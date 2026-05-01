@@ -16,6 +16,10 @@ type Props = {
   statLabels?: [string, string];
   /** Stats panelining 2 ta stat qiymatlarini override qilish */
   statValues?: (cls: ClassData) => [number, number];
+  /** classDataMap siz ham stats panelini ko'rsatish uchun (attendance kabi) */
+  statsOverride?: { values: [number | string, number | string]; labels: [string, string] };
+  /** "Record" yoki "O'rtacha davomat" label */
+  averageLabel?: string;
 };
 
 export default function ClassListPanel({
@@ -25,10 +29,13 @@ export default function ClassListPanel({
   classAverage,
   statLabels = ["O'quvchilar", "Topshiriqlar"],
   statValues = (cd) => [cd.students.length, cd.assignments.length],
+  statsOverride,
+  averageLabel = "Sinf o'rtachasi",
 }: Props) {
   const selected = CLASSES.find((c) => c.id === selectedClassId);
   const selectedData = classDataMap?.[selectedClassId];
   const hex = selected ? CLASS_COLOR_HEX[classColor(selected)] : undefined;
+  const showStats = !!(selected && hex && (selectedData || statsOverride));
 
   return (
     <div className="min-w-0 min-h-0 pr-4">
@@ -113,12 +120,12 @@ export default function ClassListPanel({
             </div>
           </div>
 
-          {/* Stats panel — faqat classDataMap bo'lganda */}
-          {selected && selectedData && hex && (
+          {/* Stats panel */}
+          {showStats && (
             <div className="group/stats border-t border-border px-5 py-5 space-y-4 shrink-0">
               <div className="flex items-center gap-3">
                 <Link
-                  href={`/dashboard/classes/${selected.id}`}
+                  href={`/dashboard/classes/${selected!.id}`}
                   className="relative group/icon p-3.5 rounded-xl shrink-0 block overflow-hidden"
                   style={{ backgroundColor: `color-mix(in srgb, ${hex} 12.5%, transparent)` }}
                 >
@@ -137,10 +144,10 @@ export default function ClassListPanel({
                   />
                 </Link>
                 <div className="min-w-0 flex-1">
-                  <h4 className="heading-small leading-tight truncate">{selected.name}</h4>
-                  {selected.time && (
+                  <h4 className="heading-small leading-tight truncate">{selected!.name}</h4>
+                  {selected!.time && (
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-1 leading-relaxed">
-                      {selected.time}
+                      {selected!.time}
                     </p>
                   )}
                 </div>
@@ -155,14 +162,19 @@ export default function ClassListPanel({
               </div>
 
               <div className="gap-2 text-center grid grid-cols-2">
-                {statValues(selectedData).map((val, i) => (
+                {(statsOverride
+                  ? statsOverride.values
+                  : statValues(selectedData!)
+                ).map((val, i) => (
                   <div
                     key={i}
                     className="p-2 rounded-lg"
                     style={{ backgroundColor: `color-mix(in srgb, ${hex} 8.2%, transparent)` }}
                   >
                     <p className="text-lg font-bold">{val}</p>
-                    <p className="text-[10px] text-muted-foreground">{statLabels[i]}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {statsOverride ? statsOverride.labels[i] : statLabels[i]}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -170,7 +182,7 @@ export default function ClassListPanel({
               {classAverage !== undefined && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Sinf o&apos;rtachasi</span>
+                    <span className="text-muted-foreground">{averageLabel}</span>
                     <span className="font-medium">{Math.round(classAverage)}%</span>
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">

@@ -348,7 +348,7 @@ export default function GradesTable({
                       <td
                         key={a.id}
                         onClick={() => setEditingCell(cellKey)}
-                        className="border-b border-r border-border p-0 w-16 min-w-16 h-16 text-center"
+                        className="border-b border-r border-border p-0 w-16 min-w-16 h-16 text-center cursor-pointer group/cell hover:ring-1 hover:ring-inset hover:ring-foreground/30 hover:bg-muted/40 transition-colors"
                       >
                         {isEditing ? (
                           <CellEditor
@@ -484,7 +484,7 @@ function GradeCell({
   }
   const percent = maxScore > 0 ? (grade.score / maxScore) * 100 : 0;
   return (
-    <div className={cn("relative w-full h-full flex flex-col items-center justify-center py-3 px-2", cellBg(percent))}>
+    <div className={cn("relative w-full h-full flex flex-col items-center justify-center py-3 px-2 group-hover/cell:ring-1 group-hover/cell:ring-inset group-hover/cell:ring-foreground/30 transition-shadow", cellBg(percent))}>
       {grade.isDraft && (
         <span className="absolute top-1 right-1 size-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
       )}
