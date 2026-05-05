@@ -29,6 +29,7 @@ const navItems = [
     items: [
       { href: "/dashboard/grades", label: "Jurnal", icon: "bar-chart-2" },
       { href: "/dashboard/attendance", label: "Davomat", icon: "check-square" },
+      { href: "/dashboard/standards", label: "Standartlar", icon: "target" },
     ],
   },
   {
@@ -50,6 +51,7 @@ const iconPaths: Record<string, React.ReactElement> = {
   "check-square": <><path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></>,
   "check-circle": <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></>,
   home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
+  target: <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>,
 };
 
 function Icon({ name, className }: { name: string; className?: string }) {
