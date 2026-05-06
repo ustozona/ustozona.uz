@@ -30,17 +30,19 @@ type ClassItem = {
   schedule: string;
   /** Optional manual override; if absent, color is auto-derived from id */
   color?: ClassColor;
+  /** Top 3 student initials for avatar stack */
+  initials?: string[];
 };
 
 const classes: ClassItem[] = [
-  { id: 1, name: "5-A", subject: "Informatika", students: 13, lessons: 18, assignments: 2, schedule: "Ju · 10:35" },
-  { id: 2, name: "5-B", subject: "Informatika", students: 14, lessons: 18, assignments: 2, schedule: "Ju · 9:40" },
-  { id: 3, name: "5-D", subject: "Informatika", students: 19, lessons: 18, assignments: 2, schedule: "Ju · 8:00" },
-  { id: 4, name: "6-A", subject: "Informatika", students: 14, lessons: 12, assignments: 3, schedule: "16:20 — 17:05" },
-  { id: 5, name: "6-B", subject: "Informatika", students: 13, lessons: 12, assignments: 3, schedule: "14:40 — 15:25" },
-  { id: 6, name: "6-D", subject: "Informatika", students: 17, lessons: 12, assignments: 3, schedule: "15:30 — 16:15" },
-  { id: 7, name: "7-A", subject: "Robototexnika", students: 16, lessons: 6, assignments: 3, schedule: "17:10 — 17:55" },
-  { id: 8, name: "Toʻgarak (1-guruh)", subject: "Scratch & Algoritmika", students: 15, lessons: 6, assignments: 1, schedule: "Sh · 9:00 — 11:00", color: "orange" },
+  { id: 1, name: "5-A", subject: "Informatika", students: 13, lessons: 18, assignments: 2, schedule: "Ju · 10:35", initials: ["AS", "DJ", "DE"] },
+  { id: 2, name: "5-B", subject: "Informatika", students: 14, lessons: 18, assignments: 2, schedule: "Ju · 9:40", initials: ["AM", "AQ", "BJ"] },
+  { id: 3, name: "5-D", subject: "Informatika", students: 19, lessons: 18, assignments: 2, schedule: "Ju · 8:00", initials: ["AR", "BJ", "DO"] },
+  { id: 4, name: "6-A", subject: "Informatika", students: 14, lessons: 12, assignments: 3, schedule: "16:20 — 17:05", initials: ["AC", "AA", "DA"] },
+  { id: 5, name: "6-B", subject: "Informatika", students: 13, lessons: 12, assignments: 3, schedule: "14:40 — 15:25", initials: ["AA", "AM", "BC"] },
+  { id: 6, name: "6-D", subject: "Informatika", students: 17, lessons: 12, assignments: 3, schedule: "15:30 — 16:15", initials: ["AB", "ET", "EE"] },
+  { id: 7, name: "7-A", subject: "Robototexnika", students: 16, lessons: 6, assignments: 3, schedule: "17:10 — 17:55", initials: ["AB", "AC", "AQ"] },
+  { id: 8, name: "Toʻgarak (1-guruh)", subject: "Scratch & Algoritmika", students: 15, lessons: 6, assignments: 1, schedule: "Sh · 9:00 — 11:00", color: "orange", initials: ["JQ", "MS", "OR"] },
 ];
 
 type SortKey = "name" | "students" | "lessons";
@@ -179,18 +181,22 @@ export default function ClassesPage() {
                 <div className="py-16 text-center">
                   <p className="text-sm text-muted-foreground">Sinflar topilmadi</p>
                 </div>
-              ) : view === "grid" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredAndSorted.map((cls) => (
-                    <ClassGridCard key={cls.id} cls={cls} />
-                  ))}
-                  <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
-                </div>
               ) : (
-                <div className="flex flex-col gap-2">
-                  {filteredAndSorted.map((cls) => (
-                    <ClassListRow key={cls.id} cls={cls} />
-                  ))}
+                <div key={view} className="animate-fade-in">
+                  {view === "grid" ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredAndSorted.map((cls, i) => (
+                        <ClassGridCard key={cls.id} cls={cls} index={i} />
+                      ))}
+                      <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {filteredAndSorted.map((cls, i) => (
+                        <ClassListRow key={cls.id} cls={cls} index={i} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -224,7 +230,7 @@ export default function ClassesPage() {
 
 /* ─────────────────────────── Grid Card ─────────────────────────── */
 
-function ClassGridCard({ cls }: { cls: ClassItem }) {
+function ClassGridCard({ cls, index }: { cls: ClassItem; index: number }) {
   const color = cls.color ?? autoClassColor(cls.id);
   const hex = CLASS_COLOR_HEX[color];
   const progress = Math.round(((cls.lessons - cls.assignments) / Math.max(cls.lessons, 1)) * 100);
@@ -232,9 +238,20 @@ function ClassGridCard({ cls }: { cls: ClassItem }) {
   const c = 2 * Math.PI * r;
   const filled = (progress / 100) * c;
   const remaining = c - filled;
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <div className="group bg-card rounded-2xl border border-border overflow-hidden shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] transition-all duration-200 ease-out hover:scale-[1.02] active:scale-[0.98] hover:border-border/80 hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.06)] h-full flex flex-col cursor-pointer">
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="animate-fade-slide-up group bg-card rounded-2xl border border-border overflow-hidden h-full flex flex-col cursor-pointer transition-all duration-200 ease-out active:scale-[0.98]"
+      style={{
+        animationDelay: `${index * 55}ms`,
+        backgroundColor: hovered ? `rgba(${hexToRgb(hex)}, 0.04)` : undefined,
+        borderColor: hovered ? `${hex}70` : undefined,
+        transform: hovered ? 'scale(1.015)' : 'scale(1)',
+        boxShadow: hovered ? '0 8px 24px -4px rgba(0,0,0,0.08)' : '0 4px 20px -2px rgba(0,0,0,0.05)',
+      }}>
       <div className="px-4 pt-4">
         <div className="h-36 relative flex items-center justify-center overflow-hidden rounded-xl" style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.125)` }}>
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-20 -mr-6 -mt-6" style={{ backgroundColor: hex }} />
@@ -309,36 +326,65 @@ function StatBox({ hex, icon, value, label }: { hex: string; icon: "users" | "bo
 
 /* ─────────────────────────── List Row ─────────────────────────── */
 
-function ClassListRow({ cls }: { cls: ClassItem }) {
+function ClassListRow({ cls, index }: { cls: ClassItem; index: number }) {
   const color = cls.color ?? autoClassColor(cls.id);
   const hex = CLASS_COLOR_HEX[color];
+  const initials = cls.initials ?? ["AB", "CD", "EF"];
+  const [hovered, setHovered] = useState(false);
+  const overflow = Math.max(cls.students - 3, 0);
+
   return (
-    <div className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/30 transition-all cursor-pointer min-w-0 hover:scale-[1.005] active:scale-[0.995]">
-      <div className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.13)` }}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: hex }}>
-          <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
-          <path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
-        </svg>
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">{cls.name}</p>
-        <p className="text-xs text-muted-foreground truncate">{cls.schedule} · {cls.subject}</p>
-      </div>
-      <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground shrink-0">
-        <span><span className="font-semibold text-foreground">{cls.lessons}</span> dars</span>
-        <span><span className="font-semibold text-foreground">{cls.assignments}</span> vazifa</span>
-      </div>
-      <div className="flex -space-x-1.5 shrink-0">
-        {[0, 1, 2].map((i) => (
-          <span key={i} className="h-7 w-7 rounded-full ring-2 ring-card flex items-center justify-center text-[10px] font-bold"
-            style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.15)`, color: hex }}>
-            {String.fromCharCode(65 + ((cls.id + i) % 26))}
-          </span>
-        ))}
-        <span className="h-7 px-1.5 rounded-full ring-2 ring-card flex items-center justify-center text-[10px] font-bold"
-          style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.15)`, color: hex }}>
-          +{Math.max(cls.students - 3, 0)}
-        </span>
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="animate-fade-slide-up group bg-background rounded-xl border border-border p-4 cursor-pointer transition-all duration-200 ease-out active:scale-[0.98]"
+      style={{
+        animationDelay: `${index * 55}ms`,
+        backgroundColor: hovered ? `rgba(${hexToRgb(hex)}, 0.05)` : undefined,
+        borderColor: hovered ? `${hex}70` : undefined,
+        transform: hovered ? 'scale(1.015)' : 'scale(1)',
+      }}>
+      <div className="flex items-center gap-3">
+        {/* Icon */}
+        <div className="p-3.5 rounded-xl shrink-0" style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.125)` }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: hex }}>
+            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
+            <path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
+          </svg>
+        </div>
+
+        {/* Name + Schedule */}
+        <div className="min-w-0 flex-1">
+          <h4 className="heading-small leading-tight truncate group-hover:text-primary transition-colors">{cls.name}</h4>
+          <span className="text-xs text-muted-foreground/60 mt-0.5 block truncate">{cls.schedule}</span>
+        </div>
+
+        {/* Stats + Avatars */}
+        <div className="shrink-0 flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground/60">
+            <span className="flex items-center gap-1">{cls.lessons} Dars</span>
+            <span className="flex items-center gap-1">
+              <span className="text-muted-foreground/30 mx-0.5">·</span>
+              {cls.assignments} Vazifa
+            </span>
+          </div>
+          <div className="hidden md:block">
+            <div className="flex -space-x-2">
+              {initials.map((init, i) => (
+                <div key={i}
+                  className="rounded-full flex items-center justify-center font-semibold text-white shrink-0 overflow-hidden size-7 text-xs ring-2 ring-background"
+                  style={{ backgroundColor: hex }}>
+                  {init}
+                </div>
+              ))}
+              {overflow > 0 && (
+                <div className="rounded-full flex items-center justify-center font-semibold bg-accent text-foreground ring-2 ring-background size-7 text-xs">
+                  +{overflow}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
