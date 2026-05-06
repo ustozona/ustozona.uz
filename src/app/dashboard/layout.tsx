@@ -17,7 +17,7 @@ export default function DashboardLayout({
         <Header />
         <div className="flex flex-1 min-h-0">
           <Sidebar />
-          <main className="relative flex-1 min-w-0 overflow-y-auto scrollbar-thin bg-white dark:bg-black">
+          <main className="relative flex-1 min-w-0 overflow-y-auto scrollbar-thin bg-neutral-50/50 dark:bg-black">
             {/* Grid background */}
             <div
               className={cn(

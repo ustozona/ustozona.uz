@@ -130,7 +130,7 @@ export default function Sidebar() {
     <aside
       data-collapsed={collapsed ? "true" : "false"}
       className={cn(
-        "hidden md:flex flex-col h-full bg-sidebar border-r border-sidebar-border overflow-hidden transition-[width] duration-200 ease-linear shrink-0",
+        "hidden md:flex flex-col h-full bg-white dark:bg-sidebar border-r border-sidebar-border overflow-hidden transition-[width] duration-200 ease-linear shrink-0",
         collapsed ? "w-[var(--sidebar-width-icon)]" : "w-[var(--sidebar-width)]"
       )}
     >
@@ -174,7 +174,7 @@ export default function Sidebar() {
       </div>
 
       {/* Footer: AI Magic + Storage usage */}
-      <div className={cn("shrink-0 border-t border-sidebar-border bg-sidebar", collapsed ? "px-2 py-3 space-y-2" : "px-4 py-3 space-y-3")}>
+      <div className={cn("shrink-0 border-t border-sidebar-border bg-white dark:bg-sidebar", collapsed ? "px-2 py-3 space-y-2" : "px-4 py-3 space-y-3")}>
         {collapsed ? (
           <>
             <Tooltip>
