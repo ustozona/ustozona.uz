@@ -1,1086 +1,345 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { autoClassColor, classTokens, CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
-import {
-  DEFAULT_TIMETABLE_CONFIG,
-  DAYS,
-  buildSlots,
-  fmtMin,
-  defaultsForProfile,
-  type TimetableConfig,
-  type LessonSlot,
-  type Shift,
-  type SchoolProfile,
-} from "@/lib/timetable";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin, { Draggable, type DropArg, type EventReceiveArg } from "@fullcalendar/interaction";
+import type { EventClickArg, EventDropArg, EventContentArg } from "@fullcalendar/core";
+import { autoClassColor, CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 
-type ClassItem = {
-  id: number;
-  name: string;
-  subject: string;
-  shift: Shift;
+/* ─── Types ─── */
+type ClassItem = { 
+  id: number; 
+  name: string; 
   color?: ClassColor;
+  students?: number;
+  lessons?: number;
+  assignments?: number;
+  schedule?: string;
+  initials?: string[];
 };
+type TimetableEvent = { id: string; classId: number; start: string; end: string };
 
-const classes: ClassItem[] = [
-  { id: 1, name: "5-A", subject: "Informatika", shift: 1 },
-  { id: 2, name: "5-B", subject: "Informatika", shift: 1 },
-  { id: 3, name: "5-D", subject: "Informatika", shift: 1 },
-  { id: 4, name: "6-A", subject: "Informatika", shift: 2 },
-  { id: 5, name: "6-B", subject: "Informatika", shift: 2 },
-  { id: 6, name: "6-D", subject: "Informatika", shift: 2 },
-  { id: 7, name: "7-A", subject: "Robototexnika", shift: 2 },
-  { id: 8, name: "To'garak (1-guruh)", subject: "Scratch & Algoritmika", shift: 2, color: "orange" },
+/* ─── Same classes as classes page ─── */
+const CLASSES: ClassItem[] = [
+  { id: 1, name: "1-A", students: 24, lessons: 18, assignments: 2, schedule: "Du · 08:00", initials: ["AS", "DJ", "DE"] },
+  { id: 2, name: "2-A", students: 18, lessons: 18, assignments: 2, schedule: "Se · 09:40", initials: ["AM", "AQ", "BJ"] },
+  { id: 3, name: "3-A", students: 30, lessons: 18, assignments: 2, schedule: "Ch · 10:35", initials: ["AR", "BJ", "DO"] },
+  { id: 4, name: "4-A", students: 22, lessons: 12, assignments: 3, schedule: "Pa · 11:30", initials: ["AC", "AA", "DA"] },
+  { id: 5, name: "5-A", students: 25, lessons: 12, assignments: 3, schedule: "Ju · 14:40", initials: ["AA", "AM", "BC"] },
+  { id: 6, name: "6-A", students: 15, lessons: 12, assignments: 3, schedule: "Sh · 15:30", initials: ["AB", "ET", "EE"] },
+  { id: 7, name: "7-A", students: 28, lessons: 6, assignments: 3, schedule: "Du · 17:10", initials: ["AB", "AC", "AQ"] },
+  { id: 8, name: "8-A", students: 12, lessons: 6, assignments: 1, schedule: "Se · 09:00", initials: ["JQ", "MS", "OR"] },
+  { id: 9, name: "9-A", students: 19, lessons: 6, assignments: 2, schedule: "Ch · 10:00", initials: ["AS", "BN", "KM"] },
+  { id: 10, name: "10-A", students: 27, lessons: 6, assignments: 2, schedule: "Pa · 11:00", initials: ["LT", "PR", "SW"] },
+  { id: 11, name: "11-A", students: 21, lessons: 6, assignments: 2, schedule: "Ju · 12:00", initials: ["QW", "ER", "TY"] },
 ];
 
-const STORAGE_KEY = "murabbiyona-timetable-events";
-const CONFIG_KEY = "murabbiyona-timetable-config";
-const PROFILE_KEY = "murabbiyona-timetable-profile";
-const ONBOARDED_KEY = "murabbiyona-timetable-onboarded";
-
-type TimetableEvent = {
-  id: string;
-  classId: number;
-  day: number;
-  startMin: number;
-  endMin: number;
-};
+const STORAGE_KEY = "murabbiyona-timetable-v2";
+const DAY_UZ = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
 
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
-const SLOT_HEIGHT = 180; // px per hour
-const TOTAL_HOURS = 24;
-
-
-type EnrichedSlot = LessonSlot & { shift: Shift };
-
 export default function TimetablePage() {
   const [events, setEvents] = useState<TimetableEvent[]>([]);
-  const [config, setConfig] = useState<TimetableConfig>(DEFAULT_TIMETABLE_CONFIG);
-  const [profile, setProfile] = useState<SchoolProfile>("double");
   const [hydrated, setHydrated] = useState(false);
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const [editingEventId, setEditingEventId] = useState<string | null>(null);
-  const [pendingNewEventId, setPendingNewEventId] = useState<string | null>(null);
-  const [draggingId, setDraggingId] = useState<number | null>(null);
-  const [dragHover, setDragHover] = useState<{ day: number; key: string } | null>(null);
   const [saved, setSaved] = useState(true);
+  const [editEvent, setEditEvent] = useState<TimetableEvent | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const draggableRef = useRef<Draggable | null>(null);
+  const calendarRef = useRef<InstanceType<typeof FullCalendar>>(null);
 
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const didInitialScrollRef = useRef(false);
-
-  // Hydrate
   useEffect(() => {
-    try {
-      const savedEvents = localStorage.getItem(STORAGE_KEY);
-      if (savedEvents) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const parsed: any[] = JSON.parse(savedEvents);
-        // Migrate old durationMin → endMin
-        const migrated: TimetableEvent[] = parsed.map((e) => ({
-          id: e.id,
-          classId: e.classId,
-          day: e.day,
-          startMin: e.startMin,
-          endMin: e.endMin ?? (e.startMin + (e.durationMin ?? 60)),
-        }));
-        setEvents(migrated);
-      }
-      const savedCfg = localStorage.getItem(CONFIG_KEY);
-      if (savedCfg) setConfig(JSON.parse(savedCfg));
-      const savedProfile = localStorage.getItem(PROFILE_KEY);
-      if (savedProfile === "single" || savedProfile === "double") setProfile(savedProfile);
-      const onboarded = localStorage.getItem(ONBOARDED_KEY);
-      if (onboarded !== "1") setOnboardingOpen(true);
-    } catch {}
+    try { const r = localStorage.getItem(STORAGE_KEY); if (r) setEvents(JSON.parse(r)); } catch {}
     setHydrated(true);
   }, []);
 
-  // Persist events
   useEffect(() => {
     if (!hydrated) return;
     setSaved(false);
-    const t = setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
-      setSaved(true);
-    }, 600);
+    const t = setTimeout(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); setSaved(true); }, 600);
     return () => clearTimeout(t);
   }, [events, hydrated]);
 
   useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-  }, [config, hydrated]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(PROFILE_KEY, profile);
-  }, [profile, hydrated]);
-
-  const classById = useMemo(() => {
-    const m = new Map<number, ClassItem>();
-    classes.forEach((c) => m.set(c.id, c));
-    return m;
+    if (!listRef.current) return;
+    draggableRef.current = new Draggable(listRef.current, {
+      itemSelector: ".draggable-class",
+      eventData: (el) => {
+        const id = Number(el.getAttribute("data-class-id"));
+        const cls = CLASSES.find(c => c.id === id);
+        const hex = cls ? CLASS_COLOR_HEX[cls.color ?? autoClassColor(cls.id)] : "#888";
+        return { title: cls?.name ?? "", duration: "00:45", backgroundColor: hex, borderColor: hex, textColor: "#2e3138", extendedProps: { classId: id } };
+      },
+    });
+    return () => draggableRef.current?.destroy();
   }, []);
 
-  // Slots: depend on profile
-  const allSlots: EnrichedSlot[] = useMemo(() => {
-    const s1 = buildSlots(config.shift1).map((s) => ({ ...s, shift: 1 as Shift }));
-    if (profile === "single") return s1;
-    const s2 = buildSlots(config.shift2).map((s) => ({ ...s, shift: 2 as Shift }));
-    return [...s1, ...s2].sort((a, b) => a.startMin - b.startMin);
-  }, [config, profile]);
+  const fcEvents = useMemo(() => events.map(ev => {
+    const cls = CLASSES.find(c => c.id === ev.classId);
+    const hex = cls ? CLASS_COLOR_HEX[cls.color ?? autoClassColor(cls.id)] : "#888";
+    return { id: ev.id, title: cls?.name ?? "", start: ev.start, end: ev.end, backgroundColor: hex, borderColor: hex, textColor: "#2e3138", extendedProps: { classId: ev.classId } };
+  }), [events]);
 
-  // Initial auto-scroll: to the earliest event or earliest slot
-  useEffect(() => {
-    if (!hydrated || didInitialScrollRef.current) return;
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    const earliestEventMin = events.length
-      ? Math.min(...events.map((e) => e.startMin))
-      : null;
-    const earliestSlotMin = allSlots.length ? allSlots[0].startMin : null;
-    const target =
-      earliestEventMin !== null && earliestSlotMin !== null
-        ? Math.min(earliestEventMin, earliestSlotMin)
-        : earliestEventMin ?? earliestSlotMin ?? 8 * 60;
-    const targetPx = (target / 60) * SLOT_HEIGHT - 20;
-    scroller.scrollTop = Math.max(0, targetPx);
-    didInitialScrollRef.current = true;
-  }, [hydrated, allSlots, events]);
+  const handleEventReceive = useCallback((info: EventReceiveArg) => {
+    const classId = Number(info.event.extendedProps.classId);
+    if (!classId) return;
+    const startStr = info.event.startStr;
+    const endStr = info.event.endStr || new Date(info.event.start!.getTime() + 45 * 60000).toISOString();
+    setEvents(prev => [...prev, { id: uid(), classId, start: startStr, end: endStr }]);
+    info.revert();
+  }, []);
 
-  const handleDragStart = (e: React.DragEvent, classId: number) => {
-    e.dataTransfer.setData("application/x-class-id", String(classId));
-    e.dataTransfer.effectAllowed = "copy";
-    setDraggingId(classId);
-  };
-  const handleDragEnd = () => { setDraggingId(null); setDragHover(null); };
-  const handleDragOver = (e: React.DragEvent, day: number, key: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-    if (dragHover?.day !== day || dragHover?.key !== key) setDragHover({ day, key });
-  };
-  const handleDrop = (e: React.DragEvent, day: number, startMin: number, endMin: number) => {
-    e.preventDefault();
-    const classIdStr = e.dataTransfer.getData("application/x-class-id");
-    const classId = parseInt(classIdStr, 10);
-    if (!classId || isNaN(classId)) return;
-    setSaved(false);
-    setEvents((prev) => [...prev, { id: uid(), classId, day, startMin, endMin }]);
-    setDragHover(null);
-    setDraggingId(null);
-  };
-  const removeEvent = (id: string) => setEvents((prev) => prev.filter((e) => e.id !== id));
+  const handleEventDrop = useCallback((info: EventDropArg) => {
+    setEvents(prev => prev.map(ev => ev.id === info.event.id ? { ...ev, start: info.event.startStr, end: info.event.endStr } : ev));
+  }, []);
 
-  const updateEvent = (id: string, patch: Partial<TimetableEvent>) => {
-    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
-  };
+  const handleEventClick = useCallback((info: EventClickArg) => {
+    const ev = events.find(e => e.id === info.event.id);
+    if (ev) setEditEvent(ev);
+  }, [events]);
 
-  const editingEvent = useMemo(
-    () => events.find((e) => e.id === editingEventId) ?? null,
-    [events, editingEventId]
-  );
+  const removeEvent = useCallback((id: string) => setEvents(prev => prev.filter(e => e.id !== id)), []);
 
-  const completeOnboarding = (newProfile: SchoolProfile, newConfig: TimetableConfig) => {
-    setProfile(newProfile);
-    setConfig(newConfig);
-    try { localStorage.setItem(ONBOARDED_KEY, "1"); } catch {}
-    setOnboardingOpen(false);
-  };
+  // The classNextLesson variable is removed because we display students and lessons count instead
+
+  if (!hydrated) return null;
 
   return (
-    <div className="grid gap-4 p-4 grid-cols-1 xl:grid-cols-[320px_1fr] h-full min-h-0">
-      {/* Onboarding modal */}
-      {onboardingOpen && (
-        <OnboardingDialog
-          initialProfile={profile}
-          initialConfig={config}
-          onComplete={completeOnboarding}
-        />
-      )}
-
-      {/* Edit event modal */}
-      {editingEvent && (
-        <EditEventDialog
-          event={editingEvent}
-          isNew={pendingNewEventId === editingEvent.id}
-          classes={classes}
-          slots={allSlots}
-          onSave={(patch) => {
-            updateEvent(editingEvent.id, patch);
-            setEditingEventId(null);
-            setPendingNewEventId(null);
-          }}
-          onClose={() => {
-            if (pendingNewEventId) removeEvent(pendingNewEventId);
-            setEditingEventId(null);
-            setPendingNewEventId(null);
-          }}
-          onDelete={() => {
-            removeEvent(editingEvent.id);
-            setEditingEventId(null);
-            setPendingNewEventId(null);
-          }}
-        />
-      )}
-
-      {/* ── Left: Classes list ── */}
-      <Card className="rounded-2xl shadow-none flex flex-col gap-0 py-0 min-w-0 xl:max-h-[calc(100dvh-var(--top-header-height)-2rem)]">
-        <div className="px-5 py-5 shrink-0 border-b border-border/60">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-foreground flex items-center justify-center shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-background">
-                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
-                <path d="M22 10v6"/>
-                <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+    <div className="flex-1 min-h-0 flex flex-col px-4 py-2 md:p-8 lg:px-12">
+      <div className="flex-1 min-h-0 grid p-3 -m-3" style={{ gridTemplateColumns: "25% 75%" }}>
+        {/* ── Left: Sinflar ── */}
+        <div className="min-w-0 min-h-0 pr-4 grid">
+        <div className="bg-card rounded-xl border border-border card-elevation flex flex-col h-full overflow-hidden" data-tour="timetable-class-selector">
+          {/* Header */}
+          <div className="flex items-center px-5 pt-6 pb-4 gap-2.5 shrink-0 min-h-[4.5rem]">
+            <div className="p-2 rounded-lg bg-muted">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5 text-foreground">
+                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /><path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">Sinflar</h2>
+            <h2 className="heading-section">Sinflar</h2>
           </div>
-          <p className="text-xs text-muted-foreground mt-3 text-center">
-            Sinflarni jadvalga sudrab tashlang
-          </p>
-        </div>
-        <CardContent className="flex-1 overflow-y-auto scrollbar-thin px-3 py-3 space-y-2">
-          {classes.map((cls) => {
-            // Compute next lessons label for this class
-            const clsEvents = events
-              .filter((ev) => ev.classId === cls.id)
-              .sort((a, b) => a.day - b.day || a.startMin - b.startMin);
-            const nextLessons = clsEvents.length > 0
-              ? clsEvents
-                  .slice(0, 2)
-                  .map((ev) => {
-                    const dayShort = DAYS.find((d) => d.idx === ev.day)?.short ?? "";
-                    return `${dayShort} ${fmtMin(ev.startMin)}`;
-                  })
-                  .join(" · ")
-              : null;
-            return (
-              <DraggableClassCard
-                key={cls.id}
-                cls={cls}
-                dragging={draggingId === cls.id}
-                nextLessons={nextLessons}
-                onDragStart={(e) => handleDragStart(e, cls.id)}
-                onDragEnd={handleDragEnd}
-                onEdit={() => {
-                  if (clsEvents[0]) {
-                    setEditingEventId(clsEvents[0].id);
-                  } else {
-                    // Sinf jadvalsiz — yangi dars qo'shish uchun bo'sh event yaratamiz
-                    const newId = uid();
-                    const defaultSlot = allSlots[0];
-                    setEvents((prev) => [...prev, {
-                      id: newId,
-                      classId: cls.id,
-                      day: 1,
-                      startMin: defaultSlot?.startMin ?? 480,
-                      endMin: defaultSlot?.endMin ?? 525,
-                    }]);
-                    setPendingNewEventId(newId);
-                    setEditingEventId(newId);
-                  }
-                }}
-                onDelete={() => {}}
-              />
-            );
-          })}
-        </CardContent>
-      </Card>
 
-      {/* ── Right: Calendar ── */}
-      <Card className="rounded-2xl shadow-none flex flex-col gap-0 py-0 min-w-0 xl:max-h-[calc(100dvh-var(--top-header-height)-2rem)]">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-5 shrink-0 border-b border-border/60">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-foreground flex items-center justify-center shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-background">
-                <path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>
+          {/* Academic year button */}
+          <div className="px-5 pb-4 shrink-0">
+            <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all duration-150 cursor-pointer active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground px-3 has-[>svg]:px-2.5 gap-1.5 bg-card border border-border shadow-xs hover:bg-muted !pl-4 !pr-3 w-full h-11 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground shrink-0">
+                <path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />
               </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">Dars jadvali</h2>
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Saved indicator */}
-            <span className={cn(
-              "inline-flex items-center gap-1.5 text-xs font-medium transition-all duration-300",
-              saved ? "text-emerald-600" : "text-muted-foreground"
-            )}>
-              {saved ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6 9 17l-5-5"/>
-                </svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-              )}
-              {saved ? "Saqlandi" : "Saqlanmoqda..."}
-            </span>
-            <span className="text-[11px] text-muted-foreground hidden sm:inline">
-              {profile === "single" ? "1-smenali maktab" : "2-smenali maktab"}
-            </span>
-            <Tooltip>
-              <TooltipTrigger
-                onClick={() => setOnboardingOpen(true)}
-                className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Sozlash"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              </TooltipTrigger>
-              <TooltipContent>Sozlash</TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
-
-        <CardContent
-          ref={scrollerRef}
-          className="flex-1 overflow-auto scrollbar-thin p-0 min-h-0"
-        >
-          <CalendarGrid
-            slots={allSlots}
-            events={events}
-            classById={classById}
-            dragHover={dragHover}
-            draggingId={draggingId}
-            onDragOver={handleDragOver}
-            onDropSlot={(e, day, slot) =>
-              handleDrop(e, day, slot.startMin, slot.endMin)
-            }
-            onDropFree={(e, day, hour) => handleDrop(e, day, hour * 60, hour * 60 + 60)}
-            onRemove={removeEvent}
-            onEdit={setEditingEventId}
-          />
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-/* ─────────────────────────── Calendar grid ─────────────────────────── */
-
-function CalendarGrid({
-  slots,
-  events,
-  classById,
-  dragHover,
-  draggingId,
-  onDragOver,
-  onDropSlot,
-  onDropFree,
-  onRemove,
-  onEdit,
-}: {
-  slots: EnrichedSlot[];
-  events: TimetableEvent[];
-  classById: Map<number, ClassItem>;
-  dragHover: { day: number; key: string } | null;
-  draggingId: number | null;
-  onDragOver: (e: React.DragEvent, day: number, key: string) => void;
-  onDropSlot: (e: React.DragEvent, day: number, slot: EnrichedSlot) => void;
-  onDropFree: (e: React.DragEvent, day: number, hour: number) => void;
-  onRemove: (id: string) => void;
-  onEdit: (id: string) => void;
-}) {
-  const minToTop = (min: number) => (min / 60) * SLOT_HEIGHT;
-  const totalHeight = TOTAL_HOURS * SLOT_HEIGHT;
-
-  // Compute lesson index within each shift
-  const slotIndex = useMemo(() => {
-    const map = new Map<number, number>();
-    const s1 = slots.filter((s) => s.shift === 1);
-    const s2 = slots.filter((s) => s.shift === 2);
-    s1.forEach((s, i) => map.set(s.startMin, i + 1));
-    s2.forEach((s, i) => map.set(s.startMin, i + 1));
-    return map;
-  }, [slots]);
-
-  return (
-    <div className="min-w-[820px]">
-      {/* Header */}
-      <div
-        className="grid sticky top-0 z-20 bg-card border-b border-border"
-        style={{ gridTemplateColumns: "70px repeat(6, minmax(0, 1fr))" }}
-      >
-        <div />
-        {DAYS.map((d) => (
-          <div key={d.idx} className="px-3 py-3 text-center border-l border-border/60">
-            <p className="text-sm font-bold text-foreground">
-              {d.label}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Body */}
-      <div
-        className="grid relative"
-        style={{ gridTemplateColumns: "70px repeat(6, minmax(0, 1fr))", height: totalHeight }}
-      >
-        {/* Time gutter */}
-        <div className="border-r border-border/60 relative">
-          {Array.from({ length: TOTAL_HOURS }, (_, h) => (
-            <div
-              key={h}
-              className="text-xs text-muted-foreground font-semibold pl-3 pt-1.5 absolute left-0 right-0"
-              style={{ top: h * SLOT_HEIGHT, height: SLOT_HEIGHT }}
-            >
-              {h.toString().padStart(2, "0")}:00
-            </div>
-          ))}
-        </div>
-
-        {/* Day columns */}
-        {DAYS.map((d) => (
-          <div key={d.idx} className="relative border-l border-border/60">
-            {/* Hour rows with 15-min sub-gridlines + free-drop targets */}
-            {Array.from({ length: TOTAL_HOURS }, (_, h) => {
-              const key = `h-${h}`;
-              const isHover = dragHover?.day === d.idx && dragHover?.key === key;
-              return (
-                <div
-                  key={h}
-                  onDragOver={(e) => onDragOver(e, d.idx, key)}
-                  onDrop={(e) => onDropFree(e, d.idx, h)}
-                  className={cn(
-                    "relative border-t border-border/60 transition-colors",
-                    isHover && draggingId !== null
-                      ? "bg-foreground/5"
-                      : ""
-                  )}
-                  style={{ height: SLOT_HEIGHT }}
-                >
-                  {/* 5-daqiqalik chiziqlar */}
-                  {Array.from({ length: 11 }, (_, i) => (
-                    <div
-                      key={i}
-                      className="absolute left-0 right-0 pointer-events-none"
-                      style={{
-                        top: ((i + 1) / 12) * SLOT_HEIGHT,
-                        borderTop: (i + 1) % 6 === 0
-                          ? "1px dashed rgba(0,0,0,0.08)"
-                          : "1px solid rgba(0,0,0,0.03)",
-                      }}
-                    />
-                  ))}
-                </div>
-              );
-            })}
-
-            {/* Lesson slots — invisible drop targets + hover highlight only */}
-            {slots.map((slot) => {
-              const top = minToTop(slot.startMin);
-              const height = ((slot.endMin - slot.startMin) / 60) * SLOT_HEIGHT;
-              const key = `slot-${slot.startMin}`;
-              const isHover = dragHover?.day === d.idx && dragHover?.key === key;
-              return (
-                <div
-                  key={slot.startMin}
-                  onDragOver={(e) => onDragOver(e, d.idx, key)}
-                  onDrop={(e) => onDropSlot(e, d.idx, slot)}
-                  className={cn(
-                    "absolute left-0 right-0 rounded transition-colors",
-                    isHover && "bg-foreground/5"
-                  )}
-                  style={{ top, height }}
-                />
-              );
-            })}
-
-            {/* Events on top */}
-            {events
-              .filter((ev) => ev.day === d.idx)
-              .map((ev) => {
-                const cls = classById.get(ev.classId);
-                if (!cls) return null;
-                const top = minToTop(ev.startMin);
-                const height = ((ev.endMin - ev.startMin) / 60) * SLOT_HEIGHT;
-                return (
-                  <EventBlock
-                    key={ev.id}
-                    event={ev}
-                    cls={cls}
-                    top={top}
-                    height={height}
-                    onRemove={() => onRemove(ev.id)}
-                    onEdit={() => onEdit(ev.id)}
-                  />
-                );
-              })}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function EventBlock({
-  event,
-  cls,
-  top,
-  height,
-  onRemove,
-  onEdit,
-}: {
-  event: TimetableEvent;
-  cls: ClassItem;
-  top: number;
-  height: number;
-  onRemove: () => void;
-  onEdit: () => void;
-}) {
-  const color = cls.color ?? autoClassColor(cls.id);
-  const hex = CLASS_COLOR_HEX[color];
-  // Dark text on light solid color bg
-  return (
-    <div
-      className="absolute left-1.5 right-1.5 rounded-xl p-2.5 group cursor-pointer overflow-hidden shadow-sm z-10"
-      style={{
-        top: top + 3,
-        height: Math.max(height - 6, 36),
-        backgroundColor: hex + "22",  /* ~13% opacity bg */
-        borderLeft: `3px solid ${hex}`,
-      }}
-      onClick={onEdit}
-    >
-      <p className="text-[11px] font-semibold leading-tight" style={{ color: hex }}>
-        {fmtMin(event.startMin)} – {fmtMin(event.endMin)}
-      </p>
-      <p className="text-sm font-bold leading-tight mt-0.5 truncate text-foreground">
-        {cls.name}
-      </p>
-
-      {/* X delete button — top-right, visible on hover */}
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); onRemove(); }}
-        className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity hover:opacity-70"
-        aria-label="O'chirish"
-        style={{ color: hex }}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-        </svg>
-      </button>
-    </div>
-  );
-}
-
-/* ─────────────────────────── Edit event dialog ─────────────────────────── */
-
-function EditEventDialog({
-  event,
-  isNew = false,
-  classes,
-  slots,
-  onSave,
-  onClose,
-  onDelete,
-}: {
-  event: TimetableEvent;
-  isNew?: boolean;
-  classes: ClassItem[];
-  slots: EnrichedSlot[];
-  onSave: (patch: Partial<TimetableEvent>) => void;
-  onClose: () => void;
-  onDelete: () => void;
-}) {
-  const [classId, setClassId] = useState(event.classId);
-  const [day, setDay] = useState(event.day);
-  const [startMin, setStartMin] = useState(event.startMin);
-  const [endMin, setEndMin] = useState(event.endMin);
-
-  const startH = Math.floor(startMin / 60);
-  const startM = startMin % 60;
-  const endH = Math.floor(endMin / 60);
-  const endMn = endMin % 60;
-  const durationMin = endMin - startMin;
-
-  // Quick presets — match onto existing slots
-  const matchingSlot = slots.find((s) => s.startMin === startMin && s.endMin === endMin);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-card rounded-2xl shadow-2xl w-full max-w-md max-h-[90dvh] overflow-y-auto scrollbar-thin">
-        <div className="px-6 pt-6 pb-4 border-b border-border/60 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-foreground">{isNew ? "Yangi dars qo'shish" : "Darsni tahrirlash"}</h2>
-          <button
-            onClick={onClose}
-            className="h-7 w-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground"
-            aria-label="Yopish"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-            </svg>
-          </button>
-        </div>
-
-        <div className="px-6 py-5 space-y-4">
-          {/* Class */}
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1.5">Sinf</label>
-            <select
-              value={classId}
-              onChange={(e) => setClassId(parseInt(e.target.value))}
-              className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none focus:border-foreground/40"
-            >
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>{c.name} — {c.subject}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Day */}
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1.5">Kun</label>
-            <select
-              value={day}
-              onChange={(e) => setDay(parseInt(e.target.value))}
-              className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none focus:border-foreground/40"
-            >
-              {DAYS.map((d) => (
-                <option key={d.idx} value={d.idx}>{d.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Time: Start + End */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">Boshlanish</label>
-              <input
-                type="time"
-                value={`${startH.toString().padStart(2, "0")}:${startM.toString().padStart(2, "0")}`}
-                onChange={(e) => {
-                  const [h, m] = e.target.value.split(":").map(Number);
-                  const newStart = h * 60 + m;
-                  setStartMin(newStart);
-                  // Keep same duration when start changes
-                  setEndMin(newStart + durationMin);
-                }}
-                className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none focus:border-foreground/40"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">Tugash</label>
-              <input
-                type="time"
-                value={`${endH.toString().padStart(2, "0")}:${endMn.toString().padStart(2, "0")}`}
-                onChange={(e) => {
-                  const [h, m] = e.target.value.split(":").map(Number);
-                  setEndMin(h * 60 + m);
-                }}
-                className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none focus:border-foreground/40"
-              />
-            </div>
-          </div>
-
-          {/* Duration badge */}
-          {durationMin > 0 && (
-            <p className="text-xs text-muted-foreground -mt-2">
-              Davomiyligi: <span className="font-semibold text-foreground">{durationMin} daqiqa</span>
-            </p>
-          )}
-
-          {/* Quick slot picker */}
-          {slots.length > 0 && (
-            <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">Tayyor soat</label>
-              <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto scrollbar-thin">
-                {slots.map((s, i) => {
-                  const idxInShift =
-                    s.shift === 1
-                      ? slots.filter((x) => x.shift === 1).findIndex((x) => x.startMin === s.startMin) + 1
-                      : slots.filter((x) => x.shift === 2).findIndex((x) => x.startMin === s.startMin) + 1;
-                  const isActive = matchingSlot?.startMin === s.startMin;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        setStartMin(s.startMin);
-                        setEndMin(s.endMin);
-                      }}
-                      className={cn(
-                        "text-left px-2 py-1.5 rounded-md border text-[11px] transition-colors",
-                        isActive
-                          ? "border-foreground bg-foreground/5 text-foreground"
-                          : "border-border bg-card hover:bg-muted text-muted-foreground"
-                      )}
-                    >
-                      <span className="font-semibold">{s.shift}-smena {idxInShift}-soat</span>
-                      <span className="block text-[10px] opacity-70">
-                        {fmtMin(s.startMin)} – {fmtMin(s.endMin)}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="px-6 py-4 border-t border-border/60 flex items-center justify-between gap-2">
-          <button
-            onClick={onDelete}
-            className="h-9 px-3 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1.5"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            </svg>
-            O'chirish
-          </button>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="h-9 px-4 rounded-lg text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-            >
-              Bekor qilish
-            </button>
-            <button
-              onClick={() => onSave({ classId, day, startMin, endMin })}
-              disabled={endMin <= startMin}
-              className="h-9 px-5 rounded-lg bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Saqlash
+              <span className="text-sm font-medium truncate">2025–2026-o&apos;quv yili</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground shrink-0 ml-auto">
+                <path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" />
+              </svg>
             </button>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
-/* ─────────────────────────── Onboarding dialog ─────────────────────────── */
+          <p className="text-caption text-muted-foreground px-5 pb-3 text-center shrink-0">Sinflarni jadvalga sudrab tashlang</p>
 
-function OnboardingDialog({
-  initialProfile,
-  initialConfig,
-  onComplete,
-}: {
-  initialProfile: SchoolProfile;
-  initialConfig: TimetableConfig;
-  onComplete: (profile: SchoolProfile, config: TimetableConfig) => void;
-}) {
-  const [profile, setProfile] = useState<SchoolProfile>(initialProfile);
-  const [config, setConfig] = useState<TimetableConfig>(initialConfig);
-
-  // When profile changes, prefill defaults — but keep user edits if they came back to a previously chosen profile
-  const handleProfileChange = (next: SchoolProfile) => {
-    setProfile(next);
-    setConfig(defaultsForProfile(next));
-  };
-
-  const updateShift = (s: 1 | 2, key: keyof TimetableConfig["shift1"], value: number) => {
-    setConfig((prev) => ({
-      ...prev,
-      [s === 1 ? "shift1" : "shift2"]: {
-        ...(s === 1 ? prev.shift1 : prev.shift2),
-        [key]: value,
-      },
-    }));
-  };
-
-  const previewSlots = useMemo(() => {
-    const s1 = buildSlots(config.shift1).map((s) => ({ ...s, shift: 1 as const }));
-    if (profile === "single") return s1;
-    const s2 = buildSlots(config.shift2).map((s) => ({ ...s, shift: 2 as const }));
-    return [...s1, ...s2];
-  }, [config, profile]);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90dvh] overflow-y-auto scrollbar-thin">
-        <div className="px-6 pt-6 pb-4 border-b border-border/60">
-          <h2 className="text-xl font-bold text-foreground">Maktab tizimini sozlang</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Bu sozlamalar dars jadvali uchun ishlatiladi. Keyin ham o'zgartirishingiz mumkin.
-          </p>
-        </div>
-
-        <div className="px-6 py-5 space-y-5">
-          {/* Step 1: Profile */}
-          <div>
-            <p className="text-sm font-semibold text-foreground mb-2">
-              1. Sizning maktabingizda dars qanday tashkil etilgan?
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <ProfileOption
-                active={profile === "single"}
-                onClick={() => handleProfileChange("single")}
-                title="Faqat 1-smenali"
-                subtitle="Ertalab. Tanaffus 10 daq, katta tanaffus 15 daq."
-              />
-              <ProfileOption
-                active={profile === "double"}
-                onClick={() => handleProfileChange("double")}
-                title="2-smenali"
-                subtitle="Ertalab va kunduz. Tanaffus 5 daq, katta tanaffus 10 daq."
-              />
-            </div>
-          </div>
-
-          {/* Step 2: Shift settings */}
-          <div>
-            <p className="text-sm font-semibold text-foreground mb-2">
-              2. Smena vaqtlarini tasdiqlang
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <ShiftCard
-                label="1-smena"
-                cfg={config.shift1}
-                onChange={(k, v) => updateShift(1, k, v)}
-              />
-              {profile === "double" && (
-                <ShiftCard
-                  label="2-smena"
-                  cfg={config.shift2}
-                  onChange={(k, v) => updateShift(2, k, v)}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Preview */}
-          <div>
-            <p className="text-sm font-semibold text-foreground mb-2">3. Ko'rinishi</p>
-            <div className="rounded-lg border border-border bg-muted/20 p-3 max-h-48 overflow-y-auto scrollbar-thin">
-              <div className="space-y-1">
-                {previewSlots.map((s) => {
-                  const idx =
-                    s.shift === 1
-                      ? buildSlots(config.shift1).findIndex((x) => x.startMin === s.startMin) + 1
-                      : buildSlots(config.shift2).findIndex((x) => x.startMin === s.startMin) + 1;
+          {/* Class list with fade gradient */}
+          <div className="flex-1 min-h-0 relative overflow-hidden rounded-b-xl">
+            <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+            <div className="h-full overflow-y-auto scrollbar-thin" ref={listRef}>
+              <div className="px-5 pb-5 space-y-2">
+                {CLASSES.map(cls => {
+                  const hex = CLASS_COLOR_HEX[cls.color ?? autoClassColor(cls.id)];
+                  const scheduledLessons = events.filter(e => e.classId === cls.id).length;
                   return (
                     <div
-                      key={`${s.shift}-${s.startMin}`}
-                      className="flex items-center gap-3 text-xs"
+                      key={cls.id}
+                      className="group draggable-class cursor-grab flex items-center gap-3 p-4 border-2 rounded-xl transition-all duration-200 hover:shadow-[0_8px_16px_-6px_rgba(0,0,0,0.15)] relative"
+                      data-class-id={cls.id}
+                      style={{ borderColor: hex, backgroundColor: hex + "10" }}
                     >
-                      <span className="text-muted-foreground w-16 shrink-0">
-                        {s.shift}-smena
-                      </span>
-                      <span className="font-semibold text-foreground w-14 shrink-0">{idx}-soat</span>
-                      <span className="text-muted-foreground tabular-nums">
-                        {fmtMin(s.startMin)} – {fmtMin(s.endMin)}
-                      </span>
+                      <div className="p-3 rounded-xl shrink-0" style={{ backgroundColor: hex + "20" }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" style={{ color: hex }}>
+                          <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /><path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="heading-small truncate">{cls.name}</p>
+                        <div className="text-[11px] text-muted-foreground/80 font-medium mt-0.5 flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <span>{cls.students} ta</span>
+                          </div>
+                          <span className="text-muted-foreground/40">•</span>
+                          <div className="flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+                            <span>{scheduledLessons} / {cls.lessons}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Hover actions */}
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-card/90 backdrop-blur-sm shadow-sm border border-border/50 p-0.5">
+                        <button type="button" className="p-1.5 rounded-md hover:bg-accent transition-colors" title="Tahrirlash">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground">
+                            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" />
+                          </svg>
+                        </button>
+                        <button type="button" className="p-1.5 rounded-md hover:bg-red-500/10 transition-colors" title="O&apos;chirish">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground hover:text-red-500">
+                            <path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
+                {/* Add Class button */}
+                <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-150 cursor-pointer active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border border-border bg-card shadow-xs hover:bg-accent hover:text-accent-foreground px-4 py-2 has-[>svg]:px-3 w-full h-11 mt-3 rounded-xl border-dashed">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 mr-2">
+                    <path d="M5 12h14" /><path d="M12 5v14" />
+                  </svg>
+                  Sinf qo&apos;shish
+                </button>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="px-6 py-4 border-t border-border/60 flex items-center justify-end gap-2">
-          <button
-            onClick={() => onComplete(profile, config)}
-            className="h-10 px-5 rounded-lg bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors"
-          >
-            Saqlash va davom etish
+      {/* ── Right: Dars jadvali ── */}
+      <div className="min-w-0 min-h-0 grid">
+        <div className="bg-card rounded-xl border border-border card-elevation flex flex-col h-full overflow-hidden" data-tour="timetable-grid">
+          {/* Header */}
+          <div className="flex items-center px-5 pt-5 pb-3 gap-2.5 shrink-0 min-h-[4.5rem]">
+            <div className="p-2 rounded-lg bg-muted">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5 text-foreground">
+                <path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />
+              </svg>
+            </div>
+            <h2 className="heading-section">Dars jadvali</h2>
+            <div className="ml-auto flex items-center gap-3">
+              <span className="inline-flex items-center gap-1 text-xs transition-all duration-200">
+                {saved ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M20 6 9 17l-5-5" /></svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                )}
+                <span className="text-muted-foreground">{saved ? "Saqlandi" : "Saqlanmoqda..."}</span>
+              </span>
+              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-all duration-150 cursor-pointer active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive py-2 has-[>svg]:px-3 h-11 px-4 rounded-xl font-semibold bg-foreground text-background hover:bg-foreground/90">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 mr-2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
+                </svg>
+                Rotatsiyani sozlash
+              </button>
+            </div>
+          </div>
+
+          {/* Calendar */}
+          <div data-carousel-ignore="true" className="flex-1 min-h-0 overflow-hidden px-5 pb-5 timetable-editor">
+            <FullCalendar
+              ref={calendarRef}
+              plugins={[timeGridPlugin, interactionPlugin]}
+              initialView="timeGridWeek"
+              headerToolbar={false}
+              dayHeaderContent={(args) => {
+                const dow = args.date.getDay();
+                const dayNum = [0, 1, 2, 3, 4, 5, 6];
+                const num = dayNum.indexOf(dow);
+                const short = dow >= 1 && dow <= 6 ? DAY_UZ[dow - 1] : "";
+                return (
+                  <div className="fc-custom-header">
+                    <span className="fc-header-weekday text-sm font-medium">{short}</span>
+                  </div>
+                );
+              }}
+              hiddenDays={[0]}
+              slotMinTime="07:00:00"
+              slotMaxTime="21:00:00"
+              slotDuration="00:15:00"
+              slotLabelInterval="01:00:00"
+              slotLabelFormat={{ hour: "numeric", minute: "2-digit", hour12: false }}
+              height="100%"
+              expandRows={true}
+              editable={true}
+              droppable={true}
+              eventReceive={handleEventReceive}
+              eventDrop={handleEventDrop}
+              eventClick={handleEventClick}
+              events={fcEvents}
+              eventContent={(arg: EventContentArg) => <EventContent arg={arg} onRemove={removeEvent} />}
+              nowIndicator={true}
+              allDaySlot={false}
+              scrollTime="07:00:00"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Edit dialog */}
+      {editEvent && (
+        <EditDialog
+          event={editEvent}
+          onSave={(patch) => { setEvents(prev => prev.map(e => e.id === editEvent.id ? { ...e, ...patch } : e)); setEditEvent(null); }}
+          onDelete={() => { removeEvent(editEvent.id); setEditEvent(null); }}
+          onClose={() => setEditEvent(null)}
+        />
+      )}
+    </div>
+    </div>
+  );
+}
+
+/* ─── Event content ─── */
+function EventContent({ arg, onRemove }: { arg: EventContentArg; onRemove: (id: string) => void }) {
+  const fmt = (d: Date | null) => d ? `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}` : "";
+  return (
+    <div className="fc-event-main-custom group/event relative w-full h-full overflow-hidden p-1.5 flex flex-col">
+      <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(arg.event.id); }}
+        className="absolute top-0.5 right-0.5 size-5 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/event:opacity-100 transition-opacity z-10 cursor-pointer hover:opacity-70">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#2e3138" }}>
+          <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+        </svg>
+      </button>
+      <div className="fc-event-time text-[10px] opacity-80 font-medium leading-none mb-1">{fmt(arg.event.start)} - {fmt(arg.event.end)}</div>
+      <div className="fc-event-title text-xs font-bold leading-tight">{arg.event.title}</div>
+    </div>
+  );
+}
+
+/* ─── Edit dialog ─── */
+function EditDialog({ event, onSave, onDelete, onClose }: {
+  event: TimetableEvent;
+  onSave: (p: Partial<TimetableEvent>) => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) {
+  const [classId, setClassId] = useState(event.classId);
+  const sd = new Date(event.start), ed = new Date(event.end);
+  const [st, setSt] = useState(`${sd.getHours().toString().padStart(2, "0")}:${sd.getMinutes().toString().padStart(2, "0")}`);
+  const [et, setEt] = useState(`${ed.getHours().toString().padStart(2, "0")}:${ed.getMinutes().toString().padStart(2, "0")}`);
+  const base = event.start.split("T")[0];
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm">
+        <div className="px-6 pt-6 pb-4 border-b border-border/60 flex items-center justify-between">
+          <h2 className="text-lg font-bold">Darsni tahrirlash</h2>
+          <button onClick={onClose} className="size-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
           </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ProfileOption({
-  active,
-  onClick,
-  title,
-  subtitle,
-}: {
-  active: boolean;
-  onClick: () => void;
-  title: string;
-  subtitle: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "text-left p-3 rounded-lg border-2 transition-all",
-        active
-          ? "border-foreground bg-foreground/5"
-          : "border-border bg-card hover:border-foreground/30"
-      )}
-    >
-      <div className="flex items-start gap-2.5">
-        <span
-          className={cn(
-            "h-4 w-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center",
-            active ? "border-foreground" : "border-border"
-          )}
-        >
-          {active && <span className="h-2 w-2 rounded-full bg-foreground" />}
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-foreground">{title}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>
+        <div className="px-6 py-5 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold mb-1.5">Sinf</label>
+            <select value={classId} onChange={e => setClassId(Number(e.target.value))} className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none">
+              {CLASSES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="block text-xs font-semibold mb-1.5">Boshlanish</label><input type="time" value={st} onChange={e => setSt(e.target.value)} className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none" /></div>
+            <div><label className="block text-xs font-semibold mb-1.5">Tugash</label><input type="time" value={et} onChange={e => setEt(e.target.value)} className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none" /></div>
+          </div>
         </div>
-      </div>
-    </button>
-  );
-}
-
-function ShiftCard({
-  label,
-  cfg,
-  onChange,
-}: {
-  label: string;
-  cfg: TimetableConfig["shift1"];
-  onChange: (key: keyof TimetableConfig["shift1"], value: number) => void;
-}) {
-  const startH = Math.floor(cfg.startMin / 60);
-  const startM = cfg.startMin % 60;
-  return (
-    <div className="rounded-lg border border-border bg-card p-3 space-y-2">
-      <p className="text-xs font-semibold text-foreground">{label}</p>
-      <FieldRow label="Boshlanish vaqti">
-        <input
-          type="time"
-          value={`${startH.toString().padStart(2, "0")}:${startM.toString().padStart(2, "0")}`}
-          onChange={(e) => {
-            const [h, m] = e.target.value.split(":").map(Number);
-            onChange("startMin", h * 60 + m);
-          }}
-          className="text-xs bg-background border border-border rounded px-2 py-1 outline-none focus:border-foreground/40"
-        />
-      </FieldRow>
-      <FieldRow label="Soatlar soni">
-        <select
-          value={cfg.lessonCount}
-          onChange={(e) => onChange("lessonCount", parseInt(e.target.value))}
-          className="text-xs bg-background border border-border rounded px-2 py-1 outline-none focus:border-foreground/40"
-        >
-          {[4, 5, 6, 7, 8].map((n) => (
-            <option key={n} value={n}>{n} ta</option>
-          ))}
-        </select>
-      </FieldRow>
-      <FieldRow label="Tanaffus">
-        <select
-          value={cfg.breakMin}
-          onChange={(e) => onChange("breakMin", parseInt(e.target.value))}
-          className="text-xs bg-background border border-border rounded px-2 py-1 outline-none focus:border-foreground/40"
-        >
-          {[5, 10, 15].map((n) => (
-            <option key={n} value={n}>{n} daqiqa</option>
-          ))}
-        </select>
-      </FieldRow>
-      <FieldRow label="Katta tanaffus (qo'shimcha)">
-        <select
-          value={cfg.longBreakExtraMin}
-          onChange={(e) => onChange("longBreakExtraMin", parseInt(e.target.value))}
-          className="text-xs bg-background border border-border rounded px-2 py-1 outline-none focus:border-foreground/40"
-        >
-          <option value={0}>Yo'q</option>
-          <option value={5}>+5 daqiqa</option>
-          <option value={10}>+10 daqiqa</option>
-        </select>
-      </FieldRow>
-    </div>
-  );
-}
-
-function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-[11px] text-muted-foreground">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-/* ─────────────────────────── Draggable class card ─────────────────────────── */
-
-function DraggableClassCard({
-  cls,
-  dragging,
-  nextLessons,
-  onDragStart,
-  onDragEnd,
-  onEdit,
-  onDelete,
-}: {
-  cls: ClassItem;
-  dragging: boolean;
-  nextLessons: string | null;
-  onDragStart: (e: React.DragEvent) => void;
-  onDragEnd: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const color = cls.color ?? autoClassColor(cls.id);
-  const hex = CLASS_COLOR_HEX[color];
-
-  return (
-    <div
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      className={cn(
-        "group flex items-center gap-3 p-3 rounded-xl border-2 cursor-grab active:cursor-grabbing transition-all relative",
-        dragging ? "opacity-40" : "hover:shadow-sm"
-      )}
-      style={{
-        borderColor: hex,
-        backgroundColor: hex + "14",  /* ~8% opacity */
-      }}
-    >
-      {/* Icon */}
-      <div
-        className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
-        style={{ backgroundColor: hex + "28" }}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: hex }}>
-          <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
-          <path d="M22 10v6"/>
-          <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
-        </svg>
-      </div>
-
-      {/* Text */}
-      <div className="min-w-0 flex-1">
-        <p className="text-base font-bold text-foreground truncate leading-tight">{cls.name}</p>
-        <p className="text-[11px] truncate mt-0.5" style={{ color: hex + "cc" }}>
-          {nextLessons ?? `${cls.subject} · ${cls.shift}-smena`}
-        </p>
-      </div>
-
-      {/* Hover actions */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-card/90 backdrop-blur-sm shadow-sm border border-border/50 p-0.5">
-        <button
-          type="button"
-          draggable={false}
-          onClick={(e) => { e.stopPropagation(); onEdit(); }}
-          className="p-1.5 rounded-md hover:bg-accent transition-colors"
-          aria-label="Tahrirlash"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
-            <path d="m15 5 4 4"/>
-          </svg>
-        </button>
-        <button
-          type="button"
-          draggable={false}
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="p-1.5 rounded-md hover:bg-red-500/10 transition-colors"
-          aria-label="O'chirish"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground hover:text-red-500">
-            <path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-          </svg>
-        </button>
+        <div className="px-6 py-4 border-t border-border/60 flex items-center justify-between gap-2">
+          <button onClick={onDelete} className="h-9 px-3 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">O&apos;chirish</button>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="h-9 px-4 rounded-lg text-sm font-semibold hover:bg-muted transition-colors">Bekor</button>
+            <button onClick={() => onSave({ classId, start: `${base}T${st}:00`, end: `${base}T${et}:00` })} className="h-9 px-5 rounded-lg bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors">Saqlash</button>
+          </div>
+        </div>
       </div>
     </div>
   );

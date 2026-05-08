@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 type ClassItem = {
   id: number;
   name: string;
-  subject: string;
   students: number;
   lessons: number;
   assignments: number;
@@ -35,14 +34,17 @@ type ClassItem = {
 };
 
 const classes: ClassItem[] = [
-  { id: 1, name: "5-A", subject: "Informatika", students: 13, lessons: 18, assignments: 2, schedule: "Ju · 10:35", initials: ["AS", "DJ", "DE"] },
-  { id: 2, name: "5-B", subject: "Informatika", students: 14, lessons: 18, assignments: 2, schedule: "Ju · 9:40", initials: ["AM", "AQ", "BJ"] },
-  { id: 3, name: "5-D", subject: "Informatika", students: 19, lessons: 18, assignments: 2, schedule: "Ju · 8:00", initials: ["AR", "BJ", "DO"] },
-  { id: 4, name: "6-A", subject: "Informatika", students: 14, lessons: 12, assignments: 3, schedule: "16:20 — 17:05", initials: ["AC", "AA", "DA"] },
-  { id: 5, name: "6-B", subject: "Informatika", students: 13, lessons: 12, assignments: 3, schedule: "14:40 — 15:25", initials: ["AA", "AM", "BC"] },
-  { id: 6, name: "6-D", subject: "Informatika", students: 17, lessons: 12, assignments: 3, schedule: "15:30 — 16:15", initials: ["AB", "ET", "EE"] },
-  { id: 7, name: "7-A", subject: "Robototexnika", students: 16, lessons: 6, assignments: 3, schedule: "17:10 — 17:55", initials: ["AB", "AC", "AQ"] },
-  { id: 8, name: "Toʻgarak (1-guruh)", subject: "Scratch & Algoritmika", students: 15, lessons: 6, assignments: 1, schedule: "Sh · 9:00 — 11:00", color: "orange", initials: ["JQ", "MS", "OR"] },
+  { id: 1, name: "1-A", students: 24, lessons: 18, assignments: 2, schedule: "Du · 08:00", initials: ["AS", "DJ", "DE"] },
+  { id: 2, name: "2-A", students: 18, lessons: 18, assignments: 2, schedule: "Se · 09:40", initials: ["AM", "AQ", "BJ"] },
+  { id: 3, name: "3-A", students: 30, lessons: 18, assignments: 2, schedule: "Ch · 10:35", initials: ["AR", "BJ", "DO"] },
+  { id: 4, name: "4-A", students: 22, lessons: 12, assignments: 3, schedule: "Pa · 11:30", initials: ["AC", "AA", "DA"] },
+  { id: 5, name: "5-A", students: 25, lessons: 12, assignments: 3, schedule: "Ju · 14:40", initials: ["AA", "AM", "BC"] },
+  { id: 6, name: "6-A", students: 15, lessons: 12, assignments: 3, schedule: "Sh · 15:30", initials: ["AB", "ET", "EE"] },
+  { id: 7, name: "7-A", students: 28, lessons: 6, assignments: 3, schedule: "Du · 17:10", initials: ["AB", "AC", "AQ"] },
+  { id: 8, name: "8-A", students: 12, lessons: 6, assignments: 1, schedule: "Se · 09:00", initials: ["JQ", "MS", "OR"] },
+  { id: 9, name: "9-A", students: 19, lessons: 6, assignments: 2, schedule: "Ch · 10:00", initials: ["AS", "BN", "KM"] },
+  { id: 10, name: "10-A", students: 27, lessons: 6, assignments: 2, schedule: "Pa · 11:00", initials: ["LT", "PR", "SW"] },
+  { id: 11, name: "11-A", students: 21, lessons: 6, assignments: 2, schedule: "Ju · 12:00", initials: ["QW", "ER", "TY"] },
 ];
 
 type SortKey = "name" | "students" | "lessons";
@@ -59,11 +61,7 @@ export default function ClassesPage() {
   const filteredAndSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = q
-      ? classes.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.subject.toLowerCase().includes(q)
-      )
+      ? classes.filter((c) => c.name.toLowerCase().includes(q))
       : classes;
     const sorted = [...list].sort((a, b) => {
       if (sortKey === "students") return b.students - a.students;
@@ -512,11 +510,9 @@ function CreateClassModal({ onClose }: { onClose: () => void }) {
                   timeSlots.map((slot) => (
                     <div key={slot.id} className="flex items-center gap-3 p-4 border rounded-lg bg-muted/30">
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-[130px] h-9 shrink-0 bg-card shadow-none">
-                            <span className="truncate">{slot.day}</span>
-                            <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                          </button>
+                        <DropdownMenuTrigger className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-[130px] h-9 shrink-0 bg-card shadow-none">
+                          <span className="truncate">{slot.day}</span>
+                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-[130px]">
                           <DropdownMenuRadioGroup value={slot.day} onValueChange={(val) => updateTimeSlotDay(slot.id, val)}>
