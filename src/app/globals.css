@@ -248,7 +248,50 @@
 .timetable-editor .fc-theme-standard th,
 .timetable-editor .fc-theme-standard .fc-scrollgrid { border-color: var(--border); }
 .timetable-editor .fc .fc-col-header-cell { background: var(--muted) !important; }
-.timetable-editor .fc .fc-timegrid-axis { background: var(--muted) !important; }
+
+/* Force white background for the time axis column, but keep header corner muted */
+.timetable-editor .fc td.fc-timegrid-axis,
+.timetable-editor .fc .fc-timegrid-slot-label {
+  background: var(--card) !important;
+}
+.timetable-editor .fc th.fc-timegrid-axis {
+  background: var(--muted) !important;
+}
+
+/* Add "Vaqt" text to the top-left corner */
+.timetable-editor .fc th.fc-timegrid-axis {
+  vertical-align: middle;
+}
+.timetable-editor .fc th.fc-timegrid-axis .fc-timegrid-axis-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.timetable-editor .fc th.fc-timegrid-axis .fc-timegrid-axis-frame::after {
+  content: "Vaqt";
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+/* Give the header a rounded appearance at the corners */
+.timetable-editor .fc-scrollgrid {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.timetable-editor .fc-scrollgrid-section-header > th {
+  background: var(--muted);
+}
+.timetable-editor .fc .fc-timegrid-axis {
+  border-top-left-radius: var(--radius-md);
+}
+.timetable-editor .fc .fc-col-header-cell:last-child {
+  border-top-right-radius: var(--radius-md);
+}
+
 .timetable-editor .fc-col-header-cell-cushion { padding: 10px 4px; text-decoration: none; color: var(--foreground); }
 .timetable-editor .fc-timegrid-slot { height: 2.1rem; }
 .timetable-editor .fc-timegrid-slot-label { font-size: 10px; color: var(--muted-foreground); }
@@ -266,5 +309,5 @@
 /* Day header: "Day 1 / Mon" format */
 .timetable-editor .fc-custom-header { display: flex; flex-direction: column; align-items: center; padding: 4px 2px; }
 .timetable-editor .fc-header-day { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--foreground); line-height: 1.3; }
-.timetable-editor .fc-header-weekday { font-size: 11px; color: var(--muted-foreground); line-height: 1.3; }
+.timetable-editor .fc-header-weekday { font-size: 13px; font-weight: 600; color: var(--foreground); opacity: 0.7; line-height: 1.3; }
 

@@ -6,6 +6,10 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, { Draggable, type DropArg, type EventReceiveArg } from "@fullcalendar/interaction";
 import type { EventClickArg, EventDropArg, EventContentArg } from "@fullcalendar/core";
 import { autoClassColor, CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
+import { Clock2Icon, ChevronDownIcon, XIcon, TrashIcon, SaveIcon, PlusIcon, PaletteIcon } from "lucide-react";
 
 /* ─── Types ─── */
 type ClassItem = { 
@@ -45,6 +49,7 @@ export default function TimetablePage() {
   const [hydrated, setHydrated] = useState(false);
   const [saved, setSaved] = useState(true);
   const [editEvent, setEditEvent] = useState<TimetableEvent | null>(null);
+  const [editingClass, setEditingClass] = useState<ClassItem | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const draggableRef = useRef<Draggable | null>(null);
   const calendarRef = useRef<InstanceType<typeof FullCalendar>>(null);
@@ -101,12 +106,46 @@ export default function TimetablePage() {
 
   const removeEvent = useCallback((id: string) => setEvents(prev => prev.filter(e => e.id !== id)), []);
 
-  // The classNextLesson variable is removed because we display students and lessons count instead
+  const handleSaveClassSlots = useCallback((classId: number, slots: {day:string, start:string, end:string}[]) => {
+    setEvents(prev => {
+      const next = prev.filter(e => e.classId !== classId);
+      
+      // Find the Monday of the week currently shown in the calendar.
+      // FullCalendar shows the week that contains "today" but starts on Monday.
+      // If today is Sunday (0), the calendar shows NEXT week (Mon of next week).
+      const now = new Date();
+      const todayDow = now.getDay(); // 0=Sun, 1=Mon...6=Sat
+      // Days to add to reach this week's Monday
+      // If Sunday: jump to next Monday (+1), else go back to Monday of current week
+      const mondayOffset = todayDow === 0 ? 1 : 1 - todayDow;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + mondayOffset);
+      monday.setHours(0, 0, 0, 0);
+      
+      slots.forEach(slot => {
+        // DAY_UZ: 0=Dushanba(Mon)...5=Shanba(Sat)
+        const dayIndex = DAY_UZ.indexOf(slot.day); // 0-5
+        if (dayIndex < 0) return;
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + dayIndex);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        next.push({
+          id: Math.random().toString(36).slice(2, 9),
+          classId,
+          start: `${yyyy}-${mm}-${dd}T${slot.start}:00`,
+          end: `${yyyy}-${mm}-${dd}T${slot.end}:00`,
+        });
+      });
+      return next;
+    });
+  }, []);
 
   if (!hydrated) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col px-4 py-2 md:p-8 lg:px-12">
+    <div className="absolute inset-0 flex flex-col px-4 py-2 md:p-8 lg:px-12">
       <div className="flex-1 min-h-0 grid p-3 -m-3" style={{ gridTemplateColumns: "25% 75%" }}>
         {/* ── Left: Sinflar ── */}
         <div className="min-w-0 min-h-0 pr-4 grid">
@@ -172,7 +211,7 @@ export default function TimetablePage() {
                       </div>
                       {/* Hover actions */}
                       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-card/90 backdrop-blur-sm shadow-sm border border-border/50 p-0.5">
-                        <button type="button" className="p-1.5 rounded-md hover:bg-accent transition-colors" title="Tahrirlash">
+                        <button type="button" className="p-1.5 rounded-md hover:bg-accent transition-colors" title="Tahrirlash" onClick={() => setEditingClass(cls)}>
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground">
                             <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" />
                           </svg>
@@ -237,8 +276,6 @@ export default function TimetablePage() {
               headerToolbar={false}
               dayHeaderContent={(args) => {
                 const dow = args.date.getDay();
-                const dayNum = [0, 1, 2, 3, 4, 5, 6];
-                const num = dayNum.indexOf(dow);
                 const short = dow >= 1 && dow <= 6 ? DAY_UZ[dow - 1] : "";
                 return (
                   <div className="fc-custom-header">
@@ -278,6 +315,14 @@ export default function TimetablePage() {
           onClose={() => setEditEvent(null)}
         />
       )}
+      {editingClass && (
+        <EditClassModal
+          cls={editingClass}
+          existingEvents={events.filter(e => e.classId === editingClass.id)}
+          onSave={(slots) => { handleSaveClassSlots(editingClass.id, slots); setEditingClass(null); }}
+          onClose={() => setEditingClass(null)}
+        />
+      )}
     </div>
     </div>
   );
@@ -307,38 +352,262 @@ function EditDialog({ event, onSave, onDelete, onClose }: {
   onDelete: () => void;
   onClose: () => void;
 }) {
-  const [classId, setClassId] = useState(event.classId);
+  const classId = event.classId;
   const sd = new Date(event.start), ed = new Date(event.end);
   const [st, setSt] = useState(`${sd.getHours().toString().padStart(2, "0")}:${sd.getMinutes().toString().padStart(2, "0")}`);
   const [et, setEt] = useState(`${ed.getHours().toString().padStart(2, "0")}:${ed.getMinutes().toString().padStart(2, "0")}`);
   const base = event.start.split("T")[0];
+  
+  const selectedCls = CLASSES.find(c => c.id === classId);
+  const hex = selectedCls ? CLASS_COLOR_HEX[selectedCls.color ?? autoClassColor(selectedCls.id)] : "#888";
+
+  const dow = sd.getDay();
+  const dayShort = dow >= 1 && dow <= 6 ? DAY_UZ[dow - 1] : "";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm">
-        <div className="px-6 pt-6 pb-4 border-b border-border/60 flex items-center justify-between">
-          <h2 className="text-lg font-bold">Darsni tahrirlash</h2>
-          <button onClick={onClose} className="size-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-background w-full max-w-[340px] rounded-2xl shadow-lg flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-6 pb-2">
+          <h2 className="text-lg font-semibold text-foreground">Dars vaqtini tahrirlash</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors outline-none cursor-pointer">
+            <XIcon className="size-4" />
           </button>
         </div>
-        <div className="px-6 py-5 space-y-4">
-          <div>
-            <label className="block text-xs font-semibold mb-1.5">Sinf</label>
-            <select value={classId} onChange={e => setClassId(Number(e.target.value))} className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none">
-              {CLASSES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+
+        <div className="p-6 pt-3 space-y-6">
+          <div className="flex flex-col gap-2">
+            <label className="text-[13px] font-semibold text-muted-foreground">Sinf</label>
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-border bg-muted/30">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: hex }} />
+              <span className="font-semibold text-foreground">{selectedCls?.name}</span>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="block text-xs font-semibold mb-1.5">Boshlanish</label><input type="time" value={st} onChange={e => setSt(e.target.value)} className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none" /></div>
-            <div><label className="block text-xs font-semibold mb-1.5">Tugash</label><input type="time" value={et} onChange={e => setEt(e.target.value)} className="w-full text-sm bg-background border border-border rounded-md px-3 py-2 outline-none" /></div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-[13px] font-semibold text-muted-foreground">{dayShort} kuni vaqti</label>
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Kirish</span>
+                <div className="relative">
+                  <input
+                    type="time"
+                    value={st}
+                    onChange={e => setSt(e.target.value)}
+                    className="flex w-full h-11 rounded-xl border border-input bg-card pl-3 pr-9 py-2 text-[15px] font-semibold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-ring [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden"
+                  />
+                  <Clock2Icon className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+              <span className="text-muted-foreground font-medium mt-6">—</span>
+              <div className="relative flex-1 flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Chiqish</span>
+                <div className="relative">
+                  <input
+                    type="time"
+                    value={et}
+                    onChange={e => setEt(e.target.value)}
+                    className="flex w-full h-11 rounded-xl border border-input bg-card pl-3 pr-9 py-2 text-[15px] font-semibold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-ring [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden"
+                  />
+                  <Clock2Icon className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="px-6 py-4 border-t border-border/60 flex items-center justify-between gap-2">
-          <button onClick={onDelete} className="h-9 px-3 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">O&apos;chirish</button>
-          <div className="flex gap-2">
-            <button onClick={onClose} className="h-9 px-4 rounded-lg text-sm font-semibold hover:bg-muted transition-colors">Bekor</button>
-            <button onClick={() => onSave({ classId, start: `${base}T${st}:00`, end: `${base}T${et}:00` })} className="h-9 px-5 rounded-lg bg-foreground text-background text-sm font-semibold hover:bg-foreground/90 transition-colors">Saqlash</button>
+
+        <div className="p-6 pt-2 grid grid-cols-2 gap-3">
+          <Button className="from-destructive via-destructive/60 to-destructive focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 bg-transparent bg-gradient-to-r [background-size:200%_auto] text-white hover:bg-transparent hover:bg-[99%_center] h-11 rounded-xl gap-2 font-semibold shadow-none transition-all duration-300" onClick={onDelete}>
+            <TrashIcon className="size-[18px]" />
+            O'chirish
+          </Button>
+          <Button className="bg-sky-600/10 text-sky-600 hover:bg-sky-600/20 focus-visible:ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:hover:bg-sky-400/20 dark:focus-visible:ring-sky-400/40 h-11 rounded-xl gap-2 font-semibold shadow-none transition-colors" onClick={() => onSave({ start: `${base}T${st}:00`, end: `${base}T${et}:00` })}>
+            <SaveIcon className="size-[18px]" />
+            Saqlash
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Class Edit Modal ─────────────────────────── */
+function EditClassModal({ cls, existingEvents, onSave, onClose }: { 
+  cls: ClassItem; 
+  existingEvents: TimetableEvent[];
+  onSave: (slots: { day: string; start: string; end: string }[]) => void; 
+  onClose: () => void; 
+}) {
+  const presetHexes = Object.entries(CLASS_COLOR_HEX)
+    .filter(([name]) => name !== "gray")
+    .map(([, hex]) => hex);
+  const initialHex = cls.color ? CLASS_COLOR_HEX[cls.color] : CLASS_COLOR_HEX[autoClassColor(cls.id)];
+  const [selectedColorHex, setSelectedColorHex] = useState<string>(initialHex);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [description, setDescription] = useState("");
+
+  type TimeSlot = { id: string; day: string; start: string; end: string };
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() => {
+    return existingEvents.map(ev => {
+      const d = new Date(ev.start);
+      const dow = d.getDay();
+      const dayName = dow >= 1 && dow <= 6 ? DAY_UZ[dow - 1] : 'Dushanba';
+      const start = ev.start.split('T')[1].substring(0, 5);
+      const end = ev.end.split('T')[1].substring(0, 5);
+      return { id: Math.random().toString(36).slice(2, 9), day: dayName, start, end };
+    });
+  });
+
+  const addTimeSlot = () => setTimeSlots([...timeSlots, { id: Math.random().toString(), day: "Dushanba", start: "09:00", end: "10:00" }]);
+  const removeTimeSlot = (id: string) => setTimeSlots(timeSlots.filter(s => s.id !== id));
+  const updateTimeSlotDay = (id: string, day: string) => setTimeSlots(timeSlots.map(s => s.id === id ? { ...s, day } : s));
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-background w-full max-w-[540px] rounded-lg border shadow-lg flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex flex-col gap-2 p-6 pb-0 text-center sm:text-left relative">
+          <h2 className="text-lg leading-none font-semibold text-foreground">Sinfni tahrirlash: {cls.name}</h2>
+          <button onClick={onClose} className="absolute top-4 right-4 cursor-pointer opacity-70 transition-opacity hover:opacity-100 outline-none">
+            <XIcon className="size-4" />
+            <span className="sr-only">Close</span>
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
+          <Field>
+            <FieldLabel htmlFor="cls-name">Sinf nomi</FieldLabel>
+            <div className="flex gap-2 relative">
+              <input
+                id="cls-name"
+                value={cls.name}
+                readOnly
+                className="flex h-9 w-full flex-1 rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-none text-foreground/70 cursor-not-allowed"
+              />
+              <button
+                onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-150 cursor-pointer active:scale-[0.98] size-9 shrink-0 relative border border-border shadow-sm hover:opacity-90"
+                style={{ background: `conic-gradient(${presetHexes.join(", ")}, ${presetHexes[0]})` }}
+              >
+                <PaletteIcon className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
+              </button>
+
+              {isColorPickerOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setIsColorPickerOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 z-20 w-[260px] p-3 bg-card border border-border rounded-xl shadow-xl flex flex-wrap gap-2 justify-center">
+                    {presetHexes.map(hex => (
+                      <button
+                        key={hex}
+                        onClick={() => { setSelectedColorHex(hex); setIsColorPickerOpen(false); }}
+                        className="w-7 h-7 rounded-full transition-transform hover:scale-110 ring-2 ring-transparent hover:ring-border ring-offset-2 ring-offset-card shadow-sm"
+                        style={{ backgroundColor: hex, outline: hex === selectedColorHex ? `3px solid ${hex}` : undefined, outlineOffset: "2px" }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="cls-desc">Tavsif</FieldLabel>
+            <input
+              id="cls-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Masalan, 10-sinflar uchun chuqurlashtirilgan matematika"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </Field>
+
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">O&apos;quv yili:</span>
+            <span className="font-medium bg-muted px-2 py-0.5 rounded-full text-foreground">2025-2026-o&apos;quv yili</span>
           </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm leading-none font-medium select-none">Haftalik jadval</label>
+              <Button variant="ghost" size="sm" onClick={addTimeSlot} className="h-8 rounded-md gap-1.5 px-3">
+                <PlusIcon className="h-4 w-4 mr-1" /> Vaqt oralig&apos;ini qo&apos;shish
+              </Button>
+            </div>
+
+            <div className="pr-1">
+              <div className="space-y-3">
+                {timeSlots.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center border border-dashed rounded-lg">
+                    Muntazam jadval yo&apos;q. Vaqt qo&apos;shish.
+                  </p>
+                ) : (
+                  timeSlots.map((slot) => (
+                    <div key={slot.id} className="flex items-center gap-3 p-4 border rounded-lg bg-muted/30">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-[130px] h-9 shrink-0 bg-card shadow-none">
+                          <span className="truncate">{slot.day}</span>
+                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[130px]">
+                          <DropdownMenuRadioGroup value={slot.day} onValueChange={(val) => updateTimeSlotDay(slot.id, val)}>
+                            <DropdownMenuRadioItem value="Dushanba">Dushanba</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="Seshanba">Seshanba</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="Chorshanba">Chorshanba</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="Payshanba">Payshanba</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="Juma">Juma</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="Shanba">Shanba</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="Yakshanba">Yakshanba</DropdownMenuRadioItem>
+                          </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <input
+                            type="time"
+                            lang="en-GB"
+                            step="60"
+                            value={slot.start}
+                            onChange={(e) => setTimeSlots(timeSlots.map(s => s.id === slot.id ? { ...s, start: e.target.value } : s))}
+                            className="flex h-9 w-[78px] rounded-md border border-input bg-card pl-2 pr-6 py-1 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shrink-0 [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                          />
+                          <Clock2Icon className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                        </div>
+                        
+                        <span className="text-muted-foreground text-xs shrink-0 font-medium">dan</span>
+                        
+                        <div className="relative">
+                          <input
+                            type="time"
+                            lang="en-GB"
+                            step="60"
+                            value={slot.end}
+                            onChange={(e) => setTimeSlots(timeSlots.map(s => s.id === slot.id ? { ...s, end: e.target.value } : s))}
+                            className="flex h-9 w-[78px] rounded-md border border-input bg-card pl-2 pr-6 py-1 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shrink-0 [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                          />
+                          <Clock2Icon className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                        </div>
+
+                        <span className="text-muted-foreground text-xs shrink-0 font-medium">gacha</span>
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeTimeSlot(slot.id)}
+                        className="ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <XIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end p-6 pt-2 border-t mt-auto">
+          <Button variant="outline" onClick={onClose} className="h-9 px-4 py-2">Bekor qilish</Button>
+          <Button variant="default" className="h-9 px-4 py-2" onClick={() => onSave(timeSlots)}>Saqlash</Button>
         </div>
       </div>
     </div>
