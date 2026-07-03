@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/useTaskStore";
 import { TASK_STATUS, STATUS_META, type TaskPriority } from "@/lib/tasks-data";
 import { filterTasksByFilter } from "@/hooks/useFilteredTasks";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import type { TaskFilter } from "./TasksSidebar";
 
@@ -94,7 +95,7 @@ function StatTile({
   );
 }
 
-function scopeLabel(f: TaskFilter): string {
+function scopeLabel(f: TaskFilter, classNameOf: (id: string) => string | undefined): string {
   if (f === "inbox") return "Kiruvchi";
   if (f === "today") return "Bugun";
   if (f === "upcoming") return "Yaqin kunlarda";
@@ -105,13 +106,14 @@ function scopeLabel(f: TaskFilter): string {
   if (f.startsWith("class-")) {
     const cid = f.replace("class-", "");
     if (cid === "none") return "Umumiy";
-    return CLASSES.find((c) => c.id === cid)?.name ?? "Sinf";
+    return classNameOf(cid) ?? "Sinf";
   }
   return "Barcha vazifalar";
 }
 
 export default function TaskStats({ activeFilter, onSelectFilter }: Props) {
   const tasks = useTaskStore((s) => s.tasks);
+  const liveClasses = useLiveClasses();
   const todayStr = new Date().toISOString().split("T")[0];
 
   // Recharts ResponsiveContainer serverda oʻlchovsiz (-1) boʻlib hydration
@@ -189,14 +191,14 @@ export default function TaskStats({ activeFilter, onSelectFilter }: Props) {
       if (!open || !t.classIds?.length) return;
       t.classIds.forEach((cid) => { counts[cid] = (counts[cid] || 0) + 1; });
     });
-    const rows = CLASSES
-      .filter((c) => c.id !== "no-class" && counts[c.id] > 0)
+    const rows = liveClasses
+      .filter((c) => counts[c.id] > 0)
       .map((c) => ({ id: c.id, name: c.name, count: counts[c.id], hex: CLASS_COLOR_HEX[classColor(c)] }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
     const max = rows.reduce((m, r) => Math.max(m, r.count), 0);
     return { rows, max };
-  }, [tasks]);
+  }, [tasks, liveClasses]);
 
   const activeStatuses = STATUS_META.filter((s) => stats.statusCounts[s.id] > 0);
   const donutGradient = (() => {
@@ -279,7 +281,7 @@ export default function TaskStats({ activeFilter, onSelectFilter }: Props) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <TypographyLabel>Bajarish</TypographyLabel>
-                  <span className="text-[11px] text-muted-foreground/70 truncate">{scopeLabel(activeFilter)}</span>
+                  <span className="text-[11px] text-muted-foreground/70 truncate">{scopeLabel(activeFilter, (id) => liveClasses.find((c) => c.id === id)?.name)}</span>
                 </div>
                 {stats.active === 0 ? (
                   <p className="text-sm text-muted-foreground py-2">Bu ro‘yxatda hisoblanadigan vazifa yo‘q.</p>

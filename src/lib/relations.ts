@@ -8,7 +8,7 @@
    A uchun "uka" boʻlsa, B uchun "aka" boʻlib koʻrinadi.
    ════════════════════════════════════════════════════════════════════ */
 
-import { CLASS_DATA, classColor } from "@/lib/grades-data";
+import { CLASS_DATA, classColor, type ClassData } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 
 export type SchoolStudent = {
@@ -22,14 +22,11 @@ export type SchoolStudent = {
   birthDate?: string;
 };
 
-let _all: SchoolStudent[] | null = null;
-let _byId: Map<string, SchoolStudent> | null = null;
-
-/** Maktabdagi barcha oʻquvchilar (sinflar boʻyicha tartibda) */
-export function getAllStudents(): SchoolStudent[] {
-  if (_all) return _all;
+/** Maktabdagi barcha oʻquvchilar (sinflar boʻyicha tartibda) —
+    jonli classDataMap'dan (chaqiruvchi useGradesStore'dan uzatadi). */
+export function getAllStudents(classDataMap: Record<string, ClassData>): SchoolStudent[] {
   const out: SchoolStudent[] = [];
-  for (const [classId, data] of Object.entries(CLASS_DATA)) {
+  for (const [classId, data] of Object.entries(classDataMap)) {
     const hex = CLASS_COLOR_HEX[classColor(data.info)];
     for (const s of data.students) {
       out.push({
@@ -44,19 +41,39 @@ export function getAllStudents(): SchoolStudent[] {
       });
     }
   }
-  _all = out;
   return out;
 }
 
-export function getSchoolStudent(id: string): SchoolStudent | undefined {
-  if (!_byId) _byId = new Map(getAllStudents().map((s) => [s.id, s]));
-  return _byId.get(id);
+export function getSchoolStudent(
+  classDataMap: Record<string, ClassData>,
+  id: string
+): SchoolStudent | undefined {
+  for (const [classId, data] of Object.entries(classDataMap)) {
+    const s = data.students.find((st) => st.id === id);
+    if (s) {
+      return {
+        id: s.id,
+        name: s.name,
+        initials: s.initials,
+        classId,
+        className: data.info.name,
+        hex: CLASS_COLOR_HEX[classColor(data.info)],
+        gender: s.gender,
+        birthDate: s.birthDate,
+      };
+    }
+  }
+  return undefined;
 }
 
 /** Koʻruvchi nuqtai nazaridan qarindoshlik yorligʻi (jins + yosh boʻyicha) */
-export function kinshipLabel(viewerId: string, relativeId: string): string {
-  const v = getSchoolStudent(viewerId);
-  const r = getSchoolStudent(relativeId);
+export function kinshipLabel(
+  classDataMap: Record<string, ClassData>,
+  viewerId: string,
+  relativeId: string
+): string {
+  const v = getSchoolStudent(classDataMap, viewerId);
+  const r = getSchoolStudent(classDataMap, relativeId);
   if (!r) return "Qarindosh";
   // Ertaroq tugʻilgan = kattaroq
   const older =
@@ -74,9 +91,11 @@ const DEFAULT_SIBLING_NAMES: string[][] = [
   ["Feruza Yusupova", "Xurshid Yusupov"],
 ];
 
-/** Boshlangʻich bogʻlarni id juftliklariga aylantiradi (topilmaganlari oʻtkazib yuboriladi) */
+/** Boshlangʻich bogʻlarni id juftliklariga aylantiradi (topilmaganlari
+    oʻtkazib yuboriladi). FAQAT seed (scripts/seed.ts) ishlatadi — shu
+    sabab statik CLASS_DATA'dan oʻqiydi. */
 export function resolveDefaultLinks(): [string, string][] {
-  const byName = new Map(getAllStudents().map((s) => [s.name, s.id]));
+  const byName = new Map(getAllStudents(CLASS_DATA).map((s) => [s.name, s.id]));
   const pairs: [string, string][] = [];
   for (const group of DEFAULT_SIBLING_NAMES) {
     const ids = group

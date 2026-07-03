@@ -9,7 +9,8 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { TypographyLabel } from "@/components/ui/typography";
 import { Badge } from "@/components/ui/badge";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { useTaskStore } from "@/store/useTaskStore";
@@ -65,6 +66,7 @@ const TASK_TEMPLATES: TaskTemplate[] = [
 ];
 
 export default function TasksSidebar({ activeFilter, onSelectFilter }: Props) {
+  const liveClasses = useLiveClasses();
   const tasks = useTaskStore((s) => s.tasks);
   const addTask = useTaskStore((s) => s.addTask);
   const setSelectedTaskId = useTaskStore((s) => s.setSelectedTaskId);
@@ -217,10 +219,9 @@ export default function TasksSidebar({ activeFilter, onSelectFilter }: Props) {
             <div className="mt-6">
               <TypographyLabel className="px-3 mb-2 block text-muted-foreground">Sinflar</TypographyLabel>
               <div className="space-y-0.5">
-                {CLASSES.map((cls) => {
+                {liveClasses.map((cls) => {
                   const colorHex = CLASS_COLOR_HEX[classColor(cls)];
                   const count = counts.classCounts[cls.id] || 0;
-                  if (cls.id === "no-class") return null;
                   return renderClassItem(cls.id, cls.name, colorHex, count);
                 })}
                 {renderClassItem("none", "Umumiy", "var(--muted-foreground)", counts.classCounts["none"] || 0)}

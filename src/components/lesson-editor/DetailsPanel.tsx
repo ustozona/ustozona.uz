@@ -7,7 +7,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
 import { fmtClock, dateKeyToDate } from "@/lib/lesson-schedule";
@@ -35,8 +36,9 @@ export default function DetailsPanel({
   onAddScheduleForClass: (classId: string, date: string, startMin: number, endMin: number) => void;
   onRemoveScheduleForClass: (classId: string, index: number) => void;
 }) {
+  const liveClasses = useLiveClasses();
   const selectedIds = lessonClassIds(lesson);
-  const selectedClasses = CLASSES.filter((c) => selectedIds.includes(c.id));
+  const selectedClasses = liveClasses.filter((c) => selectedIds.includes(c.id));
   const [schedOpen, setSchedOpen] = useState<string | null>(null);
 
   const toggleClass = (id: string) => {
@@ -109,7 +111,7 @@ export default function DetailsPanel({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[280px] overflow-y-auto">
-              {CLASSES.map((c) => {
+              {liveClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
                 const on = selectedIds.includes(c.id);
                 return (

@@ -17,6 +17,10 @@ export const classUpsertSchema = z.object({
   name: z.string().min(1).max(200),
   color: z.string().max(50).optional(),
   time: z.string().max(100).optional(),
+  grade: z.number().int().min(1).max(11).optional(),
+  subject: z.string().max(200).optional(),
+  icon: z.string().max(50).optional(),
+  description: z.string().max(1000).optional(),
   sortOrder: z.number().int().min(0),
 });
 

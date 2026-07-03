@@ -6,8 +6,10 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses, useLiveClassesHydrated } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX, classColorStyle, classTints } from "@/lib/class-colors";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useClassPanelStats, type Page } from "@/hooks/useClassPanelStats";
 
 type Props = {
@@ -27,7 +29,9 @@ export default function ClassListPanel({
   onEditClass,
   onDeleteClass,
 }: Props) {
-  const selected = CLASSES.find((c) => c.id === selectedClassId);
+  const liveClasses = useLiveClasses();
+  const hydrated = useLiveClassesHydrated();
+  const selected = liveClasses.find((c) => c.id === selectedClassId);
   const hex = selected ? CLASS_COLOR_HEX[classColor(selected)] : undefined;
   /** Sinf rangidan shaffof tint (EMStudio rgba(...) effekti) */
   const tint = (h: string, pct: number) => `color-mix(in srgb, ${h} ${pct}%, transparent)`;
@@ -61,7 +65,23 @@ export default function ClassListPanel({
           <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
           <ScrollArea className="h-full w-full">
             <div className="px-5 pt-4 pb-5 space-y-0.5">
-              {CLASSES.map((cls) => {
+              {!hydrated && liveClasses.length === 0 && (
+                <div className="space-y-2 pt-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-11 w-full rounded-lg" />
+                  ))}
+                </div>
+              )}
+              {hydrated && liveClasses.length === 0 && (
+                <div className="flex flex-col items-center gap-3 py-10 text-center">
+                  <GraduationCap className="size-6 text-muted-foreground" aria-hidden="true" />
+                  <p className="text-sm text-muted-foreground">Hali sinf yoʻq</p>
+                  <Button asChild variant="outline" size="sm" className="shadow-none">
+                    <Link href="/dashboard/classes">Sinf yaratish</Link>
+                  </Button>
+                </div>
+              )}
+              {liveClasses.map((cls) => {
                 const isSelected = cls.id === selectedClassId;
                 const color = classColor(cls);
                 const tints = classTints(color);

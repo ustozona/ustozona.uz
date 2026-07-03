@@ -33,11 +33,24 @@ import {
   GraduationCap, Search, ArrowUpDown, BarChart3, Users, BookOpen,
   ClipboardList, MoreHorizontal, ArrowRight,
 } from "lucide-react";
-import { autoClassColor, CLASS_COLOR_HEX, classTints, classColorValue, type ClassColor } from "@/lib/class-colors";
-import { classIcon } from "@/lib/class-icons";
-import { CLASSES as classes, type SchoolClass } from "@/lib/classes-data";
-import { classSlug } from "@/lib/class-id";
-import { ClassFormModal } from "@/components/ClassFormModal";
+import { CLASS_COLOR_HEX, classTints, classColorValue, type ClassColor } from "@/lib/class-colors";
+import { classIcon, type ClassIconKey } from "@/lib/class-icons";
+import { classColor, type ClassInfo } from "@/lib/grades-data";
+import { lessonClassIds } from "@/lib/lessons-data";
+import { classInfoFromForm, useCreateClass } from "@/hooks/useLiveClasses";
+import { useGradesStore } from "@/store/useGradesStore";
+import { useLessonStore } from "@/store/useLessonStore";
+import { ClassFormModal, type ClassFormValues } from "@/components/ClassFormModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import DashboardPage, {
   panelCardClass,
@@ -46,10 +59,27 @@ import DashboardPage, {
   panelScrollInnerClass,
 } from "@/components/DashboardPage";
 
-/* Sinflar — yagona umumiy manbadan (@/lib/classes-data) */
+/* Sinflar — jonli manbadan (useGradesStore.classDataMap, server-backed).
+   Yaratish/tahrirlash/oʻchirish store'ga yoziladi; GradesServerSync
+   oʻzgarishni avtomatik serverga sinxronlaydi. */
 
 type SortKey = "name" | "students" | "lessons";
 type ViewMode = "grid" | "list";
+
+/** Sahifa koʻrinishi uchun jonli sinf modeli (statistika bilan). */
+type LiveClass = {
+  id: string;
+  info: ClassInfo;
+  name: string;
+  color: ClassColor;
+  schedule?: string;
+  subject?: string;
+  students: number;
+  lessons: number;
+  coveredLessons: number;
+  assignments: number;
+  initials: string[];
+};
 
 export default function ClassesPage() {
   const [view, setView] = useState<ViewMode>("grid");
@@ -57,31 +87,83 @@ export default function ClassesPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  // Boshlangʻich yuklanish — skeleton koʻrsatish uchun (mock; real API kelganda almashtiriladi)
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 550);
-    return () => clearTimeout(t);
-  }, []);
+  const [editTarget, setEditTarget] = useState<LiveClass | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LiveClass | null>(null);
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
 
+  const classDataMap = useGradesStore((s) => s.classDataMap);
+  const hydrated = useGradesStore((s) => s._hasHydrated);
+  const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
+  const updateClass = useGradesStore((s) => s.updateClass);
+  const allLessons = useLessonStore((s) => s.lessons);
+  // Server hydration tugamaguncha skeleton
+  const loading = !hydrated;
+
+  const liveClasses = useMemo<LiveClass[]>(
+    () =>
+      Object.values(classDataMap).map((cd) => {
+        const cls = cd.info;
+        const classLessons = allLessons.filter((l) => lessonClassIds(l).includes(cls.id));
+        return {
+          id: cls.id,
+          info: cls,
+          name: cls.name,
+          color: classColor(cls),
+          schedule: cls.time,
+          subject: cls.subject,
+          students: cd.students.length,
+          lessons: classLessons.length,
+          coveredLessons: classLessons.filter((l) => l.status === "Completed").length,
+          assignments: cd.assignments.length,
+          initials: cd.students.slice(0, 3).map((s) => s.initials),
+        };
+      }),
+    [classDataMap, allLessons]
+  );
+
+  const createClass = useCreateClass();
+
+  const handleCreate = (v: ClassFormValues) => {
+    createClass(v);
+    setIsCreateModalOpen(false);
+  };
+
+  const handleEditSubmit = (v: ClassFormValues) => {
+    if (!editTarget) return;
+    updateClass(editTarget.id, (cd) => ({
+      ...cd,
+      info: classInfoFromForm(editTarget.id, v, cd.info),
+    }));
+    setEditTarget(null);
+  };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    setClassDataMap((prev) => {
+      const next = { ...prev };
+      delete next[deleteTarget.id];
+      return next;
+    });
+    setDeleteTarget(null);
+  };
+
   const filteredAndSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = q ? classes.filter((c) => c.name.toLowerCase().includes(q)) : classes;
+    const list = q ? liveClasses.filter((c) => c.name.toLowerCase().includes(q)) : liveClasses;
     return [...list].sort((a, b) => {
       if (sortKey === "students") return b.students - a.students;
       if (sortKey === "lessons") return b.lessons - a.lessons;
       return a.name.localeCompare(b.name);
     });
-  }, [search, sortKey]);
+  }, [liveClasses, search, sortKey]);
 
   const totals = useMemo(() => ({
-    classes: classes.length,
-    students: classes.reduce((s, c) => s + c.students, 0),
-    lessons: classes.reduce((s, c) => s + c.lessons, 0),
-    assignments: classes.reduce((s, c) => s + c.assignments, 0),
-  }), []);
+    classes: liveClasses.length,
+    students: liveClasses.reduce((s, c) => s + c.students, 0),
+    lessons: liveClasses.reduce((s, c) => s + c.lessons, 0),
+    assignments: liveClasses.reduce((s, c) => s + c.assignments, 0),
+  }), [liveClasses]);
 
   return (
     <DashboardPage>
@@ -187,7 +269,32 @@ export default function ClassesPage() {
           {/* Scrollable content */}
           <CardContent className={panelCardContentClass}>
             <div className={panelScrollInnerClass}>
-              {filteredAndSorted.length === 0 ? (
+              {loading ? (
+                <div className={cn(
+                  "grid gap-5",
+                  collapsed
+                    ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                    : "grid-cols-1 sm:grid-cols-2"
+                )}>
+                  {Array.from({ length: 6 }).map((_, i) => <ClassCardSkeleton key={i} index={i} />)}
+                </div>
+              ) : liveClasses.length === 0 ? (
+                <div className="py-16 flex flex-col items-center gap-4 text-center">
+                  <div className="p-4 rounded-2xl bg-muted">
+                    <GraduationCap className="size-6 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Hali sinf yoʻq</p>
+                    <TypographyMuted className="text-xs mt-0.5">
+                      Birinchi sinfingizni yarating — oʻquvchilar, baholar va davomat shu yerdan boshlanadi.
+                    </TypographyMuted>
+                  </div>
+                  <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
+                    <PlusIcon className="size-4" />
+                    Yangi sinf yaratish
+                  </Button>
+                </div>
+              ) : filteredAndSorted.length === 0 ? (
                 <div className="py-16 flex flex-col items-center gap-3 text-center">
                   <div className="p-4 rounded-2xl bg-muted">
                     <Search className="size-6 text-muted-foreground" />
@@ -206,21 +313,27 @@ export default function ClassesPage() {
                         ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                         : "grid-cols-1 sm:grid-cols-2"
                     )}>
-                      {loading ? (
-                        Array.from({ length: 6 }).map((_, i) => <ClassCardSkeleton key={i} index={i} />)
-                      ) : (
-                        <>
-                          {filteredAndSorted.map((cls, i) => (
-                            <ClassGridCard key={cls.id} cls={cls} index={i} />
-                          ))}
-                          <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
-                        </>
-                      )}
+                      {filteredAndSorted.map((cls, i) => (
+                        <ClassGridCard
+                          key={cls.id}
+                          cls={cls}
+                          index={i}
+                          onEdit={() => setEditTarget(cls)}
+                          onDelete={() => setDeleteTarget(cls)}
+                        />
+                      ))}
+                      <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
                       {filteredAndSorted.map((cls, i) => (
-                        <ClassListRow key={cls.id} cls={cls} index={i} />
+                        <ClassListRow
+                          key={cls.id}
+                          cls={cls}
+                          index={i}
+                          onEdit={() => setEditTarget(cls)}
+                          onDelete={() => setDeleteTarget(cls)}
+                        />
                       ))}
                     </div>
                   )}
@@ -272,10 +385,51 @@ export default function ClassesPage() {
       {isCreateModalOpen && (
         <ClassFormModal
           mode="create"
-          onSubmit={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreate}
           onClose={() => setIsCreateModalOpen(false)}
         />
       )}
+
+      {editTarget && (
+        <ClassFormModal
+          mode="edit"
+          initial={{
+            name: editTarget.info.name,
+            grade: editTarget.info.grade ?? null,
+            subject: editTarget.info.subject ?? "",
+            color: editTarget.color,
+            icon: (editTarget.info.icon as ClassIconKey | undefined),
+            description: editTarget.info.description ?? "",
+            slots: [],
+          }}
+          onSubmit={handleEditSubmit}
+          onClose={() => setEditTarget(null)}
+        />
+      )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sinfni oʻchirish</AlertDialogTitle>
+            <AlertDialogDescription>
+              «{deleteTarget?.name}» sinfi
+              {deleteTarget && deleteTarget.students > 0
+                ? `, uning ${deleteTarget.students} ta oʻquvchisi va barcha baholari`
+                : " va unga tegishli barcha maʼlumotlar"}{" "}
+              butunlay oʻchiriladi. Bu amalni ortga qaytarib boʻlmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Oʻchirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardPage>
   );
 }
@@ -356,14 +510,23 @@ function ClassCardSkeleton({ index }: { index: number }) {
   );
 }
 
-function ClassGridCard({ cls, index }: { cls: SchoolClass; index: number }) {
+function ClassGridCard({
+  cls,
+  index,
+  onEdit,
+  onDelete,
+}: {
+  cls: LiveClass;
+  index: number;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   const router = useRouter();
-  const color = cls.color ?? autoClassColor(cls.id);
-  const hex = CLASS_COLOR_HEX[color];
+  const hex = CLASS_COLOR_HEX[cls.color];
   const rgb = hexToRgb(hex);
   // Dars rejasi progressi: oʻtilgan mavzular / rejadagi mavzular
   const progress = Math.round((cls.coveredLessons / Math.max(cls.lessons, 1)) * 100);
-  const Icon = classIcon(cls.icon);
+  const Icon = classIcon(cls.info.icon);
   // Halqa boʻsh holatdan boshlanib, joylashgach toʻladi (animatsiya)
   const RING_C = 251.33;
   const [ringFilled, setRingFilled] = useState(false);
@@ -376,7 +539,7 @@ function ClassGridCard({ cls, index }: { cls: SchoolClass; index: number }) {
     <div
       className="class-card animate-fade-slide-up group rounded-2xl border overflow-hidden cursor-pointer flex flex-col relative transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-[var(--card-hex)]/30"
       style={{ animationDelay: `${index * 40}ms`, "--card-rgb": rgb, "--card-hex": hex } as React.CSSProperties}
-      onClick={() => router.push(`/dashboard/classes/${classSlug(cls.name)}`)}
+      onClick={() => router.push(`/dashboard/classes/${cls.id}`)}
     >
       {/* Rangli cover band — gradient + striped tekstura */}
       <div
@@ -396,14 +559,14 @@ function ClassGridCard({ cls, index }: { cls: SchoolClass; index: number }) {
           size="icon-sm"
           type="button"
           aria-label="Sinfni ochish"
-          onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/classes/${classSlug(cls.name)}`); }}
+          onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/classes/${cls.id}`); }}
           className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
         >
           <ArrowRight className="size-4" />
         </Button>
       </div>
       <div className="absolute top-3 right-3 z-20">
-        <ClassCardMenu />
+        <ClassCardMenu onEdit={onEdit} onDelete={onDelete} />
       </div>
 
       <div className="relative px-5 pb-5 flex flex-col items-center gap-4">
@@ -427,7 +590,7 @@ function ClassGridCard({ cls, index }: { cls: SchoolClass; index: number }) {
                 className="absolute inset-0 m-auto flex size-[68px] items-center justify-center rounded-full border-2 border-card shadow-sm"
                 style={{ backgroundColor: hex }}
               >
-                {cls.icon ? (
+                {cls.info.icon ? (
                   <Icon className="size-8 text-white" />
                 ) : (
                   <span className="text-xl font-bold text-white tracking-tight select-none">{classMonogram(cls.name)}</span>
@@ -455,7 +618,9 @@ function ClassGridCard({ cls, index }: { cls: SchoolClass; index: number }) {
           <p className="font-bold text-base leading-tight truncate max-w-full text-foreground transition-colors duration-200 group-hover:text-[var(--card-hex)]">
             {cls.name}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">{cls.schedule}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {cls.schedule ?? cls.subject ?? "Jadval belgilanmagan"}
+          </p>
         </div>
 
         {/* Statistika — ikonali 3 ustun, vertikal ajratgichlar bilan */}
@@ -480,7 +645,7 @@ function ClassGridCard({ cls, index }: { cls: SchoolClass; index: number }) {
 
 
 /* ── Karta uchun 3-nuqta DropdownMenu ── */
-function ClassCardMenu({ hex }: { hex?: string }) {
+function ClassCardMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -495,14 +660,17 @@ function ClassCardMenu({ hex }: { hex?: string }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem className="gap-2 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem
+          className="gap-2 cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+        >
           <PencilIcon className="size-4 text-muted-foreground" />
           Tahrirlash
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
         >
           <TrashIcon className="size-4" />
           Oʻchirish
@@ -530,18 +698,27 @@ function AddClassCard({ onClick }: { onClick?: () => void }) {
 
 /* ─────────────────────────── List Row ─────────────────────────── */
 
-function ClassListRow({ cls, index }: { cls: SchoolClass; index: number }) {
+function ClassListRow({
+  cls,
+  index,
+  onEdit,
+  onDelete,
+}: {
+  cls: LiveClass;
+  index: number;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   const router = useRouter();
-  const color = cls.color ?? autoClassColor(cls.id);
-  const hex = CLASS_COLOR_HEX[color];
-  const initials = cls.initials ?? ["AB", "CD", "EF"];
-  const overflow = Math.max(cls.students - 3, 0);
+  const hex = CLASS_COLOR_HEX[cls.color];
+  const initials = cls.initials;
+  const overflow = Math.max(cls.students - initials.length, 0);
 
   return (
     <div
       className="list-card animate-fade-slide-up group flex items-center gap-4 px-4 py-4 cursor-pointer"
       style={{ animationDelay: `${index * 25}ms`, ["--card-accent" as string]: hex }}
-      onClick={() => router.push(`/dashboard/classes/${classSlug(cls.name)}`)}
+      onClick={() => router.push(`/dashboard/classes/${cls.id}`)}
     >
       {/* Rangli ikoncha */}
       <div
@@ -556,7 +733,9 @@ function ClassListRow({ cls, index }: { cls: SchoolClass; index: number }) {
         <p className="text-sm font-semibold leading-none truncate transition-colors duration-150 group-hover:text-primary">
           {cls.name}
         </p>
-        <p className="text-xs text-muted-foreground mt-1.5">{cls.schedule}</p>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          {cls.schedule ?? cls.subject ?? "Jadval belgilanmagan"}
+        </p>
       </div>
 
       {/* Statistika */}
@@ -587,7 +766,7 @@ function ClassListRow({ cls, index }: { cls: SchoolClass; index: number }) {
       </div>
 
       {/* 3-nuqta menu */}
-      <ClassCardMenu />
+      <ClassCardMenu onEdit={onEdit} onDelete={onDelete} />
     </div>
   );
 }

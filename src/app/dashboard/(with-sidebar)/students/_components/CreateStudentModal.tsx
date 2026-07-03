@@ -10,7 +10,8 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { uz } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { MONTHS_UZ } from "@/lib/localization";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClassInfo } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { User, UserPlus, ChevronDown, Camera, X, CalendarDays, Mars, Venus, Check } from "lucide-react";
@@ -100,8 +101,8 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
   }, [open, defaultClassId]);
 
   // Oʻquvchi joriy ochiq sinfga qoʻshiladi — sinf shu yerda belgilangan, qayta tanlanmaydi
-  const selectedClass = CLASSES.find((c) => c.id === defaultClassId) ?? CLASSES[0];
-  const classHex = CLASS_COLOR_HEX[classColor(selectedClass)];
+  const selectedClass = useLiveClassInfo(defaultClassId);
+  const classHex = selectedClass ? CLASS_COLOR_HEX[classColor(selectedClass)] : CLASS_COLOR_HEX.blue;
 
   const fullName = `${firstName} ${lastName}`.trim();
   const canSubmit = firstName.trim().length > 0 || lastName.trim().length > 0;
@@ -141,10 +142,12 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2.5">
               <DialogTitle className="text-xl">{mode === "edit" ? "Oʻquvchini tahrirlash" : "Yangi oʻquvchi"}</DialogTitle>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                <ClassSwatch hex={classHex} className="size-2" />
-                {selectedClass.name}
-              </span>
+              {selectedClass && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  <ClassSwatch hex={classHex} className="size-2" />
+                  {selectedClass.name}
+                </span>
+              )}
             </div>
           </div>
           <DialogClose asChild>

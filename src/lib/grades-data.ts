@@ -6,6 +6,12 @@ export type ClassInfo = {
   name: string;
   color?: ClassColor;
   time?: string;
+  /** Sinf raqami (1–11); yoʻq boʻlsa — toʻgarak kabi darajasiz guruh. */
+  grade?: number;
+  subject?: string;
+  /** Avatar ikonkasi kaliti (class-icons.ts ClassIconKey). */
+  icon?: string;
+  description?: string;
 };
 
 export type Student = {

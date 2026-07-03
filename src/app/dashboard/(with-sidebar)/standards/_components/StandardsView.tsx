@@ -26,13 +26,18 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { lessonCoverage } from "@/lib/standards-coverage";
 import { panelHeaderClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
-import { CLASSES } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classStandardMastery, classStandardMisconceptions, setMasterySummary, type ClassStandardMastery } from "@/lib/standards-mastery";
 import type { StandardItem } from "@/lib/standards-data";
 
-const CLASS_NAME = new Map(CLASSES.map((c) => [c.id, c.name]));
+/** Jonli sinf nomi xaritasi (id → nom). */
+function useClassNameMap(): Map<string, string> {
+  const liveClasses = useLiveClasses();
+  return useMemo(() => new Map(liveClasses.map((c) => [c.id, c.name])), [liveClasses]);
+}
 
 export default function StandardsView({ classId }: { classId: string }) {
+  const classNames = useClassNameMap();
   const sets = useStandardsStore((s) => s.sets);
   const removeSet = useStandardsStore((s) => s.removeSet);
   const addStandards = useStandardsStore((s) => s.addStandards);
@@ -125,7 +130,7 @@ export default function StandardsView({ classId }: { classId: string }) {
                     <BookOpen aria-hidden />
                   </EmptyMedia>
                   <EmptyTitle>
-                    {CLASS_NAME.get(classId) ?? "Sinf"} uchun toʻplam yoʻq
+                    {classNames.get(classId) ?? "Sinf"} uchun toʻplam yoʻq
                   </EmptyTitle>
                   <EmptyDescription>
                     Tayyor toʻplamdan tanlang yoki oʻzingiz yarating (Excel/CSV import ham bor).
@@ -195,6 +200,7 @@ function SetCard({
   onToggle: (code: string) => void;
   onRemove: (code: string) => void;
 }) {
+  const classNames = useClassNameMap();
   // Qamrov = qoʻlda (std.covered) YOKI darsdan avtomatik (v3 §9 Q4).
   const lessons = useLessonStore((s) => s.lessons);
   const isCovered = (s: StandardItem) => s.covered || lessonCoverage(lessons, classId, s.id).taught;
@@ -236,7 +242,7 @@ function SetCard({
             <div className="flex items-center gap-1.5 flex-wrap">
               {set.classIds.map((id) => (
                 <Badge key={id} variant="outline" className="shadow-none text-muted-foreground">
-                  {CLASS_NAME.get(id) ?? id}
+                  {classNames.get(id) ?? id}
                 </Badge>
               ))}
               <TypographyMuted className="text-caption">

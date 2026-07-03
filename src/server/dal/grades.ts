@@ -62,6 +62,10 @@ function rowToInfo(c: ClassRow): ClassInfo {
     name: c.name,
     ...(c.color ? { color: c.color as ClassColor } : {}),
     ...(c.time ? { time: c.time } : {}),
+    ...(c.grade != null ? { grade: c.grade } : {}),
+    ...(c.subject ? { subject: c.subject } : {}),
+    ...(c.icon ? { icon: c.icon } : {}),
+    ...(c.description ? { description: c.description } : {}),
   };
 }
 
@@ -172,6 +176,10 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           name: c.name,
           color: c.color ?? null,
           time: c.time ?? null,
+          grade: c.grade ?? null,
+          subject: c.subject ?? null,
+          icon: c.icon ?? null,
+          description: c.description ?? null,
           sortOrder: c.sortOrder,
         }))
       )
@@ -181,6 +189,10 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           name: sql`excluded.name`,
           color: sql`excluded.color`,
           time: sql`excluded.time`,
+          grade: sql`excluded.grade`,
+          subject: sql`excluded.subject`,
+          icon: sql`excluded.icon`,
+          description: sql`excluded.description`,
           sortOrder: sql`excluded.sort_order`,
           updatedAt: now,
         },

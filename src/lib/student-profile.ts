@@ -1,17 +1,17 @@
 /* ════════════════════════════════════════════════════════════════════
    OʻQUVCHI PROFILI — maʼlumot agregatsiyasi (yagona manba)
 
-   CLASS_DATA (baholar) va seed-asosidagi davomatdan oʻquvchi profili uchun
-   barcha hosilalarni hisoblaydi. Hammasi DETERMINISTIK (id'dan seed) —
-   SSR/CSR mos keladi, hydration mismatch boʻlmaydi. Davomat foizi
-   oʻquvchilar roʻyxati kartasidagi bilan AYNAN mos (seededAttendancePct).
+   Jonli classDataMap (useGradesStore, chaqiruvchi uzatadi) va
+   seed-asosidagi davomatdan oʻquvchi profili uchun barcha hosilalarni
+   hisoblaydi. Hosilalar DETERMINISTIK (id'dan seed) — SSR/CSR mos
+   keladi, hydration mismatch boʻlmaydi. Davomat foizi seeded
+   (seededAttendancePct) — v1 cheklov, real davomatga keyin ulanadi.
    Bitta istisno: "Choraklik" trend chegaralari oʻquv yili kalendaridan
    (localStorage, SSR'da defaultlar) — chart recharts ichida boʻlgani uchun
    serverda baribir chizilmaydi.
    ════════════════════════════════════════════════════════════════════ */
 
 import {
-  CLASS_DATA,
   classColor,
   TOPIC_COLOR_HEX,
   type ClassData,
@@ -128,8 +128,11 @@ export type StudentProfile = {
 
 // ─── Joylashuv: studentId → sinf + roʻyxat ───────────────────────────────────
 
-export function locateStudent(studentId: string): StudentLocation | null {
-  for (const [classId, data] of Object.entries(CLASS_DATA)) {
+export function locateStudent(
+  classDataMap: Record<string, ClassData>,
+  studentId: string
+): StudentLocation | null {
+  for (const [classId, data] of Object.entries(classDataMap)) {
     const index = data.students.findIndex((s) => s.id === studentId);
     if (index === -1) continue;
     const roster: RosterEntry[] = data.students.map((s) => ({
@@ -423,10 +426,13 @@ function computeRisk(overall: number, attendancePct: number, missing: number): R
 
 // ─── Asosiy: toʻliq profil ───────────────────────────────────────────────────
 
-export function getStudentProfile(studentId: string): StudentProfile | null {
-  const location = locateStudent(studentId);
+export function getStudentProfile(
+  classDataMap: Record<string, ClassData>,
+  studentId: string
+): StudentProfile | null {
+  const location = locateStudent(classDataMap, studentId);
   if (!location) return null;
-  const data = CLASS_DATA[location.classId];
+  const data = classDataMap[location.classId];
   const student = data.students[location.index];
 
   const topics = buildTopics(data, studentId);

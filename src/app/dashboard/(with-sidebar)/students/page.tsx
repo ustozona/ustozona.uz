@@ -4,8 +4,12 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { gradeBadgeClass as gradeBadge, attendanceBadgeClass as attendanceBadge } from "@/lib/score-colors";
-import { CLASSES, classColor, CLASS_DATA } from "@/lib/grades-data";
+import { classColor, type Student } from "@/lib/grades-data";
+import { studentSummary } from "@/lib/grades-stats";
+import { studentStats } from "@/lib/attendance-data";
 import { useClassStore } from "@/store/useClassStore";
+import { useGradesStore } from "@/store/useGradesStore";
+import { useAttendanceStore } from "@/store/useAttendanceStore";
 import ClassListPanel from "@/components/ClassListPanel";
 import { cn } from "@/lib/utils";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -63,21 +67,11 @@ const SORT_LABELS: Record<SortKey, string> = {
 };
 
 // ─── Yordamchilar ────────────────────────────────────────────────────────────
-/** Sinf grades dan oʻquvchining oʻrtacha bahosini hisoblash (% — boʻsh emaslari) */
-function computeGrade(classId: string, studentId: string): number {
-  const data = CLASS_DATA[classId];
-  if (!data) return 0;
-  const scores = data.grades
-    .filter((g) => g.studentId === studentId && g.score !== null)
-    .map((g) => g.score as number);
-  if (scores.length === 0) return 0;
-  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-}
-
-/** id dan barqaror davomat foizi (84–100) */
-function seededAttendance(id: string): number {
-  const n = Array.from(id).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return 84 + (n % 17); // 84..100
+/** Ism + familiyadan bosh harflar ("Abdulloh Xasanov" → "AX"). */
+function makeInitials(firstName: string, lastName: string): string {
+  return (
+    ((firstName[0] ?? "") + (lastName[0] ?? firstName[1] ?? "")).toUpperCase() || "?"
+  );
 }
 
 const STATUS_PILL: Record<
@@ -110,9 +104,6 @@ const STATUS_PILL: Record<
 const badgeBase =
   "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
 
-// Import qilingan oʻquvchilar avatariga aylanma ranglar
-const IMPORT_SWATCHES = ["#818cf8", "#60a5fa", "#4ade80", "#fbbf24", "#f472b6", "#2dd4bf", "#fb7185"];
-
 // ─── Sahifa ──────────────────────────────────────────────────────────────────
 export default function StudentsPage() {
   // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni keng).
@@ -130,10 +121,13 @@ export default function StudentsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
 
-  // Mahalliy oʻzgarishlar: status va qoʻshilgan oʻquvchilar (sinf boʻyicha)
-  const [statusOverride, setStatusOverride] = useState<Record<string, Status>>({});
-  const [extra, setExtra] = useState<Record<string, StudentRow[]>>({});
-  const [removed, setRemoved] = useState<Set<string>>(new Set());
+  // Jonli manba: roster/baholar — useGradesStore, davomat — useAttendanceStore.
+  // Yozishlar updateClass orqali → GradesServerSync serverga sinxronlaydi.
+  const classDataMap = useGradesStore((s) => s.classDataMap);
+  const updateClass = useGradesStore((s) => s.updateClass);
+  const attendanceRecords = useAttendanceStore((s) =>
+    selectedClassId ? s.recordsByClass[selectedClassId] : undefined
+  );
 
   // Sinf almashganda preview yopiladi
   useEffect(() => {
@@ -141,30 +135,40 @@ export default function StudentsPage() {
     setSearch("");
   }, [selectedClassId]);
 
-  const selectedClass = CLASSES.find((c) => c.id === selectedClassId) ?? CLASSES[0];
-  const selColor = classColor(selectedClass);
+  const selectedInfo = selectedClassId ? classDataMap[selectedClassId]?.info : undefined;
+  const selColor = selectedInfo ? classColor(selectedInfo) : "blue";
   const selHex = CLASS_COLOR_HEX[selColor];
   const tint = (pct: number) => `color-mix(in srgb, ${selHex} ${pct}%, transparent)`;
+  const firstLiveClassId = Object.keys(classDataMap)[0];
 
-  // Sinf oʻquvchilarini quramiz
+  // Sinf oʻquvchilarini jonli maʼlumotdan quramiz
   const allStudents = useMemo<StudentRow[]>(() => {
     if (!selectedClassId) return [];
-    const data = CLASS_DATA[selectedClassId];
-    const base: StudentRow[] = (data?.students ?? []).map((s, i) => ({
-      id: s.id,
-      name: s.name,
-      initials: s.initials,
-      studentId: `ID-${1001 + i}`,
-      grade: computeGrade(selectedClassId, s.id),
-      attendance: seededAttendance(s.id),
-      status: (statusOverride[s.id] ?? s.status ?? "active") as Status,
-    }));
-    const added = (extra[selectedClassId] ?? []).map((s) => ({
-      ...s,
-      status: statusOverride[s.id] ?? s.status,
-    }));
-    return [...added, ...base].filter((s) => !removed.has(s.id));
-  }, [selectedClassId, statusOverride, extra, removed]);
+    const data = classDataMap[selectedClassId];
+    if (!data) return [];
+    const records = attendanceRecords ?? [];
+    return data.students.map((s, i) => {
+      const att = studentStats(records, s.id);
+      const attTotal = att.present + att.absent + att.late + att.excused;
+      return {
+        id: s.id,
+        name: s.name,
+        initials: s.initials,
+        studentId: `ID-${1001 + i}`,
+        // Jurnal bilan bir xil kanonik hisob (summativ, vaznli, Q/T chiqarilgan)
+        grade: Math.round(
+          studentSummary(s.id, data.assignments, data.grades, data.topics).summative
+        ),
+        attendance: attTotal ? Math.round((att.present / attTotal) * 100) : 100,
+        status: (s.status ?? "active") as Status,
+        gender: s.gender,
+        birthDate: s.birthDate,
+        parentName: s.parentName,
+        parentPhone: s.parentPhone,
+        studentPhone: s.studentPhone,
+      };
+    });
+  }, [selectedClassId, classDataMap, attendanceRecords]);
 
   // Filtr + qidiruv + saralash
   const students = useMemo(() => {
@@ -189,61 +193,56 @@ export default function StudentsPage() {
     ? { classes: 2, list: 3 }
     : { classes: 1, list: 2 };
 
-  // ── Amallar ──
-  const toggleStatus = (id: string, current: Status) =>
-    setStatusOverride((prev) => ({ ...prev, [id]: current === "active" ? "away" : "active" }));
+  // ── Amallar — hammasi useGradesStore'ga yoziladi (server sync avtomatik) ──
+  const setStatus = (id: string, status: Status) => {
+    if (!selectedClassId) return;
+    updateClass(selectedClassId, (cd) => ({
+      ...cd,
+      students: cd.students.map((s) => (s.id === id ? { ...s, status } : s)),
+    }));
+  };
 
-  const setStatus = (id: string, status: Status) =>
-    setStatusOverride((prev) => ({ ...prev, [id]: status }));
+  const toggleStatus = (id: string, current: Status) =>
+    setStatus(id, current === "active" ? "away" : "active");
 
   const deleteStudent = (id: string) => {
-    setRemoved((prev) => new Set(prev).add(id));
+    if (!selectedClassId) return;
+    // Baholari ham birga tozalanadi (serverda FK cascade, klientda qoʻlda)
+    updateClass(selectedClassId, (cd) => ({
+      ...cd,
+      students: cd.students.filter((s) => s.id !== id),
+      grades: cd.grades.filter((g) => g.studentId !== id),
+    }));
     if (selectedStudentId === id) setSelectedStudentId(null);
   };
 
   const handleCreate = (data: NewStudentInput) => {
     const name = `${data.firstName} ${data.lastName}`.trim();
-    const initials =
-      ((data.firstName[0] ?? "") + (data.lastName[0] ?? "")).toUpperCase() || "?";
-    const row: StudentRow = {
-      id: `new-${Date.now()}`,
+    const student: Student = {
+      id: crypto.randomUUID(),
       name,
-      initials,
-      studentId: `ID-${Math.floor(1000 + Math.random() * 9000)}`,
-      grade: 0,
-      attendance: 100,
+      initials: makeInitials(data.firstName, data.lastName),
       status: "active",
-      avatarColor: data.avatarColor,
-      avatarImage: data.avatarImage,
-      gender: data.gender,
-      birthDate: data.birthDate,
-      parentName: data.parentName,
-      parentPhone: data.parentPhone,
-      studentPhone: data.studentPhone,
+      ...(data.gender ? { gender: data.gender } : {}),
+      ...(data.birthDate ? { birthDate: data.birthDate } : {}),
+      ...(data.parentName ? { parentName: data.parentName } : {}),
+      ...(data.parentPhone ? { parentPhone: data.parentPhone } : {}),
+      ...(data.studentPhone ? { studentPhone: data.studentPhone } : {}),
     };
-    setExtra((prev) => ({ ...prev, [data.classId]: [row, ...(prev[data.classId] ?? [])] }));
-    if (data.classId === selectedClassId) setSelectedStudentId(row.id);
+    updateClass(data.classId, (cd) => ({ ...cd, students: [student, ...cd.students] }));
+    if (data.classId === selectedClassId) setSelectedStudentId(student.id);
   };
 
-  // Roʻyxatdan bir nechta oʻquvchini joriy sinfga qoʻshish (faqat ism/familiya, ID avtomatik)
+  // Roʻyxatdan bir nechta oʻquvchini joriy sinfga qoʻshish (faqat ism/familiya)
   const handleImport = (incoming: { firstName: string; lastName: string }[]) => {
     if (!selectedClassId || incoming.length === 0) return;
-    const rows: StudentRow[] = incoming.map((s, i) => {
-      const name = `${s.firstName} ${s.lastName}`.trim();
-      const initials =
-        ((s.firstName[0] ?? "") + (s.lastName[0] ?? s.firstName[1] ?? "")).toUpperCase() || "?";
-      return {
-        id: `imp-${Date.now()}-${i}`,
-        name,
-        initials,
-        studentId: `ID-${Math.floor(1000 + Math.random() * 9000)}`,
-        grade: 0,
-        attendance: 100,
-        status: "active" as Status,
-        avatarColor: IMPORT_SWATCHES[i % IMPORT_SWATCHES.length],
-      };
-    });
-    setExtra((prev) => ({ ...prev, [selectedClassId]: [...rows, ...(prev[selectedClassId] ?? [])] }));
+    const rows: Student[] = incoming.map((s) => ({
+      id: crypto.randomUUID(),
+      name: `${s.firstName} ${s.lastName}`.trim(),
+      initials: makeInitials(s.firstName, s.lastName),
+      status: "active",
+    }));
+    updateClass(selectedClassId, (cd) => ({ ...cd, students: [...rows, ...cd.students] }));
   };
 
   // Joriy sinf oʻquvchilarini CSV faylga eksport qilish (Excelʼda UTF-8 uchun BOM bilan)
@@ -259,7 +258,7 @@ export default function StudentsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${selectedClass.name}-oquvchilar.csv`;
+    a.download = `${selectedInfo?.name ?? "sinf"}-oquvchilar.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -558,7 +557,7 @@ export default function StudentsPage() {
               <PreviewCard
                 key={selectedStudent.id}
                 student={selectedStudent}
-                className={selectedClass.name}
+                className={selectedInfo?.name ?? ""}
                 hex={selHex}
                 tint={tint}
                 onToggleStatus={() => toggleStatus(selectedStudent.id, selectedStudent.status)}
@@ -572,14 +571,14 @@ export default function StudentsPage() {
       <CreateStudentModal
         open={createOpen}
         onOpenChange={setCreateOpen}
-        defaultClassId={selectedClassId ?? CLASSES[0].id}
+        defaultClassId={selectedClassId ?? firstLiveClassId ?? ""}
         onCreate={handleCreate}
       />
 
       <ImportStudentsModal
         open={importOpen}
         onOpenChange={setImportOpen}
-        className={selectedClass.name}
+        className={selectedInfo?.name ?? ""}
         onImport={handleImport}
       />
     </>

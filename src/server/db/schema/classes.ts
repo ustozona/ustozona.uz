@@ -28,6 +28,13 @@ export const classes = pgTable(
     color: text("color"),
     /** Koʻrsatma vaqti, mas. "17:10 — 17:55" (faqat koʻrinish uchun). */
     time: text("time"),
+    /** Sinf raqami (1–11); null = toʻgarak kabi darajasiz guruh. */
+    grade: integer("grade"),
+    /** Fan nomi, mas. "Ingliz tili". */
+    subject: text("subject"),
+    /** Avatar ikonkasi kaliti (ClassIconKey). */
+    icon: text("icon"),
+    description: text("description"),
     /** Frontend massiv tartibi (sidebar/roʻyxat) — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

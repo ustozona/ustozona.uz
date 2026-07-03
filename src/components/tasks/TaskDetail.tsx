@@ -25,7 +25,8 @@ import { format, parseISO, addDays } from "date-fns";
 import { uz } from "date-fns/locale";
 import { useTaskStore } from "@/store/useTaskStore";
 import { TASK_STATUS, PRIORITY_STYLES, STATUS_LABELS, STATUS_STYLES, ASSIGNEES } from "@/lib/tasks-data";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { RecurrenceEditor } from "@/components/tasks/RecurrenceEditor";
@@ -35,6 +36,7 @@ const FOCUS_MINUTES = 25;
 const BREAK_MINUTES = 5;
 
 export default function TaskDetail() {
+  const liveClasses = useLiveClasses();
   const tasks = useTaskStore(s => s.tasks);
   const selectedTaskId = useTaskStore(s => s.selectedTaskId);
   const setSelectedTaskId = useTaskStore(s => s.setSelectedTaskId);
@@ -166,7 +168,7 @@ export default function TaskDetail() {
   const ringDashoffset = 283 - (283 * (timeLeft / totalSecs));
 
   // Class names
-  const selectedClassObjs = CLASSES.filter(c => task.classIds?.includes(c.id));
+  const selectedClassObjs = liveClasses.filter(c => task.classIds?.includes(c.id));
   const className = selectedClassObjs.length > 0 ? selectedClassObjs.map(c => c.name).join(", ") : "Umumiy";
 
   // Overdue check
@@ -436,7 +438,7 @@ export default function TaskDetail() {
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[260px]">
-                  {CLASSES.map(c => {
+                  {liveClasses.map(c => {
                     const hex = CLASS_COLOR_HEX[classColor(c)];
                     return (
                       <DropdownMenuItem key={c.id} onSelect={() => {

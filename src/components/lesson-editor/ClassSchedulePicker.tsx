@@ -5,7 +5,8 @@ import { ChevronLeft, ChevronRight, CalendarDays, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MONTHS_UZ } from "@/lib/localization";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { classColor, CLASSES } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClassInfo } from "@/hooks/useLiveClasses";
 import {
   weeklySlotsForClass, slotsOnDate, dateToKey, dateKeyToDate, fmtClock,
 } from "@/lib/lesson-schedule";
@@ -29,7 +30,7 @@ export default function ClassSchedulePicker({
   onSubmit: (date: string, sessions: { startMin: number; endMin: number }[]) => void;
   onCancel: () => void;
 }) {
-  const cls = CLASSES.find((c) => c.id === classId);
+  const cls = useLiveClassInfo(classId);
   const hex = cls ? CLASS_COLOR_HEX[classColor(cls)] : "var(--primary)";
   // Bugungi versiya boʻyicha jadval bor-yoʻqligi (checkbox holati uchun)
   const hasTimetable = useMemo(() => weeklySlotsForClass(classId).length > 0, [classId]);

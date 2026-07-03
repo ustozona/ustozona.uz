@@ -23,7 +23,7 @@ import { type TaskFilter } from "./TasksSidebar";
 import { TASK_STATUS, STATUS_META, nextRecurrenceDate, type TaskStatus, type TaskPriority } from "@/lib/tasks-data";
 import { recurrenceLabel } from "@/lib/recurrence";
 import { ContextMenu, type ContextMenuItem } from "@/components/shadcn-space/context-menu/context-menu-01";
-import { CLASSES } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useFilteredTasks, type GroupByMode, type SortByMode } from "@/hooks/useFilteredTasks";
 import { format, parseISO } from "date-fns";
 import { uz } from "date-fns/locale";
@@ -37,6 +37,7 @@ type Props = {
 };
 
 export default function TasksList({ activeFilter }: Props) {
+  const liveClasses = useLiveClasses();
   const tasks = useTaskStore((s) => s.tasks);
   const selectedTaskId = useTaskStore((s) => s.selectedTaskId);
   const setSelectedTaskId = useTaskStore((s) => s.setSelectedTaskId);
@@ -201,7 +202,7 @@ export default function TasksList({ activeFilter }: Props) {
     if (activeFilter.startsWith("class-")) {
       const cid = activeFilter.replace("class-", "");
       if (cid === "none") return "Umumiy";
-      return CLASSES.find(c => c.id === cid)?.name || "Vazifalar";
+      return liveClasses.find(c => c.id === cid)?.name || "Vazifalar";
     }
     return "Mening vazifalarim";
   };
@@ -223,7 +224,7 @@ export default function TasksList({ activeFilter }: Props) {
     if (groupBy === "status") return STATUS_GROUPS.map(g => g.id);
     if (groupBy === "date") return DATE_GROUPS;
     if (groupBy === "priority") return ["high", "medium", "low", "none"];
-    if (groupBy === "class") return [...CLASSES.filter(c => c.id !== "no-class").map(c => c.id), "none"];
+    if (groupBy === "class") return [...liveClasses.map(c => c.id), "none"];
     return ["all"];
   })();
 
@@ -443,7 +444,7 @@ export default function TasksList({ activeFilter }: Props) {
                     groupLabel = "Umumiy";
                     groupColor = "bg-muted-foreground";
                   } else {
-                    const cls = CLASSES.find(c => c.id === groupId);
+                    const cls = liveClasses.find(c => c.id === groupId);
                     groupLabel = cls?.name ?? groupId;
                     groupColor = "bg-primary";
                   }

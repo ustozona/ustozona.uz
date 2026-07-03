@@ -25,7 +25,7 @@ import AiAssistantPanel from "./AiAssistantPanel";
 import { TableKit } from "@tiptap/extension-table";
 import { TaskList, TaskItem } from "@tiptap/extension-list";
 import { Callout, CalloutTitle } from "./callout-extension";
-import { CLASSES } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 
 const STATUS = {
   Completed: { label: "Tugallandi", cls: "bg-success/10 text-success" },
@@ -36,6 +36,7 @@ const STATUS = {
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const router = useRouter();
+  const liveClasses = useLiveClasses();
   const hydrated = useLessonStore((s) => s._hasHydrated);
   const lesson = useLessonStore((s) => s.lessons.find((l) => l.id === lessonId));
   const units = useLessonStore((s) => s.units);
@@ -230,7 +231,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             <AiAssistantPanel
               lessonContext={{
                 title: lesson.title,
-                classes: lessonClassIds(lesson).map((id) => CLASSES.find((c) => c.id === id)?.name ?? id).join(", "),
+                classes: lessonClassIds(lesson).map((id) => liveClasses.find((c) => c.id === id)?.name ?? id).join(", "),
                 unit: units.find((u) => u.id === lesson.unitId)?.title,
                 content: editor?.getHTML(),
               }}

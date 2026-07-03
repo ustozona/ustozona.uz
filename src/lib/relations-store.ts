@@ -16,14 +16,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { create } from "zustand";
-import { resolveDefaultLinks } from "./relations";
 
 const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
-
-/** Seed initial holat SSR uchun qoladi (9-bosqichgacha). */
-function defaults(): string[] {
-  return resolveDefaultLinks().map(([a, b]) => pairKey(a, b));
-}
 
 interface RelationsState {
   links: string[];
@@ -33,8 +27,10 @@ interface RelationsState {
   unlink: (a: string, b: string) => void;
 }
 
+// Boshlangʻich holat BOʻSH — server (student_relations) haqiqat manbai;
+// demo juftliklar scripts/seed.ts orqali bazada.
 export const useRelationsStore = create<RelationsState>()((set) => ({
-  links: defaults(),
+  links: [],
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),
 

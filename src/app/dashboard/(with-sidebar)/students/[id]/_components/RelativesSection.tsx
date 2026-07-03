@@ -15,6 +15,7 @@ import {
   getAllStudents, getSchoolStudent, kinshipLabel, type SchoolStudent,
 } from "@/lib/relations";
 import { useRelatives, linkRelatives, unlinkRelatives } from "@/lib/relations-store";
+import { useGradesStore } from "@/store/useGradesStore";
 import { UserPlus, X, ChevronRight, Users, ChevronDown } from "lucide-react";
 
 /** Rang doirasi ichidagi bosh harflar (paneldagi uslub bilan bir xil) */
@@ -38,28 +39,29 @@ export default function RelativesSection({
   onNavigate: (id: string) => void;
 }) {
   const relativeIds = useRelatives(studentId);
+  const classDataMap = useGradesStore((s) => s.classDataMap);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const relatives = useMemo(
     () =>
       relativeIds
-        .map((id) => getSchoolStudent(id))
+        .map((id) => getSchoolStudent(classDataMap, id))
         .filter((s): s is SchoolStudent => Boolean(s)),
-    [relativeIds]
+    [relativeIds, classDataMap]
   );
 
   // Tanlash uchun nomzodlar — oʻzi va allaqachon bogʻlanganlardan tashqari, sinf boʻyicha guruhlangan
   const candidatesByClass = useMemo(() => {
     const exclude = new Set([studentId, ...relativeIds]);
     const groups = new Map<string, SchoolStudent[]>();
-    for (const s of getAllStudents()) {
+    for (const s of getAllStudents(classDataMap)) {
       if (exclude.has(s.id)) continue;
       const arr = groups.get(s.className) ?? [];
       arr.push(s);
       groups.set(s.className, arr);
     }
     return [...groups.entries()];
-  }, [studentId, relativeIds]);
+  }, [studentId, relativeIds, classDataMap]);
 
   return (
     <Collapsible defaultOpen={false} className="border-b border-border p-5">
@@ -111,7 +113,7 @@ export default function RelativesSection({
                   <p className="truncate text-sm font-medium">{r.name}</p>
                   <div className="mt-0.5 flex items-center gap-1.5">
                     <Badge variant="secondary" className="px-1.5 py-0 text-[11px]">
-                      {kinshipLabel(studentId, r.id)}
+                      {kinshipLabel(classDataMap, studentId, r.id)}
                     </Badge>
                     <span className="text-xs text-muted-foreground">{r.className}</span>
                   </div>

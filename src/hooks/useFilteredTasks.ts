@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { type Task } from "@/lib/tasks-data";
 import { type TaskFilter } from "@/components/tasks/TasksSidebar";
-import { CLASSES } from "@/lib/grades-data";
+import { useGradesStore } from "@/store/useGradesStore";
 
 export type GroupByMode = "status" | "date" | "priority" | "class" | "none";
 export type SortByMode = "default" | "date" | "title" | "priority" | "created";
@@ -45,6 +45,7 @@ export function useFilteredTasks(
 ) {
   const todayStr = new Date().toISOString().split("T")[0];
   const nextWeekStr = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const classDataMap = useGradesStore((s) => s.classDataMap);
 
   return useMemo(() => {
     // 1. Filtrlash (yagona manba — filterTasksByFilter)
@@ -129,9 +130,9 @@ export function useFilteredTasks(
         groups[key].push(task);
       });
     } else if (groupBy === "class") {
-      // Har bir sinf uchun group
-      CLASSES.forEach(cls => {
-        if (cls.id !== "no-class") groups[cls.id] = [];
+      // Har bir sinf uchun group (jonli roʻyxat)
+      Object.keys(classDataMap).forEach((cid) => {
+        groups[cid] = [];
       });
       groups["none"] = []; // Sinfsiz
       sorted.forEach(task => {
@@ -152,5 +153,5 @@ export function useFilteredTasks(
       totalTasks: filteredTotal,
       completedTasks: filteredCompleted
     };
-  }, [tasks, activeFilter, groupBy, sortBy, showCompleted, todayStr, nextWeekStr]);
+  }, [tasks, activeFilter, groupBy, sortBy, showCompleted, todayStr, nextWeekStr, classDataMap]);
 }

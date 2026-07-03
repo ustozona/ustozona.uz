@@ -29,8 +29,7 @@ import {
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTaskStore } from "@/store/useTaskStore";
-import { CLASS_DATA } from "@/lib/grades-data";
-import { getAllStudents } from "@/lib/relations";
+import { useGradesStore } from "@/store/useGradesStore";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { MONTHS_UZ } from "@/lib/localization";
 import { SettingsGroup, SavedIndicator } from "./SettingsShared";
@@ -103,8 +102,9 @@ export default function ProfileSection() {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
 
-  const classCount = Object.keys(CLASS_DATA).length;
-  const studentCount = getAllStudents().length;
+  const classDataMap = useGradesStore((s) => s.classDataMap);
+  const classCount = Object.keys(classDataMap).length;
+  const studentCount = Object.values(classDataMap).reduce((n, cd) => n + cd.students.length, 0);
   const avatarHex =
     CLASS_COLOR_HEX[(profile.avatarColor as ClassColor) ?? "orange"] ?? CLASS_COLOR_HEX.orange;
 

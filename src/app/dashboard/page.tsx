@@ -6,12 +6,19 @@ import { Sunrise, Sunset, BookOpen, CalendarDays, ChevronLeft, ChevronRight, Squ
 import { useState, useEffect, useMemo } from "react";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
+import { useLessonStore } from "@/store/useLessonStore";
+import { useTaskStore } from "@/store/useTaskStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
 import { CLASSES } from "@/lib/classes-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
+import { classColor } from "@/lib/grades-data";
+import { lessonClassIds } from "@/lib/lessons-data";
+import { TASK_STATUS } from "@/lib/tasks-data";
+import { DAYS_UZ_SUN } from "@/lib/localization";
 import { gradesIdForSchoolClass } from "@/lib/class-bridge";
-import { autoClassColor, classTints } from "@/lib/class-colors";
+import { autoClassColor, classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { fmtMin } from "@/lib/timetable";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -35,16 +42,13 @@ import DashboardPageLayout, {
   dashboardStackClass,
 } from "@/components/DashboardPage";
 
-// Kelgusi darslar — hafta davomida, bugundan keyin, faqat oʻtilmagan
-const upcomingWeekLessons = [
-  // Seshanba
-  { id: 6, date: "4-iyun", dayName: "Seshanba", className: "9-A", topic: "Matnni oʻqib tushunish: asosiy gʻoya", startTime: "09:00", endTime: "09:45", isReady: true, color: "rgb(59, 130, 246)", bg: "rgba(59, 130, 246, 0.125)" },
-  { id: 7, date: "4-iyun", dayName: "Seshanba", className: "10-A", topic: "Norasmiy xat yozish", startTime: "11:00", endTime: "11:45", isReady: false, color: "rgb(139, 92, 246)", bg: "rgba(139, 92, 246, 0.125)" },
-  // Chorshanba
-  { id: 8, date: "5-iyun", dayName: "Chorshanba", className: "6-A", topic: "Present Simple: savol va inkor", startTime: "08:00", endTime: "08:45", isReady: true, color: "rgb(74, 222, 128)", bg: "rgba(74, 222, 128, 0.125)" },
-  // Payshanba
-  { id: 9, date: "6-iyun", dayName: "Payshanba", className: "7-B", topic: "Hobbilar haqida suhbat", startTime: "10:30", endTime: "11:15", isReady: false, color: "rgb(236, 72, 153)", bg: "rgba(236, 72, 153, 0.125)" },
-];
+/** hex → "r, g, b" (rgba fon uchun). */
+function hexToRgb(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
+}
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
@@ -80,6 +84,56 @@ export default function DashboardPage() {
       .filter((e) => e.day === todayDow)
       .sort((a, b) => a.startMin - b.startMin);
   }, [versions, todayKey, holiday, todayDow]);
+
+  // ── Kelgusi darslar — jonli mavzu bankidan (rejalangan, bugundan boshlab) ──
+  const allLessons = useLessonStore((s) => s.lessons);
+  const liveClasses = useLiveClasses();
+  const classMetaById = useMemo(
+    () => new Map(liveClasses.map((c) => [c.id, { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] }])),
+    [liveClasses]
+  );
+  const upcomingLessons = useMemo(() => {
+    return allLessons
+      .filter((l) => l.scheduledDate && l.scheduledDate >= todayKey && l.status !== "Completed")
+      .sort((a, b) =>
+        a.scheduledDate!.localeCompare(b.scheduledDate!) || (a.startMin ?? 0) - (b.startMin ?? 0)
+      )
+      .slice(0, 8)
+      .map((l) => {
+        const [y, mo, d] = l.scheduledDate!.split("-").map(Number);
+        const date = new Date(y, mo - 1, d);
+        const firstClassId = lessonClassIds(l)[0];
+        const meta = firstClassId ? classMetaById.get(firstClassId) : undefined;
+        const hex = meta?.hex ?? "#94a3b8";
+        return {
+          id: l.id,
+          dayName: DAYS_UZ_SUN[date.getDay()],
+          date: `${d}-${MONTHS_UZ[mo - 1].toLowerCase()}`,
+          className: meta?.name ?? "Sinf",
+          topic: l.title || "(nomsiz mavzu)",
+          startTime: l.startMin != null ? fmtMin(l.startMin) : (l.time ?? ""),
+          isReady: !!(l.content && l.content.trim().length > 0),
+          color: hex,
+          bg: `rgba(${hexToRgb(hex)}, 0.125)`,
+        };
+      });
+  }, [allLessons, classMetaById, todayKey]);
+
+  // ── Vazifalar — jonli (ochiq, muddat boʻyicha) ──
+  const allTasks = useTaskStore((s) => s.tasks);
+  const openTasks = useMemo(
+    () =>
+      allTasks
+        .filter((t) => t.status !== TASK_STATUS.DONE && t.status !== TASK_STATUS.CANCELED)
+        .sort((a, b) => {
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return a.dueDate.localeCompare(b.dueDate);
+        }),
+    [allTasks]
+  );
+  const openTaskCount = openTasks.length;
+  const upcomingTasks = useMemo(() => openTasks.slice(0, 4), [openTasks]);
 
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
@@ -176,8 +230,10 @@ export default function DashboardPage() {
                     {holiday
                       ? `Bugun — ${holiday.name}. Yaxshi dam oling!`
                       : todaysEvents.length === 0
-                        ? "Bugun darsingiz yoʻq, lekin bajarishingiz kerak boʻlgan 1 ta vazifangiz bor."
-                        : `Bugun ${todaysEvents.length} ta darsingiz va bajarishingiz kerak boʻlgan 1 ta vazifangiz bor.`}
+                        ? openTaskCount > 0
+                          ? `Bugun darsingiz yoʻq, lekin bajarishingiz kerak boʻlgan ${openTaskCount} ta vazifangiz bor.`
+                          : "Bugun darsingiz yoʻq. Yaxshi dam oling!"
+                        : `Bugun ${todaysEvents.length} ta darsingiz${openTaskCount > 0 ? ` va ${openTaskCount} ta vazifangiz` : ""} bor.`}
                   </TypographyMuted>
                 </div>
               </div>
@@ -198,15 +254,27 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className={panelCardContentClass}>
                   <div className={cn(panelScrollInnerClass, "space-y-4")}>
+                    {mounted && upcomingLessons.length === 0 && (
+                      <div className="flex flex-col items-center gap-2 py-10 text-center">
+                        <BookOpen className="size-6 text-muted-foreground" />
+                        <p className="text-sm font-medium text-foreground">Rejalangan dars yoʻq</p>
+                        <TypographyMuted className="text-xs">
+                          Darslar rejalashtiruvchida sanaga qoʻyilgach shu yerda koʻrinadi.
+                        </TypographyMuted>
+                        <Link href="/dashboard/planner" className="text-xs text-primary hover:underline">
+                          Rejalashtiruvchini ochish
+                        </Link>
+                      </div>
+                    )}
                     {/* Kunlar boʻyicha guruhlangan darslar */}
-                    {Array.from(new Map(upcomingWeekLessons.map(l => [l.dayName, l])).entries()).map(([dayName, firstLesson]) => (
-                      <div key={dayName}>
+                    {Array.from(new Map(upcomingLessons.map(l => [l.dayName + l.date, l])).entries()).map(([dayKey, firstLesson]) => (
+                      <div key={dayKey}>
                         <div className="flex items-center gap-2 mb-2">
-                          <TypographySmall className="text-foreground">{dayName}</TypographySmall>
+                          <TypographySmall className="text-foreground">{firstLesson.dayName}</TypographySmall>
                           <TypographyMuted>{firstLesson.date}</TypographyMuted>
                         </div>
                         <div className="space-y-2">
-                          {upcomingWeekLessons.filter(l => l.dayName === dayName).map((lesson, i) => (
+                          {upcomingLessons.filter(l => l.dayName + l.date === dayKey).map((lesson, i) => (
                             <div
                               key={lesson.id}
                               style={{
@@ -448,13 +516,38 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3 rounded-lg px-3 py-4 transition-colors bg-muted/40 hover:bg-muted cursor-pointer">
-                      <Checkbox id="task1" />
-                      <span className="font-medium flex-1 text-sm truncate text-foreground min-w-0">
-                        Oʻquvchilarning 3 choraklik davomatlarini qoʻyib chiqish
-                      </span>
-                      <span className="text-xs shrink-0 text-destructive font-medium">Apr 5</span>
-                    </div>
+                    {mounted && upcomingTasks.length === 0 && (
+                      <div className="flex flex-col items-center gap-1.5 py-6 text-center">
+                        <SquareCheckBig className="size-5 text-muted-foreground" />
+                        <TypographyMuted className="text-xs">Ochiq vazifa yoʻq</TypographyMuted>
+                      </div>
+                    )}
+                    {upcomingTasks.map((task) => {
+                      const overdue = !!task.dueDate && task.dueDate < todayKey;
+                      const dueLabel = task.dueDate
+                        ? (() => {
+                            const [, m, d] = task.dueDate!.split("-").map(Number);
+                            return `${d}-${MONTHS_UZ[m - 1].toLowerCase()}`;
+                          })()
+                        : null;
+                      return (
+                        <Link
+                          key={task.id}
+                          href="/dashboard/tasks"
+                          className="flex items-center gap-3 rounded-lg px-3 py-4 transition-colors bg-muted/40 hover:bg-muted cursor-pointer"
+                        >
+                          <Checkbox id={`task-${task.id}`} checked={task.status === TASK_STATUS.DONE} />
+                          <span className="font-medium flex-1 text-sm truncate text-foreground min-w-0">
+                            {task.title}
+                          </span>
+                          {dueLabel && (
+                            <span className={cn("text-xs shrink-0 font-medium", overdue ? "text-destructive" : "text-muted-foreground")}>
+                              {dueLabel}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
                   </div>
 
                   <Link href="/dashboard/tasks" className="block text-center text-xs text-muted-foreground hover:text-foreground transition-colors">

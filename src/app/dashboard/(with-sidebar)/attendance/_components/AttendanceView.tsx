@@ -22,7 +22,7 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX, classTints, type ClassColor } from "@/lib/class-colors";
 import { ATTENDANCE_TONE } from "@/lib/score-colors";
 import { Button } from "@/components/ui/button";
@@ -560,8 +560,8 @@ export default function AttendanceView({ classId }: { classId: string }) {
     return { total: present + absent + late + excused, present, absent, late, excused, pct: quarterRateOf(id)?.pct ?? 0 };
   };
 
-  // Avatar/preview rangi — joriy sinf palitrasidan
-  const classHex = CLASS_COLOR_HEX[classColor(CLASSES.find((c) => c.id === classId) ?? CLASSES[0])];
+  // Avatar/preview rangi — joriy sinf palitrasidan (jonli info; yoʻq boʻlsa id boʻyicha avto)
+  const classHex = CLASS_COLOR_HEX[classColor(gradesClass?.info ?? { id: classId, name: classId })];
 
   // "Xavfli" — gibrid: <75% (absolyut floor) YOKI sinfning eng past 25% (pertsentil)
   const periodPcts = baseStudents.map((s) => periodRateOf(s.id)?.pct).filter((p): p is number => p != null);

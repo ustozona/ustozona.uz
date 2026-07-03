@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TypographyMuted } from "@/components/ui/typography";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { ChevronDownIcon, Lock } from "lucide-react";
@@ -28,7 +29,7 @@ export default function CreateUnitModal({
   onSubmit: (values: CreateUnitValues) => void;
   onClose: () => void;
 }) {
-  const selectableClasses = CLASSES.filter((c) => c.id !== "no-class");
+  const selectableClasses = useLiveClasses();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [classIds, setClassIds] = useState<string[]>(defaultClassIds);

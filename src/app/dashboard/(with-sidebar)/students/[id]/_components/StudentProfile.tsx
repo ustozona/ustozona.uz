@@ -4,6 +4,8 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getStudentProfile } from "@/lib/student-profile";
+import { useGradesStore } from "@/store/useGradesStore";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -57,7 +59,12 @@ export default function StudentProfile({
   initialTab?: string;
 }) {
   const router = useRouter();
-  const profile = useMemo(() => getStudentProfile(studentId), [studentId]);
+  const classDataMap = useGradesStore((s) => s.classDataMap);
+  const hydrated = useGradesStore((s) => s._hasHydrated);
+  const profile = useMemo(
+    () => getStudentProfile(classDataMap, studentId),
+    [classDataMap, studentId]
+  );
 
   // Active tab URL'da (`?tab=`) saqlanadi — oʻquvchilar orasida oʻtganda saqlanib qoladi
   const [tab, setTabState] = useState<TabId>(() => normalizeTab(initialTab));
@@ -116,6 +123,16 @@ export default function StudentProfile({
     },
     [studentId]
   );
+
+  // ── Server hydration tugamagan — hali "topilmadi" deb boʻlmaydi ──
+  if (!profile && !hydrated) {
+    return (
+      <div className="flex flex-1 min-h-0 gap-6 p-6">
+        <Skeleton className="w-72 shrink-0 rounded-2xl" />
+        <Skeleton className="flex-1 rounded-2xl" />
+      </div>
+    );
+  }
 
   // ── Topilmadi ──
   if (!profile) {

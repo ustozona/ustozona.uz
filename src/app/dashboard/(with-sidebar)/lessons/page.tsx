@@ -12,7 +12,8 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses, useCreateClass } from "@/hooks/useLiveClasses";
 import { useClassStore } from "@/store/useClassStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { lessonClassIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
@@ -48,6 +49,8 @@ export default function LessonsPage() {
   // (Sinflar ustuni 50%). Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
   const [selectedClassId, setSelectedClassIdState] = useState<string | null>(null);
   const handleSelectClass = (id: string) => { setSelectedClassIdState(id); setStoreClassId(id); };
+  const liveClasses = useLiveClasses();
+  const createClass = useCreateClass();
   const units = useLessonStore((s) => s.units);
   const lessons = useLessonStore((s) => s.lessons);
   const addUnit = useLessonStore((s) => s.addUnit);
@@ -122,7 +125,7 @@ export default function LessonsPage() {
 
   const openLesson = (id: string) => router.push(`/lessons/${id}`);
 
-  const selectedClass = CLASSES.find((c) => c.id === selectedClassId) ?? null;
+  const selectedClass = liveClasses.find((c) => c.id === selectedClassId) ?? null;
   const selectedUnit = selectedUnitId && selectedUnitId !== NONE
     ? units.find((u) => u.id === selectedUnitId) ?? null
     : null;
@@ -546,7 +549,7 @@ export default function LessonsPage() {
         {classModalOpen && (
           <ClassFormModal
             mode="create"
-            onSubmit={() => setClassModalOpen(false)}
+            onSubmit={(v) => { handleSelectClass(createClass(v)); setClassModalOpen(false); }}
             onClose={() => setClassModalOpen(false)}
           />
         )}

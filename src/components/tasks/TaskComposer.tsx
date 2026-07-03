@@ -14,7 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ClassSwatch } from "@/components/ClassSwatch";
-import { CLASSES, classColor } from "@/lib/grades-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { parseTaskNLP } from "@/lib/task-parser";
 import { RecurrenceEditor } from "@/components/tasks/RecurrenceEditor";
@@ -68,6 +69,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
     const [dueTime, setDueTime] = useState<string | null>(null);
     const [priority, setPriority] = useState<TaskPriority>("none");
     const [classIds, setClassIds] = useState<string[]>([]);
+    const liveClasses = useLiveClasses();
     const [repeatOpen, setRepeatOpen] = useState(false);
     const [recurrenceRule, setRecurrenceRule] = useState<string | null>(null);
     const [calMonth, setCalMonth] = useState<Date>(new Date());
@@ -351,8 +353,15 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
               >
                 {classIds.length > 0 ? (
                   <>
-                    <ClassSwatch hex={CLASS_COLOR_HEX[classColor(CLASSES.find((c) => c.id === classIds[0])!)]} />
-                    <span>{classIds.length === 1 ? CLASSES.find((c) => c.id === classIds[0])?.name : `${classIds.length} sinf`}</span>
+                    {(() => {
+                      const first = liveClasses.find((c) => c.id === classIds[0]);
+                      return (
+                        <>
+                          <ClassSwatch hex={first ? CLASS_COLOR_HEX[classColor(first)] : CLASS_COLOR_HEX.gray} />
+                          <span>{classIds.length === 1 ? first?.name ?? "Sinf" : `${classIds.length} sinf`}</span>
+                        </>
+                      );
+                    })()}
                   </>
                 ) : (
                   <>
@@ -365,7 +374,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
             </PopoverTrigger>
             <PopoverContent align="start" className="w-56 p-1.5" sideOffset={8}>
               <div className="flex max-h-64 flex-col overflow-y-auto">
-                {CLASSES.filter((c) => c.id !== "no-class").map((cls) => {
+                {liveClasses.map((cls) => {
                   const active = classIds.includes(cls.id);
                   return (
                     <button
