@@ -1,16 +1,15 @@
 import type { TimetableEvent } from "@/lib/timetable";
-import { schoolClassForGradesId } from "@/lib/class-bridge";
 import { getTimetableForDate } from "@/store/useTimetableStore";
 import { dateToKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
-   DARS REJALASHTIRISH KOʻPRIGI
+   DARS REJALASHTIRISH YORDAMCHILARI
 
    Dars muharriridagi "Jadval" boʻlimi uchun: oʻqituvchining haftalik
-   jadvalidagi (timetable) slotlarni grades-data sinf idʼsi boʻyicha
-   oʻqiydi. Jadval endi VERSIYALANGAN (useTimetableStore) — sana
-   berilsa oʻsha kuni amalda boʻlgan versiya slotlari qaytadi;
-   class-bridge orqali matnli id ("9-a") ↔ raqamli sinf bogʻlanadi.
+   jadvalidagi (timetable) slotlarni sinf idʼsi boʻyicha oʻqiydi.
+   Jadval VERSIYALANGAN (useTimetableStore) — sana berilsa oʻsha kuni
+   amalda boʻlgan versiya slotlari qaytadi. Eventlar jonli sinf id'siga
+   bogʻlangan, alohida koʻprik kerak emas.
    ════════════════════════════════════════════════════════════════════ */
 
 // Sana yordamchilari kanonik joyi — lib/date-keys.ts (bu yerda back-compat re-export).
@@ -21,13 +20,11 @@ export function readTimetableEvents(dateKey?: string): TimetableEvent[] {
   return getTimetableForDate(dateKey ?? dateToKey(new Date()));
 }
 
-/** Berilgan grades-sinf ("9-a") uchun haftalik slotlar (day: 1=Du…6=Sh).
+/** Berilgan sinf uchun haftalik slotlar (day: 1=Du…6=Sh).
     `dateKey` berilsa — oʻsha kuni amalda boʻlgan versiya jadvalidan. */
-export function weeklySlotsForClass(gradesClassId: string, dateKey?: string): TimetableEvent[] {
-  const sc = schoolClassForGradesId(gradesClassId);
-  if (!sc) return [];
+export function weeklySlotsForClass(classId: string, dateKey?: string): TimetableEvent[] {
   return readTimetableEvents(dateKey)
-    .filter((e) => e.classId === sc.id)
+    .filter((e) => e.classId === classId)
     .sort((a, b) => a.day - b.day || a.startMin - b.startMin);
 }
 

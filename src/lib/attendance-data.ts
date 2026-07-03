@@ -1,5 +1,4 @@
 import type { ClassColor } from "@/lib/class-colors";
-import { schoolClassForGradesId } from "@/lib/class-bridge";
 import {
   isSchoolDay,
   type AcademicYearCalendar, type DateRange,
@@ -66,22 +65,21 @@ function ymd(d: Date): string {
  * (2) oʻsha SANADA amalda boʻlgan jadval versiyasida shu sinfning darsi bor —
  * ikkalasi ham bajarilsa kun roʻyxatga kiradi. Jadval versiyalangani uchun yil
  * oʻrtasida dars kuni koʻchsa (mas. chorshanba → payshanba) tarix buzilmaydi.
- * Grades sinf id ("5-a") ↔ jadval sinf id (raqam) — class-bridge orqali.
+ * Jadval eventlari endi jonli sinf id'siga bogʻlangan — toʻgʻridan solishtiramiz.
  */
 export function deriveLessonDays(
-  gradesClassId: string,
+  classId: string,
   range: DateRange,
   calendar: AcademicYearCalendar,
   versions: TimetableVersion[]
 ): LessonDay[] {
-  const sc = schoolClassForGradesId(gradesClassId);
-  if (!sc || versions.length === 0 || range.start > range.end) return [];
+  if (versions.length === 0 || range.start > range.end) return [];
   const days: LessonDay[] = [];
   for (let key = range.start; key <= range.end; key = addDaysKey(key, 1)) {
     if (!isSchoolDay(calendar, key)) continue;
     const dow = dateKeyToDate(key).getDay(); // Du..Sh = 1..6 — jadvaldagi `day` bilan bir xil
     const version = resolveVersionForDate(versions, key);
-    if (version?.events.some((e) => e.classId === sc.id && e.day === dow)) {
+    if (version?.events.some((e) => e.classId === classId && e.day === dow)) {
       days.push({ date: key, dayOfWeek: dow });
     }
   }

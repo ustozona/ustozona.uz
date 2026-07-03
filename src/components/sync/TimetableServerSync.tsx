@@ -5,6 +5,7 @@ import { useTimetableStore } from "@/store/useTimetableStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
 import { diffTimetable, type TimetableSnapshot } from "@/lib/sync/timetable-sync";
+import { normalizeLegacyVersions, type TimetableVersion } from "@/lib/timetable-versions";
 import {
   fetchTimetableAction,
   syncTimetableAction,
@@ -22,8 +23,20 @@ function selectSnapshot(s: TimetableState): TimetableSnapshot {
   return { versions: s.versions };
 }
 
+/** Fetch + eski raqamli classId'larni jonli id'ga oʻgirish (bir marta, hydration'da). */
+async function fetchNormalized() {
+  const payload = await fetchTimetableAction();
+  if (payload && Array.isArray((payload as { versions?: TimetableVersion[] }).versions)) {
+    return {
+      ...payload,
+      versions: normalizeLegacyVersions((payload as { versions: TimetableVersion[] }).versions),
+    };
+  }
+  return payload;
+}
+
 export default function TimetableServerSync() {
-  const hydrated = useHydrateStore(useTimetableStore, fetchTimetableAction);
+  const hydrated = useHydrateStore(useTimetableStore, fetchNormalized);
 
   React.useEffect(() => {
     if (!hydrated) return;

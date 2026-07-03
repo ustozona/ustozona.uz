@@ -11,8 +11,7 @@ import { useEffect } from "react";
    necha MB boʻlishi mumkin) — shu roʻyxat boʻyicha oʻchiriladi.
 
    ATAYIN QOLADIGANLAR (qurilma darajasidagi UX/holat, serverga
-   koʻchirilmagan): murabbiyona-timetable-overrides, murabbiyona-custom-
-   classes, murabbiyona-blocked-days, murabbiyona-timetable-tip,
+   koʻchirilmagan): murabbiyona-blocked-days, murabbiyona-timetable-tip,
    ustozona-cookie-consent, next-themes'ning "theme" kaliti.
    ════════════════════════════════════════════════════════════════════ */
 
@@ -30,6 +29,9 @@ const LEGACY_KEYS = [
   "murabbiyona-class-storage",
   "murabbiyona-timetable-events",
   "murabbiyona-bell-config-v1",
+  // Jadval sahifasining lokal sinf roʻyxati davri (jonli sinflarga oʻtildi)
+  "murabbiyona-timetable-overrides-v1",
+  "murabbiyona-timetable-custom-classes-v1",
   "ems.relations.v1",
 ];
 

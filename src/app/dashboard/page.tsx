@@ -11,13 +11,11 @@ import { useTaskStore } from "@/store/useTaskStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
-import { CLASSES } from "@/lib/classes-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { lessonClassIds } from "@/lib/lessons-data";
 import { TASK_STATUS } from "@/lib/tasks-data";
 import { DAYS_UZ_SUN } from "@/lib/localization";
-import { gradesIdForSchoolClass } from "@/lib/class-bridge";
 import { autoClassColor, classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { fmtMin } from "@/lib/timetable";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -74,7 +72,6 @@ export default function DashboardPage() {
   // ── Bugungi darslar — bugun amaldagi jadval versiyasidan ──
   const versions = useTimetableStore((s) => s.versions);
   const calendar = useCalendarStore((s) => s.calendar);
-  const classById = useMemo(() => new Map(CLASSES.map((c) => [c.id, c])), []);
   const todayKey = dateToKey(currentTime);
   const holiday = getHolidayForDate(calendar, todayKey);
   const todayDow = currentTime.getDay(); // 0=Yakshanba
@@ -88,6 +85,8 @@ export default function DashboardPage() {
   // ── Kelgusi darslar — jonli mavzu bankidan (rejalangan, bugundan boshlab) ──
   const allLessons = useLessonStore((s) => s.lessons);
   const liveClasses = useLiveClasses();
+  // Jonli sinf xaritasi — "Bugungi darslar" (jadval eventlari) ham shu manbadan
+  const liveById = useMemo(() => new Map(liveClasses.map((c) => [c.id, c])), [liveClasses]);
   const classMetaById = useMemo(
     () => new Map(liveClasses.map((c) => [c.id, { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] }])),
     [liveClasses]
@@ -363,20 +362,19 @@ export default function DashboardPage() {
                       
                       {/* Bugungi darslar — jadval versiyasidan (7:00 boshlanish, 1 soat = 120px) */}
                       {todaysEvents.map((ev) => {
-                        const cls = classById.get(ev.classId);
-                        const color = cls?.color ?? autoClassColor(ev.classId);
+                        const cls = liveById.get(ev.classId);
+                        const color = cls ? classColor(cls) : autoClassColor(ev.classId);
                         const tints = classTints(color);
                         const top = (ev.startMin / 60 - 7) * 120 + 1;
                         const height = Math.max(((ev.endMin - ev.startMin) / 60) * 120 - 2, 32);
                         if (top + height < 0 || top > 120 * 12) return null;
-                        const gradesId = gradesIdForSchoolClass(ev.classId);
                         return (
                           <div key={ev.id} className="absolute left-1 right-1 z-[1] group transition-shadow overflow-hidden rounded-md border" style={{ top, height, ...tints.surface, ...tints.softBorder }}>
                             <div className="h-full flex flex-col px-2 pt-2 pb-2">
                               <div className="relative shrink-0 mb-0.5">
                                 <div className="flex items-baseline gap-1.5 min-w-0">
                                   <TypographySmall className="text-sm font-semibold truncate min-w-0 leading-none">
-                                    {cls?.name ?? `Sinf ${ev.classId}`}
+                                    {cls?.name ?? "Nomaʼlum sinf"}
                                   </TypographySmall>
                                   <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">{fmtMin(ev.startMin)} - {fmtMin(ev.endMin)}</span>
                                 </div>
@@ -384,7 +382,7 @@ export default function DashboardPage() {
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button asChild variant="ghost" size="icon-xs" className="h-full aspect-square bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20">
-                                        <Link href={gradesId ? `/dashboard/classes/${gradesId}` : "/dashboard/timetable"}>
+                                        <Link href={cls ? `/dashboard/classes/${ev.classId}` : "/dashboard/timetable"}>
                                           <ArrowUpRight className="size-3.5" />
                                         </Link>
                                       </Button>

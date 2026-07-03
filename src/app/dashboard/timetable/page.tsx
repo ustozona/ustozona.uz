@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { autoClassColor, CLASS_COLOR_HEX, classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
-import { CLASSES, type SchoolClass } from "@/lib/classes-data";
+import { classColor } from "@/lib/grades-data";
+import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm } from "@/hooks/useLiveClasses";
+import { useGradesStore } from "@/store/useGradesStore";
 import { cn } from "@/lib/utils";
 import { DAYS_UZ, DAYS_UZ_SHORT } from "@/lib/localization";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -31,7 +33,7 @@ import { CardStripes } from "@/components/CardStripes";
 import { CardCorner } from "@/components/CardCorner";
 import { type TimetableEvent } from "@/lib/timetable";
 import { type BellConfig, defaultBellConfig, computePeriods } from "@/lib/bell-schedule";
-import PeriodGrid from "@/components/timetable/PeriodGrid";
+import PeriodGrid, { type TimetableClass } from "@/components/timetable/PeriodGrid";
 import BellScheduleDialog from "@/components/timetable/BellScheduleDialog";
 import EffectiveDateDialog, { type EffectiveChoice } from "@/components/timetable/EffectiveDateDialog";
 import VersionChip, { versionRangeLabel } from "@/components/timetable/VersionChip";
@@ -46,12 +48,11 @@ import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calend
 /* TimetableEvent — @/lib/timetable dan (takrorlanuvchi haftalik shablon).
    Jadvalning yagona manbasi endi useTimetableStore (versiyalangan
    snapshotlar); bu sahifa tanlangan versiyaning LOKAL QORALAMASINI
-   tahrirlaydi va 600ms debounce bilan store'ga commit qiladi. */
-type ClassOverride = { color?: ClassColor; name?: string; description?: string; grade?: number | null; subject?: string };
+   tahrirlaydi va 600ms debounce bilan store'ga commit qiladi.
+   Sinf roʻyxati — JONLI (useLiveClasses); yaratish/tahrirlash bevosita
+   useGradesStore'ga yoziladi va serverga sinxronlanadi. */
 
-const OVERRIDES_KEY = "murabbiyona-timetable-overrides-v1";
 const TIP_KEY = "murabbiyona-timetable-drag-tip-v1";
-const CUSTOM_KEY = "murabbiyona-timetable-custom-classes-v1";
 // Jadval faqat 6 ish kuni (Dushanba–Shanba) — kanonik `DAYS_UZ`dan slice.
 const DAY_UZ = DAYS_UZ.slice(0, 6);
 const DAY_UZ_SHORT = DAYS_UZ_SHORT.slice(0, 6);
@@ -93,11 +94,9 @@ export default function TimetablePage() {
   const [hydrated, setHydrated] = useState(false);
   const [saved, setSaved] = useState(true);
   const [editEvent, setEditEvent] = useState<TimetableEvent | null>(null);
-  const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
+  const [editingClass, setEditingClass] = useState<TimetableClass | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
   const [showTip, setShowTip] = useState(false);
-  const [overrides, setOverrides] = useState<Record<number, ClassOverride>>({});
-  const [customClasses, setCustomClasses] = useState<SchoolClass[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [dragOverDay, setDragOverDay] = useState<number | null>(null);
   /** "free" — uzluksiz vaqt-grid (erkin); "lesson" — tayyor katak grid (dars soatlari) */
@@ -151,22 +150,34 @@ export default function TimetablePage() {
   /** Vaqt gridining scroll konteyneri — boshlanishida maktab soatiga oʻtish uchun */
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  /** Bazaviy + foydalanuvchi qoʻshgan sinflar */
-  const classesAll = useMemo(() => [...CLASSES, ...customClasses], [customClasses]);
+  /** Jonli sinflar (server-backed) — palette va event nomlari shu yerdan */
+  const liveClasses = useLiveClasses();
+  const liveHydrated = useLiveClassesHydrated();
+  const createClass = useCreateClass();
+  const updateClassStore = useGradesStore((s) => s.updateClass);
+  const classesAll = useMemo<TimetableClass[]>(
+    () => liveClasses.map((c) => ({
+      id: c.id,
+      name: c.name,
+      color: classColor(c),
+      grade: c.grade ?? null,
+      subject: c.subject,
+      icon: c.icon as TimetableClass["icon"],
+      description: c.description,
+    })),
+    [liveClasses]
+  );
+  const classById = useMemo(() => new Map(classesAll.map((c) => [c.id, c])), [classesAll]);
 
   /** Qoʻngʻiroq jadvalidan hisoblangan period qatorlari ("1-soat" …) */
   const periods = useMemo(() => computePeriods(bellConfig), [bellConfig]);
 
-  /** Bazaviy sinf + foydalanuvchi oʻzgartirishlari (rang/nom/tavsif) birlashtirilgan */
-  const getClass = useCallback((id: number): SchoolClass => {
-    const base = classesAll.find(c => c.id === id) ?? CLASSES[0];
-    const o = overrides[id];
-    return o ? { ...base, ...o } : base;
-  }, [classesAll, overrides]);
+  /** Event sinfi — jonli roʻyxatdan; oʻchirilgan/legacy id uchun barqaror fallback */
+  const getClass = useCallback((id: string): TimetableClass => {
+    return classById.get(id) ?? { id, name: "Nomaʼlum sinf", color: autoClassColor(id) };
+  }, [classById]);
 
   useEffect(() => {
-    try { const o = localStorage.getItem(OVERRIDES_KEY); if (o) setOverrides(JSON.parse(o)); } catch {}
-    try { const c = localStorage.getItem(CUSTOM_KEY); if (c) setCustomClasses(JSON.parse(c)); } catch {}
     setHydrated(true);
   }, []);
 
@@ -277,16 +288,6 @@ export default function TimetablePage() {
     setDeleteConfirmOpen(false);
   }, [selectedVersion, versions, deleteVersion, today]);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
-  }, [overrides, hydrated]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(CUSTOM_KEY, JSON.stringify(customClasses));
-  }, [customClasses, hydrated]);
-
   // Jadvalni JSON sifatida eksport qilish
   const exportSchedule = useCallback(() => {
     const rows = [...events]
@@ -318,8 +319,8 @@ export default function TimetablePage() {
   /* ─── Native drag-and-drop ─── */
 
   // Sinf kartasini sudrash boshlanishi (chap roʻyxatdan)
-  const onClassDragStart = useCallback((e: React.DragEvent, classId: number) => {
-    e.dataTransfer.setData("text/class-id", String(classId));
+  const onClassDragStart = useCallback((e: React.DragEvent, classId: string) => {
+    e.dataTransfer.setData("text/class-id", classId);
     e.dataTransfer.effectAllowed = "copy";
   }, []);
 
@@ -340,7 +341,7 @@ export default function TimetablePage() {
     const rawMin = DAY_START_MIN + ((e.clientY - rect.top) / HOUR_H) * 60;
 
     const eventId = e.dataTransfer.getData("text/event-id");
-    const classIdStr = e.dataTransfer.getData("text/class-id");
+    const classId = e.dataTransfer.getData("text/class-id");
 
     if (eventId) {
       const grab = grabOffsetRef.current ?? 0;
@@ -351,21 +352,19 @@ export default function TimetablePage() {
         const startMin = clamp(snapMin(rawMin - grab), DAY_START_MIN, DAY_END_MIN - dur);
         return { ...ev, day, startMin, endMin: startMin + dur };
       }));
-    } else if (classIdStr) {
-      const classId = Number(classIdStr);
-      if (!classId) return;
+    } else if (classId) {
       const startMin = clamp(snapMin(rawMin), DAY_START_MIN, DAY_END_MIN - DEFAULT_DURATION);
       setEvents(prev => [...prev, { id: uid(), classId, day, startMin, endMin: startMin + DEFAULT_DURATION }]);
     }
   }, [readOnly]);
 
   // Period katagiga sinf qoʻyish (Dars soatlari rejim) — oʻsha katakdagi mavjudini almashtiradi
-  const placeInPeriod = useCallback((day: number, startMin: number, endMin: number, classId: number) => {
+  const placeInPeriod = useCallback((day: number, startMin: number, endMin: number, classId: string) => {
     setEvents(prev => [...prev.filter(e => !(e.day === day && e.startMin === startMin)), { id: uid(), classId, day, startMin, endMin }]);
   }, []);
 
   // Erkin-vaqtli toʻgarak qoʻshish
-  const addClub = useCallback((day: number, classId: number, startMin: number, endMin: number) => {
+  const addClub = useCallback((day: number, classId: string, startMin: number, endMin: number) => {
     setEvents(prev => [...prev, { id: uid(), classId, day, startMin, endMin }]);
   }, []);
 
@@ -375,7 +374,7 @@ export default function TimetablePage() {
   }, []);
 
   /** Modaldan kelgan slotlarni (kun-nomi + "HH:MM") jadval hodisalariga yozish */
-  const handleSaveClassSlots = useCallback((classId: number, slots: { day: string; start: string; end: string }[]) => {
+  const handleSaveClassSlots = useCallback((classId: string, slots: { day: string; start: string; end: string }[]) => {
     if (readOnly) return;
     setEvents(prev => {
       const next = prev.filter(e => e.classId !== classId);
@@ -389,26 +388,29 @@ export default function TimetablePage() {
   }, [readOnly]);
 
   /** Sinf eventʼlaridan modal uchun slot roʻyxati tuzish */
-  const slotsForClass = useCallback((classId: number): ClassSlot[] =>
+  const slotsForClass = useCallback((classId: string): ClassSlot[] =>
     events.filter(e => e.classId === classId).map(ev => ({
       day: DAY_UZ[ev.day - 1] ?? "Dushanba",
       start: minToHHMM(ev.startMin),
       end: minToHHMM(ev.endMin),
     })), [events]);
 
-  /** "+" — yangi sinf yaratish (customClassesʼga qoʻshadi + slotlarini jadvalga yozadi) */
+  /** "+" — yangi JONLI sinf yaratish (server-sync) + slotlarini jadvalga yozish */
   const handleCreateClass = useCallback((values: ClassFormValues) => {
-    const newId = Math.max(0, ...classesAll.map(c => c.id)) + 1;
-    setCustomClasses(prev => [...prev, {
-      id: newId, name: values.name, grade: values.grade, subject: values.subject, color: values.color, icon: values.icon, description: values.description,
-      shift: 1, students: 0, lessons: 0, coveredLessons: 0, assignments: 0, schedule: "", initials: [],
-    }]);
+    const newId = createClass(values);
     handleSaveClassSlots(newId, values.slots);
     setCreateOpen(false);
-  }, [classesAll, handleSaveClassSlots]);
+  }, [createClass, handleSaveClassSlots]);
+
+  /** Sinf tahriri — jonli sinfga yoziladi (barcha sahifalarga taʼsir qiladi) */
+  const handleEditClass = useCallback((classId: string, v: ClassFormValues) => {
+    updateClassStore(classId, (cd) => ({ ...cd, info: classInfoFromForm(classId, v, cd.info) }));
+    handleSaveClassSlots(classId, v.slots);
+    setEditingClass(null);
+  }, [updateClassStore, handleSaveClassSlots]);
 
   /** Sinfning haftalik slotlaridan "Du 09:00, Pa 14:00" kabi xulosa matni */
-  const scheduleSummary = useCallback((classId: number): string => {
+  const scheduleSummary = useCallback((classId: string): string => {
     const evs = events.filter(e => e.classId === classId);
     if (evs.length === 0) return "Jadvalga qoʻshilmagan";
     const seen = new Set<string>();
@@ -435,7 +437,7 @@ export default function TimetablePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
-  if (!hydrated || !storeHydrated) return null;
+  if (!hydrated || !storeHydrated || !liveHydrated) return null;
 
   /** Arxiv/kelgusi banner matnlari uchun tanlangan versiya davri */
   const selectedRangeLabel = selectedVersion ? versionRangeLabel(versions, selectedVersion) : "";
@@ -477,9 +479,18 @@ export default function TimetablePage() {
             <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
             <ScrollArea className="h-full w-full">
               <div className={cn(panelScrollInnerClass, "space-y-2 @max-[400px]:px-4")}>
+                {classesAll.length === 0 && (
+                  <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border px-4 py-8 text-center">
+                    <GraduationCap className="size-5 text-muted-foreground" />
+                    <p className="text-sm font-medium text-foreground">Sinf hali yoʻq</p>
+                    <p className="text-xs text-muted-foreground">
+                      «Qoʻshish» tugmasi bilan birinchi sinfingizni yarating — soʻng uni jadvalga sudrab qoʻyasiz.
+                    </p>
+                  </div>
+                )}
                 {classesAll.map((cls, i) => {
                   const merged = getClass(cls.id);
-                  const color = merged.color ?? autoClassColor(cls.id);
+                  const color = merged.color;
                   return (
                     <ContextMenu key={cls.id}>
                       <ContextMenuTrigger asChild>
@@ -749,7 +760,7 @@ export default function TimetablePage() {
                       {/* Darslar */}
                       {dayEvents.map(ev => {
                         const cls = getClass(ev.classId);
-                        const tints = classTints(cls.color ?? autoClassColor(ev.classId));
+                        const tints = classTints(cls.color);
                         const top = ((ev.startMin - DAY_START_MIN) / 60) * HOUR_H;
                         const height = Math.max(((ev.endMin - ev.startMin) / 60) * HOUR_H, 22);
                         if (top + height < 0 || top > HOURS.length * HOUR_H) return null;
@@ -759,7 +770,7 @@ export default function TimetablePage() {
                             name={cls.name}
                             startMin={ev.startMin}
                             endMin={ev.endMin}
-                            stripeColor={cls.color ?? autoClassColor(ev.classId)}
+                            stripeColor={cls.color}
                             surface={tints.surfaceStrong}
                             softBorder={tints.borderMedium}
                             textStrong={tints.textStrong}
@@ -792,7 +803,7 @@ export default function TimetablePage() {
         <EditDialog
           event={editEvent}
           className={getClass(editEvent.classId).name}
-          color={getClass(editEvent.classId).color ?? autoClassColor(editEvent.classId)}
+          color={getClass(editEvent.classId).color}
           onSave={(patch) => { setEvents(prev => prev.map(e => e.id === editEvent.id ? { ...e, ...patch } : e)); setEditEvent(null); }}
           onDelete={() => { removeEvent(editEvent.id); setEditEvent(null); }}
           onClose={() => setEditEvent(null)}
@@ -812,15 +823,12 @@ export default function TimetablePage() {
             name: editingClass.name,
             grade: editingClass.grade ?? null,
             subject: editingClass.subject ?? "",
-            color: editingClass.color ?? autoClassColor(editingClass.id),
+            color: editingClass.color,
+            icon: editingClass.icon,
             description: editingClass.description ?? "",
             slots: slotsForClass(editingClass.id),
           }}
-          onSubmit={(v) => {
-            setOverrides(prev => ({ ...prev, [editingClass.id]: { color: v.color, name: v.name, description: v.description, grade: v.grade, subject: v.subject } }));
-            handleSaveClassSlots(editingClass.id, v.slots);
-            setEditingClass(null);
-          }}
+          onSubmit={(v) => handleEditClass(editingClass.id, v)}
           onClose={() => setEditingClass(null)}
         />
       )}

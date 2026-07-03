@@ -30,6 +30,29 @@ export type TimetableVersion = {
   createdAt: string; // ISO
 };
 
+/* ── Legacy migratsiya ────────────────────────────────────────────────
+   TimetableEvent.classId ilgari classes-data'ning RAQAMLI id'si edi;
+   endi jonli sinf id'si (string). Bazadagi eski JSONB eventlar shu
+   xarita bilan hydration'da oʻgiriladi (TimetableServerSync). Xaritada
+   yoʻq raqamlar (eski demo "10-A"=9, "Speaking Club"=10) "legacy-N"
+   boʻlib qoladi — UI "Nomaʼlum sinf" koʻrsatadi, foydalanuvchi eventni
+   oʻchirishi/qayta qoʻyishi mumkin. */
+const LEGACY_SCHOOL_CLASS_IDS: Record<number, string> = {
+  1: "5-a", 2: "5-b", 3: "6-a", 4: "6-b",
+  5: "7-a", 6: "7-b", 7: "8-a", 8: "9-a",
+};
+
+export function normalizeLegacyVersions(vs: TimetableVersion[]): TimetableVersion[] {
+  return vs.map((v) => ({
+    ...v,
+    events: v.events.map((e) => {
+      const raw = e.classId as unknown;
+      if (typeof raw !== "number") return e;
+      return { ...e, classId: LEGACY_SCHOOL_CLASS_IDS[raw] ?? `legacy-${raw}` };
+    }),
+  }));
+}
+
 /** effectiveFrom boʻyicha oʻsish tartibida (asl massivga tegmaydi). */
 export function sortVersions(vs: TimetableVersion[]): TimetableVersion[] {
   return [...vs].sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom));

@@ -1,11 +1,11 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { classTints, autoClassColor, CLASS_CARD_INTERACTION } from "@/lib/class-colors";
+import { classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
 import type { TimetableEvent } from "@/lib/timetable";
 import type { PeriodRow } from "@/lib/bell-schedule";
-import type { SchoolClass } from "@/lib/classes-data";
+import type { ClassIconKey } from "@/lib/class-icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { XIcon, Plus, Check } from "lucide-react";
@@ -13,18 +13,30 @@ import { XIcon, Plus, Check } from "lucide-react";
 const DAY_UZ = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
 const minToHHMM = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 
+/** Jadval UI'sining sinf koʻrinishi — jonli ClassInfo'dan hosil qilinadi
+    (rang allaqachon hal qilingan; timetable sahifasi getClass shu shaklda qaytaradi). */
+export type TimetableClass = {
+  id: string;
+  name: string;
+  color: ClassColor;
+  grade?: number | null;
+  subject?: string;
+  icon?: ClassIconKey;
+  description?: string;
+};
+
 export type PeriodGridProps = {
   periods: PeriodRow[];
   events: TimetableEvent[];
-  classes: SchoolClass[];
-  getClass: (id: number) => SchoolClass;
+  classes: TimetableClass[];
+  getClass: (id: string) => TimetableClass;
   profile: "single" | "double";
   /** Arxiv rejimi — qoʻyish/oʻchirish/tahrirlash oʻchadi, faqat koʻrish */
   readOnly?: boolean;
   /** Period katagiga sinf qoʻyish (mavjudini almashtiradi) */
-  onPlace: (day: number, startMin: number, endMin: number, classId: number) => void;
+  onPlace: (day: number, startMin: number, endMin: number, classId: string) => void;
   /** Erkin-vaqtli toʻgarak qoʻshish */
-  onAddClub: (day: number, classId: number, startMin: number, endMin: number) => void;
+  onAddClub: (day: number, classId: string, startMin: number, endMin: number) => void;
   onRemove: (eventId: string) => void;
   onEditEvent: (ev: TimetableEvent) => void;
 };
@@ -93,11 +105,11 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
               key={day}
               className={cn("flex min-h-[56px] flex-col gap-1 border-border p-1", ci > 0 && "border-l")}
               onDragOver={(e) => { if (!readOnly && Array.from(e.dataTransfer.types).includes("text/class-id")) e.preventDefault(); }}
-              onDrop={(e) => { if (readOnly) return; e.preventDefault(); const cid = Number(e.dataTransfer.getData("text/class-id")); if (cid) onAddClub(day, cid, base, base + 45); }}
+              onDrop={(e) => { if (readOnly) return; e.preventDefault(); const cid = e.dataTransfer.getData("text/class-id"); if (cid) onAddClub(day, cid, base, base + 45); }}
             >
               {clubs.map((ev) => {
                 const cls = getClass(ev.classId);
-                const tints = classTints(cls.color ?? autoClassColor(cls.id));
+                const tints = classTints(cls.color);
                 return (
                   <div
                     key={ev.id}
@@ -131,7 +143,7 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
 }
 
 /* ─── Qoʻshimcha dars qoʻshish — oddiy katakdek "+" (tayyor sinf roʻyxati) ─── */
-function ClubAddButton({ classes, onAdd }: { classes: SchoolClass[]; onAdd: (classId: number) => void }) {
+function ClubAddButton({ classes, onAdd }: { classes: TimetableClass[]; onAdd: (classId: string) => void }) {
   const [open, setOpen] = useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -152,10 +164,10 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
   event?: TimetableEvent;
   day: number;
   period: PeriodRow;
-  classes: SchoolClass[];
-  getClass: (id: number) => SchoolClass;
+  classes: TimetableClass[];
+  getClass: (id: string) => TimetableClass;
   readOnly?: boolean;
-  onPlace: (day: number, startMin: number, endMin: number, classId: number) => void;
+  onPlace: (day: number, startMin: number, endMin: number, classId: string) => void;
   onRemove: (id: string) => void;
   onEdit: (ev: TimetableEvent) => void;
   borderLeft: boolean;
@@ -165,14 +177,14 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
   const handleDrop = (e: React.DragEvent) => {
     if (readOnly) return;
     e.preventDefault();
-    const cid = Number(e.dataTransfer.getData("text/class-id"));
+    const cid = e.dataTransfer.getData("text/class-id");
     if (cid) onPlace(day, period.startMin, period.endMin, cid);
   };
   const wrap = cn("relative min-h-[56px] border-b border-border p-1", borderLeft && "border-l");
 
   if (event) {
     const cls = getClass(event.classId);
-    const tints = classTints(cls.color ?? autoClassColor(cls.id));
+    const tints = classTints(cls.color);
     const cellCard = (
       <div role={readOnly ? undefined : "button"} tabIndex={readOnly ? undefined : 0} className={cn("group/cell relative h-full w-full overflow-hidden rounded-md border pl-2 pr-1 py-1", readOnly ? "cursor-default" : "cursor-pointer", CLASS_CARD_INTERACTION)} style={{ ...tints.surfaceStrong, ...tints.borderMedium }}>
         <span className="absolute left-0 top-0 bottom-0 w-0.5" style={{ backgroundColor: tints.solid }} aria-hidden />
@@ -225,9 +237,9 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
 
 /* ─── Sinf tanlash (qidiruvli) ─── */
 function ClassPicker({ classes, selectedId, onSelect }: {
-  classes: SchoolClass[];
-  selectedId?: number;
-  onSelect: (classId: number) => void;
+  classes: TimetableClass[];
+  selectedId?: string;
+  onSelect: (classId: string) => void;
 }) {
   return (
     <Command>
@@ -236,7 +248,7 @@ function ClassPicker({ classes, selectedId, onSelect }: {
         <CommandEmpty>Topilmadi</CommandEmpty>
         <CommandGroup>
           {classes.map((c) => {
-            const tints = classTints(c.color ?? autoClassColor(c.id));
+            const tints = classTints(c.color);
             return (
               <CommandItem key={c.id} value={`${c.name} ${c.subject ?? ""}`} onSelect={() => onSelect(c.id)} className="gap-2">
                 <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: tints.solid }} />

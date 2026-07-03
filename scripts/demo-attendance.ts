@@ -16,16 +16,12 @@ import { buildSlots, DOUBLE_SHIFT_DEFAULTS, type TimetableEvent } from "@/lib/ti
    ham izchil boʻlishi kerak: BITTA manba (DEMO_TIMETABLE) ham jadval
    eventlarini, ham davomat yozuvlari tushadigan kunlarni belgilaydi.
 
-   Sinf-koʻprik (class-bridge) NOM boʻyicha bogʻlaydi — grades-data'dagi
-   15 sinfdan 8 tasi classes-data'da bor; qolganlariga jadval eventi
-   yozilmaydi (davomat yozuvlari baribir yaratiladi — "Barcha kunlar"
-   koʻrinishida koʻrinadi, bu classes-domeni serverga koʻchguncha maʼlum
-   demo cheklovi).
+   Jadval eventlari endi jonli sinf id'siga (CLASS_DATA kaliti, "5-a")
+   bogʻlanadi — barcha 15 sinf event + davomat oladi (eski class-bridge
+   davri "8 ta koʻprikli sinf" cheklovi tugadi).
    ════════════════════════════════════════════════════════════════════ */
 
 type DemoSlot = {
-  /** classes-data (timetable) raqamli sinf id — koʻprik mavjud boʻlsa */
-  schoolClassId?: number;
   /** Haftada 2 dars kuni (1=Du … 6=Sh) */
   days: [number, number];
   /** 1-smena 08:00dan, 2-smena 13:00dan (DOUBLE_SHIFT_DEFAULTS) */
@@ -35,16 +31,14 @@ type DemoSlot = {
 };
 
 export const DEMO_TIMETABLE: Record<string, DemoSlot> = {
-  // Koʻprikli sinflar — jadval eventi + davomat
-  "5-a":    { schoolClassId: 1,  days: [1, 4], shift: 1, slot: 0 },
-  "5-b":    { schoolClassId: 2,  days: [2, 5], shift: 1, slot: 0 },
-  "6-a":    { schoolClassId: 3,  days: [3, 6], shift: 1, slot: 0 },
-  "6-b":    { schoolClassId: 4,  days: [1, 4], shift: 1, slot: 1 },
-  "7-a":    { schoolClassId: 5,  days: [2, 5], shift: 2, slot: 0 },
-  "7-b":    { schoolClassId: 6,  days: [3, 6], shift: 2, slot: 0 },
-  "8-a":    { schoolClassId: 7,  days: [1, 4], shift: 2, slot: 0 },
-  "9-a":    { schoolClassId: 8,  days: [2, 5], shift: 2, slot: 1 },
-  // Koʻpriksiz sinflar — faqat davomat yozuvlari
+  "5-a":    { days: [1, 4], shift: 1, slot: 0 },
+  "5-b":    { days: [2, 5], shift: 1, slot: 0 },
+  "6-a":    { days: [3, 6], shift: 1, slot: 0 },
+  "6-b":    { days: [1, 4], shift: 1, slot: 1 },
+  "7-a":    { days: [2, 5], shift: 2, slot: 0 },
+  "7-b":    { days: [3, 6], shift: 2, slot: 0 },
+  "8-a":    { days: [1, 4], shift: 2, slot: 0 },
+  "9-a":    { days: [2, 5], shift: 2, slot: 1 },
   "5-d":    { days: [3, 6], shift: 1, slot: 1 },
   "6-d":    { days: [1, 4], shift: 1, slot: 2 },
   "7-d":    { days: [2, 5], shift: 2, slot: 2 },
@@ -57,14 +51,13 @@ export const DEMO_TIMETABLE: Record<string, DemoSlot> = {
 /** Demo oʻqituvchining jadval eventlari (tt-seed-v1 versiyasiga). */
 export function demoTimetableEvents(): TimetableEvent[] {
   const events: TimetableEvent[] = [];
-  for (const [gradesId, cfg] of Object.entries(DEMO_TIMETABLE)) {
-    if (cfg.schoolClassId == null) continue;
+  for (const [classId, cfg] of Object.entries(DEMO_TIMETABLE)) {
     const shiftCfg = cfg.shift === 1 ? DOUBLE_SHIFT_DEFAULTS.shift1 : DOUBLE_SHIFT_DEFAULTS.shift2;
     const slot = buildSlots(shiftCfg)[cfg.slot];
     for (const day of cfg.days) {
       events.push({
-        id: `tt-seed-${gradesId}-${day}`,
-        classId: cfg.schoolClassId,
+        id: `tt-seed-${classId}-${day}`,
+        classId,
         day,
         startMin: slot.startMin,
         endMin: slot.endMin,

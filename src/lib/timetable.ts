@@ -3,11 +3,15 @@ export type Shift = 1 | 2;
 /**
  * Dars jadvali hodisasi — takrorlanuvchi haftalik shablon.
  * day: 1=Dushanba … 6=Shanba; startMin/endMin: 00:00 dan daqiqalar.
+ * classId — JONLI sinf id'si (useGradesStore.classDataMap kaliti; seed
+ * sinflarda "5-a", foydalanuvchi yaratganlarda uuid). Eski raqamli
+ * (classes-data) id'lar hydration'da normalize qilinadi —
+ * timetable-versions.ts `normalizeLegacyVersions`.
  * Umumiy tip — timetable, planner va PeriodGrid baham koʻradi.
  */
 export type TimetableEvent = {
   id: string;
-  classId: number;
+  classId: string;
   day: number;
   startMin: number;
   endMin: number;

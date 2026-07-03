@@ -14,8 +14,7 @@ import { lessonClassIds } from "@/lib/lessons-data";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
-import { CLASSES as SCHOOL_CLASSES } from "@/lib/classes-data";
-import { classSlug, type ClassIdentity } from "@/lib/class-id";
+import { type ClassIdentity } from "@/lib/class-id";
 import { cn } from "@/lib/utils";
 import { OverviewSection } from "./OverviewSection";
 import { OverviewSidebar } from "./OverviewSidebar";
@@ -46,28 +45,24 @@ export default function ClassDetail({ identity, initialSection }: Props) {
   const tints = useMemo(() => classTints(identity.color), [identity.color]);
 
   /* ── Jonli statistika — Darslar (useLessonStore) va Baholar (useGradesStore)
-     bilan bir manbadan. Persist tiklanmaguncha (mount) statik classes-data
-     fallback'i koʻrsatiladi — SSR/hydratsiya mosligi uchun. ── */
+     bilan bir manbadan. Mount'gacha nol — SSR/hydratsiya mosligi uchun. ── */
   const mounted = useMounted();
   const lessons = useLessonStore((s) => s.lessons);
   const classDataMap = useGradesStore((s) => s.classDataMap);
 
   const stats = useMemo(() => {
-    const fallback = SCHOOL_CLASSES.find((c) => classSlug(c.name) === identity.id);
     if (!mounted) {
-      return { students: fallback?.students ?? 0, lessons: fallback?.lessons ?? 0, progress: 0 };
+      return { students: 0, lessons: 0, progress: 0 };
     }
     const gradeData = classDataMap[identity.id];
     const classLessons = lessons.filter((l) => lessonClassIds(l).includes(identity.id));
     const completed = classLessons.filter((l) => l.status === "Completed").length;
 
-    const students = gradeData?.students.length ?? fallback?.students ?? 0;
-    const lessonCount = classLessons.length || fallback?.lessons || 0;
     const progress = classLessons.length
       ? Math.round((completed / classLessons.length) * 100)
       : 0;
 
-    return { students, lessons: lessonCount, progress };
+    return { students: gradeData?.students.length ?? 0, lessons: classLessons.length, progress };
   }, [identity.id, mounted, lessons, classDataMap]);
 
   const counts = useMemo<Partial<Record<ClassSection, number>>>(

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { notFound } from "next/navigation";
 import { useGradesStore } from "@/store/useGradesStore";
 import { classColor } from "@/lib/grades-data";
-import { resolveClassIdentity, type ClassIdentity } from "@/lib/class-id";
+import { type ClassIdentity } from "@/lib/class-id";
 import { Skeleton } from "@/components/ui/skeleton";
 import ClassDetail from "./ClassDetail";
 import type { ClassSection } from "./sections";
@@ -12,13 +12,10 @@ import type { ClassSection } from "./sections";
 /* ════════════════════════════════════════════════════════════════════
    SINF IDENTITETINI JONLI HAL QILISH
 
-   Tartib:
-     1. useGradesStore.classDataMap[id] — jonli (server-backed) sinflar,
-        shu jumladan foydalanuvchi yaratgan uuid-id'li sinflar.
-     2. resolveClassIdentity — statik fallback (timetable'ning numerik
-        sinflari nom-slug orqali; v1 cheklov, class-bridge bilan birga
-        keyin olib tashlanadi).
-   Hydration tugamaguncha 404 qilmaymiz — skeleton koʻrsatiladi.
+   Yagona manba — useGradesStore.classDataMap (server-backed): seed
+   id'li ("5-a") ham, foydalanuvchi yaratgan uuid-id'li sinflar ham.
+   Hydration tugamaguncha 404 qilmaymiz — skeleton koʻrsatiladi;
+   tugagach xaritada boʻlmagan id → notFound.
    ════════════════════════════════════════════════════════════════════ */
 
 export function ClassDetailResolver({
@@ -31,10 +28,10 @@ export function ClassDetailResolver({
   const info = useGradesStore((s) => s.classDataMap[id]?.info);
   const hydrated = useGradesStore((s) => s._hasHydrated);
 
-  const identity = useMemo<ClassIdentity | null>(() => {
-    if (info) return { id, name: info.name, color: classColor(info) };
-    return resolveClassIdentity(id);
-  }, [id, info]);
+  const identity = useMemo<ClassIdentity | null>(
+    () => (info ? { id, name: info.name, color: classColor(info) } : null),
+    [id, info]
+  );
 
   if (!identity) {
     if (!hydrated) {

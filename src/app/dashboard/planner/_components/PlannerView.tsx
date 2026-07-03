@@ -3,11 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { autoClassColor, classTints, type ClassColor } from "@/lib/class-colors";
+import { classTints, type ClassColor } from "@/lib/class-colors";
 import { fmtMin, type TimetableEvent } from "@/lib/timetable";
-import { CLASSES, type SchoolClass } from "@/lib/classes-data";
-import { classColor as gradeClassColor } from "@/lib/grades-data";
-import { gradesIdForSchoolClass, schoolClassForGradesId, gradeClassById } from "@/lib/class-bridge";
+import { classColor, type ClassInfo } from "@/lib/grades-data";
+import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
@@ -44,8 +43,9 @@ import { LessonStatusBadge } from "@/components/LessonStatusBadge";
 /* ════════════════════════════════════════════════════════════════════
    PLANNER — dars jadvali (timetable) kalendarda. Standalone /planner
    BARCHA sinflarni, sinf-detali Planner boʻlimi esa `classId` berilsa
-   FAQAT shu sinfni koʻrsatadi (event + joylangan dars class-bridge bilan
-   filtrlanadi). Ikkalasi shu komponentni ishlatadi (DRY).
+   FAQAT shu sinfni koʻrsatadi. Jadval eventlari ham, darslar ham endi
+   BITTA jonli sinf id maydonida — koʻprik yoʻq. Ikkalasi shu
+   komponentni ishlatadi (DRY).
 
    REJALASHTIRISH — yagona manba: useLessonStore `scheduleByClass`.
    Planner ham, dars muharriri ham SHU xaritaga yozadi (addScheduleForClass/
@@ -57,7 +57,7 @@ const BLOCKED_KEY = "murabbiyona-blocked-days";
 const NO_UNIT = "__none__";
 
 type BlockedDay = { date: string; label: string };
-type SlotModal = { date: Date; schoolClassId: number; gradesId?: string; startMin: number; endMin: number };
+type SlotModal = { date: Date; classId: string; startMin: number; endMin: number };
 /** Kalendarga joylangan bitta sessiya (dars + qaysi sinf + vaqt). */
 type Placement = { lesson: Lesson; classId: string; startMin: number; endMin: number };
 /** Tahrir/koʻchirish nishoni — QAYSI sessiya (dars + sinf + sana + vaqt). */
@@ -109,21 +109,10 @@ function getMonthGrid(year: number, month: number): (Date | null)[] {
   while (cells.length % 7 !== 0) cells.push(null);
   return cells;
 }
-function schoolClassColor(cls: SchoolClass) {
-  return cls.color ?? autoClassColor(cls.id);
-}
 /** Placement timetable eventiga tegishlimi — sinf mos VA boshlanish event
     oraligʻida (vaqt biroz siljigan boʻlsa ham slot ichida qoladi). */
 function placementInEvent(p: Placement, ev: TimetableEvent): boolean {
-  return schoolClassForGradesId(p.classId)?.id === ev.classId && p.startMin >= ev.startMin && p.startMin < ev.endMin;
-}
-/** Joylangan mavzuning rangi/nomi — blok bilan mos (grades→classes koʻprik) */
-function lessonDisplay(l: Lesson): { name: string; color: ClassColor; tints: ReturnType<typeof classTints> } {
-  const sc = schoolClassForGradesId(l.classId);
-  if (sc) { const c = schoolClassColor(sc); return { name: sc.name, color: c, tints: classTints(c) }; }
-  const g = gradeClassById(l.classId);
-  const c: ClassColor = g ? gradeClassColor(g) : "gray";
-  return { name: g?.name ?? l.classId, color: c, tints: classTints(c) };
+  return p.classId === ev.classId && p.startMin >= ev.startMin && p.startMin < ev.endMin;
 }
 
 export default function PlannerView({ classId }: { classId?: string }) {
@@ -203,19 +192,22 @@ export default function PlannerView({ classId }: { classId?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, view]);
 
-  const classById = useMemo(() => new Map(CLASSES.map((c) => [c.id, c])), []);
+  // Jonli sinflar — event/dars nomi va rangi shu yerdan (server-backed)
+  const classDataMap = useGradesStore((s) => s.classDataMap);
+  const classInfoById = (id: string): ClassInfo | undefined => classDataMap[id]?.info;
+  const liveClassColor = (info: ClassInfo): ClassColor => classColor(info);
+  /** Joylangan mavzuning rangi/nomi — blok bilan mos (jonli sinfdan) */
+  const lessonDisplay = (l: Lesson): { name: string; color: ClassColor; tints: ReturnType<typeof classTints> } => {
+    const info = classInfoById(l.classId);
+    const c: ClassColor = info ? liveClassColor(info) : "gray";
+    return { name: info?.name ?? "Nomaʼlum sinf", color: c, tints: classTints(c) };
+  };
   const blockedSet = useMemo(() => new Set(blocked.map((b) => b.date)), [blocked]);
   const blockedMap = useMemo(() => new Map(blocked.map((b) => [b.date, b.label])), [blocked]);
 
   /** Jadvalda umuman event bormi — boʻsh holat (onboarding) uchun. */
   const hasAnyTimetable = useMemo(() => versions.some((v) => v.events.length > 0), [versions]);
 
-  // ── Sinf-detali filtri (classId berilsa) ──
-  // Timetable event'lari SchoolClass id (raqamli), mavzular grades-id (matn).
-  const scId = useMemo(
-    () => (classId ? schoolClassForGradesId(classId)?.id ?? null : null),
-    [classId],
-  );
   /** Sanada amalda boʻlgan versiya jadvalidan shu kunning darslari.
       Oʻquv yilidan tashqari yoki taʼtil kuni — boʻsh. */
   const eventsForDate = (date: Date): TimetableEvent[] => {
@@ -224,8 +216,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
     if (getHolidayForDate(calendar, key)) return [];
     const tDay = dateToTimetableDay(date);
     const evs = (resolveVersionForDate(versions, key)?.events ?? []).filter((e) => e.day === tDay);
-    // classId berilgan-u, lekin timetable'da mos sinf yoʻq boʻlsa → event koʻrsatmaymiz.
-    return classId ? evs.filter((e) => e.classId === scId) : evs;
+    return classId ? evs.filter((e) => e.classId === classId) : evs;
   };
 
   // Sinf-detali: shu sinfda AZO boʻlgan (asosiy boʻlmasa ham) barcha darslar.
@@ -315,14 +306,14 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
   // ── Yaratish (nom + Boʻlim + vaqt) ──
   function openCreateModal(date: Date, ev: TimetableEvent) {
-    setCreateModal({ date, schoolClassId: ev.classId, gradesId: gradesIdForSchoolClass(ev.classId), startMin: ev.startMin, endMin: ev.endMin });
+    setCreateModal({ date, classId: ev.classId, startMin: ev.startMin, endMin: ev.endMin });
     setCmTitle("");
     setCmUnitId(NO_UNIT);
     setCmStartStr(minToHHMM(ev.startMin));
     setCmEndStr(minToHHMM(ev.endMin));
   }
   function saveCreate() {
-    if (!createModal || !createModal.gradesId || !cmTitle.trim()) return;
+    if (!createModal || !cmTitle.trim()) return;
     const startMin = HHMMToMin(cmStartStr);
     const endMin = HHMMToMin(cmEndStr);
     if (endMin <= startMin) {
@@ -331,41 +322,41 @@ export default function PlannerView({ classId }: { classId?: string }) {
     }
     const title = cmTitle.trim();
     const id = addLesson({
-      classId: createModal.gradesId,
+      classId: createModal.classId,
       unitId: cmUnitId === NO_UNIT ? null : cmUnitId,
       title,
       status: "Scheduled",
     });
-    addScheduleForClass(id, createModal.gradesId, toDateKey(createModal.date), startMin, endMin);
+    addScheduleForClass(id, createModal.classId, toDateKey(createModal.date), startMin, endMin);
     setCreateModal(null);
     toast.success("Dars yaratildi va joylandi", { description: title });
   }
   const createUnits = useMemo(
-    () => (createModal?.gradesId ? units.filter((u) => u.classId === createModal.gradesId) : []),
+    () => (createModal ? units.filter((u) => u.classId === createModal.classId) : []),
     [units, createModal]
   );
 
   // ── Ulash (bitta mavzu; slot vaqti) ──
   function openLinkModal(date: Date, ev: TimetableEvent) {
-    setLinkModal({ date, schoolClassId: ev.classId, gradesId: gradesIdForSchoolClass(ev.classId), startMin: ev.startMin, endMin: ev.endMin });
+    setLinkModal({ date, classId: ev.classId, startMin: ev.startMin, endMin: ev.endMin });
     setLmLessonId("");
     setLmSearch("");
     setLmUnitFilter("all");
   }
   function saveLink() {
-    if (!linkModal || !linkModal.gradesId || !lmLessonId) return;
+    if (!linkModal || !lmLessonId) return;
     const linked = lessons.find((l) => l.id === lmLessonId);
-    addScheduleForClass(lmLessonId, linkModal.gradesId, toDateKey(linkModal.date), linkModal.startMin, linkModal.endMin);
+    addScheduleForClass(lmLessonId, linkModal.classId, toDateKey(linkModal.date), linkModal.startMin, linkModal.endMin);
     setLinkModal(null);
     toast.success("Mavzu ulandi", { description: linked?.title });
   }
   const linkUnits = useMemo(
-    () => (linkModal?.gradesId ? units.filter((u) => u.classId === linkModal.gradesId) : []),
+    () => (linkModal ? units.filter((u) => u.classId === linkModal.classId) : []),
     [units, linkModal]
   );
   // Nomzodlar: shu sinf aʼzosi, oʻtilmagan, VA shu sinfda hali joylanmagan.
   const linkCandidates = useMemo(() => {
-    const gid = linkModal?.gradesId;
+    const gid = linkModal?.classId;
     if (!gid) return [];
     const q = lmSearch.trim().toLowerCase();
     return lessons.filter((l) =>
@@ -439,14 +430,14 @@ export default function PlannerView({ classId }: { classId?: string }) {
     });
   }
 
-  const slotClass = (m: SlotModal | null) => (m ? classById.get(m.schoolClassId) : undefined);
-  const slotTints = (m: SlotModal | null) => { const c = slotClass(m); return c ? classTints(schoolClassColor(c)) : null; };
+  const slotClass = (m: SlotModal | null) => (m ? classInfoById(m.classId) : undefined);
+  const slotTints = (m: SlotModal | null) => { const c = slotClass(m); return c ? classTints(liveClassColor(c)) : null; };
   const weekColsStyle = { gridTemplateColumns: `56px repeat(${weekDates.length}, minmax(0,1fr))` };
 
   function EventPill({ ev, onOpen }: { ev: TimetableEvent; onOpen?: () => void }) {
-    const cls = classById.get(ev.classId);
+    const cls = classInfoById(ev.classId);
     if (!cls) return null;
-    const tints = classTints(schoolClassColor(cls));
+    const tints = classTints(liveClassColor(cls));
     return (
       <button type="button" onClick={onOpen} style={tints.gradient}
         className="flex w-full items-center gap-1.5 truncate rounded-md px-1.5 py-1 text-left transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
@@ -493,9 +484,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
                   <span className="font-normal text-muted-foreground">{anchor.getFullYear()}</span>
                 </>
               )}
-              {classId && schoolClassForGradesId(classId) && (
+              {classId && classInfoById(classId) && (
                 <span className="font-normal text-muted-foreground">
-                  · {schoolClassForGradesId(classId)!.name}
+                  · {classInfoById(classId)!.name}
                 </span>
               )}
             </CardTitle>
@@ -696,12 +687,13 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
                         {/* Dars bloklari (timetable) — blok/taʼtil kunida koʻrsatilmaydi */}
                         {!isBlocked && !holiday && dayEvents.map((ev) => {
-                          const cls = classById.get(ev.classId);
+                          const cls = classInfoById(ev.classId);
                           if (!cls) return null;
+                          const clsColor = liveClassColor(cls);
                           const topH = ev.startMin / 60 - START_HOUR;
                           const durH = (ev.endMin - ev.startMin) / 60;
                           if (topH + durH < 0 || topH > VISIBLE_HOURS) return null;
-                          const tints = classTints(schoolClassColor(cls));
+                          const tints = classTints(clsColor);
                           const blockLessons = placed.filter((p) => placementInEvent(p, ev));
                           // Darsli slot toʻyingan yuzada, boʻshi xira — rejalashtirilmagan joylar bir qarashda koʻrinadi
                           const hasLesson = blockLessons.length > 0;
@@ -709,23 +701,19 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             <div key={ev.id}
                               style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32), ...(hasLesson ? { ...tints.surfaceStrong, ...tints.borderMedium } : { ...tints.tint, ...tints.softBorder }) }}
                               className={cn("group/ev absolute inset-x-1 z-10 flex flex-col overflow-hidden rounded-xl border px-3 pb-2.5 pt-3.5 transition-all", !hasLesson && "border-dashed")}>
-                              {hasLesson && <CardStripes color={schoolClassColor(cls)} variant="cover" />}
-                              {hasLesson && <CardCorner color={schoolClassColor(cls)} className="-right-5 -top-5 size-16" />}
+                              {hasLesson && <CardStripes color={clsColor} variant="cover" />}
+                              {hasLesson && <CardCorner color={clsColor} className="-right-5 -top-5 size-16" />}
                               {/* ↗ sinfni ochish — faqat umumiy /planner'da (sinf-detali ichida
-                                  allaqachon shu sinfdamiz, shuning uchun yashiriladi). Aniq sinfga
-                                  yoʻnaltiramiz (grades slug), mos kelmasa roʻyxatga. */}
-                              {!classId && (() => {
-                                const evGradesId = gradesIdForSchoolClass(ev.classId);
-                                return (
-                                  <Link
-                                    href={evGradesId ? `/dashboard/classes/${evGradesId}` : "/dashboard/classes"}
-                                    title="Sinfni ochish"
-                                    className="absolute right-1.5 top-1.5 z-20 hidden size-6 items-center justify-center rounded-md bg-background/70 text-foreground/70 shadow-sm transition hover:bg-background hover:text-foreground group-hover/ev:flex"
-                                  >
-                                    <ArrowUpRight className="size-3.5" />
-                                  </Link>
-                                );
-                              })()}
+                                  allaqachon shu sinfdamiz, shuning uchun yashiriladi). */}
+                              {!classId && (
+                                <Link
+                                  href={`/dashboard/classes/${ev.classId}`}
+                                  title="Sinfni ochish"
+                                  className="absolute right-1.5 top-1.5 z-20 hidden size-6 items-center justify-center rounded-md bg-background/70 text-foreground/70 shadow-sm transition hover:bg-background hover:text-foreground group-hover/ev:flex"
+                                >
+                                  <ArrowUpRight className="size-3.5" />
+                                </Link>
+                              )}
                               <span className="flex items-center gap-1.5 pr-6">
                                 <span style={{ backgroundColor: tints.solid }} className={cn("h-3.5 w-0.5 shrink-0 rounded-full", !hasLesson && "opacity-40")} aria-hidden />
                                 <span style={hasLesson ? tints.textStrong : undefined} className={cn("truncate text-[15px] leading-tight", hasLesson ? "font-bold" : "font-semibold text-muted-foreground")}>{cls.name}</span>
@@ -984,11 +972,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
               {slotClass(createModal) ? ` · ${slotClass(createModal)!.name}` : ""}
             </DialogDescription>
           </DialogHeader>
-          {createModal && !createModal.gradesId ? (
-            <TypographyMuted className="rounded-lg border border-border/50 bg-muted/50 p-3 text-sm">
-              Bu sinf mavzu banki bilan bogʻlanmagan (lessons sahifasida bunday sinf yoʻq).
-            </TypographyMuted>
-          ) : (
+          {createModal && (
             <div className="flex flex-col gap-3 py-1">
               <div>
                 <Label htmlFor="cm-title" className="mb-1 block text-xs font-semibold text-muted-foreground">Mavzu</Label>
@@ -1025,7 +1009,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateModal(null)}>Bekor</Button>
-            <Button onClick={saveCreate} disabled={!createModal?.gradesId || !cmTitle.trim()}>Saqlash</Button>
+            <Button onClick={saveCreate} disabled={!cmTitle.trim()}>Saqlash</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1041,11 +1025,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
             </DialogDescription>
           </DialogHeader>
 
-          {!linkModal?.gradesId ? (
-            <TypographyMuted className="rounded-lg border border-border/50 bg-muted/50 p-3 text-sm">
-              Bu sinf mavzu banki bilan bogʻlanmagan.
-            </TypographyMuted>
-          ) : (
+          {linkModal && (
             <div className="flex flex-col gap-3 py-1">
               <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
                 <div className="relative">
@@ -1087,7 +1067,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                     {linkCandidates.map((l) => {
                       const { tints } = lessonDisplay(l);
                       const sel = lmLessonId === l.id;
-                      const uid2 = linkModal?.gradesId ? unitIdForClass(l, linkModal.gradesId) : null;
+                      const uid2 = linkModal ? unitIdForClass(l, linkModal.classId) : null;
                       const unitTitle = uid2 ? linkUnits.find((u) => u.id === uid2)?.title : null;
                       return (
                         <button key={l.id} type="button" onClick={() => setLmLessonId(sel ? "" : l.id)}
