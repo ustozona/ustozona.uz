@@ -1,7 +1,22 @@
 import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
-import { SidebarProvider } from "@/components/sidebar-context";
-import { cn } from "@/lib/utils";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import DashboardShellWrapper from "@/components/DashboardShellWrapper";
+import WorkspaceBackground from "@/components/WorkspaceBackground";
+import SettingsServerSync from "@/components/sync/SettingsServerSync";
+import GradesServerSync from "@/components/sync/GradesServerSync";
+import AttendanceServerSync from "@/components/sync/AttendanceServerSync";
+import LessonsServerSync from "@/components/sync/LessonsServerSync";
+import TimetableServerSync from "@/components/sync/TimetableServerSync";
+import CalendarServerSync from "@/components/sync/CalendarServerSync";
+import TasksServerSync from "@/components/sync/TasksServerSync";
+import StandardsServerSync from "@/components/sync/StandardsServerSync";
+import ClassNotesServerSync from "@/components/sync/ClassNotesServerSync";
+import RelationsServerSync from "@/components/sync/RelationsServerSync";
+import ClassPrefsServerSync from "@/components/sync/ClassPrefsServerSync";
+import NotificationsServerSync from "@/components/sync/NotificationsServerSync";
+import FeedbackServerSync from "@/components/sync/FeedbackServerSync";
+import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
 
 export default function DashboardLayout({
   children,
@@ -9,29 +24,32 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <div
-        className="flex flex-col h-dvh min-h-[600px] w-full"
-        style={{ "--top-header-height": "3.8rem" } as React.CSSProperties}
-      >
+    <SidebarProvider
+      className="h-svh min-h-[600px]"
+      style={{ "--top-header-height": "3.8rem" } as React.CSSProperties}
+    >
+      <SettingsServerSync />
+      <GradesServerSync />
+      <AttendanceServerSync />
+      <LessonsServerSync />
+      <TimetableServerSync />
+      <CalendarServerSync />
+      <TasksServerSync />
+      <StandardsServerSync />
+      <ClassNotesServerSync />
+      <RelationsServerSync />
+      <ClassPrefsServerSync />
+      <NotificationsServerSync />
+      <FeedbackServerSync />
+      <LegacyStorageCleanup />
+      <AppSidebar />
+      <SidebarInset className="min-h-0 overflow-hidden">
         <Header />
-        <div className="flex flex-1 min-h-0">
-          <Sidebar />
-          <main className="relative flex-1 min-w-0 overflow-y-auto scrollbar-thin bg-neutral-50/50 dark:bg-black">
-            {/* Grid background */}
-            <div
-              className={cn(
-                "absolute inset-0 opacity-[0.24]",
-                "[background-size:40px_40px]",
-                "[background-image:linear-gradient(to_right,#e4e4e7_1px,transparent_1px),linear-gradient(to_bottom,#e4e4e7_1px,transparent_1px)]",
-                "dark:[background-image:linear-gradient(to_right,#262626_1px,transparent_1px),linear-gradient(to_bottom,#262626_1px,transparent_1px)]"
-              )}
-              style={{ maskImage: "radial-gradient(ellipse at center, white 60%, transparent 100%)" }}
-            />
-            <div className="relative z-10 h-full">{children}</div>
-          </main>
+        <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden">
+          <WorkspaceBackground />
+          <DashboardShellWrapper>{children}</DashboardShellWrapper>
         </div>
-      </div>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

@@ -1,5 +1,18 @@
 export type Shift = 1 | 2;
 
+/**
+ * Dars jadvali hodisasi — takrorlanuvchi haftalik shablon.
+ * day: 1=Dushanba … 6=Shanba; startMin/endMin: 00:00 dan daqiqalar.
+ * Umumiy tip — timetable, planner va PeriodGrid baham koʻradi.
+ */
+export type TimetableEvent = {
+  id: string;
+  classId: number;
+  day: number;
+  startMin: number;
+  endMin: number;
+};
+
 export type LessonSlot = {
   /** 1..6 within the shift */
   index: number;

@@ -1,51 +1,52 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSidebar } from "@/components/ui/sidebar";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Clock2Icon, PaletteIcon, XIcon, PlusIcon, ChevronDownIcon } from "lucide-react";
-import { IconPlus } from "@tabler/icons-react";
-import { autoClassColor, CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
+import { TypographyMuted, TypographySmall } from "@/components/ui/typography";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { StripedPattern } from "@/components/ui/striped-pattern";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
+  XIcon, PlusIcon, ChevronDownIcon,
+  LayoutGrid, List as ListIcon, PencilIcon, Trash2 as TrashIcon,
+  GraduationCap, Search, ArrowUpDown, BarChart3, Users, BookOpen,
+  ClipboardList, MoreHorizontal, ArrowRight,
+} from "lucide-react";
+import { autoClassColor, CLASS_COLOR_HEX, classTints, classColorValue, type ClassColor } from "@/lib/class-colors";
+import { classIcon } from "@/lib/class-icons";
+import { CLASSES as classes, type SchoolClass } from "@/lib/classes-data";
+import { classSlug } from "@/lib/class-id";
+import { ClassFormModal } from "@/components/ClassFormModal";
 import { cn } from "@/lib/utils";
+import DashboardPage, {
+  panelCardClass,
+  panelCardContentClass,
+  panelCardHeaderClass,
+  panelScrollInnerClass,
+} from "@/components/DashboardPage";
 
-type ClassItem = {
-  id: number;
-  name: string;
-  students: number;
-  lessons: number;
-  assignments: number;
-  schedule: string;
-  /** Optional manual override; if absent, color is auto-derived from id */
-  color?: ClassColor;
-  /** Top 3 student initials for avatar stack */
-  initials?: string[];
-};
-
-const classes: ClassItem[] = [
-  { id: 1, name: "1-A", students: 24, lessons: 18, assignments: 2, schedule: "Du · 08:00", initials: ["AS", "DJ", "DE"] },
-  { id: 2, name: "2-A", students: 18, lessons: 18, assignments: 2, schedule: "Se · 09:40", initials: ["AM", "AQ", "BJ"] },
-  { id: 3, name: "3-A", students: 30, lessons: 18, assignments: 2, schedule: "Ch · 10:35", initials: ["AR", "BJ", "DO"] },
-  { id: 4, name: "4-A", students: 22, lessons: 12, assignments: 3, schedule: "Pa · 11:30", initials: ["AC", "AA", "DA"] },
-  { id: 5, name: "5-A", students: 25, lessons: 12, assignments: 3, schedule: "Ju · 14:40", initials: ["AA", "AM", "BC"] },
-  { id: 6, name: "6-A", students: 15, lessons: 12, assignments: 3, schedule: "Sh · 15:30", initials: ["AB", "ET", "EE"] },
-  { id: 7, name: "7-A", students: 28, lessons: 6, assignments: 3, schedule: "Du · 17:10", initials: ["AB", "AC", "AQ"] },
-  { id: 8, name: "8-A", students: 12, lessons: 6, assignments: 1, schedule: "Se · 09:00", initials: ["JQ", "MS", "OR"] },
-  { id: 9, name: "9-A", students: 19, lessons: 6, assignments: 2, schedule: "Ch · 10:00", initials: ["AS", "BN", "KM"] },
-  { id: 10, name: "10-A", students: 27, lessons: 6, assignments: 2, schedule: "Pa · 11:00", initials: ["LT", "PR", "SW"] },
-  { id: 11, name: "11-A", students: 21, lessons: 6, assignments: 2, schedule: "Ju · 12:00", initials: ["QW", "ER", "TY"] },
-];
+/* Sinflar — yagona umumiy manbadan (@/lib/classes-data) */
 
 type SortKey = "name" | "students" | "lessons";
 type ViewMode = "grid" | "list";
@@ -55,141 +56,169 @@ export default function ClassesPage() {
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("name");
-  const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  // Boshlangʻich yuklanish — skeleton koʻrsatish uchun (mock; real API kelganda almashtiriladi)
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 550);
+    return () => clearTimeout(t);
+  }, []);
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
 
   const filteredAndSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = q
-      ? classes.filter((c) => c.name.toLowerCase().includes(q))
-      : classes;
-    const sorted = [...list].sort((a, b) => {
+    const list = q ? classes.filter((c) => c.name.toLowerCase().includes(q)) : classes;
+    return [...list].sort((a, b) => {
       if (sortKey === "students") return b.students - a.students;
       if (sortKey === "lessons") return b.lessons - a.lessons;
       return a.name.localeCompare(b.name);
     });
-    return sorted;
   }, [search, sortKey]);
 
-  const totals = useMemo(
-    () => ({
-      classes: classes.length,
-      students: classes.reduce((s, c) => s + c.students, 0),
-      lessons: classes.reduce((s, c) => s + c.lessons, 0),
-      assignments: classes.reduce((s, c) => s + c.assignments, 0),
-    }),
-    []
-  );
+  const totals = useMemo(() => ({
+    classes: classes.length,
+    students: classes.reduce((s, c) => s + c.students, 0),
+    lessons: classes.reduce((s, c) => s + c.lessons, 0),
+    assignments: classes.reduce((s, c) => s + c.assignments, 0),
+  }), []);
 
   return (
-    <div className="flex flex-col h-full px-4 py-2 md:p-8 lg:px-12">
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        {/* Main: classes grid */}
-        <div className="@container bg-card rounded-xl border border-border card-elevation overflow-hidden flex flex-col h-full min-h-0">
-          <div className="px-5 pt-5 pb-3 shrink-0 flex items-center justify-between min-h-[4.5rem]">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-muted">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground">
-                  <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
-                  <path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
-                </svg>
-              </div>
-              <h2 className="heading-section">Mening sinflarim</h2>
+    <DashboardPage>
+      {/* ── Two-column layout: main card + overview sidebar ── */}
+      <div className="flex flex-1 min-h-0 gap-6">
+
+        {/* ── Main: classes panel ── */}
+        <Card className={cn("flex-1 min-w-0", panelCardClass)}>
+          <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-[4.5rem] px-5 py-5!")}>
+            <div className="flex items-center gap-2.5 shrink-0">
+              <SectionIcon><GraduationCap /></SectionIcon>
+              <CardTitle>Mening sinflarim</CardTitle>
             </div>
+
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                {/* Search */}
-                <div className="flex items-center">
-                  {searchOpen ? (
-                    <div className="flex items-center gap-1 bg-muted/50 rounded-xl pl-3 pr-1.5 h-11">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground shrink-0">
-                        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.34-4.34" />
-                      </svg>
-                      <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onBlur={() => !search && setSearchOpen(false)} placeholder="Sinf yoki fan..." className="bg-transparent outline-none text-sm w-40 h-full" />
-                      {search && (
-                        <button onClick={() => { setSearch(""); setSearchOpen(false); }} className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                        </button>
+              {/* Search */}
+              <div className={cn("flex items-center transition-all duration-200", searchOpen ? "w-52" : "w-8")}>
+                {searchOpen ? (
+                  <div className="flex items-center w-full h-9 border border-border rounded-md px-3 gap-1.5 bg-background animate-in slide-in-from-right-2">
+                    <Search className="size-4 text-muted-foreground shrink-0" />
+                    <input
+                      autoFocus
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      onBlur={() => !search && setSearchOpen(false)}
+                      placeholder="Sinf nomi..."
+                      className="flex-1 min-w-0 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
+                    />
+                    {search && (
+                      <button onClick={() => { setSearch(""); setSearchOpen(false); }} className="text-muted-foreground hover:text-foreground">
+                        <XIcon className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)}>
+                    <Search className="size-4" />
+                  </Button>
+                )}
+              </div>
+
+              {/* Filter */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-1.5 shadow-none">
+                    <ChevronDownIcon className="size-4" />
+                    <span className="hidden sm:inline">Filter</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+                    <DropdownMenuRadioItem value="name">Barcha sinflar</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="students">Koʻp oʻquvchi</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="lessons">Koʻp dars</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Sort */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-1.5 shadow-none">
+                    <ArrowUpDown className="size-4" />
+                    <span className="hidden sm:inline">
+                      Sort: {sortKey === "name" ? "Nom" : sortKey === "students" ? "Oʻquvchi" : "Dars"}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+                    <DropdownMenuRadioItem value="name">Nom boʻyicha</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="students">Oʻquvchilar soni</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="lessons">Darslar soni</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* New class */}
+              <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
+                <PlusIcon className="size-4" />
+                Yangi sinf
+              </Button>
+
+              {/* View toggle - ToggleGroup (outline/sm — Filter va Sort bilan bir xil) */}
+              <ToggleGroup
+                type="single"
+                value={view}
+                onValueChange={(v) => v && setView(v as ViewMode)}
+                variant="outline"
+                size="default"
+                className="hidden sm:flex shadow-none"
+              >
+                <ToggleGroupItem value="grid" aria-label="Grid view">
+                  <LayoutGrid className="size-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="list" aria-label="List view">
+                  <ListIcon className="size-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </CardHeader>
+
+          {/* Scrollable content */}
+          <CardContent className={panelCardContentClass}>
+            <div className={panelScrollInnerClass}>
+              {filteredAndSorted.length === 0 ? (
+                <div className="py-16 flex flex-col items-center gap-3 text-center">
+                  <div className="p-4 rounded-2xl bg-muted">
+                    <Search className="size-6 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Topilmadi</p>
+                    <TypographyMuted className="text-xs mt-0.5">«{search}» boʻyicha hech narsa yoʻq</TypographyMuted>
+                  </div>
+                </div>
+              ) : (
+                <div key={view} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
+                  {view === "grid" ? (
+                    <div className={cn(
+                      "grid gap-5",
+                      collapsed
+                        ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                        : "grid-cols-1 sm:grid-cols-2"
+                    )}>
+                      {loading ? (
+                        Array.from({ length: 6 }).map((_, i) => <ClassCardSkeleton key={i} index={i} />)
+                      ) : (
+                        <>
+                          {filteredAndSorted.map((cls, i) => (
+                            <ClassGridCard key={cls.id} cls={cls} index={i} />
+                          ))}
+                          <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
+                        </>
                       )}
                     </div>
                   ) : (
-                    <button onClick={() => setSearchOpen(true)} className="inline-flex items-center justify-center h-11 w-11 rounded-xl border border-border bg-card card-elevation hover:bg-accent hover:text-accent-foreground transition-all">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.34-4.34" /></svg>
-                    </button>
-                  )}
-                </div>
-
-                {/* Sort */}
-                <div className="relative">
-                  <button onClick={() => setSortMenuOpen((v) => !v)} className="inline-flex items-center justify-center h-11 px-5 rounded-xl border border-border bg-card card-elevation hover:bg-accent hover:text-accent-foreground transition-all text-sm font-semibold gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></svg>
-                    <span>Saralash: {sortKey === "name" ? "Nom" : sortKey === "students" ? "O'quvchi" : "Dars"}</span>
-                  </button>
-                  {sortMenuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setSortMenuOpen(false)} />
-                      <div className="absolute right-0 top-full mt-1 z-20 w-44 bg-card border border-border rounded-xl shadow-md py-1">
-                        {([
-                          { key: "name", label: "Nom boʻyicha" },
-                          { key: "students", label: "Oʻquvchilar soni" },
-                          { key: "lessons", label: "Darslar soni" },
-                        ] as const).map((opt) => (
-                          <button key={opt.key} onClick={() => { setSortKey(opt.key); setSortMenuOpen(false); }}
-                            className={cn("w-full text-left px-3 py-1.5 text-sm hover:bg-muted transition-colors flex items-center gap-2", sortKey === opt.key ? "font-semibold text-foreground" : "text-foreground/80")}>
-                            {sortKey === opt.key && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>}
-                            {sortKey !== opt.key && <span className="w-3" />}
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* New Class */}
-                <Button onClick={() => setIsCreateModalOpen(true)} size="default" className="h-11 px-6 rounded-xl font-semibold shadow-lg shadow-primary/20 gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
-                  Yangi sinf
-                </Button>
-              </div>
-
-              {/* View toggle */}
-              <div className="flex items-center gap-1 p-1 h-11 rounded-xl bg-card card-elevation">
-                <button onClick={() => setView("grid")}
-                  className={cn("h-9 w-9 flex items-center justify-center rounded-lg transition-colors cursor-pointer", view === "grid" ? "text-white hover:text-white/80" : "bg-transparent hover:bg-muted")}
-                  style={view === "grid" ? { backgroundColor: "#2e3138" } : undefined}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" />
-                  </svg>
-                </button>
-                <button onClick={() => setView("list")}
-                  className={cn("h-9 w-9 flex items-center justify-center rounded-lg transition-colors cursor-pointer", view === "list" ? "text-white hover:text-white/80" : "bg-transparent hover:bg-muted")}
-                  style={view === "list" ? { backgroundColor: "#2e3138" } : undefined}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 5h.01" /><path d="M3 12h.01" /><path d="M3 19h.01" /><path d="M8 5h13" /><path d="M8 12h13" /><path d="M8 19h13" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin">
-            <div className="px-5 pt-1 pb-5">
-              {filteredAndSorted.length === 0 ? (
-                <div className="py-16 text-center">
-                  <p className="text-sm text-muted-foreground">Sinflar topilmadi</p>
-                </div>
-              ) : (
-                <div key={view} className="animate-fade-in">
-                  {view === "grid" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {filteredAndSorted.map((cls, i) => (
-                        <ClassGridCard key={cls.id} cls={cls} index={i} />
-                      ))}
-                      <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
+                    <div className="flex flex-col gap-2">
                       {filteredAndSorted.map((cls, i) => (
                         <ClassListRow key={cls.id} cls={cls} index={i} />
                       ))}
@@ -198,107 +227,93 @@ export default function ClassesPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Right: Overview */}
-        <div className="hidden lg:block">
-          <div className="bg-card rounded-xl border border-border card-elevation flex flex-col h-full overflow-hidden">
-            <div className="px-5 pt-6 pb-3 flex items-center gap-2.5 shrink-0 min-h-[4.5rem]">
-              <div className="p-2 rounded-lg bg-muted">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground size-5">
-                  <path d="M3 3v16a2 2 0 0 0 2 2h16" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" />
-                </svg>
+        {/* ── Overview sidebar ── */}
+        <div className="hidden lg:flex w-72 shrink-0 flex-col">
+          <Card className={cn(panelCardClass)}>
+            <CardHeader className={cn(panelCardHeaderClass, "items-center gap-2 min-h-[4.5rem] px-5 py-5!")}>
+              <SectionIcon><BarChart3 /></SectionIcon>
+              <CardTitle>Statistika</CardTitle>
+            </CardHeader>
+            <CardContent className={panelCardContentClass}>
+              <div className={cn(panelScrollInnerClass, "flex flex-col gap-2.5")}>
+                <OverviewStat
+                  icon={<GraduationCap className="size-4" />}
+                  color="blue"
+                  value={totals.classes}
+                  label="Jami sinflar"
+                />
+                <OverviewStat
+                  icon={<Users className="size-4" />}
+                  color="teal"
+                  value={totals.students}
+                  label="Jami oʻquvchilar"
+                />
+                <OverviewStat
+                  icon={<BookOpen className="size-4" />}
+                  color="violet"
+                  value={totals.lessons}
+                  label="Jami mavzular"
+                />
+                <OverviewStat
+                  icon={<ClipboardList className="size-4" />}
+                  color="amber"
+                  value={totals.assignments}
+                  label="Jami topshiriqlar"
+                />
               </div>
-              <h2 className="heading-section">Statistika</h2>
-            </div>
-            <div className="px-5 pb-5 space-y-3">
-              <OverviewRow color="blue" label="Jami sinflar" value={totals.classes} icon="cap" />
-              <OverviewRow color="teal" label="Jami o'quvchilar" value={totals.students} icon="users" />
-              <OverviewRow color="purple" label="Jami darslar" value={totals.lessons} icon="book" />
-              <OverviewRow color="orange" label="Jami vazifalar" value={totals.assignments} icon="clipboard" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-      {isCreateModalOpen && <CreateClassModal onClose={() => setIsCreateModalOpen(false)} />}
+
+      {isCreateModalOpen && (
+        <ClassFormModal
+          mode="create"
+          onSubmit={() => setIsCreateModalOpen(false)}
+          onClose={() => setIsCreateModalOpen(false)}
+        />
+      )}
+    </DashboardPage>
+  );
+}
+
+/* ─────────────────────────── Overview Stat ─────────────────────────── */
+
+function OverviewStat({
+  icon,
+  color,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  color: ClassColor;
+  value: number;
+  label: string;
+}) {
+  const tints = classTints(color);
+  const c = classColorValue(color);
+  const iconBgLight = { backgroundColor: `color-mix(in oklch, ${c} 9%, var(--background))` };
+
+  return (
+    <div className="flex items-center gap-4 rounded-xl bg-muted/30 px-4 py-3.5">
+      <div style={iconBgLight} className="flex items-center justify-center size-10 rounded-lg shrink-0">
+        <span style={tints.iconText} className="flex items-center justify-center">{icon}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium text-muted-foreground leading-none">{label}</p>
+        <p className="text-xl font-bold tabular-nums leading-none mt-1.5">
+          {value} <span className="text-sm font-medium text-muted-foreground">ta</span>
+        </p>
+      </div>
     </div>
   );
 }
 
 /* ─────────────────────────── Grid Card ─────────────────────────── */
 
-function ClassGridCard({ cls, index }: { cls: ClassItem; index: number }) {
-  const color = cls.color ?? autoClassColor(cls.id);
-  const hex = CLASS_COLOR_HEX[color];
-  const progress = Math.round(((cls.lessons - cls.assignments) / Math.max(cls.lessons, 1)) * 100);
-  const r = 23.5;
-  const c = 2 * Math.PI * r;
-  const filled = (progress / 100) * c;
-  const remaining = c - filled;
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="animate-fade-slide-up group bg-card rounded-2xl border border-border overflow-hidden h-full flex flex-col cursor-pointer transition-all duration-200 ease-out active:scale-[0.98]"
-      style={{
-        animationDelay: `${index * 55}ms`,
-        backgroundColor: hovered ? `rgba(${hexToRgb(hex)}, 0.04)` : undefined,
-        borderColor: hovered ? `${hex}70` : undefined,
-        transform: hovered ? 'scale(1.015)' : 'scale(1)',
-        boxShadow: hovered ? '0 8px 24px -4px rgba(0,0,0,0.08)' : '0 4px 20px -2px rgba(0,0,0,0.05)',
-      }}>
-      <div className="px-4 pt-4">
-        <div className="h-36 relative flex items-center justify-center overflow-hidden rounded-xl" style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.125)` }}>
-          <div className="absolute top-0 right-0 w-24 h-24 rounded-full opacity-20 -mr-6 -mt-6" style={{ backgroundColor: hex }} />
-          <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full opacity-10 -ml-4 -mb-4" style={{ backgroundColor: hex }} />
-          <div className="p-4 rounded-2xl relative z-10" style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.19)` }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: hex }}>
-              <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
-              <path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
-            </svg>
-          </div>
-          <div className="absolute top-2 right-2 z-20 hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <button type="button" onClick={(e) => e.stopPropagation()} className="p-2 rounded-lg bg-card/80 backdrop-blur-sm text-muted-foreground hover:text-primary hover:bg-card transition-colors cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
-            </button>
-            <button type="button" onClick={(e) => e.stopPropagation()} className="p-2 rounded-lg bg-card/80 backdrop-blur-sm text-muted-foreground hover:text-destructive hover:bg-card transition-colors cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="px-4 pb-4 pt-4 flex-1 flex flex-col">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-black leading-tight tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1">{cls.name}</h3>
-            <p className="text-caption text-muted-foreground line-clamp-1 mt-1">{cls.schedule}</p>
-          </div>
-          <div className="shrink-0 opacity-20 group-hover:opacity-100 transition-opacity duration-200">
-            <div className="relative inline-flex items-center justify-center">
-              <svg width="52" height="52" className="transform -rotate-90">
-                <circle cx="26" cy="26" r={r} fill="none" stroke="currentColor" strokeWidth="5" className="text-muted/20" />
-                <circle cx="26" cy="26" r={r} fill="none" stroke={hex} strokeWidth="5" strokeDasharray={`${filled} ${remaining}`} strokeDashoffset="0" strokeLinecap="round" className="transition-all duration-300" />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[10px] font-bold">{progress}%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-2 mt-auto pt-3">
-          <StatBox hex={hex} icon="users" value={cls.students} label="O'quvchi" />
-          <StatBox hex={hex} icon="book" value={cls.lessons} label="Dars" />
-          <StatBox hex={hex} icon="clipboard" value={cls.assignments} label="Vazifa" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Hex rang ni RGB ga aylantirish (inline style uchun) */
 function hexToRgb(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
@@ -306,85 +321,194 @@ function hexToRgb(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-function StatBox({ hex, icon, value, label }: { hex: string; icon: "users" | "book" | "clipboard"; value: number; label: string }) {
-  const path = icon === "users" ? (
-    <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><path d="M16 3.128a4 4 0 0 1 0 7.744" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><circle cx="9" cy="7" r="4" /></>
-  ) : icon === "book" ? (
-    <><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></>
-  ) : (
-    <><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="M12 11h4" /><path d="M12 16h4" /><path d="M8 11h.01" /><path d="M8 16h.01" /></>
-  );
+/** Ikonka tanlanmagan sinf uchun avatar monogrammasi: nomdan 1-2 belgi. */
+function classMonogram(name: string): string {
+  const base = name.split("(")[0].trim();
+  const alnum = base.replace(/[^\p{L}\p{N}]/gu, "");
+  return alnum.slice(0, 2).toUpperCase() || "?";
+}
+
+/** Yuklanish skeleti — ClassGridCard tarkibini aks ettiradi. */
+function ClassCardSkeleton({ index }: { index: number }) {
   return (
-    <div className="flex-1 flex flex-col items-center gap-1 p-2.5 rounded-lg" style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.082)` }}>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: hex }}>{path}</svg>
-      <span><span className="text-sm font-semibold text-foreground">{value}</span> <span className="text-[10px] font-normal text-muted-foreground">{label}</span></span>
+    <div
+      className="animate-fade-slide-up rounded-2xl border overflow-hidden flex flex-col"
+      style={{ animationDelay: `${index * 40}ms` }}
+    >
+      <Skeleton className="h-[86px] w-full rounded-none" />
+      <div className="px-5 pb-5 flex flex-col items-center gap-4">
+        <Skeleton className="-mt-10 size-[84px] rounded-full border-4 border-card" />
+        <div className="flex flex-col items-center gap-2 w-full -mt-1.5">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="h-6 w-14 rounded-full mt-1" />
+        </div>
+        <div className="flex w-full gap-3 border-t border-border pt-3.5">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex flex-1 flex-col gap-1.5">
+              <Skeleton className="size-[18px] rounded" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ─────────────────────────── List Row ─────────────────────────── */
-
-function ClassListRow({ cls, index }: { cls: ClassItem; index: number }) {
+function ClassGridCard({ cls, index }: { cls: SchoolClass; index: number }) {
+  const router = useRouter();
   const color = cls.color ?? autoClassColor(cls.id);
   const hex = CLASS_COLOR_HEX[color];
-  const initials = cls.initials ?? ["AB", "CD", "EF"];
-  const [hovered, setHovered] = useState(false);
-  const overflow = Math.max(cls.students - 3, 0);
+  const rgb = hexToRgb(hex);
+  // Dars rejasi progressi: oʻtilgan mavzular / rejadagi mavzular
+  const progress = Math.round((cls.coveredLessons / Math.max(cls.lessons, 1)) * 100);
+  const Icon = classIcon(cls.icon);
+  // Halqa boʻsh holatdan boshlanib, joylashgach toʻladi (animatsiya)
+  const RING_C = 251.33;
+  const [ringFilled, setRingFilled] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setRingFilled(true), 80);
+    return () => clearTimeout(id);
+  }, []);
 
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="animate-fade-slide-up group bg-background rounded-xl border border-border p-4 cursor-pointer transition-all duration-200 ease-out active:scale-[0.98]"
-      style={{
-        animationDelay: `${index * 55}ms`,
-        backgroundColor: hovered ? `rgba(${hexToRgb(hex)}, 0.05)` : undefined,
-        borderColor: hovered ? `${hex}70` : undefined,
-        transform: hovered ? 'scale(1.015)' : 'scale(1)',
-      }}>
-      <div className="flex items-center gap-3">
-        {/* Icon */}
-        <div className="p-3.5 rounded-xl shrink-0" style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.125)` }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: hex }}>
-            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
-            <path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
-          </svg>
-        </div>
+      className="class-card animate-fade-slide-up group rounded-2xl border overflow-hidden cursor-pointer flex flex-col relative transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-[var(--card-hex)]/30"
+      style={{ animationDelay: `${index * 40}ms`, "--card-rgb": rgb, "--card-hex": hex } as React.CSSProperties}
+      onClick={() => router.push(`/dashboard/classes/${classSlug(cls.name)}`)}
+    >
+      {/* Rangli cover band — gradient + striped tekstura */}
+      <div
+        className="relative h-[86px] shrink-0 overflow-hidden"
+        style={{ background: `linear-gradient(135deg, rgba(${rgb}, 0.20), rgba(${rgb}, 0.06))` }}
+      >
+        <StripedPattern
+          className="opacity-50"
+          style={{ color: `rgba(${rgb}, 0.5)` }}
+        />
+      </div>
 
-        {/* Name + Schedule */}
-        <div className="min-w-0 flex-1">
-          <h4 className="heading-small leading-tight truncate group-hover:text-primary transition-colors">{cls.name}</h4>
-          <span className="text-xs text-muted-foreground/60 mt-0.5 block truncate">{cls.schedule}</span>
-        </div>
+      {/* ── Tepa ikonlar: chapda strelka (ochish), oʻngda 3-nuqta menu — ikkalasi ham ghost, faqat hover ── */}
+      <div className="absolute top-3 left-3 z-20">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          type="button"
+          aria-label="Sinfni ochish"
+          onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/classes/${classSlug(cls.name)}`); }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
+        >
+          <ArrowRight className="size-4" />
+        </Button>
+      </div>
+      <div className="absolute top-3 right-3 z-20">
+        <ClassCardMenu />
+      </div>
 
-        {/* Stats + Avatars */}
-        <div className="shrink-0 flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground/60">
-            <span className="flex items-center gap-1">{cls.lessons} Dars</span>
-            <span className="flex items-center gap-1">
-              <span className="text-muted-foreground/30 mx-0.5">·</span>
-              {cls.assignments} Vazifa
-            </span>
-          </div>
-          <div className="hidden md:block">
-            <div className="flex -space-x-2">
-              {initials.map((init, i) => (
-                <div key={i}
-                  className="rounded-full flex items-center justify-center font-semibold text-white shrink-0 overflow-hidden size-7 text-xs ring-2 ring-background"
-                  style={{ backgroundColor: hex }}>
-                  {init}
-                </div>
-              ))}
-              {overflow > 0 && (
-                <div className="rounded-full flex items-center justify-center font-semibold bg-accent text-foreground ring-2 ring-background size-7 text-xs">
-                  +{overflow}
-                </div>
-              )}
+      <div className="relative px-5 pb-5 flex flex-col items-center gap-4">
+        {/* Avatar + progress halqasi — bandning chegarasida, oʻrtaga tekislangan */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="-mt-10 relative size-[84px] cursor-help transition-transform duration-300 group-hover:scale-105"
+            >
+              {/* Progress halqasi (SVG) */}
+              <svg viewBox="0 0 84 84" className="absolute inset-0 size-full -rotate-90">
+                <circle cx="42" cy="42" r="40" fill="none" strokeWidth="3" style={{ stroke: `rgba(${rgb}, 0.16)` }} />
+                <circle
+                  cx="42" cy="42" r="40" fill="none" strokeWidth="3" strokeLinecap="round"
+                  style={{ stroke: hex, strokeDasharray: RING_C, strokeDashoffset: ringFilled ? RING_C * (1 - progress / 100) : RING_C, transition: "stroke-dashoffset 1.5s cubic-bezier(0.16,1,0.3,1)" }}
+                />
+              </svg>
+              {/* Avatar */}
+              <div
+                className="absolute inset-0 m-auto flex size-[68px] items-center justify-center rounded-full border-2 border-card shadow-sm"
+                style={{ backgroundColor: hex }}
+              >
+                {cls.icon ? (
+                  <Icon className="size-8 text-white" />
+                ) : (
+                  <span className="text-xl font-bold text-white tracking-tight select-none">{classMonogram(cls.name)}</span>
+                )}
+              </div>
+              {/* Foiz badge */}
+              <span
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border bg-card px-1.5 py-0.5 text-[11px] font-semibold leading-none tabular-nums shadow-sm"
+                style={{ color: hex }}
+              >
+                {progress}%
+              </span>
             </div>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[200px]">
+            <p className="font-semibold">Dars rejasi</p>
+            <p className="text-background/70">
+              {cls.lessons} mavzudan <b className="font-semibold text-background tabular-nums">{cls.coveredLessons}</b> tasi oʻtilgan
+            </p>
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Nom + jadval — oʻrtaga tekislangan */}
+        <div className="flex flex-col items-center text-center min-w-0 w-full">
+          <p className="font-bold text-base leading-tight truncate max-w-full text-foreground transition-colors duration-200 group-hover:text-[var(--card-hex)]">
+            {cls.name}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">{cls.schedule}</p>
+        </div>
+
+        {/* Statistika — ikonali 3 ustun, vertikal ajratgichlar bilan */}
+        <div className="flex w-full border-t border-border pt-3.5">
+          <div className="flex flex-1 flex-col items-center text-center gap-1.5 pr-3 border-r border-border">
+            <Users className="size-[18px] text-muted-foreground" />
+            <span className="text-xs"><b className="font-semibold">{cls.students}</b> ta oʻquvchi</span>
+          </div>
+          <div className="flex flex-1 flex-col items-center text-center gap-1.5 px-3 border-r border-border">
+            <BookOpen className="size-[18px] text-muted-foreground" />
+            <span className="text-xs"><b className="font-semibold">{cls.lessons}</b> ta mavzu</span>
+          </div>
+          <div className="flex flex-1 flex-col items-center text-center gap-1.5 pl-3">
+            <ClipboardList className="size-[18px] text-muted-foreground" />
+            <span className="text-xs"><b className="font-semibold">{cls.assignments}</b> ta topshiriq</span>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+
+/* ── Karta uchun 3-nuqta DropdownMenu ── */
+function ClassCardMenu({ hex }: { hex?: string }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          type="button"
+          onClick={(e) => e.stopPropagation()}
+          className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
+        >
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem className="gap-2 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+          <PencilIcon className="size-4 text-muted-foreground" />
+          Tahrirlash
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="gap-2 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <TrashIcon className="size-4" />
+          Oʻchirish
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -392,192 +516,78 @@ function ClassListRow({ cls, index }: { cls: ClassItem; index: number }) {
 
 function AddClassCard({ onClick }: { onClick?: () => void }) {
   return (
-    <button onClick={onClick} className="rounded-2xl border-2 border-dashed border-border hover:border-foreground/40 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center gap-2 min-h-[260px]">
-      <div className="h-11 w-11 rounded-full bg-muted flex items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+    <button
+      onClick={onClick}
+      className="rounded-xl border-2 border-dashed border-border hover:border-foreground/30 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center gap-3 min-h-[160px] cursor-pointer group"
+    >
+      <div className="size-11 rounded-full bg-muted flex items-center justify-center group-hover:bg-muted-foreground/10 transition-colors">
+        <PlusIcon className="size-5 text-muted-foreground" strokeWidth={2} />
       </div>
-      <span className="text-sm text-muted-foreground font-medium">Yangi sinf qoʻshish</span>
+      <TypographySmall className="text-muted-foreground">Yangi sinf qoʻshish</TypographySmall>
     </button>
   );
 }
 
-const OVERVIEW_COLORS: Record<string, string> = {
-  blue: "#60a5fa", teal: "#2dd4bf", purple: "#c084fc", orange: "#fb923c",
-};
+/* ─────────────────────────── List Row ─────────────────────────── */
 
-function OverviewRow({ color, label, value, icon }: { color: string; label: string; value: number; icon: "cap" | "users" | "book" | "clipboard" }) {
-  const hex = OVERVIEW_COLORS[color] ?? "#94A3B8";
-  const path =
-    icon === "cap" ? (<><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /><path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></>)
-      : icon === "users" ? (<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>)
-        : icon === "book" ? (<><path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></>)
-          : (<><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="M12 11h4" /><path d="M12 16h4" /><path d="M8 11h.01" /><path d="M8 16h.01" /></>);
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-      <div className="p-2 rounded-lg" style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.125)` }}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5" style={{ color: hex }}>{path}</svg>
-      </div>
-      <div>
-        <div className="text-2xl font-bold">{value} ta</div>
-        <div className="text-sm text-muted-foreground">{label}</div>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────── Modal ─────────────────────────── */
-
-function CreateClassModal({ onClose }: { onClose: () => void }) {
-  const [className, setClassName] = useState("");
-  const [description, setDescription] = useState("");
-  const presetHexes = Object.entries(CLASS_COLOR_HEX)
-    .filter(([name]) => name !== "gray")
-    .map(([, hex]) => hex);
-  const [selectedColorHex, setSelectedColorHex] = useState<string>(presetHexes[0]);
-  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-
-  type TimeSlot = { id: string; day: string; start: string; end: string };
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-
-  const addTimeSlot = () => setTimeSlots([...timeSlots, { id: Math.random().toString(), day: "Dushanba", start: "09:00", end: "10:00" }]);
-  const removeTimeSlot = (id: string) => setTimeSlots(timeSlots.filter(s => s.id !== id));
-  const updateTimeSlotDay = (id: string, day: string) => setTimeSlots(timeSlots.map(s => s.id === id ? { ...s, day } : s));
+function ClassListRow({ cls, index }: { cls: SchoolClass; index: number }) {
+  const router = useRouter();
+  const color = cls.color ?? autoClassColor(cls.id);
+  const hex = CLASS_COLOR_HEX[color];
+  const initials = cls.initials ?? ["AB", "CD", "EF"];
+  const overflow = Math.max(cls.students - 3, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-background w-full max-w-[540px] rounded-lg border shadow-lg flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex flex-col gap-2 p-6 pb-0 text-center sm:text-left relative">
-          <h2 className="text-lg leading-none font-semibold text-foreground">Yangi sinf yaratish</h2>
-          <button onClick={onClose} className="absolute top-4 right-4 cursor-pointer opacity-70 transition-opacity hover:opacity-100 outline-none">
-            <XIcon className="size-4" />
-            <span className="sr-only">Close</span>
-          </button>
-        </div>
-
-        <div className="p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
-          <Field>
-            <FieldLabel htmlFor="name">Sinf nomi <span className="text-destructive">*</span></FieldLabel>
-            <div className="flex gap-2 relative">
-              <Input id="name" value={className} onChange={(e) => setClassName(e.target.value)} placeholder="Masalan, Algebra 101" className="flex-1 h-9" required />
-              <button onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-150 cursor-pointer active:scale-[0.98] size-9 shrink-0 relative border border-border shadow-sm hover:opacity-90"
-                style={{ 
-                  background: `conic-gradient(${presetHexes.join(", ")}, ${presetHexes[0]})` 
-                }}>
-                <PaletteIcon className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
-              </button>
-
-              {isColorPickerOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setIsColorPickerOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 z-20 w-[260px] p-3 bg-card border border-border rounded-xl shadow-xl flex flex-wrap gap-2 justify-center">
-                    {presetHexes.map(hex => (
-                      <button key={hex} onClick={() => { setSelectedColorHex(hex); setIsColorPickerOpen(false); }}
-                        className="w-7 h-7 rounded-full transition-transform hover:scale-110 ring-2 ring-transparent hover:ring-border ring-offset-2 ring-offset-card shadow-sm"
-                        style={{ backgroundColor: hex }} />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </Field>
-
-          <Field>
-            <FieldLabel htmlFor="description">Tavsif</FieldLabel>
-            <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Masalan, 10-sinflar uchun chuqurlashtirilgan matematika" className="h-9" />
-          </Field>
-
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Oʻquv yili:</span>
-            <span className="font-medium bg-muted px-2 py-0.5 rounded-full text-foreground">2025-2026-oʻquv yili</span>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm leading-none font-medium select-none">Haftalik jadval</label>
-              <Button variant="ghost" size="sm" onClick={addTimeSlot} className="h-8 rounded-md gap-1.5 px-3">
-                <PlusIcon className="h-4 w-4 mr-1" /> Vaqt oralig‘ini qo‘shish
-              </Button>
-            </div>
-
-            <div className="pr-1">
-              <div className="space-y-3">
-                {timeSlots.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center border border-dashed rounded-lg">
-                    Muntazam jadval yoʻq. Vaqt qoʻshish.
-                  </p>
-                ) : (
-                  timeSlots.map((slot) => (
-                    <div key={slot.id} className="flex items-center gap-3 p-4 border rounded-lg bg-muted/30">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-[130px] h-9 shrink-0 bg-card shadow-none">
-                          <span className="truncate">{slot.day}</span>
-                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[130px]">
-                          <DropdownMenuRadioGroup value={slot.day} onValueChange={(val) => updateTimeSlotDay(slot.id, val)}>
-                            <DropdownMenuRadioItem value="Dushanba">Dushanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Seshanba">Seshanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Chorshanba">Chorshanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Payshanba">Payshanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Juma">Juma</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Shanba">Shanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Yakshanba">Yakshanba</DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <input
-                            type="time"
-                            lang="en-GB"
-                            step="60"
-                            value={slot.start}
-                            onChange={(e) => setTimeSlots(timeSlots.map(s => s.id === slot.id ? { ...s, start: e.target.value } : s))}
-                            className="flex h-9 w-[78px] rounded-md border border-input bg-card pl-2 pr-6 py-1 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shrink-0 [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
-                          />
-                          <Clock2Icon className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                        </div>
-                        
-                        <span className="text-muted-foreground text-xs shrink-0 font-medium">dan</span>
-                        
-                        <div className="relative">
-                          <input
-                            type="time"
-                            lang="en-GB"
-                            step="60"
-                            value={slot.end}
-                            onChange={(e) => setTimeSlots(timeSlots.map(s => s.id === slot.id ? { ...s, end: e.target.value } : s))}
-                            className="flex h-9 w-[78px] rounded-md border border-input bg-card pl-2 pr-6 py-1 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shrink-0 [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
-                          />
-                          <Clock2Icon className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                        </div>
-
-                        <span className="text-muted-foreground text-xs shrink-0 font-medium">gacha</span>
-                      </div>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeTimeSlot(slot.id)}
-                        className="ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end p-6 pt-2 border-t mt-auto">
-          <Button variant="outline" onClick={onClose} className="h-9 px-4 py-2">Bekor qilish</Button>
-          <Button variant="default" className="h-9 px-4 py-2" onClick={onClose}>Sinf yaratish</Button>
-        </div>
+    <div
+      className="list-card animate-fade-slide-up group flex items-center gap-4 px-4 py-4 cursor-pointer"
+      style={{ animationDelay: `${index * 25}ms`, ["--card-accent" as string]: hex }}
+      onClick={() => router.push(`/dashboard/classes/${classSlug(cls.name)}`)}
+    >
+      {/* Rangli ikoncha */}
+      <div
+        className="list-card-icon size-11 rounded-lg flex items-center justify-center shrink-0"
+        style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.12)` }}
+      >
+        <GraduationCap className="size-5" style={{ color: hex }} />
       </div>
+
+      {/* Nom + jadval */}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold leading-none truncate transition-colors duration-150 group-hover:text-primary">
+          {cls.name}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1.5">{cls.schedule}</p>
+      </div>
+
+      {/* Statistika */}
+      <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+        <span><b className="font-medium text-foreground">{cls.students}</b> ta oʻquvchi</span>
+        <span className="text-border">·</span>
+        <span><b className="font-medium text-foreground">{cls.lessons}</b> ta mavzu</span>
+        <span className="text-border">·</span>
+        <span><b className="font-medium text-foreground">{cls.assignments}</b> ta topshiriq</span>
+      </div>
+
+      {/* Avatarlar */}
+      <div className="hidden lg:flex -space-x-2 shrink-0">
+        {initials.map((init, i) => (
+          <Avatar key={i} className="size-8 ring-2 ring-background">
+            <AvatarFallback className="text-[10px] font-semibold text-white" style={{ backgroundColor: hex }}>
+              {init}
+            </AvatarFallback>
+          </Avatar>
+        ))}
+        {overflow > 0 && (
+          <Avatar className="size-8 ring-2 ring-background">
+            <AvatarFallback className="bg-muted text-[10px] font-semibold text-muted-foreground">
+              +{overflow}
+            </AvatarFallback>
+          </Avatar>
+        )}
+      </div>
+
+      {/* 3-nuqta menu */}
+      <ClassCardMenu />
     </div>
   );
 }

@@ -1,615 +1,1063 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import FullCalendar from "@fullcalendar/react";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin, { Draggable, type DropArg, type EventReceiveArg } from "@fullcalendar/interaction";
-import type { EventClickArg, EventDropArg, EventContentArg } from "@fullcalendar/core";
-import { autoClassColor, CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { autoClassColor, CLASS_COLOR_HEX, classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
+import { ClassSwatch } from "@/components/ClassSwatch";
+import { CLASSES, type SchoolClass } from "@/lib/classes-data";
+import { cn } from "@/lib/utils";
+import { DAYS_UZ, DAYS_UZ_SHORT } from "@/lib/localization";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { SectionIcon } from "@/components/ui/section-icon";
+import DashboardPageLayout, {
+  panelCardClass,
+  panelCardContentClass,
+  panelCardHeaderClass,
+  panelScrollInnerClass,
+  dashboardSplitGridClass,
+} from "@/components/DashboardPage";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "@/components/ui/context-menu";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import { ClassFormModal, type ClassFormValues, type ClassSlot } from "@/components/ClassFormModal";
+import { ClassCard } from "@/components/ClassCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Clock2Icon, ChevronDownIcon, XIcon, TrashIcon, SaveIcon, PlusIcon, PaletteIcon } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { TypographyLabel } from "@/components/ui/typography";
+import { CardStripes } from "@/components/CardStripes";
+import { CardCorner } from "@/components/CardCorner";
+import { type TimetableEvent } from "@/lib/timetable";
+import { type BellConfig, defaultBellConfig, computePeriods } from "@/lib/bell-schedule";
+import PeriodGrid from "@/components/timetable/PeriodGrid";
+import BellScheduleDialog from "@/components/timetable/BellScheduleDialog";
+import EffectiveDateDialog, { type EffectiveChoice } from "@/components/timetable/EffectiveDateDialog";
+import VersionChip, { versionRangeLabel } from "@/components/timetable/VersionChip";
+import { useTimetableStore } from "@/store/useTimetableStore";
+import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
+import { fmtDayMonthUz } from "@/lib/academic-calendar";
+import { todayKey as getTodayKey } from "@/lib/date-keys";
+import { toast } from "sonner";
+import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, GripVertical, Check, Loader2, MoreVertical, Download, PencilIcon as EditIcon, MousePointer2, Magnet, Hourglass, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
 
 /* ─── Types ─── */
-type ClassItem = { 
-  id: number; 
-  name: string; 
-  color?: ClassColor;
-  students?: number;
-  lessons?: number;
-  assignments?: number;
-  schedule?: string;
-  initials?: string[];
-};
-type TimetableEvent = { id: string; classId: number; start: string; end: string };
+/* TimetableEvent — @/lib/timetable dan (takrorlanuvchi haftalik shablon).
+   Jadvalning yagona manbasi endi useTimetableStore (versiyalangan
+   snapshotlar); bu sahifa tanlangan versiyaning LOKAL QORALAMASINI
+   tahrirlaydi va 600ms debounce bilan store'ga commit qiladi. */
+type ClassOverride = { color?: ClassColor; name?: string; description?: string; grade?: number | null; subject?: string };
 
-/* ─── Same classes as classes page ─── */
-const CLASSES: ClassItem[] = [
-  { id: 1, name: "1-A", students: 24, lessons: 18, assignments: 2, schedule: "Du · 08:00", initials: ["AS", "DJ", "DE"] },
-  { id: 2, name: "2-A", students: 18, lessons: 18, assignments: 2, schedule: "Se · 09:40", initials: ["AM", "AQ", "BJ"] },
-  { id: 3, name: "3-A", students: 30, lessons: 18, assignments: 2, schedule: "Ch · 10:35", initials: ["AR", "BJ", "DO"] },
-  { id: 4, name: "4-A", students: 22, lessons: 12, assignments: 3, schedule: "Pa · 11:30", initials: ["AC", "AA", "DA"] },
-  { id: 5, name: "5-A", students: 25, lessons: 12, assignments: 3, schedule: "Ju · 14:40", initials: ["AA", "AM", "BC"] },
-  { id: 6, name: "6-A", students: 15, lessons: 12, assignments: 3, schedule: "Sh · 15:30", initials: ["AB", "ET", "EE"] },
-  { id: 7, name: "7-A", students: 28, lessons: 6, assignments: 3, schedule: "Du · 17:10", initials: ["AB", "AC", "AQ"] },
-  { id: 8, name: "8-A", students: 12, lessons: 6, assignments: 1, schedule: "Se · 09:00", initials: ["JQ", "MS", "OR"] },
-  { id: 9, name: "9-A", students: 19, lessons: 6, assignments: 2, schedule: "Ch · 10:00", initials: ["AS", "BN", "KM"] },
-  { id: 10, name: "10-A", students: 27, lessons: 6, assignments: 2, schedule: "Pa · 11:00", initials: ["LT", "PR", "SW"] },
-  { id: 11, name: "11-A", students: 21, lessons: 6, assignments: 2, schedule: "Ju · 12:00", initials: ["QW", "ER", "TY"] },
-];
+const OVERRIDES_KEY = "murabbiyona-timetable-overrides-v1";
+const TIP_KEY = "murabbiyona-timetable-drag-tip-v1";
+const CUSTOM_KEY = "murabbiyona-timetable-custom-classes-v1";
+// Jadval faqat 6 ish kuni (Dushanba–Shanba) — kanonik `DAYS_UZ`dan slice.
+const DAY_UZ = DAYS_UZ.slice(0, 6);
+const DAY_UZ_SHORT = DAYS_UZ_SHORT.slice(0, 6);
 
-const STORAGE_KEY = "murabbiyona-timetable-v2";
-const DAY_UZ = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
+/* ─── Grid oʻlchamlari — toʻliq 24 soat (00:00–24:00) ─── */
+const START_HOUR = 0;
+const END_HOUR = 24;
+const HOUR_H = 180;                // 1 soat balandligi (px) — planner bilan bir xil
+const SNAP = 15;                   // daqiqada tutilish (snap)
+const DEFAULT_DURATION = 45;       // yangi dars uzunligi (daqiqa)
+const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
+const DAY_START_MIN = START_HOUR * 60;
+const DAY_END_MIN = END_HOUR * 60;
+/** Boshlanishida koʻrsatiladigan soat (maktab boshlanishi) */
+const INITIAL_SCROLL_HOUR = 8;
 
 function uid() { return Math.random().toString(36).slice(2, 9); }
+function minToHHMM(min: number) { return `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`; }
+function hhmmToMin(s: string) { const [h, m] = s.split(":").map(Number); return (h || 0) * 60 + (m || 0); }
+function snapMin(m: number) { return Math.round(m / SNAP) * SNAP; }
+function clamp(v: number, lo: number, hi: number) { return Math.min(Math.max(v, lo), hi); }
+
+/** Dars davomiyligini oʻqiladigan matnga aylantirish: 45 → "45 daq", 90 → "1 soat 30 daq" */
+function fmtDuration(min: number) {
+  const h = Math.floor(min / 60), m = min % 60;
+  if (h && m) return `${h} soat ${m} daq`;
+  if (h) return `${h} soat`;
+  return `${m} daq`;
+}
+
+
+/** Qoʻngʻiroq jadvali nusxasi — draft va snapshot orasida shared reference qolmasin. */
+function cloneBell(c: BellConfig): BellConfig {
+  return { profile: c.profile, shift1: { ...c.shift1 }, shift2: { ...c.shift2 } };
+}
 
 export default function TimetablePage() {
   const [events, setEvents] = useState<TimetableEvent[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [saved, setSaved] = useState(true);
   const [editEvent, setEditEvent] = useState<TimetableEvent | null>(null);
-  const [editingClass, setEditingClass] = useState<ClassItem | null>(null);
-  const listRef = useRef<HTMLDivElement | null>(null);
-  const draggableRef = useRef<Draggable | null>(null);
-  const calendarRef = useRef<InstanceType<typeof FullCalendar>>(null);
+  const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
+  const [clearOpen, setClearOpen] = useState(false);
+  const [showTip, setShowTip] = useState(false);
+  const [overrides, setOverrides] = useState<Record<number, ClassOverride>>({});
+  const [customClasses, setCustomClasses] = useState<SchoolClass[]>([]);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [dragOverDay, setDragOverDay] = useState<number | null>(null);
+  /** "free" — uzluksiz vaqt-grid (erkin); "lesson" — tayyor katak grid (dars soatlari) */
+  const [snapMode, setSnapMode] = useState<"free" | "lesson">("free");
+  /** Qoʻngʻiroq jadvali sozlamasi (smena + dars/tanaffus vaqtlari) */
+  const [bellConfig, setBellConfig] = useState<BellConfig>(defaultBellConfig);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  /* ── Versiyalash holati ── */
+  const versions = useTimetableStore((s) => s.versions);
+  const storeHydrated = useTimetableStore((s) => s._hasHydrated);
+  const commitDraft = useTimetableStore((s) => s.commitDraft);
+  const createVersion = useTimetableStore((s) => s.createVersion);
+  const deleteVersion = useTimetableStore((s) => s.deleteVersion);
+  const [today] = useState(() => getTodayKey());
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+  /** Arxiv versiyani tahrirlashga ochish (tasdiqdan soʻng) */
+  const [archiveUnlocked, setArchiveUnlocked] = useState(false);
+  /** Joriy sessiyada "qachondan?" savoliga javob berilganmi (in-place tanlovi) */
+  const [decisionMade, setDecisionMade] = useState(false);
+  const [effectiveDialogOpen, setEffectiveDialogOpen] = useState(false);
+  /** Dialog chipdagi "Yangi versiya…" orqali ochilganmi (in-place varianti yashiriladi) */
+  const [dialogExplicit, setDialogExplicit] = useState(false);
+  const [unlockConfirmOpen, setUnlockConfirmOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  /** Hal qilinmagan qoralama bilan versiya almashtirilsa — maqsad shu yerda kutadi */
+  const pendingSwitchRef = useRef<string | null>(null);
+
+  const selectedVersion = useMemo(
+    () => versions.find((v) => v.id === selectedVersionId) ?? null,
+    [versions, selectedVersionId]
+  );
+  const currentVersionId = useMemo(
+    () => resolveVersionForDate(versions, today)?.id ?? null,
+    [versions, today]
+  );
+  const mode: "none" | "current" | "past-locked" | "past-unlocked" | "future" = !selectedVersion
+    ? "none"
+    : selectedVersion.effectiveFrom > today
+      ? "future"
+      : selectedVersion.id === currentVersionId
+        ? "current"
+        : archiveUnlocked
+          ? "past-unlocked"
+          : "past-locked";
+  /** Arxiv (qulflangan) rejim — grid faqat koʻrish uchun */
+  const readOnly = mode === "past-locked";
+
+  /** Mavjud darsni koʻchirayotganda — ushlangan nuqtaning dars boshidan daqiqa-ofseti */
+  const grabOffsetRef = useRef<number | null>(null);
+  /** Vaqt gridining scroll konteyneri — boshlanishida maktab soatiga oʻtish uchun */
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  /** Bazaviy + foydalanuvchi qoʻshgan sinflar */
+  const classesAll = useMemo(() => [...CLASSES, ...customClasses], [customClasses]);
+
+  /** Qoʻngʻiroq jadvalidan hisoblangan period qatorlari ("1-soat" …) */
+  const periods = useMemo(() => computePeriods(bellConfig), [bellConfig]);
+
+  /** Bazaviy sinf + foydalanuvchi oʻzgartirishlari (rang/nom/tavsif) birlashtirilgan */
+  const getClass = useCallback((id: number): SchoolClass => {
+    const base = classesAll.find(c => c.id === id) ?? CLASSES[0];
+    const o = overrides[id];
+    return o ? { ...base, ...o } : base;
+  }, [classesAll, overrides]);
 
   useEffect(() => {
-    try { const r = localStorage.getItem(STORAGE_KEY); if (r) setEvents(JSON.parse(r)); } catch {}
+    try { const o = localStorage.getItem(OVERRIDES_KEY); if (o) setOverrides(JSON.parse(o)); } catch {}
+    try { const c = localStorage.getItem(CUSTOM_KEY); if (c) setCustomClasses(JSON.parse(c)); } catch {}
     setHydrated(true);
   }, []);
 
+  // Store hydratsiyasidan soʻng bugun amaldagi versiyani tanlash
+  useEffect(() => {
+    if (!storeHydrated || versions.length === 0 || selectedVersionId) return;
+    setSelectedVersionId(resolveVersionForDate(versions, today)?.id ?? sortVersions(versions)[0].id);
+  }, [storeHydrated, versions, selectedVersionId, today]);
+
+  // Versiya almashganda — qoralama shu versiya snapshotidan qayta quriladi
+  useEffect(() => {
+    if (!selectedVersion) return;
+    setEvents(selectedVersion.events.map((e) => ({ ...e })));
+    setBellConfig(cloneBell(selectedVersion.bellConfig));
+    setSaved(true);
+    setDecisionMade(false);
+    setArchiveUnlocked(false);
+    // Faqat versiya almashganda (id) — commit'dan keyingi snapshot yangilanishida emas
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVersionId, storeHydrated]);
+
+  /* Commit oqimi: qoralama snapshotdan farq qilsa 600ms debounce, soʻng —
+     joriy versiyada birinchi marta boʻlsa "qachondan?" dialogi, aks holda
+     toʻgʻridan-toʻgʻri commit (arxiv-ochiq va kelgusi versiyalar dialogsiz). */
+  useEffect(() => {
+    if (!hydrated || !storeHydrated || !selectedVersion) return;
+    const dirty =
+      JSON.stringify(events) !== JSON.stringify(selectedVersion.events) ||
+      JSON.stringify(bellConfig) !== JSON.stringify(selectedVersion.bellConfig);
+    if (!dirty) { setSaved(true); return; }
+    setSaved(false);
+    const t = setTimeout(() => {
+      if (mode === "current" && !decisionMade) {
+        setDialogExplicit(false);
+        setEffectiveDialogOpen(true);
+        return;
+      }
+      commitDraft(selectedVersion.id, events, bellConfig);
+      setSaved(true);
+    }, 600);
+    return () => clearTimeout(t);
+  }, [events, bellConfig, hydrated, storeHydrated, selectedVersion, mode, decisionMade, commitDraft]);
+
+  /* ── Versiya amallari ── */
+
+  const revertDraft = useCallback(() => {
+    if (!selectedVersion) return;
+    setEvents(selectedVersion.events.map((e) => ({ ...e })));
+    setBellConfig(cloneBell(selectedVersion.bellConfig));
+    setSaved(true);
+  }, [selectedVersion]);
+
+  const handleSelectVersion = useCallback((id: string) => {
+    if (id === selectedVersionId) return;
+    if (!saved && selectedVersion) {
+      if (mode === "current" && !decisionMade) {
+        // Hal qilinmagan oʻzgarish bor — avval "qachondan?" savoli, soʻng almashish
+        pendingSwitchRef.current = id;
+        setDialogExplicit(false);
+        setEffectiveDialogOpen(true);
+        return;
+      }
+      commitDraft(selectedVersion.id, events, bellConfig); // kutayotgan commit'ni darhol yakunlash
+    }
+    setSelectedVersionId(id);
+  }, [selectedVersionId, saved, selectedVersion, mode, decisionMade, commitDraft, events, bellConfig]);
+
+  const applyEffectiveChoice = useCallback((choice: EffectiveChoice) => {
+    if (!selectedVersion) return;
+    if (choice.kind === "in-place") {
+      commitDraft(selectedVersion.id, events, bellConfig);
+      setDecisionMade(true);
+      setSaved(true);
+    } else {
+      const id = createVersion({ effectiveFrom: choice.effectiveFrom, note: choice.note, baseId: selectedVersion.id });
+      if (!id) { toast.error("Bu sanada allaqachon versiya bor"); return; }
+      // Yangi versiya qoralamadagi holatni oladi; eski versiya snapshoti oʻzgarmaydi
+      commitDraft(id, events, bellConfig);
+      toast.success(`Yangi jadval versiyasi — ${fmtDayMonthUz(choice.effectiveFrom)}dan`);
+      setEffectiveDialogOpen(false);
+      setSelectedVersionId(pendingSwitchRef.current ?? id);
+      pendingSwitchRef.current = null;
+      return;
+    }
+    setEffectiveDialogOpen(false);
+    if (pendingSwitchRef.current) {
+      setSelectedVersionId(pendingSwitchRef.current);
+      pendingSwitchRef.current = null;
+    }
+  }, [selectedVersion, commitDraft, createVersion, events, bellConfig]);
+
+  const cancelEffectiveDialog = useCallback(() => {
+    revertDraft();
+    setEffectiveDialogOpen(false);
+    if (pendingSwitchRef.current) {
+      setSelectedVersionId(pendingSwitchRef.current);
+      pendingSwitchRef.current = null;
+    }
+  }, [revertDraft]);
+
+  const confirmDeleteVersion = useCallback(() => {
+    if (!selectedVersion || versions.length <= 1) return;
+    const remaining = versions.filter((v) => v.id !== selectedVersion.id);
+    deleteVersion(selectedVersion.id);
+    setSelectedVersionId(
+      resolveVersionForDate(remaining, today)?.id ?? sortVersions(remaining)[0]?.id ?? null
+    );
+    setDeleteConfirmOpen(false);
+  }, [selectedVersion, versions, deleteVersion, today]);
+
   useEffect(() => {
     if (!hydrated) return;
-    setSaved(false);
-    const t = setTimeout(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); setSaved(true); }, 600);
-    return () => clearTimeout(t);
-  }, [events, hydrated]);
+    localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
+  }, [overrides, hydrated]);
 
   useEffect(() => {
-    if (!listRef.current) return;
-    draggableRef.current = new Draggable(listRef.current, {
-      itemSelector: ".draggable-class",
-      eventData: (el) => {
-        const id = Number(el.getAttribute("data-class-id"));
-        const cls = CLASSES.find(c => c.id === id);
-        const hex = cls ? CLASS_COLOR_HEX[cls.color ?? autoClassColor(cls.id)] : "#888";
-        return { title: cls?.name ?? "", duration: "00:45", backgroundColor: hex, borderColor: hex, textColor: "#2e3138", extendedProps: { classId: id } };
-      },
-    });
-    return () => draggableRef.current?.destroy();
+    if (!hydrated) return;
+    localStorage.setItem(CUSTOM_KEY, JSON.stringify(customClasses));
+  }, [customClasses, hydrated]);
+
+  // Jadvalni JSON sifatida eksport qilish
+  const exportSchedule = useCallback(() => {
+    const rows = [...events]
+      .sort((a, b) => a.day - b.day || a.startMin - b.startMin)
+      .map(e => {
+        const cls = getClass(e.classId);
+        return { sinf: cls.name, kun: DAY_UZ[e.day - 1], boshlanish: minToHHMM(e.startMin), tugash: minToHHMM(e.endMin) };
+      });
+    const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dars-jadvali.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [events, getClass]);
+
+  // Birinchi foydalanishda drag maslahati (bir martalik, localStorage)
+  useEffect(() => {
+    try { if (!localStorage.getItem(TIP_KEY)) setShowTip(true); } catch {}
   }, []);
-
-  const fcEvents = useMemo(() => events.map(ev => {
-    const cls = CLASSES.find(c => c.id === ev.classId);
-    const hex = cls ? CLASS_COLOR_HEX[cls.color ?? autoClassColor(cls.id)] : "#888";
-    return { id: ev.id, title: cls?.name ?? "", start: ev.start, end: ev.end, backgroundColor: hex, borderColor: hex, textColor: "#2e3138", extendedProps: { classId: ev.classId } };
-  }), [events]);
-
-  const handleEventReceive = useCallback((info: EventReceiveArg) => {
-    const classId = Number(info.event.extendedProps.classId);
-    if (!classId) return;
-    const startStr = info.event.startStr;
-    const endStr = info.event.endStr || new Date(info.event.start!.getTime() + 45 * 60000).toISOString();
-    setEvents(prev => [...prev, { id: uid(), classId, start: startStr, end: endStr }]);
-    info.revert();
+  const dismissTip = useCallback(() => {
+    try { localStorage.setItem(TIP_KEY, "1"); } catch {}
+    setShowTip(false);
   }, []);
-
-  const handleEventDrop = useCallback((info: EventDropArg) => {
-    setEvents(prev => prev.map(ev => ev.id === info.event.id ? { ...ev, start: info.event.startStr, end: info.event.endStr } : ev));
-  }, []);
-
-  const handleEventClick = useCallback((info: EventClickArg) => {
-    const ev = events.find(e => e.id === info.event.id);
-    if (ev) setEditEvent(ev);
-  }, [events]);
 
   const removeEvent = useCallback((id: string) => setEvents(prev => prev.filter(e => e.id !== id)), []);
 
-  const handleSaveClassSlots = useCallback((classId: number, slots: {day:string, start:string, end:string}[]) => {
+  /* ─── Native drag-and-drop ─── */
+
+  // Sinf kartasini sudrash boshlanishi (chap roʻyxatdan)
+  const onClassDragStart = useCallback((e: React.DragEvent, classId: number) => {
+    e.dataTransfer.setData("text/class-id", String(classId));
+    e.dataTransfer.effectAllowed = "copy";
+  }, []);
+
+  // Mavjud darsni sudrash boshlanishi (grid ichida koʻchirish)
+  const onEventDragStart = useCallback((e: React.DragEvent, ev: TimetableEvent) => {
+    e.dataTransfer.setData("text/event-id", ev.id);
+    e.dataTransfer.effectAllowed = "move";
+    const rect = e.currentTarget.getBoundingClientRect();
+    grabOffsetRef.current = ((e.clientY - rect.top) / HOUR_H) * 60;
+  }, []);
+
+  // Kun ustuniga tashlash (Erkin rejim) — Y koordinatadan vaqtni 15 daq snap qiladi
+  const onColumnDrop = useCallback((e: React.DragEvent, day: number) => {
+    if (readOnly) return;
+    e.preventDefault();
+    setDragOverDay(null);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const rawMin = DAY_START_MIN + ((e.clientY - rect.top) / HOUR_H) * 60;
+
+    const eventId = e.dataTransfer.getData("text/event-id");
+    const classIdStr = e.dataTransfer.getData("text/class-id");
+
+    if (eventId) {
+      const grab = grabOffsetRef.current ?? 0;
+      grabOffsetRef.current = null;
+      setEvents(prev => prev.map(ev => {
+        if (ev.id !== eventId) return ev;
+        const dur = ev.endMin - ev.startMin;             // davomiylik saqlanadi
+        const startMin = clamp(snapMin(rawMin - grab), DAY_START_MIN, DAY_END_MIN - dur);
+        return { ...ev, day, startMin, endMin: startMin + dur };
+      }));
+    } else if (classIdStr) {
+      const classId = Number(classIdStr);
+      if (!classId) return;
+      const startMin = clamp(snapMin(rawMin), DAY_START_MIN, DAY_END_MIN - DEFAULT_DURATION);
+      setEvents(prev => [...prev, { id: uid(), classId, day, startMin, endMin: startMin + DEFAULT_DURATION }]);
+    }
+  }, [readOnly]);
+
+  // Period katagiga sinf qoʻyish (Dars soatlari rejim) — oʻsha katakdagi mavjudini almashtiradi
+  const placeInPeriod = useCallback((day: number, startMin: number, endMin: number, classId: number) => {
+    setEvents(prev => [...prev.filter(e => !(e.day === day && e.startMin === startMin)), { id: uid(), classId, day, startMin, endMin }]);
+  }, []);
+
+  // Erkin-vaqtli toʻgarak qoʻshish
+  const addClub = useCallback((day: number, classId: number, startMin: number, endMin: number) => {
+    setEvents(prev => [...prev, { id: uid(), classId, day, startMin, endMin }]);
+  }, []);
+
+  // Dars cardini sudrab davomiylikni oʻzgartirish (faqat erkin rejimda)
+  const onResizeEvent = useCallback((id: string, newStart: number, newEnd: number) => {
+    setEvents(prev => prev.map(e => e.id === id ? { ...e, startMin: newStart, endMin: newEnd } : e));
+  }, []);
+
+  /** Modaldan kelgan slotlarni (kun-nomi + "HH:MM") jadval hodisalariga yozish */
+  const handleSaveClassSlots = useCallback((classId: number, slots: { day: string; start: string; end: string }[]) => {
+    if (readOnly) return;
     setEvents(prev => {
       const next = prev.filter(e => e.classId !== classId);
-      
-      // Find the Monday of the week currently shown in the calendar.
-      // FullCalendar shows the week that contains "today" but starts on Monday.
-      // If today is Sunday (0), the calendar shows NEXT week (Mon of next week).
-      const now = new Date();
-      const todayDow = now.getDay(); // 0=Sun, 1=Mon...6=Sat
-      // Days to add to reach this week's Monday
-      // If Sunday: jump to next Monday (+1), else go back to Monday of current week
-      const mondayOffset = todayDow === 0 ? 1 : 1 - todayDow;
-      const monday = new Date(now);
-      monday.setDate(now.getDate() + mondayOffset);
-      monday.setHours(0, 0, 0, 0);
-      
       slots.forEach(slot => {
-        // DAY_UZ: 0=Dushanba(Mon)...5=Shanba(Sat)
-        const dayIndex = DAY_UZ.indexOf(slot.day); // 0-5
+        const dayIndex = DAY_UZ.indexOf(slot.day); // 0–5
         if (dayIndex < 0) return;
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + dayIndex);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        next.push({
-          id: Math.random().toString(36).slice(2, 9),
-          classId,
-          start: `${yyyy}-${mm}-${dd}T${slot.start}:00`,
-          end: `${yyyy}-${mm}-${dd}T${slot.end}:00`,
-        });
+        next.push({ id: uid(), classId, day: dayIndex + 1, startMin: hhmmToMin(slot.start), endMin: hhmmToMin(slot.end) });
       });
       return next;
     });
-  }, []);
+  }, [readOnly]);
 
-  if (!hydrated) return null;
+  /** Sinf eventʼlaridan modal uchun slot roʻyxati tuzish */
+  const slotsForClass = useCallback((classId: number): ClassSlot[] =>
+    events.filter(e => e.classId === classId).map(ev => ({
+      day: DAY_UZ[ev.day - 1] ?? "Dushanba",
+      start: minToHHMM(ev.startMin),
+      end: minToHHMM(ev.endMin),
+    })), [events]);
+
+  /** "+" — yangi sinf yaratish (customClassesʼga qoʻshadi + slotlarini jadvalga yozadi) */
+  const handleCreateClass = useCallback((values: ClassFormValues) => {
+    const newId = Math.max(0, ...classesAll.map(c => c.id)) + 1;
+    setCustomClasses(prev => [...prev, {
+      id: newId, name: values.name, grade: values.grade, subject: values.subject, color: values.color, icon: values.icon, description: values.description,
+      shift: 1, students: 0, lessons: 0, coveredLessons: 0, assignments: 0, schedule: "", initials: [],
+    }]);
+    handleSaveClassSlots(newId, values.slots);
+    setCreateOpen(false);
+  }, [classesAll, handleSaveClassSlots]);
+
+  /** Sinfning haftalik slotlaridan "Du 09:00, Pa 14:00" kabi xulosa matni */
+  const scheduleSummary = useCallback((classId: number): string => {
+    const evs = events.filter(e => e.classId === classId);
+    if (evs.length === 0) return "Jadvalga qoʻshilmagan";
+    const seen = new Set<string>();
+    const parts: { order: number; text: string }[] = [];
+    evs.forEach(e => {
+      const idx = e.day - 1;
+      if (idx < 0 || idx > 5) return;
+      const text = `${DAY_UZ_SHORT[idx]} ${minToHHMM(e.startMin)}`;
+      if (seen.has(text)) return;
+      seen.add(text);
+      parts.push({ order: idx * 1440 + e.startMin, text });
+    });
+    parts.sort((a, b) => a.order - b.order);
+    if (parts.length <= 2) return parts.map(p => p.text).join(", ");
+    return `${parts[0].text}, ${parts[1].text} +${parts.length - 2}`;
+  }, [events]);
+
+  // Boshlanishida gridʼni maktab soatiga (yoki eng erta darsga) suradi
+  useEffect(() => {
+    if (!hydrated || !scrollRef.current) return;
+    const earliest = events.length ? Math.min(...events.map(e => e.startMin)) : INITIAL_SCROLL_HOUR * 60;
+    scrollRef.current.scrollTop = Math.max(0, (earliest / 60) * HOUR_H - HOUR_H * 0.5);
+    // faqat birinchi yuklanishda — events oʻzgarganda qayta surmaymiz
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
+  if (!hydrated || !storeHydrated) return null;
+
+  /** Arxiv/kelgusi banner matnlari uchun tanlangan versiya davri */
+  const selectedRangeLabel = selectedVersion ? versionRangeLabel(versions, selectedVersion) : "";
 
   return (
-    <div className="absolute inset-0 flex flex-col px-4 py-2 md:p-8 lg:px-12">
-      <div className="flex-1 min-h-0 grid p-3 -m-3" style={{ gridTemplateColumns: "25% 75%" }}>
+    <DashboardPageLayout className="h-full">
+      {/* Chap ustun minmax bilan: sidebar ochilib joy torayganda ham panel
+          300px dan tor boʻlmaydi — kartalar siqilib qolmaydi. */}
+      <div className={cn(dashboardSplitGridClass, "grid-cols-1 lg:grid-cols-[minmax(300px,1fr)_3fr]")}>
         {/* ── Left: Sinflar ── */}
-        <div className="min-w-0 min-h-0 pr-4 grid">
-        <div className="bg-card rounded-xl border border-border card-elevation flex flex-col h-full overflow-hidden" data-tour="timetable-class-selector">
+        <div className="min-w-0 min-h-0 grid">
+        <Card className={cn(panelCardClass)} data-tour="timetable-class-selector">
           {/* Header */}
-          <div className="flex items-center px-5 pt-6 pb-4 gap-2.5 shrink-0 min-h-[4.5rem]">
-            <div className="p-2 rounded-lg bg-muted">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5 text-foreground">
-                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /><path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
-              </svg>
+          <CardHeader className={cn(panelCardHeaderClass, "gap-3 border-b min-h-[4.5rem] px-5 py-5!")}>
+            <SectionIcon>
+              <GraduationCap />
+            </SectionIcon>
+            <CardTitle>Sinflar</CardTitle>
+            <Button variant="ghost" size="sm" disabled={readOnly} className="ml-auto shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={() => setCreateOpen(true)}>
+              <PlusIcon className="size-4" />
+              Qoʻshish
+            </Button>
+          </CardHeader>
+
+          {/* Birinchi foydalanish maslahati (bir martalik) */}
+          {showTip && (
+            <div className="mx-4 mb-4 mt-1 flex items-center gap-2.5 rounded-xl border border-dashed border-border bg-card px-3.5 py-2.5 text-xs text-muted-foreground shrink-0 shadow-sm">
+              <GripVertical className="size-4 shrink-0 text-muted-foreground/50" />
+              <p className="flex-1 leading-snug">Sinf kartasini ushlab, oʻngdagi jadvalga sudrab tashlang.</p>
+              <button type="button" onClick={dismissTip} aria-label="Yopish" className="shrink-0 rounded-md p-0.5 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground">
+                <XIcon className="size-3.5" />
+              </button>
             </div>
-            <h2 className="heading-section">Sinflar</h2>
-          </div>
+          )}
 
-          {/* Academic year button */}
-          <div className="px-5 pb-4 shrink-0">
-            <button className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all duration-150 cursor-pointer active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:text-accent-foreground px-3 has-[>svg]:px-2.5 gap-1.5 bg-card border border-border shadow-xs hover:bg-muted !pl-4 !pr-3 w-full h-11 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground shrink-0">
-                <path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />
-              </svg>
-              <span className="text-sm font-medium truncate">2025–2026-o&apos;quv yili</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground shrink-0 ml-auto">
-                <path d="m7 15 5 5 5-5" /><path d="m7 9 5-5 5 5" />
-              </svg>
-            </button>
-          </div>
-
-          <p className="text-caption text-muted-foreground px-5 pb-3 text-center shrink-0">Sinflarni jadvalga sudrab tashlang</p>
-
-          {/* Class list with fade gradient */}
-          <div className="flex-1 min-h-0 relative overflow-hidden rounded-b-xl">
+          {/* Class list with fade gradient. @container — panel torayganda
+              (sidebar ochiq) roʻyxat paddingʼi va kartalar zichlashadi. */}
+          <CardContent className={cn(panelCardContentClass, "@container")}>
             <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
-            <div className="h-full overflow-y-auto scrollbar-thin" ref={listRef}>
-              <div className="px-5 pb-5 space-y-2">
-                {CLASSES.map(cls => {
-                  const hex = CLASS_COLOR_HEX[cls.color ?? autoClassColor(cls.id)];
-                  const scheduledLessons = events.filter(e => e.classId === cls.id).length;
+            <ScrollArea className="h-full w-full">
+              <div className={cn(panelScrollInnerClass, "space-y-2 @max-[400px]:px-4")}>
+                {classesAll.map((cls, i) => {
+                  const merged = getClass(cls.id);
+                  const color = merged.color ?? autoClassColor(cls.id);
                   return (
-                    <div
-                      key={cls.id}
-                      className="group draggable-class cursor-grab flex items-center gap-3 p-4 border-2 rounded-xl transition-all duration-200 hover:shadow-[0_8px_16px_-6px_rgba(0,0,0,0.15)] relative"
-                      data-class-id={cls.id}
-                      style={{ borderColor: hex, backgroundColor: hex + "10" }}
-                    >
-                      <div className="p-3 rounded-xl shrink-0" style={{ backgroundColor: hex + "20" }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-6" style={{ color: hex }}>
-                          <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /><path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
-                        </svg>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="heading-small truncate">{cls.name}</p>
-                        <div className="text-[11px] text-muted-foreground/80 font-medium mt-0.5 flex items-center gap-2">
-                          <div className="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            <span>{cls.students} ta</span>
-                          </div>
-                          <span className="text-muted-foreground/40">•</span>
-                          <div className="flex items-center gap-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
-                            <span>{scheduledLessons} / {cls.lessons}</span>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Hover actions */}
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg bg-card/90 backdrop-blur-sm shadow-sm border border-border/50 p-0.5">
-                        <button type="button" className="p-1.5 rounded-md hover:bg-accent transition-colors" title="Tahrirlash" onClick={() => setEditingClass(cls)}>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground">
-                            <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" />
-                          </svg>
-                        </button>
-                        <button type="button" className="p-1.5 rounded-md hover:bg-red-500/10 transition-colors" title="O&apos;chirish">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5 text-muted-foreground hover:text-red-500">
-                            <path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
+                    <ContextMenu key={cls.id}>
+                      <ContextMenuTrigger asChild>
+                        <ClassCard
+                          name={merged.name}
+                          subtitle={scheduleSummary(cls.id)}
+                          color={color}
+                          variant="card"
+                          draggable={!readOnly}
+                          onDragStart={(e) => onClassDragStart(e, cls.id)}
+                          data-class-id={cls.id}
+                          className="draggable-class cursor-grab active:cursor-grabbing animate-fade-slide-up"
+                          style={{ animationDelay: `${i * 40}ms` }}
+                          actions={
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  aria-label="Amallar"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="absolute right-2 top-1/2 size-7 -translate-y-1/2 border border-border/50 bg-card/80 text-muted-foreground shadow-sm backdrop-blur-sm transition-opacity opacity-100 md:opacity-0 md:group-hover/cc:opacity-100 data-[state=open]:opacity-100"
+                                >
+                                  <MoreVertical className="size-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenuItem disabled={readOnly} onClick={() => setEditingClass(merged)}>
+                                  <EditIcon />
+                                  Tahrirlash
+                                </DropdownMenuItem>
+                                <DropdownMenuItem variant="destructive" disabled={readOnly} onClick={() => setEvents(prev => prev.filter(ev => ev.classId !== cls.id))}>
+                                  <TrashIcon />
+                                  Jadvaldan oʻchirish
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          }
+                        />
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        <ContextMenuItem disabled={readOnly} onClick={() => setEditingClass(merged)}>
+                          <EditIcon />
+                          Tahrirlash
+                        </ContextMenuItem>
+                        <ContextMenuItem variant="destructive" disabled={readOnly} onClick={() => setEvents(prev => prev.filter(e => e.classId !== cls.id))}>
+                          <TrashIcon />
+                          Jadvaldan oʻchirish
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                   );
                 })}
-                {/* Add Class button */}
-                <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-150 cursor-pointer active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border border-border bg-card shadow-xs hover:bg-accent hover:text-accent-foreground px-4 py-2 has-[>svg]:px-3 w-full h-11 mt-3 rounded-xl border-dashed">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 mr-2">
-                    <path d="M5 12h14" /><path d="M12 5v14" />
-                  </svg>
-                  Sinf qo&apos;shish
-                </button>
               </div>
-            </div>
-          </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
         </div>
-      </div>
 
       {/* ── Right: Dars jadvali ── */}
       <div className="min-w-0 min-h-0 grid">
-        <div className="bg-card rounded-xl border border-border card-elevation flex flex-col h-full overflow-hidden" data-tour="timetable-grid">
+        <Card className={panelCardClass} data-tour="timetable-grid">
           {/* Header */}
-          <div className="flex items-center px-5 pt-5 pb-3 gap-2.5 shrink-0 min-h-[4.5rem]">
-            <div className="p-2 rounded-lg bg-muted">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-5 text-foreground">
-                <path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />
-              </svg>
-            </div>
-            <h2 className="heading-section">Dars jadvali</h2>
-            <div className="ml-auto flex items-center gap-3">
-              <span className="inline-flex items-center gap-1 text-xs transition-all duration-200">
-                {saved ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M20 6 9 17l-5-5" /></svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+          <CardHeader className={cn(panelCardHeaderClass, "gap-3 border-b-0 min-h-[4.5rem] px-5 py-5")}>
+            {/* Chap: sarlavha + versiya satri (ostki qatorda) */}
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <SectionIcon>
+                <Calendar />
+              </SectionIcon>
+              <div className="flex min-w-0 flex-col">
+                <CardTitle>Dars jadvali</CardTitle>
+                {versions.length > 0 && (
+                  <VersionChip
+                    variant="subtitle"
+                    versions={versions}
+                    selectedId={selectedVersionId}
+                    todayKey={today}
+                    onSelect={handleSelectVersion}
+                    onCreateNew={() => { setDialogExplicit(true); setEffectiveDialogOpen(true); }}
+                    onDeleteSelected={() => setDeleteConfirmOpen(true)}
+                  />
                 )}
-                <span className="text-muted-foreground">{saved ? "Saqlandi" : "Saqlanmoqda..."}</span>
-              </span>
-              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm transition-all duration-150 cursor-pointer active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive py-2 has-[>svg]:px-3 h-11 px-4 rounded-xl font-semibold bg-foreground text-background hover:bg-foreground/90">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 mr-2">
-                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
-                </svg>
-                Rotatsiyani sozlash
-              </button>
+              </div>
             </div>
-          </div>
 
-          {/* Calendar */}
-          <div data-carousel-ignore="true" className="flex-1 min-h-0 overflow-hidden px-5 pb-5 timetable-editor">
-            <FullCalendar
-              ref={calendarRef}
-              plugins={[timeGridPlugin, interactionPlugin]}
-              initialView="timeGridWeek"
-              headerToolbar={false}
-              dayHeaderContent={(args) => {
-                const dow = args.date.getDay();
-                const short = dow >= 1 && dow <= 6 ? DAY_UZ[dow - 1] : "";
-                return (
-                  <div className="fc-custom-header">
-                    <span className="fc-header-weekday text-sm font-medium">{short}</span>
+            {/* Markaz: koʻrinish rejimi */}
+            <ToggleGroup
+              type="single"
+              value={snapMode}
+              onValueChange={(v) => v && setSnapMode(v as "free" | "lesson")}
+              variant="outline"
+              size="default"
+              aria-label="Koʻrinish rejimi"
+              className="shrink-0 shadow-none"
+            >
+              <ToggleGroupItem value="free" className="gap-1.5 text-xs" title="Erkin: uzluksiz vaqt-grid, istalgan vaqtga qoʻyish">
+                <MousePointer2 className="size-4" />
+                <span className="hidden sm:inline">Erkin</span>
+              </ToggleGroupItem>
+              <ToggleGroupItem value="lesson" className="gap-1.5 text-xs" title="Dars soatlari: tayyor katak grid (qoʻngʻiroq jadvali asosida)">
+                <Magnet className="size-4" />
+                <span className="hidden sm:inline">Dars soatlari</span>
+              </ToggleGroupItem>
+            </ToggleGroup>
+
+            {/* Oʻng: avto-saqlash holati + koʻproq amallar */}
+            <div className="flex flex-1 items-center justify-end gap-2">
+              <span className="hidden items-center gap-1 text-xs text-muted-foreground md:inline-flex" aria-live="polite">
+                {saved ? <Check className="size-3" strokeWidth={2.5} /> : <Loader2 className="size-3 animate-spin" strokeWidth={2} />}
+                {saved ? "Saqlandi" : "Saqlanmoqda…"}
+              </span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label="Koʻproq amallar" className="shadow-none">
+                    <MoreVertical />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {!readOnly && (
+                    <DropdownMenuItem onSelect={() => setSettingsOpen(true)}>
+                      <SlidersHorizontal />
+                      Qoʻngʻiroq jadvali
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onSelect={exportSchedule}>
+                    <Download />
+                    Eksport qilish
+                  </DropdownMenuItem>
+                  {events.length > 0 && !readOnly && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive" onSelect={() => setClearOpen(true)}>
+                        <TrashIcon />
+                        Jadvalni tozalash
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Tozalashni tasdiqlash (⋯ menyudan ochiladi) */}
+            <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Jadvalni tozalash?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Barcha qoʻyilgan darslar jadvaldan olib tashlanadi. Bu amalni ortga qaytarib boʻlmaydi.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => setEvents([])} className="bg-destructive text-white hover:bg-destructive/90">Tozalash</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardHeader>
+
+          {/* Versiya holati banneri — arxiv (qulflangan/ochilgan) va kelgusi versiyalar */}
+          {mode === "past-locked" && (
+            <div className="mx-6 mb-2 flex items-center gap-2.5 rounded-lg border border-border bg-muted/60 px-3.5 py-2 text-xs text-muted-foreground shrink-0">
+              <Lock className="size-3.5 shrink-0" />
+              <p className="flex-1 leading-snug">
+                Arxiv jadval · {selectedRangeLabel}. Faqat koʻrish rejimi.
+              </p>
+              <Button variant="outline" size="sm" className="h-7 shrink-0 text-xs" onClick={() => setUnlockConfirmOpen(true)}>
+                Tahrirlashga ochish
+              </Button>
+            </div>
+          )}
+          {mode === "past-unlocked" && (
+            <div className="mx-6 mb-2 flex items-center gap-2.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3.5 py-2 text-xs text-amber-700 dark:text-amber-400 shrink-0">
+              <TriangleAlert className="size-3.5 shrink-0" />
+              <p className="flex-1 leading-snug">
+                Arxiv tahrirlanmoqda — oʻzgarishlar {selectedRangeLabel} davri tarixiga taʼsir qiladi.
+              </p>
+            </div>
+          )}
+          {mode === "future" && (
+            <div className="mx-6 mb-2 flex items-center gap-2.5 rounded-lg border border-border bg-muted/40 px-3.5 py-2 text-xs text-muted-foreground shrink-0">
+              <CalendarClock className="size-3.5 shrink-0" />
+              <p className="flex-1 leading-snug">
+                Bu jadval {fmtDayMonthUz(selectedVersion?.effectiveFrom ?? today)}dan kuchga kiradi.
+              </p>
+            </div>
+          )}
+
+          {/* Hafta jadvali (kun × vaqt grid) */}
+          <CardContent className={cn(panelCardContentClass, "relative flex flex-col overflow-hidden")} data-carousel-ignore="true">
+            {snapMode === "free" && events.length === 0 && (
+              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-6">
+                <div className="flex flex-col items-center gap-3 text-center rounded-xl border border-dashed border-border bg-background/90 backdrop-blur-sm px-10 py-8 shadow-sm">
+                  <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <Calendar className="size-6" />
                   </div>
-                );
-              }}
-              hiddenDays={[0]}
-              slotMinTime="07:00:00"
-              slotMaxTime="21:00:00"
-              slotDuration="00:15:00"
-              slotLabelInterval="01:00:00"
-              slotLabelFormat={{ hour: "numeric", minute: "2-digit", hour12: false }}
-              height="100%"
-              expandRows={true}
-              editable={true}
-              droppable={true}
-              eventReceive={handleEventReceive}
-              eventDrop={handleEventDrop}
-              eventClick={handleEventClick}
-              events={fcEvents}
-              eventContent={(arg: EventContentArg) => <EventContent arg={arg} onRemove={removeEvent} />}
-              nowIndicator={true}
-              allDaySlot={false}
-              scrollTime="07:00:00"
-            />
-          </div>
-        </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">Jadval hozircha boʻsh</p>
+                    <p className="text-xs text-muted-foreground">Sinflarni chapdan shu yerga sudrab tashlang</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {snapMode === "lesson" ? (
+              <PeriodGrid
+                periods={periods}
+                events={events}
+                classes={classesAll}
+                getClass={getClass}
+                profile={bellConfig.profile}
+                readOnly={readOnly}
+                onPlace={placeInPeriod}
+                onAddClub={addClub}
+                onRemove={removeEvent}
+                onEditEvent={setEditEvent}
+              />
+            ) : (
+            <>
+            {/* Yagona scroll konteyneri: sticky sarlavha + grid bitta oqimda →
+                ustunlar aniq mos keladi (scrollbar ikkalasiga ham bir xil taʼsir qiladi) */}
+            <div ref={scrollRef} className="mx-6 my-2 min-h-0 flex-1 overflow-y-auto rounded-md border border-border [scrollbar-width:thin]">
+              {/* Sarlavha (kun nomlari) — "Dars soatlari" headeri bilan bir xil dizayn */}
+              <div className="sticky top-0 z-20 flex border-b border-border bg-muted">
+                <div className="w-16 shrink-0 border-r border-border py-2.5 text-center text-[13px] font-semibold text-foreground/70">
+                  Vaqt
+                </div>
+                {DAY_UZ.map((d, i) => (
+                  <div key={d} className={cn("min-w-0 flex-1 truncate py-2.5 text-center text-sm font-medium text-foreground/80", i > 0 && "border-l border-border")}>
+                    {d}
+                  </div>
+                ))}
+              </div>
+
+              {/* Grid tanasi */}
+              <div className="flex">
+                {/* Vaqt oʻqi — soatlar soat chizigʻiga (tepaga) tekislangan */}
+                <div className="w-16 shrink-0 border-r border-border">
+                  {HOURS.map((h, idx) => (
+                    <div key={h} style={{ height: HOUR_H }} className={cn("relative", idx > 0 && "border-t border-border")}>
+                      <span className="absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium tabular-nums text-muted-foreground">{minToHHMM(h * 60)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Kun ustunlari */}
+                {DAY_UZ.map((d, col) => {
+                  const day = col + 1;
+                  const dayEvents = events.filter(e => e.day === day);
+                  return (
+                    <div
+                      key={d}
+                      onDragOver={(e) => { if (readOnly) return; e.preventDefault(); e.dataTransfer.dropEffect = grabOffsetRef.current != null ? "move" : "copy"; if (dragOverDay !== day) setDragOverDay(day); }}
+                      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverDay(prev => (prev === day ? null : prev)); }}
+                      onDrop={(e) => onColumnDrop(e, day)}
+                      className={cn("relative min-w-0 flex-1 transition-colors", col > 0 && "border-l border-border/50", dragOverDay === day && "bg-primary/[0.04]")}
+                      style={{ height: HOURS.length * HOUR_H }}
+                    >
+                      {/* 15-daqiqalik chiziqlar — :30 biroz aniqroq, :15/:45 eng xira */}
+                      {HOURS.map((h, idx) => [1, 2, 3].map(q => (
+                        <div key={`q-${h}-${q}`} className={cn("pointer-events-none absolute inset-x-0 border-t", q === 2 ? "border-border/50" : "border-border/25")} style={{ top: idx * HOUR_H + (q * HOUR_H) / 4 }} />
+                      )))}
+                      {/* Soat chiziqlari — aniqroq (asosiy) */}
+                      {HOURS.map((h, idx) => (
+                        idx > 0 ? <div key={h} className="pointer-events-none absolute inset-x-0 border-t border-border" style={{ top: idx * HOUR_H }} /> : null
+                      ))}
+
+                      {/* Darslar */}
+                      {dayEvents.map(ev => {
+                        const cls = getClass(ev.classId);
+                        const tints = classTints(cls.color ?? autoClassColor(ev.classId));
+                        const top = ((ev.startMin - DAY_START_MIN) / 60) * HOUR_H;
+                        const height = Math.max(((ev.endMin - ev.startMin) / 60) * HOUR_H, 22);
+                        if (top + height < 0 || top > HOURS.length * HOUR_H) return null;
+                        return (
+                          <EventBlock
+                            key={ev.id}
+                            name={cls.name}
+                            startMin={ev.startMin}
+                            endMin={ev.endMin}
+                            stripeColor={cls.color ?? autoClassColor(ev.classId)}
+                            surface={tints.surfaceStrong}
+                            softBorder={tints.borderMedium}
+                            textStrong={tints.textStrong}
+                            top={top}
+                            height={height}
+                            readOnly={readOnly}
+                            resizable={snapMode === "free" && !readOnly}
+                            onResize={(s, en) => onResizeEvent(ev.id, s, en)}
+                            onDragStart={(e) => onEventDragStart(e, ev)}
+                            onDragEnd={() => { grabOffsetRef.current = null; setDragOverDay(null); }}
+                            onClick={() => { if (!readOnly) setEditEvent(ev); }}
+                            onRemove={() => removeEvent(ev.id)}
+                          />
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
       </div>
 
       {/* Edit dialog */}
       {editEvent && (
         <EditDialog
           event={editEvent}
+          className={getClass(editEvent.classId).name}
+          color={getClass(editEvent.classId).color ?? autoClassColor(editEvent.classId)}
           onSave={(patch) => { setEvents(prev => prev.map(e => e.id === editEvent.id ? { ...e, ...patch } : e)); setEditEvent(null); }}
           onDelete={() => { removeEvent(editEvent.id); setEditEvent(null); }}
           onClose={() => setEditEvent(null)}
         />
       )}
+      {createOpen && (
+        <ClassFormModal
+          mode="create"
+          onSubmit={handleCreateClass}
+          onClose={() => setCreateOpen(false)}
+        />
+      )}
       {editingClass && (
-        <EditClassModal
-          cls={editingClass}
-          existingEvents={events.filter(e => e.classId === editingClass.id)}
-          onSave={(slots) => { handleSaveClassSlots(editingClass.id, slots); setEditingClass(null); }}
+        <ClassFormModal
+          mode="edit"
+          initial={{
+            name: editingClass.name,
+            grade: editingClass.grade ?? null,
+            subject: editingClass.subject ?? "",
+            color: editingClass.color ?? autoClassColor(editingClass.id),
+            description: editingClass.description ?? "",
+            slots: slotsForClass(editingClass.id),
+          }}
+          onSubmit={(v) => {
+            setOverrides(prev => ({ ...prev, [editingClass.id]: { color: v.color, name: v.name, description: v.description, grade: v.grade, subject: v.subject } }));
+            handleSaveClassSlots(editingClass.id, v.slots);
+            setEditingClass(null);
+          }}
           onClose={() => setEditingClass(null)}
         />
       )}
-    </div>
-    </div>
+      {settingsOpen && (
+        <BellScheduleDialog
+          config={bellConfig}
+          onSave={(c) => { setBellConfig(c); setSettingsOpen(false); }}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
+
+      {/* "Qachondan kuchga kiradi?" — joriy jadval tahririda yoki "Yangi versiya…" da */}
+      <EffectiveDateDialog
+        open={effectiveDialogOpen}
+        todayKey={today}
+        takenDates={versions.map((v) => v.effectiveFrom)}
+        allowInPlace={!dialogExplicit}
+        onConfirm={applyEffectiveChoice}
+        onCancel={dialogExplicit ? () => setEffectiveDialogOpen(false) : cancelEffectiveDialog}
+      />
+
+      {/* Arxivni tahrirlashga ochish tasdigʻi */}
+      <AlertDialog open={unlockConfirmOpen} onOpenChange={setUnlockConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Arxiv jadvalni tahrirlash?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu jadval {selectedRangeLabel} davrida amalda boʻlgan. Oʻzgarishlar oʻsha davr
+              tarixiga (planner, davomat) taʼsir qiladi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { setArchiveUnlocked(true); setUnlockConfirmOpen(false); }}>
+              Tahrirlashga ochish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Versiyani oʻchirish tasdigʻi */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Versiyani oʻchirish?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedVersion
+                ? `«${fmtDayMonthUz(selectedVersion.effectiveFrom)}dan» versiyasi oʻchiriladi. Bu davr sanalari qoʻshni versiya jadvali bilan koʻrsatiladi.`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteVersion} className="bg-destructive text-white hover:bg-destructive/90">
+              Oʻchirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DashboardPageLayout>
   );
 }
 
-/* ─── Event content ─── */
-function EventContent({ arg, onRemove }: { arg: EventContentArg; onRemove: (id: string) => void }) {
-  const fmt = (d: Date | null) => d ? `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}` : "";
+/* ─── Dars bloki (grid ichida) ─── */
+function EventBlock({ name, startMin, endMin, stripeColor, surface, softBorder, textStrong, top, height, resizable, readOnly = false, onResize, onDragStart, onDragEnd, onClick, onRemove }: {
+  name: string;
+  startMin: number;
+  endMin: number;
+  stripeColor: ClassColor;
+  surface: React.CSSProperties;
+  softBorder: React.CSSProperties;
+  textStrong: React.CSSProperties;
+  top: number;
+  height: number;
+  resizable: boolean;
+  /** Arxiv rejimi — drag/resize/oʻchirish oʻchadi */
+  readOnly?: boolean;
+  onResize: (newStart: number, newEnd: number) => void;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
+  onClick: () => void;
+  onRemove: () => void;
+}) {
+  const [resizing, setResizing] = useState(false);
+
+  // Tutqichni sudrash — yuqori yoki pastki chetdan davomiylikni oʻzgartiradi (15 daq snap)
+  const startResize = (edge: "start" | "end") => (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setResizing(true);
+    const startY = e.clientY;
+    const origStart = startMin, origEnd = endMin;
+    const onMove = (me: PointerEvent) => {
+      const delta = snapMin(((me.clientY - startY) / HOUR_H) * 60);
+      if (edge === "end") onResize(origStart, clamp(origEnd + delta, origStart + SNAP, DAY_END_MIN));
+      else onResize(clamp(origStart + delta, DAY_START_MIN, origEnd - SNAP), origEnd);
+    };
+    const onUp = () => {
+      setResizing(false);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
+
+  const compact = height < 58; // juda past bloklarda davomiylik qatorini yashiramiz
+
   return (
-    <div className="fc-event-main-custom group/event relative w-full h-full overflow-hidden p-1.5 flex flex-col">
-      <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(arg.event.id); }}
-        className="absolute top-0.5 right-0.5 size-5 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/event:opacity-100 transition-opacity z-10 cursor-pointer hover:opacity-70">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#2e3138" }}>
-          <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-        </svg>
-      </button>
-      <div className="fc-event-time text-[10px] opacity-80 font-medium leading-none mb-1">{fmt(arg.event.start)} - {fmt(arg.event.end)}</div>
-      <div className="fc-event-title text-xs font-bold leading-tight">{arg.event.title}</div>
+    <div
+      draggable={!readOnly && !resizing}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onClick={onClick}
+      className={cn("group/event isolate absolute left-1 right-1 overflow-hidden rounded-xl border focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]", readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing", CLASS_CARD_INTERACTION)}
+      style={{ top: top + 1, height: height - 2, ...surface, ...softBorder }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
+    >
+      <CardStripes color={stripeColor} variant="cover" />
+      <CardCorner color={stripeColor} className="-right-5 -top-5 size-16" />
+      {!readOnly && (
+        <button
+          type="button"
+          aria-label="Oʻchirish"
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          className="absolute top-0.5 right-0.5 z-20 flex size-5 cursor-pointer items-center justify-center rounded-sm opacity-100 transition-opacity hover:bg-foreground/10 md:opacity-0 md:group-hover/event:opacity-100"
+        >
+          <XIcon className="size-3.5" />
+        </button>
+      )}
+      <div className="flex flex-col gap-1.5 pb-2 pt-3 pl-2.5 pr-5">
+        <span className="flex items-center gap-1.5">
+          <span style={{ backgroundColor: CLASS_COLOR_HEX[stripeColor] }} className="h-3 w-0.5 shrink-0 rounded-full" aria-hidden />
+          <span className="truncate text-[13px] font-semibold leading-tight text-foreground">{name}</span>
+        </span>
+        <span style={textStrong} className="flex items-center gap-1 truncate text-[11px] leading-tight opacity-90">
+          <Clock2Icon className="size-2.5 shrink-0" />
+          <span className="tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>
+        </span>
+        {!compact && (
+          <span style={textStrong} className="flex items-center gap-1 truncate text-[11px] leading-tight opacity-75">
+            <Hourglass className="size-2.5 shrink-0" />
+            <span className="tabular-nums">{fmtDuration(endMin - startMin)}</span>
+          </span>
+        )}
+      </div>
+
+      {/* Oʻlcham (davomiylik) tutqichlari — faqat erkin rejimda */}
+      {resizable && (
+        <>
+          <div draggable={false} onPointerDown={startResize("start")} className="absolute inset-x-0 top-0 z-10 h-2 cursor-ns-resize">
+            <span className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted-foreground opacity-0 transition-opacity group-hover/event:opacity-40" aria-hidden />
+          </div>
+          <div draggable={false} onPointerDown={startResize("end")} className="absolute inset-x-0 bottom-0 z-10 h-2 cursor-ns-resize">
+            <span className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted-foreground opacity-0 transition-opacity group-hover/event:opacity-40" aria-hidden />
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 /* ─── Edit dialog ─── */
-function EditDialog({ event, onSave, onDelete, onClose }: {
+function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
   event: TimetableEvent;
+  className: string;
+  color: ClassColor;
   onSave: (p: Partial<TimetableEvent>) => void;
   onDelete: () => void;
   onClose: () => void;
 }) {
-  const classId = event.classId;
-  const sd = new Date(event.start), ed = new Date(event.end);
-  const [st, setSt] = useState(`${sd.getHours().toString().padStart(2, "0")}:${sd.getMinutes().toString().padStart(2, "0")}`);
-  const [et, setEt] = useState(`${ed.getHours().toString().padStart(2, "0")}:${ed.getMinutes().toString().padStart(2, "0")}`);
-  const base = event.start.split("T")[0];
-  
-  const selectedCls = CLASSES.find(c => c.id === classId);
-  const hex = selectedCls ? CLASS_COLOR_HEX[selectedCls.color ?? autoClassColor(selectedCls.id)] : "#888";
-
-  const dow = sd.getDay();
-  const dayShort = dow >= 1 && dow <= 6 ? DAY_UZ[dow - 1] : "";
+  const [st, setSt] = useState(minToHHMM(event.startMin));
+  const [et, setEt] = useState(minToHHMM(event.endMin));
+  const hex = CLASS_COLOR_HEX[color];
+  const dayName = DAY_UZ[event.day - 1] ?? "";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-background w-full max-w-[340px] rounded-2xl shadow-lg flex flex-col animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-6 pb-2">
-          <h2 className="text-lg font-semibold text-foreground">Dars vaqtini tahrirlash</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors outline-none cursor-pointer">
-            <XIcon className="size-4" />
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Dars vaqtini tahrirlash</DialogTitle>
+        </DialogHeader>
 
-        <div className="p-6 pt-3 space-y-6">
-          <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-semibold text-muted-foreground">Sinf</label>
-            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-border bg-muted/30">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: hex }} />
-              <span className="font-semibold text-foreground">{selectedCls?.name}</span>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Sinf</Label>
+            <div className="flex items-center gap-2.5 rounded-md border border-input bg-muted/40 px-3 py-2">
+              <ClassSwatch hex={hex} className="size-2.5" />
+              <span className="text-sm font-medium">{className}</span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-semibold text-muted-foreground">{dayShort} kuni vaqti</label>
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1 flex flex-col gap-1.5">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Kirish</span>
+          <div className="space-y-2">
+            <Label>{dayName} kuni vaqti</Label>
+            <div className="flex items-end gap-2">
+              <div className="flex-1 space-y-1.5">
+                <TypographyLabel>Kirish</TypographyLabel>
                 <div className="relative">
-                  <input
+                  <Input
                     type="time"
                     value={st}
                     onChange={e => setSt(e.target.value)}
-                    className="flex w-full h-11 rounded-xl border border-input bg-card pl-3 pr-9 py-2 text-[15px] font-semibold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-ring [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden"
+                    className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
                   />
-                  <Clock2Icon className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                  <Clock2Icon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 </div>
               </div>
-              <span className="text-muted-foreground font-medium mt-6">—</span>
-              <div className="relative flex-1 flex flex-col gap-1.5">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Chiqish</span>
+              <span className="pb-2 text-muted-foreground">—</span>
+              <div className="flex-1 space-y-1.5">
+                <TypographyLabel>Chiqish</TypographyLabel>
                 <div className="relative">
-                  <input
+                  <Input
                     type="time"
                     value={et}
                     onChange={e => setEt(e.target.value)}
-                    className="flex w-full h-11 rounded-xl border border-input bg-card pl-3 pr-9 py-2 text-[15px] font-semibold shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-ring [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden"
+                    className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
                   />
-                  <Clock2Icon className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                  <Clock2Icon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="p-6 pt-2 grid grid-cols-2 gap-3">
-          <Button className="from-destructive via-destructive/60 to-destructive focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 bg-transparent bg-gradient-to-r [background-size:200%_auto] text-white hover:bg-transparent hover:bg-[99%_center] h-11 rounded-xl gap-2 font-semibold shadow-none transition-all duration-300" onClick={onDelete}>
-            <TrashIcon className="size-[18px]" />
-            O'chirish
+        <DialogFooter>
+          <Button variant="soft-destructive" onClick={onDelete}>
+            <TrashIcon />
+            Oʻchirish
           </Button>
-          <Button className="bg-sky-600/10 text-sky-600 hover:bg-sky-600/20 focus-visible:ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:hover:bg-sky-400/20 dark:focus-visible:ring-sky-400/40 h-11 rounded-xl gap-2 font-semibold shadow-none transition-colors" onClick={() => onSave({ start: `${base}T${st}:00`, end: `${base}T${et}:00` })}>
-            <SaveIcon className="size-[18px]" />
+          <Button onClick={() => onSave({ startMin: hhmmToMin(st), endMin: hhmmToMin(et) })}>
+            <SaveIcon />
             Saqlash
           </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────── Class Edit Modal ─────────────────────────── */
-function EditClassModal({ cls, existingEvents, onSave, onClose }: { 
-  cls: ClassItem; 
-  existingEvents: TimetableEvent[];
-  onSave: (slots: { day: string; start: string; end: string }[]) => void; 
-  onClose: () => void; 
-}) {
-  const presetHexes = Object.entries(CLASS_COLOR_HEX)
-    .filter(([name]) => name !== "gray")
-    .map(([, hex]) => hex);
-  const initialHex = cls.color ? CLASS_COLOR_HEX[cls.color] : CLASS_COLOR_HEX[autoClassColor(cls.id)];
-  const [selectedColorHex, setSelectedColorHex] = useState<string>(initialHex);
-  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-  const [description, setDescription] = useState("");
-
-  type TimeSlot = { id: string; day: string; start: string; end: string };
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(() => {
-    return existingEvents.map(ev => {
-      const d = new Date(ev.start);
-      const dow = d.getDay();
-      const dayName = dow >= 1 && dow <= 6 ? DAY_UZ[dow - 1] : 'Dushanba';
-      const start = ev.start.split('T')[1].substring(0, 5);
-      const end = ev.end.split('T')[1].substring(0, 5);
-      return { id: Math.random().toString(36).slice(2, 9), day: dayName, start, end };
-    });
-  });
-
-  const addTimeSlot = () => setTimeSlots([...timeSlots, { id: Math.random().toString(), day: "Dushanba", start: "09:00", end: "10:00" }]);
-  const removeTimeSlot = (id: string) => setTimeSlots(timeSlots.filter(s => s.id !== id));
-  const updateTimeSlotDay = (id: string, day: string) => setTimeSlots(timeSlots.map(s => s.id === id ? { ...s, day } : s));
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-background w-full max-w-[540px] rounded-lg border shadow-lg flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex flex-col gap-2 p-6 pb-0 text-center sm:text-left relative">
-          <h2 className="text-lg leading-none font-semibold text-foreground">Sinfni tahrirlash: {cls.name}</h2>
-          <button onClick={onClose} className="absolute top-4 right-4 cursor-pointer opacity-70 transition-opacity hover:opacity-100 outline-none">
-            <XIcon className="size-4" />
-            <span className="sr-only">Close</span>
-          </button>
-        </div>
-
-        <div className="p-6 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
-          <Field>
-            <FieldLabel htmlFor="cls-name">Sinf nomi</FieldLabel>
-            <div className="flex gap-2 relative">
-              <input
-                id="cls-name"
-                value={cls.name}
-                readOnly
-                className="flex h-9 w-full flex-1 rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-none text-foreground/70 cursor-not-allowed"
-              />
-              <button
-                onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-all duration-150 cursor-pointer active:scale-[0.98] size-9 shrink-0 relative border border-border shadow-sm hover:opacity-90"
-                style={{ background: `conic-gradient(${presetHexes.join(", ")}, ${presetHexes[0]})` }}
-              >
-                <PaletteIcon className="h-5 w-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
-              </button>
-
-              {isColorPickerOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setIsColorPickerOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 z-20 w-[260px] p-3 bg-card border border-border rounded-xl shadow-xl flex flex-wrap gap-2 justify-center">
-                    {presetHexes.map(hex => (
-                      <button
-                        key={hex}
-                        onClick={() => { setSelectedColorHex(hex); setIsColorPickerOpen(false); }}
-                        className="w-7 h-7 rounded-full transition-transform hover:scale-110 ring-2 ring-transparent hover:ring-border ring-offset-2 ring-offset-card shadow-sm"
-                        style={{ backgroundColor: hex, outline: hex === selectedColorHex ? `3px solid ${hex}` : undefined, outlineOffset: "2px" }}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </Field>
-
-          <Field>
-            <FieldLabel htmlFor="cls-desc">Tavsif</FieldLabel>
-            <input
-              id="cls-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Masalan, 10-sinflar uchun chuqurlashtirilgan matematika"
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </Field>
-
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">O&apos;quv yili:</span>
-            <span className="font-medium bg-muted px-2 py-0.5 rounded-full text-foreground">2025-2026-o&apos;quv yili</span>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm leading-none font-medium select-none">Haftalik jadval</label>
-              <Button variant="ghost" size="sm" onClick={addTimeSlot} className="h-8 rounded-md gap-1.5 px-3">
-                <PlusIcon className="h-4 w-4 mr-1" /> Vaqt oralig&apos;ini qo&apos;shish
-              </Button>
-            </div>
-
-            <div className="pr-1">
-              <div className="space-y-3">
-                {timeSlots.length === 0 ? (
-                  <p className="text-sm text-muted-foreground py-4 text-center border border-dashed rounded-lg">
-                    Muntazam jadval yo&apos;q. Vaqt qo&apos;shish.
-                  </p>
-                ) : (
-                  timeSlots.map((slot) => (
-                    <div key={slot.id} className="flex items-center gap-3 p-4 border rounded-lg bg-muted/30">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-[130px] h-9 shrink-0 bg-card shadow-none">
-                          <span className="truncate">{slot.day}</span>
-                          <ChevronDownIcon className="h-4 w-4 opacity-50" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[130px]">
-                          <DropdownMenuRadioGroup value={slot.day} onValueChange={(val) => updateTimeSlotDay(slot.id, val)}>
-                            <DropdownMenuRadioItem value="Dushanba">Dushanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Seshanba">Seshanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Chorshanba">Chorshanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Payshanba">Payshanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Juma">Juma</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Shanba">Shanba</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="Yakshanba">Yakshanba</DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <input
-                            type="time"
-                            lang="en-GB"
-                            step="60"
-                            value={slot.start}
-                            onChange={(e) => setTimeSlots(timeSlots.map(s => s.id === slot.id ? { ...s, start: e.target.value } : s))}
-                            className="flex h-9 w-[78px] rounded-md border border-input bg-card pl-2 pr-6 py-1 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shrink-0 [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
-                          />
-                          <Clock2Icon className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                        </div>
-                        
-                        <span className="text-muted-foreground text-xs shrink-0 font-medium">dan</span>
-                        
-                        <div className="relative">
-                          <input
-                            type="time"
-                            lang="en-GB"
-                            step="60"
-                            value={slot.end}
-                            onChange={(e) => setTimeSlots(timeSlots.map(s => s.id === slot.id ? { ...s, end: e.target.value } : s))}
-                            className="flex h-9 w-[78px] rounded-md border border-input bg-card pl-2 pr-6 py-1 text-sm shadow-none transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 shrink-0 [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
-                          />
-                          <Clock2Icon className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                        </div>
-
-                        <span className="text-muted-foreground text-xs shrink-0 font-medium">gacha</span>
-                      </div>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeTimeSlot(slot.id)}
-                        className="ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end p-6 pt-2 border-t mt-auto">
-          <Button variant="outline" onClick={onClose} className="h-9 px-4 py-2">Bekor qilish</Button>
-          <Button variant="default" className="h-9 px-4 py-2" onClick={() => onSave(timeSlots)}>Saqlash</Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

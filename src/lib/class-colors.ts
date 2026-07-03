@@ -1,218 +1,121 @@
+import type { CSSProperties } from "react";
+
+/* ════════════════════════════════════════════════════════════════════
+   SINF RANGLARI — yagona manba (single source of truth)
+
+   Har rang FAQAT bitta joyda, OKLCH formatda aniqlanadi (CLASS_COLOR_BASE).
+   Qolgan hamma narsa — hex, badge/fon/chegara ottenkalari, dark mode —
+   shu bitta qiymatdan HOSIL qilinadi. Hech qaerda qoʻlda takror yoʻq.
+
+   Palitra: 10 ta yaxshi farqlanadigan, oʻqiladigan rang (avto-tanlov uchun)
+   + gray (faqat foydalanuvchi qoʻlda tanlaganda). Idrok yorqinligi (L)
+   oʻxshash diapazonda kalibrlangan, ranglar bir oilaga oʻxshaydi.
+   ════════════════════════════════════════════════════════════════════ */
+
 export type ClassColor =
   | "red"
   | "orange"
   | "amber"
-  | "yellow"
-  | "lime"
   | "green"
-  | "emerald"
   | "teal"
-  | "cyan"
   | "sky"
   | "blue"
   | "indigo"
   | "violet"
-  | "purple"
-  | "fuchsia"
   | "pink"
-  | "rose"
   | "gray";
 
+/** Avto-tanlov hovuzi — `gray` ataylab kiritilmagan (u "belgilanmagan" holat) */
 export const CLASS_COLORS: ClassColor[] = [
   "red",
   "orange",
   "amber",
-  "yellow",
-  "lime",
   "green",
-  "emerald",
   "teal",
-  "cyan",
   "sky",
   "blue",
   "indigo",
   "violet",
-  "purple",
-  "fuchsia",
   "pink",
-  "rose",
 ];
 
-type ColorTokens = {
-  gradient: string;
-  iconBg: string;
-  iconText: string;
-  badgeBg: string;
-  badgeText: string;
-  ring: string;
-  dot: string;
+/**
+ * YAGONA MANBA — har rang bitta OKLCH qiymat.
+ * Qiymatlar rasmiy Tailwind/shadcn palitrasining `-400` darajasi
+ * (https://v3.shadcn.com/colors). Rang ottenkasini oʻzgartirish kerak boʻlsa,
+ * faqat shu yerni tahrirlang. Yangi rang qoʻshish — shu obyektga bitta qator
+ * + `ClassColor` tipiga nom.
+ */
+export const CLASS_COLOR_BASE: Record<ClassColor, string> = {
+  red:    "oklch(0.704 0.191 22.216)",
+  orange: "oklch(0.75 0.183 55.934)",
+  amber:  "oklch(0.828 0.189 84.429)",
+  green:  "oklch(0.792 0.209 151.711)",
+  teal:   "oklch(0.777 0.152 181.912)",
+  sky:    "oklch(0.746 0.16 232.661)",
+  blue:   "oklch(0.707 0.165 254.624)",
+  indigo: "oklch(0.673 0.182 276.935)",
+  violet: "oklch(0.702 0.183 293.541)",
+  pink:   "oklch(0.718 0.202 349.761)",
+  gray:   "oklch(0.707 0.022 261.325)",
 };
 
-export const CLASS_COLOR_TOKENS: Record<ClassColor, ColorTokens> = {
-  red: {
-    gradient: "from-red-100 via-red-50 to-red-100/40",
-    iconBg: "bg-red-200/70",
-    iconText: "text-red-600",
-    badgeBg: "bg-red-100",
-    badgeText: "text-red-700",
-    ring: "ring-red-200",
-    dot: "bg-red-400",
-  },
-  orange: {
-    gradient: "from-orange-100 via-orange-50 to-orange-100/40",
-    iconBg: "bg-orange-200/70",
-    iconText: "text-orange-600",
-    badgeBg: "bg-orange-100",
-    badgeText: "text-orange-700",
-    ring: "ring-orange-200",
-    dot: "bg-orange-400",
-  },
-  amber: {
-    gradient: "from-amber-100 via-amber-50 to-amber-100/40",
-    iconBg: "bg-amber-200/70",
-    iconText: "text-amber-600",
-    badgeBg: "bg-amber-100",
-    badgeText: "text-amber-700",
-    ring: "ring-amber-200",
-    dot: "bg-amber-400",
-  },
-  yellow: {
-    gradient: "from-yellow-100 via-yellow-50 to-yellow-100/40",
-    iconBg: "bg-yellow-200/70",
-    iconText: "text-yellow-600",
-    badgeBg: "bg-yellow-100",
-    badgeText: "text-yellow-700",
-    ring: "ring-yellow-200",
-    dot: "bg-yellow-400",
-  },
-  lime: {
-    gradient: "from-lime-100 via-lime-50 to-lime-100/40",
-    iconBg: "bg-lime-200/70",
-    iconText: "text-lime-600",
-    badgeBg: "bg-lime-100",
-    badgeText: "text-lime-700",
-    ring: "ring-lime-200",
-    dot: "bg-lime-400",
-  },
-  green: {
-    gradient: "from-green-100 via-green-50 to-green-100/40",
-    iconBg: "bg-green-200/70",
-    iconText: "text-green-600",
-    badgeBg: "bg-green-100",
-    badgeText: "text-green-700",
-    ring: "ring-green-200",
-    dot: "bg-green-400",
-  },
-  emerald: {
-    gradient: "from-emerald-100 via-emerald-50 to-emerald-100/40",
-    iconBg: "bg-emerald-200/70",
-    iconText: "text-emerald-600",
-    badgeBg: "bg-emerald-100",
-    badgeText: "text-emerald-700",
-    ring: "ring-emerald-200",
-    dot: "bg-emerald-400",
-  },
-  teal: {
-    gradient: "from-teal-100 via-teal-50 to-teal-100/40",
-    iconBg: "bg-teal-200/70",
-    iconText: "text-teal-600",
-    badgeBg: "bg-teal-100",
-    badgeText: "text-teal-700",
-    ring: "ring-teal-200",
-    dot: "bg-teal-400",
-  },
-  cyan: {
-    gradient: "from-cyan-100 via-cyan-50 to-cyan-100/40",
-    iconBg: "bg-cyan-200/70",
-    iconText: "text-cyan-600",
-    badgeBg: "bg-cyan-100",
-    badgeText: "text-cyan-700",
-    ring: "ring-cyan-200",
-    dot: "bg-cyan-400",
-  },
-  sky: {
-    gradient: "from-sky-100 via-sky-50 to-sky-100/40",
-    iconBg: "bg-sky-200/70",
-    iconText: "text-sky-600",
-    badgeBg: "bg-sky-100",
-    badgeText: "text-sky-700",
-    ring: "ring-sky-200",
-    dot: "bg-sky-400",
-  },
-  blue: {
-    gradient: "from-blue-100 via-blue-50 to-blue-100/40",
-    iconBg: "bg-blue-200/70",
-    iconText: "text-blue-600",
-    badgeBg: "bg-blue-100",
-    badgeText: "text-blue-700",
-    ring: "ring-blue-200",
-    dot: "bg-blue-400",
-  },
-  indigo: {
-    gradient: "from-indigo-100 via-indigo-50 to-indigo-100/40",
-    iconBg: "bg-indigo-200/70",
-    iconText: "text-indigo-600",
-    badgeBg: "bg-indigo-100",
-    badgeText: "text-indigo-700",
-    ring: "ring-indigo-200",
-    dot: "bg-indigo-400",
-  },
-  violet: {
-    gradient: "from-violet-100 via-violet-50 to-violet-100/40",
-    iconBg: "bg-violet-200/70",
-    iconText: "text-violet-600",
-    badgeBg: "bg-violet-100",
-    badgeText: "text-violet-700",
-    ring: "ring-violet-200",
-    dot: "bg-violet-400",
-  },
-  purple: {
-    gradient: "from-purple-100 via-purple-50 to-purple-100/40",
-    iconBg: "bg-purple-200/70",
-    iconText: "text-purple-600",
-    badgeBg: "bg-purple-100",
-    badgeText: "text-purple-700",
-    ring: "ring-purple-200",
-    dot: "bg-purple-400",
-  },
-  fuchsia: {
-    gradient: "from-fuchsia-100 via-fuchsia-50 to-fuchsia-100/40",
-    iconBg: "bg-fuchsia-200/70",
-    iconText: "text-fuchsia-600",
-    badgeBg: "bg-fuchsia-100",
-    badgeText: "text-fuchsia-700",
-    ring: "ring-fuchsia-200",
-    dot: "bg-fuchsia-400",
-  },
-  pink: {
-    gradient: "from-pink-100 via-pink-50 to-pink-100/40",
-    iconBg: "bg-pink-200/70",
-    iconText: "text-pink-600",
-    badgeBg: "bg-pink-100",
-    badgeText: "text-pink-700",
-    ring: "ring-pink-200",
-    dot: "bg-pink-400",
-  },
-  rose: {
-    gradient: "from-rose-100 via-rose-50 to-rose-100/40",
-    iconBg: "bg-rose-200/70",
-    iconText: "text-rose-600",
-    badgeBg: "bg-rose-100",
-    badgeText: "text-rose-700",
-    ring: "ring-rose-200",
-    dot: "bg-rose-400",
-  },
-  gray: {
-    gradient: "from-gray-100 via-gray-50 to-gray-100/40",
-    iconBg: "bg-gray-200/70",
-    iconText: "text-gray-500",
-    badgeBg: "bg-gray-100",
-    badgeText: "text-gray-500",
-    ring: "ring-gray-200",
-    dot: "bg-gray-400",
-  },
-};
+/* ─────────────────────────────────────────────────────────────────────
+   OKLCH → sRGB hex konvertori (faqat shu fayl ichida).
+   Mavjud isteʼmolchilar inline `style={{ color: hex }}` va `${hex}40`
+   (hex-alpha) ishlatadi — shuning uchun hex shaklini ham hosil qilamiz.
+   ───────────────────────────────────────────────────────────────────── */
 
+function clamp01(x: number): number {
+  return x < 0 ? 0 : x > 1 ? 1 : x;
+}
+
+/** Linear sRGB kanalini gamma-kodlangan [0..255] ga oʻtkazish */
+function linearToSrgb(c: number): number {
+  const v = c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  return Math.round(clamp01(v) * 255);
+}
+
+export function oklchToHex(oklch: string): string {
+  const m = oklch.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/i);
+  if (!m) return "#888888";
+  const L = parseFloat(m[1]);
+  const C = parseFloat(m[2]);
+  const hDeg = parseFloat(m[3]);
+  const h = (hDeg * Math.PI) / 180;
+  const a = C * Math.cos(h);
+  const b = C * Math.sin(h);
+
+  // OKLab → LMS
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.291485548 * b;
+  const l = l_ * l_ * l_;
+  const mm = m_ * m_ * m_;
+  const s = s_ * s_ * s_;
+
+  // LMS → linear sRGB
+  const r = +4.0767416621 * l - 3.3077115913 * mm + 0.2309699292 * s;
+  const g = -1.2684380046 * l + 2.6097574011 * mm - 0.3413193965 * s;
+  const bl = -0.0041960863 * l - 0.7034186147 * mm + 1.707614701 * s;
+
+  const toHex = (n: number) => n.toString(16).padStart(2, "0");
+  return `#${toHex(linearToSrgb(r))}${toHex(linearToSrgb(g))}${toHex(linearToSrgb(bl))}`;
+}
+
+/**
+ * Hex qiymatlar — CLASS_COLOR_BASE dan HOSIL qilingan (qoʻlda emas).
+ * Solid toʻldirish uchun: dot, ikona, avatar, progress, swatch va h.k.
+ */
+export const CLASS_COLOR_HEX: Record<ClassColor, string> = Object.fromEntries(
+  (Object.keys(CLASS_COLOR_BASE) as ClassColor[]).map((k) => [k, oklchToHex(CLASS_COLOR_BASE[k])])
+) as Record<ClassColor, string>;
+
+/* ─────────────────────────────────────────────────────────────────────
+   Yordamchilar
+   ───────────────────────────────────────────────────────────────────── */
+
+/** Seed (id yoki nom) asosida barqaror avto-rang tanlash */
 export function autoClassColor(seed: number | string): ClassColor {
   const n =
     typeof seed === "number"
@@ -221,28 +124,75 @@ export function autoClassColor(seed: number | string): ClassColor {
   return CLASS_COLORS[Math.abs(n) % CLASS_COLORS.length];
 }
 
-export function classTokens(color: ClassColor) {
-  return CLASS_COLOR_TOKENS[color];
+/** Solid rang qiymati (OKLCH) — inline `color` / `backgroundColor` uchun */
+export function classColorValue(color: ClassColor): string {
+  return CLASS_COLOR_BASE[color];
 }
 
-/** Tailwind 400 hex values for inline styles */
-export const CLASS_COLOR_HEX: Record<ClassColor, string> = {
-  red:     "#F87171",
-  orange:  "#FB923C",
-  amber:   "#FBBF24",
-  yellow:  "#FACC15",
-  lime:    "#A3E635",
-  green:   "#4ADE80",
-  emerald: "#34D399",
-  teal:    "#2DD4BF",
-  cyan:    "#22D3EE",
-  sky:     "#38BDF8",
-  blue:    "#60A5FA",
-  indigo:  "#818CF8",
-  violet:  "#A78BFA",
-  purple:  "#C084FC",
-  fuchsia: "#E879F9",
-  pink:    "#F472B6",
-  rose:    "#FB7185",
-  gray:    "#9CA3AF",
-};
+/**
+ * `--class-color` CSS oʻzgaruvchisini ochib beruvchi inline style.
+ * globals.css dagi color-mix asosidagi yuzalar (.class-card va h.k.)
+ * shu oʻzgaruvchidan foydalanadi — dark mode avtomatik ishlaydi.
+ */
+export function classColorStyle(color: ClassColor): CSSProperties {
+  return { ["--class-color" as string]: CLASS_COLOR_BASE[color] } as CSSProperties;
+}
+
+/**
+ * Sinf rangidan HOSIL qilingan ottenkalar — tayyor inline-style obyektlari.
+ * Hammasi `color-mix` orqali tema tokenlariga (--background / --foreground)
+ * aralashtiriladi, shuning uchun dark mode qoʻshimcha koddsiz toʻgʻri chiqadi.
+ *
+ * Eski `CLASS_COLOR_TOKENS` (Tailwind klasslar) oʻrnini bosadi.
+ */
+export function classTints(color: ClassColor) {
+  return makeColorTints(CLASS_COLOR_BASE[color]);
+}
+
+/**
+ * Umumiy ottenka engine'i — ixtiyoriy OKLCH bazadan (sinf VA toifa ranglari
+ * shuni ishlatadi, yagona manba). Hammasi `color-mix` orqali tema tokenlariga
+ * aralashadi — dark mode avtomatik.
+ */
+export function makeColorTints(c: string) {
+  const mix = (pct: number, into = "var(--background)") =>
+    `color-mix(in oklch, ${c} ${pct}%, ${into})`;
+
+  return {
+    /** Solid rang (OKLCH string) — urgʻu chizigʻi/ikona uchun */
+    solid: c,
+    /** YAGONA karta yuzasi — eng och fon (matn oʻqilishi uchun) */
+    surface: { backgroundColor: mix(3, "var(--card)") } as CSSProperties,
+    /** YAGONA karta chegarasi — yumshoq rangli */
+    softBorder: { borderColor: mix(22) } as CSSProperties,
+    /** Yumshoq fon — qatorlar */
+    tint: { backgroundColor: mix(7) } as CSSProperties,
+    /** Badge foni */
+    badge: { backgroundColor: mix(18) } as CSSProperties,
+    /** Och gradient fon (jadval kartalari) — yuqoridan pastga, oqqa yaqin */
+    gradient: { backgroundImage: `linear-gradient(155deg, ${mix(13)} 0%, ${mix(4)} 100%)` } as CSSProperties,
+    /** Oʻrtacha toʻyingan karta yuzasi — timetable/planner event kartalari */
+    surfaceStrong: { backgroundImage: `linear-gradient(155deg, ${mix(35, "var(--card)")} 0%, ${mix(25, "var(--card)")} 100%)` } as CSSProperties,
+    /** Rangli matn (badge ichidagi yozuv) */
+    text: { color: mix(52, "var(--foreground)") } as CSSProperties,
+    /** surfaceStrong yuzasida oʻqiladigan toʻqroq rangli matn */
+    textStrong: { color: mix(68, "var(--foreground)") } as CSSProperties,
+    /** surfaceStrong ustida koʻrinadigan chegara (softBorder yuzadan ochroq boʻlib qoladi) */
+    borderMedium: { borderColor: mix(38) } as CSSProperties,
+    /** Kichik nuqta / indikator */
+    dot: { backgroundColor: c } as CSSProperties,
+    /** Chegara rangi (ring) */
+    ring: { borderColor: mix(45) } as CSSProperties,
+    /** Ikona konteyner foni */
+    iconBg: { backgroundColor: mix(20) } as CSSProperties,
+    /** Ikona rangi */
+    iconText: { color: c } as CSSProperties,
+  } as const;
+}
+
+/**
+ * Sinf kartalari uchun YAGONA hover/animatsiya tizimi.
+ * Sidebar, grid (Erkin), period katagi, toʻgarak — hammasi shuni ishlatadi.
+ */
+export const CLASS_CARD_INTERACTION =
+  "transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-px hover:shadow-md active:translate-y-0 active:shadow-sm";

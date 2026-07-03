@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -18,9 +20,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Murabbiyona EMS — O'qituvchi boshqaruv tizimi",
+  title: "Ustozona EMS — Oʻqituvchi boshqaruv tizimi",
   description:
-    "Murabbiyona EMS — o'qituvchilar uchun to'liq boshqaruv tizimi. Sinflar, o'quvchilar, darslar, baholar va davomatni bir joyda boshqaring.",
+    "Ustozona EMS — oʻqituvchilar uchun toʻliq boshqaruv tizimi. Sinflar, oʻquvchilar, darslar, baholar va davomatni bir joyda boshqaring.",
 };
 
 export default function RootLayout({
@@ -29,10 +31,19 @@ export default function RootLayout({
   return (
     <html
       lang="uz"
-      className={`${dmSans.variable} ${jetbrainsMono.variable} h-full`}
+      suppressHydrationWarning
+      className={`${dmSans.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground antialiased">
-        <TooltipProvider>{children}</TooltipProvider>
+      <body className="min-h-screen flex flex-col bg-background text-foreground antialiased">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

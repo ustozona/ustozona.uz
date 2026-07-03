@@ -1,6 +1,45 @@
-import { CLASSES, type ClassInfo, type Student } from "@/lib/grades-data";
+import type { ClassColor } from "@/lib/class-colors";
+import { schoolClassForGradesId } from "@/lib/class-bridge";
+import {
+  isSchoolDay,
+  type AcademicYearCalendar, type DateRange,
+} from "@/lib/academic-calendar";
+import {
+  resolveVersionForDate, type TimetableVersion,
+} from "@/lib/timetable-versions";
+import { addDaysKey, dateKeyToDate } from "@/lib/date-keys";
 
-export type AttendanceStatus = "present" | "absent" | "late" | "excused" | "unmarked";
+// Davomat holati endi erkin satr — built-in + foydalanuvchi yaratgan maxsus
+// holatlar bitta modelda. "unmarked" — yozuv yoʻqligini bildiruvchi sentinel.
+export type AttendanceStatus = string;
+
+/** Holatning davomat foiziga taʼsiri (referensdagi "score impact") */
+export type ScoreImpact = "positive" | "negative" | "neutral";
+
+/**
+ * Davomat holati taʼrifi. Built-in 4 ta holat semantik tokenlardan
+ * (success/destructive/warning/info) rang oladi; maxsus holatlar sinf rang
+ * palitrasidan (ClassColor → classTints) — ikkalasi ham dizayn tizimida.
+ */
+export type AttendanceStatusDef = {
+  key: string;
+  label: string;
+  /** Lucide ikona nomi — UI qatlamida komponentga map qilinadi */
+  icon: string;
+  scoreImpact: ScoreImpact;
+  active: boolean;
+  builtIn: boolean;
+  /** Built-in uchun semantik tone, maxsus uchun ClassColor */
+  tone: "success" | "destructive" | "warning" | "info" | ClassColor;
+};
+
+/** Har sinf shu 4 ta built-in holatdan boshlanadi (referens bilan bir xil) */
+export const BUILTIN_STATUSES: AttendanceStatusDef[] = [
+  { key: "present", label: "Keldi", icon: "check", scoreImpact: "positive", active: true, builtIn: true, tone: "success" },
+  { key: "absent", label: "Kelmadi", icon: "x", scoreImpact: "negative", active: true, builtIn: true, tone: "destructive" },
+  { key: "late", label: "Kechikdi", icon: "clock", scoreImpact: "positive", active: true, builtIn: true, tone: "warning" },
+  { key: "excused", label: "Sababli", icon: "file", scoreImpact: "neutral", active: true, builtIn: true, tone: "info" },
+];
 
 export type AttendanceRecord = {
   studentId: string;
@@ -14,90 +53,39 @@ export type LessonDay = {
   dayOfWeek: number; // 0=Sun..6=Sat
 };
 
-export type AttendanceClassData = {
-  info: ClassInfo;
-  students: Student[];
-  lessonDays: LessonDay[];
-  records: AttendanceRecord[];
-};
+// Sanani MAHALLIY kalendar boʻyicha "YYYY-MM-DD" ga formatlash.
+// toISOString() UTC'ga oʻtkazadi → UTC+ mintaqalarda kun -1 ga suriladi
+// (mas. 1-aprel → 31-mart), bu chorak chegarasini buzadi.
+function ymd(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
-// O'quvchilar — har sinf uchun
-const STUDENTS_BY_CLASS: Record<string, Student[]> = {
-  "9-a": [
-    { id: "ap", name: "Asadbek Panjiyev",     initials: "AP" },
-    { id: "de", name: "Davron Eshbo'riyev",    initials: "DE" },
-    { id: "da", name: "Dilafruz Abdumurodova", initials: "DA" },
-    { id: "dk", name: "Dilora Karimova",       initials: "DK" },
-    { id: "dj", name: "Dilshodbek Jovliyev",   initials: "DJ" },
-    { id: "ea", name: "Elnur Avduvaitov",      initials: "EA" },
-    { id: "ja", name: "Javohir Abduzairov",    initials: "JA" },
-    { id: "kf", name: "Kibora Farhodova",      initials: "KF" },
-    { id: "nj", name: "Nafisa Jo'rayeva",      initials: "NJ" },
-    { id: "ok", name: "O'rol Karimov",         initials: "OK" },
-    { id: "pm", name: "Parviz Mirzayev",       initials: "PM" },
-    { id: "sa", name: "Sarvinoz Alimova",      initials: "SA" },
-    { id: "sh", name: "Sherzod Holiqov",       initials: "SH" },
-    { id: "un", name: "Umida Nazarova",        initials: "UN" },
-    { id: "zt", name: "Zulfiya Tursunova",     initials: "ZT" },
-    { id: "ab", name: "Abdulloh Botirov",      initials: "AB" },
-  ],
-};
-
-// Dars kunlarini generatsiya qilish (har chorshanba va juma)
-function generateLessonDays(year: number, month: number, weekdays: number[]): LessonDay[] {
+/**
+ * Dars kunlarini JADVAL + KALENDARdan hisoblash: diapazondagi har bir kun uchun
+ * (1) `isSchoolDay` — oʻquv yili ichida, yakshanba emas, taʼtil emas; va
+ * (2) oʻsha SANADA amalda boʻlgan jadval versiyasida shu sinfning darsi bor —
+ * ikkalasi ham bajarilsa kun roʻyxatga kiradi. Jadval versiyalangani uchun yil
+ * oʻrtasida dars kuni koʻchsa (mas. chorshanba → payshanba) tarix buzilmaydi.
+ * Grades sinf id ("5-a") ↔ jadval sinf id (raqam) — class-bridge orqali.
+ */
+export function deriveLessonDays(
+  gradesClassId: string,
+  range: DateRange,
+  calendar: AcademicYearCalendar,
+  versions: TimetableVersion[]
+): LessonDay[] {
+  const sc = schoolClassForGradesId(gradesClassId);
+  if (!sc || versions.length === 0 || range.start > range.end) return [];
   const days: LessonDay[] = [];
-  const date = new Date(year, month - 1, 1);
-  while (date.getMonth() === month - 1) {
-    if (weekdays.includes(date.getDay())) {
-      days.push({
-        date: date.toISOString().slice(0, 10),
-        dayOfWeek: date.getDay(),
-      });
+  for (let key = range.start; key <= range.end; key = addDaysKey(key, 1)) {
+    if (!isSchoolDay(calendar, key)) continue;
+    const dow = dateKeyToDate(key).getDay(); // Du..Sh = 1..6 — jadvaldagi `day` bilan bir xil
+    const version = resolveVersionForDate(versions, key);
+    if (version?.events.some((e) => e.classId === sc.id && e.day === dow)) {
+      days.push({ date: key, dayOfWeek: dow });
     }
-    date.setDate(date.getDate() + 1);
   }
   return days;
-}
-
-const APRIL_LESSONS = generateLessonDays(2026, 4, [3, 5]); // chorshanba=3, juma=5
-const MAY_LESSONS   = generateLessonDays(2026, 5, [3, 5, 6]); // +shanba
-
-function makeRecords(students: Student[], days: LessonDay[]): AttendanceRecord[] {
-  const records: AttendanceRecord[] = [];
-  const statuses: AttendanceStatus[] = ["present", "present", "present", "absent", "late", "present", "present", "excused"];
-  let i = 0;
-  for (const s of students) {
-    for (const d of days) {
-      const status = statuses[i % statuses.length];
-      i++;
-      if (status === "unmarked") continue;
-      records.push({ studentId: s.id, date: d.date, status });
-    }
-  }
-  return records;
-}
-
-const students9a = STUDENTS_BY_CLASS["9-a"];
-
-export const ATTENDANCE_DATA: Record<string, AttendanceClassData> = {
-  "9-a": {
-    info: CLASSES.find((c) => c.id === "9-a")!,
-    students: students9a,
-    lessonDays: [...APRIL_LESSONS, ...MAY_LESSONS],
-    records: makeRecords(students9a, [...APRIL_LESSONS, ...MAY_LESSONS]),
-  },
-};
-
-export function getOrCreateClassData(classId: string): AttendanceClassData {
-  if (ATTENDANCE_DATA[classId]) return ATTENDANCE_DATA[classId];
-  const info = CLASSES.find((c) => c.id === classId) ?? { id: classId, name: classId };
-  const students: Student[] = [
-    { id: "s1", name: "O'quvchi 1", initials: "O1" },
-    { id: "s2", name: "O'quvchi 2", initials: "O2" },
-    { id: "s3", name: "O'quvchi 3", initials: "O3" },
-  ];
-  const days = generateLessonDays(2026, 4, [3, 5]);
-  return { info, students, lessonDays: days, records: makeRecords(students, days) };
 }
 
 export function getStatus(
@@ -122,8 +110,58 @@ export function studentStats(records: AttendanceRecord[], studentId: string) {
   };
 }
 
+/**
+ * Holat ogʻirliklari — konstrukt: "Oʻrganish imkoniyati" (docs/attendance-model.md).
+ * Keldi=1 toʻliq, Kechikdi=0.5 qisman, Sababli/Kelmadi=0 (ikkalasi ham kamaytiradi).
+ * Belgilangan barcha kunlar hisobga kiradi (Sababli endi chiqarib tashlanmaydi).
+ */
+export const STATUS_WEIGHT: Record<string, number> = {
+  present: 1, late: 0.5, excused: 0, absent: 0,
+};
+
+/**
+ * Vaznli davomat foizi. `dates` berilsa — faqat shu sanalar (oylik/choraklik).
+ * `absents` — surunkali holatni aniqlash uchun "Kelmadi" soni. Yozuv yoʻq → null.
+ */
+export function weightedRate(
+  records: AttendanceRecord[],
+  studentId: string,
+  dates?: Set<string>
+): { pct: number; counted: number; absents: number } | null {
+  let counted = 0;
+  let sum = 0;
+  let absents = 0;
+  for (const r of records) {
+    if (r.studentId !== studentId) continue;
+    if (r.status === "unmarked") continue;
+    if (dates && !dates.has(r.date)) continue;
+    counted++;
+    sum += STATUS_WEIGHT[r.status] ?? 1;
+    if (r.status === "absent") absents++;
+  }
+  if (counted === 0) return null;
+  return { pct: Math.round((sum / counted) * 100), counted, absents };
+}
+
+/** Quyi pertsentil (mas. 25) qiymati — bo‘sh ro‘yxatda null. */
+export function percentile(values: number[], p: number): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = Math.floor((p / 100) * (sorted.length - 1));
+  return sorted[idx];
+}
+
+/** Oydagi BARCHA kunlar (showAllDays rejimi uchun) — dush–yak tartibida */
+export function allDaysInMonth(year: number, month: number): LessonDay[] {
+  const days: LessonDay[] = [];
+  const date = new Date(year, month - 1, 1);
+  while (date.getMonth() === month - 1) {
+    days.push({ date: ymd(date), dayOfWeek: date.getDay() });
+    date.setDate(date.getDate() + 1);
+  }
+  return days;
+}
+
 export const DAY_NAMES_SHORT = ["Yak", "Du", "Se", "Cho", "Pay", "Ju", "Sha"];
-export const MONTH_NAMES = [
-  "Yanvar","Fevral","Mart","Aprel","May","Iyun",
-  "Iyul","Avgust","Sentabr","Oktabr","Noyabr","Dekabr",
-];
+// Oy nomlari — kanonik manba `lib/localization.ts`da (bu yerda backward-compat re-export).
+export { MONTHS_UZ as MONTH_NAMES } from "./localization";

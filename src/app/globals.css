@@ -4,7 +4,137 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ─────────────────────────────────────────────
+   Tailwind theme tokens — shadcn/ui standart
+   Barcha CSS oʻzgaruvchilarni Tailwind utilitylariga
+   bogʻlaydi: bg-background, text-foreground, ...
+   ───────────────────────────────────────────── */
+@theme inline {
+  /* ── Ranglar ── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── Chartlar ── */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* ── Sidebar ── */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ── Semantik ranglar (custom) ── */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  /* ── Shriftlar ── */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* ── Radius shkala — --radius dan hosil boʻladi ── */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+  --animate-shiny-text: shiny-text 8s infinite
+;
+  @keyframes shiny-text {
+  0%, 90%, 100% {
+    background-position: calc(-100% - var(--shiny-width)) 0;}
+  30%, 60% {
+    background-position: calc(100% + var(--shiny-width)) 0;}}
+  --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
+  --color-color-5: var(--color-5);
+  --color-color-4: var(--color-4);
+  --color-color-3: var(--color-3);
+  --color-color-2: var(--color-2);
+  --color-color-1: var(--color-1);
+  @keyframes rainbow {
+  0% {
+    background-position: 0%;}
+  100% {
+    background-position: 200%;}}
+  --animate-aurora: aurora 8s ease-in-out infinite alternate;
+  @keyframes aurora {
+  0% {
+    background-position: 0% 50%;
+    transform: rotate(-3deg) scale(0.95);}
+  25% {
+    background-position: 50% 100%;
+    transform: rotate(3deg) scale(1.05);}
+  50% {
+    background-position: 100% 50%;
+    transform: rotate(-2deg) scale(1);}
+  75% {
+    background-position: 50% 0%;
+    transform: rotate(2deg) scale(1.05);}
+  100% {
+    background-position: 0% 50%;
+    transform: rotate(-3deg) scale(0.95);}}
+  --animate-shine: shine var(--duration) infinite linear;
+  @keyframes shine {
+  0% {
+    background-position: 0% 0%;}
+  50% {
+    background-position: 100% 100%;}
+  to {
+    background-position: 0% 0%;}}}
+
+/* ─────────────────────────────────────────────
+   Light mode (default) — OKLCH
+   ───────────────────────────────────────────── */
 :root {
+  --radius: 0.5rem;
+
   /* Base */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -17,7 +147,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
 
-  /* Primary — dark charcoal (asl EMStudio rangiga mos) */
+  /* Primary — dark charcoal */
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
 
@@ -41,16 +171,20 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
 
-  /* Radius */
-  --radius: 0.625rem;
+  /* Charts — rangli palitra */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
 
   /* Sidebar */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.94 0 0);
-  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
@@ -59,22 +193,23 @@
   --sidebar-width-icon: 4.5rem;
   --top-header-height: 3.8rem;
 
-  /* Semantic */
-  --success: #16a34a;
-  --success-bg: #dcfce7;
-  --warning: #d97706;
-  --warning-bg: #fef3c7;
-  --info: #2563eb;
-  --info-bg: #dbeafe;
-
-  /* Charts */
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Semantik ranglar — OKLCH */
+  --success: oklch(0.627 0.194 149.214);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.205 0 0);
+  --info: oklch(0.546 0.245 262.881);
+  --info-foreground: oklch(0.985 0 0);
+  --color-1: oklch(66.2% 0.225 25.9);
+  --color-2: oklch(60.4% 0.26 302);
+  --color-3: oklch(69.6% 0.165 251);
+  --color-4: oklch(80.2% 0.134 225);
+  --color-5: oklch(90.7% 0.231 133);
 }
 
+/* ─────────────────────────────────────────────
+   Dark mode — .dark selektori
+   ───────────────────────────────────────────── */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -94,6 +229,15 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+
+  /* Charts — dark mode uchun rangli */
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+
+  /* Sidebar */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -102,56 +246,99 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+
+  /* Semantik ranglar — dark */
+  --success: oklch(0.627 0.194 149.214);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.145 0 0);
+  --info: oklch(0.488 0.243 264.376);
+  --info-foreground: oklch(0.985 0 0);
+  --color-1: oklch(66.2% 0.225 25.9);
+  --color-2: oklch(60.4% 0.26 302);
+  --color-3: oklch(69.6% 0.165 251);
+  --color-4: oklch(80.2% 0.134 225);
+  --color-5: oklch(90.7% 0.231 133);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+/* ─────────────────────────────────────────────
+   Landing Page Themes — Yashil, Ko'k, Indigo
+   ───────────────────────────────────────────── */
+/* Yashil (Ta'lim) - Default */
+.theme-landing-green {
+  --primary: oklch(0.596 0.145 163.225);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.795 0.184 86.047);
+  --accent-foreground: oklch(0.205 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+}
+.dark .theme-landing-green, .theme-landing-green.dark {
+  --primary: oklch(0.596 0.145 163.225);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.795 0.184 86.047);
+  --accent-foreground: oklch(0.205 0 0);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
 }
 
+/* Ko'k (Professional) */
+.theme-landing-blue {
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.627 0.265 303.9);
+  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+}
+.dark .theme-landing-blue, .theme-landing-blue.dark {
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.627 0.265 303.9);
+  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+}
+
+/* Indigo (Zamonaviy) */
+.theme-landing-indigo {
+  --primary: oklch(0.511 0.262 276.966);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.656 0.241 354.308);
+  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+}
+.dark .theme-landing-indigo, .theme-landing-indigo.dark {
+  --primary: oklch(0.511 0.262 276.966);
+  --primary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.656 0.241 354.308);
+  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+}
+
+/* Qora va Oq (Monochrome / Vercel uslubi) */
+.theme-landing-mono {
+  --primary: oklch(0.145 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --accent: oklch(0.95 0 0);
+  --accent-foreground: oklch(0.145 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+}
+.dark .theme-landing-mono, .theme-landing-mono.dark {
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0.145 0 0);
+  --accent: oklch(0.25 0 0);
+  --accent-foreground: oklch(1 0 0);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+}
+
+/* ─────────────────────────────────────────────
+   Base layer — standart chegaralar va fon
+   ───────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -170,7 +357,11 @@
   }
 }
 
-/* Logo font — GoodTime Grotesk o'rniga DM Sans bold tight */
+/* ─────────────────────────────────────────────
+   Custom utilities
+   ───────────────────────────────────────────── */
+
+/* Logo text */
 .logo-text {
   font-size: 18px;
   font-weight: 700;
@@ -178,6 +369,84 @@
   line-height: 1;
 }
 
+/* ─────────────────────────────────────────────
+   EMStudio uslubidagi karta "elevation" — chegara
+   oʻrniga yumshoq, koʻp qatlamli soya. Panel/kartalar
+   dotli fondan ajralib turadi.
+   ───────────────────────────────────────────── */
+.card-elevation {
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.04),
+    0 8px 24px -6px rgb(0 0 0 / 0.07);
+}
+.dark .card-elevation {
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.30),
+    0 8px 24px -4px rgb(0 0 0 / 0.45);
+}
+
+/* ─────────────────────────────────────────────
+   Tipografika shkalasi — YAGONA MANBA
+   Utility klasslar (Tailwind v4 / shadcn uslubi). Inline ishlatish uchun
+   qulay; React komponentlari (Typography*) shu qiymatlarga mos. Doimo
+   tokenlardan (--foreground / --muted-foreground) foydalaning, xom rang yoʻq.
+   Hujjat: docs/design-system.md
+   ───────────────────────────────────────────── */
+
+/* Sahifa sarlavhasi — 24px / 700 */
+.heading-page {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+/* Boʻlim / panel sarlavhasi — 18px / 600 (CardTitle bilan bir xil) */
+.heading-section {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--foreground);
+}
+
+/* Kichik sarlavha (karta ichidagi ism va h.k.) — 15px / 600 */
+.heading-small {
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+/* Asosiy matn — 14px / 400 */
+.text-body {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--foreground);
+}
+
+/* Kichik izoh / muted — 12px / 400 */
+.text-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+/* Yorliq (UPPERCASE) — 11px / 500 */
+.text-label {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Scrollbar */
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
@@ -189,31 +458,61 @@
   border-radius: 2px;
 }
 
-/* Heading & Card utilities (EMStudio mos) */
-.heading-section {
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.3;
+/* ─────────────────────────────────────────────
+   Jurnal (Kundalik) — rich text kontenti
+   Tiptap HTML chiqishini standart koʻrinishda beradi.
+   Editor va EntryCard ikkalasi ham shu klassni ishlatadi.
+   ───────────────────────────────────────────── */
+.prose-journal {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--foreground);
 }
-.heading-small {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-}
-.text-caption {
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-.card-elevation {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
-}
-.card-elevation:hover {
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.06);
+.prose-journal p { margin-bottom: 0.5rem; }
+.prose-journal p:last-child { margin-bottom: 0; }
+.prose-journal h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.3; margin: 0.6rem 0 0.3rem; }
+.prose-journal h2 { font-size: 1.125rem; font-weight: 700; line-height: 1.3; margin: 0.5rem 0 0.25rem; }
+.prose-journal h3 { font-size: 1rem; font-weight: 600; line-height: 1.3; margin: 0.4rem 0 0.2rem; }
+.prose-journal ul { list-style: disc; padding-left: 1.25rem; margin-bottom: 0.5rem; }
+.prose-journal ol { list-style: decimal; padding-left: 1.25rem; margin-bottom: 0.5rem; }
+.prose-journal li { margin: 0.1rem 0; }
+.prose-journal li > p { margin: 0; }
+.prose-journal blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0.5rem 0;
 }
 
-/* ── Animations ───────────────────────────── */
+/* ─────────────────────────────────────────────
+   Jurnal (Kundalik) — rich text kontenti
+   Tiptap HTML chiqishini standart koʻrinishda beradi.
+   Editor va EntryCard ikkalasi ham shu klassni ishlatadi.
+   ───────────────────────────────────────────── */
+.prose-journal {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+.prose-journal p { margin-bottom: 0.5rem; }
+.prose-journal p:last-child { margin-bottom: 0; }
+.prose-journal h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.3; margin: 0.6rem 0 0.3rem; }
+.prose-journal h2 { font-size: 1.125rem; font-weight: 700; line-height: 1.3; margin: 0.5rem 0 0.25rem; }
+.prose-journal h3 { font-size: 1rem; font-weight: 600; line-height: 1.3; margin: 0.4rem 0 0.2rem; }
+.prose-journal ul { list-style: disc; padding-left: 1.25rem; margin-bottom: 0.5rem; }
+.prose-journal ol { list-style: decimal; padding-left: 1.25rem; margin-bottom: 0.5rem; }
+.prose-journal li { margin: 0.1rem 0; }
+.prose-journal li > p { margin: 0; }
+.prose-journal blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  color: var(--muted-foreground);
+  margin: 0.5rem 0;
+}
+
+/* ─────────────────────────────────────────────
+   Animatsiyalar
+   ───────────────────────────────────────────── */
 
 @keyframes fade-slide-up {
   from {
@@ -240,74 +539,395 @@
   animation: fade-in 0.18s ease-out both;
 }
 
-/* ── FullCalendar overrides ── */
-.timetable-editor { container-type: size; }
-
-.timetable-editor .fc { font-family: inherit; font-size: 12px; }
-.timetable-editor .fc-theme-standard td,
-.timetable-editor .fc-theme-standard th,
-.timetable-editor .fc-theme-standard .fc-scrollgrid { border-color: var(--border); }
-.timetable-editor .fc .fc-col-header-cell { background: var(--muted) !important; }
-
-/* Force white background for the time axis column, but keep header corner muted */
-.timetable-editor .fc td.fc-timegrid-axis,
-.timetable-editor .fc .fc-timegrid-slot-label {
-  background: var(--card) !important;
+/* Sinf kartasi tanlanganda "spring" sakrash (ClassCard variant="card") */
+@keyframes spring-bounce {
+  0%   { transform: scale(0.96); opacity: 0; }
+  60%  { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); }
 }
-.timetable-editor .fc th.fc-timegrid-axis {
-  background: var(--muted) !important;
+.animate-spring-bounce {
+  animation: spring-bounce 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* Add "Vaqt" text to the top-left corner */
-.timetable-editor .fc th.fc-timegrid-axis {
-  vertical-align: middle;
+/* Quote bosilganda belgilangan xabar joyiga oʻtib, qisqa "yorish" (flash).
+   color-mix'siz — Turbopack .css'da var() bilan color-mix'ni buzadi. */
+@keyframes feedback-jump-flash {
+  0%   { box-shadow: 0 0 0 3px var(--primary); }
+  70%  { box-shadow: 0 0 0 3px var(--primary); }
+  100% { box-shadow: 0 0 0 3px transparent; }
 }
-.timetable-editor .fc th.fc-timegrid-axis .fc-timegrid-axis-frame {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
+.feedback-jump-flash {
+  border-radius: 0.5rem;
+  animation: feedback-jump-flash 1.4s ease-out;
 }
-.timetable-editor .fc th.fc-timegrid-axis .fc-timegrid-axis-frame::after {
-  content: "Vaqt";
-  font-size: 13px;
-  font-weight: 600;
+
+/* ─────────────────────────────────────────────
+   Interaktiv karta — umumiy hover (shadcn convention)
+   Bitta klass: scale + shadow + active. Rang ixtiyoriy:
+   --card-accent berilsa oʻsha rang, berilmasa --border.
+   ───────────────────────────────────────────── */
+.card-interactive {
+  transition: transform 0.2s ease-out,
+              box-shadow 0.2s ease-out,
+              border-color 0.2s ease-out,
+              background-color 0.2s ease-out;
+  box-shadow: 0 4px 20px -2px rgb(0 0 0 / 0.05);
+}
+.card-interactive:hover {
+  transform: scale(1.015);
+  box-shadow: 0 8px 24px -4px rgb(0 0 0 / 0.08);
+  border-color: color-mix(in srgb, var(--card-accent, var(--border)) 44%, transparent);
+  background-color: color-mix(in srgb, var(--card-accent, transparent) 4%, transparent);
+}
+.card-interactive:active {
+  transform: scale(0.98);
+}
+
+/* ─────────────────────────────────────────────
+   Sinf kartasi — --card-rgb CSS oʻzgaruvchisi orqali
+   rang dinamik boʻlsa ham pure CSS hover ishlaydi.
+   ───────────────────────────────────────────── */
+.class-card {
+  background-color: rgba(var(--card-rgb), 0.05);
+  border-color: rgba(var(--card-rgb), 0.18);
+  box-shadow: none;
+  transition: transform 0.18s ease-out,
+              box-shadow 0.18s ease-out,
+              border-color 0.18s ease-out;
+}
+.class-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(var(--card-rgb), 0.07);
+  border-color: rgba(var(--card-rgb), 0.4);
+}
+.class-card:active {
+  transform: translateY(0px);
+  box-shadow: none;
+}
+
+/* Progress bar — ochiq rang, hover da toʻq */
+.class-card .progress-fill {
+  background-color: rgba(var(--card-rgb), 0.22);
+}
+.class-card:hover .progress-fill {
+  background-color: rgba(var(--card-rgb), 1);
+}
+
+/* ─────────────────────────────────────────────
+   YAGONA list-card holatlari (default / hover / active)
+   Barcha sahifalardagi interaktiv roʻyxat kartalari uchun bitta qobiq.
+   Accent rang `--card-accent` orqali (sinf/topic rangi) inline beriladi.
+   Active 2px-koʻrinish reflowsiz — inset ring orqali (border-width oʻzgarmaydi).
+   ───────────────────────────────────────────── */
+.list-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  transition: background-color 0.15s ease-out,
+              border-color 0.15s ease-out,
+              box-shadow 0.15s ease-out;
+}
+/* Hover — NEYTRAL: yumshoq koʻtarilish soyasi (rang yoʻq, fon oʻzgarmaydi).
+   Rang faqat active'da — ikki holat toza ajraladi. */
+.list-card:hover:not([data-active="true"]) {
+  box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.10);
+}
+.dark .list-card:hover:not([data-active="true"]) {
+  box-shadow: 0 4px 14px -2px rgb(0 0 0 / 0.5);
+}
+/* Leading ikona — FAQAT hover da yengil kattalashadi (active'da emas) */
+.list-card-icon {
+  transition: transform 0.2s ease-out;
+}
+.list-card:hover:not([data-active="true"]) .list-card-icon {
+  transform: scale(1.08);
+}
+/* Active: sinf rangi — chegara + 2px-koʻrinish ring (reflowsiz) + inline tint fon.
+   Build CSS-ichi color-mix'ni mangle qiladi — tint inline `classTints` orqali. */
+.list-card[data-active="true"] {
+  border-color: var(--card-accent, var(--primary));
+  box-shadow: inset 0 0 0 1px var(--card-accent, var(--primary));
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   DARS MUHARRIRI (lesson editor) — Tiptap/ProseMirror + A4 varaq + print
+   ════════════════════════════════════════════════════════════════════ */
+
+/* A4 varaq: 96dpi da 794×1123px (210×297mm) */
+.a4-sheet {
+  width: 794px;
+  max-width: 100%;
+  min-height: 1123px;
+}
+
+/* ProseMirror tahrirlash maydoni */
+.lesson-prose:focus { outline: none; }
+.lesson-prose .ProseMirror { outline: none; min-height: 60vh; }
+.lesson-prose h1 { font-size: 1.875rem; font-weight: 700; line-height: 1.2; margin: 1.4rem 0 0.6rem; letter-spacing: -0.02em; }
+.lesson-prose h2 { font-size: 1.4rem; font-weight: 700; line-height: 1.25; margin: 1.2rem 0 0.5rem; letter-spacing: -0.015em; }
+.lesson-prose h3 { font-size: 1.15rem; font-weight: 600; line-height: 1.3; margin: 1rem 0 0.4rem; }
+.lesson-prose p { font-size: 1rem; line-height: 1.7; margin: 0.5rem 0; }
+.lesson-prose ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
+.lesson-prose ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+.lesson-prose li { margin: 0.2rem 0; line-height: 1.6; }
+.lesson-prose li > p { margin: 0; }
+.lesson-prose blockquote { border-left: 3px solid var(--border); padding-left: 1rem; color: var(--muted-foreground); margin: 0.8rem 0; }
+.lesson-prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.lesson-prose code { font-family: var(--font-mono), monospace; font-size: 0.875em; background: var(--muted); padding: 0.1em 0.35em; border-radius: 0.3rem; }
+.lesson-prose pre { background: oklch(0.21 0.006 285.9); color: oklch(0.96 0 0); font-family: var(--font-mono), monospace; padding: 1rem 1.1rem; border-radius: 0.6rem; overflow-x: auto; margin: 0.8rem 0; font-size: 0.875rem; line-height: 1.5; }
+.lesson-prose pre code { background: none; padding: 0; color: inherit; }
+.lesson-prose mark { background: oklch(0.93 0.13 100); border-radius: 0.2rem; padding: 0.05em 0.15em; }
+.lesson-prose img { max-width: 100%; height: auto; border-radius: 0.6rem; margin: 0.8rem 0; }
+.lesson-prose hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+/* ── Callout bloklar (Obsidian uslubi — lucide ikonlar, OKLCH ranglar) ──
+   Har tur o'z aksent rangini `--cl` orqali beradi; karta foni/hoshiyasi
+   shu rangdan color-mix bilan hisoblanadi. Semantik tokenlar bor joyda
+   ular ishlatiladi (info/success/warning/destructive), qolganlari OKLCH. */
+.lesson-prose .callout {
+  --cl: var(--info);
+  position: relative;
+  background: color-mix(in srgb, var(--cl) 5%, var(--card));
+  padding: 0.75rem 1.1rem 0.8rem 1.35rem;
+  margin: 0.9rem 0;
+}
+.lesson-prose .callout::before {
+  /* Chap rangli hoshiya (radiussiz) */
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0.28rem;
+  background: var(--cl);
+}
+/* Ikon — sarlavha qatorining boshida (absolyut), matn ikon yonidan boshlanadi */
+.lesson-prose .callout-icon {
+  position: absolute;
+  left: 1.3rem;
+  top: 0.92rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--cl);
+  pointer-events: none;
+}
+.lesson-prose .callout-icon svg { width: 100%; height: 100%; }
+.lesson-prose .callout-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.45;
   color: var(--foreground);
-  opacity: 0.7;
+  padding-left: 1.6rem;
 }
+.lesson-prose .callout-inner > :nth-child(2) { margin-top: 0.35rem; }
+.lesson-prose .callout-inner > :last-child { margin-bottom: 0; }
 
-/* Give the header a rounded appearance at the corners */
-.timetable-editor .fc-scrollgrid {
-  border-radius: var(--radius-md);
+/* Tur ranglari — rasmdagi spektr (ko'k → moviy → yashil → sariq → qizil → siyohrang → kulrang) */
+.lesson-prose .callout[data-callout-type="note"]     { --cl: var(--info); }
+.lesson-prose .callout[data-callout-type="abstract"] { --cl: oklch(0.62 0.17 230); }
+.lesson-prose .callout[data-callout-type="info"]     { --cl: oklch(0.65 0.13 215); }
+.lesson-prose .callout[data-callout-type="tip"]      { --cl: oklch(0.66 0.13 185); }
+.lesson-prose .callout[data-callout-type="success"]  { --cl: var(--success); }
+.lesson-prose .callout[data-callout-type="question"] { --cl: oklch(0.68 0.16 135); }
+.lesson-prose .callout[data-callout-type="warning"]  { --cl: var(--warning); }
+.lesson-prose .callout[data-callout-type="failure"]  { --cl: var(--destructive); }
+.lesson-prose .callout[data-callout-type="danger"]   { --cl: oklch(0.58 0.23 13); }
+.lesson-prose .callout[data-callout-type="bug"]      { --cl: oklch(0.6 0.24 0); }
+.lesson-prose .callout[data-callout-type="example"]  { --cl: oklch(0.55 0.22 295); }
+
+/* ── Muharrir: jadval ── */
+.lesson-prose table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 0.9rem 0;
   overflow: hidden;
 }
-.timetable-editor .fc-scrollgrid-section-header > th {
+.lesson-prose th, .lesson-prose td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.65rem;
+  vertical-align: top;
+  position: relative;
+}
+.lesson-prose th {
   background: var(--muted);
+  font-weight: 700;
+  text-align: left;
 }
-.timetable-editor .fc .fc-timegrid-axis {
-  border-top-left-radius: var(--radius-md);
+.lesson-prose td > :first-child, .lesson-prose th > :first-child { margin-top: 0; }
+.lesson-prose td > :last-child, .lesson-prose th > :last-child { margin-bottom: 0; }
+.lesson-prose .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  pointer-events: none;
 }
-.timetable-editor .fc .fc-col-header-cell:last-child {
-  border-top-right-radius: var(--radius-md);
+.lesson-prose .column-resize-handle {
+  position: absolute;
+  right: -2px; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--primary);
+  cursor: col-resize;
 }
 
-.timetable-editor .fc-col-header-cell-cushion { padding: 10px 4px; text-decoration: none; color: var(--foreground); }
-.timetable-editor .fc-timegrid-slot { height: 2.1rem; }
-.timetable-editor .fc-timegrid-slot-label { font-size: 10px; color: var(--muted-foreground); }
-.timetable-editor .fc-timegrid-slot-label-cushion { padding: 0 6px; }
-.timetable-editor .fc-event { border-radius: 6px; border-width: 1px; padding: 2px 4px; cursor: pointer; }
-.timetable-editor .fc-event:hover { filter: brightness(0.92); }
-.timetable-editor .fc-timegrid-now-indicator-line { border-color: #ef4444; }
-.timetable-editor .fc-timegrid-now-indicator-arrow { border-top-color: #ef4444; border-bottom-color: #ef4444; }
-.timetable-editor .fc-day-today { background: rgba(0,0,0,0.015) !important; }
-.timetable-editor .fc-scrollgrid-section-liquid > td { padding-bottom: 0; }
-.timetable-editor .fc-scroller { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-.timetable-editor .fc-event-time { font-size: 10px; font-weight: 600; opacity: 0.9; line-height: 1.2; }
-.timetable-editor .fc-event-title { font-size: 11px; font-weight: 700; line-height: 1.2; }
+/* ── Muharrir: vazifa roʻyxati (todo) ── */
+.lesson-prose ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.1rem;
+  margin: 0.5rem 0;
+}
+.lesson-prose ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0.25rem 0;
+}
+.lesson-prose ul[data-type="taskList"] li > label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 1.7em; /* matn qatori balandligi bilan bir xil — vertikal markaz */
+  user-select: none;
+}
+.lesson-prose ul[data-type="taskList"] li > div { flex: 1; min-width: 0; }
+.lesson-prose ul[data-type="taskList"] li > div > p { margin: 0; line-height: 1.7; }
+.lesson-prose ul[data-type="taskList"] input[type="checkbox"] {
+  appearance: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 1.5px solid var(--border);
+  border-radius: 0.3rem;
+  background: var(--card);
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.lesson-prose ul[data-type="taskList"] input[type="checkbox"]:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.lesson-prose ul[data-type="taskList"] input[type="checkbox"]:checked::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  background: var(--primary-foreground);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.lesson-prose ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
 
-/* Day header: "Day 1 / Mon" format */
-.timetable-editor .fc-custom-header { display: flex; flex-direction: column; align-items: center; padding: 4px 2px; }
-.timetable-editor .fc-header-day { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--foreground); line-height: 1.3; }
-.timetable-editor .fc-header-weekday { font-size: 13px; font-weight: 600; color: var(--foreground); opacity: 0.7; line-height: 1.3; }
+/* ── Murabbiyona AI chat — markdown ko'rinishi ── */
+.ai-prose > :first-child { margin-top: 0; }
+.ai-prose > :last-child { margin-bottom: 0; }
+.ai-prose h1, .ai-prose h2, .ai-prose h3 { font-weight: 700; line-height: 1.3; margin: 1rem 0 0.4rem; color: var(--foreground); }
+.ai-prose h1 { font-size: 1.15rem; }
+.ai-prose h2 { font-size: 1.05rem; }
+.ai-prose h3 { font-size: 0.95rem; }
+.ai-prose p { margin: 0.45rem 0; line-height: 1.6; }
+.ai-prose ul { list-style: disc; padding-left: 1.25rem; margin: 0.45rem 0; }
+.ai-prose ol { list-style: decimal; padding-left: 1.25rem; margin: 0.45rem 0; }
+.ai-prose li { margin: 0.2rem 0; line-height: 1.55; }
+.ai-prose li > p { margin: 0; }
+.ai-prose strong { font-weight: 700; }
+.ai-prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+.ai-prose code { font-family: var(--font-mono), monospace; font-size: 0.85em; background: var(--muted); padding: 0.08em 0.32em; border-radius: 0.3rem; }
+.ai-prose pre { background: oklch(0.21 0.006 285.9); color: oklch(0.96 0 0); padding: 0.75rem 0.9rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.6rem 0; font-size: 0.8rem; }
+.ai-prose pre code { background: none; padding: 0; color: inherit; }
+.ai-prose blockquote { border-left: 3px solid var(--border); padding-left: 0.8rem; color: var(--muted-foreground); margin: 0.6rem 0; }
+.ai-prose hr { border: none; border-top: 1px solid var(--border); margin: 0.9rem 0; }
+.ai-prose table { border-collapse: collapse; width: 100%; margin: 0.6rem 0; font-size: 0.85em; }
+.ai-prose th, .ai-prose td { border: 1px solid var(--border); padding: 0.35rem 0.5rem; text-align: left; }
 
+/* Placeholder (bo'sh paragraf) */
+.lesson-prose .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted-foreground);
+  opacity: 0.55;
+  pointer-events: none;
+  height: 0;
+}
+
+/* ── PDF / Print: faqat A4 varaqni chiqaramiz ── */
+@media print {
+  @page { size: A4; margin: 16mm; }
+  body { overflow: visible !important; }
+  body * { visibility: hidden !important; }
+  .a4-print, .a4-print * { visibility: visible !important; }
+  .a4-print {
+    position: absolute !important;
+    left: 0; top: 0;
+    width: 100% !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .no-print { display: none !important; }
+}
+
+/* ── magicui RainbowButton ── */
+:root {
+  --color-1: hsl(0 100% 63%);
+  --color-2: hsl(270 100% 63%);
+  --color-3: hsl(210 100% 63%);
+  --color-4: hsl(195 100% 63%);
+  --color-5: hsl(90 100% 63%);
+}
+@keyframes rainbow {
+  0% { background-position: 0%; }
+  100% { background-position: 200%; }
+}
+.animate-rainbow { animation: rainbow var(--speed, 2s) infinite linear; }
+
+/* ─────────────────────────────────────────────
+   Sidebar — "icon" (yopiq) rejim.
+   Bu loyiha Tailwind setupida shadcn'ning
+   group-data-[collapsible=icon]:* variantlari generatsiya
+   boʻlmaydi. Shuning uchun yopiq holatni data-atributlarga
+   asoslangan oddiy (layersiz) CSS bilan boshqaramiz.
+   Enni utility bilan urishtirmaymiz — buning oʻrniga
+   --sidebar-width oʻzgaruvchisining OʻZINI icon-enga
+   tenglashtiramiz, shunda mavjud w-(--sidebar-width)
+   klassi tabiiy ravishda toraytadi (specificity jangisiz).
+   ───────────────────────────────────────────── */
+/* (En inline boshqariladi — ui/sidebar.tsx ichida `sidebarWidth`.
+   Bu yerda faqat yopiq holatdagi koʻrinish tozalovi.) */
+
+/* Boʻlim sarlavhalarini yashirish */
+[data-slot="sidebar"][data-collapsible="icon"] [data-sidebar="group-label"] {
+  margin-top: -0.5rem;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Menyu tugmalari → faqat ikonka, markazda (matnni yashiramiz).
+   data-sidebar="menu-button"ni ishlatamiz, chunki asChild kompozitsiyada
+   (DropdownMenuTrigger/Link) data-slot qoplanib ketishi mumkin, lekin
+   data-sidebar omon qoladi. */
+[data-slot="sidebar"][data-collapsible="icon"] [data-sidebar="menu-button"] {
+  justify-content: center;
+  overflow: hidden;
+}
+/* Ikonkadan keyingi hamma narsa (matn, chevron) yashirinadi */
+[data-slot="sidebar"][data-collapsible="icon"] [data-sidebar="menu-button"] > :not(:first-child) {
+  display: none;
+}
+
+/* Badge, action, sub-menyu yopiq holatda koʻrinmaydi */
+[data-slot="sidebar"][data-collapsible="icon"] [data-sidebar="menu-badge"],
+[data-slot="sidebar"][data-collapsible="icon"] [data-sidebar="menu-action"],
+[data-slot="sidebar"][data-collapsible="icon"] [data-sidebar="group-action"],
+[data-slot="sidebar"][data-collapsible="icon"] [data-slot="sidebar-menu-sub"] {
+  display: none;
+}
+
+/* Footer separatorni ham yashiramiz (toza koʻrinish) */
+[data-slot="sidebar"][data-collapsible="icon"] [data-sidebar="separator"] {
+  display: none;
+}

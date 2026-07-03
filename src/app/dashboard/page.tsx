@@ -2,22 +2,54 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Sunrise, Sunset, Crown, BookOpen, CalendarDays, ChevronLeft, ChevronRight, SquareCheckBig, Plus, ArrowUpRight, FileText, Trash2, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Sunrise, Sunset, BookOpen, CalendarDays, ChevronLeft, ChevronRight, SquareCheckBig, Plus, ArrowUpRight, FileText, Trash2, Clock } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { useTimetableStore } from "@/store/useTimetableStore";
+import { useCalendarStore } from "@/store/useCalendarStore";
+import { resolveVersionForDate } from "@/lib/timetable-versions";
+import { getHolidayForDate } from "@/lib/academic-calendar";
+import { dateToKey } from "@/lib/date-keys";
+import { CLASSES } from "@/lib/classes-data";
+import { gradesIdForSchoolClass } from "@/lib/class-bridge";
+import { autoClassColor, classTints } from "@/lib/class-colors";
+import { fmtMin } from "@/lib/timetable";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
+import { Badge } from "@/components/ui/badge";
 
-const todayLessons = [
-  { id: 1, title: "1-dars.", unit: "No Unit", subject: "Adabiyot", startTime: "08:00", endTime: "08:45", status: "Rejalashtirilgan", color: "rgb(74, 222, 128)", bg: "rgba(74, 222, 128, 0.125)", badgeBg: "rgba(74, 222, 128, 0.082)", badgeBorder: "rgba(74, 222, 128, 0.19)" },
-  { id: 2, title: "2-dars.", unit: "No Unit", subject: "Ona tili", startTime: "11:25", endTime: "12:10", status: "Rejalashtirilgan", color: "rgb(251, 191, 36)", bg: "rgba(251, 191, 36, 0.125)", badgeBg: "rgba(251, 191, 36, 0.082)", badgeBorder: "rgba(251, 191, 36, 0.19)" },
-  { id: 3, title: "3-dars.", unit: "No Unit", subject: "Adabiyot", startTime: "13:00", endTime: "13:45", status: "Rejalashtirilgan", color: "rgb(248, 113, 113)", bg: "rgba(248, 113, 113, 0.125)", badgeBg: "rgba(248, 113, 113, 0.082)", badgeBorder: "rgba(248, 113, 113, 0.19)" },
-  { id: 4, title: "4-dars.", unit: "No Unit", subject: "Ona tili", startTime: "15:30", endTime: "16:15", status: "Rejalashtirilgan", color: "rgb(244, 114, 182)", bg: "rgba(244, 114, 182, 0.125)", badgeBg: "rgba(244, 114, 182, 0.082)", badgeBorder: "rgba(244, 114, 182, 0.19)" },
-  { id: 5, title: "5-dars.", unit: "No Unit", subject: "Tarix", startTime: "17:10", endTime: "17:55", status: "Rejalashtirilgan", color: "rgb(251, 146, 60)", bg: "rgba(251, 146, 60, 0.125)", badgeBg: "rgba(251, 146, 60, 0.082)", badgeBorder: "rgba(251, 146, 60, 0.19)" },
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { TypographyH3, TypographyMuted, TypographySmall } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
+import { MONTHS_UZ } from "@/lib/localization";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import DashboardPageLayout, {
+  panelCardClass,
+  panelCardContentClass,
+  panelCardHeaderClass,
+  panelScrollInnerClass,
+  dashboardGridClass,
+  dashboardStackClass,
+} from "@/components/DashboardPage";
+
+// Kelgusi darslar — hafta davomida, bugundan keyin, faqat oʻtilmagan
+const upcomingWeekLessons = [
+  // Seshanba
+  { id: 6, date: "4-iyun", dayName: "Seshanba", className: "9-A", topic: "Matnni oʻqib tushunish: asosiy gʻoya", startTime: "09:00", endTime: "09:45", isReady: true, color: "rgb(59, 130, 246)", bg: "rgba(59, 130, 246, 0.125)" },
+  { id: 7, date: "4-iyun", dayName: "Seshanba", className: "10-A", topic: "Norasmiy xat yozish", startTime: "11:00", endTime: "11:45", isReady: false, color: "rgb(139, 92, 246)", bg: "rgba(139, 92, 246, 0.125)" },
+  // Chorshanba
+  { id: 8, date: "5-iyun", dayName: "Chorshanba", className: "6-A", topic: "Present Simple: savol va inkor", startTime: "08:00", endTime: "08:45", isReady: true, color: "rgb(74, 222, 128)", bg: "rgba(74, 222, 128, 0.125)" },
+  // Payshanba
+  { id: 9, date: "6-iyun", dayName: "Payshanba", className: "7-B", topic: "Hobbilar haqida suhbat", startTime: "10:30", endTime: "11:15", isReady: false, color: "rgb(236, 72, 153)", bg: "rgba(236, 72, 153, 0.125)" },
 ];
-
-const monthNamesUz = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const firstName = useSettingsStore((s) => s.profile.name).split(/\s+/)[0];
   
   const [currentMonthDate, setCurrentMonthDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -34,6 +66,20 @@ export default function DashboardPage() {
     
     return () => clearInterval(timer);
   }, []);
+
+  // ── Bugungi darslar — bugun amaldagi jadval versiyasidan ──
+  const versions = useTimetableStore((s) => s.versions);
+  const calendar = useCalendarStore((s) => s.calendar);
+  const classById = useMemo(() => new Map(CLASSES.map((c) => [c.id, c])), []);
+  const todayKey = dateToKey(currentTime);
+  const holiday = getHolidayForDate(calendar, todayKey);
+  const todayDow = currentTime.getDay(); // 0=Yakshanba
+  const todaysEvents = useMemo(() => {
+    if (holiday || todayDow === 0) return [];
+    return (resolveVersionForDate(versions, todayKey)?.events ?? [])
+      .filter((e) => e.day === todayDow)
+      .sort((a, b) => a.startMin - b.startMin);
+  }, [versions, todayKey, holiday, todayDow]);
 
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
@@ -53,7 +99,7 @@ export default function DashboardPage() {
 
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year: number, month: number) => {
-    let day = new Date(year, month, 1).getDay();
+    const day = new Date(year, month, 1).getDay();
     return day === 0 ? 6 : day - 1;
   };
   
@@ -104,11 +150,11 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 min-h-0 flex flex-col px-4 py-2 md:p-8 lg:px-12">
-        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[1fr] gap-4">
+      <DashboardPageLayout className="flex-1">
+        <div className={cn(dashboardGridClass, "flex-1 min-h-0 grid-cols-1 lg:grid-cols-4 lg:grid-rows-[1fr]")}>
           
           {/* Left Column (Hero & Lessons) */}
-          <div className="lg:col-span-2 flex flex-col gap-4 h-full min-h-0">
+          <div className={cn(dashboardStackClass, "lg:col-span-2 h-full min-h-0")}>
             {/* HERO CARD */}
             <div className="relative overflow-hidden rounded-xl px-5 py-7 md:px-8 md:py-12 text-white">
               <div className={`absolute inset-0 bg-gradient-to-br z-0 ${isDay ? "from-amber-400 via-orange-500 to-rose-500" : "from-slate-800 via-indigo-900 to-purple-900"}`} />
@@ -121,12 +167,18 @@ export default function DashboardPage() {
               />
               <div className="absolute inset-0 bg-black/10 z-[2]" />
               <div className="relative z-10 flex items-start justify-between [text-shadow:_0_2px_8px_rgb(0_0_0_/_60%)]">
-                <div className="flex flex-col gap-1 md:gap-1.5">
-                  <div className="flex items-center gap-2.5 md:gap-3">
+                <div className="flex flex-col gap-1 md:gap-2">
+                  <div className="flex items-center gap-3">
                     <Icon className={`size-7 md:size-8 drop-shadow-lg ${iconColor}`} />
-                    <h2 className="text-xl md:text-2xl font-bold">{greetingText()}, Otabek</h2>
+                    <TypographyH3 className="text-2xl text-white">{greetingText()}, {firstName}!</TypographyH3>
                   </div>
-                  <p className="text-sm text-white max-w-md text-[15px]">Bugun 5 ta darsingiz va bajarishingiz kerak bo'lgan 1 ta vazifangiz bor.</p>
+                  <TypographyMuted className="max-w-md leading-relaxed text-white">
+                    {holiday
+                      ? `Bugun — ${holiday.name}. Yaxshi dam oling!`
+                      : todaysEvents.length === 0
+                        ? "Bugun darsingiz yoʻq, lekin bajarishingiz kerak boʻlgan 1 ta vazifangiz bor."
+                        : `Bugun ${todaysEvents.length} ta darsingiz va bajarishingiz kerak boʻlgan 1 ta vazifangiz bor.`}
+                  </TypographyMuted>
                 </div>
               </div>
               <div className="absolute -top-10 -right-10 size-48 rounded-full bg-white/10 z-[3]" />
@@ -134,268 +186,244 @@ export default function DashboardPage() {
             </div>
 
             {/* LESSONS CARD */}
-            <div className="bg-card text-card-foreground rounded-xl border border-border/50 shadow-sm py-0 gap-0 h-full flex flex-col overflow-hidden">
-              <div className="px-5 pt-6 pb-3 shrink-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-lg bg-muted">
-                      <BookOpen className="size-5 text-foreground" />
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                      <h2 className="text-xl"><span className="font-semibold">Shu haftadagi</span> <span className="font-normal text-muted-foreground">darslar</span></h2>
-                    </div>
-                  </div>
-                  <Link href="/dashboard/lessons" className="hidden md:inline-block text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                    Barchasi
-                  </Link>
+            <Card className={cn("shadow-sm", panelCardClass)}>
+              <CardHeader className={cn(panelCardHeaderClass, "justify-between min-h-[4.5rem] px-5 py-5!")}>
+                <div className="flex items-center gap-2">
+                  <SectionIcon><BookOpen /></SectionIcon>
+                  <CardTitle>Kelgusi darslar</CardTitle>
                 </div>
-              </div>
-              <div className="px-0 pb-0 pt-0 flex-1 min-h-0 relative overflow-hidden">
-                <style>{`
-                  [data-radix-scroll-area-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}
-                  [data-radix-scroll-area-viewport]::-webkit-scrollbar{display:none}
-                `}</style>
-                <div data-radix-scroll-area-viewport="" className="h-full w-full overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                  <div className="space-y-4 px-5 pb-5">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-semibold text-foreground">Bugun</span>
-                        <span className="text-xs text-muted-foreground">6-may</span>
-                      </div>
-                      <div className="space-y-2">
-                        {todayLessons.map(lesson => (
-                          <div key={lesson.id} className="group rounded-xl border p-4 cursor-pointer data-[state=open]:ring-2 data-[state=open]:ring-inset data-[state=open]:ring-primary/40 transition-colors duration-300 ease-out hover:bg-muted/40 hover:border-border/80 bg-background border-border">
-                            <div className="flex items-center gap-3">
-                              <div className="p-3.5 rounded-xl shrink-0 transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-3" style={{ backgroundColor: lesson.bg }}>
-                                <FileText className="size-7" style={{ color: lesson.color }} />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <h4 className="font-semibold text-sm leading-tight truncate group-hover:text-primary transition-colors">{lesson.title}</h4>
-                                <div className="flex items-center gap-1.5 mt-0.5 text-xs text-muted-foreground">
-                                  <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: lesson.color }} />
-                                  <span className="truncate max-w-[320px]">
-                                    {lesson.unit} &bull; {lesson.startTime} - {lesson.endTime}
-                                  </span>
+                <Link href="/dashboard/lessons" className="hidden md:inline-block text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                  Barchasi
+                </Link>
+              </CardHeader>
+              <CardContent className={panelCardContentClass}>
+                  <div className={cn(panelScrollInnerClass, "space-y-4")}>
+                    {/* Kunlar boʻyicha guruhlangan darslar */}
+                    {Array.from(new Map(upcomingWeekLessons.map(l => [l.dayName, l])).entries()).map(([dayName, firstLesson]) => (
+                      <div key={dayName}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <TypographySmall className="text-foreground">{dayName}</TypographySmall>
+                          <TypographyMuted>{firstLesson.date}</TypographyMuted>
+                        </div>
+                        <div className="space-y-2">
+                          {upcomingWeekLessons.filter(l => l.dayName === dayName).map((lesson, i) => (
+                            <div
+                              key={lesson.id}
+                              style={{
+                                animationDelay: `${i * 55}ms`,
+                                borderColor: `var(--hover-color, var(--border))`,
+                              } as React.CSSProperties}
+                              className="animate-fade-slide-up group rounded-lg border p-4 cursor-pointer bg-card transition-all duration-200 hover:bg-muted/5"
+                              onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLDivElement).style.setProperty('--hover-color', lesson.color);
+                              }}
+                              onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLDivElement).style.setProperty('--hover-color', 'var(--border)');
+                              }}
+                            >
+                              <div className="flex items-center gap-3">
+                                {/* Chap: Icon */}
+                                <div className="p-3 rounded-xl shrink-0 transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-3" style={{ backgroundColor: lesson.bg }}>
+                                  <FileText className="size-7" style={{ color: lesson.color }} />
                                 </div>
-                              </div>
-                              <div className="shrink-0 flex items-center gap-4">
-                                <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
-                                  <span className="size-1.5 rounded-full flex-shrink-0 bg-emerald-500" />
-                                  {lesson.status}
-                                </span>
-                              </div>
+
+                                {/* Oʻrta: Mavzu + Sinf/vaqt */}
+                                <div className="min-w-0 flex-1 flex flex-col gap-1">
+                                  <p className="text-sm font-semibold leading-snug text-foreground transition-colors duration-200 group-hover:text-primary">{lesson.topic}</p>
+                                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <span className="font-medium text-foreground">{lesson.className}</span>
+                                    <span className="size-0.5 rounded-full bg-muted-foreground" />
+                                    <span>{lesson.startTime}</span>
+                                  </div>
+                                </div>
+
+                                {/* Oʻng: Badge */}
+                                {lesson.isReady ? (
+                                  <Badge variant="outline" className="hidden px-2.5 py-1 md:inline-flex items-center gap-1.5 rounded-full border-success/30 bg-success/10 text-success text-xs font-medium shrink-0">
+                                    <span className="size-1.5 rounded-full flex-shrink-0 bg-success" />
+                                    Tayyor
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="hidden px-2.5 py-1 md:inline-flex items-center gap-1.5 rounded-full border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-xs font-medium shrink-0">
+                                    <span className="size-1.5 rounded-full flex-shrink-0 bg-amber-500" />
+                                    Reja yoʻq
+                                  </Badge>
+                                )}
                               <div className="shrink-0 group/actions relative flex items-center before:content-[''] before:absolute before:-inset-y-4 before:-left-10 before:-right-4">
                                 <div className="relative z-10 flex items-center gap-0.5 overflow-hidden max-w-0 opacity-0 group-hover/actions:max-w-16 group-hover/actions:opacity-100 transition-all duration-200 ease-out">
-                                  <button className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-muted transition-colors shrink-0">
+                                  <Button variant="ghost" size="icon-sm" className="text-muted-foreground/60 hover:text-destructive shrink-0">
                                     <Trash2 className="size-3.5" />
-                                  </button>
+                                  </Button>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Middle Column (Schedule) */}
           <div className="h-full min-h-0">
-            <div className="bg-card text-card-foreground rounded-xl border border-border/50 shadow-sm flex flex-col gap-0 py-0 overflow-hidden h-full">
-              <div className="flex items-center px-5 shrink-0" style={{ height: 68 }}>
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-muted">
-                    <Clock className="size-5 text-foreground" />
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <h2 className="text-xl"><span className="font-semibold">Bugungi</span> <span className="font-normal text-muted-foreground">darslar</span></h2>
-                  </div>
+            <Card className={cn("shadow-sm", panelCardClass)}>
+              <CardHeader className={cn(panelCardHeaderClass, "min-h-[4.5rem] px-5 py-5!")}>
+                <div className="flex items-center gap-2">
+                  <SectionIcon><Clock /></SectionIcon>
+                  <CardTitle>Bugungi darslar</CardTitle>
                 </div>
-              </div>
-              <div className="flex-1 min-h-0">
-                <div className="h-full overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                  <div className="relative border-t border-border/50 flex">
-                    <div className="w-12 shrink-0 border-r border-border/50">
+              </CardHeader>
+              <CardContent className={panelCardContentClass}>
+                <div className={panelScrollInnerClass}>
+                  <div className="relative border-t border-border/30 flex">
+                    <div className="w-12 shrink-0 border-r border-border/30">
                       {[7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6].map((h, i) => (
-                        <div key={i} className="flex items-start justify-center pt-1 border-b border-border/50" style={{ height: 120 }}>
-                          <span className="text-[10px] text-muted-foreground font-medium">{h}:00</span>
+                        <div key={i} className="flex items-start justify-center pt-1 border-b border-border/30" style={{ height: 120 }}>
+                          <span className="text-xs font-medium text-muted-foreground">{h}:00</span>
                         </div>
                       ))}
                     </div>
                     <div className="relative flex-1">
                       {Array.from({ length: 12 }).map((_, i) => (
-                        <div key={i} className="border-b border-border/50" style={{ height: 120 }}>
-                          <div className="border-b border-border/20 mt-[60px]" />
+                        <div key={i} className="border-b border-border/30" style={{ height: 120 }}>
+                          <Separator className="mt-[60px] opacity-20" />
                         </div>
                       ))}
                       
-                      {/* 9-B Class */}
-                      <div className="absolute left-1 right-1 rounded-lg z-[1] group transition-shadow overflow-hidden" style={{ top: 121, height: 88, backgroundColor: "rgba(74, 222, 128, 0.125)" }}>
-                        <div className="h-full flex flex-col px-2 pt-2 pb-2">
-                          <div className="relative shrink-0 mb-0.5">
-                            <div className="flex items-baseline gap-1.5 min-w-0">
-                              <p className="text-xs font-bold truncate min-w-0">9-B</p>
-                              <span className="text-[10px] shrink-0 whitespace-nowrap opacity-70">8:00 - 8:45</span>
-                            </div>
-                            <div className="absolute top-0 right-0 bottom-0 flex items-stretch gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="aspect-square h-full rounded-md bg-black/[0.08] hover:bg-black/[0.15] dark:bg-white/[0.12] dark:hover:bg-white/[0.20] flex items-center justify-center transition-colors cursor-pointer" title="Darsni ochish">
-                                <ArrowUpRight className="size-3.5" />
-                              </button>
+                      {/* Bugungi darslar — jadval versiyasidan (7:00 boshlanish, 1 soat = 120px) */}
+                      {todaysEvents.map((ev) => {
+                        const cls = classById.get(ev.classId);
+                        const color = cls?.color ?? autoClassColor(ev.classId);
+                        const tints = classTints(color);
+                        const top = (ev.startMin / 60 - 7) * 120 + 1;
+                        const height = Math.max(((ev.endMin - ev.startMin) / 60) * 120 - 2, 32);
+                        if (top + height < 0 || top > 120 * 12) return null;
+                        const gradesId = gradesIdForSchoolClass(ev.classId);
+                        return (
+                          <div key={ev.id} className="absolute left-1 right-1 z-[1] group transition-shadow overflow-hidden rounded-md border" style={{ top, height, ...tints.surface, ...tints.softBorder }}>
+                            <div className="h-full flex flex-col px-2 pt-2 pb-2">
+                              <div className="relative shrink-0 mb-0.5">
+                                <div className="flex items-baseline gap-1.5 min-w-0">
+                                  <TypographySmall className="text-sm font-semibold truncate min-w-0 leading-none">
+                                    {cls?.name ?? `Sinf ${ev.classId}`}
+                                  </TypographySmall>
+                                  <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">{fmtMin(ev.startMin)} - {fmtMin(ev.endMin)}</span>
+                                </div>
+                                <div className="absolute top-0 right-0 bottom-0 flex items-stretch gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button asChild variant="ghost" size="icon-xs" className="h-full aspect-square bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20">
+                                        <Link href={gradesId ? `/dashboard/classes/${gradesId}` : "/dashboard/timetable"}>
+                                          <ArrowUpRight className="size-3.5" />
+                                        </Link>
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Sinfni ochish</TooltipContent>
+                                  </Tooltip>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
+                        );
+                      })}
 
-                      {/* 9-A Class */}
-                      <div className="absolute left-1 right-1 rounded-lg z-[1] group transition-shadow overflow-hidden" style={{ top: 531, height: 88, backgroundColor: "rgba(251, 191, 36, 0.125)" }}>
-                        <div className="h-full flex flex-col px-2 pt-2 pb-2">
-                          <div className="relative shrink-0 mb-0.5">
-                            <div className="flex items-baseline gap-1.5 min-w-0">
-                              <p className="text-xs font-bold truncate min-w-0">9-A</p>
-                              <span className="text-[10px] shrink-0 whitespace-nowrap opacity-70">11:25 - 12:10</span>
-                            </div>
-                            <div className="absolute top-0 right-0 bottom-0 flex items-stretch gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="aspect-square h-full rounded-md bg-black/[0.08] hover:bg-black/[0.15] dark:bg-white/[0.12] dark:hover:bg-white/[0.20] flex items-center justify-center transition-colors cursor-pointer" title="Darsni ochish">
-                                <ArrowUpRight className="size-3.5" />
-                              </button>
-                            </div>
-                          </div>
+                      {/* Boʻsh holat — taʼtil yoki darssiz kun */}
+                      {todaysEvents.length === 0 && (
+                        <div className="absolute inset-x-3 top-6 z-[1] flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-background/80 px-4 py-6 text-center backdrop-blur-sm">
+                          <CalendarDays className="size-5 text-muted-foreground" />
+                          <p className="text-sm font-medium text-foreground">
+                            {holiday ? `Bugun — ${holiday.name}` : "Bugun dars yoʻq"}
+                          </p>
+                          <Link href="/dashboard/timetable" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                            Jadvalni ochish
+                          </Link>
                         </div>
-                      </div>
-
-                      {/* 8-A Class */}
-                      <div className="absolute left-1 right-1 rounded-lg z-[1] group transition-shadow overflow-hidden" style={{ top: 721, height: 88, backgroundColor: "rgba(248, 113, 113, 0.125)" }}>
-                        <div className="h-full flex flex-col px-2 pt-2 pb-2">
-                          <div className="relative shrink-0 mb-0.5">
-                            <div className="flex items-baseline gap-1.5 min-w-0">
-                              <p className="text-xs font-bold truncate min-w-0">8-A</p>
-                              <span className="text-[10px] shrink-0 whitespace-nowrap opacity-70">13:00 - 13:45</span>
-                            </div>
-                            <div className="absolute top-0 right-0 bottom-0 flex items-stretch gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="aspect-square h-full rounded-md bg-black/[0.08] hover:bg-black/[0.15] dark:bg-white/[0.12] dark:hover:bg-white/[0.20] flex items-center justify-center transition-colors cursor-pointer" title="Darsni ochish">
-                                <ArrowUpRight className="size-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 7-D Class */}
-                      <div className="absolute left-1 right-1 rounded-lg z-[1] group transition-shadow overflow-hidden" style={{ top: 1021, height: 88, backgroundColor: "rgba(244, 114, 182, 0.125)" }}>
-                        <div className="h-full flex flex-col px-2 pt-2 pb-2">
-                          <div className="relative shrink-0 mb-0.5">
-                            <div className="flex items-baseline gap-1.5 min-w-0">
-                              <p className="text-xs font-bold truncate min-w-0">7-D</p>
-                              <span className="text-[10px] shrink-0 whitespace-nowrap opacity-70">15:30 - 16:15</span>
-                            </div>
-                            <div className="absolute top-0 right-0 bottom-0 flex items-stretch gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="aspect-square h-full rounded-md bg-black/[0.08] hover:bg-black/[0.15] dark:bg-white/[0.12] dark:hover:bg-white/[0.20] flex items-center justify-center transition-colors cursor-pointer" title="Darsni ochish">
-                                <ArrowUpRight className="size-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 8-B Class */}
-                      <div className="absolute left-1 right-1 rounded-lg z-[1] group transition-shadow overflow-hidden" style={{ top: 1221, height: 88, backgroundColor: "rgba(251, 146, 60, 0.125)" }}>
-                        <div className="h-full flex flex-col px-2 pt-2 pb-2">
-                          <div className="relative shrink-0 mb-0.5">
-                            <div className="flex items-baseline gap-1.5 min-w-0">
-                              <p className="text-xs font-bold truncate min-w-0">8-B</p>
-                              <span className="text-[10px] shrink-0 whitespace-nowrap opacity-70">17:10 - 17:55</span>
-                            </div>
-                            <div className="absolute top-0 right-0 bottom-0 flex items-stretch gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="aspect-square h-full rounded-md bg-black/[0.08] hover:bg-black/[0.15] dark:bg-white/[0.12] dark:hover:bg-white/[0.20] flex items-center justify-center transition-colors cursor-pointer" title="Darsni ochish">
-                                <ArrowUpRight className="size-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      )}
 
                       {/* Current Time Line */}
                       <div className="absolute left-0 right-0 z-20 flex items-center pointer-events-none transition-all duration-1000 ease-linear" style={{ top: getTimelineTop() }}>
-                        <div className="size-2 rounded-full bg-rose-500 -ml-1" />
-                        <div className="flex-1 h-[2px] bg-rose-500" />
+                        <div className="size-2 rounded-full bg-destructive -ml-1" />
+                        <div className="flex-1 h-[2px] bg-destructive" />
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Right Column (Calendar & Tasks) */}
-          <div className="h-full min-h-0 flex flex-col gap-0">
-            <div className="bg-card text-card-foreground gap-6 rounded-xl border border-border/50 shadow-sm py-5 flex flex-col flex-1 min-h-0">
-              <div className="px-6 flex flex-col flex-1 min-h-0">
+          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+            <Card className="shadow-sm flex flex-col flex-1 min-h-0 py-0">
+              <CardContent className="px-6 py-5 flex flex-col flex-1 min-h-0 overflow-hidden">
+
+                {/* ── Calendar ── */}
                 <div className="shrink-0">
                   <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-lg bg-muted cursor-pointer hover:bg-accent transition-colors" onClick={() => { setCurrentMonthDate(new Date()); setSelectedDate(new Date()); }} title="Bugunga qaytish">
-                        <CalendarDays className="size-5 text-foreground" />
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <SectionIcon><CalendarDays /></SectionIcon>
                       {cal && (
-                        <div className="flex items-baseline gap-1.5 text-xl tracking-tight">
-                          <span className="font-semibold">{monthNamesUz[cal.month]}</span>
-                          <span className="font-normal text-muted-foreground">({cal.year}-yil)</span>
-                        </div>
+                        <CardTitle className="flex items-baseline gap-1.5">
+                          {MONTHS_UZ[cal.month]}
+                          <span className="font-normal text-foreground/50">({cal.year})</span>
+                        </CardTitle>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={prevMonth} className="h-8 w-8 inline-flex items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer" aria-label="Oldingi oy">
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-                      <button onClick={nextMonth} className="h-8 w-8 inline-flex items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer" aria-label="Keyingi oy">
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon-sm" onClick={prevMonth} aria-label="Oldingi oy" className="rounded-full text-muted-foreground">
+                        <ChevronLeft className="size-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon-sm" onClick={nextMonth} aria-label="Keyingi oy" className="rounded-full text-muted-foreground">
+                        <ChevronRight className="size-4" />
+                      </Button>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-7 mb-1 mt-2">
                     {["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"].map(d => (
                       <div key={d} className="text-center text-sm font-bold text-foreground py-2">{d}</div>
                     ))}
                   </div>
+
                   {cal && (
                     <div className="grid grid-cols-7">
-                      {/* Previous Month Days */}
                       {cal.prevDays.map((d, i) => (
                         <div key={`prev-${i}`} className="relative flex justify-center py-0.5">
-                          <button disabled className="relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm transition-colors rounded-full opacity-30 pointer-events-none">
+                          <button disabled className="relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm rounded-full opacity-20 pointer-events-none">
                             <span className="leading-none">{d}</span>
                           </button>
                         </div>
                       ))}
-                      {/* Current Month Days */}
                       {cal.currDays.map((d) => {
                         const isToday = isSameDay(new Date(), cal.year, cal.month, d);
                         const isSelected = isSameDay(selectedDate, cal.year, cal.month, d);
                         const hasEvent = hasLesson(cal.year, cal.month, d);
                         const blocked = isBlockedDay(cal.year, cal.month, d);
                         return (
-                          <div key={`curr-${d}`} className="relative flex justify-center py-0.5 group/day">
-                            <button 
+                          <div key={`curr-${d}`} className="relative flex justify-center py-0.5">
+                            <button
                               onClick={() => !blocked && handleDateClick(d)}
-                              className={`relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm transition-all rounded-full ${!blocked ? "hover:bg-accent/80 cursor-pointer" : "cursor-default text-muted-foreground/40"} ${isToday && !blocked ? "font-bold text-primary" : ""} ${isSelected && !isToday && !blocked ? "bg-primary/10 font-semibold" : ""}`}
-                              style={isToday && !blocked ? { border: '2px solid #2e3138' } : undefined}
+                              className={cn(
+                                "relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm transition-colors rounded-full",
+                                blocked ? "opacity-30 cursor-default" : "cursor-pointer hover:bg-accent",
+                                isToday && !blocked && "font-semibold border-2 border-foreground",
+                                isSelected && !isToday && !blocked && "bg-accent"
+                              )}
                             >
-                              <span className={`leading-none mt-0.5 ${blocked ? "line-through decoration-[1.5px]" : ""}`}>{d}</span>
+                              <span className={cn("leading-none", blocked && "line-through decoration-[1.5px]")}>{d}</span>
                               {hasEvent && !blocked && (
-                                <span className="absolute bottom-1.5 size-[3px] rounded-full bg-emerald-500 shadow-[0_0_2px_rgba(16,185,129,0.5)] transition-transform group-hover/day:scale-125" />
+                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 size-1 rounded-full bg-success" />
                               )}
                             </button>
                           </div>
                         );
                       })}
-                      {/* Next Month Days */}
                       {cal.nextDays.map((d, i) => (
                         <div key={`next-${i}`} className="relative flex justify-center py-0.5">
-                          <button disabled className="relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm transition-colors rounded-full opacity-30 pointer-events-none">
+                          <button disabled className="relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm rounded-full opacity-20 pointer-events-none">
                             <span className="leading-none">{d}</span>
                           </button>
                         </div>
@@ -404,45 +432,42 @@ export default function DashboardPage() {
                   )}
                 </div>
 
+                {/* ── Spacer ── */}
                 <div className="my-5 shrink-0" />
 
-                <div className="flex-1 min-h-0 relative overflow-hidden">
-                  <div className="h-full w-full overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-lg bg-muted">
-                          <SquareCheckBig className="size-5 text-foreground" />
-                        </div>
-                        <div className="flex items-baseline gap-1.5">
-                          <h3 className="text-xl font-semibold">Vazifalar</h3>
-                        </div>
-                      </div>
-                      <button className="h-7 w-7 p-0 inline-flex items-center justify-center rounded-md hover:bg-accent text-muted-foreground transition-colors cursor-pointer">
-                        <Plus className="h-4 w-4" />
-                      </button>
+                {/* ── Tasks ── */}
+                <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <SectionIcon><SquareCheckBig /></SectionIcon>
+                      <CardTitle>Vazifalar</CardTitle>
                     </div>
-                    
-                    <div className="flex flex-col gap-2.5">
-                      <div className="px-3 pr-5 py-5 rounded-lg transition-colors bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <button type="button" role="checkbox" className="size-4 shrink-0 rounded-[4px] border-2 border-neutral-300 bg-white transition-shadow cursor-pointer" />
-                          <h4 className="font-medium flex-1 text-sm truncate text-foreground">Oʻquvchilarning 3 choraklik davomatlarini qoʻyib chiqish</h4>
-                          <span className="text-xs shrink-0 text-rose-500 font-medium">5 Apr</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Link href="/dashboard/tasks" className="block text-center text-xs text-muted-foreground hover:text-foreground transition-colors mt-3">
-                      Barchasi
-                    </Link>
+                    <Button variant="ghost" size="icon-sm" className="text-muted-foreground">
+                      <Plus className="size-4" />
+                    </Button>
                   </div>
+
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3 rounded-lg px-3 py-4 transition-colors bg-muted/40 hover:bg-muted cursor-pointer">
+                      <Checkbox id="task1" />
+                      <span className="font-medium flex-1 text-sm truncate text-foreground min-w-0">
+                        Oʻquvchilarning 3 choraklik davomatlarini qoʻyib chiqish
+                      </span>
+                      <span className="text-xs shrink-0 text-destructive font-medium">Apr 5</span>
+                    </div>
+                  </div>
+
+                  <Link href="/dashboard/tasks" className="block text-center text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    Barchasi
+                  </Link>
                 </div>
-              </div>
-            </div>
+
+              </CardContent>
+            </Card>
           </div>
 
         </div>
-      </div>
+      </DashboardPageLayout>
     </div>
   );
 }
