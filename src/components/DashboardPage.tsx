@@ -57,3 +57,75 @@ type DashboardPageProps = {
 export default function DashboardPage({ children, className }: DashboardPageProps) {
   return <div className={cn(dashboardPageClass, className)}>{children}</div>;
 }
+
+/**
+ * Koʻp-ustunli dashboard qobigʻi (kanonik). CSS Grid asosida — `min-w-0` grid
+ * track (`minmax(0,1fr)`) orqali avtomatik, inline `flexGrow/flexBasis` kerak emas.
+ *
+ * `template` — `lg+` `grid-template-columns` (mas.
+ * `"minmax(0,2fr) minmax(0,3fr) minmax(0,1fr)"`). Dinamik nisbat sahifada hisoblanadi.
+ * `xlTemplate` — ixtiyoriy: agar biror ustun faqat `xl+` da chiqsa (mas. detal panel),
+ * `xl` da track soni oshadi; shu holatda alohida template beriladi.
+ * `< lg` da bitta ustun (`grid-cols-1`) — yashirilgan ustunlar boʻsh track qoldirmaydi.
+ *
+ * MUHIM (grid invariant): har breakpoint'da koʻrinadigan ustunlar soni = shu
+ * breakpoint template'idagi track soni. Ustunlar `hideBelow`/shartли render bilan
+ * yashirilsa, mos template'ni ham yangilang.
+ */
+type DashboardColumnsProps = React.ComponentPropsWithoutRef<"div"> & {
+  template: string;
+  xlTemplate?: string;
+};
+
+export function DashboardColumns({
+  template,
+  xlTemplate,
+  className,
+  style,
+  children,
+  ...rest
+}: DashboardColumnsProps) {
+  return (
+    <div
+      className={cn(
+        "grid flex-1 min-w-0 min-h-0 gap-6 grid-cols-1 lg:grid-cols-[var(--dash-cols)]",
+        xlTemplate && "xl:grid-cols-[var(--dash-cols-xl)]",
+        className,
+      )}
+      style={
+        {
+          "--dash-cols": template,
+          ...(xlTemplate ? { "--dash-cols-xl": xlTemplate } : {}),
+          ...style,
+        } as React.CSSProperties
+      }
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * `DashboardColumns` ustuni. `min-w-0 min-h-0 h-full` majburiy (15px collapse
+ * himoyasi). `hideBelow` — breakpoint siyosati: chap panel `lg`, oʻng detal `xl`.
+ */
+type DashboardColumnProps = React.ComponentPropsWithoutRef<"div"> & {
+  hideBelow?: "lg" | "xl";
+};
+
+export function DashboardColumn({ hideBelow, className, children, ...rest }: DashboardColumnProps) {
+  return (
+    <div
+      className={cn(
+        "min-w-0 min-h-0 h-full",
+        hideBelow === "lg" && "hidden lg:block",
+        hideBelow === "xl" && "hidden xl:block",
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+}

@@ -18,6 +18,7 @@ import { useClassStore } from "@/store/useClassStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { lessonClassIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import ClassListPanel from "@/components/ClassListPanel";
+import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, List, Calendar, Trash2 } from "lucide-react";
@@ -153,6 +154,9 @@ export default function LessonsPage() {
     : detailMode
       ? { classes: 1, units: 1, lessons: 2 }
       : { classes: 1, units: 2, lessons: 1 };
+
+  /* Grid template (`lg+`) — 3 ustun doim DOM'da; nisbat grow'dan. */
+  const columnsTemplate = `minmax(0,${grow.classes}fr) minmax(0,${grow.units}fr) minmax(0,${grow.lessons}fr)`;
 
   /* ── Unit qator/karta koʻrinishlari ── */
 
@@ -296,17 +300,16 @@ export default function LessonsPage() {
   };
 
   return (
-    <div className="flex-1 min-w-0 h-full min-h-0 flex gap-6 p-4 md:p-6 overflow-hidden">
+    <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
       {/* ── Column 1: Sinflar (25%) ── */}
-      <div data-tour="lessons-classes" className="hidden lg:block min-w-0 min-h-0 h-full" style={{ flexGrow: grow.classes, flexBasis: 0 }}>
+      <DashboardColumn hideBelow="lg" data-tour="lessons-classes">
         <ClassListPanel page="lessons" selectedClassId={selectedClassId ?? ""} onSelect={handleSelectClass} onAddClass={() => setClassModalOpen(true)} />
-      </div>
+      </DashboardColumn>
 
       {/* ── Column 2: Boʻlimlar ── */}
       <div
         data-tour="lessons-units"
         className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
-        style={{ flexGrow: grow.units, flexBasis: 0 }}
       >
           {noClass ? (
             /* Sinf tanlanmagan — headerʼsiz, markaziy placeholder (2-rasm) */
@@ -448,7 +451,6 @@ export default function LessonsPage() {
         <div
           data-tour="lessons-list"
           className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
-          style={{ flexGrow: grow.lessons, flexBasis: 0 }}
         >
           {!selectedUnitId ? (
             /* Boʻlim tanlanmagan — headerʼsiz, faqat markaziy placeholder (1-rasm) */
@@ -622,6 +624,6 @@ export default function LessonsPage() {
             onClose={() => setUnitModalOpen(false)}
           />
         )}
-      </div>
+      </DashboardColumns>
   );
 }

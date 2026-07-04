@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useClassStore } from "@/store/useClassStore";
 import ClassListPanel from "@/components/ClassListPanel";
+import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import StandardsView from "./_components/StandardsView";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
@@ -20,14 +21,15 @@ export default function StandardsPage() {
      sinf tanlanmagan → 50/50, sinf tanlangan → sinflar tor, standartlar keng. */
   const noClass = !selectedClassId;
   const grow = noClass ? { classes: 1, content: 1 } : { classes: 1, content: 3 };
+  const columnsTemplate = `minmax(0,${grow.classes}fr) minmax(0,${grow.content}fr)`;
 
   return (
-    <div className="flex flex-1 min-w-0 h-full min-h-0 gap-6 overflow-hidden p-4 md:p-6">
-      <div data-tour="standards-classes" className="hidden lg:block min-w-0 min-h-0 h-full" style={{ flexGrow: grow.classes, flexBasis: 0 }}>
+    <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
+      <DashboardColumn hideBelow="lg" data-tour="standards-classes">
         <ClassListPanel page="standards" selectedClassId={selectedClassId ?? ""} onSelect={handleSelectClass} />
-      </div>
+      </DashboardColumn>
 
-      <div className="flex min-w-0 min-h-0 h-full flex-col" style={{ flexGrow: grow.content, flexBasis: 0 }}>
+      <div className="flex min-w-0 min-h-0 h-full flex-col">
         {noClass ? (
           <div className="h-full overflow-hidden rounded-xl bg-card card-elevation">
             <Empty className="h-full border-0">
@@ -42,6 +44,6 @@ export default function StandardsPage() {
           <StandardsView classId={selectedClassId} />
         )}
       </div>
-    </div>
+    </DashboardColumns>
   );
 }

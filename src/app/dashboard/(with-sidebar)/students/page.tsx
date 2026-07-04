@@ -11,6 +11,7 @@ import { useClassStore } from "@/store/useClassStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import ClassListPanel from "@/components/ClassListPanel";
+import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -196,11 +197,17 @@ export default function StudentsPage() {
   const filterActive = statusFilter !== "all" || search.trim().length > 0;
   const noClass = !selectedClassId;
 
-  /* Ustun nisbatlari (lessons usuli) — sidebardan tashqari maydon flex-grow bilan boʻlinadi:
-       sinf tanlanmagan → sinflar keng; oʻquvchi tanlangan → 25/50/25; aks holda preview yopiq. */
+  /* Ustun nisbatlari — sinf tanlanmagan → 50/50 (grades/standards bilan bir xil boʻsh holat);
+     oʻquvchi tanlangan → 25/50/25; aks holda preview yopiq (25/50 → 1/2). */
   const grow = noClass
-    ? { classes: 2, list: 3 }
+    ? { classes: 1, list: 1 }
     : { classes: 1, list: 2 };
+
+  /* Grid template (`lg+`) — koʻrinadigan ustunlar soniga mos. Preview ustuni faqat
+     oʻquvchi tanlanganda DOM'da; shu holatda 3-track qoʻshiladi (25/50/25). */
+  const columnsTemplate = selectedStudent
+    ? `minmax(0,${grow.classes}fr) minmax(0,${grow.list}fr) minmax(0,1fr)`
+    : `minmax(0,${grow.classes}fr) minmax(0,${grow.list}fr)`;
 
   // ── Amallar — hammasi useGradesStore'ga yoziladi (server sync avtomatik) ──
   const setStatus = (id: string, status: Status) => {
@@ -280,14 +287,14 @@ export default function StudentsPage() {
 
   return (
     <>
-      <div className="flex flex-1 min-w-0 h-full min-h-0 gap-6 overflow-hidden p-4 md:p-6">
+      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
         {/* ── Ustun 1: Sinflar ── */}
-        <div data-tour="students-classes" className="hidden lg:block min-w-0 min-h-0 h-full" style={{ flexGrow: grow.classes, flexBasis: 0 }}>
+        <DashboardColumn hideBelow="lg" data-tour="students-classes">
           <ClassListPanel page="students" selectedClassId={selectedClassId ?? ""} onSelect={handleSelectClass} />
-        </div>
+        </DashboardColumn>
 
         {/* ── Ustun 2: Oʻquvchilar roʻyxati ── */}
-        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl bg-card card-elevation" style={{ flexGrow: grow.list, flexBasis: 0 }}>
+        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl bg-card card-elevation">
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
@@ -566,7 +573,7 @@ export default function StudentsPage() {
 
         {/* ── Ustun 3: Preview (oʻquvchi tanlanganda) ── */}
         {selectedStudent && (
-          <div className="hidden min-w-0 min-h-0 h-full lg:block" style={{ flexGrow: 1, flexBasis: 0 }}>
+          <DashboardColumn hideBelow="lg">
             <div className="h-full overflow-hidden rounded-xl bg-card card-elevation">
               <PreviewCard
                 key={selectedStudent.id}
@@ -578,9 +585,9 @@ export default function StudentsPage() {
                 onViewProfile={() => openProfile(selectedStudent.id)}
               />
             </div>
-          </div>
+          </DashboardColumn>
         )}
-      </div>
+      </DashboardColumns>
 
       <CreateStudentModal
         open={createOpen}

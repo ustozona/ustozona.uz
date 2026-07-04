@@ -92,8 +92,14 @@ toolbar tugmalari va inputlari bir qatorda 36px balandlikda boʻladi.
   Ghost faqat kompakt/ikkilamchi joyda. Hammasi bir xil: students/classes/timetable.
 - Roʻyxat: `ScrollArea` + pastda `bg-gradient-to-t from-card` fade.
 - Roʻyxat ichki boʻshliq: `px-5 pt-5 pb-5` — yon tomonlar bilan yuqori va pastki masofa teng (`px = pt = pb = 20px`). `pt-1` yoki `pt-2` ishlatmang.
-- Ustun layout (Lessons/Students): bitta `flex gap-6` konteyner, har ustun
-  `style={{ flexGrow, flexBasis: 0 }}` bilan boʻlinadi (responsive).
+- **Koʻp-ustunli layout (kanonik) — `DashboardColumns` (`components/DashboardPage.tsx`).**
+  CSS Grid asosida: `<DashboardColumns template="minmax(0,2fr) minmax(0,3fr) …">`.
+  `min-w-0` grid track (`minmax(0,1fr)`) orqali avtomatik — **inline `flexGrow/flexBasis`
+  ishlatmang**. Dinamik nisbat (sinf/oʻquvchi tanlanganda) `template` string'ida hisoblanadi.
+  `< lg` da bitta ustun (`grid-cols-1`); ustunni yashirish `<DashboardColumn hideBelow="lg|xl">`.
+  Faqat `xl+` da chiqadigan ustun boʻlsa `xlTemplate` bering (track soni oshadi).
+  Breakpoint siyosati: chap "Sinflar" paneli = `lg`, oʻng detal/preview paneli = `xl`
+  (students preview `lg` da — ustunlar bilan birga chiqadi, hujjatlangan istisno).
 
 ---
 

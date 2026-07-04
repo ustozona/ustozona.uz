@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TypographyMuted } from "@/components/ui/typography";
-import { panelCardClass } from "@/components/DashboardPage";
+import { panelCardClass, DashboardColumns } from "@/components/DashboardPage";
 import { classTints, CLASS_COLOR_HEX, classColorStyle } from "@/lib/class-colors";
 import { lessonClassIds } from "@/lib/lessons-data";
 import { useLessonStore } from "@/store/useLessonStore";
@@ -92,13 +92,21 @@ export default function ClassDetail({ identity, initialSection }: Props) {
      moslashadi. Overview → 25/50/25; boshqa boʻlimlar (oʻng panel yoʻq) → 25/75. */
   const grow = { left: 1, center: showRight ? 2 : 3, right: 1 };
 
+  /* Grid template — chap panel `lg+`, oʻng panel faqat `xl+` (va overview'da).
+     `lg` da 2 track (chap+markaz); `xl` da 3 track (chap+markaz+oʻng, 25/50/25). */
+  const columnsTemplate = `minmax(0,${grow.left}fr) minmax(0,${grow.center}fr)`;
+  const columnsXlTemplate = showRight
+    ? `minmax(0,${grow.left}fr) minmax(0,${grow.center}fr) minmax(0,${grow.right}fr)`
+    : undefined;
+
   return (
-    <div className="flex h-full min-h-0 gap-6 p-4 md:p-6 lg:p-8 overflow-hidden">
+    <DashboardColumns
+      template={columnsTemplate}
+      xlTemplate={columnsXlTemplate}
+      className="h-full overflow-hidden p-4 md:p-6 lg:p-8"
+    >
       {/* ───────────── LEFT: sinf identifikatori + boʻlim navigatsiyasi ───────────── */}
-      <aside
-        className="hidden lg:flex min-w-0 min-h-0 h-full"
-        style={{ flexGrow: grow.left, flexBasis: 0 }}
-      >
+      <aside className="hidden lg:flex min-w-0 min-h-0 h-full">
         <Card className={cn(panelCardClass, "w-full")} style={classColorStyle(identity.color)}>
           {/* Header */}
           <div className="shrink-0 border-b border-border px-5 py-5">
@@ -199,7 +207,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
       </aside>
 
       {/* ───────────── CENTER: faol boʻlim kontenti ───────────── */}
-      <main className="flex min-w-0 h-full min-h-0 flex-col gap-4" style={{ flexGrow: grow.center, flexBasis: 0 }}>
+      <main className="flex min-w-0 h-full min-h-0 flex-col gap-4">
         {/* <lg: chap aside yashirin — gorizontal boʻlim almashtirgich */}
         <div className="lg:hidden shrink-0 -mx-1 overflow-x-auto scrollbar-thin">
           <div className="flex items-center gap-1.5 px-1">
@@ -258,14 +266,11 @@ export default function ClassDetail({ identity, initialSection }: Props) {
 
       {/* ───────────── RIGHT: kontekstli panel ───────────── */}
       {showRight && (
-        <aside
-          className="hidden xl:flex min-w-0 min-h-0 h-full"
-          style={{ flexGrow: grow.right, flexBasis: 0 }}
-        >
+        <aside className="hidden xl:flex min-w-0 min-h-0 h-full">
           <OverviewSidebar identity={identity} />
         </aside>
       )}
-    </div>
+    </DashboardColumns>
   );
 }
 

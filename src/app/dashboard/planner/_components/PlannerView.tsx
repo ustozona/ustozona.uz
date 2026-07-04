@@ -450,7 +450,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
       <button type="button" onClick={onOpen} style={tints.gradient}
         className="flex w-full items-center gap-1.5 truncate rounded-md px-1.5 py-1 text-left transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
         <span style={tints.dot} className="size-1.5 shrink-0 rounded-[3px]" />
-        <span style={tints.text} className="truncate text-xs font-semibold">{cls.name}</span>
+        <span style={tints.text} className="min-w-0 truncate text-xs font-semibold">{cls.name}</span>
         <span style={tints.text} className="ml-auto shrink-0 text-[10px] font-medium opacity-70">{fmtMin(ev.startMin)}</span>
       </button>
     );
@@ -467,7 +467,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
         {p.lesson.status === "Completed"
           ? <Check style={tints.textStrong} className="size-2.5 shrink-0" strokeWidth={3} />
           : <FileText style={tints.textStrong} className="size-2.5 shrink-0" />}
-        <span style={tints.textStrong} className="truncate text-xs font-semibold">{p.lesson.title}</span>
+        <span style={tints.textStrong} className="min-w-0 truncate text-xs font-semibold">{p.lesson.title}</span>
         <span style={tints.textStrong} className="ml-auto shrink-0 text-[10px] opacity-70">{minToHHMM(p.startMin)}</span>
       </button>
     );
