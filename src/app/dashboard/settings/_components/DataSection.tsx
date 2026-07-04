@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { deleteAccountAction } from "@/server/actions/account";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -60,6 +61,7 @@ export default function DataSection() {
   const tasks = useTaskStore((s) => s.tasks);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const [confirmText, setConfirmText] = React.useState("");
+  const [deleting, setDeleting] = React.useState(false);
 
   const handleExport = () => {
     try {
@@ -84,13 +86,21 @@ export default function DataSection() {
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    setDeleting(true);
     try {
-      localStorage.clear();
+      // Serverdagi hisobni haqiqatan oʻchiradi (user → cascade → hammasi)
+      // va sessiya cookie'sini tozalaydi.
+      await deleteAccountAction();
+      // Eski localStorage kalitlari qolgan boʻlsa — ular ham ketsin.
+      try {
+        localStorage.clear();
+      } catch {}
       toast.success("Hisob va barcha maʼlumotlar oʻchirildi.");
-      setTimeout(() => (window.location.href = "/"), 500);
+      window.location.href = "/";
     } catch {
-      toast.error("Oʻchirish amalga oshmadi.");
+      setDeleting(false);
+      toast.error("Oʻchirish amalga oshmadi. Qayta urinib koʻring.");
     }
   };
 
@@ -166,8 +176,9 @@ export default function DataSection() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Hisobni butunlay oʻchirasizmi?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Barcha lokal maʼlumotlar oʻchiriladi va tiklab boʻlmaydi. Avval eksport qilib
-                    olishni tavsiya qilamiz. Tasdiqlash uchun quyiga{" "}
+                    Hisobingiz va serverdagi barcha maʼlumotlar (sinflar, oʻquvchilar, baholar,
+                    davomat, sozlamalar) butunlay oʻchiriladi va tiklab boʻlmaydi. Avval eksport
+                    qilib olishni tavsiya qilamiz. Tasdiqlash uchun quyiga{" "}
                     <span className="font-semibold text-foreground">{CONFIRM_WORD}</span> deb yozing.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -180,11 +191,15 @@ export default function DataSection() {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={handleDelete}
-                    disabled={confirmText.trim() !== CONFIRM_WORD}
+                    onClick={(e) => {
+                      // Xato boʻlsa dialog ochiq qolsin (Radix aks holda yopadi).
+                      e.preventDefault();
+                      void handleDelete();
+                    }}
+                    disabled={confirmText.trim() !== CONFIRM_WORD || deleting}
                     className="bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50"
                   >
-                    Ha, oʻchirilsin
+                    {deleting ? "Oʻchirilmoqda…" : "Ha, oʻchirilsin"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

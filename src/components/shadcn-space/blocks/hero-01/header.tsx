@@ -96,7 +96,14 @@ const Header = ({ navigationData, className }: HeaderProps) => {
         </div>
 
         {/* Desktop CTA */}
-        <div className="flex gap-4">
+        <div className="flex items-center gap-2 lg:gap-3">
+          <Button
+            asChild
+            variant="ghost"
+            className="hidden lg:flex rounded-full h-10 px-5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+          >
+            <a href="/register">Roʻyxatdan oʻtish</a>
+          </Button>
           <CollaborateButton className="hidden lg:flex" />
 
           <div className="lg:hidden">
@@ -161,8 +168,15 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                       </NavigationMenuList>
                     </NavigationMenu>
 
-                    <div className="w-fit">
+                    <div className="flex flex-col gap-3 w-fit">
                       <CollaborateButton />
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="rounded-full h-10 px-5 text-sm font-medium w-fit cursor-pointer"
+                      >
+                        <a href="/register">Roʻyxatdan oʻtish</a>
+                      </Button>
                     </div>
                   </div>
 
