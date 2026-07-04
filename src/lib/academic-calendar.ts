@@ -64,6 +64,41 @@ export function makeCalendarForYear(startYear: number): AcademicYearCalendar {
   };
 }
 
+/** Foydalanuvchi kalendarda belgilagan yil oraligʻidan kalendar hosil qiladi:
+    yil chegaralari — aynan belgilangan boshlanish/tugash sanalari; choraklar
+    va taʼtillar boshlanish yiliga qarab rasmiy struktura boʻyicha toʻldiriladi.
+    Onboarding sehrgari ishlatadi (oʻqituvchi oʻzi kalendardan belgilaydi) —
+    keyin Sozlamalar → "Oʻquv yili"da aniqlashtiriladi.
+    startKey/endKey — "YYYY-MM-DD". */
+export function makeCalendarForRange(startKey: string, endKey: string): AcademicYearCalendar {
+  const [sy, sm] = startKey.split("-").map(Number);
+  // Iyun (6) va undan keyin boshlansa — shu yil oʻquv yili boshi, aks holda oldingi yil.
+  const startYear = sm >= 6 ? sy : sy - 1;
+  const template = makeCalendarForYear(startYear);
+  return {
+    ...template,
+    yearLabel: `${startYear}–${startYear + 1}`,
+    range: { start: startKey, end: endKey },
+  };
+}
+
+/** Kalendarni butun yillar soniga suradi — har sananing yil qismiga `delta`
+    qoʻshadi (nom/tuzilma oʻzgarmaydi). "Oldingi oʻquv yilidan nusxa" oqimi
+    oʻqituvchi moslashtirgan choraklar va taʼtillarni yangi yilga koʻchirish
+    uchun ishlatadi. Sof — React/store'ga bogʻliq emas. */
+export function shiftCalendarYears(cal: AcademicYearCalendar, delta: number): AcademicYearCalendar {
+  const shiftKey = (k: string) => (k ? `${Number(k.slice(0, 4)) + delta}${k.slice(4)}` : k);
+  const shiftRange = (r: DateRange): DateRange => ({ start: shiftKey(r.start), end: shiftKey(r.end) });
+  const y1 = cal.range.start ? Number(cal.range.start.slice(0, 4)) + delta : 0;
+  const y2 = cal.range.end ? Number(cal.range.end.slice(0, 4)) + delta : 0;
+  return {
+    yearLabel: y1 && y2 ? (y1 === y2 ? `${y1}` : `${y1}–${y2}`) : "",
+    range: shiftRange(cal.range),
+    quarters: cal.quarters.map((q) => ({ ...q, range: shiftRange(q.range) })),
+    holidays: cal.holidays.map((h) => ({ ...h, range: shiftRange(h.range) })),
+  };
+}
+
 /** 2025–2026 rasmiy defaultlar — Sozlamalardagi "Standart qiymatlarga qaytarish"
     va boshqa demo/seed kodi uchun. */
 export const DEFAULT_CALENDAR_2025_2026: AcademicYearCalendar = makeCalendarForYear(2025);

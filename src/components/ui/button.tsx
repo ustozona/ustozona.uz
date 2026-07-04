@@ -19,6 +19,9 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        soft: "bg-primary/10 text-primary hover:bg-primary/15 dark:bg-primary/15 dark:hover:bg-primary/25",
+        "soft-destructive":
+          "bg-destructive/10 text-destructive hover:bg-destructive/15 dark:bg-destructive/15 dark:hover:bg-destructive/25",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -61,4 +64,7 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+type ButtonProps = React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & { asChild?: boolean }
+
+export { Button, buttonVariants, type ButtonProps }

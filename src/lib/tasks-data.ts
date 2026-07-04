@@ -172,6 +172,7 @@ export const TASKS_DATA: Task[] = [
     description: "O'quvchilar topshirgan norasmiy xatlarni (writing) ko'rib chiqib, baholash.",
     dueDate: addDays(-1), // o'tgan
     endDate: null,
+    dueTime: null,
     isRecurring: false,
     recurrenceRule: null,
     mentions: [],
@@ -195,6 +196,7 @@ export const TASKS_DATA: Task[] = [
     description: "Majlis juma kuni soat 17:00 da bo'ladi. Hamma ota-onalarni ogohlantirish kerak.",
     dueDate: addDays(2), // upcoming
     endDate: null,
+    dueTime: null,
     isRecurring: false,
     recurrenceRule: null,
     mentions: [],
@@ -215,6 +217,7 @@ export const TASKS_DATA: Task[] = [
     description: "",
     dueDate: addDays(3), // upcoming
     endDate: null,
+    dueTime: null,
     isRecurring: false,
     recurrenceRule: null,
     mentions: [],
@@ -235,6 +238,7 @@ export const TASKS_DATA: Task[] = [
     description: "Navro'z bayrami munosabati bilan tadbir ssenariysi.",
     dueDate: null, // inbox
     endDate: null,
+    dueTime: null,
     isRecurring: false,
     recurrenceRule: null,
     mentions: [],
@@ -255,6 +259,7 @@ export const TASKS_DATA: Task[] = [
     description: "Speaking Club to'garagi uchun jurnal va ro'yxatlarni to'ldirish.",
     dueDate: formatDate(today), // bugun
     endDate: null,
+    dueTime: null,
     isRecurring: true,
     recurrenceRule: "every-monday",
     mentions: [],
@@ -277,6 +282,7 @@ export const TASKS_DATA: Task[] = [
     description: "",
     dueDate: addDays(-5), // overdue
     endDate: null,
+    dueTime: null,
     isRecurring: false,
     recurrenceRule: null,
     mentions: [],
@@ -297,6 +303,7 @@ export const TASKS_DATA: Task[] = [
     description: "Listening mashqlari uchun audiolarni va flashcard'larni tayyorlab qo'yish.",
     dueDate: addDays(1), // upcoming
     endDate: null,
+    dueTime: null,
     isRecurring: false,
     recurrenceRule: null,
     mentions: [],
@@ -317,6 +324,7 @@ export const TASKS_DATA: Task[] = [
     description: "Ingliz tili fanidan maktab bosqichiga qatnashuvchilar.",
     dueDate: addDays(7),
     endDate: null,
+    dueTime: null,
     isRecurring: false,
     recurrenceRule: null,
     mentions: [],

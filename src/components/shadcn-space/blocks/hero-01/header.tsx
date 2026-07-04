@@ -119,7 +119,6 @@ const Header = ({ navigationData, className }: HeaderProps) => {
               </SheetTrigger>
 
               <SheetContent
-                showCloseButton={false}
                 side="right"
                 className="w-full sm:w-96 p-0 border-l-0"
               >

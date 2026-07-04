@@ -101,7 +101,7 @@ export default function StandardsView({ classId }: { classId: string }) {
             >
               <Search className="size-4" aria-hidden />
             </Button>
-            <Button className="h-9 gap-1.5" onClick={() => setAddOpen(true)}>
+            <Button data-tour="standards-add" className="h-9 gap-1.5" onClick={() => setAddOpen(true)}>
               <Plus className="size-4" aria-hidden />
               Standart qoʻshish
             </Button>
@@ -125,7 +125,7 @@ export default function StandardsView({ classId }: { classId: string }) {
         )}
 
         {/* Content */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div data-tour="standards-list" className="flex-1 min-h-0 overflow-y-auto">
           {classSets.length === 0 ? (
             <div className="flex h-full items-center justify-center px-5 py-10">
               <Empty>

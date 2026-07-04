@@ -2,8 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Sunrise, Sunset, BookOpen, CalendarDays, ChevronLeft, ChevronRight, SquareCheckBig, Plus, ArrowUpRight, FileText, Trash2, Clock } from "lucide-react";
+import { Sunrise, Sunset, BookOpen, CalendarDays, SquareCheckBig, Plus, ArrowUpRight, FileText, Trash2, Clock } from "lucide-react";
+import * as React from "react";
 import { useState, useEffect, useMemo } from "react";
+import { uz } from "date-fns/locale";
+import { type DayButton } from "react-day-picker";
+import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useLessonStore } from "@/store/useLessonStore";
@@ -47,6 +51,20 @@ function hexToRgb(hex: string): string {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `${r}, ${g}, ${b}`;
+}
+
+/** Dashboard mini-kalendar kun tugmasi — dars boʻlgan kunlarda past qismida
+    yashil nuqta koʻrsatadi (modifiers.hasLesson orqali). */
+function DashboardDayButton(props: React.ComponentProps<typeof CalendarDayButton>) {
+  const hasLesson = !!props.modifiers?.hasLesson;
+  return (
+    <CalendarDayButton {...props}>
+      {props.children}
+      {hasLesson && (
+        <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-success group-data-[selected-single=true]/day:bg-primary-foreground" />
+      )}
+    </CalendarDayButton>
+  );
 }
 
 export default function DashboardPage() {
@@ -151,48 +169,22 @@ export default function DashboardPage() {
     return "Xayrli kech";
   };
 
-  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
-  const getFirstDayOfMonth = (year: number, month: number) => {
-    const day = new Date(year, month, 1).getDay();
-    return day === 0 ? 6 : day - 1;
-  };
-  
-  const prevMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1));
-  const nextMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1));
-  const handleDateClick = (day: number) => setSelectedDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), day));
-  
-  const hasLesson = (year: number, month: number, day: number) => {
-    const date = new Date(year, month, day);
-    const dayOfWeek = date.getDay();
-    return dayOfWeek >= 1 && dayOfWeek <= 5;
-  };
-  
-  const isBlockedDay = (year: number, month: number, day: number) => {
-    return [12, 13, 14, 15].includes(day); // Testing blocks
-  };
-  
-  const isSameDay = (d1: Date, y: number, m: number, d: number) => {
-    return d1.getFullYear() === y && d1.getMonth() === m && d1.getDate() === d;
-  };
+  // ── Mini-kalendar modifikatorlari — jonli maʼlumotdan ──
+  // Dars kunlari (rejalangan mavzular) va bloklangan kunlar (yakshanba + taʼtil).
+  const lessonDayKeys = useMemo(() => {
+    const s = new Set<string>();
+    for (const l of allLessons) if (l.scheduledDate) s.add(l.scheduledDate);
+    return s;
+  }, [allLessons]);
 
-  const renderCalendarDays = () => {
-    const year = currentMonthDate.getFullYear();
-    const month = currentMonthDate.getMonth();
-    const daysInMonth = getDaysInMonth(year, month);
-    const firstDay = getFirstDayOfMonth(year, month);
-    const daysInPrevMonth = getDaysInMonth(year, month - 1);
-    
-    const prevDays = Array.from({ length: firstDay }, (_, i) => daysInPrevMonth - firstDay + i + 1);
-    const currDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    
-    const totalRendered = prevDays.length + currDays.length;
-    const neededNext = 42 - totalRendered;
-    const nextDays = Array.from({ length: neededNext }, (_, i) => i + 1);
-    
-    return { year, month, prevDays, currDays, nextDays };
-  };
-  
-  const cal = mounted ? renderCalendarDays() : null;
+  const calendarModifiers = useMemo(
+    () => ({
+      hasLesson: (date: Date) => lessonDayKeys.has(dateToKey(date)),
+      blocked: (date: Date) =>
+        date.getDay() === 0 || !!getHolidayForDate(calendar, dateToKey(date)),
+    }),
+    [lessonDayKeys, calendar]
+  );
 
   const imageSrc = isDay ? "/day.png" : "/night.png";
   const Icon = isDay ? Sunrise : Sunset;
@@ -242,7 +234,7 @@ export default function DashboardPage() {
             </div>
 
             {/* LESSONS CARD */}
-            <Card className={cn("shadow-sm", panelCardClass)}>
+            <Card data-tour="home-overview" className={cn("shadow-sm", panelCardClass)}>
               <CardHeader className={cn(panelCardHeaderClass, "justify-between min-h-[4.5rem] px-5 py-5!")}>
                 <div className="flex items-center gap-2">
                   <SectionIcon><BookOpen /></SectionIcon>
@@ -433,74 +425,27 @@ export default function DashboardPage() {
 
                 {/* ── Calendar ── */}
                 <div className="shrink-0">
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2">
-                      <SectionIcon><CalendarDays /></SectionIcon>
-                      {cal && (
-                        <CardTitle className="flex items-baseline gap-1.5">
-                          {MONTHS_UZ[cal.month]}
-                          <span className="font-normal text-foreground/50">({cal.year})</span>
-                        </CardTitle>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon-sm" onClick={prevMonth} aria-label="Oldingi oy" className="rounded-full text-muted-foreground">
-                        <ChevronLeft className="size-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon-sm" onClick={nextMonth} aria-label="Keyingi oy" className="rounded-full text-muted-foreground">
-                        <ChevronRight className="size-4" />
-                      </Button>
-                    </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <SectionIcon><CalendarDays /></SectionIcon>
+                    <CardTitle>Kalendar</CardTitle>
                   </div>
 
-                  <div className="grid grid-cols-7 mb-1 mt-2">
-                    {["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"].map(d => (
-                      <div key={d} className="text-center text-sm font-bold text-foreground py-2">{d}</div>
-                    ))}
-                  </div>
-
-                  {cal && (
-                    <div className="grid grid-cols-7">
-                      {cal.prevDays.map((d, i) => (
-                        <div key={`prev-${i}`} className="relative flex justify-center py-0.5">
-                          <button disabled className="relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm rounded-full opacity-20 pointer-events-none">
-                            <span className="leading-none">{d}</span>
-                          </button>
-                        </div>
-                      ))}
-                      {cal.currDays.map((d) => {
-                        const isToday = isSameDay(new Date(), cal.year, cal.month, d);
-                        const isSelected = isSameDay(selectedDate, cal.year, cal.month, d);
-                        const hasEvent = hasLesson(cal.year, cal.month, d);
-                        const blocked = isBlockedDay(cal.year, cal.month, d);
-                        return (
-                          <div key={`curr-${d}`} className="relative flex justify-center py-0.5">
-                            <button
-                              onClick={() => !blocked && handleDateClick(d)}
-                              className={cn(
-                                "relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm transition-colors rounded-full",
-                                blocked ? "opacity-30 cursor-default" : "cursor-pointer hover:bg-accent",
-                                isToday && !blocked && "font-semibold border-2 border-foreground",
-                                isSelected && !isToday && !blocked && "bg-accent"
-                              )}
-                            >
-                              <span className={cn("leading-none", blocked && "line-through decoration-[1.5px]")}>{d}</span>
-                              {hasEvent && !blocked && (
-                                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 size-1 rounded-full bg-success" />
-                              )}
-                            </button>
-                          </div>
-                        );
-                      })}
-                      {cal.nextDays.map((d, i) => (
-                        <div key={`next-${i}`} className="relative flex justify-center py-0.5">
-                          <button disabled className="relative z-10 h-9 w-9 inline-flex flex-col items-center justify-center text-sm rounded-full opacity-20 pointer-events-none">
-                            <span className="leading-none">{d}</span>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <Calendar
+                    mode="single"
+                    locale={uz}
+                    selected={selectedDate}
+                    onSelect={(d) => d && setSelectedDate(d)}
+                    month={currentMonthDate}
+                    onMonthChange={setCurrentMonthDate}
+                    formatters={{
+                      formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
+                      formatWeekdayName: (date) => ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"][date.getDay()],
+                    }}
+                    modifiers={calendarModifiers}
+                    modifiersClassNames={{ blocked: "text-muted-foreground/40 line-through" }}
+                    components={{ DayButton: DashboardDayButton }}
+                    className="w-full p-0 [--cell-size:--spacing(9)]"
+                  />
                 </div>
 
                 {/* ── Spacer ── */}

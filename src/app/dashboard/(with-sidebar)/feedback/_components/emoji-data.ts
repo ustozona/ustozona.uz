@@ -66,7 +66,6 @@ export function loadEmojiGroups(): Promise<EmojiGroup[]> {
       arr.push({
         char: charFromUnified(e.unified),
         image: e.image,
-        name: e.name,
         search: [e.name, ...(e.short_names ?? []), ...(e.keywords ?? [])].join(" ").toLowerCase(),
         sort: e.sort_order,
       });

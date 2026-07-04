@@ -282,12 +282,12 @@ export default function StudentsPage() {
     <>
       <div className="flex flex-1 min-w-0 h-full min-h-0 gap-6 overflow-hidden p-4 md:p-6">
         {/* ── Ustun 1: Sinflar ── */}
-        <div className="hidden lg:block min-w-0 min-h-0 h-full" style={{ flexGrow: grow.classes, flexBasis: 0 }}>
+        <div data-tour="students-classes" className="hidden lg:block min-w-0 min-h-0 h-full" style={{ flexGrow: grow.classes, flexBasis: 0 }}>
           <ClassListPanel page="students" selectedClassId={selectedClassId ?? ""} onSelect={handleSelectClass} />
         </div>
 
         {/* ── Ustun 2: Oʻquvchilar roʻyxati ── */}
-        <div className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl bg-card card-elevation" style={{ flexGrow: grow.list, flexBasis: 0 }}>
+        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl bg-card card-elevation" style={{ flexGrow: grow.list, flexBasis: 0 }}>
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
@@ -329,7 +329,7 @@ export default function StudentsPage() {
               {/* Filtr */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Holat boʻyicha filtrlash" className={cn(toolbarBtn, statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
+                  <Button data-tour="students-filter" variant="outline" size="icon" aria-label="Holat boʻyicha filtrlash" className={cn(toolbarBtn, statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
                     <Filter className="size-4" />
                   </Button>
                 </PopoverTrigger>

@@ -501,7 +501,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
           </div>
 
           <Tabs value={view} onValueChange={(v) => setView(v as "week" | "month")} className="self-center">
-            <TabsList>
+            <TabsList data-tour="planner-view-toggle">
               <TabsTrigger value="week" className="px-5">Hafta</TabsTrigger>
               <TabsTrigger value="month" className="px-5">Oy</TabsTrigger>
             </TabsList>
@@ -558,7 +558,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <>
             {/* ── Hafta ── */}
             {view === "week" && (
-              <div ref={scrollerRef} className="h-full overflow-y-auto scrollbar-thin">
+              <div ref={scrollerRef} data-tour="planner-grid" className="h-full overflow-y-auto scrollbar-thin">
                 <div className="grid" style={weekColsStyle}>
 
                   {/* Sticky sarlavha (opaque) */}
@@ -575,7 +575,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                       versions.length > 1 && vNow != null && vNow.id !== resolveVersionForDate(versions, toDateKey(prevDate))?.id;
                     const full = DAYS_UZ[dateToTimetableDay(d) - 1];
                     return (
-                      <div key={i} className="group/day relative sticky top-0 z-30 border-l border-b border-border bg-muted px-2 py-3 text-center">
+                      <div key={i} data-tour={i === 0 ? "planner-day-cell" : undefined} className="group/day relative sticky top-0 z-30 border-l border-b border-border bg-muted px-2 py-3 text-center">
                         <div className="flex flex-col items-center gap-1">
                           <span className="truncate max-w-full text-label">{full}</span>
                           {isToday ? (
@@ -611,7 +611,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             <button
                               type="button"
                               aria-label="Kun sozlamalari"
-                              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground/60 transition hover:bg-foreground/10 hover:text-foreground focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] data-[state=open]:bg-foreground/10 data-[state=open]:text-foreground"
+                              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-foreground/10 data-[state=open]:text-foreground"
                             >
                               <SlidersHorizontal className="size-4" />
                             </button>

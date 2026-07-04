@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { TrashIcon, Plus, RotateCcw, TriangleAlert } from "lucide-react";
+import { TrashIcon, Plus, RotateCcw, TriangleAlert, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +19,7 @@ import { inRange, type DateRange } from "@/lib/academic-calendar";
 import { todayKey } from "@/lib/date-keys";
 import { SettingsGroup, SettingRow, SavedIndicator } from "./SettingsShared";
 import YearStrip from "./YearStrip";
+import CreateSemesterModal from "./CreateSemesterModal";
 
 /* ════════════════════════════════════════════════════════════════════
    "OʻQUV YILI" SOZLAMALARI — kalendar boshqaruvi
@@ -65,6 +66,7 @@ export default function AcademicYearSection() {
   const removeHoliday = useCalendarStore((s) => s.removeHoliday);
   const resetDefaults = useCalendarStore((s) => s.resetDefaults);
   const [resetOpen, setResetOpen] = React.useState(false);
+  const [createOpen, setCreateOpen] = React.useState(false);
 
   if (!hydrated) {
     return <div className="h-40 animate-pulse rounded-xl bg-muted/40" />;
@@ -99,7 +101,15 @@ export default function AcademicYearSection() {
       <SettingsGroup
         title={`Oʻquv yili · ${calendar.yearLabel}`}
         description="Choraklar va taʼtillar butun ilova (jadval, davomat, baholar) uchun yagona manba."
-        action={<SavedIndicator signal={calendar} />}
+        action={
+          <div className="flex items-center gap-2">
+            <SavedIndicator signal={calendar} />
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
+              <CalendarPlus className="size-4" />
+              Yangi oʻquv yili
+            </Button>
+          </div>
+        }
       >
         <YearStrip calendar={calendar} />
         {warnings.length > 0 && (
@@ -187,6 +197,8 @@ export default function AcademicYearSection() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <CreateSemesterModal open={createOpen} onOpenChange={setCreateOpen} />
     </>
   );
 }

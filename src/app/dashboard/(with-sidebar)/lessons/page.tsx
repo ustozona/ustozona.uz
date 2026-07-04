@@ -298,12 +298,13 @@ export default function LessonsPage() {
   return (
     <div className="flex-1 min-w-0 h-full min-h-0 flex gap-6 p-4 md:p-6 overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
-      <div className="hidden lg:block min-w-0 min-h-0 h-full" style={{ flexGrow: grow.classes, flexBasis: 0 }}>
+      <div data-tour="lessons-classes" className="hidden lg:block min-w-0 min-h-0 h-full" style={{ flexGrow: grow.classes, flexBasis: 0 }}>
         <ClassListPanel page="lessons" selectedClassId={selectedClassId ?? ""} onSelect={handleSelectClass} onAddClass={() => setClassModalOpen(true)} />
       </div>
 
       {/* ── Column 2: Boʻlimlar ── */}
       <div
+        data-tour="lessons-units"
         className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
         style={{ flexGrow: grow.units, flexBasis: 0 }}
       >
@@ -445,6 +446,7 @@ export default function LessonsPage() {
 
         {/* ── Column 3: Mavzular ── */}
         <div
+          data-tour="lessons-list"
           className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
           style={{ flexGrow: grow.lessons, flexBasis: 0 }}
         >

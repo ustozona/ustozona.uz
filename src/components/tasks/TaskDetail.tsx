@@ -328,7 +328,7 @@ export default function TaskDetail() {
                         endDate: range?.to ? format(range.to, "yyyy-MM-dd") : null
                       });
                     }}
-                    initialFocus
+                    autoFocus
                     locale={uz}
                     className="p-3"
                   />

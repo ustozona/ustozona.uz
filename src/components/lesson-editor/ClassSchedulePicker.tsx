@@ -1,8 +1,11 @@
 "use client";
 
+import * as React from "react";
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, CalendarDays, Check } from "lucide-react";
+import { Check } from "lucide-react";
+import { uz } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { MONTHS_UZ } from "@/lib/localization";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { classColor } from "@/lib/grades-data";
@@ -36,8 +39,7 @@ export default function ClassSchedulePicker({
   const hasTimetable = useMemo(() => weeklySlotsForClass(classId).length > 0, [classId]);
 
   const initial = value ? dateKeyToDate(value.date) : new Date();
-  const [viewY, setViewY] = useState(initial.getFullYear());
-  const [viewM, setViewM] = useState(initial.getMonth());
+  const [viewMonth, setViewMonth] = useState<Date>(initial);
   const [selectedKey, setSelectedKey] = useState<string | null>(value?.date ?? null);
   const [useClassSchedule, setUseClassSchedule] = useState(hasTimetable);
   // Jadval rejimi: bir kunda bir nechta vaqt tanlanishi mumkin (kalit: "start-end").
@@ -47,42 +49,19 @@ export default function ClassSchedulePicker({
   const [endMin, setEndMin] = useState<number | null>(value?.endMin ?? null);
   const slotKey = (s: { startMin: number; endMin: number }) => `${s.startMin}-${s.endMin}`;
 
-  const todayKey = dateToKey(new Date());
+  const selectedDate = selectedKey ? dateKeyToDate(selectedKey) : undefined;
+  const daySlots = selectedDate ? slotsOnDate(classId, selectedDate) : [];
 
-  // Oyning kunlar toʻri (oldingi/keyingi oy bilan toʻldirilgan, 6 qator)
-  const cells = useMemo(() => {
-    const first = new Date(viewY, viewM, 1);
-    const startOffset = first.getDay(); // 0=Ya
-    const out: { date: Date; inMonth: boolean }[] = [];
-    for (let i = 0; i < 42; i++) {
-      const d = new Date(viewY, viewM, 1 - startOffset + i);
-      out.push({ date: d, inMonth: d.getMonth() === viewM });
-    }
-    return out;
-  }, [viewY, viewM]);
-
-  // Har sana OʻZ versiyasining slotlarini koʻradi (versiya chegarasi oyning
-  // oʻrtasiga tushishi mumkin) — koʻrinayotgan 42 kun uchun bir marta hisoblanadi.
-  const slotsByKey = useMemo(() => {
-    const m = new Map<string, ReturnType<typeof slotsOnDate>>();
-    for (const { date } of cells) m.set(dateToKey(date), slotsOnDate(classId, date));
-    return m;
-  }, [cells, classId]);
-
-  const selectedDate = selectedKey ? dateKeyToDate(selectedKey) : null;
-  const daySlots = selectedKey
-    ? slotsByKey.get(selectedKey) ?? (selectedDate ? slotsOnDate(classId, selectedDate) : [])
-    : [];
-
-  const prevMonth = () => { const m = viewM - 1; if (m < 0) { setViewM(11); setViewY(viewY - 1); } else setViewM(m); };
-  const nextMonth = () => { const m = viewM + 1; if (m > 11) { setViewM(0); setViewY(viewY + 1); } else setViewM(m); };
+  // Kalendar modifikatori: sinf jadvalida dars boʻlgan kunlar (har sana OʻZ
+  // versiyasining slotlarini koʻradi — versiya chegarasi oy oʻrtasiga tushishi mumkin).
+  const hasSlotOnDate = (date: Date) => slotsOnDate(classId, date).length > 0;
 
   const pickDay = (d: Date) => {
     const key = dateToKey(d);
     setSelectedKey(key);
     if (useClassSchedule) {
       // Sukut boʻyicha oʻsha kunning barcha darslarini belgilab qoʻyamiz.
-      setPicked(new Set((slotsByKey.get(key) ?? slotsOnDate(classId, d)).map(slotKey)));
+      setPicked(new Set(slotsOnDate(classId, d).map(slotKey)));
     }
   };
   const toggleSlot = (s: { startMin: number; endMin: number }) =>
@@ -101,52 +80,44 @@ export default function ClassSchedulePicker({
 
   return (
     <div className="w-[300px] p-3">
-      {/* Oy navigatsiyasi */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2 text-sm font-bold text-foreground">
-          <CalendarDays className="size-4 text-muted-foreground" />
-          {MONTHS_UZ[viewM]} <span className="text-muted-foreground font-medium">{viewY}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <button onClick={prevMonth} className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"><ChevronLeft className="size-4" /></button>
-          <button onClick={nextMonth} className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"><ChevronRight className="size-4" /></button>
-        </div>
-      </div>
-
-      {/* Hafta sarlavhalari */}
-      <div className="grid grid-cols-7 mb-1">
-        {WEEKDAYS.map((w) => (
-          <div key={w} className="text-center text-[11px] font-semibold text-muted-foreground/70 py-1">{w}</div>
-        ))}
-      </div>
-
-      {/* Kunlar */}
-      <div className="grid grid-cols-7 gap-0.5">
-        {cells.map(({ date, inMonth }, i) => {
-          const key = dateToKey(date);
-          const hasSlot = inMonth && (slotsByKey.get(key)?.length ?? 0) > 0;
-          const isSel = key === selectedKey;
-          const isToday = key === todayKey;
-          return (
-            <button
-              key={i}
-              onClick={() => pickDay(date)}
-              className={cn(
-                "relative h-8 rounded-md text-xs flex items-center justify-center transition-colors",
-                !inMonth && "text-muted-foreground/30",
-                inMonth && !isSel && "text-foreground hover:bg-muted",
-                isToday && !isSel && "ring-1 ring-border",
-              )}
-              style={isSel ? { backgroundColor: hex, color: "#fff" } : hasSlot ? { backgroundColor: `color-mix(in srgb, ${hex} 14%, transparent)` } : undefined}
-            >
-              {date.getDate()}
-              {hasSlot && !isSel && (
-                <span className="absolute bottom-1 size-1 rounded-full" style={{ backgroundColor: hex }} />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Kalendar — sinf jadvalida dars boʻlgan kunlar sinf rangida ajratiladi */}
+      <Calendar
+        mode="single"
+        locale={uz}
+        month={viewMonth}
+        onMonthChange={setViewMonth}
+        selected={selectedDate}
+        onSelect={(d) => d && pickDay(d)}
+        formatters={{
+          formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
+          formatWeekdayName: (date) => WEEKDAYS[date.getDay()],
+        }}
+        modifiers={{ hasSlot: hasSlotOnDate }}
+        components={{
+          DayButton: (p: React.ComponentProps<typeof CalendarDayButton>) => {
+            const isSel = !!p.modifiers.selected;
+            const hasSlot = !!p.modifiers.hasSlot;
+            return (
+              <CalendarDayButton
+                {...p}
+                style={
+                  isSel
+                    ? { backgroundColor: hex, color: "#fff" }
+                    : hasSlot
+                      ? { backgroundColor: `color-mix(in srgb, ${hex} 14%, transparent)` }
+                      : undefined
+                }
+              >
+                {p.children}
+                {hasSlot && !isSel && (
+                  <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full" style={{ backgroundColor: hex }} />
+                )}
+              </CalendarDayButton>
+            );
+          },
+        }}
+        className="w-full p-0 [--cell-size:--spacing(8)]"
+      />
 
       {/* Jadval rejimi */}
       <label className={cn("flex items-center gap-2 mt-3 text-sm select-none", hasTimetable ? "cursor-pointer" : "opacity-40 cursor-not-allowed")}>

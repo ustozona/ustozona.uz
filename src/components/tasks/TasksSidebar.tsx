@@ -121,7 +121,7 @@ export default function TasksSidebar({ activeFilter, onSelectFilter }: Props) {
     { id: "all", label: "Barchasi", icon: Layers, count: counts.all },
   ] as const;
 
-  const renderSmartListItem = (item: typeof smartLists[0]) => {
+  const renderSmartListItem = (item: typeof smartLists[number]) => {
     const isSelected = activeFilter === item.id;
     const Icon = item.icon;
 

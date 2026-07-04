@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { uz } from "date-fns/locale";
+import { type DateRange } from "react-day-picker";
 import {
   GraduationCap,
   CalendarRange,
@@ -22,10 +24,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
-import { makeCalendarForYear } from "@/lib/academic-calendar";
+import { makeCalendarForYear, makeCalendarForRange, fmtDayMonthUz } from "@/lib/academic-calendar";
+import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
+import { MONTHS_UZ } from "@/lib/localization";
 
 /* ════════════════════════════════════════════════════════════════════
    ONBOARDING SEHRGARI — yangi oʻqituvchi uchun birinchi ishga tushirish.
@@ -34,9 +39,10 @@ import { makeCalendarForYear } from "@/lib/academic-calendar";
    maʼlumotini tegishli store'ga yozadi (SettingsServerSync/CalendarServerSync
    avtomatik serverga sinxronlaydi). Yakunda `onboardingCompleted = true`.
 
-   Oʻquv yili BOʻSH boshlanadi — bu yerda foydalanuvchi yilni tanlaydi,
-   choraklar/taʼtillar rasmiy jadval boʻyicha avtomatik toʻldiriladi
-   (keyin Sozlamalar → "Oʻquv yili"da tahrirlanadi).
+   Oʻquv yili BOʻSH boshlanadi — bu yerda foydalanuvchi oʻquv yilining
+   boshlanish va tugash sanasini SHADCN KALENDARIDA oʻzi belgilaydi
+   (range), choraklar/taʼtillar rasmiy jadval boʻyicha avtomatik
+   toʻldiriladi (keyin Sozlamalar → "Oʻquv yili"da tahrirlanadi).
 
    `OnboardingGate` faqat hydration tugagach va onboarding tugamagan
    boʻlsa render qiladi. Yopish/Esc/tashqariga bosish bloklangan —
@@ -51,6 +57,9 @@ function defaultStartYear(): number {
   const now = new Date();
   return now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
 }
+
+/** Kalendar hafta sarlavhalari — getDay() tartibida (0=Yakshanba). */
+const UZ_WEEKDAYS = ["Yak", "Dush", "Sesh", "Chor", "Pay", "Jum", "Shan"];
 
 const FEATURES = [
   { icon: GraduationCap, title: "Sinflar va baholar", desc: "Oʻquvchilar, jurnal va baholash bir joyda." },
@@ -75,10 +84,17 @@ export default function OnboardingWizard() {
   const [school, setSchool] = React.useState(profile.school);
   const [subject, setSubject] = React.useState(profile.subject);
 
-  // Oʻquv yili qadam
+  // Oʻquv yili qadam — oʻqituvchi kalendarda yil oraligʻini oʻzi belgilaydi.
+  // Sukut boʻyicha rasmiy struktura oraligʻi tanlangan (oʻzgartirish mumkin).
   const base = React.useMemo(defaultStartYear, []);
-  const [startYear, setStartYear] = React.useState(base);
-  const yearOptions = [base - 1, base, base + 1];
+  const defaultRange = React.useMemo<DateRange>(() => {
+    const c = makeCalendarForYear(base);
+    return { from: dateKeyToDate(c.range.start), to: dateKeyToDate(c.range.end) };
+  }, [base]);
+  const [range, setRange] = React.useState<DateRange | undefined>(defaultRange);
+  const hasFullRange = Boolean(range?.from && range?.to);
+  const startKey = range?.from ? dateToKey(range.from) : "";
+  const endKey = range?.to ? dateToKey(range.to) : "";
 
   const complete = React.useCallback(
     (navigateToClasses: boolean) => {
@@ -90,8 +106,8 @@ export default function OnboardingWizard() {
 
   const next = () => {
     if (step === 1) setProfile({ name: name.trim() || profile.name, school: school.trim(), subject: subject.trim() });
-    if (step === 2) {
-      const cal = makeCalendarForYear(startYear);
+    if (step === 2 && startKey && endKey) {
+      const cal = makeCalendarForRange(startKey, endKey);
       setCalendar(cal);
       setAcademicYear(cal.yearLabel);
     }
@@ -99,7 +115,7 @@ export default function OnboardingWizard() {
   };
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
-  const yearLabel = `${startYear}–${startYear + 1}`;
+  const yearLabel = startKey ? makeCalendarForRange(startKey, endKey || startKey).yearLabel : "";
   const canContinueProfile = name.trim().length > 0;
 
   return (
@@ -179,36 +195,40 @@ export default function OnboardingWizard() {
 
           {/* ── 2: Oʻquv yili ── */}
           {step === 2 && (
-            <div className="flex flex-col gap-5 animate-in fade-in-50 duration-300">
+            <div className="flex flex-col gap-4 animate-in fade-in-50 duration-300">
               <StepHeader
                 icon={<CalendarRange className="size-5" />}
-                title="Oʻquv yilini tanlang"
-                desc="Choraklar va taʼtillar rasmiy jadval boʻyicha avtomatik toʻldiriladi — keyin Sozlamalar → «Oʻquv yili»da aniqlashtirasiz."
+                title="Oʻquv yilini belgilang"
+                desc="Kalendarda oʻquv yilining boshlanish, soʻng tugash sanasini tanlang. Choraklar va taʼtillar avtomatik toʻldiriladi — keyin Sozlamalar → «Oʻquv yili»da aniqlashtirasiz."
               />
-              <div className="grid grid-cols-3 gap-2">
-                {yearOptions.map((y) => {
-                  const active = y === startYear;
-                  return (
-                    <button
-                      key={y}
-                      type="button"
-                      onClick={() => setStartYear(y)}
-                      className={cn(
-                        "flex flex-col items-center gap-1 rounded-xl border px-3 py-3.5 text-sm transition-colors",
-                        active
-                          ? "border-primary bg-primary/5 text-foreground"
-                          : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                      )}
-                    >
-                      <span className="font-semibold tabular-nums">{y}–{y + 1}</span>
-                      {active && <Check className="size-4 text-primary" />}
-                    </button>
-                  );
-                })}
+              <div className="flex justify-center">
+                <Calendar
+                  mode="range"
+                  locale={uz}
+                  formatters={{
+                    formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
+                    formatWeekdayName: (date) => UZ_WEEKDAYS[date.getDay()],
+                  }}
+                  selected={range}
+                  onSelect={setRange}
+                  defaultMonth={range?.from ?? dateKeyToDate(`${base}-09-01`)}
+                  captionLayout="dropdown"
+                  startMonth={new Date(base - 1, 0)}
+                  endMonth={new Date(base + 2, 11)}
+                  className="rounded-xl border border-border p-3"
+                />
               </div>
               <div className="rounded-xl border border-border bg-muted/30 px-4 py-3">
-                <p className="text-xs text-muted-foreground">Tanlangan yil</p>
-                <p className="text-sm font-medium mt-0.5 tabular-nums">{yearLabel} · 2-sentabr — 25-may · 4 chorak</p>
+                <p className="text-xs text-muted-foreground">Tanlangan oʻquv yili</p>
+                {hasFullRange ? (
+                  <p className="text-sm font-medium mt-0.5 tabular-nums">
+                    {yearLabel} · {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Kalendarda boshlanish, soʻng tugash sanasini belgilang.
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -247,7 +267,11 @@ export default function OnboardingWizard() {
           )}
 
           {step < 3 ? (
-            <Button className="gap-1.5" onClick={next} disabled={step === 1 && !canContinueProfile}>
+            <Button
+              className="gap-1.5"
+              onClick={next}
+              disabled={(step === 1 && !canContinueProfile) || (step === 2 && !hasFullRange)}
+            >
               Davom etish
               <ArrowRight className="size-4" />
             </Button>

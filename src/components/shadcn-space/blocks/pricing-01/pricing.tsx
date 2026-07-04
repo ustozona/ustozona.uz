@@ -68,7 +68,7 @@ const Pricing = () => {
       transition: {
         delay: index * 0.2,
         duration: 0.6,
-        ease: "easeInOut",
+        ease: "easeInOut" as const,
       },
     }),
   };

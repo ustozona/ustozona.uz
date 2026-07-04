@@ -21,7 +21,7 @@ export default function TasksPage() {
       </div>
 
       {/* ── Column 2: Tasks List (Qolgan qism) ── */}
-      <div className="min-w-0 min-h-0 h-full flex flex-col flex-1 transition-all duration-300">
+      <div data-tour="tasks-list" className="min-w-0 min-h-0 h-full flex flex-col flex-1 transition-all duration-300">
         <TasksList activeFilter={activeFilter} />
       </div>
 
@@ -34,7 +34,7 @@ export default function TasksPage() {
 
       {/* ── Column 3 (muqobil): Statistika (hech narsa tanlanmaganda) ── */}
       {!detailMode && (
-        <div className="hidden xl:flex min-w-0 min-h-0 h-full flex-col shrink-0 animate-in fade-in-0 duration-300 w-[360px] xl:w-[25%] max-w-md">
+        <div data-tour="tasks-stats" className="hidden xl:flex min-w-0 min-h-0 h-full flex-col shrink-0 animate-in fade-in-0 duration-300 w-[360px] xl:w-[25%] max-w-md">
           <TaskStats activeFilter={activeFilter} onSelectFilter={setActiveFilter} />
         </div>
       )}

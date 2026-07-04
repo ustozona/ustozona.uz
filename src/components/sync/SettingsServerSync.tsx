@@ -27,6 +27,7 @@ function selectSaveInput(s: SettingsState): SettingsSaveInput {
     language: s.language,
     workspaceBackground: s.workspaceBackground,
     onboardingCompleted: s.onboardingCompleted,
+    completedTours: s.completedTours,
   };
 }
 

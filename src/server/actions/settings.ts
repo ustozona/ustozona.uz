@@ -25,6 +25,7 @@ const saveSchema = z.object({
   language: z.enum(["uz", "ru", "en"]),
   workspaceBackground: z.enum(["grid", "parchment", "circles", "stripes"]),
   onboardingCompleted: z.boolean(),
+  completedTours: z.array(z.string().max(50)).max(50),
 });
 
 export type SettingsSaveInput = z.infer<typeof saveSchema>;

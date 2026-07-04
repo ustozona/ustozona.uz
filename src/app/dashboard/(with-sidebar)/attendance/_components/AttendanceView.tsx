@@ -701,7 +701,7 @@ export default function AttendanceView({ classId }: { classId: string }) {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={() => setStatusModal(true)} className={ctrlBtn}>
+                  <Button data-tour="attendance-config" variant="outline" size="icon" onClick={() => setStatusModal(true)} className={ctrlBtn}>
                     <ListChecks className="h-4 w-4" aria-hidden />
                   </Button>
                 </TooltipTrigger>

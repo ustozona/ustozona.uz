@@ -73,6 +73,11 @@ interface SettingsState {
   onboardingCompleted: boolean;
   setOnboardingCompleted: (v: boolean) => void;
 
+  /** Koʻrilgan bo'lim tur'lari (coach-mark) — har bo'limga birinchi kirilganda
+      bir marta koʻrsatiladi, id shu yerga qoʻshiladi. prefs JSONB'da saqlanadi. */
+  completedTours: string[];
+  markTourCompleted: (id: string) => void;
+
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 }
@@ -94,6 +99,10 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
 
   onboardingCompleted: false,
   setOnboardingCompleted: (v) => set({ onboardingCompleted: v }),
+
+  completedTours: [],
+  markTourCompleted: (id) =>
+    set((s) => (s.completedTours.includes(id) ? s : { completedTours: [...s.completedTours, id] })),
 
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),

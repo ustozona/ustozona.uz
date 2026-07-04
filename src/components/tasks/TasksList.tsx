@@ -454,7 +454,7 @@ export default function TasksList({ activeFilter }: Props) {
             <div className="p-4 sm:p-6 w-full max-w-4xl mx-auto space-y-4">
               
               {/* Vazifa qoʻshish — kengayuvchi capture qutisi */}
-              <div className="px-2 pb-2">
+              <div data-tour="tasks-composer" className="px-2 pb-2">
                 <TaskComposer ref={captureBarRef} seed={composerSeed} />
               </div>
 
