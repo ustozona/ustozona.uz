@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TypographyMuted } from "@/components/ui/typography";
 import ClassListPanel from "@/components/ClassListPanel";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { seedClass, OPEN_TASK, SCRIPTS } from "@/lib/diagnostics";
@@ -31,8 +31,7 @@ function pickPair(scriptIds: string[], counts: Record<string, number>): [string,
 }
 
 export default function CjPage() {
-  const storeClassId = useClassStore((s) => s.selectedClassId);
-  const setSelectedClassId = useClassStore((s) => s.setSelectedClassId);
+  const [storeClassId, setSelectedClassId] = useClassIdParam({ fallbackToStore: true });
   const data = seedClass();
 
   const scriptIds = useMemo(() => SCRIPTS.map((s) => s.id), []);
@@ -87,7 +86,7 @@ export default function CjPage() {
   return (
     <>
       <div className="hidden lg:block w-[280px] shrink-0 h-full py-4 pl-4">
-        <ClassListPanel page="standards" selectedClassId={storeClassId} onSelect={setSelectedClassId} />
+        <ClassListPanel page="standards" selectedClassId={storeClassId ?? ""} onSelect={setSelectedClassId} />
       </div>
 
       <div className={withSidebarPageClass}>

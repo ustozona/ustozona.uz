@@ -16,7 +16,7 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import ClassListPanel from "@/components/ClassListPanel";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import {
@@ -41,8 +41,7 @@ function cellClass(state: MasteryState, level: DecayLevel): string {
 }
 
 export default function OzlashtirishPage() {
-  const storeClassId = useClassStore((s) => s.selectedClassId);
-  const setSelectedClassId = useClassStore((s) => s.setSelectedClassId);
+  const [storeClassId, setSelectedClassId] = useClassIdParam({ fallbackToStore: true });
   const [classId, setClassId] = useState<string>(SEED_CLASS_ID);
   const handleSelect = (id: string) => { setClassId(id); setSelectedClassId(id); };
 
@@ -77,7 +76,7 @@ export default function OzlashtirishPage() {
   return (
     <>
       <div className="hidden lg:block w-[280px] shrink-0 h-full py-4 pl-4">
-        <ClassListPanel page="standards" selectedClassId={storeClassId} onSelect={handleSelect} />
+        <ClassListPanel page="standards" selectedClassId={storeClassId ?? ""} onSelect={handleSelect} />
       </div>
 
       <div className={withSidebarPageClass}>

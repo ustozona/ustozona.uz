@@ -38,9 +38,10 @@ const DATE_GROUPS = ["bugun", "ertaga", "kelasi hafta", "muddatsiz", "oʻtgan"];
 
 type Props = {
   activeFilter: TaskFilter;
+  onSelectFilter?: (filter: TaskFilter) => void;
 };
 
-export default function TasksList({ activeFilter }: Props) {
+export default function TasksList({ activeFilter, onSelectFilter }: Props) {
   const liveClasses = useLiveClasses();
   const tasks = useTaskStore((s) => s.tasks);
   const selectedTaskId = useTaskStore((s) => s.selectedTaskId);
@@ -71,6 +72,17 @@ export default function TasksList({ activeFilter }: Props) {
   const manualSort = sortBy === "default";
 
   const { tasksList, groupedTasks, totalTasks, completedTasks } = useFilteredTasks(tasks, activeFilter, groupBy, sortBy, showCompleted);
+
+  // Boʻsh-holat semantikasi: "hech qachon boʻlmagan" (zero) ≠ "hammasi bajarilgan"
+  // (cleared) ≠ "filtrga mos yoʻq" (filtered). Bir xil "Barcha ishlar qilingan"
+  // matni yangi hisobga chalgʻituvchi edi.
+  //   zero     — hech qachon vazifa boʻlmagan → yoʻnaltiruvchi (composerni koʻrsat)
+  //   filtered — vazifa bor, lekin tor koʻrinish boʻsh → neytral + tozalash
+  //   cleared  — vazifa bor, keng/vaqt koʻrinish boʻsh → tabriklovchi (hammasi joyida)
+  const isScopingFilter =
+    activeFilter === "important" || activeFilter === "completed" || activeFilter.startsWith("class-");
+  const emptyKind: "zero" | "filtered" | "cleared" =
+    tasks.length === 0 ? "zero" : isScopingFilter ? "filtered" : "cleared";
 
   // Tabriklash: joriy roʻyxatdagi oxirgi vazifa bajarilib boʻsh qolганда bir marta
   // confetti otiladi. Faqat boʻsh-EMASdan → boʻshga oʻtishda (filtr almashishida
@@ -727,8 +739,47 @@ export default function TasksList({ activeFilter }: Props) {
                 );
               })}
 
-              {/* Empty state */}
-              {tasksList.length === 0 && (
+              {/* Empty state — zero / filtered / cleared (qarang: emptyKind) */}
+              {tasksList.length === 0 && emptyKind === "zero" && (
+                <Empty className="py-16 animate-in fade-in zoom-in duration-500">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <ListPlus className="size-6" />
+                    </EmptyMedia>
+                    <EmptyTitle>Hali vazifa yoʻq</EmptyTitle>
+                    <EmptyDescription>
+                      Baholash, rejalashtirish, ota-onaga xat — kuzatmoqchi boʻlgan har qanday ishni vazifaga aylantiring.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <Button size="sm" onClick={() => captureBarRef.current?.focus()}>
+                    <Plus className="size-4" />
+                    Birinchi vazifani qoʻshish
+                  </Button>
+                </Empty>
+              )}
+
+              {tasksList.length === 0 && emptyKind === "filtered" && (
+                <Empty className="py-16 animate-in fade-in zoom-in duration-500">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Inbox className="size-6" />
+                    </EmptyMedia>
+                    <EmptyTitle>Bu koʻrinishga mos vazifa yoʻq</EmptyTitle>
+                    <EmptyDescription>
+                      {activeFilter === "completed"
+                        ? "Hali bajarilgan vazifa yoʻq."
+                        : "Tanlangan filtrga mos vazifa topilmadi."}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  {onSelectFilter && activeFilter !== "completed" && (
+                    <Button variant="outline" size="sm" onClick={() => onSelectFilter("all")}>
+                      Barcha vazifalarga oʻtish
+                    </Button>
+                  )}
+                </Empty>
+              )}
+
+              {tasksList.length === 0 && emptyKind === "cleared" && (
                 <Empty className="py-16 animate-in fade-in zoom-in duration-500">
                   <EmptyHeader>
                     <EmptyMedia variant="icon">

@@ -22,6 +22,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { Label } from "@/components/ui/label";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
@@ -1130,7 +1131,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {/* Koʻchirish — sana + vaqt shu yerda (bank orqali unschedule/relink kerak emas) */}
             <div>
               <Label htmlFor="em-date" className="mb-1 block text-xs font-semibold text-muted-foreground">Sana</Label>
-              <Input id="em-date" type="date" value={emDateStr} onChange={(e) => setEmDateStr(e.target.value)} />
+              <DateKeyPicker value={emDateStr} onChange={setEmDateStr} ariaLabel="Sana" className="w-full" />
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-1">

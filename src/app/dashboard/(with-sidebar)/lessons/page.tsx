@@ -14,7 +14,7 @@ import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClasses, useCreateClass } from "@/hooks/useLiveClasses";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
 import { lessonClassIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import ClassListPanel from "@/components/ClassListPanel";
@@ -52,11 +52,10 @@ const NONE = "__none__";
 
 export default function LessonsPage() {
   const router = useRouter();
-  const setStoreClassId = useClassStore((s) => s.setSelectedClassId);
-  // Sinf tanlash — lokal holat. null = sahifaga kirilganda hech narsa tanlanmagan
-  // (Sinflar ustuni 50%). Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
-  const [selectedClassId, setSelectedClassIdState] = useState<string | null>(null);
-  const handleSelectClass = (id: string) => { setSelectedClassIdState(id); setStoreClassId(id); };
+  // Sinf tanlash — `?classId=` URL param (refresh/deep-link chidamli).
+  // null = hech narsa tanlanmagan (Sinflar ustuni 50%). Tanlanganda URL +
+  // store default yangilanadi (boshqa sahifalar bilan sinxron).
+  const [selectedClassId, handleSelectClass] = useClassIdParam();
   const liveClasses = useLiveClasses();
   const createClass = useCreateClass();
   const units = useLessonStore((s) => s.units);

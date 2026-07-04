@@ -15,7 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import ClassListPanel from "@/components/ClassListPanel";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { seedClass, MISCONCEPTIONS, type Misconception } from "@/lib/diagnostics";
@@ -44,8 +44,7 @@ function draftFor(standardId: string): DraftQuestion[] {
 }
 
 export default function QuizPage() {
-  const storeClassId = useClassStore((s) => s.selectedClassId);
-  const setSelectedClassId = useClassStore((s) => s.setSelectedClassId);
+  const [storeClassId, setSelectedClassId] = useClassIdParam({ fallbackToStore: true });
   const data = seedClass();
 
   const [standardId, setStandardId] = useState<string>(data.standards[0]?.id ?? "");
@@ -68,7 +67,7 @@ export default function QuizPage() {
   return (
     <>
       <div className="hidden lg:block w-[280px] shrink-0 h-full py-4 pl-4">
-        <ClassListPanel page="standards" selectedClassId={storeClassId} onSelect={setSelectedClassId} />
+        <ClassListPanel page="standards" selectedClassId={storeClassId ?? ""} onSelect={setSelectedClassId} />
       </div>
 
       <div className={withSidebarPageClass}>

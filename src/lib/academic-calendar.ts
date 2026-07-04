@@ -39,6 +39,13 @@ export function isCalendarConfigured(cal: AcademicYearCalendar): boolean {
   return Boolean(cal.range.start && cal.range.end && cal.quarters.length > 0);
 }
 
+/** Bugungi sanadan joriy oʻquv yilining boshlanish yili: iyun (6) va undan
+    keyin — shu yil, aks holda oldingi yil. Eager-seed va onboarding sukut
+    qiymati shu yordamchidan bitta manba sifatida foydalanadi. */
+export function currentAcademicStartYear(now: Date = new Date()): number {
+  return now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+}
+
 /** Berilgan boshlanish yiliga rasmiy struktura boʻyicha kalendar hosil qiladi:
     yil 2-sentabrdan keyingi 25-maygacha; kuzgi 4–9-noyabr, qishki 28-dekabrdan
     10-yanvargacha, bahorgi 21–27-mart taʼtillari; 4 chorak shular orasida.

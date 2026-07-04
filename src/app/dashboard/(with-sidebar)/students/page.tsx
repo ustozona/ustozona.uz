@@ -7,7 +7,7 @@ import { gradeBadgeClass as gradeBadge, attendanceBadgeClass as attendanceBadge 
 import { classColor, type Student } from "@/lib/grades-data";
 import { studentSummary } from "@/lib/grades-stats";
 import { studentStats } from "@/lib/attendance-data";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import ClassListPanel from "@/components/ClassListPanel";
@@ -119,9 +119,7 @@ export default function StudentsPage() {
   // Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
   const router = useRouter();
   const openProfile = (id: string) => router.push(`/dashboard/students/${encodeURIComponent(id)}`);
-  const setStoreClassId = useClassStore((s) => s.setSelectedClassId);
-  const [selectedClassId, setSelectedClassIdState] = useState<string | null>(null);
-  const handleSelectClass = (id: string) => { setSelectedClassIdState(id); setStoreClassId(id); };
+  const [selectedClassId, handleSelectClass] = useClassIdParam();
 
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [search, setSearch] = useState("");

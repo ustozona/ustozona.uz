@@ -500,7 +500,7 @@ export default function TimetablePage() {
                   <Empty className="py-8">
                     <EmptyHeader>
                       <EmptyMedia variant="icon"><GraduationCap /></EmptyMedia>
-                      <EmptyTitle>Sinf hali yoʻq</EmptyTitle>
+                      <EmptyTitle>Hali sinf yoʻq</EmptyTitle>
                       <EmptyDescription>
                         «Qoʻshish» tugmasi bilan birinchi sinfingizni yarating — soʻng uni jadvalga sudrab qoʻyasiz.
                       </EmptyDescription>

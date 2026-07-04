@@ -28,7 +28,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
-import { makeCalendarForYear, makeCalendarForRange, fmtDayMonthUz } from "@/lib/academic-calendar";
+import {
+  makeCalendarForYear,
+  makeCalendarForRange,
+  fmtDayMonthUz,
+  currentAcademicStartYear,
+  isCalendarConfigured,
+} from "@/lib/academic-calendar";
 import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
 import { MONTHS_UZ } from "@/lib/localization";
 
@@ -39,10 +45,13 @@ import { MONTHS_UZ } from "@/lib/localization";
    maʼlumotini tegishli store'ga yozadi (SettingsServerSync/CalendarServerSync
    avtomatik serverga sinxronlaydi). Yakunda `onboardingCompleted = true`.
 
-   Oʻquv yili BOʻSH boshlanadi — bu yerda foydalanuvchi oʻquv yilining
-   boshlanish va tugash sanasini SHADCN KALENDARIDA oʻzi belgilaydi
-   (range), choraklar/taʼtillar rasmiy jadval boʻyicha avtomatik
-   toʻldiriladi (keyin Sozlamalar → "Oʻquv yili"da tahrirlanadi).
+   Oʻquv yili qadami — "yaratish" emas, TASDIQLASH: kalendar allaqachon
+   CalendarServerSync tomonidan joriy sanadan rasmiy oʻzbek oʻquv yili bilan
+   eager-seed qilingan (~90% oʻqituvchiga toʻgʻri keladi). Foydalanuvchi
+   sukut qiymatini bir klik bilan tasdiqlaydi yoki «Sanalarni oʻzgartirish»
+   orqali SHADCN KALENDARIDA oraliqni tuzatadi (choraklar/taʼtillar rasmiy
+   jadval boʻyicha qayta toʻldiriladi; keyin Sozlamalar → "Oʻquv yili"da
+   ham tahrirlanadi).
 
    `OnboardingGate` faqat hydration tugagach va onboarding tugamagan
    boʻlsa render qiladi. Yopish/Esc/tashqariga bosish bloklangan —
@@ -50,13 +59,6 @@ import { MONTHS_UZ } from "@/lib/localization";
    ════════════════════════════════════════════════════════════════════ */
 
 const STEP_COUNT = 4;
-
-/** Bugungi sanadan taxminiy joriy oʻquv yili boshlanish yili: iyun (6) va
-    undan keyin — shu yil, aks holda oldingi yil. */
-function defaultStartYear(): number {
-  const now = new Date();
-  return now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
-}
 
 /** Kalendar hafta sarlavhalari — getDay() tartibida (0=Yakshanba). */
 const UZ_WEEKDAYS = ["Yak", "Dush", "Sesh", "Chor", "Pay", "Jum", "Shan"];
@@ -75,6 +77,7 @@ export default function OnboardingWizard() {
   const setAcademicYear = useSettingsStore((s) => s.setAcademicYear);
   const setOnboardingCompleted = useSettingsStore((s) => s.setOnboardingCompleted);
   const setCalendar = useCalendarStore((s) => s.setCalendar);
+  const seededCalendar = useCalendarStore((s) => s.calendar);
 
   const [step, setStep] = React.useState(0);
 
@@ -84,14 +87,22 @@ export default function OnboardingWizard() {
   const [school, setSchool] = React.useState(profile.school);
   const [subject, setSubject] = React.useState(profile.subject);
 
-  // Oʻquv yili qadam — oʻqituvchi kalendarda yil oraligʻini oʻzi belgilaydi.
-  // Sukut boʻyicha rasmiy struktura oraligʻi tanlangan (oʻzgartirish mumkin).
-  const base = React.useMemo(defaultStartYear, []);
+  // Oʻquv yili qadam — kalendar allaqachon eager-seed qilingan; foydalanuvchi
+  // sukut oraligʻini tasdiqlaydi yoki tuzatadi (editing). Sukut oraligʻi
+  // seed'langan kalendardan olinadi (aks holda joriy yildan hisoblanadi).
+  const base = React.useMemo(
+    () =>
+      isCalendarConfigured(seededCalendar) && seededCalendar.range.start
+        ? Number(seededCalendar.range.start.slice(0, 4))
+        : currentAcademicStartYear(),
+    [seededCalendar]
+  );
   const defaultRange = React.useMemo<DateRange>(() => {
-    const c = makeCalendarForYear(base);
+    const c = isCalendarConfigured(seededCalendar) ? seededCalendar : makeCalendarForYear(base);
     return { from: dateKeyToDate(c.range.start), to: dateKeyToDate(c.range.end) };
-  }, [base]);
+  }, [seededCalendar, base]);
   const [range, setRange] = React.useState<DateRange | undefined>(defaultRange);
+  const [editing, setEditing] = React.useState(false);
   const hasFullRange = Boolean(range?.from && range?.to);
   const startKey = range?.from ? dateToKey(range.from) : "";
   const endKey = range?.to ? dateToKey(range.to) : "";
@@ -193,43 +204,75 @@ export default function OnboardingWizard() {
             </div>
           )}
 
-          {/* ── 2: Oʻquv yili ── */}
+          {/* ── 2: Oʻquv yili (tasdiqlash yoki tuzatish) ── */}
           {step === 2 && (
             <div className="flex flex-col gap-4 animate-in fade-in-50 duration-300">
               <StepHeader
                 icon={<CalendarRange className="size-5" />}
-                title="Oʻquv yilini belgilang"
-                desc="Kalendarda oʻquv yilining boshlanish, soʻng tugash sanasini tanlang. Choraklar va taʼtillar avtomatik toʻldiriladi — keyin Sozlamalar → «Oʻquv yili»da aniqlashtirasiz."
+                title="Oʻquv yilini tasdiqlang"
+                desc="Rasmiy oʻzbek oʻquv yili sanalarini oldindan tayyorladik. Toʻgʻri boʻlsa davom eting yoki sanalarni oʻzgartiring — choraklar va taʼtillar avtomatik toʻldiriladi."
               />
-              <div className="flex justify-center">
-                <Calendar
-                  mode="range"
-                  locale={uz}
-                  formatters={{
-                    formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
-                    formatWeekdayName: (date) => UZ_WEEKDAYS[date.getDay()],
-                  }}
-                  selected={range}
-                  onSelect={setRange}
-                  defaultMonth={range?.from ?? dateKeyToDate(`${base}-09-01`)}
-                  captionLayout="dropdown"
-                  startMonth={new Date(base - 1, 0)}
-                  endMonth={new Date(base + 2, 11)}
-                  className="rounded-xl border border-border p-3"
-                />
-              </div>
-              <div className="rounded-xl border border-border bg-muted/30 px-4 py-3">
-                <p className="text-xs text-muted-foreground">Tanlangan oʻquv yili</p>
-                {hasFullRange ? (
-                  <p className="text-sm font-medium mt-0.5 tabular-nums">
-                    {yearLabel} · {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    Kalendarda boshlanish, soʻng tugash sanasini belgilang.
-                  </p>
-                )}
-              </div>
+
+              {!editing ? (
+                <>
+                  <div className="rounded-xl border border-border bg-muted/30 px-4 py-4">
+                    <p className="text-xs text-muted-foreground">Oʻquv yilingiz</p>
+                    {hasFullRange ? (
+                      <>
+                        <p className="text-lg font-semibold mt-1 tabular-nums">{yearLabel}</p>
+                        <p className="text-sm text-muted-foreground mt-0.5 tabular-nums">
+                          {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Sanalarni belgilash uchun «Sanalarni oʻzgartirish»ni bosing.
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="self-start gap-1.5"
+                    onClick={() => setEditing(true)}
+                  >
+                    <CalendarRange className="size-4" />
+                    Sanalarni oʻzgartirish
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-center">
+                    <Calendar
+                      mode="range"
+                      locale={uz}
+                      formatters={{
+                        formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
+                        formatWeekdayName: (date) => UZ_WEEKDAYS[date.getDay()],
+                      }}
+                      selected={range}
+                      onSelect={setRange}
+                      defaultMonth={range?.from ?? dateKeyToDate(`${base}-09-01`)}
+                      captionLayout="dropdown"
+                      startMonth={new Date(base - 1, 0)}
+                      endMonth={new Date(base + 2, 11)}
+                      className="rounded-xl border border-border p-3"
+                    />
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/30 px-4 py-3">
+                    <p className="text-xs text-muted-foreground">Tanlangan oʻquv yili</p>
+                    {hasFullRange ? (
+                      <p className="text-sm font-medium mt-0.5 tabular-nums">
+                        {yearLabel} · {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        Kalendarda boshlanish, soʻng tugash sanasini belgilang.
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
 

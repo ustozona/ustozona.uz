@@ -37,7 +37,17 @@ const MOCKS = {
   tasksCalendar: TasksCalendarMock,
 } as const;
 
-/** Target elementni topib rect qaytaradi; scroll/resize'da yangilaydi. */
+/** Element «tayyor»mi — DOM'da bor va koʻrinadigan oʻlchamga ega. */
+function isReady(el: HTMLElement | null): el is HTMLElement {
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  return r.width > 0 && r.height > 0;
+}
+
+/** Target elementni topib rect qaytaradi; scroll/resize'da yangilaydi.
+    Element darhol topilmasa yoki hali oʻlchamsiz boʻlsa (maʼlumot yuklanmoqda,
+    animatsiya, kech mount) qisqa muddat qayta urinadi — topilmasa `null`
+    qaytaradi va chaqiruvchi markaziy modalga tushadi (buzilmaydi). */
 function useTargetRect(selector: string | undefined): Rect | null {
   const [rect, setRect] = React.useState<Rect | null>(null);
 
@@ -46,31 +56,54 @@ function useTargetRect(selector: string | undefined): Rect | null {
       setRect(null);
       return;
     }
-    const el = document.querySelector(selector) as HTMLElement | null;
-    if (!el) {
-      setRect(null);
-      return;
-    }
-    // Koʻrinishga keltiramiz (bosqich almashganda)
-    el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+
+    let el: HTMLElement | null = null;
+    let ro: ResizeObserver | null = null;
+    let pollId = 0;
+    let settleId = 0;
 
     const measure = () => {
+      if (!el) return;
       const r = el.getBoundingClientRect();
       setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
     };
-    measure();
 
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    window.addEventListener("scroll", measure, true);
-    window.addEventListener("resize", measure);
-    // Silliq scroll tugagach oxirgi pozitsiyani ushlash uchun
-    const t = window.setTimeout(measure, 320);
+    /** Target topilib tayyor boʻlgach — oʻlchash + kuzatuvchilarni ulash. */
+    const attach = () => {
+      if (!el) return;
+      el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+      measure();
+      ro = new ResizeObserver(measure);
+      ro.observe(el);
+      window.addEventListener("scroll", measure, true);
+      window.addEventListener("resize", measure);
+      // Silliq scroll tugagach oxirgi pozitsiyani ushlash uchun
+      settleId = window.setTimeout(measure, 320);
+    };
+
+    // Qisqa muddat (~2s) qayta urinish — kech mount / 0px oʻlcham holatlari uchun.
+    const deadline = Date.now() + 2000;
+    const tryFind = () => {
+      const candidate = document.querySelector(selector) as HTMLElement | null;
+      if (isReady(candidate)) {
+        el = candidate;
+        attach();
+        return;
+      }
+      if (Date.now() < deadline) {
+        pollId = window.setTimeout(tryFind, 120);
+      } else {
+        setRect(null); // topilmadi — markaziy modalga tushadi
+      }
+    };
+    tryFind();
+
     return () => {
-      ro.disconnect();
+      ro?.disconnect();
       window.removeEventListener("scroll", measure, true);
       window.removeEventListener("resize", measure);
-      window.clearTimeout(t);
+      window.clearTimeout(pollId);
+      window.clearTimeout(settleId);
     };
   }, [selector]);
 

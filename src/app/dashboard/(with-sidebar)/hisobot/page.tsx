@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import ClassListPanel from "@/components/ClassListPanel";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { seedClass, mastery } from "@/lib/diagnostics";
@@ -21,8 +21,7 @@ const SEED_CLASS_ID = "9-b";
 const TODAY = new Date().toISOString().slice(0, 10);
 
 export default function HisobotPage() {
-  const storeClassId = useClassStore((s) => s.selectedClassId);
-  const setSelectedClassId = useClassStore((s) => s.setSelectedClassId);
+  const [storeClassId, setSelectedClassId] = useClassIdParam({ fallbackToStore: true });
   const data = seedClass();
 
   const [studentId, setStudentId] = useState<string>(data.students[0]?.id ?? "");
@@ -58,7 +57,7 @@ export default function HisobotPage() {
   return (
     <>
       <div className="hidden lg:block w-[280px] shrink-0 h-full py-4 pl-4 print:hidden">
-        <ClassListPanel page="standards" selectedClassId={storeClassId} onSelect={setSelectedClassId} />
+        <ClassListPanel page="standards" selectedClassId={storeClassId ?? ""} onSelect={setSelectedClassId} />
       </div>
 
       <div className={withSidebarPageClass}>

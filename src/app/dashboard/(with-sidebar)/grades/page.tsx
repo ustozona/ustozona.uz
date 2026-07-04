@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import GradesView from "./_components/GradesView";
@@ -11,11 +10,10 @@ import {
 import { BookOpen } from "lucide-react";
 
 export default function GradesPage() {
-  // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni 50%).
-  // Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
-  const setStoreClassId = useClassStore((s) => s.setSelectedClassId);
-  const [selectedClassId, setSelectedClassIdState] = useState<string | null>(null);
-  const handleSelectClass = (id: string) => { setSelectedClassIdState(id); setStoreClassId(id); };
+  // Sinf tanlash — `?classId=` URL param (refresh/deep-link chidamli).
+  // null = hech narsa tanlanmagan (Sinflar ustuni 50%). Tanlanganda URL +
+  // store default yangilanadi (boshqa sahifalar bilan sinxron).
+  const [selectedClassId, handleSelectClass] = useClassIdParam();
 
   /* Ustun nisbatlari (lessons/students usuli) — flex-grow + flex-basis:0:
      sinf tanlanmagan → 50/50, sinf tanlangan → sinflar tor, jurnal keng. */

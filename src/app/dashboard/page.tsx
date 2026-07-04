@@ -219,13 +219,15 @@ export default function DashboardPage() {
                     <TypographyH3 className="text-2xl text-white">{greetingText()}, {firstName}!</TypographyH3>
                   </div>
                   <TypographyMuted className="max-w-md leading-relaxed text-white">
-                    {holiday
-                      ? `Bugun — ${holiday.name}. Yaxshi dam oling!`
-                      : todaysEvents.length === 0
-                        ? openTaskCount > 0
-                          ? `Bugun darsingiz yoʻq, lekin bajarishingiz kerak boʻlgan ${openTaskCount} ta vazifangiz bor.`
-                          : "Bugun darsingiz yoʻq. Yaxshi dam oling!"
-                        : `Bugun ${todaysEvents.length} ta darsingiz${openTaskCount > 0 ? ` va ${openTaskCount} ta vazifangiz` : ""} bor.`}
+                    {liveClasses.length === 0 && allLessons.length === 0
+                      ? "Ustozona'ga xush kelibsiz! Boshlash uchun birinchi sinfingizni yarating."
+                      : holiday
+                        ? `Bugun — ${holiday.name}. Yaxshi dam oling!`
+                        : todaysEvents.length === 0
+                          ? openTaskCount > 0
+                            ? `Bugun darsingiz yoʻq, lekin bajarishingiz kerak boʻlgan ${openTaskCount} ta vazifangiz bor.`
+                            : "Bugun darsingiz yoʻq. Yaxshi dam oling!"
+                          : `Bugun ${todaysEvents.length} ta darsingiz${openTaskCount > 0 ? ` va ${openTaskCount} ta vazifangiz` : ""} bor.`}
                   </TypographyMuted>
                 </div>
               </div>

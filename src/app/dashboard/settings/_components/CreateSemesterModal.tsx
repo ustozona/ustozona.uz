@@ -6,8 +6,8 @@ import {
   Dialog, DialogContent, DialogHeaderBar, DialogFooter, DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { cn } from "@/lib/utils";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import {
@@ -162,17 +162,17 @@ export default function CreateSemesterModal({
             <div className="space-y-2">
               <Label className="text-xs font-medium text-muted-foreground">Yil davri</Label>
               <div className="flex items-center gap-1.5">
-                <Input
-                  type="date"
+                <DateKeyPicker
                   value={range.start}
-                  onChange={(e) => e.target.value && setRange((r) => ({ ...r, start: e.target.value }))}
+                  onChange={(v) => setRange((r) => ({ ...r, start: v }))}
+                  ariaLabel="Boshlanish sanasi"
                   className="flex-1"
                 />
                 <span className="text-muted-foreground">—</span>
-                <Input
-                  type="date"
+                <DateKeyPicker
                   value={range.end}
-                  onChange={(e) => e.target.value && setRange((r) => ({ ...r, end: e.target.value }))}
+                  onChange={(v) => setRange((r) => ({ ...r, end: v }))}
+                  ariaLabel="Tugash sanasi"
                   className="flex-1"
                 />
               </div>

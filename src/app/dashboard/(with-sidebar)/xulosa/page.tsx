@@ -13,7 +13,7 @@ import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
 import ClassListPanel from "@/components/ClassListPanel";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import {
@@ -27,8 +27,7 @@ import {
 const SEED_CLASS_ID = "9-b";
 
 export default function XulosaPage() {
-  const storeClassId = useClassStore((s) => s.selectedClassId);
-  const setSelectedClassId = useClassStore((s) => s.setSelectedClassId);
+  const [storeClassId, setSelectedClassId] = useClassIdParam({ fallbackToStore: true });
   // Demo: diagnostik seed faqat 9-B uchun. Default shuni tanlaymiz.
   const [classId, setClassId] = useState<string>(SEED_CLASS_ID);
   const handleSelect = (id: string) => { setClassId(id); setSelectedClassId(id); };
@@ -78,7 +77,7 @@ export default function XulosaPage() {
   return (
     <>
       <div className="hidden lg:block w-[280px] shrink-0 h-full py-4 pl-4">
-        <ClassListPanel page="standards" selectedClassId={storeClassId} onSelect={handleSelect} />
+        <ClassListPanel page="standards" selectedClassId={storeClassId ?? ""} onSelect={handleSelect} />
       </div>
 
       <div className={withSidebarPageClass}>

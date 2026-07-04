@@ -4,6 +4,7 @@ import * as React from "react";
 import { TrashIcon, Plus, RotateCcw, TriangleAlert, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,22 +31,22 @@ import CreateSemesterModal from "./CreateSemesterModal";
    kesishish/diapazon buzilishi bloklamaydi, faqat ogohlantiradi.
    ════════════════════════════════════════════════════════════════════ */
 
-/** Ikki sana inputi — SettingRow oʻng sloti uchun. */
+/** Ikki sana tanlagich (shadcn) — SettingRow oʻng sloti uchun. */
 function RangeInputs({ range, onChange }: { range: DateRange; onChange: (r: DateRange) => void }) {
   return (
     <div className="flex items-center gap-1.5">
-      <Input
-        type="date"
+      <DateKeyPicker
         value={range.start}
-        onChange={(e) => e.target.value && onChange({ ...range, start: e.target.value })}
-        className="w-[8.7rem]"
+        onChange={(v) => onChange({ ...range, start: v })}
+        ariaLabel="Boshlanish sanasi"
+        className="w-[9.5rem]"
       />
       <span className="text-muted-foreground">—</span>
-      <Input
-        type="date"
+      <DateKeyPicker
         value={range.end}
-        onChange={(e) => e.target.value && onChange({ ...range, end: e.target.value })}
-        className="w-[8.7rem]"
+        onChange={(v) => onChange({ ...range, end: v })}
+        ariaLabel="Tugash sanasi"
+        className="w-[9.5rem]"
       />
     </div>
   );

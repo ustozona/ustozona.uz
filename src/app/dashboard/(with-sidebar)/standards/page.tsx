@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassIdParam } from "@/hooks/useClassIdParam";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import StandardsView from "./_components/StandardsView";
@@ -13,9 +12,7 @@ import { Target } from "lucide-react";
 export default function StandardsPage() {
   // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni 50%).
   // Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
-  const setStoreClassId = useClassStore((s) => s.setSelectedClassId);
-  const [selectedClassId, setSelectedClassIdState] = useState<string | null>(null);
-  const handleSelectClass = (id: string) => { setSelectedClassIdState(id); setStoreClassId(id); };
+  const [selectedClassId, handleSelectClass] = useClassIdParam();
 
   /* Ustun nisbatlari (lessons/students usuli) — flex-grow + flex-basis:0:
      sinf tanlanmagan → 50/50, sinf tanlangan → sinflar tor, standartlar keng. */

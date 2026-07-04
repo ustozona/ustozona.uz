@@ -22,7 +22,7 @@ export default function TasksPage() {
 
       {/* ── Column 2: Tasks List (Qolgan qism) ── */}
       <div data-tour="tasks-list" className="min-w-0 min-h-0 h-full flex flex-col flex-1 transition-all duration-300">
-        <TasksList activeFilter={activeFilter} />
+        <TasksList activeFilter={activeFilter} onSelectFilter={setActiveFilter} />
       </div>
 
       {/* ── Column 3: Task Detail (vazifa tanlanganda) ── */}
