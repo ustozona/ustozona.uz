@@ -67,9 +67,12 @@ export const useTimetableStore = create<TimetableVersionsState>()((set, get) => 
 
   seedIfEmpty: () => {
     if (typeof window === "undefined" || get().versions.length > 0) return;
+    // Oʻquv yili hali sozlanmagan boʻlishi mumkin (boʻsh kalendar) — u holda
+    // effectiveFrom "" boʻlib qolib, serverga yozishda validatsiyadan oʻtmaydi.
+    // Shu sabab bugungi sanaga qaytamiz; foydalanuvchi keyin oʻzgartira oladi.
     const version: TimetableVersion = {
       id: uid(),
-      effectiveFrom: getCurrentCalendar().range.start,
+      effectiveFrom: getCurrentCalendar().range.start || todayKey(),
       events: [],
       bellConfig: defaultBellConfig(),
       note: "Dastlabki jadval",

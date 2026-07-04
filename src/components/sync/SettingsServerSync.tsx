@@ -26,6 +26,7 @@ function selectSaveInput(s: SettingsState): SettingsSaveInput {
     academicYear: s.academicYear,
     language: s.language,
     workspaceBackground: s.workspaceBackground,
+    onboardingCompleted: s.onboardingCompleted,
   };
 }
 

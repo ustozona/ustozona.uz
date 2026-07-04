@@ -28,6 +28,7 @@ export type SettingsPayload = {
   language: AppLanguage;
   workspaceBackground: WorkspaceBackground;
   plan: "free" | "pro";
+  onboardingCompleted: boolean;
 };
 
 export type SettingsUpdate = {
@@ -39,12 +40,17 @@ export type SettingsUpdate = {
   academicYear: string;
   language: AppLanguage;
   workspaceBackground: WorkspaceBackground;
+  onboardingCompleted: boolean;
 };
 
 const BACKGROUNDS: readonly string[] = ["grid", "parchment", "circles", "stripes"];
 const LANGUAGES: readonly string[] = ["uz", "ru", "en"];
 
-type TeacherPrefs = { avatarColor?: string; workspaceBackground?: string };
+type TeacherPrefs = {
+  avatarColor?: string;
+  workspaceBackground?: string;
+  onboardingCompleted?: boolean;
+};
 
 export async function getSettings(): Promise<SettingsPayload> {
   const teacher = await requireTeacher();
@@ -74,6 +80,7 @@ export async function getSettings(): Promise<SettingsPayload> {
       ? (prefs.workspaceBackground as WorkspaceBackground)
       : "grid",
     plan: teacher.plan === "pro" ? "pro" : "free",
+    onboardingCompleted: prefs.onboardingCompleted === true,
   };
 }
 
@@ -84,6 +91,7 @@ export async function updateSettings(input: SettingsUpdate): Promise<void> {
   const patch = JSON.stringify({
     avatarColor: input.avatarColor,
     workspaceBackground: input.workspaceBackground,
+    onboardingCompleted: input.onboardingCompleted,
   } satisfies TeacherPrefs);
   await db
     .update(teachers)

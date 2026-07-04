@@ -19,14 +19,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useCalendarStore } from "@/store/useCalendarStore";
+import { isCalendarConfigured } from "@/lib/academic-calendar";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -34,7 +29,6 @@ import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { MONTHS_UZ } from "@/lib/localization";
 import { SettingsGroup, SavedIndicator } from "./SettingsShared";
 
-const ACADEMIC_YEARS = ["2024–2025", "2025–2026", "2026–2027"];
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2MB
 
 /** Google bilan kirilганда keladiган namuna rasm (data URI — tarmoqsiz, prototip uchun). */
@@ -92,8 +86,9 @@ function StatCard({
 export default function ProfileSection() {
   const profile = useSettingsStore((s) => s.profile);
   const setProfile = useSettingsStore((s) => s.setProfile);
-  const academicYear = useSettingsStore((s) => s.academicYear);
-  const setAcademicYear = useSettingsStore((s) => s.setAcademicYear);
+  const calendar = useCalendarStore((s) => s.calendar);
+  const configured = isCalendarConfigured(calendar);
+  const yearLabel = calendar.yearLabel;
 
   const lessonCount = useLessonStore((s) => s.lessons.length);
   const taskCount = useTaskStore((s) => s.tasks.length);
@@ -266,7 +261,11 @@ export default function ProfileSection() {
       {/* Akademik statistika */}
       <SettingsGroup
         title="Akademik statistika"
-        description={`Joriy ${academicYear} oʻquv yili boʻyicha umumiy koʻrsatkichlar.`}
+        description={
+          configured
+            ? `Joriy ${yearLabel} oʻquv yili boʻyicha umumiy koʻrsatkichlar.`
+            : "Umumiy koʻrsatkichlar (oʻquv yili hali sozlanmagan)."
+        }
       >
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard icon={GraduationCap} value={mounted ? classCount : "—"} label="Sinf" href="/dashboard/classes" />
@@ -276,25 +275,19 @@ export default function ProfileSection() {
         </div>
       </SettingsGroup>
 
-      {/* Oʻquv yili */}
+      {/* Oʻquv yili — jonli kalendardan (yagona manba). Toʻliq tahrir chapdagi
+          "Oʻquv yili" boʻlimida (choraklar + taʼtillar). */}
       <SettingsGroup title="Oʻquv yili" description="Koʻrsatkichlar va hisobotlar shu davrga moslanadi.">
         <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3">
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-medium text-foreground">Faol oʻquv yili</span>
-            <span className="text-xs text-muted-foreground">Header'dagi yil tanlagichi bilan sinxron.</span>
+            <span className="text-xs text-muted-foreground">
+              Chapdagi «Oʻquv yili» boʻlimida choraklar va taʼtillar bilan sozlanadi.
+            </span>
           </div>
-          <Select value={academicYear} onValueChange={setAcademicYear}>
-            <SelectTrigger className="w-36" size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ACADEMIC_YEARS.map((y) => (
-                <SelectItem key={y} value={y}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <span className="shrink-0 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-sm font-medium tabular-nums">
+            {configured ? yearLabel : "Sozlanmagan"}
+          </span>
         </div>
       </SettingsGroup>
     </>

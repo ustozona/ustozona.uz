@@ -17,6 +17,7 @@ import ClassPrefsServerSync from "@/components/sync/ClassPrefsServerSync";
 import NotificationsServerSync from "@/components/sync/NotificationsServerSync";
 import FeedbackServerSync from "@/components/sync/FeedbackServerSync";
 import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
+import OnboardingGate from "@/components/onboarding/OnboardingGate";
 
 export default function DashboardLayout({
   children,
@@ -42,6 +43,7 @@ export default function DashboardLayout({
       <NotificationsServerSync />
       <FeedbackServerSync />
       <LegacyStorageCleanup />
+      <OnboardingGate />
       <AppSidebar />
       <SidebarInset className="min-h-0 overflow-hidden">
         <Header />

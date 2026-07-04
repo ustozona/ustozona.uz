@@ -21,6 +21,7 @@ import { fmtMin } from "@/lib/timetable";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Badge } from "@/components/ui/badge";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -254,16 +255,20 @@ export default function DashboardPage() {
               <CardContent className={panelCardContentClass}>
                   <div className={cn(panelScrollInnerClass, "space-y-4")}>
                     {mounted && upcomingLessons.length === 0 && (
-                      <div className="flex flex-col items-center gap-2 py-10 text-center">
-                        <BookOpen className="size-6 text-muted-foreground" />
-                        <p className="text-sm font-medium text-foreground">Rejalangan dars yoʻq</p>
-                        <TypographyMuted className="text-xs">
-                          Darslar rejalashtiruvchida sanaga qoʻyilgach shu yerda koʻrinadi.
-                        </TypographyMuted>
-                        <Link href="/dashboard/planner" className="text-xs text-primary hover:underline">
-                          Rejalashtiruvchini ochish
-                        </Link>
-                      </div>
+                      <Empty className="border-0 py-8">
+                        <EmptyHeader>
+                          <EmptyMedia variant="icon"><BookOpen className="size-6" /></EmptyMedia>
+                          <EmptyTitle>Rejalangan dars yoʻq</EmptyTitle>
+                          <EmptyDescription>
+                            Darslar rejalashtiruvchida sanaga qoʻyilgach shu yerda koʻrinadi.
+                          </EmptyDescription>
+                        </EmptyHeader>
+                        <EmptyContent>
+                          <Link href="/dashboard/planner" className="text-xs text-primary hover:underline">
+                            Rejalashtiruvchini ochish
+                          </Link>
+                        </EmptyContent>
+                      </Empty>
                     )}
                     {/* Kunlar boʻyicha guruhlangan darslar */}
                     {Array.from(new Map(upcomingLessons.map(l => [l.dayName + l.date, l])).entries()).map(([dayKey, firstLesson]) => (

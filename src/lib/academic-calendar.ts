@@ -23,23 +23,50 @@ export type AcademicYearCalendar = {
   holidays: Holiday[];
 };
 
-/** 2025–2026 rasmiy defaultlar: yil 2-sentabrdan; kuzgi 4–9-noyabr,
-    qishki 28-dekabrdan 14 kun, bahorgi 21-martdan 7 kun. */
-export const DEFAULT_CALENDAR_2025_2026: AcademicYearCalendar = {
-  yearLabel: "2025–2026",
-  range: { start: "2025-09-02", end: "2026-05-25" },
-  quarters: [
-    { id: "q1", name: "1-chorak", range: { start: "2025-09-02", end: "2025-11-03" } },
-    { id: "q2", name: "2-chorak", range: { start: "2025-11-10", end: "2025-12-27" } },
-    { id: "q3", name: "3-chorak", range: { start: "2026-01-11", end: "2026-03-20" } },
-    { id: "q4", name: "4-chorak", range: { start: "2026-03-28", end: "2026-05-25" } },
-  ],
-  holidays: [
-    { id: "h-kuz", name: "Kuzgi taʼtil", range: { start: "2025-11-04", end: "2025-11-09" } },
-    { id: "h-qish", name: "Qishki taʼtil", range: { start: "2025-12-28", end: "2026-01-10" } },
-    { id: "h-bahor", name: "Bahorgi taʼtil", range: { start: "2026-03-21", end: "2026-03-27" } },
-  ],
+/** Boʻsh (hali sozlanmagan) kalendar — yangi foydalanuvchi shu holatdan
+    boshlaydi. Onboarding sehrgari yoki Sozlamalar orqali toʻldiriladi.
+    `isCalendarConfigured` shu holatni aniqlaydi. */
+export const EMPTY_CALENDAR: AcademicYearCalendar = {
+  yearLabel: "",
+  range: { start: "", end: "" },
+  quarters: [],
+  holidays: [],
 };
+
+/** Kalendar sozlanganmi (yil chegarasi + kamida bitta chorak bor)?
+    Boʻsh boʻlsa header/planner "sozlash" holatini koʻrsatadi. */
+export function isCalendarConfigured(cal: AcademicYearCalendar): boolean {
+  return Boolean(cal.range.start && cal.range.end && cal.quarters.length > 0);
+}
+
+/** Berilgan boshlanish yiliga rasmiy struktura boʻyicha kalendar hosil qiladi:
+    yil 2-sentabrdan keyingi 25-maygacha; kuzgi 4–9-noyabr, qishki 28-dekabrdan
+    10-yanvargacha, bahorgi 21–27-mart taʼtillari; 4 chorak shular orasida.
+    Onboarding sehrgari foydalanuvchi yilni tanlagach shu bilan toʻldiradi —
+    keyin Sozlamalar → "Oʻquv yili"da tahrirlanadi. */
+export function makeCalendarForYear(startYear: number): AcademicYearCalendar {
+  const y = startYear;
+  const n = startYear + 1;
+  return {
+    yearLabel: `${y}–${n}`,
+    range: { start: `${y}-09-02`, end: `${n}-05-25` },
+    quarters: [
+      { id: "q1", name: "1-chorak", range: { start: `${y}-09-02`, end: `${y}-11-03` } },
+      { id: "q2", name: "2-chorak", range: { start: `${y}-11-10`, end: `${y}-12-27` } },
+      { id: "q3", name: "3-chorak", range: { start: `${n}-01-11`, end: `${n}-03-20` } },
+      { id: "q4", name: "4-chorak", range: { start: `${n}-03-28`, end: `${n}-05-25` } },
+    ],
+    holidays: [
+      { id: "h-kuz", name: "Kuzgi taʼtil", range: { start: `${y}-11-04`, end: `${y}-11-09` } },
+      { id: "h-qish", name: "Qishki taʼtil", range: { start: `${y}-12-28`, end: `${n}-01-10` } },
+      { id: "h-bahor", name: "Bahorgi taʼtil", range: { start: `${n}-03-21`, end: `${n}-03-27` } },
+    ],
+  };
+}
+
+/** 2025–2026 rasmiy defaultlar — Sozlamalardagi "Standart qiymatlarga qaytarish"
+    va boshqa demo/seed kodi uchun. */
+export const DEFAULT_CALENDAR_2025_2026: AcademicYearCalendar = makeCalendarForYear(2025);
 
 /** Sana diapazon ichidami (ikkala chegara ham inklyuziv). */
 export function inRange(dateKey: string, r: DateRange): boolean {

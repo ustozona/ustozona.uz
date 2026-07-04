@@ -68,6 +68,11 @@ interface SettingsState {
 
   plan: "free" | "pro";
 
+  /** Onboarding sehrgari tugatilganmi. Yangi hisobda `false` — dashboard
+      sehrgarni koʻrsatadi; tugagach yoki oʻtkazib yuborilgach `true`. */
+  onboardingCompleted: boolean;
+  setOnboardingCompleted: (v: boolean) => void;
+
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 }
@@ -76,7 +81,7 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   profile: DEFAULT_PROFILE,
   setProfile: (patch) => set((s) => ({ profile: { ...s.profile, ...patch } })),
 
-  academicYear: "2025–2026",
+  academicYear: "",
   setAcademicYear: (y) => set({ academicYear: y }),
 
   language: "uz",
@@ -86,6 +91,9 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   setWorkspaceBackground: (b) => set({ workspaceBackground: b }),
 
   plan: "free",
+
+  onboardingCompleted: false,
+  setOnboardingCompleted: (v) => set({ onboardingCompleted: v }),
 
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),

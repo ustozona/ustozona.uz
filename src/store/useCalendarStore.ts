@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   DEFAULT_CALENDAR_2025_2026,
+  EMPTY_CALENDAR,
   type AcademicYearCalendar,
   type DateRange,
   type Holiday,
@@ -9,9 +10,9 @@ import {
 /* ════════════════════════════════════════════════════════════════════
    OʻQUV YILI KALENDARI STORE — server-backed (6-bosqich migratsiyasi)
 
-   Bitta joriy oʻquv yili: chegaralar, 4 chorak, taʼtillar. 2025–2026
-   rasmiy sanalari default — hammasi Sozlamalar → "Oʻquv yili"da
-   tahrirlanadi.
+   Bitta joriy oʻquv yili: chegaralar, 4 chorak, taʼtillar. Yangi
+   foydalanuvchi BOʻSH kalendar (EMPTY_CALENDAR) bilan boshlaydi —
+   onboarding sehrgari yoki Sozlamalar → "Oʻquv yili" toʻldiradi.
 
    Manba endi Postgres: `CalendarServerSync` (dashboard layout)
    hydration + snapshot-sync qiladi (hujjat bitta — diff shart emas).
@@ -30,6 +31,9 @@ interface CalendarState {
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 
+  /** Butun kalendarni birdaniga oʻrnatadi (onboarding sehrgari yilni
+      tanlab makeCalendarForYear natijasini yozadi). */
+  setCalendar: (calendar: AcademicYearCalendar) => void;
   setYearLabel: (label: string) => void;
   setYearRange: (range: DateRange) => void;
   setQuarterRange: (id: string, range: DateRange) => void;
@@ -41,9 +45,11 @@ interface CalendarState {
 }
 
 export const useCalendarStore = create<CalendarState>()((set) => ({
-  calendar: DEFAULT_CALENDAR_2025_2026,
+  calendar: EMPTY_CALENDAR,
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),
+
+  setCalendar: (calendar) => set({ calendar }),
 
   setYearLabel: (label) =>
     set((s) => ({ calendar: { ...s.calendar, yearLabel: label } })),

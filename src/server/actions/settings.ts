@@ -24,6 +24,7 @@ const saveSchema = z.object({
   academicYear: z.string().max(20),
   language: z.enum(["uz", "ru", "en"]),
   workspaceBackground: z.enum(["grid", "parchment", "circles", "stripes"]),
+  onboardingCompleted: z.boolean(),
 });
 
 export type SettingsSaveInput = z.infer<typeof saveSchema>;
