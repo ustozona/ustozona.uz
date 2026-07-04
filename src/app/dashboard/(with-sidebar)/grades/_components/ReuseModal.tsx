@@ -12,7 +12,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+} from "@/components/ui/empty";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FormFieldGroup } from "@/components/ui/form-blocks";
 import { TypographyList, TypographyMuted, TypographySmall } from "@/components/ui/typography";
@@ -148,15 +150,13 @@ export default function ReuseModal({
         <ScrollArea className="flex-1">
           <div className="p-6 pt-0">
           {filtered.length === 0 ? (
-            <Alert className="bg-muted/50">
-              <div className="flex items-center gap-2 mb-1">
-                <Search className="size-4 text-muted-foreground" />
-                <AlertTitle className="mb-0">Topilmadi</AlertTitle>
-              </div>
-              <AlertDescription className="text-muted-foreground ml-6">
-                Sizning qidiruvingiz boʻyicha hech qanday topshiriq topilmadi.
-              </AlertDescription>
-            </Alert>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><Search /></EmptyMedia>
+                <EmptyTitle>Topilmadi</EmptyTitle>
+                <EmptyDescription>Sizning qidiruvingiz boʻyicha hech qanday topshiriq topilmadi.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <TypographyList className="my-0 ml-0 list-none flex flex-col gap-2 [&>li]:mt-0">
               {filtered.map((it) => {

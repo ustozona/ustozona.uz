@@ -57,6 +57,9 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TypographyMuted, TypographySmall } from "@/components/ui/typography";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+} from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
 import {
   TOPIC_COLOR_HEX,
@@ -398,17 +401,13 @@ export default function NewTopicModal({
             <div className="relative flex-1 min-h-0 overflow-hidden">
               <ScrollArea className="h-full px-5">
                 {visibleGroups.length === 0 ? (
-                  <div className="flex h-full min-h-[300px] flex-col items-center justify-center py-16 text-center">
-                    <div className="mb-3 flex size-12 items-center justify-center rounded-xl bg-muted">
-                      <Tag className="size-5 text-muted-foreground" aria-hidden />
-                    </div>
-                    <TypographySmall className="font-medium text-muted-foreground">
-                      Hali toifa yoʻq
-                    </TypographySmall>
-                    <TypographyMuted className="mt-1 max-w-[240px] text-xs">
-                      Topshiriqlarni guruhlash va yakuniy bahoga vaznlash uchun toifa yarating.
-                    </TypographyMuted>
-                  </div>
+                  <Empty className="min-h-[300px]">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon"><Tag /></EmptyMedia>
+                      <EmptyTitle>Hali toifa yoʻq</EmptyTitle>
+                      <EmptyDescription>Topshiriqlarni guruhlash va yakuniy bahoga vaznlash uchun toifa yarating.</EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
                 ) : (
                   <div className="flex flex-col gap-2.5 py-4">
                     {visibleGroups.map((g) => (

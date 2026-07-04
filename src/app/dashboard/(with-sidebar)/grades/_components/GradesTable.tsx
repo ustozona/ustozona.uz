@@ -78,6 +78,9 @@ import {
   panelCardHeaderClass,
 } from "@/components/DashboardPage";
 import { TypographyMuted, TypographySmall } from "@/components/ui/typography";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+} from "@/components/ui/empty";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
@@ -1122,15 +1125,13 @@ export default function GradesTable({
 
 function GradesEmptyState() {
   return (
-    <div className="h-full min-h-[50vh] flex flex-col items-center justify-center text-center px-6">
-      <div className="size-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-        <Users className="size-8 text-muted-foreground" aria-hidden />
-      </div>
-      <p className="heading-small text-foreground">Sinfda oʻquvchi yoʻq</p>
-      <TypographyMuted className="mt-1 max-w-sm">
-        Baholarni kuzatishni boshlash uchun bu sinfga oʻquvchi qoʻshing.
-      </TypographyMuted>
-    </div>
+    <Empty className="min-h-[50vh]">
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><Users /></EmptyMedia>
+        <EmptyTitle>Sinfda oʻquvchi yoʻq</EmptyTitle>
+        <EmptyDescription>Baholarni kuzatishni boshlash uchun bu sinfga oʻquvchi qoʻshing.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }
 
