@@ -8,6 +8,13 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CardTitle } from "@/components/ui/card";
 import { TypographyMuted } from "@/components/ui/typography";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
 import { panelCardClass } from "@/components/DashboardPage";
 import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { lessonClassIds } from "@/lib/lessons-data";
@@ -68,15 +75,15 @@ export function OverviewSection({ identity }: { identity: ClassIdentity }) {
       <ScrollArea className="flex-1 min-h-0">
         <div className="px-5 py-5">
           {!hydrated ? null : upcoming.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center py-20">
-              <div className="size-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
-                <BookOpen className="size-6 text-muted-foreground" />
-              </div>
-              <p className="text-sm font-semibold text-foreground">Rejalashtirilgan yaqin dars yoʻq</p>
-              <TypographyMuted className="text-xs mt-1.5 max-w-xs">
-                Reja boʻlimidan darslarni kalendarga joylashtiring.
-              </TypographyMuted>
-            </div>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <BookOpen />
+                </EmptyMedia>
+                <EmptyTitle>Rejalashtirilgan yaqin dars yoʻq</EmptyTitle>
+                <EmptyDescription>Reja boʻlimidan darslarni kalendarga joylashtiring.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <div className="space-y-2.5">
               {upcoming.map((lesson) => (

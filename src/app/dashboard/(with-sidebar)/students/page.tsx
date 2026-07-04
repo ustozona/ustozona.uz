@@ -30,6 +30,14 @@ import {
   ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent,
   ContextMenuRadioGroup, ContextMenuRadioItem,
 } from "@/components/ui/context-menu";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
+} from "@/components/ui/empty";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import CreateStudentModal, { type NewStudentInput } from "./_components/CreateStudentModal";
 import ImportStudentsModal from "./_components/ImportStudentsModal";
 import {
@@ -120,6 +128,7 @@ export default function StudentsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<StudentRow | null>(null);
 
   // Jonli manba: roster/baholar — useGradesStore, davomat — useAttendanceStore.
   // Yozishlar updateClass orqali → GradesServerSync serverga sinxronlaydi.
@@ -231,6 +240,7 @@ export default function StudentsPage() {
     };
     updateClass(data.classId, (cd) => ({ ...cd, students: [student, ...cd.students] }));
     if (data.classId === selectedClassId) setSelectedStudentId(student.id);
+    toast.success("Oʻquvchi qoʻshildi");
   };
 
   // Roʻyxatdan bir nechta oʻquvchini joriy sinfga qoʻshish (faqat ism/familiya)
@@ -243,6 +253,7 @@ export default function StudentsPage() {
       status: "active",
     }));
     updateClass(selectedClassId, (cd) => ({ ...cd, students: [...rows, ...cd.students] }));
+    toast.success(`${rows.length} ta oʻquvchi qoʻshildi`);
   };
 
   // Joriy sinf oʻquvchilarini CSV faylga eksport qilish (Excelʼda UTF-8 uchun BOM bilan)
@@ -261,6 +272,7 @@ export default function StudentsPage() {
     a.download = `${selectedInfo?.name ?? "sinf"}-oquvchilar.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success("Oʻquvchilar roʻyxati eksport qilindi");
   };
 
   // Header toolbar tugmasi — outline, tekis (soyasiz), 36px. CTA (Yangi oʻquvchi) primary.
@@ -277,11 +289,13 @@ export default function StudentsPage() {
         {/* ── Ustun 2: Oʻquvchilar roʻyxati ── */}
         <div className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl bg-card card-elevation" style={{ flexGrow: grow.list, flexBasis: 0 }}>
           {noClass ? (
-            <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-              <SectionIcon size="lg" className="mb-4"><Users /></SectionIcon>
-              <p className="text-base font-semibold text-foreground">Sinf tanlanmagan</p>
-              <TypographyMuted className="mt-1.5 text-sm">Oʻquvchilarni koʻrish uchun sinf tanlang</TypographyMuted>
-            </div>
+            <Empty className="h-full border-0">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><Users /></EmptyMedia>
+                <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
+                <EmptyDescription>Oʻquvchilarni koʻrish uchun sinf tanlang</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <>
           {/* Header / toolbar */}
@@ -413,31 +427,31 @@ export default function StudentsPage() {
           <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-xl">
             <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-4 bg-gradient-to-t from-card to-transparent" />
             {students.length === 0 ? (
-              <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-                <div className="flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-                  <Users className="size-8" />
-                </div>
-                <div className="max-w-xs">
-                  <p className="text-base font-semibold text-foreground">
+              <Empty className="h-full">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><Users /></EmptyMedia>
+                  <EmptyTitle>
                     {filterActive ? "Mos oʻquvchi topilmadi" : "Bu sinfda hali oʻquvchi yoʻq"}
-                  </p>
-                  <TypographyMuted className="mt-1.5 text-sm">
+                  </EmptyTitle>
+                  <EmptyDescription>
                     {filterActive
                       ? "Filtr yoki qidiruvni oʻzgartirib koʻring."
                       : "Birinchi oʻquvchini qoʻshing yoki tayyor roʻyxatni import qiling."}
-                  </TypographyMuted>
-                </div>
+                  </EmptyDescription>
+                </EmptyHeader>
                 {!filterActive && (
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    <Button onClick={() => setCreateOpen(true)} className="gap-2">
-                      <Plus className="size-4" /> Yangi oʻquvchi
-                    </Button>
-                    <Button variant="outline" onClick={() => setImportOpen(true)} className="gap-2 shadow-none">
-                      <Upload className="size-4" /> Import
-                    </Button>
-                  </div>
+                  <EmptyContent>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      <Button onClick={() => setCreateOpen(true)} className="gap-2">
+                        <Plus className="size-4" /> Yangi oʻquvchi
+                      </Button>
+                      <Button variant="outline" onClick={() => setImportOpen(true)} className="gap-2 shadow-none">
+                        <Upload className="size-4" /> Import
+                      </Button>
+                    </div>
+                  </EmptyContent>
                 )}
-              </div>
+              </Empty>
             ) : (
               <ScrollArea className="h-full w-full">
                 <div className="space-y-3 px-5 pt-5 pb-5">
@@ -535,7 +549,7 @@ export default function StudentsPage() {
                             </ContextMenuSubContent>
                           </ContextMenuSub>
                           <ContextMenuSeparator />
-                          <ContextMenuItem variant="destructive" onSelect={() => deleteStudent(s.id)}>
+                          <ContextMenuItem variant="destructive" onSelect={() => setDeleteTarget(s)}>
                             <Trash2 className="size-4" /> Oʻchirish
                           </ContextMenuItem>
                         </ContextMenuContent>
@@ -581,6 +595,32 @@ export default function StudentsPage() {
         className={selectedInfo?.name ?? ""}
         onImport={handleImport}
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Oʻquvchini oʻchirish</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget ? `«${deleteTarget.name}» ` : ""}oʻquvchisi va uning barcha baholari butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteTarget) {
+                  deleteStudent(deleteTarget.id);
+                  toast.success("Oʻquvchi oʻchirildi");
+                }
+                setDeleteTarget(null);
+              }}
+            >
+              Oʻchirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

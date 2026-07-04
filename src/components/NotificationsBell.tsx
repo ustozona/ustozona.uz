@@ -8,6 +8,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+} from "@/components/ui/empty";
+import {
   Bell, CheckCheck, MessageSquare, Sparkles, Lightbulb, Tag,
   type LucideIcon,
 } from "lucide-react";
@@ -90,13 +93,13 @@ export default function NotificationsBell() {
         </div>
 
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-              <Bell className="size-5" />
-            </div>
-            <p className="text-sm font-medium text-foreground">Xabarlar yoʻq</p>
-            <p className="text-xs text-muted-foreground">Yangi xabarlar shu yerda koʻrinadi.</p>
-          </div>
+          <Empty className="p-8">
+            <EmptyHeader>
+              <EmptyMedia variant="icon"><Bell /></EmptyMedia>
+              <EmptyTitle>Xabarlar yoʻq</EmptyTitle>
+              <EmptyDescription>Yangi xabarlar shu yerda koʻrinadi.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <ScrollArea className="max-h-[min(420px,60vh)]">
             <ul className="divide-y divide-border/60">

@@ -21,6 +21,8 @@ import DashboardPageLayout, {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "@/components/ui/context-menu";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { ClassFormModal, type ClassFormValues, type ClassSlot } from "@/components/ClassFormModal";
 import { ClassCard } from "@/components/ClassCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -290,6 +292,10 @@ export default function TimetablePage() {
 
   // Jadvalni JSON sifatida eksport qilish
   const exportSchedule = useCallback(() => {
+    if (events.length === 0) {
+      toast.error("Eksport uchun jadval boʻsh");
+      return;
+    }
     const rows = [...events]
       .sort((a, b) => a.day - b.day || a.startMin - b.startMin)
       .map(e => {
@@ -303,6 +309,7 @@ export default function TimetablePage() {
     a.download = "dars-jadvali.json";
     a.click();
     URL.revokeObjectURL(url);
+    toast.success("Jadval eksport qilindi");
   }, [events, getClass]);
 
   // Birinchi foydalanishda drag maslahati (bir martalik, localStorage)
@@ -315,6 +322,16 @@ export default function TimetablePage() {
   }, []);
 
   const removeEvent = useCallback((id: string) => setEvents(prev => prev.filter(e => e.id !== id)), []);
+
+  // Sinfning barcha darslarini jadvaldan olib tashlash — Qaytarish (undo) bilan.
+  const removeClassFromSchedule = useCallback((classId: string) => {
+    const removed = events.filter(ev => ev.classId === classId);
+    if (removed.length === 0) return;
+    setEvents(prev => prev.filter(ev => ev.classId !== classId));
+    toast.success("Sinf jadvaldan olib tashlandi", {
+      action: { label: "Qaytarish", onClick: () => setEvents(prev => [...prev, ...removed]) },
+    });
+  }, [events]);
 
   /* ─── Native drag-and-drop ─── */
 
@@ -480,13 +497,15 @@ export default function TimetablePage() {
             <ScrollArea className="h-full w-full">
               <div className={cn(panelScrollInnerClass, "space-y-2 @max-[400px]:px-4")}>
                 {classesAll.length === 0 && (
-                  <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border px-4 py-8 text-center">
-                    <GraduationCap className="size-5 text-muted-foreground" />
-                    <p className="text-sm font-medium text-foreground">Sinf hali yoʻq</p>
-                    <p className="text-xs text-muted-foreground">
-                      «Qoʻshish» tugmasi bilan birinchi sinfingizni yarating — soʻng uni jadvalga sudrab qoʻyasiz.
-                    </p>
-                  </div>
+                  <Empty className="py-8">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon"><GraduationCap /></EmptyMedia>
+                      <EmptyTitle>Sinf hali yoʻq</EmptyTitle>
+                      <EmptyDescription>
+                        «Qoʻshish» tugmasi bilan birinchi sinfingizni yarating — soʻng uni jadvalga sudrab qoʻyasiz.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
                 )}
                 {classesAll.map((cls, i) => {
                   const merged = getClass(cls.id);
@@ -522,7 +541,7 @@ export default function TimetablePage() {
                                   <EditIcon />
                                   Tahrirlash
                                 </DropdownMenuItem>
-                                <DropdownMenuItem variant="destructive" disabled={readOnly} onClick={() => setEvents(prev => prev.filter(ev => ev.classId !== cls.id))}>
+                                <DropdownMenuItem variant="destructive" disabled={readOnly} onClick={() => removeClassFromSchedule(cls.id)}>
                                   <TrashIcon />
                                   Jadvaldan oʻchirish
                                 </DropdownMenuItem>
@@ -536,7 +555,7 @@ export default function TimetablePage() {
                           <EditIcon />
                           Tahrirlash
                         </ContextMenuItem>
-                        <ContextMenuItem variant="destructive" disabled={readOnly} onClick={() => setEvents(prev => prev.filter(e => e.classId !== cls.id))}>
+                        <ContextMenuItem variant="destructive" disabled={readOnly} onClick={() => removeClassFromSchedule(cls.id)}>
                           <TrashIcon />
                           Jadvaldan oʻchirish
                         </ContextMenuItem>
@@ -643,7 +662,7 @@ export default function TimetablePage() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => setEvents([])} className="bg-destructive text-white hover:bg-destructive/90">Tozalash</AlertDialogAction>
+                  <AlertDialogAction onClick={() => { setEvents([]); toast.success("Jadval tozalandi"); }} className="bg-destructive text-white hover:bg-destructive/90">Tozalash</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -662,20 +681,21 @@ export default function TimetablePage() {
             </div>
           )}
           {mode === "past-unlocked" && (
-            <div className="mx-6 mb-2 flex items-center gap-2.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3.5 py-2 text-xs text-amber-700 dark:text-amber-400 shrink-0">
-              <TriangleAlert className="size-3.5 shrink-0" />
-              <p className="flex-1 leading-snug">
-                Arxiv tahrirlanmoqda — oʻzgarishlar {selectedRangeLabel} davri tarixiga taʼsir qiladi.
-              </p>
-            </div>
+            <Alert className="mx-6 mb-2 shrink-0 border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400">
+              <TriangleAlert />
+              <AlertTitle>Arxiv tahrirlanmoqda</AlertTitle>
+              <AlertDescription className="text-amber-700/90 dark:text-amber-400/90">
+                Oʻzgarishlar {selectedRangeLabel} davri tarixiga taʼsir qiladi.
+              </AlertDescription>
+            </Alert>
           )}
           {mode === "future" && (
-            <div className="mx-6 mb-2 flex items-center gap-2.5 rounded-lg border border-border bg-muted/40 px-3.5 py-2 text-xs text-muted-foreground shrink-0">
-              <CalendarClock className="size-3.5 shrink-0" />
-              <p className="flex-1 leading-snug">
+            <Alert className="mx-6 mb-2 shrink-0 text-muted-foreground">
+              <CalendarClock />
+              <AlertDescription>
                 Bu jadval {fmtDayMonthUz(selectedVersion?.effectiveFrom ?? today)}dan kuchga kiradi.
-              </p>
-            </div>
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Hafta jadvali (kun × vaqt grid) */}

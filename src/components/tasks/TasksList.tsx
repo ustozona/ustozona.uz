@@ -16,6 +16,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { CardTitle } from "@/components/ui/card";
 import { TaskComposer, type TaskComposerHandle, type ComposerSeed } from "./TaskComposer";
 import { useTaskStore } from "@/store/useTaskStore";
@@ -160,10 +164,16 @@ export default function TasksList({ activeFilter }: Props) {
     toast.success("Bajarildi");
   };
 
-  const bulkDelete = () => {
-    selectedIds.forEach(id => deleteTask(id));
-    clearSelection();
-    toast.error("Oʻchirildi");
+  // Oʻchirishni tasdiqlash — bitta yoki tanlangan (bulk) vazifalar uchun bitta AlertDialog.
+  const [pendingDelete, setPendingDelete] = useState<{ ids: string[]; bulk: boolean } | null>(null);
+
+  const performDelete = () => {
+    if (!pendingDelete) return;
+    const { ids, bulk } = pendingDelete;
+    ids.forEach(id => deleteTask(id));
+    if (bulk) clearSelection();
+    setPendingDelete(null);
+    toast.success(ids.length > 1 ? `${ids.length} ta vazifa oʻchirildi` : "Vazifa oʻchirildi");
   };
 
   const bulkSnooze = () => {
@@ -407,7 +417,7 @@ export default function TasksList({ activeFilter }: Props) {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button size="sm" variant="destructive" onClick={bulkDelete}>
+                    <Button size="sm" variant="destructive" onClick={() => setPendingDelete({ ids: [...selectedIds], bulk: true })}>
                       <Trash2 className="size-4 mr-1" /> Oʻchirish
                     </Button>
                   </TooltipTrigger>
@@ -417,6 +427,27 @@ export default function TasksList({ activeFilter }: Props) {
             )}
           </div>
         )}
+
+        <AlertDialog open={!!pendingDelete} onOpenChange={(open) => { if (!open) setPendingDelete(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {pendingDelete?.bulk ? "Tanlangan vazifalarni oʻchirasizmi?" : "Vazifani oʻchirasizmi?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {pendingDelete?.bulk
+                  ? `${pendingDelete.ids.length} ta vazifa butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.`
+                  : "Vazifa va uning barcha maʼlumotlari butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+              <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={performDelete}>
+                Oʻchirish
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <div className="flex-1 min-h-0 relative overflow-hidden">
           <ScrollArea className="h-full w-full">
@@ -559,7 +590,7 @@ export default function TasksList({ activeFilter }: Props) {
                               iconBg: "bg-red-500/10",
                               iconColor: "text-red-500",
                               danger: true,
-                              onClick: () => { deleteTask(task.id); toast.error("Vazifa oʻchirildi"); },
+                              onClick: () => setPendingDelete({ ids: [task.id], bulk: false }),
                             },
                           ];
 

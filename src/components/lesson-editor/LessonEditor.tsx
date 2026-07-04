@@ -18,6 +18,14 @@ import { useLessonStore } from "@/store/useLessonStore";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
+} from "@/components/ui/empty";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { lessonClassIds } from "@/lib/lessons-data";
 import EditorToolbar from "./EditorToolbar";
 import DetailsPanel from "./DetailsPanel";
@@ -51,6 +59,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [aiOpen, setAiOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
@@ -95,13 +104,18 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
 
   if (hydrated && !lesson) {
     return (
-      <div className="h-dvh flex flex-col items-center justify-center gap-3 text-center">
-        <FileText className="size-10 text-muted-foreground/30" />
-        <p className="text-base font-semibold">Dars topilmadi</p>
-        <button onClick={() => router.push("/dashboard/lessons")} className="text-sm text-primary underline">
-          Darslar roʻyxatiga qaytish
-        </button>
-      </div>
+      <Empty className="h-dvh">
+        <EmptyHeader>
+          <EmptyMedia variant="icon"><FileText /></EmptyMedia>
+          <EmptyTitle>Dars topilmadi</EmptyTitle>
+          <EmptyDescription>Bu dars mavjud emas yoki oʻchirilgan.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button variant="outline" onClick={() => router.push("/dashboard/lessons")}>
+            Darslar roʻyxatiga qaytish
+          </Button>
+        </EmptyContent>
+      </Empty>
     );
   }
 
@@ -135,8 +149,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     toast.success("Dars nusxalandi");
     router.push(`/lessons/${newId}`);
   };
-  const handleDelete = () => {
-    if (!window.confirm("Bu darsni oʻchirishni tasdiqlaysizmi?")) return;
+  const performDelete = () => {
     deleteLesson(lessonId);
     toast.success("Dars oʻchirildi");
     router.push("/dashboard/lessons");
@@ -188,11 +201,28 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                 <BookmarkPlus className="size-4" /> Shablon sifatida saqlash
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDelete} className="gap-2 text-destructive focus:text-destructive">
+              <DropdownMenuItem onClick={() => setConfirmDeleteOpen(true)} className="gap-2 text-destructive focus:text-destructive">
                 <Trash2 className="size-4" /> Darsni oʻchirish
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Darsni oʻchirish</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Bu dars va uning barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={performDelete}>
+                  Oʻchirish
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <button
             onClick={() => router.push("/dashboard/lessons")}
             title="Yopish"

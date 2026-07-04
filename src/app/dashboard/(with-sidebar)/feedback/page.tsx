@@ -3,6 +3,9 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+} from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -454,22 +457,20 @@ export default function FeedbackPage() {
 
 function EmptyState({ filterActive, ongoing }: { filterActive: boolean; ongoing?: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border px-6 py-16 text-center">
-      <div className="flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-        <MessagesSquare className="size-8" />
-      </div>
-      <div className="max-w-xs">
-        <p className="text-base font-semibold text-foreground">
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><MessagesSquare /></EmptyMedia>
+        <EmptyTitle>
           {ongoing ? "Jarayonda fikr yoʻq" : filterActive ? "Mos fikr topilmadi" : "Hali fikr yoʻq"}
-        </p>
-        <TypographyMuted className="mt-1.5 text-sm">
+        </EmptyTitle>
+        <EmptyDescription>
           {ongoing
             ? "Koʻrilayotgan yoki rejalashtirilgan fikrlar shu yerda koʻrinadi."
             : filterActive
             ? "Filtr yoki qidiruvni oʻzgartirib koʻring."
             : "Birinchi boʻlib taklif yoki fikr bildiring."}
-        </TypographyMuted>
-      </div>
-    </div>
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }

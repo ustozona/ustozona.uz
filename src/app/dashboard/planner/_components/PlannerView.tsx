@@ -32,6 +32,14 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { panelCardClass, panelCardHeaderClass } from "@/components/DashboardPage";
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
+import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, PlusIcon, LinkIcon,
   FileText, Check, Trash2, Undo2, CalendarOff, ArrowUpRight, Eye, EyeOff,
   SlidersHorizontal, Pencil, Search, Ban, Clock, CalendarPlus,
@@ -528,22 +536,24 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
             {/* ── Boʻsh holat (jadval hali tuzilmagan) ── */}
             {hydrated && !hasAnyTimetable ? (
-              <div className="flex h-full flex-col items-center justify-center gap-4 p-8 text-center">
-                <SectionIcon className="size-12">
-                  <CalendarPlus className="size-6" />
-                </SectionIcon>
-                <div className="max-w-sm space-y-1.5">
-                  <p className="heading-small">Jadval hali tuzilmagan</p>
-                  <TypographyMuted className="text-sm">
+              <Empty className="h-full">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <CalendarPlus className="size-6" />
+                  </EmptyMedia>
+                  <EmptyTitle>Jadval hali tuzilmagan</EmptyTitle>
+                  <EmptyDescription>
                     Planner dars jadvalingiz ustiga quriladi. Avval haftalik jadvalni tuzing —
                     keyin bu yerda darslarni rejalashtirasiz.
-                  </TypographyMuted>
-                </div>
-                <Button onClick={() => router.push("/dashboard/timetable")} className="gap-1.5">
-                  <CalendarPlus className="size-4" />
-                  Jadval tuzish
-                </Button>
-              </div>
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button onClick={() => router.push("/dashboard/timetable")} className="gap-1.5">
+                    <CalendarPlus className="size-4" />
+                    Jadval tuzish
+                  </Button>
+                </EmptyContent>
+              </Empty>
             ) : (
               <>
             {/* ── Hafta ── */}

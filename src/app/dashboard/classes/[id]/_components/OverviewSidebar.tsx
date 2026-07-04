@@ -8,6 +8,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TypographyMuted } from "@/components/ui/typography";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyContent,
+} from "@/components/ui/empty";
 import { panelCardClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { MONTHS_UZ_SHORT } from "@/lib/localization";
@@ -140,19 +147,23 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
           <ScrollArea className="flex-1 min-h-0">
             <div className="p-3">
               {!mounted ? null : classTasks.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                  <div className="size-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
-                    <CheckSquare className="size-5 text-muted-foreground" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">Bu sinfga vazifa yoʻq</p>
-                  <Link
-                    href="/dashboard/tasks"
-                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                  >
-                    Vazifalar boʻlimi
-                    <ChevronRight className="size-3.5" />
-                  </Link>
-                </div>
+                <Empty className="p-6">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <CheckSquare />
+                    </EmptyMedia>
+                    <EmptyTitle>Bu sinfga vazifa yoʻq</EmptyTitle>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Link
+                      href="/dashboard/tasks"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    >
+                      Vazifalar boʻlimi
+                      <ChevronRight className="size-3.5" />
+                    </Link>
+                  </EmptyContent>
+                </Empty>
               ) : (
                 <div className="space-y-1">
                   {classTasks.map((t) => {

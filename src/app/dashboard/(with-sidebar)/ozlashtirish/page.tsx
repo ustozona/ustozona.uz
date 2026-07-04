@@ -8,6 +8,13 @@ import { CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TypographyMuted } from "@/components/ui/typography";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
 import ClassListPanel from "@/components/ClassListPanel";
 import { useClassStore } from "@/store/useClassStore";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
@@ -98,9 +105,13 @@ export default function OzlashtirishPage() {
 
           {/* Content */}
           {!isSeed ? (
-            <div className="flex-1 flex items-center justify-center px-6">
-              <TypographyMuted>Demo: oʻzlashtirish jadvali faqat 9-B uchun.</TypographyMuted>
-            </div>
+            <Empty className="flex-1">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><Grid3x3 /></EmptyMedia>
+                <EmptyTitle>Maʼlumot yoʻq</EmptyTitle>
+                <EmptyDescription>Demo bosqichida oʻzlashtirish jadvali faqat 9-B sinf uchun mavjud.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <div className="flex-1 min-h-0 flex flex-col">
               <ScrollArea className="flex-1 min-h-0">

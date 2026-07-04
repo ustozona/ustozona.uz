@@ -26,6 +26,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TypographyMuted } from "@/components/ui/typography";
 import { Card } from "@/components/ui/card";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { toast } from "sonner";
 import {
   FileText, Search, ArrowDownUp, X, Minus, ListFilter,
@@ -155,12 +161,12 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
 
       {/* Roʻyxat — faqat shu qism scroll boʻladi */}
       {rows.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 py-16 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-            <FileText className="size-7" />
-          </div>
-          <TypographyMuted>Mos topshiriq topilmadi</TypographyMuted>
-        </div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon"><FileText /></EmptyMedia>
+            <EmptyTitle>Mos topshiriq topilmadi</EmptyTitle>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <ScrollArea className="min-h-0 flex-1">
           <div className="space-y-2 p-3">

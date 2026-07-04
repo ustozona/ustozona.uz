@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+} from "@/components/ui/empty";
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import ClassListPanel from "@/components/ClassListPanel";
@@ -112,16 +115,16 @@ export default function QuizPage() {
 
           {/* Drafts */}
           {!generated ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-              <div className="size-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-                <Sparkles className="size-8 text-muted-foreground" aria-hidden />
-              </div>
-              <p className="heading-small text-foreground">Quiz qoralamasi tayyor emas</p>
-              <TypographyMuted className="mt-1 max-w-sm">
-                Standart tanlab, “Ustozona AI bilan yaratish” tugmasini bosing. AI savol qoralaydi —
-                yakuniy qarorni siz qabul qilasiz.
-              </TypographyMuted>
-            </div>
+            <Empty className="flex-1">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><Sparkles /></EmptyMedia>
+                <EmptyTitle>Quiz qoralamasi tayyor emas</EmptyTitle>
+                <EmptyDescription>
+                  Standart tanlab, “Ustozona AI bilan yaratish” tugmasini bosing. AI savol qoralaydi —
+                  yakuniy qarorni siz qabul qilasiz.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <ScrollArea className="flex-1 min-h-0">
               <div className="px-6 py-6 space-y-4">

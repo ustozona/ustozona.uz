@@ -5,6 +5,12 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { TypographyMuted } from "@/components/ui/typography";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Plus, StickyNote, Smile, AlertCircle, Minus } from "lucide-react";
 
 export type Sentiment = "positive" | "concern" | "neutral";
@@ -107,14 +113,12 @@ export default function NotesTab({
 
       {/* List */}
       {visible.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-            <StickyNote className="size-7" />
-          </div>
-          <TypographyMuted>
-            {notes.length === 0 ? "Hali qayd yoʻq" : "Bu turdagi qayd yoʻq"}
-          </TypographyMuted>
-        </div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon"><StickyNote /></EmptyMedia>
+            <EmptyTitle>{notes.length === 0 ? "Hali qayd yoʻq" : "Bu turdagi qayd yoʻq"}</EmptyTitle>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div className="space-y-2.5">
           {visible.map((n) => {

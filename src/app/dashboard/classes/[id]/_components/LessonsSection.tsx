@@ -15,6 +15,18 @@ import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLessonStore } from "@/store/useLessonStore";
 import { lessonClassIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import CreateUnitModal from "@/components/CreateUnitModal";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, List, Calendar, Trash2 } from "lucide-react";
 import { TypographyMuted } from "@/components/ui/typography";
 import type { ClassIdentity } from "@/lib/class-id";
@@ -303,15 +315,19 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                   {unitsForClass.map(renderUnitWide)}
                   {renderNoUnitWide()}
                   {unitsForClass.length === 0 && (
-                    <div className="flex flex-col items-center justify-center text-center py-12 px-6">
-                      <Layers className="size-9 text-muted-foreground/25 mb-3" />
-                      <p className="text-sm font-semibold text-foreground">Boʻlimlar yoʻq</p>
-                      <TypographyMuted className="text-xs mt-1">Boʻlim qoʻshing yoki darslarni toʻgʻridan-toʻgʻri qoʻshing.</TypographyMuted>
-                      <Button variant="outline" className="mt-4 gap-2 h-9" onClick={() => setUnitModalOpen(true)}>
-                        <Plus className="size-4" />
-                        Boʻlim qoʻshish
-                      </Button>
-                    </div>
+                    <Empty className="py-12">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon"><Layers /></EmptyMedia>
+                        <EmptyTitle>Boʻlimlar yoʻq</EmptyTitle>
+                        <EmptyDescription>Boʻlim qoʻshing yoki darslarni toʻgʻridan-toʻgʻri qoʻshing.</EmptyDescription>
+                      </EmptyHeader>
+                      <EmptyContent>
+                        <Button variant="outline" className="gap-2 h-9" onClick={() => setUnitModalOpen(true)}>
+                          <Plus className="size-4" />
+                          Boʻlim qoʻshish
+                        </Button>
+                      </EmptyContent>
+                    </Empty>
                   )}
                 </>
               )}
@@ -337,13 +353,33 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                 <button title="Tahrirlash" className="p-2 rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-muted transition-colors">
                   <Pencil className="size-4" />
                 </button>
-                <button
-                  title="Oʻchirish"
-                  className="p-2 rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-muted transition-colors"
-                  onClick={() => { deleteUnit(selectedUnit.id); setSelectedUnitId(null); }}
-                >
-                  <Trash2 className="size-4" />
-                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      title="Oʻchirish"
+                      className="p-2 rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-muted transition-colors"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Boʻlimni oʻchirish</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        «{pad(selectedUnit.number)}. {selectedUnit.title}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni qaytarib boʻlmaydi.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-white hover:bg-destructive/90"
+                        onClick={() => { deleteUnit(selectedUnit.id); setSelectedUnitId(null); toast.success("Boʻlim oʻchirildi"); }}
+                      >
+                        Oʻchirish
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 text-center">
@@ -420,15 +456,19 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
               <ScrollArea className="h-full w-full">
                 <div className="px-4 pt-4 pb-5 space-y-3">
                   {lessonsForUnit.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center text-center py-24">
-                      <FileText className="size-12 text-muted-foreground/20 mb-3" />
-                      <p className="text-sm font-semibold text-foreground">Hali mavzu yoʻq</p>
-                      <TypographyMuted className="text-xs mt-1">Ushbu boʻlimga birinchi mavzuni qoʻshing.</TypographyMuted>
-                      <Button variant="outline" className="mt-4 gap-2 h-9" onClick={handleNewLesson}>
-                        <Plus className="size-4" />
-                        Yangi mavzu
-                      </Button>
-                    </div>
+                    <Empty className="py-16">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon"><FileText /></EmptyMedia>
+                        <EmptyTitle>Hali mavzu yoʻq</EmptyTitle>
+                        <EmptyDescription>Ushbu boʻlimga birinchi mavzuni qoʻshing.</EmptyDescription>
+                      </EmptyHeader>
+                      <EmptyContent>
+                        <Button variant="outline" className="gap-2 h-9" onClick={handleNewLesson}>
+                          <Plus className="size-4" />
+                          Yangi mavzu
+                        </Button>
+                      </EmptyContent>
+                    </Empty>
                   ) : (
                     lessonsForUnit.map((lesson) => {
                       const lessonUnit = units.find((u) => u.id === lesson.unitId);
@@ -477,13 +517,34 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                             </Badge>
                           </div>
                           <div className="shrink-0 overflow-hidden max-w-0 opacity-0 group-hover:max-w-9 group-hover:opacity-100 transition-all duration-200 ease-out">
-                            <button
-                              title="Oʻchirish"
-                              className="size-7 rounded-md flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-muted transition-colors"
-                              onClick={(e) => { e.stopPropagation(); deleteLesson(lesson.id); }}
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button
+                                  title="Oʻchirish"
+                                  className="size-7 rounded-md flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-muted transition-colors"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Mavzuni oʻchirish</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Bu mavzu va uning tahrirlagichdagi barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-white hover:bg-destructive/90"
+                                    onClick={() => { deleteLesson(lesson.id); toast.success("Mavzu oʻchirildi"); }}
+                                  >
+                                    Oʻchirish
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                       );

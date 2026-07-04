@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TypographyMuted, TypographyLabel } from "@/components/ui/typography";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+} from "@/components/ui/empty";
 import ClassListPanel from "@/components/ClassListPanel";
 import { useClassStore } from "@/store/useClassStore";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
@@ -216,14 +219,14 @@ function Muted({ children }: { children: React.ReactNode }) {
 
 function EmptyState() {
   return (
-    <div className="h-full min-h-[60vh] flex flex-col items-center justify-center text-center px-6">
-      <div className="size-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-        <Sparkles className="size-8 text-muted-foreground" aria-hidden />
-      </div>
-      <p className="heading-small text-foreground">Diagnostik maʼlumot yoʻq</p>
-      <TypographyMuted className="mt-1 max-w-sm">
-        Demo bosqichida diagnostika faqat 9-B (Informatika) sinfi uchun mavjud. Roʻyxatdan 9-B ni tanlang.
-      </TypographyMuted>
-    </div>
+    <Empty className="min-h-[60vh]">
+      <EmptyHeader>
+        <EmptyMedia variant="icon"><Sparkles /></EmptyMedia>
+        <EmptyTitle>Diagnostik maʼlumot yoʻq</EmptyTitle>
+        <EmptyDescription>
+          Demo bosqichida diagnostika faqat 9-B (Informatika) sinfi uchun mavjud. Roʻyxatdan 9-B ni tanlang.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }

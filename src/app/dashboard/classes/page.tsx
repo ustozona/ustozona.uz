@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -23,6 +24,14 @@ import {
 } from "@/components/ui/tooltip";
 import { StripedPattern } from "@/components/ui/striped-pattern";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
 import {
   DropdownMenuSeparator,
   DropdownMenuItem,
@@ -140,12 +149,14 @@ export default function ClassesPage() {
 
   const handleDelete = () => {
     if (!deleteTarget) return;
+    const name = deleteTarget.name;
     setClassDataMap((prev) => {
       const next = { ...prev };
       delete next[deleteTarget.id];
       return next;
     });
     setDeleteTarget(null);
+    toast.success(`«${name}» sinfi oʻchirildi`);
   };
 
   const filteredAndSorted = useMemo(() => {
@@ -279,31 +290,29 @@ export default function ClassesPage() {
                   {Array.from({ length: 6 }).map((_, i) => <ClassCardSkeleton key={i} index={i} />)}
                 </div>
               ) : liveClasses.length === 0 ? (
-                <div className="py-16 flex flex-col items-center gap-4 text-center">
-                  <div className="p-4 rounded-2xl bg-muted">
-                    <GraduationCap className="size-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Hali sinf yoʻq</p>
-                    <TypographyMuted className="text-xs mt-0.5">
+                <Empty className="h-full">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><GraduationCap className="size-6" /></EmptyMedia>
+                    <EmptyTitle>Hali sinf yoʻq</EmptyTitle>
+                    <EmptyDescription>
                       Birinchi sinfingizni yarating — oʻquvchilar, baholar va davomat shu yerdan boshlanadi.
-                    </TypographyMuted>
-                  </div>
-                  <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
-                    <PlusIcon className="size-4" />
-                    Yangi sinf yaratish
-                  </Button>
-                </div>
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
+                      <PlusIcon className="size-4" />
+                      Yangi sinf yaratish
+                    </Button>
+                  </EmptyContent>
+                </Empty>
               ) : filteredAndSorted.length === 0 ? (
-                <div className="py-16 flex flex-col items-center gap-3 text-center">
-                  <div className="p-4 rounded-2xl bg-muted">
-                    <Search className="size-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Topilmadi</p>
-                    <TypographyMuted className="text-xs mt-0.5">«{search}» boʻyicha hech narsa yoʻq</TypographyMuted>
-                  </div>
-                </div>
+                <Empty className="h-full">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><Search className="size-6" /></EmptyMedia>
+                    <EmptyTitle>Topilmadi</EmptyTitle>
+                    <EmptyDescription>«{search}» boʻyicha hech narsa yoʻq</EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               ) : (
                 <div key={view} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
                   {view === "grid" ? (

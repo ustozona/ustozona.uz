@@ -17,6 +17,10 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import {
+  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { TypographyMuted } from "@/components/ui/typography";
 import AddStandardModal from "./AddStandardModal";
 import CJModal from "./CJModal";
@@ -145,8 +149,14 @@ export default function StandardsView({ classId }: { classId: string }) {
               </Empty>
             </div>
           ) : visibleSets.length === 0 ? (
-            <div className="px-5 py-16 text-center">
-              <TypographyMuted>Hech narsa topilmadi.</TypographyMuted>
+            <div className="flex h-full items-center justify-center px-5 py-16">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><Search aria-hidden /></EmptyMedia>
+                  <EmptyTitle>Hech narsa topilmadi</EmptyTitle>
+                  <EmptyDescription>Qidiruv yoki filtrni oʻzgartirib koʻring.</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             </div>
           ) : (
             <div className="px-5 py-5 space-y-3">
@@ -285,15 +295,32 @@ function SetCard({
           <Plus className="size-4" aria-hidden />
           Standart
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
-          aria-label="Toʻplamni oʻchirish"
-          onClick={onRemoveSet}
-        >
-          <Trash2 className="size-4" aria-hidden />
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+              aria-label="Toʻplamni oʻchirish"
+            >
+              <Trash2 className="size-4" aria-hidden />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Toʻplam oʻchirilsinmi?</AlertDialogTitle>
+              <AlertDialogDescription>
+                «{set.name}» toʻplami va undagi barcha {total} ta standart butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+              <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={onRemoveSet}>
+                Oʻchirish
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <CollapsibleContent>
@@ -503,15 +530,32 @@ function StandardRow({
         </div>
       )}
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-8 shrink-0 self-center text-muted-foreground hover:text-destructive opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 transition-opacity"
-        aria-label="Standartni oʻchirish"
-        onClick={() => onRemove(std.id)}
-      >
-        <Trash2 className="size-4" aria-hidden />
-      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 shrink-0 self-center text-muted-foreground hover:text-destructive opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 transition-opacity"
+            aria-label="Standartni oʻchirish"
+          >
+            <Trash2 className="size-4" aria-hidden />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Standart oʻchirilsinmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu standart toʻplamdan butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={() => onRemove(std.id)}>
+              Oʻchirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {subjective && (
         <CJModal open={cjOpen} onOpenChange={setCjOpen} standardId={std.id} standardDesc={std.desc} />

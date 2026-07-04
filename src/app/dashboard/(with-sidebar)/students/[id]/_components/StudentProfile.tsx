@@ -11,6 +11,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import {
@@ -137,16 +145,18 @@ export default function StudentProfile({
   // ── Topilmadi ──
   if (!profile) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-        <SectionIcon size="lg"><Users /></SectionIcon>
-        <div>
-          <p className="text-base font-semibold text-foreground">Oʻquvchi topilmadi</p>
-          <TypographyMuted className="mt-1">Bu oʻquvchi mavjud emas yoki oʻchirilgan.</TypographyMuted>
-        </div>
-        <Button onClick={() => router.push("/dashboard/students")} variant="outline" className="shadow-none">
-          <ArrowLeft className="size-4" /> Oʻquvchilarga qaytish
-        </Button>
-      </div>
+      <Empty className="h-full border-0">
+        <EmptyHeader>
+          <EmptyMedia variant="icon"><Users /></EmptyMedia>
+          <EmptyTitle>Oʻquvchi topilmadi</EmptyTitle>
+          <EmptyDescription>Bu oʻquvchi mavjud emas yoki oʻchirilgan.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button onClick={() => router.push("/dashboard/students")} variant="outline" className="shadow-none">
+            <ArrowLeft className="size-4" /> Oʻquvchilarga qaytish
+          </Button>
+        </EmptyContent>
+      </Empty>
     );
   }
 

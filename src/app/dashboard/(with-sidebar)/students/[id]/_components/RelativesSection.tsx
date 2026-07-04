@@ -16,6 +16,7 @@ import {
 } from "@/lib/relations";
 import { useRelatives, linkRelatives, unlinkRelatives } from "@/lib/relations-store";
 import { useGradesStore } from "@/store/useGradesStore";
+import { toast } from "sonner";
 import { UserPlus, X, ChevronRight, Users, ChevronDown } from "lucide-react";
 
 /** Rang doirasi ichidagi bosh harflar (paneldagi uslub bilan bir xil) */
@@ -123,7 +124,12 @@ export default function RelativesSection({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => unlinkRelatives(studentId, r.id)}
+                onClick={() => {
+                  unlinkRelatives(studentId, r.id);
+                  toast.success(`${r.name} bilan bogʻlanish olib tashlandi`, {
+                    action: { label: "Qaytarish", onClick: () => linkRelatives(studentId, r.id) },
+                  });
+                }}
                 aria-label={`${r.name} bogʻlanishini olib tashlash`}
                 className="size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
               >

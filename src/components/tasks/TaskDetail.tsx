@@ -11,6 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { TypographyH3, TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import { SectionIcon } from "@/components/ui/section-icon";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+} from "@/components/ui/empty";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -66,6 +74,7 @@ export default function TaskDetail() {
   const [timeLeft, setTimeLeft] = useState(FOCUS_MINUTES * 60);
   const [isActive, setIsActive] = useState(false);
   const [isPomodoroOpen, setIsPomodoroOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Stop timer if task changes
@@ -126,11 +135,13 @@ export default function TaskDetail() {
 
   if (!task) {
     return (
-      <div className="h-full bg-card rounded-xl card-elevation flex flex-col items-center justify-center p-6 text-center">
-        <SectionIcon size="lg" className="mb-4 text-muted-foreground bg-muted"><ClipboardList /></SectionIcon>
-        <TypographyH3>Vazifa tanlanmagan</TypographyH3>
-        <TypographyMuted className="mt-2">Tafsilotlarni koʻrish uchun roʻyxatdan vazifani tanlang.</TypographyMuted>
-      </div>
+      <Empty className="h-full bg-card rounded-xl card-elevation">
+        <EmptyHeader>
+          <EmptyMedia variant="icon"><ClipboardList /></EmptyMedia>
+          <EmptyTitle>Vazifa tanlanmagan</EmptyTitle>
+          <EmptyDescription>Tafsilotlarni koʻrish uchun roʻyxatdan vazifani tanlang.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
 
@@ -893,6 +904,7 @@ export default function TaskDetail() {
               if (e.target.files && e.target.files[0]) {
                 const file = e.target.files[0];
                 updateTask(task.id, { attachments: [...task.attachments, file.name] });
+                toast.success(`"${file.name}" biriktirildi`);
               }
             }} />
             <div className="rounded-lg size-9 hover:text-foreground flex items-center justify-center hover:bg-muted/50 transition-colors">
@@ -906,11 +918,31 @@ export default function TaskDetail() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[180px]">
-              <DropdownMenuItem onClick={() => deleteTask(task.id)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <DropdownMenuItem onClick={() => setConfirmDeleteOpen(true)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
                 <Trash2 className="size-3.5 mr-2" /> Vazifani oʻchirish
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Vazifani oʻchirishni tasdiqlaysizmi?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Vazifa va uning barcha kichik vazifalari, izohlari va taymer yozuvlari butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={() => { deleteTask(task.id); toast.success("Vazifa oʻchirildi"); }}
+                >
+                  Oʻchirish
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

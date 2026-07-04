@@ -23,6 +23,11 @@ import {
   type SetTemplate,
 } from "@/lib/standard-templates";
 import { useStandardsStore, type CustomSet } from "@/store/useStandardsStore";
+import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 type Props = {
   open: boolean;
@@ -289,8 +294,13 @@ function MyStandardsTab({ classId }: { classId: string }) {
         const setName = name.trim() || file.name.replace(/\.[^.]+$/, "");
         addCustomSet({ name: setName, subject: subject.trim() || "—", grade: grade.trim() || undefined, standards: items });
         resetForm();
+        toast.success(`${items.length} ta standart import qilindi`);
+      } else {
+        toast.warning("Faylda standart topilmadi");
       }
-    } catch { /* jim — import xatosi */ }
+    } catch {
+      toast.error("Faylni oʻqib boʻlmadi");
+    }
     finally { setImporting(false); }
   }
 
@@ -430,10 +440,28 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
           className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover/cs:opacity-100 transition-opacity cursor-pointer">
           <PencilLine className="size-4" aria-hidden />
         </button>
-        <button type="button" onClick={onDelete} aria-label="Oʻchirish"
-          className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover/cs:opacity-100 transition-opacity cursor-pointer">
-          <Trash2 className="size-4" aria-hidden />
-        </button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button type="button" aria-label="Oʻchirish"
+              className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover/cs:opacity-100 transition-opacity cursor-pointer">
+              <Trash2 className="size-4" aria-hidden />
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Toʻplam oʻchirilsinmi?</AlertDialogTitle>
+              <AlertDialogDescription>
+                «{cs.name}» toʻplami va undagi barcha {cs.standards.length} ta standart butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+              <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={onDelete}>
+                Oʻchirish
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <span className="text-caption text-muted-foreground shrink-0 tabular-nums">{cs.standards.length} ta</span>
         <AddBtn added={added} onClick={onAttach} />
       </div>

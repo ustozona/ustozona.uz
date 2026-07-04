@@ -22,6 +22,13 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, List, Calendar, Trash2 } from "lucide-react";
 import { TypographyMuted } from "@/components/ui/typography";
+import {
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
+} from "@/components/ui/empty";
+import {
+  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 /** Status badge ranglari — semantik tokenlar (success / info / warning / muted) */
 const STATUS_STYLES: Record<Lesson["status"], string> = {
@@ -302,11 +309,13 @@ export default function LessonsPage() {
       >
           {noClass ? (
             /* Sinf tanlanmagan — headerʼsiz, markaziy placeholder (2-rasm) */
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-              <SectionIcon size="lg" className="mb-4"><Layers /></SectionIcon>
-              <p className="text-base font-semibold text-foreground">Sinf tanlanmagan</p>
-              <TypographyMuted className="text-sm mt-1.5">Boʻlimlarni koʻrish uchun sinf tanlang</TypographyMuted>
-            </div>
+            <Empty className="flex-1">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><Layers /></EmptyMedia>
+                <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
+                <EmptyDescription>Boʻlimlarni koʻrish uchun sinf tanlang</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <>
           {/* Header */}
@@ -341,15 +350,19 @@ export default function LessonsPage() {
                     {unitsForClass.map(renderUnitWide)}
                     {renderNoUnitWide()}
                     {unitsForClass.length === 0 && (
-                      <div className="flex flex-col items-center justify-center text-center py-12 px-6">
-                        <Layers className="size-9 text-muted-foreground/25 mb-3" />
-                        <p className="text-sm font-semibold text-foreground">Boʻlimlar yoʻq</p>
-                        <TypographyMuted className="text-xs mt-1">Boʻlim qoʻshing yoki darslarni toʻgʻridan-toʻgʻri qoʻshing.</TypographyMuted>
-                        <Button variant="outline" className="mt-4 gap-2 h-9" onClick={handleCreateUnit}>
-                          <Plus className="size-4" />
-                          Boʻlim qoʻshish
-                        </Button>
-                      </div>
+                      <Empty className="py-12">
+                        <EmptyHeader>
+                          <EmptyMedia variant="icon"><Layers /></EmptyMedia>
+                          <EmptyTitle>Boʻlimlar yoʻq</EmptyTitle>
+                          <EmptyDescription>Boʻlim qoʻshing yoki darslarni toʻgʻridan-toʻgʻri qoʻshing.</EmptyDescription>
+                        </EmptyHeader>
+                        <EmptyContent>
+                          <Button variant="outline" className="gap-2 h-9" onClick={handleCreateUnit}>
+                            <Plus className="size-4" />
+                            Boʻlim qoʻshish
+                          </Button>
+                        </EmptyContent>
+                      </Empty>
                     )}
                   </>
                 )}
@@ -376,13 +389,33 @@ export default function LessonsPage() {
                   <button title="Tahrirlash" className="p-2 rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-muted transition-colors">
                     <Pencil className="size-4" />
                   </button>
-                  <button
-                    title="Oʻchirish"
-                    className="p-2 rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-muted transition-colors"
-                    onClick={() => { deleteUnit(selectedUnit.id); setSelectedUnitId(null); }}
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        title="Oʻchirish"
+                        className="p-2 rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-muted transition-colors"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Boʻlimni oʻchirish</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          «{pad(selectedUnit.number)}. {selectedUnit.title}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni qaytarib boʻlmaydi.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-white hover:bg-destructive/90"
+                          onClick={() => { deleteUnit(selectedUnit.id); setSelectedUnitId(null); toast.success("Boʻlim oʻchirildi"); }}
+                        >
+                          Oʻchirish
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-center">
@@ -417,11 +450,13 @@ export default function LessonsPage() {
         >
           {!selectedUnitId ? (
             /* Boʻlim tanlanmagan — headerʼsiz, faqat markaziy placeholder (1-rasm) */
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-              <SectionIcon size="lg" className="mb-4"><FileText /></SectionIcon>
-              <p className="text-base font-semibold text-foreground">Boʻlim tanlanmagan</p>
-              <TypographyMuted className="text-sm mt-1.5">Mavzularni koʻrish uchun boʻlim tanlang.</TypographyMuted>
-            </div>
+            <Empty className="flex-1">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><FileText /></EmptyMedia>
+                <EmptyTitle>Boʻlim tanlanmagan</EmptyTitle>
+                <EmptyDescription>Mavzularni koʻrish uchun boʻlim tanlang.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <>
           {/* Header */}
@@ -467,15 +502,19 @@ export default function LessonsPage() {
             <ScrollArea className="h-full w-full">
               <div className="px-4 pt-4 pb-5 space-y-3">
                 {lessonsForUnit.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center py-24">
-                    <FileText className="size-12 text-muted-foreground/20 mb-3" />
-                    <p className="text-sm font-semibold text-foreground">Hali mavzu yoʻq</p>
-                    <TypographyMuted className="text-xs mt-1">Ushbu boʻlimga birinchi mavzuni qoʻshing.</TypographyMuted>
-                    <Button variant="outline" className="mt-4 gap-2 h-9" onClick={handleNewLesson}>
-                      <Plus className="size-4" />
-                      Yangi mavzu
-                    </Button>
-                  </div>
+                  <Empty className="py-16">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon"><FileText /></EmptyMedia>
+                      <EmptyTitle>Hali mavzu yoʻq</EmptyTitle>
+                      <EmptyDescription>Ushbu boʻlimga birinchi mavzuni qoʻshing.</EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button variant="outline" className="gap-2 h-9" onClick={handleNewLesson}>
+                        <Plus className="size-4" />
+                        Yangi mavzu
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
                 ) : (
                   lessonsForUnit.map((lesson) => {
                     const lessonUnit = units.find((u) => u.id === lesson.unitId);
@@ -527,13 +566,34 @@ export default function LessonsPage() {
                           </Badge>
                         </div>
                         <div className="shrink-0 overflow-hidden max-w-0 opacity-0 group-hover:max-w-9 group-hover:opacity-100 transition-all duration-200 ease-out">
-                          <button
-                            title="Oʻchirish"
-                            className="size-7 rounded-md flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-muted transition-colors"
-                            onClick={(e) => { e.stopPropagation(); deleteLesson(lesson.id); }}
-                          >
-                            <Trash2 className="size-3.5" />
-                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                title="Oʻchirish"
+                                className="size-7 rounded-md flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-muted transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Darsni oʻchirish</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Bu dars va uning tahrirlagichdagi barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-white hover:bg-destructive/90"
+                                  onClick={() => { deleteLesson(lesson.id); toast.success("Dars oʻchirildi"); }}
+                                >
+                                  Oʻchirish
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     );

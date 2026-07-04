@@ -20,6 +20,13 @@ import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -186,19 +193,17 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-xl">
           <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-4 bg-gradient-to-t from-card to-transparent" />
           {students.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-              <div className="flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-                <Users className="size-8" />
-              </div>
-              <div className="max-w-xs">
-                <p className="text-base font-semibold text-foreground">
+            <Empty className="h-full">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><Users className="size-6" /></EmptyMedia>
+                <EmptyTitle>
                   {search.trim() ? "Mos oʻquvchi topilmadi" : "Bu sinfda hali oʻquvchi yoʻq"}
-                </p>
-                <TypographyMuted className="mt-1.5 text-sm">
+                </EmptyTitle>
+                <EmptyDescription>
                   {search.trim() ? "Qidiruvni oʻzgartirib koʻring." : "Oʻquvchilarni qoʻshing."}
-                </TypographyMuted>
-              </div>
-            </div>
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <ScrollArea className="h-full w-full">
               <div className="space-y-3 px-5 pt-5 pb-5">
