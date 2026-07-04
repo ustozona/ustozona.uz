@@ -9,7 +9,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuBadge,
@@ -18,14 +17,6 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
@@ -42,10 +33,8 @@ import {
   Home,
   Target,
   BookMarked,
-  Plus,
   MessagesSquare,
   Settings,
-  HelpCircle,
   ChevronsUpDown,
   type LucideIcon,
 } from "lucide-react";
@@ -57,43 +46,22 @@ type NavItem = {
   badgeKey?: "tasks";
 };
 
-const topItems: NavItem[] = [
+const navItems: NavItem[] = [
   { href: "/dashboard", label: "Bosh sahifa", icon: Home },
+  { href: "/dashboard/tasks", label: "Vazifalar", icon: CheckCircle, badgeKey: "tasks" },
+  { href: "/dashboard/classes", label: "Mening sinflarim", icon: LayoutGrid },
   { href: "/dashboard/students", label: "Oʻquvchilar", icon: Users },
+  { href: "/dashboard/timetable", label: "Dars jadvali", icon: Calendar },
+  { href: "/dashboard/planner", label: "Rejalashtiruvchi", icon: BookOpen },
+  { href: "/dashboard/lessons", label: "Darslar", icon: FileText },
+  { href: "/dashboard/attendance", label: "Davomat", icon: CheckSquare },
+  { href: "/dashboard/grades", label: "Jurnal", icon: BarChart2 },
+  { href: "/dashboard/standards", label: "Standartlar", icon: Target },
 ];
-
-const navSections: { section: string; items: NavItem[] }[] = [
-  {
-    section: "TAYYORGARLIK",
-    items: [
-      { href: "/dashboard/classes", label: "Mening sinflarim", icon: LayoutGrid },
-      { href: "/dashboard/timetable", label: "Dars jadvali", icon: Calendar },
-      { href: "/dashboard/planner", label: "Rejalashtiruvchi", icon: BookOpen },
-      { href: "/dashboard/lessons", label: "Darslar", icon: FileText },
-    ],
-  },
-  {
-    section: "KUNDALIK ISH",
-    items: [
-      { href: "/dashboard/attendance", label: "Davomat", icon: CheckSquare },
-      { href: "/dashboard/grades", label: "Jurnal", icon: BarChart2 },
-      { href: "/dashboard/tasks", label: "Vazifalar", icon: CheckCircle, badgeKey: "tasks" },
-    ],
-  },
-  {
-    section: "BAHOLASH",
-    items: [
-      { href: "/dashboard/standards", label: "Standartlar", icon: Target },
-    ],
-  },
-];
-
-const createItems: { href: string; label: string; icon: LucideIcon; desc: string }[] = [];
 
 const footerItems: NavItem[] = [
   { href: "/dashboard/feedback", label: "Fikr-mulohaza", icon: MessagesSquare },
   { href: "/dashboard/settings", label: "Sozlamalar", icon: Settings },
-  { href: "/dashboard/help", label: "Yordam", icon: HelpCircle },
 ];
 
 function useTaskCount() {
@@ -137,36 +105,6 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
   );
 }
 
-function CreateMenu() {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <SidebarMenuButton
-          className="bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-sm hover:bg-sidebar-primary hover:opacity-90 hover:text-sidebar-primary-foreground active:bg-sidebar-primary active:text-sidebar-primary-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
-        >
-          <Plus />
-          <span>Yaratish</span>
-        </SidebarMenuButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side="right" align="start" className="w-60">
-        <DropdownMenuLabel>Yangi yaratish</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {createItems.map((item) => (
-          <DropdownMenuItem key={item.href} asChild>
-            <Link href={item.href} className="flex items-start gap-2.5 cursor-pointer">
-              <item.icon className="size-4 mt-0.5 text-muted-foreground shrink-0" strokeWidth={2} />
-              <span className="flex flex-col">
-                <span className="text-sm font-medium">{item.label}</span>
-                <span className="text-xs text-muted-foreground">{item.desc}</span>
-              </span>
-            </Link>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
 export function AppSidebar() {
   const taskCount = useTaskCount();
   const profile = useSettingsStore((s) => s.profile);
@@ -199,37 +137,20 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        {/* Yaratish + top-level */}
+      <SidebarContent data-tour="sidebar-nav">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <CreateMenu />
-              </SidebarMenuItem>
-              {topItems.map((item) => (
-                <NavMenuItem key={item.href} item={item} />
+              {navItems.map((item) => (
+                <NavMenuItem
+                  key={item.href}
+                  item={item}
+                  badge={item.badgeKey === "tasks" ? taskCount : undefined}
+                />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {navSections.map((section) => (
-          <SidebarGroup key={section.section}>
-            <SidebarGroupLabel>{section.section}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {section.items.map((item) => (
-                  <NavMenuItem
-                    key={item.href}
-                    item={item}
-                    badge={item.badgeKey === "tasks" ? taskCount : undefined}
-                  />
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
       </SidebarContent>
 
       <SidebarFooter>

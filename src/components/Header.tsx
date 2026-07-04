@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { IconButton } from "@/components/ui/icon-button";
 import { Separator } from "@/components/ui/separator";
 import { TypographySmall } from "@/components/ui/typography";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -14,15 +12,9 @@ import { isCalendarConfigured } from "@/lib/academic-calendar";
 import QuickFeedback from "@/components/QuickFeedback";
 import NotificationsBell from "@/components/NotificationsBell";
 import { cn } from "@/lib/utils";
-import { Search, ShieldCheck, Calendar } from "lucide-react";
-
-const navLinks = [
-  { href: "/dashboard", label: "Bosh sahifa", exact: true },
-  { href: "/dashboard/help", label: "Yordam" },
-];
+import { Calendar } from "lucide-react";
 
 export default function Header() {
-  const pathname = usePathname();
   const calendar = useCalendarStore((s) => s.calendar);
   const calHydrated = useCalendarStore((s) => s._hasHydrated);
   const configured = isCalendarConfigured(calendar);
@@ -44,52 +36,16 @@ export default function Header() {
       </Tooltip>
       <Separator orientation="vertical" className="mx-1 !h-6" />
 
-      {/* Center nav */}
-      <div className="flex-1 flex justify-center px-2">
-        <nav className="flex items-center gap-1">
-          {navLinks.map((link) => {
-            const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-150",
-                  active
-                    ? "bg-foreground text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+      {/* Spacer — pushes actions to the right */}
+      <div className="flex-1" />
 
       {/* Right actions */}
       <div className="flex items-center gap-1">
-        <QuickFeedback />
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <IconButton className="text-muted-foreground">
-              <Search className="size-[17px]" strokeWidth={2} />
-            </IconButton>
-          </TooltipTrigger>
-          <TooltipContent>Qidirish</TooltipContent>
-        </Tooltip>
+        <span data-tour="header-feedback" className="inline-flex">
+          <QuickFeedback />
+        </span>
 
         <NotificationsBell />
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <IconButton className="text-muted-foreground">
-              <ShieldCheck className="size-[17px]" strokeWidth={2} />
-            </IconButton>
-          </TooltipTrigger>
-          <TooltipContent>Xavfsizlik</TooltipContent>
-        </Tooltip>
 
         <Separator orientation="vertical" className="mx-1.5 !h-6" />
 

@@ -10,6 +10,14 @@ import { classColor } from "@/lib/grades-data";
 import { useLiveClasses, useLiveClassesHydrated } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX, classColorStyle, classTints } from "@/lib/class-colors";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
 import { useClassPanelStats, type Page } from "@/hooks/useClassPanelStats";
 
 type Props = {
@@ -73,13 +81,28 @@ export default function ClassListPanel({
                 </div>
               )}
               {hydrated && liveClasses.length === 0 && (
-                <div className="flex flex-col items-center gap-3 py-10 text-center">
-                  <GraduationCap className="size-6 text-muted-foreground" aria-hidden="true" />
-                  <p className="text-sm text-muted-foreground">Hali sinf yoʻq</p>
-                  <Button asChild variant="outline" size="sm" className="shadow-none">
-                    <Link href="/dashboard/classes">Sinf yaratish</Link>
-                  </Button>
-                </div>
+                <Empty className="py-8">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon"><GraduationCap /></EmptyMedia>
+                    <EmptyTitle>Hali sinf yoʻq</EmptyTitle>
+                    <EmptyDescription>
+                      Birinchi sinfingizni yarating — oʻquvchilar shu yerdan boshlanadi.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    {onAddClass ? (
+                      <Button onClick={onAddClass} className="gap-1.5">
+                        <Plus className="size-4" /> Sinf yaratish
+                      </Button>
+                    ) : (
+                      <Button asChild className="gap-1.5">
+                        <Link href="/dashboard/classes">
+                          <Plus className="size-4" /> Sinf yaratish
+                        </Link>
+                      </Button>
+                    )}
+                  </EmptyContent>
+                </Empty>
               )}
               {liveClasses.map((cls) => {
                 const isSelected = cls.id === selectedClassId;
