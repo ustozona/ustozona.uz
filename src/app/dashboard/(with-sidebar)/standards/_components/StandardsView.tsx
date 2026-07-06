@@ -17,6 +17,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
@@ -130,9 +131,7 @@ export default function StandardsView({ classId }: { classId: string }) {
             <div className="flex h-full items-center justify-center px-5 py-10">
               <Empty>
                 <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <BookOpen aria-hidden />
-                  </EmptyMedia>
+                  <EmptyMedia><Illustration name="2" className="h-32 text-black dark:text-white" /></EmptyMedia>
                   <EmptyTitle>
                     {classNames.get(classId) ?? "Sinf"} uchun toʻplam yoʻq
                   </EmptyTitle>

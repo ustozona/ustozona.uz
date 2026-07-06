@@ -15,6 +15,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { panelCardClass } from "@/components/DashboardPage";
 import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { lessonClassIds } from "@/lib/lessons-data";
@@ -77,9 +78,7 @@ export function OverviewSection({ identity }: { identity: ClassIdentity }) {
           {!hydrated ? null : upcoming.length === 0 ? (
             <Empty>
               <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <BookOpen />
-                </EmptyMedia>
+                <EmptyMedia><Illustration name="28" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>Rejalashtirilgan yaqin dars yoʻq</EmptyTitle>
                 <EmptyDescription>Reja boʻlimidan darslarni kalendarga joylashtiring.</EmptyDescription>
               </EmptyHeader>

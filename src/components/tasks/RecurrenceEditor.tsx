@@ -55,7 +55,7 @@ export function RecurrenceEditor({
     <div className="flex flex-col">
       {/* ── Yoʻq (takrorlanmaydi) ── */}
       <PresetRow
-        label="Yoʻq"
+        label="Takrorlanmaydi"
         active={!value}
         onClick={() => {
           onChange(null);
@@ -87,7 +87,7 @@ export function RecurrenceEditor({
         )}
       >
         <Settings2 className={cn("size-4", customOpen ? "text-primary" : "text-muted-foreground")} />
-        <span className="font-medium">Moslashtirish</span>
+        <span className="font-medium">Oʻzingiz sozlang...</span>
         <ChevronRight className={cn("ml-auto size-4 text-muted-foreground/60 transition-transform", customOpen && "rotate-90")} />
       </button>
 
@@ -220,6 +220,6 @@ function buildPresets(ref: Date): { rule: string; label: string; hint?: string }
     { rule: `every:due:1:week:days=${wd}`, label: "Haftalik", hint: WEEKDAY_SHORT[wd] },
     { rule: "every:due:1:month", label: "Oylik", hint: `${ref.getDate()}-kun` },
     { rule: "every:due:1:year", label: "Yillik", hint: format(ref, "d-MMM", { locale: uz }) },
-    { rule: "every:due:1:week:days=1,2,3,4,5", label: "Har ish kuni", hint: "Du–Ju" },
+    { rule: "every:due:1:week:days=1,2,3,4,5", label: "Faqat ish kunlari", hint: "Du–Ju" },
   ];
 }

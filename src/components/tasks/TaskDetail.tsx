@@ -199,7 +199,7 @@ export default function TaskDetail() {
       <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-3 border-b border-border bg-card min-h-[4.5rem] z-10 relative">
         <div className="flex items-center gap-3 min-w-0">
           <SectionIcon><ClipboardList /></SectionIcon>
-          <CardTitle className="truncate">Vazifa tafsiloti</CardTitle>
+          <CardTitle className="truncate">Vazifa tafsilotlari</CardTitle>
           {isActive && (
             <Badge variant="secondary" className="px-2 py-0.5 rounded-md text-xs font-medium text-primary bg-primary/10 animate-pulse gap-1.5">
               <Clock className="size-3" />
@@ -400,7 +400,7 @@ export default function TaskDetail() {
                           task.priority === "medium" ? "fill-warning text-warning" :
                             task.priority === "low" ? "fill-info text-info" : "text-muted-foreground"
                       )} />
-                      {task.priority === "none" ? "Yoʻq" : task.priority === "high" ? "Yuqori" : task.priority === "medium" ? "Oʻrta" : "Past"}
+                      {task.priority === "none" ? "Belgilanmagan" : task.priority === "high" ? "Yuqori" : task.priority === "medium" ? "Oʻrta" : "Past"}
                     </div>
                   </div>
                 </DropdownMenuTrigger>
@@ -486,7 +486,7 @@ export default function TaskDetail() {
                       "flex-1 text-sm font-medium truncate flex items-center gap-2",
                       recurLabel ? "text-foreground" : "text-muted-foreground"
                     )}>
-                      {recurLabel ?? "Yoʻq"}
+                      {recurLabel ?? "Takrorlanmaydi"}
                     </div>
                   </div>
                 </PopoverTrigger>
@@ -654,7 +654,7 @@ export default function TaskDetail() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ListChecks className="size-4 text-muted-foreground" />
-                  <span className="text-xs font-semibold text-foreground/80">Ost vazifalar</span>
+                  <span className="text-xs font-semibold text-foreground/80">Kichik vazifalar</span>
                 </div>
                 {subtasks.length > 0 && (
                   <span className="text-caption tabular-nums">
@@ -709,7 +709,7 @@ export default function TaskDetail() {
                       setSubtaskTitle("");
                     }
                   }}
-                  placeholder="Ost vazifa qoʻshish..."
+                  placeholder="Kichik vazifa qoʻshish..."
                   className="h-8 flex-1 border-none bg-transparent px-0 text-sm focus:outline-none placeholder:text-muted-foreground/60 text-foreground"
                   autoFocus={subtasksOpen}
                 />
@@ -721,7 +721,7 @@ export default function TaskDetail() {
                 onClick={() => setSubtasksOpen(true)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 -mx-2 text-sm text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
               >
-                <ListChecks className="size-4" /> Ost vazifa qoʻshish
+                <ListChecks className="size-4" /> Kichik vazifa qoʻshish
               </button>
             )}
 

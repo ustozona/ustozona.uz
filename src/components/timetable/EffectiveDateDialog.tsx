@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { nextMonday } from "@/lib/timetable-versions";
 import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
-import { MONTHS_UZ } from "@/lib/localization";
+import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 import {
   Dialog,
   DialogContent,
@@ -40,8 +40,6 @@ import {
    sana tanlagich — standart Calendar (Popover ichida), native <input
    type=date> emas (u brauzer/OS temasiga ergashib begona koʻrinardi).
    ════════════════════════════════════════════════════════════════════ */
-
-const UZ_WEEKDAYS = ["Yak", "Dush", "Sesh", "Chor", "Pay", "Jum", "Shan"];
 
 export type EffectiveChoice =
   | { kind: "new"; effectiveFrom: string; note?: string }
@@ -95,12 +93,18 @@ export default function EffectiveDateDialog({
 
   // Caption ichida asosiy maʼlumot — SANA — urgʻulanadi (foreground + 500),
   // qolgani muted; tez skanerlash uchun.
-  const dateCaption = (key: string) => (
-    <>
-      <span className="font-medium text-foreground">{fmtDayMonthUz(key)}</span>dan kuchga
-      kiradi
-    </>
-  );
+  const withDate = (key: string, text: string) => {
+    const date = fmtDayMonthUz(key);
+    const idx = text.indexOf("{date}");
+    if (idx < 0) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <span className="font-medium text-foreground">{date}</span>
+        {text.slice(idx + "{date}".length)}
+      </>
+    );
+  };
 
   const options: {
     key: OptionKind;
@@ -113,29 +117,35 @@ export default function EffectiveDateDialog({
       key: "monday",
       icon: <CalendarClock className="size-4" />,
       title: "Keyingi dushanbadan",
-      caption: mondayTaken ? "Bu sanada allaqachon versiya bor" : dateCaption(monday),
+      caption: mondayTaken
+        ? "Ushbu sanaga dars jadvali tuzilgan"
+        : withDate(monday, "Yangi jadval {date}dan kuchga kiradi. Ungacha darslar eski tartibda boʻladi."),
       disabled: mondayTaken,
     },
     {
       key: "today",
       icon: <CalendarDays className="size-4" />,
-      title: "Bugundan",
-      caption: todayTaken ? "Bu sanada allaqachon versiya bor" : dateCaption(todayKey),
+      title: "Bugundan boshlab",
+      caption: todayTaken
+        ? "Ushbu sanaga dars jadvali tuzilgan"
+        : withDate(todayKey, "{date}dan boshlanadi. Oʻtgan kunlar tarixiga taʼsir qilmaydi."),
       disabled: todayTaken,
     },
     {
       key: "custom",
       icon: <CalendarSearch className="size-4" />,
-      title: "Boshqa sana…",
-      caption: customDate ? dateCaption(customDate) : "Sanani oʻzingiz tanlaysiz",
+      title: "Boshqa sanadan…",
+      caption: customDate
+        ? withDate(customDate, "{date}dan kuchga kiradi")
+        : "Sanani kalendardan tanlang.",
     },
     ...(allowInPlace
       ? [
           {
             key: "in-place" as const,
             icon: <Wrench className="size-4" />,
-            title: "Bu xatoni tuzatish",
-            caption: "Yangi versiya yaratilmaydi — oʻtgan kunlar ham shu jadval bilan koʻrinadi",
+            title: "Xatoni toʻgʻrilash",
+            caption: "Yangi versiya yaratilmaydi. Oʻzgarish oʻtgan va kelgusi kunlarning hammasiga qoʻllaniladi.",
           },
         ]
       : []),
@@ -145,20 +155,20 @@ export default function EffectiveDateDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-xl gap-0 overflow-hidden p-0 bg-card top-[8vh] translate-y-0"
+        className="max-w-2xl gap-0 overflow-hidden p-0 bg-card top-[8vh] translate-y-0"
       >
         {/* Standart header — ikona + sarlavha + size-9 yopish tugmasi */}
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
-          <div className="flex items-center gap-3">
-            <SectionIcon>
+        <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <SectionIcon className="shrink-0">
               <CalendarCog />
             </SectionIcon>
-            <div className="flex flex-col">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <DialogTitle asChild>
-                <CardTitle>Oʻzgarish qachondan kuchga kiradi?</CardTitle>
+                <CardTitle>Yangi dars jadvali qachondan kuchga kiradi?</CardTitle>
               </DialogTitle>
               <DialogDescription className="text-caption">
-                Yangi sana tanlansa, avvalgi kunlar eski jadval bilan qoladi
+                Ungacha boʻlgan dars va baholar tarixi oldingi jadvalda saqlanadi.
               </DialogDescription>
             </div>
           </div>
@@ -201,7 +211,7 @@ export default function EffectiveDateDialog({
 
           {kind === "custom" && (
             <div className="space-y-1.5 rounded-lg border border-border bg-muted/30 p-3">
-              <Label>Amal qilish sanasi</Label>
+              <Label>Kuchga kirish sanasi</Label>
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -221,7 +231,7 @@ export default function EffectiveDateDialog({
                     locale={uz}
                     formatters={{
                       formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
-                      formatWeekdayName: (date) => UZ_WEEKDAYS[date.getDay()],
+                      formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
                     }}
                     selected={customDate ? dateKeyToDate(customDate) : undefined}
                     defaultMonth={customDate ? dateKeyToDate(customDate) : dateKeyToDate(todayKey)}
@@ -238,7 +248,7 @@ export default function EffectiveDateDialog({
                 </PopoverContent>
               </Popover>
               {customTaken && (
-                <p className="text-xs text-destructive">Bu sanada allaqachon versiya bor.</p>
+                <p className="text-xs text-destructive">Ushbu sanaga dars jadvali tuzilgan.</p>
               )}
               {!customTaken && customPast && (
                 <p className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500">
@@ -252,12 +262,12 @@ export default function EffectiveDateDialog({
 
           {kind !== "in-place" && (
             <div className="space-y-1.5 pt-4">
-              <Label htmlFor="version-note">Nima oʻzgardi? (ixtiyoriy)</Label>
+              <Label htmlFor="version-note">Oʻzgarishlar haqida izoh (ixtiyoriy)</Label>
               <Input
                 id="version-note"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Masalan: 7-B juma kuniga koʻchdi"
+                placeholder="Masalan: 7-B darsi juma kuniga oʻtkazildi"
               />
             </div>
           )}

@@ -12,6 +12,7 @@ import { TypographyMuted, TypographyLabel } from "@/components/ui/typography";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import ClassListPanel from "@/components/ClassListPanel";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
@@ -220,7 +221,7 @@ function EmptyState() {
   return (
     <Empty className="min-h-[60vh]">
       <EmptyHeader>
-        <EmptyMedia variant="icon"><Sparkles /></EmptyMedia>
+        <EmptyMedia><Illustration name="9" className="h-32 text-black dark:text-white" /></EmptyMedia>
         <EmptyTitle>Diagnostik maʼlumot yoʻq</EmptyTitle>
         <EmptyDescription>
           Demo bosqichida diagnostika faqat 9-B (Informatika) sinfi uchun mavjud. Roʻyxatdan 9-B ni tanlang.

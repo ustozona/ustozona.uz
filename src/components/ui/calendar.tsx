@@ -9,16 +9,27 @@ import {
 import {
   DayPicker,
   getDefaultClassNames,
+  useDayPicker,
   type DayButton,
+  type DropdownProps,
 } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { Button, buttonVariants } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  fixedWeeks = true,
   captionLayout = "label",
   buttonVariant = "ghost",
   formatters,
@@ -32,6 +43,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      fixedWeeks={fixedWeeks}
       className={cn(
         "group/calendar bg-background p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
@@ -163,6 +175,7 @@ function Calendar({
           )
         },
         DayButton: CalendarDayButton,
+        Dropdown: CalendarDropdown,
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>
@@ -176,6 +189,75 @@ function Calendar({
       }}
       {...props}
     />
+  )
+}
+
+/** Oy/yil tanlagich — mobil va desktop uchun ikki xil yechim.
+    Mobil: rasmiy shadcn/react-day-picker standarti (shaffof native <select>
+    ustiga stilangan yorliq) — native OS g'ildiragi ochiladi, Radix
+    Popover/Dialog qatlamlari bilan hech qanday ziddiyatga kirmaydi.
+    Desktop: haqiqiy shadcn Select (Radix, uslublangan floating menyu) —
+    Popover ichida Popover holatlari kamdan-kam, sichqoncha bilan ishlash
+    uchun ancha izchil koʻrinadi. */
+function CalendarDropdown(props: DropdownProps) {
+  const isMobile = useIsMobile()
+  const { classNames, components } = useDayPicker()
+  const { options, value, onChange, disabled, className, style } = props
+
+  if (isMobile) {
+    const selectedOption = options?.find((o) => o.value === value)
+    return (
+      <span className={classNames.dropdown_root} data-disabled={disabled}>
+        <components.Select
+          className={cn(classNames.dropdown, className)}
+          style={style}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          aria-label={props["aria-label"]}
+        >
+          {options?.map(({ value: optValue, label, disabled: optDisabled }) => (
+            <components.Option key={optValue} value={optValue} disabled={optDisabled}>
+              {label}
+            </components.Option>
+          ))}
+        </components.Select>
+        <span className={classNames.caption_label} aria-hidden>
+          {selectedOption?.label}
+          <components.Chevron orientation="down" size={18} className={classNames.chevron} />
+        </span>
+      </span>
+    )
+  }
+
+  // MUHIM: trigger `relative z-10` boʻlishi shart. Kalendarning `nav`
+  // konteyneri (`absolute inset-x-0 top-0 w-full`) butun sarlavha qatorini
+  // koʻrinmas qatlam sifatida qoplaydi — static trigger uning OSTIDA qolib,
+  // bosishlar navʼga yutiladi (native yechim ishlagani sababi ham shu:
+  // dropdown_root `relative`). calendar-05 reference'i buni `hideNavigation`
+  // bilan hal qiladi; biz strelkalarni saqlab, trigger'ni ustga chiqaramiz.
+  const selected = options?.find((o) => String(o.value) === String(value))
+  const handleChange = (v: string) => {
+    onChange?.({ target: { value: v } } as React.ChangeEvent<HTMLSelectElement>)
+  }
+
+  return (
+    <Select value={String(value)} onValueChange={handleChange} disabled={disabled}>
+      <SelectTrigger
+        size="sm"
+        aria-label={props["aria-label"]}
+        className="relative z-10 h-8 w-fit gap-1 border-none bg-transparent px-2 text-sm font-medium shadow-none data-[size=sm]:h-8"
+      >
+        <SelectValue>{selected?.label}</SelectValue>
+      </SelectTrigger>
+      <SelectContent position="popper" align="start" className="max-h-64 min-w-24">
+        {options?.map(({ value: optValue, label, disabled: optDisabled }) => (
+          <SelectItem key={optValue} value={String(optValue)} disabled={optDisabled}>
+            {label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 

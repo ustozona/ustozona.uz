@@ -40,6 +40,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, PlusIcon, LinkIcon,
   FileText, Check, Trash2, Undo2, CalendarOff, ArrowUpRight, Eye, EyeOff,
@@ -539,9 +540,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {hydrated && !hasAnyTimetable ? (
               <Empty className="h-full">
                 <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <CalendarPlus className="size-6" />
-                  </EmptyMedia>
+                  <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
                   <EmptyTitle>Jadval hali tuzilmagan</EmptyTitle>
                   <EmptyDescription>
                     Planner dars jadvalingiz ustiga quriladi. Avval haftalik jadvalni tuzing —

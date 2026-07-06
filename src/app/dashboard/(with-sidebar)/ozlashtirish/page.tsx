@@ -15,6 +15,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import ClassListPanel from "@/components/ClassListPanel";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { withSidebarPageClass, panelHeaderClass } from "@/components/DashboardPage";
@@ -106,7 +107,7 @@ export default function OzlashtirishPage() {
           {!isSeed ? (
             <Empty className="flex-1">
               <EmptyHeader>
-                <EmptyMedia variant="icon"><Grid3x3 /></EmptyMedia>
+                <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>Maʼlumot yoʻq</EmptyTitle>
                 <EmptyDescription>Demo bosqichida oʻzlashtirish jadvali faqat 9-B sinf uchun mavjud.</EmptyDescription>
               </EmptyHeader>

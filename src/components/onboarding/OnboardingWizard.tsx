@@ -36,7 +36,7 @@ import {
   isCalendarConfigured,
 } from "@/lib/academic-calendar";
 import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
-import { MONTHS_UZ } from "@/lib/localization";
+import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 
 /* ════════════════════════════════════════════════════════════════════
    ONBOARDING SEHRGARI — yangi oʻqituvchi uchun birinchi ishga tushirish.
@@ -61,8 +61,6 @@ import { MONTHS_UZ } from "@/lib/localization";
 const STEP_COUNT = 4;
 
 /** Kalendar hafta sarlavhalari — getDay() tartibida (0=Yakshanba). */
-const UZ_WEEKDAYS = ["Yak", "Dush", "Sesh", "Chor", "Pay", "Jum", "Shan"];
-
 const FEATURES = [
   { icon: GraduationCap, title: "Sinflar va baholar", desc: "Oʻquvchilar, jurnal va baholash bir joyda." },
   { icon: BookOpen, title: "Dars rejalashtirish", desc: "Jadval, mavzular va dars materiallari." },
@@ -248,7 +246,7 @@ export default function OnboardingWizard() {
                       locale={uz}
                       formatters={{
                         formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
-                        formatWeekdayName: (date) => UZ_WEEKDAYS[date.getDay()],
+                        formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
                       }}
                       selected={range}
                       onSelect={setRange}

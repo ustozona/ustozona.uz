@@ -7,7 +7,7 @@ import StandardsView from "./_components/StandardsView";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
-import { Target } from "lucide-react";
+import { Illustration } from "@/components/ui/illustration";
 
 export default function StandardsPage() {
   // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni 50%).
@@ -31,7 +31,7 @@ export default function StandardsPage() {
           <div className="h-full overflow-hidden rounded-xl bg-card card-elevation">
             <Empty className="h-full border-0">
               <EmptyHeader>
-                <EmptyMedia variant="icon"><Target /></EmptyMedia>
+                <EmptyMedia><Illustration name="2" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
                 <EmptyDescription>Standartlarni koʻrish uchun sinf tanlang</EmptyDescription>
               </EmptyHeader>

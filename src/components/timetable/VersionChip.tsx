@@ -78,6 +78,14 @@ export default function VersionChip({
 
   const sorted = sortVersions(versions).reverse();
 
+  // Kelgusi versiya uchun subtitle qatori onboarding ohangida: "kechikish"
+  // emas, "hammasi rejadagidek" hissi beriladi.
+  const subtitleText = !selected
+    ? "Dars jadvali tarixi"
+    : selected.effectiveFrom > todayKey
+      ? `Dars jadvalingiz ${fmtDayMonthUz(selected.effectiveFrom)}dan amal qiladi`
+      : `${stateLabel} · ${versionRangeLabel(versions, selected)}`;
+
   return (
     <DropdownMenu>
       <Tooltip>
@@ -90,9 +98,7 @@ export default function VersionChip({
                 className="group/vc -ml-1 flex max-w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-caption text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <span className={cn("size-2 shrink-0 rounded-full", triggerDot)} aria-hidden />
-                <span className="truncate font-medium">
-                  {selected ? `${stateLabel} · ${versionRangeLabel(versions, selected)}` : "Jadval versiyalari"}
-                </span>
+                <span className="truncate font-medium">{subtitleText}</span>
                 <ChevronDown className="size-3.5 shrink-0 opacity-60 transition-opacity group-hover/vc:opacity-100" />
               </button>
             ) : (
@@ -115,7 +121,7 @@ export default function VersionChip({
       </Tooltip>
       <DropdownMenuContent align="start" className="w-72">
         <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-          Versiyalar tarixi
+          Dars jadvali tarixi
         </DropdownMenuLabel>
         {sorted.map((v, i) => {
           const isCurrent = v.id === currentId;
@@ -174,7 +180,7 @@ export default function VersionChip({
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onCreateNew}>
           <PlusIcon />
-          Yangi versiya…
+          Yangi sanadan dars jadvali tuzish…
         </DropdownMenuItem>
         <DropdownMenuItem
           variant="destructive"
@@ -182,7 +188,7 @@ export default function VersionChip({
           onSelect={onDeleteSelected}
         >
           <TrashIcon />
-          Tanlangan versiyani oʻchirish
+          Ushbu dars jadvalini oʻchirish
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

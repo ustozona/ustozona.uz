@@ -7,7 +7,7 @@ import GradesView from "./_components/GradesView";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
-import { BookOpen } from "lucide-react";
+import { Illustration } from "@/components/ui/illustration";
 
 export default function GradesPage() {
   // Sinf tanlash — `?classId=` URL param (refresh/deep-link chidamli).
@@ -32,7 +32,7 @@ export default function GradesPage() {
           <div className="h-full overflow-hidden rounded-xl bg-card card-elevation">
             <Empty className="h-full border-0">
               <EmptyHeader>
-                <EmptyMedia variant="icon"><BookOpen /></EmptyMedia>
+                <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
                 <EmptyDescription>Jurnalni ochish uchun sinf tanlang</EmptyDescription>
               </EmptyHeader>

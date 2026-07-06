@@ -26,6 +26,7 @@ import { TypographyMuted } from "@/components/ui/typography";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import {
   AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
@@ -314,7 +315,7 @@ export default function LessonsPage() {
             /* Sinf tanlanmagan — headerʼsiz, markaziy placeholder (2-rasm) */
             <Empty className="flex-1">
               <EmptyHeader>
-                <EmptyMedia variant="icon"><Layers /></EmptyMedia>
+                <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
                 <EmptyDescription>Boʻlimlarni koʻrish uchun sinf tanlang</EmptyDescription>
               </EmptyHeader>
@@ -355,7 +356,7 @@ export default function LessonsPage() {
                     {unitsForClass.length === 0 && (
                       <Empty className="py-12">
                         <EmptyHeader>
-                          <EmptyMedia variant="icon"><Layers /></EmptyMedia>
+                          <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
                           <EmptyTitle>Boʻlimlar yoʻq</EmptyTitle>
                           <EmptyDescription>Boʻlim qoʻshing yoki darslarni toʻgʻridan-toʻgʻri qoʻshing.</EmptyDescription>
                         </EmptyHeader>
@@ -455,7 +456,7 @@ export default function LessonsPage() {
             /* Boʻlim tanlanmagan — headerʼsiz, faqat markaziy placeholder (1-rasm) */
             <Empty className="flex-1">
               <EmptyHeader>
-                <EmptyMedia variant="icon"><FileText /></EmptyMedia>
+                <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>Boʻlim tanlanmagan</EmptyTitle>
                 <EmptyDescription>Mavzularni koʻrish uchun boʻlim tanlang.</EmptyDescription>
               </EmptyHeader>
@@ -507,7 +508,7 @@ export default function LessonsPage() {
                 {lessonsForUnit.length === 0 ? (
                   <Empty className="py-16">
                     <EmptyHeader>
-                      <EmptyMedia variant="icon"><FileText /></EmptyMedia>
+                      <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
                       <EmptyTitle>Hali mavzu yoʻq</EmptyTitle>
                       <EmptyDescription>Ushbu boʻlimga birinchi mavzuni qoʻshing.</EmptyDescription>
                     </EmptyHeader>

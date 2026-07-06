@@ -36,6 +36,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -746,9 +747,7 @@ export default function AttendanceView({ classId }: { classId: string }) {
             {monthDays.length === 0 ? (
               <Empty className="h-full w-full">
                 <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Calendar className="size-6" />
-                  </EmptyMedia>
+                  <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
                   <EmptyTitle>Bu oyda dars kuni yoʻq</EmptyTitle>
                   <EmptyDescription>
                     Bu sinf uchun {MONTH_NAMES[month.month - 1]} oyida rejalashtirilgan dars yoʻq. Barcha kalendar kunlarini koʻrsating yoki boshqa oyga oʻting.

@@ -17,7 +17,6 @@ import {
   Minus,
   Lightbulb,
   Info,
-  Users,
   Keyboard,
   Check,
   X,
@@ -81,6 +80,7 @@ import { TypographyMuted, TypographySmall } from "@/components/ui/typography";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
@@ -1127,7 +1127,7 @@ function GradesEmptyState() {
   return (
     <Empty className="min-h-[50vh]">
       <EmptyHeader>
-        <EmptyMedia variant="icon"><Users /></EmptyMedia>
+        <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
         <EmptyTitle>Sinfda oʻquvchi yoʻq</EmptyTitle>
         <EmptyDescription>Baholarni kuzatishni boshlash uchun bu sinfga oʻquvchi qoʻshing.</EmptyDescription>
       </EmptyHeader>

@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
@@ -214,12 +215,12 @@ export default function TasksList({ activeFilter, onSelectFilter }: Props) {
   })();
 
   const getFilterTitle = () => {
-    if (activeFilter === "inbox") return "Kirim (Inbox)";
+    if (activeFilter === "inbox") return "Kiruvchi";
     if (activeFilter === "today") return "Bugun";
-    if (activeFilter === "upcoming") return "Yaqin kunlarda";
-    if (activeFilter === "overdue") return "Muddati oʻtgan";
+    if (activeFilter === "upcoming") return "Rejalashtirilgan";
+    if (activeFilter === "overdue") return "Kechikkanlar";
     if (activeFilter === "important") return "Muhim vazifalar";
-    if (activeFilter === "completed") return "Bajarilganlar";
+    if (activeFilter === "completed") return "Bajarilgan";
     if (activeFilter === "all") return "Mening vazifalarim";
     if (activeFilter.startsWith("class-")) {
       const cid = activeFilter.replace("class-", "");
@@ -258,19 +259,19 @@ export default function TasksList({ activeFilter, onSelectFilter }: Props) {
   };
 
   const GROUP_BY_LABELS: Record<GroupByMode, string> = {
-    status: "Holat",
-    date: "Sana",
-    priority: "Ustuvorlik",
-    class: "Sinf",
-    none: "Hech narsa",
+    status: "Holati boʻyicha",
+    date: "Sanasi boʻyicha",
+    priority: "Ustuvorligi boʻyicha",
+    class: "Sinf boʻyicha",
+    none: "Guruhlamaslik",
   };
 
   const SORT_BY_LABELS: Record<SortByMode, string> = {
-    default: "Standart",
-    date: "Sana",
-    title: "Sarlavha",
-    priority: "Ustuvorlik",
-    created: "Yaratilgan",
+    default: "Odatiy tartib",
+    date: "Sanasi boʻyicha",
+    title: "Nomi boʻyicha",
+    priority: "Ustuvorligi boʻyicha",
+    created: "Yaratilgan vaqti boʻyicha",
   };
   const hasSelection = selectedIds.size > 0;
 
@@ -554,7 +555,7 @@ export default function TasksList({ activeFilter, onSelectFilter }: Props) {
                             },
                             {
                               icon: Pin,
-                              label: "Muhim (Pin)",
+                              label: "Qadab qoʻyish",
                               shortcut: "⌘P",
                               iconBg: "bg-orange-500/10",
                               iconColor: "text-orange-500",
@@ -562,7 +563,7 @@ export default function TasksList({ activeFilter, onSelectFilter }: Props) {
                             },
                             {
                               icon: Ban,
-                              label: "Bajarilmaydi",
+                              label: "Bajarishdan voz kechish",
                               shortcut: "⌘W",
                               iconBg: "bg-red-500/10",
                               iconColor: "text-red-500",
@@ -570,7 +571,7 @@ export default function TasksList({ activeFilter, onSelectFilter }: Props) {
                             },
                             {
                               icon: Timer,
-                              label: "Fokus rejimi",
+                              label: "Fokus rejimini boshlash",
                               shortcut: "⌘F",
                               iconBg: "bg-primary/10",
                               iconColor: "text-primary",
@@ -578,7 +579,7 @@ export default function TasksList({ activeFilter, onSelectFilter }: Props) {
                             },
                             {
                               icon: Files,
-                              label: "Nusxalash",
+                              label: "Dublikat qilish",
                               shortcut: "⌘D",
                               iconBg: "bg-violet-500/10",
                               iconColor: "text-violet-500",
@@ -743,17 +744,15 @@ export default function TasksList({ activeFilter, onSelectFilter }: Props) {
               {tasksList.length === 0 && emptyKind === "zero" && (
                 <Empty className="py-16 animate-in fade-in zoom-in duration-500">
                   <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <ListPlus className="size-6" />
-                    </EmptyMedia>
-                    <EmptyTitle>Hali vazifa yoʻq</EmptyTitle>
+                    <EmptyMedia><Illustration name="30" className="h-32 text-black dark:text-white" /></EmptyMedia>
+                    <EmptyTitle>Hozircha vazifalar mavjud emas</EmptyTitle>
                     <EmptyDescription>
-                      Baholash, rejalashtirish, ota-onaga xat — kuzatmoqchi boʻlgan har qanday ishni vazifaga aylantiring.
+                      Baholash, darslarni rejalashtirish yoki ota-onalar bilan muloqot — kunlik rejalaringizni vazifalar roʻyxatiga qayd etib boring.
                     </EmptyDescription>
                   </EmptyHeader>
                   <Button size="sm" onClick={() => captureBarRef.current?.focus()}>
                     <Plus className="size-4" />
-                    Birinchi vazifani qoʻshish
+                    Yangi vazifa qoʻshish
                   </Button>
                 </Empty>
               )}
@@ -782,12 +781,10 @@ export default function TasksList({ activeFilter, onSelectFilter }: Props) {
               {tasksList.length === 0 && emptyKind === "cleared" && (
                 <Empty className="py-16 animate-in fade-in zoom-in duration-500">
                   <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <CheckCheck className="size-6" />
-                    </EmptyMedia>
-                    <EmptyTitle>Barcha ishlar qilingan!</EmptyTitle>
+                    <EmptyMedia><Illustration name="48" className="h-32 text-black dark:text-white" /></EmptyMedia>
+                    <EmptyTitle>Hamma vazifalar bajarildi! ✨</EmptyTitle>
                     <EmptyDescription>
-                      Ajoyib natija! Yangi vazifa qoʻshish uchun yuqoridagi maydondan foydalaning yoki biroz dam oling.
+                      Kuningiz unumli oʻtdi! Yangi vazifa qoʻshish uchun yuqoridagi maydondan foydalaning yoki maroqli dam oling.
                     </EmptyDescription>
                   </EmptyHeader>
                 </Empty>

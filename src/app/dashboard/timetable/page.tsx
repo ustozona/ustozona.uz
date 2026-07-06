@@ -22,14 +22,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from "@/components/ui/context-menu";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { ClassFormModal, type ClassFormValues, type ClassSlot } from "@/components/ClassFormModal";
 import { ClassCard } from "@/components/ClassCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TypographyLabel } from "@/components/ui/typography";
 import { CardStripes } from "@/components/CardStripes";
 import { CardCorner } from "@/components/CardCorner";
@@ -43,8 +44,9 @@ import { useTimetableStore } from "@/store/useTimetableStore";
 import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { todayKey as getTodayKey } from "@/lib/date-keys";
+import { SavedIndicator } from "@/app/dashboard/settings/_components/SettingsShared";
 import { toast } from "sonner";
-import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, GripVertical, Check, Loader2, MoreVertical, Download, PencilIcon as EditIcon, MousePointer2, Magnet, Hourglass, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
+import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, GripVertical, MoreVertical, Download, PencilIcon as EditIcon, MousePointer2, Magnet, Hourglass, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
 
 /* ─── Types ─── */
 /* TimetableEvent — @/lib/timetable dan (takrorlanuvchi haftalik shablon).
@@ -55,6 +57,7 @@ import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calend
    useGradesStore'ga yoziladi va serverga sinxronlanadi. */
 
 const TIP_KEY = "murabbiyona-timetable-drag-tip-v1";
+const FUTURE_TIP_KEY = "murabbiyona-timetable-future-tip-dismissed-v1";
 // Jadval faqat 6 ish kuni (Dushanba–Shanba) — kanonik `DAYS_UZ`dan slice.
 const DAY_UZ = DAYS_UZ.slice(0, 6);
 const DAY_UZ_SHORT = DAYS_UZ_SHORT.slice(0, 6);
@@ -95,6 +98,8 @@ export default function TimetablePage() {
   const [events, setEvents] = useState<TimetableEvent[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [saved, setSaved] = useState(true);
+  /** Har haqiqiy commit'da +1 — SavedIndicator shu signalga qarab vaqtinchalik chip koʻrsatadi. */
+  const [savedSignal, setSavedSignal] = useState(0);
   const [editEvent, setEditEvent] = useState<TimetableEvent | null>(null);
   const [editingClass, setEditingClass] = useState<TimetableClass | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
@@ -126,6 +131,10 @@ export default function TimetablePage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   /** Hal qilinmagan qoralama bilan versiya almashtirilsa — maqsad shu yerda kutadi */
   const pendingSwitchRef = useRef<string | null>(null);
+  /** Versiya endigina almashdi (qoralama snapshotdan qayta qurilmoqda) —
+      commit-effect shu renderda hali eski `events`ni koʻradi, uni oʻtkazib
+      yubormasa yolgʻon "oʻzgarish bor" deb "qachondan?" dialogini ochib yuboradi. */
+  const justSwitchedRef = useRef(false);
 
   const selectedVersion = useMemo(
     () => versions.find((v) => v.id === selectedVersionId) ?? null,
@@ -192,6 +201,7 @@ export default function TimetablePage() {
   // Versiya almashganda — qoralama shu versiya snapshotidan qayta quriladi
   useEffect(() => {
     if (!selectedVersion) return;
+    justSwitchedRef.current = true;
     setEvents(selectedVersion.events.map((e) => ({ ...e })));
     setBellConfig(cloneBell(selectedVersion.bellConfig));
     setSaved(true);
@@ -206,6 +216,7 @@ export default function TimetablePage() {
      toʻgʻridan-toʻgʻri commit (arxiv-ochiq va kelgusi versiyalar dialogsiz). */
   useEffect(() => {
     if (!hydrated || !storeHydrated || !selectedVersion) return;
+    if (justSwitchedRef.current) { justSwitchedRef.current = false; return; }
     const dirty =
       JSON.stringify(events) !== JSON.stringify(selectedVersion.events) ||
       JSON.stringify(bellConfig) !== JSON.stringify(selectedVersion.bellConfig);
@@ -219,9 +230,19 @@ export default function TimetablePage() {
       }
       commitDraft(selectedVersion.id, events, bellConfig);
       setSaved(true);
+      setSavedSignal((n) => n + 1);
     }, 600);
     return () => clearTimeout(t);
   }, [events, bellConfig, hydrated, storeHydrated, selectedVersion, mode, decisionMade, commitDraft]);
+
+  // Sahifadan chiqishda kutayotgan (debounce'dagi) oʻzgarish bekor boʻlib qolmasin —
+  // unmount paytida joriy qoralamani darhol commit qilamiz.
+  const flushRef = useRef<() => void>(() => {});
+  flushRef.current = () => {
+    if (!selectedVersion || saved) return;
+    commitDraft(selectedVersion.id, events, bellConfig);
+  };
+  useEffect(() => () => flushRef.current(), []);
 
   /* ── Versiya amallari ── */
 
@@ -253,6 +274,7 @@ export default function TimetablePage() {
       commitDraft(selectedVersion.id, events, bellConfig);
       setDecisionMade(true);
       setSaved(true);
+      setSavedSignal((n) => n + 1);
     } else {
       const id = createVersion({ effectiveFrom: choice.effectiveFrom, note: choice.note, baseId: selectedVersion.id });
       if (!id) { toast.error("Bu sanada allaqachon versiya bor"); return; }
@@ -319,6 +341,23 @@ export default function TimetablePage() {
   const dismissTip = useCallback(() => {
     try { localStorage.setItem(TIP_KEY, "1"); } catch {}
     setShowTip(false);
+  }, []);
+
+  // "Kelgusi jadval" xabari — versiya boʻyicha bir martalik (localStorage)
+  const [dismissedFutureIds, setDismissedFutureIds] = useState<string[]>([]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(FUTURE_TIP_KEY);
+      if (raw) setDismissedFutureIds(JSON.parse(raw));
+    } catch {}
+  }, []);
+  const dismissFutureTip = useCallback((id: string) => {
+    setDismissedFutureIds((prev) => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      try { localStorage.setItem(FUTURE_TIP_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
   }, []);
 
   const removeEvent = useCallback((id: string) => setEvents(prev => prev.filter(e => e.id !== id)), []);
@@ -473,17 +512,19 @@ export default function TimetablePage() {
               <GraduationCap />
             </SectionIcon>
             <CardTitle>Sinflar</CardTitle>
-            <Button variant="ghost" size="sm" disabled={readOnly} className="ml-auto shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={() => setCreateOpen(true)}>
-              <PlusIcon className="size-4" />
-              Qoʻshish
-            </Button>
+            {classesAll.length > 0 && (
+              <Button variant="ghost" size="sm" disabled={readOnly} className="ml-auto shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={() => setCreateOpen(true)}>
+                <PlusIcon className="size-4" />
+                Qoʻshish
+              </Button>
+            )}
           </CardHeader>
 
           {/* Birinchi foydalanish maslahati (bir martalik) */}
-          {showTip && (
-            <div className="mx-4 mb-4 mt-1 flex items-center gap-2.5 rounded-xl border border-dashed border-border bg-card px-3.5 py-2.5 text-xs text-muted-foreground shrink-0 shadow-sm">
-              <GripVertical className="size-4 shrink-0 text-muted-foreground/50" />
-              <p className="flex-1 leading-snug">Sinf kartasini ushlab, oʻngdagi jadvalga sudrab tashlang.</p>
+          {showTip && classesAll.length > 0 && (
+            <div className="mx-5 mb-3 mt-3 flex items-center gap-2 shrink-0 text-xs text-muted-foreground">
+              <GripVertical className="size-3.5 shrink-0 text-muted-foreground/50" />
+              <p className="flex-1 leading-snug">Sinf kartasini bosib ushlab, oʻng tomondagi jadvalga sudrab oʻtkazing.</p>
               <button type="button" onClick={dismissTip} aria-label="Yopish" className="shrink-0 rounded-md p-0.5 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground">
                 <XIcon className="size-3.5" />
               </button>
@@ -499,12 +540,17 @@ export default function TimetablePage() {
                 {classesAll.length === 0 && (
                   <Empty className="py-8">
                     <EmptyHeader>
-                      <EmptyMedia variant="icon"><GraduationCap /></EmptyMedia>
-                      <EmptyTitle>Hali sinf yoʻq</EmptyTitle>
+                      <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
+                      <EmptyTitle>Hozircha sinflar yoʻq</EmptyTitle>
                       <EmptyDescription>
-                        «Qoʻshish» tugmasi bilan birinchi sinfingizni yarating — soʻng uni jadvalga sudrab qoʻyasiz.
+                        Oʻquvchilar roʻyxatini shakllantirish uchun birinchi sinfingizni qoʻshing.
                       </EmptyDescription>
                     </EmptyHeader>
+                    <EmptyContent>
+                      <Button onClick={() => setCreateOpen(true)} disabled={readOnly} className="gap-1.5">
+                        <PlusIcon className="size-4" /> Sinf qoʻshish
+                      </Button>
+                    </EmptyContent>
                   </Empty>
                 )}
                 {classesAll.map((cls, i) => {
@@ -596,31 +642,22 @@ export default function TimetablePage() {
             </div>
 
             {/* Markaz: koʻrinish rejimi */}
-            <ToggleGroup
-              type="single"
-              value={snapMode}
-              onValueChange={(v) => v && setSnapMode(v as "free" | "lesson")}
-              variant="outline"
-              size="default"
-              aria-label="Koʻrinish rejimi"
-              className="shrink-0 shadow-none"
-            >
-              <ToggleGroupItem value="free" className="gap-1.5 text-xs" title="Erkin: uzluksiz vaqt-grid, istalgan vaqtga qoʻyish">
-                <MousePointer2 className="size-4" />
-                <span className="hidden sm:inline">Erkin</span>
-              </ToggleGroupItem>
-              <ToggleGroupItem value="lesson" className="gap-1.5 text-xs" title="Dars soatlari: tayyor katak grid (qoʻngʻiroq jadvali asosida)">
-                <Magnet className="size-4" />
-                <span className="hidden sm:inline">Dars soatlari</span>
-              </ToggleGroupItem>
-            </ToggleGroup>
+            <Tabs value={snapMode} onValueChange={(v) => setSnapMode(v as "free" | "lesson")} className="shrink-0">
+              <TabsList aria-label="Koʻrinish rejimi">
+                <TabsTrigger value="free" className="gap-1.5 text-xs" title="Taqvim: uzluksiz vaqt-grid, istalgan vaqtga qoʻyish">
+                  <MousePointer2 className="size-4" />
+                  <span className="hidden sm:inline">Taqvim</span>
+                </TabsTrigger>
+                <TabsTrigger value="lesson" className="gap-1.5 text-xs" title="Jadval: tayyor katak grid (qoʻngʻiroq jadvali asosida)">
+                  <Magnet className="size-4" />
+                  <span className="hidden sm:inline">Jadval</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
             {/* Oʻng: avto-saqlash holati + koʻproq amallar */}
             <div className="flex flex-1 items-center justify-end gap-2">
-              <span className="hidden items-center gap-1 text-xs text-muted-foreground md:inline-flex" aria-live="polite">
-                {saved ? <Check className="size-3" strokeWidth={2.5} /> : <Loader2 className="size-3 animate-spin" strokeWidth={2} />}
-                {saved ? "Saqlandi" : "Saqlanmoqda…"}
-              </span>
+              <SavedIndicator signal={savedSignal} />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" aria-label="Koʻproq amallar" className="shadow-none">
@@ -689,12 +726,22 @@ export default function TimetablePage() {
               </AlertDescription>
             </Alert>
           )}
-          {mode === "future" && (
-            <Alert className="mx-6 mb-2 shrink-0 text-muted-foreground">
-              <CalendarClock />
-              <AlertDescription>
-                Bu jadval {fmtDayMonthUz(selectedVersion?.effectiveFrom ?? today)}dan kuchga kiradi.
-              </AlertDescription>
+          {mode === "future" && selectedVersion && !dismissedFutureIds.includes(selectedVersion.id) && (
+            <Alert variant="info" className="mx-6 mb-2 flex w-auto shrink-0 items-center justify-between gap-3">
+              <span className="flex min-w-0 items-center gap-3">
+                <CalendarClock className="size-4 shrink-0" />
+                <AlertDescription className="truncate">
+                  Bu jadval {fmtDayMonthUz(selectedVersion.effectiveFrom)}dan kuchga kiradi.
+                </AlertDescription>
+              </span>
+              <button
+                type="button"
+                onClick={() => dismissFutureTip(selectedVersion.id)}
+                aria-label="Yopish"
+                className="shrink-0 rounded-md p-1 text-current/60 transition-colors hover:bg-blue-500/10 hover:text-current"
+              >
+                <XIcon className="size-3.5" />
+              </button>
             </Alert>
           )}
 
@@ -702,15 +749,17 @@ export default function TimetablePage() {
           <CardContent className={cn(panelCardContentClass, "relative flex flex-col overflow-hidden")} data-carousel-ignore="true">
             {snapMode === "free" && events.length === 0 && (
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-6">
-                <div className="flex flex-col items-center gap-3 text-center rounded-xl border border-dashed border-border bg-background/90 backdrop-blur-sm px-10 py-8 shadow-sm">
-                  <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <Calendar className="size-6" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">Jadval hozircha boʻsh</p>
-                    <p className="text-xs text-muted-foreground">Sinflarni chapdan shu yerga sudrab tashlang</p>
-                  </div>
-                </div>
+                <Empty className="pointer-events-none w-auto">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Calendar />
+                    </EmptyMedia>
+                    <EmptyTitle>Jadval hozircha boʻsh</EmptyTitle>
+                    <EmptyDescription>
+                      Sinflarni chap tomondan ushbu maydonga sudrab oʻtkazing
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               </div>
             )}
 

@@ -34,6 +34,7 @@ import {
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
@@ -296,9 +297,9 @@ export default function StudentsPage() {
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
-                <EmptyMedia variant="icon"><Users /></EmptyMedia>
+                <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
-                <EmptyDescription>Oʻquvchilarni koʻrish uchun sinf tanlang</EmptyDescription>
+                <EmptyDescription>Oʻquvchilar va ularning maʼlumotlarini koʻrish uchun chap menyudan kerakli sinfni tanlang.</EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
@@ -434,7 +435,7 @@ export default function StudentsPage() {
             {students.length === 0 ? (
               <Empty className="h-full">
                 <EmptyHeader>
-                  <EmptyMedia variant="icon"><Users /></EmptyMedia>
+                  <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
                   <EmptyTitle>
                     {filterActive ? "Mos oʻquvchi topilmadi" : "Bu sinfda hali oʻquvchi yoʻq"}
                   </EmptyTitle>

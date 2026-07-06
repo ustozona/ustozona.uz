@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,7 @@ import {
   DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  Search, ArrowUpDown, ListFilter, MessagesSquare, ChevronDown,
+  Search, ArrowUpDown, ListFilter, ChevronDown,
 } from "lucide-react";
 import {
   useFeedbackStore, initialsOf, totalReactions,
@@ -459,7 +460,7 @@ function EmptyState({ filterActive, ongoing }: { filterActive: boolean; ongoing?
   return (
     <Empty>
       <EmptyHeader>
-        <EmptyMedia variant="icon"><MessagesSquare /></EmptyMedia>
+        <EmptyMedia><Illustration name="4" className="h-32 text-black dark:text-white" /></EmptyMedia>
         <EmptyTitle>
           {ongoing ? "Jarayonda fikr yoʻq" : filterActive ? "Mos fikr topilmadi" : "Hali fikr yoʻq"}
         </EmptyTitle>

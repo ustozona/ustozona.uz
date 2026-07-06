@@ -19,6 +19,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import {
@@ -32,7 +33,7 @@ import NotesTab, { type Note, type Sentiment } from "./NotesTab";
 import CreateStudentModal, { type NewStudentInput } from "../../_components/CreateStudentModal";
 import { toast } from "sonner";
 import {
-  ChevronsUpDown, ChevronLeft, ChevronRight, ArrowLeft, Check, Users, AlertTriangle,
+  ChevronsUpDown, ChevronLeft, ChevronRight, ArrowLeft, Check, AlertTriangle,
   Phone, MessageCircle, Pen, BarChart3, ClipboardList,
   StickyNote, Cake, Mars, Venus,
 } from "lucide-react";
@@ -147,7 +148,7 @@ export default function StudentProfile({
     return (
       <Empty className="h-full border-0">
         <EmptyHeader>
-          <EmptyMedia variant="icon"><Users /></EmptyMedia>
+          <EmptyMedia><Illustration name="14" className="h-32 text-black dark:text-white" /></EmptyMedia>
           <EmptyTitle>Oʻquvchi topilmadi</EmptyTitle>
           <EmptyDescription>Bu oʻquvchi mavjud emas yoki oʻchirilgan.</EmptyDescription>
         </EmptyHeader>

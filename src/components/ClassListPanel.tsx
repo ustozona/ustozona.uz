@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { GraduationCap, Plus, Pencil, Trash2, ArrowUpRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -7,9 +8,10 @@ import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { classColor } from "@/lib/grades-data";
-import { useLiveClasses, useLiveClassesHydrated } from "@/hooks/useLiveClasses";
+import { useLiveClasses, useLiveClassesHydrated, useCreateClass } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX, classColorStyle, classTints } from "@/lib/class-colors";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ClassFormModal } from "@/components/ClassFormModal";
 import {
   Empty,
   EmptyHeader,
@@ -18,6 +20,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { useClassPanelStats, type Page } from "@/hooks/useClassPanelStats";
 
 type Props = {
@@ -39,6 +42,7 @@ export default function ClassListPanel({
 }: Props) {
   const liveClasses = useLiveClasses();
   const hydrated = useLiveClassesHydrated();
+  const createClass = useCreateClass();
   const selected = liveClasses.find((c) => c.id === selectedClassId);
   const hex = selected ? CLASS_COLOR_HEX[classColor(selected)] : undefined;
   /** Sinf rangidan shaffof tint (EMStudio rgba(...) effekti) */
@@ -46,6 +50,11 @@ export default function ClassListPanel({
 
   const stats = useClassPanelStats(page, selectedClassId);
   const showStats = !!(selected && hex && stats);
+
+  // onAddClass berilmasa (koʻp sahifada shunday) — panel oʻzi sinf yaratish
+  // modalini boshqaradi, "Sinflar" boʻlimiga sakrash oʻrniga.
+  const [internalModalOpen, setInternalModalOpen] = useState(false);
+  const handleAddClass = onAddClass ?? (() => setInternalModalOpen(true));
 
   return (
     <div className="h-full flex flex-col">
@@ -56,16 +65,18 @@ export default function ClassListPanel({
             <SectionIcon><GraduationCap /></SectionIcon>
             <CardTitle className="truncate">Sinflar</CardTitle>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onAddClass}
-            className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground"
-            aria-label="Sinf qoʻshish"
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            Qoʻshish
-          </Button>
+          {liveClasses.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAddClass}
+              className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground"
+              aria-label="Sinf qoʻshish"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Qoʻshish
+            </Button>
+          )}
         </div>
 
         {/* List */}
@@ -83,24 +94,16 @@ export default function ClassListPanel({
               {hydrated && liveClasses.length === 0 && (
                 <Empty className="py-8">
                   <EmptyHeader>
-                    <EmptyMedia variant="icon"><GraduationCap /></EmptyMedia>
-                    <EmptyTitle>Hali sinf yoʻq</EmptyTitle>
+                    <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
+                    <EmptyTitle>Hozircha sinflar yoʻq</EmptyTitle>
                     <EmptyDescription>
-                      Birinchi sinfingizni yarating — oʻquvchilar shu yerdan boshlanadi.
+                      Oʻquvchilar roʻyxatini shakllantirish uchun birinchi sinfingizni qoʻshing.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
-                    {onAddClass ? (
-                      <Button onClick={onAddClass} className="gap-1.5">
-                        <Plus className="size-4" /> Sinf yaratish
-                      </Button>
-                    ) : (
-                      <Button asChild className="gap-1.5">
-                        <Link href="/dashboard/classes">
-                          <Plus className="size-4" /> Sinf yaratish
-                        </Link>
-                      </Button>
-                    )}
+                    <Button onClick={handleAddClass} className="gap-1.5">
+                      <Plus className="size-4" /> Sinf qoʻshish
+                    </Button>
                   </EmptyContent>
                 </Empty>
               )}
@@ -228,6 +231,14 @@ export default function ClassListPanel({
           </div>
         )}
       </div>
+
+      {internalModalOpen && (
+        <ClassFormModal
+          mode="create"
+          onSubmit={(v) => { onSelect(createClass(v)); setInternalModalOpen(false); }}
+          onClose={() => setInternalModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

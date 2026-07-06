@@ -30,7 +30,7 @@ const PRIORITY_META: { id: TaskPriority; label: string; bar: string }[] = [
   { id: "high",   label: "Yuqori", bar: "bg-destructive" },
   { id: "medium", label: "O‘rta",  bar: "bg-warning" },
   { id: "low",    label: "Past",   bar: "bg-info" },
-  { id: "none",   label: "Yo‘q",   bar: "bg-muted-foreground/40" },
+  { id: "none",   label: "Belgilanmagan",   bar: "bg-muted-foreground/40" },
 ];
 
 type Props = {
@@ -98,10 +98,10 @@ function StatTile({
 function scopeLabel(f: TaskFilter, classNameOf: (id: string) => string | undefined): string {
   if (f === "inbox") return "Kiruvchi";
   if (f === "today") return "Bugun";
-  if (f === "upcoming") return "Yaqin kunlarda";
-  if (f === "overdue") return "Muddati o‘tgan";
+  if (f === "upcoming") return "Rejalashtirilgan";
+  if (f === "overdue") return "Kechikkanlar";
   if (f === "important") return "Muhim";
-  if (f === "completed") return "Bajarilganlar";
+  if (f === "completed") return "Bajarilgan";
   if (f === "all") return "Barcha vazifalar";
   if (f.startsWith("class-")) {
     const cid = f.replace("class-", "");
@@ -234,18 +234,18 @@ export default function TaskStats({ activeFilter, onSelectFilter }: Props) {
               <div className="grid grid-cols-2 gap-2.5">
                 <StatTile
                   icon={CheckCircle2}
-                  label="Bugun qolgan"
+                  label="Bugun"
                   value={global.todayRemaining}
-                  sub={global.todayTotal === 0 ? "bugun vazifa yo‘q" : `${global.todayDone}/${global.todayTotal} bajarildi`}
+                  sub={global.todayTotal === 0 ? "Rejalar yoʻq" : `${global.todayDone}/${global.todayTotal} bajarildi`}
                   tone={global.todayRemaining === 0 && global.todayTotal > 0 ? "success" : "default"}
                   active={activeFilter === "today"}
                   onClick={() => onSelectFilter("today")}
                 />
                 <StatTile
                   icon={AlertCircle}
-                  label="Muddati o‘tgan"
+                  label="Muddati oʻtgan"
                   value={global.overdue}
-                  sub={global.overdue > 0 ? "e’tibor talab qiladi" : "hammasi joyida"}
+                  sub={global.overdue > 0 ? "eʼtibor talab qiladi" : "Kechikkanlar yoʻq"}
                   tone={global.overdue > 0 ? "destructive" : "default"}
                   active={activeFilter === "overdue"}
                   onClick={() => onSelectFilter("overdue")}
@@ -255,11 +255,11 @@ export default function TaskStats({ activeFilter, onSelectFilter }: Props) {
               {/* ── Bu hafta bajarish trendi (global) ── */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <TypographyLabel>Bu hafta bajarildi</TypographyLabel>
+                  <TypographyLabel>Shu haftada bajarilgan</TypographyLabel>
                   <span className="text-sm font-semibold tabular-nums">{week.total}</span>
                 </div>
                 {week.total === 0 ? (
-                  <p className="text-sm text-muted-foreground py-1">Oxirgi 7 kunda bajarilgan vazifa yo‘q.</p>
+                  <p className="text-sm text-muted-foreground py-1">Oxirgi 7 kunda hech qanday vazifa bajarilmadi.</p>
                 ) : !mounted ? (
                   <div className="h-24 w-full" />
                 ) : (
@@ -280,11 +280,11 @@ export default function TaskStats({ activeFilter, onSelectFilter }: Props) {
               {/* ── Bajarish foizi (joriy filtr boʻyicha) ── */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <TypographyLabel>Bajarish</TypographyLabel>
+                  <TypographyLabel>Samaradorlik</TypographyLabel>
                   <span className="text-[11px] text-muted-foreground/70 truncate">{scopeLabel(activeFilter, (id) => liveClasses.find((c) => c.id === id)?.name)}</span>
                 </div>
                 {stats.active === 0 ? (
-                  <p className="text-sm text-muted-foreground py-2">Bu ro‘yxatda hisoblanadigan vazifa yo‘q.</p>
+                  <p className="text-sm text-muted-foreground py-2">Bu roʻyxatda hali maʼlumotlar yoʻq.</p>
                 ) : (
                   <>
                     <div className="flex items-end justify-between">

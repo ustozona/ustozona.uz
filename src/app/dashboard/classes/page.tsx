@@ -32,6 +32,7 @@ import {
   EmptyDescription,
   EmptyContent,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import {
   DropdownMenuSeparator,
   DropdownMenuItem,
@@ -221,14 +222,14 @@ export default function ClassesPage() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="gap-1.5 shadow-none">
                     <ChevronDownIcon className="size-4" />
-                    <span className="hidden sm:inline">Filter</span>
+                    <span className="hidden sm:inline">Filtr</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
                     <DropdownMenuRadioItem value="name">Barcha sinflar</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="students">Koʻp oʻquvchi</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="lessons">Koʻp dars</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="students">Oʻquvchisi koʻp</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="lessons">Darslari koʻp</DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -239,15 +240,15 @@ export default function ClassesPage() {
                   <Button variant="outline" className="gap-1.5 shadow-none">
                     <ArrowUpDown className="size-4" />
                     <span className="hidden sm:inline">
-                      Sort: {sortKey === "name" ? "Nom" : sortKey === "students" ? "Oʻquvchi" : "Dars"}
+                      {sortKey === "name" ? "Alifbo boʻyicha" : sortKey === "students" ? "Oʻquvchilar soni" : "Darslar soni"}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                    <DropdownMenuRadioItem value="name">Nom boʻyicha</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="students">Oʻquvchilar soni</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="lessons">Darslar soni</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="name">Alifbo boʻyicha (A–Z)</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="students">Oʻquvchilar soni boʻyicha</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="lessons">Darslar soni boʻyicha</DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -292,23 +293,23 @@ export default function ClassesPage() {
               ) : liveClasses.length === 0 ? (
                 <Empty className="h-full">
                   <EmptyHeader>
-                    <EmptyMedia variant="icon"><GraduationCap className="size-6" /></EmptyMedia>
-                    <EmptyTitle>Hali sinf yoʻq</EmptyTitle>
+                    <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
+                    <EmptyTitle>Hozircha sinflar yoʻq</EmptyTitle>
                     <EmptyDescription>
-                      Birinchi sinfingizni yarating — oʻquvchilar, baholar va davomat shu yerdan boshlanadi.
+                      Birinchi sinfingizni qoʻshing va oʻquvchilar roʻyxati, davomat hamda baholashni yuritishni boshlang.
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
                       <PlusIcon className="size-4" />
-                      Yangi sinf yaratish
+                      Yangi sinf qoʻshish
                     </Button>
                   </EmptyContent>
                 </Empty>
               ) : filteredAndSorted.length === 0 ? (
                 <Empty className="h-full">
                   <EmptyHeader>
-                    <EmptyMedia variant="icon"><Search className="size-6" /></EmptyMedia>
+                    <EmptyMedia><Illustration name="14" className="h-32 text-black dark:text-white" /></EmptyMedia>
                     <EmptyTitle>Topilmadi</EmptyTitle>
                     <EmptyDescription>«{search}» boʻyicha hech narsa yoʻq</EmptyDescription>
                   </EmptyHeader>
@@ -360,32 +361,48 @@ export default function ClassesPage() {
               <CardTitle>Statistika</CardTitle>
             </CardHeader>
             <CardContent className={panelCardContentClass}>
-              <div className={cn(panelScrollInnerClass, "flex flex-col gap-2.5")}>
-                <OverviewStat
-                  icon={<GraduationCap className="size-4" />}
-                  color="blue"
-                  value={totals.classes}
-                  label="Jami sinflar"
-                />
-                <OverviewStat
-                  icon={<Users className="size-4" />}
-                  color="teal"
-                  value={totals.students}
-                  label="Jami oʻquvchilar"
-                />
-                <OverviewStat
-                  icon={<BookOpen className="size-4" />}
-                  color="violet"
-                  value={totals.lessons}
-                  label="Jami mavzular"
-                />
-                <OverviewStat
-                  icon={<ClipboardList className="size-4" />}
-                  color="amber"
-                  value={totals.assignments}
-                  label="Jami topshiriqlar"
-                />
-              </div>
+              {totals.classes === 0 ? (
+                <div className={cn(panelScrollInnerClass, "flex h-full items-center justify-center text-center")}>
+                  <TypographyMuted className="text-sm">
+                    Sinf qoʻshgach statistikangiz shu yerda koʻrinadi
+                  </TypographyMuted>
+                </div>
+              ) : (
+                <div className={cn(panelScrollInnerClass, "flex flex-col gap-4")}>
+                  <OverviewStat
+                    icon={<GraduationCap className="size-4" />}
+                    color="gray"
+                    value={totals.classes}
+                    label="Sinflar"
+                  />
+                  <OverviewStat
+                    icon={<Users className="size-4" />}
+                    color="gray"
+                    value={totals.students}
+                    label="Oʻquvchilar"
+                  />
+                  <OverviewStat
+                    icon={<BookOpen className="size-4" />}
+                    color="gray"
+                    value={totals.lessons}
+                    label="Darslar"
+                  />
+                  <OverviewStat
+                    icon={<ClipboardList className="size-4" />}
+                    color="gray"
+                    value={totals.assignments}
+                    label="Topshiriqlar"
+                  />
+                  <Button
+                    variant="ghost"
+                    className="mt-2 justify-start gap-1.5 text-muted-foreground hover:text-foreground"
+                    onClick={() => toast("Toʻliq statistika sahifasi tez orada qoʻshiladi")}
+                  >
+                    Toʻliq statistikani koʻrish
+                    <ArrowRight className="size-4" />
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -461,16 +478,14 @@ function OverviewStat({
   const iconBgLight = { backgroundColor: `color-mix(in oklch, ${c} 9%, var(--background))` };
 
   return (
-    <div className="flex items-center gap-4 rounded-xl bg-muted/30 px-4 py-3.5">
-      <div style={iconBgLight} className="flex items-center justify-center size-10 rounded-lg shrink-0">
+    <div className="flex items-center gap-3">
+      <div style={iconBgLight} className="flex items-center justify-center size-9 rounded-lg shrink-0">
         <span style={tints.iconText} className="flex items-center justify-center">{icon}</span>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-muted-foreground leading-none">{label}</p>
-        <p className="text-xl font-bold tabular-nums leading-none mt-1.5">
-          {value} <span className="text-sm font-medium text-muted-foreground">ta</span>
-        </p>
-      </div>
+      <p className="flex-1 min-w-0 truncate text-sm font-medium text-muted-foreground">{label}</p>
+      <p className="text-lg font-bold tabular-nums leading-none shrink-0">
+        {value} <span className="text-xs font-medium text-muted-foreground">ta</span>
+      </p>
     </div>
   );
 }

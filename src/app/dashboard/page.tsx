@@ -1,20 +1,20 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { Sunrise, Sunset, BookOpen, CalendarDays, SquareCheckBig, Plus, ArrowUpRight, FileText, Trash2, Clock } from "lucide-react";
+import { BookOpen, SquareCheckBig, ArrowRight, ArrowUpRight, FileText, Trash2, Clock } from "lucide-react";
 import * as React from "react";
 import { useState, useEffect, useMemo } from "react";
-import { uz } from "date-fns/locale";
-import { type DayButton } from "react-day-picker";
-import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { useTimetableStore } from "@/store/useTimetableStore";
+import { useGradesStore } from "@/store/useGradesStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTaskStore } from "@/store/useTaskStore";
+import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
+import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
+import { getSunTimes, getDayPhase } from "@/lib/sun";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { lessonClassIds } from "@/lib/lessons-data";
@@ -26,13 +26,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Badge } from "@/components/ui/badge";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TypographyH3, TypographyMuted, TypographySmall } from "@/components/ui/typography";
+import { TypographyMuted, TypographySmall } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { MONTHS_UZ } from "@/lib/localization";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -53,32 +54,16 @@ function hexToRgb(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-/** Dashboard mini-kalendar kun tugmasi — dars boʻlgan kunlarda past qismida
-    yashil nuqta koʻrsatadi (modifiers.hasLesson orqali). */
-function DashboardDayButton(props: React.ComponentProps<typeof CalendarDayButton>) {
-  const hasLesson = !!props.modifiers?.hasLesson;
-  return (
-    <CalendarDayButton {...props}>
-      {props.children}
-      {hasLesson && (
-        <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-success group-data-[selected-single=true]/day:bg-primary-foreground" />
-      )}
-    </CalendarDayButton>
-  );
-}
-
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const firstName = useSettingsStore((s) => s.profile.name).split(/\s+/)[0];
   
-  const [currentMonthDate, setCurrentMonthDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   useEffect(() => {
     setMounted(true);
     setCurrentTime(new Date());
-    setCurrentMonthDate(new Date());
     setSelectedDate(new Date());
     
     const timer = setInterval(() => {
@@ -91,6 +76,7 @@ export default function DashboardPage() {
   // ── Bugungi darslar — bugun amaldagi jadval versiyasidan ──
   const versions = useTimetableStore((s) => s.versions);
   const calendar = useCalendarStore((s) => s.calendar);
+  const classDataMap = useGradesStore((s) => s.classDataMap);
   const todayKey = dateToKey(currentTime);
   const holiday = getHolidayForDate(calendar, todayKey);
   const todayDow = currentTime.getDay(); // 0=Yakshanba
@@ -101,6 +87,21 @@ export default function DashboardPage() {
       .sort((a, b) => a.startMin - b.startMin);
   }, [versions, todayKey, holiday, todayDow]);
 
+  // ── Tanlangan kun darslari — haftalik tasma tanloviga bogʻliq ──
+  const selectedKey = dateToKey(selectedDate);
+  const isSelectedToday = selectedKey === todayKey;
+  const selectedHoliday = getHolidayForDate(calendar, selectedKey);
+  const selectedDow = selectedDate.getDay();
+  const selectedEvents = useMemo(() => {
+    if (selectedHoliday || selectedDow === 0) return [];
+    return (resolveVersionForDate(versions, selectedKey)?.events ?? [])
+      .filter((e) => e.day === selectedDow)
+      .sort((a, b) => a.startMin - b.startMin);
+  }, [versions, selectedKey, selectedHoliday, selectedDow]);
+  const selectedDayLabel = isSelectedToday
+    ? "Bugungi darslar"
+    : `${selectedDate.getDate()}-${MONTHS_UZ[selectedDate.getMonth()].toLowerCase()} (${DAYS_UZ_SUN[selectedDow].toLowerCase()})`;
+
   // ── Kelgusi darslar — jonli mavzu bankidan (rejalangan, bugundan boshlab) ──
   const allLessons = useLessonStore((s) => s.lessons);
   const liveClasses = useLiveClasses();
@@ -110,6 +111,27 @@ export default function DashboardPage() {
     () => new Map(liveClasses.map((c) => [c.id, { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] }])),
     [liveClasses]
   );
+  // ── Salomlashuv kartasi metrikalari ──
+  const classCount = liveClasses.length;
+  const studentCount = useMemo(
+    () => Object.values(classDataMap).reduce((n, cd) => n + (cd.students?.length ?? 0), 0),
+    [classDataMap]
+  );
+  // Bugungi agenda — jadval eventlaridan (vaqt · sinf · rang)
+  const todayAgenda = useMemo(
+    () =>
+      todaysEvents.map((ev) => {
+        const meta = classMetaById.get(ev.classId);
+        return {
+          id: ev.id,
+          className: meta?.name ?? "Nomaʼlum sinf",
+          timeLabel: fmtMin(ev.startMin),
+          hex: meta?.hex ?? "#94a3b8",
+        };
+      }),
+    [todaysEvents, classMetaById]
+  );
+
   const upcomingLessons = useMemo(() => {
     return allLessons
       .filter((l) => l.scheduledDate && l.scheduledDate >= todayKey && l.status !== "Completed")
@@ -150,24 +172,39 @@ export default function DashboardPage() {
         }),
     [allTasks]
   );
-  const openTaskCount = openTasks.length;
-  const upcomingTasks = useMemo(() => openTasks.slice(0, 4), [openTasks]);
+  // Bugun muddati keladigan ochiq vazifalar (WelcomeCard chipi)
+  const todayTaskCount = useMemo(
+    () => openTasks.filter((t) => t.dueDate === todayKey).length,
+    [openTasks, todayKey]
+  );
+  // Tanlangan kun vazifalari — bugun tanlansa yaqin vazifalar, aks holda oʻsha kun muddatlilari
+  const dayTasks = useMemo(
+    () =>
+      isSelectedToday
+        ? openTasks.slice(0, 5)
+        : openTasks.filter((t) => t.dueDate === selectedKey),
+    [openTasks, isSelectedToday, selectedKey]
+  );
 
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
-  const isDay = hour >= 6 && hour < 19;
-  
+
+  // ── Salom — haqiqiy quyosh chiqishi/botishiga bogʻlangan (Toshkent) ──
+  const sun = useMemo(() => getSunTimes(currentTime), [currentTime]);
+  const dayPhase = getDayPhase(currentTime, sun);
+
   const getTimelineTop = () => {
     if (hour < 7) return -10;
     if (hour > 18) return 120 * 12 + 10;
     return (hour - 7) * 120 + (minute * 2) + 1;
   };
-  
-  const greetingText = () => {
-    if (hour < 12) return "Xayrli tong";
-    if (hour < 18) return "Xayrli kun";
-    return "Xayrli kech";
+
+  const PHASE_GREETING: Record<typeof dayPhase, string> = {
+    tong: "Xayrli tong",
+    kun: "Xayrli kun",
+    kech: "Xayrli kech",
   };
+  const greetingText = () => PHASE_GREETING[dayPhase];
 
   // ── Mini-kalendar modifikatorlari — jonli maʼlumotdan ──
   // Dars kunlari (rejalangan mavzular) va bloklangan kunlar (yakshanba + taʼtil).
@@ -176,19 +213,6 @@ export default function DashboardPage() {
     for (const l of allLessons) if (l.scheduledDate) s.add(l.scheduledDate);
     return s;
   }, [allLessons]);
-
-  const calendarModifiers = useMemo(
-    () => ({
-      hasLesson: (date: Date) => lessonDayKeys.has(dateToKey(date)),
-      blocked: (date: Date) =>
-        date.getDay() === 0 || !!getHolidayForDate(calendar, dateToKey(date)),
-    }),
-    [lessonDayKeys, calendar]
-  );
-
-  const imageSrc = isDay ? "/day.png" : "/night.png";
-  const Icon = isDay ? Sunrise : Sunset;
-  const iconColor = isDay ? "text-yellow-300" : "text-indigo-300";
 
   if (!mounted) {
     return <div className="flex-1 min-h-0 bg-card/50 h-full animate-pulse"></div>;
@@ -201,39 +225,18 @@ export default function DashboardPage() {
           
           {/* Left Column (Hero & Lessons) */}
           <div className={cn(dashboardStackClass, "lg:col-span-2 h-full min-h-0")}>
-            {/* HERO CARD */}
-            <div className="relative overflow-hidden rounded-xl px-5 py-7 md:px-8 md:py-12 text-white">
-              <div className={`absolute inset-0 bg-gradient-to-br z-0 ${isDay ? "from-amber-400 via-orange-500 to-rose-500" : "from-slate-800 via-indigo-900 to-purple-900"}`} />
-              <Image 
-                alt="Manzara" 
-                fill 
-                className="object-cover object-center z-[1]" 
-                src={imageSrc}
-                priority
-              />
-              <div className="absolute inset-0 bg-black/10 z-[2]" />
-              <div className="relative z-10 flex items-start justify-between [text-shadow:_0_2px_8px_rgb(0_0_0_/_60%)]">
-                <div className="flex flex-col gap-1 md:gap-2">
-                  <div className="flex items-center gap-3">
-                    <Icon className={`size-7 md:size-8 drop-shadow-lg ${iconColor}`} />
-                    <TypographyH3 className="text-2xl text-white">{greetingText()}, {firstName}!</TypographyH3>
-                  </div>
-                  <TypographyMuted className="max-w-md leading-relaxed text-white">
-                    {liveClasses.length === 0 && allLessons.length === 0
-                      ? "Ustozona'ga xush kelibsiz! Boshlash uchun birinchi sinfingizni yarating."
-                      : holiday
-                        ? `Bugun — ${holiday.name}. Yaxshi dam oling!`
-                        : todaysEvents.length === 0
-                          ? openTaskCount > 0
-                            ? `Bugun darsingiz yoʻq, lekin bajarishingiz kerak boʻlgan ${openTaskCount} ta vazifangiz bor.`
-                            : "Bugun darsingiz yoʻq. Yaxshi dam oling!"
-                          : `Bugun ${todaysEvents.length} ta darsingiz${openTaskCount > 0 ? ` va ${openTaskCount} ta vazifangiz` : ""} bor.`}
-                  </TypographyMuted>
-                </div>
-              </div>
-              <div className="absolute -top-10 -right-10 size-48 rounded-full bg-white/10 z-[3]" />
-              <div className="absolute -bottom-8 -right-4 size-32 rounded-full bg-white/5 z-[3]" />
-            </div>
+            {/* SALOMLASHUV KARTASI (card-05 dizayni) */}
+            <WelcomeCard
+              firstName={firstName}
+              greeting={greetingText()}
+              dateLabel={`Bugun ${currentTime.getDate()}-${MONTHS_UZ[currentTime.getMonth()].toLowerCase()}, ${DAYS_UZ_SUN[todayDow].toLowerCase()}`}
+              restNote={holiday ? `${holiday.name}. Yaxshi dam oling!` : todayDow === 0 ? "Yaxshi dam oling!" : undefined}
+              todayLessonCount={todaysEvents.length}
+              todayTaskCount={todayTaskCount}
+              studentCount={studentCount}
+              classCount={classCount}
+              todayAgenda={todayAgenda}
+            />
 
             {/* LESSONS CARD */}
             <Card data-tour="home-overview" className={cn("shadow-sm", panelCardClass)}>
@@ -249,18 +252,16 @@ export default function DashboardPage() {
               <CardContent className={panelCardContentClass}>
                   <div className={cn(panelScrollInnerClass, "space-y-4")}>
                     {mounted && upcomingLessons.length === 0 && (
-                      <Empty className="border-0 py-8">
+                      <Empty className="border-0 p-4 gap-4">
                         <EmptyHeader>
-                          <EmptyMedia variant="icon"><BookOpen className="size-6" /></EmptyMedia>
-                          <EmptyTitle>Rejalangan dars yoʻq</EmptyTitle>
-                          <EmptyDescription>
-                            Darslar rejalashtiruvchida sanaga qoʻyilgach shu yerda koʻrinadi.
-                          </EmptyDescription>
+                          <EmptyMedia><Illustration name="22" className="h-[clamp(5rem,14vh,8rem)] text-black dark:text-white" /></EmptyMedia>
+                          <EmptyTitle>Haftalik darslar belgilanmagan</EmptyTitle>
+                          <EmptyDescription>Jadval boʻsh — darslarni rejalashtiring.</EmptyDescription>
                         </EmptyHeader>
                         <EmptyContent>
-                          <Link href="/dashboard/planner" className="text-xs text-primary hover:underline">
-                            Rejalashtiruvchini ochish
-                          </Link>
+                          <Button asChild variant="link" size="sm" className="h-auto p-0 underline">
+                            <Link href="/dashboard/planner">Rejalashtirish</Link>
+                          </Button>
                         </EmptyContent>
                       </Empty>
                     )}
@@ -339,11 +340,35 @@ export default function DashboardPage() {
               <CardHeader className={cn(panelCardHeaderClass, "min-h-[4.5rem] px-5 py-5!")}>
                 <div className="flex items-center gap-2">
                   <SectionIcon><Clock /></SectionIcon>
-                  <CardTitle>Bugungi darslar</CardTitle>
+                  <CardTitle>{selectedDayLabel}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className={panelCardContentClass}>
                 <div className={panelScrollInnerClass}>
+                  {selectedEvents.length === 0 ? (
+                    <Empty className="h-full border-0 p-4 gap-4">
+                      <EmptyHeader>
+                        <EmptyMedia><Illustration name="28" className="h-[clamp(5rem,14vh,8rem)] text-black dark:text-white" /></EmptyMedia>
+                        <EmptyTitle>
+                          {selectedHoliday
+                            ? `${isSelectedToday ? "Bugun" : "Bu kun"} — ${selectedHoliday.name}`
+                            : isSelectedToday
+                              ? "Bugun darslar rejalashtirilmagan"
+                              : "Bu kunga dars yoʻq"}
+                        </EmptyTitle>
+                        <EmptyDescription>
+                          {isSelectedToday
+                            ? "Bugunga mashgʻulot yoʻq — jadvalni tekshiring."
+                            : "Bu kunga dars rejalanmagan — jadvalni tekshiring."}
+                        </EmptyDescription>
+                      </EmptyHeader>
+                      <EmptyContent>
+                        <Button asChild variant="link" size="sm" className="h-auto p-0 underline">
+                          <Link href="/dashboard/timetable">Dars jadvalini ochish</Link>
+                        </Button>
+                      </EmptyContent>
+                    </Empty>
+                  ) : (
                   <div className="relative border-t border-border/30 flex">
                     <div className="w-12 shrink-0 border-r border-border/30">
                       {[7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6].map((h, i) => (
@@ -359,8 +384,8 @@ export default function DashboardPage() {
                         </div>
                       ))}
                       
-                      {/* Bugungi darslar — jadval versiyasidan (7:00 boshlanish, 1 soat = 120px) */}
-                      {todaysEvents.map((ev) => {
+                      {/* Tanlangan kun darslari — jadval versiyasidan (7:00 boshlanish, 1 soat = 120px) */}
+                      {selectedEvents.map((ev) => {
                         const cls = liveById.get(ev.classId);
                         const color = cls ? classColor(cls) : autoClassColor(ev.classId);
                         const tints = classTints(color);
@@ -395,26 +420,16 @@ export default function DashboardPage() {
                         );
                       })}
 
-                      {/* Boʻsh holat — taʼtil yoki darssiz kun */}
-                      {todaysEvents.length === 0 && (
-                        <div className="absolute inset-x-3 top-6 z-[1] flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-background/80 px-4 py-6 text-center backdrop-blur-sm">
-                          <CalendarDays className="size-5 text-muted-foreground" />
-                          <p className="text-sm font-medium text-foreground">
-                            {holiday ? `Bugun — ${holiday.name}` : "Bugun dars yoʻq"}
-                          </p>
-                          <Link href="/dashboard/timetable" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                            Jadvalni ochish
-                          </Link>
+                      {/* Joriy vaqt chizigʻi — faqat bugun tanlangida */}
+                      {isSelectedToday && (
+                        <div className="absolute left-0 right-0 z-20 flex items-center pointer-events-none transition-all duration-1000 ease-linear" style={{ top: getTimelineTop() }}>
+                          <div className="size-2 rounded-full bg-destructive -ml-1" />
+                          <div className="flex-1 h-[2px] bg-destructive" />
                         </div>
                       )}
-
-                      {/* Current Time Line */}
-                      <div className="absolute left-0 right-0 z-20 flex items-center pointer-events-none transition-all duration-1000 ease-linear" style={{ top: getTimelineTop() }}>
-                        <div className="size-2 rounded-full bg-destructive -ml-1" />
-                        <div className="flex-1 h-[2px] bg-destructive" />
-                      </div>
                     </div>
                   </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -422,57 +437,60 @@ export default function DashboardPage() {
 
           {/* Right Column (Calendar & Tasks) */}
           <div className={cn(dashboardStackClass, "h-full min-h-0")}>
-            <Card className="shadow-sm flex flex-col flex-1 min-h-0 py-0">
-              <CardContent className="px-6 py-5 flex flex-col flex-1 min-h-0 overflow-hidden">
 
-                {/* ── Calendar ── */}
-                <div className="shrink-0">
-                  <div className="flex items-center gap-2 mb-3">
-                    <SectionIcon><CalendarDays /></SectionIcon>
-                    <CardTitle>Kalendar</CardTitle>
-                  </div>
+            {/* ── Taqvim kartasi (sarlavhasiz — faqat hafta/oy koʻrinishi) ── */}
+            <Card className="shadow-sm shrink-0 py-0">
+              <CardContent className="px-6 py-5">
+                <WeekStrip
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  todayKey={todayKey}
+                  hasLesson={(key) => lessonDayKeys.has(key)}
+                  isBlocked={(date) => date.getDay() === 0 || !!getHolidayForDate(calendar, dateToKey(date))}
+                />
+              </CardContent>
+            </Card>
 
-                  <Calendar
-                    mode="single"
-                    locale={uz}
-                    selected={selectedDate}
-                    onSelect={(d) => d && setSelectedDate(d)}
-                    month={currentMonthDate}
-                    onMonthChange={setCurrentMonthDate}
-                    formatters={{
-                      formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
-                      formatWeekdayName: (date) => ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"][date.getDay()],
-                    }}
-                    modifiers={calendarModifiers}
-                    modifiersClassNames={{ blocked: "text-muted-foreground/40 line-through" }}
-                    components={{ DayButton: DashboardDayButton }}
-                    className="w-full p-0 [--cell-size:--spacing(9)]"
-                  />
+            {/* ── Vazifalar kartasi ── */}
+            <Card className="shadow-sm flex flex-col flex-1 min-h-0 py-0 gap-0">
+              <CardHeader className="min-h-[4.5rem] px-5 py-5! flex flex-row items-center justify-between gap-2 space-y-0 border-b border-border">
+                <div className="flex items-center gap-2 min-w-0">
+                  <SectionIcon><SquareCheckBig /></SectionIcon>
+                  <CardTitle className="truncate">Vazifalar</CardTitle>
+                  {!isSelectedToday && (
+                    <span className="text-xs text-muted-foreground shrink-0">· {selectedDate.getDate()}-{MONTHS_UZ[selectedDate.getMonth()].toLowerCase()}</span>
+                  )}
                 </div>
-
-                {/* ── Spacer ── */}
-                <div className="my-5 shrink-0" />
-
-                {/* ── Tasks ── */}
-                <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <SectionIcon><SquareCheckBig /></SectionIcon>
-                      <CardTitle>Vazifalar</CardTitle>
-                    </div>
-                    <Button variant="ghost" size="icon-sm" className="text-muted-foreground">
-                      <Plus className="size-4" />
-                    </Button>
-                  </div>
-
+                <Button asChild variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0">
+                  <Link href="/dashboard/tasks"><ArrowRight className="size-4" /></Link>
+                </Button>
+              </CardHeader>
+              <CardContent className="p-0 flex flex-col flex-1 min-h-0 overflow-hidden">
+                {mounted && dayTasks.length === 0 ? (
+                  <Empty className="border-0 flex-1 min-h-0 overflow-hidden p-4 gap-3">
+                    <EmptyHeader>
+                      <EmptyMedia><Illustration name="30" className="h-[clamp(3.5rem,11vh,6rem)] text-black dark:text-white" /></EmptyMedia>
+                      <EmptyTitle>
+                        {isSelectedToday
+                          ? "Faol vazifa yoʻq"
+                          : "Bu kunga vazifa yoʻq"}
+                      </EmptyTitle>
+                      <EmptyDescription>
+                        {isSelectedToday
+                          ? "Yangi vazifa qoʻshib rejani boshlang."
+                          : "Bu kunga vazifa qoʻshing."}
+                      </EmptyDescription>
+                    </EmptyHeader>
+                    <EmptyContent>
+                      <Button asChild variant="link" size="sm" className="h-auto p-0 underline">
+                        <Link href="/dashboard/tasks">Vazifa qoʻshish</Link>
+                      </Button>
+                    </EmptyContent>
+                  </Empty>
+                ) : (
+                <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin flex flex-col px-6 py-5">
                   <div className="flex flex-col gap-2">
-                    {mounted && upcomingTasks.length === 0 && (
-                      <div className="flex flex-col items-center gap-1.5 py-6 text-center">
-                        <SquareCheckBig className="size-5 text-muted-foreground" />
-                        <TypographyMuted className="text-xs">Ochiq vazifa yoʻq</TypographyMuted>
-                      </div>
-                    )}
-                    {upcomingTasks.map((task) => {
+                    {dayTasks.map((task) => {
                       const overdue = !!task.dueDate && task.dueDate < todayKey;
                       const dueLabel = task.dueDate
                         ? (() => {
@@ -499,12 +517,8 @@ export default function DashboardPage() {
                       );
                     })}
                   </div>
-
-                  <Link href="/dashboard/tasks" className="block text-center text-xs text-muted-foreground hover:text-foreground transition-colors">
-                    Barchasi
-                  </Link>
                 </div>
-
+                )}
               </CardContent>
             </Card>
           </div>

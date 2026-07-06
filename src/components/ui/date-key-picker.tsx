@@ -8,7 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
-import { MONTHS_UZ } from "@/lib/localization";
+import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 
 /* ════════════════════════════════════════════════════════════════════
    SANA TANLAGICH — shadcn Popover + Calendar (native <input type="date"> oʻrnini bosadi)
@@ -17,9 +17,6 @@ import { MONTHS_UZ } from "@/lib/localization";
    Oʻzbekcha oy/hafta nomlari, dropdown caption. Oʻquv yili sozlamalari va
    boshqa sana maydonlari uchun yagona komponent.
    ════════════════════════════════════════════════════════════════════ */
-
-/** Kalendar hafta sarlavhalari — getDay() tartibida (0=Yakshanba). */
-const UZ_WEEKDAYS = ["Yak", "Dush", "Sesh", "Chor", "Pay", "Jum", "Shan"];
 
 /** "2025-09-16" → "16.09.2025". Boʻsh boʻlsa placeholder. */
 function fmtKey(key: string): string {
@@ -65,7 +62,7 @@ export function DateKeyPicker({
           locale={uz}
           formatters={{
             formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
-            formatWeekdayName: (date) => UZ_WEEKDAYS[date.getDay()],
+            formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
           }}
           selected={selected}
           onSelect={(d) => {

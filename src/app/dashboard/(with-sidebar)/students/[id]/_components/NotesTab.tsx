@@ -11,7 +11,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Plus, StickyNote, Smile, AlertCircle, Minus } from "lucide-react";
+import { Illustration } from "@/components/ui/illustration";
+import { Plus, Smile, AlertCircle, Minus } from "lucide-react";
 
 export type Sentiment = "positive" | "concern" | "neutral";
 export type Note = { id: string; text: string; sentiment: Sentiment; time: string };
@@ -115,7 +116,7 @@ export default function NotesTab({
       {visible.length === 0 ? (
         <Empty>
           <EmptyHeader>
-            <EmptyMedia variant="icon"><StickyNote /></EmptyMedia>
+            <EmptyMedia><Illustration name="46" className="h-32 text-black dark:text-white" /></EmptyMedia>
             <EmptyTitle>{notes.length === 0 ? "Hali qayd yoʻq" : "Bu turdagi qayd yoʻq"}</EmptyTitle>
           </EmptyHeader>
         </Empty>

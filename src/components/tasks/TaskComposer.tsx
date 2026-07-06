@@ -293,7 +293,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
                   <button type="button" className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-muted/40 transition-colors">
                     <Repeat className="size-4 text-muted-foreground" />
                     <span className="font-medium">Takrorlash</span>
-                    <span className="ml-auto text-xs text-muted-foreground">{recurrenceLabel(recurrenceRule, dueDate) ?? "Yoʻq"}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">{recurrenceLabel(recurrenceRule, dueDate) ?? "Takrorlanmaydi"}</span>
                     <ChevronRight className={cn("size-4 text-muted-foreground/60 transition-transform", repeatOpen && "rotate-90")} />
                   </button>
                 </CollapsibleTrigger>

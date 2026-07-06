@@ -11,6 +11,7 @@ import { TypographyMuted } from "@/components/ui/typography";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -116,7 +117,7 @@ export default function QuizPage() {
           {!generated ? (
             <Empty className="flex-1">
               <EmptyHeader>
-                <EmptyMedia variant="icon"><Sparkles /></EmptyMedia>
+                <EmptyMedia><Illustration name="4" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>Quiz qoralamasi tayyor emas</EmptyTitle>
                 <EmptyDescription>
                   Standart tanlab, “Ustozona AI bilan yaratish” tugmasini bosing. AI savol qoralaydi —

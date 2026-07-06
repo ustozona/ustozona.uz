@@ -27,6 +27,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -195,7 +196,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
           {students.length === 0 ? (
             <Empty className="h-full">
               <EmptyHeader>
-                <EmptyMedia variant="icon"><Users className="size-6" /></EmptyMedia>
+                <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>
                   {search.trim() ? "Mos oʻquvchi topilmadi" : "Bu sinfda hali oʻquvchi yoʻq"}
                 </EmptyTitle>

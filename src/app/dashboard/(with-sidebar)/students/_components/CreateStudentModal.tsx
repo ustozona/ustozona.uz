@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { uz } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { MONTHS_UZ } from "@/lib/localization";
+import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClassInfo } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
@@ -41,9 +41,6 @@ type Props = {
   /** edit rejimida boshlangʻich qiymatlar (prefill) */
   initial?: Partial<NewStudentInput>;
 };
-
-// Kalendar uchun oʻzbekcha oy/hafta nomlari
-const UZ_WEEKDAYS = ["Yak", "Dush", "Sesh", "Chor", "Pay", "Jum", "Shan"];
 
 function initialsOf(first: string, last: string): string {
   const a = first.trim()[0] ?? "";
@@ -297,7 +294,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
                         locale={uz}
                         formatters={{
                           formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
-                          formatWeekdayName: (date) => UZ_WEEKDAYS[date.getDay()],
+                          formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
                         }}
                         selected={fromISO(birthDate)}
                         defaultMonth={fromISO(birthDate) ?? new Date(2012, 0)}

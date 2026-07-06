@@ -114,10 +114,10 @@ export default function TasksSidebar({ activeFilter, onSelectFilter }: Props) {
   const smartLists = [
     { id: "inbox", label: "Kiruvchi", icon: Inbox, count: counts.inbox },
     { id: "today", label: "Bugun", icon: Calendar, count: counts.today },
-    { id: "upcoming", label: "Yaqin kunlarda", icon: CalendarDays, count: counts.upcoming },
+    { id: "upcoming", label: "Rejalashtirilgan", icon: CalendarDays, count: counts.upcoming },
     { id: "important", label: "Muhim", icon: Flag, count: counts.important },
-    { id: "overdue", label: "Muddati oʻtgan", icon: AlertCircle, count: counts.overdue },
-    { id: "completed", label: "Bajarilganlar", icon: CheckCircle2, count: counts.completed },
+    { id: "overdue", label: "Kechikkanlar", icon: AlertCircle, count: counts.overdue },
+    { id: "completed", label: "Bajarilgan", icon: CheckCircle2, count: counts.completed },
     { id: "all", label: "Barchasi", icon: Layers, count: counts.all },
   ] as const;
 

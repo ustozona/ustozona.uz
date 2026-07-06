@@ -22,6 +22,9 @@ export const DAYS_UZ_SUN: readonly string[] = [
   "Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba",
 ];
 
+/** Kun nomlari (2 harf, tor kalendar katakchalariga moslashtirilgan) — YAKSHANBA-birinchi. */
+export const DAYS_UZ_SUN_SHORT: readonly string[] = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"];
+
 /** Oy nomlari (toʻliq, bosh harf) — 0=Yanvar … 11=Dekabr. */
 export const MONTHS_UZ: readonly string[] = [
   "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",

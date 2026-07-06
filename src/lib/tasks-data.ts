@@ -65,7 +65,7 @@ export const PRIORITY_STYLES: Record<TaskPriority, { bg: string; text: string; d
   high:   { bg: "bg-destructive/10", text: "text-destructive", dot: "bg-destructive", label: "Yuqori" },
   medium: { bg: "bg-warning/10", text: "text-warning-foreground", dot: "bg-warning", label: "O'rta" },
   low:    { bg: "bg-info/10", text: "text-info", dot: "bg-info", label: "Past" },
-  none:   { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground/40", label: "Yo'q" },
+  none:   { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground/40", label: "Belgilanmagan" },
 };
 
 export const STATUS_STYLES: Record<TaskStatus, { bg: string; text: string }> = {

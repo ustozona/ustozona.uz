@@ -15,6 +15,7 @@ import {
   EmptyTitle,
   EmptyContent,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { panelCardClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { MONTHS_UZ_SHORT } from "@/lib/localization";
@@ -149,9 +150,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
               {!mounted ? null : classTasks.length === 0 ? (
                 <Empty className="p-6">
                   <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <CheckSquare />
-                    </EmptyMedia>
+                    <EmptyMedia><Illustration name="30" className="h-32 text-black dark:text-white" /></EmptyMedia>
                     <EmptyTitle>Bu sinfga vazifa yoʻq</EmptyTitle>
                   </EmptyHeader>
                   <EmptyContent>
