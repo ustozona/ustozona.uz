@@ -47,13 +47,13 @@ export type TimetableConfig = {
 
 export type SchoolProfile = "single" | "double";
 
-/** Defaults for a single-shift school: 10 min breaks, 15 min long break */
+/** Defaults for a single-shift school: 5 min breaks, 10 min long break */
 export const SINGLE_SHIFT_DEFAULTS: TimetableConfig = {
   shift1: {
     startMin: 8 * 60,
     lessonCount: 6,
     lessonMin: 45,
-    breakMin: 10,
+    breakMin: 5,
     longBreakAfter: 3,
     longBreakExtraMin: 5,
   },
@@ -61,7 +61,7 @@ export const SINGLE_SHIFT_DEFAULTS: TimetableConfig = {
     startMin: 13 * 60,
     lessonCount: 6,
     lessonMin: 45,
-    breakMin: 10,
+    breakMin: 5,
     longBreakAfter: 3,
     longBreakExtraMin: 5,
   },

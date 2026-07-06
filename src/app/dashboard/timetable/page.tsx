@@ -35,7 +35,7 @@ import { TypographyLabel } from "@/components/ui/typography";
 import { CardStripes } from "@/components/CardStripes";
 import { CardCorner } from "@/components/CardCorner";
 import { type TimetableEvent } from "@/lib/timetable";
-import { type BellConfig, defaultBellConfig, computePeriods } from "@/lib/bell-schedule";
+import { type BellConfig, defaultBellConfig, computePeriods, remapEventsForBellChange } from "@/lib/bell-schedule";
 import PeriodGrid, { type TimetableClass } from "@/components/timetable/PeriodGrid";
 import BellScheduleDialog from "@/components/timetable/BellScheduleDialog";
 import EffectiveDateDialog, { type EffectiveChoice } from "@/components/timetable/EffectiveDateDialog";
@@ -190,6 +190,18 @@ export default function TimetablePage() {
 
   useEffect(() => {
     setHydrated(true);
+  }, []);
+
+  // Sozlamalardagi "Dars jadvalida sozlash" havolasi: ?bell=1 → qoʻngʻiroq
+  // dialogini ochib, paramni URL'dan tozalaymiz (router.replace remount
+  // qilgani uchun history.replaceState).
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("bell") !== "1") return;
+    setSettingsOpen(true);
+    sp.delete("bell");
+    const qs = sp.toString();
+    window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
   }, []);
 
   // Store hydratsiyasidan soʻng bugun amaldagi versiyani tanlash
@@ -904,7 +916,18 @@ export default function TimetablePage() {
       {settingsOpen && (
         <BellScheduleDialog
           config={bellConfig}
-          onSave={(c) => { setBellConfig(c); setSettingsOpen(false); }}
+          events={events}
+          onSave={(c) => {
+            // Qoʻngʻiroq vaqtlari oʻzgarsa, kataklarga qoʻyilgan darslar yangi
+            // period vaqtlariga koʻchadi — jadval kataklardan "tushib ketmaydi".
+            const { events: remapped, moved } = remapEventsForBellChange(events, bellConfig, c);
+            if (moved > 0) {
+              setEvents(remapped);
+              toast.success(`${moved} ta dars yangi qoʻngʻiroq vaqtlariga moslandi`);
+            }
+            setBellConfig(c);
+            setSettingsOpen(false);
+          }}
           onClose={() => setSettingsOpen(false)}
         />
       )}

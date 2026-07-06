@@ -1,4 +1,4 @@
-import { buildSlots, DOUBLE_SHIFT_DEFAULTS, type ShiftConfig, type SchoolProfile } from "@/lib/timetable";
+import { buildSlots, DOUBLE_SHIFT_DEFAULTS, type ShiftConfig, type SchoolProfile, type TimetableEvent } from "@/lib/timetable";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻNGʻIROQ JADVALI (bell schedule) — sozlamalar va period hisoblari
@@ -50,4 +50,33 @@ export function computePeriods(c: BellConfig): PeriodRow[] {
 /** Hodisa biror period qatoriga toʻgʻri keladimi (boshlanish vaqti boʻyicha) */
 export function isPeriodTime(periods: PeriodRow[], startMin: number): boolean {
   return periods.some((p) => p.startMin === startMin);
+}
+
+/** Qoʻngʻiroq jadvali oʻzgarganda darslarni yangi period vaqtlariga koʻchirish.
+
+    Eventlar absolyut vaqt saqlaydi, grid esa periodni startMin mosligi
+    bilan topadi — konfig oʻzgarsa darslar kataklardan "tushib ketadi".
+    Shu funksiya eski periodga aynan mos eventlarni (shift, index) kaliti
+    boʻyicha yangi period vaqtiga koʻchiradi; mos kelmaganlar (erkin-vaqtli
+    toʻgaraklar) tegilmaydi. `moved` — vaqti haqiqatan oʻzgarganlar soni. */
+export function remapEventsForBellChange(
+  events: TimetableEvent[],
+  oldCfg: BellConfig,
+  newCfg: BellConfig
+): { events: TimetableEvent[]; moved: number } {
+  const oldPeriods = computePeriods(oldCfg);
+  const newByKey = new Map(computePeriods(newCfg).map((p) => [`${p.shift}:${p.index}`, p]));
+  let moved = 0;
+  const next = events.map((ev) => {
+    const op = oldPeriods.find((p) => p.startMin === ev.startMin);
+    if (!op) return ev;
+    const np = newByKey.get(`${op.shift}:${op.index}`);
+    if (!np || (np.startMin === op.startMin && np.endMin === op.endMin)) return ev;
+    moved++;
+    // Katakni toʻliq egallagan dars yangi katakni ham toʻliq egallaydi;
+    // erkin rejimda choʻzilgani davomiyligini saqlab faqat siljiydi.
+    const dur = ev.endMin === op.endMin ? np.endMin - np.startMin : ev.endMin - ev.startMin;
+    return { ...ev, startMin: np.startMin, endMin: np.startMin + dur };
+  });
+  return { events: next, moved };
 }

@@ -19,15 +19,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Check, ChevronDown, PlusIcon, TrashIcon } from "lucide-react";
+import { Check, CheckCircle2, ChevronDown, Circle, Clock, PlusIcon, TrashIcon } from "lucide-react";
 
 /* ════════════════════════════════════════════════════════════════════
    VERSIYA TANLAGICH — jadval sahifasi toolbar chipi (A+C gibrid)
 
-   Trigger ixcham: holat NUQTASI (yashil=joriy, koʻk=kelgusi, kulrang=
-   arxiv) + faqat sana-diapazon — "Joriy jadval/Arxiv" soʻzlari banner
-   bilan takrorlanmasin deb tooltip'ga koʻchdi. Dropdown — vertikal
-   TIMELINE (chiziq+nuqtalar, eng yangisi tepada): sana-diapazon, izoh,
+   Trigger ixcham: holat INDIKATORI — endi ikon (kvadrat emas): CheckCircle2
+   (yashil, joriy), Clock (sariq, kelgusi — "hali boshlanmagan"), Circle
+   (kulrang, arxiv) — + faqat sana-diapazon — "Joriy jadval/Arxiv" soʻzlari
+   banner bilan takrorlanmasin deb tooltip'ga koʻchdi. Dropdown — vertikal
+   TIMELINE (chiziq+ikonlar, eng yangisi tepada): sana-diapazon, izoh,
    "Joriy/Kelgusi" badge; pastda "Yangi versiya…" va oʻchirish.
    ════════════════════════════════════════════════════════════════════ */
 
@@ -68,13 +69,21 @@ export default function VersionChip({
         ? "Joriy jadval"
         : "Arxiv jadval";
 
-  const triggerDot = !selected
-    ? "bg-muted-foreground/50"
+  const TriggerIcon = !selected
+    ? Circle
     : selected.effectiveFrom > todayKey
-      ? "bg-info"
+      ? Clock
       : selected.id === currentId
-        ? "bg-success"
-        : "bg-muted-foreground/50";
+        ? CheckCircle2
+        : Circle;
+
+  const triggerIconCls = !selected
+    ? "text-muted-foreground/50"
+    : selected.effectiveFrom > todayKey
+      ? "text-warning"
+      : selected.id === currentId
+        ? "text-success"
+        : "text-muted-foreground/50";
 
   const sorted = sortVersions(versions).reverse();
 
@@ -97,7 +106,7 @@ export default function VersionChip({
                 aria-label={`${stateLabel} — versiyalar tarixi`}
                 className="group/vc -ml-1 flex max-w-full items-center gap-1.5 rounded-md px-1 py-0.5 text-caption text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
-                <span className={cn("size-2 shrink-0 rounded-full", triggerDot)} aria-hidden />
+                <TriggerIcon className={cn("size-3.5 shrink-0", triggerIconCls)} aria-hidden />
                 <span className="truncate font-medium">{subtitleText}</span>
                 <ChevronDown className="size-3.5 shrink-0 opacity-60 transition-opacity group-hover/vc:opacity-100" />
               </button>
@@ -108,7 +117,7 @@ export default function VersionChip({
                 aria-label={`${stateLabel} — versiyalar tarixi`}
                 className="gap-2 shadow-none"
               >
-                <span className={cn("size-2 shrink-0 rounded-full", triggerDot)} aria-hidden />
+                <TriggerIcon className={cn("size-3.5 shrink-0", triggerIconCls)} aria-hidden />
                 <span className="max-w-44 truncate">
                   {selected ? versionRangeLabel(versions, selected) : "Versiyalar"}
                 </span>
@@ -127,11 +136,12 @@ export default function VersionChip({
           const isCurrent = v.id === currentId;
           const isSelected = v.id === selectedId;
           const isFuture = v.effectiveFrom > todayKey;
+          const DotIcon = isFuture ? Clock : isCurrent ? CheckCircle2 : Circle;
           const dotCls = isFuture
-            ? "bg-info"
+            ? "text-warning"
             : isCurrent
-              ? "bg-success"
-              : "border-[1.5px] border-muted-foreground/50 bg-transparent";
+              ? "text-success"
+              : "text-muted-foreground/50";
           const only = sorted.length === 1;
           return (
             <DropdownMenuItem
@@ -149,7 +159,9 @@ export default function VersionChip({
                     )}
                   />
                 )}
-                <span className={cn("absolute top-[13px] size-2.5 rounded-full", dotCls)} />
+                <span className="absolute top-[11px] flex size-4 items-center justify-center rounded-full bg-popover">
+                  <DotIcon className={cn("size-3.5", dotCls)} />
+                </span>
               </span>
               <span className="min-w-0 flex-1 py-2">
                 <span className="flex items-center gap-2">
@@ -157,12 +169,12 @@ export default function VersionChip({
                     {versionRangeLabel(versions, v)}
                   </span>
                   {isCurrent && (
-                    <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                    <Badge className="h-5 bg-green-50 px-1.5 text-[10px] text-green-700 dark:bg-green-950 dark:text-green-300">
                       Joriy
                     </Badge>
                   )}
                   {isFuture && (
-                    <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+                    <Badge className="h-5 bg-amber-50 px-1.5 text-[10px] text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                       Kelgusi
                     </Badge>
                   )}

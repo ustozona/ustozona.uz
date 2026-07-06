@@ -101,12 +101,11 @@ export function WeekStrip({
               onClick={() => onSelect(day)}
               className={cn(
                 "group flex flex-col items-center gap-1 rounded-lg py-2 transition-colors",
-                // Tanlangan (faol harakat) = toʻliq qora katak;
-                // bugun (mo'ljal) = toʻliq koʻk→sariq gradient katak
+                // Tanlangan (faol harakat) = toʻliq qora katak; bugun (moʻljal) = accent katak
                 isSelected
                   ? "bg-primary text-primary-foreground"
                   : isToday
-                    ? "bg-linear-to-br from-sky-300 to-amber-200 text-foreground"
+                    ? "bg-accent text-accent-foreground"
                     : "text-foreground hover:bg-accent",
                 blocked && !isSelected && !isToday && "text-muted-foreground/60"
               )}
