@@ -5,38 +5,29 @@ import Link from "next/link";
 import {
   GraduationCap,
   Users,
-  FileText,
-  CheckCircle,
-  Mail,
-  CalendarDays,
-  Building2,
-  ChevronRight,
-  Upload,
+  BookOpen,
+  ClipboardList,
+  Pencil,
   Trash2,
+  BadgeCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { isCalendarConfigured } from "@/lib/academic-calendar";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useGradesStore } from "@/store/useGradesStore";
-import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, type ClassColor, classTints } from "@/lib/class-colors";
 import { MONTHS_UZ } from "@/lib/localization";
+import { cn } from "@/lib/utils";
 import { SettingsGroup, SavedIndicator } from "./SettingsShared";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2MB
-
-/** Google bilan kirilганда keladiган namuna rasm (data URI — tarmoqsiz, prototip uchun). */
-const GOOGLE_SAMPLE_AVATAR =
-  "data:image/svg+xml;utf8," +
-  encodeURIComponent(
-    `<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%234285F4'/><stop offset='1' stop-color='%2334A853'/></linearGradient></defs><rect width='128' height='128' fill='url(%23g)'/><text x='50%' y='54%' font-family='Arial' font-size='64' fill='white' text-anchor='middle' dominant-baseline='middle'>O</text></svg>`
-  );
 
 function initialsOf(name: string) {
   return (
@@ -57,28 +48,42 @@ function formatJoined(iso: string) {
 
 function StatCard({
   icon: Icon,
+  color,
   value,
   label,
   href,
 }: {
   icon: React.ElementType;
+  color: ClassColor;
   value: React.ReactNode;
   label: string;
   href: string;
 }) {
+  const tints = classTints(color);
+  const style = {
+    ["--stat-border" as string]: (tints.softBorder as React.CSSProperties).borderColor,
+    ["--stat-border-hover" as string]: (tints.ring as React.CSSProperties).borderColor,
+    ["--stat-bg" as string]: (tints.surface as React.CSSProperties).backgroundColor,
+    ["--stat-bg-hover" as string]: (tints.tint as React.CSSProperties).backgroundColor,
+  } as React.CSSProperties;
   return (
     <Link
       href={href}
-      className="group flex flex-col gap-1 rounded-xl border border-border bg-card px-4 py-3.5 transition-colors hover:border-foreground/25 hover:bg-muted/40"
+      style={style}
+      className="group flex flex-col gap-3 rounded-xl border border-[var(--stat-border)] bg-[var(--stat-bg)] px-4 py-4 transition-colors hover:border-[var(--stat-border-hover)] hover:bg-[var(--stat-bg-hover)]"
     >
-      <div className="flex items-center justify-between">
-        <Icon className="size-4 text-muted-foreground" strokeWidth={2} />
-        <ChevronRight className="size-3.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+      <div className="flex items-center gap-2">
+        <div
+          style={tints.iconBg}
+          className="flex size-7 shrink-0 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110"
+        >
+          <Icon className="size-4" style={tints.iconText} strokeWidth={2} />
+        </div>
+        <span className="heading-small">{label}</span>
       </div>
-      <span className="mt-1 text-2xl font-bold tracking-tight text-foreground tabular-nums">
-        {value}
+      <span className="heading-page tabular-nums">
+        {value} <span className="text-body font-normal text-muted-foreground">ta</span>
       </span>
-      <span className="text-xs text-muted-foreground">{label}</span>
     </Link>
   );
 }
@@ -105,7 +110,6 @@ export default function ProfileSection() {
 
   const isGoogle = profile.provider === "google";
   const nameError = profile.name.trim().length === 0;
-  const emailError = profile.email.trim().length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email);
 
   const fileRef = React.useRef<HTMLInputElement>(null);
 
@@ -132,23 +136,31 @@ export default function ProfileSection() {
 
   return (
     <>
-      {/* Identifikatsiya */}
+      {/* Asosiy maʼlumotlar */}
       <SettingsGroup
-        title="Identifikatsiya"
-        description="Ismingiz sidebar va bosh sahifadagi salomlashuvда koʻrinadi. Oʻzgarishlar avtomatik saqlanadi."
+        title="Asosiy maʼlumotlar"
+        description="Ismingiz yon panel (sidebar) hamda bosh sahifadagi salomlashuv matnida aks etadi. Oʻzgarishlar avtomatik ravishda saqlanadi."
         action={<SavedIndicator signal={JSON.stringify(profile)} />}
       >
-        <div className="flex flex-col gap-4 rounded-xl border border-border bg-card px-4 py-4 sm:flex-row sm:items-center">
-          <div className="flex flex-col items-center gap-2 sm:items-start">
-            <Avatar size="lg" className="size-16">
+        <div className="flex flex-col gap-4 rounded-xl border border-border bg-card px-5 py-5 sm:flex-row sm:items-start">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            aria-label="Rasmni oʻzgartirish"
+            className="group relative size-20 shrink-0 self-center overflow-hidden rounded-full sm:self-start"
+          >
+            <Avatar className="size-20">
               {profile.avatarUrl && <AvatarImage src={profile.avatarUrl} alt={profile.name} />}
               <AvatarFallback
-                className="text-xl font-semibold text-white"
+                className="text-2xl font-semibold text-white"
                 style={{ backgroundColor: avatarHex }}
               >
                 {initialsOf(profile.name)}
               </AvatarFallback>
             </Avatar>
+            <span className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+              <Pencil className="size-5 text-white" strokeWidth={2} />
+            </span>
             <input
               ref={fileRef}
               type="file"
@@ -156,66 +168,43 @@ export default function ProfileSection() {
               className="hidden"
               onChange={onPickFile}
             />
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={() => fileRef.current?.click()}
-              >
-                <Upload className="size-3.5" />
-                {profile.avatarUrl ? "Oʻzgartirish" : "Rasm yuklash"}
-              </Button>
+          </button>
+
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5 text-center sm:text-left">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:justify-start">
+              <span className="truncate text-lg font-semibold text-foreground">{profile.name || "—"}</span>
               {profile.avatarUrl && (
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-7 text-muted-foreground"
-                  aria-label="Rasmni olib tashlash"
                   onClick={() => setProfile({ avatarUrl: "" })}
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
                 >
                   <Trash2 className="size-3.5" />
-                </Button>
+                  Rasmni olib tashlash
+                </button>
               )}
             </div>
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <span className="truncate text-base font-semibold text-foreground">{profile.name || "—"}</span>
-            <span className="truncate text-sm text-muted-foreground">{profile.email}</span>
-            <div className="mt-0.5 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground">
-                <Mail className="size-3.5 text-muted-foreground" />
-                {isGoogle ? "Google" : "Email"}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
-                <CalendarDays className="size-3.5" />
-                Aʼzo: {formatJoined(profile.joinedAt)}
-              </span>
-              {profile.school && (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs text-muted-foreground">
-                  <Building2 className="size-3.5" />
-                  {profile.school}
-                </span>
+            <div className="flex items-center justify-center gap-1 sm:justify-start">
+              <span className="truncate text-sm text-muted-foreground">{profile.email}</span>
+              {isGoogle && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <BadgeCheck className="size-4 shrink-0 text-info" />
+                  </TooltipTrigger>
+                  <TooltipContent>Google orqali tasdiqlangan</TooltipContent>
+                </Tooltip>
               )}
             </div>
-            {isGoogle && !profile.avatarUrl && (
-              <button
-                type="button"
-                onClick={() => setProfile({ avatarUrl: GOOGLE_SAMPLE_AVATAR })}
-                className="mt-1 self-start text-xs text-primary underline-offset-2 hover:underline"
-              >
-                Google hisobingizdagi rasmni ishlatish
-              </button>
-            )}
+            <span className="mt-0.5 text-xs text-muted-foreground">
+              Aʼzo: {formatJoined(profile.joinedAt)}
+              {profile.school && ` · ${profile.school}`}
+            </span>
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="profile-name">Toʻliq ism</Label>
+            <Label htmlFor="profile-name">Ism va familiya</Label>
             <Input
               id="profile-name"
               value={profile.name}
@@ -227,18 +216,13 @@ export default function ProfileSection() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="profile-email">Email</Label>
-            <Input
-              id="profile-email"
-              type="email"
-              value={profile.email}
-              onChange={(e) => setProfile({ email: e.target.value })}
-              placeholder="pochta@example.com"
-              aria-invalid={emailError}
-            />
-            {emailError && <p className="text-xs text-destructive">Email formati notoʻgʻri.</p>}
+            <Input id="profile-email" type="email" value={profile.email} readOnly disabled />
+            <p className="text-xs text-muted-foreground">
+              {isGoogle ? "Ushbu maʼlumot Google hisobingiz orqali boshqariladi." : "Kirish uchun ishlatiladi, shu yerdan oʻzgartirib boʻlmaydi."}
+            </p>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="profile-school">Maktab / muassasa</Label>
+            <Label htmlFor="profile-school">Taʼlim muassasasi / Maktab</Label>
             <Input
               id="profile-school"
               value={profile.school}
@@ -258,31 +242,58 @@ export default function ProfileSection() {
         </div>
       </SettingsGroup>
 
-      {/* Akademik statistika */}
+      {/* Oʻquv statistikasi */}
       <SettingsGroup
-        title="Akademik statistika"
+        title="Oʻquv statistikasi"
         description={
           configured
-            ? `Joriy ${yearLabel} oʻquv yili boʻyicha umumiy koʻrsatkichlar.`
+            ? `${yearLabel} oʻquv yili uchun umumiy koʻrsatkichlar.`
             : "Umumiy koʻrsatkichlar (oʻquv yili hali sozlanmagan)."
         }
       >
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard icon={GraduationCap} value={mounted ? classCount : "—"} label="Sinf" href="/dashboard/classes" />
-          <StatCard icon={Users} value={mounted ? studentCount : "—"} label="Oʻquvchi" href="/dashboard/students" />
-          <StatCard icon={FileText} value={mounted ? lessonCount : "—"} label="Dars" href="/dashboard/lessons" />
-          <StatCard icon={CheckCircle} value={mounted ? taskCount : "—"} label="Topshiriq" href="/dashboard/tasks" />
+          <StatCard
+            icon={GraduationCap}
+            color="amber"
+            value={mounted ? classCount : "—"}
+            label="Sinflar"
+            href="/dashboard/classes"
+          />
+          <StatCard
+            icon={Users}
+            color="violet"
+            value={mounted ? studentCount : "—"}
+            label="Oʻquvchilar"
+            href="/dashboard/students"
+          />
+          <StatCard
+            icon={BookOpen}
+            color="sky"
+            value={mounted ? lessonCount : "—"}
+            label="Darslar"
+            href="/dashboard/lessons"
+          />
+          <StatCard
+            icon={ClipboardList}
+            color="green"
+            value={mounted ? taskCount : "—"}
+            label="Topshiriqlar"
+            href="/dashboard/tasks"
+          />
         </div>
       </SettingsGroup>
 
       {/* Oʻquv yili — jonli kalendardan (yagona manba). Toʻliq tahrir chapdagi
           "Oʻquv yili" boʻlimida (choraklar + taʼtillar). */}
-      <SettingsGroup title="Oʻquv yili" description="Koʻrsatkichlar va hisobotlar shu davrga moslanadi.">
+      <SettingsGroup
+        title="Oʻquv yili"
+        description="Barcha koʻrsatkichlar va hisobotlar ushbu davrga muvofiq shakllantiriladi."
+      >
         <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3">
           <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">Faol oʻquv yili</span>
+            <span className="text-sm font-medium text-foreground">Joriy oʻquv yili</span>
             <span className="text-xs text-muted-foreground">
-              Chapdagi «Oʻquv yili» boʻlimida choraklar va taʼtillar bilan sozlanadi.
+              Choraklar va taʼtillar chap paneldagi «Oʻquv yili» boʻlimi orqali sozlanadi.
             </span>
           </div>
           <span className="shrink-0 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-sm font-medium tabular-nums">

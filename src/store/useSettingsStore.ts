@@ -15,7 +15,7 @@ import { create } from "zustand";
    ════════════════════════════════════════════════════════════════════ */
 
 export type WorkspaceBackground = "grid" | "parchment" | "circles" | "stripes";
-export type AppLanguage = "uz" | "ru" | "en";
+export type AppLanguage = "uz" | "kaa" | "ru" | "en";
 export type AuthProvider = "google" | "email";
 
 export type TeacherProfile = {

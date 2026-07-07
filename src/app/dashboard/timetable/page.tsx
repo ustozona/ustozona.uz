@@ -94,6 +94,24 @@ function cloneBell(c: BellConfig): BellConfig {
   return { profile: c.profile, shift1: { ...c.shift1 }, shift2: { ...c.shift2 } };
 }
 
+/** Kalit tartibidan qatʼi nazar barqaror JSON. Postgres JSONB obyekt
+    kalitlarini qayta tartiblab qaytaradi (bellConfig: profile/shift1/shift2 →
+    shift1/shift2/profile), oddiy JSON.stringify solishtiruvi shu sabab
+    hydratsiyadan soʻng yolgʻon "oʻzgarish bor" berib, "qachondan?" dialogini
+    oʻz-oʻzidan ochib yuborardi. */
+function stableStringify(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(stableStringify).join(",")}]`;
+  if (v && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return `{${Object.keys(o)
+      .filter((k) => o[k] !== undefined)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${stableStringify(o[k])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(v);
+}
+
 export default function TimetablePage() {
   const [events, setEvents] = useState<TimetableEvent[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -230,16 +248,21 @@ export default function TimetablePage() {
     if (!hydrated || !storeHydrated || !selectedVersion) return;
     if (justSwitchedRef.current) { justSwitchedRef.current = false; return; }
     const dirty =
-      JSON.stringify(events) !== JSON.stringify(selectedVersion.events) ||
-      JSON.stringify(bellConfig) !== JSON.stringify(selectedVersion.bellConfig);
+      stableStringify(events) !== stableStringify(selectedVersion.events) ||
+      stableStringify(bellConfig) !== stableStringify(selectedVersion.bellConfig);
     if (!dirty) { setSaved(true); return; }
     setSaved(false);
     const t = setTimeout(() => {
-      if (mode === "current" && !decisionMade) {
+      // Boʻsh jadval birinchi marta toʻldirilmoqda — saqlanadigan "eski
+      // tartib" yoʻq, "qachondan?" savoli maʼnosiz; jimgina joriy versiyaga
+      // yozamiz va sessiya davomida boshqa soʻramaymiz.
+      const firstFill = selectedVersion.events.length === 0;
+      if (mode === "current" && !decisionMade && !firstFill) {
         setDialogExplicit(false);
         setEffectiveDialogOpen(true);
         return;
       }
+      if (firstFill && mode === "current") setDecisionMade(true);
       commitDraft(selectedVersion.id, events, bellConfig);
       setSaved(true);
       setSavedSignal((n) => n + 1);
@@ -268,7 +291,7 @@ export default function TimetablePage() {
   const handleSelectVersion = useCallback((id: string) => {
     if (id === selectedVersionId) return;
     if (!saved && selectedVersion) {
-      if (mode === "current" && !decisionMade) {
+      if (mode === "current" && !decisionMade && selectedVersion.events.length > 0) {
         // Hal qilinmagan oʻzgarish bor — avval "qachondan?" savoli, soʻng almashish
         pendingSwitchRef.current = id;
         setDialogExplicit(false);

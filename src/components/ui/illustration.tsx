@@ -19,11 +19,13 @@ export function Illustration({
   name,
   label,
   className,
+  style,
 }: {
   /** Fayl nomi (kengaytmasiz), mas. "oc-taking-note". */
   name: string;
   label?: string;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   const [svg, setSvg] = useState<string | null>(() => cache.get(name) ?? null);
 
@@ -65,6 +67,7 @@ export function Illustration({
         "inline-block text-foreground [&_svg]:h-full [&_svg]:w-auto",
         className
       )}
+      style={style}
       dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
     />
   );

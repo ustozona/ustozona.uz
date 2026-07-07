@@ -1,7 +1,7 @@
 import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { account, teachers } from "@/server/db/schema";
+import { account, teachers, user } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import type {
   AppLanguage,
@@ -46,7 +46,7 @@ export type SettingsUpdate = {
 };
 
 const BACKGROUNDS: readonly string[] = ["grid", "parchment", "circles", "stripes"];
-const LANGUAGES: readonly string[] = ["uz", "ru", "en"];
+const LANGUAGES: readonly string[] = ["uz", "kaa", "ru", "en"];
 
 type TeacherPrefs = {
   avatarColor?: string;
@@ -62,6 +62,11 @@ export async function getSettings(): Promise<SettingsPayload> {
     .from(account)
     .where(eq(account.userId, teacher.id))
     .limit(1);
+  const [authUser] = await db
+    .select({ image: user.image })
+    .from(user)
+    .where(eq(user.id, teacher.id))
+    .limit(1);
 
   const prefs = (teacher.prefs ?? {}) as TeacherPrefs;
   return {
@@ -69,7 +74,9 @@ export async function getSettings(): Promise<SettingsPayload> {
       name: teacher.name,
       email: teacher.email,
       joinedAt: teacher.createdAt.toISOString().slice(0, 7),
-      avatarUrl: teacher.avatarUrl ?? "",
+      // Foydalanuvchi hali oʻzi rasm yuklamagan boʻlsa, Google OAuth'dan
+      // kelgan rasmni (Better Auth `user.image`) avtomatik ishlatamiz.
+      avatarUrl: teacher.avatarUrl || authUser?.image || "",
       avatarColor: prefs.avatarColor ?? "orange",
       school: teacher.school ?? "",
       subject: teacher.subject ?? "",

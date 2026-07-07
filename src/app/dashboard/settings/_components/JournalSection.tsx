@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { useClassStore } from "@/store/useClassStore";
 import { GRADING_SCALE_PRESETS } from "@/lib/grades-data";
 import { formatScore, type LabelStyle } from "@/lib/grade-scale";
-import { SettingsGroup, SettingRow, SwitchRow } from "./SettingsShared";
+import { SettingsGroup, SettingRow, SwitchRow, SavedIndicator } from "./SettingsShared";
 
 export default function JournalSection() {
   const journalScale = useClassStore((s) => s.journalScale);
@@ -32,6 +32,7 @@ export default function JournalSection() {
       <SettingsGroup
         title="Baholash shkalasi"
         description="Butun jurnalda ishlatiladigan yagona shkala. Ichki hisob (foiz) oʻzgarmaydi — faqat koʻrinish."
+        action={<SavedIndicator signal={journalScale} />}
       >
         <SettingRow title="Shkala turi" description={`Namuna: 78% → ${example}`}>
           <Select

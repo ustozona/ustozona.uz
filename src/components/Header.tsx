@@ -11,6 +11,9 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { isCalendarConfigured } from "@/lib/academic-calendar";
 import QuickFeedback from "@/components/QuickFeedback";
 import NotificationsBell from "@/components/NotificationsBell";
+import HeaderThemeToggle from "@/components/HeaderThemeToggle";
+import HeaderLanguageMenu from "@/components/HeaderLanguageMenu";
+import HeaderAccountMenu from "@/components/HeaderAccountMenu";
 import { cn } from "@/lib/utils";
 import { Calendar } from "lucide-react";
 
@@ -49,6 +52,11 @@ export default function Header() {
 
         <Separator orientation="vertical" className="mx-1.5 !h-6" />
 
+        <HeaderThemeToggle />
+        <HeaderLanguageMenu />
+
+        <Separator orientation="vertical" className="mx-1.5 !h-6" />
+
         {/* Oʻquv yili — jonli kalendardan (bitta joriy yil). Bosilsa
             Sozlamalar → "Oʻquv yili"ga oʻtadi; hali sozlanmagan boʻlsa
             sozlashga undaydi. Hydration tugamaguncha koʻrsatilmaydi
@@ -78,6 +86,9 @@ export default function Header() {
             </TooltipContent>
           </Tooltip>
         )}
+
+        <Separator orientation="vertical" className="mx-1.5 !h-6" />
+        <HeaderAccountMenu />
       </div>
     </header>
   );

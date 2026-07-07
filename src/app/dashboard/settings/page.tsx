@@ -1,18 +1,8 @@
 "use client";
 
 import * as React from "react";
-import {
-  User,
-  Palette,
-  BarChart2,
-  CheckSquare,
-  Clock,
-  CalendarRange,
-  CreditCard,
-  Database,
-  Settings,
-  type LucideIcon,
-} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Settings } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -25,49 +15,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-
-import ProfileSection from "./_components/ProfileSection";
-import AppearanceSection from "./_components/AppearanceSection";
-import JournalSection from "./_components/JournalSection";
-import AttendanceSection from "./_components/AttendanceSection";
-import BellSection from "./_components/BellSection";
-import AcademicYearSection from "./_components/AcademicYearSection";
-import PlanSection from "./_components/PlanSection";
-import DataSection from "./_components/DataSection";
-
-type SectionDef = {
-  id: string;
-  label: string;
-  subtitle: string;
-  icon: LucideIcon;
-  Component: React.ComponentType;
-};
-
-const SECTIONS: SectionDef[] = [
-  { id: "profil", label: "Profil", subtitle: "Shaxsiy maʼlumot va statistika", icon: User, Component: ProfileSection },
-  { id: "korinish", label: "Koʻrinish", subtitle: "Mavzu, fon va til", icon: Palette, Component: AppearanceSection },
-  { id: "jurnal", label: "Jurnal", subtitle: "Baholash shkalasi", icon: BarChart2, Component: JournalSection },
-  { id: "davomat", label: "Davomat", subtitle: "Statuslar va taʼsir", icon: CheckSquare, Component: AttendanceSection },
-  { id: "jadval", label: "Dars jadvali", subtitle: "Smena va qoʻngʻiroq", icon: Clock, Component: BellSection },
-  { id: "oquv-yili", label: "Oʻquv yili", subtitle: "Choraklar va taʼtillar", icon: CalendarRange, Component: AcademicYearSection },
-  { id: "tarif", label: "Tarif", subtitle: "Reja va imkoniyatlar", icon: CreditCard, Component: PlanSection },
-  { id: "hisob", label: "Hisob", subtitle: "Eksport, DPA va xavfsizlik", icon: Database, Component: DataSection },
-];
+import { SECTIONS, GROUP_LABELS, GROUP_ORDER } from "./sections";
 
 export default function SettingsPage() {
-  const [active, setActive] = React.useState("profil");
+  return (
+    <React.Suspense fallback={null}>
+      <SettingsPageInner />
+    </React.Suspense>
+  );
+}
 
-  // ?section= bilan sinxron (Suspense talab qilmaydigan yengil usul).
-  React.useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get("section");
-    if (p && SECTIONS.some((s) => s.id === p)) setActive(p);
-  }, []);
+function SettingsPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // ?section= — yagona manba. useSearchParams reaktiv boʻlgani uchun header
+  // dropdownidan yoki chapdagi nav'dan kelgan har qanday oʻzgarish (hatto
+  // sahifa allaqachon ochiq boʻlsa ham) darhol qayta render qiladi.
+  const param = searchParams.get("section");
+  const active = param && SECTIONS.some((s) => s.id === param) ? param : "profil";
 
   const select = (id: string) => {
-    setActive(id);
-    const url = new URL(window.location.href);
-    url.searchParams.set("section", id);
-    window.history.replaceState(null, "", url);
+    const url = new URLSearchParams(searchParams.toString());
+    url.set("section", id);
+    router.replace(`/dashboard/settings?${url.toString()}`, { scroll: false });
   };
 
   const current = SECTIONS.find((s) => s.id === active) ?? SECTIONS[0];
@@ -85,27 +55,34 @@ export default function SettingsPage() {
             <CardTitle>Sozlamalar</CardTitle>
           </div>
           <ScrollArea className="min-h-0 flex-1">
-            <nav className="flex flex-col gap-0.5 p-2">
-              {SECTIONS.map((s) => {
-                const isActive = s.id === active;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => select(s.id)}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors",
-                      isActive
-                        ? "bg-accent font-medium text-accent-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <s.icon className="size-4 shrink-0" strokeWidth={2} />
-                    <span className="truncate">{s.label}</span>
-                  </button>
-                );
-              })}
+            <nav className="flex flex-col gap-3 p-2">
+              {GROUP_ORDER.map((group) => (
+                <div key={group} className="flex flex-col gap-0.5">
+                  <span className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">
+                    {GROUP_LABELS[group]}
+                  </span>
+                  {SECTIONS.filter((s) => s.group === group).map((s) => {
+                    const isActive = s.id === active;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => select(s.id)}
+                        aria-current={isActive ? "page" : undefined}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                          isActive
+                            ? "bg-accent font-medium text-accent-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        )}
+                      >
+                        <s.icon className="size-4 shrink-0" strokeWidth={2} />
+                        <span className="truncate">{s.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </nav>
           </ScrollArea>
         </Card>
@@ -130,10 +107,14 @@ export default function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SECTIONS.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.label}
-                    </SelectItem>
+                  {GROUP_ORDER.map((group) => (
+                    <React.Fragment key={group}>
+                      {SECTIONS.filter((s) => s.group === group).map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </React.Fragment>
                   ))}
                 </SelectContent>
               </Select>

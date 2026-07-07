@@ -371,25 +371,25 @@ export default function ClassesPage() {
                 <div className={cn(panelScrollInnerClass, "flex flex-col gap-4")}>
                   <OverviewStat
                     icon={<GraduationCap className="size-4" />}
-                    color="gray"
+                    color="amber"
                     value={totals.classes}
                     label="Sinflar"
                   />
                   <OverviewStat
                     icon={<Users className="size-4" />}
-                    color="gray"
+                    color="violet"
                     value={totals.students}
                     label="Oʻquvchilar"
                   />
                   <OverviewStat
                     icon={<BookOpen className="size-4" />}
-                    color="gray"
+                    color="sky"
                     value={totals.lessons}
                     label="Darslar"
                   />
                   <OverviewStat
                     icon={<ClipboardList className="size-4" />}
-                    color="gray"
+                    color="green"
                     value={totals.assignments}
                     label="Topshiriqlar"
                   />

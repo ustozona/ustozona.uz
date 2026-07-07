@@ -18,7 +18,8 @@ import {
   type AppLanguage,
 } from "@/store/useSettingsStore";
 import { backgroundStyle } from "@/components/WorkspaceBackground";
-import { SettingsGroup, SettingRow } from "./SettingsShared";
+import { LANGUAGES } from "@/lib/languages";
+import { SettingsGroup, SettingRow, SavedIndicator } from "./SettingsShared";
 
 const THEMES: { value: string; label: string; icon: React.ElementType }[] = [
   { value: "light", label: "Yorugʻ", icon: Sun },
@@ -31,12 +32,6 @@ const BACKGROUNDS: { value: BgKind; label: string }[] = [
   { value: "parchment", label: "Qogʻoz" },
   { value: "circles", label: "Doiralar" },
   { value: "stripes", label: "Chiziqlar" },
-];
-
-const LANGUAGES: { value: AppLanguage; label: string; ready: boolean }[] = [
-  { value: "uz", label: "Oʻzbekcha", ready: true },
-  { value: "ru", label: "Ruscha (tez orada)", ready: false },
-  { value: "en", label: "English (soon)", ready: false },
 ];
 
 export default function AppearanceSection() {
@@ -55,7 +50,11 @@ export default function AppearanceSection() {
   return (
     <>
       {/* Mavzu */}
-      <SettingsGroup title="Mavzu" description="Yorugʻ, qorongʻu yoki tizim sozlamasiga moslanadi.">
+      <SettingsGroup
+        title="Mavzu"
+        description="Yorugʻ, qorongʻu yoki tizim sozlamasiga moslanadi."
+        action={<SavedIndicator signal={activeTheme} />}
+      >
         <div role="radiogroup" aria-label="Mavzu" className="grid grid-cols-3 gap-2">
           {THEMES.map((t) => {
             const active = activeTheme === t.value;
@@ -85,6 +84,7 @@ export default function AppearanceSection() {
       <SettingsGroup
         title="Ishchi maydon foni"
         description="Dashboard orqa fonining vizual koʻrinishi."
+        action={<SavedIndicator signal={workspaceBackground} />}
       >
         <div role="radiogroup" aria-label="Ishchi maydon foni" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {BACKGROUNDS.map((b) => {

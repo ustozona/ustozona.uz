@@ -40,7 +40,10 @@ const PROFILE_OPTIONS = [
 ] as const;
 
 const minToHHMM = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
-const shiftsEqual = (a: ShiftConfig, b: ShiftConfig) => JSON.stringify(a) === JSON.stringify(b);
+/** Kalit tartibiga bogʻliq boʻlmagan taqqoslash — server (JSONB) qaytargan
+    obyektlarda kalitlar qayta tartiblangan boʻladi, JSON.stringify aldanadi. */
+const shiftsEqual = (a: ShiftConfig, b: ShiftConfig) =>
+  (Object.keys({ ...a, ...b }) as (keyof ShiftConfig)[]).every((k) => a[k] === b[k]);
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻNGʻIROQ JADVALI DIALOGI

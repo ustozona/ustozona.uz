@@ -4,7 +4,6 @@ import * as React from "react";
 import { Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { SettingsGroup } from "./SettingsShared";
 
@@ -51,7 +50,11 @@ export default function PlanSection() {
         </ul>
       </SettingsGroup>
 
-      <SettingsGroup title="Pro tarif" description="Koʻproq imkoniyat kerakmi?">
+      <SettingsGroup
+        title="Pro tarif"
+        description="Koʻproq imkoniyat kerakmi?"
+        action={<Badge variant="secondary">Tez orada</Badge>}
+      >
         <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5">
           <div className="mb-3 flex items-center gap-2">
             <Sparkles className="size-4 text-primary" />
@@ -65,12 +68,9 @@ export default function PlanSection() {
               </li>
             ))}
           </ul>
-          <Button
-            className="w-full sm:w-auto"
-            onClick={() => toast.info("Pro tarif tez orada ishga tushadi.")}
-          >
+          <Button className="w-full sm:w-auto" disabled>
             <Sparkles className="size-4" />
-            Pro'ga oʻtish
+            Proʼga oʻtish
           </Button>
         </div>
       </SettingsGroup>

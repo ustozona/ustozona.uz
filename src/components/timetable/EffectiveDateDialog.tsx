@@ -145,7 +145,7 @@ export default function EffectiveDateDialog({
             key: "in-place" as const,
             icon: <Wrench className="size-4" />,
             title: "Xatoni toʻgʻrilash",
-            caption: "Yangi versiya yaratilmaydi. Oʻzgarish oʻtgan va kelgusi kunlarning hammasiga qoʻllaniladi.",
+            caption: "Yangi jadval yaratilmaydi, oʻzgarishlar barcha kunlarga qoʻllanadi.",
           },
         ]
       : []),

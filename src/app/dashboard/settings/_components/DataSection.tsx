@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import * as XLSX from "xlsx";
 import { Download, LogOut, Trash2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,36 +22,7 @@ import { deleteAccountAction } from "@/server/actions/account";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useGradesStore } from "@/store/useGradesStore";
-import { cn } from "@/lib/utils";
-import { SettingsGroup } from "./SettingsShared";
-
-/** Bitta rounded konteyner ichida divider bilan ajratilган qator (davomat bo'limi patterniga mos). */
-function ListRow({
-  title,
-  description,
-  first,
-  children,
-}: {
-  title: React.ReactNode;
-  description?: React.ReactNode;
-  first?: boolean;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex items-center justify-between gap-4 bg-card px-4 py-3",
-        !first && "border-t border-border"
-      )}
-    >
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <span className="text-sm font-medium text-foreground">{title}</span>
-        {description && <span className="text-xs text-muted-foreground">{description}</span>}
-      </div>
-      {children && <div className="shrink-0">{children}</div>}
-    </div>
-  );
-}
+import { SettingsGroup, SettingsList } from "./SettingsShared";
 
 const CONFIRM_WORD = "OʻCHIRISH";
 
@@ -63,8 +33,10 @@ export default function DataSection() {
   const [confirmText, setConfirmText] = React.useState("");
   const [deleting, setDeleting] = React.useState(false);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
+      // xlsx faqat shu amal bosilganda yuklanadi — sozlamalar paketini kattalashtirmaydi.
+      const XLSX = await import("xlsx");
       // Server-backed store'lardagi JORIY (hisobga tegishli) maʼlumot eksport qilinadi.
       const students = Object.entries(classDataMap).flatMap(([classId, d]) =>
         d.students.map((s) => ({ id: s.id, name: s.name, classId, className: d.info.name }))
@@ -109,49 +81,57 @@ export default function DataSection() {
       {/* Ma'lumot */}
       <SettingsGroup
         title="Maʼlumotlaringiz"
-        description="Barcha maʼlumotlaringizni bitta jadval faylида (har boʻlim alohida varaqda) yuklab oling."
+        description="Barcha maʼlumotlaringizni bitta jadval faylida (har boʻlim alohida varaqda) yuklab oling."
       >
-        <div className="overflow-hidden rounded-xl border border-border">
-          <ListRow
-            first
-            title="Maʼlumotlarni eksport qilish"
-            description="Oʻquvchilar, sinflar, darslar va topshiriqlar (.xlsx)."
-          >
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="size-4" />
-              Yuklab olish
-            </Button>
-          </ListRow>
-
-          <ListRow
-            title="Maʼlumotlarni qayta ishlash shartnomasi (DPA)"
-            description="Maktab yozuvlaringiz uchun DPA (GDPR 28-modda / FERPA)."
-          >
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">Tez orada</Badge>
-              <Button variant="outline" size="sm" disabled>
-                <ShieldCheck className="size-4" />
-                DPA imzolash
-              </Button>
-            </div>
-          </ListRow>
-
-          <ListRow title="Chiqish" description="Joriy seansni yakunlash.">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                await authClient.signOut();
-                // To'liq reload: xotiradagi store'larda oldingi hisob
-                // ma'lumotlari qolib ketmasligi uchun.
-                window.location.href = "/login";
-              }}
-            >
-              <LogOut className="size-4" />
-              Chiqish
-            </Button>
-          </ListRow>
-        </div>
+        <SettingsList
+          items={[
+            {
+              key: "export",
+              title: "Maʼlumotlarni eksport qilish",
+              description: "Oʻquvchilar, sinflar, darslar va topshiriqlar (.xlsx).",
+              trailing: (
+                <Button variant="outline" size="sm" onClick={handleExport}>
+                  <Download className="size-4" />
+                  Yuklab olish
+                </Button>
+              ),
+            },
+            {
+              key: "dpa",
+              title: "Maʼlumotlarni qayta ishlash shartnomasi (DPA)",
+              description: "Maktab yozuvlaringiz uchun DPA (GDPR 28-modda / FERPA).",
+              trailing: (
+                <>
+                  <Badge variant="secondary">Tez orada</Badge>
+                  <Button variant="outline" size="sm" disabled>
+                    <ShieldCheck className="size-4" />
+                    DPA imzolash
+                  </Button>
+                </>
+              ),
+            },
+            {
+              key: "signout",
+              title: "Chiqish",
+              description: "Joriy seansni yakunlash.",
+              trailing: (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await authClient.signOut();
+                    // To'liq reload: xotiradagi store'larda oldingi hisob
+                    // ma'lumotlari qolib ketmasligi uchun.
+                    window.location.href = "/login";
+                  }}
+                >
+                  <LogOut className="size-4" />
+                  Chiqish
+                </Button>
+              ),
+            },
+          ]}
+        />
       </SettingsGroup>
 
       {/* Danger zone */}

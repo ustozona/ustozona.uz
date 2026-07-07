@@ -18,8 +18,6 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useTaskStore } from "@/store/useTaskStore";
-import { useSettingsStore } from "@/store/useSettingsStore";
-import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import {
   GraduationCap,
   LayoutGrid,
@@ -35,7 +33,6 @@ import {
   BookMarked,
   MessagesSquare,
   Settings,
-  ChevronsUpDown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -70,15 +67,6 @@ function useTaskCount() {
   return hydrated ? tasks.filter((t) => t.status === "todo").length : 0;
 }
 
-function initialsOf(name: string) {
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 function isActivePath(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(href + "/");
@@ -107,13 +95,6 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
 
 export function AppSidebar() {
   const taskCount = useTaskCount();
-  const profile = useSettingsStore((s) => s.profile);
-  const hydrated = useSettingsStore((s) => s._hasHydrated);
-  const name = hydrated ? profile.name : "Foydalanuvchi";
-  const initials = hydrated ? initialsOf(profile.name) || "F" : "F";
-  const avatarHex = hydrated
-    ? CLASS_COLOR_HEX[(profile.avatarColor as ClassColor) ?? "orange"] ?? CLASS_COLOR_HEX.orange
-    : undefined;
 
   return (
     <Sidebar collapsible="icon">
@@ -159,23 +140,6 @@ export function AppSidebar() {
           {footerItems.map((item) => (
             <NavMenuItem key={item.href} item={item} />
           ))}
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild tooltip={`${name} · Oʻqituvchi`}>
-              <Link href="/dashboard/settings">
-                <span
-                  className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-rose-500 text-xs font-medium text-white"
-                  style={avatarHex ? { background: avatarHex } : undefined}
-                >
-                  {initials}
-                </span>
-                <div className="grid flex-1 text-left leading-tight">
-                  <span className="truncate text-sm font-medium">{name}</span>
-                  <span className="truncate text-xs text-muted-foreground">Oʻqituvchi</span>
-                </div>
-                <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
 

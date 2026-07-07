@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { defaultBellConfig, type BellConfig } from "@/lib/bell-schedule";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
@@ -42,6 +43,11 @@ export default function BellSection() {
       <SettingsGroup
         title="Qoʻngʻiroq jadvali"
         description="Joriy jadval versiyasidan oʻqiladi. Oʻzgartirish dars jadvali sahifasida — qaysi sanadan kuchga kirishi saqlashda soʻraladi."
+        action={
+          <Badge variant="secondary" className="gap-1.5 font-normal">
+            Faqat koʻrish · manba: dars jadvali
+          </Badge>
+        }
       >
         <SettingRow title="Maktab rejimi">
           <span className="text-sm text-foreground">

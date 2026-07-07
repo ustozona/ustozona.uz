@@ -100,6 +100,49 @@ export function SavedIndicator({ signal }: { signal: unknown }) {
   );
 }
 
+/**
+ * Guruhlangan roʻyxat — bitta rounded konteyner, divider bilan ajratilgan
+ * qatorlar (avval Attendance/Data har biri oʻzicha qayta yozgan pattern —
+ * endi yagona manba). Har bir item ixtiyoriy leading (ikonka/dot) va
+ * trailing (control) slotlariga ega.
+ */
+export function SettingsList({
+  items,
+  className,
+}: {
+  items: {
+    key: string;
+    title: React.ReactNode;
+    description?: React.ReactNode;
+    leading?: React.ReactNode;
+    trailing?: React.ReactNode;
+  }[];
+  className?: string;
+}) {
+  return (
+    <div className={cn("overflow-hidden rounded-xl border border-border", className)}>
+      {items.map((item, i) => (
+        <div
+          key={item.key}
+          className={cn(
+            "flex items-center gap-3 bg-card px-4 py-3",
+            i !== 0 && "border-t border-border"
+          )}
+        >
+          {item.leading}
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
+            {item.description && (
+              <span className="truncate text-xs text-muted-foreground">{item.description}</span>
+            )}
+          </div>
+          {item.trailing && <div className="flex shrink-0 items-center gap-2">{item.trailing}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Toggle qatori — SettingRow ustida Switch. */
 export function SwitchRow({
   title,

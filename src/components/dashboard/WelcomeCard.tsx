@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, SquareCheckBig, Users, School, ArrowRight, Plus } from "lucide-react";
+import { BookOpen, ClipboardList, Users, GraduationCap, ArrowRight, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { AnimatedCounter } from "@/components/dashboard/AnimatedCounter";
 import { cn } from "@/lib/utils";
+import { classTints, type ClassColor } from "@/lib/class-colors";
 
 /** Bugungi darsning agenda qatori uchun minimal maʼlumot. */
 export type WelcomeAgendaItem = {
@@ -166,10 +167,10 @@ function MetricGrid({
 }) {
   return (
     <div className="hidden shrink-0 grid-cols-2 gap-1.5 sm:grid">
-      <MetricTile href="/dashboard/timetable" icon={<Clock />} tint="text-sky-600 dark:text-sky-400" value={todayLessonCount} noun="dars" emphasize={todayLessonCount > 0} />
-      <MetricTile href="/dashboard/tasks" icon={<SquareCheckBig />} tint="text-green-600 dark:text-green-400" value={todayTaskCount} noun="vazifa" emphasize={todayTaskCount > 0} />
-      <MetricTile href="/dashboard/students" icon={<Users />} tint="text-violet-600 dark:text-violet-400" value={studentCount} noun="oʻquvchi" />
-      <MetricTile href="/dashboard/grades" icon={<School />} tint="text-amber-600 dark:text-amber-400" value={classCount} noun="sinf" />
+      <MetricTile href="/dashboard/timetable" icon={<BookOpen />} color="sky" value={todayLessonCount} noun="dars" emphasize={todayLessonCount > 0} />
+      <MetricTile href="/dashboard/tasks" icon={<ClipboardList />} color="green" value={todayTaskCount} noun="vazifa" emphasize={todayTaskCount > 0} />
+      <MetricTile href="/dashboard/students" icon={<Users />} color="violet" value={studentCount} noun="oʻquvchi" />
+      <MetricTile href="/dashboard/grades" icon={<GraduationCap />} color="amber" value={classCount} noun="sinf" />
     </div>
   );
 }
@@ -182,24 +183,25 @@ function MetricGrid({
 function MetricTile({
   href,
   icon,
-  tint,
+  color,
   value,
   noun,
   emphasize,
 }: {
   href: string;
   icon: React.ReactNode;
-  tint: string;
+  color: ClassColor;
   value: number;
   noun: string;
   emphasize?: boolean;
 }) {
+  const tints = classTints(color);
   return (
     <Link
       href={href}
       className="flex min-w-[92px] items-center gap-2 rounded-[10px] border border-white/60 bg-white/35 px-2.5 py-1.5 backdrop-blur-sm transition-colors hover:bg-white/75 dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20"
     >
-      <span className={cn("shrink-0 [&_svg]:size-4", tint)}>{icon}</span>
+      <span style={tints.iconText} className="shrink-0 [&_svg]:size-4">{icon}</span>
       <span
         className={cn(
           "text-lg font-semibold leading-none tabular-nums",
