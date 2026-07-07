@@ -3,10 +3,11 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { account, teachers, user } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
-import type {
-  AppLanguage,
-  TeacherProfile,
-  WorkspaceBackground,
+import {
+  normalizeBackgroundScale,
+  type AppLanguage,
+  type TeacherProfile,
+  type WorkspaceBackground,
 } from "@/store/useSettingsStore";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -27,6 +28,7 @@ export type SettingsPayload = {
   academicYear: string;
   language: AppLanguage;
   workspaceBackground: WorkspaceBackground;
+  backgroundScale: number;
   plan: "free" | "pro";
   onboardingCompleted: boolean;
   completedTours: string[];
@@ -41,16 +43,28 @@ export type SettingsUpdate = {
   academicYear: string;
   language: AppLanguage;
   workspaceBackground: WorkspaceBackground;
+  backgroundScale: number;
   onboardingCompleted: boolean;
   completedTours: string[];
 };
 
-const BACKGROUNDS: readonly string[] = ["grid", "parchment", "circles", "stripes"];
+const BACKGROUNDS: readonly string[] = [
+  "grid",
+  "parchment",
+  "stripes",
+  "plain",
+  "checker",
+  "lined",
+  "graphDashed",
+  "graph45",
+  "circuit",
+];
 const LANGUAGES: readonly string[] = ["uz", "kaa", "ru", "en"];
 
 type TeacherPrefs = {
   avatarColor?: string;
   workspaceBackground?: string;
+  backgroundScale?: number;
   onboardingCompleted?: boolean;
   completedTours?: string[];
 };
@@ -89,6 +103,7 @@ export async function getSettings(): Promise<SettingsPayload> {
     workspaceBackground: BACKGROUNDS.includes(prefs.workspaceBackground ?? "")
       ? (prefs.workspaceBackground as WorkspaceBackground)
       : "grid",
+    backgroundScale: normalizeBackgroundScale(prefs.backgroundScale),
     plan: teacher.plan === "pro" ? "pro" : "free",
     onboardingCompleted: prefs.onboardingCompleted === true,
     completedTours: Array.isArray(prefs.completedTours) ? prefs.completedTours : [],
@@ -102,6 +117,7 @@ export async function updateSettings(input: SettingsUpdate): Promise<void> {
   const patch = JSON.stringify({
     avatarColor: input.avatarColor,
     workspaceBackground: input.workspaceBackground,
+    backgroundScale: input.backgroundScale,
     onboardingCompleted: input.onboardingCompleted,
     completedTours: input.completedTours,
   } satisfies TeacherPrefs);

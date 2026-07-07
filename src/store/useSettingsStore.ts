@@ -14,7 +14,41 @@ import { create } from "zustand";
    javobidan keyin yoqiladi — mount-gate'lar avvalgidek ishlaydi.
    ════════════════════════════════════════════════════════════════════ */
 
-export type WorkspaceBackground = "grid" | "parchment" | "circles" | "stripes";
+export type WorkspaceBackground =
+  | "grid"
+  | "parchment"
+  | "stripes"
+  | "plain"
+  | "checker"
+  | "lined"
+  | "graphDashed"
+  | "graph45"
+  | "circuit";
+
+/** Fon variantlari — yagona manba (store, server-validatsiya va UI shu roʻyxatga tayanadi). */
+export const WORKSPACE_BACKGROUNDS: readonly WorkspaceBackground[] = [
+  "grid",
+  "parchment",
+  "stripes",
+  "plain",
+  "checker",
+  "lined",
+  "graphDashed",
+  "graph45",
+  "circuit",
+];
+
+/** Naqsh oʻlchami — foiz (200–400, dizayn vositalari zoom bosqichlariga mos).
+    Slider bilan uzluksiz tanlanadi. */
+export const BACKGROUND_SCALE_MIN = 200;
+export const BACKGROUND_SCALE_MAX = 400;
+export const BACKGROUND_SCALE_DEFAULT = 300;
+
+export function normalizeBackgroundScale(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return BACKGROUND_SCALE_DEFAULT;
+  return Math.min(BACKGROUND_SCALE_MAX, Math.max(BACKGROUND_SCALE_MIN, n));
+}
 export type AppLanguage = "uz" | "kaa" | "ru" | "en";
 export type AuthProvider = "google" | "email";
 
@@ -48,8 +82,8 @@ export const DEFAULT_PROFILE: TeacherProfile = {
 
 /** Eskirgan/notaʼrif fon qiymatini xavfsiz normallaymiz. */
 export function normalizeBackground(v: unknown): WorkspaceBackground {
-  return v === "grid" || v === "parchment" || v === "circles" || v === "stripes"
-    ? v
+  return WORKSPACE_BACKGROUNDS.includes(v as WorkspaceBackground)
+    ? (v as WorkspaceBackground)
     : "grid";
 }
 
@@ -65,6 +99,9 @@ interface SettingsState {
 
   workspaceBackground: WorkspaceBackground;
   setWorkspaceBackground: (b: WorkspaceBackground) => void;
+
+  backgroundScale: number;
+  setBackgroundScale: (s: number) => void;
 
   plan: "free" | "pro";
 
@@ -94,6 +131,9 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
 
   workspaceBackground: "grid",
   setWorkspaceBackground: (b) => set({ workspaceBackground: b }),
+
+  backgroundScale: BACKGROUND_SCALE_DEFAULT,
+  setBackgroundScale: (s) => set({ backgroundScale: s }),
 
   plan: "free",
 

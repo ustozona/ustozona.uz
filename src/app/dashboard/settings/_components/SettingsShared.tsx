@@ -17,7 +17,7 @@ export function SettingsGroup({
   className,
 }: {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   /** Sarlavha oʻngida ixtiyoriy slot — masalan saqlash indikatori. */
   action?: React.ReactNode;
   children: React.ReactNode;

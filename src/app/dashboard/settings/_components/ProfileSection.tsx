@@ -246,9 +246,22 @@ export default function ProfileSection() {
       <SettingsGroup
         title="Oʻquv statistikasi"
         description={
-          configured
-            ? `${yearLabel} oʻquv yili uchun umumiy koʻrsatkichlar.`
-            : "Umumiy koʻrsatkichlar (oʻquv yili hali sozlanmagan)."
+          configured ? (
+            <>
+              <Link href="/dashboard/settings?section=oquv-yili" className="font-medium text-foreground underline-offset-2 hover:underline">
+                {yearLabel}
+              </Link>{" "}
+              oʻquv yili uchun umumiy koʻrsatkichlar.
+            </>
+          ) : (
+            <>
+              Umumiy koʻrsatkichlar (
+              <Link href="/dashboard/settings?section=oquv-yili" className="font-medium text-foreground underline-offset-2 hover:underline">
+                oʻquv yili hali sozlanmagan
+              </Link>
+              ).
+            </>
+          )
         }
       >
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -280,25 +293,6 @@ export default function ProfileSection() {
             label="Topshiriqlar"
             href="/dashboard/tasks"
           />
-        </div>
-      </SettingsGroup>
-
-      {/* Oʻquv yili — jonli kalendardan (yagona manba). Toʻliq tahrir chapdagi
-          "Oʻquv yili" boʻlimida (choraklar + taʼtillar). */}
-      <SettingsGroup
-        title="Oʻquv yili"
-        description="Barcha koʻrsatkichlar va hisobotlar ushbu davrga muvofiq shakllantiriladi."
-      >
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">Joriy oʻquv yili</span>
-            <span className="text-xs text-muted-foreground">
-              Choraklar va taʼtillar chap paneldagi «Oʻquv yili» boʻlimi orqali sozlanadi.
-            </span>
-          </div>
-          <span className="shrink-0 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-sm font-medium tabular-nums">
-            {configured ? yearLabel : "Sozlanmagan"}
-          </span>
         </div>
       </SettingsGroup>
     </>

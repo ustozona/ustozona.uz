@@ -29,7 +29,7 @@ export type SectionDef = {
 export const GROUP_LABELS: Record<SectionGroup, string> = {
   shaxsiy: "Shaxsiy",
   oqitish: "Taʼlim",
-  hisob: "Profil va tariflar",
+  hisob: "Hisob va tariflar",
 };
 
 export const SECTIONS: SectionDef[] = [
@@ -44,26 +44,18 @@ export const SECTIONS: SectionDef[] = [
   {
     id: "korinish",
     label: "Koʻrinish",
-    subtitle: "Mavzu, fon va til",
+    subtitle: "Mavzu, fon va til sozlamalari",
     icon: Palette,
     group: "shaxsiy",
     Component: dynamic(() => import("./_components/AppearanceSection")),
   },
   {
-    id: "jurnal",
-    label: "Jurnal",
-    subtitle: "Baholash shkalasi",
-    icon: BarChart2,
+    id: "oquv-yili",
+    label: "Oʻquv yili",
+    subtitle: "Choraklar va taʼtillar",
+    icon: CalendarRange,
     group: "oqitish",
-    Component: dynamic(() => import("./_components/JournalSection")),
-  },
-  {
-    id: "davomat",
-    label: "Davomat",
-    subtitle: "Statuslar va taʼsir",
-    icon: CheckSquare,
-    group: "oqitish",
-    Component: dynamic(() => import("./_components/AttendanceSection")),
+    Component: dynamic(() => import("./_components/AcademicYearSection")),
   },
   {
     id: "jadval",
@@ -74,12 +66,20 @@ export const SECTIONS: SectionDef[] = [
     Component: dynamic(() => import("./_components/BellSection")),
   },
   {
-    id: "oquv-yili",
-    label: "Oʻquv yili",
-    subtitle: "Choraklar va taʼtillar",
-    icon: CalendarRange,
+    id: "davomat",
+    label: "Davomat",
+    subtitle: "Statuslar va taʼsir",
+    icon: CheckSquare,
     group: "oqitish",
-    Component: dynamic(() => import("./_components/AcademicYearSection")),
+    Component: dynamic(() => import("./_components/AttendanceSection")),
+  },
+  {
+    id: "jurnal",
+    label: "Jurnal",
+    subtitle: "Baholash shkalasi",
+    icon: BarChart2,
+    group: "oqitish",
+    Component: dynamic(() => import("./_components/JournalSection")),
   },
   {
     id: "tarif",
