@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import {
-  DEFAULT_CALENDAR_2025_2026,
   EMPTY_CALENDAR,
+  currentAcademicStartYear,
+  makeCalendarForYear,
   type AcademicYearCalendar,
   type DateRange,
   type Holiday,
@@ -41,7 +42,9 @@ interface CalendarState {
   addHoliday: (name: string, range: DateRange) => string;
   updateHoliday: (id: string, patch: Partial<Omit<Holiday, "id">>) => void;
   removeHoliday: (id: string) => void;
-  resetDefaults: () => void;
+  /** Joriy oʻquv yilini rasmiy shablon (4 chorak + 3 taʼtil) bilan qayta tiklaydi —
+      yil sarlavhasi hardcoded emas, joriy kalendar boshlanish yilidan hisoblanadi. */
+  resetToOfficialTemplate: () => void;
 }
 
 export const useCalendarStore = create<CalendarState>()((set) => ({
@@ -86,7 +89,14 @@ export const useCalendarStore = create<CalendarState>()((set) => ({
       calendar: { ...s.calendar, holidays: s.calendar.holidays.filter((h) => h.id !== id) },
     })),
 
-  resetDefaults: () => set({ calendar: DEFAULT_CALENDAR_2025_2026 }),
+  resetToOfficialTemplate: () =>
+    set((s) => {
+      const startYear = s.calendar.range.start
+        ? Number(s.calendar.range.start.slice(0, 4)) -
+          (Number(s.calendar.range.start.slice(5, 7)) >= 6 ? 0 : 1)
+        : currentAcademicStartYear();
+      return { calendar: makeCalendarForYear(startYear) };
+    }),
 }));
 
 /** Joriy kalendarni React'siz oʻqish — hook boʻlmagan kod (student-profile,

@@ -1,5 +1,5 @@
 import { MONTHS_UZ } from "@/lib/localization";
-import { dateKeyToDate } from "@/lib/date-keys";
+import { dateKeyToDate, addDaysKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
    OʻQUV YILI KALENDARI — yil chegaralari, 4 chorak, taʼtillar
@@ -115,6 +115,27 @@ export function inRange(dateKey: string, r: DateRange): boolean {
   return dateKey >= r.start && dateKey <= r.end;
 }
 
+/** Ikki sana kaliti orasidagi kunlar soni (b − a, ishorali). */
+export function diffDaysKeys(a: string, b: string): number {
+  return Math.round((dateKeyToDate(b).getTime() - dateKeyToDate(a).getTime()) / 86_400_000);
+}
+
+/** Berilgan chorak chegarasi (`boundary`) bevosita yonidagi taʼtilni topadi —
+    "start" bosilsa chorakdan OLDIN tugaydigan, "end" bosilsa chorakdan KEYIN
+    boshlanadigan taʼtil. Chegara surilganda shu taʼtilni ham surish taklifi uchun. */
+export function findAdjacentHoliday(
+  cal: AcademicYearCalendar,
+  quarterRange: DateRange,
+  boundary: "start" | "end"
+): Holiday | null {
+  if (boundary === "start") {
+    const dayBefore = addDaysKey(quarterRange.start, -1);
+    return cal.holidays.find((h) => h.range.end === dayBefore) ?? null;
+  }
+  const dayAfter = addDaysKey(quarterRange.end, 1);
+  return cal.holidays.find((h) => h.range.start === dayAfter) ?? null;
+}
+
 /** Sana qaysi chorakka tushadi (taʼtil/oraliq boʻlsa null). */
 export function getQuarterForDate(cal: AcademicYearCalendar, dateKey: string): Quarter | null {
   return cal.quarters.find((q) => inRange(dateKey, q.range)) ?? null;
@@ -155,5 +176,61 @@ export function fmtDayMonthUz(dateKey: string): string {
   const [, m, d] = dateKey.split("-").map(Number);
   const month = MONTHS_UZ[(m || 1) - 1] ?? "";
   return `${d || 1}-${month.toLowerCase()}`;
+}
+
+/** Diapazondagi kunlar soni (inklyuziv). */
+export function daysInRange(r: DateRange): number {
+  if (!r.start || !r.end) return 0;
+  return Math.max(Math.round((dateKeyToDate(r.end).getTime() - dateKeyToDate(r.start).getTime()) / 86_400_000) + 1, 0);
+}
+
+/** Diapazondagi dars kunlari soni (taʼtil va yakshanbalarsiz, `cal.range` ichida). */
+export function schoolDaysInRange(cal: AcademicYearCalendar, r: DateRange): number {
+  if (!r.start || !r.end) return 0;
+  let count = 0;
+  let cursor = r.start;
+  while (cursor <= r.end) {
+    if (isSchoolDay(cal, cursor)) count++;
+    cursor = addDaysKey(cursor, 1);
+  }
+  return count;
+}
+
+export type CalendarIssue = {
+  message: string;
+  /** Qaysi qatorga bogʻlanadi — SettingRow shu xabarni oʻz ichida koʻrsatadi. */
+  target: { kind: "year" } | { kind: "quarter"; id: string } | { kind: "holiday"; id: string };
+};
+
+/** Kalendarni tekshiradi: chorak/taʼtil diapazon buzilishi, yil chegarasidan chiqish,
+    choraklar orasidagi kesishuv, chorak↔taʼtil kesishuvi. Bloklamaydi — faqat ogohlantiradi,
+    har xabar aynan aybdor qatorga bogʻlanadi (UI shu boʻyicha inline koʻrsatadi). */
+export function validateCalendar(cal: AcademicYearCalendar): CalendarIssue[] {
+  const issues: CalendarIssue[] = [];
+
+  for (const q of cal.quarters) {
+    if (q.range.end < q.range.start)
+      issues.push({ message: "Tugash sanasi boshlanishidan oldin.", target: { kind: "quarter", id: q.id } });
+    if (!inRange(q.range.start, cal.range) || !inRange(q.range.end, cal.range))
+      issues.push({ message: "Oʻquv yili chegarasidan chiqib ketgan.", target: { kind: "quarter", id: q.id } });
+  }
+  for (let i = 0; i < cal.quarters.length; i++)
+    for (let j = i + 1; j < cal.quarters.length; j++) {
+      const a = cal.quarters[i];
+      const b = cal.quarters[j];
+      if (a.range.start <= b.range.end && b.range.start <= a.range.end) {
+        issues.push({ message: `${b.name} bilan kesishyapti.`, target: { kind: "quarter", id: a.id } });
+        issues.push({ message: `${a.name} bilan kesishyapti.`, target: { kind: "quarter", id: b.id } });
+      }
+    }
+  for (const h of cal.holidays) {
+    if (h.range.end < h.range.start)
+      issues.push({ message: "Tugash sanasi boshlanishidan oldin.", target: { kind: "holiday", id: h.id } });
+    for (const q of cal.quarters) {
+      if (h.range.start <= q.range.end && q.range.start <= h.range.end)
+        issues.push({ message: `${q.name} bilan kesishyapti.`, target: { kind: "holiday", id: h.id } });
+    }
+  }
+  return issues;
 }
 
