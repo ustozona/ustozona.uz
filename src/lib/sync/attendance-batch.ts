@@ -10,14 +10,15 @@ import { z } from "zod";
 
 const id = z.string().min(1).max(200);
 
+// Statuslar toʻplami QULFLANGAN — faqat 4 ta built-in kalit qabul qilinadi.
 export const statusUpsertSchema = z.object({
-  key: z.string().min(1).max(100),
+  key: z.enum(["present", "absent", "late", "excused"]),
   label: z.string().min(1).max(100),
   icon: z.string().min(1).max(50),
-  scoreImpact: z.enum(["positive", "negative", "neutral"]),
+  scoreImpact: z.enum(["full", "half", "none", "excluded"]),
   active: z.boolean(),
   builtIn: z.boolean(),
-  tone: z.string().min(1).max(50),
+  tone: z.enum(["success", "destructive", "warning", "info"]),
   sortOrder: z.number().int().min(0),
 });
 

@@ -6,7 +6,10 @@ darsda boʻlganmi va oʻquv materialidan namuna olganmi.
 
 ## 1. Holat ogʻirliklari (foiz hisobida)
 Foiz = `Σ(weight) / counted`, faqat **belgilangan** kataklar hisobga olinadi
-(belgilanmagan — denominatorga kirmaydi). `STATUS_WEIGHT` — `lib/attendance-data.ts`.
+(belgilanmagan — denominatorga kirmaydi). Vaznlar holat sozlamasidagi
+`scoreImpact` siyosatidan keladi (`full`=×1, `half`=×0.5, `none`=×0,
+`excluded`=maxrajdan chiqariladi) — SIS'lardagi "presence value" modeli;
+`statusWeights`/`weightedRate` — `lib/attendance-data.ts`. Standart qiymatlar:
 
 | Holat    | key     | weight | Izoh                                               |
 |----------|---------|--------|----------------------------------------------------|
@@ -36,11 +39,14 @@ belgisi + qator chap chetida qizil aksent + % soni qizil tonda.
 ## 4. Surunkali (chronic)
 **Oyiga jami ≥3 "Kelmadi"** = surunkali (ketma-ket emas). ⚠ belgisi va tooltipда sabab.
 
-## 5. Statuslar — global + QULFLANGAN
-4 ta built-in holat standart, oʻzgartirilmaydi. Yangi holat qoʻshish
-(icon-picker/composer) olib tashlandi — ishonchlilik va adolat uchun.
-Oʻqituvchi faqat holatni yoqadi/oʻchiradi. Modal ogʻirliklarni **shaffof**
-koʻrsatadi (×1 / ×0.5 / ×0). Moslashuvchanlik faqat **Izoh**da.
+## 5. Statuslar — global, QULFLANGAN toʻplam, sozlanadigan vazn
+Toʻplam = 4 ta built-in, ataylab qulflangan: maxsus status qoʻshish YOʻQ
+(model, zod va DAL darajasida ham — notanish kalit rad etiladi/tashlanadi).
+Real foydalanuvchilar soʻrasa qoʻshiladi. Tahrir YAGONA joyda — **Sozlamalar > Davomat** (davomat
+sahifasidagi tugma oʻsha yerga deep-link): holatni yoqish/oʻchirish va
+vaznini (×1 / ×0.5 / ×0 / hisobdan chiqarish) tanlash. Keldi/Kelmadi —
+yadro, oʻchirib boʻlmaydi; yozuvlari bor holatni oʻchirish tasdiq soʻraydi.
+Kunlik moslashuvchanlik — **Izoh**da.
 
 ## 6. Termostat — diqqatni yuzaga chiqarish
 Funnel filtrida **"Diqqat talab qiladiganlar (N)"** — bir bosishda xavfli +

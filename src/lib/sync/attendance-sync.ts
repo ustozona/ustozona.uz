@@ -26,7 +26,8 @@ export type AttendanceSnapshot = {
 
 function toStatusUpsert(s: AttendanceStatusDef, sortOrder: number): StatusUpsert {
   return {
-    key: s.key,
+    // Toʻplam qulflangan — key har doim 4 built-in'dan biri (zod tekshiradi)
+    key: s.key as StatusUpsert["key"],
     label: s.label,
     icon: s.icon,
     scoreImpact: s.scoreImpact,

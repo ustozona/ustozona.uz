@@ -1,20 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
   Check, X, Clock, FileText, ChevronLeft, ChevronRight,
   Search, Funnel, ListChecks, Calendar, CalendarRange, CalendarDays,
-  ArrowUpRight, ArrowRight, Pencil, ChevronUp, ChevronDown, Info, Users,
-  Circle, AlertTriangle, MessageSquareText,
+  ArrowUpRight, ArrowRight, Pencil, ChevronUp, ChevronDown,
+  AlertTriangle, MessageSquareText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DAYS_UZ_SUN } from "@/lib/localization";
 import {
   type AttendanceStatus, type AttendanceStatusDef,
   deriveLessonDays, getStatus, getNote, allDaysInMonth,
-  weightedRate, percentile, STATUS_WEIGHT,
+  weightedRate, percentile, statusWeights,
   MONTH_NAMES,
 } from "@/lib/attendance-data";
+import { statusVisual } from "@/components/attendance/status-visual";
 import { getQuarterForMonth, inRange } from "@/lib/academic-calendar";
 import { todayKey } from "@/lib/date-keys";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
@@ -23,13 +25,11 @@ import { useTimetableStore } from "@/store/useTimetableStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
 import { classColor } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX, classTints, type ClassColor } from "@/lib/class-colors";
-import { ATTENDANCE_TONE } from "@/lib/score-colors";
+import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
-import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -76,39 +76,6 @@ function splitName(name: string): { first: string; last: string } {
   return parts.length >= 2
     ? { first: parts[0], last: parts.slice(1).join(" ") }
     : { first: parts[0] ?? "", last: "" };
-}
-
-// ─── Status ikona/rang map (dizayn tizimi) ──────────────────────────────────
-
-const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string; strokeWidth?: number }>> = {
-  check: Check, x: X, clock: Clock, file: FileText,
-};
-
-// Built-in tonelar — to‘yingan pastel (yagona manba: score-colors.ts)
-const TONE_CLASS = ATTENDANCE_TONE;
-
-type Visual = {
-  Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  cellClass: string;
-  cellStyle?: React.CSSProperties;
-  textClass: string;
-  textStyle?: React.CSSProperties;
-  dotStyle?: React.CSSProperties;
-};
-
-function statusVisual(def: AttendanceStatusDef): Visual {
-  const Icon = STATUS_ICONS[def.icon] ?? Circle;
-  if (def.tone in TONE_CLASS) {
-    const t = TONE_CLASS[def.tone as keyof typeof TONE_CLASS];
-    return { Icon, cellClass: t.cell, textClass: t.text };
-  }
-  const tints = classTints(def.tone as ClassColor);
-  return {
-    Icon, cellClass: "", textClass: "",
-    cellStyle: { ...tints.badge, ...tints.text },
-    textStyle: tints.text,
-    dotStyle: tints.dot,
-  };
 }
 
 // ─── Oʻquvchi preview (hover-card ichida) ────────────────────────────────────
@@ -239,126 +206,6 @@ function NoteModal({
   );
 }
 
-// ─── Custom statuslar modali ─────────────────────────────────────────────────
-
-/** Boʻlim sarlavhasi (uppercase) + ixtiyoriy ⓘ tooltip — GradesSettingsModal bilan bir xil. */
-function SectionTitle({ children, hint }: { children: React.ReactNode; hint?: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <h3 className="text-label font-semibold uppercase tracking-wide text-muted-foreground">{children}</h3>
-      {hint && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" aria-label="Tushuntirish" className="text-muted-foreground/60 transition-colors hover:text-foreground">
-              <Info className="size-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-[260px] text-pretty">{hint}</TooltipContent>
-        </Tooltip>
-      )}
-    </div>
-  );
-}
-
-/** Holat ogʻirligi chipi — foizga qancha hissa qoʻshishini koʻrsatadi. */
-function WeightChip({ weight }: { weight: number }) {
-  const cls = weight === 1 ? "text-success" : weight === 0 ? "text-muted-foreground" : "text-foreground";
-  return (
-    <span className={cn("rounded-md bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums", cls)}>
-      ×{weight}
-    </span>
-  );
-}
-
-/**
- * Davomat holatlari — STANDART va QULFLANGAN toʻplam (docs/attendance-model.md).
- * Oʻqituvchi faqat holatni yoqadi/oʻchiradi; ogʻirliklar oʻzgarmaydi. Bu
- * ishonchlilik va adolat uchun; moslashuvchanlik faqat "Izoh"da.
- */
-function StatusModal({
-  statuses, onApply, onClose,
-}: { statuses: AttendanceStatusDef[]; onApply: (s: AttendanceStatusDef[]) => void; onClose: () => void }) {
-  const [draft, setDraft] = useState<AttendanceStatusDef[]>(() => statuses.map((s) => ({ ...s })));
-
-  function update(key: string, patch: Partial<AttendanceStatusDef>) {
-    setDraft((d) => d.map((s) => (s.key === key ? { ...s, ...patch } : s)));
-  }
-
-  const activeCount = draft.filter((s) => s.active).length;
-
-  const weightHint = (
-    <>
-      Davomat foizi har holatning ogʻirligiga qarab hisoblanadi:{" "}
-      <span className="font-medium text-success">Keldi ×1</span>,{" "}
-      <span className="font-medium text-foreground">Kechikdi ×0.5</span>,{" "}
-      <span className="font-medium">Sababli/Kelmadi ×0</span>. Belgilanmagan kunlar hisobga olinmaydi.
-    </>
-  );
-
-  return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent showCloseButton={false} className="max-w-md gap-0 overflow-hidden p-0 bg-card">
-        {/* Standart header — ikona + sarlavha + size-9 yopish tugmasi (o‘ngda) */}
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
-          <div className="flex items-center gap-3">
-            <SectionIcon><ListChecks /></SectionIcon>
-            <div className="flex flex-col">
-              <DialogTitle asChild>
-                <CardTitle>Davomat holatlari</CardTitle>
-              </DialogTitle>
-              <DialogDescription className="text-caption">
-                Standart holatlar va ularning foizga taʼsiri.
-              </DialogDescription>
-            </div>
-          </div>
-          <DialogClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-            <X className="size-4" />
-            <span className="sr-only">Yopish</span>
-          </DialogClose>
-        </div>
-
-        <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto scrollbar-thin p-6">
-          <div className="flex items-center justify-between gap-3">
-            <SectionTitle hint={weightHint}>Holatlar</SectionTitle>
-            <Badge variant="secondary" className="gap-1 font-normal text-muted-foreground">
-              <Users className="size-3" /> Barcha sinflarga qoʻllanadi
-            </Badge>
-          </div>
-
-          <div className="divide-y divide-border rounded-lg border border-border">
-            {draft.map((s) => {
-              const v = statusVisual(s);
-              return (
-                <div key={s.key} className="flex items-center gap-3 px-3.5 py-2.5">
-                  <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-md", v.cellClass)} style={v.cellStyle}>
-                    <v.Icon className="size-4" strokeWidth={2.5} />
-                  </span>
-                  <span className="flex-1 min-w-0 text-sm font-medium truncate">{s.label}</span>
-                  <WeightChip weight={STATUS_WEIGHT[s.key] ?? 1} />
-                  <Switch checked={s.active} onCheckedChange={(on) => update(s.key, { active: on })} />
-                </div>
-              );
-            })}
-          </div>
-
-          <p className="text-caption leading-relaxed">
-            Holatlar barcha sinflar uchun standart. Yangi holat qoʻshish oʻrniga
-            har bir kunga <span className="font-medium text-foreground">izoh</span> yozishingiz mumkin.
-          </p>
-        </div>
-
-        <DialogFooter className="items-center border-t border-border bg-muted/20 p-4 sm:justify-between">
-          <span className="text-caption">{activeCount} ta aktiv holat</span>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>Bekor qilish</Button>
-            <Button size="sm" onClick={() => { onApply(draft); onClose(); }}>Saqlash</Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ─── Ustun sarlavhasi (bulk set popover) ─────────────────────────────────────
 
 function ColHeader({
@@ -383,7 +230,7 @@ function ColHeader({
               <Tooltip key={s.key}>
                 <TooltipTrigger asChild>
                   <button type="button" onClick={() => { onBulk(s.key); setOpen(false); }}
-                    className={cn(CHIP_BTN, "size-9 rounded-lg", v.cellClass)} style={v.cellStyle}>
+                    className={cn(CHIP_BTN, "size-9 rounded-lg", v.cellClass)}>
                     <v.Icon className="size-4" strokeWidth={2.5} />
                   </button>
                 </TooltipTrigger>
@@ -425,7 +272,7 @@ function AttCell({
               faded && "opacity-50",
               v ? v.cellClass : "bg-muted/40 text-muted-foreground border border-dashed border-muted-foreground/30 hover:bg-muted/60",
             )}
-            style={v?.cellStyle}
+           
           >
             {v ? <v.Icon className="size-4" strokeWidth={2.5} /> : null}
           </button>
@@ -455,7 +302,6 @@ export default function AttendanceView({ classId }: { classId: string }) {
   // Oʻquv yili kalendari — "Choraklik %" akademik chorak diapazonidan hisoblanadi.
   const calendar = useCalendarStore((s) => s.calendar);
   const statuses = useAttendanceStore((s) => s.statuses);
-  const setStatuses = useAttendanceStore((s) => s.setStatuses);
   const setRecordsRaw = useAttendanceStore((s) => s.setRecords);
   const now = new Date();
   const [month, setMonth] = useState({ year: now.getFullYear(), month: now.getMonth() + 1 });
@@ -467,7 +313,6 @@ export default function AttendanceView({ classId }: { classId: string }) {
   const [view, setView] = useState<"scheduled" | "all" | "day">("scheduled");
   const [studentStatus, setStudentStatus] = useState<StudentStatusFilter>("all");
   const [onlyAttention, setOnlyAttention] = useState(false);
-  const [statusModal, setStatusModal] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
   // Roster va sinf nomi — baholar jurnali bilan bitta manba (server-backed).
@@ -544,8 +389,10 @@ export default function AttendanceView({ classId }: { classId: string }) {
     ? new Set(lessonDays.filter((d) => inRange(d.date, viewedQuarter.range)).map((d) => d.date))
     : monthLessonDates;
 
-  const monthRateOf = (id: string) => weightedRate(records, id, monthLessonDates);
-  const quarterRateOf = (id: string) => weightedRate(records, id, quarterLessonDates);
+  // Vaznlar — holat sozlamalaridan (Sozlamalar > Davomat); yagona manba.
+  const weights = statusWeights(statuses);
+  const monthRateOf = (id: string) => weightedRate(records, id, weights, monthLessonDates);
+  const quarterRateOf = (id: string) => weightedRate(records, id, weights, quarterLessonDates);
   const periodRateOf = quarterRateOf;
 
   // Hover-card chart uchun — choraklik holat taqsimoti (profil chart formati)
@@ -702,11 +549,13 @@ export default function AttendanceView({ classId }: { classId: string }) {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button data-tour="attendance-config" variant="outline" size="icon" onClick={() => setStatusModal(true)} className={ctrlBtn}>
-                    <ListChecks className="h-4 w-4" aria-hidden />
+                  <Button data-tour="attendance-config" variant="outline" size="icon" asChild className={ctrlBtn}>
+                    <Link href="/dashboard/settings?section=davomat">
+                      <ListChecks className="h-4 w-4" aria-hidden />
+                    </Link>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Davomat holatlari</TooltipContent>
+                <TooltipContent>Davomat holatlari — Sozlamalar</TooltipContent>
               </Tooltip>
 
               <div className="flex items-center gap-1">
@@ -814,7 +663,7 @@ export default function AttendanceView({ classId }: { classId: string }) {
                               <Tooltip key={s.key}>
                                 <TooltipTrigger asChild>
                                   <button type="button" onClick={() => handleBulk(today, s.key)}
-                                    className={cn(CHIP_BTN, "size-8", v.cellClass)} style={v.cellStyle}>
+                                    className={cn(CHIP_BTN, "size-8", v.cellClass)}>
                                     <v.Icon className="size-4" strokeWidth={2.5} />
                                   </button>
                                 </TooltipTrigger>
@@ -909,7 +758,7 @@ export default function AttendanceView({ classId }: { classId: string }) {
                                       <button type="button"
                                         onClick={() => setCell(student.id, today, s.key)}
                                         className={cn(CHIP_BTN, "size-8", v.cellClass, !cur && "opacity-40 hover:opacity-100")}
-                                        style={v.cellStyle}>
+                                       >
                                         <v.Icon className="size-4" strokeWidth={2.5} />
                                       </button>
                                     </TooltipTrigger>
@@ -989,7 +838,7 @@ export default function AttendanceView({ classId }: { classId: string }) {
                 const v = statusVisual(s);
                 return (
                   <div key={s.key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className={cn("flex", v.textClass)} style={v.textStyle}><v.Icon className="size-4" strokeWidth={2.5} /></span>
+                    <span className={cn("flex", v.textClass)}><v.Icon className="size-4" strokeWidth={2.5} /></span>
                     <span>{s.label}</span>
                     <span className="font-semibold tabular-nums text-foreground">{countByKey(s.key)}</span>
                   </div>
@@ -1017,9 +866,6 @@ export default function AttendanceView({ classId }: { classId: string }) {
           studentName={noteStudent?.name ?? ""} date={notePopup.date}
           onSave={(v) => handleNoteSave(notePopup.studentId, notePopup.date, v)}
           onClose={() => setNotePopup(null)} />
-      )}
-      {statusModal && (
-        <StatusModal statuses={statuses} onApply={setStatuses} onClose={() => setStatusModal(false)} />
       )}
     </>
   );

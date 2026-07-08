@@ -27,10 +27,8 @@ export function SettingsGroup({
     <section className={cn("space-y-3", className)}>
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-foreground/70">
-            {title}
-          </h3>
-          {description && <p className="text-xs text-muted-foreground">{description}</p>}
+          <h3 className="text-label font-semibold uppercase text-muted-foreground">{title}</h3>
+          {description && <p className="text-caption">{description}</p>}
         </div>
         {action && <div className="shrink-0 pt-0.5">{action}</div>}
       </div>
@@ -60,7 +58,7 @@ export function SettingRow({
     >
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className="text-sm font-medium text-foreground">{title}</span>
-        {description && <span className="text-xs text-muted-foreground">{description}</span>}
+        {description && <span className="text-caption">{description}</span>}
       </div>
       {children && <div className="shrink-0">{children}</div>}
     </div>
@@ -108,14 +106,19 @@ export function SavedIndicator({ signal }: { signal: unknown }) {
  */
 export function SettingsList({
   items,
+  footer,
   className,
 }: {
+  /** Roʻyxat ostidagi xulosa qatori — modal-footer uslubida (border-t + muted fon). */
+  footer?: React.ReactNode;
   items: {
     key: string;
     title: React.ReactNode;
     description?: React.ReactNode;
     leading?: React.ReactNode;
     trailing?: React.ReactNode;
+    /** Oʻchirilgan/passiv qator — kontent xiralashadi (controllar emas). */
+    dimmed?: boolean;
   }[];
   className?: string;
 }) {
@@ -129,16 +132,25 @@ export function SettingsList({
             i !== 0 && "border-t border-border"
           )}
         >
-          {item.leading}
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          {item.leading && (
+            <span className={cn("flex shrink-0 items-center", item.dimmed && "opacity-50 grayscale")}>
+              {item.leading}
+            </span>
+          )}
+          <div className={cn("flex min-w-0 flex-1 flex-col gap-0.5", item.dimmed && "opacity-60")}>
             <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
             {item.description && (
-              <span className="truncate text-xs text-muted-foreground">{item.description}</span>
+              <span className="truncate text-caption">{item.description}</span>
             )}
           </div>
           {item.trailing && <div className="flex shrink-0 items-center gap-2">{item.trailing}</div>}
         </div>
       ))}
+      {footer && (
+        <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/20 px-4 py-2.5">
+          {footer}
+        </div>
+      )}
     </div>
   );
 }
@@ -166,7 +178,7 @@ export function SwitchRow({
     >
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="text-sm font-medium text-foreground">{title}</span>
-        {description && <span className="text-xs text-muted-foreground">{description}</span>}
+        {description && <span className="text-caption">{description}</span>}
       </span>
       <Switch checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} />
     </label>

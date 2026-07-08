@@ -1,4 +1,3 @@
-import type { ClassColor } from "@/lib/class-colors";
 import {
   isSchoolDay,
   type AcademicYearCalendar, type DateRange,
@@ -8,17 +7,38 @@ import {
 } from "@/lib/timetable-versions";
 import { addDaysKey, dateKeyToDate } from "@/lib/date-keys";
 
-// Davomat holati endi erkin satr — built-in + foydalanuvchi yaratgan maxsus
-// holatlar bitta modelda. "unmarked" — yozuv yoʻqligini bildiruvchi sentinel.
+// Davomat holati — QULFLANGAN toʻplam: faqat 4 ta built-in (Keldi/Kelmadi/
+// Kechikdi/Sababli). Maxsus status yoʻq — real foydalanuvchilar soʻrasa
+// qoʻshiladi. Yozuvlarda satr tipida saqlanadi ("unmarked" — sentinel).
 export type AttendanceStatus = string;
 
-/** Holatning davomat foiziga taʼsiri (referensdagi "score impact") */
-export type ScoreImpact = "positive" | "negative" | "neutral";
+/**
+ * Holatning davomat foiziga taʼsiri — vazn siyosati (SIS'lardagi "presence
+ * value" modeli): full=×1, half=×0.5, none=×0 (maxrajga kiradi),
+ * excluded=hisobga umuman kirmaydi (maxrajdan chiqariladi).
+ */
+export type ScoreImpact = "full" | "half" | "none" | "excluded";
+
+/** Vazn siyosati → sonli vazn; `null` = maxrajdan chiqariladi. */
+export const IMPACT_WEIGHT: Record<ScoreImpact, number | null> = {
+  full: 1,
+  half: 0.5,
+  none: 0,
+  excluded: null,
+};
+
+export const IMPACT_LABELS: Record<ScoreImpact, string> = {
+  full: "Ijobiy",
+  half: "Qisman",
+  none: "Salbiy",
+  excluded: "Betaraf",
+};
 
 /**
- * Davomat holati taʼrifi. Built-in 4 ta holat semantik tokenlardan
- * (success/destructive/warning/info) rang oladi; maxsus holatlar sinf rang
- * palitrasidan (ClassColor → classTints) — ikkalasi ham dizayn tizimida.
+ * Davomat holati taʼrifi. 4 ta built-in holat semantik tokenlardan
+ * (success/destructive/warning/info) rang oladi. Oʻqituvchi faqat
+ * `active` va `scoreImpact`ni oʻzgartiradi — label/icon/tone kod
+ * manbasidan (BUILTIN_STATUSES) keladi.
  */
 export type AttendanceStatusDef = {
   key: string;
@@ -28,17 +48,40 @@ export type AttendanceStatusDef = {
   scoreImpact: ScoreImpact;
   active: boolean;
   builtIn: boolean;
-  /** Built-in uchun semantik tone, maxsus uchun ClassColor */
-  tone: "success" | "destructive" | "warning" | "info" | ClassColor;
+  tone: "success" | "destructive" | "warning" | "info";
 };
 
 /** Har sinf shu 4 ta built-in holatdan boshlanadi (referens bilan bir xil) */
 export const BUILTIN_STATUSES: AttendanceStatusDef[] = [
-  { key: "present", label: "Keldi", icon: "check", scoreImpact: "positive", active: true, builtIn: true, tone: "success" },
-  { key: "absent", label: "Kelmadi", icon: "x", scoreImpact: "negative", active: true, builtIn: true, tone: "destructive" },
-  { key: "late", label: "Kechikdi", icon: "clock", scoreImpact: "positive", active: true, builtIn: true, tone: "warning" },
-  { key: "excused", label: "Sababli", icon: "file", scoreImpact: "neutral", active: true, builtIn: true, tone: "info" },
+  { key: "present", label: "Keldi", icon: "check", scoreImpact: "full", active: true, builtIn: true, tone: "success" },
+  { key: "absent", label: "Kelmadi", icon: "x", scoreImpact: "none", active: true, builtIn: true, tone: "destructive" },
+  { key: "late", label: "Kechikdi", icon: "clock", scoreImpact: "half", active: true, builtIn: true, tone: "warning" },
+  { key: "excused", label: "Sababli", icon: "file", scoreImpact: "none", active: true, builtIn: true, tone: "info" },
 ];
+
+const IMPACT_VALUES = new Set<string>(["full", "half", "none", "excluded"]);
+
+/**
+ * DB'dan kelgan scoreImpact'ni normalize qilish. Eski uch qiymatli model
+ * (positive/negative/neutral) hech qachon hisobda ishlatilmagan — haqiqiy
+ * vaznlar qattiq kodlangan edi. Shuning uchun legacy qiymat koʻrilsa,
+ * holat kalitiga mos ESKI AMALDAGI vazn tiklanadi (foizlar oʻzgarmaydi):
+ * present→full, late→half, absent/excused→none. Nomaʼlum kalit → none.
+ */
+export function normalizeScoreImpact(key: string, raw: string): ScoreImpact {
+  if (IMPACT_VALUES.has(raw)) return raw as ScoreImpact;
+  const builtin = BUILTIN_STATUSES.find((s) => s.key === key);
+  return builtin ? builtin.scoreImpact : "none";
+}
+
+/** Statuslar roʻyxati → kalit→vazn xaritasi (weightedRate uchun). */
+export function statusWeights(
+  statuses: AttendanceStatusDef[]
+): Record<string, number | null> {
+  const out: Record<string, number | null> = {};
+  for (const s of statuses) out[s.key] = IMPACT_WEIGHT[s.scoreImpact];
+  return out;
+}
 
 export type AttendanceRecord = {
   studentId: string;
@@ -109,21 +152,17 @@ export function studentStats(records: AttendanceRecord[], studentId: string) {
 }
 
 /**
- * Holat ogʻirliklari — konstrukt: "Oʻrganish imkoniyati" (docs/attendance-model.md).
- * Keldi=1 toʻliq, Kechikdi=0.5 qisman, Sababli/Kelmadi=0 (ikkalasi ham kamaytiradi).
- * Belgilangan barcha kunlar hisobga kiradi (Sababli endi chiqarib tashlanmaydi).
- */
-export const STATUS_WEIGHT: Record<string, number> = {
-  present: 1, late: 0.5, excused: 0, absent: 0,
-};
-
-/**
- * Vaznli davomat foizi. `dates` berilsa — faqat shu sanalar (oylik/choraklik).
- * `absents` — surunkali holatni aniqlash uchun "Kelmadi" soni. Yozuv yoʻq → null.
+ * Vaznli davomat foizi — konstrukt: "Oʻrganish imkoniyati"
+ * (docs/attendance-model.md). Vaznlar endi holat sozlamalaridan keladi
+ * (`statusWeights`): standart Keldi=1, Kechikdi=0.5, Sababli/Kelmadi=0;
+ * `null` vaznli (excluded) holat maxrajga kirmaydi. `dates` berilsa —
+ * faqat shu sanalar (oylik/choraklik). `absents` — surunkali holatni
+ * aniqlash uchun "Kelmadi" soni. Yozuv yoʻq → null.
  */
 export function weightedRate(
   records: AttendanceRecord[],
   studentId: string,
+  weights: Record<string, number | null>,
   dates?: Set<string>
 ): { pct: number; counted: number; absents: number } | null {
   let counted = 0;
@@ -133,9 +172,12 @@ export function weightedRate(
     if (r.studentId !== studentId) continue;
     if (r.status === "unmarked") continue;
     if (dates && !dates.has(r.date)) continue;
-    counted++;
-    sum += STATUS_WEIGHT[r.status] ?? 1;
     if (r.status === "absent") absents++;
+    const w = weights[r.status];
+    // undefined (oʻchirilgan/nomaʼlum holat) yoki null (excluded) → maxrajdan tashqarida
+    if (w == null) continue;
+    counted++;
+    sum += w;
   }
   if (counted === 0) return null;
   return { pct: Math.round((sum / counted) * 100), counted, absents };

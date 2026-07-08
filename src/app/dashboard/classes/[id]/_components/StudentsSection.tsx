@@ -7,7 +7,7 @@ import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { gradeBadgeClass as gradeBadge, attendanceBadgeClass as attendanceBadge } from "@/lib/score-colors";
 import type { ClassData } from "@/lib/grades-data";
 import { studentSummary } from "@/lib/grades-stats";
-import { deriveLessonDays, weightedRate } from "@/lib/attendance-data";
+import { deriveLessonDays, weightedRate, statusWeights } from "@/lib/attendance-data";
 import { todayKey } from "@/lib/date-keys";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
@@ -87,6 +87,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const mounted = useMounted();
   const liveGrades = useGradesStore((s) => s.classDataMap[classId]);
   const storedRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
+  const attendanceStatuses = useAttendanceStore((s) => s.statuses);
   const calendar = useCalendarStore((s) => s.calendar);
   const versions = useTimetableStore((s) => s.versions);
 
@@ -114,10 +115,10 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
       initials: s.initials,
       studentId: `ID-${1001 + i}`,
       grade: computeGrade(data, s.id),
-      attendance: weightedRate(records, s.id, lessonDates)?.pct ?? null,
+      attendance: weightedRate(records, s.id, statusWeights(attendanceStatuses), lessonDates)?.pct ?? null,
       status: (statusOverride[s.id] ?? s.status ?? "active") as Status,
     }));
-  }, [classId, statusOverride, mounted, liveGrades, storedRecords, calendar, versions]);
+  }, [classId, statusOverride, mounted, liveGrades, storedRecords, attendanceStatuses, calendar, versions]);
 
   const students = useMemo(() => {
     const q = search.trim().toLowerCase();

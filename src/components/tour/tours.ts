@@ -232,7 +232,7 @@ export const TOURS: readonly TourDef[] = [
       },
       {
         title: "Statuslarni sozlash",
-        body: "Davomat statuslari va ularning bahoga taʼsirini oʻzingiz sozlaysiz. Barcha kunlarni koʻrsatish yoki faqat darsli kunlar orasida almashtiring.",
+        body: "Bu tugma Sozlamalar > Davomat boʻlimini ochadi: statuslarni yoqing/oʻchiring va davomat foizidagi vaznini belgilang.",
         target: '[data-tour="attendance-config"]',
         placement: "bottom",
       },

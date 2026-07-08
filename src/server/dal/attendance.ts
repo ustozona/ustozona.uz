@@ -13,9 +13,9 @@ import {
 import { requireTeacher } from "@/server/session";
 import {
   BUILTIN_STATUSES,
+  normalizeScoreImpact,
   type AttendanceRecord,
   type AttendanceStatusDef,
-  type ScoreImpact,
 } from "@/lib/attendance-data";
 import type { AttendanceBatch } from "@/lib/sync/attendance-batch";
 
@@ -39,16 +39,25 @@ function chunks<T>(rows: T[]): T[][] {
   return out;
 }
 
-function rowToStatus(r: AttendanceStatusRow): AttendanceStatusDef {
-  return {
-    key: r.key,
-    label: r.label,
-    icon: r.icon,
-    scoreImpact: r.scoreImpact as ScoreImpact,
-    active: r.active,
-    builtIn: r.builtIn,
-    tone: r.tone as AttendanceStatusDef["tone"],
-  };
+/**
+ * Statuslar toʻplami QULFLANGAN: har doim 4 ta built-in, shu tartibda.
+ * DB'dan faqat oʻqituvchi oʻzgartira oladigan maydonlar olinadi
+ * (active, scoreImpact); label/icon/tone — kod manbasidan. Notanish
+ * kalitli qatorlar eʼtiborsiz qoldiriladi.
+ */
+function mergeStatuses(rows: AttendanceStatusRow[]): AttendanceStatusDef[] {
+  const byKey = new Map(rows.map((r) => [r.key, r]));
+  return BUILTIN_STATUSES.map((b) => {
+    const row = byKey.get(b.key);
+    return row
+      ? {
+          ...b,
+          active: row.active,
+          // Eski positive/negative/neutral qiymatlar amaldagi vaznlarga tiklanadi
+          scoreImpact: normalizeScoreImpact(b.key, row.scoreImpact),
+        }
+      : { ...b };
+  });
 }
 
 function rowToRecord(r: AttendanceRecordRow): AttendanceRecord {
@@ -85,10 +94,7 @@ export async function getAttendancePayload(): Promise<AttendancePayload> {
 
   return {
     recordsByClass,
-    statuses:
-      statusRows.length > 0
-        ? statusRows.map(rowToStatus)
-        : BUILTIN_STATUSES.map((s) => ({ ...s })),
+    statuses: mergeStatuses(statusRows),
   };
 }
 
