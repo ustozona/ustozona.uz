@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Settings2, Users, X } from "lucide-react";
+import { Info, Settings2, X } from "lucide-react";
 import {
   Dialog,
   DialogTrigger,
@@ -11,46 +11,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { IconButton } from "@/components/ui/icon-button";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useClassStore } from "@/store/useClassStore";
-import {
-  formatByScaleKind,
-  scoreLabel,
-  GRADING_SCALE_PRESETS,
-  type JournalScaleKind,
-  type LabelStyle,
-} from "@/lib/grade-scale";
-
-/** Har shkala uchun qisqa tushuntirish — tanlovdan keyin koʻrsatiladi. */
-const SCALE_HINTS: Record<string, string> = {
-  five: "Oʻzbek maktab standarti: 5 (aʼlo), 4, 3, 2.",
-  ten: "1 dan 10 gacha; 10 — eng yuqori.",
-  percent: "Aniq foiz, 0–100%.",
-  pass_fail: "Ikkilik: Bajardi / Bajarmadi.",
-  qualitative: "Soʻz bilan: Aʼlo / Yaxshi / Qoniqarli / Qoniqarsiz.",
-  letter_plus: "AQSh harf tizimi: A+ dan F gacha.",
-  letter_basic: "Soddalashtirilgan harf: A dan F gacha.",
-  ib7: "Xalqaro bakalavriat (IB): 1–7, 7 — eng yuqori.",
-  gcse: "Britaniya GCSE: 9–1, 9 — eng yuqori.",
-  german6: "Germaniya: 1 (aʼlo) dan 6 (yiqilish) gacha.",
-  french20: "Fransiya: 0 dan 20 gacha.",
-};
+import ScaleControls from "@/components/grade-scale/ScaleControls";
 
 const segmentClass = "grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1";
 const segmentItem =
@@ -131,20 +99,6 @@ function SwitchRow({
   );
 }
 
-/** Ochiq roʻyxatdagi shkala bandi — nom + 78% namunasi. */
-function ScaleItem({ kind, label }: { kind: JournalScaleKind; label: string }) {
-  return (
-    <SelectItem value={kind}>
-      <span className="flex w-full items-center justify-between gap-3">
-        <span>{label}</span>
-        <span className="text-caption tabular-nums text-muted-foreground">
-          {formatByScaleKind(78, kind)}
-        </span>
-      </span>
-    </SelectItem>
-  );
-}
-
 /**
  * Jurnal sozlamalari modali (docs/grades-scale-model.md).
  * Ikki boʻlim: (1) Baholash shkalasi, (2) Jadval koʻrinishi. Shkala faqat
@@ -161,19 +115,6 @@ export default function GradesSettingsModal({
   showFormative: boolean;
   onShowFormativeChange: (v: boolean) => void;
 }) {
-  const journalScale = useClassStore((s) => s.journalScale);
-  const setJournalScale = useClassStore((s) => s.setJournalScale);
-
-  const uzPresets = GRADING_SCALE_PRESETS.filter((p) => p.group === "uz");
-  const intlPresets = GRADING_SCALE_PRESETS.filter((p) => p.group === "intl");
-  const currentLabel =
-    GRADING_SCALE_PRESETS.find((p) => p.kind === journalScale.kind)?.label ?? "";
-  const currentHint = SCALE_HINTS[journalScale.kind];
-
-  // Dinamik namuna — tanlangan shkalaga moslashadi (10-ballik → "8 (78%)").
-  const lab = scoreLabel(78, journalScale);
-  const percentExample = lab === "78%" ? "78%" : `${lab} (78%)`;
-
   return (
     <Dialog>
       <Tooltip>
@@ -206,7 +147,7 @@ export default function GradesSettingsModal({
                 <CardTitle>Jurnal sozlamalari</CardTitle>
               </DialogTitle>
               <DialogDescription className="text-caption">
-                Baholash shkalasi va jadval koʻrinishi
+                Baholash mezoni va jadval koʻrinishi
               </DialogDescription>
             </div>
           </div>
@@ -217,72 +158,12 @@ export default function GradesSettingsModal({
         </div>
 
         <div className="flex max-h-[70vh] flex-col gap-6 overflow-y-auto scrollbar-thin p-6">
-          {/* ── Baholash shkalasi ───────────────────────────────── */}
+          {/* ── Baholash mezoni ───────────────────────────────── */}
           <section className="space-y-4">
-            <SectionTitle hint="Faqat koʻrinishni oʻzgartiradi — baholar ichkarida foizda saqlanadi. Yonidagi raqam: 78% shu shkalada qanday koʻrinishini koʻrsatadi (5-ballikda «4», IB'da «6»).">
-              Baholash shkalasi
+            <SectionTitle hint="Faqat koʻrinishni oʻzgartiradi — baholar ichkarida foizda saqlanadi. Yonidagi raqam: 78% shu mezonda qanday koʻrinishini koʻrsatadi (5-ballikda «4», IB'da «6»).">
+              Baholash mezoni
             </SectionTitle>
-
-            <div className="space-y-1.5">
-              <Select
-                value={journalScale.kind}
-                onValueChange={(v) => setJournalScale({ kind: v as JournalScaleKind })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Shkala tanlang">{currentLabel}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Oʻzbekiston / umumiy</SelectLabel>
-                    {uzPresets.map((p) => (
-                      <ScaleItem key={p.kind} kind={p.kind as JournalScaleKind} label={p.label} />
-                    ))}
-                  </SelectGroup>
-                  <SelectGroup>
-                    <SelectLabel>Xalqaro dasturlar</SelectLabel>
-                    {intlPresets.map((p) => (
-                      <ScaleItem key={p.kind} kind={p.kind as JournalScaleKind} label={p.label} />
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {currentHint && (
-                <p className="text-caption leading-snug text-muted-foreground">{currentHint}</p>
-              )}
-              <Badge
-                variant="secondary"
-                className="mt-1 gap-1 font-normal text-muted-foreground"
-              >
-                <Users className="size-3" />
-                Barcha sinflarga qoʻllanadi
-              </Badge>
-            </div>
-
-            {/* Yorliq uslubi — faqat 5-ballikda */}
-            {journalScale.kind === "five" && (
-              <div className="space-y-1.5">
-                <FieldLabel>Yorliq uslubi</FieldLabel>
-                <ToggleGroup
-                  type="single"
-                  value={journalScale.labelStyle}
-                  onValueChange={(v) => v && setJournalScale({ labelStyle: v as LabelStyle })}
-                  className={segmentClass}
-                >
-                  <ToggleGroupItem value="number" className={segmentItem}>Raqam (4)</ToggleGroupItem>
-                  <ToggleGroupItem value="word" className={segmentItem}>Soʻz (Yaxshi)</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            )}
-
-            {/* Foizni koʻrsatish — foiz shkalasida maʼnosiz, yashiriladi */}
-            {journalScale.kind !== "percent" && (
-              <SwitchRow
-                title="Foizni koʻrsatish"
-                desc={`Baho yonida qavsda aniq foiz: ${percentExample}`}
-                checked={journalScale.showPercent}
-                onChange={(c) => setJournalScale({ showPercent: c })}
-              />
-            )}
+            <ScaleControls />
           </section>
 
           <Separator />
@@ -293,7 +174,7 @@ export default function GradesSettingsModal({
 
             <SwitchRow
               title="Vaznli foizni koʻrsatish"
-              desc="Har topshiriq ustida toifa vazniga nisbatan hissa."
+              desc="Har topshiriq ustida uning toifasi vazniga nisbatan hissasi."
               checked={showWeights}
               onChange={onShowWeightsChange}
             />

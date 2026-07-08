@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   type Assignment,
@@ -29,6 +29,18 @@ export default function GradesView({ classId }: { classId: string }) {
   const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
   const [modal, setModal] = useState<ModalType>(null);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
+
+  // Sozlamalardagi "Jurnal boʻlimida boshqarish" havolasi: ?topics=1 →
+  // toifalar modalini ochib, paramni URL'dan tozalaymiz (router.replace
+  // remount qilgani uchun history.replaceState — bell patterni).
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("topics") !== "1") return;
+    setModal("topic");
+    sp.delete("topics");
+    const qs = sp.toString();
+    window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
+  }, []);
 
   const classData = classDataMap[classId];
 

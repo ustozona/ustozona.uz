@@ -46,7 +46,7 @@ export type GradingScale =
   | "ten"         // 10-ballik (10=aʼlo)
   | "percent"     // 100-ballik / foiz
   | "pass_fail"   // Bajardi / Bajarmadi (yorliq tahrirlanadi)
-  | "qualitative" // Aʼlo / Yaxshi / Qoniqarli / Qoniqarsiz
+  | "qualitative" // eski (migratsiya uchun) — endi "five" + labelStyle:"word" bilan almashtirilgan, UI'da koʻrsatilmaydi
   // 🌍 Xalqaro maktab dasturlari
   | "letter_plus" // US letter A+…F
   | "letter_basic"// US letter A…F
@@ -87,7 +87,6 @@ export const GRADING_SCALE_PRESETS: {
   { kind: "ten",         label: "10-ballik (1–10)",              group: "uz" },
   { kind: "percent",     label: "100-ballik / Foiz",             group: "uz" },
   { kind: "pass_fail",   label: "Bajardi / Bajarmadi",           group: "uz" },
-  { kind: "qualitative", label: "Sifat (Aʼlo/Yaxshi/…)",         group: "uz" },
   { kind: "letter_plus", label: "Harf bahosi (A+ dan F gacha)",  group: "intl" },
   { kind: "letter_basic",label: "Harf bahosi (A dan F gacha)",   group: "intl" },
   { kind: "ib7",         label: "IB (1–7)",                      group: "intl" },

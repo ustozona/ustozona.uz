@@ -97,6 +97,14 @@ function tierLabel(percent: number, tiers: [number, string][]): string {
   return tiers[tiers.length - 1][1];
 }
 
+// Tier-asosli xalqaro shkalalar — `formatByScaleKind` va `getScaleBoundaries`
+// bitta jadvaldan o‘qiydi (ko‘rinadigan chegara jadvali shu yerdan quriladi).
+const LETTER_BASIC_TIERS: [number, string][] = [[90, "A"], [80, "B"], [70, "C"], [60, "D"], [0, "F"]];
+const IB7_TIERS: [number, string][] = [[85, "7"], [75, "6"], [65, "5"], [55, "4"], [45, "3"], [35, "2"], [0, "1"]];
+const GCSE_TIERS: [number, string][] = [[90, "9"], [80, "8"], [70, "7"], [60, "6"], [50, "5"], [40, "4"], [30, "3"], [20, "2"], [0, "1"]];
+const GERMAN6_TIERS: [number, string][] = [[90, "1"], [75, "2"], [60, "3"], [45, "4"], [30, "5"], [0, "6"]];
+const SCALE6_TIERS: [number, string][] = [[90, "6"], [75, "5"], [60, "4"], [45, "3"], [30, "2"], [0, "1"]];
+
 /**
  * TOIFA shkalasi (`scaleKind`) boʻyicha foizni yorliqqa oʻgiradi — katak va
  * ustun-oʻrtacha koʻrinishi uchun. O‘zbek-tegishli turlar (`five`, `ten`,
@@ -125,33 +133,50 @@ export function formatByScaleKind(
     case "letter_plus":
       return getLetterGrade(percent).letter;
     case "letter_basic":
-      return tierLabel(percent, [
-        [90, "A"],
-        [80, "B"],
-        [70, "C"],
-        [60, "D"],
-        [0, "F"],
-      ]);
+      return tierLabel(percent, LETTER_BASIC_TIERS);
     case "ib7":
-      return tierLabel(percent, [
-        [85, "7"], [75, "6"], [65, "5"], [55, "4"], [45, "3"], [35, "2"], [0, "1"],
-      ]);
+      return tierLabel(percent, IB7_TIERS);
     case "gcse":
-      return tierLabel(percent, [
-        [90, "9"], [80, "8"], [70, "7"], [60, "6"], [50, "5"], [40, "4"], [30, "3"], [20, "2"], [0, "1"],
-      ]);
+      return tierLabel(percent, GCSE_TIERS);
     case "german6":
       // Teskari: 1 = aʼlo, 6 = yiqilish.
-      return tierLabel(percent, [
-        [90, "1"], [75, "2"], [60, "3"], [45, "4"], [30, "5"], [0, "6"],
-      ]);
+      return tierLabel(percent, GERMAN6_TIERS);
     case "french20":
       return String(Math.round(percent / 5)); // 0..20
     case "scale_6":
-      return tierLabel(percent, [[90, "6"], [75, "5"], [60, "4"], [45, "3"], [30, "2"], [0, "1"]]);
+      return tierLabel(percent, SCALE6_TIERS);
     case "scale_10":
       return String(toTen(percent));
     default:
       return `${Math.round(percent)}%`;
+  }
+}
+
+// ─── CHEGARA JADVALI (koʻrinadigan) ─────────────────────────────────────────
+
+export type ScaleBoundary = { min: number; label: string };
+
+/**
+ * Tanlangan shkalaning chegara jadvali — UI'da "nega 84% emas 85%" savoliga
+ * javob beradi. Tier-asosli shkalalar uchun toʻliq jadval; formula-asosli
+ * (`ten`, `percent`, `french20`) va `pass_fail` uchun `null` — bular uchun
+ * bitta qisqa izoh (SCALE_HINTS) yetarli.
+ */
+export function getScaleBoundaries(kind: GradingScale, labelStyle: LabelStyle = "number"): ScaleBoundary[] | null {
+  switch (kind) {
+    case "five":
+      return FIVE_CUTS.map((t) => ({ min: t.min, label: labelStyle === "word" ? t.word : t.number }));
+    case "letter_basic":
+      return LETTER_BASIC_TIERS.map(([min, label]) => ({ min, label }));
+    case "ib7":
+      return IB7_TIERS.map(([min, label]) => ({ min, label }));
+    case "gcse":
+      return GCSE_TIERS.map(([min, label]) => ({ min, label }));
+    case "german6":
+      return GERMAN6_TIERS.map(([min, label]) => ({ min, label }));
+    case "scale_6":
+      return SCALE6_TIERS.map(([min, label]) => ({ min, label }));
+    default:
+      return null;
   }
 }
