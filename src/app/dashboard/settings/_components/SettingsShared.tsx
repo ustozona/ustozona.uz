@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { create } from "zustand";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -66,11 +67,39 @@ export function SettingRow({
 }
 
 /**
+ * Global "saqlandi" pulsi — boʻlimlardagi har bir SavedIndicator yonganida
+ * +1 boʻladi; sozlamalar sahifasi headeridagi umumiy indikator shunga ulanadi.
+ */
+export const useSaveSignal = create<{ n: number; ping: () => void }>((set) => ({
+  n: 0,
+  ping: () => set((s) => ({ n: s.n + 1 })),
+}));
+
+/**
+ * Koʻrinmas pinger — `signal` oʻzgarganda (dastlabki mount tashqari) faqat
+ * global pulsga uzatadi. Sozlamalar boʻlimlari lokal chip oʻrniga shuni
+ * ishlatadi; koʻrsatish sahifa headeridagi yagona SavedIndicator'da.
+ */
+export function SaveSignalPing({ signal }: { signal: unknown }) {
+  const first = React.useRef(true);
+  React.useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    useSaveSignal.getState().ping();
+  }, [signal]);
+  return null;
+}
+
+/**
  * Avtomatik saqlash indikatori. `signal` oʻzgarganda (dastlabki mount tashqari)
  * qisqa vaqt "Saqlandi" chipini koʻrsatadi. Har oʻzgarish darhol saqlanadigan
  * (store'ga yoziladigan) maydonlar uchun feedback beradi.
+ * `bubble=false` — global pulsga uzatmaydi (headerdagi indikatorning oʻzi
+ * pulsni tinglaydi, aks holda cheksiz halqa boʻlardi).
  */
-export function SavedIndicator({ signal }: { signal: unknown }) {
+export function SavedIndicator({ signal, bubble = true }: { signal: unknown; bubble?: boolean }) {
   const [visible, setVisible] = React.useState(false);
   const first = React.useRef(true);
 
@@ -80,6 +109,7 @@ export function SavedIndicator({ signal }: { signal: unknown }) {
       return;
     }
     setVisible(true);
+    if (bubble) useSaveSignal.getState().ping();
     const t = setTimeout(() => setVisible(false), 1600);
     return () => clearTimeout(t);
   }, [signal]);

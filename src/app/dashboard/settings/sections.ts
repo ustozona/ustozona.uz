@@ -13,23 +13,15 @@ import {
 
 /* Boʻlim registri — yagona manba. Har bir id shu yerda; boshqa joyda
    (masalan header dropdown) qoʻlda id yozish oʻrniga shu yerdagi
-   `SECTION_IDS`ga murojaat qilinadi, xato-toʻliq link kelib chiqmasin. */
-
-export type SectionGroup = "shaxsiy" | "oqitish" | "hisob";
+   `SECTION_IDS`ga murojaat qilinadi, xato-toʻliq link kelib chiqmasin.
+   Tartib = tab tartibi. */
 
 export type SectionDef = {
   id: string;
   label: string;
   subtitle: string;
   icon: LucideIcon;
-  group: SectionGroup;
   Component: React.ComponentType;
-};
-
-export const GROUP_LABELS: Record<SectionGroup, string> = {
-  shaxsiy: "Shaxsiy",
-  oqitish: "Taʼlim",
-  hisob: "Hisob va tariflar",
 };
 
 export const SECTIONS: SectionDef[] = [
@@ -38,7 +30,6 @@ export const SECTIONS: SectionDef[] = [
     label: "Profil",
     subtitle: "Shaxsiy maʼlumotlar va statistika",
     icon: User,
-    group: "shaxsiy",
     Component: dynamic(() => import("./_components/ProfileSection")),
   },
   {
@@ -46,7 +37,6 @@ export const SECTIONS: SectionDef[] = [
     label: "Koʻrinish",
     subtitle: "Mavzu, fon va til sozlamalari",
     icon: Palette,
-    group: "shaxsiy",
     Component: dynamic(() => import("./_components/AppearanceSection")),
   },
   {
@@ -54,7 +44,6 @@ export const SECTIONS: SectionDef[] = [
     label: "Oʻquv yili",
     subtitle: "Choraklar va taʼtillar",
     icon: CalendarRange,
-    group: "oqitish",
     Component: dynamic(() => import("./_components/AcademicYearSection")),
   },
   {
@@ -62,7 +51,6 @@ export const SECTIONS: SectionDef[] = [
     label: "Dars jadvali",
     subtitle: "Smena va qoʻngʻiroq",
     icon: Clock,
-    group: "oqitish",
     Component: dynamic(() => import("./_components/BellSection")),
   },
   {
@@ -70,7 +58,6 @@ export const SECTIONS: SectionDef[] = [
     label: "Davomat",
     subtitle: "Statuslar va taʼsir",
     icon: CheckSquare,
-    group: "oqitish",
     Component: dynamic(() => import("./_components/AttendanceSection")),
   },
   {
@@ -78,7 +65,6 @@ export const SECTIONS: SectionDef[] = [
     label: "Jurnal",
     subtitle: "Baholash shkalasi",
     icon: BarChart2,
-    group: "oqitish",
     Component: dynamic(() => import("./_components/JournalSection")),
   },
   {
@@ -86,15 +72,13 @@ export const SECTIONS: SectionDef[] = [
     label: "Tarif",
     subtitle: "Reja va imkoniyatlar",
     icon: CreditCard,
-    group: "hisob",
     Component: dynamic(() => import("./_components/PlanSection")),
   },
   {
     id: "hisob",
-    label: "Xavfsizlik va maxfiylik",
-    subtitle: "Eksport, DPA va hisobni oʻchirish",
+    label: "Xavfsizlik",
+    subtitle: "Maxfiylik, eksport, DPA va hisobni oʻchirish",
     icon: ShieldCheck,
-    group: "hisob",
     Component: dynamic(() => import("./_components/DataSection")),
   },
 ];
@@ -102,5 +86,3 @@ export const SECTIONS: SectionDef[] = [
 export const SECTION_IDS = Object.fromEntries(
   SECTIONS.map((s) => [s.id, s.id])
 ) as Record<string, string>;
-
-export const GROUP_ORDER: SectionGroup[] = ["shaxsiy", "oqitish", "hisob"];

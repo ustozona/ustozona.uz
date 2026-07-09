@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { KarakalpakFlag } from "@/components/ui/karakalpak-flag";
 import { Slider } from "@/components/ui/slider";
-import { SettingsGroup, SettingRow, SavedIndicator } from "./SettingsShared";
+import { SettingsGroup, SettingRow, SaveSignalPing } from "./SettingsShared";
 
 const THEMES: { value: string; label: string; icon: React.ElementType }[] = [
   { value: "light", label: "Kunduzgi", icon: Sun },
@@ -67,7 +67,7 @@ export default function AppearanceSection() {
       <SettingsGroup
         title="Mavzu"
         description="Kunduzgi, tungi yoki qurilma tizimiga mos keladigan mavzuni tanlang."
-        action={<SavedIndicator signal={activeTheme} />}
+        action={<SaveSignalPing signal={activeTheme} />}
       >
         <div role="radiogroup" aria-label="Mavzu" className="grid grid-cols-3 gap-2">
           {THEMES.map((t) => {
@@ -98,7 +98,7 @@ export default function AppearanceSection() {
       <SettingsGroup
         title="Ishchi maydon foni"
         description="Asosiy ishchi maydon foni koʻrinishi."
-        action={<SavedIndicator signal={`${workspaceBackground}-${backgroundScale}`} />}
+        action={<SaveSignalPing signal={`${workspaceBackground}-${backgroundScale}`} />}
       >
         <div role="radiogroup" aria-label="Ishchi maydon foni" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {BACKGROUNDS.map((b) => {

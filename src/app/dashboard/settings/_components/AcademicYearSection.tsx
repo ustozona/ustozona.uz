@@ -29,7 +29,7 @@ import {
   type DateRange,
 } from "@/lib/academic-calendar";
 import { todayKey, addDaysKey } from "@/lib/date-keys";
-import { SettingsGroup, SettingRow, SavedIndicator } from "./SettingsShared";
+import { SettingsGroup, SettingRow, SaveSignalPing } from "./SettingsShared";
 import YearStrip from "./YearStrip";
 import CreateSemesterModal from "./CreateSemesterModal";
 
@@ -183,7 +183,7 @@ export default function AcademicYearSection() {
         description="Chorak va taʼtil kunlari tizimdagi barcha jarayonlar (dars jadvali, davomat, jurnal) uchun asos hisoblanadi."
         action={
           <div className="flex items-center gap-2">
-            <SavedIndicator signal={calendar} />
+            <SaveSignalPing signal={calendar} />
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
               <CalendarPlus className="size-4" />
               Oʻquv yilini qoʻshish

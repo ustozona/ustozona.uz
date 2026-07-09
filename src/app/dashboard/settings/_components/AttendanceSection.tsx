@@ -37,7 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SettingsGroup, SettingsList, SavedIndicator } from "./SettingsShared";
+import { SettingsGroup, SettingsList, SaveSignalPing } from "./SettingsShared";
 
 const IMPACT_OPTIONS: ScoreImpact[] = ["full", "half", "none", "excluded"];
 
@@ -150,7 +150,7 @@ export default function AttendanceSection() {
       <SettingsGroup
         title="Davomat statuslari"
         description="Sinflaringizda davomatni qayd etish usullarini boshqaring: statuslarni faollashtiring yoki oʻchiring hamda vaznini (koeffitsiyentini) belgilang. Oʻzgarishlar barcha davomat hisobotlarida aks etadi."
-        action={<SavedIndicator signal={statuses} />}
+        action={<SaveSignalPing signal={statuses} />}
       >
         <SettingsList
           items={statuses.map((st) => {

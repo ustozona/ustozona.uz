@@ -11,7 +11,7 @@ import ScaleControls from "@/components/grade-scale/ScaleControls";
 import { useClassStore } from "@/store/useClassStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { TOPIC_COLOR_HEX, type Topic } from "@/lib/grades-data";
-import { SettingsGroup, SettingsList, SavedIndicator } from "./SettingsShared";
+import { SettingsGroup, SettingsList, SaveSignalPing } from "./SettingsShared";
 
 /** BellSection'dagi "Faqat koʻrish" badge patterni — manba boshqa boʻlimda. */
 function ReadOnlyBadge({ source }: { source: string }) {
@@ -67,7 +67,7 @@ export default function JournalSection() {
       <SettingsGroup
         title="Baholash mezoni"
         description="Ushbu mezon barcha jurnallar uchun umumiy hisoblanadi. Tizim orqa fonda ballarni foizda hisoblaydi, bu yerda esa faqat ularning koʻrinishi sozlanadi."
-        action={<SavedIndicator signal={journalScale} />}
+        action={<SaveSignalPing signal={journalScale} />}
       >
         <ScaleControls />
       </SettingsGroup>

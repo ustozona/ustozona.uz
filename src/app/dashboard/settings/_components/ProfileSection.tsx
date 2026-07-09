@@ -25,7 +25,7 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { CLASS_COLOR_HEX, type ClassColor, classTints } from "@/lib/class-colors";
 import { MONTHS_UZ } from "@/lib/localization";
 import { cn } from "@/lib/utils";
-import { SettingsGroup, SavedIndicator } from "./SettingsShared";
+import { SettingsGroup, SaveSignalPing } from "./SettingsShared";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2MB
 
@@ -140,7 +140,7 @@ export default function ProfileSection() {
       <SettingsGroup
         title="Asosiy maʼlumotlar"
         description="Ismingiz yon panel (sidebar) hamda bosh sahifadagi salomlashuv matnida aks etadi. Oʻzgarishlar avtomatik ravishda saqlanadi."
-        action={<SavedIndicator signal={JSON.stringify(profile)} />}
+        action={<SaveSignalPing signal={JSON.stringify(profile)} />}
       >
         <div className="flex flex-col gap-4 rounded-xl border border-border bg-card px-5 py-5 sm:flex-row sm:items-start">
           <button
