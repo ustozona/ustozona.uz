@@ -15,6 +15,13 @@
       "when": 1783113252579,
       "tag": "0001_polite_virginia_dare",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783579752667,
+      "tag": "0002_previous_vivisector",
+      "breakpoints": true
     }
   ]
 }

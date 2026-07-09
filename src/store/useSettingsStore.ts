@@ -67,6 +67,8 @@ export type TeacherProfile = {
   subject: string;
   /** Kirish provayderi (identifikatsiya chipi uchun) */
   provider: AuthProvider;
+  /** Tugʻilgan kun — "YYYY-MM-DD", ixtiyoriy (tabrik/chegirma uchun). Boʻsh — "" */
+  birthDate: string;
 };
 
 export const DEFAULT_PROFILE: TeacherProfile = {
@@ -78,6 +80,7 @@ export const DEFAULT_PROFILE: TeacherProfile = {
   school: "",
   subject: "Ingliz tili",
   provider: "google",
+  birthDate: "",
 };
 
 /** Eskirgan/notaʼrif fon qiymatini xavfsiz normallaymiz. */

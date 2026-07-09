@@ -18,6 +18,8 @@ export const teachers = pgTable("teachers", {
   email: text("email").notNull().unique(),
   school: text("school"),
   subject: text("subject"),
+  /** "YYYY-MM-DD" — ixtiyoriy, tugʻilgan kun tabrigi/chegirma uchun. */
+  birthDate: text("birth_date"),
   avatarUrl: text("avatar_url"),
   language: text("language").notNull().default("uz"),
   academicYear: text("academic_year"),

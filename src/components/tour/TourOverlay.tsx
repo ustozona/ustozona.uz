@@ -1,10 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
+import {
+  Tour,
+  TourPortal,
+  TourSpotlight,
+  TourSpotlightRing,
+  TourStep,
+  TourArrow,
+  TourHeader,
+  TourTitle,
+  TourDescription,
+} from "@/components/ui/tour";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { TourStep } from "./tours";
+import type { TourStep as TourStepData } from "./tours";
 import { TimetableDragMock } from "./mocks/TimetableDragMock";
 import { LessonsCalendarMock } from "./mocks/LessonsCalendarMock";
 import { TasksCalendarMock } from "./mocks/TasksCalendarMock";
@@ -12,103 +22,33 @@ import { TasksCalendarMock } from "./mocks/TasksCalendarMock";
 /* ════════════════════════════════════════════════════════════════════
    TOUR OVERLAY — bitta bosqichni chizadi.
 
-   Ikki rejim:
-   · Spotlight — `step.target` DOM'da topilsa: qorongʻi fon + teshik
-     (box-shadow) + shu elementga ulangan tooltip (Popover + Anchor).
-   · Markaziy modal — `mock` berilsa yoki target topilmasa: markazda
-     karta (mock illyustratsiya yoki oddiy matn).
+   `@diceui/tour` primitivlari (Tour/TourPortal/TourSpotlight/…) spotlight
+   + tooltip joylashuvini boshqaradi (floating-ui asosida, focus-trap
+   ichkarida tayyor). Bosqichlar orasidagi navigatsiya esa TAShqi holatga
+   (TourProvider) tegishli — shu sabab TourNext/TourPrev/TourSkipʼni EMAS,
+   oddiy tugmalarni `onNext`/`onSkip` propʼlariga bogʻlab ishlatamiz: har
+   safar `step` almashganda `TourOverlay` butunlay qayta mount boʻladi
+   (parentdagi `key`), shuning uchun ichkarida faqat bitta bosqich (value=0)
+   registratsiya qilinadi.
 
-   Rect scroll/resize'da qayta hisoblanadi. Ranglar — dizayn tokenlari.
+   `mock` berilgan yoki `target` topilmaydigan bosqichlar uchun diceui/tour
+   mos kelmaydi (u target elementsiz ishlamaydi) — bu holatda avvalgidek
+   markaziy modal saqlanib qoladi.
    ════════════════════════════════════════════════════════════════════ */
 
 type Props = {
-  step: TourStep;
+  step: TourStepData;
   index: number;
   total: number;
   onNext: () => void;
   onSkip: () => void;
 };
 
-type Rect = { top: number; left: number; width: number; height: number };
-
 const MOCKS = {
   timetableDrag: TimetableDragMock,
   lessonsCalendar: LessonsCalendarMock,
   tasksCalendar: TasksCalendarMock,
 } as const;
-
-/** Element «tayyor»mi — DOM'da bor va koʻrinadigan oʻlchamga ega. */
-function isReady(el: HTMLElement | null): el is HTMLElement {
-  if (!el) return false;
-  const r = el.getBoundingClientRect();
-  return r.width > 0 && r.height > 0;
-}
-
-/** Target elementni topib rect qaytaradi; scroll/resize'da yangilaydi.
-    Element darhol topilmasa yoki hali oʻlchamsiz boʻlsa (maʼlumot yuklanmoqda,
-    animatsiya, kech mount) qisqa muddat qayta urinadi — topilmasa `null`
-    qaytaradi va chaqiruvchi markaziy modalga tushadi (buzilmaydi). */
-function useTargetRect(selector: string | undefined): Rect | null {
-  const [rect, setRect] = React.useState<Rect | null>(null);
-
-  React.useLayoutEffect(() => {
-    if (!selector) {
-      setRect(null);
-      return;
-    }
-
-    let el: HTMLElement | null = null;
-    let ro: ResizeObserver | null = null;
-    let pollId = 0;
-    let settleId = 0;
-
-    const measure = () => {
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-    };
-
-    /** Target topilib tayyor boʻlgach — oʻlchash + kuzatuvchilarni ulash. */
-    const attach = () => {
-      if (!el) return;
-      el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
-      measure();
-      ro = new ResizeObserver(measure);
-      ro.observe(el);
-      window.addEventListener("scroll", measure, true);
-      window.addEventListener("resize", measure);
-      // Silliq scroll tugagach oxirgi pozitsiyani ushlash uchun
-      settleId = window.setTimeout(measure, 320);
-    };
-
-    // Qisqa muddat (~2s) qayta urinish — kech mount / 0px oʻlcham holatlari uchun.
-    const deadline = Date.now() + 2000;
-    const tryFind = () => {
-      const candidate = document.querySelector(selector) as HTMLElement | null;
-      if (isReady(candidate)) {
-        el = candidate;
-        attach();
-        return;
-      }
-      if (Date.now() < deadline) {
-        pollId = window.setTimeout(tryFind, 120);
-      } else {
-        setRect(null); // topilmadi — markaziy modalga tushadi
-      }
-    };
-    tryFind();
-
-    return () => {
-      ro?.disconnect();
-      window.removeEventListener("scroll", measure, true);
-      window.removeEventListener("resize", measure);
-      window.clearTimeout(pollId);
-      window.clearTimeout(settleId);
-    };
-  }, [selector]);
-
-  return rect;
-}
 
 function Footer({ index, total, onNext, onSkip }: Omit<Props, "step">) {
   const last = index === total - 1;
@@ -131,13 +71,10 @@ function Footer({ index, total, onNext, onSkip }: Omit<Props, "step">) {
 
 export function TourOverlay({ step, index, total, onNext, onSkip }: Props) {
   const wantsSpotlight = Boolean(step.target) && !step.mock;
-  const rect = useTargetRect(wantsSpotlight ? step.target : undefined);
   const Mock = step.mock ? MOCKS[step.mock] : null;
 
-  // Markaziy modal: mock berilgan yoki target topilmagan holat
-  const centered = !wantsSpotlight || !rect;
-
-  if (centered) {
+  if (!wantsSpotlight) {
+    // Markaziy modal: mock berilgan yoki target berilmagan holat
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4">
         <div
@@ -161,43 +98,23 @@ export function TourOverlay({ step, index, total, onNext, onSkip }: Props) {
     );
   }
 
-  // Spotlight rejimi
+  // Spotlight rejimi — diceui/tour. Target DOM'da topilmasa TourStep hech
+  // narsa render qilmaydi (forceMount berilmagan), shu holatda ham
+  // xavfsiz — sahifa ustida ortiqcha element qolmaydi.
   return (
-    <>
-      {/* Tashqi bosishlarni bloklovchi qatlam (teshiksiz — dim box-shadow'da) */}
-      <div className="fixed inset-0 z-40" aria-hidden />
-      {/* Teshik + qorongʻi fon */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed z-50 rounded-lg transition-[top,left,width,height] duration-200"
-        style={{
-          top: rect.top - 6,
-          left: rect.left - 6,
-          width: rect.width + 12,
-          height: rect.height + 12,
-          boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
-        }}
-      />
-      <Popover open>
-        <PopoverAnchor asChild>
-          <div
-            className="pointer-events-none fixed z-50"
-            style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
-          />
-        </PopoverAnchor>
-        <PopoverContent
-          side={step.placement ?? "bottom"}
-          align="center"
-          sideOffset={12}
-          collisionPadding={16}
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          className="z-[70] w-80"
-        >
-          <h2 className="heading-small">{step.title}</h2>
-          <p className="mt-1.5 text-sm/relaxed text-muted-foreground">{step.body}</p>
+    <Tour open onOpenChange={() => {}} onSkip={onSkip}>
+      <TourPortal>
+        <TourSpotlight />
+        <TourSpotlightRing className="rounded-lg" />
+        <TourStep target={step.target!} side={step.placement ?? "bottom"} align="center">
+          <TourArrow />
+          <TourHeader>
+            <TourTitle>{step.title}</TourTitle>
+            <TourDescription>{step.body}</TourDescription>
+          </TourHeader>
           <Footer index={index} total={total} onNext={onNext} onSkip={onSkip} />
-        </PopoverContent>
-      </Popover>
-    </>
+        </TourStep>
+      </TourPortal>
+    </Tour>
   );
 }

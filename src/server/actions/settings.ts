@@ -18,6 +18,8 @@ const saveSchema = z.object({
   name: z.string().trim().min(1).max(200),
   school: z.string().max(300),
   subject: z.string().max(200),
+  /** "YYYY-MM-DD" yoki boʻsh satr — ixtiyoriy. */
+  birthDate: z.string().max(10),
   /** Data-URL boʻlishi mumkin — limit ~1.5MB matn. */
   avatarUrl: z.string().max(1_500_000),
   avatarColor: z.string().max(50),

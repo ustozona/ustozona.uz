@@ -38,6 +38,7 @@ export type SettingsUpdate = {
   name: string;
   school: string;
   subject: string;
+  birthDate: string;
   avatarUrl: string;
   avatarColor: string;
   academicYear: string;
@@ -94,6 +95,7 @@ export async function getSettings(): Promise<SettingsPayload> {
       avatarColor: prefs.avatarColor ?? "orange",
       school: teacher.school ?? "",
       subject: teacher.subject ?? "",
+      birthDate: teacher.birthDate ?? "",
       provider: acc?.providerId === "google" ? "google" : "email",
     },
     academicYear: teacher.academicYear ?? "2025–2026",
@@ -127,6 +129,7 @@ export async function updateSettings(input: SettingsUpdate): Promise<void> {
       name: input.name,
       school: input.school,
       subject: input.subject,
+      birthDate: input.birthDate || null,
       avatarUrl: input.avatarUrl,
       academicYear: input.academicYear,
       language: input.language,

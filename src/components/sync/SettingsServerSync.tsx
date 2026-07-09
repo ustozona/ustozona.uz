@@ -21,6 +21,7 @@ function selectSaveInput(s: SettingsState): SettingsSaveInput {
     name: s.profile.name,
     school: s.profile.school,
     subject: s.profile.subject,
+    birthDate: s.profile.birthDate,
     avatarUrl: s.profile.avatarUrl,
     avatarColor: s.profile.avatarColor,
     academicYear: s.academicYear,

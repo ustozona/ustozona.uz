@@ -2,18 +2,18 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { uz } from "date-fns/locale";
 import { type DateRange } from "react-day-picker";
 import {
   GraduationCap,
   CalendarRange,
-  Sparkles,
   ArrowRight,
   ArrowLeft,
   Check,
   BookOpen,
   Users,
   ClipboardCheck,
+  User,
+  School,
 } from "lucide-react";
 import {
   Dialog,
@@ -24,7 +24,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
+import { DateKeyPicker } from "@/components/ui/date-key-picker";
+import { BirthDatePicker } from "@/components/ui/birth-date-picker";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { AppleEmoji } from "@/components/ui/apple-emoji";
+import { MagicCard } from "@/components/ui/magic-card";
+import { Confetti } from "@/components/ui/confetti";
+import { AnimatedTextRoller } from "@/components/shadcn-space/animated-text/animated-text-04";
+import {
+  Stepper,
+  StepperNav,
+  StepperItem,
+  StepperTrigger,
+  StepperIndicator,
+  StepperSeparator,
+  StepperTitle,
+  StepperDescription,
+  StepperPanel,
+  StepperContent,
+} from "@/components/ui/stepper";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
@@ -36,7 +55,6 @@ import {
   isCalendarConfigured,
 } from "@/lib/academic-calendar";
 import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
-import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 
 /* ════════════════════════════════════════════════════════════════════
    ONBOARDING SEHRGARI — yangi oʻqituvchi uchun birinchi ishga tushirish.
@@ -58,13 +76,38 @@ import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
    chiqish faqat "Keyinroq" yoki qadamlarni tugatish orqali.
    ════════════════════════════════════════════════════════════════════ */
 
-const STEP_COUNT = 4;
+/** Vertikal stepper navigatsiyasi — 4 qadam (id, sarlavha, tavsif, ikonka). */
+const STEPS = [
+  { id: "welcome", title: "Xush kelibsiz", description: "Ustozona bilan tanishing", icon: <GraduationCap /> },
+  { id: "profile", title: "Profil", description: "Oʻzingiz haqingizda", icon: <Users /> },
+  { id: "academic-year", title: "Oʻquv yili", description: "Sanalarni tasdiqlang", icon: <CalendarRange /> },
+  { id: "done", title: "Tayyor", description: "Hammasi sozlandi", icon: <Check /> },
+];
+const STEP_COUNT = STEPS.length;
 
 /** Kalendar hafta sarlavhalari — getDay() tartibida (0=Yakshanba). */
 const FEATURES = [
-  { icon: GraduationCap, title: "Sinflar va baholar", desc: "Oʻquvchilar, jurnal va baholash bir joyda." },
-  { icon: BookOpen, title: "Dars rejalashtirish", desc: "Jadval, mavzular va dars materiallari." },
-  { icon: ClipboardCheck, title: "Davomat va rivoj", desc: "Har bir oʻquvchining oʻsishini kuzating." },
+  {
+    icon: GraduationCap,
+    title: "Sinflar va baholar",
+    desc: "Oʻquvchilar roʻyxati, jurnal va baholar — barchasi bir joyda.",
+    tone: "text-success bg-success/10",
+    glow: "var(--success)",
+  },
+  {
+    icon: BookOpen,
+    title: "Darslarni rejalashtirish",
+    desc: "Dars jadvali, mavzular va oʻquv materiallari.",
+    tone: "text-info bg-info/10",
+    glow: "var(--info)",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Davomat va oʻzlashtirish",
+    desc: "Har bir oʻquvchining natijalarini kuzatib boring.",
+    tone: "text-warning bg-warning/10",
+    glow: "var(--warning)",
+  },
 ];
 
 export default function OnboardingWizard() {
@@ -84,6 +127,7 @@ export default function OnboardingWizard() {
   const [name, setName] = React.useState(profile.name);
   const [school, setSchool] = React.useState(profile.school);
   const [subject, setSubject] = React.useState(profile.subject);
+  const [birthDate, setBirthDate] = React.useState(profile.birthDate);
 
   // Oʻquv yili qadam — kalendar allaqachon eager-seed qilingan; foydalanuvchi
   // sukut oraligʻini tasdiqlaydi yoki tuzatadi (editing). Sukut oraligʻi
@@ -114,7 +158,8 @@ export default function OnboardingWizard() {
   );
 
   const next = () => {
-    if (step === 1) setProfile({ name: name.trim() || profile.name, school: school.trim(), subject: subject.trim() });
+    if (step === 1)
+      setProfile({ name: name.trim() || profile.name, school: school.trim(), subject: subject.trim(), birthDate });
     if (step === 2 && startKey && endKey) {
       const cal = makeCalendarForRange(startKey, endKey);
       setCalendar(cal);
@@ -127,86 +172,196 @@ export default function OnboardingWizard() {
   const yearLabel = startKey ? makeCalendarForRange(startKey, endKey || startKey).yearLabel : "";
   const canContinueProfile = name.trim().length > 0;
 
+  // Dialog ochilganda radix birinchi fokuslanadigan elementga (odatda "Keyinroq")
+  // fokus qoʻyadi — bu ghost tugmani doimiy ring bilan bordery qilib koʻrsatadi.
+  // Buning oʻrniga asosiy CTA'ga ("Davom etish") fokus beriladi.
+  const primaryButtonRef = React.useRef<HTMLButtonElement>(null);
+
   return (
     <Dialog open>
       <DialogContent
         showCloseButton={false}
-        width="30rem"
-        className="gap-0 overflow-hidden p-0"
+        width="46rem"
+        className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          primaryButtonRef.current?.focus();
+        }}
       >
-        {/* Progress */}
-        <div className="flex items-center gap-1.5 px-6 pt-5">
-          {Array.from({ length: STEP_COUNT }).map((_, i) => (
-            <span
-              key={i}
+        {/* Header — landing logotip tuzilishi (ikonka + "Ustozona" + aylanuvchi
+            ost-loyiha soʻzi), lekin ikonka qutisi Rainbow Button "default"
+            uslubida (qora fon + aylanuvchi gradient border/nurlanish).
+            "Ustozona" — dashboard shrifti (DM Sans, font-sans), rolling soʻz
+            oʻzining Instrument Serif kursivida qoladi (AnimatedTextRoller). */}
+        <div className="flex shrink-0 items-center justify-center border-b border-border bg-muted/20 px-6 py-5">
+          <div className="flex items-center gap-1.5">
+            <div
               className={cn(
-                "h-1 flex-1 rounded-full transition-colors duration-300",
-                i <= step ? "bg-primary" : "bg-muted"
+                "relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg text-primary-foreground",
+                "animate-rainbow bg-[length:200%]",
+                "[border:calc(0.125rem)_solid_transparent] [background-clip:padding-box,border-box,border-box] [background-origin:border-box]",
+                "bg-[linear-gradient(var(--primary),var(--primary)),linear-gradient(var(--primary)_50%,transparent_80%),linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))]",
+                "before:absolute before:bottom-[-20%] before:left-1/2 before:z-0 before:h-1/5 before:w-3/5 before:-translate-x-1/2 before:animate-rainbow before:bg-[linear-gradient(90deg,var(--color-1),var(--color-5),var(--color-3),var(--color-4),var(--color-2))] before:bg-[length:200%] before:blur-md"
               )}
-            />
-          ))}
+            >
+              <GraduationCap className="relative z-10 size-4.5" strokeWidth={2} />
+            </div>
+            <span className="font-sans text-lg font-bold tracking-tight text-foreground">Ustozona</span>
+            <AnimatedTextRoller className="-ml-0.5" />
+          </div>
         </div>
 
-        <div className="px-6 py-6">
+        <Stepper
+          steps={STEPS}
+          value={STEPS[step].id}
+          onValueChange={(id) => {
+            // Nav orqali faqat orqaga (yoki joriy) qadamga oʻtish mumkin —
+            // oldinga sakrash validatsiyani (ism/sana majburiyligi) chetlab
+            // oʻtmasin. Kelajakdagi qadamlar StepperItem'da disabled.
+            const idx = STEPS.findIndex((s) => s.id === id);
+            if (idx !== -1 && idx <= step) setStep(idx);
+          }}
+          orientation="vertical"
+          className="flex min-h-0 flex-1 flex-row items-stretch gap-4"
+        >
+        {/* Chap navigatsiya — referens (shadcn-studio stepper-09) uslubi: fonsiz,
+            "suzuvchi" roʻyxat; qadamlar orasi keng (pb-15), ajratuvchi chiziq
+            indikator markazidan absolyut oʻtadi. Faol qadam halqasi indikatorda
+            (ring), butun qator emas. Orqaga qaytish uchun bosiladi, oldinga
+            sakrash taqiqlangan (disabled) — odatiy oqim footerdagi tugmalar. */}
+        <StepperNav className="w-60 shrink-0 justify-center gap-0 overflow-y-auto bg-muted/40 px-6 py-8">
+          {STEPS.map((s, i) => (
+            <StepperItem
+              key={s.id}
+              stepId={s.id}
+              completed={i < step}
+              disabled={i > step}
+              className="relative items-start"
+            >
+              <StepperTrigger className="items-start gap-2.5 pb-15 last:pb-0">
+                <StepperIndicator />
+                <div className="mt-1 flex flex-col gap-0.5 text-left">
+                  <StepperTitle>{s.title}</StepperTitle>
+                  <StepperDescription>{s.description}</StepperDescription>
+                </div>
+              </StepperTrigger>
+              {i < STEPS.length - 1 && (
+                <StepperSeparator className="absolute inset-y-0 top-[calc(50%-22px)] left-2 group-data-[orientation=vertical]/stepper-nav:h-15" />
+              )}
+            </StepperItem>
+          ))}
+        </StepperNav>
+
+        <StepperPanel className="min-w-0 min-h-0 flex-1 overflow-y-auto px-6 py-6">
           {/* ── 0: Xush kelibsiz ── */}
-          {step === 0 && (
+          <StepperContent value="welcome">
             <div className="flex flex-col items-center gap-5 text-center animate-in fade-in-50 duration-300">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Sparkles className="size-7" />
-              </div>
               <div className="space-y-1.5">
                 <DialogTitle className="text-xl">
-                  Ustozona'ga xush kelibsiz{firstName ? `, ${firstName}` : ""}!
+                  Xush kelibsiz{firstName ? `, ${firstName}` : ""}!{" "}
+                  <AppleEmoji code="1f60a" label="Tabassum" />
                 </DialogTitle>
                 <DialogDescription className="text-balance">
-                  Bir necha qadamda ishchi maydoningizni sozlaymiz. Bu bir daqiqadan koʻp vaqt olmaydi.
+                  Ish joyingizni bir necha qadamda sozlab olamiz. Bu koʻp vaqtingizni olmaydi.
                 </DialogDescription>
               </div>
               <div className="flex w-full flex-col gap-2.5 pt-1 text-left">
                 {FEATURES.map((f) => (
-                  <div key={f.title} className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
-                    <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-background text-foreground">
-                      <f.icon className="size-4" />
+                  <MagicCard
+                    key={f.title}
+                    className="rounded-xl border-border"
+                    gradientColor={f.glow}
+                    gradientOpacity={0.12}
+                    gradientSize={160}
+                    gradientFrom={f.glow}
+                    gradientTo={f.glow}
+                    restBorderColor={f.glow}
+                  >
+                    <div className="flex items-start gap-3 px-4 py-3">
+                      <div className={cn("mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg", f.tone)}>
+                        <f.icon className="size-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium leading-tight">{f.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{f.desc}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium leading-tight">{f.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{f.desc}</p>
-                    </div>
-                  </div>
+                  </MagicCard>
                 ))}
               </div>
             </div>
-          )}
+          </StepperContent>
 
           {/* ── 1: Profil ── */}
-          {step === 1 && (
+          <StepperContent value="profile">
             <div className="flex flex-col gap-5 animate-in fade-in-50 duration-300">
               <StepHeader
-                icon={<Users className="size-5" />}
                 title="Oʻzingiz haqingizda"
                 desc="Bu maʼlumotlar profil va hisobotlarda koʻrinadi. Keyin Sozlamalarda oʻzgartirasiz."
               />
               <div className="flex flex-col gap-4">
-                <Field label="Ism-familiya" htmlFor="ob-name">
-                  <Input id="ob-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Masalan, Otabek Abdusattorov" autoFocus />
+                <Field label="Ism-familiya" htmlFor="ob-name" required>
+                  <InputGroup>
+                    <InputGroupAddon>
+                      <User className="size-4" />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id="ob-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Masalan, Otabek Abdusattorov"
+                      autoFocus
+                    />
+                  </InputGroup>
                 </Field>
-                <Field label="Maktab / muassasa" htmlFor="ob-school" optional>
-                  <Input id="ob-school" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="Masalan, 24-maktab" />
-                </Field>
-                <Field label="Asosiy fan" htmlFor="ob-subject" optional>
-                  <Input id="ob-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Masalan, Ingliz tili" />
-                </Field>
+
+                {/* Ixtiyoriy maydonlar — yupqa ajratuvchi chiziq bilan guruhlangan
+                    (qutiga oʻralmaydi — Ism-familiya bilan bir xil chekkada
+                    tekislanishi uchun qoʻshimcha gorizontal padding yoʻq).
+                    Majburiy "Ism-familiya" — "*" + tooltip bilan. */}
+                <div className="flex flex-col gap-4 border-t border-border pt-4">
+                  <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-2">
+                    <Field label="Maktab / muassasa" htmlFor="ob-school">
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <School className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="ob-school"
+                          value={school}
+                          onChange={(e) => setSchool(e.target.value)}
+                          placeholder="Masalan, 24-maktab"
+                        />
+                      </InputGroup>
+                    </Field>
+                    <Field label="Asosiy fan" htmlFor="ob-subject">
+                      <InputGroup>
+                        <InputGroupAddon>
+                          <BookOpen className="size-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          id="ob-subject"
+                          value={subject}
+                          onChange={(e) => setSubject(e.target.value)}
+                          placeholder="Masalan, Ingliz tili"
+                        />
+                      </InputGroup>
+                    </Field>
+                  </div>
+                  <Field label="Tavallud sana" htmlFor="ob-birth-date">
+                    <BirthDatePicker value={birthDate} onChange={setBirthDate} />
+                  </Field>
+                </div>
               </div>
             </div>
-          )}
+          </StepperContent>
 
           {/* ── 2: Oʻquv yili (tasdiqlash yoki tuzatish) ── */}
-          {step === 2 && (
+          <StepperContent value="academic-year">
             <div className="flex flex-col gap-4 animate-in fade-in-50 duration-300">
               <StepHeader
-                icon={<CalendarRange className="size-5" />}
                 title="Oʻquv yilini tasdiqlang"
                 desc="Rasmiy oʻzbek oʻquv yili sanalarini oldindan tayyorladik. Toʻgʻri boʻlsa davom eting yoki sanalarni oʻzgartiring — choraklar va taʼtillar avtomatik toʻldiriladi."
               />
@@ -240,43 +395,52 @@ export default function OnboardingWizard() {
                 </>
               ) : (
                 <>
-                  <div className="flex justify-center">
-                    <Calendar
-                      mode="range"
-                      locale={uz}
-                      formatters={{
-                        formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
-                        formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
-                      }}
-                      selected={range}
-                      onSelect={setRange}
-                      defaultMonth={range?.from ?? dateKeyToDate(`${base}-09-01`)}
-                      captionLayout="dropdown"
-                      startMonth={new Date(base - 1, 0)}
-                      endMonth={new Date(base + 2, 11)}
-                      className="rounded-xl border border-border p-3"
-                    />
+                  {/* "Oʻquv yili nomi" — qoʻlda kiritilmaydi, sanalardan avtomatik
+                      hosil boʻladi (2026–2027 kabi), CreateSemesterModal'dagi
+                      jonli sharh naqshi bilan bir xil. Foydalanuvchi faqat
+                      boshlanish/tugash sanasini tanlaydi. */}
+                  <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-3">
+                    <CalendarRange className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="text-sm font-semibold tabular-nums">
+                      {hasFullRange ? yearLabel : "Oʻquv yili nomi"}
+                    </span>
                   </div>
-                  <div className="rounded-xl border border-border bg-muted/30 px-4 py-3">
-                    <p className="text-xs text-muted-foreground">Tanlangan oʻquv yili</p>
-                    {hasFullRange ? (
-                      <p className="text-sm font-medium mt-0.5 tabular-nums">
-                        {yearLabel} · {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
-                      </p>
-                    ) : (
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        Kalendarda boshlanish, soʻng tugash sanasini belgilang.
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground">Yil davri</Label>
+                    <div className="flex items-center gap-1.5">
+                      <DateKeyPicker
+                        value={startKey}
+                        onChange={(v) => setRange((r) => ({ from: dateKeyToDate(v), to: r?.to }))}
+                        ariaLabel="Boshlanish sanasi"
+                        className="flex-1"
+                      />
+                      <span className="text-muted-foreground">—</span>
+                      <DateKeyPicker
+                        value={endKey}
+                        onChange={(v) => setRange((r) => ({ from: r?.from, to: dateKeyToDate(v) }))}
+                        ariaLabel="Tugash sanasi"
+                        className="flex-1"
+                      />
+                    </div>
+                    {hasFullRange && (
+                      <p className="text-xs text-muted-foreground tabular-nums">
+                        {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
                       </p>
                     )}
                   </div>
                 </>
               )}
             </div>
-          )}
+          </StepperContent>
 
           {/* ── 3: Tayyor ── */}
-          {step === 3 && (
+          <StepperContent value="done">
             <div className="flex flex-col items-center gap-5 text-center animate-in fade-in-50 duration-300">
+              <Confetti
+                className="pointer-events-none fixed inset-0 z-[100] size-full"
+                options={{ particleCount: 120, spread: 90, origin: { y: 0.6 } }}
+              />
               <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Check className="size-7" strokeWidth={2.5} />
               </div>
@@ -287,8 +451,9 @@ export default function OnboardingWizard() {
                 </DialogDescription>
               </div>
             </div>
-          )}
-        </div>
+          </StepperContent>
+        </StepperPanel>
+        </Stepper>
 
         {/* ── Footer ── */}
         <div className="flex items-center justify-between gap-3 border-t border-border px-6 py-4">
@@ -309,7 +474,8 @@ export default function OnboardingWizard() {
 
           {step < 3 ? (
             <Button
-              className="gap-1.5"
+              ref={primaryButtonRef}
+              className="gap-1.5 focus-visible:ring-2 focus-visible:ring-ring/25"
               onClick={next}
               disabled={(step === 1 && !canContinueProfile) || (step === 2 && !hasFullRange)}
             >
@@ -317,7 +483,11 @@ export default function OnboardingWizard() {
               <ArrowRight className="size-4" />
             </Button>
           ) : (
-            <Button className="gap-1.5" onClick={() => complete(true)}>
+            <Button
+              ref={primaryButtonRef}
+              className="gap-1.5 focus-visible:ring-2 focus-visible:ring-ring/25"
+              onClick={() => complete(true)}
+            >
               <GraduationCap className="size-4" />
               Birinchi sinfni yaratish
             </Button>
@@ -328,16 +498,14 @@ export default function OnboardingWizard() {
   );
 }
 
-function StepHeader({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+
+/** Qadam sarlavhasi — ikonkasiz, chunki bir xil ikonka navda allaqachon
+    koʻrsatilgan (rangli "card" quti neytral stepper uslubiga mos kelmasdi). */
+function StepHeader({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-        {icon}
-      </div>
-      <div className="min-w-0">
-        <DialogTitle className="text-base leading-tight">{title}</DialogTitle>
-        <DialogDescription className="mt-1 text-xs/relaxed">{desc}</DialogDescription>
-      </div>
+    <div className="space-y-1">
+      <DialogTitle className="text-lg">{title}</DialogTitle>
+      <DialogDescription className="text-sm/relaxed">{desc}</DialogDescription>
     </div>
   );
 }
@@ -345,19 +513,29 @@ function StepHeader({ icon, title, desc }: { icon: React.ReactNode; title: strin
 function Field({
   label,
   htmlFor,
-  optional,
+  required,
   children,
 }: {
   label: string;
   htmlFor: string;
-  optional?: boolean;
+  /** Majburiy maydon — qizil "*" + tooltip bilan belgilanadi. */
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="flex items-center gap-1.5">
+      <Label htmlFor={htmlFor} className="flex items-center gap-1">
         {label}
-        {optional && <span className="text-xs font-normal text-muted-foreground">(ixtiyoriy)</span>}
+        {required && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-destructive cursor-default" aria-label="Majburiy maydon">
+                *
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Toʻldirilishi shart</TooltipContent>
+          </Tooltip>
+        )}
       </Label>
       {children}
     </div>

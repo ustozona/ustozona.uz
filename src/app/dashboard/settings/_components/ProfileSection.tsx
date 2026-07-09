@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BirthDatePicker } from "@/components/ui/birth-date-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -238,6 +239,13 @@ export default function ProfileSection() {
               onChange={(e) => setProfile({ subject: e.target.value })}
               placeholder="Masalan: Ingliz tili"
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="profile-birth-date" className="flex items-center gap-1.5">
+              Tavallud sana
+              <span className="text-xs font-normal text-muted-foreground">(ixtiyoriy)</span>
+            </Label>
+            <BirthDatePicker value={profile.birthDate} onChange={(v) => setProfile({ birthDate: v })} />
           </div>
         </div>
       </SettingsGroup>
