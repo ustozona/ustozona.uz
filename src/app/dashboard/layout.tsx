@@ -18,6 +18,7 @@ import NotificationsServerSync from "@/components/sync/NotificationsServerSync";
 import FeedbackServerSync from "@/components/sync/FeedbackServerSync";
 import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
 import OnboardingGate from "@/components/onboarding/OnboardingGate";
+import GettingStartedChecklist from "@/components/onboarding/GettingStartedChecklist";
 import TourProvider from "@/components/tour/TourProvider";
 
 export default function DashboardLayout({
@@ -46,6 +47,7 @@ export default function DashboardLayout({
       <LegacyStorageCleanup />
       <OnboardingGate />
       <TourProvider />
+      <GettingStartedChecklist />
       <AppSidebar />
       <SidebarInset className="min-h-0 overflow-hidden">
         <Header />

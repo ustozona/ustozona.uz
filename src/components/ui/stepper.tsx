@@ -355,7 +355,7 @@ function StepperTrigger({ asChild = false, className, children, tabIndex, ...pro
       data-state={state}
       data-loading={isLoading}
       className={cn(
-        "inline-flex cursor-pointer items-center outline-none disabled:pointer-events-none disabled:opacity-60",
+        "inline-flex cursor-pointer items-center p-0 outline-none disabled:pointer-events-none disabled:opacity-60",
         "gap-2.5 rounded-full",
         className
       )}
@@ -378,10 +378,10 @@ function StepperIndicator({ children, className, variant = "default" }: StepperI
   const { indicators } = useStepper()
 
   const base =
-    "relative flex size-8 shrink-0 items-center justify-center overflow-hidden transition-all duration-300 rounded-md text-sm font-medium"
+    "relative flex size-9 shrink-0 items-center justify-center transition-all duration-300 rounded-lg text-sm font-medium"
 
   const defaultClasses = cn(
-    "border-background bg-muted data-[state=completed]:bg-primary data-[state=completed]:text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground ring-offset-background group-data-[state=active]/step:ring-primary/30 group-data-[state=active]/step:ring-2 group-data-[state=active]/step:ring-offset-3",
+    "border-background bg-muted data-[state=completed]:bg-primary data-[state=completed]:text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground group-data-[state=active]/step:outline-2 group-data-[state=active]/step:outline-primary/30 group-data-[state=active]/step:outline-offset-3",
     base
   )
 
@@ -396,7 +396,7 @@ function StepperIndicator({ children, className, variant = "default" }: StepperI
     <div data-slot="stepper-indicator" data-state={state} className={cn(classes, className)}>
       <div className="absolute">
         {(isLoading ? indicators?.loading : indicators?.[state]) ??
-          (step?.icon ? <span className="*:[svg]:size-4">{step.icon}</span> : children)}
+          (step?.icon ? <span className="*:[svg]:size-4.5">{step.icon}</span> : children)}
       </div>
     </div>
   )
@@ -421,7 +421,11 @@ function StepperTitle({ children, className }: React.ComponentProps<"h3">) {
   const { state } = useStepItem()
 
   return (
-    <h3 data-slot="stepper-title" data-state={state} className={cn("text-sm font-medium", className)}>
+    <h3
+      data-slot="stepper-title"
+      data-state={state}
+      className={cn("text-sm font-medium data-[state=active]:font-semibold data-[state=completed]:font-semibold", className)}
+    >
       {children}
     </h3>
   )

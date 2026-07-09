@@ -26,6 +26,8 @@ export type TourDef = {
   id: string;
   /** Aynan shu pathname'da ishga tushadi */
   route: string;
+  /** "Turlarni qayta koʻrish" panelida koʻrsatiladigan nom */
+  label: string;
   steps: TourStep[];
 };
 
@@ -33,6 +35,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "home",
     route: "/dashboard",
+    label: "Bosh sahifa",
     steps: [
       {
         title: "Ishchi maydoningiz",
@@ -57,6 +60,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "timetable",
     route: "/dashboard/timetable",
+    label: "Jadval",
     steps: [
       {
         title: "Sinflaringiz",
@@ -80,6 +84,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "planner",
     route: "/dashboard/planner",
+    label: "Rejalashtiruvchi",
     steps: [
       {
         title: "Boʻsh dars slotlari",
@@ -110,6 +115,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "lessons",
     route: "/dashboard/lessons",
+    label: "Darslar",
     steps: [
       {
         title: "Sinflaringiz",
@@ -139,6 +145,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "students",
     route: "/dashboard/students",
+    label: "Oʻquvchilar",
     steps: [
       {
         title: "Sinflaringiz",
@@ -169,6 +176,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "grades",
     route: "/dashboard/grades",
+    label: "Baholar",
     steps: [
       {
         title: "Sinflaringiz",
@@ -193,6 +201,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "standards",
     route: "/dashboard/standards",
+    label: "Standartlar",
     steps: [
       {
         title: "Sinflaringiz",
@@ -217,6 +226,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "attendance",
     route: "/dashboard/attendance",
+    label: "Davomat",
     steps: [
       {
         title: "Sinflaringiz",
@@ -241,6 +251,7 @@ export const TOURS: readonly TourDef[] = [
   {
     id: "tasks",
     route: "/dashboard/tasks",
+    label: "Vazifalar",
     steps: [
       {
         title: "Ishlaringizni tartiblang",

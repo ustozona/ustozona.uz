@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { type DateRange } from "react-day-picker";
 import {
   GraduationCap,
@@ -14,6 +14,9 @@ import {
   ClipboardCheck,
   User,
   School,
+  CheckCircle,
+  BarChart2,
+  Target,
 } from "lucide-react";
 import {
   Dialog,
@@ -29,8 +32,9 @@ import { BirthDatePicker } from "@/components/ui/birth-date-picker";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
-import { MagicCard } from "@/components/ui/magic-card";
-import { Confetti } from "@/components/ui/confetti";
+import { Illustration } from "@/components/ui/illustration";
+import { FeatureLoop, type FeatureLoopItem } from "@/components/onboarding/FeatureLoop";
+import { confettiPresets } from "@/lib/confetti-presets";
 import { AnimatedTextRoller } from "@/components/shadcn-space/animated-text/animated-text-04";
 import {
   Stepper,
@@ -86,32 +90,48 @@ const STEPS = [
 const STEP_COUNT = STEPS.length;
 
 /** Kalendar hafta sarlavhalari — getDay() tartibida (0=Yakshanba). */
-const FEATURES = [
+const FEATURES: FeatureLoopItem[] = [
   {
     icon: GraduationCap,
-    title: "Sinflar va baholar",
-    desc: "Oʻquvchilar roʻyxati, jurnal va baholar — barchasi bir joyda.",
-    tone: "text-success bg-success/10",
-    glow: "var(--success)",
+    title: "Sinflar va oʻquvchilar",
+    desc: "Sinflaringiz va oʻquvchilar roʻyxati bir joyda.",
+    color: "green",
   },
   {
     icon: BookOpen,
     title: "Darslarni rejalashtirish",
     desc: "Dars jadvali, mavzular va oʻquv materiallari.",
-    tone: "text-info bg-info/10",
-    glow: "var(--info)",
+    color: "sky",
+  },
+  {
+    icon: BarChart2,
+    title: "Jurnal va baholar",
+    desc: "Baholash mezonlari va oʻzlashtirish tahlili.",
+    color: "violet",
   },
   {
     icon: ClipboardCheck,
-    title: "Davomat va oʻzlashtirish",
-    desc: "Har bir oʻquvchining natijalarini kuzatib boring.",
-    tone: "text-warning bg-warning/10",
-    glow: "var(--warning)",
+    title: "Davomat",
+    desc: "Har bir darsda davomatni tez belgilang.",
+    color: "amber",
+  },
+  {
+    icon: CheckCircle,
+    title: "Vazifalar",
+    desc: "Shaxsiy va sinf vazifalarini rejalashtiring.",
+    color: "red",
+  },
+  {
+    icon: Target,
+    title: "Standartlar",
+    desc: "Oʻquv dasturi standartlari boʻyicha nazorat.",
+    color: "teal",
   },
 ];
 
 export default function OnboardingWizard() {
   const router = useRouter();
+  const pathname = usePathname();
 
   const profile = useSettingsStore((s) => s.profile);
   const setProfile = useSettingsStore((s) => s.setProfile);
@@ -121,6 +141,12 @@ export default function OnboardingWizard() {
   const seededCalendar = useCalendarStore((s) => s.calendar);
 
   const [step, setStep] = React.useState(0);
+
+  // "Tayyor" qadamiga yetganda ikki tomondan pushka effekti.
+  React.useEffect(() => {
+    if (step !== STEP_COUNT - 1) return;
+    confettiPresets.sideCannons();
+  }, [step]);
 
   // Profil qadam formasi (profildan oldindan toʻldirilgan — Google ism/email beradi)
   const firstName = React.useMemo(() => profile.name.trim().split(/\s+/)[0] || "", [profile.name]);
@@ -149,10 +175,26 @@ export default function OnboardingWizard() {
   const startKey = range?.from ? dateToKey(range.from) : "";
   const endKey = range?.to ? dateToKey(range.to) : "";
 
+  // Sinf yaratishga yoʻnaltiruvchi CTA — navigatsiya avval yakunlanadi,
+  // `onboardingCompleted` esa faqat yangi pathname yetib kelgach `true`
+  // boʻladi. Aks holda (avval flag, keyin push) bir tick ichida eski
+  // pathname'da hali "true" holat koʻrinib, TourProvider notoʻgʻri
+  // (eski) boʻlim turʼini ishga tushirib yuborardi.
+  const CLASSES_ROUTE = "/dashboard/classes";
+  const [pendingRoute, setPendingRoute] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (pendingRoute && pathname === pendingRoute) setOnboardingCompleted(true);
+  }, [pendingRoute, pathname, setOnboardingCompleted]);
+
   const complete = React.useCallback(
     (navigateToClasses: boolean) => {
-      setOnboardingCompleted(true);
-      if (navigateToClasses) router.push("/dashboard/classes");
+      if (navigateToClasses) {
+        setPendingRoute(CLASSES_ROUTE);
+        router.push(`${CLASSES_ROUTE}?new=1`);
+      } else {
+        setOnboardingCompleted(true);
+      }
     },
     [setOnboardingCompleted, router]
   );
@@ -224,14 +266,14 @@ export default function OnboardingWizard() {
             if (idx !== -1 && idx <= step) setStep(idx);
           }}
           orientation="vertical"
-          className="flex min-h-0 flex-1 flex-row items-stretch gap-4"
+          className="flex min-h-0 flex-1 flex-row items-stretch gap-0"
         >
         {/* Chap navigatsiya — referens (shadcn-studio stepper-09) uslubi: fonsiz,
             "suzuvchi" roʻyxat; qadamlar orasi keng (pb-15), ajratuvchi chiziq
             indikator markazidan absolyut oʻtadi. Faol qadam halqasi indikatorda
             (ring), butun qator emas. Orqaga qaytish uchun bosiladi, oldinga
             sakrash taqiqlangan (disabled) — odatiy oqim footerdagi tugmalar. */}
-        <StepperNav className="w-60 shrink-0 justify-center gap-0 overflow-y-auto bg-muted/40 px-6 py-8">
+        <StepperNav className="w-60 shrink-0 justify-center gap-0 overflow-y-auto border-r border-border bg-muted/40 px-6 py-8">
           {STEPS.map((s, i) => (
             <StepperItem
               key={s.id}
@@ -240,15 +282,21 @@ export default function OnboardingWizard() {
               disabled={i > step}
               className="relative items-start"
             >
-              <StepperTrigger className="items-start gap-2.5 pb-15 last:pb-0">
+              <StepperTrigger className="items-center gap-4 pb-15 last:pb-0">
                 <StepperIndicator />
-                <div className="mt-1 flex flex-col gap-0.5 text-left">
+                <div className="flex flex-col gap-0.5 text-left">
                   <StepperTitle>{s.title}</StepperTitle>
                   <StepperDescription>{s.description}</StepperDescription>
                 </div>
               </StepperTrigger>
               {i < STEPS.length - 1 && (
-                <StepperSeparator className="absolute inset-y-0 top-[calc(50%-22px)] left-2 group-data-[orientation=vertical]/stepper-nav:h-15" />
+                // Chiziq ikon ustuni (`size-9`=36px) kengligiga aniq teng qutida
+                // `justify-center` bilan markazlanadi — gorizontal tekislash piksel
+                // taxminiga bogʻliq emas. Vertikal: icon ostidan boshlab keyingi
+                // iconning tepasigacha (my-2 = ikki tomondan boʻshliq).
+                <div className="absolute top-9 bottom-0 left-0 flex w-9 flex-col items-center">
+                  <StepperSeparator className="my-2 group-data-[orientation=vertical]/stepper-nav:h-auto group-data-[orientation=vertical]/stepper-nav:flex-1" />
+                </div>
               )}
             </StepperItem>
           ))}
@@ -264,33 +312,10 @@ export default function OnboardingWizard() {
                   <AppleEmoji code="1f60a" label="Tabassum" />
                 </DialogTitle>
                 <DialogDescription className="text-balance">
-                  Ish joyingizni bir necha qadamda sozlab olamiz. Bu koʻp vaqtingizni olmaydi.
+                  Ustozona bilan ishlashni boshlaymiz — quyida sizni nima kutayotganini koʻring.
                 </DialogDescription>
               </div>
-              <div className="flex w-full flex-col gap-2.5 pt-1 text-left">
-                {FEATURES.map((f) => (
-                  <MagicCard
-                    key={f.title}
-                    className="rounded-xl border-border"
-                    gradientColor={f.glow}
-                    gradientOpacity={0.12}
-                    gradientSize={160}
-                    gradientFrom={f.glow}
-                    gradientTo={f.glow}
-                    restBorderColor={f.glow}
-                  >
-                    <div className="flex items-start gap-3 px-4 py-3">
-                      <div className={cn("mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg", f.tone)}>
-                        <f.icon className="size-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium leading-tight">{f.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{f.desc}</p>
-                      </div>
-                    </div>
-                  </MagicCard>
-                ))}
-              </div>
+              <FeatureLoop items={FEATURES} className="pt-1" />
             </div>
           </StepperContent>
 
@@ -436,14 +461,8 @@ export default function OnboardingWizard() {
 
           {/* ── 3: Tayyor ── */}
           <StepperContent value="done">
-            <div className="flex flex-col items-center gap-5 text-center animate-in fade-in-50 duration-300">
-              <Confetti
-                className="pointer-events-none fixed inset-0 z-[100] size-full"
-                options={{ particleCount: 120, spread: 90, origin: { y: 0.6 } }}
-              />
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <Check className="size-7" strokeWidth={2.5} />
-              </div>
+            <div className="flex min-h-full flex-col items-center justify-center gap-4 text-center animate-in fade-in-50 duration-300">
+              <Illustration name="48" className="h-32 text-black dark:text-white" />
               <div className="space-y-1.5">
                 <DialogTitle className="text-xl">Hammasi tayyor!</DialogTitle>
                 <DialogDescription className="text-balance">

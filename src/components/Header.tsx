@@ -12,6 +12,7 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { isCalendarConfigured } from "@/lib/academic-calendar";
 import QuickFeedback from "@/components/QuickFeedback";
 import NotificationsBell from "@/components/NotificationsBell";
+import TourReplayMenu from "@/components/tour/TourReplayMenu";
 import HeaderThemeToggle from "@/components/HeaderThemeToggle";
 import HeaderLanguageMenu from "@/components/HeaderLanguageMenu";
 import HeaderAccountMenu from "@/components/HeaderAccountMenu";
@@ -87,6 +88,7 @@ export default function Header() {
         </span>
 
         <NotificationsBell />
+        <TourReplayMenu />
 
         <Separator orientation="vertical" className="mx-1.5 !h-6" />
 

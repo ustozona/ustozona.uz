@@ -99,6 +99,20 @@ export default function ClassesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<LiveClass | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<LiveClass | null>(null);
+
+  // Onboarding CTA'dan (`?new=1`) kelganda create-modalni avtomatik ochish —
+  // "Birinchi sinfni yaratish" tugmasi vaʼda qilgan ishni bajaradi.
+  // window.location + replaceState — useClassIdParam naqshi (Suspense
+  // chegarasi talab qilmaydi, router.replace remount gotcha'sidan xoli).
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("new") === "1") {
+      setIsCreateModalOpen(true);
+      url.searchParams.delete("new");
+      window.history.replaceState(null, "", url);
+    }
+  }, []);
+
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
 
