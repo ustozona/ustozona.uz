@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,34 @@ import HeaderThemeToggle from "@/components/HeaderThemeToggle";
 import HeaderLanguageMenu from "@/components/HeaderLanguageMenu";
 import HeaderAccountMenu from "@/components/HeaderAccountMenu";
 import { cn } from "@/lib/utils";
-import { Calendar } from "lucide-react";
+import { Calendar, Maximize, Minimize } from "lucide-react";
+
+/** Butun oyna (tarayvcher) toʻliq ekran rejimini boshqaradi. */
+function useFullscreen() {
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handler = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
+  const toggle = React.useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
+  return { isFullscreen, toggle };
+}
 
 export default function Header() {
   const calendar = useCalendarStore((s) => s.calendar);
   const calHydrated = useCalendarStore((s) => s._hasHydrated);
   const configured = isCalendarConfigured(calendar);
+  const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
   return (
     <header className="flex items-center gap-1 border-b border-border bg-card shrink-0 z-20 h-[var(--top-header-height)] px-3">
@@ -36,6 +59,21 @@ export default function Header() {
             <Kbd>B</Kbd>
           </KbdGroup>
         </TooltipContent>
+      </Tooltip>
+
+      {/* Toʻliq ekran toggle */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 text-muted-foreground"
+            onClick={toggleFullscreen}
+          >
+            {isFullscreen ? <Minimize /> : <Maximize />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{isFullscreen ? "Toʻliq ekrandan chiqish" : "Toʻliq ekran"}</TooltipContent>
       </Tooltip>
       <Separator orientation="vertical" className="mx-1 !h-6" />
 
