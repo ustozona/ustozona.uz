@@ -73,6 +73,21 @@ export function TourOverlay({ step, index, total, onNext, onSkip }: Props) {
   const wantsSpotlight = Boolean(step.target) && !step.mock;
   const Mock = step.mock ? MOCKS[step.mock] : null;
 
+  // Yoʻq-target himoyasi: spotlight qadamining nishoni DOM'da boʻlmasa
+  // (masalan, boʻsh holatda grid render qilinmagan) tur "koʻrinmas-aktiv"
+  // osilib qolardi — Next/Skip tugmalari ham yoʻq. Sahifa hali render
+  // boʻlayotgan boʻlishi mumkin, shuning uchun ~300ms kutib qayta
+  // tekshiramiz; baribir topilmasa qadam avtomatik oʻtkaziladi (oxirgi
+  // qadamda bu turni yakunlaydi).
+  React.useEffect(() => {
+    if (!wantsSpotlight) return;
+    if (document.querySelector(step.target!)) return;
+    const t = setTimeout(() => {
+      if (!document.querySelector(step.target!)) onNext();
+    }, 300);
+    return () => clearTimeout(t);
+  }, [wantsSpotlight, step.target, onNext]);
+
   if (!wantsSpotlight) {
     // Markaziy modal: mock berilgan yoki target berilmagan holat
     return (

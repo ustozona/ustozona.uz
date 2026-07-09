@@ -113,13 +113,10 @@ interface SettingsState {
   onboardingCompleted: boolean;
   setOnboardingCompleted: (v: boolean) => void;
 
-  /** Koʻrilgan bo'lim tur'lari (coach-mark) — har bo'limga birinchi kirilganda
-      bir marta koʻrsatiladi, id shu yerga qoʻshiladi. prefs JSONB'da saqlanadi. */
+  /** Koʻrilgan bo'lim tur'lari (coach-mark) — tur yakunlanganda/oʻtkazib
+      yuborilganda id shu yerga qoʻshiladi. prefs JSONB'da saqlanadi. */
   completedTours: string[];
   markTourCompleted: (id: string) => void;
-  /** Turni "koʻrilmagan" holatga qaytaradi — TourProvider shu route'ga
-      kirilganda uni qayta koʻrsatadi ("qayta koʻrish" paneli uchun). */
-  setTourCompleted: (id: string, done: boolean) => void;
 
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
@@ -149,14 +146,6 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   completedTours: [],
   markTourCompleted: (id) =>
     set((s) => (s.completedTours.includes(id) ? s : { completedTours: [...s.completedTours, id] })),
-  setTourCompleted: (id, done) =>
-    set((s) => ({
-      completedTours: done
-        ? s.completedTours.includes(id)
-          ? s.completedTours
-          : [...s.completedTours, id]
-        : s.completedTours.filter((t) => t !== id),
-    })),
 
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),

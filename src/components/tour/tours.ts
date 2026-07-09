@@ -1,9 +1,14 @@
 /* ════════════════════════════════════════════════════════════════════
    BOʻLIM TURʼLARI — coach-mark onboarding reyestri (sof maʼlumot).
 
-   Har boʻlimga BIRINCHI kirilganda oʻsha boʻlimning turʼi bir marta
-   koʻrsatiladi (TourProvider boshqaradi). `id` — koʻrilgan turʼlar
+   Pull modeli: turlar foydalanuvchi Yoʻl-yoʻriq markazidan (GuideHub)
+   soʻraganda ishga tushadi; faqat "home" sehrgardan keyin bir marta
+   avtomatik (TourProvider boshqaradi). `id` — koʻrilgan turʼlar
    roʻyxatiga (useSettingsStore.completedTours) yoziladigan kalit.
+
+   Kontent qoidasi: qadam ekranda koʻrinib turgan narsani takrorlamasin —
+   faqat koʻrinmas imkoniyat (drag, rotatsiya, vazn, status almashtirish)
+   haqida gapirsin.
 
    Bosqich `target` — `[data-tour="…"]` selektori; boʻlmasa yoki `mock`
    berilsa markazlashgan modal koʻrsatiladi (boʻsh hisobda real region
@@ -38,20 +43,38 @@ export const TOURS: readonly TourDef[] = [
     label: "Bosh sahifa",
     steps: [
       {
-        title: "Ishchi maydoningiz",
-        body: "Har bir sahifa — jadval, darslar, baholar, davomat — shu yerda. Yon panelni yuqoridagi tugma bilan yigʻib, koʻproq joy ochishingiz mumkin.",
+        title: "Ish maydoningiz bilan tanishing",
+        body: "Har bir sahifa — jadval, darslar, baholar, davomat — shu yon panelda. Koʻproq joy kerak boʻlsa, yuqoridagi tugma bilan panelni yigʻib qoʻying.",
         target: '[data-tour="sidebar-nav"]',
         placement: "right",
       },
       {
-        title: "Kunlik koʻrinish",
-        body: "Har kuni bu yerdan bugungi jadval, yaqin darslar va bajarilmagan vazifalarni koʻring. Darsni bosib, toʻgʻridan-toʻgʻri tahrirga oʻting.",
+        title: "Kunlik umumiy koʻrinish",
+        body: "Har kuni ertalab shu yerdan kunni boshlang: salomlashuv kartasida bugungi darslar va vazifalar soni, pastda esa kelgusi darslar. Darsni bossangiz — toʻgʻridan-toʻgʻri tahrirga oʻtasiz.",
         target: '[data-tour="home-overview"]',
+        placement: "right",
+      },
+      {
+        title: "Kun jadvali",
+        body: "Tanlangan kunning dars jadvali soatma-soat shu yerda. Joriy vaqt chizigʻi qaysi dars ketayotganini koʻrsatib turadi.",
+        target: '[data-tour="home-schedule"]',
+        placement: "left",
+      },
+      {
+        title: "Taqvim va vazifalar",
+        body: "Haftalik taqvimdan kunni tanlasangiz, jadval va vazifalar oʻsha kunga moslashadi. Pastda muddati yaqin vazifalaringiz turadi.",
+        target: '[data-tour="home-week"]',
+        placement: "left",
+      },
+      {
+        title: "Yoʻl-yoʻriq markazi",
+        body: "Boshlash roʻyxati shu yerda — sinf yaratishdan davomatgacha 4 qadam. Har bir boʻlim qoʻllanmasini ham istalgan vaqt shu tugmadan ochasiz.",
+        target: '[data-tour="header-guide"]',
         placement: "bottom",
       },
       {
-        title: "Fikr-mulohaza",
-        body: "Xato topdingizmi yoki taklifingiz bormi? Shu tugma orqali toʻgʻridan-toʻgʻri jamoaga yuboring.",
+        title: "Fikringiz biz uchun muhim",
+        body: "Xato topdingizmi yoki taklif bormi? Shu yerdan jamoaga toʻgʻridan-toʻgʻri yozing — skrinshot ham biriktirsa boʻladi.",
         target: '[data-tour="header-feedback"]',
         placement: "bottom",
       },
@@ -87,14 +110,8 @@ export const TOURS: readonly TourDef[] = [
     label: "Rejalashtiruvchi",
     steps: [
       {
-        title: "Boʻsh dars slotlari",
-        body: "Har blok — rejalashtirilgan dars. Ustiga borganda paydo boʻladigan + tugmasi bilan yangi dars yarating yoki bogʻlash ikonkasi bilan mavjudini biriktiring.",
-        target: '[data-tour="planner-grid"]',
-        placement: "left",
-      },
-      {
-        title: "Bogʻlangan darslar",
-        body: "Dars bogʻlangach, blok rangga toʻladi va sarlavhani koʻrsatadi. Bosib tahrirni oching yoki boshqa slotga torting.",
+        title: "Dars slotlari",
+        body: "Har blok — rejalashtirilgan dars. Ustiga borganda + tugmasi bilan yangi dars yarating yoki bogʻlash ikonkasi bilan mavjudini biriktiring; bogʻlangan blok rangga toʻladi va boshqa slotga tortish mumkin.",
         target: '[data-tour="planner-grid"]',
         placement: "left",
       },
@@ -117,12 +134,6 @@ export const TOURS: readonly TourDef[] = [
     route: "/dashboard/lessons",
     label: "Darslar",
     steps: [
-      {
-        title: "Sinflaringiz",
-        body: "Darslar va boʻlimlarni koʻrish uchun sinf tanlang. Har sinf kartasi ichidagi boʻlim va darslar sonini koʻrsatadi.",
-        target: '[data-tour="lessons-classes"]',
-        placement: "right",
-      },
       {
         title: "Boʻlimlar bilan tartiblang",
         body: "Boʻlimlar darslaringizni boblar yoki mavzularga guruhlaydi. Oʻquv rejasini tartiblash uchun boʻlim yarating — tartibini oʻzgartirish uchun torting.",
@@ -148,20 +159,8 @@ export const TOURS: readonly TourDef[] = [
     label: "Oʻquvchilar",
     steps: [
       {
-        title: "Sinflaringiz",
-        body: "Oʻquvchilarni koʻrish uchun sinf tanlang. Har karta roʻyxatga yozilgan oʻquvchilar soni va faollik taqsimotini koʻrsatadi.",
-        target: '[data-tour="students-classes"]',
-        placement: "right",
-      },
-      {
         title: "Oʻquvchilar roʻyxati",
-        body: "Bir sinfdagi barcha oʻquvchilarni bir qarashda koʻring. Kartani bosib profilni oching yoki status belgisini bosib faol / uzoqda / arxiv orasida almashtiring.",
-        target: '[data-tour="students-list"]',
-        placement: "left",
-      },
-      {
-        title: "Oʻquvchi profili",
-        body: "Oʻquvchining sinflari, aloqa maʼlumoti va tezkor amallarini sahifadan chiqmay koʻring. Toʻliq davomat, baho, eslatma va portfolio uchun «Profilni koʻrish»ni bosing.",
+        body: "Status belgisini bosib faol / uzoqda / arxiv orasida almashtiring. Kartani bossangiz — sahifadan chiqmay profil: toʻliq davomat, baho, eslatma va portfolio uchun «Profilni koʻrish»ni bosing.",
         target: '[data-tour="students-list"]',
         placement: "left",
       },
@@ -178,12 +177,6 @@ export const TOURS: readonly TourDef[] = [
     route: "/dashboard/grades",
     label: "Baholar",
     steps: [
-      {
-        title: "Sinflaringiz",
-        body: "Jurnalni ochish uchun sinf tanlang. Har karta roʻyxatdagi oʻquvchilar va yaratilgan topshiriqlar sonini koʻrsatadi.",
-        target: '[data-tour="grades-classes"]',
-        placement: "right",
-      },
       {
         title: "Baho mavzulari",
         body: "Mavzular topshiriqlaringizni guruhlab yakuniy bahoni tortadi. Yigʻindisi 100% boʻladigan ogʻirliklar belgilang, soʻng mavzuni bosib jurnalni filtrlang.",
@@ -204,12 +197,6 @@ export const TOURS: readonly TourDef[] = [
     label: "Standartlar",
     steps: [
       {
-        title: "Sinflaringiz",
-        body: "Standartlarni koʻrish uchun sinf tanlang. Har karta bogʻlangan standart toʻplamlari, jami standart soni va umumiy qamrov foizini koʻrsatadi.",
-        target: '[data-tour="standards-classes"]',
-        placement: "right",
-      },
-      {
         title: "Oʻquv dasturi standartlarini qoʻshish",
         body: "Milliy va mintaqaviy freymvorklardan standartlar qoʻshing. Sinfingizga mos toʻplamni topish uchun mamlakat, mintaqa, fan va sinf darajasi boʻyicha filtrlang.",
         target: '[data-tour="standards-add"]',
@@ -228,12 +215,6 @@ export const TOURS: readonly TourDef[] = [
     route: "/dashboard/attendance",
     label: "Davomat",
     steps: [
-      {
-        title: "Sinflaringiz",
-        body: "Davomat olish uchun sinf tanlang. Har karta oʻquvchilar sonini koʻrsatadi.",
-        target: '[data-tour="attendance-classes"]',
-        placement: "right",
-      },
       {
         title: "Davomat jadvali",
         body: "Oʻquvchi × kun jadvali. Katakni bosib holatni (bor / yoʻq / kech / sababli) belgilang; oʻzgarish darrov saqlanadi.",

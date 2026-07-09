@@ -37,6 +37,8 @@ import { TypographyMuted, TypographySmall } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { MONTHS_UZ } from "@/lib/localization";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useTourRequest } from "@/components/tour/tour-request";
+import { makeHomeTourDemo, DEMO_CLASS_NAMES, type DemoEvent } from "@/components/tour/home-tour-demo";
 import DashboardPageLayout, {
   panelCardClass,
   panelCardContentClass,
@@ -186,6 +188,22 @@ export default function DashboardPage() {
     [openTasks, isSelectedToday, selectedKey]
   );
 
+  // ── Tur-demo rejimi — home tur ochiq boʻlsa boʻsh panellar namunaviy
+  //    maʼlumot bilan toʻldiriladi (faqat vizual, store'larga yozilmaydi) ──
+  const tourDemoActive = useTourRequest((s) => s.activeTourId === "home");
+  const tourDemo = useMemo(
+    () => (tourDemoActive ? makeHomeTourDemo(currentTime) : null),
+    [tourDemoActive, currentTime]
+  );
+  const upcomingDisplay =
+    tourDemo && upcomingLessons.length === 0 ? tourDemo.upcomingLessons : upcomingLessons;
+  const eventsDisplay: ReadonlyArray<(typeof selectedEvents)[number] | DemoEvent> =
+    tourDemo && selectedEvents.length === 0 ? tourDemo.events : selectedEvents;
+  const tasksDisplay = tourDemo && dayTasks.length === 0 ? tourDemo.tasks : dayTasks;
+  // Salomlashuv kartasi ham demo rejimda "sozlangan" koʻrinishda (metrikalar +
+  // agenda chiplari) — aks holda tur "Sinf qoʻshish" boʻsh variantini yoritardi.
+  const welcomeDemo = tourDemo && classCount === 0 ? tourDemo.welcome : null;
+
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
 
@@ -224,22 +242,22 @@ export default function DashboardPage() {
         <div className={cn(dashboardGridClass, "flex-1 min-h-0 grid-cols-1 lg:grid-cols-4 lg:grid-rows-[1fr]")}>
           
           {/* Left Column (Hero & Lessons) */}
-          <div className={cn(dashboardStackClass, "lg:col-span-2 h-full min-h-0")}>
+          <div data-tour="home-overview" className={cn(dashboardStackClass, "lg:col-span-2 h-full min-h-0")}>
             {/* SALOMLASHUV KARTASI (card-05 dizayni) */}
             <WelcomeCard
               firstName={firstName}
               greeting={greetingText()}
               dateLabel={`Bugun ${currentTime.getDate()}-${MONTHS_UZ[currentTime.getMonth()].toLowerCase()}, ${DAYS_UZ_SUN[todayDow].toLowerCase()}`}
               restNote={holiday ? `${holiday.name}. Yaxshi dam oling!` : todayDow === 0 ? "Yaxshi dam oling!" : undefined}
-              todayLessonCount={todaysEvents.length}
-              todayTaskCount={todayTaskCount}
-              studentCount={studentCount}
-              classCount={classCount}
+              todayLessonCount={welcomeDemo ? welcomeDemo.todayLessonCount : todaysEvents.length}
+              todayTaskCount={welcomeDemo ? welcomeDemo.todayTaskCount : todayTaskCount}
+              studentCount={welcomeDemo ? welcomeDemo.studentCount : studentCount}
+              classCount={welcomeDemo ? welcomeDemo.classCount : classCount}
               todayAgenda={todayAgenda}
             />
 
             {/* LESSONS CARD */}
-            <Card data-tour="home-overview" className={cn("shadow-sm", panelCardClass)}>
+            <Card className={cn("shadow-sm", panelCardClass)}>
               <CardHeader className={cn(panelCardHeaderClass, "justify-between min-h-[4.5rem] px-5 py-5!")}>
                 <div className="flex items-center gap-2">
                   <SectionIcon><BookOpen /></SectionIcon>
@@ -251,7 +269,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className={panelCardContentClass}>
                   <div className={cn(panelScrollInnerClass, "space-y-4")}>
-                    {mounted && upcomingLessons.length === 0 && (
+                    {mounted && upcomingDisplay.length === 0 && (
                       <Empty className="border-0 p-4 gap-4">
                         <EmptyHeader>
                           <EmptyMedia><Illustration name="22" className="h-[clamp(5rem,14vh,8rem)] text-black dark:text-white" /></EmptyMedia>
@@ -266,14 +284,14 @@ export default function DashboardPage() {
                       </Empty>
                     )}
                     {/* Kunlar boʻyicha guruhlangan darslar */}
-                    {Array.from(new Map(upcomingLessons.map(l => [l.dayName + l.date, l])).entries()).map(([dayKey, firstLesson]) => (
+                    {Array.from(new Map(upcomingDisplay.map(l => [l.dayName + l.date, l])).entries()).map(([dayKey, firstLesson]) => (
                       <div key={dayKey}>
                         <div className="flex items-center gap-2 mb-2">
                           <TypographySmall className="text-foreground">{firstLesson.dayName}</TypographySmall>
                           <TypographyMuted>{firstLesson.date}</TypographyMuted>
                         </div>
                         <div className="space-y-2">
-                          {upcomingLessons.filter(l => l.dayName + l.date === dayKey).map((lesson, i) => (
+                          {upcomingDisplay.filter(l => l.dayName + l.date === dayKey).map((lesson, i) => (
                             <div
                               key={lesson.id}
                               style={{
@@ -335,7 +353,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Middle Column (Schedule) */}
-          <div className="h-full min-h-0">
+          <div data-tour="home-schedule" className="h-full min-h-0">
             <Card className={cn("shadow-sm", panelCardClass)}>
               <CardHeader className={cn(panelCardHeaderClass, "min-h-[4.5rem] px-5 py-5!")}>
                 <div className="flex items-center gap-2">
@@ -345,7 +363,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className={panelCardContentClass}>
                 <div className={panelScrollInnerClass}>
-                  {selectedEvents.length === 0 ? (
+                  {eventsDisplay.length === 0 ? (
                     <Empty className="h-full border-0 p-4 gap-4">
                       <EmptyHeader>
                         <EmptyMedia><Illustration name="28" className="h-[clamp(5rem,14vh,8rem)] text-black dark:text-white" /></EmptyMedia>
@@ -385,8 +403,9 @@ export default function DashboardPage() {
                       ))}
                       
                       {/* Tanlangan kun darslari — jadval versiyasidan (7:00 boshlanish, 1 soat = 120px) */}
-                      {selectedEvents.map((ev) => {
+                      {eventsDisplay.map((ev) => {
                         const cls = liveById.get(ev.classId);
+                        const demoName = DEMO_CLASS_NAMES[ev.classId];
                         const color = cls ? classColor(cls) : autoClassColor(ev.classId);
                         const tints = classTints(color);
                         const top = (ev.startMin / 60 - 7) * 120 + 1;
@@ -398,7 +417,7 @@ export default function DashboardPage() {
                               <div className="relative shrink-0 mb-0.5">
                                 <div className="flex items-baseline gap-1.5 min-w-0">
                                   <TypographySmall className="text-sm font-semibold truncate min-w-0 leading-none">
-                                    {cls?.name ?? "Nomaʼlum sinf"}
+                                    {cls?.name ?? demoName ?? "Nomaʼlum sinf"}
                                   </TypographySmall>
                                   <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">{fmtMin(ev.startMin)} - {fmtMin(ev.endMin)}</span>
                                 </div>
@@ -436,7 +455,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Column (Calendar & Tasks) */}
-          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+          <div data-tour="home-week" className={cn(dashboardStackClass, "h-full min-h-0")}>
 
             {/* ── Taqvim kartasi (sarlavhasiz — faqat hafta/oy koʻrinishi) ── */}
             <Card className="shadow-sm shrink-0 py-0">
@@ -466,7 +485,7 @@ export default function DashboardPage() {
                 </Button>
               </CardHeader>
               <CardContent className="p-0 flex flex-col flex-1 min-h-0 overflow-hidden">
-                {mounted && dayTasks.length === 0 ? (
+                {mounted && tasksDisplay.length === 0 ? (
                   <Empty className="border-0 flex-1 min-h-0 overflow-hidden p-4 gap-3">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="30" className="h-[clamp(3.5rem,11vh,6rem)] text-black dark:text-white" /></EmptyMedia>
@@ -490,7 +509,7 @@ export default function DashboardPage() {
                 ) : (
                 <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin flex flex-col px-6 py-5">
                   <div className="flex flex-col gap-2">
-                    {dayTasks.map((task) => {
+                    {tasksDisplay.map((task) => {
                       const overdue = !!task.dueDate && task.dueDate < todayKey;
                       const dueLabel = task.dueDate
                         ? (() => {

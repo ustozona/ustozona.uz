@@ -12,7 +12,7 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { isCalendarConfigured } from "@/lib/academic-calendar";
 import QuickFeedback from "@/components/QuickFeedback";
 import NotificationsBell from "@/components/NotificationsBell";
-import TourReplayMenu from "@/components/tour/TourReplayMenu";
+import GuideHub from "@/components/onboarding/GuideHub";
 import HeaderThemeToggle from "@/components/HeaderThemeToggle";
 import HeaderLanguageMenu from "@/components/HeaderLanguageMenu";
 import HeaderAccountMenu from "@/components/HeaderAccountMenu";
@@ -88,7 +88,9 @@ export default function Header() {
         </span>
 
         <NotificationsBell />
-        <TourReplayMenu />
+        <span data-tour="header-guide" className="inline-flex">
+          <GuideHub />
+        </span>
 
         <Separator orientation="vertical" className="mx-1.5 !h-6" />
 

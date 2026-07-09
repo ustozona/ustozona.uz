@@ -3,15 +3,19 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useGradesStore } from "@/store/useGradesStore";
 import { tourForRoute, type TourDef } from "./tours";
+import { useTourRequest } from "./tour-request";
 import { TourOverlay } from "./TourOverlay";
 
 /* ════════════════════════════════════════════════════════════════════
    TOUR PROVIDER — qaysi boʻlim turʼini qachon koʻrsatishni hal qiladi.
 
-   Shart: hydration tugagan + onboarding tugagan + shu route uchun tur
-   bor + hali koʻrilmagan. Har boʻlimga birinchi kirilganda bir marta.
+   Pull modeli: turlar foydalanuvchi soʻraganda (GuideHub → useTourRequest)
+   ishga tushadi. Yagona istisno — "home" turʼi: onboarding sehrgari
+   tugagach bosh sahifada BIR marta avtomatik koʻrsatiladi. Boshqa
+   boʻlimlarga kirish hech qachon tur bilan toʻsilmaydi.
+
+   Soʻralgan tur completedTours'dan qatʼi nazar ishlaydi (replay).
    Yakun/Oʻtkazib yuborish → markTourCompleted(id).
 
    Mount-gate: `_hasHydrated` boʻlmasa hech narsa render qilinmaydi
@@ -25,19 +29,22 @@ export default function TourProvider() {
   const onboarded = useSettingsStore((s) => s.onboardingCompleted);
   const completedTours = useSettingsStore((s) => s.completedTours);
   const markTourCompleted = useSettingsStore((s) => s.markTourCompleted);
-  const classCount = useGradesStore((s) => Object.keys(s.classDataMap).length);
+  const requestedTourId = useTourRequest((s) => s.requestedTourId);
+  const clearRequest = useTourRequest((s) => s.clearRequest);
 
   const [active, setActive] = React.useState<TourDef | null>(null);
   const [stepIndex, setStepIndex] = React.useState(0);
 
-  // Route + tayyorlikka qarab turni faollashtirish. Har route uchun bir marta
-  // baholaymiz; tur tugagach completedTours yangilanadi va qayta ochilmaydi.
-  //
-  // Route mos kelmasa ochiq turni darhol yopamiz (masalan onboarding
-  // sehrgari tugagan zahoti bir tick ichida eski pathname uchun tur
-  // ishga tushib, keyingi navigatsiyadan keyin ham ekranda "osilib"
-  // qolishining oldini oladi — active tur hech qachon joriy sahifaga
-  // tegishli boʻlmagan holda koʻrsatilmasligi kerak).
+  // Faol tur id'sini kanalga eʼlon qilamiz — sahifalar "tur rejimi"da
+  // boʻsh panellarga demo maʼlumot chizish uchun oʻqiydi.
+  const setActiveTour = useTourRequest((s) => s.setActiveTour);
+  React.useEffect(() => {
+    setActiveTour(active?.id ?? null);
+    return () => setActiveTour(null);
+  }, [active, setActiveTour]);
+
+  // Route mos kelmasa ochiq turni darhol yopamiz — active tur hech qachon
+  // joriy sahifaga tegishli boʻlmagan holda koʻrsatilmasligi kerak.
   React.useEffect(() => {
     if (active && active.route !== pathname) {
       setActive(null);
@@ -45,18 +52,26 @@ export default function TourProvider() {
       return;
     }
     if (!hydrated || !onboarded) return;
-    if (active) return; // ochiq tur ustidan yozib yubormaslik
     const tour = tourForRoute(pathname);
-    if (!tour || completedTours.includes(tour.id)) return;
-    // "home"dan boshqa hamma tur sinf-koʻlamli sahifalarga tegishli —
-    // sinf boʻlmasa, nishonlanadigan target ham yoʻq (boʻsh holat CTA
-    // yetarli, GettingStartedChecklist yoʻnaltiradi).
-    if (tour.id !== "home" && classCount === 0) return;
+    if (!tour) return;
+
+    // Soʻrov yoʻli: hub'dan tanlangan tur mos sahifaga yetganda darhol
+    // (ochiq tur boʻlsa ham almashtirib) ishga tushadi — replay shu.
+    if (requestedTourId === tour.id) {
+      clearRequest();
+      setActive(tour);
+      setStepIndex(0);
+      return;
+    }
+
+    // Avto yoʻl: faqat "home" — sehrgardan keyingi birinchi tanishuv.
+    if (active) return; // ochiq tur ustidan yozib yubormaslik
+    if (tour.id !== "home" || completedTours.includes("home")) return;
     setActive(tour);
     setStepIndex(0);
-    // completedTours qasddan bogʻlanmaydi — faqat route/tayyorlik oʻzgarganda
+    // completedTours qasddan bogʻlanmaydi — faqat route/tayyorlik/soʻrov oʻzgarganda
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, hydrated, onboarded, active, classCount]);
+  }, [pathname, hydrated, onboarded, active, requestedTourId]);
 
   const finish = React.useCallback(() => {
     if (active) markTourCompleted(active.id);

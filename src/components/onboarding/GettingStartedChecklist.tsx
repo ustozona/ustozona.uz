@@ -6,47 +6,30 @@ import { usePathname } from "next/navigation";
 import { CheckIcon, ChevronDown, GraduationCap, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { useSettingsStore } from "@/store/useSettingsStore";
-import { useGradesStore } from "@/store/useGradesStore";
-import { useLessonStore } from "@/store/useLessonStore";
-import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { confettiPresets } from "@/lib/confetti-presets";
+import { useGettingStartedSteps } from "./useGettingStartedSteps";
+import { useTourRequest } from "@/components/tour/tour-request";
 
 /* ════════════════════════════════════════════════════════════════════
    BOSHLASH ROʻYXATI — onboarding sehrgaridan keyingi yoʻl xaritasi.
 
-   Wizard faqat profil/oʻquv yilini yigʻadi; haqiqiy "aha-moment" (sinf,
-   oʻquvchi, dars, davomat) foydalanuvchining oʻz harakati orqali sodir
-   boʻladi. Bu karta o'sha harakatlarni yoʻnaltiradi va bajarilganini
-   MAVJUD store'lardan hisoblaydi (yangi persisted maydon shart emas) —
-   shu sababli serverga sinxronlanmaydi, faqat "yopilgan"ligi localStorage
-   'da saqlanadi (qurilma darajasida yetarli, boshqa ish stanogʻiga
-   koʻchirish shart emas).
+   Qadamlar va bajarilganlik yagona manbadan (useGettingStartedSteps) —
+   headerdagi Yoʻl-yoʻriq markazi (GuideHub) ham xuddi shu roʻyxatni
+   koʻrsatadi. Bu karta faqat koʻzga tashlanadigan eslatma: X bilan
+   yopish localStorage'da saqlanadi (qurilma darajasida yetarli) va
+   FAQAT kartani yashiradi — roʻyxat hub'da doim mavjud qoladi.
 
    Hamma band bajarilganda — nishonlash (confettiPresets.center) va
-   avtomatik yopiladi. Foydalanuvchi istalgan payt X bilan yopishi ham
-   mumkin.
+   avtomatik yopiladi.
    ════════════════════════════════════════════════════════════════════ */
 
 const DISMISS_KEY = "us-getting-started-dismissed";
 
-type ChecklistStep = {
-  id: string;
-  label: string;
-  href: string;
-  done: boolean;
-};
-
 export default function GettingStartedChecklist() {
   const pathname = usePathname();
-  const onboarded = useSettingsStore((s) => s.onboardingCompleted);
-  const settingsHydrated = useSettingsStore((s) => s._hasHydrated);
-
-  const classDataMap = useGradesStore((s) => s.classDataMap);
-  const gradesHydrated = useGradesStore((s) => s._hasHydrated);
-  const lessons = useLessonStore((s) => s.lessons);
-  const recordsByClass = useAttendanceStore((s) => s.recordsByClass);
-  const attendanceHydrated = useAttendanceStore((s) => s._hasHydrated);
+  const { steps, doneCount, allDone, ready, onboarded } = useGettingStartedSteps();
+  // Tur ochiq payt karta spotlight ustiga chiqib panellarni toʻsadi — yashiramiz.
+  const tourActive = useTourRequest((s) => s.activeTourId !== null);
 
   const [dismissed, setDismissed] = React.useState(true);
   const [collapsed, setCollapsed] = React.useState(false);
@@ -59,36 +42,6 @@ export default function GettingStartedChecklist() {
     setDismissed(true);
   }, []);
 
-  const classes = Object.values(classDataMap);
-  const steps: ChecklistStep[] = [
-    {
-      id: "class",
-      label: "Birinchi sinfni yaratish",
-      href: "/dashboard/classes?new=1",
-      done: classes.length > 0,
-    },
-    {
-      id: "students",
-      label: "Oʻquvchilarni qoʻshish",
-      href: "/dashboard/students",
-      done: classes.some((c) => c.students.length > 0),
-    },
-    {
-      id: "lessons",
-      label: "Dars rejalashtirish",
-      href: "/dashboard/lessons",
-      done: lessons.length > 0,
-    },
-    {
-      id: "attendance",
-      label: "Birinchi davomatni belgilash",
-      href: "/dashboard/attendance",
-      done: Object.values(recordsByClass).some((r) => r.length > 0),
-    },
-  ];
-  const doneCount = steps.filter((s) => s.done).length;
-  const allDone = doneCount === steps.length;
-
   // Hammasi bajarilganda bir marta nishonlab, yopamiz.
   const celebratedRef = React.useRef(false);
   React.useEffect(() => {
@@ -100,8 +53,7 @@ export default function GettingStartedChecklist() {
     }
   }, [allDone, dismissed, dismiss]);
 
-  const ready = settingsHydrated && gradesHydrated && attendanceHydrated;
-  if (!ready || !onboarded || dismissed) return null;
+  if (!ready || !onboarded || dismissed || tourActive) return null;
   // Onboarding sehrgari hali yopilmoqda boʻlishi mumkin (pendingRoute) —
   // dashboard sahifalaridan tashqarida koʻrsatmaymiz.
   if (!pathname.startsWith("/dashboard")) return null;

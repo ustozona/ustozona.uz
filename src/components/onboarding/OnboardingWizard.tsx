@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, usePathname } from "next/navigation";
 import { type DateRange } from "react-day-picker";
 import {
   GraduationCap,
@@ -130,9 +129,6 @@ const FEATURES: FeatureLoopItem[] = [
 ];
 
 export default function OnboardingWizard() {
-  const router = useRouter();
-  const pathname = usePathname();
-
   const profile = useSettingsStore((s) => s.profile);
   const setProfile = useSettingsStore((s) => s.setProfile);
   const setAcademicYear = useSettingsStore((s) => s.setAcademicYear);
@@ -175,29 +171,26 @@ export default function OnboardingWizard() {
   const startKey = range?.from ? dateToKey(range.from) : "";
   const endKey = range?.to ? dateToKey(range.to) : "";
 
-  // Sinf yaratishga yoʻnaltiruvchi CTA — navigatsiya avval yakunlanadi,
-  // `onboardingCompleted` esa faqat yangi pathname yetib kelgach `true`
-  // boʻladi. Aks holda (avval flag, keyin push) bir tick ichida eski
-  // pathname'da hali "true" holat koʻrinib, TourProvider notoʻgʻri
-  // (eski) boʻlim turʼini ishga tushirib yuborardi.
-  const CLASSES_ROUTE = "/dashboard/classes";
-  const [pendingRoute, setPendingRoute] = React.useState<string | null>(null);
+  // Wizard bosh sahifada tugaydi — navigatsiya yoʻq. Flag qoʻyilgach
+  // TourProvider home turʼini shu yerning oʻzida avtomatik boshlaydi.
+  const complete = React.useCallback(() => {
+    setOnboardingCompleted(true);
+  }, [setOnboardingCompleted]);
 
+  // Tez-ikki-bosish himoyasi: footer tugmalari qadamlar orasida bir xil
+  // joyda turadi — masalan oxirgi "Davom etish"ni tez ikki marta bosgan
+  // foydalanuvchining ikkinchi bosishi allaqachon "Birinchi sinfni
+  // yaratish"ga tegib, uni bexosdan sinf modaliga otib yuborardi (yoki
+  // "Orqaga"×2 → "Keyinroq" wizard'ni butunlay yopardi). Qadam almashgandan
+  // keyingi ~0.5s ichidagi yakunlovchi bosishlar eʼtiborsiz qoldiriladi.
+  const stepChangedAt = React.useRef(0);
   React.useEffect(() => {
-    if (pendingRoute && pathname === pendingRoute) setOnboardingCompleted(true);
-  }, [pendingRoute, pathname, setOnboardingCompleted]);
-
-  const complete = React.useCallback(
-    (navigateToClasses: boolean) => {
-      if (navigateToClasses) {
-        setPendingRoute(CLASSES_ROUTE);
-        router.push(`${CLASSES_ROUTE}?new=1`);
-      } else {
-        setOnboardingCompleted(true);
-      }
-    },
-    [setOnboardingCompleted, router]
-  );
+    stepChangedAt.current = Date.now();
+  }, [step]);
+  const safeComplete = React.useCallback(() => {
+    if (Date.now() - stepChangedAt.current < 500) return;
+    complete();
+  }, [complete]);
 
   const next = () => {
     if (step === 1)
@@ -465,7 +458,7 @@ export default function OnboardingWizard() {
               <div className="space-y-1.5">
                 <DialogTitle className="text-xl">Hammasi tayyor!</DialogTitle>
                 <DialogDescription className="text-balance">
-                  {yearLabel} oʻquv yili sozlandi. Endi birinchi sinfingizni yaratib, oʻquvchilar, baholar va davomatni boshlashingiz mumkin.
+                  {yearLabel} oʻquv yili sozlandi. Boshlagach, ish maydoni bilan tanishtiruvchi qisqa yoʻriqnoma sizni kutib turadi.
                 </DialogDescription>
               </div>
             </div>
@@ -475,23 +468,24 @@ export default function OnboardingWizard() {
 
         {/* ── Footer ── */}
         <div className="flex items-center justify-between gap-3 border-t border-border px-6 py-4">
+          {/* Har variant alohida `key` bilan — React DOM tugmani qayta
+              ishlatmasin: aks holda fokus/kursor eski tugmadan yangisiga
+              «koʻchib», tez ikkinchi bosish yoki ushlab turilgan Enter
+              boshqa maʼnodagi tugmani bosib yuborardi. */}
           {step === 0 ? (
-            <Button variant="ghost" className="text-muted-foreground" onClick={() => complete(false)}>
+            <Button key="later" variant="ghost" className="text-muted-foreground" onClick={safeComplete}>
               Keyinroq
             </Button>
-          ) : step < 3 ? (
-            <Button variant="ghost" className="gap-1.5 text-muted-foreground" onClick={back}>
+          ) : (
+            <Button key="back" variant="ghost" className="gap-1.5 text-muted-foreground" onClick={back}>
               <ArrowLeft className="size-4" />
               Orqaga
-            </Button>
-          ) : (
-            <Button variant="ghost" className="text-muted-foreground" onClick={() => complete(false)}>
-              Dashboardga oʻtish
             </Button>
           )}
 
           {step < 3 ? (
             <Button
+              key="next"
               ref={primaryButtonRef}
               className="gap-1.5 focus-visible:ring-2 focus-visible:ring-ring/25"
               onClick={next}
@@ -502,12 +496,13 @@ export default function OnboardingWizard() {
             </Button>
           ) : (
             <Button
+              key="start"
               ref={primaryButtonRef}
               className="gap-1.5 focus-visible:ring-2 focus-visible:ring-ring/25"
-              onClick={() => complete(true)}
+              onClick={safeComplete}
             >
-              <GraduationCap className="size-4" />
-              Birinchi sinfni yaratish
+              Boshlash
+              <ArrowRight className="size-4" />
             </Button>
           )}
         </div>
