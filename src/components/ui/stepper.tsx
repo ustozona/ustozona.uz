@@ -470,7 +470,7 @@ function StepperPanel({ children, className }: React.ComponentProps<"div">) {
   const { stepper } = useStepper()
 
   return (
-    <div data-slot="stepper-panel" data-state={stepper.id} className={cn("w-full", className)}>
+    <div data-slot="stepper-panel" data-state={stepper.id} className={cn("flex h-full w-full flex-col justify-center", className)}>
       {children}
     </div>
   )

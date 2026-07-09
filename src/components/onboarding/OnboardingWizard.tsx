@@ -305,13 +305,13 @@ export default function OnboardingWizard() {
         <StepperPanel className="min-w-0 min-h-0 flex-1 overflow-y-auto px-6 py-6">
           {/* ── 0: Xush kelibsiz ── */}
           <StepperContent value="welcome">
-            <div className="flex flex-col items-center gap-5 text-center animate-in fade-in-50 duration-300">
-              <div className="space-y-1.5">
-                <DialogTitle className="text-xl">
+            <div className="flex flex-col gap-5 text-center animate-in fade-in-50 duration-300">
+              <div className="space-y-1">
+                <DialogTitle className="text-lg">
                   Xush kelibsiz{firstName ? `, ${firstName}` : ""}!{" "}
                   <AppleEmoji code="1f60a" label="Tabassum" />
                 </DialogTitle>
-                <DialogDescription className="text-balance">
+                <DialogDescription className="text-sm/relaxed">
                   Ustozona bilan ishlashni boshlaymiz — quyida sizni nima kutayotganini koʻring.
                 </DialogDescription>
               </div>
@@ -394,16 +394,15 @@ export default function OnboardingWizard() {
               {!editing ? (
                 <>
                   <div className="rounded-xl border border-border bg-muted/30 px-4 py-4">
-                    <p className="text-xs text-muted-foreground">Oʻquv yilingiz</p>
                     {hasFullRange ? (
                       <>
-                        <p className="text-lg font-semibold mt-1 tabular-nums">{yearLabel}</p>
+                        <p className="text-lg font-semibold tabular-nums">{yearLabel}-oʻquv yili</p>
                         <p className="text-sm text-muted-foreground mt-0.5 tabular-nums">
                           {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
                         </p>
                       </>
                     ) : (
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-muted-foreground">
                         Sanalarni belgilash uchun «Sanalarni oʻzgartirish»ni bosing.
                       </p>
                     )}
@@ -522,7 +521,7 @@ export default function OnboardingWizard() {
     koʻrsatilgan (rangli "card" quti neytral stepper uslubiga mos kelmasdi). */
 function StepHeader({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 text-center">
       <DialogTitle className="text-lg">{title}</DialogTitle>
       <DialogDescription className="text-sm/relaxed">{desc}</DialogDescription>
     </div>
