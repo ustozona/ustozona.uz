@@ -68,7 +68,7 @@ export const TOURS: readonly TourDef[] = [
       },
       {
         title: "Yoʻl-yoʻriq markazi",
-        body: "Boshlash roʻyxati shu yerda — sinf yaratishdan davomatgacha 4 qadam. Har bir boʻlim qoʻllanmasini ham istalgan vaqt shu tugmadan ochasiz.",
+        body: "Biror boʻlim qanday ishlashini unutsangiz, shu tugmani bosing — har bir sahifaning qoʻllanmasini istalgan vaqt qayta koʻrasiz.",
         target: '[data-tour="header-guide"]',
         placement: "bottom",
       },
