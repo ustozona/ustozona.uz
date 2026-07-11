@@ -41,7 +41,16 @@ function useClassNameMap(): Map<string, string> {
   return useMemo(() => new Map(liveClasses.map((c) => [c.id, c.name])), [liveClasses]);
 }
 
-export default function StandardsView({ classId }: { classId: string }) {
+export default function StandardsView({
+  classId,
+  demoMode,
+  demoSets,
+}: {
+  classId: string;
+  /** Tur demo rejimida haqiqiy toʻplamlar oʻrniga koʻrsatiladigan namunaviy standartlar. */
+  demoMode?: boolean;
+  demoSets?: StandardSet[];
+}) {
   const classNames = useClassNameMap();
   const sets = useStandardsStore((s) => s.sets);
   const removeSet = useStandardsStore((s) => s.removeSet);
@@ -54,10 +63,10 @@ export default function StandardsView({ classId }: { classId: string }) {
   const [addOpen, setAddOpen] = useState(false);
   const [addToSetId, setAddToSetId] = useState<string | null>(null);
 
-  // Tanlangan sinfga tegishli papkalar.
+  // Tanlangan sinfga tegishli papkalar (demo rejimda — namunaviy toʻplam).
   const classSets = useMemo(
-    () => sets.filter((s) => s.classIds.includes(classId)),
-    [sets, classId],
+    () => (demoMode ? (demoSets ?? []) : sets.filter((s) => s.classIds.includes(classId))),
+    [demoMode, demoSets, sets, classId],
   );
 
   // Qidiruv: har papkaning standartlarini filtrlaymiz; moslik boʻlmasa papka yashiriladi.
@@ -102,7 +111,7 @@ export default function StandardsView({ classId }: { classId: string }) {
             >
               <Search className="size-4" aria-hidden />
             </Button>
-            <Button data-tour="standards-add" className="h-9 gap-1.5" onClick={() => setAddOpen(true)}>
+            <Button data-tour="standards-add" className="h-9 gap-1.5" onClick={() => !demoMode && setAddOpen(true)}>
               <Plus className="size-4" aria-hidden />
               Standart qoʻshish
             </Button>

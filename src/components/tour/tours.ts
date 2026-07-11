@@ -23,6 +23,9 @@ export type TourStep = {
   /** '[data-tour="…"]' — yoʻq boʻlsa markaziy modal */
   target?: string;
   placement?: "top" | "bottom" | "left" | "right";
+  /** Yon (cross-axis) tekislash — daf'atan "center"; nishon burchakka yaqin
+      boʻlsa "start"/"end" bilan tooltipni pastdagi kontentdan uzoqlashtiring. */
+  align?: "start" | "center" | "end";
   /** Tooltip/modal ichidagi illyustratsiya */
   mock?: TourMock;
   /** Sahifaga signal berish uchun barqaror kalit (useTourRequest.activeStepId) —
@@ -290,14 +293,21 @@ export const TOURS: readonly TourDef[] = [
     label: "Standartlar",
     steps: [
       {
+        title: "Sinflaringiz",
+        body: "Standartlar roʻyxatini koʻrish uchun istalgan sinfni tanlang. Har bir sinfning oʻz standartlar toʻplami boʻladi.",
+        target: '[data-tour="standards-classes"]',
+        placement: "right",
+      },
+      {
         title: "Oʻquv dasturi standartlarini qoʻshish",
-        body: "Milliy va mintaqaviy freymvorklardan standartlar qoʻshing. Sinfingizga mos toʻplamni topish uchun mamlakat, mintaqa, fan va sinf darajasi boʻyicha filtrlang.",
+        body: "Milliy va hududiy taʼlim andozalaridan standartlarni qoʻshishingiz mumkin. Sinfingizga mos keladigan toʻplamni topish uchun ularni mamlakat, hudud, fan va sinf darajasi boʻyicha saralang.",
         target: '[data-tour="standards-add"]',
-        placement: "left",
+        placement: "bottom",
+        align: "end",
       },
       {
         title: "Qamrovni kuzatib boring",
-        body: "Har standart qamrov holatini koʻrsatadi — yashil: dars bogʻlangan, kulrang: hali kerak. Standartlarni dars muharriridan belgilaysiz, bogʻlangan darslar shu yerda avtomatik paydo boʻladi.",
+        body: "Har bir standart oʻzlashtirish holatini koʻrsatadi — yashil rang dars biriktirilganini, kulrang esa hali dars biriktirilmaganini anglatadi. Standartlarni darsni tahrirlash oynasida belgilaysiz, biriktirilgan darslar esa bu yerda oʻz-oʻzidan aks etadi.",
         target: '[data-tour="standards-list"]',
         placement: "left",
       },

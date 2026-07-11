@@ -123,7 +123,7 @@ export function TourOverlay({ step, index, total, onNext, onSkip }: Props) {
       <TourPortal>
         <TourSpotlight />
         <TourSpotlightRing className="rounded-lg" />
-        <TourStep target={step.target!} side={step.placement ?? "bottom"} align="center">
+        <TourStep target={step.target!} side={step.placement ?? "bottom"} align={step.align ?? "center"}>
           <TourArrow />
           <TourHeader>
             <TourTitle>{step.title}</TourTitle>
