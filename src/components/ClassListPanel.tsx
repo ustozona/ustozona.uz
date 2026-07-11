@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { useClassPanelStats, type Page } from "@/hooks/useClassPanelStats";
+import type { ClassInfo } from "@/lib/grades-data";
 
 type Props = {
   page: Page;
@@ -30,6 +31,8 @@ type Props = {
   onAddClass?: () => void;
   onEditClass?: (id: string) => void;
   onDeleteClass?: (id: string) => void;
+  /** Tur (product tour) uchun: roʻyxat boʻsh boʻlsa shu namunaviy sinflar koʻrsatiladi. */
+  demoClasses?: ClassInfo[];
 };
 
 export default function ClassListPanel({
@@ -39,8 +42,10 @@ export default function ClassListPanel({
   onAddClass,
   onEditClass,
   onDeleteClass,
+  demoClasses,
 }: Props) {
-  const liveClasses = useLiveClasses();
+  const liveClassesReal = useLiveClasses();
+  const liveClasses = demoClasses && liveClassesReal.length === 0 ? demoClasses : liveClassesReal;
   const hydrated = useLiveClassesHydrated();
   const createClass = useCreateClass();
   const selected = liveClasses.find((c) => c.id === selectedClassId);

@@ -10,6 +10,10 @@ import { studentStats } from "@/lib/attendance-data";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
+import { useTourRequest } from "@/components/tour/tour-request";
+import {
+  makeStudentsTourDemo, makeStudentsTourDemoClasses, STUDENTS_TOUR_DEMO_CLASS_ID,
+} from "@/components/tour/students-tour-demo";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
@@ -138,13 +142,26 @@ export default function StudentsPage() {
     selectedClassId ? s.recordsByClass[selectedClassId] : undefined
   );
 
+  // Tur (product tour) — hech qanday sinf/oʻquvchi qoʻshilmagan boʻlsa,
+  // "Oʻquvchilar" turʼi boʻsh panellarni namunaviy maʼlumot bilan toʻldiradi
+  // (faqat vizual, store'ga yozilmaydi — [[classes-tour-demo]] bilan bir xil naqsh).
+  const tourActive = useTourRequest((s) => s.activeTourId === "students");
+  const isDemoMode = tourActive && Object.keys(classDataMap).length === 0;
+  const demoClasses = useMemo(() => (isDemoMode ? makeStudentsTourDemoClasses() : null), [isDemoMode]);
+  const demoClass = demoClasses?.[0] ?? null;
+  const demoStudents = useMemo(() => (isDemoMode ? makeStudentsTourDemo() : null), [isDemoMode]);
+
   // Sinf almashganda preview yopiladi
   useEffect(() => {
     setSelectedStudentId(null);
     setSearch("");
   }, [selectedClassId]);
 
-  const selectedInfo = selectedClassId ? classDataMap[selectedClassId]?.info : undefined;
+  const selectedInfo = isDemoMode
+    ? demoClass!
+    : selectedClassId
+      ? classDataMap[selectedClassId]?.info
+      : undefined;
   const selColor = selectedInfo ? classColor(selectedInfo) : "blue";
   const selHex = CLASS_COLOR_HEX[selColor];
   const tint = (pct: number) => `color-mix(in srgb, ${selHex} ${pct}%, transparent)`;
@@ -181,7 +198,7 @@ export default function StudentsPage() {
 
   // Filtr + qidiruv + saralash
   const students = useMemo(() => {
-    let list = allStudents;
+    let list = isDemoMode ? ((demoStudents ?? []) as StudentRow[]) : allStudents;
     if (statusFilter !== "all") list = list.filter((s) => s.status === statusFilter);
     const q = search.trim().toLowerCase();
     if (q) list = list.filter((s) => s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q));
@@ -190,11 +207,12 @@ export default function StudentsPage() {
     else if (sortKey === "grade") sorted.sort((a, b) => a.grade - b.grade);
     else sorted.sort((a, b) => a.attendance - b.attendance);
     return sorted;
-  }, [allStudents, statusFilter, search, sortKey]);
+  }, [allStudents, isDemoMode, demoStudents, statusFilter, search, sortKey]);
 
-  const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
+  const selectedStudent =
+    students.find((s) => s.id === selectedStudentId) ?? (isDemoMode ? students[0] ?? null : null);
   const filterActive = statusFilter !== "all" || search.trim().length > 0;
-  const noClass = !selectedClassId;
+  const noClass = !selectedClassId && !isDemoMode;
 
   /* Ustun nisbatlari — sinf tanlanmagan → 50/50 (grades/standards bilan bir xil boʻsh holat);
      oʻquvchi tanlangan → 25/50/25; aks holda preview yopiq (25/50 → 1/2). */
@@ -289,7 +307,12 @@ export default function StudentsPage() {
       <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
         {/* ── Ustun 1: Sinflar ── */}
         <DashboardColumn hideBelow="lg" data-tour="students-classes">
-          <ClassListPanel page="students" selectedClassId={selectedClassId ?? ""} onSelect={handleSelectClass} />
+          <ClassListPanel
+            page="students"
+            selectedClassId={selectedClassId ?? (isDemoMode ? STUDENTS_TOUR_DEMO_CLASS_ID : "")}
+            onSelect={handleSelectClass}
+            demoClasses={demoClasses ?? undefined}
+          />
         </DashboardColumn>
 
         {/* ── Ustun 2: Oʻquvchilar roʻyxati ── */}
@@ -572,7 +595,7 @@ export default function StudentsPage() {
 
         {/* ── Ustun 3: Preview (oʻquvchi tanlanganda) ── */}
         {selectedStudent && (
-          <DashboardColumn hideBelow="lg">
+          <DashboardColumn hideBelow="lg" data-tour="students-preview">
             <div className="h-full overflow-hidden rounded-xl bg-card card-elevation">
               <PreviewCard
                 key={selectedStudent.id}

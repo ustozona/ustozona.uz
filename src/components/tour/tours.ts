@@ -125,14 +125,26 @@ export const TOURS: readonly TourDef[] = [
     label: "Oʻquvchilar",
     steps: [
       {
+        title: "Sinflaringiz",
+        body: "Oʻquvchilarini koʻrish uchun chap tomondan biror sinfni tanlang. Har bir sinf nechta oʻquvchi borligini koʻrsatib turadi.",
+        target: '[data-tour="students-classes"]',
+        placement: "right",
+      },
+      {
         title: "Oʻquvchilar roʻyxati",
-        body: "Status belgisini bosib faol / uzoqda / arxiv orasida almashtiring. Kartani bossangiz — sahifadan chiqmay profil: toʻliq davomat, baho, eslatma va portfolio uchun «Profilni koʻrish»ni bosing.",
+        body: "Sinfdagi barcha oʻquvchilarni bir vaqtning oʻzida koʻrasiz. Kartani bossangiz — oʻng tomonda profil ochiladi. Holat belgisini bossangiz — faol / taʼtilda orasida almashtirasiz (arxivga oʻtkazish uchun oʻng tugmani bosing).",
         target: '[data-tour="students-list"]',
         placement: "left",
       },
       {
-        title: "Teglar boʻyicha filtr",
-        body: "Teglar bilan oʻquvchilarni guruhlang — oʻqish darajasi, xatti-harakat rejasi, iqtidor yoki oʻzingizga kerakli har qanday belgi. Muayyan oʻquvchilarga fokuslash uchun status yoki teg boʻyicha filtrlang.",
+        title: "Oʻquvchi maʼlumotlari",
+        body: "Sahifadan chiqmagan holda oʻquvchining sinfi, bogʻlanish maʼlumotlari va tezkor amallari bilan tanishing. Toʻliq davomat, baholar, eslatmalar va shaxsiy toʻplami bilan tanishish uchun «Profilni koʻrish»ni bosing.",
+        target: '[data-tour="students-preview"]',
+        placement: "left",
+      },
+      {
+        title: "Holat boʻyicha filtrlash",
+        body: "Oʻquvchilarni holatiga qarab (faol, taʼtilda, arxivda) saralang — kerakli oʻquvchilarga eʼtibor qaratish uchun qulay.",
         target: '[data-tour="students-filter"]',
         placement: "bottom",
       },
