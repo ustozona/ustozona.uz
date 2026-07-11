@@ -240,6 +240,12 @@ export const TOURS: readonly TourDef[] = [
     label: "Davomat",
     steps: [
       {
+        title: "Sinflaringiz",
+        body: "Davomat jadvalini ochish uchun biror sinfni tanlang. Har bir dars kuni uchun butun sinfning davomatini shu yerdan belgilaysiz.",
+        target: '[data-tour="attendance-classes"]',
+        placement: "right",
+      },
+      {
         title: "Davomat jadvali",
         body: "Oʻquvchi × kun jadvali. Katakni bosib holatni (bor / yoʻq / kech / sababli) belgilang; oʻzgarish darrov saqlanadi.",
         target: '[data-tour="attendance-heatmap"]',

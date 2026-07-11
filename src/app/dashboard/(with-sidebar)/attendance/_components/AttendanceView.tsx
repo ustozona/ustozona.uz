@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { DAYS_UZ_SUN } from "@/lib/localization";
 import {
-  type AttendanceStatus, type AttendanceStatusDef,
+  type AttendanceStatus, type AttendanceStatusDef, type AttendanceRecord,
   deriveLessonDays, getStatus, getNote, allDaysInMonth,
   weightedRate, percentile, statusWeights,
   MONTH_NAMES,
@@ -24,8 +24,9 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
-import { classColor } from "@/lib/grades-data";
+import { classColor, type ClassInfo, type Student } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { makeAttendanceTourDemoLessonDays, makeAttendanceTourDemoRecords } from "@/components/tour/attendance-tour-demo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -296,7 +297,18 @@ function AttCell({
 // belgilaydi; roster — useGradesStore, yozuvlar — useAttendanceStore, dars
 // kunlari jadval+kalendar store'laridan hisoblanadi (hammasi server-backed).
 
-export default function AttendanceView({ classId }: { classId: string }) {
+export default function AttendanceView({
+  classId,
+  demoMode,
+  demoRoster,
+  demoClassInfo,
+}: {
+  classId: string;
+  /** Tur demo rejimida haqiqiy roster/yozuvlar oʻrniga koʻrsatiladigan namunaviy davomat. */
+  demoMode?: boolean;
+  demoRoster?: Student[];
+  demoClassInfo?: ClassInfo;
+}) {
   const mounted = useMounted();
   const storedRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
   // Oʻquv yili kalendari — "Choraklik %" akademik chorak diapazonidan hisoblanadi.
@@ -305,6 +317,8 @@ export default function AttendanceView({ classId }: { classId: string }) {
   const setRecordsRaw = useAttendanceStore((s) => s.setRecords);
   const now = new Date();
   const [month, setMonth] = useState({ year: now.getFullYear(), month: now.getMonth() + 1 });
+  // Demo yozuvlar faqat mahalliy holatda — real store'ga hech narsa yozilmaydi.
+  const [demoRecords, setDemoRecords] = useState<AttendanceRecord[] | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [sortField, setSortField] = useState<SortField>("firstName");
   const [notePopup, setNotePopup] = useState<{ studentId: string; date: string } | null>(null);
@@ -318,20 +332,34 @@ export default function AttendanceView({ classId }: { classId: string }) {
   // Roster va sinf nomi — baholar jurnali bilan bitta manba (server-backed).
   const gradesClass = useGradesStore((s) => s.classDataMap[classId]);
   const versions = useTimetableStore((s) => s.versions);
-  const roster = gradesClass?.students ?? [];
-  const className = gradesClass?.info.name ?? classId;
+  const roster = demoMode ? (demoRoster ?? []) : (gradesClass?.students ?? []);
+  const className = demoMode ? (demoClassInfo?.name ?? classId) : (gradesClass?.info.name ?? classId);
   const today = todayKey();
 
   // Dars kunlari — oʻsha sanada amalda boʻlgan jadval versiyasi + kalendar.
-  const lessonDays = useMemo(() => {
+  const realLessonDays = useMemo(() => {
     const end = today < calendar.range.end ? today : calendar.range.end;
     return deriveLessonDays(classId, { start: calendar.range.start, end }, calendar, versions);
   }, [classId, calendar, versions, today]);
+  // Demo rejimda kalendar/jadval store'lariga bogʻliq boʻlmaslik uchun — joriy
+  // oyning ish kunlari (Dush–Juma) "dars kuni" sifatida ishlatiladi.
+  const demoLessonDays = useMemo(
+    () => makeAttendanceTourDemoLessonDays(month.year, month.month),
+    [month.year, month.month]
+  );
+  const lessonDays = demoMode ? demoLessonDays : realLessonDays;
 
-  const records = storedRecords ?? [];
+  useEffect(() => {
+    if (!demoMode) return;
+    setDemoRecords(makeAttendanceTourDemoRecords(demoRoster ?? [], demoLessonDays, today));
+  }, [demoMode, demoLessonDays, today, demoRoster]);
+
+  const records = demoMode ? (demoRecords ?? []) : (storedRecords ?? []);
   const setRecords = (
     next: typeof records | ((prev: typeof records) => typeof records)
-  ) => setRecordsRaw(classId, next);
+  ) => (demoMode
+    ? setDemoRecords((prev) => (typeof next === "function" ? next(prev ?? []) : next))
+    : setRecordsRaw(classId, next));
 
   useEffect(() => { setSearchQ(""); setStudentStatus("all"); setOnlyAttention(false); }, [classId]);
 
@@ -409,7 +437,9 @@ export default function AttendanceView({ classId }: { classId: string }) {
   };
 
   // Avatar/preview rangi — joriy sinf palitrasidan (jonli info; yoʻq boʻlsa id boʻyicha avto)
-  const classHex = CLASS_COLOR_HEX[classColor(gradesClass?.info ?? { id: classId, name: classId })];
+  const classHex = CLASS_COLOR_HEX[classColor(
+    demoMode ? (demoClassInfo ?? { id: classId, name: classId }) : (gradesClass?.info ?? { id: classId, name: classId })
+  )];
 
   // "Xavfli" — gibrid: <75% (absolyut floor) YOKI sinfning eng past 25% (pertsentil)
   const periodPcts = baseStudents.map((s) => periodRateOf(s.id)?.pct).filter((p): p is number => p != null);
