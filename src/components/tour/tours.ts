@@ -215,21 +215,22 @@ export const TOURS: readonly TourDef[] = [
     label: "Darslar",
     steps: [
       {
-        title: "Boʻlimlar bilan tartiblang",
-        body: "Boʻlimlar darslaringizni boblar yoki mavzularga guruhlaydi. Oʻquv rejasini tartiblash uchun boʻlim yarating — tartibini oʻzgartirish uchun torting.",
+        title: "Sinflaringiz",
+        body: "Darslar va boʻlimlarni koʻrish uchun biror sinfni tanlang. Ularning har birida qancha boʻlim va dars borligini koʻrishingiz mumkin.",
+        target: '[data-tour="lessons-classes"]',
+        placement: "right",
+      },
+      {
+        title: "Boʻlimlarga ajratish",
+        body: "Boʻlimlar darslaringizni boblar yoki mavzularga ajratishga yordam beradi. Oʻquv rejangizni tartibga solish uchun boʻlimlar yarating — ularning oʻrnini almashtirish uchun shunchaki sudrab oʻtkazing.",
         target: '[data-tour="lessons-units"]',
         placement: "right",
       },
       {
         title: "Darslaringiz",
-        body: "Har boʻlim ichida dars yarating. Har dars kartasi holati, sanasi va bogʻlangan standartlarini koʻrsatadi.",
+        body: "Har bir boʻlim ichida alohida darslar yarating. Har bir dars kartasi uning holati va sanasini koʻrsatib turadi.",
         target: '[data-tour="lessons-list"]',
         placement: "left",
-      },
-      {
-        title: "Kalendarga rejalashtirish",
-        body: "Kalendar koʻrinishiga oʻting. Darslarni yon paneldan boʻsh dars slotlariga torting.",
-        mock: "lessonsCalendar",
       },
     ],
   },

@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
@@ -17,11 +16,16 @@ import { useLiveClasses, useCreateClass } from "@/hooks/useLiveClasses";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
 import { lessonClassIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
+import { useTourRequest } from "@/components/tour/tour-request";
+import {
+  makeLessonsTourDemoClasses, makeLessonsTourDemoUnits, makeLessonsTourDemoLessons,
+  LESSONS_TOUR_DEMO_CLASS_ID, LESSONS_TOUR_DEMO_UNIT_ID,
+} from "@/components/tour/lessons-tour-demo";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, List, Calendar, Trash2 } from "lucide-react";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2 } from "lucide-react";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
@@ -69,38 +73,52 @@ export default function LessonsPage() {
 
   useEffect(() => { setSelectedUnitId(null); }, [selectedClassId]);
 
+  // Tur (product tour) — hech qanday sinf qoʻshilmagan boʻlsa, "Darslar" turʼi
+  // boʻsh panellarni namunaviy sinf/boʻlim/dars bilan toʻldiradi (faqat vizual,
+  // store'ga yozilmaydi — [[students-tour-demo]] bilan bir xil naqsh).
+  const tourActive = useTourRequest((s) => s.activeTourId === "lessons");
+  const isDemoMode = tourActive && liveClasses.length === 0;
+  const demoClasses = useMemo(() => (isDemoMode ? makeLessonsTourDemoClasses() : null), [isDemoMode]);
+  const demoUnits = useMemo(() => (isDemoMode ? makeLessonsTourDemoUnits() : null), [isDemoMode]);
+  const demoLessons = useMemo(() => (isDemoMode ? makeLessonsTourDemoLessons() : null), [isDemoMode]);
+
+  const effectiveClassId = isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : selectedClassId;
+  const effectiveUnitId = isDemoMode ? (selectedUnitId ?? LESSONS_TOUR_DEMO_UNIT_ID) : selectedUnitId;
+  const unitsSource = isDemoMode ? demoUnits! : units;
+  const lessonsSource = isDemoMode ? demoLessons! : lessons;
+
   const unitsForClass = useMemo(
-    () => units.filter((u) => u.classId === selectedClassId).sort((a, b) => a.number - b.number),
-    [selectedClassId, units]
+    () => unitsSource.filter((u) => u.classId === effectiveClassId).sort((a, b) => a.number - b.number),
+    [effectiveClassId, unitsSource]
   );
 
   const noUnitLessons = useMemo(
-    () => selectedClassId
-      ? lessons.filter((l) => lessonClassIds(l).includes(selectedClassId) && unitIdForClass(l, selectedClassId) === null)
+    () => effectiveClassId
+      ? lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === null)
       : [],
-    [lessons, selectedClassId]
+    [lessonsSource, effectiveClassId]
   );
 
   const lessonsForUnit = useMemo(() => {
-    if (!selectedUnitId || !selectedClassId) return [];
-    if (selectedUnitId === NONE) return noUnitLessons;
-    return lessons.filter((l) => lessonClassIds(l).includes(selectedClassId) && unitIdForClass(l, selectedClassId) === selectedUnitId);
-  }, [selectedUnitId, selectedClassId, noUnitLessons, lessons]);
+    if (!effectiveUnitId || !effectiveClassId) return [];
+    if (effectiveUnitId === NONE) return noUnitLessons;
+    return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId);
+  }, [effectiveUnitId, effectiveClassId, noUnitLessons, lessonsSource]);
 
   const unitProgress = (unitId: string | null) => {
     const all = unitId === null
       ? noUnitLessons
-      : (selectedClassId ? lessons.filter((l) => lessonClassIds(l).includes(selectedClassId) && unitIdForClass(l, selectedClassId) === unitId) : []);
+      : (effectiveClassId ? lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === unitId) : []);
     const done = all.filter((l) => l.status === "Completed").length;
     return { total: all.length, done, pct: all.length ? Math.round((done / all.length) * 100) : 0 };
   };
 
   const unitStats = useMemo(() => {
-    if (!selectedUnitId || selectedUnitId === NONE || !selectedClassId) return null;
-    const unitLessons = lessons.filter((l) => lessonClassIds(l).includes(selectedClassId) && unitIdForClass(l, selectedClassId) === selectedUnitId);
+    if (!effectiveUnitId || effectiveUnitId === NONE || !effectiveClassId) return null;
+    const unitLessons = lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId);
     const completed = unitLessons.filter((l) => l.status === "Completed").length;
     return { lessons: unitLessons.length, completed, pct: unitLessons.length ? Math.round((completed / unitLessons.length) * 100) : 0 };
-  }, [selectedUnitId, selectedClassId, lessons]);
+  }, [effectiveUnitId, effectiveClassId, lessonsSource]);
 
   const [classModalOpen, setClassModalOpen] = useState(false);
   const [unitModalOpen, setUnitModalOpen] = useState(false);
@@ -133,9 +151,11 @@ export default function LessonsPage() {
 
   const openLesson = (id: string) => router.push(`/lessons/${id}`);
 
-  const selectedClass = liveClasses.find((c) => c.id === selectedClassId) ?? null;
-  const selectedUnit = selectedUnitId && selectedUnitId !== NONE
-    ? units.find((u) => u.id === selectedUnitId) ?? null
+  const selectedClass = isDemoMode
+    ? demoClasses![0]
+    : liveClasses.find((c) => c.id === selectedClassId) ?? null;
+  const selectedUnit = effectiveUnitId && effectiveUnitId !== NONE
+    ? unitsSource.find((u) => u.id === effectiveUnitId) ?? null
     : null;
 
   const selectedClassColor = selectedClass ? classColor(selectedClass) : "teal";
@@ -147,8 +167,8 @@ export default function LessonsPage() {
   /* Ustun nisbatlari — "sidebardan tashqari" maydon = 100%, flex-grow + flex-basis:0
      bilan boʻlinadi (sidebar ochiq/yopiq boʻlsa ham responsive). "Faol ish" ustuni keng:
        sinf tanlanmagan → 50/25/25, sinf tanlangan → 25/50/25, boʻlim tanlangan → 25/25/50. */
-  const noClass = !selectedClassId;
-  const detailMode = !!selectedUnitId;
+  const noClass = !effectiveClassId;
+  const detailMode = !!effectiveUnitId;
   const grow = noClass
     ? { classes: 2, units: 1, lessons: 1 }
     : detailMode
@@ -268,7 +288,7 @@ export default function LessonsPage() {
 
   // "Boʻlimsiz" — tor ustun (tanlangan / kompakt)
   const renderNoUnitNarrow = () => {
-    if (selectedUnitId === NONE) {
+    if (effectiveUnitId === NONE) {
       return (
         <button
           onClick={() => setSelectedUnitId(null)}
@@ -303,7 +323,13 @@ export default function LessonsPage() {
     <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" data-tour="lessons-classes">
-        <ClassListPanel page="lessons" selectedClassId={selectedClassId ?? ""} onSelect={handleSelectClass} onAddClass={() => setClassModalOpen(true)} />
+        <ClassListPanel
+          page="lessons"
+          selectedClassId={selectedClassId ?? (isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : "")}
+          onSelect={handleSelectClass}
+          onAddClass={() => setClassModalOpen(true)}
+          demoClasses={demoClasses ?? undefined}
+        />
       </DashboardColumn>
 
       {/* ── Column 2: Boʻlimlar ── */}
@@ -343,7 +369,7 @@ export default function LessonsPage() {
                   /* Tor rejim — tanlangan katta, qolganlari kompakt */
                   <>
                     {unitsForClass.map((unit) =>
-                      unit.id === selectedUnitId ? renderUnitSelected(unit) : renderUnitCompact(unit)
+                      unit.id === effectiveUnitId ? renderUnitSelected(unit) : renderUnitCompact(unit)
                     )}
                     {renderNoUnitNarrow()}
                   </>
@@ -452,7 +478,7 @@ export default function LessonsPage() {
           data-tour="lessons-list"
           className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
         >
-          {!selectedUnitId ? (
+          {!effectiveUnitId ? (
             /* Boʻlim tanlanmagan — headerʼsiz, faqat markaziy placeholder (1-rasm) */
             <Empty className="flex-1">
               <EmptyHeader>
@@ -487,16 +513,6 @@ export default function LessonsPage() {
                   <span className="hidden lg:inline">Yangi mavzu</span>
                 </Button>
               )}
-              <Separator orientation="vertical" className="h-5 mx-1.5" />
-              {/* Segmented list/calendar toggle */}
-              <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/60">
-                <button type="button" className="size-7 rounded-md flex items-center justify-center bg-card text-foreground shadow-sm transition-colors" title="Roʻyxat">
-                  <List className="size-4" />
-                </button>
-                <button type="button" className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="Kalendar">
-                  <Calendar className="size-4" />
-                </button>
-              </div>
             </div>
           </div>
 
@@ -521,7 +537,7 @@ export default function LessonsPage() {
                   </Empty>
                 ) : (
                   lessonsForUnit.map((lesson) => {
-                    const lessonUnit = units.find((u) => u.id === lesson.unitId);
+                    const lessonUnit = unitsSource.find((u) => u.id === lesson.unitId);
                     return (
                       <div
                         key={lesson.id}
