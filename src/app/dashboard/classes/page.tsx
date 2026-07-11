@@ -50,6 +50,8 @@ import { lessonClassIds } from "@/lib/lessons-data";
 import { classInfoFromForm, useCreateClass } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
+import { useTourRequest } from "@/components/tour/tour-request";
+import { makeClassesTourDemo } from "@/components/tour/classes-tour-demo";
 import { ClassFormModal, type ClassFormValues } from "@/components/ClassFormModal";
 import {
   AlertDialog,
@@ -77,7 +79,7 @@ type SortKey = "name" | "students" | "lessons";
 type ViewMode = "grid" | "list";
 
 /** Sahifa koʻrinishi uchun jonli sinf modeli (statistika bilan). */
-type LiveClass = {
+export type LiveClass = {
   id: string;
   info: ClassInfo;
   name: string;
@@ -146,6 +148,15 @@ export default function ClassesPage() {
     [classDataMap, allLessons]
   );
 
+  // Tur-demo rejimi — sinflar turʼi boʻsh hisobda ochilsa (3–4-qadam:
+  // koʻrinish almashtirish, statistika) boʻsh panellar namunaviy sinflar
+  // bilan toʻldiriladi (faqat vizual, store'ga hech narsa yozilmaydi) —
+  // [[timetable-tour-demo]] bilan bir xil naqsh.
+  const tourDemoActive = useTourRequest((s) => s.activeTourId === "classes");
+  const tourDemoClasses = useMemo(() => (tourDemoActive ? makeClassesTourDemo() : null), [tourDemoActive]);
+  const isDemoMode = tourDemoClasses != null && liveClasses.length === 0;
+  const liveClassesDisplay = isDemoMode ? tourDemoClasses! : liveClasses;
+
   const createClass = useCreateClass();
 
   const handleCreate = (v: ClassFormValues) => {
@@ -176,20 +187,20 @@ export default function ClassesPage() {
 
   const filteredAndSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = q ? liveClasses.filter((c) => c.name.toLowerCase().includes(q)) : liveClasses;
+    const list = q ? liveClassesDisplay.filter((c) => c.name.toLowerCase().includes(q)) : liveClassesDisplay;
     return [...list].sort((a, b) => {
       if (sortKey === "students") return b.students - a.students;
       if (sortKey === "lessons") return b.lessons - a.lessons;
       return a.name.localeCompare(b.name);
     });
-  }, [liveClasses, search, sortKey]);
+  }, [liveClassesDisplay, search, sortKey]);
 
   const totals = useMemo(() => ({
-    classes: liveClasses.length,
-    students: liveClasses.reduce((s, c) => s + c.students, 0),
-    lessons: liveClasses.reduce((s, c) => s + c.lessons, 0),
-    assignments: liveClasses.reduce((s, c) => s + c.assignments, 0),
-  }), [liveClasses]);
+    classes: liveClassesDisplay.length,
+    students: liveClassesDisplay.reduce((s, c) => s + c.students, 0),
+    lessons: liveClassesDisplay.reduce((s, c) => s + c.lessons, 0),
+    assignments: liveClassesDisplay.reduce((s, c) => s + c.assignments, 0),
+  }), [liveClassesDisplay]);
 
   return (
     <DashboardPage>
@@ -197,7 +208,7 @@ export default function ClassesPage() {
       <div className="flex flex-1 min-h-0 gap-6">
 
         {/* ── Main: classes panel ── */}
-        <Card className={cn("flex-1 min-w-0", panelCardClass)}>
+        <Card data-tour="classes-list" className={cn("flex-1 min-w-0", panelCardClass)}>
           <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-[4.5rem] px-5 py-5!")}>
             <div className="flex items-center gap-2.5 shrink-0">
               <SectionIcon><GraduationCap /></SectionIcon>
@@ -268,13 +279,14 @@ export default function ClassesPage() {
               </DropdownMenu>
 
               {/* New class */}
-              <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
+              <Button data-tour="classes-add" onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
                 <PlusIcon className="size-4" />
                 Yangi sinf
               </Button>
 
               {/* View toggle - ToggleGroup (outline/sm — Filter va Sort bilan bir xil) */}
               <ToggleGroup
+                data-tour="classes-view-toggle"
                 type="single"
                 value={view}
                 onValueChange={(v) => v && setView(v as ViewMode)}
@@ -304,7 +316,7 @@ export default function ClassesPage() {
                 )}>
                   {Array.from({ length: 6 }).map((_, i) => <ClassCardSkeleton key={i} index={i} />)}
                 </div>
-              ) : liveClasses.length === 0 ? (
+              ) : liveClassesDisplay.length === 0 ? (
                 <Empty className="h-full">
                   <EmptyHeader>
                     <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
@@ -342,6 +354,7 @@ export default function ClassesPage() {
                           key={cls.id}
                           cls={cls}
                           index={i}
+                          disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onDelete={() => setDeleteTarget(cls)}
                         />
@@ -355,6 +368,7 @@ export default function ClassesPage() {
                           key={cls.id}
                           cls={cls}
                           index={i}
+                          disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onDelete={() => setDeleteTarget(cls)}
                         />
@@ -369,7 +383,7 @@ export default function ClassesPage() {
 
         {/* ── Overview sidebar ── */}
         <div className="hidden lg:flex w-72 shrink-0 flex-col">
-          <Card className={cn(panelCardClass)}>
+          <Card data-tour="classes-stats" className={cn(panelCardClass)}>
             <CardHeader className={cn(panelCardHeaderClass, "items-center gap-2 min-h-[4.5rem] px-5 py-5!")}>
               <SectionIcon><BarChart3 /></SectionIcon>
               <CardTitle>Statistika</CardTitle>
@@ -551,11 +565,13 @@ function ClassCardSkeleton({ index }: { index: number }) {
 function ClassGridCard({
   cls,
   index,
+  disabled,
   onEdit,
   onDelete,
 }: {
   cls: LiveClass;
   index: number;
+  disabled?: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -575,9 +591,14 @@ function ClassGridCard({
 
   return (
     <div
-      className="class-card animate-fade-slide-up group rounded-2xl border overflow-hidden cursor-pointer flex flex-col relative transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-[var(--card-hex)]/30"
+      className={cn(
+        "class-card animate-fade-slide-up group rounded-2xl border overflow-hidden flex flex-col relative transition-all duration-300",
+        disabled
+          ? "cursor-default"
+          : "cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:border-[var(--card-hex)]/30"
+      )}
       style={{ animationDelay: `${index * 40}ms`, "--card-rgb": rgb, "--card-hex": hex } as React.CSSProperties}
-      onClick={() => router.push(`/dashboard/classes/${cls.id}`)}
+      onClick={disabled ? undefined : () => router.push(`/dashboard/classes/${cls.id}`)}
     >
       {/* Rangli cover band — gradient + striped tekstura */}
       <div
@@ -591,6 +612,7 @@ function ClassGridCard({
       </div>
 
       {/* ── Tepa ikonlar: chapda strelka (ochish), oʻngda 3-nuqta menu — ikkalasi ham ghost, faqat hover ── */}
+      {!disabled && (
       <div className="absolute top-3 left-3 z-20">
         <Button
           variant="ghost"
@@ -603,9 +625,12 @@ function ClassGridCard({
           <ArrowRight className="size-4" />
         </Button>
       </div>
+      )}
+      {!disabled && (
       <div className="absolute top-3 right-3 z-20">
         <ClassCardMenu onEdit={onEdit} onDelete={onDelete} />
       </div>
+      )}
 
       <div className="relative px-5 pb-5 flex flex-col items-center gap-4">
         {/* Avatar + progress halqasi — bandning chegarasida, oʻrtaga tekislangan */}
@@ -739,11 +764,13 @@ function AddClassCard({ onClick }: { onClick?: () => void }) {
 function ClassListRow({
   cls,
   index,
+  disabled,
   onEdit,
   onDelete,
 }: {
   cls: LiveClass;
   index: number;
+  disabled?: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -754,9 +781,9 @@ function ClassListRow({
 
   return (
     <div
-      className="list-card animate-fade-slide-up group flex items-center gap-4 px-4 py-4 cursor-pointer"
+      className={cn("list-card animate-fade-slide-up group flex items-center gap-4 px-4 py-4", disabled ? "cursor-default" : "cursor-pointer")}
       style={{ animationDelay: `${index * 25}ms`, ["--card-accent" as string]: hex }}
-      onClick={() => router.push(`/dashboard/classes/${cls.id}`)}
+      onClick={disabled ? undefined : () => router.push(`/dashboard/classes/${cls.id}`)}
     >
       {/* Rangli ikoncha */}
       <div
@@ -804,7 +831,7 @@ function ClassListRow({
       </div>
 
       {/* 3-nuqta menu */}
-      <ClassCardMenu onEdit={onEdit} onDelete={onDelete} />
+      {!disabled && <ClassCardMenu onEdit={onEdit} onDelete={onDelete} />}
     </div>
   );
 }

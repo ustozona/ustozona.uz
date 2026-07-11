@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { TourStep as TourStepData } from "./tours";
 import { TimetableDragMock } from "./mocks/TimetableDragMock";
+import { TimetablePickMock } from "./mocks/TimetablePickMock";
 import { LessonsCalendarMock } from "./mocks/LessonsCalendarMock";
 import { TasksCalendarMock } from "./mocks/TasksCalendarMock";
 
@@ -46,6 +47,7 @@ type Props = {
 
 const MOCKS = {
   timetableDrag: TimetableDragMock,
+  timetablePick: TimetablePickMock,
   lessonsCalendar: LessonsCalendarMock,
   tasksCalendar: TasksCalendarMock,
 } as const;
@@ -96,14 +98,14 @@ export function TourOverlay({ step, index, total, onNext, onSkip }: Props) {
           role="dialog"
           aria-modal="true"
           className={cn(
-            "w-full max-w-lg rounded-xl border border-border bg-background p-5 shadow-lg",
+            "w-full max-w-xl rounded-xl border border-border bg-background p-5 shadow-lg",
             "animate-in fade-in-50 zoom-in-95 duration-200"
           )}
         >
           <h2 className="heading-small">{step.title}</h2>
           <p className="mt-1.5 text-sm/relaxed text-muted-foreground">{step.body}</p>
           {Mock && (
-            <div className="mt-4 overflow-hidden rounded-lg border border-border bg-muted/30 p-3">
+            <div className="mt-4 flex items-center justify-center overflow-hidden rounded-lg border border-border bg-muted/30 p-6">
               <Mock />
             </div>
           )}

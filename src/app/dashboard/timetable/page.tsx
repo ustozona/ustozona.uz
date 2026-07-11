@@ -41,6 +41,8 @@ import BellScheduleDialog from "@/components/timetable/BellScheduleDialog";
 import EffectiveDateDialog, { type EffectiveChoice } from "@/components/timetable/EffectiveDateDialog";
 import VersionChip, { versionRangeLabel } from "@/components/timetable/VersionChip";
 import { useTimetableStore } from "@/store/useTimetableStore";
+import { useTourRequest } from "@/components/tour/tour-request";
+import { makeTimetableTourDemo } from "@/components/tour/timetable-tour-demo";
 import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { todayKey as getTodayKey } from "@/lib/date-keys";
@@ -198,6 +200,16 @@ export default function TimetablePage() {
   );
   const classById = useMemo(() => new Map(classesAll.map((c) => [c.id, c])), [classesAll]);
 
+  // ── Tur-demo rejimi — jadval turʼi boʻsh hisobda ochilsa, boʻsh
+  //    panellar namunaviy sinf/dars bilan toʻldiriladi (faqat vizual,
+  //    hech narsa store'ga yozilmaydi) — [[home-tour-demo]] bilan bir xil naqsh.
+  const tourDemoActive = useTourRequest((s) => s.activeTourId === "timetable");
+  const tourDemo = useMemo(() => (tourDemoActive ? makeTimetableTourDemo() : null), [tourDemoActive]);
+  const isDemoMode = tourDemo != null && classesAll.length === 0;
+  const classesDisplay = isDemoMode ? tourDemo!.classes : classesAll;
+  const eventsDisplay = isDemoMode ? tourDemo!.events : events;
+  const classByIdDisplay = useMemo(() => new Map(classesDisplay.map((c) => [c.id, c])), [classesDisplay]);
+
   /** Qoʻngʻiroq jadvalidan hisoblangan period qatorlari ("1-soat" …) */
   const periods = useMemo(() => computePeriods(bellConfig), [bellConfig]);
 
@@ -205,6 +217,9 @@ export default function TimetablePage() {
   const getClass = useCallback((id: string): TimetableClass => {
     return classById.get(id) ?? { id, name: "Nomaʼlum sinf", color: autoClassColor(id) };
   }, [classById]);
+  const getClassDisplay = useCallback((id: string): TimetableClass => {
+    return classByIdDisplay.get(id) ?? { id, name: "Nomaʼlum sinf", color: autoClassColor(id) };
+  }, [classByIdDisplay]);
 
   useEffect(() => {
     setHydrated(true);
@@ -572,7 +587,7 @@ export default function TimetablePage() {
             <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
             <ScrollArea className="h-full w-full">
               <div className={cn(panelScrollInnerClass, "space-y-2 @max-[400px]:px-4")}>
-                {classesAll.length === 0 && (
+                {classesDisplay.length === 0 && (
                   <Empty className="py-8">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
@@ -588,21 +603,22 @@ export default function TimetablePage() {
                     </EmptyContent>
                   </Empty>
                 )}
-                {classesAll.map((cls, i) => {
-                  const merged = getClass(cls.id);
+                {classesDisplay.map((cls, i) => {
+                  const isDemo = isDemoMode;
+                  const merged = isDemo ? cls : getClass(cls.id);
                   const color = merged.color;
                   return (
                     <ContextMenu key={cls.id}>
                       <ContextMenuTrigger asChild>
                         <ClassCard
                           name={merged.name}
-                          subtitle={scheduleSummary(cls.id)}
+                          subtitle={isDemo ? "" : scheduleSummary(cls.id)}
                           color={color}
                           variant="card"
-                          draggable={!readOnly}
+                          draggable={!readOnly && !isDemo}
                           onDragStart={(e) => onClassDragStart(e, cls.id)}
                           data-class-id={cls.id}
-                          className="draggable-class cursor-grab active:cursor-grabbing animate-fade-slide-up"
+                          className={cn("draggable-class animate-fade-slide-up", isDemo ? "pointer-events-none" : "cursor-grab active:cursor-grabbing")}
                           style={{ animationDelay: `${i * 40}ms` }}
                           actions={
                             <DropdownMenu>
@@ -782,7 +798,7 @@ export default function TimetablePage() {
 
           {/* Hafta jadvali (kun × vaqt grid) */}
           <CardContent className={cn(panelCardContentClass, "relative flex flex-col overflow-hidden")} data-carousel-ignore="true">
-            {snapMode === "free" && events.length === 0 && (
+            {snapMode === "free" && eventsDisplay.length === 0 && (
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-6">
                 <Empty className="pointer-events-none w-auto">
                   <EmptyHeader>
@@ -801,11 +817,11 @@ export default function TimetablePage() {
             {snapMode === "lesson" ? (
               <PeriodGrid
                 periods={periods}
-                events={events}
-                classes={classesAll}
-                getClass={getClass}
+                events={eventsDisplay}
+                classes={classesDisplay}
+                getClass={isDemoMode ? getClassDisplay : getClass}
                 profile={bellConfig.profile}
-                readOnly={readOnly}
+                readOnly={readOnly || isDemoMode}
                 onPlace={placeInPeriod}
                 onAddClub={addClub}
                 onRemove={removeEvent}
@@ -842,13 +858,13 @@ export default function TimetablePage() {
                 {/* Kun ustunlari */}
                 {DAY_UZ.map((d, col) => {
                   const day = col + 1;
-                  const dayEvents = events.filter(e => e.day === day);
+                  const dayEvents = eventsDisplay.filter(e => e.day === day);
                   return (
                     <div
                       key={d}
-                      onDragOver={(e) => { if (readOnly) return; e.preventDefault(); e.dataTransfer.dropEffect = grabOffsetRef.current != null ? "move" : "copy"; if (dragOverDay !== day) setDragOverDay(day); }}
+                      onDragOver={(e) => { if (readOnly || isDemoMode) return; e.preventDefault(); e.dataTransfer.dropEffect = grabOffsetRef.current != null ? "move" : "copy"; if (dragOverDay !== day) setDragOverDay(day); }}
                       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverDay(prev => (prev === day ? null : prev)); }}
-                      onDrop={(e) => onColumnDrop(e, day)}
+                      onDrop={(e) => { if (isDemoMode) return; onColumnDrop(e, day); }}
                       className={cn("relative min-w-0 flex-1 transition-colors", col > 0 && "border-l border-border/50", dragOverDay === day && "bg-primary/[0.04]")}
                       style={{ height: HOURS.length * HOUR_H }}
                     >
@@ -863,7 +879,7 @@ export default function TimetablePage() {
 
                       {/* Darslar */}
                       {dayEvents.map(ev => {
-                        const cls = getClass(ev.classId);
+                        const cls = isDemoMode ? getClassDisplay(ev.classId) : getClass(ev.classId);
                         const tints = classTints(cls.color);
                         const top = ((ev.startMin - DAY_START_MIN) / 60) * HOUR_H;
                         const height = Math.max(((ev.endMin - ev.startMin) / 60) * HOUR_H, 22);
@@ -880,12 +896,12 @@ export default function TimetablePage() {
                             textStrong={tints.textStrong}
                             top={top}
                             height={height}
-                            readOnly={readOnly}
-                            resizable={snapMode === "free" && !readOnly}
+                            readOnly={readOnly || isDemoMode}
+                            resizable={snapMode === "free" && !readOnly && !isDemoMode}
                             onResize={(s, en) => onResizeEvent(ev.id, s, en)}
                             onDragStart={(e) => onEventDragStart(e, ev)}
                             onDragEnd={() => { grabOffsetRef.current = null; setDragOverDay(null); }}
-                            onClick={() => { if (!readOnly) setEditEvent(ev); }}
+                            onClick={() => { if (!readOnly && !isDemoMode) setEditEvent(ev); }}
                             onRemove={() => removeEvent(ev.id)}
                           />
                         );

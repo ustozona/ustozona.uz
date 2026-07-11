@@ -49,6 +49,8 @@ import {
 import { CardStripes } from "@/components/CardStripes";
 import { CardCorner } from "@/components/CardCorner";
 import { LessonStatusBadge } from "@/components/LessonStatusBadge";
+import { useTourRequest } from "@/components/tour/tour-request";
+import { makePlannerTourDemo } from "@/components/tour/planner-tour-demo";
 
 /* ════════════════════════════════════════════════════════════════════
    PLANNER — dars jadvali (timetable) kalendarda. Standalone /planner
@@ -195,16 +197,26 @@ export default function PlannerView({ classId }: { classId?: string }) {
     return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    if (!hydrated || !scrollerRef.current) return;
-    const top = (nowMin / 60 - START_HOUR) * SLOT_HEIGHT - 120;
-    scrollerRef.current.scrollTop = Math.max(0, top);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, view]);
-
   // Jonli sinflar — event/dars nomi va rangi shu yerdan (server-backed)
   const classDataMap = useGradesStore((s) => s.classDataMap);
-  const classInfoById = (id: string): ClassInfo | undefined => classDataMap[id]?.info;
+
+  /** Boʻsh hisobda "planner" turʼi ishga tushsa, grid namunaviy sinf +
+      bogʻlangan dars bilan toʻldiriladi (faqat vizual — [[planner-tour-demo]]). */
+  const tourDemoActive = useTourRequest((s) => s.activeTourId === "planner");
+  const isDemoMode = tourDemoActive && !classId && !versions.some((v) => v.events.length > 0);
+  /** Kun sozlamalari qadami ochiq boʻlsa, hover'siz ham koʻrinsin. */
+  const forceShowDaySettings = useTourRequest((s) => s.activeStepTarget === '[data-tour="planner-day-settings"]');
+  /** "Oylik koʻrinish" qadami markaziy modal (real Oy tugmasiga spotlight
+      emas) — shu bosqichda koʻrinishning oʻzini "oy"ga oʻtkazamiz, aks
+      holda demo namunasi hech qachon koʻrinmas edi. */
+  const showMonthPreview = useTourRequest((s) => s.activeStepId === "planner-month-preview");
+  useEffect(() => {
+    if (showMonthPreview) setView("month");
+  }, [showMonthPreview]);
+  const plannerDemo = useMemo(() => (isDemoMode ? makePlannerTourDemo() : null), [isDemoMode]);
+
+  const classInfoById = (id: string): ClassInfo | undefined =>
+    plannerDemo?.classInfoById.get(id) ?? classDataMap[id]?.info;
   const liveClassColor = (info: ClassInfo): ClassColor => classColor(info);
   /** Joylangan mavzuning rangi/nomi — blok bilan mos (jonli sinfdan) */
   const lessonDisplay = (l: Lesson): { name: string; color: ClassColor; tints: ReturnType<typeof classTints> } => {
@@ -216,15 +228,24 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const blockedMap = useMemo(() => new Map(blocked.map((b) => [b.date, b.label])), [blocked]);
 
   /** Jadvalda umuman event bormi — boʻsh holat (onboarding) uchun. */
-  const hasAnyTimetable = useMemo(() => versions.some((v) => v.events.length > 0), [versions]);
+  const hasAnyTimetable = useMemo(() => versions.some((v) => v.events.length > 0) || isDemoMode, [versions, isDemoMode]);
+
+  // Sahifa (yoki grid) ochilganda 07:00 emas 08:00'dan boshlab koʻrinsin —
+  // `hasAnyTimetable` grid mount boʻlgandan keyin oʻzgarsa ham (masalan
+  // tur demo rejimi kechroq yoqilsa) qayta ishlaydi.
+  useEffect(() => {
+    if (!hydrated || !scrollerRef.current || view !== "week" || !hasAnyTimetable) return;
+    scrollerRef.current.scrollTop = (8 - START_HOUR) * SLOT_HEIGHT;
+  }, [hydrated, view, hasAnyTimetable]);
 
   /** Sanada amalda boʻlgan versiya jadvalidan shu kunning darslari.
       Oʻquv yilidan tashqari yoki taʼtil kuni — boʻsh. */
   const eventsForDate = (date: Date): TimetableEvent[] => {
+    const tDay = dateToTimetableDay(date);
+    if (plannerDemo) return plannerDemo.eventsForWeekday(tDay);
     const key = toDateKey(date);
     if (!inRange(key, calendar.range)) return [];
     if (getHolidayForDate(calendar, key)) return [];
-    const tDay = dateToTimetableDay(date);
     const evs = (resolveVersionForDate(versions, key)?.events ?? []).filter((e) => e.day === tDay);
     return classId ? evs.filter((e) => e.classId === classId) : evs;
   };
@@ -250,8 +271,17 @@ export default function PlannerView({ classId }: { classId?: string }) {
         map.set(s.date, arr);
       }
     }
+    if (plannerDemo) {
+      const visibleDates = [...allWeekDates, ...monthGrid.filter((d): d is Date => d !== null)];
+      for (const d of visibleDates) {
+        const dateKey = toDateKey(d);
+        const placements = plannerDemo.placementsForDate(dateKey, dateToTimetableDay(d));
+        if (placements.length === 0) continue;
+        map.set(dateKey, [...(map.get(dateKey) ?? []), ...placements]);
+      }
+    }
     return map;
-  }, [visLessons, classId]);
+  }, [visLessons, classId, plannerDemo, allWeekDates, monthGrid]);
 
   const hasLessonsOn = (d: Date) => (placedByDate.get(toDateKey(d))?.length ?? 0) > 0;
   const isOffDay = (d: Date) => dateToTimetableDay(d) === 7 || blockedSet.has(toDateKey(d));
@@ -444,33 +474,37 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const slotTints = (m: SlotModal | null) => { const c = slotClass(m); return c ? classTints(liveClassColor(c)) : null; };
   const weekColsStyle = { gridTemplateColumns: `56px repeat(${weekDates.length}, minmax(0,1fr))` };
 
+  /** Oy-pillari uchun toʻyingan (deyarli "solid") fon — [[color-system-layers]]
+      OKLCH mix dvigatelidan, faqat yuqoriroq foizda (kartalardagi
+      surfaceStrong'dan qalinroq koʻrinish uchun). */
+  const chipFill = (color: ClassColor) => ({ backgroundColor: `color-mix(in oklch, ${classTints(color).solid} 55%, var(--card))` });
+
   function EventPill({ ev, onOpen }: { ev: TimetableEvent; onOpen?: () => void }) {
     const cls = classInfoById(ev.classId);
     if (!cls) return null;
-    const tints = classTints(liveClassColor(cls));
+    const color = liveClassColor(cls);
+    const tints = classTints(color);
     return (
-      <button type="button" onClick={onOpen} style={tints.gradient}
-        className="flex w-full items-center gap-1.5 truncate rounded-md px-1.5 py-1 text-left transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
-        <span style={tints.dot} className="size-1.5 shrink-0 rounded-[3px]" />
-        <span style={tints.text} className="min-w-0 truncate text-xs font-semibold">{cls.name}</span>
-        <span style={tints.text} className="ml-auto shrink-0 text-[10px] font-medium opacity-70">{fmtMin(ev.startMin)}</span>
+      <button type="button" onClick={onOpen} style={chipFill(color)}
+        className="flex w-full items-center truncate rounded-lg px-2 py-1.5 text-left transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
+        <span style={tints.textStrong} className="min-w-0 truncate text-xs font-bold">{cls.name}</span>
       </button>
     );
   }
 
   // Joylangan mavzu pili (oy koʻrinishi) — MAVZU nomini koʻrsatadi (sinf emas).
   function PlacedPill({ p, dateKey }: { p: Placement; dateKey: string }) {
-    const { tints } = lessonDisplay(p.lesson);
+    const { color, tints } = lessonDisplay(p.lesson);
     return (
       <button type="button" onClick={() => openEdit(p, dateKey)}
-        style={{ ...tints.surfaceStrong, ...tints.borderMedium }}
-        className="flex w-full items-center gap-1.5 truncate rounded-md border px-1.5 py-1 text-left transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
-        <span style={tints.dot} className="size-1.5 shrink-0 rounded-[3px]" />
-        {p.lesson.status === "Completed"
-          ? <Check style={tints.textStrong} className="size-2.5 shrink-0" strokeWidth={3} />
-          : <FileText style={tints.textStrong} className="size-2.5 shrink-0" />}
-        <span style={tints.textStrong} className="min-w-0 truncate text-xs font-semibold">{p.lesson.title}</span>
-        <span style={tints.textStrong} className="ml-auto shrink-0 text-[10px] opacity-70">{minToHHMM(p.startMin)}</span>
+        style={chipFill(color)}
+        className="flex w-full items-center gap-1.5 truncate rounded-lg px-2 py-1.5 text-left transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
+        <span style={tints.textStrong} className="min-w-0 truncate text-xs font-bold">{p.lesson.title}</span>
+        <span className="ml-auto flex size-4 shrink-0 items-center justify-center rounded bg-[var(--card)]/60">
+          {p.lesson.status === "Completed"
+            ? <Check style={tints.textStrong} className="size-2.5" strokeWidth={3} />
+            : <FileText style={tints.textStrong} className="size-2.5" />}
+        </span>
       </button>
     );
   }
@@ -558,7 +592,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <>
             {/* ── Hafta ── */}
             {view === "week" && (
-              <div ref={scrollerRef} data-tour="planner-grid" className="h-full overflow-y-auto scrollbar-thin">
+              <div ref={scrollerRef} data-tour="planner-grid" className={cn("h-full overflow-y-auto scrollbar-thin", isDemoMode && "pointer-events-none")}>
                 <div className="grid" style={weekColsStyle}>
 
                   {/* Sticky sarlavha (opaque) */}
@@ -605,13 +639,17 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             </span>
                           </div>
                         )}
-                        {/* Hover sozlama menyusi */}
+                        {/* Hover sozlama menyusi — tur shu tugmani nishonga olsa majburan koʻrinadi */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
+                              data-tour="planner-day-settings"
                               aria-label="Kun sozlamalari"
-                              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-foreground/10 data-[state=open]:text-foreground"
+                              className={cn(
+                                "absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-foreground/10 data-[state=open]:text-foreground",
+                                forceShowDaySettings && "opacity-100 bg-foreground/10 text-foreground"
+                              )}
                             >
                               <SlidersHorizontal className="size-4" />
                             </button>
@@ -709,6 +747,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           const hasLesson = blockLessons.length > 0;
                           return (
                             <div key={ev.id}
+                              data-tour={hasLesson ? "planner-lesson-block" : "planner-empty-slot"}
                               style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32), ...(hasLesson ? { ...tints.surfaceStrong, ...tints.borderMedium } : { ...tints.tint, ...tints.softBorder }) }}
                               className={cn("group/ev absolute inset-x-1 z-10 flex flex-col overflow-hidden rounded-xl border px-3 pb-2.5 pt-3.5 transition-all", !hasLesson && "border-dashed")}>
                               {hasLesson && <CardStripes color={clsColor} variant="cover" />}
@@ -823,7 +862,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
             {/* ── Oy ── */}
             {view === "month" && (
-              <div className="flex h-full flex-col overflow-y-auto scrollbar-thin">
+              <div className={cn("flex h-full flex-col overflow-y-auto scrollbar-thin", isDemoMode && "pointer-events-none")}>
                 <div className="grid shrink-0 border-b border-border bg-muted" style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}>
                   {DAYS_UZ_SHORT.map((d) => (
                     <div key={d} className="border-l border-border/40 py-3 text-center first:border-l-0">

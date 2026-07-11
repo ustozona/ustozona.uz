@@ -26,7 +26,7 @@ import {
   FileText,
   Users,
   BarChart2,
-  CheckSquare,
+  ClipboardCheck,
   CheckCircle,
   Home,
   Target,
@@ -43,17 +43,19 @@ type NavItem = {
   badgeKey?: "tasks";
 };
 
+/* Tartib QASDAN GuideHub "Boshlash" checklisti bilan bir xil — sidebar
+   haqiqat manbai, [[../tour/tours.ts]] shu tartibga ergashadi. */
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Bosh sahifa", icon: Home },
-  { href: "/dashboard/tasks", label: "Vazifalar", icon: CheckCircle, badgeKey: "tasks" },
   { href: "/dashboard/classes", label: "Mening sinflarim", icon: LayoutGrid },
   { href: "/dashboard/students", label: "Oʻquvchilar", icon: Users },
   { href: "/dashboard/timetable", label: "Dars jadvali", icon: Calendar },
   { href: "/dashboard/planner", label: "Rejalashtiruvchi", icon: BookOpen },
   { href: "/dashboard/lessons", label: "Darslar", icon: FileText },
-  { href: "/dashboard/attendance", label: "Davomat", icon: CheckSquare },
+  { href: "/dashboard/attendance", label: "Davomat", icon: ClipboardCheck },
   { href: "/dashboard/grades", label: "Jurnal", icon: BarChart2 },
   { href: "/dashboard/standards", label: "Standartlar", icon: Target },
+  { href: "/dashboard/tasks", label: "Vazifalar", icon: CheckCircle, badgeKey: "tasks" },
 ];
 
 const footerItems: NavItem[] = [

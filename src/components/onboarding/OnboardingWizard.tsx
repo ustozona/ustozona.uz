@@ -452,8 +452,8 @@ export default function OnboardingWizard() {
           </StepperContent>
 
           {/* ── 3: Tayyor ── */}
-          <StepperContent value="done">
-            <div className="flex min-h-full flex-col items-center justify-center gap-4 text-center animate-in fade-in-50 duration-300">
+          <StepperContent value="done" className="h-full">
+            <div className="flex h-full flex-col items-center justify-center gap-4 text-center animate-in fade-in-50 duration-300">
               <Illustration name="48" className="h-32 text-black dark:text-white" />
               <div className="space-y-1.5">
                 <DialogTitle className="text-xl">Hammasi tayyor!</DialogTitle>

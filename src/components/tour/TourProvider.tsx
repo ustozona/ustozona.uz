@@ -43,6 +43,21 @@ export default function TourProvider() {
     return () => setActiveTour(null);
   }, [active, setActiveTour]);
 
+  // Joriy bosqichning nishonini eʼlon qilamiz — hover'da chiqadigan
+  // elementlarni (masalan kun sozlamalari tugmasi) shu bosqich davomida
+  // majburan koʻrsatish uchun (sahifalar useTourRequest orqali oʻqiydi).
+  const setActiveStepTarget = useTourRequest((s) => s.setActiveStepTarget);
+  React.useEffect(() => {
+    setActiveStepTarget(active?.steps[stepIndex]?.target ?? null);
+    return () => setActiveStepTarget(null);
+  }, [active, stepIndex, setActiveStepTarget]);
+
+  const setActiveStepId = useTourRequest((s) => s.setActiveStepId);
+  React.useEffect(() => {
+    setActiveStepId(active?.steps[stepIndex]?.id ?? null);
+    return () => setActiveStepId(null);
+  }, [active, stepIndex, setActiveStepId]);
+
   // Route mos kelmasa ochiq turni darhol yopamiz — active tur hech qachon
   // joriy sahifaga tegishli boʻlmagan holda koʻrsatilmasligi kerak.
   React.useEffect(() => {

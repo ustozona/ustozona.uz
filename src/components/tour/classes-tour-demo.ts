@@ -1,0 +1,42 @@
+/* ════════════════════════════════════════════════════════════════════
+   SINFLAR TUR DEMO MAʼLUMOTI — faqat vizual, store'larga YOZILMAYDI.
+
+   Classes turʼi boʻsh hisobda ishga tushsa (3–4-qadamlar: koʻrinish
+   almashtirish, statistika) boʻsh panellar tur davomida shu namunaviy
+   sinflar bilan toʻldiriladi (home-tour-demo.ts bilan bir xil naqsh —
+   [[home-tour-demo]]).
+   ════════════════════════════════════════════════════════════════════ */
+
+import type { ClassColor } from "@/lib/class-colors";
+import type { LiveClass } from "@/app/dashboard/classes/page";
+
+export function makeClassesTourDemo(): LiveClass[] {
+  const base = (
+    id: string,
+    name: string,
+    color: ClassColor,
+    subject: string,
+    students: number,
+    lessons: number,
+    coveredLessons: number,
+    assignments: number,
+    initials: string[]
+  ): LiveClass => ({
+    id,
+    info: { id, name, subject, color },
+    name,
+    color,
+    subject,
+    students,
+    lessons,
+    coveredLessons,
+    assignments,
+    initials,
+  });
+
+  return [
+    base("demo-cl-1", "Matematika 7-A", "sky" as ClassColor, "Matematika", 24, 18, 11, 9, ["AB", "DC", "EF"]),
+    base("demo-cl-2", "Ona tili 8-B", "green" as ClassColor, "Ona tili", 22, 15, 15, 7, ["GH", "IJ", "KL"]),
+    base("demo-cl-3", "Fizika 9-A", "amber" as ClassColor, "Fizika", 26, 12, 6, 5, ["MN", "OP", "QR"]),
+  ];
+}

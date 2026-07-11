@@ -1241,9 +1241,11 @@ function TourStep(props: TourStepProps) {
         onFocusCapture={onFocusCapture}
         onBlurCapture={onBlurCapture}
         className={cn(
-          "fixed z-50 flex w-80 flex-col gap-4 rounded-lg border bg-popover p-4 text-popover-foreground shadow-md outline-none",
+          "fixed z-50 flex w-80 flex-col gap-4 rounded-xl border bg-popover p-4 text-popover-foreground shadow-xl outline-none",
+          "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 duration-200",
           className,
         )}
+        data-state="open"
         style={{
           ...style,
           ...floatingStyles,
@@ -1288,7 +1290,7 @@ function TourSpotlight(props: TourSpotlightProps) {
       data-state={getDataState(open)}
       {...backdropProps}
       className={cn(
-        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80 data-[state=closed]:animate-out data-[state=open]:animate-in",
+        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/55 transition-[clip-path] duration-200 ease-out data-[state=closed]:animate-out data-[state=open]:animate-in",
         className,
       )}
       style={{
@@ -1320,7 +1322,7 @@ function TourSpotlightRing(props: TourSpotlightRingProps) {
       data-state={getDataState(open)}
       {...ringProps}
       className={cn(
-        "pointer-events-none fixed z-50 border-ring ring-[3px] ring-ring/50",
+        "pointer-events-none fixed z-50 border-ring ring-[3px] ring-ring/50 shadow-[0_0_0_9999px_rgba(0,0,0,0),0_4px_24px_rgba(0,0,0,0.25)] transition-[left,top,width,height] duration-200 ease-out",
         className,
       )}
       style={{
