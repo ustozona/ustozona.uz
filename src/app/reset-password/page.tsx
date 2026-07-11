@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { AuthShell } from "@/components/auth-shell";
@@ -87,7 +87,9 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <AuthShell showFeatureLoop={false}>
-      <ResetPasswordForm />
+      <Suspense fallback={null}>
+        <ResetPasswordForm />
+      </Suspense>
     </AuthShell>
   );
 }
