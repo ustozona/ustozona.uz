@@ -19,6 +19,8 @@ interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {
   squares?: [number, number] // [horizontal, vertical]
   className?: string
   squaresClassName?: string
+  /** Berilsa, har bir kvadratcha hover'da shu roʻyxatdan tasodifiy rangga boʻyaladi */
+  hoverColors?: string[]
 }
 
 /**
@@ -33,10 +35,12 @@ export function InteractiveGridPattern({
   squares = [24, 24],
   className,
   squaresClassName,
+  hoverColors,
   ...props
 }: InteractiveGridPatternProps) {
   const [horizontal, vertical] = squares
   const [hoveredSquare, setHoveredSquare] = useState<number | null>(null)
+  const [hoverColor, setHoverColor] = useState<string | null>(null)
 
   return (
     <svg
@@ -60,10 +64,20 @@ export function InteractiveGridPattern({
             height={height}
             className={cn(
               "stroke-gray-400/30 transition-all duration-100 ease-in-out not-[&:hover]:duration-1000",
-              hoveredSquare === index ? "fill-gray-300/30" : "fill-transparent",
+              hoveredSquare === index && !hoverColors ? "fill-gray-300/30" : "fill-transparent",
               squaresClassName
             )}
-            onMouseEnter={() => setHoveredSquare(index)}
+            style={
+              hoveredSquare === index && hoverColor
+                ? { fill: hoverColor, fillOpacity: 0.35 }
+                : undefined
+            }
+            onMouseEnter={() => {
+              setHoveredSquare(index)
+              if (hoverColors?.length) {
+                setHoverColor(hoverColors[Math.floor(Math.random() * hoverColors.length)])
+              }
+            }}
             onMouseLeave={() => setHoveredSquare(null)}
           />
         )

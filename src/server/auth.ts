@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "./db/client";
 import * as schema from "./db/schema";
+import { sendResetPasswordEmail } from "./email";
 
 /* ════════════════════════════════════════════════════════════════════
    BETTER AUTH — runtime konfiguratsiya (yagona haqiqat manbai).
@@ -27,6 +28,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    sendResetPassword: async ({ user, url }) => {
+      await sendResetPasswordEmail(user.email, url);
+    },
   },
   socialProviders: googleEnabled
     ? {

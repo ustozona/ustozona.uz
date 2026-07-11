@@ -1,7 +1,12 @@
-import RegisterForm from "@/components/shadcn-space/blocks/register-01/register";
+"use client";
 
-const Page = () => {
-  return <RegisterForm/>;
-};
+import { AuthShell } from "@/components/auth-shell";
+import { SignupForm } from "@/components/signup-form";
 
-export default Page;
+export default function RegisterPage() {
+  return (
+    <AuthShell maxWidth="max-w-md">
+      <SignupForm />
+    </AuthShell>
+  );
+}

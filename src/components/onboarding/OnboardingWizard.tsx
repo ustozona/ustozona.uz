@@ -10,12 +10,8 @@ import {
   Check,
   BookOpen,
   Users,
-  ClipboardCheck,
   User,
   School,
-  CheckCircle,
-  BarChart2,
-  Target,
 } from "lucide-react";
 import {
   Dialog,
@@ -32,8 +28,9 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { Illustration } from "@/components/ui/illustration";
-import { FeatureLoop, type FeatureLoopItem } from "@/components/onboarding/FeatureLoop";
+import { FeatureLoop } from "@/components/onboarding/FeatureLoop";
 import { confettiPresets } from "@/lib/confetti-presets";
+import { PRODUCT_FEATURES } from "@/lib/product-features";
 import { AnimatedTextRoller } from "@/components/shadcn-space/animated-text/animated-text-04";
 import {
   Stepper,
@@ -87,46 +84,6 @@ const STEPS = [
   { id: "done", title: "Tayyor", description: "Hammasi sozlandi", icon: <Check /> },
 ];
 const STEP_COUNT = STEPS.length;
-
-/** Kalendar hafta sarlavhalari — getDay() tartibida (0=Yakshanba). */
-const FEATURES: FeatureLoopItem[] = [
-  {
-    icon: GraduationCap,
-    title: "Sinflar va oʻquvchilar",
-    desc: "Sinflaringiz va oʻquvchilar roʻyxati bir joyda.",
-    color: "green",
-  },
-  {
-    icon: BookOpen,
-    title: "Darslarni rejalashtirish",
-    desc: "Dars jadvali, mavzular va oʻquv materiallari.",
-    color: "sky",
-  },
-  {
-    icon: BarChart2,
-    title: "Jurnal va baholar",
-    desc: "Baholash mezonlari va oʻzlashtirish tahlili.",
-    color: "violet",
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Davomat",
-    desc: "Har bir darsda davomatni tez belgilang.",
-    color: "amber",
-  },
-  {
-    icon: CheckCircle,
-    title: "Vazifalar",
-    desc: "Shaxsiy va sinf vazifalarini rejalashtiring.",
-    color: "red",
-  },
-  {
-    icon: Target,
-    title: "Standartlar",
-    desc: "Oʻquv dasturi standartlari boʻyicha nazorat.",
-    color: "teal",
-  },
-];
 
 export default function OnboardingWizard() {
   const profile = useSettingsStore((s) => s.profile);
@@ -308,7 +265,7 @@ export default function OnboardingWizard() {
                   Ustozona bilan ishlashni boshlaymiz — quyida sizni nima kutayotganini koʻring.
                 </DialogDescription>
               </div>
-              <FeatureLoop items={FEATURES} className="pt-1" />
+              <FeatureLoop items={PRODUCT_FEATURES} className="pt-1" />
             </div>
           </StepperContent>
 

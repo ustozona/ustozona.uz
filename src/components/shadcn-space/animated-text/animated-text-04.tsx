@@ -36,7 +36,7 @@ export const AnimatedTextRoller = ({
 
   return (
     <span
-      className={cn("inline-block h-7 overflow-hidden align-bottom", className)}
+      className={cn("inline-block h-7 overflow-hidden align-middle", className)}
       aria-label={words.join(", ")}
     >
       <span

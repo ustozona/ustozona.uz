@@ -1,7 +1,12 @@
-import LoginForm from "@/components/shadcn-space/blocks/login-01/login";
+"use client";
 
-const Page = () => {
-  return <LoginForm/>;
-};
+import { AuthShell } from "@/components/auth-shell";
+import { LoginForm } from "@/components/login-form";
 
-export default Page;
+export default function LoginPage() {
+  return (
+    <AuthShell>
+      <LoginForm />
+    </AuthShell>
+  );
+}
