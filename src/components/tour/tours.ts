@@ -241,19 +241,19 @@ export const TOURS: readonly TourDef[] = [
     steps: [
       {
         title: "Sinflaringiz",
-        body: "Davomat jadvalini ochish uchun biror sinfni tanlang. Har bir dars kuni uchun butun sinfning davomatini shu yerdan belgilaysiz.",
+        body: "Davomat jadvalini koʻrish uchun istalgan sinfni tanlang. Bu yerda butun sinfning kunlik davomatini belgilashingiz mumkin.",
         target: '[data-tour="attendance-classes"]',
         placement: "right",
       },
       {
         title: "Davomat jadvali",
-        body: "Oʻquvchi × kun jadvali. Katakni bosib holatni (bor / yoʻq / kech / sababli) belgilang; oʻzgarish darrov saqlanadi.",
+        body: "Jadval oʻquvchilar va sanalar kesimida tuzilgan. Oʻquvchining davomatini (keldi, kelmadi, kechikdi yoki sababli) belgilash uchun tegishli katakchani bosing. Oʻzgarishlar darhol saqlanadi.",
         target: '[data-tour="attendance-heatmap"]',
         placement: "left",
       },
       {
-        title: "Statuslarni sozlash",
-        body: "Bu tugma Sozlamalar > Davomat boʻlimini ochadi: statuslarni yoqing/oʻchiring va davomat foizidagi vaznini belgilang.",
+        title: "Holatlarni sozlash",
+        body: "Ushbu tugma Sozlamalar > Davomat boʻlimini ochadi. U yerdan davomat holatlarini yoqib-oʻchirishingiz hamda ularning umumiy davomat foiziga taʼsirini (ulushini) belgilashingiz mumkin.",
         target: '[data-tour="attendance-config"]',
         placement: "bottom",
       },

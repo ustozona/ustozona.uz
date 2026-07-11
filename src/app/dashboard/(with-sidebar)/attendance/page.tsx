@@ -29,7 +29,7 @@ export default function AttendancePage() {
       <div data-tour="attendance-classes" className="hidden lg:block w-[280px] shrink-0 h-full">
         <ClassListPanel
           page="attendance"
-          selectedClassId={selectedClassId ?? (isDemoMode ? ATTENDANCE_TOUR_DEMO_CLASS_ID : "")}
+          selectedClassId={effectiveClassId}
           onSelect={setSelectedClassId}
           demoClasses={demoClasses ?? undefined}
         />
