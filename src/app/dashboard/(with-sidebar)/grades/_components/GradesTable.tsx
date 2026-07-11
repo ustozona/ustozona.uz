@@ -781,7 +781,7 @@ export default function GradesTable({
           className="w-full"
           style={{ borderCollapse: "separate", borderSpacing: 0 }}
         >
-          <TableHeader className="sticky top-0 z-30 bg-card">
+          <TableHeader className="sticky top-0 z-30 bg-card" data-tour="grades-topics">
             <TableRow>
               <TableHead
                 className="sticky left-0 z-40 border-r border-b border-border min-w-[260px] w-[260px] h-[176px]"

@@ -259,14 +259,20 @@ export const TOURS: readonly TourDef[] = [
     label: "Jurnal",
     steps: [
       {
-        title: "Baho mavzulari",
-        body: "Mavzular topshiriqlaringizni guruhlab yakuniy bahoni tortadi. Yigʻindisi 100% boʻladigan ogʻirliklar belgilang, soʻng mavzuni bosib jurnalni filtrlang.",
-        target: '[data-tour="grades-grid"]',
-        placement: "left",
+        title: "Sinflaringiz",
+        body: "Baholar jurnalini ochish uchun biror sinfni tanlang. Har bir sinfda nechta oʻquvchi roʻyxatdan oʻtgani va nechta topshiriq yaratilgani koʻrsatiladi.",
+        target: '[data-tour="grades-classes"]',
+        placement: "right",
       },
       {
-        title: "Jurnalingiz",
-        body: "Jurnal har bir oʻquvchi va topshiriqni jadval koʻrinishida koʻrsatadi. Baho kiritish yoki tahrirlash uchun katakni bosing. Jami mavzu ogʻirliklariga qarab avtomatik yangilanadi.",
+        title: "Baho mavzulari",
+        body: "Mavzular topshiriqlaringizni guruhlab yakuniy bahoga ulushini belgilaydi. Yigʻindisi 100% boʻladigan ogʻirliklar oʻrnating, soʻng mavzuni bosib jadvalni filtrlang.",
+        target: '[data-tour="grades-topics"]',
+        placement: "bottom",
+      },
+      {
+        title: "Baholar jurnalingiz",
+        body: "Jurnalda har bir oʻquvchi va topshiriq jadval koʻrinishida aks etadi. Baho kiritish yoki tahrirlash uchun istalgan katakni bosing. Umumiy natija mavzularning ulushiga qarab avtomatik yangilanib boradi.",
         target: '[data-tour="grades-grid"]',
         placement: "left",
       },

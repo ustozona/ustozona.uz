@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   type Assignment,
+  type ClassData,
 } from "@/lib/grades-data";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
@@ -22,7 +23,14 @@ type ModalType = "assignment" | "reuse" | "topic" | null;
    GradesSection ham shu komponentni ishlatadi (DRY). `classId` propi qaysi
    sinf koʻrsatilishini belgilaydi; ichkarida toʻliq classDataMap saqlanadi,
    chunki mavzu/reuse amallari boshqa sinflarga ham ta'sir qiladi. ── */
-export default function GradesView({ classId }: { classId: string }) {
+export default function GradesView({
+  classId,
+  demoClassData,
+}: {
+  classId: string;
+  /** Tur demo rejimida haqiqiy classData oʻrniga koʻrsatiladigan namunaviy jurnal. */
+  demoClassData?: ClassData;
+}) {
   const mounted = useMounted();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
@@ -42,7 +50,7 @@ export default function GradesView({ classId }: { classId: string }) {
     window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
   }, []);
 
-  const classData = classDataMap[classId];
+  const classData = demoClassData ?? classDataMap[classId];
 
   function handleCellEdit(
     studentId: string,
