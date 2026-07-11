@@ -25,13 +25,14 @@ import { CardTitle } from "@/components/ui/card";
 import { TaskComposer, type TaskComposerHandle, type ComposerSeed } from "./TaskComposer";
 import { useTaskStore } from "@/store/useTaskStore";
 import { type TaskFilter } from "./TasksSidebar";
-import { TASK_STATUS, STATUS_META, nextRecurrenceDate, type TaskStatus, type TaskPriority } from "@/lib/tasks-data";
+import { TASK_STATUS, STATUS_META, nextRecurrenceDate, type TaskStatus, type TaskPriority, type Task } from "@/lib/tasks-data";
 import { recurrenceLabel } from "@/lib/recurrence";
 import { ContextMenu, type ContextMenuItem } from "@/components/shadcn-space/context-menu/context-menu-01";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useFilteredTasks, type GroupByMode, type SortByMode } from "@/hooks/useFilteredTasks";
 import { format, parseISO } from "date-fns";
 import { uz } from "date-fns/locale";
+import type { ClassInfo } from "@/lib/grades-data";
 
 const STATUS_GROUPS = STATUS_META.map((s) => ({ id: s.id, label: s.groupLabel, color: s.dot }));
 
@@ -40,11 +41,16 @@ const DATE_GROUPS = ["bugun", "ertaga", "kelasi hafta", "muddatsiz", "oʻtgan"];
 type Props = {
   activeFilter: TaskFilter;
   onSelectFilter?: (filter: TaskFilter) => void;
+  /** Tur demo rejimida haqiqiy vazifa/sinf oʻrniga koʻrsatiladigan namunaviy maʼlumot. */
+  demoTasks?: Task[];
+  demoClasses?: ClassInfo[];
 };
 
-export default function TasksList({ activeFilter, onSelectFilter }: Props) {
-  const liveClasses = useLiveClasses();
-  const tasks = useTaskStore((s) => s.tasks);
+export default function TasksList({ activeFilter, onSelectFilter, demoTasks, demoClasses }: Props) {
+  const liveClassesReal = useLiveClasses();
+  const liveClasses = demoClasses && liveClassesReal.length === 0 ? demoClasses : liveClassesReal;
+  const storedTasks = useTaskStore((s) => s.tasks);
+  const tasks = demoTasks ?? storedTasks;
   const selectedTaskId = useTaskStore((s) => s.selectedTaskId);
   const setSelectedTaskId = useTaskStore((s) => s.setSelectedTaskId);
   const toggleTaskDone = useTaskStore((s) => s.toggleTaskDone);

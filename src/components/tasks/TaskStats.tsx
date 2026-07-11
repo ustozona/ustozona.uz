@@ -14,10 +14,11 @@ import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/useTaskStore";
 import { TASK_STATUS, STATUS_META, type TaskPriority } from "@/lib/tasks-data";
 import { filterTasksByFilter } from "@/hooks/useFilteredTasks";
-import { classColor } from "@/lib/grades-data";
+import { classColor, type ClassInfo } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import type { TaskFilter } from "./TasksSidebar";
+import type { Task } from "@/lib/tasks-data";
 
 // Hafta kunlari qisqa yorligʻi (getDay 0=Yakshanba)
 const WEEKDAY_SHORT = ["Yak", "Du", "Se", "Cho", "Pay", "Ju", "Sha"];
@@ -36,6 +37,9 @@ const PRIORITY_META: { id: TaskPriority; label: string; bar: string }[] = [
 type Props = {
   activeFilter: TaskFilter;
   onSelectFilter: (f: TaskFilter) => void;
+  /** Tur demo rejimida haqiqiy vazifa/sinf oʻrniga koʻrsatiladigan namunaviy maʼlumot. */
+  demoTasks?: Task[];
+  demoClasses?: ClassInfo[];
 };
 
 function StatTile({
@@ -111,9 +115,11 @@ function scopeLabel(f: TaskFilter, classNameOf: (id: string) => string | undefin
   return "Barcha vazifalar";
 }
 
-export default function TaskStats({ activeFilter, onSelectFilter }: Props) {
-  const tasks = useTaskStore((s) => s.tasks);
-  const liveClasses = useLiveClasses();
+export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, demoClasses }: Props) {
+  const storedTasks = useTaskStore((s) => s.tasks);
+  const tasks = demoTasks ?? storedTasks;
+  const liveClassesReal = useLiveClasses();
+  const liveClasses = demoClasses && liveClassesReal.length === 0 ? demoClasses : liveClassesReal;
   const todayStr = new Date().toISOString().split("T")[0];
 
   // Recharts ResponsiveContainer serverda oʻlchovsiz (-1) boʻlib hydration

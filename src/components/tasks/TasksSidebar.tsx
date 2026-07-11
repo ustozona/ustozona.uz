@@ -14,7 +14,8 @@ import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { useTaskStore } from "@/store/useTaskStore";
-import { TASK_STATUS } from "@/lib/tasks-data";
+import { TASK_STATUS, type Task } from "@/lib/tasks-data";
+import type { ClassInfo } from "@/lib/grades-data";
 
 export type TaskFilter = 
   | "inbox" 
@@ -29,6 +30,9 @@ export type TaskFilter =
 type Props = {
   activeFilter: TaskFilter;
   onSelectFilter: (filter: TaskFilter) => void;
+  /** Tur demo rejimida haqiqiy vazifa/sinf oʻrniga koʻrsatiladigan namunaviy maʼlumot. */
+  demoTasks?: Task[];
+  demoClasses?: ClassInfo[];
 };
 
 type TaskTemplate = {
@@ -65,9 +69,11 @@ const TASK_TEMPLATES: TaskTemplate[] = [
   },
 ];
 
-export default function TasksSidebar({ activeFilter, onSelectFilter }: Props) {
-  const liveClasses = useLiveClasses();
-  const tasks = useTaskStore((s) => s.tasks);
+export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, demoClasses }: Props) {
+  const liveClassesReal = useLiveClasses();
+  const liveClasses = demoClasses && liveClassesReal.length === 0 ? demoClasses : liveClassesReal;
+  const storedTasks = useTaskStore((s) => s.tasks);
+  const tasks = demoTasks ?? storedTasks;
   const addTask = useTaskStore((s) => s.addTask);
   const setSelectedTaskId = useTaskStore((s) => s.setSelectedTaskId);
 

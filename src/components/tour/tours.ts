@@ -319,20 +319,26 @@ export const TOURS: readonly TourDef[] = [
     label: "Vazifalar",
     steps: [
       {
-        title: "Ishlaringizni tartiblang",
-        body: "Baholash, rejalashtirish, ota-onalarga xat — kuzatmoqchi boʻlgan har narsa uchun vazifa yarating. Rangli teglar bilan guruhlab, holat, ustuvorlik yoki teg boʻyicha filtrlang.",
+        title: "Vazifalar paneli",
+        body: "Chap panelda vazifalaringizni tezkor koʻzdan kechirishingiz mumkin. Bu yerda aqlli roʻyxatlar (Bugun, Muhim, Kechikkanlar...), sinflar boʻyicha saralash va tayyor shablonlar (bir marta bosish orqali vazifa yaratish) joylashgan.",
+        target: '[data-tour="tasks-sidebar"]',
+        placement: "right",
+      },
+      {
+        title: "Ishlaringizni tartibga soling",
+        body: "Baholash, darslarni rejalashtirish yoki ota-onalar bilan muloqot — nazorat qilmoqchi boʻlgan har bir ishingiz uchun vazifa yarating. Ularni rangli yorliqlar orqali guruhlang hamda holati, muhimlik darajasi yoki yorligʻiga qarab saralang.",
         target: '[data-tour="tasks-list"]',
         placement: "right",
       },
       {
-        title: "Tez qoʻshish",
-        body: "Vazifa qatorini bir joyda yozing: sana, ustuvorlik va sinfni toolbar tugmalari bilan biriktiring.",
+        title: "Tezkor qoʻshish",
+        body: "Vazifa matnini kiritish qatorining oʻzidayoq yozing: sana, muhimlik darajasi va tegishli sinfni uskunalar paneli tugmalari orqali biriktiring.",
         target: '[data-tour="tasks-composer"]',
         placement: "bottom",
       },
       {
         title: "Statistika paneli",
-        body: "Oʻng panel tanlangan koʻlam boʻyicha trend va sinf yukini koʻrsatadi.",
+        body: "Oʻng panel tanlangan vaqt oraligʻiga koʻra oʻzgarishlar dinamikasi va ish yuklamasini koʻrsatadi.",
         target: '[data-tour="tasks-stats"]',
         placement: "left",
       },
