@@ -229,7 +229,7 @@ export function ClassFormModal({
           </div>
         </ScrollArea>
 
-        <DialogFooter className="p-6 pt-4 border-t bg-muted/20 shrink-0">
+        <DialogFooter className="px-6 py-4 border-t bg-muted/20 shrink-0">
           <Button variant="outline" onClick={onClose}>Bekor qilish</Button>
           <Button onClick={submit} disabled={!canSubmit}>{mode === "create" ? "Yaratish" : "Saqlash"}</Button>
         </DialogFooter>

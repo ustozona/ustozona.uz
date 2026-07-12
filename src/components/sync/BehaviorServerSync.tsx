@@ -20,6 +20,7 @@ function selectSnapshot(s: BehaviorState): BehaviorSnapshot {
     rewards: s.rewards,
     eventsByClass: s.eventsByClass,
     redemptions: s.redemptions,
+    deletions: s.deletions,
   };
 }
 

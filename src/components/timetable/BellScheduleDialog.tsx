@@ -218,7 +218,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
           </div>
         </div>
 
-        <DialogFooter className="border-t border-border bg-muted/20 px-5 py-4 sm:items-center">
+        <DialogFooter className="border-t border-border bg-muted/20 px-6 py-4 sm:items-center">
           {movedCount > 0 && (
             <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground sm:mr-auto">
               <Info className="size-3.5 shrink-0" />

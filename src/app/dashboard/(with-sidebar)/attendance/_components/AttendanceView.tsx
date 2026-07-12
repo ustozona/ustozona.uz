@@ -193,7 +193,7 @@ function NoteModal({
           </p>
         </div>
 
-        <DialogFooter className="items-center border-t border-border bg-muted/20 p-4 sm:justify-between">
+        <DialogFooter className="items-center border-t border-border bg-muted/20 px-6 py-4 sm:justify-between">
           {note
             ? <Button variant="ghost" size="sm" onClick={() => { onSave(""); onClose(); }} className="text-destructive hover:text-destructive hover:bg-destructive/10">Oʻchirish</Button>
             : <span />}

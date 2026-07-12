@@ -32,7 +32,7 @@ export default function BehaviorTab({
 }) {
   const events = useBehaviorStore((s) => s.eventsByClass[classId]) ?? EMPTY_EVENTS;
   const redemptions = useBehaviorStore((s) => s.redemptions);
-  const removeEvents = useBehaviorStore((s) => s.removeEvents);
+  const deleteEventWithLog = useBehaviorStore((s) => s.deleteEventWithLog);
   const setEventNote = useBehaviorStore((s) => s.setEventNote);
 
   const myEvents = useMemo(
@@ -120,7 +120,7 @@ export default function BehaviorTab({
             ) : (
               <EventTimeline
                 events={myEvents}
-                onDelete={(e) => removeEvents(classId, [e.id])}
+                onDelete={(e, reason) => deleteEventWithLog(classId, e, reason)}
                 onSaveNote={(e, note) => setEventNote(classId, e.id, note)}
               />
             )}

@@ -106,13 +106,17 @@ export function AddCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border px-3 py-4",
+        "flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-border px-3 pt-6 pb-4",
         "cursor-pointer text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/40 hover:text-foreground",
         className
       )}
     >
-      <Plus className="size-5" aria-hidden />
-      <span className="text-center text-[13px] font-medium leading-tight">{label}</span>
+      <span className="flex size-9 items-center justify-center">
+        <Plus className="size-5" aria-hidden />
+      </span>
+      <span className="line-clamp-2 min-h-[2.4em] text-center text-[13px] font-medium leading-tight">
+        {label}
+      </span>
     </button>
   );
 }

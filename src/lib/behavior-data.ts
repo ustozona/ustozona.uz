@@ -40,6 +40,25 @@ export type BehaviorEvent = {
   date: string; // "YYYY-MM-DD"
   createdAt: string; // ISO
   note?: string;
+  /** 2+ oʻquvchiga birga berilgan boʻlsa — umumiy id (label emas, sonini renderda hisoblaymiz). */
+  groupId?: string;
+};
+
+/** Oʻchirish jurnali yozuvi — append-only audit-trail (behavior_deletions
+    jadvaliga sinxronlanadi; UI'da hozircha koʻrsatilmaydi). */
+export type BehaviorDeletionLogEntry = {
+  id: string;
+  classId: string;
+  studentId: string;
+  /** Oʻchirilgan event id — event qatori DBdan oʻchadi, snapshot shu yerda qoladi. */
+  eventId: string;
+  name: string;
+  emoji: string;
+  points: number;
+  /** Event sanasi ("YYYY-MM-DD"), oʻchirilgan payt emas. */
+  date: string;
+  reason?: string;
+  deletedAt: string; // ISO
 };
 
 export type BehaviorReward = {

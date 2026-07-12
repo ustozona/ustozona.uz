@@ -5,6 +5,7 @@ import {
   studentBalance,
   todayDateKey,
   uid,
+  type BehaviorDeletionLogEntry,
   type BehaviorEvent,
   type BehaviorRedemption,
   type BehaviorReward,
@@ -31,6 +32,8 @@ interface BehaviorState {
   /** classId → append-only eventlar (yangi element oxiriga qoʻshiladi). */
   eventsByClass: Record<string, BehaviorEvent[]>;
   redemptions: BehaviorRedemption[];
+  /** Oʻchirish jurnali — append-only, sync insert-only (hech qachon delete yoʻq). */
+  deletions: BehaviorDeletionLogEntry[];
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 
@@ -48,8 +51,11 @@ interface BehaviorState {
     note?: string
   ) => string[];
 
-  /** Eventlarni oʻchirish (undo / hisobotdagi ⋮ Remove). */
+  /** Eventlarni oʻchirish (undo — jurnal YOZILMAYDI). */
   removeEvents: (classId: string, eventIds: string[]) => void;
+
+  /** Hisobotdagi qasddan oʻchirish: event olib tashlanadi + jurnalga yoziladi. */
+  deleteEventWithLog: (classId: string, event: BehaviorEvent, reason?: string) => void;
 
   /** Eventga izoh yozish/tahrirlash (boʻsh matn = izohni olib tashlash). */
   setEventNote: (classId: string, eventId: string, note: string) => void;
@@ -74,6 +80,7 @@ export const useBehaviorStore = create<BehaviorState>()((set, get) => ({
   rewards: defaultRewards(),
   eventsByClass: {},
   redemptions: [],
+  deletions: [],
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),
 
@@ -84,6 +91,7 @@ export const useBehaviorStore = create<BehaviorState>()((set, get) => ({
     if (studentIds.length === 0) return [];
     const createdAt = new Date().toISOString();
     const date = todayDateKey();
+    const groupId = studentIds.length > 1 ? uid("bhg") : undefined;
     const created: BehaviorEvent[] = studentIds.map((studentId) => ({
       id: uid("bhe"),
       studentId,
@@ -95,6 +103,7 @@ export const useBehaviorStore = create<BehaviorState>()((set, get) => ({
       date,
       createdAt,
       ...(note ? { note } : {}),
+      ...(groupId ? { groupId } : {}),
     }));
     set((s) => ({
       eventsByClass: {
@@ -116,6 +125,35 @@ export const useBehaviorStore = create<BehaviorState>()((set, get) => ({
           ...s.eventsByClass,
           [classId]: prev.filter((e) => !ids.has(e.id)),
         },
+      };
+    });
+  },
+
+  deleteEventWithLog: (classId, event, reason) => {
+    const entry: BehaviorDeletionLogEntry = {
+      id: uid("bhd"),
+      classId,
+      studentId: event.studentId,
+      eventId: event.id,
+      name: event.name,
+      emoji: event.emoji,
+      points: event.points,
+      date: event.date,
+      ...(reason?.trim() ? { reason: reason.trim() } : {}),
+      deletedAt: new Date().toISOString(),
+    };
+    set((s) => {
+      const prev = s.eventsByClass[classId];
+      return {
+        deletions: [...s.deletions, entry],
+        ...(prev
+          ? {
+              eventsByClass: {
+                ...s.eventsByClass,
+                [classId]: prev.filter((e) => e.id !== event.id),
+              },
+            }
+          : {}),
       };
     });
   },

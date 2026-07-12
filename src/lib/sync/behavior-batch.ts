@@ -35,6 +35,7 @@ export const eventUpsertSchema = z.object({
   note: z.string().max(2000).nullable(),
   date: z.string().min(8).max(20), // "YYYY-MM-DD"
   createdAt: z.string().min(1).max(50), // ISO
+  groupId: id.nullable(),
 });
 
 export const rewardUpsertSchema = z.object({
@@ -57,6 +58,20 @@ export const redemptionUpsertSchema = z.object({
   createdAt: z.string().min(1).max(50),
 });
 
+/** Oʻchirish jurnali yozuvi — append-only, hech qachon oʻchirilmaydi/yangilanmaydi. */
+export const deletionInsertSchema = z.object({
+  id,
+  classId: id,
+  studentId: id,
+  eventId: id,
+  name: z.string().min(1).max(200),
+  emoji: z.string().min(1).max(50),
+  points: z.number().int().min(-100).max(100),
+  date: z.string().min(8).max(20),
+  reason: z.string().max(2000).nullable(),
+  deletedAt: z.string().min(1).max(50), // ISO
+});
+
 export const behaviorBatchSchema = z.object({
   skillsUpsert: z.array(skillUpsertSchema).max(500),
   skillsDelete: z.array(id).max(500),
@@ -66,12 +81,14 @@ export const behaviorBatchSchema = z.object({
   rewardsDelete: z.array(id).max(500),
   redemptionsUpsert: z.array(redemptionUpsertSchema).max(20000),
   redemptionsDelete: z.array(id).max(20000),
+  deletionsInsert: z.array(deletionInsertSchema).max(20000),
 });
 
 export type SkillUpsert = z.infer<typeof skillUpsertSchema>;
 export type EventUpsert = z.infer<typeof eventUpsertSchema>;
 export type RewardUpsert = z.infer<typeof rewardUpsertSchema>;
 export type RedemptionUpsert = z.infer<typeof redemptionUpsertSchema>;
+export type DeletionInsert = z.infer<typeof deletionInsertSchema>;
 export type BehaviorBatch = z.infer<typeof behaviorBatchSchema>;
 
 export function emptyBehaviorBatch(): BehaviorBatch {
@@ -84,6 +101,7 @@ export function emptyBehaviorBatch(): BehaviorBatch {
     rewardsDelete: [],
     redemptionsUpsert: [],
     redemptionsDelete: [],
+    deletionsInsert: [],
   };
 }
 
@@ -96,6 +114,7 @@ export function isEmptyBehaviorBatch(b: BehaviorBatch): boolean {
     b.rewardsUpsert.length === 0 &&
     b.rewardsDelete.length === 0 &&
     b.redemptionsUpsert.length === 0 &&
-    b.redemptionsDelete.length === 0
+    b.redemptionsDelete.length === 0 &&
+    b.deletionsInsert.length === 0
   );
 }

@@ -3,13 +3,16 @@
 import * as React from "react";
 import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+} from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  DialogHeaderBar,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -48,7 +51,8 @@ export function ClassReportDialog({
   colorHex: string;
 }) {
   const events = useBehaviorStore((s) => s.eventsByClass[classId]) ?? EMPTY_EVENTS;
-  const removeEvents = useBehaviorStore((s) => s.removeEvents);
+  const allDeletions = useBehaviorStore((s) => s.deletions);
+  const deleteEventWithLog = useBehaviorStore((s) => s.deleteEventWithLog);
   const setEventNote = useBehaviorStore((s) => s.setEventNote);
 
   const [selection, setSelection] = React.useState<Selection>(null);
@@ -80,6 +84,14 @@ export function ClassReportDialog({
     return pct;
   }, [events, period]);
 
+  const selectedDeletions = React.useMemo(
+    () =>
+      allDeletions.filter(
+        (d) => d.classId === classId && (selection === null || d.studentId === selection)
+      ),
+    [allDeletions, classId, selection]
+  );
+
   const selectedEvents = React.useMemo(
     () => (selection === null ? events : events.filter((e) => e.studentId === selection)),
     [events, selection]
@@ -95,29 +107,40 @@ export function ClassReportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 p-0 sm:max-w-4xl">
-        <DialogHeader className="border-b border-border px-6 py-4 text-left">
-          <DialogTitle>Sinf hisoboti</DialogTitle>
-          <DialogDescription>
-            Berilgan ballar kesimi — butun sinf yoki bitta oʻquvchi boʻyicha.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="gap-0 p-0 sm:max-w-4xl" showCloseButton={false}>
+        <DialogHeaderBar
+          icon={<Users className="size-4" aria-hidden />}
+          title="Sinf hisoboti"
+          description="Berilgan ballar kesimi — butun sinf yoki bitta oʻquvchi boʻyicha."
+        />
 
         <div className="flex min-h-0">
           {/* Chap: Butun sinf + oʻquvchilar (davrdagi ijobiy % bilan) */}
-          <ScrollArea className="h-[480px] w-56 shrink-0 border-r border-border">
-            <nav className="flex flex-col gap-0.5 p-3">
+          <ScrollArea className="h-[480px] w-64 shrink-0 border-r border-border">
+            {/* Radix viewport display:table — nav'ga aniq en bermasak kontent panel enidan oshib kesiladi. */}
+            <nav className="flex w-64 flex-col gap-0.5 p-3">
               <button
                 type="button"
                 onClick={() => setSelection(null)}
                 className={rowClass(selection === null)}
               >
-                <span
-                  className="flex size-7 shrink-0 items-center justify-center rounded-full"
-                  style={{ backgroundColor: `color-mix(in srgb, ${colorHex} 18%, var(--card))` }}
-                >
-                  <Users className="size-3.5" style={{ color: colorHex }} aria-hidden />
-                </span>
+                <AvatarGroup className="shrink-0">
+                  {students.slice(0, 3).map((st) => (
+                    <Avatar key={st.id} className="size-7">
+                      <AvatarFallback
+                        className="text-[10px] font-semibold text-white"
+                        style={{ backgroundColor: colorHex }}
+                      >
+                        {st.initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                  {students.length > 3 && (
+                    <AvatarGroupCount className="size-7 text-[10px] font-semibold tabular-nums">
+                      +{students.length - 3}
+                    </AvatarGroupCount>
+                  )}
+                </AvatarGroup>
                 <span className="truncate">Butun sinf</span>
               </button>
 
@@ -163,7 +186,8 @@ export function ClassReportDialog({
                 period={period}
                 onPeriodChange={setPeriod}
                 nameById={selection === null ? nameById : undefined}
-                onDelete={(e) => removeEvents(classId, [e.id])}
+                deletions={selectedDeletions}
+                onDelete={(e, reason) => deleteEventWithLog(classId, e, reason)}
                 onSaveNote={(e, note) => setEventNote(classId, e.id, note)}
               />
             </div>

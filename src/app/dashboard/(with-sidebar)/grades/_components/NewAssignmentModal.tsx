@@ -349,7 +349,7 @@ export default function NewAssignmentModal({
               )}
             </div>
 
-            <DialogFooter className="p-6 border-t border-border bg-muted/20 shrink-0">
+            <DialogFooter className="px-6 py-4 border-t border-border bg-muted/20 shrink-0">
               <Button variant="outline" size="sm" type="button" onClick={onClose}>Bekor qilish</Button>
               <Button size="sm" type="submit">
                 <Plus className="size-4" />

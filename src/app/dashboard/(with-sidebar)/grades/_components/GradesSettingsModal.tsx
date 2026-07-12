@@ -205,7 +205,7 @@ export default function GradesSettingsModal({
           </section>
         </div>
 
-        <DialogFooter className="border-t border-border bg-muted/20 p-4">
+        <DialogFooter className="border-t border-border bg-muted/20 px-6 py-4">
           <DialogClose asChild>
             <Button size="sm">Yopish</Button>
           </DialogClose>

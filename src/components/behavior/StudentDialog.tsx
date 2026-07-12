@@ -7,8 +7,10 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -77,9 +79,10 @@ export function StudentDialog({
   const rewards = useBehaviorStore((s) => s.rewards);
   const events = useBehaviorStore((s) => s.eventsByClass[classId]) ?? EMPTY_EVENTS;
   const redemptions = useBehaviorStore((s) => s.redemptions);
+  const allDeletions = useBehaviorStore((s) => s.deletions);
   const redeem = useBehaviorStore((s) => s.redeem);
   const removeRedemption = useBehaviorStore((s) => s.removeRedemption);
-  const removeEvents = useBehaviorStore((s) => s.removeEvents);
+  const deleteEventWithLog = useBehaviorStore((s) => s.deleteEventWithLog);
   const setEventNote = useBehaviorStore((s) => s.setEventNote);
 
   const [panel, setPanel] = React.useState<PanelId>("award");
@@ -97,6 +100,13 @@ export function StudentDialog({
   const balance = student
     ? studentBalance(events, classRedemptions, student.id)
     : 0;
+
+  const studentId = student?.id;
+  const myDeletions = React.useMemo(
+    () =>
+      allDeletions.filter((d) => d.classId === classId && d.studentId === studentId),
+    [allDeletions, classId, studentId]
+  );
 
   if (!student) return null;
 
@@ -118,7 +128,7 @@ export function StudentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 p-0 sm:max-w-3xl">
+      <DialogContent className="gap-0 p-0 sm:max-w-3xl" showCloseButton={false}>
         {/* Header: avatar + ism + balans + profil havolasi */}
         <DialogHeader className="border-b border-border px-6 py-4 text-left">
           <div className="flex items-center gap-3">
@@ -152,6 +162,17 @@ export function StudentDialog({
                 </Link>
               </div>
             </div>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0 self-start text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-4" aria-hidden />
+                <span className="sr-only">Yopish</span>
+              </Button>
+            </DialogClose>
           </div>
         </DialogHeader>
 
@@ -194,8 +215,9 @@ export function StudentDialog({
                   events={events.filter((e) => e.studentId === student.id)}
                   period={period}
                   onPeriodChange={setPeriod}
-                  onDelete={(e) => removeEvents(classId, [e.id])}
+                  onDelete={(e, reason) => deleteEventWithLog(classId, e, reason)}
                   onSaveNote={(e, note) => setEventNote(classId, e.id, note)}
+                  deletions={myDeletions}
                 />
               )}
             </div>

@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Award, History, Settings2, Users } from "lucide-react";
+import { Award, BarChart3, History, Settings2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -17,6 +17,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Illustration } from "@/components/ui/illustration";
 import { panelCardClass } from "@/components/DashboardPage";
 import { confettiPresets } from "@/lib/confetti-presets";
 import { classColor } from "@/lib/grades-data";
@@ -26,10 +27,7 @@ import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
 import { AwardDialog } from "./AwardDialog";
-import {
-  AwardConfirmation,
-  type AwardConfirmationData,
-} from "./AwardConfirmation";
+import { showAwardToast } from "./award-toast";
 import { ClassReportDialog } from "./ClassReportDialog";
 import { PointsSheet } from "./PointsSheet";
 import { SkillFormDialog, type SkillType } from "./SkillFormDialog";
@@ -96,8 +94,6 @@ export default function BehaviorView({ classId }: { classId: string }) {
   }, [mounted, events, redemptions, classId]);
 
   const [target, setTarget] = React.useState<AwardTarget | null>(null);
-  const [confirmation, setConfirmation] = React.useState<AwardConfirmationData | null>(null);
-  const undoRef = React.useRef<{ eventIds: string[] } | null>(null);
 
   /* Tanlash rejimi: null = oʻchiq; Set = tanlangan oʻquvchi idlari. */
   const [selected, setSelected] = React.useState<Set<string> | null>(null);
@@ -152,14 +148,12 @@ export default function BehaviorView({ classId }: { classId: string }) {
       else confettiPresets.fromElement(el);
     }
 
-    undoRef.current = { eventIds };
-    setConfirmation({
-      key: eventIds.join(","),
+    showAwardToast({
       targetLabel: t.label,
-      count: eventIds.length,
       skillName: skill.name,
       emoji: skill.emoji,
       points: skill.points,
+      onUndo: () => removeEvents(classId, eventIds),
     });
     setSelected(null);
   };
@@ -180,11 +174,6 @@ export default function BehaviorView({ classId }: { classId: string }) {
     setActiveStudentId(null);
   };
 
-  const handleUndo = () => {
-    if (undoRef.current) removeEvents(classId, undoRef.current.eventIds);
-    undoRef.current = null;
-  };
-
   return (
     <Card className={panelCardClass}>
       {/* Panel header */}
@@ -193,11 +182,17 @@ export default function BehaviorView({ classId }: { classId: string }) {
           <Award aria-hidden />
         </SectionIcon>
         <div className="min-w-0 flex-1">
-          <h3 className="heading-small truncate">Xulq-atvor</h3>
-          <TypographyMuted className="text-xs">
-            Ball berish va ragʻbatlantirish
-          </TypographyMuted>
+          <CardTitle className="truncate">Xulq-atvor</CardTitle>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 shrink-0"
+          onClick={() => setReportOpen(true)}
+        >
+          <BarChart3 className="size-4" aria-hidden />
+          Hisobot
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -224,8 +219,8 @@ export default function BehaviorView({ classId }: { classId: string }) {
         {students.length === 0 ? (
           <Empty className="py-16">
             <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <Users />
+              <EmptyMedia>
+                <Illustration name="15" className="h-32 text-black dark:text-white" />
               </EmptyMedia>
               <EmptyTitle>Oʻquvchilar yoʻq</EmptyTitle>
               <EmptyDescription>
@@ -261,7 +256,7 @@ export default function BehaviorView({ classId }: { classId: string }) {
                 )}
               </span>
               <span className="w-full truncate text-center text-[13px] font-semibold leading-tight text-foreground">
-                Sinf
+                Butun sinf
               </span>
             </button>
 
@@ -346,10 +341,7 @@ export default function BehaviorView({ classId }: { classId: string }) {
         onOpenChange={setSheetOpen}
         classId={classId}
         students={students}
-        onOpenReport={() => {
-          setSheetOpen(false);
-          setReportOpen(true);
-        }}
+        classHex={hex}
       />
 
       <ClassReportDialog
@@ -360,13 +352,6 @@ export default function BehaviorView({ classId }: { classId: string }) {
         colorHex={hex}
       />
 
-      {confirmation && (
-        <AwardConfirmation
-          data={confirmation}
-          onUndo={handleUndo}
-          onDismiss={() => setConfirmation(null)}
-        />
-      )}
     </Card>
   );
 }

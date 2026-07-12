@@ -220,6 +220,25 @@ oʻngda **ghost X** tugmasi. Kanonik namuna: `AddStandardsModal.tsx`.
 
 ---
 
+## 8. Modal footeri (standart)
+
+Barcha modal footerlari **`px-6 py-4`** ishlatadi (24px yon, 16px tepa-past) —
+jahon amaliyoti (Radix/shadcn default, Material) shu balandlikda; `p-6`/`pt-4`
+kabi 24px vertikal padding footer'ni kerakidan baland qiladi.
+
+```jsx
+<DialogFooter className="px-6 py-4 border-t border-border bg-muted/20">
+  <Button variant="outline" onClick={onClose}>Bekor qilish</Button>
+  <Button onClick={submit}>Saqlash</Button>
+</DialogFooter>
+```
+
+- Chegara: `border-t border-border`, fon: `bg-muted/20` (sarlavha bilan bir xil qoʻshimcha yuza).
+- Toʻliq ekranli/scroll ichidagi modallarda `shrink-0` qoʻshing (footer siqilib qolmasin).
+- `sm:justify-between` — footer'da chap tomonda oʻchirish tugmasi boʻlsa.
+
+---
+
 ## Qoidalar
 
 1. Xom rang (`#hex`, `rgb()`) yoki ixtiyoriy `text-[13px]` ishlatmang — token/shkaladan.

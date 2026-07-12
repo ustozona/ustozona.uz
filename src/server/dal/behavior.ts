@@ -3,12 +3,14 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
+  behaviorDeletions,
   behaviorEvents,
   behaviorRedemptions,
   behaviorRewards,
   behaviorSkills,
   classes,
   students,
+  type BehaviorDeletionRow,
   type BehaviorEventRow,
   type BehaviorRedemptionRow,
   type BehaviorRewardRow,
@@ -20,6 +22,7 @@ import {
   DEFAULT_SKILL_DEFS,
   defaultRewardId,
   defaultSkillId,
+  type BehaviorDeletionLogEntry,
   type BehaviorEvent,
   type BehaviorRedemption,
   type BehaviorReward,
@@ -72,6 +75,7 @@ function rowToEvent(r: BehaviorEventRow): BehaviorEvent {
     date: r.date,
     createdAt: r.createdAt,
     ...(r.note ? { note: r.note } : {}),
+    ...(r.groupId ? { groupId: r.groupId } : {}),
   };
 }
 
@@ -93,11 +97,27 @@ function rowToRedemption(r: BehaviorRedemptionRow): BehaviorRedemption {
   };
 }
 
+function rowToDeletion(r: BehaviorDeletionRow): BehaviorDeletionLogEntry {
+  return {
+    id: r.id,
+    classId: r.classId,
+    studentId: r.studentId,
+    eventId: r.eventId,
+    name: r.name,
+    emoji: r.emoji,
+    points: r.points,
+    date: r.date,
+    ...(r.reason ? { reason: r.reason } : {}),
+    deletedAt: r.deletedAt,
+  };
+}
+
 export type BehaviorPayload = {
   skills: BehaviorSkill[];
   rewards: BehaviorReward[];
   eventsByClass: Record<string, BehaviorEvent[]>;
   redemptions: BehaviorRedemption[];
+  deletions: BehaviorDeletionLogEntry[];
 };
 
 async function seedDefaults(tid: string): Promise<void> {
@@ -137,7 +157,7 @@ export async function getBehaviorPayload(): Promise<BehaviorPayload> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
 
-  let [skillRows, rewardRows, eventRows, redemptionRows] = await Promise.all([
+  let [skillRows, rewardRows, eventRows, redemptionRows, deletionRows] = await Promise.all([
     db
       .select()
       .from(behaviorSkills)
@@ -153,6 +173,10 @@ export async function getBehaviorPayload(): Promise<BehaviorPayload> {
       .select()
       .from(behaviorRedemptions)
       .where(eq(behaviorRedemptions.teacherId, tid)),
+    db
+      .select()
+      .from(behaviorDeletions)
+      .where(eq(behaviorDeletions.teacherId, tid)),
   ]);
 
   // Yangi oʻqituvchi: 4 jadval ham boʻsh — defaultlarni serverda yaratamiz.
@@ -193,6 +217,9 @@ export async function getBehaviorPayload(): Promise<BehaviorPayload> {
     redemptions: redemptionRows
       .map(rowToRedemption)
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+    deletions: deletionRows
+      .map(rowToDeletion)
+      .sort((a, b) => a.deletedAt.localeCompare(b.deletedAt)),
   };
 }
 
@@ -275,7 +302,9 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
 
   /* 3. Sinf va oʻquvchi egaligi (events + redemptions uchun umumiy). */
   const needsOwnership =
-    batch.eventsUpsert.length > 0 || batch.redemptionsUpsert.length > 0;
+    batch.eventsUpsert.length > 0 ||
+    batch.redemptionsUpsert.length > 0 ||
+    batch.deletionsInsert.length > 0;
   let ownClasses = new Set<string>();
   let ownStudents = new Set<string>();
   if (needsOwnership) {
@@ -308,6 +337,7 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
           note: e.note,
           date: e.date,
           createdAt: e.createdAt,
+          groupId: e.groupId,
         }))
       )
       .onConflictDoUpdate({
@@ -367,5 +397,30 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
       .where(
         and(eq(behaviorRedemptions.teacherId, tid), inArray(behaviorRedemptions.id, part))
       );
+  }
+
+  /* 6. Oʻchirish jurnali — append-only, faqat insert (retry'da DoNothing). */
+  const deletionInserts = batch.deletionsInsert.filter(
+    (d) => ownClasses.has(d.classId) && ownStudents.has(d.studentId)
+  );
+  for (const part of chunks(deletionInserts)) {
+    await db
+      .insert(behaviorDeletions)
+      .values(
+        part.map((d) => ({
+          id: d.id,
+          teacherId: tid,
+          classId: d.classId,
+          studentId: d.studentId,
+          eventId: d.eventId,
+          name: d.name,
+          emoji: d.emoji,
+          points: d.points,
+          date: d.date,
+          reason: d.reason,
+          deletedAt: d.deletedAt,
+        }))
+      )
+      .onConflictDoNothing();
   }
 }

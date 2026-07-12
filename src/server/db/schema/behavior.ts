@@ -55,6 +55,8 @@ export const behaviorEvents = pgTable(
     note: text("note"),
     date: text("date").notNull(), // "YYYY-MM-DD"
     createdAt: text("created_at").notNull(), // ISO
+    /** Bitta awardPoints chaqiruvida 2+ oʻquvchiga birga berilgan boʻlsa — umumiy id (UI'da bitta qatorga birlashtirish uchun). */
+    groupId: text("group_id"),
   },
   (t) => [
     index("behavior_events_teacher_idx").on(t.teacherId),
@@ -107,7 +109,38 @@ export const behaviorRedemptions = pgTable(
   ]
 );
 
+export const behaviorDeletions = pgTable(
+  "behavior_deletions",
+  {
+    id: text("id").primaryKey(),
+    teacherId: text("teacher_id")
+      .notNull()
+      .references(() => teachers.id, { onDelete: "cascade" }),
+    classId: text("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    studentId: text("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    /** Oʻchirilgan eventning id'si — FK-siz, qator allaqachon oʻchirilgan. */
+    eventId: text("event_id").notNull(),
+    /* ── event snapshot'i (jurnal mustaqil oʻqilsin) ── */
+    name: text("name").notNull(),
+    emoji: text("emoji").notNull(),
+    points: integer("points").notNull(),
+    date: text("date").notNull(), // event sanasi "YYYY-MM-DD"
+    /* ──────────────────────────────────────────────── */
+    reason: text("reason"),
+    deletedAt: text("deleted_at").notNull(), // ISO
+  },
+  (t) => [
+    index("behavior_deletions_teacher_idx").on(t.teacherId),
+    index("behavior_deletions_class_idx").on(t.classId),
+  ]
+);
+
 export type BehaviorSkillRow = typeof behaviorSkills.$inferSelect;
 export type BehaviorEventRow = typeof behaviorEvents.$inferSelect;
 export type BehaviorRewardRow = typeof behaviorRewards.$inferSelect;
 export type BehaviorRedemptionRow = typeof behaviorRedemptions.$inferSelect;
+export type BehaviorDeletionRow = typeof behaviorDeletions.$inferSelect;

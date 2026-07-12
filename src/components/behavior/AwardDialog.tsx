@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { Award, ThumbsDown, ThumbsUp } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
+  DialogHeaderBar,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { BehaviorSkill } from "@/lib/behavior-data";
@@ -59,25 +59,29 @@ export function AwardDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
+      <DialogContent showCloseButton={false} className="gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeaderBar icon={<Award className="size-[18px]" aria-hidden />} title={title} />
 
         {both ? (
           <Tabs defaultValue="positive">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="positive">Ijobiy</TabsTrigger>
-              <TabsTrigger value="negative">Salbiy</TabsTrigger>
+            <TabsList variant="line" className="w-full border-b border-border px-6">
+              <TabsTrigger value="positive">
+                <ThumbsUp />
+                Ijobiy
+              </TabsTrigger>
+              <TabsTrigger value="negative">
+                <ThumbsDown />
+                Salbiy
+              </TabsTrigger>
             </TabsList>
-            <TabsContent value="positive" className="mt-4">
+            <TabsContent value="positive" className="p-6">
               <SkillGrid
                 skills={positive}
                 onSelect={onSelect}
                 onAdd={onAddSkill && (() => onAddSkill("positive"))}
               />
             </TabsContent>
-            <TabsContent value="negative" className="mt-4">
+            <TabsContent value="negative" className="p-6">
               <SkillGrid
                 skills={negative}
                 onSelect={onSelect}
@@ -86,14 +90,16 @@ export function AwardDialog({
             </TabsContent>
           </Tabs>
         ) : (
-          <SkillGrid
-            skills={skills}
-            onSelect={onSelect}
-            onAdd={
-              onAddSkill &&
-              (() => onAddSkill(negative.length > 0 ? "negative" : "positive"))
-            }
-          />
+          <div className="p-6">
+            <SkillGrid
+              skills={skills}
+              onSelect={onSelect}
+              onAdd={
+                onAddSkill &&
+                (() => onAddSkill(negative.length > 0 ? "negative" : "positive"))
+              }
+            />
+          </div>
         )}
       </DialogContent>
     </Dialog>

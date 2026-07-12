@@ -273,7 +273,7 @@ export default function EffectiveDateDialog({
           )}
         </div>
 
-        <DialogFooter className="border-t border-border bg-muted/20 px-5 py-4">
+        <DialogFooter className="border-t border-border bg-muted/20 px-6 py-4">
           <Button variant="outline" onClick={onCancel}>
             Bekor qilish
           </Button>

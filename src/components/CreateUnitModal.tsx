@@ -144,7 +144,7 @@ export default function CreateUnitModal({
           </div>
         </div>
 
-        <DialogFooter className="p-6 pt-4 border-t bg-muted/20">
+        <DialogFooter className="px-6 py-4 border-t bg-muted/20">
           <Button variant="outline" onClick={onClose}>Bekor qilish</Button>
           <Button onClick={submit} disabled={!canSubmit}>Boʻlim yaratish</Button>
         </DialogFooter>

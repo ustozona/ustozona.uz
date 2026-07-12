@@ -1,0 +1,1 @@
+ALTER TABLE "behavior_events" ADD COLUMN "group_id" text;

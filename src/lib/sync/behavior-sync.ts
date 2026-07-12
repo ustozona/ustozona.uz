@@ -1,4 +1,5 @@
 import type {
+  BehaviorDeletionLogEntry,
   BehaviorEvent,
   BehaviorRedemption,
   BehaviorReward,
@@ -30,6 +31,8 @@ export type BehaviorSnapshot = {
   rewards: BehaviorReward[];
   eventsByClass: Record<string, BehaviorEvent[]>;
   redemptions: BehaviorRedemption[];
+  /** Append-only jurnal — diff faqat yangi qoʻshilganlarni insert qiladi. */
+  deletions: BehaviorDeletionLogEntry[];
 };
 
 function toSkillUpsert(s: BehaviorSkill, sortOrder: number): SkillUpsert {
@@ -56,6 +59,7 @@ function toEventUpsert(classId: string, e: BehaviorEvent): EventUpsert {
     note: e.note ?? null,
     date: e.date,
     createdAt: e.createdAt,
+    groupId: e.groupId ?? null,
   };
 }
 
@@ -138,6 +142,30 @@ function diffRedemptions(
   for (const r of prev) if (!nextIds.has(r.id)) batch.redemptionsDelete.push(r.id);
 }
 
+/** Append-only jurnal: prev'da yoʻq idlar insert boʻladi (delete hech qachon). */
+function diffDeletions(
+  prev: BehaviorDeletionLogEntry[],
+  next: BehaviorDeletionLogEntry[],
+  batch: BehaviorBatch
+): void {
+  const prevIds = new Set(prev.map((d) => d.id));
+  for (const d of next) {
+    if (prevIds.has(d.id)) continue;
+    batch.deletionsInsert.push({
+      id: d.id,
+      classId: d.classId,
+      studentId: d.studentId,
+      eventId: d.eventId,
+      name: d.name,
+      emoji: d.emoji,
+      points: d.points,
+      date: d.date,
+      reason: d.reason ?? null,
+      deletedAt: d.deletedAt,
+    });
+  }
+}
+
 export function diffBehavior(
   prev: BehaviorSnapshot,
   next: BehaviorSnapshot
@@ -146,7 +174,8 @@ export function diffBehavior(
     prev.skills === next.skills &&
     prev.rewards === next.rewards &&
     prev.eventsByClass === next.eventsByClass &&
-    prev.redemptions === next.redemptions
+    prev.redemptions === next.redemptions &&
+    prev.deletions === next.deletions
   ) {
     return null;
   }
@@ -167,6 +196,9 @@ export function diffBehavior(
   }
   if (prev.redemptions !== next.redemptions) {
     diffRedemptions(prev.redemptions, next.redemptions, batch);
+  }
+  if (prev.deletions !== next.deletions) {
+    diffDeletions(prev.deletions, next.deletions, batch);
   }
 
   return isEmptyBehaviorBatch(batch) ? null : batch;
