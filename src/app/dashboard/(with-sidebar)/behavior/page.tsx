@@ -11,7 +11,7 @@ export default function BehaviorPage() {
 
   return (
     <div className="flex flex-1 min-w-0 h-full min-h-0 gap-6 overflow-hidden p-4 md:p-6">
-      <div className="hidden lg:block w-[280px] shrink-0 h-full">
+      <div className="hidden lg:block w-[280px] shrink-0 h-full" data-tour="behavior-classes">
         <ClassListPanel
           page="behavior"
           selectedClassId={selectedClassId ?? ""}

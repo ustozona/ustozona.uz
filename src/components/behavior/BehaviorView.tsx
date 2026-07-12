@@ -189,6 +189,7 @@ export default function BehaviorView({ classId }: { classId: string }) {
           size="sm"
           className="h-8 shrink-0"
           onClick={() => setReportOpen(true)}
+          data-tour="behavior-report"
         >
           <BarChart3 className="size-4" aria-hidden />
           Hisobot
@@ -198,6 +199,7 @@ export default function BehaviorView({ classId }: { classId: string }) {
           size="sm"
           className="h-8 shrink-0"
           onClick={() => setSheetOpen(true)}
+          data-tour="behavior-points"
         >
           <History className="size-4" aria-hidden />
           Ballar
@@ -230,7 +232,10 @@ export default function BehaviorView({ classId }: { classId: string }) {
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <div
+            className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+            data-tour="behavior-grid"
+          >
             {/* "Sinf" kartasi — butun sinfga ball berish; rejimda disabled */}
             <button
               type="button"

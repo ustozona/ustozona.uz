@@ -16,6 +16,7 @@ import {
   CheckCircle,
   CircleCheck,
   ChevronRight,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -48,6 +49,7 @@ const TOUR_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   planner: BookOpen,
   lessons: FileText,
   attendance: ClipboardCheck,
+  behavior: Award,
   grades: BarChart2,
   standards: Target,
   tasks: CheckCircle,

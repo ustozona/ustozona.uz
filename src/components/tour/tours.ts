@@ -15,7 +15,12 @@
    oʻrniga mustaqil illyustratsiya).
    ════════════════════════════════════════════════════════════════════ */
 
-export type TourMock = "timetableDrag" | "timetablePick" | "lessonsCalendar" | "tasksCalendar";
+export type TourMock =
+  | "timetableDrag"
+  | "timetablePick"
+  | "lessonsCalendar"
+  | "tasksCalendar"
+  | "behaviorMultiSelect";
 
 export type TourStep = {
   title: string;
@@ -258,6 +263,42 @@ export const TOURS: readonly TourDef[] = [
         title: "Holatlarni sozlash",
         body: "Ushbu tugma Sozlamalar > Davomat boʻlimini ochadi. U yerdan davomat holatlarini yoqib-oʻchirishingiz hamda ularning umumiy davomat foiziga taʼsirini (ulushini) belgilashingiz mumkin.",
         target: '[data-tour="attendance-config"]',
+        placement: "bottom",
+      },
+    ],
+  },
+  {
+    id: "behavior",
+    route: "/dashboard/behavior",
+    label: "Xulq-atvor",
+    steps: [
+      {
+        title: "Sinflaringiz",
+        body: "Ball berish uchun avval biror sinfni tanlang. Bu yerda xuddi davomat va jurnal kabi bitta sinf ochiq turadi.",
+        target: '[data-tour="behavior-classes"]',
+        placement: "right",
+      },
+      {
+        title: "Ball berish",
+        body: "Oʻquvchi kartochkasini bosib unga alohida ball bering yoki \"Butun sinf\" kartasidan hammaga birdaniga bering.",
+        target: '[data-tour="behavior-grid"]',
+        placement: "left",
+      },
+      {
+        title: "Bir nechtasiga birga bering",
+        body: "Kartochkaga sichqonchani olib borsangiz burchakda doiracha chiqadi — shu orqali bir nechta oʻquvchini tanlab, ularga bittada ball berishingiz mumkin.",
+        mock: "behaviorMultiSelect",
+      },
+      {
+        title: "Sinf hisoboti",
+        body: "Butun sinf yoki bitta oʻquvchi boʻyicha davr kesimidagi ijobiy/salbiy ballar taqsimotini shu yerdan koʻrasiz.",
+        target: '[data-tour="behavior-report"]',
+        placement: "bottom",
+      },
+      {
+        title: "Ballar tarixi",
+        body: "Barcha berilgan ballarning toʻliq xronologik roʻyxati — kerak boʻlsa yozuvni oʻchirish yoki izoh qoldirish uchun ham shu yerdan.",
+        target: '[data-tour="behavior-points"]',
         placement: "bottom",
       },
     ],
