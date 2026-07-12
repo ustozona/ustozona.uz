@@ -49,7 +49,7 @@ function SettingsPageInner() {
 
   return (
     <div className="h-full min-h-0 p-4 md:p-6">
-      <Card className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-0 overflow-hidden py-0">
+      <Card className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col gap-0 overflow-hidden py-0">
         {/* Sahifa sarlavhasi — tab qatori bilan birga qotib turadi */}
         <div className="flex shrink-0 items-start justify-between gap-3 px-5 pt-5 md:px-6 md:pt-6">
           <div className="flex items-center gap-3">
@@ -82,7 +82,7 @@ function SettingsPageInner() {
           >
             <TabsList
               variant="line"
-              className="w-full justify-start gap-1 overflow-x-auto p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="justify-start gap-1 overflow-x-auto p-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {SECTIONS.map((s) => (
                 <TabsTrigger

@@ -114,7 +114,7 @@ export default function BehaviorTab({
           <div className="p-5">
             {myEvents.length === 0 ? (
               <TypographyMuted className="text-sm">
-                Hali ball berilmagan — sinf sahifasidagi &quot;Xulq&quot; boʻlimidan
+                Hali ball berilmagan — sinf sahifasidagi &quot;Xulq-atvor&quot; boʻlimidan
                 boshlang.
               </TypographyMuted>
             ) : (

@@ -18,7 +18,7 @@ export const CLASS_SECTIONS = [
   { key: "students",   label: "O'quvchilar", subtitle: "Ro'yxat va profillar",        icon: Users },
   { key: "grades",     label: "Baholar",     subtitle: "Jurnal va o'zlashtirish",     icon: BarChart3 },
   { key: "attendance", label: "Davomat",     subtitle: "Kunlik yo'qlama",             icon: ClipboardCheck },
-  { key: "behavior",   label: "Xulq",        subtitle: "Ballar va rag'bat",           icon: Award },
+  { key: "behavior",   label: "Xulq-atvor",  subtitle: "Ballar va rag'bat",           icon: Award },
   { key: "standards",  label: "Standartlar", subtitle: "Dastur standartlari",         icon: Target },
 ] as const;
 

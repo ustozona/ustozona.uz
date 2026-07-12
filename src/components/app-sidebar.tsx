@@ -54,7 +54,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard/planner", label: "Rejalashtiruvchi", icon: BookOpen },
   { href: "/dashboard/lessons", label: "Darslar", icon: FileText },
   { href: "/dashboard/attendance", label: "Davomat", icon: ClipboardCheck },
-  { href: "/dashboard/behavior", label: "Xulq", icon: Award },
+  { href: "/dashboard/behavior", label: "Xulq-atvor", icon: Award },
   { href: "/dashboard/grades", label: "Jurnal", icon: BarChart2 },
   { href: "/dashboard/standards", label: "Standartlar", icon: Target },
   { href: "/dashboard/tasks", label: "Vazifalar", icon: CheckCircle, badgeKey: "tasks" },

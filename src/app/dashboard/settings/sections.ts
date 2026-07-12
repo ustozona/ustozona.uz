@@ -63,7 +63,7 @@ export const SECTIONS: SectionDef[] = [
   },
   {
     id: "xulq",
-    label: "Xulq",
+    label: "Xulq-atvor",
     subtitle: "Koʻnikmalar va ragʻbat doʻkoni",
     icon: Award,
     Component: dynamic(() => import("./_components/BehaviorSection")),

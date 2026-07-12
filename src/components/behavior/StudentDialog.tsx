@@ -277,7 +277,7 @@ function ShopPanel({
       <div className="space-y-2">
         {rewards.length === 0 ? (
           <TypographyMuted className="text-sm">
-            Doʻkon boʻsh — Sozlamalar &gt; Xulq boʻlimida mukofot qoʻshing.
+            Doʻkon boʻsh — Sozlamalar &gt; Xulq-atvor boʻlimida mukofot qoʻshing.
           </TypographyMuted>
         ) : (
           rewards.map((r) => {

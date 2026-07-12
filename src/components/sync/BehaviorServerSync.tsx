@@ -33,7 +33,7 @@ export default function BehaviorServerSync() {
       select: selectSnapshot,
       diff: diffBehavior,
       push: syncBehaviorAction,
-      errorMessage: "Xulq ballari serverga saqlanmadi",
+      errorMessage: "Xulq-atvor ballari serverga saqlanmadi",
     });
     return sync.stop;
   }, [hydrated]);

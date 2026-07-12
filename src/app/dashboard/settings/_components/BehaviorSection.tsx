@@ -19,7 +19,10 @@ import { SaveSignalPing, SettingsGroup } from "./SettingsShared";
    Store'ga toʻgʻridan-toʻgʻri yoziladi (yagona manba), sync avtomatik.
    Tahrir/oʻchirish eski yozuvlarga taʼsir qilmaydi — eventlar snapshot. */
 
-const GRID_CLASS = "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4";
+/* auto-fill/minmax — konteyner kengligiga qarab (viewport emas) moslashadi,
+   shu sababli sidebar ochilib-yopilganda ustunlar soni ham darhol qayta
+   hisoblanadi (fixed sm:/md: breakpointlarida bu ishlamas edi). */
+const GRID_CLASS = "grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-3";
 
 export default function BehaviorSection() {
   const skills = useBehaviorStore((s) => s.skills);

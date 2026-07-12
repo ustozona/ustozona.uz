@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Trash2 } from "lucide-react";
+import { Gift, Minus, Plus, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,14 +17,14 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  DialogHeaderBar,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { uid, type BehaviorReward } from "@/lib/behavior-data";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
-import { EmojiPalette } from "./EmojiPalette";
+import { EmojiPickerButton } from "./EmojiPickerButton";
 
 /* Mukofot formasi — qoʻshish/tahrirlash/oʻchirish (SkillFormDialog
    qolipi). Narx = ball (1–10000, sync zod chegarasi bilan mos).
@@ -96,14 +96,17 @@ export function RewardFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {reward ? "Mukofotni tahrirlash" : "Yangi mukofot"}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent showCloseButton={false} className="gap-0 p-0 sm:max-w-lg">
+          <DialogHeaderBar
+            icon={<Gift className="size-[18px]" aria-hidden />}
+            title={reward ? "Mukofotni tahrirlash" : "Yangi mukofot"}
+          />
 
-          <div className="space-y-4">
+          <div className="space-y-4 p-6">
+            <div className="flex justify-center">
+              <EmojiPickerButton value={emoji} onChange={setEmoji} size="lg" />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="bh-reward-name">Nom</Label>
               <Input
@@ -117,28 +120,46 @@ export function RewardFormDialog({
 
             <div className="space-y-2">
               <Label htmlFor="bh-reward-cost">Narxi (ball)</Label>
-              <Input
-                id="bh-reward-cost"
-                type="number"
-                inputMode="numeric"
-                min={COST_MIN}
-                max={COST_MAX}
-                value={cost}
-                onChange={(e) => setCost(e.target.value)}
-                className="w-32"
-              />
+              <div className="flex h-9 w-32 items-stretch overflow-hidden rounded-md border border-border">
+                <button
+                  type="button"
+                  aria-label="Kamaytirish"
+                  onClick={() => setCost(String(Math.max(COST_MIN, (parsedCost || 0) - 1)))}
+                  className="flex w-7 shrink-0 items-center justify-center border-r border-border bg-muted/40 text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  <Minus className="size-3.5" aria-hidden />
+                </button>
+                <Input
+                  id="bh-reward-cost"
+                  type="number"
+                  inputMode="numeric"
+                  min={COST_MIN}
+                  max={COST_MAX}
+                  value={cost}
+                  onChange={(e) => setCost(e.target.value)}
+                  className="h-7 min-w-0 flex-1 border-none bg-transparent px-0 text-center font-semibold tabular-nums shadow-none [appearance:textfield] focus-visible:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+                <button
+                  type="button"
+                  aria-label="Koʻpaytirish"
+                  onClick={() => setCost(String(Math.min(COST_MAX, (parsedCost || 0) + 1)))}
+                  className="flex w-7 shrink-0 items-center justify-center border-l border-border bg-muted/40 text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  <Plus className="size-3.5" aria-hidden />
+                </button>
+              </div>
               <p className="text-caption">
                 Oʻquvchi shuncha ball toʻplaganda almashtira oladi.
               </p>
             </div>
-
-            <div className="space-y-2">
-              <Label>Emoji</Label>
-              <EmojiPalette value={emoji} onChange={setEmoji} />
-            </div>
           </div>
 
-          <DialogFooter className={reward ? "sm:justify-between" : undefined}>
+          <DialogFooter
+            className={cn(
+              "border-t border-border bg-muted/20 p-6 pt-4",
+              reward ? "sm:justify-between" : undefined
+            )}
+          >
             {reward && (
               <Button
                 variant="ghost"

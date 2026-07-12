@@ -229,7 +229,7 @@ export default function StudentProfile({
     { id: "overview", label: "Umumiy", sub: "Baho, davomat va koʻrsatkichlar", icon: BarChart3 },
     { id: "assignments", label: "Topshiriqlar", sub: "Ishlar va natijalar", icon: ClipboardList, count: profile.assignments.length },
     { id: "notes", label: "Qaydlar", sub: "Kuzatuvlar va eslatmalar", icon: StickyNote, count: notes.length },
-    { id: "behavior", label: "Xulq", sub: "Ballar va ragʻbat", icon: Award },
+    { id: "behavior", label: "Xulq-atvor", sub: "Ballar va ragʻbat", icon: Award },
   ];
 
   return (

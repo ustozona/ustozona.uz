@@ -193,7 +193,7 @@ export default function BehaviorView({ classId }: { classId: string }) {
           <Award aria-hidden />
         </SectionIcon>
         <div className="min-w-0 flex-1">
-          <h3 className="heading-small truncate">Xulq</h3>
+          <h3 className="heading-small truncate">Xulq-atvor</h3>
           <TypographyMuted className="text-xs">
             Ball berish va ragʻbatlantirish
           </TypographyMuted>

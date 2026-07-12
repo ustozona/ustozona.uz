@@ -3,36 +3,15 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { AppleEmojiSprite as AppleEmoji } from "@/components/ui/apple-emoji";
+import {
+  EmojiPicker,
+  EmojiPickerContent,
+  EmojiPickerFooter,
+  EmojiPickerSearch,
+} from "@/components/ui/emoji-picker";
 import { SmilePlus } from "lucide-react";
 import type { EmojiReaction } from "@/store/useFeedbackStore";
-import EmojiPickerPanel from "./EmojiPickerPanel";
-
-/** Emoji belgisini emoji-datasource-apple fayl nomiga (unified) aylantiradi. */
-function toUnified(emoji: string): string {
-  return [...emoji].map((c) => c.codePointAt(0)!.toString(16)).join("-");
-}
-
-/** Apple emoji rasmi (CDN sprite). Yuklanmasa native emojiga qaytadi. */
-function AppleEmoji({ emoji, className }: { emoji: string; className?: string }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <span className={cn("inline-flex items-center justify-center leading-none", className)}>
-        {emoji}
-      </span>
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={`https://cdn.jsdelivr.net/npm/emoji-datasource-apple@15.1.2/img/apple/64/${toUnified(emoji)}.png`}
-      alt={emoji}
-      draggable={false}
-      className={cn("inline-block object-contain", className)}
-      onError={() => setFailed(true)}
-    />
-  );
-}
 
 /** Telegram/Slack-uslub hover tez-reaksiya toʻplami. */
 const QUICK_REACTIONS = ["❤️", "👍", "🔥", "🎉", "😂", "🙏"];
@@ -107,14 +86,18 @@ export function QuickReactionBar({
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="w-auto p-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+          className="w-fit p-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
         >
-          <EmojiPickerPanel
-            onPick={(emoji) => {
+          <EmojiPicker
+            onEmojiSelect={({ emoji }) => {
               onToggle(emoji);
               setOpen(false);
             }}
-          />
+          >
+            <EmojiPickerSearch />
+            <EmojiPickerContent />
+            <EmojiPickerFooter />
+          </EmojiPicker>
         </PopoverContent>
       </Popover>
     </div>
