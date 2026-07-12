@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import {
   User,
   Palette,
+  Award,
   BarChart2,
   CheckSquare,
   Clock,
@@ -59,6 +60,13 @@ export const SECTIONS: SectionDef[] = [
     subtitle: "Statuslar va taʼsir",
     icon: CheckSquare,
     Component: dynamic(() => import("./_components/AttendanceSection")),
+  },
+  {
+    id: "xulq",
+    label: "Xulq",
+    subtitle: "Koʻnikmalar va ragʻbat doʻkoni",
+    icon: Award,
+    Component: dynamic(() => import("./_components/BehaviorSection")),
   },
   {
     id: "jurnal",

@@ -13,3 +13,4 @@ export * from "./standards";
 export * from "./notes";
 export * from "./notifications";
 export * from "./feedback";
+export * from "./behavior";

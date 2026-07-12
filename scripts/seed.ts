@@ -7,7 +7,9 @@ import { APIError } from "better-auth/api";
 import * as schema from "@/server/db/schema";
 import { CLASS_DATA } from "@/lib/grades-data";
 import { BUILTIN_STATUSES } from "@/lib/attendance-data";
+import { defaultSkills, defaultRewards } from "@/lib/behavior-data";
 import { demoAttendanceRecords, demoTimetableEvents } from "./demo-attendance";
+import { demoBehaviorData } from "./demo-behavior";
 import { resolveDefaultLinks } from "@/lib/relations";
 import { UNITS, LESSONS } from "@/lib/lessons-data";
 import { DEFAULT_CALENDAR_2025_2026 } from "@/lib/academic-calendar";
@@ -125,6 +127,14 @@ async function main() {
     .delete(schema.notifications)
     .where(eq(schema.notifications.teacherId, userId));
   await db.delete(schema.feedback).where(eq(schema.feedback.teacherId, userId));
+  // Xulq: events/redemptions classes CASCADE bilan ketadi, skills/rewards
+  // teacher-scoped (class FK yoʻq) — alohida tozalanadi.
+  await db
+    .delete(schema.behaviorSkills)
+    .where(eq(schema.behaviorSkills.teacherId, userId));
+  await db
+    .delete(schema.behaviorRewards)
+    .where(eq(schema.behaviorRewards.teacherId, userId));
   console.log("Eski demo qatorlar tozalandi.");
 
   /* ── 3. Jurnal domeni: CLASS_DATA dan ────────────────────────────── */
@@ -242,6 +252,72 @@ async function main() {
   }
   await insertChunked("attendance_records", recordRows, (b) =>
     db.insert(schema.attendanceRecords).values(b)
+  );
+
+  /* ── 4.4. Xulq: default koʻnikma/mukofotlar + ~6 hafta event ─────── */
+  // Id'lar DAL server-side seed bilan bir xil (bhs-{slug}-{teacherId}) —
+  // demo teacher birinchi fetch'da qayta seed olmaydi (jadvallar boʻsh emas).
+  const nowIso = new Date().toISOString();
+  const skillRows = defaultSkills(userId).map((s, i) => ({
+    id: s.id,
+    teacherId: userId,
+    name: s.name,
+    emoji: s.emoji,
+    points: s.points,
+    description: s.description ?? null,
+    sortOrder: i,
+    updatedAt: nowIso,
+  }));
+  await insertChunked("behavior_skills", skillRows, (b) =>
+    db.insert(schema.behaviorSkills).values(b)
+  );
+
+  const rewardRows = defaultRewards(userId).map((r, i) => ({
+    id: r.id,
+    teacherId: userId,
+    name: r.name,
+    emoji: r.emoji,
+    cost: r.cost,
+    sortOrder: i,
+    updatedAt: nowIso,
+  }));
+  await insertChunked("behavior_rewards", rewardRows, (b) =>
+    db.insert(schema.behaviorRewards).values(b)
+  );
+
+  const behavior = demoBehaviorData(userId);
+  const behaviorEventRows = behavior.events.map((e) => ({
+    id: e.id,
+    teacherId: userId,
+    classId: e.classId,
+    studentId: e.studentId,
+    skillId: e.skillId ?? null,
+    name: e.name,
+    emoji: e.emoji,
+    points: e.points,
+    description: e.description ?? null,
+    note: e.note ?? null,
+    date: e.date,
+    createdAt: e.createdAt,
+  }));
+  await insertChunked("behavior_events", behaviorEventRows, (b) =>
+    db.insert(schema.behaviorEvents).values(b)
+  );
+
+  const behaviorRedemptionRows = behavior.redemptions.map((r) => ({
+    id: r.id,
+    teacherId: userId,
+    classId: r.classId,
+    studentId: r.studentId,
+    rewardId: r.rewardId ?? null,
+    name: r.name,
+    emoji: r.emoji,
+    cost: r.cost,
+    date: r.date,
+    createdAt: r.createdAt,
+  }));
+  await insertChunked("behavior_redemptions", behaviorRedemptionRows, (b) =>
+    db.insert(schema.behaviorRedemptions).values(b)
   );
 
   /* ── 4.5. Rejalashtirish domeni: darslar banki, jadval, kalendar ── */
@@ -368,6 +444,10 @@ async function main() {
     ["grades", await db.select({ count: count() }).from(schema.grades).where(eq(schema.grades.teacherId, userId))],
     ["attendance_statuses", await db.select({ count: count() }).from(schema.attendanceStatuses).where(eq(schema.attendanceStatuses.teacherId, userId))],
     ["attendance_records", await db.select({ count: count() }).from(schema.attendanceRecords).where(eq(schema.attendanceRecords.teacherId, userId))],
+    ["behavior_skills", await db.select({ count: count() }).from(schema.behaviorSkills).where(eq(schema.behaviorSkills.teacherId, userId))],
+    ["behavior_events", await db.select({ count: count() }).from(schema.behaviorEvents).where(eq(schema.behaviorEvents.teacherId, userId))],
+    ["behavior_rewards", await db.select({ count: count() }).from(schema.behaviorRewards).where(eq(schema.behaviorRewards.teacherId, userId))],
+    ["behavior_redemptions", await db.select({ count: count() }).from(schema.behaviorRedemptions).where(eq(schema.behaviorRedemptions.teacherId, userId))],
     ["student_relations", await db.select({ count: count() }).from(schema.studentRelations).where(eq(schema.studentRelations.teacherId, userId))],
     ["tasks", await db.select({ count: count() }).from(schema.tasks).where(eq(schema.tasks.teacherId, userId))],
     ["standard_sets", await db.select({ count: count() }).from(schema.standardSets).where(eq(schema.standardSets.teacherId, userId))],

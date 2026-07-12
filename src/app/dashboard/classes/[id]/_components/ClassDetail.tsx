@@ -22,6 +22,7 @@ import { LessonsSection } from "./LessonsSection";
 import { StudentsSection } from "./StudentsSection";
 import { GradesSection } from "./GradesSection";
 import { AttendanceSection } from "./AttendanceSection";
+import { BehaviorSection } from "./BehaviorSection";
 import { StandardsSection } from "./StandardsSection";
 import { PlannerSection } from "./PlannerSection";
 import { CLASS_SECTIONS, type ClassSection } from "./sections";
@@ -251,6 +252,8 @@ export default function ClassDetail({ identity, initialSection }: Props) {
           <GradesSection identity={identity} />
         ) : section === "attendance" ? (
           <AttendanceSection identity={identity} />
+        ) : section === "behavior" ? (
+          <BehaviorSection identity={identity} />
         ) : section === "standards" ? (
           <StandardsSection identity={identity} />
         ) : section === "planner" ? (

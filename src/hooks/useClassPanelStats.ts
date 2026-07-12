@@ -4,11 +4,13 @@ import { useLessonStore } from '@/store/useLessonStore';
 import { useGradesStore } from '@/store/useGradesStore';
 import { useAttendanceStore } from '@/store/useAttendanceStore';
 import { useTaskStore } from '@/store/useTaskStore';
+import { useBehaviorStore } from '@/store/useBehaviorStore';
 import { studentStats } from '@/lib/attendance-data';
+import { classBalance } from '@/lib/behavior-data';
 import { classSummativeAverage } from '@/lib/grades-stats';
 import { useStandardsStore } from '@/store/useStandardsStore';
 
-export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "tasks";
+export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "tasks" | "behavior";
 
 export function useClassPanelStats(page: Page, classId: string): {
   items: { value: number | string; label: string }[];
@@ -18,6 +20,8 @@ export function useClassPanelStats(page: Page, classId: string): {
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const attendanceRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
   const tasksAll = useTaskStore((s) => s.tasks);
+  const behaviorEvents = useBehaviorStore((s) => s.eventsByClass[classId]);
+  const behaviorRedemptions = useBehaviorStore((s) => s.redemptions);
   const lessonUnits = useLessonStore((s) => s.units);
   const lessonsAll = useLessonStore((s) => s.lessons);
   const standardSets = useStandardsStore((s) => s.sets);
@@ -119,6 +123,26 @@ export function useClassPanelStats(page: Page, classId: string): {
           progress: { value: coveragePercent, label: "Qamrov" }
         };
       }
+      case 'behavior': {
+        // Eventlar — useBehaviorStore; SSR mismatch boʻlmasligi uchun mount'dan keyin.
+        if (!mounted) return undefined;
+        const events = behaviorEvents ?? [];
+        const classRedemptions = behaviorRedemptions.filter((r) => r.classId === classId);
+        const balance = classBalance(events, classRedemptions);
+
+        let positive = 0;
+        for (const e of events) if (e.points > 0) positive += 1;
+        const positivePct = events.length ? Math.round((positive / events.length) * 100) : 0;
+
+        return {
+          items: [
+            { value: balance, label: "Balans" },
+            { value: positive, label: "Ijobiy" },
+            { value: events.length - positive, label: "Salbiy" },
+          ],
+          progress: { value: positivePct, label: "Ijobiy ulushi" },
+        };
+      }
       case 'tasks': {
         const classTasks = tasksAll.filter((t) => t.classIds.includes(classId));
         if (classTasks.length === 0) return undefined;
@@ -137,5 +161,5 @@ export function useClassPanelStats(page: Page, classId: string): {
       default:
         return undefined;
     }
-  }, [page, classId, classDataMap, attendanceRecords, tasksAll, lessonUnits, lessonsAll, standardSets, mounted]);
+  }, [page, classId, classDataMap, attendanceRecords, tasksAll, lessonUnits, lessonsAll, standardSets, behaviorEvents, behaviorRedemptions, mounted]);
 }

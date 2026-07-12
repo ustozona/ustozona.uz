@@ -36,7 +36,7 @@ const ATT_ICONS = {
 const TREND_GRANULARITIES: Granularity[] = ["weekly", "monthly", "quarterly"];
 const ATTENDANCE_GRANULARITIES: Granularity[] = ["weekly", "monthly", "quarterly", "yearly"];
 
-function KpiCard({
+export function KpiCard({
   label, value, sub, color, icon,
 }: {
   label: string;

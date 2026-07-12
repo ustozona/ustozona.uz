@@ -16,6 +16,7 @@ import RelationsServerSync from "@/components/sync/RelationsServerSync";
 import ClassPrefsServerSync from "@/components/sync/ClassPrefsServerSync";
 import NotificationsServerSync from "@/components/sync/NotificationsServerSync";
 import FeedbackServerSync from "@/components/sync/FeedbackServerSync";
+import BehaviorServerSync from "@/components/sync/BehaviorServerSync";
 import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
 import OnboardingGate from "@/components/onboarding/OnboardingGate";
 import TourProvider from "@/components/tour/TourProvider";
@@ -43,6 +44,7 @@ export default function DashboardLayout({
       <ClassPrefsServerSync />
       <NotificationsServerSync />
       <FeedbackServerSync />
+      <BehaviorServerSync />
       <LegacyStorageCleanup />
       <OnboardingGate />
       <TourProvider />

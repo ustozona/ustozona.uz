@@ -1,0 +1,371 @@
+import "server-only";
+import { and, asc, eq, inArray } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import { db } from "@/server/db/client";
+import {
+  behaviorEvents,
+  behaviorRedemptions,
+  behaviorRewards,
+  behaviorSkills,
+  classes,
+  students,
+  type BehaviorEventRow,
+  type BehaviorRedemptionRow,
+  type BehaviorRewardRow,
+  type BehaviorSkillRow,
+} from "@/server/db/schema";
+import { requireTeacher } from "@/server/session";
+import {
+  DEFAULT_REWARD_DEFS,
+  DEFAULT_SKILL_DEFS,
+  defaultRewardId,
+  defaultSkillId,
+  type BehaviorEvent,
+  type BehaviorRedemption,
+  type BehaviorReward,
+  type BehaviorSkill,
+} from "@/lib/behavior-data";
+import type { BehaviorBatch } from "@/lib/sync/behavior-batch";
+
+/* ════════════════════════════════════════════════════════════════════
+   BEHAVIOR DAL — useBehaviorStore'ning server tomoni.
+
+   Oʻqish: 4 jadval parallel → frontend {skills, rewards, eventsByClass,
+   redemptions} shakli. 4 jadval ham boʻsh boʻlsa defaultlar SERVER-SIDE
+   seed qilinadi (deterministik id + onConflictDoNothing) — attendance
+   mergeStatuses tryuki bu yerda ishlamaydi, chunki roʻyxat tahrirlanadi
+   (qoʻshish/oʻchirish mumkin).
+
+   Yozish: attendance DAL qoidalari — tranzaksiyasiz (neon-http),
+   idempotent upsert, PK global id boʻlgani uchun setWhere teacher
+   egaligini himoya qiladi; events/redemptions uchun class/student
+   egaligi oldindan filtrlash.
+   ════════════════════════════════════════════════════════════════════ */
+
+const CHUNK = 400;
+
+function chunks<T>(rows: T[]): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < rows.length; i += CHUNK) out.push(rows.slice(i, i + CHUNK));
+  return out;
+}
+
+function rowToSkill(r: BehaviorSkillRow): BehaviorSkill {
+  return {
+    id: r.id,
+    name: r.name,
+    emoji: r.emoji,
+    points: r.points,
+    ...(r.description ? { description: r.description } : {}),
+  };
+}
+
+function rowToEvent(r: BehaviorEventRow): BehaviorEvent {
+  return {
+    id: r.id,
+    studentId: r.studentId,
+    ...(r.skillId ? { skillId: r.skillId } : {}),
+    name: r.name,
+    emoji: r.emoji,
+    ...(r.description ? { description: r.description } : {}),
+    points: r.points,
+    date: r.date,
+    createdAt: r.createdAt,
+    ...(r.note ? { note: r.note } : {}),
+  };
+}
+
+function rowToReward(r: BehaviorRewardRow): BehaviorReward {
+  return { id: r.id, name: r.name, emoji: r.emoji, cost: r.cost };
+}
+
+function rowToRedemption(r: BehaviorRedemptionRow): BehaviorRedemption {
+  return {
+    id: r.id,
+    classId: r.classId,
+    studentId: r.studentId,
+    ...(r.rewardId ? { rewardId: r.rewardId } : {}),
+    name: r.name,
+    emoji: r.emoji,
+    cost: r.cost,
+    date: r.date,
+    createdAt: r.createdAt,
+  };
+}
+
+export type BehaviorPayload = {
+  skills: BehaviorSkill[];
+  rewards: BehaviorReward[];
+  eventsByClass: Record<string, BehaviorEvent[]>;
+  redemptions: BehaviorRedemption[];
+};
+
+async function seedDefaults(tid: string): Promise<void> {
+  const now = new Date().toISOString();
+  await db
+    .insert(behaviorSkills)
+    .values(
+      DEFAULT_SKILL_DEFS.map((s, i) => ({
+        id: defaultSkillId(s.slug, tid),
+        teacherId: tid,
+        name: s.name,
+        emoji: s.emoji,
+        points: s.points,
+        description: s.description ?? null,
+        sortOrder: i,
+        updatedAt: now,
+      }))
+    )
+    .onConflictDoNothing();
+  await db
+    .insert(behaviorRewards)
+    .values(
+      DEFAULT_REWARD_DEFS.map((r, i) => ({
+        id: defaultRewardId(r.slug, tid),
+        teacherId: tid,
+        name: r.name,
+        emoji: r.emoji,
+        cost: r.cost,
+        sortOrder: i,
+        updatedAt: now,
+      }))
+    )
+    .onConflictDoNothing();
+}
+
+export async function getBehaviorPayload(): Promise<BehaviorPayload> {
+  const teacher = await requireTeacher();
+  const tid = teacher.id;
+
+  let [skillRows, rewardRows, eventRows, redemptionRows] = await Promise.all([
+    db
+      .select()
+      .from(behaviorSkills)
+      .where(eq(behaviorSkills.teacherId, tid))
+      .orderBy(asc(behaviorSkills.sortOrder)),
+    db
+      .select()
+      .from(behaviorRewards)
+      .where(eq(behaviorRewards.teacherId, tid))
+      .orderBy(asc(behaviorRewards.sortOrder)),
+    db.select().from(behaviorEvents).where(eq(behaviorEvents.teacherId, tid)),
+    db
+      .select()
+      .from(behaviorRedemptions)
+      .where(eq(behaviorRedemptions.teacherId, tid)),
+  ]);
+
+  // Yangi oʻqituvchi: 4 jadval ham boʻsh — defaultlarni serverda yaratamiz.
+  if (
+    skillRows.length === 0 &&
+    rewardRows.length === 0 &&
+    eventRows.length === 0 &&
+    redemptionRows.length === 0
+  ) {
+    await seedDefaults(tid);
+    [skillRows, rewardRows] = await Promise.all([
+      db
+        .select()
+        .from(behaviorSkills)
+        .where(eq(behaviorSkills.teacherId, tid))
+        .orderBy(asc(behaviorSkills.sortOrder)),
+      db
+        .select()
+        .from(behaviorRewards)
+        .where(eq(behaviorRewards.teacherId, tid))
+        .orderBy(asc(behaviorRewards.sortOrder)),
+    ]);
+  }
+
+  const eventsByClass: Record<string, BehaviorEvent[]> = {};
+  for (const r of eventRows) {
+    (eventsByClass[r.classId] ??= []).push(rowToEvent(r));
+  }
+  // Append-only tartib deterministik boʻlsin (createdAt boʻyicha).
+  for (const arr of Object.values(eventsByClass)) {
+    arr.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  }
+
+  return {
+    skills: skillRows.map(rowToSkill),
+    rewards: rewardRows.map(rowToReward),
+    eventsByClass,
+    redemptions: redemptionRows
+      .map(rowToRedemption)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+  };
+}
+
+export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
+  const teacher = await requireTeacher();
+  const tid = teacher.id;
+  const now = new Date().toISOString();
+
+  /* 1. Koʻnikmalar — PK global id, setWhere begona qatorni himoya qiladi. */
+  for (const part of chunks(batch.skillsUpsert)) {
+    await db
+      .insert(behaviorSkills)
+      .values(
+        part.map((s) => ({
+          id: s.id,
+          teacherId: tid,
+          name: s.name,
+          emoji: s.emoji,
+          points: s.points,
+          description: s.description,
+          sortOrder: s.sortOrder,
+          updatedAt: now,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: behaviorSkills.id,
+        set: {
+          name: sql`excluded.name`,
+          emoji: sql`excluded.emoji`,
+          points: sql`excluded.points`,
+          description: sql`excluded.description`,
+          sortOrder: sql`excluded.sort_order`,
+          updatedAt: now,
+        },
+        setWhere: eq(behaviorSkills.teacherId, tid),
+      });
+  }
+  if (batch.skillsDelete.length > 0) {
+    await db
+      .delete(behaviorSkills)
+      .where(
+        and(eq(behaviorSkills.teacherId, tid), inArray(behaviorSkills.id, batch.skillsDelete))
+      );
+  }
+
+  /* 2. Mukofotlar. */
+  for (const part of chunks(batch.rewardsUpsert)) {
+    await db
+      .insert(behaviorRewards)
+      .values(
+        part.map((r) => ({
+          id: r.id,
+          teacherId: tid,
+          name: r.name,
+          emoji: r.emoji,
+          cost: r.cost,
+          sortOrder: r.sortOrder,
+          updatedAt: now,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: behaviorRewards.id,
+        set: {
+          name: sql`excluded.name`,
+          emoji: sql`excluded.emoji`,
+          cost: sql`excluded.cost`,
+          sortOrder: sql`excluded.sort_order`,
+          updatedAt: now,
+        },
+        setWhere: eq(behaviorRewards.teacherId, tid),
+      });
+  }
+  if (batch.rewardsDelete.length > 0) {
+    await db
+      .delete(behaviorRewards)
+      .where(
+        and(eq(behaviorRewards.teacherId, tid), inArray(behaviorRewards.id, batch.rewardsDelete))
+      );
+  }
+
+  /* 3. Sinf va oʻquvchi egaligi (events + redemptions uchun umumiy). */
+  const needsOwnership =
+    batch.eventsUpsert.length > 0 || batch.redemptionsUpsert.length > 0;
+  let ownClasses = new Set<string>();
+  let ownStudents = new Set<string>();
+  if (needsOwnership) {
+    const [classRows, studentRows] = await Promise.all([
+      db.select({ id: classes.id }).from(classes).where(eq(classes.teacherId, tid)),
+      db.select({ id: students.id }).from(students).where(eq(students.teacherId, tid)),
+    ]);
+    ownClasses = new Set(classRows.map((r) => r.id));
+    ownStudents = new Set(studentRows.map((r) => r.id));
+  }
+
+  /* 4. Eventlar (append-only ledger; upsert — izoh tahriri uchun ham). */
+  const eventUpserts = batch.eventsUpsert.filter(
+    (e) => ownClasses.has(e.classId) && ownStudents.has(e.studentId)
+  );
+  for (const part of chunks(eventUpserts)) {
+    await db
+      .insert(behaviorEvents)
+      .values(
+        part.map((e) => ({
+          id: e.id,
+          teacherId: tid,
+          classId: e.classId,
+          studentId: e.studentId,
+          skillId: e.skillId,
+          name: e.name,
+          emoji: e.emoji,
+          points: e.points,
+          description: e.description,
+          note: e.note,
+          date: e.date,
+          createdAt: e.createdAt,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: behaviorEvents.id,
+        set: {
+          name: sql`excluded.name`,
+          emoji: sql`excluded.emoji`,
+          points: sql`excluded.points`,
+          description: sql`excluded.description`,
+          note: sql`excluded.note`,
+          date: sql`excluded.date`,
+        },
+        setWhere: eq(behaviorEvents.teacherId, tid),
+      });
+  }
+  for (const part of chunks(batch.eventsDelete)) {
+    await db
+      .delete(behaviorEvents)
+      .where(and(eq(behaviorEvents.teacherId, tid), inArray(behaviorEvents.id, part)));
+  }
+
+  /* 5. Sarflashlar. */
+  const redemptionUpserts = batch.redemptionsUpsert.filter(
+    (r) => ownClasses.has(r.classId) && ownStudents.has(r.studentId)
+  );
+  for (const part of chunks(redemptionUpserts)) {
+    await db
+      .insert(behaviorRedemptions)
+      .values(
+        part.map((r) => ({
+          id: r.id,
+          teacherId: tid,
+          classId: r.classId,
+          studentId: r.studentId,
+          rewardId: r.rewardId,
+          name: r.name,
+          emoji: r.emoji,
+          cost: r.cost,
+          date: r.date,
+          createdAt: r.createdAt,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: behaviorRedemptions.id,
+        set: {
+          name: sql`excluded.name`,
+          emoji: sql`excluded.emoji`,
+          cost: sql`excluded.cost`,
+          date: sql`excluded.date`,
+        },
+        setWhere: eq(behaviorRedemptions.teacherId, tid),
+      });
+  }
+  for (const part of chunks(batch.redemptionsDelete)) {
+    await db
+      .delete(behaviorRedemptions)
+      .where(
+        and(eq(behaviorRedemptions.teacherId, tid), inArray(behaviorRedemptions.id, part))
+      );
+  }
+}

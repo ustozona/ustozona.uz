@@ -30,15 +30,16 @@ import RelativesSection from "./RelativesSection";
 import OverviewTab from "./OverviewTab";
 import AssignmentsTab from "./AssignmentsTab";
 import NotesTab, { type Note, type Sentiment } from "./NotesTab";
+import BehaviorTab from "./BehaviorTab";
 import CreateStudentModal, { type NewStudentInput } from "../../_components/CreateStudentModal";
 import { toast } from "sonner";
 import {
   ChevronsUpDown, ChevronLeft, ChevronRight, ArrowLeft, Check, AlertTriangle,
   Phone, MessageCircle, Pen, BarChart3, ClipboardList,
-  StickyNote, Cake, Mars, Venus,
+  StickyNote, Cake, Mars, Venus, Award,
 } from "lucide-react";
 
-type TabId = "overview" | "assignments" | "notes";
+type TabId = "overview" | "assignments" | "notes" | "behavior";
 
 const UZ_MONTHS = [
   "yanvar", "fevral", "mart", "aprel", "may", "iyun",
@@ -55,7 +56,7 @@ function seedNotes(grade: number, riskLevel: string, name: string): Note[] {
   return [];
 }
 
-const TAB_IDS: TabId[] = ["overview", "assignments", "notes"];
+const TAB_IDS: TabId[] = ["overview", "assignments", "notes", "behavior"];
 function normalizeTab(t?: string): TabId {
   return TAB_IDS.includes(t as TabId) ? (t as TabId) : "overview";
 }
@@ -228,6 +229,7 @@ export default function StudentProfile({
     { id: "overview", label: "Umumiy", sub: "Baho, davomat va koʻrsatkichlar", icon: BarChart3 },
     { id: "assignments", label: "Topshiriqlar", sub: "Ishlar va natijalar", icon: ClipboardList, count: profile.assignments.length },
     { id: "notes", label: "Qaydlar", sub: "Kuzatuvlar va eslatmalar", icon: StickyNote, count: notes.length },
+    { id: "behavior", label: "Xulq", sub: "Ballar va ragʻbat", icon: Award },
   ];
 
   return (
@@ -465,6 +467,9 @@ export default function StudentProfile({
               <div className="pb-6 pr-4 md:pr-6">
                 <TabsContent value="overview"><OverviewTab profile={profile} /></TabsContent>
                 <TabsContent value="notes"><NotesTab notes={notes} onAdd={addNote} /></TabsContent>
+                <TabsContent value="behavior">
+                  <BehaviorTab classId={location.classId} studentId={studentId} />
+                </TabsContent>
               </div>
             </ScrollArea>
           )}

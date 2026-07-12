@@ -84,7 +84,8 @@ function demoLessonDays(classId: string): LessonDay[] {
 
 // Barqaror psevdo-tasodif (seed) — har oʻquvchining "ishonchliligi" turlicha
 // boʻlsin, davomat foizlari realistik tarqalsin (~60–100%), bir xil emas.
-function seeded(seed: number): () => number {
+// demo-behavior.ts ham shu generatorni ishlatadi (bitta manba).
+export function seeded(seed: number): () => number {
   let s = seed % 2147483647;
   if (s <= 0) s += 2147483646;
   return () => (s = (s * 16807) % 2147483647) / 2147483647;
