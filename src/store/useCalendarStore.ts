@@ -7,19 +7,26 @@ import {
   type DateRange,
   type Holiday,
 } from "@/lib/academic-calendar";
+import type { AcademicYearEntry } from "@/lib/academic-years";
 
 /* ════════════════════════════════════════════════════════════════════
-   OʻQUV YILI KALENDARI STORE — server-backed (6-bosqich migratsiyasi)
+   OʻQUV YILI KALENDARI STORE — server-backed, koʻp-yil (1-bosqich)
 
-   Bitta joriy oʻquv yili: chegaralar, 4 chorak, taʼtillar. Yangi
-   foydalanuvchi BOʻSH kalendar (EMPTY_CALENDAR) bilan boshlaydi —
-   onboarding sehrgari yoki Sozlamalar → "Oʻquv yili" toʻldiradi.
+   `years` — barcha oʻquv yillari (har biri alohida yozuv). `calendar` —
+   FAOL yilning KOʻZGUSI: oʻnlab mavjud `s.calendar` selektorlari va
+   `getCurrentCalendar()` shu sabab OʻZGARMAYDI. Mavjud mutatorlar
+   (setYearRange, addHoliday…) faol yil yozuviga write-through qiladi
+   (mirror + years bir vaqtda yangilanadi).
 
-   Manba endi Postgres: `CalendarServerSync` (dashboard layout)
-   hydration + snapshot-sync qiladi (hujjat bitta — diff shart emas).
-   localStorage persist OLIB TASHLANDI — eski `ustozona-calendar-v1`
-   kaliti endi oʻqilmaydi (9-bosqichda tozalanadi). Serverda satr yoʻq
-   boʻlsa store DEFAULT bilan qoladi.
+   Yangi mutatorlar:
+   - addYear(calendar): roʻyxatga qoʻshadi + faollashtiradi (almashtirmaydi).
+   - activateYear(id): boshqa yilni faollashtiradi (arxivni koʻrish).
+   - deleteYear(id): faol BOʻLMAGAN yilni oʻchiradi.
+
+   Manba Postgres: `CalendarServerSync` hydration (fetchYears) + snapshot
+   sync (saveYears — butun `years` roʻyxatini yuboradi). Serverda satr
+   yoʻq boʻlsa store BOʻSH (`years: []`, `calendar: EMPTY_CALENDAR`) qoladi
+   va eager-seed bitta faol yil yaratadi.
    ════════════════════════════════════════════════════════════════════ */
 
 function uid(): string {
@@ -27,13 +34,27 @@ function uid(): string {
   return `id-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
 }
 
+/** Faol yil kalendarini `nextCalendar`ga yozadi va mirror'ni yangilaydi.
+    Faol yil boʻlmasa (degenerativ holat) faqat mirror yangilanadi. */
+function writeActive(
+  s: { years: AcademicYearEntry[] },
+  nextCalendar: AcademicYearCalendar
+): { years: AcademicYearEntry[]; calendar: AcademicYearCalendar } {
+  return {
+    years: s.years.map((y) => (y.isActive ? { ...y, calendar: nextCalendar } : y)),
+    calendar: nextCalendar,
+  };
+}
+
 interface CalendarState {
+  years: AcademicYearEntry[];
+  /** Faol yilning koʻzgusi (isteʼmolchilar shu maydonni oʻqiydi). */
   calendar: AcademicYearCalendar;
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 
-  /** Butun kalendarni birdaniga oʻrnatadi (onboarding sehrgari yilni
-      tanlab makeCalendarForYear natijasini yozadi). */
+  /** Faol yil kalendarini butunligicha almashtiradi (onboarding tasdigʻi,
+      eager-seed). Faol yil boʻlmasa — birinchi faol yilni yaratadi. */
   setCalendar: (calendar: AcademicYearCalendar) => void;
   setYearLabel: (label: string) => void;
   setYearRange: (range: DateRange) => void;
@@ -42,52 +63,70 @@ interface CalendarState {
   addHoliday: (name: string, range: DateRange) => string;
   updateHoliday: (id: string, patch: Partial<Omit<Holiday, "id">>) => void;
   removeHoliday: (id: string) => void;
-  /** Joriy oʻquv yilini rasmiy shablon (4 chorak + 3 taʼtil) bilan qayta tiklaydi —
-      yil sarlavhasi hardcoded emas, joriy kalendar boshlanish yilidan hisoblanadi. */
+  /** Faol oʻquv yilini rasmiy shablon (4 chorak + 3 taʼtil) bilan qayta tiklaydi. */
   resetToOfficialTemplate: () => void;
+
+  /** Yangi oʻquv yili — roʻyxatga qoʻshadi va FAOL qiladi (eskisini
+      oʻchirmaydi). Yaratilgan yil id'sini qaytaradi. */
+  addYear: (calendar: AcademicYearCalendar) => string;
+  /** Boshqa (mavjud) yilni faollashtiradi — davomat/planner oynasi oʻsha
+      yilga koʻchadi. */
+  activateYear: (id: string) => void;
+  /** Faol BOʻLMAGAN yilni oʻchiradi (faol yil oʻchirilmaydi). */
+  deleteYear: (id: string) => void;
 }
 
 export const useCalendarStore = create<CalendarState>()((set) => ({
+  years: [],
   calendar: EMPTY_CALENDAR,
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),
 
-  setCalendar: (calendar) => set({ calendar }),
+  setCalendar: (calendar) =>
+    set((s) => {
+      if (s.years.some((y) => y.isActive)) return writeActive(s, calendar);
+      // Faol yil yoʻq — birinchi faol yilni yaratamiz (mirror bilan).
+      const entry: AcademicYearEntry = { id: uid(), isActive: true, calendar };
+      return { years: [...s.years, entry], calendar };
+    }),
 
   setYearLabel: (label) =>
-    set((s) => ({ calendar: { ...s.calendar, yearLabel: label } })),
+    set((s) => writeActive(s, { ...s.calendar, yearLabel: label })),
 
   setYearRange: (range) =>
-    set((s) => ({ calendar: { ...s.calendar, range } })),
+    set((s) => writeActive(s, { ...s.calendar, range })),
 
   setQuarterRange: (id, range) =>
-    set((s) => ({
-      calendar: {
+    set((s) =>
+      writeActive(s, {
         ...s.calendar,
         quarters: s.calendar.quarters.map((q) => (q.id === id ? { ...q, range } : q)),
-      },
-    })),
+      })
+    ),
 
   addHoliday: (name, range) => {
     const id = uid();
-    set((s) => ({
-      calendar: { ...s.calendar, holidays: [...s.calendar.holidays, { id, name, range }] },
-    }));
+    set((s) =>
+      writeActive(s, { ...s.calendar, holidays: [...s.calendar.holidays, { id, name, range }] })
+    );
     return id;
   },
 
   updateHoliday: (id, patch) =>
-    set((s) => ({
-      calendar: {
+    set((s) =>
+      writeActive(s, {
         ...s.calendar,
         holidays: s.calendar.holidays.map((h) => (h.id === id ? { ...h, ...patch } : h)),
-      },
-    })),
+      })
+    ),
 
   removeHoliday: (id) =>
-    set((s) => ({
-      calendar: { ...s.calendar, holidays: s.calendar.holidays.filter((h) => h.id !== id) },
-    })),
+    set((s) =>
+      writeActive(s, {
+        ...s.calendar,
+        holidays: s.calendar.holidays.filter((h) => h.id !== id),
+      })
+    ),
 
   resetToOfficialTemplate: () =>
     set((s) => {
@@ -95,13 +134,38 @@ export const useCalendarStore = create<CalendarState>()((set) => ({
         ? Number(s.calendar.range.start.slice(0, 4)) -
           (Number(s.calendar.range.start.slice(5, 7)) >= 6 ? 0 : 1)
         : currentAcademicStartYear();
-      return { calendar: makeCalendarForYear(startYear) };
+      return writeActive(s, makeCalendarForYear(startYear));
+    }),
+
+  addYear: (calendar) => {
+    const id = uid();
+    set((s) => ({
+      years: [...s.years.map((y) => ({ ...y, isActive: false })), { id, isActive: true, calendar }],
+      calendar,
+    }));
+    return id;
+  },
+
+  activateYear: (id) =>
+    set((s) => {
+      const target = s.years.find((y) => y.id === id);
+      if (!target || target.isActive) return s;
+      return {
+        years: s.years.map((y) => ({ ...y, isActive: y.id === id })),
+        calendar: target.calendar,
+      };
+    }),
+
+  deleteYear: (id) =>
+    set((s) => {
+      const target = s.years.find((y) => y.id === id);
+      if (!target || target.isActive) return s; // faol yil oʻchirilmaydi
+      return { years: s.years.filter((y) => y.id !== id) };
     }),
 }));
 
-/** Joriy kalendarni React'siz oʻqish — hook boʻlmagan kod (student-profile,
-    timetable seed) uchun. Eski readCalendarFromStorage oʻrnini bosadi:
-    manba localStorage emas, server-backed store. */
+/** Joriy (FAOL) kalendarni React'siz oʻqish — hook boʻlmagan kod
+    (student-profile, timetable seed) uchun. Manba: faol yil koʻzgusi. */
 export function getCurrentCalendar(): AcademicYearCalendar {
   return useCalendarStore.getState().calendar;
 }

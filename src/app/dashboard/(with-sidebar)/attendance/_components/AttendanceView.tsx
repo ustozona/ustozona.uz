@@ -18,6 +18,8 @@ import {
 import { statusVisual } from "@/components/attendance/status-visual";
 import AttendanceSettingsModal from "@/components/attendance/AttendanceSettingsModal";
 import { getQuarterForMonth, inRange, isCalendarConfigured } from "@/lib/academic-calendar";
+import { resolveVersionForDate } from "@/lib/timetable-versions";
+import TimetableCoverageBanner from "@/components/timetable/TimetableCoverageBanner";
 import Link from "next/link";
 import { todayKey } from "@/lib/date-keys";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
@@ -355,6 +357,14 @@ export default function AttendanceView({
     !demoMode &&
     isCalendarConfigured(calendar) &&
     (today < calendar.range.start || today > calendar.range.end);
+  // Jadval faol yil boshini qoplamaydimi (eng erta versiya yil boshidan keyin)?
+  // Shu holatda yil boshidagi dars kunlari boʻsh koʻrinadi — banner tuzatish taklif qiladi.
+  const scheduleGapAtStart =
+    !demoMode &&
+    isCalendarConfigured(calendar) &&
+    versions.length > 0 &&
+    !resolveVersionForDate(versions, calendar.range.start);
+  const showBanners = todayOutsideCalendar || scheduleGapAtStart;
 
   useEffect(() => {
     if (!demoMode) return;
@@ -519,19 +529,24 @@ export default function AttendanceView({
   return (
     <>
       {/* Main panel */}
-      <div className="flex-1 min-w-0 min-h-0 grid gap-3" data-tour="attendance-heatmap" style={{ minHeight: 0, gridTemplateRows: todayOutsideCalendar ? "auto 1fr" : "1fr" }}>
-        {todayOutsideCalendar && (
-          <Alert variant="info">
-            <AlertTriangle className="size-4" aria-hidden />
-            <AlertTitle>Bugun tanlangan oʻquv yildan tashqarida</AlertTitle>
-            <AlertDescription>
-              Bugungi sana ({today}) faol kalendar ({calendar.yearLabel || "joriy yil"}) diapazonidan
-              tashqarida — shuning uchun ayrim oylarda dars kuni koʻrinmasligi mumkin.{" "}
-              <Link href="/dashboard/settings?section=oquv-yili" className="font-medium underline underline-offset-2">
-                Oʻquv yili sozlamalariga oʻtish
-              </Link>
-            </AlertDescription>
-          </Alert>
+      <div className="flex-1 min-w-0 min-h-0 grid gap-3" data-tour="attendance-heatmap" style={{ minHeight: 0, gridTemplateRows: showBanners ? "auto 1fr" : "1fr" }}>
+        {showBanners && (
+          <div className="grid gap-3">
+            {todayOutsideCalendar && (
+              <Alert variant="info">
+                <AlertTriangle className="size-4" aria-hidden />
+                <AlertTitle>Bugun tanlangan oʻquv yildan tashqarida</AlertTitle>
+                <AlertDescription>
+                  Bugungi sana ({today}) faol kalendar ({calendar.yearLabel || "joriy yil"}) diapazonidan
+                  tashqarida — shuning uchun ayrim oylarda dars kuni koʻrinmasligi mumkin.{" "}
+                  <Link href="/dashboard/settings?section=oquv-yili" className="font-medium underline underline-offset-2">
+                    Oʻquv yili sozlamalariga oʻtish
+                  </Link>
+                </AlertDescription>
+              </Alert>
+            )}
+            {scheduleGapAtStart && <TimetableCoverageBanner />}
+          </div>
         )}
         <Card className={cn("min-w-0", panelCardClass)} style={{ height: "100%" }}>
           {/* Header */}

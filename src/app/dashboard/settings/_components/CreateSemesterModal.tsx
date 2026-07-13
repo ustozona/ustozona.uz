@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarPlus, Sparkles, CopyPlus, CalendarRange, CalendarOff } from "lucide-react";
+import { CalendarPlus, Sparkles, CopyPlus, CalendarRange, CalendarOff, TriangleAlert } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeaderBar, DialogFooter, DialogClose,
 } from "@/components/ui/dialog";
@@ -14,6 +14,7 @@ import {
   makeCalendarForRange, shiftCalendarYears, isCalendarConfigured,
   type AcademicYearCalendar, type DateRange,
 } from "@/lib/academic-calendar";
+import { applyYearActivationSideEffects } from "@/lib/year-side-effects";
 import YearStrip from "./YearStrip";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -26,8 +27,8 @@ import YearStrip from "./YearStrip";
         yangi yilga suriladi (shiftCalendarYears), oʻqituvchi moslamalari
         saqlanadi. Joriy kalendar sozlanmagan boʻlsa oʻchirilgan.
 
-   Yaratish joriy kalendarni almashtiradi (ilova bitta joriy oʻquv yili
-   bilan ishlaydi) — CalendarServerSync serverga sinxronlaydi.
+   Yaratish yangi oʻquv yilini roʻyxatga QOʻSHADI va FAOL qiladi (eskisini
+   almashtirmaydi) — CalendarServerSync serverga sinxronlaydi.
    ════════════════════════════════════════════════════════════════════ */
 
 type Mode = "fresh" | "copy";
@@ -45,7 +46,8 @@ export default function CreateSemesterModal({
   onOpenChange: (v: boolean) => void;
 }) {
   const current = useCalendarStore((s) => s.calendar);
-  const setCalendar = useCalendarStore((s) => s.setCalendar);
+  const years = useCalendarStore((s) => s.years);
+  const addYear = useCalendarStore((s) => s.addYear);
   const canCopy = isCalendarConfigured(current);
 
   // Standart: joriy yildan keyingi oʻquv yili (sozlangan boʻlsa), aks holda bugungi asosda.
@@ -85,9 +87,28 @@ export default function CreateSemesterModal({
 
   const valid = Boolean(range.start && range.end && range.end > range.start);
 
+  // Mavjud yillar bilan davr kesishuvi — bloklamaydi, faqat ogohlantiradi
+  // (bir sana ikki yilga tegishli boʻlishi mumkin, lekin odatda xato).
+  const overlaps = React.useMemo(
+    () =>
+      valid
+        ? years.filter(
+            (y) =>
+              y.calendar.range.start &&
+              y.calendar.range.end &&
+              y.calendar.range.start <= range.end &&
+              range.start <= y.calendar.range.end
+          )
+        : [],
+    [years, range, valid]
+  );
+
   const handleCreate = () => {
     if (!valid) return;
-    setCalendar(preview);
+    // Almashtirmaydi — roʻyxatga qoʻshadi va faollashtiradi.
+    addYear(preview);
+    // Jadval yil boshini qoplasin + bugun yangi yil ichida boʻlsa xulq langari surilsin.
+    applyYearActivationSideEffects(preview);
     onOpenChange(false);
   };
 
@@ -204,8 +225,17 @@ export default function CreateSemesterModal({
                     <p className="mt-1 text-[10px] text-muted-foreground">Taʼtil</p>
                   </div>
                 </div>
+                {overlaps.length > 0 && (
+                  <div className="flex items-start gap-1.5 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning">
+                    <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+                    <span>
+                      Bu davr {overlaps.map((y) => y.calendar.yearLabel || "nomsiz yil").join(", ")}
+                      {" "}bilan kesishadi. Yaratsa boʻladi, lekin sanalar ikki yilga tegishli boʻladi.
+                    </span>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">
-                  Yaratgach joriy oʻquv yilini almashtiradi. Choraklar va taʼtillarni keyin «Oʻquv yili» sozlamalarida aniqlashtirasiz.
+                  Yaratgach yangi oʻquv yili qoʻshiladi va FAOL boʻladi — eski yil roʻyxatda qoladi. Choraklar va taʼtillarni keyin «Oʻquv yili» sozlamalarida aniqlashtirasiz.
                 </p>
               </div>
             ) : (

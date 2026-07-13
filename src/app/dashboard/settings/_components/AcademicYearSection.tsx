@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { TrashIcon, Plus, RotateCcw, TriangleAlert, CalendarPlus } from "lucide-react";
+import { TrashIcon, Plus, RotateCcw, TriangleAlert, CalendarPlus, CalendarCheck, History } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import {
   AlertDialog,
@@ -25,9 +26,12 @@ import {
   fmtDayMonthUz,
   diffDaysKeys,
   findAdjacentHoliday,
+  inRange,
+  isCalendarConfigured,
   type CalendarIssue,
   type DateRange,
 } from "@/lib/academic-calendar";
+import { applyYearActivationSideEffects } from "@/lib/year-side-effects";
 import { todayKey, addDaysKey } from "@/lib/date-keys";
 import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
 import YearStrip from "./YearStrip";
@@ -75,6 +79,151 @@ function quickHolidays(startYear: number): { name: string; dateKey: string }[] {
     const year = h.month >= 6 ? startYear : startYear + 1;
     return { name: h.name, dateKey: `${year}-${String(h.month).padStart(2, "0")}-${String(h.day).padStart(2, "0")}` };
   });
+}
+
+/** Yil davri yorligʻi: "2-sentabr — 25-may" (boʻsh boʻlsa maʼlumot). */
+function periodLabel(range: DateRange): string {
+  return range.start && range.end
+    ? `${fmtDayMonthUz(range.start)} — ${fmtDayMonthUz(range.end)}`
+    : "Davr belgilanmagan";
+}
+
+/** Yil almashtirgich — barcha oʻquv yillari roʻyxati (faol badge, faollashtirish,
+    oʻchirish). Bitta yil boʻlsa koʻrsatilmaydi (bitta-yilli foydalanuvchi farq
+    sezmasin). Faollashtirish davomat/planner oynasini oʻsha yilga koʻchiradi. */
+function YearSwitcher() {
+  const years = useCalendarStore((s) => s.years);
+  const activateYear = useCalendarStore((s) => s.activateYear);
+  const deleteYear = useCalendarStore((s) => s.deleteYear);
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
+
+  if (years.length <= 1) return null;
+
+  const handleActivate = (id: string) => {
+    const target = years.find((y) => y.id === id);
+    if (!target) return;
+    activateYear(id);
+    applyYearActivationSideEffects(target.calendar);
+    toast.success(`${target.calendar.yearLabel || "Yil"} faollashtirildi`);
+  };
+
+  const pending = years.find((y) => y.id === deleteId) ?? null;
+
+  return (
+    <>
+      <SettingsCard
+        title="Oʻquv yillari"
+        description="Faol yil davomat, planner va choraklik statistikaning qamrov oynasini belgilaydi. Boshqa yilni faollashtirib arxivni koʻrishingiz mumkin."
+      >
+        <div className="space-y-2">
+          {years.map((y) => (
+            <div
+              key={y.id}
+              className={cn(
+                "flex flex-wrap items-center gap-3 rounded-lg border px-4 py-3 transition-colors",
+                y.isActive ? "border-primary/40 bg-primary/5" : "border-border bg-card"
+              )}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-foreground">
+                    {y.calendar.yearLabel || "Nomsiz yil"}
+                  </span>
+                  {y.isActive && (
+                    <Badge variant="secondary" className="gap-1 text-[10px]">
+                      <CalendarCheck className="size-3" />
+                      Faol
+                    </Badge>
+                  )}
+                </div>
+                <p className="mt-0.5 text-xs text-muted-foreground">{periodLabel(y.calendar.range)}</p>
+              </div>
+              {!y.isActive && (
+                <div className="flex items-center gap-1.5">
+                  <Button variant="outline" size="sm" onClick={() => handleActivate(y.id)}>
+                    Faollashtirish
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Yilni oʻchirish"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => setDeleteId(y.id)}
+                  >
+                    <TrashIcon className="size-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </SettingsCard>
+
+      <AlertDialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Oʻquv yilini oʻchirish?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pending
+                ? `«${pending.calendar.yearLabel || "Nomsiz yil"}» yil yozuvi oʻchiriladi. Davomat, baho va xulq yozuvlari (sana bilan bogʻlangan) OʻCHMAYDI — faqat bu yil oynasi olib tashlanadi.`
+                : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteId) deleteYear(deleteId);
+                setDeleteId(null);
+              }}
+            >
+              Oʻchirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
+/** Bugungi sana faol yildan tashqarida boʻlsa banner — foydalanuvchi arxiv/kelgusi
+    yilni koʻrayotganini eslatadi. Bugunni qamrovchi yil mavjud boʻlsa "joriy yilga
+    qaytish" tugmasi oʻsha yilni faollashtiradi. */
+function ArchiveYearBanner() {
+  const years = useCalendarStore((s) => s.years);
+  const calendar = useCalendarStore((s) => s.calendar);
+  const activateYear = useCalendarStore((s) => s.activateYear);
+  const today = todayKey();
+
+  if (!isCalendarConfigured(calendar)) return null;
+  if (inRange(today, calendar.range)) return null; // faol yil bugunni qamraydi — banner shart emas
+
+  const todayYear = years.find((y) => !y.isActive && inRange(today, y.calendar.range));
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3">
+      <History className="size-4 shrink-0 text-warning" />
+      <p className="min-w-0 flex-1 text-sm text-warning">
+        Siz {calendar.yearLabel || "boshqa"} yilni koʻrmoqdasiz — bugungi sana ({fmtDayMonthUz(today)})
+        bu yil davridan tashqarida.
+      </p>
+      {todayYear && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={() => {
+            activateYear(todayYear.id);
+            applyYearActivationSideEffects(todayYear.calendar);
+            toast.success(`${todayYear.calendar.yearLabel || "Joriy yil"} faollashtirildi`);
+          }}
+        >
+          Joriy yilga qaytish
+        </Button>
+      )}
+    </div>
+  );
 }
 
 export default function AcademicYearSection() {
@@ -178,6 +327,9 @@ export default function AcademicYearSection() {
 
   return (
     <>
+      <ArchiveYearBanner />
+      <YearSwitcher />
+
       <SettingsCard
         title={`Oʻquv yili · ${calendar.yearLabel}`}
         description="Chorak va taʼtil kunlari tizimdagi barcha jarayonlar (dars jadvali, davomat, jurnal) uchun asos hisoblanadi."

@@ -1,4 +1,5 @@
-import { index, integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { teachers } from "./teachers";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -86,7 +87,35 @@ export const calendars = pgTable("calendars", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/* ── Oʻquv yillari (koʻp-yil) ──────────────────────────────────────────
+   Eski `calendars` oʻqituvchi boshiga BITTA hujjat edi; endi har oʻquv
+   yili ALOHIDA qator (`data` = oʻsha shakldagi AcademicYearCalendar).
+   Bitta yil `is_active` — planner/davomat/chorak statistikasi oʻqiydigan
+   "koʻzgu". `is_active` boʻyicha partial unique index oʻqituvchida ikkita
+   faol yil boʻlishini imkonsiz qiladi. `calendars` rollback uchun qoladi
+   (migratsiya undan koʻchiradi, keyingi bosqichda tozalanadi). */
+export const academicYears = pgTable(
+  "academic_years",
+  {
+    id: text("id").primaryKey(),
+    teacherId: text("teacher_id")
+      .notNull()
+      .references(() => teachers.id, { onDelete: "cascade" }),
+    /** AcademicYearCalendar hujjati butunligicha (calendars.data bilan bir shakl). */
+    data: jsonb("data").$type<Record<string, unknown>>().notNull(),
+    isActive: boolean("is_active").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("academic_years_teacher_idx").on(t.teacherId),
+    // Oʻqituvchida faqat BITTA faol yil (partial unique).
+    uniqueIndex("academic_years_one_active_idx").on(t.teacherId).where(sql`${t.isActive}`),
+  ]
+);
+
 export type UnitRow = typeof units.$inferSelect;
 export type LessonRow = typeof lessons.$inferSelect;
 export type TimetableVersionRow = typeof timetableVersions.$inferSelect;
 export type CalendarRow = typeof calendars.$inferSelect;
+export type AcademicYearRow = typeof academicYears.$inferSelect;

@@ -49,6 +49,11 @@ interface TimetableVersionsState {
   /** Server boʻsh boʻlsa boʻsh gridni 1-versiya sifatida yaratadi.
       Invariant: hydratsiyadan soʻng har doim versions.length >= 1. */
   seedIfEmpty: () => void;
+  /** `dateKey`ni qoplaydigan versiya (effectiveFrom <= dateKey) boʻlmasa,
+      eng erta versiyani oʻsha sanaga KLONLAYDI — yangi yil boshi dars kunlari
+      "jadval yoʻq" deb boʻsh qolmaydi. Klon yaratilsa true, aks holda (allaqachon
+      qoplangan / versiya yoʻq / sana boʻsh) false qaytaradi. Idempotent. */
+  ensureVersionAt: (dateKey: string) => boolean;
   /** Versiya snapshotini yangilaydi (draft commit). */
   commitDraft: (versionId: string, events: TimetableEvent[], bellConfig: BellConfig) => void;
   /** Bazadan nusxa olib yangi versiya yaratadi; id qaytaradi (dublikat sanada null). */
@@ -79,6 +84,27 @@ export const useTimetableStore = create<TimetableVersionsState>()((set, get) => 
       createdAt: new Date().toISOString(),
     };
     set({ versions: [version] });
+  },
+
+  ensureVersionAt: (dateKey) => {
+    if (!dateKey) return false;
+    const s = get();
+    if (s.versions.length === 0) return false;
+    // Allaqachon qoplangan boʻlsa (effectiveFrom <= dateKey versiya bor) — no-op.
+    if (resolveVersionForDate(s.versions, dateKey)) return false;
+    // Dublikat sanaga klon yaratmaymiz (effectiveFrom unikal boʻlishi kerak).
+    if (s.versions.some((v) => v.effectiveFrom === dateKey)) return false;
+    const earliest = sortVersions(s.versions)[0];
+    const clone: TimetableVersion = {
+      id: uid(),
+      effectiveFrom: dateKey,
+      events: cloneEvents(earliest.events, true),
+      bellConfig: cloneBell(earliest.bellConfig),
+      note: "Yil boshi jadvali",
+      createdAt: new Date().toISOString(),
+    };
+    set({ versions: sortVersions([...s.versions, clone]) });
+    return true;
   },
 
   commitDraft: (versionId, events, bellConfig) =>

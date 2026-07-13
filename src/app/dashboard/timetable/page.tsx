@@ -40,6 +40,7 @@ import PeriodGrid, { type TimetableClass } from "@/components/timetable/PeriodGr
 import BellScheduleDialog from "@/components/timetable/BellScheduleDialog";
 import EffectiveDateDialog, { type EffectiveChoice } from "@/components/timetable/EffectiveDateDialog";
 import VersionChip, { versionRangeLabel } from "@/components/timetable/VersionChip";
+import TimetableCoverageBanner from "@/components/timetable/TimetableCoverageBanner";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeTimetableTourDemo } from "@/components/tour/timetable-tour-demo";
@@ -795,6 +796,9 @@ export default function TimetablePage() {
               </button>
             </Alert>
           )}
+
+          {/* Jadval faol oʻquv yili boshini qoplamasa — bir bosishli tuzatish */}
+          {!isDemoMode && <TimetableCoverageBanner className="mx-6 mb-2 shrink-0" />}
 
           {/* Hafta jadvali (kun × vaqt grid) */}
           <CardContent className={cn(panelCardContentClass, "relative flex flex-col overflow-hidden")} data-carousel-ignore="true">

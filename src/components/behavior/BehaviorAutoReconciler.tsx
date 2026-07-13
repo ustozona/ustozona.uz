@@ -3,6 +3,7 @@
 import * as React from "react";
 import { deriveLessonDays } from "@/lib/attendance-data";
 import { todayDateKey } from "@/lib/behavior-data";
+import { inRange } from "@/lib/academic-calendar";
 import { computeDesiredAutoEvents, reconcileAutoEvents } from "@/lib/behavior-auto";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
@@ -39,7 +40,7 @@ export default function BehaviorAutoReconciler() {
 
   const recordsByClass = useAttendanceStore((s) => s.recordsByClass);
   const classDataMap = useGradesStore((s) => s.classDataMap);
-  const calendar = useCalendarStore((s) => s.calendar);
+  const years = useCalendarStore((s) => s.years);
   const versions = useTimetableStore((s) => s.versions);
   const autoSettings = useBehaviorStore((s) => s.autoSettings);
   const deletions = useBehaviorStore((s) => s.deletions);
@@ -49,6 +50,12 @@ export default function BehaviorAutoReconciler() {
     const t = setTimeout(() => {
       const behavior = useBehaviorStore.getState();
       const todayKey = todayDateKey();
+      // Dvigatel BUGUN tegishli boʻlgan yil kalendari bilan ishlaydi — koʻrilayotgan
+      // (faol) yil bilan emas. Aks holda eski yilni koʻrish joriy seriya eventlarini
+      // oʻchirib-qayta yaratardi (churn). Bugun hech bir yilga tushmasa — skip.
+      const todayYear = years.find((y) => inRange(todayKey, y.calendar.range));
+      if (!todayYear) return;
+      const calendar = todayYear.calendar;
       const tombstones = new Set(behavior.deletions.map((d) => d.eventId));
       const end = todayKey < calendar.range.end ? todayKey : calendar.range.end;
       const needStreak = autoSettings.attendanceEnabled && autoSettings.streakEnabled;
@@ -87,7 +94,7 @@ export default function BehaviorAutoReconciler() {
       }
     }, DEBOUNCE_MS);
     return () => clearTimeout(t);
-  }, [allHydrated, recordsByClass, classDataMap, calendar, versions, autoSettings, deletions]);
+  }, [allHydrated, recordsByClass, classDataMap, years, versions, autoSettings, deletions]);
 
   return null;
 }

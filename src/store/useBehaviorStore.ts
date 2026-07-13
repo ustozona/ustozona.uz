@@ -47,6 +47,12 @@ interface BehaviorState {
   /** Qoida OFF→ON oʻtganda tegishli `*Since` bugunga koʻchadi (retro-toshqin himoyasi). */
   setAutoSettings: (next: BehaviorAutoSettings) => void;
 
+  /** Yangi oʻquv yili faollashganda avto-langarlarni (attendanceSince/
+      journalSince) yil boshiga OLDINGA suradi — faqat langar `dateKey`dan
+      OLDIN boʻlsa. Seriyalar yangi yil boshidan qaytadan boshlanadi; langar
+      oldidagi tarixga tegilmaydi (balans umrbod, eventlar oʻchmaydi). */
+  shiftAutoAnchorsForward: (dateKey: string) => void;
+
   /**
    * Reconciler yozuvi: avto-eventlarni qoʻshish/yangilash/olib tashlash
    * BITTA immutable yangilanishda. Oʻchirish jurnali YOZILMAYDI — bu
@@ -118,6 +124,15 @@ export const useBehaviorStore = create<BehaviorState>()((set, get) => ({
             !prev.journalEnabled && next.journalEnabled ? today : next.journalSince,
         },
       };
+    }),
+
+  shiftAutoAnchorsForward: (dateKey) =>
+    set((s) => {
+      const a = s.autoSettings;
+      const attendanceSince = a.attendanceSince < dateKey ? dateKey : a.attendanceSince;
+      const journalSince = a.journalSince < dateKey ? dateKey : a.journalSince;
+      if (attendanceSince === a.attendanceSince && journalSince === a.journalSince) return s;
+      return { autoSettings: { ...a, attendanceSince, journalSince } };
     }),
 
   applyAutoReconcile: (classId, { toAdd, toUpdate, toRemoveIds }) => {
