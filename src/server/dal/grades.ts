@@ -66,6 +66,7 @@ function rowToInfo(c: ClassRow): ClassInfo {
     ...(c.subject ? { subject: c.subject } : {}),
     ...(c.icon ? { icon: c.icon } : {}),
     ...(c.description ? { description: c.description } : {}),
+    ...(c.archivedAt ? { archivedAt: c.archivedAt } : {}),
   };
 }
 
@@ -182,6 +183,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           icon: c.icon ?? null,
           description: c.description ?? null,
           sortOrder: c.sortOrder,
+          archivedAt: c.archivedAt ?? null,
         }))
       )
       .onConflictDoUpdate({
@@ -195,6 +197,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           icon: sql`excluded.icon`,
           description: sql`excluded.description`,
           sortOrder: sql`excluded.sort_order`,
+          archivedAt: sql`excluded.archived_at`,
           updatedAt: now,
         },
         setWhere: eq(classes.teacherId, tid),

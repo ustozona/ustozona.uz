@@ -40,10 +40,12 @@ function startYearOf(startKey: string): number {
 }
 
 export default function CreateSemesterModal({
-  open, onOpenChange,
+  open, onOpenChange, onCreated,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  /** Yil yaratilgach chaqiriladi — AcademicYearSection rollover sehrgarini ochadi. */
+  onCreated?: () => void;
 }) {
   const current = useCalendarStore((s) => s.calendar);
   const years = useCalendarStore((s) => s.years);
@@ -110,6 +112,8 @@ export default function CreateSemesterModal({
     // Jadval yil boshini qoplasin + bugun yangi yil ichida boʻlsa xulq langari surilsin.
     applyYearActivationSideEffects(preview);
     onOpenChange(false);
+    // Rollover sehrgari (sinf nomlarini koʻchirish/arxivlash) — parent ochadi.
+    onCreated?.();
   };
 
   const modes: { id: Mode; icon: React.ReactNode; title: string; desc: string; disabled?: boolean }[] = [

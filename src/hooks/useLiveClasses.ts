@@ -19,15 +19,30 @@ import { DAYS_UZ, DAYS_UZ_SHORT } from "@/lib/localization";
    chidamli boʻlishi shart; skeletlar uchun useLiveClassesHydrated().
    ════════════════════════════════════════════════════════════════════ */
 
-/** Pure helper: map → tartiblangan ClassInfo roʻyxati. */
-export function liveClassInfos(map: Record<string, ClassData>): ClassInfo[] {
-  return Object.values(map).map((cd) => cd.info);
+/** Pure helper: map → tartiblangan ClassInfo roʻyxati. `includeArchived`
+    berilmasa arxivlangan sinflar (archivedAt) chiqarib tashlanadi —
+    pickerlar/sidebar faqat faol sinflarni koʻrsatadi. */
+export function liveClassInfos(
+  map: Record<string, ClassData>,
+  includeArchived = false
+): ClassInfo[] {
+  const infos = Object.values(map).map((cd) => cd.info);
+  return includeArchived ? infos : infos.filter((c) => !c.archivedAt);
 }
 
-/** Tartiblangan jonli sinf roʻyxati (info'lar). */
+/** Tartiblangan jonli sinf roʻyxati (info'lar) — FAOL sinflar (arxivsiz). */
 export function useLiveClasses(): ClassInfo[] {
   const map = useGradesStore((s) => s.classDataMap);
   return useMemo(() => liveClassInfos(map), [map]);
+}
+
+/** Arxivlangan sinflar (Sozlamalar/Sinflar sahifasida "tiklash" uchun). */
+export function useArchivedClasses(): ClassInfo[] {
+  const map = useGradesStore((s) => s.classDataMap);
+  return useMemo(
+    () => Object.values(map).map((cd) => cd.info).filter((c) => c.archivedAt),
+    [map]
+  );
 }
 
 /** Server hydration tugaganmi — skelet/boʻsh-holat farqlash uchun. */

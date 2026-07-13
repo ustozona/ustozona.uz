@@ -22,6 +22,7 @@ export const classUpsertSchema = z.object({
   icon: z.string().max(50).optional(),
   description: z.string().max(1000).optional(),
   sortOrder: z.number().int().min(0),
+  archivedAt: z.string().max(40).optional(),
 });
 
 export const studentUpsertSchema = z.object({

@@ -12,6 +12,9 @@ export type ClassInfo = {
   /** Avatar ikonkasi kaliti (class-icons.ts ClassIconKey). */
   icon?: string;
   description?: string;
+  /** Arxivlangan sana (ISO) yoki yoʻq. Boʻlsa — sinf pickerlardan yashirin
+      (bitiruvchi/tugagan guruh); tarixi saqlanadi, id oʻzgarmaydi. */
+  archivedAt?: string;
 };
 
 export type Student = {

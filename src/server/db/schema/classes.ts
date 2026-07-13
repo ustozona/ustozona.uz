@@ -37,6 +37,10 @@ export const classes = pgTable(
     description: text("description"),
     /** Frontend massiv tartibi (sidebar/roʻyxat) — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),
+    /** Arxivlangan sana (ISO satr) yoki null. null = faol sinf. Arxiv sinflar
+        pickerlardan yashiriladi (rollover: bitiruvchi guruhlar). Sinf UUID va
+        tarixi (davomat/baho) saqlanadi — faqat roʻyxatdan yashirin. */
+    archivedAt: text("archived_at"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

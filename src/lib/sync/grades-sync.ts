@@ -43,6 +43,7 @@ function toClassUpsert(info: ClassInfo, sortOrder: number): ClassUpsert {
     ...(info.subject ? { subject: info.subject } : {}),
     ...(info.icon ? { icon: info.icon } : {}),
     ...(info.description ? { description: info.description } : {}),
+    ...(info.archivedAt ? { archivedAt: info.archivedAt } : {}),
     sortOrder,
   };
 }

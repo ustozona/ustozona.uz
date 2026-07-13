@@ -33,9 +33,11 @@ import {
 } from "@/lib/academic-calendar";
 import { applyYearActivationSideEffects } from "@/lib/year-side-effects";
 import { todayKey, addDaysKey } from "@/lib/date-keys";
+import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
 import YearStrip from "./YearStrip";
 import CreateSemesterModal from "./CreateSemesterModal";
+import RolloverWizard from "./RolloverWizard";
 
 /* ════════════════════════════════════════════════════════════════════
    "OʻQUV YILI" SOZLAMALARI — kalendar boshqaruvi
@@ -238,6 +240,8 @@ export default function AcademicYearSection() {
   const resetToOfficialTemplate = useCalendarStore((s) => s.resetToOfficialTemplate);
   const [resetOpen, setResetOpen] = React.useState(false);
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [rolloverOpen, setRolloverOpen] = React.useState(false);
+  const activeClasses = useLiveClasses();
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
   const rowRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
 
@@ -518,7 +522,15 @@ export default function AcademicYearSection() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <CreateSemesterModal open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateSemesterModal
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={() => {
+          // Sinf boʻlsa — rollover sehrgarini ochamiz (nomlarni koʻchirish/arxivlash).
+          if (activeClasses.length > 0) setRolloverOpen(true);
+        }}
+      />
+      <RolloverWizard open={rolloverOpen} onOpenChange={setRolloverOpen} />
     </>
   );
 }

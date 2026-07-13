@@ -41,7 +41,7 @@ import {
   XIcon, PlusIcon, ChevronDownIcon,
   LayoutGrid, List as ListIcon, PencilIcon, Trash2 as TrashIcon,
   GraduationCap, Search, ArrowUpDown, BarChart3, Users, BookOpen,
-  ClipboardList, MoreHorizontal, ArrowRight,
+  ClipboardList, MoreHorizontal, ArrowRight, Archive as ArchiveIcon, ArchiveRestore,
 } from "lucide-react";
 import { CLASS_COLOR_HEX, classTints, classColorValue, type ClassColor } from "@/lib/class-colors";
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
@@ -126,7 +126,7 @@ export default function ClassesPage() {
   // Server hydration tugamaguncha skeleton
   const loading = !hydrated;
 
-  const liveClasses = useMemo<LiveClass[]>(
+  const allLiveClasses = useMemo<LiveClass[]>(
     () =>
       Object.values(classDataMap).map((cd) => {
         const cls = cd.info;
@@ -147,6 +147,10 @@ export default function ClassesPage() {
       }),
     [classDataMap, allLessons]
   );
+  // Arxivlangan sinflar asosiy roʻyxatdan/statistikadan chiqariladi — pastda
+  // alohida "Arxivlangan" boʻlimda tiklash uchun koʻrsatiladi.
+  const liveClasses = useMemo(() => allLiveClasses.filter((c) => !c.info.archivedAt), [allLiveClasses]);
+  const archivedClasses = useMemo(() => allLiveClasses.filter((c) => !!c.info.archivedAt), [allLiveClasses]);
 
   // Tur-demo rejimi — sinflar turʼi boʻsh hisobda ochilsa (3–4-qadam:
   // koʻrinish almashtirish, statistika) boʻsh panellar namunaviy sinflar
@@ -183,6 +187,27 @@ export default function ClassesPage() {
     });
     setDeleteTarget(null);
     toast.success(`«${name}» sinfi oʻchirildi`);
+  };
+
+  // Arxivlash — sinf pickerlardan yashirin boʻladi, lekin id/tarixi saqlanadi.
+  const handleArchive = (cls: LiveClass) => {
+    updateClass(cls.id, (cd) => ({
+      ...cd,
+      info: { ...cd.info, archivedAt: new Date().toISOString() },
+    }));
+    toast.success(`«${cls.name}» arxivlandi`, {
+      action: { label: "Qaytarish", onClick: () => handleRestore(cls.id) },
+    });
+  };
+
+  const handleRestore = (id: string) => {
+    updateClass(id, (cd) => {
+      if (!cd.info.archivedAt) return cd;
+      const info = { ...cd.info };
+      delete info.archivedAt;
+      return { ...cd, info };
+    });
+    toast.success("Sinf tiklandi");
   };
 
   const filteredAndSorted = useMemo(() => {
@@ -356,6 +381,7 @@ export default function ClassesPage() {
                           index={i}
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
+                          onArchive={() => handleArchive(cls)}
                           onDelete={() => setDeleteTarget(cls)}
                         />
                       ))}
@@ -370,12 +396,18 @@ export default function ClassesPage() {
                           index={i}
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
+                          onArchive={() => handleArchive(cls)}
                           onDelete={() => setDeleteTarget(cls)}
                         />
                       ))}
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* Arxivlangan sinflar — asosiy roʻyxatdan yashirin, tiklash mumkin */}
+              {!loading && !isDemoMode && archivedClasses.length > 0 && (
+                <ArchivedClassesSection classes={archivedClasses} onRestore={handleRestore} />
               )}
             </div>
           </CardContent>
@@ -567,12 +599,14 @@ function ClassGridCard({
   index,
   disabled,
   onEdit,
+  onArchive,
   onDelete,
 }: {
   cls: LiveClass;
   index: number;
   disabled?: boolean;
   onEdit: () => void;
+  onArchive: () => void;
   onDelete: () => void;
 }) {
   const router = useRouter();
@@ -628,7 +662,7 @@ function ClassGridCard({
       )}
       {!disabled && (
       <div className="absolute top-3 right-3 z-20">
-        <ClassCardMenu onEdit={onEdit} onDelete={onDelete} />
+        <ClassCardMenu onEdit={onEdit} onArchive={onArchive} onDelete={onDelete} />
       </div>
       )}
 
@@ -708,7 +742,7 @@ function ClassGridCard({
 
 
 /* ── Karta uchun 3-nuqta DropdownMenu ── */
-function ClassCardMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+function ClassCardMenu({ onEdit, onArchive, onDelete }: { onEdit: () => void; onArchive: () => void; onDelete: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -729,6 +763,13 @@ function ClassCardMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () 
         >
           <PencilIcon className="size-4 text-muted-foreground" />
           Tahrirlash
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="gap-2 cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); onArchive(); }}
+        >
+          <ArchiveIcon className="size-4 text-muted-foreground" />
+          Arxivlash
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -759,6 +800,62 @@ function AddClassCard({ onClick }: { onClick?: () => void }) {
   );
 }
 
+/* ─────────────────────────── Arxivlangan sinflar ─────────────────────────── */
+
+function ArchivedClassesSection({
+  classes,
+  onRestore,
+}: {
+  classes: LiveClass[];
+  onRestore: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-6 border-t border-border pt-5">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArchiveIcon className="size-4" />
+        Arxivlangan sinflar
+        <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums">{classes.length}</span>
+        <ChevronDownIcon className={cn("ml-auto size-4 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="mt-3 flex flex-col gap-2">
+          {classes.map((cls) => {
+            const hex = CLASS_COLOR_HEX[cls.color];
+            return (
+              <div
+                key={cls.id}
+                className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-2.5"
+              >
+                <div
+                  className="flex size-8 shrink-0 items-center justify-center rounded-md"
+                  style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.12)` }}
+                >
+                  <GraduationCap className="size-4" style={{ color: hex }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">{cls.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {cls.students} ta oʻquvchi · arxivda
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => onRestore(cls.id)}>
+                  <ArchiveRestore className="size-4" />
+                  Tiklash
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─────────────────────────── List Row ─────────────────────────── */
 
 function ClassListRow({
@@ -766,12 +863,14 @@ function ClassListRow({
   index,
   disabled,
   onEdit,
+  onArchive,
   onDelete,
 }: {
   cls: LiveClass;
   index: number;
   disabled?: boolean;
   onEdit: () => void;
+  onArchive: () => void;
   onDelete: () => void;
 }) {
   const router = useRouter();
@@ -831,7 +930,7 @@ function ClassListRow({
       </div>
 
       {/* 3-nuqta menu */}
-      {!disabled && <ClassCardMenu onEdit={onEdit} onDelete={onDelete} />}
+      {!disabled && <ClassCardMenu onEdit={onEdit} onArchive={onArchive} onDelete={onDelete} />}
     </div>
   );
 }
