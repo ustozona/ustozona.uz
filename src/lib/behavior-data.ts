@@ -265,6 +265,7 @@ export type BehaviorPeriod =
   | "lastWeek"
   | "thisMonth"
   | "lastMonth"
+  | "thisYear"
   | "all";
 
 export const BEHAVIOR_PERIODS: readonly { id: BehaviorPeriod; label: string }[] = [
@@ -274,18 +275,26 @@ export const BEHAVIOR_PERIODS: readonly { id: BehaviorPeriod; label: string }[] 
   { id: "lastWeek", label: "Oʻtgan hafta" },
   { id: "thisMonth", label: "Shu oy" },
   { id: "lastMonth", label: "Oʻtgan oy" },
+  { id: "thisYear", label: "Bu oʻquv yili" },
   { id: "all", label: "Hammasi" },
 ] as const;
 
 /**
  * Davr chegaralari (date-key, inklyuziv); "all" → null (filtrsiz).
- * Hafta dushanbadan boshlanadi (jadval konvensiyasi).
+ * Hafta dushanbadan boshlanadi (jadval konvensiyasi). "thisYear" — FAOL oʻquv
+ * yili oynasi (`academicYear` orqali beriladi; yoʻq boʻlsa null = filtrsiz).
  */
 export function periodRange(
   period: BehaviorPeriod,
-  now: Date = new Date()
+  now: Date = new Date(),
+  academicYear?: { start: string; end: string } | null
 ): { from: string; to: string } | null {
   if (period === "all") return null;
+  if (period === "thisYear") {
+    return academicYear && academicYear.start && academicYear.end
+      ? { from: academicYear.start, to: academicYear.end }
+      : null;
+  }
   const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const shift = (base: Date, days: number) => {
     const x = new Date(base);
@@ -319,13 +328,15 @@ export function periodRange(
   }
 }
 
-/** Davr boʻyicha filtr — date-key satrlari leksikografik solishtiriladi. */
+/** Davr boʻyicha filtr — date-key satrlari leksikografik solishtiriladi.
+    "thisYear" uchun `academicYear` (faol yil oynasi) beriladi. */
 export function filterEventsByPeriod(
   events: BehaviorEvent[],
   period: BehaviorPeriod,
-  now: Date = new Date()
+  now: Date = new Date(),
+  academicYear?: { start: string; end: string } | null
 ): BehaviorEvent[] {
-  const range = periodRange(period, now);
+  const range = periodRange(period, now, academicYear);
   if (!range) return events;
   return events.filter((e) => e.date >= range.from && e.date <= range.to);
 }

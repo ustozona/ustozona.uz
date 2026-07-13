@@ -45,6 +45,7 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AttendanceDonut, ATT_COLORS } from "@/app/dashboard/(with-sidebar)/students/[id]/_components/charts";
 import type { AttendanceWindow } from "@/lib/student-profile";
 import {
@@ -328,6 +329,9 @@ export default function AttendanceView({
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [view, setView] = useState<"scheduled" | "all" | "day">("scheduled");
+  // Davr granularligi — "Oy" (bitta oy) yoki "Chorak" (akademik chorak toʻlaligicha,
+  // dars kunlari `quarter.range` boʻyicha; navigatsiya choraklar boʻylab).
+  const [period, setPeriod] = useState<"month" | "quarter">("month");
   const [studentStatus, setStudentStatus] = useState<StudentStatusFilter>("all");
   const [onlyAttention, setOnlyAttention] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -393,14 +397,22 @@ export default function AttendanceView({
     return cycle[(i + 1) % cycle.length];
   };
 
-  // Koʻrsatiladigan kunlar — faqat bugun / dars kunlari / butun oy
-  const monthDays = view === "day"
-    ? allDaysInMonth(month.year, month.month).filter((d) => d.date === today)
-    : (view === "all" ? allDaysInMonth(month.year, month.month) : lessonDays)
-        .filter((d) => {
-          const [y, m] = d.date.split("-").map(Number);
-          return y === month.year && m === month.month;
-        });
+  // Akademik chorak — oy rejimida koʻrilayotgan oyning choragi; chorak rejimida
+  // aynan koʻrilayotgan chorak (navigatsiya shu boʻyicha). % ustuni, chorak
+  // statistikasi va (chorak rejimida) koʻrsatiladigan kunlar shundan keladi.
+  const viewedQuarter = getQuarterForMonth(calendar, month.year, month.month);
+
+  // Koʻrsatiladigan kunlar. Oy rejimi: faqat bugun / dars kunlari / butun oy
+  // (oyga filtrlangan). Chorak rejimi: chorak diapazonidagi barcha dars kunlari.
+  const monthDays = period === "quarter"
+    ? (viewedQuarter ? lessonDays.filter((d) => inRange(d.date, viewedQuarter.range)) : [])
+    : view === "day"
+      ? allDaysInMonth(month.year, month.month).filter((d) => d.date === today)
+      : (view === "all" ? allDaysInMonth(month.year, month.month) : lessonDays)
+          .filter((d) => {
+            const [y, m] = d.date.split("-").map(Number);
+            return y === month.year && m === month.month;
+          });
 
   // "Barcha kunlar" rejimida faqat yakshanbalarni xiralashtirish
   const isDimmed = (date: string) => view === "all" && new Date(date).getDay() === 0;
@@ -426,10 +438,9 @@ export default function AttendanceView({
     }).map((d) => d.date));
 
   const monthLessonDates = lessonDatesIn(month.year, [month.month]);
-  // "Choraklik %" — AKADEMIK chorak (kalendar-yil choragi emas): koʻrilayotgan oy
-  // tegishli chorak diapazonidagi dars sanalari. Oy hech bir chorakka tushmasa
-  // (taʼtil oyi / yil tashqarisi) — oylik toʻplamning oʻzi ishlatiladi.
-  const viewedQuarter = getQuarterForMonth(calendar, month.year, month.month);
+  // "Choraklik %" — AKADEMIK chorak dars sanalari (yuqorida hisoblangan
+  // viewedQuarter). Oy hech bir chorakka tushmasa (taʼtil oyi / yil tashqarisi)
+  // — oylik toʻplamning oʻzi ishlatiladi.
   const quarterLessonDates = viewedQuarter
     ? new Set(lessonDays.filter((d) => inRange(d.date, viewedQuarter.range)).map((d) => d.date))
     : monthLessonDates;
@@ -519,7 +530,44 @@ export default function AttendanceView({
 
   const prevMonth = () => setMonth(({ year, month: m }) => (m === 1 ? { year: year - 1, month: 12 } : { year, month: m - 1 }));
   const nextMonth = () => setMonth(({ year, month: m }) => (m === 12 ? { year: year + 1, month: 1 } : { year, month: m + 1 }));
-  const goToday = () => { const n = new Date(); setMonth({ year: n.getFullYear(), month: n.getMonth() + 1 }); };
+
+  // Berilgan oy chorakka tushsa — oʻsha chorakning boshlanish oyi; aks holda eng
+  // yaqin chorak (yil tugagach → oxirgi, boshlanmagan → birinchi). Kalendar
+  // sozlanmagan boʻlsa null. Chorak rejimida "sakrash" nuqtalari shundan.
+  const quarterStartMonthFor = (y: number, m: number): { year: number; month: number } | null => {
+    const qs = calendar.quarters;
+    if (qs.length === 0) return null;
+    const mm = String(m).padStart(2, "0");
+    const q = getQuarterForMonth(calendar, y, m)
+      ?? (`${y}-${mm}-15` > calendar.range.end ? qs[qs.length - 1] : qs[0]);
+    const [qy, qm] = q.range.start.split("-").map(Number);
+    return { year: qy, month: qm };
+  };
+
+  const goToday = () => {
+    const n = new Date();
+    const y = n.getFullYear(), m = n.getMonth() + 1;
+    // Chorak rejimi: bugun chorakka tushmasa ham eng yaqin chorakni koʻrsatamiz.
+    if (period === "quarter") {
+      const t = quarterStartMonthFor(y, m);
+      if (t) { setMonth(t); return; }
+    }
+    setMonth({ year: y, month: m });
+  };
+
+  // Chorak rejimida navigatsiya — koʻrilayotgan chorakdan oldingi/keyingisiga
+  // oʻtadi (month'ni oʻsha chorak boshlanish oyiga qoʻyadi; viewedQuarter shundan
+  // qayta hisoblanadi). Yagona faol yilda 4 chorak — chetlarda toʻxtaydi.
+  const quarterStep = (dir: -1 | 1) => {
+    const qs = calendar.quarters;
+    if (qs.length === 0) return;
+    const idx = viewedQuarter ? qs.findIndex((q) => q.id === viewedQuarter.id) : -1;
+    const nextIdx = idx === -1 ? (dir === 1 ? 0 : qs.length - 1) : Math.min(Math.max(idx + dir, 0), qs.length - 1);
+    const [y, m] = qs[nextIdx].range.start.split("-").map(Number);
+    setMonth({ year: y, month: m });
+  };
+  const goPrev = () => (period === "quarter" ? quarterStep(-1) : prevMonth());
+  const goNext = () => (period === "quarter" ? quarterStep(1) : nextMonth());
 
   const noteRecord = notePopup ? records.find((r) => r.studentId === notePopup.studentId && r.date === notePopup.date) : null;
   const noteStudent = notePopup ? roster.find((s) => s.id === notePopup.studentId) : null;
@@ -554,7 +602,7 @@ export default function AttendanceView({
             <div className="flex items-center gap-3 shrink-0">
               <SectionIcon><Calendar /></SectionIcon>
               <CardTitle className="flex items-baseline gap-1.5">
-                {MONTH_NAMES[month.month - 1]}
+                {period === "quarter" && viewedQuarter ? viewedQuarter.name : MONTH_NAMES[month.month - 1]}
                 <span className="font-normal text-foreground/50">({month.year})</span>
               </CardTitle>
             </div>
@@ -633,36 +681,71 @@ export default function AttendanceView({
                 <TooltipContent>Davomat sozlamalari</TooltipContent>
               </Tooltip>
 
+              {/* Davr granularligi — Oy | Chorak (demo/turda yashirin) */}
+              {!demoMode && (
+                <ToggleGroup
+                  type="single"
+                  value={period}
+                  onValueChange={(v) => {
+                    if (!v) return;
+                    setPeriod(v as "month" | "quarter");
+                    if (v === "quarter") {
+                      setView("scheduled");
+                      // Koʻrilayotgan oy chorakka tushmasa (yil tashqarisi) — boʻsh
+                      // ekran oʻrniga eng yaqin chorakka sakraymiz.
+                      if (!viewedQuarter) {
+                        const t = quarterStartMonthFor(month.year, month.month);
+                        if (t) setMonth(t);
+                      }
+                    }
+                  }}
+                  variant="outline"
+                  size="default"
+                  className="h-9"
+                >
+                  <ToggleGroupItem value="month" className="px-3 text-sm font-medium">Oy</ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="quarter"
+                    disabled={calendar.quarters.length === 0}
+                    className="px-3 text-sm font-medium"
+                  >
+                    Chorak
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              )}
+
               <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" onClick={prevMonth} className={ctrlBtn}>
+                <Button variant="outline" size="icon" onClick={goPrev} className={ctrlBtn}>
                   <ChevronLeft className="h-5 w-5" aria-hidden />
                 </Button>
                 <Button variant="outline" onClick={goToday} className="h-9 rounded-md bg-card border-border shadow-none font-semibold px-4">
                   Bugun
                 </Button>
-                <Button variant="outline" size="icon" onClick={nextMonth} className={ctrlBtn}>
+                <Button variant="outline" size="icon" onClick={goNext} className={ctrlBtn}>
                   <ChevronRight className="h-5 w-5" aria-hidden />
                 </Button>
               </div>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon"
-                    onClick={() => setView((v) => {
-                      const next = v === "scheduled" ? "day" : v === "day" ? "all" : "scheduled";
-                      if (next === "day") goToday();
-                      return next;
-                    })}
-                    className={cn(ctrlBtn, view !== "scheduled" && "ring-2 ring-primary ring-offset-2")}>
-                    {view === "all" ? <CalendarRange className="h-4 w-4" aria-hidden />
-                      : view === "day" ? <CalendarDays className="h-4 w-4" aria-hidden />
-                      : <Calendar className="h-4 w-4" aria-hidden />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {view === "scheduled" ? "Kun koʻrinishi" : view === "day" ? "Barcha kunlar" : "Faqat dars kunlari"}
-                </TooltipContent>
-              </Tooltip>
+              {period === "month" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon"
+                      onClick={() => setView((v) => {
+                        const next = v === "scheduled" ? "day" : v === "day" ? "all" : "scheduled";
+                        if (next === "day") goToday();
+                        return next;
+                      })}
+                      className={cn(ctrlBtn, view !== "scheduled" && "ring-2 ring-primary ring-offset-2")}>
+                      {view === "all" ? <CalendarRange className="h-4 w-4" aria-hidden />
+                        : view === "day" ? <CalendarDays className="h-4 w-4" aria-hidden />
+                        : <Calendar className="h-4 w-4" aria-hidden />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {view === "scheduled" ? "Kun koʻrinishi" : view === "day" ? "Barcha kunlar" : "Faqat dars kunlari"}
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </CardHeader>
 
@@ -672,16 +755,20 @@ export default function AttendanceView({
               <Empty className="h-full w-full">
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                  <EmptyTitle>Bu oyda dars kuni yoʻq</EmptyTitle>
+                  <EmptyTitle>{period === "quarter" ? "Bu chorakda dars kuni yoʻq" : "Bu oyda dars kuni yoʻq"}</EmptyTitle>
                   <EmptyDescription>
-                    Bu sinf uchun {MONTH_NAMES[month.month - 1]} oyida rejalashtirilgan dars yoʻq. Barcha kalendar kunlarini koʻrsating yoki boshqa oyga oʻting.
+                    {period === "quarter"
+                      ? `Bu sinf uchun ${viewedQuarter?.name ?? "bu chorak"}da rejalashtirilgan dars yoʻq. Boshqa chorakka oʻting yoki oy koʻrinishiga qayting.`
+                      : `Bu sinf uchun ${MONTH_NAMES[month.month - 1]} oyida rejalashtirilgan dars yoʻq. Barcha kalendar kunlarini koʻrsating yoki boshqa oyga oʻting.`}
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
                   <div className="flex items-center gap-2">
-                    <Button onClick={() => setView("all")} className="gap-1.5">
-                      <CalendarRange className="size-4" /> Barcha kunlar
-                    </Button>
+                    {period === "month" && (
+                      <Button onClick={() => setView("all")} className="gap-1.5">
+                        <CalendarRange className="size-4" /> Barcha kunlar
+                      </Button>
+                    )}
                     <Button variant="outline" onClick={goToday} className="bg-card">
                       Bugunga oʻtish
                     </Button>

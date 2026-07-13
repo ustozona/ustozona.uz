@@ -26,6 +26,7 @@ import {
   type BehaviorPeriod,
 } from "@/lib/behavior-data";
 import { MONTHS_UZ } from "@/lib/localization";
+import { useCalendarStore } from "@/store/useCalendarStore";
 import { BehaviorDonut } from "./BehaviorDonut";
 import { BehaviorEmoji } from "./BehaviorEmoji";
 import { EventTimeline } from "./EventTimeline";
@@ -54,9 +55,11 @@ export function ReportPanel({
   /** Berilsa — pastda yigʻiladigan "Oʻchirilgan yozuvlar" jurnali chiqadi. */
   deletions?: BehaviorDeletionLogEntry[];
 }) {
+  // "Bu oʻquv yili" davri uchun faol yil oynasi (calendar mirror).
+  const yearRange = useCalendarStore((s) => s.calendar.range);
   const filtered = React.useMemo(
-    () => filterEventsByPeriod(events, period),
-    [events, period]
+    () => filterEventsByPeriod(events, period, undefined, yearRange),
+    [events, period, yearRange]
   );
   const slices = React.useMemo(() => skillBreakdown(filtered), [filtered]);
   const stats = React.useMemo(() => eventStats(filtered), [filtered]);

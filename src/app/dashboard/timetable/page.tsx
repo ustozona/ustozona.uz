@@ -42,6 +42,7 @@ import EffectiveDateDialog, { type EffectiveChoice } from "@/components/timetabl
 import VersionChip, { versionRangeLabel } from "@/components/timetable/VersionChip";
 import TimetableCoverageBanner from "@/components/timetable/TimetableCoverageBanner";
 import { useTimetableStore } from "@/store/useTimetableStore";
+import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeTimetableTourDemo } from "@/components/tour/timetable-tour-demo";
 import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
@@ -135,6 +136,8 @@ export default function TimetablePage() {
 
   /* ── Versiyalash holati ── */
   const versions = useTimetableStore((s) => s.versions);
+  // Oʻquv yillari — versiya roʻyxatini yil boʻyicha guruhlash uchun (2+ yilda).
+  const academicYears = useCalendarStore((s) => s.years);
   const storeHydrated = useTimetableStore((s) => s._hasHydrated);
   const commitDraft = useTimetableStore((s) => s.commitDraft);
   const createVersion = useTimetableStore((s) => s.createVersion);
@@ -688,6 +691,7 @@ export default function TimetablePage() {
                     onSelect={handleSelectVersion}
                     onCreateNew={() => { setDialogExplicit(true); setEffectiveDialogOpen(true); }}
                     onDeleteSelected={() => setDeleteConfirmOpen(true)}
+                    years={academicYears.map((y) => ({ label: y.calendar.yearLabel, range: y.calendar.range }))}
                   />
                 )}
               </div>

@@ -20,6 +20,7 @@ import {
   type BehaviorPeriod,
 } from "@/lib/behavior-data";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
+import { useCalendarStore } from "@/store/useCalendarStore";
 import { ReportPanel } from "./ReportPanel";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -57,6 +58,8 @@ export function ClassReportDialog({
 
   const [selection, setSelection] = React.useState<Selection>(null);
   const [period, setPeriod] = React.useState<BehaviorPeriod>("thisWeek");
+  // "Bu oʻquv yili" davri uchun faol yil oynasi (calendar mirror).
+  const yearRange = useCalendarStore((s) => s.calendar.range);
 
   // Har ochilishda "Butun sinf"dan boshlanadi.
   React.useEffect(() => {
@@ -71,7 +74,7 @@ export function ClassReportDialog({
   /* Chap roʻyxatdagi ijobiy foizlar — tanlangan davr boʻyicha
      (oʻng paneldagi donut bilan bir xil kesim). */
   const pctById = React.useMemo(() => {
-    const filtered = filterEventsByPeriod(events, period);
+    const filtered = filterEventsByPeriod(events, period, undefined, yearRange);
     const totals = new Map<string, { positive: number; count: number }>();
     for (const e of filtered) {
       const t = totals.get(e.studentId) ?? { positive: 0, count: 0 };
@@ -82,7 +85,7 @@ export function ClassReportDialog({
     const pct = new Map<string, number>();
     for (const [id, t] of totals) pct.set(id, Math.round((t.positive / t.count) * 100));
     return pct;
-  }, [events, period]);
+  }, [events, period, yearRange]);
 
   const selectedDeletions = React.useMemo(
     () =>
