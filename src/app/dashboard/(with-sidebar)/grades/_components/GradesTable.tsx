@@ -474,6 +474,10 @@ type Props = {
   onEditAssignment: (assignmentId: string) => void;
   onCellMark: (studentId: string, assignmentId: string, mark: "absent" | "unsubmitted" | null) => void;
   onPasteColumn: (startStudentId: string, assignmentId: string, orderedStudentIds: string[], values: number[]) => void;
+  /** Arxiv yilni koʻrayotganda (bugun faol yildan tashqarida) toʻldiriladi:
+      yangi topshiriq yaratish yumshoq bloklanadi (default sana bugun boʻlgani
+      uchun koʻrilayotgan yil oynasiga tushmaydi). null = joriy yil, blok yoʻq. */
+  archiveNotice?: string | null;
 };
 
 type SortField = "firstName" | "lastName";
@@ -494,6 +498,7 @@ export default function GradesTable({
   onEditAssignment,
   onCellMark,
   onPasteColumn,
+  archiveNotice,
 }: Props) {
   const { students, assignments, grades, topics } = classData;
   const classHex = CLASS_COLOR_HEX[classColor(classData.info)];
@@ -625,8 +630,12 @@ export default function GradesTable({
 
   function handleCreate(type: "assignment" | "reuse" | "topic") {
     setCreateOpen(false);
-    if (type === "assignment") onCreateAssignmentClick();
-    else if (type === "reuse") onReuseClick();
+    // Arxiv yilda yangi topshiriq yaratish yumshoq bloklangan (menyu bandi ham
+    // disabled) — sana default bugun boʻlib, koʻrilayotgan yilga tushmaydi.
+    if (type === "assignment") {
+      if (archiveNotice) return;
+      onCreateAssignmentClick();
+    } else if (type === "reuse") onReuseClick();
     else onTopicClick();
   }
 
@@ -746,11 +755,19 @@ export default function GradesTable({
                   Yaratish
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem onClick={() => handleCreate("assignment")}>
+              <DropdownMenuContent align="end" className={archiveNotice ? "w-60" : "w-44"}>
+                <DropdownMenuItem
+                  onClick={() => handleCreate("assignment")}
+                  disabled={!!archiveNotice}
+                >
                   <FileText />
                   Topshiriq
                 </DropdownMenuItem>
+                {archiveNotice && (
+                  <div className="px-2 pb-1.5 pt-0.5 text-[11px] leading-snug text-muted-foreground">
+                    {archiveNotice}
+                  </div>
+                )}
                 <DropdownMenuItem onClick={() => handleCreate("reuse")}>
                   <Copy />
                   Qayta ishlatish
@@ -857,14 +874,20 @@ export default function GradesTable({
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
-                      onClick={onCreateAssignmentClick}
+                      onClick={archiveNotice ? undefined : onCreateAssignmentClick}
+                      aria-disabled={archiveNotice ? true : undefined}
                       aria-label="Topshiriq qoʻshish"
-                      className="w-full h-full flex items-center justify-center hover:bg-muted/40 transition-colors cursor-pointer rounded-none min-h-0"
+                      className={cn(
+                        "w-full h-full flex items-center justify-center transition-colors rounded-none min-h-0",
+                        archiveNotice
+                          ? "opacity-40 cursor-not-allowed"
+                          : "hover:bg-muted/40 cursor-pointer"
+                      )}
                     >
                       <Plus className="size-4 text-muted-foreground" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Topshiriq qoʻshish</TooltipContent>
+                  <TooltipContent>{archiveNotice ?? "Topshiriq qoʻshish"}</TooltipContent>
                 </Tooltip>
               </TableHead>
               <TableHead

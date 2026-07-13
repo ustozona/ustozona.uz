@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   type Assignment,
   type ClassData,
 } from "@/lib/grades-data";
 import { useGradesStore } from "@/store/useGradesStore";
+import { useCalendarStore } from "@/store/useCalendarStore";
+import { inRange } from "@/lib/academic-calendar";
+import { todayKey } from "@/lib/date-keys";
 import { useMounted } from "@/lib/use-mounted";
 import NewAssignmentModal, { type AssignmentFormValues } from "./NewAssignmentModal";
 import GradesTable from "./GradesTable";
@@ -35,6 +38,8 @@ export default function GradesView({
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
   const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
+  // Faol oʻquv yili oynasi — jurnal ustunlari shu oraliqqa filtrlanadi.
+  const yearRange = useCalendarStore((s) => s.calendar.range);
   const [modal, setModal] = useState<ModalType>(null);
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
 
@@ -51,6 +56,39 @@ export default function GradesView({
   }, []);
 
   const classData = demoClassData ?? classDataMap[classId];
+
+  // Koʻp oʻquv yili 3-bosqich: koʻrsatiladigan topshiriqlarni FAOL yil oynasiga
+  // filtrlaymiz. Bu FAQAT koʻrinish qatlami — store toʻliq qoladi, shuning uchun
+  // barcha mutatorlar (yaratish/tahrir/oʻchirish/reuse/mavzu) toʻliq jurnalga
+  // ishlaydi (ular quyida `classData`/store'ga tayanadi, `viewData`ga emas).
+  // Sanasi yil oraligʻida boʻlmagan topshiriq va uning baholari koʻrinmaydi;
+  // sanasi yoʻq topshiriq (backfill'dan keyin boʻlmasligi kerak) hamma yilda
+  // koʻrinadi. Demo/tur namunasi hamda kalendar sozlanmagan holat filtrsiz.
+  const viewData = useMemo(() => {
+    if (!classData || demoClassData) return classData;
+    const { start, end } = yearRange;
+    if (!start || !end) return classData;
+    const visible = classData.assignments.filter(
+      (a) => !a.date || (a.date >= start && a.date <= end)
+    );
+    if (visible.length === classData.assignments.length) return classData;
+    const visibleIds = new Set(visible.map((a) => a.id));
+    return {
+      ...classData,
+      assignments: visible,
+      grades: classData.grades.filter((g) => visibleIds.has(g.assignmentId)),
+    };
+  }, [classData, demoClassData, yearRange]);
+
+  // Bugun faol yildan tashqarida boʻlsa (arxiv/kelgusi yil koʻrilmoqda) — yangi
+  // topshiriq yaratishni yumshoq bloklaymiz: default sana bugun boʻlgani uchun u
+  // koʻrilayotgan yil oynasiga tushmaydi va darrov yoʻqolib qolardi. Mavjud
+  // yozuvlarni tahrirlash (arxivning asl amali) baribir ishlayveradi. Demo/tur
+  // namunasi va sozlanmagan kalendarda blok yoʻq.
+  const archiveNotice =
+    !demoClassData && yearRange.start && yearRange.end && !inRange(todayKey(), yearRange)
+      ? "Arxiv yilni koʻrmoqdasiz — yangi topshiriq joriy yilga tegishli boʻladi. Joriy yilga qayting."
+      : null;
 
   function handleCellEdit(
     studentId: string,
@@ -408,7 +446,7 @@ export default function GradesView({
           </Card>
         ) : (
           <GradesTable
-            classData={classData}
+            classData={viewData ?? classData}
             onCellEdit={handleCellEdit}
             onReturnAll={handleReturnAll}
             onCreateAssignmentClick={() => setModal("assignment")}
@@ -423,6 +461,7 @@ export default function GradesView({
             }
             onCellMark={handleCellMark}
             onPasteColumn={handlePasteColumn}
+            archiveNotice={archiveNotice}
           />
         )}
       </section>
