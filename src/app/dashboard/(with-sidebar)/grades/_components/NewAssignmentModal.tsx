@@ -34,6 +34,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { TOPIC_COLOR_HEX, type Topic, type Assignment } from "@/lib/grades-data";
 
 const formSchema = z.object({
@@ -41,6 +42,8 @@ const formSchema = z.object({
   maxScore: z.number().min(1, "Noldan katta boʻlishi kerak").max(1000, "Juda katta ball"),
   topicId: z.string().min(1, "Toifa tanlanishi shart"),
   date: z.string().min(1, "Sana tanlanishi shart"),
+  /** Topshirish muddati — ixtiyoriy; xulq avto-ball qoidasi shu muddatga qaraydi. */
+  dueDate: z.string().optional(),
 });
 
 export type AssignmentFormValues = z.infer<typeof formSchema>;
@@ -117,6 +120,7 @@ export default function NewAssignmentModal({
       maxScore: initial?.maxScore ?? 100,
       topicId: initial?.topicId ?? topics[0]?.id ?? "",
       date: initial?.date ?? today(),
+      dueDate: initial?.dueDate ?? "",
     },
   });
 
@@ -260,6 +264,56 @@ export default function NewAssignmentModal({
                         />
                       </PopoverContent>
                     </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="dueDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <FormLabel className="text-label">Topshirish muddati</FormLabel>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="text-muted-foreground transition-colors hover:text-foreground"
+                            aria-label="Topshirish muddati haqida"
+                          >
+                            <Info className="size-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[240px] text-xs leading-snug">
+                          Ixtiyoriy. Muddat oʻtgach katak boʻsh qolgan oʻquvchi xulq
+                          balidan avtomatik minus oladi (Sozlamalar &gt; Xulq'da
+                          oʻchirish mumkin). Bahoga taʼsir qilmaydi.
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <DateKeyPicker
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          className="h-9 flex-1 rounded-lg bg-card text-sm shadow-none"
+                          ariaLabel="Topshirish muddati"
+                        />
+                      </FormControl>
+                      {field.value && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-9 px-2 text-muted-foreground"
+                          onClick={() => field.onChange("")}
+                        >
+                          Tozalash
+                        </Button>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

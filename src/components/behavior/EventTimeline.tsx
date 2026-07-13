@@ -43,6 +43,27 @@ import { formatPoints } from "./SkillCard";
 
 const QUICK_DELETE_REASONS = ["Xato bosdim", "Notoʻgʻri oʻquvchi", "Notoʻgʻri koʻnikma"];
 
+/* Avto-event manba yorligʻi — har avto-ball yonida qayerdan kelgani
+   koʻrinadi (ekspert talabi: shaffoflik). */
+const AUTO_SOURCE_LABEL: Record<string, string> = {
+  attendance: "Davomatdan avtomatik",
+  streak: "Davomat seriyasi bonusi — davomatdan avtomatik",
+  grade: "Jurnaldan avtomatik",
+};
+
+function AutoChip({ source }: { source: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="ml-1.5 inline-flex shrink-0 items-center rounded-full border border-border bg-muted/60 px-1.5 py-px align-middle text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          Avto
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{AUTO_SOURCE_LABEL[source] ?? "Avtomatik"}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 export type EventGroupBy = "date" | "student" | "skill";
 
 /** Hovercard uchun oʻquvchi maʼlumoti (PointsSheet hisoblab beradi). */
@@ -208,9 +229,12 @@ function GroupMemberRow({
 function DeleteReasonField({
   value,
   onChange,
+  required,
 }: {
   value: string;
   onChange: (v: string) => void;
+  /** Avto-minusni bekor qilishda sabab shart (ekspert qarori). */
+  required?: boolean;
 }) {
   return (
     <div className="space-y-2 pt-1">
@@ -234,7 +258,7 @@ function DeleteReasonField({
       <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Sabab (ixtiyoriy)…"
+        placeholder={required ? "Sabab (majburiy)…" : "Sabab (ixtiyoriy)…"}
         rows={2}
         maxLength={500}
       />
@@ -273,6 +297,8 @@ export function EventTimeline({
   const [confirmEvent, setConfirmEvent] = React.useState<BehaviorEvent | null>(null);
   const [confirmGroup, setConfirmGroup] = React.useState<BehaviorEvent[] | null>(null);
   const [deleteReason, setDeleteReason] = React.useState("");
+  // Avto MANFIY yozuvni bekor qilishda izoh majburiy (6-tur ekspert qarori).
+  const requireDeleteReason = !!confirmEvent?.source && confirmEvent.points < 0;
   /* Yigʻilgan seksiyalar — default boʻsh (hammasi ochiq). */
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
 
@@ -450,6 +476,7 @@ export function EventTimeline({
                               {groupBy === "date" ? e.name : null}
                             </>
                           )}
+                          {e.source && <AutoChip source={e.source} />}
                         </p>
                         <TypographyMuted className="mt-0.5 text-xs">
                           {formatTime(e.createdAt)}
@@ -561,6 +588,7 @@ export function EventTimeline({
                       <>
                         <p className="truncate text-sm font-semibold text-foreground">
                           {primaryLabel}
+                          {e.source && <AutoChip source={e.source} />}
                         </p>
                         <TypographyMuted className="truncate text-xs">
                           {e.name} · {formatTime(e.createdAt)}
@@ -568,7 +596,10 @@ export function EventTimeline({
                       </>
                     ) : (
                       <>
-                        <p className="truncate text-sm font-medium text-foreground">{e.name}</p>
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {e.name}
+                          {e.source && <AutoChip source={e.source} />}
+                        </p>
                         <TypographyMuted className="text-xs">{formatTime(e.createdAt)}</TypographyMuted>
                       </>
                     )}
@@ -656,12 +687,20 @@ export function EventTimeline({
             <AlertDialogDescription>
               «{confirmEvent?.name}» ({confirmEvent ? formatPoints(confirmEvent.points) : ""})
               yozuvi oʻchiriladi va balansdan olib tashlanadi.
+              {confirmEvent?.source &&
+                " Bu avtomatik yozuv — oʻchirilgach qayta yaratilmaydi."}
+              {requireDeleteReason && " Avtomatik minusni bekor qilish sababi yozilishi shart."}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <DeleteReasonField value={deleteReason} onChange={setDeleteReason} />
+          <DeleteReasonField
+            value={deleteReason}
+            onChange={setDeleteReason}
+            required={requireDeleteReason}
+          />
           <AlertDialogFooter>
             <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
             <AlertDialogAction
+              disabled={requireDeleteReason && deleteReason.trim().length === 0}
               onClick={() => {
                 if (confirmEvent) onDelete(confirmEvent, deleteReason.trim() || undefined);
                 setConfirmEvent(null);

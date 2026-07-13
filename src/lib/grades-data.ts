@@ -130,6 +130,9 @@ export type Assignment = {
   maxScore: number;
   topicId: string;             // Baholash turi va shkala shu toifadan meros olinadi
   date?: string;               // yyyy-mm-dd (real sana; keyin to‘ldiriladi)
+  /** Topshirish muddati (yyyy-mm-dd). FAQAT metadata — grades v1 hisob
+      modeliga aralashmaydi; xulq avto-ball qoidasi shu muddatga qaraydi. */
+  dueDate?: string;
 };
 
 export type Grade = {

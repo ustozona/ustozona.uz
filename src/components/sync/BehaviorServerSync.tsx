@@ -21,6 +21,7 @@ function selectSnapshot(s: BehaviorState): BehaviorSnapshot {
     eventsByClass: s.eventsByClass,
     redemptions: s.redemptions,
     deletions: s.deletions,
+    autoSettings: s.autoSettings,
   };
 }
 

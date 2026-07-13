@@ -199,6 +199,7 @@ export default function GradesView({
         maxScore: input.maxScore,
         topicId: input.topicId,
         date: input.date,
+        ...(input.dueDate ? { dueDate: input.dueDate } : {}),
       };
       return {
         ...cd,
@@ -218,13 +219,17 @@ export default function GradesView({
       ...cd,
       assignments: cd.assignments.map((a) =>
         a.id === id
-          ? {
-              ...a,
-              title: input.title,
-              maxScore: input.maxScore,
-              topicId: input.topicId,
-              date: input.date,
-            }
+          ? (() => {
+              const { dueDate: _drop, ...rest } = a;
+              return {
+                ...rest,
+                title: input.title,
+                maxScore: input.maxScore,
+                topicId: input.topicId,
+                date: input.date,
+                ...(input.dueDate ? { dueDate: input.dueDate } : {}),
+              };
+            })()
           : a
       ),
     }));
@@ -439,6 +444,7 @@ export default function GradesView({
             maxScore: editingAssignment.maxScore,
             topicId: editingAssignment.topicId,
             date: editingAssignment.date ?? new Date().toISOString().slice(0, 10),
+            dueDate: editingAssignment.dueDate ?? "",
           }}
           onClose={() => setEditingAssignment(null)}
           onSubmit={handleUpdateAssignment}

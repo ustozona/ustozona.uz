@@ -1,4 +1,5 @@
 import type {
+  BehaviorAutoSettings,
   BehaviorDeletionLogEntry,
   BehaviorEvent,
   BehaviorRedemption,
@@ -8,6 +9,7 @@ import type {
 import {
   emptyBehaviorBatch,
   isEmptyBehaviorBatch,
+  type AutoSettingsUpsert,
   type BehaviorBatch,
   type EventUpsert,
   type RedemptionUpsert,
@@ -33,6 +35,8 @@ export type BehaviorSnapshot = {
   redemptions: BehaviorRedemption[];
   /** Append-only jurnal — diff faqat yangi qoʻshilganlarni insert qiladi. */
   deletions: BehaviorDeletionLogEntry[];
+  /** Avtomatik ball qoidalari — bitta obyekt, reference tenglik boʻyicha diff. */
+  autoSettings: BehaviorAutoSettings;
 };
 
 function toSkillUpsert(s: BehaviorSkill, sortOrder: number): SkillUpsert {
@@ -60,7 +64,12 @@ function toEventUpsert(classId: string, e: BehaviorEvent): EventUpsert {
     date: e.date,
     createdAt: e.createdAt,
     groupId: e.groupId ?? null,
+    source: e.source ?? null,
   };
+}
+
+function toAutoSettingsUpsert(s: BehaviorAutoSettings): AutoSettingsUpsert {
+  return { ...s };
 }
 
 function toRewardUpsert(r: BehaviorReward, sortOrder: number): RewardUpsert {
@@ -175,7 +184,8 @@ export function diffBehavior(
     prev.rewards === next.rewards &&
     prev.eventsByClass === next.eventsByClass &&
     prev.redemptions === next.redemptions &&
-    prev.deletions === next.deletions
+    prev.deletions === next.deletions &&
+    prev.autoSettings === next.autoSettings
   ) {
     return null;
   }
@@ -199,6 +209,9 @@ export function diffBehavior(
   }
   if (prev.deletions !== next.deletions) {
     diffDeletions(prev.deletions, next.deletions, batch);
+  }
+  if (prev.autoSettings !== next.autoSettings) {
+    batch.autoSettingsUpsert.push(toAutoSettingsUpsert(next.autoSettings));
   }
 
   return isEmptyBehaviorBatch(batch) ? null : batch;

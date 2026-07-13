@@ -3,6 +3,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
+  behaviorAutoSettings,
   behaviorDeletions,
   behaviorEvents,
   behaviorRedemptions,
@@ -10,6 +11,7 @@ import {
   behaviorSkills,
   classes,
   students,
+  type BehaviorAutoSettingsRow,
   type BehaviorDeletionRow,
   type BehaviorEventRow,
   type BehaviorRedemptionRow,
@@ -20,8 +22,12 @@ import { requireTeacher } from "@/server/session";
 import {
   DEFAULT_REWARD_DEFS,
   DEFAULT_SKILL_DEFS,
+  defaultAutoSettings,
   defaultRewardId,
   defaultSkillId,
+  todayDateKey,
+  type BehaviorAutoSettings,
+  type BehaviorAutoSource,
   type BehaviorDeletionLogEntry,
   type BehaviorEvent,
   type BehaviorRedemption,
@@ -76,6 +82,25 @@ function rowToEvent(r: BehaviorEventRow): BehaviorEvent {
     createdAt: r.createdAt,
     ...(r.note ? { note: r.note } : {}),
     ...(r.groupId ? { groupId: r.groupId } : {}),
+    ...(r.source ? { source: r.source as BehaviorAutoSource } : {}),
+  };
+}
+
+function rowToAutoSettings(r: BehaviorAutoSettingsRow): BehaviorAutoSettings {
+  return {
+    attendanceEnabled: r.attendanceEnabled,
+    latePoints: r.latePoints,
+    absentPoints: r.absentPoints,
+    presentEnabled: r.presentEnabled,
+    presentPoints: r.presentPoints,
+    streakEnabled: r.streakEnabled,
+    streakN: r.streakN,
+    streakBonus: r.streakBonus,
+    attendanceSince: r.attendanceSince,
+    journalEnabled: r.journalEnabled,
+    gradedPoints: r.gradedPoints,
+    missedDuePoints: r.missedDuePoints,
+    journalSince: r.journalSince,
   };
 }
 
@@ -118,6 +143,7 @@ export type BehaviorPayload = {
   eventsByClass: Record<string, BehaviorEvent[]>;
   redemptions: BehaviorRedemption[];
   deletions: BehaviorDeletionLogEntry[];
+  autoSettings: BehaviorAutoSettings;
 };
 
 async function seedDefaults(tid: string): Promise<void> {
@@ -157,7 +183,7 @@ export async function getBehaviorPayload(): Promise<BehaviorPayload> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
 
-  let [skillRows, rewardRows, eventRows, redemptionRows, deletionRows] = await Promise.all([
+  let [skillRows, rewardRows, eventRows, redemptionRows, deletionRows, autoRows] = await Promise.all([
     db
       .select()
       .from(behaviorSkills)
@@ -177,7 +203,25 @@ export async function getBehaviorPayload(): Promise<BehaviorPayload> {
       .select()
       .from(behaviorDeletions)
       .where(eq(behaviorDeletions.teacherId, tid)),
+    db
+      .select()
+      .from(behaviorAutoSettings)
+      .where(eq(behaviorAutoSettings.teacherId, tid)),
   ]);
+
+  // Avto-sozlama qatori yoʻq — defaultlar bilan seed (sinceDate = bugun:
+  // mavjud maʼlumotli userga ham langar deploy kunidan tushadi).
+  if (autoRows.length === 0) {
+    const seeded = defaultAutoSettings(todayDateKey());
+    await db
+      .insert(behaviorAutoSettings)
+      .values({ teacherId: tid, ...seeded, updatedAt: new Date().toISOString() })
+      .onConflictDoNothing();
+    autoRows = await db
+      .select()
+      .from(behaviorAutoSettings)
+      .where(eq(behaviorAutoSettings.teacherId, tid));
+  }
 
   // Yangi oʻqituvchi: 4 jadval ham boʻsh — defaultlarni serverda yaratamiz.
   if (
@@ -220,6 +264,9 @@ export async function getBehaviorPayload(): Promise<BehaviorPayload> {
     deletions: deletionRows
       .map(rowToDeletion)
       .sort((a, b) => a.deletedAt.localeCompare(b.deletedAt)),
+    autoSettings: autoRows[0]
+      ? rowToAutoSettings(autoRows[0])
+      : defaultAutoSettings(todayDateKey()),
   };
 }
 
@@ -338,6 +385,7 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
           date: e.date,
           createdAt: e.createdAt,
           groupId: e.groupId,
+          source: e.source,
         }))
       )
       .onConflictDoUpdate({
@@ -349,6 +397,7 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
           description: sql`excluded.description`,
           note: sql`excluded.note`,
           date: sql`excluded.date`,
+          source: sql`excluded.source`,
         },
         setWhere: eq(behaviorEvents.teacherId, tid),
       });
@@ -422,5 +471,32 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
         }))
       )
       .onConflictDoNothing();
+  }
+
+  /* 7. Avtomatik ball sozlamalari — per-teacher bitta qator. */
+  const autoUpsert = batch.autoSettingsUpsert[0];
+  if (autoUpsert) {
+    await db
+      .insert(behaviorAutoSettings)
+      .values({ teacherId: tid, ...autoUpsert, updatedAt: now })
+      .onConflictDoUpdate({
+        target: behaviorAutoSettings.teacherId,
+        set: {
+          attendanceEnabled: sql`excluded.attendance_enabled`,
+          latePoints: sql`excluded.late_points`,
+          absentPoints: sql`excluded.absent_points`,
+          presentEnabled: sql`excluded.present_enabled`,
+          presentPoints: sql`excluded.present_points`,
+          streakEnabled: sql`excluded.streak_enabled`,
+          streakN: sql`excluded.streak_n`,
+          streakBonus: sql`excluded.streak_bonus`,
+          attendanceSince: sql`excluded.attendance_since`,
+          journalEnabled: sql`excluded.journal_enabled`,
+          gradedPoints: sql`excluded.graded_points`,
+          missedDuePoints: sql`excluded.missed_due_points`,
+          journalSince: sql`excluded.journal_since`,
+          updatedAt: now,
+        },
+      });
   }
 }

@@ -36,6 +36,8 @@ export const eventUpsertSchema = z.object({
   date: z.string().min(8).max(20), // "YYYY-MM-DD"
   createdAt: z.string().min(1).max(50), // ISO
   groupId: id.nullable(),
+  /** Avto-event manbasi; null = qoʻlda berilgan. */
+  source: z.enum(["attendance", "streak", "grade"]).nullable(),
 });
 
 export const rewardUpsertSchema = z.object({
@@ -72,6 +74,23 @@ export const deletionInsertSchema = z.object({
   deletedAt: z.string().min(1).max(50), // ISO
 });
 
+/** Avtomatik ball qoidalari — per-teacher bitta qator. */
+export const autoSettingsUpsertSchema = z.object({
+  attendanceEnabled: z.boolean(),
+  latePoints: z.number().int().min(-10).max(-1),
+  absentPoints: z.number().int().min(-10).max(-1),
+  presentEnabled: z.boolean(),
+  presentPoints: z.number().int().min(1).max(5),
+  streakEnabled: z.boolean(),
+  streakN: z.number().int().min(2).max(20),
+  streakBonus: z.number().int().min(1).max(10),
+  attendanceSince: z.string().min(8).max(20), // "YYYY-MM-DD"
+  journalEnabled: z.boolean(),
+  gradedPoints: z.number().int().min(1).max(5),
+  missedDuePoints: z.number().int().min(-10).max(-1),
+  journalSince: z.string().min(8).max(20),
+});
+
 export const behaviorBatchSchema = z.object({
   skillsUpsert: z.array(skillUpsertSchema).max(500),
   skillsDelete: z.array(id).max(500),
@@ -82,6 +101,7 @@ export const behaviorBatchSchema = z.object({
   redemptionsUpsert: z.array(redemptionUpsertSchema).max(20000),
   redemptionsDelete: z.array(id).max(20000),
   deletionsInsert: z.array(deletionInsertSchema).max(20000),
+  autoSettingsUpsert: z.array(autoSettingsUpsertSchema).max(1),
 });
 
 export type SkillUpsert = z.infer<typeof skillUpsertSchema>;
@@ -89,6 +109,7 @@ export type EventUpsert = z.infer<typeof eventUpsertSchema>;
 export type RewardUpsert = z.infer<typeof rewardUpsertSchema>;
 export type RedemptionUpsert = z.infer<typeof redemptionUpsertSchema>;
 export type DeletionInsert = z.infer<typeof deletionInsertSchema>;
+export type AutoSettingsUpsert = z.infer<typeof autoSettingsUpsertSchema>;
 export type BehaviorBatch = z.infer<typeof behaviorBatchSchema>;
 
 export function emptyBehaviorBatch(): BehaviorBatch {
@@ -102,6 +123,7 @@ export function emptyBehaviorBatch(): BehaviorBatch {
     redemptionsUpsert: [],
     redemptionsDelete: [],
     deletionsInsert: [],
+    autoSettingsUpsert: [],
   };
 }
 
@@ -115,6 +137,7 @@ export function isEmptyBehaviorBatch(b: BehaviorBatch): boolean {
     b.rewardsDelete.length === 0 &&
     b.redemptionsUpsert.length === 0 &&
     b.redemptionsDelete.length === 0 &&
-    b.deletionsInsert.length === 0
+    b.deletionsInsert.length === 0 &&
+    b.autoSettingsUpsert.length === 0
   );
 }

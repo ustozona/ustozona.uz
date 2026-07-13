@@ -92,6 +92,7 @@ function toAssignmentUpsert(
     title: a.title,
     maxScore: a.maxScore,
     ...(a.date ? { date: a.date } : {}),
+    ...(a.dueDate ? { dueDate: a.dueDate } : {}),
     sortOrder,
   };
 }

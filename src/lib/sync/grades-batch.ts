@@ -60,6 +60,7 @@ export const assignmentUpsertSchema = z.object({
   title: z.string().min(1).max(300),
   maxScore: z.number().int().min(1).max(100000),
   date: z.string().max(20).optional(),
+  dueDate: z.string().max(20).optional(),
   sortOrder: z.number().int().min(0),
 });
 

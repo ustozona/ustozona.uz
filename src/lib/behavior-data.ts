@@ -26,11 +26,16 @@ export type BehaviorSkill = {
   description?: string;
 };
 
+/** Avto-event manbasi; maydon yoʻqligi = qoʻlda berilgan (manual). */
+export type BehaviorAutoSource = "attendance" | "streak" | "grade";
+
 export type BehaviorEvent = {
   id: string;
   studentId: string;
   /** Koʻnikma oʻchirilgan boʻlishi mumkin — tarix snapshot'dan oʻqiladi. */
   skillId?: string;
+  /** Avtomatik yaratilgan eventlarda toʻldiriladi (reconciler faqat shularga tegadi). */
+  source?: BehaviorAutoSource;
   /* ── koʻnikma snapshot'i ── */
   name: string;
   emoji: string;
@@ -83,6 +88,47 @@ export type BehaviorRedemption = {
   date: string; // "YYYY-MM-DD"
   createdAt: string; // ISO
 };
+
+/* ── Avtomatik ballar sozlamasi ─────────────────────────────────────── */
+
+/** Davomat/jurnal → xulq avto-ball qoidalari (ekspert-konsultatsiya defaultlari).
+    `*Since` — qoida yoqilgan sana: reconciler undan oldingi sanalarga tegmaydi
+    (yarim yilda yoqilganda retro-toshqin boʻlmasin). */
+export type BehaviorAutoSettings = {
+  attendanceEnabled: boolean;
+  latePoints: number; // manfiy
+  absentPoints: number; // manfiy (sababsiz)
+  /** "Har keldi uchun +ball" — default OFF (ball inflatsiyasi; davomati past sinflar uchun opsiya). */
+  presentEnabled: boolean;
+  presentPoints: number; // musbat
+  /** Ketma-ket N dars kechikish/sababsizsiz = bonus. */
+  streakEnabled: boolean;
+  streakN: number;
+  streakBonus: number; // musbat
+  attendanceSince: string; // "YYYY-MM-DD"
+  journalEnabled: boolean;
+  gradedPoints: number; // musbat
+  missedDuePoints: number; // manfiy
+  journalSince: string; // "YYYY-MM-DD"
+};
+
+export function defaultAutoSettings(sinceDate: string = todayDateKey()): BehaviorAutoSettings {
+  return {
+    attendanceEnabled: true,
+    latePoints: -1,
+    absentPoints: -2,
+    presentEnabled: false,
+    presentPoints: 1,
+    streakEnabled: true,
+    streakN: 5,
+    streakBonus: 2,
+    attendanceSince: sinceDate,
+    journalEnabled: true,
+    gradedPoints: 1,
+    missedDuePoints: -1,
+    journalSince: sinceDate,
+  };
+}
 
 /* ── Defaultlar (slug bilan — DAL deterministik id yasaydi) ─────────── */
 

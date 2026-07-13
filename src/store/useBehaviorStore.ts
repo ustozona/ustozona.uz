@@ -1,10 +1,12 @@
 import { create } from "zustand";
 import {
+  defaultAutoSettings,
   defaultRewards,
   defaultSkills,
   studentBalance,
   todayDateKey,
   uid,
+  type BehaviorAutoSettings,
   type BehaviorDeletionLogEntry,
   type BehaviorEvent,
   type BehaviorRedemption,
@@ -34,11 +36,26 @@ interface BehaviorState {
   redemptions: BehaviorRedemption[];
   /** Oʻchirish jurnali — append-only, sync insert-only (hech qachon delete yoʻq). */
   deletions: BehaviorDeletionLogEntry[];
+  /** Avtomatik ball qoidalari (davomat/jurnal → xulq). */
+  autoSettings: BehaviorAutoSettings;
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 
   setSkills: (next: BehaviorSkill[]) => void;
   setRewards: (next: BehaviorReward[]) => void;
+
+  /** Qoida OFF→ON oʻtganda tegishli `*Since` bugunga koʻchadi (retro-toshqin himoyasi). */
+  setAutoSettings: (next: BehaviorAutoSettings) => void;
+
+  /**
+   * Reconciler yozuvi: avto-eventlarni qoʻshish/yangilash/olib tashlash
+   * BITTA immutable yangilanishda. Oʻchirish jurnali YOZILMAYDI — bu
+   * tuzatish (davomat/baho oʻzgardi), qasddan oʻchirish emas.
+   */
+  applyAutoReconcile: (
+    classId: string,
+    changes: { toAdd: BehaviorEvent[]; toUpdate: BehaviorEvent[]; toRemoveIds: string[] }
+  ) => void;
 
   /**
    * Tanlangan oʻquvchilarga koʻnikma boʻyicha ball yozadi (har biriga
@@ -81,11 +98,45 @@ export const useBehaviorStore = create<BehaviorState>()((set, get) => ({
   eventsByClass: {},
   redemptions: [],
   deletions: [],
+  autoSettings: defaultAutoSettings(),
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),
 
   setSkills: (next) => set({ skills: next }),
   setRewards: (next) => set({ rewards: next }),
+
+  setAutoSettings: (next) =>
+    set((s) => {
+      const prev = s.autoSettings;
+      const today = todayDateKey();
+      return {
+        autoSettings: {
+          ...next,
+          attendanceSince:
+            !prev.attendanceEnabled && next.attendanceEnabled ? today : next.attendanceSince,
+          journalSince:
+            !prev.journalEnabled && next.journalEnabled ? today : next.journalSince,
+        },
+      };
+    }),
+
+  applyAutoReconcile: (classId, { toAdd, toUpdate, toRemoveIds }) => {
+    if (toAdd.length === 0 && toUpdate.length === 0 && toRemoveIds.length === 0) return;
+    const updateById = new Map(toUpdate.map((e) => [e.id, e]));
+    const removeIds = new Set(toRemoveIds);
+    set((s) => {
+      const prev = s.eventsByClass[classId] ?? [];
+      const next: BehaviorEvent[] = [];
+      for (const e of prev) {
+        if (removeIds.has(e.id)) continue;
+        const upd = updateById.get(e.id);
+        // Mavjud izoh saqlanadi — reconciler note'ga tegmaydi.
+        next.push(upd ? { ...upd, ...(e.note ? { note: e.note } : {}) } : e);
+      }
+      next.push(...toAdd);
+      return { eventsByClass: { ...s.eventsByClass, [classId]: next } };
+    });
+  },
 
   awardPoints: (classId, studentIds, skill, note) => {
     if (studentIds.length === 0) return [];

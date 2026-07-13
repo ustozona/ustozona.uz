@@ -68,6 +68,8 @@ export const assignments = pgTable(
     /** Xom maxraj — baho foizga shu orqali normallanadi. */
     maxScore: integer("max_score").notNull(),
     date: text("date"), // "YYYY-MM-DD"
+    /** Topshirish muddati — metadata (hisobga kirmaydi), xulq avto-ball oʻqiydi. */
+    dueDate: text("due_date"), // "YYYY-MM-DD"
     /** Jurnal ustunlari tartibi — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

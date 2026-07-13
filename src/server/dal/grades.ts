@@ -105,6 +105,7 @@ function rowToAssignment(a: AssignmentRow): Assignment {
     maxScore: a.maxScore,
     topicId: a.topicId,
     ...(a.date ? { date: a.date } : {}),
+    ...(a.dueDate ? { dueDate: a.dueDate } : {}),
   };
 }
 
@@ -300,6 +301,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           title: a.title,
           maxScore: a.maxScore,
           date: a.date ?? null,
+          dueDate: a.dueDate ?? null,
           sortOrder: a.sortOrder,
         }))
       )
@@ -311,6 +313,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           title: sql`excluded.title`,
           maxScore: sql`excluded.max_score`,
           date: sql`excluded.date`,
+          dueDate: sql`excluded.due_date`,
           sortOrder: sql`excluded.sort_order`,
           updatedAt: now,
         },

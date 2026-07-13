@@ -1,4 +1,4 @@
-import { index, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text } from "drizzle-orm/pg-core";
 import { teachers } from "./teachers";
 import { classes, students } from "./classes";
 
@@ -57,6 +57,8 @@ export const behaviorEvents = pgTable(
     createdAt: text("created_at").notNull(), // ISO
     /** Bitta awardPoints chaqiruvida 2+ oʻquvchiga birga berilgan boʻlsa — umumiy id (UI'da bitta qatorga birlashtirish uchun). */
     groupId: text("group_id"),
+    /** Avto-event manbasi ("attendance"|"streak"|"grade"); NULL = qoʻlda. */
+    source: text("source"),
   },
   (t) => [
     index("behavior_events_teacher_idx").on(t.teacherId),
@@ -139,8 +141,31 @@ export const behaviorDeletions = pgTable(
   ]
 );
 
+/** Avtomatik ball qoidalari — per-teacher bitta qator (PK = teacher_id).
+    Qator yoʻqligi = hali seed qilinmagan (birinchi payload'da yaratiladi). */
+export const behaviorAutoSettings = pgTable("behavior_auto_settings", {
+  teacherId: text("teacher_id")
+    .primaryKey()
+    .references(() => teachers.id, { onDelete: "cascade" }),
+  attendanceEnabled: boolean("attendance_enabled").notNull(),
+  latePoints: integer("late_points").notNull(),
+  absentPoints: integer("absent_points").notNull(),
+  presentEnabled: boolean("present_enabled").notNull(),
+  presentPoints: integer("present_points").notNull(),
+  streakEnabled: boolean("streak_enabled").notNull(),
+  streakN: integer("streak_n").notNull(),
+  streakBonus: integer("streak_bonus").notNull(),
+  attendanceSince: text("attendance_since").notNull(), // "YYYY-MM-DD"
+  journalEnabled: boolean("journal_enabled").notNull(),
+  gradedPoints: integer("graded_points").notNull(),
+  missedDuePoints: integer("missed_due_points").notNull(),
+  journalSince: text("journal_since").notNull(), // "YYYY-MM-DD"
+  updatedAt: text("updated_at").notNull(), // ISO
+});
+
 export type BehaviorSkillRow = typeof behaviorSkills.$inferSelect;
 export type BehaviorEventRow = typeof behaviorEvents.$inferSelect;
 export type BehaviorRewardRow = typeof behaviorRewards.$inferSelect;
 export type BehaviorRedemptionRow = typeof behaviorRedemptions.$inferSelect;
 export type BehaviorDeletionRow = typeof behaviorDeletions.$inferSelect;
+export type BehaviorAutoSettingsRow = typeof behaviorAutoSettings.$inferSelect;
