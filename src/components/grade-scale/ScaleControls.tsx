@@ -15,13 +15,13 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useClassStore } from "@/store/useClassStore";
 import { GRADING_SCALE_PRESETS } from "@/lib/grades-data";
 import { gradeBadgeClass } from "@/lib/score-colors";
 import {
   formatByScaleKind,
   scoreLabel,
   getScaleBoundaries,
+  type JournalScale,
   type JournalScaleKind,
   type LabelStyle,
 } from "@/lib/grade-scale";
@@ -118,12 +118,19 @@ function BoundaryTable({ boundaries }: { boundaries: { min: number; label: strin
 /**
  * Jurnal baholash shkalasi boshqaruvi (docs/grades-scale-model.md) — yagona
  * manba, Sozlamalar sahifasi (JournalSection) va Jurnal toolbar modali
- * (GradesSettingsModal) shu komponentni ishlatadi. Faqat koʻrinishni
- * oʻzgartiradi — baholar ichkarida foizda saqlanadi.
+ * (GradesSettingsModal) shu komponentni ishlatadi. Controlled: draft holatini
+ * host boshqaradi (explicit Save), store'ga bevosita yozmaydi. Faqat
+ * koʻrinishni oʻzgartiradi — baholar ichkarida foizda saqlanadi.
  */
-export default function ScaleControls() {
-  const journalScale = useClassStore((s) => s.journalScale);
-  const setJournalScale = useClassStore((s) => s.setJournalScale);
+export default function ScaleControls({
+  value,
+  onChange,
+}: {
+  value: JournalScale;
+  onChange: (patch: Partial<JournalScale>) => void;
+}) {
+  const journalScale = value;
+  const setJournalScale = onChange;
 
   const uzPresets = GRADING_SCALE_PRESETS.filter((p) => p.group === "uz");
   const intlPresets = GRADING_SCALE_PRESETS.filter((p) => p.group === "intl");

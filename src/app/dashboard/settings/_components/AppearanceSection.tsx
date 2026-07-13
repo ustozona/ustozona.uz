@@ -3,13 +3,6 @@
 import * as React from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon, Monitor, Check } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   useSettingsStore,
@@ -18,7 +11,6 @@ import {
   BACKGROUND_SCALE_MIN,
   BACKGROUND_SCALE_MAX,
   type WorkspaceBackground as BgKind,
-  type AppLanguage,
 } from "@/store/useSettingsStore";
 import { backgroundStyle } from "@/components/WorkspaceBackground";
 import { LANGUAGES } from "@/lib/languages";
@@ -26,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { KarakalpakFlag } from "@/components/ui/karakalpak-flag";
 import { Slider } from "@/components/ui/slider";
-import { SettingsGroup, SettingRow, SaveSignalPing } from "./SettingsShared";
+import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
 
 const THEMES: { value: string; label: string; icon: React.ElementType }[] = [
   { value: "light", label: "Kunduzgi", icon: Sun },
@@ -55,7 +47,7 @@ export default function AppearanceSection() {
   const backgroundScale = normalizeBackgroundScale(useSettingsStore((s) => s.backgroundScale));
   const setBackgroundScale = useSettingsStore((s) => s.setBackgroundScale);
   const language = useSettingsStore((s) => s.language);
-  const setLanguage = useSettingsStore((s) => s.setLanguage);
+  const currentLanguage = LANGUAGES.find((l) => l.value === language) ?? LANGUAGES[0];
 
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
@@ -64,7 +56,7 @@ export default function AppearanceSection() {
   return (
     <>
       {/* Mavzu */}
-      <SettingsGroup
+      <SettingsCard
         title="Mavzu"
         description="Kunduzgi, tungi yoki qurilma tizimiga mos keladigan mavzuni tanlang."
         action={<SaveSignalPing signal={activeTheme} />}
@@ -92,10 +84,10 @@ export default function AppearanceSection() {
             );
           })}
         </div>
-      </SettingsGroup>
+      </SettingsCard>
 
       {/* Ishchi maydon foni */}
-      <SettingsGroup
+      <SettingsCard
         title="Ishchi maydon foni"
         description="Asosiy ishchi maydon foni koʻrinishi."
         action={<SaveSignalPing signal={`${workspaceBackground}-${backgroundScale}`} />}
@@ -145,39 +137,30 @@ export default function AppearanceSection() {
             </span>
           </div>
         </SettingRow>
-      </SettingsGroup>
+      </SettingsCard>
 
       {/* Til */}
-      <SettingsGroup title="Til" description="Interfeys tili. Hozirda faqat oʻzbek tili toʻliq integratsiya qilingan.">
-        <SettingRow title="Interfeys tili" description="Yaqin orada boshqa tillar ham qoʻshiladi.">
-          <Select value={language} onValueChange={(v) => setLanguage(v as AppLanguage)}>
-            <SelectTrigger className="w-56" size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent position="popper" side="top" align="end">
-              {LANGUAGES.map((l) => (
-                <SelectItem key={l.value} value={l.value} disabled={!l.ready}>
-                  {l.flagCode ? (
-                    <AppleEmoji code={l.flagCode} label={l.label} className="size-4 rounded-[3px]" />
-                  ) : (
-                    <KarakalpakFlag className="size-4 shrink-0 rounded-[3px]" />
-                  )}
-                  <span className="flex-1">{l.label}</span>
-                  {!l.ready && (
-                    <Badge variant="secondary" className="gap-1.5 text-[10px] font-normal">
-                      <span className="relative flex size-1.5">
-                        <span className="absolute inline-flex size-full animate-ping rounded-full bg-muted-foreground/60" />
-                        <span className="relative inline-flex size-1.5 rounded-full bg-muted-foreground" />
-                      </span>
-                      Tez orada
-                    </Badge>
-                  )}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <SettingsCard title="Til" description="Interfeys tili. Hozirda faqat oʻzbek tili toʻliq integratsiya qilingan.">
+        <SettingRow
+          title={
+            <span className="flex items-center gap-2">
+              {currentLanguage?.flagCode ? (
+                <AppleEmoji
+                  code={currentLanguage.flagCode}
+                  label={currentLanguage.label}
+                  className="size-4 rounded-[3px]"
+                />
+              ) : (
+                <KarakalpakFlag className="size-4 shrink-0 rounded-[3px]" />
+              )}
+              {currentLanguage?.label ?? "Oʻzbekcha"}
+            </span>
+          }
+          description="Interfeys tili"
+        >
+          <Badge variant="secondary">Boshqa tillar tez orada</Badge>
         </SettingRow>
-      </SettingsGroup>
+      </SettingsCard>
     </>
   );
 }

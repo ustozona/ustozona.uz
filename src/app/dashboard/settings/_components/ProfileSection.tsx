@@ -1,16 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import {
-  GraduationCap,
-  Users,
-  BookOpen,
-  ClipboardList,
-  Pencil,
-  Trash2,
-  BadgeCheck,
-} from "lucide-react";
+import { Pencil, Trash2, BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,15 +9,9 @@ import { BirthDatePicker } from "@/components/ui/birth-date-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useCalendarStore } from "@/store/useCalendarStore";
-import { isCalendarConfigured } from "@/lib/academic-calendar";
-import { useLessonStore } from "@/store/useLessonStore";
-import { useTaskStore } from "@/store/useTaskStore";
-import { useGradesStore } from "@/store/useGradesStore";
-import { CLASS_COLOR_HEX, type ClassColor, classTints } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { MONTHS_UZ } from "@/lib/localization";
-import { cn } from "@/lib/utils";
-import { SettingsGroup, SaveSignalPing } from "./SettingsShared";
+import { SaveFooter, SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2MB
 
@@ -47,70 +32,28 @@ function formatJoined(iso: string) {
   return `${MONTHS_UZ[m - 1]} ${y}`;
 }
 
-function StatCard({
-  icon: Icon,
-  color,
-  value,
-  label,
-  href,
-}: {
-  icon: React.ElementType;
-  color: ClassColor;
-  value: React.ReactNode;
-  label: string;
-  href: string;
-}) {
-  const tints = classTints(color);
-  const style = {
-    ["--stat-border" as string]: (tints.softBorder as React.CSSProperties).borderColor,
-    ["--stat-border-hover" as string]: (tints.ring as React.CSSProperties).borderColor,
-    ["--stat-bg" as string]: (tints.surface as React.CSSProperties).backgroundColor,
-    ["--stat-bg-hover" as string]: (tints.tint as React.CSSProperties).backgroundColor,
-  } as React.CSSProperties;
-  return (
-    <Link
-      href={href}
-      style={style}
-      className="group flex flex-col gap-3 rounded-xl border border-[var(--stat-border)] bg-[var(--stat-bg)] px-4 py-4 transition-colors hover:border-[var(--stat-border-hover)] hover:bg-[var(--stat-bg-hover)]"
-    >
-      <div className="flex items-center gap-2">
-        <div
-          style={tints.iconBg}
-          className="flex size-7 shrink-0 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110"
-        >
-          <Icon className="size-4" style={tints.iconText} strokeWidth={2} />
-        </div>
-        <span className="heading-small">{label}</span>
-      </div>
-      <span className="heading-page tabular-nums">
-        {value} <span className="text-body font-normal text-muted-foreground">ta</span>
-      </span>
-    </Link>
-  );
-}
-
 export default function ProfileSection() {
   const profile = useSettingsStore((s) => s.profile);
   const setProfile = useSettingsStore((s) => s.setProfile);
-  const calendar = useCalendarStore((s) => s.calendar);
-  const configured = isCalendarConfigured(calendar);
-  const yearLabel = calendar.yearLabel;
-
-  const lessonCount = useLessonStore((s) => s.lessons.length);
-  const taskCount = useTaskStore((s) => s.tasks.length);
-
-  // Hidratsiya oldidan store sonlari farq qilishi mumkin — mount-gate.
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
-
-  const classDataMap = useGradesStore((s) => s.classDataMap);
-  const classCount = Object.keys(classDataMap).length;
-  const studentCount = Object.values(classDataMap).reduce((n, cd) => n + cd.students.length, 0);
   const avatarHex =
     CLASS_COLOR_HEX[(profile.avatarColor as ClassColor) ?? "orange"] ?? CLASS_COLOR_HEX.orange;
 
   const isGoogle = profile.provider === "google";
-  const nameError = profile.name.trim().length === 0;
+
+  // Faqat forma maydonlari draft'da — avatar darhol saqlanadi (subset,
+  // aks holda dirty draft'ni saqlash avatar oʻzgarishini bosib ketardi).
+  const formValues = React.useMemo(
+    () => ({
+      name: profile.name,
+      school: profile.school,
+      subject: profile.subject,
+      birthDate: profile.birthDate,
+    }),
+    [profile.name, profile.school, profile.subject, profile.birthDate]
+  );
+  const { draft, setDraft, dirty, save, reset } = useDraft(formValues, setProfile);
+  const nameError = draft.name.trim().length === 0;
+  useRegisterDraft("profil-forma", dirty, save, reset, !nameError);
 
   const fileRef = React.useRef<HTMLInputElement>(null);
 
@@ -138,12 +81,12 @@ export default function ProfileSection() {
   return (
     <>
       {/* Asosiy maʼlumotlar */}
-      <SettingsGroup
+      <SettingsCard
         title="Asosiy maʼlumotlar"
-        description="Ismingiz yon panel (sidebar) hamda bosh sahifadagi salomlashuv matnida aks etadi. Oʻzgarishlar avtomatik ravishda saqlanadi."
-        action={<SaveSignalPing signal={JSON.stringify(profile)} />}
+        description="Ismingiz yon panel (sidebar) hamda bosh sahifadagi salomlashuv matnida aks etadi."
+        footer={<SaveFooter dirty={dirty} disabled={nameError} onSave={save} onReset={reset} />}
       >
-        <div className="flex flex-col gap-4 rounded-xl border border-border bg-card px-5 py-5 sm:flex-row sm:items-start">
+        <div className="flex flex-col gap-4 rounded-xl border border-border bg-muted/20 px-5 py-5 sm:flex-row sm:items-start">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
@@ -208,8 +151,8 @@ export default function ProfileSection() {
             <Label htmlFor="profile-name">Ism va familiya</Label>
             <Input
               id="profile-name"
-              value={profile.name}
-              onChange={(e) => setProfile({ name: e.target.value })}
+              value={draft.name}
+              onChange={(e) => setDraft({ ...draft, name: e.target.value })}
               placeholder="Ism familiya"
               aria-invalid={nameError}
             />
@@ -226,8 +169,8 @@ export default function ProfileSection() {
             <Label htmlFor="profile-school">Taʼlim muassasasi / Maktab</Label>
             <Input
               id="profile-school"
-              value={profile.school}
-              onChange={(e) => setProfile({ school: e.target.value })}
+              value={draft.school}
+              onChange={(e) => setDraft({ ...draft, school: e.target.value })}
               placeholder="Masalan: 24-maktab"
             />
           </div>
@@ -235,8 +178,8 @@ export default function ProfileSection() {
             <Label htmlFor="profile-subject">Fan</Label>
             <Input
               id="profile-subject"
-              value={profile.subject}
-              onChange={(e) => setProfile({ subject: e.target.value })}
+              value={draft.subject}
+              onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
               placeholder="Masalan: Ingliz tili"
             />
           </div>
@@ -245,64 +188,10 @@ export default function ProfileSection() {
               Tavallud sana
               <span className="text-xs font-normal text-muted-foreground">(ixtiyoriy)</span>
             </Label>
-            <BirthDatePicker value={profile.birthDate} onChange={(v) => setProfile({ birthDate: v })} />
+            <BirthDatePicker value={draft.birthDate} onChange={(v) => setDraft({ ...draft, birthDate: v })} />
           </div>
         </div>
-      </SettingsGroup>
-
-      {/* Oʻquv statistikasi */}
-      <SettingsGroup
-        title="Oʻquv statistikasi"
-        description={
-          configured ? (
-            <>
-              <Link href="/dashboard/settings?section=oquv-yili" className="font-medium text-foreground underline-offset-2 hover:underline">
-                {yearLabel}
-              </Link>{" "}
-              oʻquv yili uchun umumiy koʻrsatkichlar.
-            </>
-          ) : (
-            <>
-              Umumiy koʻrsatkichlar (
-              <Link href="/dashboard/settings?section=oquv-yili" className="font-medium text-foreground underline-offset-2 hover:underline">
-                oʻquv yili hali sozlanmagan
-              </Link>
-              ).
-            </>
-          )
-        }
-      >
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard
-            icon={GraduationCap}
-            color="amber"
-            value={mounted ? classCount : "—"}
-            label="Sinflar"
-            href="/dashboard/classes"
-          />
-          <StatCard
-            icon={Users}
-            color="violet"
-            value={mounted ? studentCount : "—"}
-            label="Oʻquvchilar"
-            href="/dashboard/students"
-          />
-          <StatCard
-            icon={BookOpen}
-            color="sky"
-            value={mounted ? lessonCount : "—"}
-            label="Darslar"
-            href="/dashboard/lessons"
-          />
-          <StatCard
-            icon={ClipboardList}
-            color="green"
-            value={mounted ? taskCount : "—"}
-            label="Topshiriqlar"
-            href="/dashboard/tasks"
-          />
-        </div>
-      </SettingsGroup>
+      </SettingsCard>
     </>
   );
 }

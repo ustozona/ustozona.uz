@@ -29,7 +29,7 @@ import {
   type DateRange,
 } from "@/lib/academic-calendar";
 import { todayKey, addDaysKey } from "@/lib/date-keys";
-import { SettingsGroup, SettingRow, SaveSignalPing } from "./SettingsShared";
+import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
 import YearStrip from "./YearStrip";
 import CreateSemesterModal from "./CreateSemesterModal";
 
@@ -178,7 +178,7 @@ export default function AcademicYearSection() {
 
   return (
     <>
-      <SettingsGroup
+      <SettingsCard
         title={`Oʻquv yili · ${calendar.yearLabel}`}
         description="Chorak va taʼtil kunlari tizimdagi barcha jarayonlar (dars jadvali, davomat, jurnal) uchun asos hisoblanadi."
         action={
@@ -225,9 +225,9 @@ export default function AcademicYearSection() {
         <SettingRow title="Oʻquv yili davomiyligi" description="Oʻquv yilining boshlanish va tugash sanalari.">
           <RangeInputs range={calendar.range} onChange={handleYearRange} />
         </SettingRow>
-      </SettingsGroup>
+      </SettingsCard>
 
-      <SettingsGroup
+      <SettingsCard
         title="Choraklar"
         description="Choraklik baholar ushbu belgilangan muddatlar asosida hisoblanadi."
       >
@@ -263,9 +263,9 @@ export default function AcademicYearSection() {
             </div>
           );
         })}
-      </SettingsGroup>
+      </SettingsCard>
 
-      <SettingsGroup
+      <SettingsCard
         title="Taʼtillar"
         description="Taʼtil kunlarida darslar rejalashtirilmaydi hamda davomat va rejalashtiruvchida avtomatik hisobga olinadi."
       >
@@ -339,7 +339,7 @@ export default function AcademicYearSection() {
             </>
           )}
         </div>
-      </SettingsGroup>
+      </SettingsCard>
 
       <div>
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setResetOpen(true)}>

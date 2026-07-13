@@ -4,37 +4,223 @@ import * as React from "react";
 import { create } from "zustand";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
 /* Sozlamalar sahifasi uchun umumiy qurilish bloklari — GradesSettingsModal
-   patterniga mos (boʻlim sarlavhasi + toggle/qator). Barcha rang/tipografiya
+   patterniga mos (modal-uslub karta + toggle/qator). Barcha rang/tipografiya
    tokenlardan; hech qanday hardcoded hex. */
 
-export function SettingsGroup({
+/**
+ * Modal-uslub sozlamalar kartasi (Stripe/Vercel patterni): header'da
+ * sentence-case sarlavha + muted tavsif, body, ixtiyoriy footer (odatda
+ * SaveFooter). Eski SettingsGroup (uppercase label) oʻrnini bosadi.
+ */
+export function SettingsCard({
   title,
   description,
   action,
   children,
+  footer,
+  destructive,
   className,
 }: {
   title: string;
   description?: React.ReactNode;
-  /** Sarlavha oʻngida ixtiyoriy slot — masalan saqlash indikatori. */
+  /** Sarlavha oʻngida ixtiyoriy slot — masalan badge yoki indikator. */
   action?: React.ReactNode;
   children: React.ReactNode;
+  /** Pastki panel — odatda SaveFooter. */
+  footer?: React.ReactNode;
+  /** Danger-zone kartasi — chegara destruktiv rangda. */
+  destructive?: boolean;
   className?: string;
 }) {
   return (
-    <section className={cn("space-y-3", className)}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 space-y-1">
-          <h3 className="text-label font-semibold uppercase text-muted-foreground">{title}</h3>
+    <section
+      className={cn(
+        "overflow-hidden rounded-xl border bg-card",
+        destructive ? "border-destructive/30" : "border-border",
+        className
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-start justify-between gap-3 border-b px-5 py-3.5",
+          destructive ? "border-destructive/30" : "border-border"
+        )}
+      >
+        <div className="min-w-0 space-y-0.5">
+          <h3 className="heading-small text-foreground">{title}</h3>
           {description && <p className="text-caption">{description}</p>}
         </div>
         {action && <div className="shrink-0 pt-0.5">{action}</div>}
       </div>
-      <div className="space-y-2.5">{children}</div>
+      <div className="space-y-4 p-5">{children}</div>
+      {footer && (
+        <div
+          className={cn(
+            "flex items-center justify-between gap-3 border-t bg-muted/20 px-5 py-3",
+            destructive ? "border-destructive/30" : "border-border"
+          )}
+        >
+          {footer}
+        </div>
+      )}
     </section>
+  );
+}
+
+/* ── Draft (explicit save) infratuzilmasi ─────────────────────────── */
+
+/** Kalit tartibidan mustaqil taqqoslash — JSONB key-order gotcha. */
+export function stableStringify(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(stableStringify).join(",")}]`;
+  if (v && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    return `{${Object.keys(o)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${stableStringify(o[k])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(v) ?? "null";
+}
+
+/**
+ * Explicit-save karta uchun draft holati. `committed` (store qiymati)
+ * tashqaridan oʻzgarsa va draft toza boʻlsa draft ham yangilanadi
+ * (masalan boshqa modal orqali saqlangan boʻlsa).
+ */
+export function useDraft<T>(committed: T, commit: (next: T) => void) {
+  const [draft, setDraft] = React.useState<T>(committed);
+  const committedKey = stableStringify(committed);
+  const dirty = stableStringify(draft) !== committedKey;
+
+  // Toza holatda tashqi oʻzgarishga ergashish (hidratsiya, boshqa host
+  // saqlagani); dirty draft'da foydalanuvchi tahriri yutilmaydi.
+  React.useEffect(() => {
+    setDraft((prev) => (stableStringify(prev) === committedKey ? committed : prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [committedKey]);
+
+  const save = () => commit(draft);
+  const reset = () => setDraft(committed);
+
+  return { draft, setDraft, dirty, save, reset };
+}
+
+type DraftEntry = { dirty: boolean; valid: boolean; save: () => void; reset: () => void };
+
+/**
+ * Explicit-save kartalarning draft registri — sahifa headeridagi yagona
+ * Saqlash/Bekor qilish paneli va boʻlim almashtirish guard'i shu yerdan
+ * oʻqiydi. Har karta oʻz `save`/`reset`ini eʼlon qiladi; header ularni
+ * yigʻib bitta amal sifatida chaqiradi.
+ */
+export const useDraftRegistry = create<{
+  entries: Record<string, DraftEntry>;
+  register: (key: string, entry: DraftEntry) => void;
+  unregister: (key: string) => void;
+}>((set) => ({
+  entries: {},
+  register: (key, entry) => set((s) => ({ entries: { ...s.entries, [key]: entry } })),
+  unregister: (key) =>
+    set((s) => {
+      if (!(key in s.entries)) return s;
+      const entries = { ...s.entries };
+      delete entries[key];
+      return { entries };
+    }),
+}));
+
+/**
+ * Kartaning draft holatini registrga eʼlon qiladi; unmount'da olib
+ * tashlaydi. `save`/`reset` har render yangi funksiya boʻlishi mumkin —
+ * ref orqali eng soʻnggisi chaqiriladi, effekt faqat `dirty` oʻzgarganda
+ * qayta registratsiya qiladi.
+ */
+export function useRegisterDraft(
+  key: string,
+  dirty: boolean,
+  save: () => void,
+  reset: () => void,
+  valid = true
+) {
+  const register = useDraftRegistry((s) => s.register);
+  const unregister = useDraftRegistry((s) => s.unregister);
+  const saveRef = React.useRef(save);
+  const resetRef = React.useRef(reset);
+  React.useEffect(() => {
+    saveRef.current = save;
+    resetRef.current = reset;
+  }, [save, reset]);
+  React.useEffect(() => {
+    register(key, { dirty, valid, save: () => saveRef.current(), reset: () => resetRef.current() });
+    return () => unregister(key);
+  }, [key, dirty, valid, register, unregister]);
+}
+
+/**
+ * Explicit-save footer tarkibi: chapda holat matni, oʻngda Bekor + Saqlash.
+ * Saqlangach qisqa "Saqlandi" indikatori koʻrsatiladi.
+ */
+export function SaveFooter({
+  dirty,
+  disabled,
+  onSave,
+  onReset,
+}: {
+  dirty: boolean;
+  /** Validatsiya oʻtmaganda saqlashni bloklash (dirty boʻlsa ham). */
+  disabled?: boolean;
+  onSave: () => void;
+  onReset: () => void;
+}) {
+  // SavedIndicator ishlatilmaydi: u dirty paytida unmount boʻlib, saqlashdan
+  // keyingi birinchi renderda "signal oʻzgarishi"ni koʻrmay qoladi.
+  const [showSaved, setShowSaved] = React.useState(false);
+  React.useEffect(() => {
+    if (!showSaved) return;
+    const t = setTimeout(() => setShowSaved(false), 1600);
+    return () => clearTimeout(t);
+  }, [showSaved]);
+
+  return (
+    <>
+      <span className="min-w-0">
+        {dirty ? (
+          <span className="text-caption">Saqlanmagan oʻzgarishlar bor</span>
+        ) : (
+          <span
+            aria-live="polite"
+            className={cn(
+              "inline-flex items-center gap-1 text-xs font-medium text-success transition-opacity duration-200",
+              showSaved ? "opacity-100" : "opacity-0"
+            )}
+          >
+            <Check className="size-3.5" strokeWidth={2.5} />
+            Saqlandi
+          </span>
+        )}
+      </span>
+      <span className="flex shrink-0 items-center gap-2">
+        {dirty && (
+          <Button variant="ghost" size="sm" onClick={onReset}>
+            Bekor qilish
+          </Button>
+        )}
+        <Button
+          size="sm"
+          disabled={!dirty || disabled}
+          onClick={() => {
+            onSave();
+            setShowSaved(true);
+          }}
+        >
+          Saqlash
+        </Button>
+      </span>
+    </>
   );
 }
 
@@ -149,6 +335,10 @@ export function SettingsList({
     trailing?: React.ReactNode;
     /** Oʻchirilgan/passiv qator — kontent xiralashadi (controllar emas). */
     dimmed?: boolean;
+    /** Bola-qator (master toggle ostidagi) — chapdan indent. */
+    indent?: boolean;
+    /** Tavsif truncate qilinmaydi — toʻliq matn oʻqiladi. */
+    multiline?: boolean;
   }[];
   className?: string;
 }) {
@@ -159,7 +349,8 @@ export function SettingsList({
           key={item.key}
           className={cn(
             "flex items-center gap-3 bg-card px-4 py-3",
-            i !== 0 && "border-t border-border"
+            i !== 0 && "border-t border-border",
+            item.indent && "pl-8"
           )}
         >
           {item.leading && (
@@ -170,7 +361,9 @@ export function SettingsList({
           <div className={cn("flex min-w-0 flex-1 flex-col gap-0.5", item.dimmed && "opacity-60")}>
             <span className="truncate text-sm font-medium text-foreground">{item.title}</span>
             {item.description && (
-              <span className="truncate text-caption">{item.description}</span>
+              <span className={cn("text-caption", !item.multiline && "truncate")}>
+                {item.description}
+              </span>
             )}
           </div>
           {item.trailing && <div className="flex shrink-0 items-center gap-2">{item.trailing}</div>}

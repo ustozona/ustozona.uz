@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { Award, BarChart3, History, Settings2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
 import { AwardDialog } from "./AwardDialog";
+import BehaviorSettingsModal from "./BehaviorSettingsModal";
 import { showAwardToast } from "./award-toast";
 import { ClassReportDialog } from "./ClassReportDialog";
 import { PointsSheet } from "./PointsSheet";
@@ -206,13 +206,22 @@ export default function BehaviorView({ classId }: { classId: string }) {
         </Button>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="icon" asChild className="size-8 shrink-0">
-              <Link href="/dashboard/settings?section=xulq">
-                <Settings2 className="size-4" aria-hidden />
-              </Link>
-            </Button>
+            <span className="inline-flex">
+              <BehaviorSettingsModal
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="size-8 shrink-0"
+                    aria-label="Xulq sozlamalari"
+                  >
+                    <Settings2 className="size-4" aria-hidden />
+                  </Button>
+                }
+              />
+            </span>
           </TooltipTrigger>
-          <TooltipContent>Koʻnikmalar va doʻkon — Sozlamalar</TooltipContent>
+          <TooltipContent>Xulq sozlamalari</TooltipContent>
         </Tooltip>
       </div>
 

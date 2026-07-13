@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import Link from "next/link";
 import {
   Check, X, Clock, FileText, ChevronLeft, ChevronRight,
   Search, Funnel, ListChecks, Calendar, CalendarRange, CalendarDays,
@@ -17,6 +16,7 @@ import {
   MONTH_NAMES,
 } from "@/lib/attendance-data";
 import { statusVisual } from "@/components/attendance/status-visual";
+import AttendanceSettingsModal from "@/components/attendance/AttendanceSettingsModal";
 import { getQuarterForMonth, inRange } from "@/lib/academic-calendar";
 import { todayKey } from "@/lib/date-keys";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
@@ -579,13 +579,23 @@ export default function AttendanceView({
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button data-tour="attendance-config" variant="outline" size="icon" asChild className={ctrlBtn}>
-                    <Link href="/dashboard/settings?section=davomat">
-                      <ListChecks className="h-4 w-4" aria-hidden />
-                    </Link>
-                  </Button>
+                  <span className="inline-flex">
+                    <AttendanceSettingsModal
+                      trigger={
+                        <Button
+                          data-tour="attendance-config"
+                          variant="outline"
+                          size="icon"
+                          className={ctrlBtn}
+                          aria-label="Davomat sozlamalari"
+                        >
+                          <ListChecks className="h-4 w-4" aria-hidden />
+                        </Button>
+                      }
+                    />
+                  </span>
                 </TooltipTrigger>
-                <TooltipContent>Davomat holatlari — Sozlamalar</TooltipContent>
+                <TooltipContent>Davomat sozlamalari</TooltipContent>
               </Tooltip>
 
               <div className="flex items-center gap-1">

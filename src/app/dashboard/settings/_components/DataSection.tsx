@@ -22,7 +22,7 @@ import { deleteAccountAction } from "@/server/actions/account";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useGradesStore } from "@/store/useGradesStore";
-import { SettingsGroup, SettingsList } from "./SettingsShared";
+import { SettingsCard, SettingsList } from "./SettingsShared";
 
 const CONFIRM_WORD = "OʻCHIRISH";
 
@@ -79,7 +79,7 @@ export default function DataSection() {
   return (
     <>
       {/* Ma'lumot */}
-      <SettingsGroup
+      <SettingsCard
         title="Maʼlumotlaringiz"
         description="Barcha maʼlumotlaringizni bitta jadval faylida (har boʻlim alohida varaqda) yuklab oling."
       >
@@ -132,19 +132,22 @@ export default function DataSection() {
             },
           ]}
         />
-      </SettingsGroup>
+      </SettingsCard>
 
       {/* Danger zone */}
-      <SettingsGroup title="Xavfli hudud">
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-sm font-medium text-foreground">Hisobni oʻchirish</span>
-              <span className="text-xs text-muted-foreground">
-                Hisob va unga bogʻliq barcha maʼlumotlar (sinflar, oʻquvchilar, baholar, davomat,
-                sozlamalar) butunlay oʻchadi. Bu amalni ortga qaytarib boʻlmaydi.
-              </span>
-            </div>
+      <SettingsCard
+        title="Xavfli hudud"
+        description="Bu yerdagi amallarni ortga qaytarib boʻlmaydi."
+        destructive
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-sm font-medium text-foreground">Hisobni oʻchirish</span>
+            <span className="text-xs text-muted-foreground">
+              Hisob va unga bogʻliq barcha maʼlumotlar (sinflar, oʻquvchilar, baholar, davomat,
+              sozlamalar) butunlay oʻchadi.
+            </span>
+          </div>
             <AlertDialog onOpenChange={() => setConfirmText("")}>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" className="shrink-0">
@@ -184,9 +187,8 @@ export default function DataSection() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          </div>
         </div>
-      </SettingsGroup>
+      </SettingsCard>
     </>
   );
 }

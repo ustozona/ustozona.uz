@@ -17,17 +17,28 @@ import {
    `SECTION_IDS`ga murojaat qilinadi, xato-toʻliq link kelib chiqmasin.
    Tartib = tab tartibi. */
 
+export type SectionGroupId = "shaxsiy" | "talim" | "hisob";
+
 export type SectionDef = {
   id: string;
   label: string;
   subtitle: string;
   icon: LucideIcon;
+  group: SectionGroupId;
   Component: React.ComponentType;
 };
+
+/** Nav guruhlari — tartib = koʻrsatish tartibi. */
+export const SECTION_GROUPS: { id: SectionGroupId; label: string }[] = [
+  { id: "shaxsiy", label: "Shaxsiy" },
+  { id: "talim", label: "Taʼlim jarayoni" },
+  { id: "hisob", label: "Hisob" },
+];
 
 export const SECTIONS: SectionDef[] = [
   {
     id: "profil",
+    group: "shaxsiy",
     label: "Profil",
     subtitle: "Shaxsiy maʼlumotlar va statistika",
     icon: User,
@@ -35,6 +46,7 @@ export const SECTIONS: SectionDef[] = [
   },
   {
     id: "korinish",
+    group: "shaxsiy",
     label: "Koʻrinish",
     subtitle: "Mavzu, fon va til sozlamalari",
     icon: Palette,
@@ -42,6 +54,7 @@ export const SECTIONS: SectionDef[] = [
   },
   {
     id: "oquv-yili",
+    group: "talim",
     label: "Oʻquv yili",
     subtitle: "Choraklar va taʼtillar",
     icon: CalendarRange,
@@ -49,13 +62,15 @@ export const SECTIONS: SectionDef[] = [
   },
   {
     id: "jadval",
-    label: "Dars jadvali",
+    group: "talim",
+    label: "Qoʻngʻiroq va smena",
     subtitle: "Smena va qoʻngʻiroq",
     icon: Clock,
     Component: dynamic(() => import("./_components/BellSection")),
   },
   {
     id: "davomat",
+    group: "talim",
     label: "Davomat",
     subtitle: "Statuslar va taʼsir",
     icon: CheckSquare,
@@ -63,6 +78,7 @@ export const SECTIONS: SectionDef[] = [
   },
   {
     id: "xulq",
+    group: "talim",
     label: "Xulq-atvor",
     subtitle: "Koʻnikmalar va ragʻbat doʻkoni",
     icon: Award,
@@ -70,6 +86,7 @@ export const SECTIONS: SectionDef[] = [
   },
   {
     id: "jurnal",
+    group: "talim",
     label: "Jurnal",
     subtitle: "Baholash shkalasi",
     icon: BarChart2,
@@ -77,6 +94,7 @@ export const SECTIONS: SectionDef[] = [
   },
   {
     id: "tarif",
+    group: "hisob",
     label: "Tarif",
     subtitle: "Reja va imkoniyatlar",
     icon: CreditCard,
@@ -84,7 +102,8 @@ export const SECTIONS: SectionDef[] = [
   },
   {
     id: "hisob",
-    label: "Xavfsizlik",
+    group: "hisob",
+    label: "Hisob va maʼlumotlar",
     subtitle: "Maxfiylik, eksport, DPA va hisobni oʻchirish",
     icon: ShieldCheck,
     Component: dynamic(() => import("./_components/DataSection")),

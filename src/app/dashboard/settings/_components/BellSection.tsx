@@ -12,7 +12,7 @@ import { buildSlots, type ShiftConfig } from "@/lib/timetable";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { todayKey } from "@/lib/date-keys";
-import { SettingsGroup } from "./SettingsShared";
+import { SettingsCard } from "./SettingsShared";
 
 const minToHHMM = (m: number) =>
   `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
@@ -69,7 +69,7 @@ export default function BellSection() {
 
   return (
     <>
-      <SettingsGroup
+      <SettingsCard
         title="Smenalar va qoʻngʻiroqlar jadvali"
         description="Maʼlumotlar amaldagi dars jadvalidan olinadi. Oʻzgartirishlar dars jadvali sahifasida amalga oshiriladi (yangi jadvalni saqlash paytida uning kuchga kirish sanasi soʻraladi)."
         action={
@@ -108,7 +108,7 @@ export default function BellSection() {
             <LegendItem style={{ backgroundImage: LONG_BREAK_STRIPES, borderColor: SKY.ring.borderColor }} label="Katta tanaffus" />
           </div>
         </div>
-      </SettingsGroup>
+      </SettingsCard>
 
       <Button asChild variant="outline" size="sm">
         <Link href="/dashboard/timetable?bell=1">

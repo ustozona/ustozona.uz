@@ -5,7 +5,7 @@ import { Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { SettingsGroup } from "./SettingsShared";
+import { SettingsCard } from "./SettingsShared";
 
 const FREE_FEATURES = [
   "Cheksiz sinf va oʻquvchi",
@@ -25,7 +25,7 @@ export default function PlanSection() {
 
   return (
     <>
-      <SettingsGroup title="Joriy tarif" description="Hisobingizga biriktirilgan reja.">
+      <SettingsCard title="Joriy tarif" description="Hisobingizga biriktirilgan reja.">
         <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card px-4 py-4">
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-2">
@@ -48,9 +48,9 @@ export default function PlanSection() {
             </li>
           ))}
         </ul>
-      </SettingsGroup>
+      </SettingsCard>
 
-      <SettingsGroup
+      <SettingsCard
         title="Pro tarif"
         description="Koʻproq imkoniyat kerakmi?"
         action={<Badge variant="secondary">Tez orada</Badge>}
@@ -73,7 +73,7 @@ export default function PlanSection() {
             Proʼga oʻtish
           </Button>
         </div>
-      </SettingsGroup>
+      </SettingsCard>
     </>
   );
 }

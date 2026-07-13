@@ -16,9 +16,10 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import ScaleControls from "@/components/grade-scale/ScaleControls";
+import { useClassStore } from "@/store/useClassStore";
+import { SaveFooter, useDraft } from "@/app/dashboard/settings/_components/SettingsShared";
 
 const segmentClass = "grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1";
 const segmentItem =
@@ -115,6 +116,12 @@ export default function GradesSettingsModal({
   showFormative: boolean;
   onShowFormativeChange: (v: boolean) => void;
 }) {
+  // Shkala — explicit Save (Sozlamalar > Jurnal bilan bir xil semantika);
+  // jadval koʻrinishi togglelari view-pref sifatida darhol qoʻllanadi.
+  const journalScale = useClassStore((s) => s.journalScale);
+  const setJournalScale = useClassStore((s) => s.setJournalScale);
+  const { draft, setDraft, dirty, save, reset } = useDraft(journalScale, setJournalScale);
+
   return (
     <Dialog>
       <Tooltip>
@@ -163,7 +170,7 @@ export default function GradesSettingsModal({
             <SectionTitle hint="Faqat koʻrinishni oʻzgartiradi — baholar ichkarida foizda saqlanadi. Yonidagi raqam: 78% shu mezonda qanday koʻrinishini koʻrsatadi (5-ballikda «4», IB'da «6»).">
               Baholash mezoni
             </SectionTitle>
-            <ScaleControls />
+            <ScaleControls value={draft} onChange={(p) => setDraft({ ...draft, ...p })} />
           </section>
 
           <Separator />
@@ -205,10 +212,8 @@ export default function GradesSettingsModal({
           </section>
         </div>
 
-        <DialogFooter className="border-t border-border bg-muted/20 px-6 py-4">
-          <DialogClose asChild>
-            <Button size="sm">Yopish</Button>
-          </DialogClose>
+        <DialogFooter className="flex-row items-center justify-between gap-3 border-t border-border bg-muted/20 px-6 py-3 sm:justify-between">
+          <SaveFooter dirty={dirty} onSave={save} onReset={reset} />
         </DialogFooter>
       </DialogContent>
     </Dialog>
