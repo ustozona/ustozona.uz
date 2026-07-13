@@ -27,7 +27,7 @@ export function SettingsGroup({
   return (
     <section className={cn("space-y-3", className)}>
       <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <h3 className="text-label font-semibold uppercase text-muted-foreground">{title}</h3>
           {description && <p className="text-caption">{description}</p>}
         </div>

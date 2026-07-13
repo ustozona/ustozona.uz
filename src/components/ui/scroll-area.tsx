@@ -20,7 +20,11 @@ function ScrollArea({
       <ScrollAreaPrimitive.Viewport
         ref={viewportRef}
         data-slot="scroll-area-viewport"
-        className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1"
+        // Radix'ning ichki oʻrash div'i `display:table` — u kontentning
+        // max-content kengligiga qadar kengayadi (uzun `nowrap` matn butun
+        // sahifani choʻzib yuboradi). Bloc'ga majburlaymiz: kenglik = konteyner,
+        // faqat vertikal skroll qoladi (ilovada gorizontal ScrollArea yoʻq).
+        className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 [&>div]:!block [&>div]:!min-w-full"
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
