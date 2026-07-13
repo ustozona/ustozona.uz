@@ -47,9 +47,11 @@ import { formatPoints } from "./SkillCard";
 
 export type SkillType = "positive" | "negative";
 
-const MAGNITUDE_MIN = 1;
+/* ±1 avtomatik qoidalarga ajratilgan — qoʻlda beriladigan pedagogik
+   ball har doim ogʻirroq (min ±2). */
+const MAGNITUDE_MIN = 2;
 const MAGNITUDE_MAX = 5;
-const MAGNITUDE_PRESETS = [1, 2, 3, 4, 5];
+const MAGNITUDE_PRESETS = [2, 3, 4, 5];
 
 export function SkillFormDialog({
   open,
@@ -90,7 +92,7 @@ export function SkillFormDialog({
       setDescription("");
       setEmoji(defaultType === "positive" ? "1f31f" : "26a0-fe0f");
       setType(defaultType);
-      setMagnitude("1");
+      setMagnitude("2");
     }
     setConfirmDelete(false);
   }, [open, skill, defaultType]);

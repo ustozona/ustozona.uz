@@ -33,6 +33,7 @@ import { PointsSheet } from "./PointsSheet";
 import { SkillFormDialog, type SkillType } from "./SkillFormDialog";
 import { StudentDialog } from "./StudentDialog";
 import { BalanceBubble, StudentPointCard } from "./StudentPointCard";
+import { useClassStreaks } from "./useClassStreaks";
 
 /* ════════════════════════════════════════════════════════════════════
    XULQ koʻrinishi — oʻquvchi kartochkalari toʻri (ClassDojo UX).
@@ -75,6 +76,8 @@ export default function BehaviorView({ classId }: { classId: string }) {
   );
   const info = gradesClass?.info ?? { id: classId, name: classId };
   const hex = CLASS_COLOR_HEX[classColor(info)];
+
+  const streaks = useClassStreaks(classId);
 
   /* Balanslar — bitta oʻtishda (Σ events − Σ redemptions), mount-gate. */
   const balances = React.useMemo(() => {
@@ -281,6 +284,7 @@ export default function BehaviorView({ classId }: { classId: string }) {
                 initials={st.initials}
                 colorHex={hex}
                 balance={balances?.get(st.id) ?? (balances ? 0 : null)}
+                streak={streaks?.get(st.id)}
                 selectionMode={selecting}
                 selected={selected?.has(st.id) ?? false}
                 onToggleSelect={() => toggleSelect(st.id)}

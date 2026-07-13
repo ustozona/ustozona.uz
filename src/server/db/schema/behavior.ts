@@ -148,7 +148,9 @@ export const behaviorAutoSettings = pgTable("behavior_auto_settings", {
     .primaryKey()
     .references(() => teachers.id, { onDelete: "cascade" }),
   attendanceEnabled: boolean("attendance_enabled").notNull(),
+  lateEnabled: boolean("late_enabled").notNull().default(true),
   latePoints: integer("late_points").notNull(),
+  absentEnabled: boolean("absent_enabled").notNull().default(true),
   absentPoints: integer("absent_points").notNull(),
   presentEnabled: boolean("present_enabled").notNull(),
   presentPoints: integer("present_points").notNull(),
@@ -157,7 +159,9 @@ export const behaviorAutoSettings = pgTable("behavior_auto_settings", {
   streakBonus: integer("streak_bonus").notNull(),
   attendanceSince: text("attendance_since").notNull(), // "YYYY-MM-DD"
   journalEnabled: boolean("journal_enabled").notNull(),
+  gradedEnabled: boolean("graded_enabled").notNull().default(true),
   gradedPoints: integer("graded_points").notNull(),
+  missedDueEnabled: boolean("missed_due_enabled").notNull().default(true),
   missedDuePoints: integer("missed_due_points").notNull(),
   journalSince: text("journal_since").notNull(), // "YYYY-MM-DD"
   updatedAt: text("updated_at").notNull(), // ISO

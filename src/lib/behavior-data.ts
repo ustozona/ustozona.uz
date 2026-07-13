@@ -96,18 +96,24 @@ export type BehaviorRedemption = {
     (yarim yilda yoqilganda retro-toshqin boʻlmasin). */
 export type BehaviorAutoSettings = {
   attendanceEnabled: boolean;
+  /** Har qoida oʻqituvchi tomonidan mustaqil yoqib-oʻchiriladi (default yoniq). */
+  lateEnabled: boolean;
   latePoints: number; // manfiy
+  absentEnabled: boolean;
   absentPoints: number; // manfiy (sababsiz)
-  /** "Har keldi uchun +ball" — default OFF (ball inflatsiyasi; davomati past sinflar uchun opsiya). */
   presentEnabled: boolean;
   presentPoints: number; // musbat
-  /** Ketma-ket N dars kechikish/sababsizsiz = bonus. */
+  /** Davomat seriyasi (zina modeli): streakN = bazaviy marra B
+      (B→+2, 2B→+3, 4B→+5, keyin har 2B→+5 — bonus engine'da hisoblanadi). */
   streakEnabled: boolean;
   streakN: number;
-  streakBonus: number; // musbat
+  /** @deprecated Zina modeli (v2) bonusni oʻzi hisoblaydi; engine bu maydonni oʻqimaydi. Sync moslik uchun saqlanadi. */
+  streakBonus: number;
   attendanceSince: string; // "YYYY-MM-DD"
   journalEnabled: boolean;
+  gradedEnabled: boolean;
   gradedPoints: number; // musbat
+  missedDueEnabled: boolean;
   missedDuePoints: number; // manfiy
   journalSince: string; // "YYYY-MM-DD"
 };
@@ -115,16 +121,20 @@ export type BehaviorAutoSettings = {
 export function defaultAutoSettings(sinceDate: string = todayDateKey()): BehaviorAutoSettings {
   return {
     attendanceEnabled: true,
+    lateEnabled: true,
     latePoints: -1,
+    absentEnabled: true,
     absentPoints: -2,
-    presentEnabled: false,
+    presentEnabled: true,
     presentPoints: 1,
     streakEnabled: true,
     streakN: 5,
     streakBonus: 2,
     attendanceSince: sinceDate,
     journalEnabled: true,
+    gradedEnabled: true,
     gradedPoints: 1,
+    missedDueEnabled: true,
     missedDuePoints: -1,
     journalSince: sinceDate,
   };
@@ -135,19 +145,21 @@ export function defaultAutoSettings(sinceDate: string = todayDateKey()): Behavio
 type SkillDef = Omit<BehaviorSkill, "id"> & { slug: string };
 type RewardDef = Omit<BehaviorReward, "id"> & { slug: string };
 
+/* Qoʻlda beriladigan koʻnikmalar ±2..±5 diapazonida (±1 avtomatik
+   qoidalarga ajratilgan) — inson bahosi avto-signaldan ogʻirroq turadi. */
 export const DEFAULT_SKILL_DEFS: readonly SkillDef[] = [
   // Ijobiy
-  { slug: "yordam",     name: "Yordam berdi",           emoji: "1f91d", points: 1, description: "Sinfdoshiga tushunishga yoki vazifani bajarishga yordam berdi" },
-  { slug: "diqqat",     name: "Diqqatli boʻldi",        emoji: "1f440", points: 1, description: "Darsga eʼtiborini toʻliq qaratdi, chalgʻimadi" },
-  { slug: "faol",       name: "Faol qatnashdi",         emoji: "1f64b", points: 1, description: "Savolga dalil yoki misol bilan javob berdi" },
-  { slug: "jamoa",      name: "Jamoada ishladi",        emoji: "1f465", points: 1, description: "Guruh ishida vazifasini oʻz vaqtida bajardi" },
-  { slug: "tirishqoq",  name: "Tirishqoqlik koʻrsatdi", emoji: "1f4aa", points: 2, description: "Qiyin masalada bosh tortmay, oxirigacha urindi" },
-  { slug: "yaxshi-ish", name: "Yaxshi ishladi",         emoji: "1f31f", points: 2, description: "Topshiriqni sifatli va toʻliq bajardi" },
+  { slug: "yordam",     name: "Yordam berdi",           emoji: "1f91d", points: 2, description: "Sinfdoshiga tushunishga yoki vazifani bajarishga yordam berdi" },
+  { slug: "diqqat",     name: "Diqqatli boʻldi",        emoji: "1f440", points: 2, description: "Darsga eʼtiborini toʻliq qaratdi, chalgʻimadi" },
+  { slug: "faol",       name: "Faol qatnashdi",         emoji: "1f64b", points: 2, description: "Savolga dalil yoki misol bilan javob berdi" },
+  { slug: "jamoa",      name: "Jamoada ishladi",        emoji: "1f465", points: 2, description: "Guruh ishida vazifasini oʻz vaqtida bajardi" },
+  { slug: "tirishqoq",  name: "Tirishqoqlik koʻrsatdi", emoji: "1f4aa", points: 3, description: "Qiyin masalada bosh tortmay, oxirigacha urindi" },
+  { slug: "yaxshi-ish", name: "Yaxshi ishladi",         emoji: "1f31f", points: 3, description: "Topshiriqni sifatli va toʻliq bajardi" },
   // Salbiy
-  { slug: "uy-vazifa-yoq", name: "Uy vazifasi yoʻq",         emoji: "1f6ab",      points: -1, description: "Uy vazifasini bajarmasdan keldi" },
-  { slug: "tayyor-emas",   name: "Darsga tayyor emas",       emoji: "26a0-fe0f",  points: -1, description: "Kerakli daftar/qalam/materialsiz keldi" },
-  { slug: "xalaqit",       name: "Boshqalarga xalaqit berdi", emoji: "1f5e3-fe0f", points: -1, description: "Gapirish yoki harakat bilan sinfning diqqatini boʻldi" },
-  { slug: "odobsizlik",    name: "Odobsizlik qildi",         emoji: "1f620",      points: -2, description: "Xatosi koʻrsatilganda tuzatishdan bosh tortdi yoki dagʻal javob qaytardi" },
+  { slug: "uy-vazifa-yoq", name: "Uy vazifasi yoʻq",         emoji: "1f6ab",      points: -2, description: "Uy vazifasini bajarmasdan keldi" },
+  { slug: "tayyor-emas",   name: "Darsga tayyor emas",       emoji: "26a0-fe0f",  points: -2, description: "Kerakli daftar/qalam/materialsiz keldi" },
+  { slug: "xalaqit",       name: "Boshqalarga xalaqit berdi", emoji: "1f5e3-fe0f", points: -2, description: "Gapirish yoki harakat bilan sinfning diqqatini boʻldi" },
+  { slug: "odobsizlik",    name: "Odobsizlik qildi",         emoji: "1f620",      points: -3, description: "Xatosi koʻrsatilganda tuzatishdan bosh tortdi yoki dagʻal javob qaytardi" },
 ] as const;
 
 export const DEFAULT_REWARD_DEFS: readonly RewardDef[] = [

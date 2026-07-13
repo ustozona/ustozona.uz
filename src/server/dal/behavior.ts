@@ -89,7 +89,9 @@ function rowToEvent(r: BehaviorEventRow): BehaviorEvent {
 function rowToAutoSettings(r: BehaviorAutoSettingsRow): BehaviorAutoSettings {
   return {
     attendanceEnabled: r.attendanceEnabled,
+    lateEnabled: r.lateEnabled,
     latePoints: r.latePoints,
+    absentEnabled: r.absentEnabled,
     absentPoints: r.absentPoints,
     presentEnabled: r.presentEnabled,
     presentPoints: r.presentPoints,
@@ -98,7 +100,9 @@ function rowToAutoSettings(r: BehaviorAutoSettingsRow): BehaviorAutoSettings {
     streakBonus: r.streakBonus,
     attendanceSince: r.attendanceSince,
     journalEnabled: r.journalEnabled,
+    gradedEnabled: r.gradedEnabled,
     gradedPoints: r.gradedPoints,
+    missedDueEnabled: r.missedDueEnabled,
     missedDuePoints: r.missedDuePoints,
     journalSince: r.journalSince,
   };
@@ -483,7 +487,9 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
         target: behaviorAutoSettings.teacherId,
         set: {
           attendanceEnabled: sql`excluded.attendance_enabled`,
+          lateEnabled: sql`excluded.late_enabled`,
           latePoints: sql`excluded.late_points`,
+          absentEnabled: sql`excluded.absent_enabled`,
           absentPoints: sql`excluded.absent_points`,
           presentEnabled: sql`excluded.present_enabled`,
           presentPoints: sql`excluded.present_points`,
@@ -492,7 +498,9 @@ export async function applyBehaviorBatch(batch: BehaviorBatch): Promise<void> {
           streakBonus: sql`excluded.streak_bonus`,
           attendanceSince: sql`excluded.attendance_since`,
           journalEnabled: sql`excluded.journal_enabled`,
+          gradedEnabled: sql`excluded.graded_enabled`,
           gradedPoints: sql`excluded.graded_points`,
+          missedDueEnabled: sql`excluded.missed_due_enabled`,
           missedDuePoints: sql`excluded.missed_due_points`,
           journalSince: sql`excluded.journal_since`,
           updatedAt: now,

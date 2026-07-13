@@ -57,6 +57,13 @@
       "when": 1783915705031,
       "tag": "0007_gigantic_kabuki",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783936742616,
+      "tag": "0008_marvelous_stardust",
+      "breakpoints": true
     }
   ]
 }

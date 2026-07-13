@@ -3,6 +3,8 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import type { StreakState } from "@/lib/behavior-auto";
+import { BehaviorEmoji } from "./BehaviorEmoji";
 
 /* Oʻquvchi kartasi — avatar + ism + avatar burchagida balans bubble
    (musbat = yashil, manfiy = qizil). Balans mount-gate'gacha null —
@@ -38,11 +40,28 @@ export function BalanceBubble({
   );
 }
 
+/** Davomat seriyasi mini-chipi — faqat shaxsiy sirt (leaderboard yoʻq). */
+function StreakChip({ streak }: { streak: StreakState }) {
+  if (streak.count === 0) return null;
+  return (
+    <span
+      className={cn(
+        "absolute -bottom-1 -right-1.5 z-10 flex h-5 items-center gap-0.5 rounded-full border-2 border-card bg-card px-1",
+        "text-[10px] font-bold tabular-nums leading-none text-foreground"
+      )}
+    >
+      <BehaviorEmoji code={streak.paused ? "2744-fe0f" : "1f525"} className="size-3" />
+      {streak.count}/{streak.nextThreshold}
+    </span>
+  );
+}
+
 export function StudentPointCard({
   name,
   initials,
   colorHex,
   balance,
+  streak,
   onClick,
   selectionMode = false,
   selected = false,
@@ -53,6 +72,8 @@ export function StudentPointCard({
   colorHex: string;
   /** null = hali mount boʻlmagan — bubble chiqmaydi. */
   balance: number | null;
+  /** Joriy davomat seriyasi holati — berilmasa chip chiqmaydi. */
+  streak?: StreakState;
   onClick: () => void;
   /** Tanlash rejimi yoqiq — doirachalar doim koʻrinadi. */
   selectionMode?: boolean;
@@ -98,6 +119,7 @@ export function StudentPointCard({
           </AvatarFallback>
         </Avatar>
         {balance !== null && balance !== 0 && <BalanceBubble balance={balance} />}
+        {streak && <StreakChip streak={streak} />}
       </span>
       <span className="w-full truncate text-center text-[13px] font-medium leading-tight text-foreground">
         {name}

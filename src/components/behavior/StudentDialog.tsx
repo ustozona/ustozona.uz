@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
   studentBalance,
@@ -31,6 +32,7 @@ import { SkillGrid } from "./AwardDialog";
 import { BehaviorEmoji } from "./BehaviorEmoji";
 import { ReportPanel } from "./ReportPanel";
 import type { SkillType } from "./SkillFormDialog";
+import { useClassStreaks } from "./useClassStreaks";
 
 /* ════════════════════════════════════════════════════════════════════
    Bitta-oʻquvchi modali (ClassDojo UX, chap navigatsiyali):
@@ -101,6 +103,9 @@ export function StudentDialog({
     ? studentBalance(events, classRedemptions, student.id)
     : 0;
 
+  const streaks = useClassStreaks(classId);
+  const streak = student ? streaks?.get(student.id) : undefined;
+
   const studentId = student?.id;
   const myDeletions = React.useMemo(
     () =>
@@ -153,6 +158,24 @@ export function StudentDialog({
                 >
                   {balance} ball
                 </span>
+                {streak && streak.count > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-bold tabular-nums text-foreground">
+                        <BehaviorEmoji
+                          code={streak.paused ? "2744-fe0f" : "1f525"}
+                          className="size-3.5"
+                        />
+                        {streak.count}/{streak.nextThreshold} · keyingi marra +{streak.nextBonus}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {streak.paused
+                        ? "Seriya kutmoqda — sogʻliq muhimroq"
+                        : "Ketma-ket toza davomat seriyasi"}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <Link
                   href={`/dashboard/students/${encodeURIComponent(student.id)}?tab=behavior`}
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"

@@ -77,7 +77,9 @@ export const deletionInsertSchema = z.object({
 /** Avtomatik ball qoidalari — per-teacher bitta qator. */
 export const autoSettingsUpsertSchema = z.object({
   attendanceEnabled: z.boolean(),
+  lateEnabled: z.boolean().default(true),
   latePoints: z.number().int().min(-10).max(-1),
+  absentEnabled: z.boolean().default(true),
   absentPoints: z.number().int().min(-10).max(-1),
   presentEnabled: z.boolean(),
   presentPoints: z.number().int().min(1).max(5),
@@ -86,7 +88,9 @@ export const autoSettingsUpsertSchema = z.object({
   streakBonus: z.number().int().min(1).max(10),
   attendanceSince: z.string().min(8).max(20), // "YYYY-MM-DD"
   journalEnabled: z.boolean(),
+  gradedEnabled: z.boolean().default(true),
   gradedPoints: z.number().int().min(1).max(5),
+  missedDueEnabled: z.boolean().default(true),
   missedDuePoints: z.number().int().min(-10).max(-1),
   journalSince: z.string().min(8).max(20),
 });

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { MoveRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,58 +9,141 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { BehaviorAutoSettings } from "@/lib/behavior-data";
-import { SettingsList } from "@/app/dashboard/settings/_components/SettingsShared";
+import { streakMilestoneAt } from "@/lib/behavior-auto";
+import { BehaviorEmoji } from "./BehaviorEmoji";
+import { formatPoints } from "./SkillCard";
 
-/* Xulq avto-ballari muharriri — controlled (value/onChange), draft'ni host
-   boshqaradi (Sozlamalar > Xulq kartasi yoki xulq sahifasidagi modal).
+/* Xulq avtomatik qoidalari — koʻnikmalar bilan BIR XIL karta-grid ichida
+   yashaydi (oʻqituvchi uchun "xulq balli" bitta tushuncha). Har qoida
+   SkillCard karkasida: emoji + nom + burchakda ball badge + "Avto" nishon.
 
-   Struktura: har manba (Davomat / Jurnal) master-qator + faqat ON boʻlganda
-   koʻrinadigan indent bola-qatorlar (progressive disclosure). Seriya qoidasi
-   gap shaklida ("5 dars ketma-ket → +2 bonus") — ikkita nomsiz select
-   chalgʻitmasin. Vazn falsafasi: avto ballar past (±1..±2), qoʻlda pedagogik
-   ballar yuqori. Toggle OFF tarixni oʻchirmaydi. */
+   Ball qiymatlari QULFLANGAN (ekspert-defaultlar): avto-signal doim ±1..±2
+   diapazonda qoladi — pedagogik (qoʻlda) ballar ±2+ dan ogʻirroq turishi
+   tizim kafolati, tavsiya emas. Popover'da faqat yoqish/oʻchirish (+
+   seriyada N tanlash) va qoida izohi. Default hammasi yoniq; oʻchirilsa
+   tarix saqlanadi (reconciler tegmaydi). */
 
-/** Ball rangi — musbat yashil, manfiy qizil (davomat IMPACT_SIGN_CLS patterni). */
-const pointCls = (v: number) => (v > 0 ? "text-success" : "text-destructive");
+const RULE_EMOJI = {
+  late: "23f0",
+  absent: "1f6ab",
+  present: "2705",
+  streak: "1f525",
+  graded: "1f4dd",
+  due: "23f3",
+} as const;
 
-/** Ball qiymati tanlagichi — musbatga "+" qoʻshiladi, rang belgi boʻyicha. */
-function PointsSelect({
-  value,
-  options,
-  onChange,
-  disabled,
-  ariaLabel,
+function AutoRuleTile({
+  emoji,
+  title,
+  badge,
+  positive,
+  enabled,
+  children,
 }: {
-  value: number;
-  options: number[];
-  onChange: (v: number) => void;
-  disabled?: boolean;
-  ariaLabel: string;
+  emoji: string;
+  title: string;
+  badge: string;
+  positive: boolean;
+  enabled: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
-      <SelectTrigger
-        className={cn("w-20 font-medium tabular-nums", !disabled && pointCls(value))}
-        size="sm"
-        disabled={disabled}
-        aria-label={ariaLabel}
-      >
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o} value={String(o)} className={cn("tabular-nums", pointCls(o))}>
-            {o > 0 ? `+${o}` : String(o)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "group relative flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-3 pt-6 pb-4",
+            "cursor-pointer transition-all hover:ring-2 hover:ring-inset hover:ring-primary/30 hover:bg-muted/40",
+            "active:scale-[0.97]",
+            !enabled && "opacity-50"
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-2 right-2.5 text-xs font-bold tabular-nums",
+              positive ? "text-success" : "text-destructive"
+            )}
+          >
+            {badge}
+          </span>
+          <span className="absolute top-2 left-2.5 rounded bg-muted px-1 py-px text-[9px] font-medium tracking-wide text-muted-foreground uppercase">
+            Avto
+          </span>
+          <BehaviorEmoji
+            code={emoji}
+            label={title}
+            className="size-9 transition-transform duration-200 group-hover:scale-110"
+          />
+          <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight text-foreground">
+            {title}
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 space-y-3" align="start">
+        {children}
+      </PopoverContent>
+    </Popover>
   );
 }
 
-/** Dars soni tanlagichi — neytral, "+"siz, "N dars" koʻrinishida. */
+/** Popover izoh matni — qoida qanday ishlashi. */
+function RuleInfo({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm leading-relaxed text-muted-foreground">{children}</p>;
+}
+
+/** Popover qatori: label + kontrol. */
+function ControlRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-sm text-foreground">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+/** Seriya zina jadvali — B, 2B, 4B, 6B marralar va bonuslari. */
+function StreakLadder({ base }: { base: number }) {
+  const rows = [1, 2, 3, 4].map((k) => streakMilestoneAt(k, base));
+  return (
+    <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs tabular-nums text-muted-foreground">
+        {rows.map((r, i) => (
+          <span key={i} className="flex items-center gap-1">
+            <span className="font-medium text-foreground">{r.threshold} dars</span>
+            <span className="text-success">+{r.bonus}</span>
+          </span>
+        ))}
+        <span>…</span>
+      </div>
+    </div>
+  );
+}
+
+/** Qulflangan ball qatori — qiymat oʻzgartirilmaydi (tizim standarti). */
+function LockedPointsRow({ points }: { points: number }) {
+  return (
+    <ControlRow label="Ball">
+      <span
+        className={cn(
+          "text-sm font-semibold tabular-nums",
+          points > 0 ? "text-success" : "text-destructive"
+        )}
+      >
+        {formatPoints(points)}
+        <span className="ml-1.5 font-normal text-muted-foreground">standart</span>
+      </span>
+    </ControlRow>
+  );
+}
+
 function LessonCountSelect({
   value,
   options,
@@ -95,15 +177,15 @@ function LessonCountSelect({
 function weekExample(v: BehaviorAutoSettings): { parts: string[]; total: number } | null {
   const parts: string[] = [];
   let total = 0;
-  if (v.attendanceEnabled) {
-    if (v.presentEnabled) {
-      parts.push(`2 kelgan dars (+${v.presentPoints * 2})`);
-      total += v.presentPoints * 2;
-    }
+  if (v.attendanceEnabled && v.presentEnabled) {
+    parts.push(`2 kelgan dars (+${v.presentPoints * 2})`);
+    total += v.presentPoints * 2;
+  }
+  if (v.attendanceEnabled && v.lateEnabled) {
     parts.push(`1 kechikish (${v.latePoints})`);
     total += v.latePoints;
   }
-  if (v.journalEnabled) {
+  if (v.journalEnabled && v.gradedEnabled) {
     parts.push(`1 baholangan topshiriq (+${v.gradedPoints})`);
     total += v.gradedPoints;
   }
@@ -111,208 +193,161 @@ function weekExample(v: BehaviorAutoSettings): { parts: string[]; total: number 
   return { parts, total };
 }
 
-export default function AutoPointsEditor({
-  value,
-  onChange,
-}: {
-  value: BehaviorAutoSettings;
-  onChange: (next: BehaviorAutoSettings) => void;
-}) {
+/** Xulq avtomatik qoidalari — Koʻnikmalar gridiga ijobiy/salbiy boʻyicha aralashtiriladi. */
+export function useAutoRuleTiles(
+  value: BehaviorAutoSettings,
+  onChange: (next: BehaviorAutoSettings) => void
+): { positive: React.ReactNode[]; negative: React.ReactNode[] } {
   const patch = (partial: Partial<BehaviorAutoSettings>) =>
     onChange({ ...value, ...partial });
 
-  const att = value.attendanceEnabled;
-  const jrn = value.journalEnabled;
-  const example = weekExample(value);
+  const negative: React.ReactNode[] = [
+    <AutoRuleTile
+      key="late"
+      emoji={RULE_EMOJI.late}
+      title="Kechikdi"
+      badge={formatPoints(value.latePoints)}
+      positive={false}
+      enabled={value.attendanceEnabled && value.lateEnabled}
+    >
+      <RuleInfo>
+        Davomatda «Kechikdi» belgilanganda avtomatik yoziladi; belgi
+        tuzatilsa ball ham tuzatiladi.
+      </RuleInfo>
+      <LockedPointsRow points={value.latePoints} />
+      <ControlRow label="Yoqilgan">
+        <Switch
+          checked={value.lateEnabled}
+          onCheckedChange={(on) => patch({ lateEnabled: on })}
+          aria-label="Kechikish qoidasini yoqish"
+        />
+      </ControlRow>
+    </AutoRuleTile>,
 
-  return (
-    <>
-      {/* ── Davomat manbasi ─────────────────────────────────────── */}
-      <SettingsList
-        items={[
-          {
-            key: "att-master",
-            title: "Davomatdan avto-ballar",
-            description: "Kechikish va sababsiz kelmaslik xulq balliga avtomatik taʼsir qiladi",
-            multiline: true,
-            trailing: (
-              <Switch
-                checked={att}
-                onCheckedChange={(on) => patch({ attendanceEnabled: on })}
-                aria-label="Davomatdan avto-ballarni yoqish"
-              />
-            ),
-          },
-          ...(!att
-            ? []
-            : [
-                {
-                  key: "late",
-                  title: "Kechikdi",
-                  indent: true,
-                  trailing: (
-                    <PointsSelect
-                      value={value.latePoints}
-                      options={[-1, -2, -3, -4, -5]}
-                      onChange={(v) => patch({ latePoints: v })}
-                      ariaLabel="Kechikish balli"
-                    />
-                  ),
-                },
-                {
-                  key: "absent",
-                  title: "Sababsiz kelmadi",
-                  description: "Sababli kelmaslik ballga taʼsir qilmaydi",
-                  indent: true,
-                  multiline: true,
-                  trailing: (
-                    <PointsSelect
-                      value={value.absentPoints}
-                      options={[-1, -2, -3, -4, -5]}
-                      onChange={(v) => patch({ absentPoints: v })}
-                      ariaLabel="Sababsiz kelmaslik balli"
-                    />
-                  ),
-                },
-                {
-                  key: "present",
-                  title: "Har kelgan dars uchun",
-                  description:
-                    "Odatda oʻchiq (ball qadrsizlanadi) — davomati juda past sinflar uchun vaqtincha yoqish mumkin",
-                  indent: true,
-                  multiline: true,
-                  dimmed: !value.presentEnabled,
-                  trailing: (
-                    <>
-                      <PointsSelect
-                        value={value.presentPoints}
-                        options={[1, 2, 3]}
-                        onChange={(v) => patch({ presentPoints: v })}
-                        disabled={!value.presentEnabled}
-                        ariaLabel="Kelgan dars balli"
-                      />
-                      <Switch
-                        checked={value.presentEnabled}
-                        onCheckedChange={(on) => patch({ presentEnabled: on })}
-                        aria-label="Har kelgan dars uchun ballni yoqish"
-                      />
-                    </>
-                  ),
-                },
-                {
-                  key: "streak",
-                  title: "Davomat seriyasi bonusi",
-                  indent: true,
-                  multiline: true,
-                  dimmed: !value.streakEnabled,
-                  description: (
-                    <span className="flex flex-col gap-2">
-                      <span>
-                        Sababli kelmaslik seriyani buzmaydi (pauza). Boshlangʻich yoki kam
-                        soatli fanga 3, yuqori sinfga 5 dars tavsiya etiladi.
-                      </span>
-                      {value.streakEnabled && (
-                        <span className="flex flex-wrap items-center gap-2 text-sm text-foreground">
-                          <LessonCountSelect
-                            value={value.streakN}
-                            options={[2, 3, 4, 5, 6, 7, 8, 10]}
-                            onChange={(v) => patch({ streakN: v })}
-                            ariaLabel="Seriya uzunligi (dars soni)"
-                          />
-                          <span className="text-muted-foreground">
-                            ketma-ket toza davomat
-                          </span>
-                          <MoveRight className="size-3.5 text-muted-foreground" />
-                          <PointsSelect
-                            value={value.streakBonus}
-                            options={[1, 2, 3, 4, 5]}
-                            onChange={(v) => patch({ streakBonus: v })}
-                            ariaLabel="Seriya bonusi"
-                          />
-                          <span className="text-muted-foreground">bonus</span>
-                        </span>
-                      )}
-                    </span>
-                  ),
-                  trailing: (
-                    <Switch
-                      checked={value.streakEnabled}
-                      onCheckedChange={(on) => patch({ streakEnabled: on })}
-                      aria-label="Davomat seriyasi bonusini yoqish"
-                    />
-                  ),
-                },
-              ]),
-        ]}
-      />
+    <AutoRuleTile
+      key="absent"
+      emoji={RULE_EMOJI.absent}
+      title="Sababsiz kelmadi"
+      badge={formatPoints(value.absentPoints)}
+      positive={false}
+      enabled={value.attendanceEnabled && value.absentEnabled}
+    >
+      <RuleInfo>
+        Faqat sababsiz kelmaslik uchun — sababli kelmaslik ballga taʼsir
+        qilmaydi.
+      </RuleInfo>
+      <LockedPointsRow points={value.absentPoints} />
+      <ControlRow label="Yoqilgan">
+        <Switch
+          checked={value.absentEnabled}
+          onCheckedChange={(on) => patch({ absentEnabled: on })}
+          aria-label="Sababsiz kelmaslik qoidasini yoqish"
+        />
+      </ControlRow>
+    </AutoRuleTile>,
 
-      {/* ── Jurnal manbasi ──────────────────────────────────────── */}
-      <SettingsList
-        items={[
-          {
-            key: "jrn-master",
-            title: "Jurnaldan avto-ballar",
-            description:
-              "Topshiriq baholanganda plus; topshirish muddati oʻtib katak boʻsh qolsa minus",
-            multiline: true,
-            trailing: (
-              <Switch
-                checked={jrn}
-                onCheckedChange={(on) => patch({ journalEnabled: on })}
-                aria-label="Jurnaldan avto-ballarni yoqish"
-              />
-            ),
-          },
-          ...(!jrn
-            ? []
-            : [
-                {
-                  key: "graded",
-                  title: "Topshiriq baholandi",
-                  description: "Baho qiymatidan qatʼi nazar — bajarganlik jarayon-signali",
-                  indent: true,
-                  multiline: true,
-                  trailing: (
-                    <PointsSelect
-                      value={value.gradedPoints}
-                      options={[1, 2, 3]}
-                      onChange={(v) => patch({ gradedPoints: v })}
-                      ariaLabel="Baholangan topshiriq balli"
-                    />
-                  ),
-                },
-                {
-                  key: "due",
-                  title: "Muddatida topshirilmadi",
-                  description:
-                    "Faqat muddat kiritilgan topshiriqlarga taalluqli; «Q» (qatnashmadi) belgilangan katakka minus yozilmaydi. Keyin baho qoʻyilsa minus olib tashlanadi.",
-                  indent: true,
-                  multiline: true,
-                  trailing: (
-                    <PointsSelect
-                      value={value.missedDuePoints}
-                      options={[-1, -2, -3]}
-                      onChange={(v) => patch({ missedDuePoints: v })}
-                      ariaLabel="Muddati oʻtgan topshiriq balli"
-                    />
-                  ),
-                },
-              ]),
-        ]}
-      />
+    <AutoRuleTile
+      key="due"
+      emoji={RULE_EMOJI.due}
+      title="Muddatida topshirilmadi"
+      badge={formatPoints(value.missedDuePoints)}
+      positive={false}
+      enabled={value.journalEnabled && value.missedDueEnabled}
+    >
+      <RuleInfo>
+        Muddat kiritilgan topshiriq baholanmay qolsa yoziladi. «Q»
+        belgilangan katakka minus yozilmaydi; keyin baho qoʻyilsa minus
+        qaytariladi.
+      </RuleInfo>
+      <LockedPointsRow points={value.missedDuePoints} />
+      <ControlRow label="Yoqilgan">
+        <Switch
+          checked={value.missedDueEnabled}
+          onCheckedChange={(on) => patch({ missedDueEnabled: on })}
+          aria-label="Muddatida topshirilmadi qoidasini yoqish"
+        />
+      </ControlRow>
+    </AutoRuleTile>,
+  ];
 
-      {/* Jonli misol — sozlama oʻzgarsa darhol qayta hisoblanadi */}
-      {example && (
-        <p className="text-caption leading-relaxed">
-          <span className="font-medium text-foreground">Misol (bir hafta):</span>{" "}
-          {example.parts.join(" + ")} ={" "}
-          <span
-            className={cn("font-semibold tabular-nums", pointCls(example.total || 1))}
-          >
-            {example.total > 0 ? `+${example.total}` : example.total} ball
-          </span>
-        </p>
-      )}
-    </>
-  );
+  const positive: React.ReactNode[] = [
+    <AutoRuleTile
+      key="present"
+      emoji={RULE_EMOJI.present}
+      title="Har kelgan dars"
+      badge={formatPoints(value.presentPoints)}
+      positive
+      enabled={value.attendanceEnabled && value.presentEnabled}
+    >
+      <RuleInfo>
+        Har darsga kelgani uchun beriladi — davomati past sinflarni
+        ragʻbatlantiradi.
+      </RuleInfo>
+      <LockedPointsRow points={value.presentPoints} />
+      <ControlRow label="Yoqilgan">
+        <Switch
+          checked={value.presentEnabled}
+          onCheckedChange={(on) => patch({ presentEnabled: on })}
+          aria-label="Har kelgan dars uchun ballni yoqish"
+        />
+      </ControlRow>
+    </AutoRuleTile>,
+
+    <AutoRuleTile
+      key="streak"
+      emoji={RULE_EMOJI.streak}
+      title="Seriya bonusi"
+      badge="+2…+5"
+      positive
+      enabled={value.attendanceEnabled && value.streakEnabled}
+    >
+      <RuleInfo>
+        Ketma-ket toza davomat uchun zina boʻyicha oʻsuvchi bonus: boshlangʻich
+        marra→+2, 2 barobar→+3, 4 barobar→+5, keyin har 2 barobarda→+5.
+        Kechikish va sababli kelmaslik seriyani buzmaydi — pauza qiladi.
+        Sababsiz kelmaslikda hisoblagich 0 ga emas, oxirgi olingan marraga
+        qaytadi.
+      </RuleInfo>
+      <ControlRow label="Boshlangʻich marra">
+        <LessonCountSelect
+          value={value.streakN}
+          options={[3, 4, 5]}
+          onChange={(v) => patch({ streakN: v })}
+          disabled={!value.streakEnabled}
+          ariaLabel="Seriya boshlangʻich marrasi (dars soni)"
+        />
+      </ControlRow>
+      <StreakLadder base={value.streakN} />
+      <ControlRow label="Yoqilgan">
+        <Switch
+          checked={value.streakEnabled}
+          onCheckedChange={(on) => patch({ streakEnabled: on })}
+          aria-label="Davomat seriyasi bonusini yoqish"
+        />
+      </ControlRow>
+    </AutoRuleTile>,
+
+    <AutoRuleTile
+      key="graded"
+      emoji={RULE_EMOJI.graded}
+      title="Topshiriq baholandi"
+      badge={formatPoints(value.gradedPoints)}
+      positive
+      enabled={value.journalEnabled && value.gradedEnabled}
+    >
+      <RuleInfo>Bahosidan qatʼi nazar — bajarganlik uchun beriladi.</RuleInfo>
+      <LockedPointsRow points={value.gradedPoints} />
+      <ControlRow label="Yoqilgan">
+        <Switch
+          checked={value.gradedEnabled}
+          onCheckedChange={(on) => patch({ gradedEnabled: on })}
+          aria-label="Topshiriq baholandi qoidasini yoqish"
+        />
+      </ControlRow>
+    </AutoRuleTile>,
+  ];
+
+  return { positive, negative };
 }
+
+export { weekExample };

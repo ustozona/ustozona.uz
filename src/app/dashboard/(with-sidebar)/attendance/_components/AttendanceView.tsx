@@ -17,7 +17,8 @@ import {
 } from "@/lib/attendance-data";
 import { statusVisual } from "@/components/attendance/status-visual";
 import AttendanceSettingsModal from "@/components/attendance/AttendanceSettingsModal";
-import { getQuarterForMonth, inRange } from "@/lib/academic-calendar";
+import { getQuarterForMonth, inRange, isCalendarConfigured } from "@/lib/academic-calendar";
+import Link from "next/link";
 import { todayKey } from "@/lib/date-keys";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
@@ -348,6 +349,12 @@ export default function AttendanceView({
     [month.year, month.month]
   );
   const lessonDays = demoMode ? demoLessonDays : realLessonDays;
+  // Bugun faol o‘quv yili kalendaridan tashqarida bo‘lsa — sabab tushunarsiz
+  // bo‘sh holat o‘rniga aniq banner ko‘rsatiladi (yil almashtirilmaydi).
+  const todayOutsideCalendar =
+    !demoMode &&
+    isCalendarConfigured(calendar) &&
+    (today < calendar.range.start || today > calendar.range.end);
 
   useEffect(() => {
     if (!demoMode) return;
@@ -512,7 +519,20 @@ export default function AttendanceView({
   return (
     <>
       {/* Main panel */}
-      <div className="flex-1 min-w-0 min-h-0 grid" data-tour="attendance-heatmap" style={{ minHeight: 0 }}>
+      <div className="flex-1 min-w-0 min-h-0 grid gap-3" data-tour="attendance-heatmap" style={{ minHeight: 0, gridTemplateRows: todayOutsideCalendar ? "auto 1fr" : "1fr" }}>
+        {todayOutsideCalendar && (
+          <Alert variant="info">
+            <AlertTriangle className="size-4" aria-hidden />
+            <AlertTitle>Bugun tanlangan oʻquv yildan tashqarida</AlertTitle>
+            <AlertDescription>
+              Bugungi sana ({today}) faol kalendar ({calendar.yearLabel || "joriy yil"}) diapazonidan
+              tashqarida — shuning uchun ayrim oylarda dars kuni koʻrinmasligi mumkin.{" "}
+              <Link href="/dashboard/settings?section=oquv-yili" className="font-medium underline underline-offset-2">
+                Oʻquv yili sozlamalariga oʻtish
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
         <Card className={cn("min-w-0", panelCardClass)} style={{ height: "100%" }}>
           {/* Header */}
           <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-[4.5rem] px-5 py-5!")}>

@@ -92,10 +92,10 @@ export function computeAttendanceAutoEvents(
     if (r.date < settings.attendanceSince || r.date > todayKey) continue;
     let rule: { name: string; emoji: string; description: string } | null = null;
     let points = 0;
-    if (r.status === "late") {
+    if (r.status === "late" && settings.lateEnabled) {
       rule = AUTO_META.late;
       points = settings.latePoints;
-    } else if (r.status === "absent") {
+    } else if (r.status === "absent" && settings.absentEnabled) {
       rule = AUTO_META.absent;
       points = settings.absentPoints;
     } else if (r.status === "present" && settings.presentEnabled) {
@@ -110,14 +110,113 @@ export function computeAttendanceAutoEvents(
   return out;
 }
 
-/* ── Streak: ketma-ket N dars kechikish/sababsizsiz → bonus ─────────── */
+/* ── Streak: zina modeli (milestone ladder) + checkpoint-reset ───────── */
 
 /**
- * Yumshoq uzilish (ekspert dizayni): `present` hisoblagichni oshiradi,
- * `excused` va BELGILANMAGAN dars kuni pauza (oʻzgartirmaydi),
- * `late`/`absent` nolga tushiradi. Hisoblagich N ga yetganda oʻsha kun
- * sanasi bilan bonus-event, soʻng 0 dan qayta boshlanadi.
+ * Zina jadvali: bazaviy marra B uchun B→+2, 2B→+3, 4B→+5, keyin har
+ * 2B darsda +5. k = marra tartib raqami (1, 2, 3, …).
  */
+export function streakMilestoneAt(k: number, base: number): { threshold: number; bonus: number } {
+  if (k <= 0) return { threshold: 0, bonus: 0 };
+  if (k === 1) return { threshold: base, bonus: 2 };
+  if (k === 2) return { threshold: base * 2, bonus: 3 };
+  return { threshold: base * 2 * (k - 1), bonus: 5 };
+}
+
+/** Hisoblagich qiymatidan keyingi (hali erishilmagan) marra. */
+export function nextMilestone(counter: number, base: number): { threshold: number; bonus: number } {
+  let k = 1;
+  let m = streakMilestoneAt(k, base);
+  while (m.threshold <= counter) {
+    k += 1;
+    m = streakMilestoneAt(k, base);
+  }
+  return m;
+}
+
+/** Checkpoint-reset: oxirgi erishilgan marra qiymati (yoki 0). */
+export function checkpointFor(counter: number, base: number): number {
+  let k = 1;
+  let checkpoint = 0;
+  let m = streakMilestoneAt(k, base);
+  while (m.threshold <= counter) {
+    checkpoint = m.threshold;
+    k += 1;
+    m = streakMilestoneAt(k, base);
+  }
+  return checkpoint;
+}
+
+export type StreakState = {
+  /** Joriy hisoblagich (bonusdan keyin ham 0 ga tushmaydi). */
+  count: number;
+  /** Keyingi marra va uning bonusi. */
+  nextThreshold: number;
+  nextBonus: number;
+  /** Oxirgi belgilangan kun kechikdi/sababli/belgilanmagan boʻlsa — pauza. */
+  paused: boolean;
+};
+
+/**
+ * computeStreakEvents va computeCurrentStreaks ikkalasi shu bitta
+ * iteratsiyadan foydalanadi (drift boʻlmasin). `present` hisoblagichni
+ * oshiradi; marraga yetganda `onMilestone` chaqiriladi va hisoblagich
+ * DAVOM ETADI (0 ga tushmaydi). `late`/`excused`/belgilanmagan kun —
+ * pauza (oʻzgartirmaydi). `absent` — checkpoint-reset (oxirgi marraga
+ * qaytadi, 0 ga emas).
+ */
+function walkStreak(
+  statusByDate: Map<string, string>,
+  days: string[],
+  base: number,
+  onMilestone?: (date: string, threshold: number, bonus: number) => void
+): StreakState {
+  let counter = 0;
+  let paused = false;
+  let next = nextMilestone(counter, base);
+  for (const date of days) {
+    const status = statusByDate.get(date);
+    if (status === "absent") {
+      counter = checkpointFor(counter, base);
+      next = nextMilestone(counter, base);
+      paused = false;
+    } else if (status === "present") {
+      counter += 1;
+      paused = false;
+      if (counter === next.threshold) {
+        onMilestone?.(date, next.threshold, next.bonus);
+        next = nextMilestone(counter, base);
+      }
+    } else {
+      // late / excused / belgilanmagan kun — pauza (hisoblagich oʻzgarmaydi).
+      paused = true;
+    }
+  }
+  return { count: counter, nextThreshold: next.threshold, nextBonus: next.bonus, paused };
+}
+
+function attendanceByStudent(
+  records: AttendanceRecord[],
+  since: string,
+  todayKey: string
+): Map<string, Map<string, string>> {
+  const byStudent = new Map<string, Map<string, string>>();
+  for (const r of records) {
+    if (r.date < since || r.date > todayKey) continue;
+    let m = byStudent.get(r.studentId);
+    if (!m) byStudent.set(r.studentId, (m = new Map()));
+    m.set(r.date, r.status);
+  }
+  return byStudent;
+}
+
+function windowLessonDays(lessonDays: LessonDay[], since: string, todayKey: string): string[] {
+  return lessonDays
+    .filter((d) => d.date >= since && d.date <= todayKey)
+    .map((d) => d.date)
+    .sort();
+}
+
 export function computeStreakEvents(
   classId: string,
   records: AttendanceRecord[],
@@ -126,55 +225,50 @@ export function computeStreakEvents(
   todayKey: string
 ): BehaviorEvent[] {
   if (!settings.attendanceEnabled || !settings.streakEnabled) return [];
-  if (settings.streakN < 2 || settings.streakBonus <= 0) return [];
+  if (settings.streakN < 2) return [];
 
-  // studentId → date → status (faqat oyna ichi).
-  const byStudent = new Map<string, Map<string, string>>();
-  for (const r of records) {
-    if (r.date < settings.attendanceSince || r.date > todayKey) continue;
-    let m = byStudent.get(r.studentId);
-    if (!m) byStudent.set(r.studentId, (m = new Map()));
-    m.set(r.date, r.status);
-  }
-
-  const days = lessonDays
-    .filter((d) => d.date >= settings.attendanceSince && d.date <= todayKey)
-    .map((d) => d.date)
-    .sort();
-
-  const meta = {
-    name: streakName(settings.streakN),
-    emoji: "1f525",
-    description: "Davomatdan avtomatik: ketma-ket darslar seriyasi",
-  };
+  const byStudent = attendanceByStudent(records, settings.attendanceSince, todayKey);
+  const days = windowLessonDays(lessonDays, settings.attendanceSince, todayKey);
 
   const out: BehaviorEvent[] = [];
   for (const [studentId, statusByDate] of byStudent) {
-    let counter = 0;
-    for (const date of days) {
-      const status = statusByDate.get(date);
-      if (status === "late" || status === "absent") {
-        counter = 0;
-      } else if (status === "present") {
-        counter += 1;
-        if (counter >= settings.streakN) {
-          out.push(
-            makeEvent(
-              streakAutoId(classId, studentId, date),
-              studentId,
-              "streak",
-              meta,
-              settings.streakBonus,
-              date
-            )
-          );
-          counter = 0;
-        }
-      }
-      // excused / belgilanmagan kun — pauza (counter oʻzgarmaydi).
-    }
+    walkStreak(statusByDate, days, settings.streakN, (date, threshold, bonus) => {
+      out.push(
+        makeEvent(
+          streakAutoId(classId, studentId, date),
+          studentId,
+          "streak",
+          {
+            name: streakName(threshold),
+            emoji: "1f525",
+            description: "Davomatdan avtomatik: ketma-ket darslar seriyasi",
+          },
+          bonus,
+          date
+        )
+      );
+    });
   }
   return out;
+}
+
+/** Joriy seriya holati (UI koʻrinuvchan hisoblagich uchun) — event yaratmaydi. */
+export function computeCurrentStreaks(
+  records: AttendanceRecord[],
+  lessonDays: LessonDay[],
+  settings: BehaviorAutoSettings,
+  todayKey: string
+): Map<string, StreakState> {
+  const result = new Map<string, StreakState>();
+  if (!settings.attendanceEnabled || !settings.streakEnabled || settings.streakN < 2) return result;
+
+  const byStudent = attendanceByStudent(records, settings.attendanceSince, todayKey);
+  const days = windowLessonDays(lessonDays, settings.attendanceSince, todayKey);
+
+  for (const [studentId, statusByDate] of byStudent) {
+    result.set(studentId, walkStreak(statusByDate, days, settings.streakN));
+  }
+  return result;
 }
 
 /* ── Jurnal: baholandi (+) va muddat oʻtib boʻsh (−) ────────────────── */
@@ -210,7 +304,7 @@ export function computeJournalAutoEvents(
       const g = gradeByKey.get(`${s.id}|${a.id}`);
       const graded = !!g && g.score !== null && !g.isDraft;
 
-      if (graded && settings.gradedPoints > 0) {
+      if (graded && settings.gradedEnabled && settings.gradedPoints > 0) {
         out.push(
           makeEvent(
             gradeAutoId(classId, s.id, a.id),
@@ -224,6 +318,7 @@ export function computeJournalAutoEvents(
       } else if (
         !graded &&
         duePassed &&
+        settings.missedDueEnabled &&
         settings.missedDuePoints !== 0 &&
         // Muddat oynadan oldin boʻlsa — reconcile qamrovidan tashqarida.
         (a.dueDate as string) >= settings.journalSince &&
