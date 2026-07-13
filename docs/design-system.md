@@ -101,6 +101,22 @@ toolbar tugmalari va inputlari bir qatorda 36px balandlikda boʻladi.
   Breakpoint siyosati: chap "Sinflar" paneli = `lg`, oʻng detal/preview paneli = `xl`
   (students preview `lg` da — ustunlar bilan birga chiqadi, hujjatlangan istisno).
 
+### Brend CTA tugmasi (`variant="brand"` / `BrandCtaButton`)
+
+Marketing/konversiya nuqtalari uchun maxsus sariq tugma — oddiy ish amallarida
+ISHLATMANG (ular qora `default` boʻlib qoladi). Qoʻllash joylari: upgrade/pricing
+modal CTA, landing hero, Pro-banner kabi kamdan-kam, eʼtibor talab qiluvchi harakatlar.
+
+- **`Button variant="brand"`** (`components/ui/button.tsx`) — `rounded-full`, fon
+  brend sarigʻi `#FBC02D`, matn `#3B2F0B`, ostida 3px toʻq sariq asos
+  (`shadow-[0_3px_0_0_#C08D1B]`); bosilganda tugma 3px pastga tushib asosga
+  "oʻtiradi" (`active:translate-y-[3px] active:shadow-none`). Ranglar ataylab
+  hardcoded — brend rangi mavzudan qatʼi nazar oʻzgarmaydi.
+- **`BrandCtaButton`** (`components/brand-cta-button.tsx`) — shu variant ustiga
+  qurilgan tayyor CTA: `h-12` pill, oʻngda oq aylana ichida `ArrowUpRight`,
+  hoverda strelka chapga suzib 45° buriladi. `href` bersangiz `<a>` sifatida
+  render boʻladi.
+
 ---
 
 ## 5. Radius, soya, animatsiya

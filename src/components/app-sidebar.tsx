@@ -18,8 +18,8 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useTaskStore } from "@/store/useTaskStore";
+import { BrandWordmark } from "@/assets/logo/brand-wordmark";
 import {
-  GraduationCap,
   LayoutGrid,
   Calendar,
   BookOpen,
@@ -105,17 +105,14 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton size="lg" asChild className="h-auto">
               <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-foreground text-white shadow-sm">
-                  <GraduationCap className="size-4" strokeWidth={2.2} />
-                </div>
-                <div className="grid flex-1 text-left leading-tight">
-                  <span className="truncate font-semibold" style={{ letterSpacing: "-0.04em" }}>
-                    Ustozona
-                  </span>
-                  <span className="truncate text-xs text-muted-foreground">EMS</span>
-                </div>
+                <BrandWordmark
+                  shieldClassName="size-[30px]"
+                  textClassName="text-base"
+                  gapClassName="gap-3"
+                  rollerSize="base"
+                />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

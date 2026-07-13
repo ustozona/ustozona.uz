@@ -1,0 +1,29 @@
+import { cn } from "@/lib/utils";
+
+type BrandShieldProps = {
+  className?: string;
+};
+
+/**
+ * Ustozona brend belgisi — sariq qalqon (rasmiy logo marki).
+ * Rang doimiy brend sarigʻi (#FBC02D), mavzudan qatʼi nazar oʻzgarmaydi.
+ */
+export function BrandShield({ className }: BrandShieldProps) {
+  return (
+    <svg
+      viewBox="0 0 240 240"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Ustozona"
+      className={cn(className)}
+    >
+      <path
+        d="M0 40C0 25.0461 0 17.5692 3.21539 12C5.32183 8.35154 8.35154 5.32183 12 3.21539C17.5692 0 25.0461 0 40 0H200C214.954 0 222.431 0 228 3.21539C231.648 5.32183 234.678 8.35154 236.785 12C240 17.5692 240 25.0461 240 40V120C240 186.274 186.274 240 120 240C53.7258 240 0 186.274 0 120V40Z"
+        fill="#FBC02D"
+      />
+    </svg>
+  );
+}
+
+export default BrandShield;

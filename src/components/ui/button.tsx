@@ -32,6 +32,8 @@ const buttonVariants = cva(
         soft: "bg-primary/10 text-primary hover:bg-primary/15 dark:bg-primary/15 dark:hover:bg-primary/25",
         "soft-destructive":
           "bg-destructive/10 text-destructive hover:bg-destructive/15 dark:bg-destructive/15 dark:hover:bg-destructive/25",
+        brand:
+          "rounded-full bg-[#FBC02D] text-[#3B2F0B] shadow-[0_3px_0_0_#C08D1B] hover:bg-[#FBC02D]/90 active:translate-y-[3px] active:shadow-none focus-visible:border-[#C08D1B] focus-visible:ring-[#FBC02D]/40",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
