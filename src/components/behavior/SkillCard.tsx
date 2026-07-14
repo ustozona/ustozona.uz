@@ -18,7 +18,7 @@ const tileClass = cn(
 );
 
 /** Karta hover'ida emoji biroz kattarib "javob beradi" (mikro-animatsiya). */
-const tileEmojiClass = "size-9 transition-transform duration-200 group-hover:scale-110";
+const tileEmojiClass = "size-9 transition-transform duration-fast group-hover:scale-110";
 
 export function formatPoints(points: number): string {
   return points > 0 ? `+${points}` : `−${Math.abs(points)}`;

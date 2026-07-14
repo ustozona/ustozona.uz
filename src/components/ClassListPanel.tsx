@@ -170,16 +170,16 @@ export default function ClassListPanel({
                 style={{ backgroundColor: tint(hex!, 12.5) }}
               >
                 <span
-                  className="absolute inset-0 rounded-xl opacity-0 group-hover/icon:opacity-100 transition-opacity duration-200"
+                  className="absolute inset-0 rounded-xl opacity-0 group-hover/icon:opacity-100 transition-opacity duration-fast"
                   style={{ backgroundColor: hex }}
                 />
                 <GraduationCap
-                  className="relative size-7 transition-opacity duration-200 group-hover/icon:opacity-0"
+                  className="relative size-7 transition-opacity duration-fast group-hover/icon:opacity-0"
                   style={{ color: hex }}
                   aria-hidden="true"
                 />
                 <ArrowUpRight
-                  className="size-7 absolute inset-0 m-auto opacity-0 transition-opacity duration-200 group-hover/icon:opacity-100 text-white"
+                  className="size-7 absolute inset-0 m-auto opacity-0 transition-opacity duration-fast group-hover/icon:opacity-100 text-white"
                   aria-hidden="true"
                 />
               </Link>
@@ -189,7 +189,7 @@ export default function ClassListPanel({
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-1 leading-relaxed">{selected!.time}</p>
                 )}
               </div>
-              <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover/stats:opacity-100 transition-opacity duration-200">
+              <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover/stats:opacity-100 transition-opacity duration-fast">
                 <button
                   onClick={() => onEditClass?.(selected!.id)}
                   title="Tahrirlash"

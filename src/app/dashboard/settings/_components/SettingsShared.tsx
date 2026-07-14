@@ -194,7 +194,7 @@ export function SaveFooter({
           <span
             aria-live="polite"
             className={cn(
-              "inline-flex items-center gap-1 text-xs font-medium text-success transition-opacity duration-200",
+              "inline-flex items-center gap-1 text-xs font-medium text-success transition-opacity duration-fast",
               showSaved ? "opacity-100" : "opacity-0"
             )}
           >
@@ -304,7 +304,7 @@ export function SavedIndicator({ signal, bubble = true }: { signal: unknown; bub
     <span
       aria-live="polite"
       className={cn(
-        "inline-flex items-center gap-1 text-xs font-medium text-success transition-opacity duration-200",
+        "inline-flex items-center gap-1 text-xs font-medium text-success transition-opacity duration-fast",
         visible ? "opacity-100" : "opacity-0"
       )}
     >

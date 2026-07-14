@@ -33,7 +33,7 @@ export function ReactionChips({
           onClick={() => onToggle(r.emoji)}
           aria-pressed={r.mine}
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold tabular-nums transition-all duration-150 hover:-translate-y-0.5 active:scale-90",
+            "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold tabular-nums transition-all duration-fast hover:-translate-y-0.5 active:scale-90",
             r.mine
               ? "border-primary/50 bg-primary/10 text-foreground"
               : "border-transparent bg-muted/50 text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
@@ -68,7 +68,7 @@ export function QuickReactionBar({
           type="button"
           aria-label={emoji}
           onClick={() => onToggle(emoji)}
-          className="flex size-7 items-center justify-center rounded-full transition-transform duration-100 hover:scale-125 hover:bg-muted active:scale-95"
+          className="flex size-7 items-center justify-center rounded-full transition-transform duration-fast hover:scale-125 hover:bg-muted active:scale-95"
         >
           <AppleEmoji emoji={emoji} className="size-5" />
         </button>

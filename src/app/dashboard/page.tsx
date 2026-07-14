@@ -298,7 +298,7 @@ export default function DashboardPage() {
                                 animationDelay: `${i * 55}ms`,
                                 borderColor: `var(--hover-color, var(--border))`,
                               } as React.CSSProperties}
-                              className="animate-fade-slide-up group rounded-lg border p-4 cursor-pointer bg-card transition-all duration-200 hover:bg-muted/5"
+                              className="animate-fade-slide-up group rounded-lg border p-4 cursor-pointer bg-card transition-all duration-fast hover:bg-muted/5"
                               onMouseEnter={(e) => {
                                 (e.currentTarget as HTMLDivElement).style.setProperty('--hover-color', lesson.color);
                               }}
@@ -308,13 +308,13 @@ export default function DashboardPage() {
                             >
                               <div className="flex items-center gap-3">
                                 {/* Chap: Icon */}
-                                <div className="p-3 rounded-xl shrink-0 transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-3" style={{ backgroundColor: lesson.bg }}>
+                                <div className="p-3 rounded-xl shrink-0 transition-transform duration-base ease-standard group-hover:scale-110 group-hover:-rotate-3" style={{ backgroundColor: lesson.bg }}>
                                   <FileText className="size-7" style={{ color: lesson.color }} />
                                 </div>
 
                                 {/* Oʻrta: Mavzu + Sinf/vaqt */}
                                 <div className="min-w-0 flex-1 flex flex-col gap-1">
-                                  <p className="text-sm font-semibold leading-snug text-foreground transition-colors duration-200 group-hover:text-primary">{lesson.topic}</p>
+                                  <p className="text-sm font-semibold leading-snug text-foreground transition-colors duration-fast group-hover:text-primary">{lesson.topic}</p>
                                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <span className="font-medium text-foreground">{lesson.className}</span>
                                     <span className="size-0.5 rounded-full bg-muted-foreground" />
@@ -335,7 +335,7 @@ export default function DashboardPage() {
                                   </Badge>
                                 )}
                               <div className="shrink-0 group/actions relative flex items-center before:content-[''] before:absolute before:-inset-y-4 before:-left-10 before:-right-4">
-                                <div className="relative z-10 flex items-center gap-0.5 overflow-hidden max-w-0 opacity-0 group-hover/actions:max-w-16 group-hover/actions:opacity-100 transition-all duration-200 ease-out">
+                                <div className="relative z-10 flex items-center gap-0.5 overflow-hidden max-w-0 opacity-0 group-hover/actions:max-w-16 group-hover/actions:opacity-100 transition-all duration-fast ease-standard">
                                   <Button variant="ghost" size="icon-sm" className="text-muted-foreground/60 hover:text-destructive shrink-0">
                                     <Trash2 className="size-3.5" />
                                   </Button>

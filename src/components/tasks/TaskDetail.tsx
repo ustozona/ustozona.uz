@@ -214,7 +214,7 @@ export default function TaskDetail() {
         {subtasks.length > 0 && (
           <div className="absolute bottom-0 left-0 h-[2px] w-full bg-transparent overflow-hidden">
             <div
-              className="h-full bg-primary transition-all duration-500 ease-out"
+              className="h-full bg-primary transition-all duration-500 ease-standard"
               style={{ width: `${subtaskProgress}%` }}
             />
           </div>
@@ -612,7 +612,7 @@ export default function TaskDetail() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent
-                      className="[&_*[role=option]]:pr-8 [&_*[role=option]]:pl-2 [&_*[role=option]>span]:right-2 [&_*[role=option]>span]:left-auto [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2 data-[state=open]:slide-in-from-bottom-8 data-[state=open]:zoom-in-100 duration-400 w-[200px]"
+                      className="[&_*[role=option]]:pr-8 [&_*[role=option]]:pl-2 [&_*[role=option]>span]:right-2 [&_*[role=option]>span]:left-auto [&_*[role=option]>span]:flex [&_*[role=option]>span]:items-center [&_*[role=option]>span]:gap-2 data-[state=open]:slide-in-from-bottom-8 data-[state=open]:zoom-in-100 duration-slow w-[200px]"
                       align="end"
                     >
                       <SelectGroup>
@@ -666,7 +666,7 @@ export default function TaskDetail() {
               {subtasks.length > 0 && (
                 <div className="h-1 rounded-full bg-muted overflow-hidden">
                   <div
-                    className="h-full bg-primary transition-all duration-500 ease-out rounded-full"
+                    className="h-full bg-primary transition-all duration-500 ease-standard rounded-full"
                     style={{ width: `${subtaskProgress}%` }}
                   />
                 </div>

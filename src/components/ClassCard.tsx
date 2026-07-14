@@ -43,7 +43,7 @@ export const ClassCard = React.forwardRef<HTMLDivElement, ClassCardProps>(functi
       <div
         ref={ref}
         className={cn(
-          "group/cc flex w-full cursor-pointer items-center gap-2.5 rounded-lg border-2 border-transparent px-3 py-2 text-left transition-transform duration-200 ease-out hover:translate-x-1.5",
+          "group/cc flex w-full cursor-pointer items-center gap-2.5 rounded-lg border-2 border-transparent px-3 py-2 text-left transition-transform duration-fast ease-standard hover:translate-x-1.5",
           selected && "ring-2 ring-inset ring-primary/40",
           className,
         )}
@@ -51,7 +51,7 @@ export const ClassCard = React.forwardRef<HTMLDivElement, ClassCardProps>(functi
         {...rest}
       >
         <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: tints.solid }} aria-hidden />
-        <span className="flex-1 truncate text-sm text-foreground/70 transition-all duration-200 ease-out group-hover/cc:font-semibold group-hover/cc:text-foreground">{name}</span>
+        <span className="flex-1 truncate text-sm text-foreground/70 transition-all duration-fast ease-standard group-hover/cc:font-semibold group-hover/cc:text-foreground">{name}</span>
         {actions && <span className="ml-auto shrink-0">{actions}</span>}
       </div>
     );
@@ -65,14 +65,14 @@ export const ClassCard = React.forwardRef<HTMLDivElement, ClassCardProps>(functi
     <div
       ref={ref}
       className={cn(
-        "group/cc relative flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 p-4 text-left transition-[background-color,box-shadow] duration-200 ease-out [background-color:var(--cc-bg)] hover:[background-color:var(--cc-bg-h)] hover:shadow-md active:shadow-sm @max-[400px]:gap-2.5 @max-[400px]:p-3",
+        "group/cc relative flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 p-4 text-left transition-[background-color,box-shadow] duration-fast ease-standard [background-color:var(--cc-bg)] hover:[background-color:var(--cc-bg-h)] hover:shadow-md active:shadow-sm @max-[400px]:gap-2.5 @max-[400px]:p-3",
         selected && "ring-2 ring-inset ring-primary/40",
         className,
       )}
       style={{ borderColor: tints.solid, "--cc-bg": tints.surface.backgroundColor, "--cc-bg-h": bgHover, ...style } as React.CSSProperties}
       {...rest}
     >
-      <div className="shrink-0 rounded-xl p-3.5 transition-transform duration-200 ease-out group-hover/cc:-rotate-3 group-hover/cc:scale-110 @max-[400px]:rounded-lg @max-[400px]:p-2.5" style={tints.iconBg}>
+      <div className="shrink-0 rounded-xl p-3.5 transition-transform duration-fast ease-standard group-hover/cc:-rotate-3 group-hover/cc:scale-110 @max-[400px]:rounded-lg @max-[400px]:p-2.5" style={tints.iconBg}>
         {icon ?? <GraduationCap className="size-7 @max-[400px]:size-6" style={tints.iconText} />}
       </div>
       <div className="min-w-0 flex-1">

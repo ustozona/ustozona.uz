@@ -36,7 +36,7 @@ export default function TasksPage() {
       </div>
 
       {/* ── Column 2: Tasks List (Qolgan qism) ── */}
-      <div data-tour="tasks-list" className="min-w-0 min-h-0 h-full flex flex-col flex-1 transition-all duration-300">
+      <div data-tour="tasks-list" className="min-w-0 min-h-0 h-full flex flex-col flex-1 transition-all duration-base">
         <TasksList
           activeFilter={activeFilter}
           onSelectFilter={setActiveFilter}
@@ -47,14 +47,14 @@ export default function TasksPage() {
 
       {/* ── Column 3: Task Detail (vazifa tanlanganda) ── */}
       {detailMode && (
-        <div className="hidden md:flex min-w-0 min-h-0 h-full flex-col shrink-0 animate-in slide-in-from-right-8 fade-in-0 duration-300 w-full md:w-[350px] lg:w-[400px] xl:w-[25%] max-w-lg">
+        <div className="hidden md:flex min-w-0 min-h-0 h-full flex-col shrink-0 animate-in slide-in-from-right-8 fade-in-0 duration-base w-full md:w-[350px] lg:w-[400px] xl:w-[25%] max-w-lg">
           <TaskDetail />
         </div>
       )}
 
       {/* ── Column 3 (muqobil): Statistika (hech narsa tanlanmaganda) ── */}
       {!detailMode && (
-        <div data-tour="tasks-stats" className="hidden xl:flex min-w-0 min-h-0 h-full flex-col shrink-0 animate-in fade-in-0 duration-300 w-[360px] xl:w-[25%] max-w-md">
+        <div data-tour="tasks-stats" className="hidden xl:flex min-w-0 min-h-0 h-full flex-col shrink-0 animate-in fade-in-0 duration-base w-[360px] xl:w-[25%] max-w-md">
           <TaskStats
             activeFilter={activeFilter}
             onSelectFilter={setActiveFilter}

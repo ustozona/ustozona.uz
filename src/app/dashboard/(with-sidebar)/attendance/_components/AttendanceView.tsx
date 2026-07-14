@@ -770,7 +770,7 @@ export default function AttendanceView({
                                       {student.initials}
                                     </AvatarFallback>
                                   </Avatar>
-                                  <span className="absolute inset-0 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 flex items-center justify-center bg-[var(--avatar-bg)]"
+                                  <span className="absolute inset-0 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-fast flex items-center justify-center bg-[var(--avatar-bg)]"
                                     style={{ "--avatar-bg": classHex } as React.CSSProperties}>
                                     <ArrowUpRight className="size-3.5 text-white" aria-hidden />
                                   </span>

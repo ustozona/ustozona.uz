@@ -172,7 +172,7 @@ function SettingsPageInner() {
             {/* Orqaga tugmasi — faqat mobil (desktopda nav aktiv holatni koʻrsatadi) */}
             <div
               className={cn(
-                "flex shrink-0 items-center gap-3 border-b border-border px-5 py-3 transition-shadow duration-200 md:hidden",
+                "flex shrink-0 items-center gap-3 border-b border-border px-5 py-3 transition-shadow duration-fast md:hidden",
                 scrolled && "shadow-[0_4px_6px_-6px_rgb(0_0_0_/_0.25)]"
               )}
             >

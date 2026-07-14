@@ -44,7 +44,7 @@ export default function ReplyRow({ reply: r, flashId, onToggleReaction, onReply,
         {/* Hover'da tezkor reaksiya (javobga) */}
         <QuickReactionBar
           onToggle={onToggleReaction}
-          className="absolute -top-2 right-0 z-10 opacity-0 transition-opacity duration-150 group-hover/msg:opacity-100 focus-within:opacity-100"
+          className="absolute -top-2 right-0 z-10 opacity-0 transition-opacity duration-fast group-hover/msg:opacity-100 focus-within:opacity-100"
         />
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pr-24">
           <span className="text-sm font-semibold text-foreground">{r.author}</span>

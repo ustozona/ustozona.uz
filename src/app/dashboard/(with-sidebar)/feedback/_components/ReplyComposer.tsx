@@ -48,7 +48,7 @@ export default function ReplyComposer({
       <div className="min-w-0 flex-1">
         <div className="rounded-xl border border-border bg-background px-3 py-2 transition-colors focus-within:border-primary/50">
           {quote && (
-            <div className="mb-2 flex items-start gap-2 rounded-md bg-muted/60 py-1.5 pr-1.5 animate-in fade-in-0 slide-in-from-left-1 duration-150">
+            <div className="mb-2 flex items-start gap-2 rounded-md bg-muted/60 py-1.5 pr-1.5 animate-in fade-in-0 slide-in-from-left-1 duration-fast">
               <QuoteBlock quote={quote} className="min-w-0 flex-1 pl-2" onJump={onJump} />
               <button
                 type="button"

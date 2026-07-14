@@ -548,11 +548,11 @@
 
 .animate-fade-slide-up {
   opacity: 0;
-  animation: fade-slide-up 0.4s ease-out forwards;
+  animation: fade-slide-up var(--transition-duration-slow) var(--ease-standard) forwards;
 }
 
 .animate-fade-in {
-  animation: fade-in 0.18s ease-out both;
+  animation: fade-in var(--transition-duration-fast) var(--ease-standard) both;
 }
 
 /* Sahifa qobigʻi kirishi — toʻgʻridan-toʻgʻri bolalarga ketma-ket fade+koʻtarilish.
@@ -856,7 +856,8 @@
   cursor: pointer;
   display: grid;
   place-content: center;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--transition-duration-fast) var(--ease-standard),
+              border-color var(--transition-duration-fast) var(--ease-standard);
 }
 .lesson-prose ul[data-type="taskList"] input[type="checkbox"]:checked {
   background: var(--primary);

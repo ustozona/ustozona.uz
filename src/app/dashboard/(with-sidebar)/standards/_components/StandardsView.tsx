@@ -243,7 +243,7 @@ function SetCard({
       <div className="flex items-center gap-2 p-4 hover:bg-muted/50 transition-colors">
         <CollapsibleTrigger className="group/set flex flex-1 items-center gap-3 text-left min-w-0 cursor-pointer">
           <div className="size-12 rounded-lg shrink-0 bg-muted flex items-center justify-center">
-            <ChevronRight className="size-6 text-muted-foreground transition-transform duration-200 group-data-[state=open]/set:rotate-90" aria-hidden />
+            <ChevronRight className="size-6 text-muted-foreground transition-transform duration-fast group-data-[state=open]/set:rotate-90" aria-hidden />
           </div>
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2 flex-wrap">

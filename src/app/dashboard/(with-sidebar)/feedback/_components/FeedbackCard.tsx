@@ -218,12 +218,12 @@ export default function FeedbackCard({
           ref={articleRef}
           onMouseUp={handleTextSelect}
           style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
-          className="group/card relative rounded-xl border border-border bg-card p-4 shadow-sm transition-[border-color,box-shadow,transform] duration-200 hover:border-primary/30 hover:shadow-md md:p-5 motion-safe:animate-fade-slide-up"
+          className="group/card relative rounded-xl border border-border bg-card p-4 shadow-sm transition-[border-color,box-shadow,transform] duration-fast hover:border-primary/30 hover:shadow-md md:p-5 motion-safe:animate-fade-slide-up"
         >
           {/* Suzuvchi "Iqtibos bilan javob" tugmasi */}
           {sel && (
             <div
-              className="absolute z-20 -translate-x-1/2 -translate-y-full animate-in fade-in-0 zoom-in-95 duration-100"
+              className="absolute z-20 -translate-x-1/2 -translate-y-full animate-in fade-in-0 zoom-in-95 duration-fast"
               style={{ top: sel.top, left: sel.left }}
             >
               <button
@@ -324,7 +324,7 @@ export default function FeedbackCard({
                 {/* Hover'da tezkor reaksiya paneli (Slack/Telegram uslubi) */}
                 <QuickReactionBar
                   onToggle={onToggleReaction}
-                  className="absolute -top-2 right-0 z-10 opacity-0 transition-opacity duration-150 group-hover/msg:opacity-100 focus-within:opacity-100"
+                  className="absolute -top-2 right-0 z-10 opacity-0 transition-opacity duration-fast group-hover/msg:opacity-100 focus-within:opacity-100"
                 />
                 <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 selection:bg-primary/25">
                   {item.body}

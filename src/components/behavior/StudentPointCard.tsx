@@ -28,7 +28,7 @@ export function BalanceBubble({
       className={cn(
         "absolute -top-1 -right-1.5 z-10 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-card px-1",
         "text-[11px] font-bold tabular-nums leading-none",
-        "animate-in zoom-in-50 duration-300",
+        "animate-in zoom-in-50 duration-base",
         balance < 0
           ? "bg-destructive text-destructive-foreground"
           : "bg-success text-success-foreground",

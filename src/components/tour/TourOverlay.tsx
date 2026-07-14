@@ -101,7 +101,7 @@ export function TourOverlay({ step, index, total, onNext, onSkip }: Props) {
           aria-modal="true"
           className={cn(
             "w-full max-w-xl rounded-xl border border-border bg-background p-5 shadow-lg",
-            "animate-in fade-in-50 zoom-in-95 duration-200"
+            "animate-in fade-in-50 zoom-in-95 duration-fast"
           )}
         >
           <h2 className="heading-small">{step.title}</h2>

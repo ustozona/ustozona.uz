@@ -350,7 +350,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                   {selectedUnit.description}
                 </TypographyMuted>
               </div>
-              <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover/stats:opacity-100 transition-opacity duration-200">
+              <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover/stats:opacity-100 transition-opacity duration-fast">
                 <button title="Tahrirlash" className="p-2 rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-muted transition-colors">
                   <Pencil className="size-4" />
                 </button>
@@ -517,7 +517,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                               {STATUS_LABELS[lesson.status]}
                             </Badge>
                           </div>
-                          <div className="shrink-0 overflow-hidden max-w-0 opacity-0 group-hover:max-w-9 group-hover:opacity-100 transition-all duration-200 ease-out">
+                          <div className="shrink-0 overflow-hidden max-w-0 opacity-0 group-hover:max-w-9 group-hover:opacity-100 transition-all duration-fast ease-standard">
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <button

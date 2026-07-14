@@ -255,7 +255,7 @@ export default function OnboardingWizard() {
         <StepperPanel className="min-w-0 min-h-0 flex-1 overflow-y-auto px-6 py-6">
           {/* ── 0: Xush kelibsiz ── */}
           <StepperContent value="welcome">
-            <div className="flex flex-col gap-5 text-center animate-in fade-in-50 duration-300">
+            <div className="flex flex-col gap-5 text-center animate-in fade-in-50 duration-base">
               <div className="space-y-1">
                 <DialogTitle className="text-lg">
                   Xush kelibsiz{firstName ? `, ${firstName}` : ""}!{" "}
@@ -271,7 +271,7 @@ export default function OnboardingWizard() {
 
           {/* ── 1: Profil ── */}
           <StepperContent value="profile">
-            <div className="flex flex-col gap-5 animate-in fade-in-50 duration-300">
+            <div className="flex flex-col gap-5 animate-in fade-in-50 duration-base">
               <StepHeader
                 title="Oʻzingiz haqingizda"
                 desc="Bu maʼlumotlar profil va hisobotlarda koʻrinadi. Keyin Sozlamalarda oʻzgartirasiz."
@@ -335,7 +335,7 @@ export default function OnboardingWizard() {
 
           {/* ── 2: Oʻquv yili (tasdiqlash yoki tuzatish) ── */}
           <StepperContent value="academic-year">
-            <div className="flex flex-col gap-4 animate-in fade-in-50 duration-300">
+            <div className="flex flex-col gap-4 animate-in fade-in-50 duration-base">
               <StepHeader
                 title="Oʻquv yilini tasdiqlang"
                 desc="Rasmiy oʻzbek oʻquv yili sanalarini oldindan tayyorladik. Toʻgʻri boʻlsa davom eting yoki sanalarni oʻzgartiring — choraklar va taʼtillar avtomatik toʻldiriladi."
@@ -410,7 +410,7 @@ export default function OnboardingWizard() {
 
           {/* ── 3: Tayyor ── */}
           <StepperContent value="done" className="h-full">
-            <div className="flex h-full flex-col items-center justify-center gap-4 text-center animate-in fade-in-50 duration-300">
+            <div className="flex h-full flex-col items-center justify-center gap-4 text-center animate-in fade-in-50 duration-base">
               <Illustration name="48" className="h-32 text-black dark:text-white" />
               <div className="space-y-1.5">
                 <DialogTitle className="text-xl">Hammasi tayyor!</DialogTitle>

@@ -428,7 +428,7 @@ export default function NewTopicModal({
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="absolute inset-0 z-20 flex flex-col bg-card animate-in fade-in-0 slide-in-from-right-4 duration-150"
+                    className="absolute inset-0 z-20 flex flex-col bg-card animate-in fade-in-0 slide-in-from-right-4 duration-fast"
                   >
                     <ScrollArea className="flex-1 min-h-0">
                       <div className="px-6 py-5 flex flex-col gap-5 max-w-[560px]">

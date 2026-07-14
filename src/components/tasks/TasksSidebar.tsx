@@ -185,10 +185,10 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
       <button
         key={id}
         onClick={() => onSelectFilter(filterId)}
-        className="group w-full flex items-center text-left gap-3 px-3 py-1.5 border-2 border-transparent rounded-lg cursor-pointer transition-transform duration-200 ease-out hover:translate-x-1"
+        className="group w-full flex items-center text-left gap-3 px-3 py-1.5 border-2 border-transparent rounded-lg cursor-pointer transition-transform duration-fast ease-standard hover:translate-x-1"
       >
         <ClassSwatch hex={hexColor} className="opacity-80" />
-        <span className="text-sm text-foreground/70 truncate flex-1 transition-all duration-200 ease-out group-hover:text-foreground group-hover:font-medium">
+        <span className="text-sm text-foreground/70 truncate flex-1 transition-all duration-fast ease-standard group-hover:text-foreground group-hover:font-medium">
           {name}
         </span>
         {count > 0 && (
@@ -243,10 +243,10 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
                     key={tpl.id}
                     onClick={() => handleUseTemplate(tpl)}
                     title={`"${tpl.label}" shablonidan yangi vazifa yaratish`}
-                    className="group w-full flex items-center text-left gap-3 px-3 py-1.5 border-2 border-transparent rounded-lg cursor-pointer transition-transform duration-200 ease-out hover:translate-x-1"
+                    className="group w-full flex items-center text-left gap-3 px-3 py-1.5 border-2 border-transparent rounded-lg cursor-pointer transition-transform duration-fast ease-standard hover:translate-x-1"
                   >
                     <div className={cn("size-2.5 rounded-full shrink-0 opacity-80", tpl.dotColor)} />
-                    <span className="text-sm text-foreground/70 truncate flex-1 transition-all duration-200 ease-out group-hover:text-foreground group-hover:font-medium">{tpl.label}</span>
+                    <span className="text-sm text-foreground/70 truncate flex-1 transition-all duration-fast ease-standard group-hover:text-foreground group-hover:font-medium">{tpl.label}</span>
                   </button>
                 ))}
               </div>

@@ -249,7 +249,7 @@ function AutoHeight({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={height !== undefined ? { height } : undefined}
-      className="overflow-hidden transition-[height] duration-200 ease-out"
+      className="overflow-hidden transition-[height] duration-fast ease-standard"
     >
       <div ref={innerRef}>{children}</div>
     </div>

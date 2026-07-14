@@ -242,7 +242,7 @@ export default function ClassesPage() {
 
             <div className="flex items-center gap-2">
               {/* Search */}
-              <div className={cn("flex items-center transition-all duration-200", searchOpen ? "w-52" : "w-8")}>
+              <div className={cn("flex items-center transition-all duration-fast", searchOpen ? "w-52" : "w-8")}>
                 {searchOpen ? (
                   <div className="flex items-center w-full h-9 border border-border rounded-md px-3 gap-1.5 bg-background animate-in slide-in-from-right-2">
                     <Search className="size-4 text-muted-foreground shrink-0" />
@@ -366,7 +366,7 @@ export default function ClassesPage() {
                   </EmptyHeader>
                 </Empty>
               ) : (
-                <div key={view} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
+                <div key={view} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-fast">
                   {view === "grid" ? (
                     <div className={cn(
                       "grid gap-5",
@@ -626,7 +626,7 @@ function ClassGridCard({
   return (
     <div
       className={cn(
-        "class-card animate-fade-slide-up group rounded-2xl border overflow-hidden flex flex-col relative transition-all duration-300",
+        "class-card animate-fade-slide-up group rounded-2xl border overflow-hidden flex flex-col relative transition-all duration-base",
         disabled
           ? "cursor-default"
           : "cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:border-[var(--card-hex)]/30"
@@ -672,7 +672,7 @@ function ClassGridCard({
           <TooltipTrigger asChild>
             <div
               onClick={(e) => e.stopPropagation()}
-              className="-mt-10 relative size-[84px] cursor-help transition-transform duration-300 group-hover:scale-105"
+              className="-mt-10 relative size-[84px] cursor-help transition-transform duration-base group-hover:scale-105"
             >
               {/* Progress halqasi (SVG) */}
               <svg viewBox="0 0 84 84" className="absolute inset-0 size-full -rotate-90">
@@ -712,7 +712,7 @@ function ClassGridCard({
 
         {/* Nom + jadval — oʻrtaga tekislangan */}
         <div className="flex flex-col items-center text-center min-w-0 w-full">
-          <p className="font-bold text-base leading-tight truncate max-w-full text-foreground transition-colors duration-200 group-hover:text-[var(--card-hex)]">
+          <p className="font-bold text-base leading-tight truncate max-w-full text-foreground transition-colors duration-fast group-hover:text-[var(--card-hex)]">
             {cls.name}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -894,7 +894,7 @@ function ClassListRow({
 
       {/* Nom + jadval */}
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold leading-none truncate transition-colors duration-150 group-hover:text-primary">
+        <p className="text-sm font-semibold leading-none truncate transition-colors duration-fast group-hover:text-primary">
           {cls.name}
         </p>
         <p className="text-xs text-muted-foreground mt-1.5">

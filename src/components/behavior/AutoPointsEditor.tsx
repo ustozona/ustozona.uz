@@ -80,7 +80,7 @@ function AutoRuleTile({
           <BehaviorEmoji
             code={emoji}
             label={title}
-            className="size-9 transition-transform duration-200 group-hover:scale-110"
+            className="size-9 transition-transform duration-fast group-hover:scale-110"
           />
           <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight text-foreground">
             {title}
