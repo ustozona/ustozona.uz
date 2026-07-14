@@ -820,7 +820,7 @@ function ArchivedClassesSection({
         <ArchiveIcon className="size-4" />
         Arxivlangan sinflar
         <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums">{classes.length}</span>
-        <ChevronDownIcon className={cn("ml-auto size-4 transition-transform", open && "rotate-180")} />
+        <ChevronDownIcon className={cn("ml-auto size-4 transition-transform duration-fast ease-standard", open && "rotate-180")} />
       </button>
       {open && (
         <div className="mt-3 flex flex-col gap-2">

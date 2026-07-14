@@ -164,7 +164,7 @@ function BrowseTab({ classId }: { classId: string }) {
               <Collapsible key={t.id} className="rounded-xl border border-border overflow-hidden">
                 <div className="flex items-center gap-2 p-3 hover:bg-muted/40 transition-colors">
                   <CollapsibleTrigger className="group/t flex flex-1 items-center gap-2.5 text-left min-w-0 cursor-pointer">
-                    <ChevronRight className="size-4 text-muted-foreground shrink-0 transition-transform group-data-[state=open]/t:rotate-90" aria-hidden />
+                    <ChevronRight className="size-4 text-muted-foreground shrink-0 transition-transform duration-fast ease-standard group-data-[state=open]/t:rotate-90" aria-hidden />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-semibold truncate">{t.name}</span>
@@ -427,7 +427,7 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
     <Collapsible className="rounded-xl border border-border overflow-hidden">
       <div className="group/cs flex items-center gap-2 p-3 hover:bg-muted/40 transition-colors">
         <CollapsibleTrigger className="group/t flex flex-1 items-center gap-2.5 text-left min-w-0 cursor-pointer">
-          <ChevronRight className="size-4 text-muted-foreground shrink-0 transition-transform group-data-[state=open]/t:rotate-90" aria-hidden />
+          <ChevronRight className="size-4 text-muted-foreground shrink-0 transition-transform duration-fast ease-standard group-data-[state=open]/t:rotate-90" aria-hidden />
           <div className="min-w-0">
             <span className="text-sm font-semibold truncate">{cs.name}</span>
             <span className="block text-caption text-muted-foreground">

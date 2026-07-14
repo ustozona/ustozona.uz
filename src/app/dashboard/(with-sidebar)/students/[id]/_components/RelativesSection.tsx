@@ -74,7 +74,7 @@ export default function RelativesSection({
               {relatives.length}
             </Badge>
           )}
-          <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=open]/col:rotate-180" />
+          <ChevronDown className="size-4 text-muted-foreground transition-transform duration-fast ease-standard group-data-[state=open]/col:rotate-180" />
         </CollapsibleTrigger>
         <Button
           variant="ghost"

@@ -440,7 +440,7 @@ export default function FeedbackPage() {
                       <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
                         {g.items.length}
                       </span>
-                      <ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90" />
+                      <ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform duration-fast ease-standard group-data-[state=closed]:-rotate-90" />
                     </CollapsibleTrigger>
                     <CollapsibleContent className="space-y-3 bg-muted/25 p-3">
                       {g.items.map(renderCard)}

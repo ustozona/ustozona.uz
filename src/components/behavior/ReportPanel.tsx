@@ -147,7 +147,7 @@ function DeletionLog({
         Oʻchirilgan yozuvlar
         <span className="tabular-nums">({deletions.length})</span>
         <ChevronDown
-          className={cn("ml-auto size-3.5 shrink-0 transition-transform", open && "rotate-180")}
+          className={cn("ml-auto size-3.5 shrink-0 transition-transform duration-fast ease-standard", open && "rotate-180")}
           aria-hidden
         />
       </CollapsibleTrigger>

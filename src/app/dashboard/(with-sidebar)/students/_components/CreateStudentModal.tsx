@@ -236,7 +236,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
             className="mt-5 flex w-full items-center justify-between rounded-md py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Qoʻshimcha maʼlumot
-            <ChevronDown className={cn("size-4 transition-transform", showMore && "rotate-180")} />
+            <ChevronDown className={cn("size-4 transition-transform duration-fast ease-standard", showMore && "rotate-180")} />
           </button>
 
           {showMore && (

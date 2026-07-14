@@ -88,7 +88,7 @@ export function RecurrenceEditor({
       >
         <Settings2 className={cn("size-4", customOpen ? "text-primary" : "text-muted-foreground")} />
         <span className="font-medium">Oʻzingiz sozlang...</span>
-        <ChevronRight className={cn("ml-auto size-4 text-muted-foreground/60 transition-transform", customOpen && "rotate-90")} />
+        <ChevronRight className={cn("ml-auto size-4 text-muted-foreground/60 transition-transform duration-fast ease-standard", customOpen && "rotate-90")} />
       </button>
 
       {customOpen && (

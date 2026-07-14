@@ -294,7 +294,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
                     <Repeat className="size-4 text-muted-foreground" />
                     <span className="font-medium">Takrorlash</span>
                     <span className="ml-auto text-xs text-muted-foreground">{recurrenceLabel(recurrenceRule, dueDate) ?? "Takrorlanmaydi"}</span>
-                    <ChevronRight className={cn("size-4 text-muted-foreground/60 transition-transform", repeatOpen && "rotate-90")} />
+                    <ChevronRight className={cn("size-4 text-muted-foreground/60 transition-transform duration-fast ease-standard", repeatOpen && "rotate-90")} />
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="px-3 pb-3">

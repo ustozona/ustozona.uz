@@ -373,7 +373,7 @@ export default function FeedbackCard({
                   >
                     <MessageSquare className="size-3.5" />
                     {replyCount > 0 ? `Muhokama · ${replyCount}` : "Izohlar"}
-                    <ChevronDown className="size-3.5 transition-transform group-data-[state=open]:rotate-180" />
+                    <ChevronDown className="size-3.5 transition-transform duration-fast ease-standard group-data-[state=open]:rotate-180" />
                   </button>
                 </CollapsibleTrigger>
               </div>
@@ -404,7 +404,7 @@ export default function FeedbackCard({
                                 onClick={() => toggleThread(tr.id)}
                                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary/90 transition-colors hover:text-primary"
                               >
-                                <ChevronRight className={cn("size-3.5 transition-transform", expanded && "rotate-90")} />
+                                <ChevronRight className={cn("size-3.5 transition-transform duration-fast ease-standard", expanded && "rotate-90")} />
                                 {expanded ? "Javoblarni yashirish" : `${kids.length} ta javobni koʻrsatish`}
                               </button>
                             )}
