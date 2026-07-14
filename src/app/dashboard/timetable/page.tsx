@@ -290,12 +290,15 @@ export default function TimetablePage() {
   }, [events, bellConfig, hydrated, storeHydrated, selectedVersion, mode, decisionMade, commitDraft]);
 
   // Sahifadan chiqishda kutayotgan (debounce'dagi) oʻzgarish bekor boʻlib qolmasin —
-  // unmount paytida joriy qoralamani darhol commit qilamiz.
+  // unmount paytida joriy qoralamani darhol commit qilamiz. flush closure'ni har
+  // renderdan keyin effektda yangilaymiz (render paytida ref yozilmasin deb).
   const flushRef = useRef<() => void>(() => {});
-  flushRef.current = () => {
-    if (!selectedVersion || saved) return;
-    commitDraft(selectedVersion.id, events, bellConfig);
-  };
+  useEffect(() => {
+    flushRef.current = () => {
+      if (!selectedVersion || saved) return;
+      commitDraft(selectedVersion.id, events, bellConfig);
+    };
+  });
   useEffect(() => () => flushRef.current(), []);
 
   /* ── Versiya amallari ── */
