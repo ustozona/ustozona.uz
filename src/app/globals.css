@@ -612,6 +612,7 @@
   .card-interactive:hover,
   .card-interactive:active,
   .class-card:hover,
+  .list-card:active,
   .list-card:hover:not([data-active="true"]) .list-card-icon {
     transform: none;
   }
@@ -681,7 +682,13 @@
   background-color: var(--card);
   transition: background-color var(--transition-duration-fast) var(--ease-standard),
               border-color var(--transition-duration-fast) var(--ease-standard),
-              box-shadow var(--transition-duration-fast) var(--ease-standard);
+              box-shadow var(--transition-duration-fast) var(--ease-standard),
+              transform var(--transition-duration-fast) var(--ease-standard);
+}
+/* Bosish (press) — yengil tactile qisqarish. Doimiy tanlov (data-active) rangi
+   box-shadow/border orqali, bu esa faqat sichqoncha bosilганда — ziddiyatsiz. */
+.list-card:active {
+  transform: scale(0.99);
 }
 /* Hover — NEYTRAL: yumshoq koʻtarilish soyasi (rang yoʻq, fon oʻzgarmaydi).
    Rang faqat active'da — ikki holat toza ajraladi. */

@@ -167,6 +167,22 @@ hosila): sm 6 · md 8 · lg 10 · xl 14 · 2xl 18 · 3xl 22 · 4xl 26 px.
 | `--transition-duration-slow` | 350ms | `duration-slow` | modal, sheet, sahifa oʻtishi |
 | `--ease-standard` | cubic-bezier(0.2,0,0,1) | `ease-standard` | barcha standart harakat (Material 3) |
 
+### Interaksiya standarti (minimal — "jonli, bachkana emas")
+
+| Element | Hover | Bosish (active) | Kirish |
+|---|---|---|---|
+| **Tugma** (`Button`) | rang oʻzgaradi | `whileTap scale 0.93` (motion) | — |
+| **Asosiy karta/panel** (`Card`) | — (konteyner, statik) | — | qobiq `.stagger-children` |
+| **Kichik karta — roʻyxat** (`.list-card`: sinf/boʻlim/dars/standart/oʻquvchi qatorlari) | neytral soya koʻtarilishi + leading ikona `scale(1.08)` | `scale(0.99)` tactile | `.animate-fade-slide-up` / stagger |
+| **Kichik karta — sinf kartochkasi** (`.class-card`) | `translateY(-2px)` + rangli soya | `translateY(0)` | — |
+| **Kichik karta — umumiy** (`.card-interactive`) | `scale(1.015)` + soya | `scale(0.98)` | — |
+| **Ikona — chevron** (collapsible/dropdown) | — | ochilганда `rotate` `duration-fast` | — |
+| **Ikona — leading** (`.list-card-icon`, ClassCard) | `scale(1.08)`/`scale(1.1)` (+ba'zan rotate) | — | — |
+
+Prinsip: har element BITTA hover harakati oladi (lift YOKI scale, ikkalasi emas);
+press feedback qisqartirish (0.98–0.99); ikonlar faqat maʼnoli momentda (holat
+almashishi yoki leading-hover). Bir vaqtda bitta "katta" harakat.
+
 Qoidalar:
 - Yangi transition/animatsiyada raw `0.2s ease-out` yozmang — token utility
   (`duration-fast ease-standard`) yoki plain CSS'da `var(--transition-duration-*)`.
