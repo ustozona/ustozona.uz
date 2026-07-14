@@ -239,7 +239,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full">
       <DashboardPageLayout className="flex-1">
-        <div className={cn(dashboardGridClass, "flex-1 min-h-0 grid-cols-1 lg:grid-cols-4 lg:grid-rows-[1fr]")}>
+        <div className={cn(dashboardGridClass, "stagger-children flex-1 min-h-0 grid-cols-1 lg:grid-cols-4 lg:grid-rows-[1fr]")}>
           
           {/* Left Column (Hero & Lessons) */}
           <div data-tour="home-overview" className={cn(dashboardStackClass, "lg:col-span-2 h-full min-h-0")}>

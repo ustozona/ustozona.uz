@@ -555,6 +555,16 @@
   animation: fade-in 0.18s ease-out both;
 }
 
+/* Sahifa qobigʻi kirishi — toʻgʻridan-toʻgʻri bolalarga ketma-ket fade+koʻtarilish.
+   DashboardColumns/bosh sahifa gridiga bir marta qoʻyiladi, sahifalar avtomatik oladi. */
+.stagger-children > * {
+  opacity: 0;
+  animation: fade-slide-up var(--transition-duration-base) var(--ease-standard) both;
+}
+.stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(n + 4) { animation-delay: 150ms; }
+
 /* Sinf kartasi tanlanganda "spring" sakrash (ClassCard variant="card") */
 @keyframes spring-bounce {
   0%   { transform: scale(0.96); opacity: 0; }
@@ -585,10 +595,12 @@
   .animate-fade-slide-up,
   .animate-fade-in,
   .animate-spring-bounce,
-  .feedback-jump-flash {
+  .feedback-jump-flash,
+  .stagger-children > * {
     animation: none;
   }
-  .animate-fade-slide-up {
+  .animate-fade-slide-up,
+  .stagger-children > * {
     opacity: 1;
   }
   .card-interactive,

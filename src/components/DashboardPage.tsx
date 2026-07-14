@@ -21,11 +21,11 @@ export const dashboardSplitGridClass = "grid flex-1 min-h-0 gap-6";
 
 /** SharedClassSidebar bilan sahifalar (ustun) */
 export const withSidebarPageClass =
-  "flex flex-col h-full min-h-0 gap-6 p-4 md:p-6 lg:pl-0 overflow-hidden";
+  "stagger-children flex flex-col h-full min-h-0 gap-6 p-4 md:p-6 lg:pl-0 overflow-hidden";
 
 /** SharedClassSidebar bilan sahifalar (qator — 2+ card yonma-yon) */
 export const withSidebarRowPageClass =
-  "flex h-full min-h-0 gap-6 p-4 md:p-6 lg:pl-0 overflow-hidden";
+  "stagger-children flex h-full min-h-0 gap-6 p-4 md:p-6 lg:pl-0 overflow-hidden";
 
 /** Toʻliq balandlikdagi panel Card */
 export const panelCardClass =
@@ -88,7 +88,7 @@ export function DashboardColumns({
   return (
     <div
       className={cn(
-        "grid flex-1 min-w-0 min-h-0 gap-6 grid-cols-1 lg:grid-cols-[var(--dash-cols)]",
+        "stagger-children grid flex-1 min-w-0 min-h-0 gap-6 grid-cols-1 lg:grid-cols-[var(--dash-cols)]",
         xlTemplate && "xl:grid-cols-[var(--dash-cols-xl)]",
         className,
       )}
