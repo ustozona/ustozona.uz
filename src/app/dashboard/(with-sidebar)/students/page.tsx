@@ -215,16 +215,12 @@ export default function StudentsPage() {
   const noClass = !selectedClassId && !isDemoMode;
 
   /* Ustun nisbatlari — sinf tanlanmagan → 50/50 (grades/standards bilan bir xil boʻsh holat);
-     oʻquvchi tanlangan → 25/50/25; aks holda preview yopiq (25/50 → 1/2). */
-  const grow = noClass
-    ? { classes: 1, list: 1 }
-    : { classes: 1, list: 2 };
-
-  /* Grid template (`lg+`) — koʻrinadigan ustunlar soniga mos. Preview ustuni faqat
-     oʻquvchi tanlanganda DOM'da; shu holatda 3-track qoʻshiladi (25/50/25). */
+     sinf tanlangan, preview yopiq → 25/75; oʻquvchi tanlangan → 25/50/25. */
   const columnsTemplate = selectedStudent
-    ? `minmax(0,${grow.classes}fr) minmax(0,${grow.list}fr) minmax(0,1fr)`
-    : `minmax(0,${grow.classes}fr) minmax(0,${grow.list}fr)`;
+    ? "minmax(0,1fr) minmax(0,2fr) minmax(0,1fr)"
+    : noClass
+      ? "minmax(0,1fr) minmax(0,1fr)"
+      : "minmax(0,1fr) minmax(0,3fr)";
 
   // ── Amallar — hammasi useGradesStore'ga yoziladi (server sync avtomatik) ──
   const setStatus = (id: string, status: Status) => {
