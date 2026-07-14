@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Compass,
+  CircleHelp,
   Home,
   LayoutGrid,
   Users,
@@ -76,7 +76,7 @@ export default function GuideHub() {
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="icon" className="size-8 text-muted-foreground">
-              <Compass />
+              <CircleHelp />
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>

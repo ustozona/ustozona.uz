@@ -111,13 +111,6 @@ export default function ClassDetail({ identity, initialSection }: Props) {
         <Card className={cn(panelCardClass, "w-full")} style={classColorStyle(identity.color)}>
           {/* Header */}
           <div className="shrink-0 border-b border-border px-5 py-5">
-            <Link
-              href="/dashboard/classes"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-3"
-            >
-              <ArrowLeft className="size-3.5" />
-              Barcha sinflar
-            </Link>
             <div className="flex items-center gap-3">
               <div className="size-11 rounded-xl shrink-0 flex items-center justify-center" style={tints.iconBg}>
                 <BookOpen className="size-5" style={tints.iconText} />

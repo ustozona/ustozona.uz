@@ -405,24 +405,6 @@ export default function StudentProfile({
         >
           <div className="mb-4 mr-4 shrink-0 rounded-xl bg-card px-3 py-2 border border-border/50 shadow-sm md:mr-6">
             <div className="flex items-center gap-3">
-              {/* Orqaga — roʻyxat sahifasiga (kompakt, tooltipli) */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => router.push("/dashboard/students")}
-                      className="-ml-1 shrink-0 gap-1.5 text-muted-foreground"
-                    >
-                      <ArrowLeft className="size-4" />
-                      Oʻquvchilar
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Oʻquvchilar roʻyxatiga qaytish</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
               {/* Boʻlim tablari (markaz) */}
               <TabsList variant="line" className="mx-auto">
                 {TABS.map((t) => {
