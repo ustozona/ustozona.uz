@@ -89,6 +89,9 @@ export function DashboardColumns({
     <div
       className={cn(
         "stagger-children grid flex-1 min-w-0 min-h-0 gap-6 grid-cols-1 lg:grid-cols-[var(--dash-cols)]",
+        // Ustun nisbati oʻzgarganda (sinf/detal tanlovi) silliq kengayish-torayish.
+        // Track soni oʻzgarsa (2→3 ustun) brauzer interpolyatsiyasiz almashtiradi — bu normal.
+        "transition-[grid-template-columns] duration-base ease-standard motion-reduce:transition-none",
         xlTemplate && "xl:grid-cols-[var(--dash-cols-xl)]",
         className,
       )}
