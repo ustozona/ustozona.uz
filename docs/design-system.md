@@ -158,6 +158,28 @@ hosila): sm 6 · md 8 · lg 10 · xl 14 · 2xl 18 · 3xl 22 · 4xl 26 px.
 - Interaktiv: `.card-interactive` (hover scale+shadow), `.animate-fade-slide-up`,
   `.animate-fade-in`. (`.animate-spring-bounce` — list-card uchun ishlatilmaydi.)
 
+### Motion tokenlar (globals.css `@theme`)
+
+| Token | Qiymat | Utility | Qayerda |
+|---|---|---|---|
+| `--transition-duration-fast` | 150ms | `duration-fast` | hover, ikon, rang almashishi |
+| `--transition-duration-base` | 250ms | `duration-base` | karta/dropdown kirishi |
+| `--transition-duration-slow` | 350ms | `duration-slow` | modal, sheet, sahifa oʻtishi |
+| `--ease-standard` | cubic-bezier(0.2,0,0,1) | `ease-standard` | barcha standart harakat (Material 3) |
+
+Qoidalar:
+- Yangi transition/animatsiyada raw `0.2s ease-out` yozmang — token utility
+  (`duration-fast ease-standard`) yoki plain CSS'da `var(--transition-duration-*)`.
+- Faqat `transform`/`opacity` animatsiya qilinadi (layout xossalari emas).
+- **Mikro** (hover/press) = Tailwind klasslari komponent ichida; tugma press
+  allaqachon `Button`dagi `whileTap` — CSS `active:scale` QOʻSHMANG (ikkilanadi).
+- **Makro** (enter/exit, stagger, layout shift) = `motion` kutubxonasi,
+  `src/components/animations/` primitivlari orqali: `<FadeIn>` (fade + 8px
+  koʻtarilish), `<StaggerList>`+`<StaggerItem>` (40ms ketma-ket kirish).
+- Reduced motion uch qatlamda avtomatik yopilgan: Tailwind `motion-reduce:`,
+  globals.css'dagi `@media (prefers-reduced-motion)` guard (custom klasslar),
+  va `MotionProvider` (`MotionConfig reducedMotion="user"`, layout.tsx'da).
+
 ---
 
 ## 6. List-card holatlari (default / hover / active)

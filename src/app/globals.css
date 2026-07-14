@@ -5,6 +5,19 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────────
+   Motion tokenlar — duration-fast/base/slow, ease-standard
+   fast: hover, ikon, rang; base: card/dropdown enter; slow: modal/sheet.
+   ease-standard = Material 3 standard easing.
+   (alohida @theme — inline emas, chunki plain CSS var() bilan ham oʻqiladi)
+   ───────────────────────────────────────────── */
+@theme {
+  --transition-duration-fast: 150ms;
+  --transition-duration-base: 250ms;
+  --transition-duration-slow: 350ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ─────────────────────────────────────────────
    Tailwind theme tokens — shadcn/ui standart
    Barcha CSS oʻzgaruvchilarni Tailwind utilitylariga
    bogʻlaydi: bg-background, text-foreground, ...
@@ -564,16 +577,44 @@
   animation: feedback-jump-flash 1.4s ease-out;
 }
 
+/* Reduced motion — qoʻlda yozilgan animatsiya/transitionlar uchun guard.
+   (Tailwind utilitylari motion-reduce: bilan, motion kutubxonasi
+   MotionConfig reducedMotion="user" bilan yopiladi — bu blok faqat
+   shu fayldagi custom klasslarni qamrab oladi.) */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-slide-up,
+  .animate-fade-in,
+  .animate-spring-bounce,
+  .feedback-jump-flash {
+    animation: none;
+  }
+  .animate-fade-slide-up {
+    opacity: 1;
+  }
+  .card-interactive,
+  .class-card,
+  .list-card,
+  .list-card-icon {
+    transition: none;
+  }
+  .card-interactive:hover,
+  .card-interactive:active,
+  .class-card:hover,
+  .list-card:hover:not([data-active="true"]) .list-card-icon {
+    transform: none;
+  }
+}
+
 /* ─────────────────────────────────────────────
    Interaktiv karta — umumiy hover (shadcn convention)
    Bitta klass: scale + shadow + active. Rang ixtiyoriy:
    --card-accent berilsa oʻsha rang, berilmasa --border.
    ───────────────────────────────────────────── */
 .card-interactive {
-  transition: transform 0.2s ease-out,
-              box-shadow 0.2s ease-out,
-              border-color 0.2s ease-out,
-              background-color 0.2s ease-out;
+  transition: transform var(--transition-duration-base) var(--ease-standard),
+              box-shadow var(--transition-duration-base) var(--ease-standard),
+              border-color var(--transition-duration-base) var(--ease-standard),
+              background-color var(--transition-duration-base) var(--ease-standard);
   box-shadow: 0 4px 20px -2px rgb(0 0 0 / 0.05);
 }
 .card-interactive:hover {
@@ -594,9 +635,9 @@
   background-color: rgba(var(--card-rgb), 0.05);
   border-color: rgba(var(--card-rgb), 0.18);
   box-shadow: none;
-  transition: transform 0.18s ease-out,
-              box-shadow 0.18s ease-out,
-              border-color 0.18s ease-out;
+  transition: transform var(--transition-duration-fast) var(--ease-standard),
+              box-shadow var(--transition-duration-fast) var(--ease-standard),
+              border-color var(--transition-duration-fast) var(--ease-standard);
 }
 .class-card:hover {
   transform: translateY(-2px);
@@ -626,9 +667,9 @@
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   background-color: var(--card);
-  transition: background-color 0.15s ease-out,
-              border-color 0.15s ease-out,
-              box-shadow 0.15s ease-out;
+  transition: background-color var(--transition-duration-fast) var(--ease-standard),
+              border-color var(--transition-duration-fast) var(--ease-standard),
+              box-shadow var(--transition-duration-fast) var(--ease-standard);
 }
 /* Hover — NEYTRAL: yumshoq koʻtarilish soyasi (rang yoʻq, fon oʻzgarmaydi).
    Rang faqat active'da — ikki holat toza ajraladi. */
@@ -640,7 +681,7 @@
 }
 /* Leading ikona — FAQAT hover da yengil kattalashadi (active'da emas) */
 .list-card-icon {
-  transition: transform 0.2s ease-out;
+  transition: transform var(--transition-duration-base) var(--ease-standard);
 }
 .list-card:hover:not([data-active="true"]) .list-card-icon {
   transform: scale(1.08);
