@@ -222,6 +222,16 @@ function StudentSwitcherCrumb({
 }
 
 export default function HeaderBreadcrumb() {
+  // useSearchParams() prerender'da Suspense chegarasini talab qiladi —
+  // aks holda dashboard'dagi HAR BIR sahifaning build'i yiqiladi.
+  return (
+    <React.Suspense fallback={null}>
+      <HeaderBreadcrumbInner />
+    </React.Suspense>
+  );
+}
+
+function HeaderBreadcrumbInner() {
   const crumbs = useBreadcrumbs();
 
   if (crumbs.length === 0) return null;
