@@ -10,29 +10,44 @@ import { cn } from "@/lib/utils";
 
 const FAQ_DATA = [
   {
-    question: "Ustozona platformasi nima qiladi?",
+    question: "Bu rasmiy elektron jurnallar oʻrniga oʻtadimi?",
     answer:
-      "Ustozona oʻqituvchining kundalik ishini — elektron jurnal, baholash, davomat, dars rejalashtirish va standartlar boʻyicha oʻzlashtirishni bitta tizimga birlashtiradi.",
+      "Yoʻq. Ustozona — sizning shaxsiy ishchi yordamchingiz. Rasmiy tizimlarga kiritish kerak boʻlgan choraklik ballarni, xulq hisobotlarini va davomat statistikasini shu yerda tayyorlab, tayyor raqamlarni koʻchirib qoʻyasiz.",
   },
   {
-    question: "Baholash qanday ishlaydi?",
+    question: "Direktorim yoki maktab maʼmuriyati maʼlumotlarimni koʻra oladimi?",
     answer:
-      "Baholash sozlanadigan shkala asosida ishlaydi: formativ va summativ baholarni alohida yuritasiz, har sinf va mavzuga oʻz rangi beriladi, oʻzlashtirish dinamikasi avtomatik hisoblanadi.",
+      "Maʼlumotlaringiz sizniki — maxfiylik sozlamalari asosida boshqa hech kim sizning ruxsatingizsiz ularni koʻra olmaydi. Barchasini faqat oʻzingiz boshqarasiz.",
   },
   {
-    question: "Darslarni qanday tayyorlayman?",
+    question: "Telefonda ishlatsam boʻladimi?",
     answer:
-      "Dars muharririda matn, jadval va materiallarni toʻliq ekranli muharrirda tayyorlaysiz, soʻngra bir bosishda chop etishga tayyor A4 PDF qilib olasiz.",
+      "Platforma hozircha asosan kompyuter va noutbuk brauzerida ishlashga moslashgan. Telefon ekranlari uchun qulay maxsus qism sentabrda ishga tushiriladi.",
   },
   {
-    question: "Tizimni oʻzlashtirish qiyinmi?",
+    question: "Oʻtgan oʻquv yilidagi maʼlumotlar yangi yilda oʻchib ketadimi?",
     answer:
-      "Yoʻq. Interfeys sodda va oʻzbek tilida; sinflar, jurnal va jadval bir-biriga bogʻlangan, shuning uchun bir necha daqiqada ishni boshlab yuborasiz.",
+      "Yoʻq. Oʻtgan yillar arxivda saqlanadi. Sinflarni yangi oʻquv yiliga oʻtkazish uchun maxsus sehrgar bor.",
   },
   {
-    question: "Maʼlumotlarim xavfsizmi?",
+    question: "Dars jadvali oʻzgarib qolsa, avvalgi oylarning jurnali buzilmaydimi?",
     answer:
-      "Barcha maʼlumotlar himoyalangan serverlarda saqlanadi va faqat sizning hisobingiz orqali ochiladi.",
+      "Tizim jadval versiyalarini tushunadi. «3-noyabrdan boshlab jadval oʻzgardi» deb kiritsangiz, undan oldingi oylarning baholar tarixi xuddi oʻzidek saqlanib qoladi.",
+  },
+  {
+    question: "Men 100 ballik tizimda baholayman. Dastur menga toʻgʻri keladimi?",
+    answer:
+      "Albatta. Tizimda 10 dan ortiq baholash shkalasi bor — 5 ballik, foizli, harfli va boshqalar. Oʻzingizga mosini sozlab olasiz.",
+  },
+  {
+    question: "Oʻquvchilar soniga chegara bormi?",
+    answer:
+      "Hech qanday chegara yoʻq. Istalgancha sinf va oʻquvchi qoʻshishingiz mumkin.",
+  },
+  {
+    question: "Tizimdan foydalanishni qanday oʻrganaman?",
+    answer:
+      "Birinchi marta kirganingizda interaktiv qoʻllanma sizni qadam-baqadam yetaklaydi. Taklifingiz boʻlsa, fikr-mulohaza doskasiga yozasiz — boshqa ustozlar ovoz beradi, jamoa koʻrib chiqadi.",
   },
 ];
 
@@ -58,7 +73,7 @@ export default function Faq() {
                 key={`item-${index}`}
                 value={`item-${index}`}
                 className={cn(
-                  "p-6 border border-border rounded-2xl flex flex-col gap-3 group/item data-[open]:bg-accent transition-colors animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both",
+                  "p-6 border border-border last:border-b rounded-2xl flex flex-col gap-3 group/item data-[open]:bg-accent transition-colors animate-in fade-in slide-in-from-bottom-8 duration-700 fill-mode-both",
                   index === 0 && "delay-100",
                   index === 1 && "delay-200",
                   index === 2 && "delay-300",

@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { LucideIcon, Layers } from "lucide-react";
 import { motion } from "motion/react";
@@ -35,43 +35,50 @@ const Feature = ({ featureData }: { featureData: Features }) => {
                   Nega Ustozona?
                 </Badge>
                 <h2 className="text-3xl md:text-4xl font-semibold">
-                  Qogʻozbozlik emas, oʻqitish
+                  Vaqtni qogʻozbozlikka emas, oʻqitishga sarflang
                 </h2>
                 <p className="text-lg font-normal text-muted-foreground">
-                  Jurnal, davomat va jadval bir-biriga bogʻlangan. Bir marta
-                  kiritasiz — hamma joyda yangilanadi, qolgan vaqt oʻquvchilarga.
+                  Har bir darsning 5–10 daqiqasi davomatga ketadi. Kechikkanlarni,
+                  uy vazifasi qilmaganlarni alohida daftarga yozasiz. Chorak
+                  yakunida esa kalkulyator koʻtarib tungacha oʻrtacha ballni
+                  hisoblaysiz.
                 </p>
               </div>
-              <Button asChild className="rounded-full px-5 py-2.5 shadow-xs h-auto cursor-pointer">
-                <a href="#">Bepul boshlang</a>
-              </Button>
+              <ButtonWithIcon href="/register">Jurnalni yaratish</ButtonWithIcon>
             </motion.div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
               <motion.div
-                initial={{ x: -100, opacity: 0 }}
-                whileInView={{ x: 0, opacity: 1 }}
-                viewport={{ once: true }}
+                initial={{ y: 24, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                viewport={{ once: true, amount: 0.1 }}
                 transition={{
-                  duration: 0.8,
+                  duration: 0.5,
                   ease: [0.21, 0.47, 0.32, 0.98],
                 }}
-                className="h-full w-full rounded-2xl bg-primary text-primary-foreground"
+                className="h-full w-full rounded-2xl text-neutral-900"
+                style={{ backgroundColor: "#FBC02D" }}
               >
                 <Card className="flex h-full items-start gap-10 sm:gap-12 has-data-[slot=card-footer]:pb-6! sm:has-data-[slot=card-footer]:pb-10! pt-8 sm:py-12 border-none shadow-none ring-0 rounded-2xl bg-transparent">
                   <CardContent className="flex flex-col gap-6 px-6 sm:px-10">
-                    <div className="flex size-12 items-center justify-center rounded-xl bg-primary-foreground/15">
-                      <Layers className="size-6" strokeWidth={1.5} />
+                    <div className="flex size-12 items-center justify-center rounded-xl bg-neutral-900/10 ring-1 ring-neutral-900/15">
+                      <Layers
+                        className="size-6 text-neutral-900"
+                        strokeWidth={1.5}
+                      />
                     </div>
-                    <h3 className="text-2xl sm:text-3xl font-medium leading-snug">
-                      Bir marta kiriting — jurnal, davomat va jadval oʻzaro
-                      bogʻlanadi, qolgan hammasi avtomatik yangilanadi.
+                    {/* Rang MAJBURIY: fon endi brend sarigʻi (#FBC02D) —
+                        matn qora (text-neutral-900) boʻlmasa oʻqilmaydi. */}
+                    <h3 className="text-2xl sm:text-3xl font-medium leading-snug text-neutral-900">
+                      Ustozonada davomat bir bosishda belgilanadi. Kechikkanlarning
+                      xulq bali oʻzi pasayadi, yakuniy baho esa soniyalar ichida
+                      hisoblanadi.
                     </h3>
                   </CardContent>
                   <CardFooter className="border-none w-full px-6 sm:px-10 py-0 flex flex-col items-start gap-0.5">
-                    <p className="text-sm font-medium text-primary-foreground">
+                    <p className="text-sm font-medium text-neutral-900">
                       Bitta tizim
                     </p>
-                    <span className="text-xs font-normal text-primary-foreground/70 uppercase">
+                    <span className="text-xs font-normal text-neutral-900/70 uppercase">
                       Oʻqituvchining butun ish oqimi
                     </span>
                   </CardFooter>
@@ -82,11 +89,12 @@ const Feature = ({ featureData }: { featureData: Features }) => {
                   return (
                     <motion.div
                       key={index}
-                      initial={{ x: 100, opacity: 0 }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      viewport={{ once: true }}
+                      initial={{ y: 24, opacity: 0 }}
+                      whileInView={{ y: 0, opacity: 1 }}
+                      viewport={{ once: true, amount: 0.1 }}
                       transition={{
-                        duration: 0.8,
+                        duration: 0.5,
+                        delay: index * 0.06,
                         ease: [0.21, 0.47, 0.32, 0.98],
                       }}
                     >

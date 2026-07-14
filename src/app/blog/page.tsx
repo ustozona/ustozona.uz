@@ -1,4 +1,5 @@
-import Header, { type NavigationSection } from "@/components/shadcn-space/blocks/hero-01/header";
+import Header from "@/components/shadcn-space/blocks/hero-01/header";
+import { PAGE_NAV } from "@/lib/landing-nav";
 import Footer from "@/components/shadcn-space/blocks/footer-01/footer";
 import Blog from "@/components/shadcn-space/blocks/blog-01/blog";
 import Newsletter from "@/components/shadcn-space/blocks/newsletter-01/newsletter";
@@ -11,18 +12,10 @@ export const metadata = {
   description: "Taʼlim, baholash va raqamli oʻqitish boʻyicha maqolalar.",
 };
 
-const navigationData: NavigationSection[] = [
-  { title: "Asosiy", href: "/" },
-  { title: "Imkoniyatlar", href: "/#features" },
-  { title: "Narxlar", href: "/#pricing" },
-  { title: "Blog", href: "/blog", isActive: true },
-  { title: "FAQ", href: "/#faq" },
-];
-
 export default function BlogPage() {
   return (
     <div className="min-h-screen flex flex-col theme-landing-mono">
-      <Header navigationData={navigationData} />
+      <Header navigationData={PAGE_NAV} />
       <main className="flex-1">
         <section className="relative">
           <LandingGlow className="left-1/2 top-12 -translate-x-1/2 w-[70%] h-[40%]" />

@@ -1,17 +1,10 @@
 import { notFound } from "next/navigation";
-import Header, { type NavigationSection } from "@/components/shadcn-space/blocks/hero-01/header";
+import Header from "@/components/shadcn-space/blocks/hero-01/header";
 import Footer from "@/components/shadcn-space/blocks/footer-01/footer";
 import { Blogpost1 } from "@/components/blogpost1";
 import { CookieConsent } from "@/components/landing/CookieConsent";
 import { BLOG_POSTS, getPostBySlug } from "@/lib/blog-posts";
-
-const navigationData: NavigationSection[] = [
-  { title: "Asosiy", href: "/" },
-  { title: "Imkoniyatlar", href: "/#features" },
-  { title: "Narxlar", href: "/#pricing" },
-  { title: "Blog", href: "/blog", isActive: true },
-  { title: "FAQ", href: "/#faq" },
-];
+import { PAGE_NAV } from "@/lib/landing-nav";
 
 export function generateStaticParams() {
   return BLOG_POSTS.map((post) => ({ slug: post.slug }));
@@ -40,7 +33,7 @@ export default async function BlogPostPage({
 
   return (
     <div className="min-h-screen flex flex-col theme-landing-mono">
-      <Header navigationData={navigationData} />
+      <Header navigationData={PAGE_NAV} />
       <main className="flex-1">
         <Blogpost1
           title={post.title}

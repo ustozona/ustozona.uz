@@ -72,7 +72,12 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
         )}
 
         <Field>
-          <Button type="button" variant="ghost" className="w-full hover:bg-secondary hover:text-secondary-foreground" asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full hover:bg-secondary hover:text-secondary-foreground"
+            asChild
+          >
             <a href="/login">
               <ChevronLeft className="size-4" />
               Kirish sahifasiga qaytish

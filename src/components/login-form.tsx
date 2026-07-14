@@ -10,6 +10,8 @@ import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator } from 
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RainbowButton } from "@/components/ui/rainbow-button";
+import { GoogleIcon } from "@/components/google-icon";
 
 /** Better Auth xato kodlari → oʻzbekcha xabarlar. */
 const ERROR_UZ: Record<string, string> = {
@@ -59,9 +61,19 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
         <div className="flex flex-col items-center text-center gap-1">
           <h1 className="text-2xl font-medium">Hisobingizga kiring</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            Hisobingizga kirish uchun quyida elektron pochta va parolingizni kiriting.
+            Ustozonaga xush kelibsiz — davom etish uchun kiring.
           </p>
         </div>
+
+        {/* Google eng tepada — bir bosishli kirish eng past ishqalanishli yoʻl. */}
+        <Field>
+          <Button variant="outline" type="button" onClick={handleGoogle}>
+            <GoogleIcon className="h-4 w-4" />
+            Google orqali kirish
+          </Button>
+        </Field>
+
+        <FieldSeparator>yoki email bilan</FieldSeparator>
 
         <Field>
           <FieldLabel htmlFor="email">Elektron pochta</FieldLabel>
@@ -109,26 +121,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
         )}
 
         <Field>
-          <Button type="submit" disabled={pending}>
+          <RainbowButton type="submit" disabled={pending} className="w-full h-9">
             {pending ? "Kirilmoqda…" : "Tizimga kirish"}
-          </Button>
-        </Field>
-
-        <FieldSeparator>yoki</FieldSeparator>
-
-        <Field>
-          <Button variant="outline" type="button" onClick={handleGoogle}>
-            <img
-              src="https://images.shadcnspace.com/assets/svgs/icon-google.svg"
-              alt=""
-              className="h-4 w-4"
-            />
-            Google orqali kirish
-          </Button>
+          </RainbowButton>
         </Field>
 
         <FieldDescription className="text-center">
-          Hisobingiz yoʻqmi? <a href="/register">Roʻyxatdan oʻtish</a>
+          Hisobingiz yoʻqmi?{" "}
+          <a href="/register" className="font-medium text-foreground hover:underline">
+            Bepul boshlash
+          </a>
         </FieldDescription>
       </FieldGroup>
     </form>

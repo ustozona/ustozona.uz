@@ -114,9 +114,12 @@
   --color-color-1: var(--color-1);
   @keyframes rainbow {
   0% {
-    background-position: 0%;}
+    background-position: 0%;
+    }
   100% {
-    background-position: 200%;}}
+    background-position: 200%;
+    }
+  }
   --animate-aurora: aurora 8s ease-in-out infinite alternate;
   @keyframes aurora {
   0% {
@@ -933,18 +936,13 @@
   .no-print { display: none !important; }
 }
 
-/* ── magicui RainbowButton ── */
-:root {
-  --color-1: hsl(0 100% 63%);
-  --color-2: hsl(270 100% 63%);
-  --color-3: hsl(210 100% 63%);
-  --color-4: hsl(195 100% 63%);
-  --color-5: hsl(90 100% 63%);
-}
-@keyframes rainbow {
-  0% { background-position: 0%; }
-  100% { background-position: 200%; }
-}
+/* ── magicui RainbowButton ──
+   Ranglar (--color-1…5) va @keyframes rainbow YUQORIDA aniqlangan:
+   ranglar :root/.dark ichida (OKLCH, dizayn-tizimi bilan bir formatda),
+   keyframes esa @theme ichida. Bu yerda ilgari ularning hsl nusxasi
+   turgan edi — u yuqoridagini bekor qilib qoʻyardi, oʻchirildi.
+   Faqat utility klassi qoladi: bu Tailwind setupida @theme dagi
+   --animate-* har doim ham utility hosil qilmaydi. */
 .animate-rainbow { animation: rainbow var(--speed, 2s) infinite linear; }
 
 /* ─────────────────────────────────────────────

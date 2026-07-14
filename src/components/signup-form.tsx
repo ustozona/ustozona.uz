@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { RainbowButton } from "@/components/ui/rainbow-button";
+import { GoogleIcon } from "@/components/google-icon";
 
 /** Better Auth xato kodlari → oʻzbekcha xabarlar. */
 const ERROR_UZ: Record<string, string> = {
@@ -66,11 +68,21 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
     <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center text-center gap-1">
-          <h1 className="text-2xl font-medium">Roʻyxatdan oʻtish</h1>
+          <h1 className="text-2xl font-medium">Bepul boshlash</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            Roʻyxatdan oʻtish uchun quyidagi shaklni toʻldiring.
+            Bank kartasi talab qilinmaydi. Bir daqiqada ishga tushasiz.
           </p>
         </div>
+
+        {/* Google eng tepada — parol oʻylab topish eng katta toʻsiq. */}
+        <Field>
+          <Button variant="outline" type="button" onClick={handleGoogle}>
+            <GoogleIcon className="h-4 w-4" />
+            Google orqali davom etish
+          </Button>
+        </Field>
+
+        <FieldSeparator>yoki email bilan</FieldSeparator>
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
@@ -98,31 +110,29 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field>
-            <FieldLabel htmlFor="email">Elektron pochta</FieldLabel>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="falonchi@email.uz"
-              autoComplete="email"
-              required
-            />
-          </Field>
+        <Field>
+          <FieldLabel htmlFor="email">Elektron pochta</FieldLabel>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="falonchi@email.uz"
+            autoComplete="email"
+            required
+          />
+        </Field>
 
-          <Field>
-            <FieldLabel htmlFor="password">Parol</FieldLabel>
-            <PasswordInput
-              id="password"
-              name="password"
-              placeholder="Kamida 8 belgi"
-              autoComplete="new-password"
-              required
-              minLength={8}
-            />
-          </Field>
-        </div>
+        <Field>
+          <FieldLabel htmlFor="password">Parol</FieldLabel>
+          <PasswordInput
+            id="password"
+            name="password"
+            placeholder="Kamida 8 belgi"
+            autoComplete="new-password"
+            required
+            minLength={8}
+          />
+        </Field>
 
         {error && (
           <p className="text-sm text-destructive text-center" role="alert">
@@ -131,26 +141,16 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
         )}
 
         <Field>
-          <Button type="submit" disabled={pending}>
-            {pending ? "Yaratilmoqda…" : "Roʻyxatdan oʻtish"}
-          </Button>
-        </Field>
-
-        <FieldSeparator>yoki</FieldSeparator>
-
-        <Field>
-          <Button variant="outline" type="button" onClick={handleGoogle}>
-            <img
-              src="https://images.shadcnspace.com/assets/svgs/icon-google.svg"
-              alt=""
-              className="h-4 w-4"
-            />
-            Google orqali roʻyxatdan oʻtish
-          </Button>
+          <RainbowButton type="submit" disabled={pending} className="w-full h-9">
+            {pending ? "Yaratilmoqda…" : "Bepul boshlash"}
+          </RainbowButton>
         </Field>
 
         <FieldDescription className="text-center">
-          Hisobingiz bormi? <a href="/login">Tizimga kirish</a>
+          Hisobingiz bormi?{" "}
+          <a href="/login" className="font-medium text-foreground hover:underline">
+            Tizimga kirish
+          </a>
         </FieldDescription>
       </FieldGroup>
     </form>

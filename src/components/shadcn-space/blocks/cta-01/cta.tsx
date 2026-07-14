@@ -29,14 +29,21 @@ const CTA = ({ className }: CTAProps) => {
               className="flex flex-col gap-6 items-center mx-auto"
             >
               <div className="flex flex-col gap-3 items-center text-center">
-                <h2 className="text-3xl md:text-5xl font-medium">
-                  Taʼlim jarayonini biz bilan osonlashtiring
+                <h2 className="text-3xl md:text-5xl font-medium text-center">
+                  Hisobotlar va turli xil qogʻozbozliklar oʻrniga
+                  <br />
+                  eʼtiboringizni darsga qarating!
                 </h2>
                 <p className="max-w-2xl mx-auto">
-                  Oʻqituvchilar uchun eng qulay platformani izlayapsizmi? Jurnal, davomat va baholashni bir joyda — boshqaruvni toʻliq raqamlashtiring.
+                  Roʻyxatdan oʻtish bir daqiqa. Sinfingizni qoʻshing va darhol ishlata boshlang.
                 </p>
               </div>
-              <ButtonWithIcon href="/register">Hoziroq boshlash</ButtonWithIcon>
+              <div className="flex flex-col items-center gap-3">
+                <ButtonWithIcon href="/register">Bepul roʻyxatdan oʻtish</ButtonWithIcon>
+                <p className="text-sm text-muted-foreground">
+                  Oʻqituvchilar uchun bepul. Bank kartasi talab qilinmaydi.
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>

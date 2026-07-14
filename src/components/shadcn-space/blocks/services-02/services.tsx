@@ -1,15 +1,16 @@
 "use client";
-import Image from "next/image";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@iconify/react";
-import { CLASS_COLOR_BASE } from "@/lib/class-colors";
+import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
+import { SERVICE_PREVIEWS } from "@/components/shadcn-space/blocks/services-02/previews";
+
+const BRAND_YELLOW = "#FBC02D";
 
 export interface ServiceItem {
+    /** SERVICE_PREVIEWS dagi mini-koʻrinish kaliti */
+    id: keyof typeof SERVICE_PREVIEWS;
     heading: string;
     descp: string;
-    image: string;
 }
 
 export interface ServicesProps {
@@ -18,24 +19,29 @@ export interface ServicesProps {
 
 export const servicesData: ServiceItem[] = [
     {
-        heading: "Elektron jurnal",
-        descp: "Formativ va summativ baholarni sozlanadigan shkala asosida yuriting; sinf oʻrtachasi va oʻzlashtirish dinamikasi avtomatik hisoblanadi.",
-        image: "/screens/grades.png"
+        id: "jurnal",
+        heading: "Elektron jurnal va baholash",
+        descp: "Kategoriya va vaznlarni bir marta sozlaysiz («Uy vazifasi 20%, imtihon 50%») — tizim qolganini oʻzi qiladi. Past ball qizil, yuqori ball yashil boʻlib boʻyaladi: sinf holati bir qarashda koʻrinadi.",
     },
     {
-        heading: "Dars jadvali",
-        descp: "Sinflarni jadvalga sudrab tashlang, dars soatlarini belgilang — har sinf oʻz rangida, bir qarashda koʻrinadi.",
-        image: "/screens/timetable.png"
+        id: "davomat",
+        heading: "Davomat — bir bosishda",
+        descp: "Butun sinf kelgan boʻlsa, sana ustunini bosib «hammasi keldi» deb bir marta belgilaysiz. Har bir yozuvga alohida izoh qoldirish mumkin.",
     },
     {
-        heading: "Dars rejalashtirish",
-        descp: "Haftalik va oylik rejalashtiruvchi: keyingi darslar, topshiriqlar va baholash kunlarini bitta kalendarda boshqaring.",
-        image: "/screens/planner.png"
+        id: "xulq",
+        heading: "Xulq-atvor bali — oʻzi hisoblanadi",
+        descp: "Kechikish, dars qoldirish va topshiriqni kechiktirish asosida oʻquvchining xulq bali avtomatik shakllanib boradi. Eng zerikarli ish oʻz-oʻzidan bajariladi.",
     },
     {
-        heading: "Davomat",
-        descp: "Davomatni tez belgilang, sababli/sababsiz qoldirilgan kunlarni kuzating — natija oʻzlashtirishga bogʻlanadi.",
-        image: "/screens/attendance.png"
+        id: "jadval",
+        heading: "Dars jadvali va rejalashtirish",
+        descp: "Yil oʻrtasida jadval oʻzgarsa, eski oylarning tarixi va baholari buzilmaydi. Qoʻngʻiroq jadvali va darsni sudrab koʻchirish ham bor.",
+    },
+    {
+        id: "muharrir",
+        heading: "Dars muharriri va PDF",
+        descp: "Toʻliq matn muharririda dars ishlanmangizni yozasiz va bir bosishda A4 formatda chop etishga tayyor PDF qilib olasiz.",
     }
 ];
 
@@ -55,41 +61,33 @@ function Services({ data = servicesData }: ServicesProps) {
                             <Badge variant="outline" className="py-1 px-3 h-auto text-sm font-normal border-0 outline outline-border">
                                 Tizim ichidan
                             </Badge>
-                            <h2 className="sm:text-5xl text-3xl text-foreground font-semibold">Nimalar qila olasiz</h2>
+                            <h2 className="sm:text-5xl text-3xl text-foreground font-semibold">Nimalar qila olasiz?</h2>
                             <p className="max-w-2xl text-muted-foreground sm:text-lg text-base">
-                                Oʻqituvchining kundalik ishi — jurnal, jadval, rejalashtirish va davomat — bitta tizimda. Nomi ustiga olib boring va koʻring.
+                                Oʻqituvchining kundalik ishi — jurnal, davomat, xulq, jadval va dars ishlanmasi — bitta tizimda. Nomi ustiga olib boring va koʻring.
                             </p>
                         </div>
-                        <Button
-                            className={"group p-1 bg-primary hover:bg-primary/80 text-white font-medium flex gap-2 lg:gap-3 justify-between items-center rounded-full w-fit ps-5 h-auto border-0 animate-in fade-in slide-in-from-right-10 duration-1000 delay-200 ease-in-out fill-mode-both"}
+                        <ButtonWithIcon
+                            href="/register"
+                            className="animate-in fade-in slide-in-from-right-10 duration-1000 delay-200 ease-in-out fill-mode-both"
                         >
-                            <a href="/register" className="flex items-center gap-3 text-primary-foreground text-sm font-medium">
-                                Bepul boshlang
-                                <div className="p-2 bg-background rounded-full group-hover:rotate-45 transition-transform duration-300 ease-in-out">
-                                    <Icon
-                                        className="text-foreground"
-                                        icon="lucide:arrow-up-right"
-                                        width={16}
-                                        height={16}
-                                    />
-                                </div>
-                            </a>
-                        </Button>
+                            Oʻzlashtirishni kuzatish
+                        </ButtonWithIcon>
                     </div>
                     <div className="grid grid-cols-12 relative gap-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 ease-in-out fill-mode-both">
-                        <div className="w-full lg:col-span-4 col-span-12 flex items-center justify-center">
-                            <div className={`transition-all duration-300 z-10 w-full`} >
-                                {data?.[activeIndex]?.image && (
-                                    <Image
-                                        key={data[activeIndex].image}
-                                        src={data[activeIndex].image}
-                                        alt={data[activeIndex].heading}
-                                        width={1440}
-                                        height={900}
-                                        className="w-full h-auto object-contain rounded-xl border border-border shadow-sm animate-in fade-in duration-500"
-                                    />
-                                )}
-                            </div>
+                        <div className="w-full lg:col-span-4 col-span-12 flex items-start justify-center lg:sticky lg:top-28 lg:self-start">
+                            {(() => {
+                                const active = data?.[activeIndex];
+                                if (!active) return null;
+                                const Preview = SERVICE_PREVIEWS[active.id];
+                                return (
+                                    <div
+                                        key={active.id}
+                                        className="w-full max-w-sm animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                    >
+                                        <Preview />
+                                    </div>
+                                );
+                            })()}
                         </div>
                         <div className="lg:col-span-1" />
                         <div className="w-full flex flex-col gap-16 lg:col-span-7 col-span-12">
@@ -101,7 +99,7 @@ function Services({ data = servicesData }: ServicesProps) {
                                         className="group py-6 xl:py-10 border-t border-border cursor-pointer flex xl:flex-row flex-col xl:items-center items-start justify-between xl:gap-10 gap-1 relative">
                                         <h3
                                             className="py-1 text-2xl md:text-3xl font-semibold text-foreground max-w-2xs w-full transition-colors"
-                                            style={activeIndex === index ? { color: CLASS_COLOR_BASE.teal } : undefined}
+                                            style={activeIndex === index ? { color: BRAND_YELLOW } : undefined}
                                         >
                                             {value.heading}
                                         </h3>

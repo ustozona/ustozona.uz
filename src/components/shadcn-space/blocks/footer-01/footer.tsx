@@ -1,7 +1,11 @@
 import Logo from "@/assets/logo/logo";
 import { Separator } from "@/components/ui/separator";
-
-const TELEGRAM_URL = "https://t.me/ustozona_tms";
+import {
+  FOOTER_PAGE_LINKS,
+  LEGAL_LINKS,
+  TELEGRAM_HANDLE,
+  TELEGRAM_URL,
+} from "@/lib/landing-nav";
 
 const TelegramIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -11,51 +15,13 @@ const TelegramIcon = () => (
 
 type FooterData = {
   title: string;
-  links: {
-    title: string;
-    href: string;
-  }[];
+  links: { title: string; href: string }[];
 };
 
+// Nomlar va havolalar YAGONA manbadan (lib/landing-nav) — header bilan bir xil.
 const footerSections: FooterData[] = [
-  {
-    title: "Sahifalar",
-    links: [
-      {
-        title: "Xususiyatlar",
-        href: "#features",
-      },
-      {
-        title: "Narxlar",
-        href: "#pricing",
-      },
-      {
-        title: "Savol-javob",
-        href: "#faq",
-      },
-      {
-        title: "Bogʻlanish",
-        href: TELEGRAM_URL,
-      },
-    ],
-  },
-  {
-    title: "Qoʻshimcha maʼlumot",
-    links: [
-      {
-        title: "Foydalanish shartlari",
-        href: "#",
-      },
-      {
-        title: "Maxfiylik siyosati",
-        href: "#",
-      },
-      {
-        title: "Ommaviy oferta",
-        href: "#",
-      },
-    ],
-  },
+  { title: "Sahifalar", links: FOOTER_PAGE_LINKS },
+  { title: "Qoʻshimcha maʼlumot", links: LEGAL_LINKS },
 ];
 
 const Footer = () => {
@@ -129,7 +95,7 @@ const Footer = () => {
                       className="inline-flex items-center gap-2 text-base font-normal text-muted-foreground hover:text-foreground"
                     >
                       <TelegramIcon />
-                      @ustozona_tms
+                      {TELEGRAM_HANDLE}
                     </a>
                   </li>
                   <li>
