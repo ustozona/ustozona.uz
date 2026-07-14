@@ -148,7 +148,7 @@ Qarorlar (nima qachon qilinadi) — 4-boʻlimda. Bu yerda hamma kandidat bir joy
 
 | # | Ish | Izoh |
 |---|---|---|
-| 1 | **Prod-tayyorlik** | Domen, telefon auth, demo — sentabrda real foydalanuvchi kirishi shart |
+| 1 | **Prod-tayyorlik** | 🟢 Asosan BAJARILDI (14-iyul): www.ustozona.uz ulangan va ishlayapti, demo seed yuritildi, login tekshirildi. Qoldi: telefon-qurilmada sinash + Google orqali kirish kalitlari (ixtiyoriy) |
 | 2 | **Sertifikatlash** | Davomat+baho+xulqdan avtomatik sertifikat, oʻqituvchi print qiladi |
 | 3 | **Ommaviy dars siljitish** | Kuzgi bayramlargacha tayyor boʻlsin |
 | 4 | **OCR blanka — MVP boshlanadi** | Eng katta ish: blanka generatori + skanerning birinchi ishlaydigan versiyasi. ⚠️ Texnik risk yuqori — 15-avgustga MVP, sayqal sentabrga oʻtishi mumkin. Marketing kampaniyasi shu bilan bogʻlanadi |

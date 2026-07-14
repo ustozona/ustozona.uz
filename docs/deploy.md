@@ -1,8 +1,12 @@
 # Vercel Hobby'ga deploy
 
-`next build` lokal oʻtadi (2026-07-03 tekshirilgan; 31 baseline tsc xato
-`next.config.ts`dagi `typescript.ignoreBuildErrors` bilan vaqtincha
-chetlab oʻtilgan — qarz tozalangach bayroq olib tashlansin).
+`next build` lokal oʻtadi (tsc TOZA — 31 baseline 2026-07-04 da tuzatilgan,
+`ignoreBuildErrors` bayrogʻi olib tashlangan; build toʻliq type-check bilan).
+
+> **Holat (2026-07-14):** domen ULANGAN — asosiy manzil `https://www.ustozona.uz`
+> (apex `ustozona.uz` → www ga 308 redirect, DNS ahost.uz'da). Demo seed
+> yuritilgan (`npm run db:seed`). Health + demo login ikkala domenda ham OK.
+> Qolgan: telefon-qurilmada prod tekshiruv, Google OAuth env (ixtiyoriy).
 
 ## 1. Repo → Vercel
 
