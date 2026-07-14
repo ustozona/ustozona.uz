@@ -14,3 +14,4 @@ export * from "./notes";
 export * from "./notifications";
 export * from "./feedback";
 export * from "./behavior";
+export * from "./student-notes";

@@ -3,8 +3,14 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { getStudentProfile } from "@/lib/student-profile";
+import { getStudentProfile, locateStudent } from "@/lib/student-profile";
 import { useGradesStore } from "@/store/useGradesStore";
+import { useAttendanceStore } from "@/store/useAttendanceStore";
+import { useCalendarStore } from "@/store/useCalendarStore";
+import { useTimetableStore } from "@/store/useTimetableStore";
+import { deriveLessonDays, statusWeights, type AttendanceRecord } from "@/lib/attendance-data";
+import { todayKey } from "@/lib/date-keys";
+import { useStudentNotesStore, formatNoteTime } from "@/store/useStudentNotesStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -46,15 +52,7 @@ const UZ_MONTHS = [
   "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr",
 ];
 
-// Deterministik boshlangʻich qayd (demo uchun, soatga bogʻliq emas)
-function seedNotes(grade: number, riskLevel: string, name: string): Note[] {
-  const first = name.split(" ")[0];
-  if (riskLevel !== "ok")
-    return [{ id: "seed", text: `${first} bilan qoʻshimcha ishlash kerak.`, sentiment: "concern", time: "2 kun oldin" }];
-  if (grade >= 85)
-    return [{ id: "seed", text: `${first} darslarda faol va tirishqoq.`, sentiment: "positive", time: "3 kun oldin" }];
-  return [];
-}
+const EMPTY_RECORDS: AttendanceRecord[] = [];
 
 const TAB_IDS: TabId[] = ["overview", "assignments", "notes", "behavior"];
 function normalizeTab(t?: string): TabId {
@@ -71,15 +69,37 @@ export default function StudentProfile({
   const router = useRouter();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const hydrated = useGradesStore((s) => s._hasHydrated);
+
+  // Davomat — jonli manba (Davomat sahifasi bilan bir xil: recordsByClass +
+  // real dars kunlari + vaznlar). classId oʻquvchi joylashuvidan aniqlanadi.
+  const classId = useMemo(() => locateStudent(classDataMap, studentId)?.classId, [classDataMap, studentId]);
+  const attendanceRecords = useAttendanceStore((s) => (classId ? s.recordsByClass[classId] : undefined)) ?? EMPTY_RECORDS;
+  const attendanceStatuses = useAttendanceStore((s) => s.statuses);
+  const calendar = useCalendarStore((s) => s.calendar);
+  const timetableVersions = useTimetableStore((s) => s.versions);
+  const lessonDays = useMemo(() => {
+    if (!classId) return [];
+    const today = todayKey();
+    const end = today < calendar.range.end ? today : calendar.range.end;
+    return deriveLessonDays(classId, { start: calendar.range.start, end }, calendar, timetableVersions);
+  }, [classId, calendar, timetableVersions]);
+  const attendanceWeights = useMemo(() => statusWeights(attendanceStatuses), [attendanceStatuses]);
+
   const profile = useMemo(
-    () => getStudentProfile(classDataMap, studentId),
-    [classDataMap, studentId]
+    () =>
+      getStudentProfile(classDataMap, studentId, {
+        records: attendanceRecords,
+        lessonDays,
+        weights: attendanceWeights,
+      }),
+    [classDataMap, studentId, attendanceRecords, lessonDays, attendanceWeights]
   );
 
   // Active tab URL'da (`?tab=`) saqlanadi — oʻquvchilar orasida oʻtganda saqlanib qoladi
   const [tab, setTabState] = useState<TabId>(() => normalizeTab(initialTab));
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const [addedNotes, setAddedNotes] = useState<Record<string, Note[]>>({});
+  const noteEntries = useStudentNotesStore((s) => s.items);
+  const addNoteEntry = useStudentNotesStore((s) => s.addNote);
   // Profil tahriri (sessiya ichida) — boshqa oʻquvchiga oʻtganda tozalanadi
   const [editOpen, setEditOpen] = useState(false);
   const [override, setOverride] = useState<Partial<NewStudentInput>>({});
@@ -119,19 +139,17 @@ export default function StudentProfile({
     return () => window.removeEventListener("keydown", onKey);
   }, [go, prevId, nextId]);
 
-  const notes = useMemo<Note[]>(() => {
-    if (!profile) return [];
-    return [...(addedNotes[studentId] ?? []), ...seedNotes(profile.overallGrade, profile.risk.level, profile.name)];
-  }, [addedNotes, studentId, profile]);
+  const notes = useMemo<Note[]>(
+    () =>
+      noteEntries
+        .filter((n) => n.studentId === studentId)
+        .map((n) => ({ id: n.id, text: n.text, sentiment: n.sentiment, time: formatNoteTime(n.createdAt) })),
+    [noteEntries, studentId]
+  );
 
   const addNote = useCallback(
-    (text: string, sentiment: Sentiment) => {
-      setAddedNotes((prev) => ({
-        ...prev,
-        [studentId]: [{ id: `n-${Date.now()}`, text, sentiment, time: "Hozir" }, ...(prev[studentId] ?? [])],
-      }));
-    },
-    [studentId]
+    (text: string, sentiment: Sentiment) => addNoteEntry(studentId, text, sentiment),
+    [addNoteEntry, studentId]
   );
 
   // ── Server hydration tugamagan — hali "topilmadi" deb boʻlmaydi ──

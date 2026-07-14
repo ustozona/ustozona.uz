@@ -1,11 +1,13 @@
 /* ════════════════════════════════════════════════════════════════════
    OʻQUVCHI PROFILI — maʼlumot agregatsiyasi (yagona manba)
 
-   Jonli classDataMap (useGradesStore, chaqiruvchi uzatadi) va
-   seed-asosidagi davomatdan oʻquvchi profili uchun barcha hosilalarni
-   hisoblaydi. Hosilalar DETERMINISTIK (id'dan seed) — SSR/CSR mos
-   keladi, hydration mismatch boʻlmaydi. Davomat foizi seeded
-   (seededAttendancePct) — v1 cheklov, real davomatga keyin ulanadi.
+   Jonli classDataMap (useGradesStore, chaqiruvchi uzatadi) va jonli
+   davomat yozuvlari (useAttendanceStore, chaqiruvchi uzatadi) asosida
+   oʻquvchi profili uchun barcha hosilalarni hisoblaydi. Baholarga
+   bogʻliq hosilalar DETERMINISTIK (id'dan seed emas, grades'dan) —
+   SSR/CSR mos keladi. Davomat endi HAQIQIY (attendance-data.ts bilan
+   bir xil `weightedRate`/`deriveLessonDays` mantigʻi — chaqiruvchi
+   real records/lessonDays/weights uzatadi).
    Bitta istisno: "Choraklik" trend chegaralari oʻquv yili kalendaridan
    (localStorage, SSR'da defaultlar) — chart recharts ichida boʻlgani uchun
    serverda baribir chizilmaydi.
@@ -23,7 +25,8 @@ import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { BLOOM_LEVELS } from "@/lib/standards-data";
 import { getQuarterForDate } from "@/lib/academic-calendar";
 import { getCurrentCalendar } from "@/store/useCalendarStore";
-import { dateToKey } from "@/lib/date-keys";
+import { dateToKey, dateKeyToDate } from "@/lib/date-keys";
+import { getStatus, weightedRate, type AttendanceRecord, type LessonDay } from "@/lib/attendance-data";
 
 // ─── Tiplar ──────────────────────────────────────────────────────────────────
 
@@ -157,11 +160,6 @@ export function locateStudent(
 
 function seedFromId(id: string): number {
   return Array.from(id).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-}
-
-/** Oʻquvchilar roʻyxati kartasi bilan AYNAN mos davomat foizi (84..100) */
-export function seededAttendancePct(id: string): number {
-  return 84 + (seedFromId(id) % 17);
 }
 
 // ─── Topic boʻyicha oʻrtacha (Category Strengths) ────────────────────────────
@@ -348,47 +346,34 @@ export function aggregateTrend(scores: DatedScore[], g: Granularity): TrendPoint
   });
 }
 
-// ─── Davomat (deterministik generatsiya) ─────────────────────────────────────
+// ─── Davomat (haqiqiy yozuvlardan) ────────────────────────────────────────────
 
-/** Oʻquv yili dars kunlari — haftada 2 marta (chorshanba=3, juma=5) */
-function lessonDays(): Date[] {
-  const out: Date[] = [];
-  const d = new Date(YEAR_START);
-  while (d <= ANCHOR) {
-    if (d.getDay() === 3 || d.getDay() === 5) out.push(new Date(d));
-    d.setDate(d.getDate() + 1);
+/**
+ * Chaqiruvchi (StudentProfile.tsx) `useAttendanceStore`/`useCalendarStore`/
+ * `useTimetableStore`dan real `records`+`lessonDays`+`weights` (statusWeights)
+ * hisoblab uzatadi — attendance-data.ts (Davomat sahifasi) bilan bir xil
+ * manba/mantiq. Belgilanmagan ("unmarked") kunlar ribbon/donutga kirmaydi
+ * — soxta toʻldirish yoʻq; % esa `weightedRate` bilan (Sozlamalar>Davomat
+ * vaznlariga mos) hisoblanadi.
+ */
+function buildAttendance(
+  studentId: string,
+  records: AttendanceRecord[],
+  lessonDays: LessonDay[],
+  weights: Record<string, number | null>
+): AttendanceSummary {
+  const days: AttendanceDay[] = [];
+  for (const ld of lessonDays) {
+    const status = getStatus(records, studentId, ld.date);
+    if (status === "unmarked") continue;
+    days.push({ date: ld.date, label: fmt(dateKeyToDate(ld.date)), status: status as AttendanceStatus });
   }
-  return out;
-}
-
-function buildAttendance(studentId: string): AttendanceSummary {
-  const pct = seededAttendancePct(studentId);
-  const dates = lessonDays();
-  const total = dates.length;
-  const present = Math.round((total * pct) / 100);
-  const remaining = total - present;
-  const late = Math.round(remaining * 0.25);
-  const excused = Math.round(remaining * 0.15);
-  const absent = Math.max(0, remaining - late - excused);
-
-  // Status multiset → deterministik tarqatish (seed bilan tartiblaymiz)
-  const pool: AttendanceStatus[] = [
-    ...Array<AttendanceStatus>(present).fill("present"),
-    ...Array<AttendanceStatus>(absent).fill("absent"),
-    ...Array<AttendanceStatus>(late).fill("late"),
-    ...Array<AttendanceStatus>(excused).fill("excused"),
-  ];
-  const base = seedFromId(studentId);
-  const order = pool
-    .map((status, i) => ({ status, k: (base * 31 + i * 17) % 997 }))
-    .sort((a, b) => a.k - b.k)
-    .map((x) => x.status);
-
-  const days: AttendanceDay[] = dates.map((dt, i) => ({
-    date: dt.toISOString().slice(0, 10),
-    label: fmt(dt),
-    status: order[i] ?? "present",
-  }));
+  const total = days.length;
+  const present = days.filter((d) => d.status === "present").length;
+  const absent = days.filter((d) => d.status === "absent").length;
+  const late = days.filter((d) => d.status === "late").length;
+  const excused = days.filter((d) => d.status === "excused").length;
+  const pct = weightedRate(records, studentId, weights)?.pct ?? 0;
 
   return { total, present, absent, late, excused, pct, days };
 }
@@ -426,9 +411,16 @@ function computeRisk(overall: number, attendancePct: number, missing: number): R
 
 // ─── Asosiy: toʻliq profil ───────────────────────────────────────────────────
 
+export type AttendanceInput = {
+  records: AttendanceRecord[];
+  lessonDays: LessonDay[];
+  weights: Record<string, number | null>;
+};
+
 export function getStudentProfile(
   classDataMap: Record<string, ClassData>,
-  studentId: string
+  studentId: string,
+  attendanceInput: AttendanceInput
 ): StudentProfile | null {
   const location = locateStudent(classDataMap, studentId);
   if (!location) return null;
@@ -442,7 +434,12 @@ export function getStudentProfile(
   const gradedCount = assignments.filter((a) => a.status === "graded").length;
   const missingCount = assignments.filter((a) => a.status === "missing").length;
   const datedScores = buildDatedScores(assignments);
-  const attendance = buildAttendance(studentId);
+  const attendance = buildAttendance(
+    studentId,
+    attendanceInput.records,
+    attendanceInput.lessonDays,
+    attendanceInput.weights
+  );
   const risk = computeRisk(overallGrade, attendance.pct, missingCount);
 
   return {
