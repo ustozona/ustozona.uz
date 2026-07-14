@@ -95,13 +95,6 @@ export type LessonDay = {
   dayOfWeek: number; // 0=Sun..6=Sat
 };
 
-// Sanani MAHALLIY kalendar boʻyicha "YYYY-MM-DD" ga formatlash.
-// toISOString() UTC'ga oʻtkazadi → UTC+ mintaqalarda kun -1 ga suriladi
-// (mas. 1-aprel → 31-mart), bu chorak chegarasini buzadi.
-function ymd(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 /**
  * Dars kunlarini JADVAL + KALENDARdan hisoblash: diapazondagi har bir kun uchun
  * (1) `isSchoolDay` — oʻquv yili ichida, yakshanba emas, taʼtil emas; va
@@ -189,17 +182,6 @@ export function percentile(values: number[], p: number): number | null {
   const sorted = [...values].sort((a, b) => a - b);
   const idx = Math.floor((p / 100) * (sorted.length - 1));
   return sorted[idx];
-}
-
-/** Oydagi BARCHA kunlar (showAllDays rejimi uchun) — dush–yak tartibida */
-export function allDaysInMonth(year: number, month: number): LessonDay[] {
-  const days: LessonDay[] = [];
-  const date = new Date(year, month - 1, 1);
-  while (date.getMonth() === month - 1) {
-    days.push({ date: ymd(date), dayOfWeek: date.getDay() });
-    date.setDate(date.getDate() + 1);
-  }
-  return days;
 }
 
 export const DAY_NAMES_SHORT = ["Yak", "Du", "Se", "Cho", "Pay", "Ju", "Sha"];

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Check, X, Clock, FileText, ChevronLeft, ChevronRight,
-  Search, Funnel, ListChecks, Calendar, CalendarRange, CalendarDays,
+  Funnel, Settings2, Calendar,
   ArrowUpRight, ArrowRight, Pencil, ChevronUp, ChevronDown,
   AlertTriangle, MessageSquareText,
 } from "lucide-react";
@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { DAYS_UZ_SUN } from "@/lib/localization";
 import {
   type AttendanceStatus, type AttendanceStatusDef, type AttendanceRecord,
-  deriveLessonDays, getStatus, getNote, allDaysInMonth,
+  deriveLessonDays, getStatus, getNote,
   weightedRate, percentile, statusWeights,
   MONTH_NAMES,
 } from "@/lib/attendance-data";
@@ -31,7 +31,6 @@ import { classColor, type ClassInfo, type Student } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { makeAttendanceTourDemoLessonDays, makeAttendanceTourDemoRecords } from "@/components/tour/attendance-tour-demo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Dialog, DialogContent, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -58,16 +57,7 @@ import {
 
 type SortDir = "asc" | "desc";
 type SortField = "firstName" | "lastName";
-type StudentStatusFilter = "all" | "active" | "away" | "archived";
 const UNMARKED = "unmarked";
-
-// Oʻquvchi holati filtri yorliqlari (students sahifasi bilan bir xil)
-const STUDENT_STATUS_LABELS: [StudentStatusFilter, string][] = [
-  ["all", "Hammasi"],
-  ["active", "Oʻqimoqda"],
-  ["away", "Taʼtilda"],
-  ["archived", "Chiqib ketgan"],
-];
 
 // Sarlavha qatori foni — muted'dan sal ochroq (card tomon aralashtirilgan, lekin opaque)
 const HEADER_BG = "color-mix(in srgb, var(--muted) 55%, var(--card))";
@@ -214,18 +204,18 @@ function NoteModal({
 // ─── Ustun sarlavhasi (bulk set popover) ─────────────────────────────────────
 
 function ColHeader({
-  date, isToday, statuses, onBulk, dimmed,
-}: { date: string; isToday: boolean; statuses: AttendanceStatusDef[]; onBulk: (s: AttendanceStatus) => void; dimmed?: boolean }) {
+  date, isToday, statuses, onBulk, cellRef,
+}: { date: string; isToday: boolean; statuses: AttendanceStatusDef[]; onBulk: (s: AttendanceStatus) => void; cellRef?: React.Ref<HTMLTableCellElement> }) {
   const [open, setOpen] = useState(false);
   const [, , dd] = date.split("-");
   const dayName = ["Yak", "Du", "Se", "Cho", "Pay", "Ju", "Sha"][new Date(date).getDay()];
   return (
-    <th className={cn("border-b border-r border-border p-0 w-[44px] min-w-[44px] text-center relative")} style={{ width: 44, minWidth: 44, background: HEADER_BG }}>
+    <th ref={cellRef} className={cn("border-b border-r border-border p-0 w-[44px] min-w-[44px] text-center relative")} style={{ width: 44, minWidth: 44, background: HEADER_BG }}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <div className="flex flex-col items-center justify-center h-full w-full gap-0.5 cursor-pointer py-2 hover:bg-muted/80 transition-colors">
-            <span className={cn("text-xs font-bold uppercase", isToday ? "text-primary" : dimmed ? "text-muted-foreground/40" : "text-muted-foreground")}>{dayName}</span>
-            <span className={cn("text-sm font-bold", isToday && "text-primary", dimmed && "text-muted-foreground/40")}>{parseInt(dd, 10)}</span>
+            <span className={cn("text-xs font-bold uppercase", isToday ? "text-primary" : "text-muted-foreground")}>{dayName}</span>
+            <span className={cn("text-sm font-bold", isToday && "text-primary")}>{parseInt(dd, 10)}</span>
           </div>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-1.5 flex items-center gap-1 rounded-xl shadow-xl">
@@ -262,8 +252,8 @@ function ColHeader({
 // ─── Davomat katagi ──────────────────────────────────────────────────────────
 
 function AttCell({
-  def, note, onClick, onNote, faded,
-}: { def: AttendanceStatusDef | null; note: string; onClick: () => void; onNote: () => void; faded?: boolean }) {
+  def, note, onClick, onNote,
+}: { def: AttendanceStatusDef | null; note: string; onClick: () => void; onNote: () => void }) {
   const [hov, setHov] = useState(false);
   const v = def ? statusVisual(def) : null;
   return (
@@ -274,7 +264,6 @@ function AttCell({
             type="button" onClick={onClick}
             className={cn(
               CHIP_BTN, "size-9",
-              faded && "opacity-50",
               v ? v.cellClass : "bg-muted/40 text-muted-foreground border border-dashed border-muted-foreground/30 hover:bg-muted/60",
             )}
            
@@ -326,15 +315,10 @@ export default function AttendanceView({
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [sortField, setSortField] = useState<SortField>("firstName");
   const [notePopup, setNotePopup] = useState<{ studentId: string; date: string } | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQ, setSearchQ] = useState("");
-  const [view, setView] = useState<"scheduled" | "all" | "day">("scheduled");
   // Davr granularligi — "Oy" (bitta oy) yoki "Chorak" (akademik chorak toʻlaligicha,
   // dars kunlari `quarter.range` boʻyicha; navigatsiya choraklar boʻylab).
   const [period, setPeriod] = useState<"month" | "quarter">("month");
-  const [studentStatus, setStudentStatus] = useState<StudentStatusFilter>("all");
   const [onlyAttention, setOnlyAttention] = useState(false);
-  const [filterOpen, setFilterOpen] = useState(false);
 
   // Roster va sinf nomi — baholar jurnali bilan bitta manba (server-backed).
   const gradesClass = useGradesStore((s) => s.classDataMap[classId]);
@@ -382,7 +366,31 @@ export default function AttendanceView({
     ? setDemoRecords((prev) => (typeof next === "function" ? next(prev ?? []) : next))
     : setRecordsRaw(classId, next));
 
-  useEffect(() => { setSearchQ(""); setStudentStatus("all"); setOnlyAttention(false); }, [classId]);
+  useEffect(() => { setOnlyAttention(false); }, [classId]);
+
+  // Yetim yozuvlarni tozalash — ilgari "barcha kunlar" rejimida dars jadvalidan
+  // tashqari sanaga qoʻyilgan yozuvlar endi jadvalda koʻrinmaydi; joriy oʻquv
+  // yili ichida dars kuniga toʻgʻri kelmaydigan yozuvlar oʻchiriladi. Yil
+  // diapazonidan tashqaridagi (oʻtgan yil) yozuvlarga tegilmaydi.
+  useEffect(() => {
+    if (demoMode || !mounted) return;
+    if (!isCalendarConfigured(calendar) || realLessonDays.length === 0) return;
+    if (!storedRecords?.length) return;
+    const lessonSet = new Set(realLessonDays.map((d) => d.date));
+    const end = today < calendar.range.end ? today : calendar.range.end;
+    const orphan = (r: AttendanceRecord) =>
+      r.date >= calendar.range.start && r.date <= end && !lessonSet.has(r.date);
+    if (storedRecords.some(orphan)) {
+      setRecordsRaw(classId, storedRecords.filter((r) => !orphan(r)));
+    }
+  }, [demoMode, mounted, calendar, realLessonDays, storedRecords, today, classId, setRecordsRaw]);
+
+  // Bugungi ustunga avtoscroll — jadval ochilganda (yoki oy/sinf almashganda)
+  // bugungi sana koʻrinishda boʻlsa, ustun markazga keltiriladi.
+  const todayColRef = useRef<HTMLTableCellElement>(null);
+  useEffect(() => {
+    todayColRef.current?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [mounted, classId, month.year, month.month, period]);
 
   // Persist store tiklanmaguncha SSR seed bilan mos placeholder.
   if (!mounted) return <div className="flex-1 min-w-0 min-h-0" />;
@@ -402,25 +410,17 @@ export default function AttendanceView({
   // statistikasi va (chorak rejimida) koʻrsatiladigan kunlar shundan keladi.
   const viewedQuarter = getQuarterForMonth(calendar, month.year, month.month);
 
-  // Koʻrsatiladigan kunlar. Oy rejimi: faqat bugun / dars kunlari / butun oy
-  // (oyga filtrlangan). Chorak rejimi: chorak diapazonidagi barcha dars kunlari.
+  // Koʻrsatiladigan kunlar — har doim dars kunlari. Oy rejimi: koʻrilayotgan
+  // oyga tushganlari; chorak rejimi: chorak diapazonidagilari.
   const monthDays = period === "quarter"
     ? (viewedQuarter ? lessonDays.filter((d) => inRange(d.date, viewedQuarter.range)) : [])
-    : view === "day"
-      ? allDaysInMonth(month.year, month.month).filter((d) => d.date === today)
-      : (view === "all" ? allDaysInMonth(month.year, month.month) : lessonDays)
-          .filter((d) => {
-            const [y, m] = d.date.split("-").map(Number);
-            return y === month.year && m === month.month;
-          });
+    : lessonDays.filter((d) => {
+        const [y, m] = d.date.split("-").map(Number);
+        return y === month.year && m === month.month;
+      });
 
-  // "Barcha kunlar" rejimida faqat yakshanbalarni xiralashtirish
-  const isDimmed = (date: string) => view === "all" && new Date(date).getDay() === 0;
-
-  // Oʻquvchilar — qidiruv + status filtri + tartiblash
+  // Oʻquvchilar — tartiblash
   const baseStudents = [...roster]
-    .filter((s) => s.name.toLowerCase().includes(searchQ.toLowerCase()))
-    .filter((s) => studentStatus === "all" || (s.status ?? "active") === studentStatus)
     .sort((a, b) => {
       const na = splitName(a.name);
       const nb = splitName(b.name);
@@ -500,15 +500,6 @@ export default function AttendanceView({
       if (next === UNMARKED) return prev.filter((r) => !(r.studentId === studentId && r.date === date));
       if (cur) return prev.map((r) => (r.studentId === studentId && r.date === date ? { ...r, status: next } : r));
       return [...prev, { studentId, date, status: next }];
-    });
-  };
-
-  const setCell = (studentId: string, date: string, status: AttendanceStatus) => {
-    setRecords((prev) => {
-      const ex = prev.find((r) => r.studentId === studentId && r.date === date);
-      const without = prev.filter((r) => !(r.studentId === studentId && r.date === date));
-      if (status === UNMARKED) return ex?.note ? [...without, { studentId, date, status: UNMARKED, note: ex.note }] : without;
-      return [...without, { studentId, date, status, note: ex?.note }];
     });
   };
 
@@ -607,81 +598,8 @@ export default function AttendanceView({
               </CardTitle>
             </div>
 
-            <div className="flex items-center gap-1.5 md:gap-3">
-              {searchOpen && (
-                <Input autoFocus value={searchQ} onChange={(e) => setSearchQ(e.target.value)}
-                  onBlur={() => { if (!searchQ) setSearchOpen(false); }}
-                  placeholder="Oʻquvchi qidirish..."
-                  className="text-sm bg-muted rounded-md px-3 outline-none border border-transparent focus:border-border w-44 transition-all h-9" />
-              )}
-              <Button variant="outline" size="icon" onClick={() => setSearchOpen((v) => !v)}
-                className={cn(ctrlBtn, searchOpen && "ring-2 ring-primary ring-offset-2")}>
-                <Search className="h-4 w-4" aria-hidden />
-              </Button>
-
-              {/* Filter — status boʻyicha */}
-              <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon"
-                    className={cn(ctrlBtn, (studentStatus !== "all" || onlyAttention) && "ring-2 ring-primary ring-offset-2")}>
-                    <Funnel className="h-4 w-4" aria-hidden />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-60 p-2 rounded-xl">
-                  {/* Diqqat talab qiladiganlar (termostat) */}
-                  <button type="button" onClick={() => setOnlyAttention((v) => !v)}
-                    className={cn(
-                      "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-sm transition-colors text-left",
-                      onlyAttention ? "bg-destructive/10 font-medium text-destructive" : "hover:bg-muted",
-                    )}>
-                    <span className="flex items-center gap-2">
-                      <AlertTriangle className="size-4" />
-                      Diqqat talab qiladiganlar
-                    </span>
-                    <span className={cn("tabular-nums", onlyAttention ? "text-destructive" : "text-muted-foreground")}>{attentionCount}</span>
-                  </button>
-
-                  <div className="my-2 h-px bg-border" />
-
-                  {/* Oʻquvchi holati boʻyicha */}
-                  <p className="text-label px-2 pb-2">Oʻquvchi holati</p>
-                  <div className="flex flex-col gap-0.5">
-                    {STUDENT_STATUS_LABELS.map(([val, label]) => (
-                      <button key={val} type="button" onClick={() => setStudentStatus(val)}
-                        className={cn(
-                          "flex items-center justify-between rounded-lg px-2.5 py-1.5 text-sm transition-colors text-left",
-                          studentStatus === val ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted",
-                        )}>
-                        {label}
-                        {studentStatus === val && <span className="size-1.5 rounded-full bg-primary" />}
-                      </button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex">
-                    <AttendanceSettingsModal
-                      trigger={
-                        <Button
-                          data-tour="attendance-config"
-                          variant="outline"
-                          size="icon"
-                          className={ctrlBtn}
-                          aria-label="Davomat sozlamalari"
-                        >
-                          <ListChecks className="h-4 w-4" aria-hidden />
-                        </Button>
-                      }
-                    />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>Davomat sozlamalari</TooltipContent>
-              </Tooltip>
-
-              {/* Davr granularligi — Oy | Chorak (demo/turda yashirin) */}
+            {/* Davr granularligi — Oy | Chorak (demo/turda yashirin) — markazda */}
+            <div className="flex flex-1 items-center justify-center">
               {!demoMode && (
                 <ToggleGroup
                   type="single"
@@ -690,7 +608,6 @@ export default function AttendanceView({
                     if (!v) return;
                     setPeriod(v as "month" | "quarter");
                     if (v === "quarter") {
-                      setView("scheduled");
                       // Koʻrilayotgan oy chorakka tushmasa (yil tashqarisi) — boʻsh
                       // ekran oʻrniga eng yaqin chorakka sakraymiz.
                       if (!viewedQuarter) {
@@ -713,6 +630,22 @@ export default function AttendanceView({
                   </ToggleGroupItem>
                 </ToggleGroup>
               )}
+            </div>
+
+            <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
+              {attentionCount > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" onClick={() => setOnlyAttention((v) => !v)}
+                      className={cn(ctrlBtn, onlyAttention && "ring-2 ring-primary ring-offset-2")}>
+                      <Funnel className="h-4 w-4" aria-hidden />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {onlyAttention ? "Hammasini koʻrsatish" : `Diqqat talab qiladiganlar (${attentionCount})`}
+                  </TooltipContent>
+                </Tooltip>
+              )}
 
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="icon" onClick={goPrev} className={ctrlBtn}>
@@ -726,26 +659,26 @@ export default function AttendanceView({
                 </Button>
               </div>
 
-              {period === "month" && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon"
-                      onClick={() => setView((v) => {
-                        const next = v === "scheduled" ? "day" : v === "day" ? "all" : "scheduled";
-                        if (next === "day") goToday();
-                        return next;
-                      })}
-                      className={cn(ctrlBtn, view !== "scheduled" && "ring-2 ring-primary ring-offset-2")}>
-                      {view === "all" ? <CalendarRange className="h-4 w-4" aria-hidden />
-                        : view === "day" ? <CalendarDays className="h-4 w-4" aria-hidden />
-                        : <Calendar className="h-4 w-4" aria-hidden />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {view === "scheduled" ? "Kun koʻrinishi" : view === "day" ? "Barcha kunlar" : "Faqat dars kunlari"}
-                  </TooltipContent>
-                </Tooltip>
-              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex">
+                    <AttendanceSettingsModal
+                      trigger={
+                        <Button
+                          data-tour="attendance-config"
+                          variant="outline"
+                          size="icon"
+                          className={ctrlBtn}
+                          aria-label="Davomat sozlamalari"
+                        >
+                          <Settings2 className="h-4 w-4" aria-hidden />
+                        </Button>
+                      }
+                    />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Davomat sozlamalari</TooltipContent>
+              </Tooltip>
             </div>
           </CardHeader>
 
@@ -759,20 +692,13 @@ export default function AttendanceView({
                   <EmptyDescription>
                     {period === "quarter"
                       ? `Bu sinf uchun ${viewedQuarter?.name ?? "bu chorak"}da rejalashtirilgan dars yoʻq. Boshqa chorakka oʻting yoki oy koʻrinishiga qayting.`
-                      : `Bu sinf uchun ${MONTH_NAMES[month.month - 1]} oyida rejalashtirilgan dars yoʻq. Barcha kalendar kunlarini koʻrsating yoki boshqa oyga oʻting.`}
+                      : `Bu sinf uchun ${MONTH_NAMES[month.month - 1]} oyida rejalashtirilgan dars yoʻq. Boshqa oyga oʻting yoki dars jadvalini tekshiring.`}
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
-                  <div className="flex items-center gap-2">
-                    {period === "month" && (
-                      <Button onClick={() => setView("all")} className="gap-1.5">
-                        <CalendarRange className="size-4" /> Barcha kunlar
-                      </Button>
-                    )}
-                    <Button variant="outline" onClick={goToday} className="bg-card">
-                      Bugunga oʻtish
-                    </Button>
-                  </div>
+                  <Button variant="outline" onClick={goToday} className="bg-card">
+                    Bugunga oʻtish
+                  </Button>
                 </EmptyContent>
               </Empty>
             ) : (
@@ -780,7 +706,6 @@ export default function AttendanceView({
                 <colgroup>
                   <col style={{ width: 220 }} />
                   {monthDays.map((d) => <col key={d.date} style={{ width: 44 }} />)}
-                  {view === "day" && <col />}
                   <col style={{ width: 120 }} />
                 </colgroup>
 
@@ -813,39 +738,8 @@ export default function AttendanceView({
                     </TableHead>
 
                     {monthDays.map((d) => (
-                      <ColHeader key={d.date} date={d.date} isToday={d.date === today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} dimmed={isDimmed(d.date)} />
+                      <ColHeader key={d.date} date={d.date} isToday={d.date === today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} cellRef={d.date === today ? todayColRef : undefined} />
                     ))}
-
-                    {view === "day" && (
-                      <th className="border-b border-r border-border px-3 align-middle" style={{ background: HEADER_BG }}>
-                        <div className="flex items-center gap-1">
-                          {activeStatuses.map((s) => {
-                            const v = statusVisual(s);
-                            return (
-                              <Tooltip key={s.key}>
-                                <TooltipTrigger asChild>
-                                  <button type="button" onClick={() => handleBulk(today, s.key)}
-                                    className={cn(CHIP_BTN, "size-8", v.cellClass)}>
-                                    <v.Icon className="size-4" strokeWidth={2.5} />
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent>Hammasi: {s.label}</TooltipContent>
-                              </Tooltip>
-                            );
-                          })}
-                          <div className="mx-0.5 h-6 w-px bg-border" />
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button type="button" onClick={() => handleBulk(today, UNMARKED)}
-                                className={cn(CHIP_BTN, "size-8 text-muted-foreground border border-dashed border-muted-foreground/30 hover:bg-muted/60")}>
-                                <X className="size-4" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>Tozalash</TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </th>
-                    )}
 
                     {/* Davomat % — akademik chorak boʻyicha */}
                     <TableHead className="sticky right-0 z-40 border-b border-l border-border px-2 text-center align-middle text-label whitespace-nowrap" style={{ width: 120, background: HEADER_BG }}>
@@ -897,52 +791,15 @@ export default function AttendanceView({
                         </TableCell>
 
                         {monthDays.map((d) => (
-                          <TableCell key={d.date} className={cn("border-b border-r border-border p-1 text-center min-w-[44px]", isDimmed(d.date) && "bg-muted/30")}>
+                          <TableCell key={d.date} className="border-b border-r border-border p-1 text-center min-w-[44px]">
                             <AttCell
                               def={statusByKey(getStatus(records, student.id, d.date))}
                               note={getNote(records, student.id, d.date)}
                               onClick={() => handleCell(student.id, d.date)}
                               onNote={() => setNotePopup({ studentId: student.id, date: d.date })}
-                              faded={isDimmed(d.date)}
                             />
                           </TableCell>
                         ))}
-
-                        {view === "day" && (
-                          <TableCell className="border-b border-r border-border px-3">
-                            <div className="flex items-center gap-1">
-                              {activeStatuses.map((s) => {
-                                const v = statusVisual(s);
-                                const cur = getStatus(records, student.id, today) === s.key;
-                                return (
-                                  <Tooltip key={s.key}>
-                                    <TooltipTrigger asChild>
-                                      <button type="button"
-                                        onClick={() => setCell(student.id, today, s.key)}
-                                        className={cn(CHIP_BTN, "size-8", v.cellClass, !cur && "opacity-40 hover:opacity-100")}
-                                       >
-                                        <v.Icon className="size-4" strokeWidth={2.5} />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>{s.label}</TooltipContent>
-                                  </Tooltip>
-                                );
-                              })}
-                              <div className="mx-0.5 h-6 w-px bg-border" />
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <button type="button"
-                                    onClick={() => setNotePopup({ studentId: student.id, date: today })}
-                                    className={cn(CHIP_BTN, "size-8 hover:bg-muted", getNote(records, student.id, today)
-                                      ? "text-info" : "text-muted-foreground/40 hover:text-foreground")}>
-                                    <Pencil className="size-4" />
-                                  </button>
-                                </TooltipTrigger>
-                                <TooltipContent>Izoh</TooltipContent>
-                              </Tooltip>
-                            </div>
-                          </TableCell>
-                        )}
 
                         {/* Davomat % — faqat foiz; hoverda oʻquvchi preview */}
                         <TableCell className="sticky right-0 z-10 bg-card group-hover:bg-muted border-b border-l border-border px-3 text-center no-elevation">
@@ -972,14 +829,16 @@ export default function AttendanceView({
 
                   {students.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={monthDays.length + (view === "day" ? 3 : 2)} className="py-10 px-8">
+                      <TableCell colSpan={monthDays.length + 2} className="py-10 px-8">
                         <Alert className="max-w-md mx-auto bg-muted/50 text-left">
                           <div className="flex items-center gap-2 mb-1">
-                            <Search className="size-4 text-muted-foreground" />
+                            <AlertTriangle className="size-4 text-muted-foreground" />
                             <AlertTitle className="mb-0">Topilmadi</AlertTitle>
                           </div>
                           <AlertDescription className="text-muted-foreground ml-6">
-                            Qidiruv yoki filtr boʻyicha oʻquvchilar topilmadi.
+                            {onlyAttention
+                              ? "Diqqat talab qiladigan oʻquvchi topilmadi."
+                              : "Bu sinfda oʻquvchi yoʻq."}
                           </AlertDescription>
                         </Alert>
                       </TableCell>
