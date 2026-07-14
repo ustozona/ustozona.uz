@@ -6,7 +6,8 @@
 > **Holat (2026-07-14):** domen ULANGAN — asosiy manzil `https://www.ustozona.uz`
 > (apex `ustozona.uz` → www ga 308 redirect, DNS ahost.uz'da). Demo seed
 > yuritilgan (`npm run db:seed`). Health + demo login ikkala domenda ham OK.
-> Qolgan: telefon-qurilmada prod tekshiruv, Google OAuth env (ixtiyoriy).
+> Google OAuth ham sozlangan va ishlaydi (sign-in/social → haqiqiy Google URL).
+> Qolgan: faqat telefon-qurilmada prod tekshiruv.
 
 ## 1. Repo → Vercel
 
