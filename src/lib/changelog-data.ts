@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "profile-birthdate-save-fix",
+    date: "2026-07-16",
+    type: "tuzatildi",
+    title: "Profilda tavallud sanani saqlash endi ishlaydi",
+    body:
+      "Sozlamalar > Profilda tugʻilgan kunni yil/kun/oy orqali tanlaganda baʼzida \"Saqlash\" tugmasi faollashmay qolardi — tuzatildi.",
+    href: "/dashboard/settings",
+  },
+  {
     id: "students-add-flow",
     date: "2026-07-15",
     type: "tuzatildi",

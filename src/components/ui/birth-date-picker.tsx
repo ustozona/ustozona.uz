@@ -51,12 +51,24 @@ export function BirthDatePicker({
     [currentYear, yearsBack]
   );
 
-  const { y, m, d } = parseKey(value);
+  // Yil/kun/oy alohida onChange'lar bilan tanlanadi, lekin `onChange` faqat
+  // uchalasi ham toʻlgandan keyin chaqiriladi — shu oraliqda tashqi `value`
+  // hali eski (yoki boʻsh) qoladi. Shuning uchun qisman tanlovlarni lokal
+  // holatda saqlaymiz, aks holda har bosishda `value`dan qayta parse qilinib
+  // avvalgi tanlovlar yoʻqolib ketardi (saqlash tugmasi hech faollashmasdi).
+  const [pending, setPending] = React.useState<{ y?: number; m?: number; d?: number }>({});
+  React.useEffect(() => setPending({}), [value]);
+
+  const parsed = parseKey(value);
+  const y = pending.y ?? parsed.y;
+  const m = pending.m ?? parsed.m;
+  const d = pending.d ?? parsed.d;
 
   const setPart = (next: { y?: number; m?: number; d?: number }) => {
     const ny = next.y ?? y;
     const nm = next.m ?? m;
     let nd = next.d ?? d;
+    setPending({ y: ny, m: nm, d: nd });
     if (ny && nm && nd) {
       const max = daysInMonth(ny, nm);
       if (nd > max) nd = max; // masalan 31-fevral → 28/29ga qisqartiriladi
