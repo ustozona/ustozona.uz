@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthLogo } from "@/components/auth-logo";
-import { FeatureLoop } from "@/components/onboarding/FeatureLoop";
+import { AuthFeatureLoop } from "@/components/onboarding/AuthFeatureLoop";
 import { PRODUCT_FEATURES } from "@/lib/product-features";
 import { cn } from "@/lib/utils";
 
@@ -41,7 +41,7 @@ export function AuthShell({
       </div>
       {showFeatureLoop && (
         <div className="relative hidden h-svh min-h-0 overflow-hidden bg-muted lg:flex lg:items-center lg:justify-center lg:p-10">
-          <FeatureLoop items={PRODUCT_FEATURES} visible={7} className="w-full max-w-md" />
+          <AuthFeatureLoop items={PRODUCT_FEATURES} visible={7} className="w-full max-w-md" />
         </div>
       )}
     </div>
