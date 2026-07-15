@@ -268,7 +268,9 @@ export function unseenChangelogCount(seenCount: number | null): number {
 /** Sana boʻyicha guruhlar (eng yangisi birinchi). Isteʼmolchi useMemo'da
     bir marta chaqiradi. Sort — qoʻlda tahrirda tartib buzilsa himoya. */
 export function groupChangelogByDate(): { date: string; items: ChangelogEntry[] }[] {
-  const sorted = [...CHANGELOG_ENTRIES].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const sorted = [...CHANGELOG_ENTRIES].sort((a, b) =>
+    a.date === b.date ? 0 : a.date < b.date ? 1 : -1
+  );
   const groups: { date: string; items: ChangelogEntry[] }[] = [];
   for (const entry of sorted) {
     const last = groups[groups.length - 1];
