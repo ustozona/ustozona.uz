@@ -319,6 +319,15 @@ export default function AttendanceView({
   // dars kunlari `quarter.range` boʻyicha; navigatsiya choraklar boʻylab).
   const [period, setPeriod] = useState<"month" | "quarter">("month");
   const [onlyAttention, setOnlyAttention] = useState(false);
+  
+  // Bugungi sana yil diapazonidan tashqaridaligi bo'yicha ogohlantirish (bir martalik yopish uchun)
+  const [isAlertDismissed, setIsAlertDismissed] = useState(true);
+  
+  useEffect(() => {
+    if (!demoMode && typeof window !== "undefined") {
+      setIsAlertDismissed(localStorage.getItem("attendance-calendar-alert-dismissed") === "true");
+    }
+  }, [demoMode]);
 
   // Roster va sinf nomi — baholar jurnali bilan bitta manba (server-backed).
   const gradesClass = useGradesStore((s) => s.classDataMap[classId]);
@@ -352,7 +361,7 @@ export default function AttendanceView({
     isCalendarConfigured(calendar) &&
     versions.length > 0 &&
     !resolveVersionForDate(versions, calendar.range.start);
-  const showBanners = todayOutsideCalendar || scheduleGapAtStart;
+  const showBanners = (todayOutsideCalendar && !isAlertDismissed) || scheduleGapAtStart;
 
   useEffect(() => {
     if (!demoMode) return;
@@ -571,8 +580,8 @@ export default function AttendanceView({
       <div className="flex-1 min-w-0 min-h-0 grid gap-3" data-tour="attendance-heatmap" style={{ minHeight: 0, gridTemplateRows: showBanners ? "auto 1fr" : "1fr" }}>
         {showBanners && (
           <div className="grid gap-3">
-            {todayOutsideCalendar && (
-              <Alert variant="info">
+            {todayOutsideCalendar && !isAlertDismissed && (
+              <Alert variant="info" className="pr-10 relative">
                 <AlertTriangle className="size-4" aria-hidden />
                 <AlertTitle>Bugun tanlangan oʻquv yildan tashqarida</AlertTitle>
                 <AlertDescription>
@@ -582,6 +591,18 @@ export default function AttendanceView({
                     Oʻquv yili sozlamalariga oʻtish
                   </Link>
                 </AlertDescription>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-2 h-6 w-6 rounded-md text-blue-600/70 hover:text-blue-600 hover:bg-blue-600/10 dark:text-blue-400/70 dark:hover:text-blue-400 dark:hover:bg-blue-400/10 shadow-none"
+                  onClick={() => {
+                    setIsAlertDismissed(true);
+                    localStorage.setItem("attendance-calendar-alert-dismissed", "true");
+                  }}
+                  aria-label="Ogohlantirishni yopish"
+                >
+                  <X className="size-3.5" />
+                </Button>
               </Alert>
             )}
             {scheduleGapAtStart && <TimetableCoverageBanner />}
