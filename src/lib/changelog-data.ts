@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "lesson-editor-save-fix",
+    date: "2026-07-15",
+    type: "tuzatildi",
+    title: "Dars muharriridagi saqlash endi ishonchli",
+    body:
+      "Ilgari dars muharririda yozgan matningiz baʼzida yoʻqolib qolardi — darslar roʻyxatiga qaytganingizda oʻzgarish saqlanmaganday koʻrinardi. Endi har bir yozuv darhol serverga saqlanadi va sahifadan chiqishda hech narsa yoʻqolmaydi.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "notifications-polish",
     date: "2026-07-15",
     type: "yaxshilandi",

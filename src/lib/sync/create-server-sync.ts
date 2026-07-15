@@ -52,7 +52,7 @@ export function createServerSync<S, P, D = P>(opts: {
   push: (payload: D) => Promise<unknown>;
   debounceMs?: number;
   errorMessage?: string;
-}): { stop: () => void } {
+}): { stop: () => void; flush: () => Promise<void> } {
   const debounceMs = opts.debounceMs ?? 1500;
   const errorMessage = opts.errorMessage ?? "Oʻzgarishlar serverga saqlanmadi";
   const diff =
@@ -117,9 +117,15 @@ export function createServerSync<S, P, D = P>(opts: {
 
   return {
     stop() {
-      stopped = true;
       unsubscribe();
       if (timer) clearTimeout(timer);
+      // Unmount paytida kutilayotgan oʻzgarishlar yoʻqolmasin — oxirgi flush.
+      void flush();
+      stopped = true;
+    },
+    flush() {
+      if (timer) clearTimeout(timer);
+      return flush();
     },
   };
 }

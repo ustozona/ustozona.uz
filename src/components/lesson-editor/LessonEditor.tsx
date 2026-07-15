@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
+import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -130,9 +131,10 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   ];
 
   /* ── "..." menyu amallari ── */
-  const handleSaveNow = () => {
+  const handleSaveNow = async () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     if (editor) updateLesson(lessonId, { content: editor.getHTML() });
+    await flushLessonsNow();
     setSaving(false);
     toast.success("Saqlandi");
   };

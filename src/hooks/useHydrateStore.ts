@@ -16,6 +16,7 @@ import * as React from "react";
    ════════════════════════════════════════════════════════════════════ */
 
 type HydratableStore<S> = {
+  getState: () => S;
   setState: (partial: Partial<S>) => void;
 };
 
@@ -30,6 +31,12 @@ export function useHydrateStore<S extends { _hasHydrated: boolean }>(
     // StrictMode'da effect ikki marta chaqiriladi — bitta fetch yetadi.
     if (started.current) return;
     started.current = true;
+    // Shu sessiyada allaqachon hydrate boʻlgan (masalan, boshqa layout'da) —
+    // qayta fetch lokal, hali push qilinmagan oʻzgarishlarni bosib ketardi.
+    if (store.getState()._hasHydrated) {
+      setHydrated(true);
+      return;
+    }
     (async () => {
       try {
         const payload = await fetchPayload();

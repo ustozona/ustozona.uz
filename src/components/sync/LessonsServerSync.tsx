@@ -9,6 +9,12 @@ import { fetchLessonsAction, syncLessonsAction } from "@/server/actions/lessons"
 
 /* Lessons store ↔ server koʻprigi (renderi yoʻq). */
 
+// Joriy sync instansining flush'i — "Saqlash" tugmasi darhol push qilishi uchun.
+let flushRef: (() => Promise<void>) | null = null;
+export function flushLessonsNow(): Promise<void> {
+  return flushRef?.() ?? Promise.resolve();
+}
+
 type LessonState = ReturnType<typeof useLessonStore.getState>;
 
 function selectSnapshot(s: LessonState): LessonsSnapshot {
@@ -27,7 +33,11 @@ export default function LessonsServerSync() {
       push: syncLessonsAction,
       errorMessage: "Darslar serverga saqlanmadi",
     });
-    return sync.stop;
+    flushRef = sync.flush;
+    return () => {
+      flushRef = null;
+      sync.stop();
+    };
   }, [hydrated]);
 
   return null;
