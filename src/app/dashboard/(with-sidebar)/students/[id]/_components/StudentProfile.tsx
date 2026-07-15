@@ -379,7 +379,7 @@ export default function StudentProfile({
                 <Pen className="size-3.5" /> Tahrirlash
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+            <div className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-4">
               {/* Jinsi — inline dropdown */}
               <div className="min-w-0">
                 <p className="text-xs text-muted-foreground">Jinsi</p>
@@ -451,10 +451,10 @@ export default function StudentProfile({
                     {birthDateText ? (
                       <button
                         type="button"
-                        className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-primary cursor-pointer"
+                        className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-primary cursor-pointer whitespace-nowrap"
                       >
-                        <CalendarDays className="size-3.5 text-muted-foreground" />
-                        {birthDateText}
+                        <CalendarDays className="size-3.5 text-muted-foreground shrink-0" />
+                        <span className="truncate">{birthDateText}</span>
                       </button>
                     ) : (
                       <button
