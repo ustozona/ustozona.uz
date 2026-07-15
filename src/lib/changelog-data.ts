@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "students-add-flow",
+    date: "2026-07-15",
+    type: "tuzatildi",
+    title: "Oʻquvchi qoʻshish endi ishlaydi",
+    body:
+      "\"Sinf tanlanmagan\" xatosi tufayli baʼzi hollarda oʻquvchi qoʻshib boʻlmayotgan edi — tuzatildi. Shu bilan birga oʻquvchi qoʻshish oynasi ham yangilandi: bitta oʻquvchi qoʻshish, roʻyxatni joylashtirish yoki CSV/Excel fayldan import qilish endi bitta qulay oynada. (Omadbek Odilovga sinovda topgan buglar uchun rahmat!)",
+    href: "/dashboard/students",
+  },
+  {
     id: "lesson-editor-save-fix",
     date: "2026-07-15",
     type: "tuzatildi",

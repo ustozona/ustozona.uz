@@ -27,7 +27,7 @@ import {
   Popover, PopoverTrigger, PopoverContent,
 } from "@/components/ui/popover";
 import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -44,11 +44,11 @@ import {
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import CreateStudentModal, { type NewStudentInput } from "./_components/CreateStudentModal";
-import ImportStudentsModal from "./_components/ImportStudentsModal";
+import { type NewStudentInput } from "./_components/CreateStudentModal";
+import AddStudentModal from "./_components/AddStudentModal";
 import {
-  Users, User, Plus, Search, Filter, ArrowUp, Trash2, ChevronDown,
-  TrendingUp, CalendarCheck, Phone, MessageCircle, ExternalLink, Pen, Upload, Download,
+  Users, User, Plus, Search, Filter, ArrowUp, Trash2,
+  TrendingUp, CalendarCheck, Phone, MessageCircle, ExternalLink, Pen, Download,
   Eye, NotebookPen, Clock, Archive, GraduationCap,
 } from "lucide-react";
 
@@ -130,8 +130,7 @@ export default function StudentsPage() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("grade");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [createOpen, setCreateOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<StudentRow | null>(null);
 
   // Jonli manba: roster/baholar — useGradesStore, davomat — useAttendanceStore.
@@ -402,49 +401,24 @@ export default function StudentsPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Yangi oʻquvchi — tor rejimda (3 ustun ochiq) ikonka + menyu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="icon" className="font-semibold @[700px]:hidden">
-                    <Plus className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={() => setCreateOpen(true)}>
-                    <Plus className="size-4" /> Yangi oʻquvchi
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => setImportOpen(true)}>
-                    <Upload className="size-4" /> Import
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={handleExport} disabled={allStudents.length === 0}>
-                    <Download className="size-4" /> Eksport
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Eksport */}
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Eksport"
+                title="Eksport"
+                className={toolbarBtn}
+                onClick={handleExport}
+                disabled={allStudents.length === 0}
+              >
+                <Download className="size-4" />
+              </Button>
 
-              {/* Keng rejim — split button */}
-              <div className="hidden @[700px]:flex">
-                <Button onClick={() => setCreateOpen(true)} className="rounded-r-none px-4 font-semibold">
-                  <Plus className="mr-1 size-4" />
-                  Yangi oʻquvchi
-                </Button>
-                <div className="w-px bg-primary-foreground/30" />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="rounded-l-none px-2 font-semibold">
-                      <ChevronDown className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => setImportOpen(true)}>
-                      <Upload className="size-4" /> Import
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={handleExport} disabled={allStudents.length === 0}>
-                      <Download className="size-4" /> Eksport
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              {/* Yangi oʻquvchi — tanlov modalini ochadi (bitta / import) */}
+              <Button onClick={() => setAddOpen(true)} className="w-9 px-0 font-semibold @[560px]:w-auto @[560px]:px-4">
+                <Plus className="size-4 @[560px]:mr-1" />
+                <span className="hidden @[560px]:inline">Yangi oʻquvchi</span>
+              </Button>
             </div>
           </div>
 
@@ -467,11 +441,8 @@ export default function StudentsPage() {
                 {!filterActive && (
                   <EmptyContent>
                     <div className="flex flex-wrap items-center justify-center gap-2">
-                      <Button onClick={() => setCreateOpen(true)} className="gap-2">
+                      <Button onClick={() => setAddOpen(true)} className="gap-2">
                         <Plus className="size-4" /> Yangi oʻquvchi
-                      </Button>
-                      <Button variant="outline" onClick={() => setImportOpen(true)} className="gap-2 shadow-none">
-                        <Upload className="size-4" /> Import
                       </Button>
                     </div>
                   </EmptyContent>
@@ -607,17 +578,11 @@ export default function StudentsPage() {
         )}
       </DashboardColumns>
 
-      <CreateStudentModal
-        open={createOpen}
-        onOpenChange={setCreateOpen}
+      <AddStudentModal
+        open={addOpen}
+        onOpenChange={setAddOpen}
         defaultClassId={selectedClassId ?? firstLiveClassId ?? ""}
         onCreate={handleCreate}
-      />
-
-      <ImportStudentsModal
-        open={importOpen}
-        onOpenChange={setImportOpen}
-        className={selectedInfo?.name ?? ""}
         onImport={handleImport}
       />
 

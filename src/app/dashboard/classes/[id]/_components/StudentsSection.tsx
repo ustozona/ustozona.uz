@@ -13,6 +13,10 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
+import { toast } from "sonner";
+import { type NewStudentInput } from "@/app/dashboard/(with-sidebar)/students/_components/CreateStudentModal";
+import AddStudentModal from "@/app/dashboard/(with-sidebar)/students/_components/AddStudentModal";
+import type { Student } from "@/lib/grades-data";
 import { useMounted } from "@/lib/use-mounted";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -26,6 +30,7 @@ import {
   EmptyMedia,
   EmptyTitle,
   EmptyDescription,
+  EmptyContent,
 } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -71,6 +76,12 @@ const STATUS_PILL: Record<Status, { cls: string; dot: string; label: string }> =
 };
 const badgeBase = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
 
+function makeInitials(firstName: string, lastName: string): string {
+  const a = firstName.trim()[0] ?? "";
+  const b = lastName.trim()[0] ?? "";
+  return (a + b).toUpperCase() || "?";
+}
+
 export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const router = useRouter();
   const classId = identity.id;
@@ -81,10 +92,12 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("grade");
   const [statusOverride, setStatusOverride] = useState<Record<string, Status>>({});
+  const [createOpen, setCreateOpen] = useState(false);
 
   // Jonli manbalar — Baholar jurnali va Davomat bilan bir xil store
   // (server-backed). Hydration'gacha roʻyxat boʻsh boʻlib turadi.
   const mounted = useMounted();
+  const updateClass = useGradesStore((s) => s.updateClass);
   const liveGrades = useGradesStore((s) => s.classDataMap[classId]);
   const storedRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
   const attendanceStatuses = useAttendanceStore((s) => s.statuses);
@@ -94,6 +107,36 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   useEffect(() => { setSelectedStudentId(null); setSearch(""); }, [classId]);
 
   const openProfile = (id: string) => router.push(`/dashboard/students/${encodeURIComponent(id)}`);
+
+  const handleCreate = (data: NewStudentInput) => {
+    const name = `${data.firstName} ${data.lastName}`.trim();
+    const student: Student = {
+      id: crypto.randomUUID(),
+      name,
+      initials: makeInitials(data.firstName, data.lastName),
+      status: "active",
+      ...(data.gender ? { gender: data.gender } : {}),
+      ...(data.birthDate ? { birthDate: data.birthDate } : {}),
+      ...(data.parentName ? { parentName: data.parentName } : {}),
+      ...(data.parentPhone ? { parentPhone: data.parentPhone } : {}),
+      ...(data.studentPhone ? { studentPhone: data.studentPhone } : {}),
+    };
+    updateClass(data.classId, (cd) => ({ ...cd, students: [student, ...cd.students] }));
+    setSelectedStudentId(student.id);
+    toast.success("Oʻquvchi qoʻshildi");
+  };
+
+  const handleImport = (incoming: { firstName: string; lastName: string }[]) => {
+    if (incoming.length === 0) return;
+    const rows: Student[] = incoming.map((s) => ({
+      id: crypto.randomUUID(),
+      name: `${s.firstName} ${s.lastName}`.trim(),
+      initials: makeInitials(s.firstName, s.lastName),
+      status: "active",
+    }));
+    updateClass(classId, (cd) => ({ ...cd, students: [...rows, ...cd.students] }));
+    toast.success(`${rows.length} ta oʻquvchi qoʻshildi`);
+  };
 
   const allStudents = useMemo<StudentRow[]>(() => {
     const data = mounted ? liveGrades : undefined;
@@ -184,7 +227,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button className="font-semibold" disabled title="Tez orada">
+            <Button className="font-semibold" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4 @[640px]:mr-1" />
               <span className="hidden @[640px]:inline">Yangi oʻquvchi</span>
             </Button>
@@ -205,6 +248,13 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                   {search.trim() ? "Qidiruvni oʻzgartirib koʻring." : "Oʻquvchilarni qoʻshing."}
                 </EmptyDescription>
               </EmptyHeader>
+              {!search.trim() && (
+                <EmptyContent>
+                  <Button onClick={() => setCreateOpen(true)} className="gap-2">
+                    <Plus className="size-4" /> Yangi oʻquvchi
+                  </Button>
+                </EmptyContent>
+              )}
             </Empty>
           ) : (
             <ScrollArea className="h-full w-full">
@@ -276,6 +326,14 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
           </div>
         </div>
       )}
+
+      <AddStudentModal
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        defaultClassId={classId}
+        onCreate={handleCreate}
+        onImport={handleImport}
+      />
     </div>
   );
 }
