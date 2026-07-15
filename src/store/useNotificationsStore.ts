@@ -20,6 +20,10 @@ export type NotificationItem = {
   body?: string;
   /** Bosilganda oʻtiladigan ichki manzil. */
   href?: string;
+  /** status-kind uchun aniq holat pill'i (m-n "Jarayonda") — boʻlmasa
+   *  generic kind badge koʻrsatiladi. */
+  badgeLabel?: string;
+  badgeClassName?: string;
   read: boolean;
   createdAt: string; // ISO
 };
@@ -29,6 +33,8 @@ export type NewNotificationInput = {
   title: string;
   body?: string;
   href?: string;
+  badgeLabel?: string;
+  badgeClassName?: string;
 };
 
 function uid(): string {
@@ -73,6 +79,8 @@ export const useNotificationsStore = create<NotificationsState>()(
           title: input.title,
           body: input.body,
           href: input.href,
+          badgeLabel: input.badgeLabel,
+          badgeClassName: input.badgeClassName,
           read: false,
           createdAt: new Date().toISOString(),
         };

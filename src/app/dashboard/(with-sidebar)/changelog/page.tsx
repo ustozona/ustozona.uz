@@ -1,0 +1,343 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ChevronDown, ChevronUp, ListFilter, Megaphone } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { TypographyMuted } from "@/components/ui/typography";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuCheckboxItem, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  groupChangelogByDate,
+  fmtChangelogDateUz,
+  type ChangelogEntry,
+  type ChangelogType,
+} from "@/lib/changelog-data";
+import { markChangelogSeen } from "@/hooks/useChangelogSeen";
+import { TYPE_META, TYPE_ORDER } from "./_components/changelog-meta";
+
+type TypeFilter = ChangelogType | "all";
+
+/** Dastlab koʻrsatiladigan yozuvlar soni — qolgani tugma bilan ochiladi. */
+const INITIAL_VISIBLE = 20;
+/** Bir sanada shuncha yoki koʻproq kompakt yozuv boʻlsa, ular bitta
+    yigʻiladigan qatorga jamlanadi (referens: "N minor updates · hide"). */
+const COLLAPSE_THRESHOLD = 2;
+
+function TypePill({ type }: { type: ChangelogEntry["type"] }) {
+  const meta = TYPE_META[type];
+  return (
+    <Badge variant="outline" className={cn("shrink-0 gap-1", meta.pill)}>
+      <meta.icon className="size-3" />
+      {meta.label}
+    </Badge>
+  );
+}
+
+/** Tegishli sahifaga oʻng chetga tekislangan kichik havola-chip. */
+function HrefChip({ href }: { href: string }) {
+  const label = href.split("/").pop() ?? "";
+  return (
+    <Link
+      href={href}
+      className="shrink-0 rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+    >
+      {ROUTE_CHIP_LABELS[href] ?? label}
+    </Link>
+  );
+}
+
+const ROUTE_CHIP_LABELS: Record<string, string> = {
+  "/dashboard": "Bosh sahifa",
+  "/dashboard/students": "Oʻquvchilar",
+  "/dashboard/timetable": "Dars jadvali",
+  "/dashboard/attendance": "Davomat",
+  "/dashboard/behavior": "Xulq-atvor",
+  "/dashboard/standards": "Standartlar",
+  "/dashboard/settings": "Sozlamalar",
+  "/dashboard/feedback": "Fikr-mulohaza",
+};
+
+function FullEntryRow({ entry }: { entry: ChangelogEntry }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 space-y-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <TypePill type={entry.type} />
+          <span className="text-sm font-medium text-foreground">{entry.title}</span>
+        </div>
+        <p className="text-sm leading-relaxed text-muted-foreground">{entry.body}</p>
+      </div>
+      {entry.href && <HrefChip href={entry.href} />}
+    </div>
+  );
+}
+
+function CompactEntryRow({ entry }: { entry: ChangelogEntry }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <TypePill type={entry.type} />
+        <span className="truncate text-sm font-medium text-foreground">{entry.title}</span>
+      </div>
+      {entry.href && <HrefChip href={entry.href} />}
+    </div>
+  );
+}
+
+/** Ketma-ket kompakt yozuvlarni "N ta kichik yangilanish" qatoriga jamlaydi. */
+function CompactGroup({ entries }: { entries: ChangelogEntry[] }) {
+  const [open, setOpen] = useState(false);
+  if (entries.length < COLLAPSE_THRESHOLD) {
+    return (
+      <div className="space-y-3">
+        {entries.map((e) => (
+          <CompactEntryRow key={e.id} entry={e} />
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 text-left text-sm text-muted-foreground"
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full bg-muted-foreground/50" />
+          {entries.length} ta kichik yangilanish
+        </span>
+        {open ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+      </button>
+      {open && (
+        <div className="mt-3 space-y-3 border-t border-border pt-3">
+          {entries.map((e) => (
+            <CompactEntryRow key={e.id} entry={e} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Yozuvlarni tartibni saqlagan holda bloklarga ajratadi: toʻliq (body bor)
+    yozuvlar oʻz holicha, ketma-ket kompakt yozuvlar bitta guruh sifatida. */
+type Block =
+  | { kind: "full"; entry: ChangelogEntry }
+  | { kind: "compact"; entries: ChangelogEntry[] };
+
+function toBlocks(items: ChangelogEntry[]): Block[] {
+  const blocks: Block[] = [];
+  let run: ChangelogEntry[] = [];
+  const flush = () => {
+    if (run.length) blocks.push({ kind: "compact", entries: run });
+    run = [];
+  };
+  for (const entry of items) {
+    if (entry.body) {
+      flush();
+      blocks.push({ kind: "full", entry });
+    } else {
+      run.push(entry);
+    }
+  }
+  flush();
+  return blocks;
+}
+
+export default function ChangelogPage() {
+  // Sahifa ochildi — hamma yozuv koʻrildi (sidebar badge darhol oʻchadi).
+  useEffect(() => {
+    markChangelogSeen();
+  }, []);
+
+  const groups = useMemo(() => groupChangelogByDate(), []);
+
+  // Tur boʻyicha soni (filtr menyusida koʻrsatish uchun)
+  const typeCounts = useMemo(() => {
+    const map = { all: 0 } as Record<TypeFilter, number>;
+    for (const t of TYPE_ORDER) map[t] = 0;
+    for (const g of groups) for (const it of g.items) { map.all++; map[it.type]++; }
+    return map;
+  }, [groups]);
+
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const filterActive = typeFilter !== "all";
+
+  const filteredGroups = useMemo(() => {
+    if (!filterActive) return groups;
+    return groups
+      .map((g) => ({ date: g.date, items: g.items.filter((it) => it.type === typeFilter) }))
+      .filter((g) => g.items.length > 0);
+  }, [groups, typeFilter, filterActive]);
+
+  // "Oxirgi 30 kunda N ta yangilanish" — effektda hisoblanadi: bugungi sana
+  // prerender (build) sanasidan farq qilsa hydration mismatch boʻlmasin.
+  const [recentCount, setRecentCount] = useState(0);
+  useEffect(() => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const key = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, "0")}-${String(cutoff.getDate()).padStart(2, "0")}`;
+    setRecentCount(
+      filteredGroups.reduce((sum, g) => (g.date >= key ? sum + g.items.length : sum), 0)
+    );
+  }, [filteredGroups]);
+
+  const [expanded, setExpanded] = useState(false);
+  const totalEntries = useMemo(
+    () => filteredGroups.reduce((sum, g) => sum + g.items.length, 0),
+    [filteredGroups]
+  );
+
+  // Dastlab INITIAL_VISIBLE ta yozuv (guruh chegarasini saqlagan holda kesiladi)
+  const visibleGroups = useMemo(() => {
+    if (expanded || totalEntries <= INITIAL_VISIBLE) return filteredGroups;
+    const out: typeof filteredGroups = [];
+    let remaining = INITIAL_VISIBLE;
+    for (const g of filteredGroups) {
+      if (remaining <= 0) break;
+      out.push({ date: g.date, items: g.items.slice(0, remaining) });
+      remaining -= g.items.length;
+    }
+    return out;
+  }, [filteredGroups, expanded, totalEntries]);
+
+  return (
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col p-4 md:p-6">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card card-elevation">
+        {/* Sarlavha — qotib turadi, faqat pastdagi roʻyxat scroll boʻladi */}
+        <div className="shrink-0 border-b border-border p-4 md:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <Megaphone className="size-4.5 text-primary" />
+              </div>
+              <h1 className="heading-page text-foreground">Yangilanishlar</h1>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2">
+              {/* Tur boʻyicha filtr — icon-only */}
+              <DropdownMenu>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className={cn(
+                          "relative size-9 shrink-0 shadow-none",
+                          filterActive && "border-primary/40 text-primary"
+                        )}
+                      >
+                        <ListFilter className="size-4" />
+                        {filterActive && (
+                          <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold tabular-nums text-primary-foreground">
+                            1
+                          </span>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Filtr</TooltipContent>
+                </Tooltip>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuCheckboxItem
+                    checked={typeFilter === "all"}
+                    onCheckedChange={() => setTypeFilter("all")}
+                  >
+                    Hammasi
+                    <span className="ml-auto text-xs text-muted-foreground">{typeCounts.all}</span>
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  {TYPE_ORDER.map((t) => (
+                    <DropdownMenuCheckboxItem
+                      key={t}
+                      checked={typeFilter === t}
+                      onCheckedChange={() => setTypeFilter(typeFilter === t ? "all" : t)}
+                    >
+                      {TYPE_META[t].label}
+                      <span className="ml-auto text-xs text-muted-foreground">{typeCounts[t]}</span>
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          <TypographyMuted className="mt-1.5 text-sm leading-relaxed">
+            Ustozona qanday rivojlanmoqda — yangi imkoniyatlar, yaxshilanishlar va
+            tuzatishlar.
+            {recentCount > 0 && (
+              <span className="text-muted-foreground/80">
+                {" "}
+                Oxirgi 30 kunda{" "}
+                <span className="font-medium text-foreground/80">{recentCount} ta</span>{" "}
+                yangilanish.
+              </span>
+            )}
+          </TypographyMuted>
+        </div>
+
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="p-4 md:p-6">
+            {visibleGroups.map((group, gi) => (
+              <div key={group.date} className="relative flex gap-4">
+                {/* Timeline rail: nuqta + vertikal chiziq (VersionChip uslubi) */}
+                <div aria-hidden className="relative flex w-4 shrink-0 justify-center">
+                  {visibleGroups.length > 1 && (
+                    <span
+                      className={cn(
+                        "absolute w-px bg-border",
+                        gi === 0
+                          ? "top-3 bottom-0"
+                          : gi === visibleGroups.length - 1
+                            ? "top-0 h-3"
+                            : "inset-y-0"
+                      )}
+                    />
+                  )}
+                  <span className="absolute top-1.5 size-2.5 rounded-full border-2 border-primary bg-card" />
+                </div>
+
+                <div className={cn("min-w-0 flex-1", gi === visibleGroups.length - 1 ? "pb-0" : "pb-7")}>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-semibold text-foreground">
+                      {fmtChangelogDateUz(group.date)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {group.items.length} ta yangilanish
+                    </span>
+                  </div>
+                  <div className="mt-2.5 space-y-4">
+                    {toBlocks(group.items).map((block, bi) =>
+                      block.kind === "full" ? (
+                        <FullEntryRow key={block.entry.id} entry={block.entry} />
+                      ) : (
+                        <CompactGroup key={`compact-${bi}`} entries={block.entries} />
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {!expanded && totalEntries > INITIAL_VISIBLE && (
+              <div className="mt-4 flex justify-center">
+                <Button variant="ghost" size="sm" onClick={() => setExpanded(true)}>
+                  Oldingi yangilanishlarni koʻrsatish
+                </Button>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
+    </div>
+  );
+}

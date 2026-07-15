@@ -18,6 +18,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useTaskStore } from "@/store/useTaskStore";
+import { useChangelogUnseenCount } from "@/hooks/useChangelogSeen";
 import { BrandWordmark } from "@/assets/logo/brand-wordmark";
 import {
   LayoutGrid,
@@ -32,6 +33,7 @@ import {
   Target,
   BookMarked,
   MessagesSquare,
+  Megaphone,
   Settings,
   Award,
   type LucideIcon,
@@ -41,7 +43,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  badgeKey?: "tasks";
+  badgeKey?: "tasks" | "changelog";
 };
 
 /* Tartib QASDAN GuideHub "Boshlash" checklisti bilan bir xil — sidebar
@@ -61,6 +63,7 @@ const navItems: NavItem[] = [
 ];
 
 const footerItems: NavItem[] = [
+  { href: "/dashboard/changelog", label: "Yangilanishlar", icon: Megaphone, badgeKey: "changelog" },
   { href: "/dashboard/feedback", label: "Fikr-mulohaza", icon: MessagesSquare },
   { href: "/dashboard/settings", label: "Sozlamalar", icon: Settings },
 ];
@@ -89,8 +92,8 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
         </Link>
       </SidebarMenuButton>
       {showBadge && (
-        <SidebarMenuBadge className="bg-sidebar-primary/10 text-sidebar-primary">
-          {badge}
+        <SidebarMenuBadge className="bg-sidebar-primary/10 text-sidebar-primary animate-in fade-in">
+          {badge > 9 ? "9+" : badge}
         </SidebarMenuBadge>
       )}
     </SidebarMenuItem>
@@ -99,6 +102,11 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
 
 export function AppSidebar() {
   const taskCount = useTaskCount();
+  const changelogCount = useChangelogUnseenCount();
+  const badgeCounts: Record<NonNullable<NavItem["badgeKey"]>, number> = {
+    tasks: taskCount,
+    changelog: changelogCount,
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -127,7 +135,7 @@ export function AppSidebar() {
                 <NavMenuItem
                   key={item.href}
                   item={item}
-                  badge={item.badgeKey === "tasks" ? taskCount : undefined}
+                  badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined}
                 />
               ))}
             </SidebarMenu>
@@ -139,7 +147,11 @@ export function AppSidebar() {
         <SidebarSeparator className="mb-1" />
         <SidebarMenu>
           {footerItems.map((item) => (
-            <NavMenuItem key={item.href} item={item} />
+            <NavMenuItem
+              key={item.href}
+              item={item}
+              badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined}
+            />
           ))}
         </SidebarMenu>
       </SidebarFooter>

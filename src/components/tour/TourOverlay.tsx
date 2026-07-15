@@ -20,6 +20,7 @@ import { TimetablePickMock } from "./mocks/TimetablePickMock";
 import { LessonsCalendarMock } from "./mocks/LessonsCalendarMock";
 import { TasksCalendarMock } from "./mocks/TasksCalendarMock";
 import { BehaviorMultiSelectMock } from "./mocks/BehaviorMultiSelectMock";
+import { FeedbackUpvoteMock } from "./mocks/FeedbackUpvoteMock";
 
 /* ════════════════════════════════════════════════════════════════════
    TOUR OVERLAY — bitta bosqichni chizadi.
@@ -52,6 +53,7 @@ const MOCKS = {
   lessonsCalendar: LessonsCalendarMock,
   tasksCalendar: TasksCalendarMock,
   behaviorMultiSelect: BehaviorMultiSelectMock,
+  feedbackUpvote: FeedbackUpvoteMock,
 } as const;
 
 function Footer({ index, total, onNext, onSkip }: Omit<Props, "step">) {

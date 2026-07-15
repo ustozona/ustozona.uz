@@ -13,6 +13,8 @@ export const notificationUpsertSchema = z.object({
   title: z.string().min(1).max(300),
   body: z.string().max(2000).nullable(),
   href: z.string().max(500).nullable(),
+  badgeLabel: z.string().max(60).nullable(),
+  badgeClassName: z.string().max(200).nullable(),
   read: z.boolean(),
   createdAt: z.string().min(1).max(40),
   sortOrder: z.number().int().min(0),

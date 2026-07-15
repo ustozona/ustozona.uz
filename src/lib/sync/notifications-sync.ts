@@ -21,6 +21,8 @@ function toUpsert(n: NotificationItem, sortOrder: number): NotificationUpsert {
     title: n.title,
     body: n.body ?? null,
     href: n.href ?? null,
+    badgeLabel: n.badgeLabel ?? null,
+    badgeClassName: n.badgeClassName ?? null,
     read: n.read,
     createdAt: n.createdAt,
     sortOrder,

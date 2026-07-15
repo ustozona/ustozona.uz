@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  Search, ArrowUpDown, ListFilter, Rows3, Loader2, CheckCircle2,
+  Search, ArrowUpDown, ListFilter, MessageSquare, Clock, CheckCircle2,
 } from "lucide-react";
 import {
   useFeedbackStore, initialsOf, upvoteCount,
@@ -278,14 +278,14 @@ export default function FeedbackPage() {
           <Tabs value={tab} onValueChange={(v) => setTab(v as ViewTab)}>
             <TabsList variant="line">
               <TabsTrigger value="all" className="gap-1.5">
-                <Rows3 className="size-3.5" />
+                <MessageSquare className="size-3.5" />
                 Hammasi
                 <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
                   {items.length}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="process" className="gap-1.5">
-                <Loader2 className="size-3.5" />
+                <Clock className="size-3.5" />
                 Jarayonda
                 <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
                   {tabCounts.process}

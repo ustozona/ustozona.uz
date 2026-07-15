@@ -13,6 +13,7 @@ export const ROUTE_LABELS: Record<string, string> = {
   "/dashboard/grades/help": "Yordam",
   "/dashboard/standards": "Standartlar",
   "/dashboard/tasks": "Vazifalar",
+  "/dashboard/changelog": "Yangilanishlar",
   "/dashboard/feedback": "Fikr-mulohaza",
   "/dashboard/settings": "Sozlamalar",
   "/dashboard/cj": "Qiyosiy baholash",

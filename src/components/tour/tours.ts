@@ -20,7 +20,8 @@ export type TourMock =
   | "timetablePick"
   | "lessonsCalendar"
   | "tasksCalendar"
-  | "behaviorMultiSelect";
+  | "behaviorMultiSelect"
+  | "feedbackUpvote";
 
 export type TourStep = {
   title: string;
@@ -405,8 +406,7 @@ export const TOURS: readonly TourDef[] = [
       {
         title: "Ovoz berish nima uchun kerak",
         body: "Yoqqan taklifga ↑ tugmasini bosing — koʻproq ovoz olgan takliflar jamoa uchun ustuvor hisoblanadi va tezroq amalga oshiriladi. Bu — takliflarning \"ustuvorlik reytingi\".",
-        target: '[data-tour="feedback-upvote"]',
-        placement: "top",
+        mock: "feedbackUpvote",
       },
     ],
   },

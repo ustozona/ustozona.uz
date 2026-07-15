@@ -4,28 +4,33 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { IconButton } from "@/components/ui/icon-button";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
-import {
-  Bell, CheckCheck, MessageSquare, Sparkles, Lightbulb, Tag,
-  type LucideIcon,
-} from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import {
   useNotificationsStore, type NotificationKind,
 } from "@/store/useNotificationsStore";
 
-const KIND_ICON: Record<NotificationKind, LucideIcon> = {
-  reply: MessageSquare,
-  feedback: Lightbulb,
-  status: Tag,
-  system: Sparkles,
+const KIND_LABEL: Record<NotificationKind, string> = {
+  reply: "Javob",
+  feedback: "Fikr",
+  status: "Holat",
+  system: "Tizim",
 };
 
-/** ISO → "hozir / 5 daq / 3 soat / 2 kun / 12 iyun". */
+const KIND_BADGE: Record<NotificationKind, string> = {
+  reply: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+  feedback: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20",
+  status: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  system: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+};
+
+/** ISO → "hozir / 5 daq oldin / 3 soat oldin / 2 kun oldin / 12 iyun". */
 const MONTHS_SHORT = [
   "yan", "fev", "mar", "apr", "may", "iyun",
   "iyul", "avg", "sen", "okt", "noy", "dek",
@@ -36,11 +41,11 @@ function timeAgo(iso: string): string {
   const diff = Date.now() - d.getTime();
   const min = Math.floor(diff / 60_000);
   if (min < 1) return "hozir";
-  if (min < 60) return `${min} daq`;
+  if (min < 60) return `${min} daq oldin`;
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr} soat`;
+  if (hr < 24) return `${hr} soat oldin`;
   const day = Math.floor(hr / 24);
-  if (day < 7) return `${day} kun`;
+  if (day < 7) return `${day} kun oldin`;
   return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
 }
 
@@ -63,7 +68,7 @@ export default function NotificationsBell() {
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
-            <IconButton aria-label="Xabarlar" className="relative text-muted-foreground">
+            <IconButton aria-label="Bildirishnomalar" className="relative text-muted-foreground">
               <Bell className="size-[17px]" strokeWidth={2} />
               {unread > 0 && (
                 <span className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-1 text-[8px] font-bold leading-none text-white">
@@ -73,22 +78,26 @@ export default function NotificationsBell() {
             </IconButton>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>Xabarlar</TooltipContent>
+        <TooltipContent>Bildirishnomalar</TooltipContent>
       </Tooltip>
 
-      <PopoverContent align="end" className="w-[360px] max-w-[calc(100vw-1.5rem)] p-0">
+      <PopoverContent align="end" className="w-96 max-w-[calc(100vw-1.5rem)] p-0 shadow-lg">
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-          <h3 className="text-sm font-semibold text-foreground">Xabarlar</h3>
+          <h3 className="text-sm font-semibold text-foreground">Bildirishnomalar</h3>
           {unread > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
-              onClick={markAllRead}
-            >
-              <CheckCheck className="size-3.5" />
-              Barchasini oʻqildi
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 text-muted-foreground hover:text-foreground"
+                  onClick={markAllRead}
+                >
+                  <CheckCheck className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Barchasini oʻqilgan deb belgilash</TooltipContent>
+            </Tooltip>
           )}
         </div>
 
@@ -96,44 +105,43 @@ export default function NotificationsBell() {
           <Empty className="p-8">
             <EmptyHeader>
               <EmptyMedia variant="icon"><Bell /></EmptyMedia>
-              <EmptyTitle>Xabarlar yoʻq</EmptyTitle>
-              <EmptyDescription>Yangi xabarlar shu yerda koʻrinadi.</EmptyDescription>
+              <EmptyTitle>Bildirishnoma yoʻq</EmptyTitle>
+              <EmptyDescription>Yangi bildirishnomalar shu yerda koʻrinadi.</EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
           <ScrollArea className="max-h-[min(420px,60vh)]">
             <ul className="divide-y divide-border/60">
               {items.map((n) => {
-                const Icon = KIND_ICON[n.kind];
                 return (
                   <li key={n.id}>
                     <button
                       type="button"
                       onClick={() => openItem(n.id, n.href)}
                       className={cn(
-                        "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/60",
+                        "flex w-full items-start px-4 py-3 text-left transition-colors hover:bg-muted/60",
                         !n.read && "bg-primary/[0.04]"
                       )}
                     >
-                      <span
-                        className={cn(
-                          "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
-                          n.read ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
-                        )}
-                      >
-                        <Icon className="size-4" />
-                      </span>
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center justify-between gap-2">
                           <span className="truncate text-sm font-medium text-foreground">{n.title}</span>
-                          {!n.read && <span className="size-1.5 shrink-0 rounded-full bg-primary" />}
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "shrink-0 px-1.5 py-0 text-[10px] font-medium",
+                              n.badgeClassName ?? KIND_BADGE[n.kind]
+                            )}
+                          >
+                            {n.badgeLabel ?? KIND_LABEL[n.kind]}
+                          </Badge>
                         </span>
                         {n.body && (
                           <span className="mt-0.5 line-clamp-2 block text-xs leading-relaxed text-muted-foreground">
                             {n.body}
                           </span>
                         )}
-                        <span className="mt-1 block text-[11px] text-muted-foreground/70">{timeAgo(n.createdAt)}</span>
+                        <span className="mt-1 block text-xs text-muted-foreground">{timeAgo(n.createdAt)}</span>
                       </span>
                     </button>
                   </li>

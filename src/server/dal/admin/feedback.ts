@@ -82,7 +82,7 @@ export async function listAllFeedback(params: {
 /** Oʻqituvchiga qoʻngʻiroqcha bildirishnomasi (roʻyxat boshiga). */
 async function notifyTeacher(
   teacherId: string,
-  entry: { kind: string; title: string; body?: string },
+  entry: { kind: string; title: string; body?: string; feedbackId: string; badgeLabel?: string; badgeClassName?: string },
 ): Promise<void> {
   const [{ lowest }] = await db
     .select({ lowest: min(notifications.sortOrder) })
@@ -94,7 +94,9 @@ async function notifyTeacher(
     kind: entry.kind,
     title: entry.title,
     body: entry.body ?? null,
-    href: "/dashboard/feedback",
+    href: `/dashboard/feedback?item=${entry.feedbackId}`,
+    badgeLabel: entry.badgeLabel ?? null,
+    badgeClassName: entry.badgeClassName ?? null,
     read: false,
     createdAt: new Date().toISOString(),
     sortOrder: (lowest ?? 0) - 1,
@@ -132,6 +134,7 @@ export async function replyToFeedbackAsTeam(
     kind: "reply",
     title: "Fikringizga Ustozona jamoasi javob berdi",
     body: body.length > 120 ? `${body.slice(0, 117)}…` : body,
+    feedbackId,
   });
 
   await writeAuditLog(actor, {
@@ -142,11 +145,23 @@ export async function replyToFeedbackAsTeam(
   });
 }
 
-const STATUS_TITLES: Record<string, string> = {
-  yangi: "Yangi",
-  jarayonda: "Jarayonda",
-  bajarildi: "Bajarildi",
-  rad: "Rad etilgan",
+/* Har status uchun toʻliq, tabiiy gap — "Fikringiz holati: X" formatidan
+   koʻra oʻqituvchiga tushunarli (Gemini tanqidi asosida). */
+const STATUS_NOTIFY_TITLES: Record<string, string> = {
+  yangi: "Fikringiz qabul qilindi",
+  jarayonda: "Fikringiz koʻrib chiqilmoqda",
+  bajarildi: "Fikringiz asosida oʻzgarish kiritildi",
+  rad: "Fikringiz koʻrib chiqildi",
+};
+
+/* Bildirishnoma badge'i uchun — feedback sahifasidagi STATUS_META bilan
+   AYNAN bir xil label/rang (yagona haqiqat manbai, ikkalasi ham shu
+   qiymatlarni koʻrsatadi). */
+const STATUS_BADGE: Record<string, { label: string; className: string }> = {
+  yangi: { label: "Yangi", className: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20" },
+  jarayonda: { label: "Jarayonda", className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" },
+  bajarildi: { label: "Bajarildi", className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+  rad: { label: "Rad etilgan", className: "bg-slate-400/10 text-slate-500 dark:text-slate-400 border-slate-400/20" },
 };
 
 export async function setFeedbackStatus(
@@ -174,8 +189,11 @@ export async function setFeedbackStatus(
 
   await notifyTeacher(row.teacherId, {
     kind: "status",
-    title: `Fikringiz holati yangilandi: ${STATUS_TITLES[status] ?? status}`,
+    title: STATUS_NOTIFY_TITLES[status] ?? "Fikringiz holati yangilandi",
     body: item.body.length > 120 ? `${item.body.slice(0, 117)}…` : item.body,
+    feedbackId,
+    badgeLabel: STATUS_BADGE[status]?.label,
+    badgeClassName: STATUS_BADGE[status]?.className,
   });
 
   await writeAuditLog(actor, {
