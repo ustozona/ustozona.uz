@@ -26,6 +26,10 @@ export const auth = betterAuth({
   appName: "Ustozona",
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
+  // apex (ustozona.uz) www'ga 308 bilan redirekt qiladi — BETTER_AUTH_URL
+  // qaysi domen bilan sozlanganidan qatʼi nazar, ikkalasi ham origin
+  // tekshiruvidan 403 yemasligi uchun aniq roʻyxatga olinadi.
+  trustedOrigins: ["https://ustozona.uz", "https://www.ustozona.uz"],
   database: drizzleAdapter(db, { provider: "pg", schema }),
   emailAndPassword: {
     enabled: true,
