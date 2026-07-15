@@ -89,6 +89,7 @@ export default function StudentProfile({
 }) {
   const router = useRouter();
   const classDataMap = useGradesStore((s) => s.classDataMap);
+  const updateClass = useGradesStore((s) => s.updateClass);
   const hydrated = useGradesStore((s) => s._hasHydrated);
 
   // Davomat — jonli manba (Davomat sahifasi bilan bir xil: recordsByClass +
@@ -266,12 +267,35 @@ export default function StudentProfile({
       parentPhone: data.parentPhone,
       studentPhone: data.studentPhone,
     });
+    if (location?.classId) {
+      updateClass(location.classId, (cd) => ({
+        ...cd,
+        students: cd.students.map((s) =>
+          s.id === studentId ? {
+            ...s,
+            name: `${data.firstName} ${data.lastName}`.trim(),
+            initials: (data.firstName[0] + (data.lastName?.[0] || "")).toUpperCase(),
+            gender: data.gender,
+            birthDate: data.birthDate,
+            parentName: data.parentName,
+            parentPhone: data.parentPhone,
+            studentPhone: data.studentPhone,
+          } : s
+        ),
+      }));
+    }
     toast.success("Maʼlumot saqlandi");
   };
 
   // Inline gender oʻzgartirish
   const handleGenderChange = (val: Gender) => {
     setOverride((prev) => ({ ...prev, gender: val }));
+    if (location?.classId) {
+      updateClass(location.classId, (cd) => ({
+        ...cd,
+        students: cd.students.map((s) => s.id === studentId ? { ...s, gender: val } : s),
+      }));
+    }
     setGenderOpen(false);
     toast.success("Jinsi saqlandi");
   };
@@ -279,7 +303,14 @@ export default function StudentProfile({
   // Inline birthDate oʻzgartirish
   const handleBirthDateChange = (d: Date | undefined) => {
     if (d) {
-      setOverride((prev) => ({ ...prev, birthDate: toISO(d) }));
+      const iso = toISO(d);
+      setOverride((prev) => ({ ...prev, birthDate: iso }));
+      if (location?.classId) {
+        updateClass(location.classId, (cd) => ({
+          ...cd,
+          students: cd.students.map((s) => s.id === studentId ? { ...s, birthDate: iso } : s),
+        }));
+      }
       setBirthDateOpen(false);
       toast.success("Tavallud sanasi saqlandi");
     }
@@ -289,6 +320,12 @@ export default function StudentProfile({
   const handleContactSave = (field: string, value: string) => {
     const trimmed = value.trim();
     setOverride((prev) => ({ ...prev, [field]: trimmed || undefined }));
+    if (location?.classId) {
+      updateClass(location.classId, (cd) => ({
+        ...cd,
+        students: cd.students.map((s) => s.id === studentId ? { ...s, [field]: trimmed || undefined } : s),
+      }));
+    }
     setEditingContact(null);
     if (trimmed) toast.success("Maʼlumot saqlandi");
   };
