@@ -83,11 +83,22 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
   const pathname = usePathname();
   const active = isActivePath(pathname, item.href);
   const showBadge = !!badge && badge > 0;
+  // Yangilanishlar — yangi kontent signali (Slack/GitHub uslubi): raqamli
+  // chipdan tashqari, koʻrilmaguncha ikonka burchagida ping-nuqta pulslanadi.
+  const showPing = showBadge && item.badgeKey === "changelog";
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
         <Link href={item.href}>
-          <item.icon />
+          <span className="relative inline-flex">
+            <item.icon />
+            {showPing && (
+              <span className="absolute -right-0.5 -top-0.5 flex size-1.5">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-sidebar-primary opacity-75" />
+                <span className="relative inline-flex size-1.5 rounded-full bg-sidebar-primary" />
+              </span>
+            )}
+          </span>
           <span>{item.label}</span>
         </Link>
       </SidebarMenuButton>
