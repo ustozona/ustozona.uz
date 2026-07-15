@@ -62,6 +62,7 @@ const ROUTE_CHIP_LABELS: Record<string, string> = {
   "/dashboard/standards": "Standartlar",
   "/dashboard/settings": "Sozlamalar",
   "/dashboard/feedback": "Fikr-mulohaza",
+  "/dashboard/lessons": "Darslar",
 };
 
 function FullEntryRow({ entry }: { entry: ChangelogEntry }) {
