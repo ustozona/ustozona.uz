@@ -5,8 +5,6 @@ import {
   ThumbsUp,
   MessageSquare,
   Sparkles,
-  Eye,
-  CalendarClock,
   Loader2,
   CheckCircle2,
   XCircle,
@@ -79,7 +77,7 @@ export const CATEGORY_META: Record<FeedbackCategory, Meta<FeedbackCategory>> = {
 
 export const CATEGORY_ORDER: FeedbackCategory[] = ["taklif", "xato", "savol", "maqtov", "boshqa"];
 
-// ── Holat ───────────────────────────────────────────────────────────────────
+// ── Holat (sodda 4-bosqichli oqim) ──────────────────────────────────────────
 export const STATUS_META: Record<FeedbackStatus, Meta<FeedbackStatus>> = {
   yangi: {
     value: "yangi",
@@ -89,29 +87,13 @@ export const STATUS_META: Record<FeedbackStatus, Meta<FeedbackStatus>> = {
     dot: "bg-slate-400",
     iconColor: "text-slate-400",
   },
-  korilmoqda: {
-    value: "korilmoqda",
-    label: "Koʻrilmoqda",
-    icon: Eye,
+  jarayonda: {
+    value: "jarayonda",
+    label: "Jarayonda",
+    icon: Loader2,
     pill: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
     dot: "bg-blue-500",
     iconColor: "text-blue-500",
-  },
-  rejalashtirilgan: {
-    value: "rejalashtirilgan",
-    label: "Rejalashtirilgan",
-    icon: CalendarClock,
-    pill: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20",
-    dot: "bg-violet-500",
-    iconColor: "text-violet-500",
-  },
-  bajarilmoqda: {
-    value: "bajarilmoqda",
-    label: "Bajarilmoqda",
-    icon: Loader2,
-    pill: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
-    dot: "bg-amber-500",
-    iconColor: "text-amber-500",
   },
   bajarildi: {
     value: "bajarildi",
@@ -131,21 +113,7 @@ export const STATUS_META: Record<FeedbackStatus, Meta<FeedbackStatus>> = {
   },
 };
 
-export const STATUS_ORDER: FeedbackStatus[] = [
-  "yangi",
-  "korilmoqda",
-  "rejalashtirilgan",
-  "bajarilmoqda",
-  "bajarildi",
-  "rad",
-];
-
-/** "Ongoing" tabida guruhlanadigan faol holatlar (tartibida koʻrsatiladi). */
-export const ONGOING_STATUSES: FeedbackStatus[] = [
-  "korilmoqda",
-  "rejalashtirilgan",
-  "bajarilmoqda",
-];
+export const STATUS_ORDER: FeedbackStatus[] = ["yangi", "jarayonda", "bajarildi", "rad"];
 
 // ── Sana formati ──────────────────────────────────────────────────────────
 const MONTHS_SHORT = [
@@ -162,19 +130,28 @@ export function formatFeedbackTime(iso: string): string {
   return `${hh}:${mm}`;
 }
 
-/** ISO → nisbiy: "bugun / kecha / N kun oldin / N hafta oldin / N oy oldin / N yil oldin". */
+/** ISO → nisbiy (GitHub/Twitter uslubi): "N daqiqa/soat oldin" → "kecha" →
+    "DD-MM" (yoki boshqa yil boʻlsa "DD-MM-YYYY"). */
 export function formatFeedbackAgo(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
+  const now = new Date();
   const dayMs = 86_400_000;
   const startOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
-  const diff = Math.round((startOf(new Date()) - startOf(d)) / dayMs);
-  if (diff <= 0) return "bugun";
-  if (diff === 1) return "kecha";
-  if (diff < 7) return `${diff} kun oldin`;
-  if (diff < 30) return `${Math.floor(diff / 7)} hafta oldin`;
-  if (diff < 365) return `${Math.floor(diff / 30)} oy oldin`;
-  return `${Math.floor(diff / 365)} yil oldin`;
+  const dayDiff = Math.round((startOf(now) - startOf(d)) / dayMs);
+
+  if (dayDiff <= 0) {
+    const diffMs = Math.max(0, now.getTime() - d.getTime());
+    const diffMin = Math.floor(diffMs / 60_000);
+    if (diffMin < 1) return "hozir";
+    if (diffMin < 60) return `${diffMin} daqiqa oldin`;
+    return `${Math.floor(diffMs / 3_600_000)} soat oldin`;
+  }
+  if (dayDiff === 1) return "kecha";
+
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return d.getFullYear() === now.getFullYear() ? `${dd}-${mm}` : `${dd}-${mm}-${d.getFullYear()}`;
 }
 
 /** ISO → "30 may 2026, 18:24" (hover tooltip / toʻliq sana uchun). */

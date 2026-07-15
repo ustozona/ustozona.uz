@@ -20,4 +20,9 @@ export const ROUTE_LABELS: Record<string, string> = {
   "/dashboard/ozlashtirish": "Oʻzlashtirish",
   "/dashboard/quiz": "Test",
   "/dashboard/xulosa": "Xulosa",
+  "/admin": "Boshqaruv",
+  "/admin/users": "Foydalanuvchilar",
+  "/admin/schools": "Maktablar",
+  "/admin/feedback": "Fikrlar",
+  "/admin/audit": "Audit jurnali",
 };

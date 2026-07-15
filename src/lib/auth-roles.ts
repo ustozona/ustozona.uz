@@ -1,0 +1,48 @@
+import { createAccessControl } from "better-auth/plugins/access";
+import { defaultStatements, adminAc } from "better-auth/plugins/admin/access";
+
+/* ════════════════════════════════════════════════════════════════════
+   ROLLAR — better-auth admin plugini uchun yagona rol xaritasi.
+
+   DIQQAT: bu fayl `server-only` import qilmasligi SHART — uni runtime
+   auth (src/server/auth.ts), CLI sxema-konfiguratsiyasi
+   (scripts/auth-schema-config.ts) va auth-client ham yuklaydi.
+
+   Bitta akkaunt bir nechta rolni vergul bilan saqlaydi
+   (masalan "teacher,super_admin").
+
+   - teacher      — oddiy foydalanuvchi (default), plugin API'lari yopiq
+   - school_admin — oʻz maktabi doirasida read-only (scoping DAL'da,
+                    plugin API'lari yopiq)
+   - super_admin  — toʻliq boshqaruv. `adminAc` shablonida
+                    `impersonate-admins` YOʻQ — super_admin boshqa
+                    super_admin sifatida kira olmaydi (ataylab).
+   ════════════════════════════════════════════════════════════════════ */
+
+export const ac = createAccessControl(defaultStatements);
+
+export const roles = {
+  teacher: ac.newRole({ user: [], session: [] }),
+  school_admin: ac.newRole({ user: [], session: [] }),
+  super_admin: ac.newRole({ ...adminAc.statements }),
+} as const;
+
+export const ADMIN_ROLES = ["super_admin"] as const;
+
+/** Vergul bilan saqlangan rollarni massivga aylantiradi (default: teacher). */
+export function rolesOf(user: { role?: string | null } | null | undefined): string[] {
+  const raw = user?.role?.trim();
+  if (!raw) return ["teacher"];
+  return raw
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
+}
+
+export function isSuperAdmin(user: { role?: string | null } | null | undefined): boolean {
+  return rolesOf(user).includes("super_admin");
+}
+
+export function isSchoolAdmin(user: { role?: string | null } | null | undefined): boolean {
+  return rolesOf(user).includes("school_admin");
+}

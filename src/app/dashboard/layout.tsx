@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DashboardShellWrapper from "@/components/DashboardShellWrapper";
@@ -54,6 +55,7 @@ export default function DashboardLayout({
       <TourProvider />
       <AppSidebar />
       <SidebarInset className="min-h-0 overflow-hidden">
+        <ImpersonationBanner />
         <Header />
         <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden">
           <WorkspaceBackground />

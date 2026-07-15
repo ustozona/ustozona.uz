@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquarePlus, X } from "lucide-react";
 import FeedbackForm from "./FeedbackForm";
 
 type Props = {
   userInitials: string;
+  /** Joriy foydalanuvchining profil rasmi (Sozlamalar > Profil). */
+  userAvatarUrl?: string;
   /** Fikr yuborilgach (forma tozalanadi, karta ochiq qoladi). */
   onSubmitted?: (id: string) => void;
 };
@@ -17,7 +19,7 @@ type Props = {
  * holatda sokin qator (avatar + ishora), fokusda bordered karta. Forma
  * tanasi umumiy `FeedbackForm`da (header QuickFeedback bilan bir xil).
  */
-export default function FeedbackComposer({ userInitials, onSubmitted }: Props) {
+export default function FeedbackComposer({ userInitials, userAvatarUrl, onSubmitted }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   // ── Yopiq holat: sokin qator ──
@@ -29,6 +31,7 @@ export default function FeedbackComposer({ userInitials, onSubmitted }: Props) {
         className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left card-elevation transition-colors hover:border-primary/40"
       >
         <Avatar size="sm">
+          {userAvatarUrl && <AvatarImage src={userAvatarUrl} alt="" />}
           <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
             {userInitials}
           </AvatarFallback>
@@ -48,6 +51,7 @@ export default function FeedbackComposer({ userInitials, onSubmitted }: Props) {
         submitLabel="Fikr bildirish"
         leading={
           <Avatar size="sm" className="mt-0.5">
+            {userAvatarUrl && <AvatarImage src={userAvatarUrl} alt="" />}
             <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
               {userInitials}
             </AvatarFallback>

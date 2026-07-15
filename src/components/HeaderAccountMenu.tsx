@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { Settings, LogOut, ChevronDown, Moon, Sun, Check } from "lucide-react";
+import { Settings, LogOut, ChevronDown, Moon, Sun, Check, ShieldCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +23,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { LANGUAGES } from "@/lib/languages";
 import { authClient } from "@/lib/auth-client";
+import { isSuperAdmin } from "@/lib/auth-roles";
 
 function initialsOf(name: string) {
   return name
@@ -31,6 +32,20 @@ function initialsOf(name: string) {
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
+}
+
+/* Faqat super_admin'ga koʻrinadi (kosmetik — haqiqiy gate server'da). */
+function AdminPanelItem() {
+  const { data } = authClient.useSession();
+  if (!data || !isSuperAdmin(data.user)) return null;
+  return (
+    <DropdownMenuItem asChild>
+      <Link href="/admin">
+        <ShieldCheck />
+        Admin panel
+      </Link>
+    </DropdownMenuItem>
+  );
 }
 
 export default function HeaderAccountMenu() {
@@ -85,6 +100,7 @@ export default function HeaderAccountMenu() {
             Sozlamalar
           </Link>
         </DropdownMenuItem>
+        <AdminPanelItem />
         <DropdownMenuSeparator />
 
         {/* Mavzu — tez almashtirish */}

@@ -15,13 +15,9 @@ import { create } from "zustand";
    ════════════════════════════════════════════════════════════════════ */
 
 export type FeedbackCategory = "taklif" | "xato" | "savol" | "maqtov" | "boshqa";
-export type FeedbackStatus =
-  | "yangi"
-  | "korilmoqda"
-  | "rejalashtirilgan"
-  | "bajarilmoqda"
-  | "bajarildi"
-  | "rad";
+/** Sodda 4-holatli oqim (admin va foydalanuvchi uchun ortiqcha
+    murakkablik kerak emas) — avvalgi 6 holat "jarayonda"ga birlashtirildi. */
+export type FeedbackStatus = "yangi" | "jarayonda" | "bajarildi" | "rad";
 
 /** Telegram-uslub quote: qaysi xabarga javob berilyapti (denormalizatsiya). */
 export type ReplyQuote = {
@@ -70,14 +66,27 @@ export type FeedbackItem = {
       (ism satriga bogʻlanmaydi: Sozlamalarda ism oʻzgarsa ham buzilmaydi). */
   isMine?: boolean;
   createdAt: string; // ISO
+  /** Oxirgi tahrirlangan vaqt — bor boʻlsa "(tahrirlangan)" belgisi koʻrsatiladi. */
+  editedAt?: string;
   /** Emoji reaksiyalar (❤️/👍/🔥 …). */
   reactions: EmojiReaction[];
   replies: FeedbackReply[];
 };
 
-/** Fikrning umumiy reaksiya soni (saralash/ommaboplik uchun). */
+/** Fikrning umumiy reaksiya soni (hissiy signal — saralashda ishlatilmaydi). */
 export function totalReactions(item: FeedbackItem): number {
   return item.reactions.reduce((sum, r) => sum + r.count, 0);
+}
+
+/** Rasmiy "ovoz" sanogʻi (👍) — saralash/ustuvorlik shu bitta metrikaga
+    asoslanadi (GitHub Issues uslubi: koʻp emoji ± hissiy, 👍 esa ovoz). */
+export function upvoteCount(item: FeedbackItem): number {
+  return item.reactions.find((r) => r.emoji === "👍")?.count ?? 0;
+}
+
+/** Joriy foydalanuvchi ovoz berganmi (👍). */
+export function isUpvotedByMe(item: FeedbackItem): boolean {
+  return item.reactions.find((r) => r.emoji === "👍")?.mine ?? false;
 }
 
 /** Emoji reaksiyani qoʻshadi/olib tashlaydi (Telegram-uslub toggle) — fikr va javob uchun umumiy. */
@@ -127,6 +136,8 @@ interface FeedbackState {
   /** Javobga emoji reaksiyani qoʻshadi/olib tashlaydi. */
   toggleReplyReaction: (id: string, replyId: string, emoji: string) => void;
   addReply: (id: string, reply: { body: string; author: string; isOfficial: boolean; quote?: ReplyQuote; parentId?: string }) => void;
+  /** Fikr matnini tahrirlaydi — `editedAt` belgilanadi. */
+  editFeedback: (id: string, body: string) => void;
   setStatus: (id: string, status: FeedbackStatus) => void;
   deleteFeedback: (id: string) => void;
   /** Oʻchirilgan fikrni joyiga qaytaradi (undo-toast uchun). */
@@ -199,6 +210,13 @@ export const useFeedbackStore = create<FeedbackState>()(
                   ],
                 }
               : it
+          ),
+        })),
+
+      editFeedback: (id, body) =>
+        set((s) => ({
+          items: s.items.map((it) =>
+            it.id === id ? { ...it, body: body.trim(), editedAt: new Date().toISOString() } : it
           ),
         })),
 

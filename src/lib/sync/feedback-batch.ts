@@ -13,7 +13,7 @@ const id = z.string().min(1).max(200);
 
 export const feedbackUpsertSchema = z.object({
   id,
-  status: z.enum(["yangi", "korilmoqda", "rejalashtirilgan", "bajarilmoqda", "bajarildi", "rad"]),
+  status: z.enum(["yangi", "jarayonda", "bajarildi", "rad"]),
   category: z.enum(["taklif", "xato", "savol", "maqtov", "boshqa"]),
   sortOrder: z.number().int().min(0),
   data: z.record(z.string(), z.unknown()),

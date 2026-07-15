@@ -385,6 +385,31 @@ export const TOURS: readonly TourDef[] = [
       },
     ],
   },
+  {
+    id: "feedback",
+    route: "/dashboard/feedback",
+    label: "Fikr-mulohaza",
+    steps: [
+      {
+        title: "Fikringizni yozing",
+        body: "Ustozona haqida taklif, xato, savol yoki maqtovingizni shu yerdan yuboring — turkumini tanlang, kerak boʻlsa skrinshot biriktiring.",
+        target: '[data-tour="feedback-composer"]',
+        placement: "bottom",
+      },
+      {
+        title: "Hammasi, Jarayonda, Bajarilgan",
+        body: "\"Hammasi\"da barcha fikrlar koʻrinadi — yangi fikr ham shu yerda, holati rangli belgi orqali darhol koʻrinadi. \"Jarayonda\" — koʻrib chiqilayotgan yoki ish boshlangan fikrlar, \"Bajarilgan\" — amalga oshirilgan takliflar. Qidirish, filtr va saralash ikonkalari oʻng tomonda.",
+        target: '[data-tour="feedback-toolbar"]',
+        placement: "bottom",
+      },
+      {
+        title: "Ovoz berish nima uchun kerak",
+        body: "Yoqqan taklifga ↑ tugmasini bosing — koʻproq ovoz olgan takliflar jamoa uchun ustuvor hisoblanadi va tezroq amalga oshiriladi. Bu — takliflarning \"ustuvorlik reytingi\".",
+        target: '[data-tour="feedback-upvote"]',
+        placement: "top",
+      },
+    ],
+  },
 ] as const;
 
 /** Berilgan pathname uchun boshlanadigan tur (aniq moslik). */

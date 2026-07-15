@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -8,14 +8,27 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Kbd } from "@/components/ui/kbd";
-import { ImagePlus, Send } from "lucide-react";
+import { ImagePlus, Send, SearchCheck } from "lucide-react";
 import {
-  useFeedbackStore, initialsOf, type FeedbackCategory,
+  useFeedbackStore, initialsOf, upvoteCount, type FeedbackCategory, type FeedbackItem,
 } from "@/store/useFeedbackStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { CATEGORY_META, CATEGORY_ORDER } from "./feedback-meta";
 import { useImageAttachments, AttachmentPreviewList } from "./attachments";
 import type { NewFeedbackFormValue } from "./types";
+
+/** Sodda soʻz-ustma-ust hisoblash — toʻliq matn qidiruv dvigateli emas,
+    faqat "shunga oʻxshash fikr bormi?" taklifi uchun yetarli. */
+function similarityScore(query: string, target: string): number {
+  const words = (s: string) =>
+    new Set(s.toLowerCase().match(/[a-zʻʼ0-9]{3,}/gi) ?? []);
+  const q = words(query);
+  const t = words(target);
+  if (q.size === 0) return 0;
+  let hits = 0;
+  for (const w of q) if (t.has(w)) hits++;
+  return hits;
+}
 
 /* Fikr yuborish formasining YAGONA tanasi — sahifadagi inline kompozer va
    header'dagi QuickFeedback popover shu formani oʻraydi (avval ikkalasi
@@ -72,13 +85,29 @@ type Props = {
 export default function FeedbackForm({
   autoFocus, rows = 3, submitLabel = "Yuborish", leading, extraActions, onEscape, onSubmitted,
 }: Props) {
+  const router = useRouter();
   const [category, setCategory] = useState<FeedbackCategory>("taklif");
   const [body, setBody] = useState("");
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const attachments = useImageAttachments();
   const submitFeedback = useFeedbackSubmit();
+  const allItems = useFeedbackStore((s) => s.items);
 
   const canSubmit = body.trim().length > 0;
+
+  // "Shunga oʻxshash fikr bormi?" — dublikatni kamaytirish uchun yumshoq
+  // taklif (GitHub Issues "similar issues" naqshi), qidiruv sifatida emas,
+  // faqat 3 tagacha eng mos yozuv.
+  const similar = useMemo<FeedbackItem[]>(() => {
+    const q = body.trim();
+    if (q.length < 8) return [];
+    return allItems
+      .map((it) => ({ it, score: similarityScore(q, it.body) }))
+      .filter((x) => x.score >= 2)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((x) => x.it);
+  }, [body, allItems]);
 
   const submit = () => {
     if (!canSubmit) return;
@@ -149,6 +178,34 @@ export default function FeedbackForm({
           </Link>{" "}
           qulayroq boʻlishi mumkin.
         </p>
+      )}
+
+      {/* Shunga oʻxshash fikrlar — dublikatni kamaytirish */}
+      {similar.length > 0 && (
+        <div className="mt-3 space-y-1.5 rounded-lg border border-border bg-muted/30 p-2">
+          <div className="flex items-center gap-1.5 px-1 text-[11px] font-semibold text-muted-foreground">
+            <SearchCheck className="size-3.5" />
+            Shunga oʻxshash fikr bormi? Ovoz bering — takror yozishni shart emas
+          </div>
+          {similar.map((it) => {
+            const meta = CATEGORY_META[it.category];
+            const Icon = meta.icon;
+            return (
+              <button
+                key={it.id}
+                type="button"
+                onClick={() => router.push(`/dashboard/feedback?item=${it.id}`)}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-background"
+              >
+                <Icon className={cn("size-3.5 shrink-0", meta.iconColor)} />
+                <span className="min-w-0 flex-1 truncate text-foreground">{it.body}</span>
+                <span className="shrink-0 tabular-nums text-muted-foreground">
+                  ↑ {upvoteCount(it)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       )}
 
       {/* Biriktirilgan rasmlar */}

@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible, CollapsibleTrigger, CollapsibleContent,
 } from "@/components/ui/collapsible";
@@ -15,29 +16,31 @@ import {
 } from "@/components/ui/dialog";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger,
-  DropdownMenuSubContent, DropdownMenuRadioGroup, DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import {
   ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuSeparator,
-  ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent,
-  ContextMenuRadioGroup, ContextMenuRadioItem,
 } from "@/components/ui/context-menu";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   MessageSquare, MoreHorizontal, Trash2, ChevronDown, ChevronRight,
-  CornerUpLeft, Quote,
+  CornerUpLeft, Quote, Pencil,
 } from "lucide-react";
 import {
-  type FeedbackItem, type FeedbackReply, type FeedbackStatus, type ReplyQuote,
+  type FeedbackItem, type FeedbackReply, type ReplyQuote,
+  upvoteCount, isUpvotedByMe,
 } from "@/store/useFeedbackStore";
 import {
-  CATEGORY_META, STATUS_META, STATUS_ORDER, formatFeedbackAgo, formatFeedbackFull,
+  CATEGORY_META, STATUS_META, formatFeedbackAgo, formatFeedbackFull,
 } from "./feedback-meta";
 import { ReactionChips, QuickReactionBar } from "./ReactionBar";
 import { excerptOf } from "./QuoteBlock";
 import { useQuoteSelection } from "./useQuoteSelection";
 import ReplyRow from "./ReplyRow";
 import ReplyComposer from "./ReplyComposer";
+import UpVoteButton from "@/components/shadcn-space/button/button-21";
 
 const badgeBase =
   "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap";
@@ -53,22 +56,26 @@ type Props = {
   flashOnMount?: boolean;
   /** Javob kompozeridagi avatar uchun (oddiy foydalanuvchi rejimi). */
   userInitials: string;
+  /** Joriy foydalanuvchining profil rasmi (Sozlamalar > Profil). */
+  userAvatarUrl?: string;
   onToggleReaction: (emoji: string) => void;
   onToggleReplyReaction: (replyId: string, emoji: string) => void;
-  onSetStatus: (status: FeedbackStatus) => void;
   /** asTeam — rasmiy (jamoa) javob; parentId — top-level ajdod ipi. */
   onAddReply: (body: string, asTeam: boolean, quote?: ReplyQuote, parentId?: string) => void;
+  /** Fikr matnini tahrirlash — `editedAt` yangilanadi. */
+  onEdit: (body: string) => void;
   onDelete: () => void;
+  /** Birinchi kartada tur (`feedback-upvote`) uchun `data-tour` belgisi. */
+  tourTarget?: boolean;
 };
 
 export default function FeedbackCard({
-  item, index = 0, flashOnMount = false, userInitials,
-  onToggleReaction, onToggleReplyReaction, onSetStatus, onAddReply, onDelete,
+  item, index = 0, flashOnMount = false, userInitials, userAvatarUrl,
+  onToggleReaction, onToggleReplyReaction, onAddReply, onEdit, onDelete, tourTarget = false,
 }: Props) {
   const cat = CATEGORY_META[item.category];
   const status = STATUS_META[item.status];
   const CatIcon = cat.icon;
-  const StatusIcon = status.icon;
   const images = item.images ?? [];
   const replyCount = item.replies.length;
 
@@ -100,6 +107,22 @@ export default function FeedbackCard({
 
   // Iqtibos bosilganda belgilangan xabar "flash" bilan ajratiladi (React boshqaradi).
   const [flashId, setFlashId] = useState<string | null>(null);
+
+  // Fikr matnini tahrirlash (inline) + oʻchirish tasdigʻi.
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDraft, setEditDraft] = useState(item.body);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  const startEdit = () => {
+    setEditDraft(item.body);
+    setIsEditing(true);
+  };
+  const submitEdit = () => {
+    const body = editDraft.trim();
+    if (!body) return;
+    onEdit(body);
+    setIsEditing(false);
+  };
 
   // Matn belgilash → suzuvchi "Iqtibos" tugmasi.
   const { sel, handleTextSelect, clearSelection } = useQuoteSelection(articleRef, item.author);
@@ -197,20 +220,6 @@ export default function FeedbackCard({
     />
   );
 
-  const statusRadio = (
-    <ContextMenuRadioGroup value={item.status} onValueChange={(v) => onSetStatus(v as FeedbackStatus)}>
-      {STATUS_ORDER.map((s) => {
-        const m = STATUS_META[s];
-        const Icon = m.icon;
-        return (
-          <ContextMenuRadioItem key={s} value={s}>
-            <Icon className={cn("size-4 shrink-0", m.iconColor)} /> {m.label}
-          </ContextMenuRadioItem>
-        );
-      })}
-    </ContextMenuRadioGroup>
-  );
-
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -242,29 +251,42 @@ export default function FeedbackCard({
             {/* ── Sarlavha: avatar + ism/turkum/sana | holat + kebab (B: holat oʻngda) ── */}
             <div className="flex items-center gap-3">
               <Avatar size="lg" className="shrink-0">
+                {userAvatarUrl && <AvatarImage src={userAvatarUrl} alt={item.author} />}
                 <AvatarFallback className="bg-muted text-sm font-semibold text-muted-foreground">
                   {item.authorInitials}
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex min-w-0 flex-1 items-center gap-2">
-                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-sm font-semibold text-foreground">{item.author}</span>
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <span className="truncate text-sm font-semibold text-foreground">{item.author}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default text-xs text-muted-foreground/70">
+                          {formatFeedbackAgo(item.createdAt)}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>{formatFeedbackFull(item.createdAt)}</TooltipContent>
+                    </Tooltip>
+                    {item.editedAt && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-default text-xs text-muted-foreground/50">
+                            · tahrirlangan
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>{formatFeedbackFull(item.editedAt)}</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-1.5">
                   <span className={cn(badgeBase, cat.pill)}>
                     <CatIcon className="size-3 shrink-0" />
                     {cat.label}
                   </span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="cursor-default text-xs text-muted-foreground/70">
-                        · {formatFeedbackAgo(item.createdAt)}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>{formatFeedbackFull(item.createdAt)}</TooltipContent>
-                  </Tooltip>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-1.5">
                   <span className={cn(badgeBase, status.pill)}>
                     <span className={cn("size-1.5 shrink-0 rounded-full", status.dot)} />
                     {status.label}
@@ -281,30 +303,13 @@ export default function FeedbackCard({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger className="gap-2">
-                          <StatusIcon className={cn("size-4 shrink-0", status.iconColor)} />
-                          Holati
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuRadioGroup
-                            value={item.status}
-                            onValueChange={(v) => onSetStatus(v as FeedbackStatus)}
-                          >
-                            {STATUS_ORDER.map((s) => {
-                              const m = STATUS_META[s];
-                              const Icon = m.icon;
-                              return (
-                                <DropdownMenuRadioItem key={s} value={s}>
-                                  <Icon className={cn("size-4 shrink-0", m.iconColor)} /> {m.label}
-                                </DropdownMenuRadioItem>
-                              );
-                            })}
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuSub>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+                      <DropdownMenuItem onSelect={startEdit}>
+                        <Pencil className="size-4" /> Tahrirlash
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() => setDeleteConfirmOpen(true)}
+                      >
                         <Trash2 className="size-4" /> Oʻchirish
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -322,13 +327,38 @@ export default function FeedbackCard({
                 className={cn("group/msg relative", flashId === `msg-${item.id}` && "feedback-jump-flash")}
               >
                 {/* Hover'da tezkor reaksiya paneli (Slack/Telegram uslubi) */}
-                <QuickReactionBar
-                  onToggle={onToggleReaction}
-                  className="absolute -top-2 right-0 z-10 opacity-0 transition-opacity duration-fast group-hover/msg:opacity-100 focus-within:opacity-100"
-                />
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 selection:bg-primary/25">
-                  {item.body}
-                </p>
+                {!isEditing && (
+                  <QuickReactionBar
+                    onToggle={onToggleReaction}
+                    className="absolute -top-2 right-0 z-10 opacity-0 transition-opacity duration-fast group-hover/msg:opacity-100 focus-within:opacity-100"
+                  />
+                )}
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      autoFocus
+                      value={editDraft}
+                      onChange={(e) => setEditDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") setIsEditing(false);
+                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submitEdit();
+                      }}
+                      className="min-h-20 text-sm"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                        Bekor qilish
+                      </Button>
+                      <Button size="sm" disabled={!editDraft.trim()} onClick={submitEdit}>
+                        Saqlash
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 selection:bg-primary/25">
+                    {item.body}
+                  </p>
+                )}
               </div>
 
               {images.length > 0 && (
@@ -355,8 +385,15 @@ export default function FeedbackCard({
                 </div>
               )}
 
-              {/* Reaksiya chiplari + Javob + Muhokama — bir qatorda (OP) */}
+              {/* Ovoz + Reaksiya chiplari + Javob + Muhokama — bir qatorda (OP) */}
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span {...(tourTarget ? { "data-tour": "feedback-upvote" } : {})}>
+                  <UpVoteButton
+                    voted={isUpvotedByMe(item)}
+                    count={upvoteCount(item)}
+                    onToggle={() => onToggleReaction("👍")}
+                  />
+                </span>
                 <ReactionChips reactions={item.reactions} onToggle={onToggleReaction} />
                 <button
                   type="button"
@@ -390,6 +427,7 @@ export default function FeedbackCard({
                         <ReplyRow
                           reply={tr}
                           flashId={flashId}
+                          userAvatarUrl={userAvatarUrl}
                           onToggleReaction={(emoji) => onToggleReplyReaction(tr.id, emoji)}
                           onReply={() => replyToReply(tr)}
                           onJump={jumpTo}
@@ -414,6 +452,7 @@ export default function FeedbackCard({
                                   key={r.id}
                                   reply={r}
                                   flashId={flashId}
+                                  userAvatarUrl={userAvatarUrl}
                                   onToggleReaction={(emoji) => onToggleReplyReaction(r.id, emoji)}
                                   onReply={() => replyToReply(r)}
                                   onJump={jumpTo}
@@ -439,19 +478,35 @@ export default function FeedbackCard({
         <ContextMenuItem onSelect={() => openComposer(undefined)}>
           <CornerUpLeft className="size-4" /> Javob berish
         </ContextMenuItem>
+        <ContextMenuItem onSelect={startEdit}>
+          <Pencil className="size-4" /> Tahrirlash
+        </ContextMenuItem>
         <ContextMenuSeparator />
-        <ContextMenuSub>
-          <ContextMenuSubTrigger className="gap-2">
-            <StatusIcon className={cn("size-4 shrink-0", status.iconColor)} />
-            Holati
-          </ContextMenuSubTrigger>
-          <ContextMenuSubContent>{statusRadio}</ContextMenuSubContent>
-        </ContextMenuSub>
-        <ContextMenuSeparator />
-        <ContextMenuItem variant="destructive" onSelect={onDelete}>
-          Oʻchirish
+        <ContextMenuItem variant="destructive" onSelect={() => setDeleteConfirmOpen(true)}>
+          <Trash2 className="size-4" /> Oʻchirish
         </ContextMenuItem>
       </ContextMenuContent>
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fikrni oʻchirasizmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu amal qaytarib boʻlmaydi — fikr va unga yozilgan barcha javoblar butunlay
+              oʻchiriladi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={onDelete}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Oʻchirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ContextMenu>
   );
 }

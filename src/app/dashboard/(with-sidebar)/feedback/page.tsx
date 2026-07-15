@@ -12,39 +12,48 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TypographyMuted } from "@/components/ui/typography";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  Search, ArrowUpDown, ListFilter, ChevronDown,
+  Search, ArrowUpDown, ListFilter, Rows3, Loader2, CheckCircle2,
 } from "lucide-react";
 import {
-  useFeedbackStore, initialsOf, totalReactions,
+  useFeedbackStore, initialsOf, upvoteCount,
   type FeedbackCategory, type FeedbackStatus, type ReplyQuote,
 } from "@/store/useFeedbackStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import {
-  CATEGORY_META, CATEGORY_ORDER, STATUS_META, STATUS_ORDER, ONGOING_STATUSES,
+  CATEGORY_META, CATEGORY_ORDER, STATUS_META, STATUS_ORDER,
 } from "./_components/feedback-meta";
-import { excerptOf } from "./_components/QuoteBlock";
 import FeedbackComposer from "./_components/FeedbackComposer";
 import FeedbackCard from "./_components/FeedbackCard";
 
 type SortKey = "votes" | "new" | "replies";
 type CatFilter = FeedbackCategory | "all";
 type StatFilter = FeedbackStatus | "all";
-type ViewTab = "feed" | "ongoing";
+/** Kanban emas, tab-uslub oqim: "Hammasi" (yangi ham shu yerda, badge
+    orqali koʻrinadi) + Jarayonda + Bajarilgan. */
+type ViewTab = "all" | "process" | "done";
 
 const SORT_LABELS: Record<SortKey, string> = {
-  votes: "Eng koʻp reaksiya",
+  votes: "Eng koʻp ovoz",
   new: "Eng yangi",
   replies: "Eng koʻp izoh",
+};
+
+/** Tab → holat: 4-bosqichli sodda model, "yangi" va "rad etilgan" hech
+    qaysi tabga tegishli emas — faqat "Hammasi"da va Filtrda koʻrinadi. */
+const TAB_META: Record<Exclude<ViewTab, "all">, { label: string; status: FeedbackStatus }> = {
+  process: { label: "Jarayonda", status: "jarayonda" },
+  done: { label: "Bajarilgan", status: "bajarildi" },
 };
 
 export default function FeedbackPage() {
@@ -53,9 +62,8 @@ export default function FeedbackPage() {
   const toggleReaction = useFeedbackStore((s) => s.toggleReaction);
   const toggleReplyReaction = useFeedbackStore((s) => s.toggleReplyReaction);
   const addReply = useFeedbackStore((s) => s.addReply);
-  const setStatus = useFeedbackStore((s) => s.setStatus);
+  const editFeedback = useFeedbackStore((s) => s.editFeedback);
   const deleteFeedback = useFeedbackStore((s) => s.deleteFeedback);
-  const restoreFeedback = useFeedbackStore((s) => s.restoreFeedback);
 
   const notify = useNotificationsStore((s) => s.notify);
   const searchParams = useSearchParams();
@@ -64,8 +72,9 @@ export default function FeedbackPage() {
   const settingsHydrated = useSettingsStore((s) => s._hasHydrated);
   const userName = settingsHydrated ? profile.name : "Siz";
   const userInitials = settingsHydrated ? initialsOf(profile.name) : "S";
+  const userAvatarUrl = settingsHydrated ? profile.avatarUrl || undefined : undefined;
 
-  const [tab, setTab] = useState<ViewTab>("feed");
+  const [tab, setTab] = useState<ViewTab>("all");
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("votes");
   const [catFilter, setCatFilter] = useState<CatFilter>("all");
@@ -82,7 +91,7 @@ export default function FeedbackPage() {
     jumpedRef.current = jumpId;
     if (items.some((it) => it.id === jumpId)) {
       // Karta filtr yoki boshqa tab ortida qolib ketmasin.
-      setTab("feed");
+      setTab("all");
       setCatFilter("all");
       setStatFilter("all");
       setMineOnly(false);
@@ -117,15 +126,18 @@ export default function FeedbackPage() {
     return map;
   }, [items]);
 
-  const ongoingCount = useMemo(
-    () => items.filter((it) => ONGOING_STATUSES.includes(it.status)).length,
+  const tabCounts = useMemo(
+    () => ({
+      process: items.filter((it) => it.status === TAB_META.process.status).length,
+      done: items.filter((it) => it.status === TAB_META.done.status).length,
+    }),
     [items]
   );
 
   const sortItems = useMemo(() => {
     return (list: typeof items) => {
       const sorted = [...list];
-      if (sortKey === "votes") sorted.sort((a, b) => totalReactions(b) - totalReactions(a));
+      if (sortKey === "votes") sorted.sort((a, b) => upvoteCount(b) - upvoteCount(a));
       else if (sortKey === "new") sorted.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
       else sorted.sort((a, b) => b.replies.length - a.replies.length);
       return sorted;
@@ -153,13 +165,12 @@ export default function FeedbackPage() {
 
   const feedList = useMemo(() => sortItems(filtered), [filtered, sortItems]);
 
-  // Ongoing: faol holatlar boʻyicha guruhlangan
-  const ongoingGroups = useMemo(() => {
-    return ONGOING_STATUSES.map((st) => ({
-      status: st,
-      items: sortItems(filtered.filter((it) => it.status === st)),
-    })).filter((g) => g.items.length > 0);
-  }, [filtered, sortItems]);
+  // Joriy tab roʻyxati — "Hammasi" toʻliq lenta, qolganlari bosqich
+  // boʻyicha filtrlangan (Kanban/accordion emas, oddiy tab-uslub oqim).
+  const tabList = useMemo(() => {
+    if (tab === "all") return feedList;
+    return sortItems(filtered.filter((it) => it.status === TAB_META[tab].status));
+  }, [tab, feedList, filtered, sortItems]);
 
   const filterActive =
     catFilter !== "all" || statFilter !== "all" || mineOnly || search.trim().length > 0;
@@ -174,7 +185,7 @@ export default function FeedbackPage() {
     setStatFilter("all");
     setMineOnly(false);
     setSearch("");
-    setTab("feed");
+    setTab("all");
   };
 
   /** Javob: asTeam — rasmiy (Ustozona jamoasi) yoki oddiy foydalanuvchi nomidan. */
@@ -209,34 +220,15 @@ export default function FeedbackPage() {
     }
   };
 
-  /** Holat oʻzgarishi — fikr egasiga bildirishnoma (doskaning eng qimmatli xabari). */
-  const handleSetStatus = (id: string, status: FeedbackStatus) => {
-    const item = items.find((it) => it.id === id);
-    if (!item || item.status === status) return;
-    setStatus(id, status);
-    notify({
-      kind: "status",
-      title: "Fikringiz holati yangilandi",
-      body: `«${excerptOf(item.body, 70)}» — endi ${STATUS_META[status].label}`,
-      href: `/dashboard/feedback?item=${id}`,
-    });
-    toast.success(`Holat: ${STATUS_META[status].label}`, {
-      description: `${item.author}ga bildirishnoma yuborildi.`,
-    });
+  /** Oʻchirish — FeedbackCard'dagi AlertDialog tasdigʻidan keyin chaqiriladi. */
+  const handleDelete = (id: string) => {
+    deleteFeedback(id);
+    toast.success("Fikr oʻchirildi");
   };
 
-  /** Oʻchirish — darhol, lekin toast orqali qaytarib olsa boʻladi (undo). */
-  const handleDelete = (id: string) => {
-    const index = items.findIndex((it) => it.id === id);
-    const item = items[index];
-    if (!item) return;
-    deleteFeedback(id);
-    toast("Fikr oʻchirildi", {
-      action: {
-        label: "Qaytarish",
-        onClick: () => restoreFeedback(item, index),
-      },
-    });
+  const handleEdit = (id: string, body: string) => {
+    editFeedback(id, body);
+    toast.success("Fikr tahrirlandi");
   };
 
   const renderCard = (it: (typeof items)[number], i: number) => (
@@ -246,11 +238,13 @@ export default function FeedbackPage() {
       index={i}
       flashOnMount={flashItemId === it.id}
       userInitials={userInitials}
+      userAvatarUrl={userAvatarUrl}
       onToggleReaction={(emoji) => toggleReaction(it.id, emoji)}
       onToggleReplyReaction={(replyId, emoji) => toggleReplyReaction(it.id, replyId, emoji)}
-      onSetStatus={(s) => handleSetStatus(it.id, s)}
       onAddReply={(body, asTeam, quote, parentId) => handleReply(it.id, body, asTeam, quote, parentId)}
+      onEdit={(body) => handleEdit(it.id, body)}
       onDelete={() => handleDelete(it.id)}
+      tourTarget={i === 0 && tab === "all"}
     />
   );
 
@@ -268,55 +262,66 @@ export default function FeedbackPage() {
         {/* Umumiy card: kompozer + toolbar + lenta */}
         <div className="overflow-hidden rounded-2xl border border-border bg-card card-elevation">
           {/* Inline kompozer */}
-          <div className="border-b border-border p-3 md:p-4">
-            <FeedbackComposer userInitials={userInitials} onSubmitted={handleSubmitted} />
+          <div className="border-b border-border p-3 md:p-4" data-tour="feedback-composer">
+            <FeedbackComposer
+              userInitials={userInitials}
+              userAvatarUrl={userAvatarUrl}
+              onSubmitted={handleSubmitted}
+            />
           </div>
 
           {/* Tablar + toolbar */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2.5 md:px-4">
+          <div
+            className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2.5 md:px-4"
+            data-tour="feedback-toolbar"
+          >
           <Tabs value={tab} onValueChange={(v) => setTab(v as ViewTab)}>
-            <TabsList>
-              <TabsTrigger value="feed" className="gap-1.5">
-                Lenta
+            <TabsList variant="line">
+              <TabsTrigger value="all" className="gap-1.5">
+                <Rows3 className="size-3.5" />
+                Hammasi
                 <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
                   {items.length}
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="ongoing" className="gap-1.5">
+              <TabsTrigger value="process" className="gap-1.5">
+                <Loader2 className="size-3.5" />
                 Jarayonda
                 <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
-                  {ongoingCount}
+                  {tabCounts.process}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger value="done" className="gap-1.5">
+                <CheckCircle2 className="size-3.5" />
+                Bajarilgan
+                <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
+                  {tabCounts.done}
                 </span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
           <div className="ml-auto flex items-center gap-1.5">
-            {/* Qidirish — desktop'da doimiy inline maydon */}
-            <div className="relative hidden md:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Qidirish…"
-                className="h-9 w-48 pl-9"
-              />
-            </div>
-            {/* Qidirish — tor ekranda popover */}
+            {/* Qidirish — icon-only, popover ichida (barcha ekranlarda bir xil) */}
             <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Qidirish"
-                  className={cn(
-                    "size-9 shadow-none md:hidden",
-                    search.trim() && "ring-2 ring-primary ring-offset-2"
-                  )}
-                >
-                  <Search className="size-4" />
-                </Button>
-              </PopoverTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="Qidirish"
+                      className={cn(
+                        "size-9 shadow-none",
+                        search.trim() && "border-primary/40 text-primary"
+                      )}
+                    >
+                      <Search className="size-4" />
+                    </Button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Qidirish</TooltipContent>
+              </Tooltip>
               <PopoverContent align="end" className="w-72">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -331,20 +336,30 @@ export default function FeedbackPage() {
               </PopoverContent>
             </Popover>
 
-            {/* Filtr (turkum + holat) */}
+            {/* Filtr (turkum + holat) — icon-only */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className={cn("h-9 gap-2 px-3 font-medium shadow-none", filterActive && "border-primary/40 text-primary")}>
-                  <ListFilter className="size-4" />
-                  Filtr
-                  {filterCount > 0 && (
-                    <span className="rounded-full bg-primary/15 px-1.5 text-[11px] font-semibold tabular-nums text-primary">
-                      {filterCount}
-                    </span>
-                  )}
-                  <ChevronDown className="size-4 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={cn(
+                        "relative size-9 shadow-none",
+                        filterActive && "border-primary/40 text-primary"
+                      )}
+                    >
+                      <ListFilter className="size-4" />
+                      {filterCount > 0 && (
+                        <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold tabular-nums text-primary-foreground">
+                          {filterCount}
+                        </span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Filtr</TooltipContent>
+              </Tooltip>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuCheckboxItem checked={mineOnly} onCheckedChange={(v) => setMineOnly(v === true)}>
                   Faqat meniki
@@ -390,19 +405,23 @@ export default function FeedbackPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Saralash */}
+            {/* Saralash — icon-only */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-9 gap-2 px-3 font-medium shadow-none">
-                  <ArrowUpDown className="size-4" />
-                  <span className="hidden sm:inline">{SORT_LABELS[sortKey]}</span>
-                </Button>
-              </DropdownMenuTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="size-9 shadow-none">
+                      <ArrowUpDown className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Saralash: {SORT_LABELS[sortKey]}</TooltipContent>
+              </Tooltip>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Saralash</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                  <DropdownMenuRadioItem value="votes">Eng koʻp reaksiya</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="votes">Eng koʻp ovoz</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="new">Eng yangi</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="replies">Eng koʻp izoh</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
@@ -413,42 +432,16 @@ export default function FeedbackPage() {
 
           {/* Kontent */}
           {!hydrated ? (
-            <div className="flex h-40 items-center justify-center">
+            <div className="flex h-40 flex-col items-center justify-center gap-2">
+              <Spinner className="size-6 text-muted-foreground" />
               <TypographyMuted>Yuklanmoqda…</TypographyMuted>
             </div>
-          ) : tab === "feed" ? (
-            feedList.length === 0 ? (
-              <div className="p-4 md:p-5">
-                <EmptyState filterActive={filterActive} />
-              </div>
-            ) : (
-              <div className="space-y-3 bg-muted/25 p-3 md:p-4">{feedList.map(renderCard)}</div>
-            )
-          ) : ongoingGroups.length === 0 ? (
+          ) : tabList.length === 0 ? (
             <div className="p-4 md:p-5">
-              <EmptyState filterActive={filterActive} ongoing />
+              <EmptyState filterActive={filterActive} tab={tab} />
             </div>
           ) : (
-            <div className="divide-y divide-border">
-              {ongoingGroups.map((g) => {
-                const m = STATUS_META[g.status];
-                return (
-                  <Collapsible key={g.status} defaultOpen>
-                    <CollapsibleTrigger className="group flex w-full items-center gap-2.5 bg-muted/30 px-4 py-2.5 text-left">
-                      <span className={cn("size-2 shrink-0 rounded-full", m.dot)} />
-                      <span className="text-sm font-semibold text-foreground">{m.label}</span>
-                      <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
-                        {g.items.length}
-                      </span>
-                      <ChevronDown className="ml-auto size-4 text-muted-foreground transition-transform duration-fast ease-standard group-data-[state=closed]:-rotate-90" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-3 bg-muted/25 p-3">
-                      {g.items.map(renderCard)}
-                    </CollapsibleContent>
-                  </Collapsible>
-                );
-              })}
-            </div>
+            <div className="space-y-3 bg-muted/25 p-3 md:p-4">{tabList.map(renderCard)}</div>
           )}
         </div>
       </div>
@@ -456,17 +449,23 @@ export default function FeedbackPage() {
   );
 }
 
-function EmptyState({ filterActive, ongoing }: { filterActive: boolean; ongoing?: boolean }) {
+const EMPTY_TAB_COPY: Record<Exclude<ViewTab, "all">, { title: string; desc: string }> = {
+  process: { title: "Jarayonda fikr yoʻq", desc: "Koʻrib chiqilayotgan yoki ish boshlangan fikrlar shu yerda koʻrinadi." },
+  done: { title: "Hali bajarilgan fikr yoʻq", desc: "Amalga oshirilgan taklif va tuzatilgan xatolar shu yerda koʻrinadi." },
+};
+
+function EmptyState({ filterActive, tab }: { filterActive: boolean; tab: ViewTab }) {
+  const copy = tab !== "all" ? EMPTY_TAB_COPY[tab] : null;
   return (
     <Empty>
       <EmptyHeader>
         <EmptyMedia><Illustration name="4" className="h-32 text-black dark:text-white" /></EmptyMedia>
         <EmptyTitle>
-          {ongoing ? "Jarayonda fikr yoʻq" : filterActive ? "Mos fikr topilmadi" : "Hali fikr yoʻq"}
+          {copy ? copy.title : filterActive ? "Mos fikr topilmadi" : "Hali fikr yoʻq"}
         </EmptyTitle>
         <EmptyDescription>
-          {ongoing
-            ? "Koʻrilayotgan yoki rejalashtirilgan fikrlar shu yerda koʻrinadi."
+          {copy
+            ? copy.desc
             : filterActive
             ? "Filtr yoki qidiruvni oʻzgartirib koʻring."
             : "Birinchi boʻlib taklif yoki fikr bildiring."}

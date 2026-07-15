@@ -1,5 +1,6 @@
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import { schools } from "./schools";
 
 /* ════════════════════════════════════════════════════════════════════
    TEACHERS — har bir oʻqituvchining domen-profili.
@@ -17,6 +18,7 @@ export const teachers = pgTable("teachers", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   school: text("school"),
+  schoolId: text("school_id").references(() => schools.id, { onDelete: "set null" }),
   subject: text("subject"),
   /** "YYYY-MM-DD" — ixtiyoriy, tugʻilgan kun tabrigi/chegirma uchun. */
   birthDate: text("birth_date"),

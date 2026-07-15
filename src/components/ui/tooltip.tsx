@@ -42,7 +42,12 @@ function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-50 w-fit origin-(--radix-tooltip-content-transform-origin) animate-in rounded-md bg-foreground px-3 py-1.5 text-xs text-balance text-background fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+          // Faqat opacity animatsiya qilinadi — Radix `transform` orqali
+          // joylashadi (inline style); Tailwind zoom/slide utility'lari HAM
+          // `transform`ni CSS animatsiya bilan yozib, animatsiya davomida
+          // Radix pozitsiyasini vaqtincha bekor qilib qoʻyar edi (tooltip
+          // ochilgan zumda notoʻgʻri joyda koʻrinib, keyin sakrab toʻgʻrilanardi).
+          "z-50 w-fit origin-(--radix-tooltip-content-transform-origin) animate-in rounded-md bg-foreground px-3 py-1.5 text-xs text-balance text-background fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
           className
         )}
         {...props}

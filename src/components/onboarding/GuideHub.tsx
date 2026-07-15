@@ -17,6 +17,7 @@ import {
   CircleCheck,
   ChevronRight,
   Award,
+  MessagesSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -53,6 +54,7 @@ const TOUR_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   grades: BarChart2,
   standards: Target,
   tasks: CheckCircle,
+  feedback: MessagesSquare,
 };
 
 export default function GuideHub() {

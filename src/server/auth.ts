@@ -2,6 +2,8 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { admin } from "better-auth/plugins/admin";
+import { ac, roles, ADMIN_ROLES } from "@/lib/auth-roles";
 import { db } from "./db/client";
 import * as schema from "./db/schema";
 import { sendResetPasswordEmail } from "./email";
@@ -40,14 +42,21 @@ export const auth = betterAuth({
         },
       }
     : undefined,
-  user: {
-    additionalFields: {
-      /** Sentyabr: oʻquvchi akkauntlari ham shu jadvalga `role` bilan qoʻshiladi. */
-      role: { type: "string", defaultValue: "teacher", input: false },
-    },
-  },
-  // Next 16 async cookies() bilan server action ichida cookie yozishni hal qiladi.
-  plugins: [nextCookies()],
+  // `role` maydonini endi admin plugin egallaydi (defaultRole: "teacher").
+  // Rollar vergul bilan saqlanadi: masalan "teacher,super_admin".
+  plugins: [
+    admin({
+      defaultRole: "teacher",
+      adminRoles: [...ADMIN_ROLES],
+      ac,
+      roles,
+      bannedUserMessage:
+        "Hisobingiz vaqtincha bloklangan. Savollar boʻlsa support@ustozona.uz ga yozing.",
+    }),
+    // Next 16 async cookies() bilan server action ichida cookie yozishni hal qiladi.
+    // nextCookies() DOIM oxirgi plugin boʻlishi kerak.
+    nextCookies(),
+  ],
 });
 
 export type AuthSession = typeof auth.$Infer.Session;

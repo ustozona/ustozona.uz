@@ -12,11 +12,14 @@ import {
 } from "@/components/ui/emoji-picker";
 import { SmilePlus } from "lucide-react";
 import type { EmojiReaction } from "@/store/useFeedbackStore";
+import AnimatedLikeButton from "@/components/shadcn-space/button/button-20";
 
-/** Telegram/Slack-uslub hover tez-reaksiya toʻplami. */
-const QUICK_REACTIONS = ["❤️", "👍", "🔥", "🎉", "😂", "🙏"];
+/** Telegram/Slack-uslub hover tez-reaksiya toʻplami. 👍 alohida Upvote
+    tugmasi orqali beriladi (ovoz berish), shu sabab bu yerda yoʻq. */
+const QUICK_REACTIONS = ["❤️", "🔥", "🎉", "😂", "🙏"];
 
-/** Reaksiya sanoqlari (chiplar). Reaksiya boʻlmasa — hech narsa chizmaydi. */
+/** Reaksiya sanoqlari (chiplar). Reaksiya boʻlmasa — hech narsa chizmaydi.
+    ❤️ — animatsion Like tugmasi bilan, boshqalari — oddiy chip. */
 export function ReactionChips({
   reactions, onToggle,
 }: {
@@ -26,23 +29,27 @@ export function ReactionChips({
   if (reactions.length === 0) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {reactions.map((r) => (
-        <button
-          key={r.emoji}
-          type="button"
-          onClick={() => onToggle(r.emoji)}
-          aria-pressed={r.mine}
-          className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold tabular-nums transition-all duration-fast hover:-translate-y-0.5 active:scale-90",
-            r.mine
-              ? "border-primary/50 bg-primary/10 text-foreground"
-              : "border-transparent bg-muted/50 text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
-          )}
-        >
-          <AppleEmoji emoji={r.emoji} className="size-5" />
-          {r.count}
-        </button>
-      ))}
+      {reactions.map((r) =>
+        r.emoji === "❤️" ? (
+          <AnimatedLikeButton
+            key={r.emoji}
+            liked={r.mine}
+            count={r.count}
+            onToggle={() => onToggle(r.emoji)}
+          />
+        ) : (
+          <button
+            key={r.emoji}
+            type="button"
+            onClick={() => onToggle(r.emoji)}
+            aria-pressed={r.mine}
+            className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-2.5 text-xs font-semibold tabular-nums transition-all duration-fast hover:-translate-y-0.5 hover:bg-muted active:scale-90"
+          >
+            <AppleEmoji emoji={r.emoji} className="size-4" />
+            {r.count}
+          </button>
+        )
+      )}
     </div>
   );
 }
