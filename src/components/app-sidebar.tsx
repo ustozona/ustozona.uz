@@ -90,8 +90,8 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
         <Link href={item.href}>
-          <span className="relative inline-flex">
-            <item.icon />
+          <span className="relative inline-flex size-4 shrink-0">
+            <item.icon className="size-4 shrink-0" />
             {showPing && (
               <span className="absolute -right-0.5 -top-0.5 flex size-1.5">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-sidebar-primary opacity-75" />
