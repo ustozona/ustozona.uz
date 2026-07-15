@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getStudentProfile, locateStudent } from "@/lib/student-profile";
@@ -11,8 +11,10 @@ import { useTimetableStore } from "@/store/useTimetableStore";
 import { deriveLessonDays, statusWeights, type AttendanceRecord } from "@/lib/attendance-data";
 import { todayKey } from "@/lib/date-keys";
 import { useStudentNotesStore, formatNoteTime } from "@/store/useStudentNotesStore";
+import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -29,8 +31,13 @@ import { Illustration } from "@/components/ui/illustration";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
   Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem,
 } from "@/components/ui/command";
+import { Calendar } from "@/components/ui/calendar";
+import { uz } from "date-fns/locale";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import RelativesSection from "./RelativesSection";
 import OverviewTab from "./OverviewTab";
@@ -42,8 +49,22 @@ import { toast } from "sonner";
 import {
   ChevronsUpDown, ChevronLeft, ChevronRight, ArrowLeft, Check, AlertTriangle,
   Phone, MessageCircle, Pen, BarChart3, ClipboardList,
-  StickyNote, Cake, Mars, Venus, Award,
+  StickyNote, Cake, Mars, Venus, Award, CalendarDays,
 } from "lucide-react";
+
+type Gender = "male" | "female";
+
+/** yyyy-mm-dd ↔ Date (timezone-xavfsiz, lokal) */
+function toISO(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+function fromISO(s: string): Date | undefined {
+  if (!s) return undefined;
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
 
 type TabId = "overview" | "assignments" | "notes" | "behavior";
 
@@ -104,6 +125,11 @@ export default function StudentProfile({
   const [editOpen, setEditOpen] = useState(false);
   const [override, setOverride] = useState<Partial<NewStudentInput>>({});
   useEffect(() => setOverride({}), [studentId]);
+
+  // Inline tahrirlash uchun holatlar
+  const [genderOpen, setGenderOpen] = useState(false);
+  const [birthDateOpen, setBirthDateOpen] = useState(false);
+  const [editingContact, setEditingContact] = useState<string | null>(null);
 
   const setTab = useCallback((next: TabId) => {
     setTabState(next);
@@ -243,6 +269,30 @@ export default function StudentProfile({
     toast.success("Maʼlumot saqlandi");
   };
 
+  // Inline gender oʻzgartirish
+  const handleGenderChange = (val: Gender) => {
+    setOverride((prev) => ({ ...prev, gender: val }));
+    setGenderOpen(false);
+    toast.success("Jinsi saqlandi");
+  };
+
+  // Inline birthDate oʻzgartirish
+  const handleBirthDateChange = (d: Date | undefined) => {
+    if (d) {
+      setOverride((prev) => ({ ...prev, birthDate: toISO(d) }));
+      setBirthDateOpen(false);
+      toast.success("Tavallud sanasi saqlandi");
+    }
+  };
+
+  // Inline aloqa maydonlarni oʻzgartirish
+  const handleContactSave = (field: string, value: string) => {
+    const trimmed = value.trim();
+    setOverride((prev) => ({ ...prev, [field]: trimmed || undefined }));
+    setEditingContact(null);
+    if (trimmed) toast.success("Maʼlumot saqlandi");
+  };
+
   const TABS: { id: TabId; label: string; sub: string; icon: React.ComponentType<{ className?: string }>; count?: number }[] = [
     { id: "overview", label: "Umumiy", sub: "Baho, davomat va koʻrsatkichlar", icon: BarChart3 },
     { id: "assignments", label: "Topshiriqlar", sub: "Ishlar va natijalar", icon: ClipboardList, count: profile.assignments.length },
@@ -330,35 +380,113 @@ export default function StudentProfile({
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-              {/* Jins — modaldagidek rangli pill (oʻgʻil=koʻk, qiz=pushti) */}
+              {/* Jinsi — inline dropdown */}
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Jins</p>
+                <p className="text-xs text-muted-foreground">Jinsi</p>
                 {info.gender ? (
-                  <span
-                    className={cn(
-                      "mt-1 inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium",
-                      info.gender === "male"
-                        ? "border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400"
-                        : "border-pink-500 bg-pink-500/10 text-pink-600 dark:text-pink-400"
-                    )}
-                  >
-                    {info.gender === "male" ? <Mars className="size-3.5" /> : <Venus className="size-3.5" />}
-                    {genderLabel}
-                  </span>
+                  <DropdownMenu open={genderOpen} onOpenChange={setGenderOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className={cn(
+                          "mt-1 inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium cursor-pointer transition-opacity hover:opacity-80",
+                          info.gender === "male"
+                            ? "border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                            : "border-pink-500 bg-pink-500/10 text-pink-600 dark:text-pink-400"
+                        )}
+                      >
+                        {info.gender === "male" ? <Mars className="size-3.5" /> : <Venus className="size-3.5" />}
+                        {genderLabel}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-[140px]">
+                      <DropdownMenuItem onClick={() => handleGenderChange("male")} className="gap-2">
+                        <Mars className="size-4 text-sky-500" />
+                        <span>Oʻgʻil</span>
+                        {info.gender === "male" && <Check className="ml-auto size-4" />}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleGenderChange("female")} className="gap-2">
+                        <Venus className="size-4 text-pink-500" />
+                        <span>Qiz</span>
+                        {info.gender === "female" && <Check className="ml-auto size-4" />}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => setEditOpen(true)}
-                    className="mt-1 block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    + Qoʻshish
-                  </button>
+                  <DropdownMenu open={genderOpen} onOpenChange={setGenderOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="mt-1 block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        + Qoʻshish
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-[140px]">
+                      <DropdownMenuItem onClick={() => handleGenderChange("male")} className="gap-2">
+                        <Mars className="size-4 text-sky-500" />
+                        <span>Oʻgʻil</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleGenderChange("female")} className="gap-2">
+                        <Venus className="size-4 text-pink-500" />
+                        <span>Qiz</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
-              {/* Yosh — tugʻilgan kunigacha qolgan vaqt tooltipda */}
+              {/* Sinfi — rangli nuqtali badge (Yoshi bilan oʻrin almashgan) */}
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Sinfi</p>
+                <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  <ClassSwatch hex={hex} className="size-2" />
+                  {location.classInfo.name}
+                </span>
+              </div>
+              {/* Tavallud sanasi — inline taqvim popover */}
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Tavallud sanasi</p>
+                <Popover open={birthDateOpen} onOpenChange={setBirthDateOpen}>
+                  <PopoverTrigger asChild>
+                    {birthDateText ? (
+                      <button
+                        type="button"
+                        className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-primary cursor-pointer"
+                      >
+                        <CalendarDays className="size-3.5 text-muted-foreground" />
+                        {birthDateText}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="mt-1 block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        + Qoʻshish
+                      </button>
+                    )}
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      locale={uz}
+                      formatters={{
+                        formatMonthDropdown: (date: Date) => MONTHS_UZ[date.getMonth()],
+                        formatWeekdayName: (date: Date) => DAYS_UZ_SUN_SHORT[date.getDay()],
+                      }}
+                      selected={fromISO(info.birthDate ?? "")}
+                      defaultMonth={fromISO(info.birthDate ?? "") ?? new Date(2012, 0)}
+                      captionLayout="dropdown"
+                      startMonth={new Date(2000, 0)}
+                      endMonth={new Date(2027, 11)}
+                      onSelect={handleBirthDateChange}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              {/* Yoshi — tugʻilgan kunigacha qolgan vaqt tooltipda (Sinfi bilan oʻrin almashgan) */}
               {age != null ? (
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Yosh</p>
+                  <p className="text-xs text-muted-foreground">Yoshi</p>
                   {birthdayCountdown ? (
                     <TooltipProvider>
                       <Tooltip>
@@ -374,30 +502,51 @@ export default function StudentProfile({
                   )}
                 </div>
               ) : (
-                <Field label="Yosh" value={undefined} onAdd={() => setEditOpen(true)} />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Yoshi</p>
+                  <p className="mt-1 text-sm text-muted-foreground">—</p>
+                </div>
               )}
-              <Field label="Tugʻilgan sana" value={birthDateText} onAdd={() => setEditOpen(true)} />
-              {/* Sinf — modaldagidek rangli nuqtali badge */}
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Sinf</p>
-                <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                  <ClassSwatch hex={hex} className="size-2" />
-                  {location.classInfo.name}
-                </span>
-              </div>
             </div>
           </div>
 
           {/* Qarindoshlar — bogʻlangan aka/uka/opa/singil, bosilganda profilga oʻtadi */}
           <RelativesSection studentId={studentId} onNavigate={go} />
 
-          {/* Aloqa */}
+          {/* Aloqa — inline tahrirlash */}
           <div className="p-5">
             <TypographyLabel className="mb-4 block">Aloqa</TypographyLabel>
             <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-              <Field className="col-span-2" label="Ota-ona" value={info.parentName} onAdd={() => setEditOpen(true)} />
-              <Field label="Ota-ona telefoni" value={info.parentPhone} onAdd={() => setEditOpen(true)} />
-              <Field label="Oʻquvchi telefoni" value={info.studentPhone} onAdd={() => setEditOpen(true)} />
+              <InlineEditField
+                className="col-span-2"
+                label="Ota-ona"
+                value={info.parentName}
+                fieldKey="parentName"
+                editingContact={editingContact}
+                setEditingContact={setEditingContact}
+                onSave={handleContactSave}
+                placeholder="Masalan: Dilnoza Karimova (onasi)"
+              />
+              <InlineEditField
+                label="Ota-ona telefoni"
+                value={info.parentPhone}
+                fieldKey="parentPhone"
+                editingContact={editingContact}
+                setEditingContact={setEditingContact}
+                onSave={handleContactSave}
+                placeholder="+998 90 123-45-67"
+                inputType="tel"
+              />
+              <InlineEditField
+                label="Oʻquvchi telefoni"
+                value={info.studentPhone}
+                fieldKey="studentPhone"
+                editingContact={editingContact}
+                setEditingContact={setEditingContact}
+                onSave={handleContactSave}
+                placeholder="+998 ..."
+                inputType="tel"
+              />
             </div>
           </div>
         </div>
@@ -573,6 +722,107 @@ function Field({
         </button>
       ) : (
         <p className="mt-1 text-sm text-muted-foreground">—</p>
+      )}
+    </div>
+  );
+}
+
+/** Aloqa maydoni — bosganda inline Input chiqadi, Enter bilan saqlanadi, Escape bilan bekor qilinadi */
+function InlineEditField({
+  label,
+  value,
+  fieldKey,
+  editingContact,
+  setEditingContact,
+  onSave,
+  placeholder,
+  inputType = "text",
+  className,
+}: {
+  label: string;
+  value?: string;
+  fieldKey: string;
+  editingContact: string | null;
+  setEditingContact: (key: string | null) => void;
+  onSave: (field: string, value: string) => void;
+  placeholder?: string;
+  inputType?: string;
+  className?: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [draft, setDraft] = useState(value ?? "");
+  const isEditing = editingContact === fieldKey;
+
+  // Draft qiymati tashqaridan oʻzgarganda sinxronlash
+  useEffect(() => {
+    if (!isEditing) setDraft(value ?? "");
+  }, [value, isEditing]);
+
+  // Tahrirlash rejimiga kirganda autofocus
+  useEffect(() => {
+    if (isEditing) {
+      // Kichik kechikish — DOM renderdan keyin
+      const t = setTimeout(() => inputRef.current?.focus(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [isEditing]);
+
+  const startEdit = () => {
+    setDraft(value ?? "");
+    setEditingContact(fieldKey);
+  };
+
+  const save = () => onSave(fieldKey, draft);
+  const cancel = () => {
+    setDraft(value ?? "");
+    setEditingContact(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") { e.preventDefault(); save(); }
+    if (e.key === "Escape") { e.preventDefault(); cancel(); }
+  };
+
+  if (isEditing) {
+    return (
+      <div className={cn("min-w-0", className)}>
+        <p className="text-xs text-muted-foreground mb-1">{label}</p>
+        <div className="flex items-center gap-1.5">
+          <Input
+            ref={inputRef}
+            type={inputType}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={save}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className="h-8 text-sm"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("min-w-0", className)}>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      {value ? (
+        <button
+          type="button"
+          onClick={startEdit}
+          className="mt-1 truncate text-sm font-medium text-foreground transition-colors hover:text-primary cursor-pointer text-left"
+          title="Tahrirlash uchun bosing"
+        >
+          {value}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={startEdit}
+          className="mt-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          + Qoʻshish
+        </button>
       )}
     </div>
   );
