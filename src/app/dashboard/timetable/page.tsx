@@ -1087,8 +1087,8 @@ function EventBlock({ name, startMin, endMin, stripeColor, surface, softBorder, 
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onClick}
-      className={cn("group/event isolate absolute left-1 right-1 overflow-hidden rounded-xl border focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]", readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing", CLASS_CARD_INTERACTION)}
-      style={{ top: top + 1, height: height - 2, ...surface, ...softBorder }}
+      className={cn("group/event isolate absolute left-1 right-1 overflow-hidden rounded-xl border border-border focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]", readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing", CLASS_CARD_INTERACTION)}
+      style={{ top: top + 1, height: height - 2, ...surface }}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}

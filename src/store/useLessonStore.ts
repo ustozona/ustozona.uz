@@ -81,6 +81,8 @@ interface LessonState {
   addUnit: (data: { classId: string; title: string; description?: string }) => string;
   updateUnit: (id: string, patch: Partial<Omit<Unit, "id">>) => void;
   deleteUnit: (id: string) => void;
+  /** Oʻchirilgan boʻlimni (va unga tegishli boʻlgan darslar boʻlim-bogʻlanishini) qaytarish — undo uchun. */
+  restoreUnit: (unit: Unit, lessonIds: string[]) => void;
 
   addLesson: (data: { classId: string; unitId: string | null; title: string; status?: LessonStatus }) => string;
   updateLesson: (id: string, patch: Partial<Omit<Lesson, "id">>) => void;
@@ -125,6 +127,10 @@ export const useLessonStore = create<LessonState>()(
       deleteUnit: (id) => set((s) => ({
         units: s.units.filter((u) => u.id !== id),
         lessons: s.lessons.map((l) => (l.unitId === id ? { ...l, unitId: null } : l)),
+      })),
+      restoreUnit: (unit, lessonIds) => set((s) => ({
+        units: s.units.some((u) => u.id === unit.id) ? s.units : [...s.units, unit],
+        lessons: s.lessons.map((l) => (lessonIds.includes(l.id) ? { ...l, unitId: unit.id } : l)),
       })),
 
       addLesson: ({ classId, unitId, title, status = "Unscheduled" }) => {

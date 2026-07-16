@@ -748,8 +748,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           return (
                             <div key={ev.id}
                               data-tour={hasLesson ? "planner-lesson-block" : "planner-empty-slot"}
-                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32), ...(hasLesson ? { ...tints.surfaceStrong, ...tints.borderMedium } : { ...tints.tint, ...tints.softBorder }) }}
-                              className={cn("group/ev absolute inset-x-1 z-10 flex flex-col overflow-hidden rounded-xl border px-3 pb-2.5 pt-3.5 transition-all", !hasLesson && "border-dashed")}>
+                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32), ...(hasLesson ? { ...tints.surfaceStrong } : { ...tints.tint }) }}
+                              className={cn("group/ev absolute inset-x-1 z-10 flex flex-col overflow-hidden rounded-xl border border-border px-3 pb-2.5 pt-3.5 transition-all", !hasLesson && "border-dashed")}>
                               {hasLesson && <CardStripes color={clsColor} variant="cover" />}
                               {hasLesson && <CardCorner color={clsColor} className="-right-5 -top-5 size-16" />}
                               {/* ↗ sinfni ochish — faqat umumiy /planner'da (sinf-detali ichida
@@ -835,8 +835,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               draggable
                               onDragStart={(e) => startDrag(e, p, dateKey)}
                               onClick={() => openEdit(p, dateKey)}
-                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 30), ...tints.surfaceStrong, ...tints.borderMedium }}
-                              className={cn("absolute inset-x-1 z-[11] overflow-hidden rounded-xl border px-3 pb-2.5 pt-3.5 text-left transition-all hover:brightness-95 cursor-grab active:cursor-grabbing", done && "opacity-75")}>
+                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 30), ...tints.surfaceStrong }}
+                              className={cn("absolute inset-x-1 z-[11] overflow-hidden rounded-xl border border-border px-3 pb-2.5 pt-3.5 text-left transition-all hover:brightness-95 cursor-grab active:cursor-grabbing", done && "opacity-75")}>
                               <CardStripes color={color} variant="cover" />
                               <CardCorner color={color} className="-right-5 -top-5 size-16" />
                               <LessonStatusBadge status={l.status} className="absolute right-1.5 top-1.5" />

@@ -209,6 +209,27 @@ export function classTints(color: ClassColor) {
   return makeColorTints(CLASS_COLOR_BASE[color]);
 }
 
+function darkenOklch(oklch: string, factor: number = 0.8): string {
+  const m = oklch.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/i);
+  if (!m) return oklch;
+  const L = parseFloat(m[1]) * factor; // L ni kamaytiramiz (-600 darajasi uchun)
+  return `oklch(${L.toFixed(3)} ${m[2]} ${m[3]})`;
+}
+
+/** L ni oshirib (-300 darajasiga yaqin) yorugʻroq ottenka hosil qiladi. */
+function lightenOklch(oklch: string, addL: number = 0.09): string {
+  const m = oklch.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/i);
+  if (!m) return oklch;
+  const L = Math.min(0.97, parseFloat(m[1]) + addL);
+  return `oklch(${L.toFixed(3)} ${m[2]} ${m[3]})`;
+}
+
+export function classGradient(color: ClassColor | string): React.CSSProperties {
+  const c = color in CLASS_COLOR_BASE ? CLASS_COLOR_BASE[color as ClassColor] : color;
+  const lightC = lightenOklch(c);
+  return { backgroundImage: `linear-gradient(135deg, ${lightC} 0%, ${c} 100%)` } as React.CSSProperties;
+}
+
 /**
  * Umumiy ottenka engine'i — ixtiyoriy OKLCH bazadan (sinf VA toifa ranglari
  * shuni ishlatadi, yagona manba). Hammasi `color-mix` orqali tema tokenlariga
@@ -217,6 +238,8 @@ export function classTints(color: ClassColor) {
 export function makeColorTints(c: string) {
   const mix = (pct: number, into = "var(--background)") =>
     `color-mix(in oklch, ${c} ${pct}%, ${into})`;
+
+  const lightC = lightenOklch(c); // ~ -300 shade (gradientTile uchun)
 
   return {
     /** Solid rang (OKLCH string) — urgʻu chizigʻi/ikona uchun */
@@ -231,6 +254,8 @@ export function makeColorTints(c: string) {
     badge: { backgroundColor: mix(18) } as CSSProperties,
     /** Och gradient fon (jadval kartalari) — yuqoridan pastga, oqqa yaqin */
     gradient: { backgroundImage: `linear-gradient(155deg, ${mix(13)} 0%, ${mix(4)} 100%)` } as CSSProperties,
+    /** Karta pasporti v2: 44px iconbox uchun toʻyingan gradient (-300 dan -400 ga — "portlab turishi" uchun) */
+    gradientTile: { backgroundImage: `linear-gradient(135deg, ${lightC} 0%, ${c} 100%)` } as CSSProperties,
     /** Oʻrtacha toʻyingan karta yuzasi — timetable/planner event kartalari */
     surfaceStrong: { backgroundImage: `linear-gradient(155deg, ${mix(35, "var(--card)")} 0%, ${mix(25, "var(--card)")} 100%)` } as CSSProperties,
     /** Rangli matn (badge ichidagi yozuv) */

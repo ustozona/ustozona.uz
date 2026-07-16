@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,16 @@ import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2 } from "lucide-react";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown } from "lucide-react";
+import {
+  ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
@@ -68,9 +77,37 @@ export default function LessonsPage() {
   const lessons = useLessonStore((s) => s.lessons);
   const addUnit = useLessonStore((s) => s.addUnit);
   const addLesson = useLessonStore((s) => s.addLesson);
+  const updateUnit = useLessonStore((s) => s.updateUnit);
   const deleteUnit = useLessonStore((s) => s.deleteUnit);
+  const restoreUnit = useLessonStore((s) => s.restoreUnit);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
+  const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
+  const [editUnitTitle, setEditUnitTitle] = useState("");
+  const [editUnitDesc, setEditUnitDesc] = useState("");
+
+  const openEditUnit = (unit: Unit) => {
+    setEditUnitTarget(unit);
+    setEditUnitTitle(unit.title);
+    setEditUnitDesc(unit.description);
+  };
+  const saveEditUnit = () => {
+    if (!editUnitTarget) return;
+    updateUnit(editUnitTarget.id, { title: editUnitTitle.trim(), description: editUnitDesc.trim() });
+    setEditUnitTarget(null);
+  };
+  const handleConfirmDeleteUnit = () => {
+    if (!deleteUnitTarget) return;
+    const unit = deleteUnitTarget;
+    const lessonIds = lessons.filter((l) => l.unitId === unit.id).map((l) => l.id);
+    deleteUnit(unit.id);
+    if (unit.id === selectedUnitId) setSelectedUnitId(null);
+    setDeleteUnitTarget(null);
+    toast.success(`«${pad(unit.number)}. ${unit.title}» oʻchirildi`, {
+      action: { label: "Bekor qilish", onClick: () => restoreUnit(unit, lessonIds) },
+    });
+  };
 
   useEffect(() => { setSelectedUnitId(null); }, [selectedClassId]);
 
@@ -128,6 +165,19 @@ export default function LessonsPage() {
     return { lessons: unitLessons.length, completed, pct: unitLessons.length ? Math.round((completed / unitLessons.length) * 100) : 0 };
   }, [effectiveUnitId, effectiveClassId, lessonsSource]);
 
+  const [unitFooterOpen, setUnitFooterOpen] = useState(true);
+  useEffect(() => {
+    const saved = localStorage.getItem("unit-panel-footer-open");
+    if (saved !== null) setUnitFooterOpen(saved === "1");
+  }, []);
+  const toggleUnitFooter = () => {
+    setUnitFooterOpen((prev) => {
+      const next = !prev;
+      localStorage.setItem("unit-panel-footer-open", next ? "1" : "0");
+      return next;
+    });
+  };
+
   const [classModalOpen, setClassModalOpen] = useState(false);
   const [unitModalOpen, setUnitModalOpen] = useState(false);
 
@@ -169,8 +219,6 @@ export default function LessonsPage() {
   const selectedClassColor = selectedClass ? classColor(selectedClass) : "teal";
   const selectedClassTints = classTints(selectedClassColor);
   const selectedClassHex = CLASS_COLOR_HEX[selectedClassColor];
-  /** Tanlangan element foni — sinf rangining shaffof tinti (EMStudio rgba effekti) */
-  const tintBg = (pct: number) => `color-mix(in srgb, ${selectedClassHex} ${pct}%, transparent)`;
 
   /* Ustun nisbatlari — "sidebardan tashqari" maydon = 100%, flex-grow + flex-basis:0
      bilan boʻlinadi (sidebar ochiq/yopiq boʻlsa ham responsive). "Faol ish" ustuni keng:
@@ -188,18 +236,38 @@ export default function LessonsPage() {
 
   /* ── Unit qator/karta koʻrinishlari ── */
 
+  // Har bir boʻlim qatori/kartasi ustida oʻng-klik menyu — Tahrirlash/Oʻchirish.
+  const withUnitMenu = (unit: Unit, node: ReactNode) => (
+    <ContextMenu key={unit.id}>
+      <ContextMenuTrigger asChild>{node}</ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => openEditUnit(unit)}>
+          <Pencil className="size-4" />
+          Tahrirlash
+        </ContextMenuItem>
+        <ContextMenuItem
+          variant="destructive"
+          className="gap-2 cursor-pointer"
+          onClick={() => setDeleteUnitTarget(unit)}
+        >
+          <Trash2 className="size-4" />
+          Oʻchirish
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+
   // Keng ustun (boʻlim tanlanmagan): toʻliq karta — nom + tavsif + dars soni + progress
   const renderUnitWide = (unit: Unit) => {
     const { total, pct } = unitProgress(unit.id);
-    return (
+    return withUnitMenu(unit,
       <button
-        key={unit.id}
         onClick={() => setSelectedUnitId(unit.id)}
         className="list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer"
         style={{ ["--card-accent" as string]: selectedClassHex }}
       >
-        <div style={selectedClassTints.iconBg} className="list-card-icon size-11 rounded-lg shrink-0 flex items-center justify-center">
-          <Layers style={selectedClassTints.iconText} className="size-5" />
+        <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
+          <Layers className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
@@ -224,16 +292,15 @@ export default function LessonsPage() {
   // Tor ustun, tanlangan: katta karta + count badge + spring-bounce
   const renderUnitSelected = (unit: Unit) => {
     const { total } = unitProgress(unit.id);
-    return (
+    return withUnitMenu(unit,
       <button
-        key={unit.id}
         onClick={() => setSelectedUnitId(null)}
         className="list-card w-full flex items-center text-left gap-3 p-4 cursor-pointer"
         data-active="true"
         style={{ ["--card-accent" as string]: selectedClassHex, ...selectedClassTints.tint }}
       >
-        <div style={selectedClassTints.iconBg} className="list-card-icon size-11 rounded-lg shrink-0 flex items-center justify-center">
-          <Layers style={selectedClassTints.iconText} className="size-5" />
+        <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
+          <Layers className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{pad(unit.number)}. {unit.title}</h4>
@@ -249,13 +316,12 @@ export default function LessonsPage() {
   // Tor ustun, tanlanmagan: kompakt nuqtali qator
   const renderUnitCompact = (unit: Unit) => {
     const { total } = unitProgress(unit.id);
-    return (
+    return withUnitMenu(unit,
       <button
-        key={unit.id}
         onClick={() => setSelectedUnitId(unit.id)}
-        className="group w-full flex items-center text-left gap-3 px-3 py-2.5 min-h-12 rounded-lg border-2 border-transparent cursor-pointer transition-colors hover:bg-muted/50"
+        className="list-row group w-full"
       >
-        <span className="size-3 rounded-[4px] shrink-0" style={{ backgroundColor: selectedClassHex }} />
+        <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: selectedClassHex }} />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           {pad(unit.number)}. {unit.title}
         </span>
@@ -273,7 +339,7 @@ export default function LessonsPage() {
         className="list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer"
         style={{ ["--card-accent" as string]: "var(--muted-foreground)" }}
       >
-        <div className="list-card-icon size-11 rounded-lg bg-muted shrink-0 flex items-center justify-center">
+        <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center bg-muted">
           <Layers className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
@@ -286,7 +352,7 @@ export default function LessonsPage() {
         </div>
         <div className="hidden md:flex items-center gap-2 shrink-0 w-[130px]">
           <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
-            <div className="h-full rounded-full bg-muted-foreground/40 transition-all" style={{ width: `${pct}%` }} />
+            <div className="h-full rounded-full bg-muted-foreground/30 transition-all" style={{ width: `${pct}%` }} />
           </div>
           <span className="text-xs font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
         </div>
@@ -304,8 +370,8 @@ export default function LessonsPage() {
           data-active="true"
           style={{ ["--card-accent" as string]: "var(--muted-foreground)", backgroundColor: "var(--muted)" }}
         >
-          <div className="list-card-icon size-11 rounded-lg bg-muted shrink-0 flex items-center justify-center">
-            <Layers className="size-5 text-muted-foreground" />
+          <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={{ backgroundImage: `linear-gradient(135deg, var(--muted-foreground) 0%, oklch(0.4 0 0) 100%)` }}>
+            <Layers className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-sm font-semibold text-foreground leading-tight block">Boʻlimsiz</h4>
@@ -317,9 +383,9 @@ export default function LessonsPage() {
     return (
       <button
         onClick={() => setSelectedUnitId(NONE)}
-        className="group w-full flex items-center text-left gap-3 px-3 py-2.5 min-h-12 rounded-lg border-2 border-transparent cursor-pointer transition-colors hover:bg-muted/50"
+        className="list-row group w-full"
       >
-        <span className="size-3 rounded-[4px] shrink-0 bg-muted-foreground/30" />
+        <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           Boʻlimsiz
         </span>
@@ -410,75 +476,97 @@ export default function LessonsPage() {
             </ScrollArea>
           </div>
 
-          {/* Bottom selected unit stats (faqat haqiqiy boʻlim tanlanganda) */}
+          {/* Bottom selected unit stats — Sinflar panel footeri bilan bir xil til (ochib/yopib qoʻyiladi) */}
           {selectedUnit && unitStats && (
-            <div className="group/stats border-t border-border px-5 py-5 space-y-4 shrink-0">
-              <div className="flex items-center gap-3">
-                <div style={selectedClassTints.iconBg} className="p-3.5 rounded-xl shrink-0">
-                  <Layers style={selectedClassTints.iconText} className="size-7" />
+            <div className="border-t border-border shrink-0">
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="size-9 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
+                  <Layers className="size-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
                     {pad(selectedUnit.number)}. {selectedUnit.title}
                   </h4>
-                  <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">
-                    {selectedUnit.description}
-                  </TypographyMuted>
                 </div>
-                <div className="shrink-0 flex items-center gap-0.5 opacity-0 group-hover/stats:opacity-100 transition-opacity duration-fast">
-                  <button title="Tahrirlash" className="p-2 rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-muted transition-colors">
-                    <Pencil className="size-4" />
-                  </button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button
-                        title="Oʻchirish"
-                        className="p-2 rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-muted transition-colors"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Boʻlimni oʻchirish</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          «{pad(selectedUnit.number)}. {selectedUnit.title}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni qaytarib boʻlmaydi.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-white hover:bg-destructive/90"
-                          onClick={() => { deleteUnit(selectedUnit.id); setSelectedUnitId(null); toast.success("Boʻlim oʻchirildi"); }}
-                        >
-                          Oʻchirish
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+                <button
+                  onClick={toggleUnitFooter}
+                  title={unitFooterOpen ? "Statistikani yashirish" : "Statistikani koʻrsatish"}
+                  aria-expanded={unitFooterOpen}
+                  className="shrink-0 p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted transition-colors"
+                >
+                  <ChevronDown className={cn("size-4 transition-transform duration-fast", unitFooterOpen && "rotate-180")} aria-hidden="true" />
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="p-2 rounded-lg" style={{ backgroundColor: tintBg(8.2) }}>
-                  <p className="text-lg font-bold text-foreground leading-none">{unitStats.lessons}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Darslar</p>
+              {unitFooterOpen && (
+                <div className="px-4 pb-4">
+                  <div className="flex items-start divide-x divide-border">
+                    <div className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
+                      <p className="text-xs text-muted-foreground truncate">Darslar:</p>
+                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{unitStats.lessons} ta</p>
+                    </div>
+                    <div className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
+                      <p className="text-xs text-muted-foreground truncate">Bajarildi:</p>
+                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{unitStats.completed} ta</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 mt-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">Progress</span>
+                      <span className="font-bold tabular-nums text-foreground">{Math.round(unitStats.pct)}%</span>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(unitStats.pct, 100)}%`, backgroundColor: selectedClassHex }} />
+                    </div>
+                  </div>
                 </div>
-                <div className="p-2 rounded-lg" style={{ backgroundColor: tintBg(8.2) }}>
-                  <p className="text-lg font-bold text-foreground leading-none">{unitStats.completed}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Bajarildi</p>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Tugallandi</span>
-                  <span className="font-medium tabular-nums">{unitStats.completed}/{unitStats.lessons}</span>
-                </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(unitStats.pct, 100)}%`, backgroundColor: selectedClassHex }} />
-                </div>
-              </div>
+              )}
             </div>
           )}
+
+          <Dialog open={!!editUnitTarget} onOpenChange={(o) => !o && setEditUnitTarget(null)}>
+            <DialogContent className="max-w-[440px]">
+              <DialogHeader>
+                <DialogTitle>Boʻlimni tahrirlash</DialogTitle>
+                <DialogDescription>Boʻlim nomi va tavsifini yangilang.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label htmlFor="eu-title">Nomi</Label>
+                  <Input id="eu-title" value={editUnitTitle} onChange={(e) => setEditUnitTitle(e.target.value)} autoFocus />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="eu-desc">Tavsif</Label>
+                  <Textarea id="eu-desc" value={editUnitDesc} onChange={(e) => setEditUnitDesc(e.target.value)} rows={3} />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditUnitTarget(null)}>Bekor qilish</Button>
+                <Button onClick={saveEditUnit} disabled={!editUnitTitle.trim()}>Saqlash</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <AlertDialog open={!!deleteUnitTarget} onOpenChange={(o) => !o && setDeleteUnitTarget(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Boʻlimni oʻchirish</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {deleteUnitTarget && (
+                    <>«{pad(deleteUnitTarget.number)}. {deleteUnitTarget.title}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni keyinroq bekor qilishingiz mumkin.</>
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={handleConfirmDeleteUnit}
+                >
+                  Oʻchirish
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
             </>
           )}
         </div>
@@ -552,11 +640,11 @@ export default function LessonsPage() {
                       <div
                         key={lesson.id}
                         onClick={() => openLesson(lesson.id)}
-                        className="list-card group flex items-center gap-3 p-3.5 cursor-pointer"
+                        className="list-card group flex items-center gap-3 p-4 cursor-pointer"
                         style={{ ["--card-accent" as string]: selectedClassHex }}
                       >
-                        <div style={selectedClassTints.iconBg} className="list-card-icon size-11 rounded-lg shrink-0 flex items-center justify-center">
-                          <FileText style={selectedClassTints.iconText} className="size-5" />
+                        <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
+                          <FileText className="size-5" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">

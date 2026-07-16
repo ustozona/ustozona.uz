@@ -65,6 +65,7 @@ import {
   TOPIC_COLOR_HEX,
   TOPIC_COLOR_ORDER,
   classColor,
+  topicTints,
   type GradingScale,
   type InputMode,
   type TopicColor,
@@ -409,7 +410,7 @@ export default function NewTopicModal({
                     </EmptyHeader>
                   </Empty>
                 ) : (
-                  <div className="flex flex-col gap-2.5 py-4">
+                  <div className="flex flex-col gap-2 py-4">
                     {visibleGroups.map((g) => (
                       <GroupRow
                         key={g.groupId}
@@ -704,14 +705,14 @@ function GroupRow({
 
   return (
     <div
-      className="list-card group flex items-center gap-3 p-3.5"
+      className="list-card group flex items-center gap-3 p-4"
       style={{ ["--card-accent" as string]: hex }}
     >
       <div
-        className="list-card-icon size-11 shrink-0 flex items-center justify-center rounded-lg"
-        style={{ backgroundColor: `color-mix(in srgb, ${hex} 14%, transparent)` }}
+        className="list-card-icon size-11 shrink-0 flex items-center justify-center rounded-full text-white"
+        style={topicTints(group.color).gradientTile}
       >
-        <Tag className="size-5" style={{ color: hex }} />
+        <Tag className="size-5" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">

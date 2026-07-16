@@ -84,16 +84,16 @@ export function OverviewSection({ identity }: { identity: ClassIdentity }) {
               </EmptyHeader>
             </Empty>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {upcoming.map((lesson) => (
                 <Link
                   key={lesson.id}
                   href={`/lessons/${lesson.id}`}
-                  className="list-card group flex items-center gap-3 p-3.5 cursor-pointer"
+                  className="list-card group flex items-center gap-3 p-4 cursor-pointer"
                   style={{ ["--card-accent" as string]: hex }}
                 >
-                  <div style={tints.iconBg} className="list-card-icon size-10 rounded-lg shrink-0 flex items-center justify-center">
-                    <BookOpen style={tints.iconText} className="size-5" />
+                  <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
+                    <BookOpen className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">

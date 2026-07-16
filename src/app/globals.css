@@ -680,43 +680,104 @@
 /* ─────────────────────────────────────────────
    YAGONA list-card holatlari (default / hover / active)
    Barcha sahifalardagi interaktiv roʻyxat kartalari uchun bitta qobiq.
-   Accent rang `--card-accent` orqali (sinf/topic rangi) inline beriladi.
-   Active 2px-koʻrinish reflowsiz — inset ring orqali (border-width oʻzgarmaydi).
+   Karta pasporti v2:
+   - border doim neytral.
+   - selected: chap 3px rail (::before) + inline tint (fon).
    ───────────────────────────────────────────── */
 .list-card {
+  position: relative;
+  min-height: 4.5rem; /* 72px — Karta pasporti v2 anatomiyasi */
+  box-sizing: border-box;
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   background-color: var(--card);
+  overflow: hidden; /* chap rail radiusga tushishi uchun */
   transition: background-color var(--transition-duration-fast) var(--ease-standard),
               border-color var(--transition-duration-fast) var(--ease-standard),
               box-shadow var(--transition-duration-fast) var(--ease-standard),
               transform var(--transition-duration-fast) var(--ease-standard);
 }
-/* Bosish (press) — yengil tactile qisqarish. Doimiy tanlov (data-active) rangi
-   box-shadow/border orqali, bu esa faqat sichqoncha bosilганда — ziddiyatsiz. */
-.list-card:active {
-  transform: scale(0.99);
+.list-card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
 }
-/* Hover — NEYTRAL: yumshoq koʻtarilish soyasi (rang yoʻq, fon oʻzgarmaydi).
-   Rang faqat active'da — ikki holat toza ajraladi. */
+.list-card[aria-disabled="true"],
+.list-card:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.list-card:active {
+  transform: scale(0.985);
+}
 .list-card:hover:not([data-active="true"]) {
-  box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.10);
+  border-color: color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border));
+  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 4%, var(--card));
+  /* Qalinroq (~1.5px) chegara taassuroti — border-width EMAS (u padding'ni yeb,
+     kontentni 1px siljitib qoʻyardi). Inset box-shadow border-radius'ga har
+     doim toʻliq mos keladi va box-model'ga sira tegmaydi. */
+  box-shadow: inset 0 0 0 0.5px color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border)),
+              0 4px 14px -4px rgb(0 0 0 / 0.10);
 }
 .dark .list-card:hover:not([data-active="true"]) {
-  box-shadow: 0 4px 14px -2px rgb(0 0 0 / 0.5);
+  box-shadow: inset 0 0 0 0.5px color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border)),
+              0 4px 14px -2px rgb(0 0 0 / 0.5);
 }
-/* Leading ikona — FAQAT hover da yengil kattalashadi (active'da emas) */
 .list-card-icon {
   transition: transform var(--transition-duration-base) var(--ease-standard);
 }
 .list-card:hover:not([data-active="true"]) .list-card-icon {
   transform: scale(1.08);
 }
-/* Active: sinf rangi — chegara + 2px-koʻrinish ring (reflowsiz) + inline tint fon.
-   Build CSS-ichi color-mix'ni mangle qiladi — tint inline `classTints` orqali. */
-.list-card[data-active="true"] {
-  border-color: var(--card-accent, var(--primary));
-  box-shadow: inset 0 0 0 1px var(--card-accent, var(--primary));
+/* Active: 3px chap rail. Fon rangi inline `style` bilan beriladi. */
+.list-card[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--card-accent, var(--primary));
+  z-index: 10;
+}
+
+/* ─────────────────────────────────────────────
+   QATOR TILI (list-row) — zich ro'yxatlar uchun.
+   Modallar, chap nav panellari, dropdownlar.
+   Morf yo'q. Hover = bg-muted, Active = tint + 3px rail.
+   ───────────────────────────────────────────── */
+.list-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* 12px */
+  padding: 0.75rem; /* 12px — zich rejim, Karta pasporti v2 */
+  min-height: 2.75rem; /* 44px */
+  border-radius: var(--radius-md);
+  text-align: left;
+  cursor: pointer;
+  background-color: transparent;
+  transition: background-color var(--transition-duration-fast) var(--ease-standard);
+  overflow: hidden;
+}
+.list-row:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+}
+.list-row:hover:not([data-active="true"]) {
+  background-color: var(--muted);
+}
+.list-row:active {
+  transform: scale(0.985);
+}
+.list-row[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--card-accent, var(--primary));
+  z-index: 10;
 }
 
 /* ════════════════════════════════════════════════════════════════════

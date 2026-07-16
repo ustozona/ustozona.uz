@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
 import { gradeBadgeClass as gradeBadge, attendanceBadgeClass as attendanceBadge } from "@/lib/score-colors";
 import type { ClassData } from "@/lib/grades-data";
 import { studentSummary } from "@/lib/grades-stats";
@@ -86,6 +86,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const router = useRouter();
   const classId = identity.id;
   const hex = CLASS_COLOR_HEX[identity.color];
+  const tints = classTints(identity.color);
   const tint = (pct: number) => `color-mix(in srgb, ${hex} ${pct}%, transparent)`;
 
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -274,32 +275,27 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                       }}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="list-card-icon flex size-14 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white" style={{ backgroundColor: hex }}>
+                        <div className="list-card-icon flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white" style={tints.gradientTile}>
                           {s.initials}
                         </div>
                         <div className="min-w-0 flex-1">
                           <h4 className="heading-small truncate transition-colors group-hover:text-primary">{s.name}</h4>
-                          <p className="mt-0.5 text-xs text-muted-foreground/60">Oʻquvchi ID: {s.studentId}</p>
                         </div>
-                        <div className="flex shrink-0 items-center gap-1.5">
-                          <span className={cn(badgeBase, gradeBadge(s.grade))}>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <span className={cn(badgeBase, s.grade === 0 ? "bg-muted text-muted-foreground border-border" : gradeBadge(s.grade))}>
                             <TrendingUp className="size-3 shrink-0" />
                             {s.grade}%
                           </span>
-                          <span className={cn(badgeBase, s.attendance == null ? "bg-muted text-muted-foreground border-border" : attendanceBadge(s.attendance))}>
-                            <CalendarCheck className="size-3 shrink-0" />
-                            {s.attendance == null ? "—" : `${s.attendance}%`}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
+                            title={s.status === "active" ? "Yoʻq deb belgilash" : "Faol deb belgilash"}
+                            className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
+                          >
+                            <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
+                            {pill.label}
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
-                          title={s.status === "active" ? "Yoʻq deb belgilash" : "Faol deb belgilash"}
-                          className={cn(badgeBase, "hidden shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95 @[560px]:inline-flex", pill.cls)}
-                        >
-                          <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
-                          {pill.label}
-                        </button>
                       </div>
                     </div>
                   );

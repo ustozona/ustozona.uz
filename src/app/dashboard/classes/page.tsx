@@ -882,16 +882,16 @@ function ClassListRow({
 
   return (
     <div
-      className={cn("list-card animate-fade-slide-up group flex items-center gap-4 px-4 py-4", disabled ? "cursor-default" : "cursor-pointer")}
+      className={cn("list-card animate-fade-slide-up group flex items-center gap-3 px-4 py-4", disabled ? "cursor-default" : "cursor-pointer")}
       style={{ animationDelay: `${index * 25}ms`, ["--card-accent" as string]: hex }}
       onClick={disabled ? undefined : () => router.push(`/dashboard/classes/${cls.id}`)}
     >
       {/* Rangli ikoncha */}
       <div
-        className="list-card-icon size-11 rounded-lg flex items-center justify-center shrink-0"
-        style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.12)` }}
+        className="list-card-icon size-11 rounded-full flex items-center justify-center shrink-0 text-white"
+        style={classTints(cls.color).gradientTile}
       >
-        <GraduationCap className="size-5" style={{ color: hex }} />
+        <GraduationCap className="size-5" />
       </div>
 
       {/* Nom + jadval */}

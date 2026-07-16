@@ -24,7 +24,9 @@ export const lessonUpsertSchema = z.object({
   classId: id,
   unitId: id.nullable(),
   number: z.number().int().min(0).max(10000),
-  title: z.string().min(1).max(500),
+  /* Yangi dars boʻsh sarlavha ("Qoralama") bilan yaratiladi — muharrirda
+     toʻldiriladi, shuning uchun min(1) emas. */
+  title: z.string().max(500),
   status: z.enum(["Completed", "Scheduled", "Unscheduled", "Draft"]),
   sortOrder: z.number().int().min(0),
   data: z.record(z.string(), z.unknown()),

@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "card-passport-v2",
+    date: "2026-07-16",
+    type: "yaxshilandi",
+    title: "Kartalar va roʻyxatlar yangi koʻrinishga oʻtdi",
+    body:
+      "Sinflar, darslar, oʻquvchilar va jadval boʻyicha barcha kartalar bir xil, yangi koʻrinishga keldi: dumaloq gradientli ikonalar, tanlanganda chapdan ingichka rangli chiziq. Oʻquvchi kartalaridagi ortiqcha maʼlumotlar (ID qatori) olib tashlandi, muhim koʻrsatkichlar aniqroq chiqadi.",
+    href: "/dashboard/classes",
+  },
+  {
     id: "class-color-palette-expanded",
     date: "2026-07-16",
     type: "yaxshilandi",

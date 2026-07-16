@@ -8,14 +8,9 @@ import { GraduationCap } from "lucide-react";
 /* ════════════════════════════════════════════════════════════════════
    ClassCard — YAGONA sinf kartasi (butun ilova boʻylab)
 
-   Bitta tizim, ikki zichlik:
-   • variant="row"  — ixcham: rangli nuqta + nom. Hoverда oʻngga siljiydi,
-        matn qalinlashadi/toʻqlashadi. → zich roʻyxat, dropdown, tanlovlar.
-   • variant="card" — toʻliq: solid rangli chegara + och fon + ikona chip +
-        nom + ostki matn; tanlanganда "spring" sakrash. → tanlangan/asosiy, grid.
-
-   Rang faqat nuqta / chegara / ikona chipdan keladi; fon eng och, matn
-   `foreground` — oʻqilishi uchun. Hammasi bizning tokenlar asosida.
+   Karta pasporti v2 asosida:
+   • variant="row"  — ixcham list-row: swatch + nom. Tanlovda tint+rail.
+   • variant="card" — toʻliq list-card: neytral border + 44px gradient doira + oq glif + nom.
    ════════════════════════════════════════════════════════════════════ */
 
 export type ClassCardProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -42,42 +37,45 @@ export const ClassCard = React.forwardRef<HTMLDivElement, ClassCardProps>(functi
     return (
       <div
         ref={ref}
-        className={cn(
-          "group/cc flex w-full cursor-pointer items-center gap-2.5 rounded-lg border-2 border-transparent px-3 py-2 text-left transition-transform duration-fast ease-standard hover:translate-x-1.5",
-          selected && "ring-2 ring-inset ring-primary/40",
-          className,
-        )}
-        style={style}
+        className={cn("list-row group/cc", className)}
+        data-active={selected || undefined}
+        style={{ ["--card-accent" as string]: tints.solid, ...(selected ? tints.tint : {}), ...style }}
         {...rest}
       >
         <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: tints.solid }} aria-hidden />
-        <span className="flex-1 truncate text-sm text-foreground/70 transition-all duration-fast ease-standard group-hover/cc:font-semibold group-hover/cc:text-foreground">{name}</span>
+        <span className="flex-1 truncate text-sm text-foreground/70 transition-colors group-hover/cc:text-foreground group-[[data-active=true]]/cc:font-semibold group-[[data-active=true]]/cc:text-foreground">
+          {name}
+        </span>
         {actions && <span className="ml-auto shrink-0">{actions}</span>}
       </div>
     );
   }
 
   // variant="card"
-  // Tor konteynerda (@container <400px — masalan sidebar ochiq jadval paneli)
-  // padding/ikona zichlashadi — matn oʻngdan siqilib qolmaydi.
-  const bgHover = `color-mix(in oklch, ${tints.solid} 8%, var(--card))`;
   return (
     <div
       ref={ref}
       className={cn(
-        "group/cc relative flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 p-4 text-left transition-[background-color,box-shadow] duration-fast ease-standard [background-color:var(--cc-bg)] hover:[background-color:var(--cc-bg-h)] hover:shadow-md active:shadow-sm @max-[400px]:gap-2.5 @max-[400px]:p-3",
-        selected && "ring-2 ring-inset ring-primary/40",
+        "list-card group/cc flex w-full cursor-pointer items-center gap-3 p-4 text-left @max-[400px]:gap-2.5 @max-[400px]:p-3",
         className,
       )}
-      style={{ borderColor: tints.solid, "--cc-bg": tints.surface.backgroundColor, "--cc-bg-h": bgHover, ...style } as React.CSSProperties}
+      data-active={selected || undefined}
+      style={{
+        ["--card-accent" as string]: tints.solid,
+        ...(selected ? tints.tint : {}),
+        ...style
+      }}
       {...rest}
     >
-      <div className="shrink-0 rounded-xl p-3.5 transition-transform duration-fast ease-standard group-hover/cc:-rotate-3 group-hover/cc:scale-110 @max-[400px]:rounded-lg @max-[400px]:p-2.5" style={tints.iconBg}>
-        {icon ?? <GraduationCap className="size-7 @max-[400px]:size-6" style={tints.iconText} />}
+      <div 
+        className="list-card-icon size-11 shrink-0 rounded-full flex items-center justify-center text-white @max-[400px]:size-9" 
+        style={tints.gradientTile}
+      >
+        {icon ?? <GraduationCap className="size-5 @max-[400px]:size-4" />}
       </div>
       <div className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold leading-tight text-foreground">{name}</span>
-        {subtitle && <span className="mt-0.5 block truncate text-xs text-muted-foreground/60">{subtitle}</span>}
+        <span className="block truncate text-[15px] font-semibold leading-tight text-foreground">{name}</span>
+        {subtitle && <span className="mt-0.5 block truncate text-xs text-muted-foreground">{subtitle}</span>}
         {meta}
       </div>
       {actions}

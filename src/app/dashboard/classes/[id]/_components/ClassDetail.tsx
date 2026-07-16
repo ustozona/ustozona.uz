@@ -122,22 +122,22 @@ export default function ClassDetail({ identity, initialSection }: Props) {
             </div>
 
             {/* Stat tiles */}
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              <div className="rounded-lg px-3 py-2.5 text-center" style={tints.tint}>
-                <p className="text-lg font-bold leading-none tabular-nums">{stats.students}</p>
-                <p className="text-[11px] text-muted-foreground mt-1">Oʻquvchi</p>
+            <div className="flex items-center gap-8 mt-5 px-1 mb-2">
+              <div>
+                <p className="text-2xl font-bold leading-none tabular-nums text-foreground">{stats.students}</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">Oʻquvchi</p>
               </div>
-              <div className="rounded-lg px-3 py-2.5 text-center" style={tints.tint}>
-                <p className="text-lg font-bold leading-none tabular-nums">{stats.lessons}</p>
-                <p className="text-[11px] text-muted-foreground mt-1">Dars</p>
+              <div>
+                <p className="text-2xl font-bold leading-none tabular-nums text-foreground">{stats.lessons}</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">Dars</p>
               </div>
             </div>
 
             {/* Progress */}
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-5 space-y-2 px-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Oʻzlashtirildi</span>
-                <span className="font-semibold tabular-nums">{stats.progress}%</span>
+                <span className="text-muted-foreground font-medium uppercase tracking-wider text-[10px]">Oʻzlashtirildi</span>
+                <span className="font-bold tabular-nums text-foreground">{stats.progress}%</span>
               </div>
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
@@ -150,7 +150,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
 
           {/* Nav list */}
           <ScrollArea className="flex-1 min-h-0">
-            <nav className="px-3 py-4 space-y-1">
+            <nav className="p-3 space-y-1">
               {CLASS_SECTIONS.map((s) => {
                 const isActive = s.key === section;
                 const Icon = s.icon;
@@ -160,38 +160,24 @@ export default function ClassDetail({ identity, initialSection }: Props) {
                     key={s.key}
                     onClick={() => selectSection(s.key)}
                     aria-current={isActive ? "true" : undefined}
-                    className={cn(
-                      "group w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors cursor-pointer",
-                      isActive ? "" : "hover:bg-muted/50"
-                    )}
-                    style={isActive ? { ...tints.tint } : undefined}
+                    className="list-row group w-full border-none px-3"
+                    data-active={isActive || undefined}
+                    style={isActive ? { ["--card-accent" as string]: tints.solid, ...tints.tint } : undefined}
                   >
-                    <div
-                      className={cn(
-                        "size-9 rounded-lg shrink-0 flex items-center justify-center transition-colors",
-                        isActive ? "" : "bg-muted text-muted-foreground group-hover:text-foreground"
-                      )}
-                      style={isActive ? tints.iconBg : undefined}
-                    >
-                      <Icon className="size-4" style={isActive ? tints.iconText : undefined} />
-                    </div>
+                    <Icon className={cn("size-4 shrink-0 transition-colors", isActive ? "" : "text-muted-foreground group-hover:text-foreground")} style={isActive ? { color: tints.solid } : undefined} />
                     <div className="min-w-0 flex-1">
                       <p
                         className={cn(
-                          "text-sm font-medium leading-tight truncate",
+                          "text-[13px] font-medium leading-tight truncate transition-colors",
                           isActive ? "text-foreground" : "text-foreground/70 group-hover:text-foreground"
                         )}
                       >
                         {s.label}
                       </p>
-                      {isActive && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{s.subtitle}</p>
-                      )}
                     </div>
                     {count != null && (
                       <span className="text-xs text-muted-foreground tabular-nums shrink-0">{count}</span>
                     )}
-                    {isActive && <ChevronRight className="size-4 shrink-0" style={tints.iconText} />}
                   </button>
                 );
               })}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type CSSProperties } from "react";
 import type { StudentProfile, AssignmentRow } from "@/lib/student-profile";
-import { TOPIC_COLOR_HEX, type TopicColor } from "@/lib/grades-data";
+import { TOPIC_COLOR_HEX, topicTints, type TopicColor } from "@/lib/grades-data";
 import { cn } from "@/lib/utils";
 import { gradeBadgeClass } from "@/lib/score-colors";
 import { Input } from "@/components/ui/input";
@@ -268,13 +268,13 @@ function AssignmentItem({
                 : {}),
             } as CSSProperties
           }
-          className="list-card group flex cursor-pointer items-center gap-3.5 p-3 outline-none"
+          className="list-card group flex cursor-pointer items-center gap-3 p-4 outline-none"
         >
           <div
-            className="list-card-icon flex size-11 shrink-0 items-center justify-center rounded-lg"
-            style={{ backgroundColor: `color-mix(in srgb, ${accent} 14%, transparent)` }}
+            className="list-card-icon flex size-11 shrink-0 items-center justify-center rounded-full text-white"
+            style={topicTints(topic.color).gradientTile}
           >
-            <FileText className="size-5" style={{ color: accent }} />
+            <FileText className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="heading-small truncate">{assignment.title}</h4>

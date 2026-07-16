@@ -198,50 +198,46 @@ Qoidalar:
 
 ---
 
-## 6. List-card holatlari (default / hover / active)
+## 6. Karta pasporti v2 (Yagona karta va roʻyxat standarti)
 
-Barcha sahifalardagi interaktiv roʻyxat kartalari (Boʻlimlar, Mavzular, Oʻquvchilar,
-Topshiriqlar, Sinflar roʻyxati) **yagona qobiq** — `globals.css` dagi `.list-card`.
-Har sahifa faqat ichki kontentini (leading, badge, trailing) beradi; holat tili bitta.
+Ilovadagi barcha karta va roʻyxat elementlari "Karta pasporti v2" qoidalariga boʻysunadi. Bu tizimni EMStudio dizaynidan farqlaydi va yagona vizual tilni ta'minlaydi.
 
-**Tamoyil:** rang FAQAT active'da (tanlangan signali). Hover NEYTRAL — ikki holat
-toza ajraladi, a11y (och sinf ranglarida border kontrast muammosi) yo'qoladi.
+**Asosiy qoidalar:**
 
-| Holat | Qoida |
-|---|---|
-| Default | `.list-card` — `rounded-xl` (14px), 1px `border`, `bg-card` (oq). Separatsiya border orqali |
-| Hover | Neytral yumshoq **koʻtarilish soyasi** + leading ikona `scale(1.08)`. ❌ fon oʻzgarmaydi, ❌ rangli border, ❌ translate-x |
-| Active | `data-active="true"` — sinf rangi: accent chegara + inset ring (2px-koʻrinish, **reflowsiz**) + inline tint fon (`classTints(color).tint`). Ikona scale YOʻQ |
-| Accent | `style={{ ["--card-accent"]: hex }}` — sinf rangi (`CLASS_COLOR_HEX`) yoki topic (`topicHex`); faqat active'da ishlatiladi |
+1. **Iconbox / Tile**: Kvadrat emas, **44px DOIRA**. Fon — bir xil hue asosidagi GRADIENT (135 gradus burchak ostida, `-400` dan `-600` ga qarab). Glif rangi doim **OQ**. Och ranglar (sariq, ohak) uchun gradientning toʻqroq qismi glif oʻqilishini ta'minlaydi.
+2. **Avatar**: Iconbox dan farqlash uchun u gradient emas, balki **tint** fonga ega boʻladi va ichidagi initsial/matn `text` rangida boʻladi.
+3. **Chegara (Border) va Rang tashuvchilar**: Karta va roʻyxatlarda doimiy rangli ramka YOʻQ. Ular neytral (`border` token) chegaraga ega. Sinf/toifa rangi quyidagilarda aks etadi:
+   - Katta kartalarda: Gradient doira (Tile).
+   - Zich roʻyxatlarda (nav, dropdown): 10px swatch (rangli nuqta).
+   - Faol (Selected) holatda: chap tomondagi 3px `rail` (chiziq).
+4. **Tanlov holati (Selected / Active)**: `data-active="true"`. Karta shakli/oʻlchami oʻzgarmaydi (morf bekor). Faqat vizual holat oʻzgaradi:
+   - `tint` fon qoʻshiladi.
+   - Chap tomonda 3px rangli `rail` paydo boʻladi (rang `--card-accent` dan olinadi).
+5. **Anatomiya va oʻlchamlar (4pt-grid)**:
+   - Asosiy karta paddingi: **16px** (zich rejimda 12px).
+   - Elementlar orasidagi ichki masofa (gap): **12px**.
+   - Karta minimal balandligi (min-h): **72px**.
+   - Burchaklar (radius): **14px** (`rounded-xl`).
+   - Sarlavha: `15px`, `font-semibold` (600).
+   - Izoh/Subtitle: `12px` `muted-foreground`.
+   - Kartalar orasidagi masofa: **8px**.
+   - Panel chekkalari (padding): **20px**. (p-3.5 kabi oraliq qiymatlar yo'qoladi).
+6. **Holatlar (States)**:
+   - **Default**: 1px neytral border.
+   - **Hover**: Karta = shadow-lift (yumshoq koʻtarilish soyasi). Qator (row) = `bg-muted`. (Sinf rangi aralashmaydi).
+   - **Press / Active**: `scale(0.985)`.
+   - **Selected**: `tint` fon + 3px chap `rail`.
+   - **Focus-visible**: 2px neytral ring.
+   - **Disabled**: `opacity-45` + `pointer-events-none`.
+7. **Qator (Row) tili (zich roʻyxatlar uchun)**: 
+   Chap navigatsiya, dropdown, jurnal yon paneli kabilar uchun ishlatiladi (min-h 44-48px). Standart `.list-row` yordamida yoziladi (swatch + nom). Tanlov = `tint` + 3px chap `rail`. Morf yoʻq.
+8. **Signal grammatikasi (Trailing)**: Karta oxirida **maksimal 2 ta signal** ruxsat etiladi:
+   - Metrika (kulrang yozuv).
+   - Status (outline chip + nuqta).
+   - Progress (bar + foiz).
+   - Oʻquvchi kartalarida 0%/boʻsh qizil emas, neytral kulrang boʻladi.
 
-```jsx
-<div
-  className="list-card group flex items-center gap-3 p-4 cursor-pointer"
-  data-active={isSelected || undefined}
-  style={isSelected ? { ["--card-accent"]: hex, ...classTints(color).tint } : undefined}
->
-  <div className="list-card-icon size-11 rounded-lg …" style={classTints(color).iconBg}>…</div>
-  …
-</div>
-```
-
-**Leading / tipografika standarti:**
-
-| Element | Standart |
-|---|---|
-| Ikona qutisi | `size-11` (44px) `rounded-lg` + `list-card-icon` (hover scale), fon `classTints(color).iconBg`, ikona `size-5` rang `iconText` |
-| Shaxs avatari | `size-14` (56px) `rounded-full`, solid rang + oq bosh harflar |
-| Sarlavha | `.heading-small` (yoki `text-sm font-semibold`), `truncate`, hover `group-hover:text-primary` |
-| Meta / subtitle | `.text-caption` / `text-muted-foreground` |
-| Badge | `inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border` + `score-colors.ts` |
-
-**Kompakt nav-row** (chap panel: Sinflar/Boʻlimlar roʻyxati) — kanonik namuna
-`ClassListPanel.tsx`: default = `size-3 rounded-[4px]` swatch + `min-h-12` + `hover:bg-muted/50`;
-active = `min-h-20` ikona-quti karta (`border-2`, `classTints`). `hover:translate-x` ishlatilmaydi.
-
-> ⚠️ `color-mix(… var() …)` ni **CSS faylida** ishlatmang — Lightning CSS (build) uni
-> mangle qiladi. Faqat **inline `style`** da ishlaydi (`classTints` shunday). Stylesheet'da
-> dinamik rang kerak boʻlsa — `var(--card-accent)` orqali, inline berib.
+> ⚠️ **Taqiqlar**: Koʻp rangli (candy) gradientlar, ochiq rangli (sariq/ohak) tile ustida oq glifning oʻqilmay qolishi (qorayuvchi gradient orqali yechiladi).
 
 ---
 

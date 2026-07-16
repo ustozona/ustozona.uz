@@ -40,7 +40,7 @@ export default function TimetableCoverageBanner({ className }: { className?: str
   return (
     <Alert
       variant="info"
-      className={cn("flex flex-wrap items-center justify-between gap-3", className)}
+      className={cn("flex w-full max-w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", className)}
     >
       <span className="flex min-w-0 items-start gap-2">
         <CalendarClock className="mt-0.5 size-4 shrink-0" />
@@ -55,7 +55,7 @@ export default function TimetableCoverageBanner({ className }: { className?: str
       <Button
         variant="outline"
         size="sm"
-        className="shrink-0"
+        className="w-full shrink-0 sm:w-auto"
         onClick={() => {
           if (ensureVersionAt(start)) {
             toast.success(`Jadval ${fmtDayMonthUz(start)}dan boshlab qoplandi`);

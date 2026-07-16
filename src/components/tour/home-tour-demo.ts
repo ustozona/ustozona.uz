@@ -34,13 +34,6 @@ const DEMO_HEX = {
   amber: "#f59e0b",
 } as const;
 
-function rgba(hex: string, a: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
-}
-
 function dayLabel(d: Date) {
   return {
     dayName: DAYS_UZ_SUN[d.getDay()],
@@ -64,7 +57,7 @@ export function makeHomeTourDemo(now: Date) {
       startTime: "08:00",
       isReady: true,
       color: DEMO_HEX.blue,
-      bg: rgba(DEMO_HEX.blue, 0.125),
+      classColor: null,
     },
     {
       id: "demo-l2",
@@ -74,7 +67,7 @@ export function makeHomeTourDemo(now: Date) {
       startTime: "09:00",
       isReady: false,
       color: DEMO_HEX.green,
-      bg: rgba(DEMO_HEX.green, 0.125),
+      classColor: null,
     },
     {
       id: "demo-l3",
@@ -84,7 +77,7 @@ export function makeHomeTourDemo(now: Date) {
       startTime: "10:00",
       isReady: false,
       color: DEMO_HEX.amber,
-      bg: rgba(DEMO_HEX.amber, 0.125),
+      classColor: null,
     },
   ];
 

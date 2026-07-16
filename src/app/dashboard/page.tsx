@@ -48,13 +48,6 @@ import DashboardPageLayout, {
   dashboardStackClass,
 } from "@/components/DashboardPage";
 
-/** hex → "r, g, b" (rgba fon uchun). */
-function hexToRgb(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `${r}, ${g}, ${b}`;
-}
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
@@ -110,7 +103,10 @@ export default function DashboardPage() {
   // Jonli sinf xaritasi — "Bugungi darslar" (jadval eventlari) ham shu manbadan
   const liveById = useMemo(() => new Map(liveClasses.map((c) => [c.id, c])), [liveClasses]);
   const classMetaById = useMemo(
-    () => new Map(liveClasses.map((c) => [c.id, { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] }])),
+    () => new Map(liveClasses.map((c) => {
+      const color = classColor(c);
+      return [c.id, { name: c.name, hex: CLASS_COLOR_HEX[color], color }];
+    })),
     [liveClasses]
   );
   // ── Salomlashuv kartasi metrikalari ──
@@ -156,7 +152,7 @@ export default function DashboardPage() {
           startTime: l.startMin != null ? fmtMin(l.startMin) : (l.time ?? ""),
           isReady: !!(l.content && l.content.trim().length > 0),
           color: hex,
-          bg: `rgba(${hexToRgb(hex)}, 0.125)`,
+          classColor: meta?.color ?? null,
         };
       });
   }, [allLessons, classMetaById, todayKey]);
@@ -296,20 +292,16 @@ export default function DashboardPage() {
                               key={lesson.id}
                               style={{
                                 animationDelay: `${i * 55}ms`,
-                                borderColor: `var(--hover-color, var(--border))`,
+                                ["--card-accent" as string]: lesson.color,
                               } as React.CSSProperties}
-                              className="animate-fade-slide-up group rounded-lg border p-4 cursor-pointer bg-card transition-all duration-fast hover:bg-muted/5"
-                              onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLDivElement).style.setProperty('--hover-color', lesson.color);
-                              }}
-                              onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLDivElement).style.setProperty('--hover-color', 'var(--border)');
-                              }}
+                              className="list-card animate-fade-slide-up group flex items-center gap-3 p-4 cursor-pointer"
                             >
-                              <div className="flex items-center gap-3">
                                 {/* Chap: Icon */}
-                                <div className="p-3 rounded-xl shrink-0 transition-transform duration-base ease-standard group-hover:scale-110 group-hover:-rotate-3" style={{ backgroundColor: lesson.bg }}>
-                                  <FileText className="size-7" style={{ color: lesson.color }} />
+                                <div
+                                  className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white"
+                                  style={lesson.classColor ? classTints(lesson.classColor).gradientTile : { backgroundColor: lesson.color }}
+                                >
+                                  <FileText className="size-5" />
                                 </div>
 
                                 {/* Oʻrta: Mavzu + Sinf/vaqt */}
@@ -342,7 +334,6 @@ export default function DashboardPage() {
                                 </div>
                               </div>
                             </div>
-                          </div>
                           ))}
                         </div>
                       </div>

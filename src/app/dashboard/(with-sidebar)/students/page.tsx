@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { gradeBadgeClass as gradeBadge, attendanceBadgeClass as attendanceBadge } from "@/lib/score-colors";
+import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
+import { gradeBadgeClass as gradeBadge } from "@/lib/score-colors";
 import { classColor, type Student } from "@/lib/grades-data";
 import { studentSummary } from "@/lib/grades-stats";
 import { studentStats } from "@/lib/attendance-data";
@@ -49,7 +49,7 @@ import { type NewStudentInput } from "./_components/CreateStudentModal";
 import AddStudentModal from "./_components/AddStudentModal";
 import {
   Users, User, Plus, Search, Filter, ArrowUp, Trash2,
-  TrendingUp, CalendarCheck, Phone, MessageCircle, ExternalLink, Pen, Download,
+  TrendingUp, Phone, MessageCircle, ExternalLink, Pen, Download,
   Eye, NotebookPen, Clock, Archive, GraduationCap,
 } from "lucide-react";
 
@@ -164,6 +164,7 @@ export default function StudentsPage() {
       : undefined;
   const selColor = selectedInfo ? classColor(selectedInfo) : "blue";
   const selHex = CLASS_COLOR_HEX[selColor];
+  const selTints = classTints(selColor);
   const tint = (pct: number) => `color-mix(in srgb, ${selHex} ${pct}%, transparent)`;
   const firstLiveClassId = Object.keys(classDataMap)[0];
 
@@ -472,8 +473,12 @@ export default function StudentsPage() {
                           >
                           <div className="flex items-center gap-3">
                             <div
-                              className="list-card-icon flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-semibold text-white"
-                              style={{ backgroundColor: s.avatarColor ?? selHex }}
+                              className="list-card-icon flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-semibold text-white"
+                              style={
+                                s.avatarImage || s.avatarColor
+                                  ? { backgroundColor: s.avatarColor ?? selHex }
+                                  : selTints.gradientTile
+                              }
                             >
                               {s.avatarImage ? (
                                 // eslint-disable-next-line @next/next/no-img-element
@@ -486,27 +491,22 @@ export default function StudentsPage() {
                               <h4 className="heading-small truncate transition-colors group-hover:text-primary">
                                 {s.name}
                               </h4>
-                              <p className="mt-0.5 text-xs text-muted-foreground/60">Oʻquvchi ID: {s.studentId}</p>
                             </div>
-                            <div className="flex shrink-0 items-center gap-1.5">
-                              <span className={cn(badgeBase, gradeBadge(s.grade))}>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <span className={cn(badgeBase, s.grade === 0 ? "bg-muted text-muted-foreground border-border" : gradeBadge(s.grade))}>
                                 <TrendingUp className="size-3 shrink-0" />
                                 {s.grade}%
                               </span>
-                              <span className={cn(badgeBase, attendanceBadge(s.attendance))}>
-                                <CalendarCheck className="size-3 shrink-0" />
-                                {s.attendance}%
-                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
+                                title={s.status === "active" ? "Yoʻq deb belgilash" : "Faol deb belgilash"}
+                                className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
+                              >
+                                <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
+                                {pill.label}
+                              </button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
-                              title={s.status === "active" ? "Yoʻq deb belgilash" : "Faol deb belgilash"}
-                              className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
-                            >
-                              <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
-                              {pill.label}
-                            </button>
                           </div>
                           </div>
                         </ContextMenuTrigger>

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, classGradient } from "@/lib/class-colors";
 import { lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
 import { fmtClock, dateKeyToDate } from "@/lib/lesson-schedule";
 import ClassSchedulePicker from "./ClassSchedulePicker";
@@ -136,7 +136,6 @@ export default function DetailsPanel({
             <div className="space-y-2.5">
               {selectedClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
-                const tint = `color-mix(in srgb, ${hex} 14%, transparent)`;
                 const unitsForClass = units.filter((u) => u.classId === c.id).sort((a, b) => a.number - b.number);
                 const curUnitId = lesson.unitByClass?.[c.id] ?? (c.id === selectedIds[0] ? lesson.unitId ?? null : null);
                 const unit = units.find((u) => u.id === curUnitId);
@@ -145,8 +144,8 @@ export default function DetailsPanel({
                     <DropdownMenuTrigger asChild>
                       <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 hover:bg-accent/40 transition-colors text-left">
                         <span className="flex items-center gap-3 min-w-0">
-                          <span className="size-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: tint }}>
-                            <Layers className="size-4.5" style={{ color: hex }} />
+                          <span className="size-9 rounded-full flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
+                            <Layers className="size-4" />
                           </span>
                           <span className="flex flex-col min-w-0">
                             <span className="text-xs text-muted-foreground leading-tight">{c.name}</span>
@@ -159,10 +158,8 @@ export default function DetailsPanel({
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[260px] overflow-y-auto p-1.5">
-                      <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-3 py-2 rounded-lg">
-                        <span className="size-8 rounded-lg flex items-center justify-center shrink-0 bg-muted">
-                          <Layers className="size-4 text-muted-foreground" />
-                        </span>
+                      <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-2.5 py-2 rounded-lg">
+                        <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
                         <span className="flex-1 truncate text-muted-foreground">Boʻlimsiz</span>
                         {!unit && <Check className="size-4 shrink-0" />}
                       </DropdownMenuItem>
@@ -171,10 +168,8 @@ export default function DetailsPanel({
                       ) : unitsForClass.map((u) => {
                         const on = u.id === curUnitId;
                         return (
-                          <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-3 py-2 rounded-lg">
-                            <span className="size-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: tint }}>
-                              <Layers className="size-4" style={{ color: hex }} />
-                            </span>
+                          <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-2.5 py-2 rounded-lg">
+                            {dot(hex)}
                             <span className="flex-1 truncate">{String(u.number).padStart(2, "0")}. {u.title}</span>
                             {on && <Check className="size-4 shrink-0" />}
                           </DropdownMenuItem>
