@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, ListFilter, Megaphone } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronUp, ListFilter, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -46,15 +46,17 @@ function HrefChip({ href }: { href: string }) {
   return (
     <Link
       href={href}
-      className="shrink-0 rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+      className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
     >
       {ROUTE_CHIP_LABELS[href] ?? label}
+      <ArrowUpRight className="size-3" />
     </Link>
   );
 }
 
 const ROUTE_CHIP_LABELS: Record<string, string> = {
   "/dashboard": "Bosh sahifa",
+  "/dashboard/classes": "Mening sinflarim",
   "/dashboard/students": "Oʻquvchilar",
   "/dashboard/timetable": "Dars jadvali",
   "/dashboard/attendance": "Davomat",
@@ -191,6 +193,15 @@ export default function ChangelogPage() {
     );
   }, [filteredGroups]);
 
+  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
+  const toggleDate = (date: string) =>
+    setCollapsedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date);
+      else next.add(date);
+      return next;
+    });
+
   const [expanded, setExpanded] = useState(false);
   const totalEntries = useMemo(
     () => filteredGroups.reduce((sum, g) => sum + g.items.length, 0),
@@ -308,23 +319,34 @@ export default function ChangelogPage() {
                 </div>
 
                 <div className={cn("min-w-0 flex-1", gi === visibleGroups.length - 1 ? "pb-0" : "pb-7")}>
-                  <div className="flex items-baseline gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleDate(group.date)}
+                    className="flex w-full items-baseline gap-2 text-left"
+                  >
                     <span className="text-sm font-semibold text-foreground">
                       {fmtChangelogDateUz(group.date)}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {group.items.length} ta yangilanish
                     </span>
-                  </div>
-                  <div className="mt-2.5 space-y-4">
-                    {toBlocks(group.items).map((block, bi) =>
-                      block.kind === "full" ? (
-                        <FullEntryRow key={block.entry.id} entry={block.entry} />
-                      ) : (
-                        <CompactGroup key={`compact-${bi}`} entries={block.entries} />
-                      )
+                    {collapsedDates.has(group.date) ? (
+                      <ChevronDown className="size-3.5 text-muted-foreground" />
+                    ) : (
+                      <ChevronUp className="size-3.5 text-muted-foreground" />
                     )}
-                  </div>
+                  </button>
+                  {!collapsedDates.has(group.date) && (
+                    <div className="mt-2.5 space-y-4">
+                      {toBlocks(group.items).map((block, bi) =>
+                        block.kind === "full" ? (
+                          <FullEntryRow key={block.entry.id} entry={block.entry} />
+                        ) : (
+                          <CompactGroup key={`compact-${bi}`} entries={block.entries} />
+                        )
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
