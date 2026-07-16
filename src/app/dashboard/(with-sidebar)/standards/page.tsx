@@ -14,6 +14,7 @@ import { useTourRequest } from "@/components/tour/tour-request";
 import {
   makeStandardsTourDemoClasses, makeStandardsTourDemoSets, STANDARDS_TOUR_DEMO_CLASS_ID,
 } from "@/components/tour/standards-tour-demo";
+import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 
 export default function StandardsPage() {
   // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni 50%).
@@ -24,19 +25,27 @@ export default function StandardsPage() {
   // koʻrsatiladi (grades/attendance turi bilan bir xil naqsh).
   const sets = useStandardsStore((s) => s.sets);
   const tourActive = useTourRequest((s) => s.activeTourId === "standards");
+  const activeTourStepId = useTourRequest((s) => s.activeStepId);
   const isDemoMode = tourActive && sets.length === 0;
   const demoClasses = useMemo(() => (isDemoMode ? makeStandardsTourDemoClasses() : null), [isDemoMode]);
   const demoSets = useMemo(() => (isDemoMode ? makeStandardsTourDemoSets() : null), [isDemoMode]);
   const effectiveClassId = isDemoMode ? STANDARDS_TOUR_DEMO_CLASS_ID : selectedClassId;
 
+  // "Sinflaringiz" bosqichida standartlar ustuni hali ochilmagan koʻrinishida
+  // qolsin — aks holda demo standart oldindan koʻrinib, xuddi tur allaqachon
+  // standartlarga oʻtganday taassurot qoldiradi.
+  const classesStepActive = isDemoMode && activeTourStepId === "standards-classes";
+
   /* Ustun nisbatlari (lessons/students usuli) — flex-grow + flex-basis:0:
      sinf tanlanmagan → 50/50, sinf tanlangan → sinflar tor, standartlar keng. */
-  const noClass = !effectiveClassId;
+  const noClass = !effectiveClassId || classesStepActive;
   const grow = noClass ? { classes: 1, content: 1 } : { classes: 1, content: 3 };
   const columnsTemplate = `minmax(0,${grow.classes}fr) minmax(0,${grow.content}fr)`;
 
   return (
-    <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
+    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+      <TourDemoBanner tourId="standards" active={isDemoMode} />
+      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
       <DashboardColumn hideBelow="lg" data-tour="standards-classes">
         <ClassListPanel
           page="standards"
@@ -61,6 +70,7 @@ export default function StandardsPage() {
           <StandardsView classId={effectiveClassId} demoMode={isDemoMode} demoSets={demoSets ?? undefined} />
         )}
       </div>
-    </DashboardColumns>
+      </DashboardColumns>
+    </div>
   );
 }

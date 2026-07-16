@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { KarakalpakFlag } from "@/components/ui/karakalpak-flag";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
 
 const THEMES: { value: string; label: string; icon: React.ElementType }[] = [
@@ -48,6 +49,8 @@ export default function AppearanceSection() {
   const setBackgroundScale = useSettingsStore((s) => s.setBackgroundScale);
   const language = useSettingsStore((s) => s.language);
   const currentLanguage = LANGUAGES.find((l) => l.value === language) ?? LANGUAGES[0];
+  const autoToursEnabled = useSettingsStore((s) => s.autoToursEnabled);
+  const setAutoToursEnabled = useSettingsStore((s) => s.setAutoToursEnabled);
 
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
@@ -159,6 +162,22 @@ export default function AppearanceSection() {
           description="Interfeys tili"
         >
           <Badge variant="secondary">Boshqa tillar tez orada</Badge>
+        </SettingRow>
+      </SettingsCard>
+      {/* Avtomatik turlar */}
+      <SettingsCard 
+        title="Avtomatik yoʻl-yoʻriq" 
+        description="Yangi sahifaga kirganingizda u haqida qisqacha ma'lumot beruvchi turlarni avtomatik ko'rsatish."
+        action={<SaveSignalPing signal={`${autoToursEnabled}`} />}
+      >
+        <SettingRow
+          title="Turlarni avtomatik boshlash"
+          description="O'chirib qo'yilsa, turlar faqat Yo'l-yo'riq markazidan qo'lda ishga tushiriladi."
+        >
+          <Switch 
+            checked={autoToursEnabled}
+            onCheckedChange={setAutoToursEnabled}
+          />
         </SettingRow>
       </SettingsCard>
     </>

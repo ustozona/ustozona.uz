@@ -8,6 +8,7 @@ import TaskStats from "@/components/tasks/TaskStats";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeTasksTourDemoClasses, makeTasksTourDemoTasks } from "@/components/tour/tasks-tour-demo";
+import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 
 export default function TasksPage() {
   const [activeFilter, setActiveFilter] = useState<TaskFilter>("today");
@@ -24,7 +25,9 @@ export default function TasksPage() {
   const demoTasks = useMemo(() => (isDemoMode ? makeTasksTourDemoTasks() : null), [isDemoMode]);
 
   return (
-    <div className="flex-1 min-w-0 h-full min-h-0 flex gap-6 p-4 md:p-6 overflow-hidden">
+    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+      <TourDemoBanner tourId="tasks" active={isDemoMode} />
+      <div className="flex-1 min-w-0 h-full min-h-0 flex gap-6 p-4 md:p-6 overflow-hidden">
       {/* ── Column 1: Sidebar (doim ~20%) ── */}
       <div data-tour="tasks-sidebar" className="hidden lg:block min-w-0 min-h-0 h-full shrink-0 lg:w-64 xl:w-[20%]" >
         <TasksSidebar
@@ -63,6 +66,7 @@ export default function TasksPage() {
           />
         </div>
       )}
+      </div>
     </div>
   );
 }

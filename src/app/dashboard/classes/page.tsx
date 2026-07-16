@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -229,6 +230,7 @@ export default function ClassesPage() {
 
   return (
     <DashboardPage>
+      <TourDemoBanner tourId="classes" active={isDemoMode} />
       {/* ── Two-column layout: main card + overview sidebar ── */}
       <div className="flex flex-1 min-h-0 gap-6">
 

@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "guided-tour-reliability",
+    date: "2026-07-16",
+    type: "yaxshilandi",
+    title: "Qoʻllanma turlari endi ishonchliroq",
+    body:
+      "Kichik ekranda yoki bir tur oʻrtasida boshqa sahifaga oʻtib ketilganda tur endi notoʻgʻri \"koʻrilgan\" deb belgilanmaydi. Oʻtkazib yuborilgan tur \"bajarilgan\" bilan aralashmaydi, klaviatura orqali boshqarish (Esc, Oʻngga/Chapga) qoʻshildi.",
+    href: "/dashboard",
+  },
+  {
     id: "profile-birthdate-save-fix",
     date: "2026-07-16",
     type: "tuzatildi",

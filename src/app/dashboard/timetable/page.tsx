@@ -45,6 +45,7 @@ import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeTimetableTourDemo } from "@/components/tour/timetable-tour-demo";
+import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { todayKey as getTodayKey } from "@/lib/date-keys";
@@ -557,6 +558,7 @@ export default function TimetablePage() {
 
   return (
     <DashboardPageLayout className="h-full">
+      <TourDemoBanner tourId="timetable" active={isDemoMode} />
       {/* Chap ustun minmax bilan: sidebar ochilib joy torayganda ham panel
           300px dan tor boʻlmaydi — kartalar siqilib qolmaydi. */}
       <div className={cn(dashboardSplitGridClass, "grid-cols-1 lg:grid-cols-[minmax(300px,1fr)_3fr]")}>

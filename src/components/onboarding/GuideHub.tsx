@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Award,
   MessagesSquare,
+  MinusCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -61,6 +62,7 @@ export default function GuideHub() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const completedTours = useSettingsStore((s) => s.completedTours);
+  const dismissedTours = useSettingsStore((s) => s.dismissedTours);
   const requestTour = useTourRequest((s) => s.requestTour);
 
   const openTour = (id: string, route: string) => {
@@ -69,6 +71,7 @@ export default function GuideHub() {
     router.push(route);
   };
 
+  // Faqat completed (skip emas) turlar progress'ga kiradi
   const doneCount = TOURS.filter((t) => completedTours.includes(t.id)).length;
   const progress = TOURS.length > 0 ? (doneCount / TOURS.length) * 100 : 0;
 
@@ -100,12 +103,14 @@ export default function GuideHub() {
         <div className="flex flex-col gap-0.5 p-2">
           {TOURS.map((t) => {
             const Icon = TOUR_ICONS[t.id] ?? Home;
-            const seen = completedTours.includes(t.id);
+            const completed = completedTours.includes(t.id);
+            const dismissed = !completed && dismissedTours.includes(t.id);
             return (
               <button
                 key={t.id}
                 type="button"
                 onClick={() => openTour(t.id, t.route)}
+                title={dismissed ? "O'tkazib yuborilgan — qayta boshlash uchun bosing" : undefined}
                 className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted"
               >
                 <div
@@ -117,9 +122,11 @@ export default function GuideHub() {
                 >
                   <Icon className="size-3.5" />
                 </div>
-                <span className="flex-1">{t.label}</span>
-                {seen ? (
+                <span className={cn("flex-1", dismissed && "text-muted-foreground")}>{t.label}</span>
+                {completed ? (
                   <CircleCheck className="size-4 shrink-0 text-primary" strokeWidth={2} />
+                ) : dismissed ? (
+                  <MinusCircle className="size-4 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" strokeWidth={1.5} />
                 ) : (
                   <ChevronRight className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                 )}

@@ -21,6 +21,7 @@ import {
   makeLessonsTourDemoClasses, makeLessonsTourDemoUnits, makeLessonsTourDemoLessons,
   LESSONS_TOUR_DEMO_CLASS_ID, LESSONS_TOUR_DEMO_UNIT_ID,
 } from "@/components/tour/lessons-tour-demo";
+import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
@@ -77,13 +78,20 @@ export default function LessonsPage() {
   // boʻsh panellarni namunaviy sinf/boʻlim/dars bilan toʻldiradi (faqat vizual,
   // store'ga yozilmaydi — [[students-tour-demo]] bilan bir xil naqsh).
   const tourActive = useTourRequest((s) => s.activeTourId === "lessons");
+  const activeTourStepId = useTourRequest((s) => s.activeStepId);
   const isDemoMode = tourActive && liveClasses.length === 0;
   const demoClasses = useMemo(() => (isDemoMode ? makeLessonsTourDemoClasses() : null), [isDemoMode]);
   const demoUnits = useMemo(() => (isDemoMode ? makeLessonsTourDemoUnits() : null), [isDemoMode]);
   const demoLessons = useMemo(() => (isDemoMode ? makeLessonsTourDemoLessons() : null), [isDemoMode]);
 
   const effectiveClassId = isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : selectedClassId;
-  const effectiveUnitId = isDemoMode ? (selectedUnitId ?? LESSONS_TOUR_DEMO_UNIT_ID) : selectedUnitId;
+  // "Sinflaringiz" bosqichida boʻlimlar ustuni hali tanlanmagan koʻrinishida
+  // qolsin — aks holda demo boʻlim oldindan tanlangan boʻlib koʻrinib, xuddi
+  // tur allaqachon boʻlimlarga oʻtganday taassurot qoldiradi.
+  const demoUnitPreselected = isDemoMode && activeTourStepId !== "lessons-classes";
+  const effectiveUnitId = isDemoMode
+    ? (selectedUnitId ?? (demoUnitPreselected ? LESSONS_TOUR_DEMO_UNIT_ID : null))
+    : selectedUnitId;
   const unitsSource = isDemoMode ? demoUnits! : units;
   const lessonsSource = isDemoMode ? demoLessons! : lessons;
 
@@ -320,7 +328,9 @@ export default function LessonsPage() {
   };
 
   return (
-    <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
+    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+      <TourDemoBanner tourId="lessons" active={isDemoMode} />
+      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" data-tour="lessons-classes">
         <ClassListPanel
@@ -641,5 +651,6 @@ export default function LessonsPage() {
           />
         )}
       </DashboardColumns>
+    </div>
   );
 }

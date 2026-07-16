@@ -113,10 +113,27 @@ interface SettingsState {
   onboardingCompleted: boolean;
   setOnboardingCompleted: (v: boolean) => void;
 
-  /** Koʻrilgan bo'lim tur'lari (coach-mark) — tur yakunlanganda/oʻtkazib
-      yuborilganda id shu yerga qoʻshiladi. prefs JSONB'da saqlanadi. */
+  /** Koʻrilgan bo'lim tur'lari (coach-mark) — tur YAKUNLANGANDA id shu
+      yerga qoʻshiladi. Skip qilinganlar bu yerga YOZILMAYDI — alohida
+      `dismissedTours` roʻyxatiga tushadi. prefs JSONB'da saqlanadi. */
   completedTours: string[];
   markTourCompleted: (id: string) => void;
+
+  /** Oʻtkazib yuborilgan (skip) turlar — avto-trigger qilmaslik uchun,
+      lekin GuideHub checklistida ✓ KOʻRSATILMAYDI. */
+  dismissedTours: string[];
+  dismissTour: (id: string) => void;
+
+  /** Yarim tashlab ketilgan turlar hisoblagichi — 2+ marta tashlab
+      ketilgach avto-trigger oʻchiriladi (GuideHub'dan replay qolaveradi). */
+  abandonedTours: Record<string, number>;
+  incrementAbandon: (id: string) => void;
+
+  /** Avto-turlarni yoqish/oʻchirish — foydalanuvchi Sozlamalarda
+      boshqaradi. false boʻlsa sahifaga kirganda tur avtomatik chiqmaydi,
+      lekin GuideHub'dan qoʻlda boshlash ishlayveradi. */
+  autoToursEnabled: boolean;
+  setAutoToursEnabled: (v: boolean) => void;
 
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
@@ -146,6 +163,17 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
   completedTours: [],
   markTourCompleted: (id) =>
     set((s) => (s.completedTours.includes(id) ? s : { completedTours: [...s.completedTours, id] })),
+
+  dismissedTours: [],
+  dismissTour: (id) =>
+    set((s) => (s.dismissedTours.includes(id) ? s : { dismissedTours: [...s.dismissedTours, id] })),
+
+  abandonedTours: {},
+  incrementAbandon: (id) =>
+    set((s) => ({ abandonedTours: { ...s.abandonedTours, [id]: (s.abandonedTours[id] ?? 0) + 1 } })),
+
+  autoToursEnabled: true,
+  setAutoToursEnabled: (v) => set({ autoToursEnabled: v }),
 
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),

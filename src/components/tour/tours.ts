@@ -1,10 +1,11 @@
 /* ════════════════════════════════════════════════════════════════════
    BOʻLIM TURʼLARI — coach-mark onboarding reyestri (sof maʼlumot).
 
-   Pull modeli: turlar foydalanuvchi Yoʻl-yoʻriq markazidan (GuideHub)
-   soʻraganda ishga tushadi; faqat "home" sehrgardan keyin bir marta
-   avtomatik (TourProvider boshqaradi). `id` — koʻrilgan turʼlar
-   roʻyxatiga (useSettingsStore.completedTours) yoziladigan kalit.
+   Har bir boʻlimga birinchi marta kirilganda tur avtomatik ishga tushadi
+   (autoToursEnabled + katta ekran + 2 martadan koʻp tashlab ketilmagan
+   boʻlsa; TourProvider boshqaradi). GuideHub orqali istalgan payt qayta
+   koʻrish ham mumkin (soʻrov yoʻli). `id` — koʻrilgan turʼlar roʻyxatiga
+   (useSettingsStore.completedTours) yoziladigan kalit.
 
    Kontent qoidasi: qadam ekranda koʻrinib turgan narsani takrorlamasin —
    faqat koʻrinmas imkoniyat (drag, rotatsiya, vazn, status almashtirish)
@@ -18,8 +19,6 @@
 export type TourMock =
   | "timetableDrag"
   | "timetablePick"
-  | "lessonsCalendar"
-  | "tasksCalendar"
   | "behaviorMultiSelect"
   | "feedbackUpvote";
 
@@ -213,7 +212,7 @@ export const TOURS: readonly TourDef[] = [
       },
       {
         title: "Oylik koʻrinish",
-        body: "Butun jadvalni bir qarashda koʻrish uchun Oy koʻrinishiga oʻting. Rangli chiziqlar rejalashtirilgan sinflarni, hujjat ikonkalari esa bogʻlangan darsli kunlarni belgilaydi.",
+        body: "Butun jadvalni bir qarashda koʻrish uchun Oy koʻrinishiga oʻting. Rangli chiziqlar rejalashtirilgan sinflarni, hujjat ikonkalari yana biriktirilgan darsli kunlarni belgilaydi.",
         id: "planner-month-preview",
       },
     ],
@@ -228,6 +227,7 @@ export const TOURS: readonly TourDef[] = [
         body: "Darslar va boʻlimlarni koʻrish uchun biror sinfni tanlang. Ularning har birida qancha boʻlim va dars borligini koʻrishingiz mumkin.",
         target: '[data-tour="lessons-classes"]',
         placement: "right",
+        id: "lessons-classes",
       },
       {
         title: "Boʻlimlarga ajratish",
@@ -314,6 +314,7 @@ export const TOURS: readonly TourDef[] = [
         body: "Baholar jurnalini ochish uchun biror sinfni tanlang. Har bir sinfda nechta oʻquvchi roʻyxatdan oʻtgani va nechta topshiriq yaratilgani koʻrsatiladi.",
         target: '[data-tour="grades-classes"]',
         placement: "right",
+        id: "grades-classes",
       },
       {
         title: "Baho mavzulari",
@@ -339,6 +340,7 @@ export const TOURS: readonly TourDef[] = [
         body: "Standartlar roʻyxatini koʻrish uchun istalgan sinfni tanlang. Har bir sinfning oʻz standartlar toʻplami boʻladi.",
         target: '[data-tour="standards-classes"]',
         placement: "right",
+        id: "standards-classes",
       },
       {
         title: "Oʻquv dasturi standartlarini qoʻshish",
@@ -399,7 +401,7 @@ export const TOURS: readonly TourDef[] = [
       },
       {
         title: "Hammasi, Jarayonda, Bajarilgan",
-        body: "\"Hammasi\"da barcha fikrlar koʻrinadi — yangi fikr ham shu yerda, holati rangli belgi orqali darhol koʻrinadi. \"Jarayonda\" — koʻrib chiqilayotgan yoki ish boshlangan fikrlar, \"Bajarilgan\" — amalga oshirilgan takliflar. Qidirish, filtr va saralash ikonkalari oʻng tomonda.",
+        body: "Turli tablar orqali barcha takliflarni va ularning joriy holatini kuzatishingiz mumkin. Qidirish va saralash vositalari o'ng tomonda joylashgan.",
         target: '[data-tour="feedback-toolbar"]',
         placement: "bottom",
       },
@@ -416,3 +418,4 @@ export const TOURS: readonly TourDef[] = [
 export function tourForRoute(pathname: string): TourDef | undefined {
   return TOURS.find((t) => t.route === pathname);
 }
+

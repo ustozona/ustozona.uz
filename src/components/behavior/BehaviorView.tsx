@@ -22,6 +22,7 @@ import { confettiPresets } from "@/lib/confetti-presets";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { classBalance, type BehaviorSkill } from "@/lib/behavior-data";
+import type { ClassInfo, Student } from "@/lib/grades-data";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
@@ -60,7 +61,17 @@ type AwardTarget = {
 
 const EMPTY_EVENTS: never[] = [];
 
-export default function BehaviorView({ classId }: { classId: string }) {
+type Props = {
+  classId: string;
+  /** Tur (product tour) uchun: sinf/oʻquvchi hali yoʻq boʻlsa namunaviy
+      roster koʻrsatiladi. Ball berish serverga yozilishi kerak boʻlgani
+      uchun demo rejimida bloklanadi — [[behavior-tour-demo]]. */
+  demoMode?: boolean;
+  demoStudents?: Student[];
+  demoClassInfo?: ClassInfo;
+};
+
+export default function BehaviorView({ classId, demoMode, demoStudents, demoClassInfo }: Props) {
   const mounted = useMounted();
 
   const skills = useBehaviorStore((s) => s.skills);
@@ -71,10 +82,13 @@ export default function BehaviorView({ classId }: { classId: string }) {
 
   const gradesClass = useGradesStore((s) => s.classDataMap[classId]);
   const students = React.useMemo(
-    () => (gradesClass?.students ?? []).filter((st) => st.status !== "archived"),
-    [gradesClass]
+    () =>
+      demoMode
+        ? (demoStudents ?? [])
+        : (gradesClass?.students ?? []).filter((st) => st.status !== "archived"),
+    [demoMode, demoStudents, gradesClass]
   );
-  const info = gradesClass?.info ?? { id: classId, name: classId };
+  const info = demoMode ? (demoClassInfo ?? { id: classId, name: classId }) : (gradesClass?.info ?? { id: classId, name: classId });
   const hex = CLASS_COLOR_HEX[classColor(info)];
 
   const streaks = useClassStreaks(classId);
@@ -141,8 +155,14 @@ export default function BehaviorView({ classId }: { classId: string }) {
     });
   };
 
-  /* Yagona yozish yoʻli — AwardDialog ham, StudentDialog ham shu orqali. */
+  /* Yagona yozish yoʻli — AwardDialog ham, StudentDialog ham shu orqali.
+     Demo rejimida serverga yozilmaydi (namunaviy oʻquvchilar haqiqiy emas). */
   const performAward = (t: AwardTarget, skill: BehaviorSkill, el: HTMLElement) => {
+    if (demoMode) {
+      setTarget(null);
+      setSelected(null);
+      return;
+    }
     const eventIds = awardPoints(classId, t.studentIds, skill);
     if (eventIds.length === 0) return;
 

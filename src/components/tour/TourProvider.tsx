@@ -10,25 +10,31 @@ import { TourOverlay } from "./TourOverlay";
 /* ════════════════════════════════════════════════════════════════════
    TOUR PROVIDER — qaysi boʻlim turʼini qachon koʻrsatishni hal qiladi.
 
-   Pull modeli: turlar foydalanuvchi soʻraganda (GuideHub → useTourRequest)
-   ishga tushadi. Yagona istisno — "home" turʼi: onboarding sehrgari
-   tugagach bosh sahifada BIR marta avtomatik koʻrsatiladi. Boshqa
-   boʻlimlarga kirish hech qachon tur bilan toʻsilmaydi.
+   Har bir boʻlimga BIRINCHI marta kirilganda (completedTours'da yoʻq
+   boʻlsa) tur avtomatik ishga tushadi — foydalanuvchi kashf qilishini
+   kutib oʻtirmaymiz. Qayta koʻrish GuideHub orqali istalgan payt mumkin
+   (soʻrov yoʻli — completedTours'dan qatʼi nazar ishlaydi, replay shu).
 
-   Soʻralgan tur completedTours'dan qatʼi nazar ishlaydi (replay).
-   Yakun/Oʻtkazib yuborish → markTourCompleted(id).
+   Yakun/Oʻtkazib yuborish → markTourCompleted(id) / dismissTour(id).
 
    Mount-gate: `_hasHydrated` boʻlmasa hech narsa render qilinmaydi
    (SSR mismatch + maʼlumotli hisobda «boʻsh» chaqnashning oldini olish).
    Dashboard layoutʼida OnboardingGate yonida turadi.
    ════════════════════════════════════════════════════════════════════ */
 
+const MIN_TOUR_VIEWPORT = 1024;
+
 export default function TourProvider() {
   const pathname = usePathname();
   const hydrated = useSettingsStore((s) => s._hasHydrated);
   const onboarded = useSettingsStore((s) => s.onboardingCompleted);
   const completedTours = useSettingsStore((s) => s.completedTours);
+  const dismissedTours = useSettingsStore((s) => s.dismissedTours);
+  const abandonedTours = useSettingsStore((s) => s.abandonedTours);
+  const autoToursEnabled = useSettingsStore((s) => s.autoToursEnabled);
   const markTourCompleted = useSettingsStore((s) => s.markTourCompleted);
+  const dismissTour = useSettingsStore((s) => s.dismissTour);
+  const incrementAbandon = useSettingsStore((s) => s.incrementAbandon);
   const requestedTourId = useTourRequest((s) => s.requestedTourId);
   const clearRequest = useTourRequest((s) => s.clearRequest);
 
@@ -58,10 +64,10 @@ export default function TourProvider() {
     return () => setActiveStepId(null);
   }, [active, stepIndex, setActiveStepId]);
 
-  // Route mos kelmasa ochiq turni darhol yopamiz — active tur hech qachon
-  // joriy sahifaga tegishli boʻlmagan holda koʻrsatilmasligi kerak.
+  // Route mos kelmasa ochiq turni darhol yopamiz
   React.useEffect(() => {
     if (active && active.route !== pathname) {
+      incrementAbandon(active.id);
       setActive(null);
       setStepIndex(0);
       return;
@@ -71,39 +77,62 @@ export default function TourProvider() {
     if (!tour) return;
 
     // Soʻrov yoʻli: hub'dan tanlangan tur mos sahifaga yetganda darhol
-    // (ochiq tur boʻlsa ham almashtirib) ishga tushadi — replay shu.
     if (requestedTourId === tour.id) {
       clearRequest();
+      if (window.innerWidth < MIN_TOUR_VIEWPORT) {
+        import("sonner").then((m) => m.toast.error("Tur koʻrsatmalari faqat katta ekranda mavjud."));
+        return;
+      }
       setActive(tour);
       setStepIndex(0);
       return;
     }
 
-    // Avto yoʻl: faqat "home" — sehrgardan keyingi birinchi tanishuv.
-    if (active) return; // ochiq tur ustidan yozib yubormaslik
-    if (tour.id !== "home" || completedTours.includes("home")) return;
-    setActive(tour);
-    setStepIndex(0);
-    // completedTours qasddan bogʻlanmaydi — faqat route/tayyorlik/soʻrov oʻzgarganda
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, hydrated, onboarded, active, requestedTourId]);
+    // Avto yoʻl
+    if (active) return; 
+    if (!autoToursEnabled) return;
+    if (completedTours.includes(tour.id) || dismissedTours.includes(tour.id)) return;
+    if ((abandonedTours[tour.id] ?? 0) >= 2) return;
+    if (window.innerWidth < MIN_TOUR_VIEWPORT) return;
 
-  const finish = React.useCallback(() => {
+    // Kichik kechikish bilan koʻrsatish
+    const tid = setTimeout(() => {
+      setActive(tour);
+      setStepIndex(0);
+    }, 700);
+    
+    return () => clearTimeout(tid);
+  }, [
+    pathname, hydrated, onboarded, active, requestedTourId, completedTours,
+    dismissedTours, abandonedTours, autoToursEnabled, clearRequest, incrementAbandon
+  ]);
+
+  const complete = React.useCallback(() => {
     if (active) markTourCompleted(active.id);
     setActive(null);
     setStepIndex(0);
   }, [active, markTourCompleted]);
 
+  const dismiss = React.useCallback(() => {
+    if (active) dismissTour(active.id);
+    setActive(null);
+    setStepIndex(0);
+  }, [active, dismissTour]);
+
   const next = React.useCallback(() => {
     if (!active) return;
     setStepIndex((i) => {
       if (i >= active.steps.length - 1) {
-        finish();
+        complete();
         return i;
       }
       return i + 1;
     });
-  }, [active, finish]);
+  }, [active, complete]);
+
+  const prev = React.useCallback(() => {
+    setStepIndex((i) => Math.max(0, i - 1));
+  }, []);
 
   if (!hydrated || !onboarded || !active) return null;
   const step = active.steps[stepIndex];
@@ -116,7 +145,8 @@ export default function TourProvider() {
       index={stepIndex}
       total={active.steps.length}
       onNext={next}
-      onSkip={finish}
+      onPrev={prev}
+      onSkip={dismiss}
     />
   );
 }

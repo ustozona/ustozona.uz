@@ -14,6 +14,7 @@ import { useTourRequest } from "@/components/tour/tour-request";
 import {
   makeStudentsTourDemo, makeStudentsTourDemoClasses, STUDENTS_TOUR_DEMO_CLASS_ID,
 } from "@/components/tour/students-tour-demo";
+import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
@@ -298,7 +299,8 @@ export default function StudentsPage() {
   const toolbarBtn = "size-9 shadow-none";
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+      <TourDemoBanner tourId="students" active={isDemoMode} />
       <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
         {/* ── Ustun 1: Sinflar ── */}
         <DashboardColumn hideBelow="lg" data-tour="students-classes">
@@ -611,7 +613,7 @@ export default function StudentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
 
