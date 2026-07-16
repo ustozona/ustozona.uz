@@ -37,7 +37,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     type: "yaxshilandi",
     title: "Sinf ranglari palitrasi kengaytirildi",
     body:
-      "Yangi sinf yaratganda rang endi avtomatik va tasodifiy tanlanadi. Rang tanlash oynasiga yana 7 ta yangi ottenka (sariq, laym, zumrad, moviy-yashil, binafsha, fuksiya, atirgul) qoʻshildi — jami 17 ta rangdan xohlaganingizni tanlashingiz mumkin.",
+      "Yangi sinf yaratganda rang endi avtomatik tanlanadi — barcha ranglar tugamaguncha bitta rang qaytarilmaydi. Rang tanlash oynasiga yana 7 ta yangi ottenka (sariq, laym, zumrad, moviy-yashil, binafsha, fuksiya, atirgul) qoʻshildi — jami 17 ta rangdan xohlaganingizni tanlashingiz mumkin.",
     href: "/dashboard/classes",
   },
   {

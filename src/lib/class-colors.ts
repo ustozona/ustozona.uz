@@ -145,6 +145,45 @@ export function autoClassColor(seed: number | string): ClassColor {
   return CLASS_COLORS[Math.abs(n) % CLASS_COLORS.length];
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+   "Aqilli" tasodifiy rang — shuffle-bag algoritmi.
+   Bitta rang berilgach, QOLGAN ranglar tugamaguncha u qayta berilmaydi
+   (barcha 10 ta rang navbat bilan, tasodifiy tartibda tarqatiladi).
+   Navbat localStorage'da saqlanadi — sahifa yangilansa ham davom etadi.
+   ───────────────────────────────────────────────────────────────────── */
+
+const AUTO_COLOR_BAG_KEY = "ustozona:class-color-bag";
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** Navbatdagi "aqilli" tasodifiy rangni chiqaradi va navbatni yangilaydi */
+export function nextAutoClassColor(): ClassColor {
+  if (typeof window === "undefined") {
+    return CLASS_COLORS[Math.floor(Math.random() * CLASS_COLORS.length)];
+  }
+
+  let bag: unknown;
+  try {
+    bag = JSON.parse(window.localStorage.getItem(AUTO_COLOR_BAG_KEY) ?? "[]");
+  } catch {
+    bag = [];
+  }
+
+  let queue = Array.isArray(bag) ? bag.filter((c): c is ClassColor => CLASS_COLORS.includes(c as ClassColor)) : [];
+  if (queue.length === 0) queue = shuffle(CLASS_COLORS);
+
+  const [next, ...rest] = queue;
+  window.localStorage.setItem(AUTO_COLOR_BAG_KEY, JSON.stringify(rest));
+  return next;
+}
+
 /** Solid rang qiymati (OKLCH) — inline `color` / `backgroundColor` uchun */
 export function classColorValue(color: ClassColor): string {
   return CLASS_COLOR_BASE[color];

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, nextAutoClassColor, type ClassColor } from "@/lib/class-colors";
 import { CLASS_ICONS, CLASS_ICON_KEYS, DEFAULT_CLASS_ICON, type ClassIconKey } from "@/lib/class-icons";
 import { Dialog, DialogContent, DialogHeaderBar, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -41,9 +41,7 @@ export function ClassFormModal({
   const [name, setName] = useState(initial?.name ?? "");
   const [grade, setGrade] = useState<number | null>(initial?.grade ?? null);
   const [subject, setSubject] = useState(initial?.subject ?? "");
-  const [selectedColor, setSelectedColor] = useState<ClassColor>(
-    initial?.color ?? colorEntries[Math.floor(Math.random() * colorEntries.length)][0]
-  );
+  const [selectedColor, setSelectedColor] = useState<ClassColor>(initial?.color ?? nextAutoClassColor);
   const [selectedIcon, setSelectedIcon] = useState<ClassIconKey>(initial?.icon ?? DEFAULT_CLASS_ICON);
   const [description, setDescription] = useState(initial?.description ?? "");
   const selectedHex = CLASS_COLOR_HEX[selectedColor];
