@@ -16,13 +16,20 @@ export type ClassColor =
   | "red"
   | "orange"
   | "amber"
+  | "yellow"
+  | "lime"
   | "green"
+  | "emerald"
   | "teal"
+  | "cyan"
   | "sky"
   | "blue"
   | "indigo"
   | "violet"
+  | "purple"
+  | "fuchsia"
   | "pink"
+  | "rose"
   | "gray";
 
 /** Avto-tanlov hovuzi — `gray` ataylab kiritilmagan (u "belgilanmagan" holat) */
@@ -30,13 +37,20 @@ export const CLASS_COLORS: ClassColor[] = [
   "red",
   "orange",
   "amber",
+  "yellow",
+  "lime",
   "green",
+  "emerald",
   "teal",
+  "cyan",
   "sky",
   "blue",
   "indigo",
   "violet",
+  "purple",
+  "fuchsia",
   "pink",
+  "rose",
 ];
 
 /**
@@ -47,17 +61,24 @@ export const CLASS_COLORS: ClassColor[] = [
  * + `ClassColor` tipiga nom.
  */
 export const CLASS_COLOR_BASE: Record<ClassColor, string> = {
-  red:    "oklch(0.704 0.191 22.216)",
-  orange: "oklch(0.75 0.183 55.934)",
-  amber:  "oklch(0.828 0.189 84.429)",
-  green:  "oklch(0.792 0.209 151.711)",
-  teal:   "oklch(0.777 0.152 181.912)",
-  sky:    "oklch(0.746 0.16 232.661)",
-  blue:   "oklch(0.707 0.165 254.624)",
-  indigo: "oklch(0.673 0.182 276.935)",
-  violet: "oklch(0.702 0.183 293.541)",
-  pink:   "oklch(0.718 0.202 349.761)",
-  gray:   "oklch(0.707 0.022 261.325)",
+  red:     "oklch(0.704 0.191 22.216)",
+  orange:  "oklch(0.75 0.183 55.934)",
+  amber:   "oklch(0.828 0.189 84.429)",
+  yellow:  "oklch(0.852 0.199 91.936)",
+  lime:    "oklch(0.841 0.238 128.85)",
+  green:   "oklch(0.792 0.209 151.711)",
+  emerald: "oklch(0.765 0.177 163.223)",
+  teal:    "oklch(0.777 0.152 181.912)",
+  cyan:    "oklch(0.789 0.154 211.53)",
+  sky:     "oklch(0.746 0.16 232.661)",
+  blue:    "oklch(0.707 0.165 254.624)",
+  indigo:  "oklch(0.673 0.182 276.935)",
+  violet:  "oklch(0.702 0.183 293.541)",
+  purple:  "oklch(0.714 0.203 305.504)",
+  fuchsia: "oklch(0.74 0.238 322.16)",
+  pink:    "oklch(0.718 0.202 349.761)",
+  rose:    "oklch(0.712 0.194 13.428)",
+  gray:    "oklch(0.707 0.022 261.325)",
 };
 
 /* ─────────────────────────────────────────────────────────────────────

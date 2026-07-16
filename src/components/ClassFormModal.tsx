@@ -41,7 +41,9 @@ export function ClassFormModal({
   const [name, setName] = useState(initial?.name ?? "");
   const [grade, setGrade] = useState<number | null>(initial?.grade ?? null);
   const [subject, setSubject] = useState(initial?.subject ?? "");
-  const [selectedColor, setSelectedColor] = useState<ClassColor>(initial?.color ?? colorEntries[0][0]);
+  const [selectedColor, setSelectedColor] = useState<ClassColor>(
+    initial?.color ?? colorEntries[Math.floor(Math.random() * colorEntries.length)][0]
+  );
   const [selectedIcon, setSelectedIcon] = useState<ClassIconKey>(initial?.icon ?? DEFAULT_CLASS_ICON);
   const [description, setDescription] = useState(initial?.description ?? "");
   const selectedHex = CLASS_COLOR_HEX[selectedColor];

@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "class-color-palette-expanded",
+    date: "2026-07-16",
+    type: "yaxshilandi",
+    title: "Sinf ranglari palitrasi kengaytirildi",
+    body:
+      "Yangi sinf yaratganda rang endi avtomatik va tasodifiy tanlanadi. Rang tanlash oynasiga yana 7 ta yangi ottenka (sariq, laym, zumrad, moviy-yashil, binafsha, fuksiya, atirgul) qoʻshildi — jami 17 ta rangdan xohlaganingizni tanlashingiz mumkin.",
+    href: "/dashboard/classes",
+  },
+  {
     id: "guided-tour-reliability",
     date: "2026-07-16",
     type: "yaxshilandi",
