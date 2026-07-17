@@ -20,6 +20,7 @@ export type SchoolStudent = {
   hex: string;
   gender?: "male" | "female";
   birthDate?: string;
+  classGrade?: number;
 };
 
 /** Maktabdagi barcha oʻquvchilar (sinflar boʻyicha tartibda) —
@@ -38,6 +39,7 @@ export function getAllStudents(classDataMap: Record<string, ClassData>): SchoolS
         hex,
         gender: s.gender,
         birthDate: s.birthDate,
+        classGrade: data.info.grade,
       });
     }
   }
@@ -60,6 +62,7 @@ export function getSchoolStudent(
         hex: CLASS_COLOR_HEX[classColor(data.info)],
         gender: s.gender,
         birthDate: s.birthDate,
+        classGrade: data.info.grade,
       };
     }
   }
@@ -75,9 +78,16 @@ export function kinshipLabel(
   const v = getSchoolStudent(classDataMap, viewerId);
   const r = getSchoolStudent(classDataMap, relativeId);
   if (!r) return "Qarindosh";
-  // Ertaroq tugʻilgan = kattaroq
-  const older =
-    v?.birthDate && r.birthDate ? r.birthDate < v.birthDate : false;
+  // Ertaroq tugʻilgan = kattaroq; tugʻilgan sana yoʻq boʻlsa, sinf raqami
+  // boʻyicha taxmin qilinadi (kattaroq sinf = kattaroq oʻquvchi)
+  let older: boolean;
+  if (v?.birthDate && r.birthDate) {
+    older = r.birthDate < v.birthDate;
+  } else if (v?.classGrade != null && r.classGrade != null) {
+    older = r.classGrade > v.classGrade;
+  } else {
+    older = false;
+  }
   if (r.gender === "female") return older ? "Opa" : "Singil";
   if (r.gender === "male") return older ? "Aka" : "Uka";
   return older ? "Katta" : "Kichik";
