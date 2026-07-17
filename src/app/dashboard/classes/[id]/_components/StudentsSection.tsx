@@ -40,7 +40,7 @@ import {
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  Users, User, Plus, Search, ArrowUp, TrendingUp, CalendarCheck, Phone, MessageCircle,
+  Users, User, Plus, Search, ArrowUpDown, TrendingUp, CalendarCheck, Phone, MessageCircle,
   ExternalLink,
 } from "lucide-react";
 import type { ClassIdentity } from "@/lib/class-id";
@@ -221,7 +221,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="h-9 w-9 px-0 font-semibold shadow-none @[640px]:w-auto @[640px]:px-4">
-                  <ArrowUp className="size-4 @[640px]:mr-2" />
+                  <ArrowUpDown className="size-4 @[640px]:mr-2" />
                   <span className="hidden @[640px]:inline">{t("sortButton", { label: sortLabels(t)[sortKey] })}</span>
                 </Button>
               </DropdownMenuTrigger>

@@ -28,6 +28,7 @@ import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import {
   Popover, PopoverTrigger, PopoverContent,
 } from "@/components/ui/popover";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator,
@@ -49,7 +50,7 @@ import { toast } from "sonner";
 import { type NewStudentInput } from "./_components/CreateStudentModal";
 import AddStudentModal from "./_components/AddStudentModal";
 import {
-  Users, User, Plus, Search, Filter, ArrowUp, Trash2,
+  Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2,
   TrendingUp, Phone, MessageCircle, ExternalLink, Pen, Download,
   Eye, NotebookPen, Clock, Archive, GraduationCap,
 } from "lucide-react";
@@ -330,7 +331,7 @@ export default function StudentsPage() {
               {/* Qidiruv */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label={t("searchAria")} className={cn(toolbarBtn, search.trim() && "ring-2 ring-primary ring-offset-2")}>
+                  <Button variant="ghost" size="icon" aria-label={t("searchAria")} className={cn(toolbarBtn, search.trim() && "ring-2 ring-primary ring-offset-2")}>
                     <Search className="size-4" />
                   </Button>
                 </PopoverTrigger>
@@ -351,8 +352,8 @@ export default function StudentsPage() {
               {/* Filtr */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button data-tour="students-filter" variant="outline" size="icon" aria-label={t("filterAria")} className={cn(toolbarBtn, statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
-                    <Filter className="size-4" />
+                  <Button data-tour="students-filter" variant="ghost" size="icon" aria-label={t("filterAria")} className={cn(toolbarBtn, statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
+                    <ListFilter className="size-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-56">
@@ -377,12 +378,16 @@ export default function StudentsPage() {
 
               {/* Saralash */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="h-9 w-9 px-0 font-semibold shadow-none @[700px]:w-auto @[700px]:px-4">
-                    <ArrowUp className="size-4 @[700px]:mr-2" />
-                    <span className="hidden @[700px]:inline">{t("sortButton", { label: t(`sortLabels.${sortKey}`) })}</span>
-                  </Button>
-                </DropdownMenuTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" aria-label={t("sortButton", { label: t(`sortLabels.${sortKey}`) })} className={toolbarBtn}>
+                        <ArrowUpDown className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("sortButton", { label: t(`sortLabels.${sortKey}`) })}</TooltipContent>
+                </Tooltip>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{t("sortMenuLabel")}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -396,7 +401,7 @@ export default function StudentsPage() {
 
               {/* Eksport */}
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 aria-label={t("exportAria")}
                 title={t("exportAria")}

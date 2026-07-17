@@ -91,7 +91,12 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
   const label = t(item.labelKey);
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={active} tooltip={label}>
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        tooltip={label}
+        className="data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground data-[active=true]:hover:bg-sidebar-primary data-[active=true]:hover:text-sidebar-primary-foreground data-[active=true]:[&>svg]:text-sidebar-primary-foreground"
+      >
         <Link href={item.href}>
           <span className="relative inline-flex size-4 shrink-0">
             <item.icon className="size-4 shrink-0" />

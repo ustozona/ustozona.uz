@@ -40,7 +40,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  XIcon, PlusIcon, ChevronDownIcon,
+  XIcon, PlusIcon, ChevronDownIcon, ListFilter,
   LayoutGrid, List as ListIcon, PencilIcon, Trash2 as TrashIcon,
   GraduationCap, Search, ArrowUpDown, BarChart3, Users, BookOpen,
   ClipboardList, MoreHorizontal, ArrowRight, Archive as ArchiveIcon, ArchiveRestore,
@@ -79,6 +79,7 @@ import DashboardPage, {
 
 type SortKey = "name" | "students" | "lessons";
 type ViewMode = "grid" | "list";
+const CLASSES_VIEW_STORAGE_KEY = "classes-view-mode";
 
 /** Sahifa koʻrinishi uchun jonli sinf modeli (statistika bilan). */
 export type LiveClass = {
@@ -98,6 +99,14 @@ export type LiveClass = {
 export default function ClassesPage() {
   const t = useTranslations("ClassesPage");
   const [view, setView] = useState<ViewMode>("grid");
+  useEffect(() => {
+    const stored = localStorage.getItem(CLASSES_VIEW_STORAGE_KEY);
+    if (stored === "grid" || stored === "list") setView(stored);
+  }, []);
+  const handleViewChange = (v: ViewMode) => {
+    setView(v);
+    localStorage.setItem(CLASSES_VIEW_STORAGE_KEY, v);
+  };
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("name");
@@ -273,12 +282,16 @@ export default function ClassesPage() {
 
               {/* Filter */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-1.5 shadow-none">
-                    <ChevronDownIcon className="size-4" />
-                    <span className="hidden sm:inline">{t("filter")}</span>
-                  </Button>
-                </DropdownMenuTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <ListFilter className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("filter")}</TooltipContent>
+                </Tooltip>
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
                     <DropdownMenuRadioItem value="name">{t("filterAllClasses")}</DropdownMenuRadioItem>
@@ -290,14 +303,18 @@ export default function ClassesPage() {
 
               {/* Sort */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-1.5 shadow-none">
-                    <ArrowUpDown className="size-4" />
-                    <span className="hidden sm:inline">
-                      {sortKey === "name" ? t("sortShortName") : sortKey === "students" ? t("sortShortStudents") : t("sortShortLessons")}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <ArrowUpDown className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {sortKey === "name" ? t("sortShortName") : sortKey === "students" ? t("sortShortStudents") : t("sortShortLessons")}
+                  </TooltipContent>
+                </Tooltip>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
                     <DropdownMenuRadioItem value="name">{t("sortFullName")}</DropdownMenuRadioItem>
@@ -318,7 +335,7 @@ export default function ClassesPage() {
                 data-tour="classes-view-toggle"
                 type="single"
                 value={view}
-                onValueChange={(v) => v && setView(v as ViewMode)}
+                onValueChange={(v) => v && handleViewChange(v as ViewMode)}
                 variant="outline"
                 size="default"
                 className="hidden sm:flex shadow-none"
