@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -75,15 +76,18 @@ export function SignIcon({ impact, className }: { impact: ScoreImpact; className
 const CORE_KEYS = new Set(["present", "absent"]);
 
 /** Jonli misol — 20 darslik namuna; vazn oʻzgarsa foiz darhol qayta hisoblanadi. */
-const SAMPLE: { key: string; label: string; count: number }[] = [
-  { key: "present", label: "Keldi", count: 16 },
-  { key: "late", label: "Kechikdi", count: 2 },
-  { key: "excused", label: "Sababli", count: 1 },
-  { key: "absent", label: "Kelmadi", count: 1 },
+const SAMPLE: { key: string; count: number }[] = [
+  { key: "present", count: 16 },
+  { key: "late", count: 2 },
+  { key: "excused", count: 1 },
+  { key: "absent", count: 1 },
 ];
 
+type Translator = (key: string, values?: Record<string, string | number>) => string;
+
 export function sampleRate(
-  statuses: AttendanceStatusDef[]
+  statuses: AttendanceStatusDef[],
+  t: Translator
 ): { pct: number; parts: string[] } | null {
   let sum = 0;
   let counted = 0;
@@ -91,14 +95,15 @@ export function sampleRate(
   for (const s of SAMPLE) {
     const def = statuses.find((d) => d.key === s.key);
     if (!def || !def.active) continue;
+    const label = t(`sampleStatusLabel.${s.key}`);
     const w = IMPACT_WEIGHT[def.scoreImpact];
     if (w == null) {
-      parts.push(`${s.count} ta «${s.label}» (hisobdan chiqarilgan)`);
+      parts.push(t("sampleExcluded", { count: s.count, label }));
       continue;
     }
     counted += s.count;
     sum += s.count * w;
-    parts.push(`${s.count} ta «${s.label}» (×${w})`);
+    parts.push(t("sampleWeighted", { count: s.count, label, weight: w }));
   }
   if (counted === 0) return null;
   return { pct: Math.round((sum / counted) * 100), parts };
@@ -111,6 +116,7 @@ export default function AttendanceStatusesEditor({
   value: AttendanceStatusDef[];
   onChange: (next: AttendanceStatusDef[]) => void;
 }) {
+  const t = useTranslations("AttendanceStatusesEditor");
   const recordsByClass = useAttendanceStore((s) => s.recordsByClass);
 
   // Har holat nechta yozuvda ishlatilgan — oʻchirishdan oldin kontekst.
@@ -137,7 +143,7 @@ export default function AttendanceStatusesEditor({
   };
 
   const confirmStatus = value.find((s) => s.key === confirmKey);
-  const example = sampleRate(value);
+  const example = sampleRate(value, t);
 
   return (
     <>
@@ -151,9 +157,9 @@ export default function AttendanceStatusesEditor({
             title: st.label,
             dimmed: !st.active,
             description: !st.active
-              ? "Oʻchirilgan — jadvalda koʻrsatilmaydi"
+              ? t("disabledDescription")
               : used > 0
-                ? `${used} ta yozuvda ishlatilgan`
+                ? t("usedDescription", { count: used })
                 : undefined,
             leading: (
               <span
@@ -195,17 +201,17 @@ export default function AttendanceStatusesEditor({
                         <Switch
                           checked={st.active}
                           disabled
-                          aria-label={`${st.label} — asosiy status, oʻchirib boʻlmaydi`}
+                          aria-label={t("coreLockedAria", { label: st.label })}
                         />
                       </span>
                     </TooltipTrigger>
-                    <TooltipContent>Asosiy status — oʻchirib boʻlmaydi</TooltipContent>
+                    <TooltipContent>{t("coreLockedTooltip")}</TooltipContent>
                   </Tooltip>
                 ) : (
                   <Switch
                     checked={st.active}
                     onCheckedChange={(on) => toggle(st, on)}
-                    aria-label={`${st.label} statusini yoqish`}
+                    aria-label={t("toggleAria", { label: st.label })}
                   />
                 )}
               </>
@@ -215,7 +221,7 @@ export default function AttendanceStatusesEditor({
         footer={
           <>
             <span className="text-caption">
-              {value.filter((s) => s.active).length} ta faol status
+              {t("activeCount", { count: value.filter((s) => s.active).length })}
             </span>
             <span className="flex items-center gap-1.5">
               {value
@@ -246,7 +252,7 @@ export default function AttendanceStatusesEditor({
       {/* Jonli misol — vazn oʻzgarsa formula va foiz darhol qayta hisoblanadi */}
       {example && (
         <p className="text-caption leading-relaxed">
-          <span className="font-medium text-foreground">Misol (20 dars):</span>{" "}
+          <span className="font-medium text-foreground">{t("sampleLabel")}</span>{" "}
           {example.parts.join(" + ")} ={" "}
           <span className="font-semibold text-foreground tabular-nums">{example.pct}%</span>
         </p>
@@ -256,23 +262,21 @@ export default function AttendanceStatusesEditor({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              «{confirmStatus?.label}» statusini oʻchirasizmi?
+              {t("confirmTitle", { label: confirmStatus?.label ?? "" })}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Bu status {usageByKey[confirmKey ?? ""] ?? 0} ta davomat yozuvida ishlatilgan.
-              Yozuvlar oʻchmaydi, lekin jadvalda koʻrsatilmaydi va davomat foizi hisobidan
-              chiqadi. Statusni qayta yoqsangiz, hammasi tiklanadi.
+              {t("confirmDescription", { count: usageByKey[confirmKey ?? ""] ?? 0 })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (confirmKey) patch(confirmKey, { active: false });
                 setConfirmKey(null);
               }}
             >
-              Oʻchirish
+              {t("deleteAction")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1757,7 +1757,11 @@
     "deleteGroupTitle": "Delete this group entry?",
     "deleteGroupDescription": "The entry given to {count} students together will be deleted and removed from balances.",
     "reasonPlaceholderRequired": "Reason (required)…",
-    "reasonPlaceholderOptional": "Reason (optional)…"
+    "reasonPlaceholderOptional": "Reason (optional)…",
+    "hoverBalanceLabel": "Balance:",
+    "hoverBalanceUnit": "points",
+    "hoverEarned": "+{count} positive",
+    "hoverLost": "−{count} negative"
   },
   "Changelog": {
     "title": "Updates",
@@ -2550,5 +2554,293 @@
     "descriptionPlaceholder": "A short description of what this unit covers...",
     "cancel": "Cancel",
     "submit": "Create unit"
+  },
+  "LessonsServerSync": {
+    "saveError": "Lessons weren't saved to the server"
+  },
+  "SettingsDialogContent": {
+    "close": "Close"
+  },
+  "AttendanceStatusesEditor": {
+    "disabledDescription": "Disabled — won't show in the table",
+    "usedDescription": "Used in {count} records",
+    "activeCount": "{count} active statuses",
+    "coreLockedAria": "{label} — core status, cannot be disabled",
+    "coreLockedTooltip": "Core status — cannot be disabled",
+    "toggleAria": "Enable {label} status",
+    "confirmTitle": "Disable the “{label}” status?",
+    "confirmDescription": "This status is used in {count} attendance records. The records won't be deleted, but they'll stop showing in the table and will be excluded from the attendance rate. Re-enabling the status restores everything.",
+    "cancel": "Cancel",
+    "deleteAction": "Disable",
+    "sampleLabel": "Example (20 lessons):",
+    "sampleExcluded": "{count} “{label}” (excluded)",
+    "sampleWeighted": "{count} “{label}” (×{weight})",
+    "sampleStatusLabel": {
+      "present": "Present",
+      "late": "Late",
+      "excused": "Excused",
+      "absent": "Absent"
+    }
+  },
+  "TimetablePickMock": {
+    "selectClass": "Select a class"
+  },
+  "TourProvider": {
+    "smallViewportError": "Guided tours are only available on larger screens."
+  },
+  "TourOverlay": {
+    "progressAria": "Step {index} of {total}",
+    "closeAria": "Close tour",
+    "skipTour": "Skip this tour",
+    "disableAutoTours": "Don't show these anymore",
+    "back": "Back",
+    "next": "Next",
+    "done": "Got it"
+  },
+  "ProductTours": {
+    "home": {
+      "label": "Home",
+      "steps": {
+        "0": {
+          "title": "Get to know your workspace",
+          "body": "Every page — schedule, lessons, grades, attendance — lives in this sidebar. Need more room? Collapse it with the button above."
+        },
+        "1": {
+          "title": "Your daily overview",
+          "body": "Start every morning here: the greeting card shows today's lesson and task counts, with upcoming lessons below. Click a lesson to jump straight into editing it."
+        },
+        "2": {
+          "title": "Daily schedule",
+          "body": "The selected day's lesson schedule is laid out hour by hour here. The current-time line shows which lesson is running right now."
+        },
+        "3": {
+          "title": "Calendar and tasks",
+          "body": "Pick a day from the weekly calendar and the schedule and tasks adjust to match. Tasks due soon appear below."
+        },
+        "4": {
+          "title": "Guide hub",
+          "body": "Forgot how a section works? Click this button — you can replay any page's guide at any time."
+        },
+        "5": {
+          "title": "Your feedback matters",
+          "body": "Found a bug or have a suggestion? Send it straight to the team from here — you can attach a screenshot too."
+        }
+      }
+    },
+    "classes": {
+      "label": "My classes",
+      "steps": {
+        "0": {
+          "title": "It all starts here",
+          "body": "First create a new class: enter its name, subject, and a distinguishing color. Every other section (schedule, students, gradebook, attendance) links back to these classes."
+        },
+        "1": {
+          "title": "Class card",
+          "body": "Each card shows the number of students, topics, and assignments at a glance. Click a card to open the full class page."
+        },
+        "2": {
+          "title": "Switch the view",
+          "body": "You can view your classes as a grid or a list — pick whichever view suits you best."
+        },
+        "3": {
+          "title": "Overall stats",
+          "body": "This section totals up all classes, students, lessons, and assignments. These numbers update automatically as you add new classes."
+        }
+      }
+    },
+    "students": {
+      "label": "Students",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Pick a class on the left to see its students. Each class shows how many students it has."
+        },
+        "1": {
+          "title": "Student list",
+          "body": "See every student in the class at once. Click a card to open their profile on the right. Click the status badge to switch between active/on leave (right-click to archive)."
+        },
+        "2": {
+          "title": "Student details",
+          "body": "Review the student's class, contact details, and quick actions without leaving the page. Click “View profile” for full attendance, grades, notes, and their personal portfolio."
+        },
+        "3": {
+          "title": "Filter by status",
+          "body": "Sort students by status (active, on leave, archived) — handy for focusing on the students who need attention."
+        }
+      }
+    },
+    "timetable": {
+      "label": "Timetable",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Create your classes here first. Each gets its own color so you can tell them apart easily on the calendar."
+        },
+        "1": {
+          "title": "Weekly schedule",
+          "body": "Your recurring lesson schedule is stored here. If your schedule alternates week to week, set up a rotation cycle — the calendar will then mark each day automatically."
+        },
+        "2": {
+          "title": "Drag from the side panel",
+          "body": "Grab a class card from the side panel and drag it onto an empty calendar slot. This works in every view."
+        },
+        "3": {
+          "title": "Or click a cell",
+          "body": "In “Schedule” view you can also click an empty cell and pick the class from the list. Great for placing lessons quickly and precisely."
+        }
+      }
+    },
+    "planner": {
+      "label": "Planner",
+      "steps": {
+        "0": {
+          "title": "Empty lesson slots",
+          "body": "Each block is a scheduled lesson slot. Hover over it: use the “+” button to create a new lesson, or the link icon to attach an existing one."
+        },
+        "1": {
+          "title": "Linked lessons",
+          "body": "Once a lesson is attached, the block fills with color and shows the lesson name. Click it to edit, or drag it to another slot."
+        },
+        "2": {
+          "title": "Day settings",
+          "body": "Hover over a day to reveal this button — from here you can block the day or jump to editing the schedule."
+        },
+        "3": {
+          "title": "Month view",
+          "body": "Switch to Month view to see the whole schedule at a glance. Colored lines mark scheduled classes, and document icons mark days with linked lessons."
+        }
+      }
+    },
+    "lessons": {
+      "label": "Lessons",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Pick a class to view its lessons and units. Each shows how many units and lessons it has."
+        },
+        "1": {
+          "title": "Organize into units",
+          "body": "Units help split your lessons into chapters or topics. Create units to organize your curriculum — drag them to reorder."
+        },
+        "2": {
+          "title": "Your lessons",
+          "body": "Create individual lessons inside each unit. Every lesson card shows its status and date."
+        }
+      }
+    },
+    "attendance": {
+      "label": "Attendance",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Pick any class to see its attendance table. You can mark the whole class's daily attendance here."
+        },
+        "1": {
+          "title": "Attendance table",
+          "body": "The table is organized by student and date. Click the relevant cell to mark a student's attendance (present, absent, late, or excused). Changes save instantly."
+        },
+        "2": {
+          "title": "Configure statuses",
+          "body": "This button opens Settings > Attendance. From there you can turn attendance statuses on or off and set how much each one affects the overall attendance rate."
+        }
+      }
+    },
+    "behavior": {
+      "label": "Behavior",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Pick a class to award points. Just like attendance and the gradebook, one class stays open at a time here."
+        },
+        "1": {
+          "title": "Award points",
+          "body": "Click a student's card to award them points individually, or use the “Whole class” card to award everyone at once."
+        },
+        "2": {
+          "title": "Award several at once",
+          "body": "Hover over a card and a circle appears in the corner — use it to select multiple students and award them points in one go."
+        },
+        "3": {
+          "title": "Class report",
+          "body": "See the positive/negative point distribution for the whole class or a single student over a period, right here."
+        },
+        "4": {
+          "title": "Points history",
+          "body": "A full chronological list of every point awarded — delete an entry or add a note from here whenever needed."
+        }
+      }
+    },
+    "grades": {
+      "label": "Gradebook",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Pick a class to open its gradebook. Each class shows how many students are enrolled and how many assignments have been created."
+        },
+        "1": {
+          "title": "Grading topics",
+          "body": "Topics group your assignments and set their share of the final grade. Set weights that add up to 100%, then click a topic to filter the table."
+        },
+        "2": {
+          "title": "Your gradebook",
+          "body": "Every student and assignment appears in a table view. Click any cell to enter or edit a grade. The overall result updates automatically based on topic weights."
+        }
+      }
+    },
+    "standards": {
+      "label": "Standards",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Pick any class to see its standards list. Each class has its own set of standards."
+        },
+        "1": {
+          "title": "Add curriculum standards",
+          "body": "You can add standards from national and regional education frameworks. Filter by country, region, subject, and grade level to find the right set for your class."
+        },
+        "2": {
+          "title": "Track coverage",
+          "body": "Each standard shows its mastery status — green means a lesson is linked, gray means none yet. You link standards from the lesson editor, and linked lessons show up here automatically."
+        }
+      }
+    },
+    "tasks": {
+      "label": "Tasks",
+      "steps": {
+        "0": {
+          "title": "Tasks panel",
+          "body": "Get a quick overview of your tasks in the left panel. It has smart lists (Today, Important, Overdue…), sorting by class, and ready-made templates (create a task in one click)."
+        },
+        "1": {
+          "title": "Organize your work",
+          "body": "Grading, planning lessons, or communicating with parents — create a task for anything you want to track. Group them with colored tags and sort by status, priority, or tag."
+        },
+        "2": {
+          "title": "Quick add",
+          "body": "Type right in the task input: attach a date, priority, and class using the toolbar buttons."
+        },
+        "3": {
+          "title": "Stats panel",
+          "body": "The right panel shows change trends and workload for the selected time range."
+        }
+      }
+    },
+    "feedback": {
+      "label": "Feedback",
+      "steps": {
+        "0": {
+          "title": "Write your feedback",
+          "body": "Send Ustozona a suggestion, bug report, question, or compliment right here — pick a category and attach a screenshot if needed."
+        },
+        "1": {
+          "title": "All, In progress, Done",
+          "body": "Track every submission and its current status across the tabs. Search and sorting tools are on the right."
+        },
+        "2": {
+          "title": "Why voting matters",
+          "body": "Click ↑ on a suggestion you like — suggestions with more votes are prioritized by the team and shipped sooner. That's the suggestions' “priority ranking”."
+        }
+      }
+    }
   }
 }

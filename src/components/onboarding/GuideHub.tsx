@@ -27,7 +27,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { TOURS } from "@/components/tour/tours";
+import { useTours } from "@/components/tour/tours";
 import { useTourRequest } from "@/components/tour/tour-request";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -61,6 +61,7 @@ const TOUR_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 
 export default function GuideHub() {
   const t = useTranslations("GuideHub");
+  const tours = useTours();
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const completedTours = useSettingsStore((s) => s.completedTours);
@@ -74,8 +75,8 @@ export default function GuideHub() {
   };
 
   // Faqat completed (skip emas) turlar progress'ga kiradi
-  const doneCount = TOURS.filter((tour) => completedTours.includes(tour.id)).length;
-  const progress = TOURS.length > 0 ? (doneCount / TOURS.length) * 100 : 0;
+  const doneCount = tours.filter((tour) => completedTours.includes(tour.id)).length;
+  const progress = tours.length > 0 ? (doneCount / tours.length) * 100 : 0;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -98,12 +99,12 @@ export default function GuideHub() {
           <div className="flex items-center gap-2 pt-1">
             <Progress value={progress} className="h-1.5 flex-1" />
             <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-              {doneCount} / {TOURS.length}
+              {doneCount} / {tours.length}
             </span>
           </div>
         </div>
         <div className="flex flex-col gap-0.5 p-2">
-          {TOURS.map((tour) => {
+          {tours.map((tour) => {
             const Icon = TOUR_ICONS[tour.id] ?? Home;
             const completed = completedTours.includes(tour.id);
             const dismissed = !completed && dismissedTours.includes(tour.id);

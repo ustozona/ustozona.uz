@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { X, type LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   DialogClose,
   DialogContent,
@@ -32,6 +33,7 @@ export default function SettingsDialogContent({
   footer?: React.ReactNode;
   className?: string;
 }) {
+  const t = useTranslations("SettingsDialogContent");
   return (
     <DialogContent
       showCloseButton={false}
@@ -52,7 +54,7 @@ export default function SettingsDialogContent({
         </div>
         <DialogClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
           <X className="size-4" />
-          <span className="sr-only">Yopish</span>
+          <span className="sr-only">{t("close")}</span>
         </DialogClose>
       </div>
 

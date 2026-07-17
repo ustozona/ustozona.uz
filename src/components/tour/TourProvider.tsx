@@ -2,8 +2,10 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { tourForRoute, type TourDef } from "./tours";
+import { tourForRoute, useTours, type TourDef } from "./tours";
 import { useTourRequest } from "./tour-request";
 import { TourOverlay } from "./TourOverlay";
 
@@ -25,6 +27,8 @@ import { TourOverlay } from "./TourOverlay";
 const MIN_TOUR_VIEWPORT = 1024;
 
 export default function TourProvider() {
+  const t = useTranslations("TourProvider");
+  const tours = useTours();
   const pathname = usePathname();
   const hydrated = useSettingsStore((s) => s._hasHydrated);
   const onboarded = useSettingsStore((s) => s.onboardingCompleted);
@@ -73,14 +77,14 @@ export default function TourProvider() {
       return;
     }
     if (!hydrated || !onboarded) return;
-    const tour = tourForRoute(pathname);
+    const tour = tourForRoute(tours, pathname);
     if (!tour) return;
 
     // Soʻrov yoʻli: hub'dan tanlangan tur mos sahifaga yetganda darhol
     if (requestedTourId === tour.id) {
       clearRequest();
       if (window.innerWidth < MIN_TOUR_VIEWPORT) {
-        import("sonner").then((m) => m.toast.error("Tur koʻrsatmalari faqat katta ekranda mavjud."));
+        toast.error(t("smallViewportError"));
         return;
       }
       setActive(tour);
@@ -104,7 +108,7 @@ export default function TourProvider() {
     return () => clearTimeout(tid);
   }, [
     pathname, hydrated, onboarded, active, requestedTourId, completedTours,
-    dismissedTours, abandonedTours, autoToursEnabled, clearRequest, incrementAbandon
+    dismissedTours, abandonedTours, autoToursEnabled, clearRequest, incrementAbandon, tours, t
   ]);
 
   const complete = React.useCallback(() => {

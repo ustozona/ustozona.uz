@@ -139,6 +139,7 @@ function ClassAvatar({
 
 /** Ism ustidagi hovercard kontenti — avatar + balans + ijobiy/salbiy pill'lar. */
 function StudentHoverBody({ info, classHex }: { info: StudentHoverInfo; classHex?: string }) {
+  const t = useTranslations("EventTimeline");
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
@@ -146,18 +147,19 @@ function StudentHoverBody({ info, classHex }: { info: StudentHoverInfo; classHex
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">{info.name}</p>
           <p className="text-xs text-muted-foreground">
-            Balans:{" "}
-            <span className="font-semibold tabular-nums text-foreground">{info.balance}</span> ball
+            {t("hoverBalanceLabel")}{" "}
+            <span className="font-semibold tabular-nums text-foreground">{info.balance}</span>{" "}
+            {t("hoverBalanceUnit")}
           </p>
         </div>
       </div>
       <Separator />
       <div className="flex items-center gap-1.5">
         <span className="rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-success">
-          +{info.earned} ijobiy
+          {t("hoverEarned", { count: info.earned })}
         </span>
         <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-destructive">
-          −{info.lost} salbiy
+          {t("hoverLost", { count: info.lost })}
         </span>
       </div>
     </div>

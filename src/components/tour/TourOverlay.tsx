@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import {
   Tour,
   TourPortal,
@@ -59,6 +60,7 @@ const MOCKS = {
 
 /* ── Progress dots ─────────────────────────────────────────────────── */
 function ProgressDots({ index, total }: { index: number; total: number }) {
+  const t = useTranslations("TourOverlay");
   // 8 ta dan oshsa raqam ko'rsatamiz, dots emas
   if (total > 8) {
     return (
@@ -68,7 +70,7 @@ function ProgressDots({ index, total }: { index: number; total: number }) {
     );
   }
   return (
-    <div className="flex items-center gap-1.5" aria-label={`${index + 1} / ${total} qadam`}>
+    <div className="flex items-center gap-1.5" aria-label={t("progressAria", { index: index + 1, total })}>
       {Array.from({ length: total }, (_, i) => (
         <span
           key={i}
@@ -88,6 +90,7 @@ function ProgressDots({ index, total }: { index: number; total: number }) {
 
 /* ── Dismiss dropdown (×) ──────────────────────────────────────────── */
 function DismissButton({ onSkip, className }: { onSkip: () => void; className?: string }) {
+  const t = useTranslations("TourOverlay");
   const setAutoToursEnabled = useSettingsStore((s) => s.setAutoToursEnabled);
 
   return (
@@ -95,7 +98,7 @@ function DismissButton({ onSkip, className }: { onSkip: () => void; className?: 
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Turni yopish"
+          aria-label={t("closeAria")}
           className={cn(
             "flex size-6 items-center justify-center rounded-md opacity-70 ring-offset-background transition-opacity hover:bg-muted hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
             className
@@ -106,7 +109,7 @@ function DismissButton({ onSkip, className }: { onSkip: () => void; className?: 
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuItem onClick={onSkip}>
-          O&apos;tkazib yuborish
+          {t("skipTour")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -117,7 +120,7 @@ function DismissButton({ onSkip, className }: { onSkip: () => void; className?: 
           }}
         >
           <BellOff className="mr-2 size-3.5" />
-          Boshqa ko&apos;rsatilmasin
+          {t("disableAutoTours")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -126,6 +129,7 @@ function DismissButton({ onSkip, className }: { onSkip: () => void; className?: 
 
 /* ── Footer ────────────────────────────────────────────────────────── */
 function Footer({ index, total, onNext, onPrev }: Omit<Props, "step" | "onSkip">) {
+  const t = useTranslations("TourOverlay");
   const last = index === total - 1;
   const first = index === 0;
 
@@ -135,11 +139,11 @@ function Footer({ index, total, onNext, onPrev }: Omit<Props, "step" | "onSkip">
       <div className="flex items-center gap-2">
         {!first && (
           <Button variant="ghost" size="sm" onClick={onPrev}>
-            Ortga
+            {t("back")}
           </Button>
         )}
         <Button size="sm" className="min-w-[80px]" onClick={onNext}>
-          {last ? "Tushunarli" : "Keyingi"}
+          {last ? t("done") : t("next")}
         </Button>
       </div>
     </div>

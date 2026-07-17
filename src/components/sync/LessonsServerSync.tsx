@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
@@ -22,6 +23,7 @@ function selectSnapshot(s: LessonState): LessonsSnapshot {
 }
 
 export default function LessonsServerSync() {
+  const t = useTranslations("LessonsServerSync");
   const hydrated = useHydrateStore(useLessonStore, fetchLessonsAction);
 
   React.useEffect(() => {
@@ -31,14 +33,14 @@ export default function LessonsServerSync() {
       select: selectSnapshot,
       diff: diffLessons,
       push: syncLessonsAction,
-      errorMessage: "Darslar serverga saqlanmadi",
+      errorMessage: t("saveError"),
     });
     flushRef = sync.flush;
     return () => {
       flushRef = null;
       sync.stop();
     };
-  }, [hydrated]);
+  }, [hydrated, t]);
 
   return null;
 }
