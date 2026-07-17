@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -95,6 +96,7 @@ export type LiveClass = {
 };
 
 export default function ClassesPage() {
+  const t = useTranslations("ClassesPage");
   const [view, setView] = useState<ViewMode>("grid");
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -187,7 +189,7 @@ export default function ClassesPage() {
       return next;
     });
     setDeleteTarget(null);
-    toast.success(`«${name}» sinfi oʻchirildi`);
+    toast.success(t("deleteToast", { name }));
   };
 
   // Arxivlash — sinf pickerlardan yashirin boʻladi, lekin id/tarixi saqlanadi.
@@ -196,8 +198,8 @@ export default function ClassesPage() {
       ...cd,
       info: { ...cd.info, archivedAt: new Date().toISOString() },
     }));
-    toast.success(`«${cls.name}» arxivlandi`, {
-      action: { label: "Qaytarish", onClick: () => handleRestore(cls.id) },
+    toast.success(t("archiveToast", { name: cls.name }), {
+      action: { label: t("archiveUndo"), onClick: () => handleRestore(cls.id) },
     });
   };
 
@@ -208,7 +210,7 @@ export default function ClassesPage() {
       delete info.archivedAt;
       return { ...cd, info };
     });
-    toast.success("Sinf tiklandi");
+    toast.success(t("restoreToast"));
   };
 
   const filteredAndSorted = useMemo(() => {
@@ -239,7 +241,7 @@ export default function ClassesPage() {
           <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-[4.5rem] px-5 py-5!")}>
             <div className="flex items-center gap-2.5 shrink-0">
               <SectionIcon><GraduationCap /></SectionIcon>
-              <CardTitle>Mening sinflarim</CardTitle>
+              <CardTitle>{t("title")}</CardTitle>
             </div>
 
             <div className="flex items-center gap-2">
@@ -253,7 +255,7 @@ export default function ClassesPage() {
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       onBlur={() => !search && setSearchOpen(false)}
-                      placeholder="Sinf nomi..."
+                      placeholder={t("searchPlaceholder")}
                       className="flex-1 min-w-0 text-sm bg-transparent outline-none placeholder:text-muted-foreground"
                     />
                     {search && (
@@ -274,14 +276,14 @@ export default function ClassesPage() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="gap-1.5 shadow-none">
                     <ChevronDownIcon className="size-4" />
-                    <span className="hidden sm:inline">Filtr</span>
+                    <span className="hidden sm:inline">{t("filter")}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                    <DropdownMenuRadioItem value="name">Barcha sinflar</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="students">Oʻquvchisi koʻp</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="lessons">Darslari koʻp</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="name">{t("filterAllClasses")}</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="students">{t("filterMoreStudents")}</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="lessons">{t("filterMoreLessons")}</DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -292,15 +294,15 @@ export default function ClassesPage() {
                   <Button variant="outline" className="gap-1.5 shadow-none">
                     <ArrowUpDown className="size-4" />
                     <span className="hidden sm:inline">
-                      {sortKey === "name" ? "Alifbo boʻyicha" : sortKey === "students" ? "Oʻquvchilar soni" : "Darslar soni"}
+                      {sortKey === "name" ? t("sortShortName") : sortKey === "students" ? t("sortShortStudents") : t("sortShortLessons")}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                    <DropdownMenuRadioItem value="name">Alifbo boʻyicha (A–Z)</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="students">Oʻquvchilar soni boʻyicha</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="lessons">Darslar soni boʻyicha</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="name">{t("sortFullName")}</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="students">{t("sortFullStudents")}</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="lessons">{t("sortFullLessons")}</DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -308,7 +310,7 @@ export default function ClassesPage() {
               {/* New class */}
               <Button data-tour="classes-add" onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
                 <PlusIcon className="size-4" />
-                Yangi sinf
+                {t("newClass")}
               </Button>
 
               {/* View toggle - ToggleGroup (outline/sm — Filter va Sort bilan bir xil) */}
@@ -321,10 +323,10 @@ export default function ClassesPage() {
                 size="default"
                 className="hidden sm:flex shadow-none"
               >
-                <ToggleGroupItem value="grid" aria-label="Grid view">
+                <ToggleGroupItem value="grid" aria-label={t("gridViewAria")}>
                   <LayoutGrid className="size-4" />
                 </ToggleGroupItem>
-                <ToggleGroupItem value="list" aria-label="List view">
+                <ToggleGroupItem value="list" aria-label={t("listViewAria")}>
                   <ListIcon className="size-4" />
                 </ToggleGroupItem>
               </ToggleGroup>
@@ -347,15 +349,15 @@ export default function ClassesPage() {
                 <Empty className="h-full">
                   <EmptyHeader>
                     <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                    <EmptyTitle>Hozircha sinflar yoʻq</EmptyTitle>
+                    <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
                     <EmptyDescription>
-                      Birinchi sinfingizni qoʻshing va oʻquvchilar roʻyxati, davomat hamda baholashni yuritishni boshlang.
+                      {t("emptyDescription")}
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
                       <PlusIcon className="size-4" />
-                      Yangi sinf qoʻshish
+                      {t("emptyAddClass")}
                     </Button>
                   </EmptyContent>
                 </Empty>
@@ -363,8 +365,8 @@ export default function ClassesPage() {
                 <Empty className="h-full">
                   <EmptyHeader>
                     <EmptyMedia><Illustration name="14" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                    <EmptyTitle>Topilmadi</EmptyTitle>
-                    <EmptyDescription>«{search}» boʻyicha hech narsa yoʻq</EmptyDescription>
+                    <EmptyTitle>{t("notFoundTitle")}</EmptyTitle>
+                    <EmptyDescription>{t("notFoundDescription", { search })}</EmptyDescription>
                   </EmptyHeader>
                 </Empty>
               ) : (
@@ -420,13 +422,13 @@ export default function ClassesPage() {
           <Card data-tour="classes-stats" className={cn(panelCardClass)}>
             <CardHeader className={cn(panelCardHeaderClass, "items-center gap-2 min-h-[4.5rem] px-5 py-5!")}>
               <SectionIcon><BarChart3 /></SectionIcon>
-              <CardTitle>Statistika</CardTitle>
+              <CardTitle>{t("statsTitle")}</CardTitle>
             </CardHeader>
             <CardContent className={panelCardContentClass}>
               {totals.classes === 0 ? (
                 <div className={cn(panelScrollInnerClass, "flex h-full items-center justify-center text-center")}>
                   <TypographyMuted className="text-sm">
-                    Sinf qoʻshgach statistikangiz shu yerda koʻrinadi
+                    {t("statsEmpty")}
                   </TypographyMuted>
                 </div>
               ) : (
@@ -435,32 +437,36 @@ export default function ClassesPage() {
                     icon={<GraduationCap className="size-4" />}
                     color="amber"
                     value={totals.classes}
-                    label="Sinflar"
+                    label={t("statClasses")}
+                    unit={t("statUnit")}
                   />
                   <OverviewStat
                     icon={<Users className="size-4" />}
                     color="violet"
                     value={totals.students}
-                    label="Oʻquvchilar"
+                    label={t("statStudents")}
+                    unit={t("statUnit")}
                   />
                   <OverviewStat
                     icon={<BookOpen className="size-4" />}
                     color="sky"
                     value={totals.lessons}
-                    label="Darslar"
+                    label={t("statLessons")}
+                    unit={t("statUnit")}
                   />
                   <OverviewStat
                     icon={<ClipboardList className="size-4" />}
                     color="green"
                     value={totals.assignments}
-                    label="Topshiriqlar"
+                    label={t("statAssignments")}
+                    unit={t("statUnit")}
                   />
                   <Button
                     variant="ghost"
                     className="mt-2 justify-start gap-1.5 text-muted-foreground hover:text-foreground"
-                    onClick={() => toast("Toʻliq statistika sahifasi tez orada qoʻshiladi")}
+                    onClick={() => toast(t("fullStatsToast"))}
                   >
-                    Toʻliq statistikani koʻrish
+                    {t("viewFullStats")}
                     <ArrowRight className="size-4" />
                   </Button>
                 </div>
@@ -498,22 +504,20 @@ export default function ClassesPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Sinfni oʻchirish</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              «{deleteTarget?.name}» sinfi
               {deleteTarget && deleteTarget.students > 0
-                ? `, uning ${deleteTarget.students} ta oʻquvchisi va barcha baholari`
-                : " va unga tegishli barcha maʼlumotlar"}{" "}
-              butunlay oʻchiriladi. Bu amalni ortga qaytarib boʻlmaydi.
+                ? t("deleteDialogWithStudents", { name: deleteTarget.name, count: deleteTarget.students })
+                : t("deleteDialogWithoutStudents", { name: deleteTarget?.name ?? "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
-              Oʻchirish
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -529,11 +533,13 @@ function OverviewStat({
   color,
   value,
   label,
+  unit,
 }: {
   icon: React.ReactNode;
   color: ClassColor;
   value: number;
   label: string;
+  unit?: string;
 }) {
   const tints = classTints(color);
   const c = classColorValue(color);
@@ -546,7 +552,7 @@ function OverviewStat({
       </div>
       <p className="flex-1 min-w-0 truncate text-sm font-medium text-muted-foreground">{label}</p>
       <p className="text-lg font-bold tabular-nums leading-none shrink-0">
-        {value} <span className="text-xs font-medium text-muted-foreground">ta</span>
+        {value}{unit ? <span className="text-xs font-medium text-muted-foreground"> {unit}</span> : null}
       </p>
     </div>
   );
@@ -612,6 +618,7 @@ function ClassGridCard({
   onDelete: () => void;
 }) {
   const router = useRouter();
+  const t = useTranslations("ClassesPage");
   const hex = CLASS_COLOR_HEX[cls.color];
   const rgb = hexToRgb(hex);
   // Dars rejasi progressi: oʻtilgan mavzular / rejadagi mavzular
@@ -654,7 +661,7 @@ function ClassGridCard({
           variant="ghost"
           size="icon-sm"
           type="button"
-          aria-label="Sinfni ochish"
+          aria-label={t("openClassAria")}
           onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/classes/${cls.id}`); }}
           className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
         >
@@ -705,9 +712,9 @@ function ClassGridCard({
             </div>
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-[200px]">
-            <p className="font-semibold">Dars rejasi</p>
+            <p className="font-semibold">{t("lessonPlanTooltipTitle")}</p>
             <p className="text-background/70">
-              {cls.lessons} mavzudan <b className="font-semibold text-background tabular-nums">{cls.coveredLessons}</b> tasi oʻtilgan
+              {t("lessonPlanTooltipBody", { lessons: cls.lessons, covered: cls.coveredLessons })}
             </p>
           </TooltipContent>
         </Tooltip>
@@ -718,7 +725,7 @@ function ClassGridCard({
             {cls.name}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {cls.schedule ?? cls.subject ?? "Jadval belgilanmagan"}
+            {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
           </p>
         </div>
 
@@ -726,15 +733,15 @@ function ClassGridCard({
         <div className="flex w-full border-t border-border pt-3.5">
           <div className="flex flex-1 flex-col items-center text-center gap-1.5 pr-3 border-r border-border">
             <Users className="size-[18px] text-muted-foreground" />
-            <span className="text-xs"><b className="font-semibold">{cls.students}</b> ta oʻquvchi</span>
+            <span className="text-xs font-semibold">{t("studentsCount", { count: cls.students })}</span>
           </div>
           <div className="flex flex-1 flex-col items-center text-center gap-1.5 px-3 border-r border-border">
             <BookOpen className="size-[18px] text-muted-foreground" />
-            <span className="text-xs"><b className="font-semibold">{cls.lessons}</b> ta mavzu</span>
+            <span className="text-xs font-semibold">{t("lessonsCount", { count: cls.lessons })}</span>
           </div>
           <div className="flex flex-1 flex-col items-center text-center gap-1.5 pl-3">
             <ClipboardList className="size-[18px] text-muted-foreground" />
-            <span className="text-xs"><b className="font-semibold">{cls.assignments}</b> ta topshiriq</span>
+            <span className="text-xs font-semibold">{t("assignmentsCount", { count: cls.assignments })}</span>
           </div>
         </div>
       </div>
@@ -745,6 +752,7 @@ function ClassGridCard({
 
 /* ── Karta uchun 3-nuqta DropdownMenu ── */
 function ClassCardMenu({ onEdit, onArchive, onDelete }: { onEdit: () => void; onArchive: () => void; onDelete: () => void }) {
+  const t = useTranslations("ClassesPage");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -764,14 +772,14 @@ function ClassCardMenu({ onEdit, onArchive, onDelete }: { onEdit: () => void; on
           onClick={(e) => { e.stopPropagation(); onEdit(); }}
         >
           <PencilIcon className="size-4 text-muted-foreground" />
-          Tahrirlash
+          {t("edit")}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="gap-2 cursor-pointer"
           onClick={(e) => { e.stopPropagation(); onArchive(); }}
         >
           <ArchiveIcon className="size-4 text-muted-foreground" />
-          Arxivlash
+          {t("archive")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -779,7 +787,7 @@ function ClassCardMenu({ onEdit, onArchive, onDelete }: { onEdit: () => void; on
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
         >
           <TrashIcon className="size-4" />
-          Oʻchirish
+          {t("delete")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -789,6 +797,7 @@ function ClassCardMenu({ onEdit, onArchive, onDelete }: { onEdit: () => void; on
 /* ─────────────────────────── Add Card ─────────────────────────── */
 
 function AddClassCard({ onClick }: { onClick?: () => void }) {
+  const t = useTranslations("ClassesPage");
   return (
     <button
       onClick={onClick}
@@ -797,7 +806,7 @@ function AddClassCard({ onClick }: { onClick?: () => void }) {
       <div className="size-11 rounded-full bg-muted flex items-center justify-center group-hover:bg-muted-foreground/10 transition-colors">
         <PlusIcon className="size-5 text-muted-foreground" strokeWidth={2} />
       </div>
-      <TypographySmall className="text-muted-foreground">Yangi sinf qoʻshish</TypographySmall>
+      <TypographySmall className="text-muted-foreground">{t("addClassCard")}</TypographySmall>
     </button>
   );
 }
@@ -811,6 +820,7 @@ function ArchivedClassesSection({
   classes: LiveClass[];
   onRestore: (id: string) => void;
 }) {
+  const t = useTranslations("ClassesPage");
   const [open, setOpen] = useState(false);
   return (
     <div className="mt-6 border-t border-border pt-5">
@@ -820,7 +830,7 @@ function ArchivedClassesSection({
         className="flex w-full items-center gap-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArchiveIcon className="size-4" />
-        Arxivlangan sinflar
+        {t("archivedSection")}
         <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums">{classes.length}</span>
         <ChevronDownIcon className={cn("ml-auto size-4 transition-transform duration-fast ease-standard", open && "rotate-180")} />
       </button>
@@ -842,12 +852,12 @@ function ArchivedClassesSection({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{cls.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {cls.students} ta oʻquvchi · arxivda
+                    {t("archivedStudentsCount", { count: cls.students })}
                   </p>
                 </div>
                 <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => onRestore(cls.id)}>
                   <ArchiveRestore className="size-4" />
-                  Tiklash
+                  {t("restore")}
                 </Button>
               </div>
             );
@@ -876,6 +886,7 @@ function ClassListRow({
   onDelete: () => void;
 }) {
   const router = useRouter();
+  const t = useTranslations("ClassesPage");
   const hex = CLASS_COLOR_HEX[cls.color];
   const initials = cls.initials;
   const overflow = Math.max(cls.students - initials.length, 0);
@@ -900,17 +911,17 @@ function ClassListRow({
           {cls.name}
         </p>
         <p className="text-xs text-muted-foreground mt-1.5">
-          {cls.schedule ?? cls.subject ?? "Jadval belgilanmagan"}
+          {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
         </p>
       </div>
 
       {/* Statistika */}
       <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-        <span><b className="font-medium text-foreground">{cls.students}</b> ta oʻquvchi</span>
+        <span className="font-medium text-foreground">{t("studentsCount", { count: cls.students })}</span>
         <span className="text-border">·</span>
-        <span><b className="font-medium text-foreground">{cls.lessons}</b> ta mavzu</span>
+        <span className="font-medium text-foreground">{t("lessonsCount", { count: cls.lessons })}</span>
         <span className="text-border">·</span>
-        <span><b className="font-medium text-foreground">{cls.assignments}</b> ta topshiriq</span>
+        <span className="font-medium text-foreground">{t("assignmentsCount", { count: cls.assignments })}</span>
       </div>
 
       {/* Avatarlar */}

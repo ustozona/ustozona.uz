@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   type Assignment,
@@ -34,6 +35,7 @@ export default function GradesView({
   /** Tur demo rejimida haqiqiy classData oʻrniga koʻrsatiladigan namunaviy jurnal. */
   demoClassData?: ClassData;
 }) {
+  const t = useTranslations("GradesView");
   const mounted = useMounted();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
@@ -87,7 +89,7 @@ export default function GradesView({
   // namunasi va sozlanmagan kalendarda blok yoʻq.
   const archiveNotice =
     !demoClassData && yearRange.start && yearRange.end && !inRange(todayKey(), yearRange)
-      ? "Arxiv yilni koʻrmoqdasiz — yangi topshiriq joriy yilga tegishli boʻladi. Joriy yilga qayting."
+      ? t("archiveNotice")
       : null;
 
   function handleCellEdit(
@@ -165,7 +167,7 @@ export default function GradesView({
       });
       return { ...cd, grades: nextGrades };
     });
-    toast.success(`${values.length} ta baho yopishtirildi`);
+    toast.success(t("gradesPasted", { count: values.length }));
   }
 
   function handleReturnAll() {
@@ -173,7 +175,7 @@ export default function GradesView({
       ...cd,
       grades: cd.grades.map((g) => ({ ...g, isDraft: false })),
     }));
-    toast.success("Qoralama baholar qaytarildi");
+    toast.success(t("draftsReturned"));
   }
 
   function handlePublishAssignment(assignmentId: string) {
@@ -184,7 +186,7 @@ export default function GradesView({
         g.assignmentId === assignmentId ? { ...g, isDraft: false } : g
       ),
     }));
-    toast.success("Topshiriq nashr qilindi", { description: title });
+    toast.success(t("assignmentPublished"), { description: title });
   }
 
   // Baholanmagan (ball ham, Q/T ham yo‘q) o‘quvchilarga ommaviy qo‘llash.
@@ -206,7 +208,7 @@ export default function GradesView({
       );
       return { ...cd, grades: [...nextGrades, ...additions] };
     });
-    toast.success("Baholanmaganlarga qo‘llandi", { description: `${score} ball` });
+    toast.success(t("appliedToUngraded"), { description: t("scoreLabel", { score }) });
   }
 
   function handleMarkRemaining(assignmentId: string) {
@@ -226,7 +228,7 @@ export default function GradesView({
       );
       return { ...cd, grades: [...nextGrades, ...additions] };
     });
-    toast.success("Qolganlar “T” (topshirmadi) deb belgilandi");
+    toast.success(t("remainingMarkedUnsubmitted"));
   }
 
   function handleCreateAssignment(input: AssignmentFormValues) {
@@ -245,7 +247,7 @@ export default function GradesView({
       };
     });
     setModal(null);
-    toast.success("Topshiriq yaratildi", {
+    toast.success(t("assignmentCreated"), {
       description: input.title,
     });
   }
@@ -272,7 +274,7 @@ export default function GradesView({
       ),
     }));
     setEditingAssignment(null);
-    toast.success("Topshiriq saqlandi", { description: input.title });
+    toast.success(t("assignmentSaved"), { description: input.title });
   }
 
   function handleReuse(_sourceClassId: string, sourceAssignment: Assignment) {
@@ -284,7 +286,7 @@ export default function GradesView({
       const newAssignment: Assignment = {
         ...sourceAssignment,
         id: `a-${Date.now()}`,
-        title: `${sourceAssignment.title} (nusxa)`,
+        title: t("copySuffix", { title: sourceAssignment.title }),
         topicId: targetTopic?.id ?? sourceAssignment.topicId,
       };
       return {
@@ -293,7 +295,7 @@ export default function GradesView({
       };
     });
     setModal(null);
-    toast.success("Topshiriq qayta ishlatildi", {
+    toast.success(t("assignmentReused"), {
       description: sourceAssignment.title,
     });
   }
@@ -351,14 +353,14 @@ export default function GradesView({
       return next;
     });
     // Tahrir baho/topshiriqni oʻchirgan boʻlsa — bekor qilish taklif qilamiz.
-    toast.success(payload.isEdit ? "Mavzu saqlandi" : "Mavzu yaratildi", {
+    toast.success(payload.isEdit ? t("topicSaved") : t("topicCreated"), {
       description: payload.name,
       ...(removedAny ? {
         action: {
-          label: "Bekor qilish",
+          label: t("undo"),
           onClick: () => {
             setClassDataMap(snapshot);
-            toast.success("Tiklandi");
+            toast.success(t("restored"));
           },
         },
       } : {}),
@@ -387,13 +389,13 @@ export default function GradesView({
       }
       return next;
     });
-    toast.success("Mavzu oʻchirildi", {
+    toast.success(t("topicDeleted"), {
       description: name || undefined,
       action: {
-        label: "Bekor qilish",
+        label: t("undo"),
         onClick: () => {
           setClassDataMap(snapshot);
-          toast.success("Tiklandi", { description: name || undefined });
+          toast.success(t("restored"), { description: name || undefined });
         },
       },
     });
@@ -412,17 +414,17 @@ export default function GradesView({
       grades: c.grades.filter((g) => g.assignmentId !== assignmentId),
     }));
 
-    toast.success("Topshiriq oʻchirildi", {
+    toast.success(t("assignmentDeleted"), {
       description: removedAssignment.title,
       action: {
-        label: "Bekor qilish",
+        label: t("undo"),
         onClick: () => {
           updateClass(classId, (c) => ({
             ...c,
             assignments: [...c.assignments, removedAssignment],
             grades: [...c.grades, ...removedGrades],
           }));
-          toast.success("Tiklandi", { description: removedAssignment.title });
+          toast.success(t("restored"), { description: removedAssignment.title });
         },
       },
     });
@@ -438,9 +440,9 @@ export default function GradesView({
           <Card className="flex flex-col items-center justify-center h-full gap-3">
             <Alert className="max-w-md bg-muted/50">
               <BookOpen className="size-4" />
-              <AlertTitle>Bu sinfda oʻquvchilar yoʻq</AlertTitle>
+              <AlertTitle>{t("noStudentsTitle")}</AlertTitle>
               <AlertDescription>
-                Baholarni kuzatish uchun oʻquvchi qoʻshing
+                {t("noStudentsDescription")}
               </AlertDescription>
             </Alert>
           </Card>

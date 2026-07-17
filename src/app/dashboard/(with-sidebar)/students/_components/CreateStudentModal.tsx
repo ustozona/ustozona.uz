@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,7 @@ function formatBirth(s: string): string {
 }
 
 export default function CreateStudentModal({ open, onOpenChange, defaultClassId, onCreate, mode = "create", initial }: Props) {
+  const t = useTranslations("CreateStudentModal");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState<Gender | "">("");
@@ -138,10 +140,10 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
         <div className="flex shrink-0 items-center gap-4 border-b border-border px-6 py-5">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2.5">
-              <DialogTitle className="text-xl">{mode === "edit" ? "Oʻquvchini tahrirlash" : "Yangi oʻquvchi"}</DialogTitle>
+              <DialogTitle className="text-xl">{mode === "edit" ? t("titleEdit") : t("titleCreate")}</DialogTitle>
               {selectedClass && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                  <ClassSwatch hex={classHex} className="size-2" />
+                  <ClassSwatch hex={classHex} className="size-2.5" />
                   {selectedClass.name}
                 </span>
               )}
@@ -150,7 +152,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
           <DialogClose asChild>
             <Button type="button" variant="ghost" size="icon" className="-mr-1.5 shrink-0 text-muted-foreground hover:text-foreground">
               <X className="size-4" />
-              <span className="sr-only">Yopish</span>
+              <span className="sr-only">{t("close")}</span>
             </Button>
           </DialogClose>
         </div>
@@ -164,7 +166,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                aria-label="Rasm yuklash"
+                aria-label={t("avatarUploadAria")}
                 className="group relative flex size-16 items-center justify-center overflow-hidden rounded-full text-xl font-semibold text-white transition-colors"
                 style={{ backgroundColor: classHex }}
               >
@@ -184,7 +186,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
                 <button
                   type="button"
                   onClick={() => setAvatarImage(null)}
-                  aria-label="Rasmni olib tashlash"
+                  aria-label={t("avatarRemoveAria")}
                   className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-colors hover:text-foreground"
                 >
                   <X className="size-3" />
@@ -192,8 +194,8 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium">Tasvir</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">Sinf rangini oladi.</p>
+              <p className="text-sm font-medium">{t("avatarLabel")}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{t("avatarHint")}</p>
               <Button
                 type="button"
                 variant="outline"
@@ -202,31 +204,31 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
                 className="mt-2 gap-1.5 shadow-none"
               >
                 <Camera className="size-3.5" />
-                {avatarImage ? "Almashtirish" : "Rasm yuklash"}
+                {avatarImage ? t("avatarReplace") : t("avatarUpload")}
               </Button>
             </div>
           </div>
 
           {/* Ism + Familiya */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Ism">
+            <Field label={t("firstName")}>
               <Input
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Masalan: Alisher"
+                placeholder={t("firstNamePlaceholder")}
                 autoFocus
               />
             </Field>
-            <Field label="Familiya">
+            <Field label={t("lastName")}>
               <Input
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Masalan: Aliyev"
+                placeholder={t("lastNamePlaceholder")}
               />
             </Field>
           </div>
           <p className="mt-1.5 text-xs text-muted-foreground">
-            Ism yoki familiya — kamida bittasi yetarli.
+            {t("nameHint")}
           </p>
 
           {/* Qoʻshimcha (ixtiyoriy) — yashiriladigan */}
@@ -235,7 +237,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
             onClick={() => setShowMore((v) => !v)}
             className="mt-5 flex w-full items-center justify-between rounded-md py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Qoʻshimcha maʼlumot
+            {t("moreInfo")}
             <ChevronDown className={cn("size-4 transition-transform duration-fast ease-standard", showMore && "rotate-180")} />
           </button>
 
@@ -243,11 +245,11 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
             <div className="mt-3 grid gap-4 border-t border-border pt-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-1.5">
-                  <Label className="text-sm font-medium">Jins</Label>
+                  <Label className="text-sm font-medium">{t("gender")}</Label>
                   <div className="flex gap-2">
                     {([
-                      ["male", "Oʻgʻil", Mars, "sky"],
-                      ["female", "Qiz", Venus, "pink"],
+                      ["male", t("genderMale"), Mars, "sky"],
+                      ["female", t("genderFemale"), Venus, "pink"],
                     ] as [Gender, string, typeof Mars, "sky" | "pink"][]).map(([val, lbl, Icon, tone]) => {
                       const active = gender === val;
                       return (
@@ -274,7 +276,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
 
                 {/* Tugʻilgan sana — Calendar (popover) */}
                 <div className="grid gap-1.5">
-                  <Label className="text-sm font-medium">Tugʻilgan sana</Label>
+                  <Label className="text-sm font-medium">{t("birthDate")}</Label>
                   <Popover open={dateOpen} onOpenChange={setDateOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -285,7 +287,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
                         )}
                       >
                         <CalendarDays className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                        {birthDate ? formatBirth(birthDate) : "Sanani tanlang"}
+                        {birthDate ? formatBirth(birthDate) : t("birthDatePlaceholder")}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto overflow-hidden p-0" align="start">
@@ -311,29 +313,29 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
                 </div>
               </div>
 
-              <Field label="Ota yoki onasining ismi sharifi">
+              <Field label={t("parentName")}>
                 <Input
                   value={parentName}
                   onChange={(e) => setParentName(e.target.value)}
-                  placeholder="Masalan: Dilnoza Karimova (onasi)"
+                  placeholder={t("parentNamePlaceholder")}
                 />
               </Field>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Ota-ona telefoni">
+                <Field label={t("parentPhone")}>
                   <Input
                     type="tel"
                     value={parentPhone}
                     onChange={(e) => setParentPhone(e.target.value)}
-                    placeholder="+998 90 123-45-67"
+                    placeholder={t("parentPhonePlaceholder")}
                   />
                 </Field>
-                <Field label="Oʻquvchi telefoni">
+                <Field label={t("studentPhone")}>
                   <Input
                     type="tel"
                     value={studentPhone}
                     onChange={(e) => setStudentPhone(e.target.value)}
-                    placeholder="+998 ..."
+                    placeholder={t("studentPhonePlaceholder")}
                   />
                 </Field>
               </div>
@@ -343,10 +345,10 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
 
         {/* ── Footer ── */}
         <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border px-6 py-4">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Bekor qilish</Button>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t("cancel")}</Button>
           <Button type="submit" disabled={!canSubmit} className="gap-2">
             {mode === "edit" ? <Check className="size-4" /> : <UserPlus className="size-4" />}
-            {mode === "edit" ? "Saqlash" : "Qoʻshish"}
+            {mode === "edit" ? t("save") : t("add")}
           </Button>
         </div>
         </form>

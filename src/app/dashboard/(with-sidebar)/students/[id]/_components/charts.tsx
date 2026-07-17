@@ -5,6 +5,7 @@
    Ranglar dizayn tizimidan: sinf hex (trend/radar), semantik davomat ranglari.
    ════════════════════════════════════════════════════════════════════ */
 
+import { useTranslations } from "next-intl";
 import {
   Area, AreaChart, CartesianGrid, XAxis, YAxis, Line,
   Pie, PieChart, Cell, Label,
@@ -20,21 +21,6 @@ import {
 import type {
   TrendPoint, BloomBreakdown, AttendanceWindow, AttendanceDay,
 } from "@/lib/student-profile";
-
-const ATT_STATUS_LABELS = {
-  present: "Kelgan",
-  absent: "Kelmagan",
-  late: "Kechikkan",
-  excused: "Sababli",
-} as const;
-
-// Donut tooltipi: "{value} marta {phrase}" — "73 marta kelgan"
-const ATT_TOOLTIP_PHRASE = {
-  present: "kelgan",
-  absent: "kelmagan",
-  late: "kechikkan",
-  excused: "sababli kelmagan",
-} as const;
 
 // Davomat semantik ranglari (yagona joy)
 export const ATT_COLORS = {
@@ -62,31 +48,33 @@ function EdgeAwareTick({
 }
 
 function TrendEmptyState({ message }: { message: string }) {
+  const t = useTranslations("StudentCharts");
   return (
     <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-1 text-center">
-      <p className="text-sm font-medium text-foreground">Trend uchun yetarli maʼlumot yoʻq</p>
+      <p className="text-sm font-medium text-foreground">{t("trendEmptyTitle")}</p>
       <p className="text-xs text-muted-foreground">{message}</p>
     </div>
   );
 }
 
 export function TrendChart({ points, color }: { points: TrendPoint[]; color: string }) {
+  const t = useTranslations("StudentCharts");
   // D — boʻsh / yetarsiz holatlar: trend uchun kamida 2 davr nuqtasi kerak,
   // aks holda chiziq emas, yolgʻiz nuqta chiqadi (ma'nosiz).
   if (points.length === 0) {
-    return <TrendEmptyState message="Bu oʻquvchida hali baholangan ish yoʻq." />;
+    return <TrendEmptyState message={t("trendEmptyNoGraded")} />;
   }
   if (points.length === 1) {
     return (
-      <TrendEmptyState message="Bu oraliqda faqat bitta davr baholangan — boshqa oraliqni tanlang." />
+      <TrendEmptyState message={t("trendEmptySinglePeriod")} />
     );
   }
 
   // Asosiy chiziq rangi qiymatga bogʻliq (scoreBarColor): past qizil, yuqori
   // yashil — semantik. Kumulyativ chiziq esa neytral (muted) yoʻnaltiruvchi.
   const config = {
-    pct: { label: "Davr oʻrtachasi", color },
-    cum: { label: "Umumiy daraja", color: "var(--muted-foreground)" },
+    pct: { label: t("periodAverage"), color },
+    cum: { label: t("overallLevel"), color: "var(--muted-foreground)" },
   } satisfies ChartConfig;
 
   // Domenni ikkala qatorga ham moslaymiz; tepa/pastda biroz havo qoldiramiz.
@@ -121,9 +109,9 @@ export function TrendChart({ points, color }: { points: TrendPoint[]; color: str
             <ChartTooltipContent
               indicator="dot"
               formatter={(value, name, item) => {
-                const label = name === "cum" ? "Umumiy daraja" : "Davr oʻrtachasi";
-                const count = name === "pct" ? ` · ${item?.payload?.count} baho` : "";
-                return `${label}: ${value}%${count}`;
+                const label = name === "cum" ? t("overallLevel") : t("periodAverage");
+                const count = name === "pct" ? t("tooltipCountSuffix", { count: Number(item?.payload?.count ?? 0) }) : "";
+                return t("tooltipValue", { label, value: String(value ?? ""), count });
               }}
             />
           }
@@ -155,8 +143,9 @@ export function TrendChart({ points, color }: { points: TrendPoint[]; color: str
 // ─── Blum darajalari (radar) ─────────────────────────────────────────────────
 
 export function BloomRadar({ levels, hex }: { levels: BloomBreakdown[]; hex: string }) {
+  const t = useTranslations("StudentCharts");
   const data = levels.map((l) => ({ level: l.label, value: l.value }));
-  const config = { value: { label: "Oʻzlashtirish", color: hex } } satisfies ChartConfig;
+  const config = { value: { label: t("achievement"), color: hex } } satisfies ChartConfig;
 
   return (
     <ChartContainer config={config} className="mx-auto aspect-square max-h-[250px] w-full">
@@ -174,17 +163,24 @@ export function BloomRadar({ levels, hex }: { levels: BloomBreakdown[]; hex: str
 // ─── Davomat donut (markazlangan overlay) ────────────────────────────────────
 
 export function AttendanceDonut({ summary }: { summary: AttendanceWindow }) {
+  const t = useTranslations("StudentCharts");
   const data = [
     { status: "present", value: summary.present },
     { status: "late", value: summary.late },
     { status: "excused", value: summary.excused },
     { status: "absent", value: summary.absent },
   ];
+  const attTooltipPhrase = {
+    present: t("presentPhrase"),
+    absent: t("absentPhrase"),
+    late: t("latePhrase"),
+    excused: t("excusedPhrase"),
+  } as const;
   const config: ChartConfig = {
-    present: { label: "Kelgan", color: ATT_COLORS.present },
-    late: { label: "Kechikkan", color: ATT_COLORS.late },
-    excused: { label: "Sababli", color: ATT_COLORS.excused },
-    absent: { label: "Kelmagan", color: ATT_COLORS.absent },
+    present: { label: t("present"), color: ATT_COLORS.present },
+    late: { label: t("late"), color: ATT_COLORS.late },
+    excused: { label: t("excused"), color: ATT_COLORS.excused },
+    absent: { label: t("absent"), color: ATT_COLORS.absent },
   };
 
   return (
@@ -198,8 +194,8 @@ export function AttendanceDonut({ summary }: { summary: AttendanceWindow }) {
               hideLabel
               indicator="line"
               formatter={(value, name, item) => {
-                const status = (item?.payload?.status ?? name) as keyof typeof ATT_TOOLTIP_PHRASE;
-                const phrase = ATT_TOOLTIP_PHRASE[status] ?? String(name);
+                const status = (item?.payload?.status ?? name) as keyof typeof attTooltipPhrase;
+                const phrase = attTooltipPhrase[status] ?? String(name);
                 // formatter berilganda shadcn indicator'ni chizmaydi (chart.tsx:195) —
                 // shuning uchun "line" indicator'ni shu yerda oʻzimiz qaytaramiz.
                 return (
@@ -208,7 +204,7 @@ export function AttendanceDonut({ summary }: { summary: AttendanceWindow }) {
                       className="w-1 shrink-0 self-stretch rounded-[2px]"
                       style={{ backgroundColor: ATT_COLORS[status as keyof typeof ATT_COLORS] }}
                     />
-                    <span className="text-foreground">{value} marta {phrase}</span>
+                    <span className="text-foreground">{t("donutTooltip", { value: String(value ?? ""), phrase })}</span>
                   </>
                 );
               }}
@@ -238,7 +234,7 @@ export function AttendanceDonut({ summary }: { summary: AttendanceWindow }) {
                       y={(viewBox.cy ?? 0) + 24}
                       className="fill-muted-foreground text-[11px] font-medium uppercase tracking-wider"
                     >
-                      Davomat
+                      {t("attendanceLabel")}
                     </tspan>
                   </text>
                 );
@@ -256,10 +252,17 @@ export function AttendanceDonut({ summary }: { summary: AttendanceWindow }) {
 // Donut "qancha"ni, tracker "qachon"ni koʻrsatadi.
 
 export function AttendanceTracker({ days }: { days: AttendanceDay[] }) {
+  const t = useTranslations("StudentCharts");
+  const attStatusLabels = {
+    present: t("present"),
+    absent: t("absent"),
+    late: t("late"),
+    excused: t("excused"),
+  } as const;
   if (days.length === 0) {
     return (
       <div className="flex h-9 items-center justify-center text-sm text-muted-foreground">
-        Davomat maʼlumoti yoʻq
+        {t("noAttendanceData")}
       </div>
     );
   }
@@ -276,7 +279,7 @@ export function AttendanceTracker({ days }: { days: AttendanceDay[] }) {
             </TooltipTrigger>
             <TooltipContent>
               <span className="font-medium">{d.label}</span>
-              <span className="opacity-70"> · {ATT_STATUS_LABELS[d.status]}</span>
+              <span className="opacity-70"> · {attStatusLabels[d.status]}</span>
             </TooltipContent>
           </Tooltip>
         ))}

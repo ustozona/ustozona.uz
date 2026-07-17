@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
@@ -17,6 +18,7 @@ import {
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 
 export default function GradesPage() {
+  const t = useTranslations("GradesPage");
   // Sinf tanlash — `?classId=` URL param (refresh/deep-link chidamli).
   // null = hech narsa tanlanmagan (Sinflar ustuni 50%). Tanlanganda URL +
   // store default yangilanadi (boshqa sahifalar bilan sinxron).
@@ -62,8 +64,8 @@ export default function GradesPage() {
               <Empty className="h-full border-0">
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                  <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
-                  <EmptyDescription>Jurnalni ochish uchun sinf tanlang</EmptyDescription>
+                  <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+                  <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             </div>

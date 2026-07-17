@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -26,27 +28,32 @@ export const metadata: Metadata = {
     "Ustozona EMS — oʻqituvchilar uchun toʻliq boshqaruv tizimi. Sinflar, oʻquvchilar, darslar, baholar va davomatni bir joyda boshqaring.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
     <html
-      lang="uz"
+      lang={locale}
       suppressHydrationWarning
       className={`${dmSans.variable} ${jetbrainsMono.variable}`}
     >
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <MotionProvider>
-            <TooltipProvider>{children}</TooltipProvider>
-          </MotionProvider>
-          <Toaster richColors position="bottom-center" />
-        </ThemeProvider>
+        <NextIntlClientProvider messages={messages}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <MotionProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+            </MotionProvider>
+            <Toaster richColors position="bottom-center" />
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -49,7 +49,7 @@ export function normalizeBackgroundScale(v: unknown): number {
   if (!Number.isFinite(n)) return BACKGROUND_SCALE_DEFAULT;
   return Math.min(BACKGROUND_SCALE_MAX, Math.max(BACKGROUND_SCALE_MIN, n));
 }
-export type AppLanguage = "uz" | "kaa" | "ru" | "en";
+export type AppLanguage = "uz" | "kaa" | "ru" | "en" | "ky" | "kk";
 export type AuthProvider = "google" | "email";
 
 export type TeacherProfile = {

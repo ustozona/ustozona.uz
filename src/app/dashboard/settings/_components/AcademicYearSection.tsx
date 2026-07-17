@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { TrashIcon, Plus, RotateCcw, TriangleAlert, CalendarPlus, CalendarCheck, History } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -50,19 +51,20 @@ import RolloverWizard from "./RolloverWizard";
 
 /** Ikki sana tanlagich (shadcn) — SettingRow oʻng sloti uchun. */
 function RangeInputs({ range, onChange }: { range: DateRange; onChange: (r: DateRange) => void }) {
+  const t = useTranslations("AcademicYearSection");
   return (
     <div className="flex items-center gap-1.5">
       <DateKeyPicker
         value={range.start}
         onChange={(v) => onChange({ ...range, start: v })}
-        ariaLabel="Boshlanish sanasi"
+        ariaLabel={t("rangeStartAria")}
         className="w-[9.5rem]"
       />
       <span className="text-muted-foreground">—</span>
       <DateKeyPicker
         value={range.end}
         onChange={(v) => onChange({ ...range, end: v })}
-        ariaLabel="Tugash sanasi"
+        ariaLabel={t("rangeEndAria")}
         className="w-[9.5rem]"
       />
     </div>
@@ -71,11 +73,14 @@ function RangeInputs({ range, onChange }: { range: DateRange; onChange: (r: Date
 
 /** Rasmiy bayramlar — "Tezkor qoʻshish" chiplari uchun sana kalitini hisoblaydi
     (oʻquv yili boshlanish yiliga nisbatan: iyundan oldingi oylar keyingi kalendar yiliga tushadi). */
-function quickHolidays(startYear: number): { name: string; dateKey: string }[] {
+function quickHolidays(
+  startYear: number,
+  names: { independence: string; navruz: string; memory: string }
+): { name: string; dateKey: string }[] {
   const defs = [
-    { name: "Mustaqillik kuni", month: 9, day: 1 },
-    { name: "Navroʻz bayrami", month: 3, day: 21 },
-    { name: "Xotira va qadrlash kuni", month: 5, day: 9 },
+    { name: names.independence, month: 9, day: 1 },
+    { name: names.navruz, month: 3, day: 21 },
+    { name: names.memory, month: 5, day: 9 },
   ];
   return defs.map((h) => {
     const year = h.month >= 6 ? startYear : startYear + 1;
@@ -84,16 +89,17 @@ function quickHolidays(startYear: number): { name: string; dateKey: string }[] {
 }
 
 /** Yil davri yorligʻi: "2-sentabr — 25-may" (boʻsh boʻlsa maʼlumot). */
-function periodLabel(range: DateRange): string {
+function periodLabel(range: DateRange, unsetLabel: string): string {
   return range.start && range.end
     ? `${fmtDayMonthUz(range.start)} — ${fmtDayMonthUz(range.end)}`
-    : "Davr belgilanmagan";
+    : unsetLabel;
 }
 
 /** Yil almashtirgich — barcha oʻquv yillari roʻyxati (faol badge, faollashtirish,
     oʻchirish). Bitta yil boʻlsa koʻrsatilmaydi (bitta-yilli foydalanuvchi farq
     sezmasin). Faollashtirish davomat/planner oynasini oʻsha yilga koʻchiradi. */
 function YearSwitcher() {
+  const t = useTranslations("AcademicYearSection");
   const years = useCalendarStore((s) => s.years);
   const activateYear = useCalendarStore((s) => s.activateYear);
   const deleteYear = useCalendarStore((s) => s.deleteYear);
@@ -106,7 +112,7 @@ function YearSwitcher() {
     if (!target) return;
     activateYear(id);
     applyYearActivationSideEffects(target.calendar);
-    toast.success(`${target.calendar.yearLabel || "Yil"} faollashtirildi`);
+    toast.success(t("toastYearActivated", { year: target.calendar.yearLabel || t("defaultYearName") }));
   };
 
   const pending = years.find((y) => y.id === deleteId) ?? null;
@@ -114,8 +120,8 @@ function YearSwitcher() {
   return (
     <>
       <SettingsCard
-        title="Oʻquv yillari"
-        description="Faol yil davomat, planner va choraklik statistikaning qamrov oynasini belgilaydi. Boshqa yilni faollashtirib arxivni koʻrishingiz mumkin."
+        title={t("yearsTitle")}
+        description={t("yearsDescription")}
       >
         <div className="space-y-2">
           {years.map((y) => (
@@ -129,26 +135,26 @@ function YearSwitcher() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-foreground">
-                    {y.calendar.yearLabel || "Nomsiz yil"}
+                    {y.calendar.yearLabel || t("unnamedYear")}
                   </span>
                   {y.isActive && (
                     <Badge variant="secondary" className="gap-1 text-[10px]">
                       <CalendarCheck className="size-3" />
-                      Faol
+                      {t("activeBadge")}
                     </Badge>
                   )}
                 </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">{periodLabel(y.calendar.range)}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{periodLabel(y.calendar.range, t("periodUnset"))}</p>
               </div>
               {!y.isActive && (
                 <div className="flex items-center gap-1.5">
                   <Button variant="outline" size="sm" onClick={() => handleActivate(y.id)}>
-                    Faollashtirish
+                    {t("activateButton")}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Yilni oʻchirish"
+                    aria-label={t("deleteYearAria")}
                     className="text-muted-foreground hover:text-destructive"
                     onClick={() => setDeleteId(y.id)}
                   >
@@ -164,15 +170,15 @@ function YearSwitcher() {
       <AlertDialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Oʻquv yilini oʻchirish?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteYearDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
               {pending
-                ? `«${pending.calendar.yearLabel || "Nomsiz yil"}» yil yozuvi oʻchiriladi. Davomat, baho va xulq yozuvlari (sana bilan bogʻlangan) OʻCHMAYDI — faqat bu yil oynasi olib tashlanadi.`
+                ? t("deleteYearDialogDescription", { year: pending.calendar.yearLabel || t("unnamedYear") })
                 : ""}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={() => {
@@ -180,7 +186,7 @@ function YearSwitcher() {
                 setDeleteId(null);
               }}
             >
-              Oʻchirish
+              {t("deleteButton")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -193,6 +199,7 @@ function YearSwitcher() {
     yilni koʻrayotganini eslatadi. Bugunni qamrovchi yil mavjud boʻlsa "joriy yilga
     qaytish" tugmasi oʻsha yilni faollashtiradi. */
 function ArchiveYearBanner() {
+  const t = useTranslations("AcademicYearSection");
   const years = useCalendarStore((s) => s.years);
   const calendar = useCalendarStore((s) => s.calendar);
   const activateYear = useCalendarStore((s) => s.activateYear);
@@ -207,8 +214,10 @@ function ArchiveYearBanner() {
     <div className="flex flex-wrap items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3">
       <History className="size-4 shrink-0 text-warning" />
       <p className="min-w-0 flex-1 text-sm text-warning">
-        Siz {calendar.yearLabel || "boshqa"} yilni koʻrmoqdasiz — bugungi sana ({fmtDayMonthUz(today)})
-        bu yil davridan tashqarida.
+        {t("archiveBannerText", {
+          year: calendar.yearLabel || t("defaultOtherYear"),
+          date: fmtDayMonthUz(today),
+        })}
       </p>
       {todayYear && (
         <Button
@@ -218,10 +227,10 @@ function ArchiveYearBanner() {
           onClick={() => {
             activateYear(todayYear.id);
             applyYearActivationSideEffects(todayYear.calendar);
-            toast.success(`${todayYear.calendar.yearLabel || "Joriy yil"} faollashtirildi`);
+            toast.success(t("toastYearActivated", { year: todayYear.calendar.yearLabel || t("currentYearFallback") }));
           }}
         >
-          Joriy yilga qaytish
+          {t("backToCurrentYear")}
         </Button>
       )}
     </div>
@@ -229,6 +238,7 @@ function ArchiveYearBanner() {
 }
 
 export default function AcademicYearSection() {
+  const t = useTranslations("AcademicYearSection");
   const calendar = useCalendarStore((s) => s.calendar);
   const hydrated = useCalendarStore((s) => s._hasHydrated);
   const setYearRange = useCalendarStore((s) => s.setYearRange);
@@ -267,10 +277,10 @@ export default function AcademicYearSection() {
       if (holiday) {
         const delta = diffDaysKeys(quarter.range.start, newRange.start);
         const nextEnd = addDaysKey(holiday.range.end, delta);
-        toast(`«${holiday.name}» taʼtilini ham suraymi?`, {
-          description: `Yangi tugash sanasi: ${fmtDayMonthUz(nextEnd)}`,
+        toast(t("toastShiftHolidayTitle", { holiday: holiday.name }), {
+          description: t("toastNewEndDate", { date: fmtDayMonthUz(nextEnd) }),
           action: {
-            label: "Ha, suray",
+            label: t("toastShiftAction"),
             onClick: () => updateHoliday(holiday.id, { range: { ...holiday.range, end: nextEnd } }),
           },
         });
@@ -281,10 +291,10 @@ export default function AcademicYearSection() {
       if (holiday) {
         const delta = diffDaysKeys(quarter.range.end, newRange.end);
         const nextStart = addDaysKey(holiday.range.start, delta);
-        toast(`«${holiday.name}» taʼtilini ham suraymi?`, {
-          description: `Yangi boshlanish sanasi: ${fmtDayMonthUz(nextStart)}`,
+        toast(t("toastShiftHolidayTitle", { holiday: holiday.name }), {
+          description: t("toastNewStartDate", { date: fmtDayMonthUz(nextStart) }),
           action: {
-            label: "Ha, suray",
+            label: t("toastShiftAction"),
             onClick: () => updateHoliday(holiday.id, { range: { ...holiday.range, start: nextStart } }),
           },
         });
@@ -319,7 +329,11 @@ export default function AcademicYearSection() {
     ? Number(calendar.range.start.slice(0, 4)) - (Number(calendar.range.start.slice(5, 7)) >= 6 ? 0 : 1)
     : new Date().getFullYear();
   const existingHolidayNames = new Set(calendar.holidays.map((h) => h.name));
-  const suggestions = quickHolidays(startYear).filter((h) => !existingHolidayNames.has(h.name));
+  const suggestions = quickHolidays(startYear, {
+    independence: t("holidayIndependence"),
+    navruz: t("holidayNavruz"),
+    memory: t("holidayMemory"),
+  }).filter((h) => !existingHolidayNames.has(h.name));
 
   const handleYearRange = (r: DateRange) => {
     setYearRange(r);
@@ -335,14 +349,14 @@ export default function AcademicYearSection() {
       <YearSwitcher />
 
       <SettingsCard
-        title={`Oʻquv yili · ${calendar.yearLabel}`}
-        description="Chorak va taʼtil kunlari tizimdagi barcha jarayonlar (dars jadvali, davomat, jurnal) uchun asos hisoblanadi."
+        title={t("yearSectionTitle", { year: calendar.yearLabel })}
+        description={t("yearSectionDescription")}
         action={
           <div className="flex items-center gap-2">
             <SaveSignalPing signal={calendar} />
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
               <CalendarPlus className="size-4" />
-              Oʻquv yilini qoʻshish
+              {t("addYearButton")}
             </Button>
           </div>
         }
@@ -351,19 +365,19 @@ export default function AcademicYearSection() {
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">Dars kunlari</p>
+            <p className="text-[11px] text-muted-foreground">{t("statSchoolDays")}</p>
             <p className="mt-0.5 text-base font-semibold text-foreground">≈ {totalSchoolDays}</p>
           </div>
           <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">Yil yakunlanishi</p>
+            <p className="text-[11px] text-muted-foreground">{t("statYearProgress")}</p>
             <p className="mt-0.5 text-base font-semibold text-foreground">{progressPct}%</p>
           </div>
           <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">Choraklar</p>
+            <p className="text-[11px] text-muted-foreground">{t("statQuarters")}</p>
             <p className="mt-0.5 text-base font-semibold text-foreground">{calendar.quarters.length}</p>
           </div>
           <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">Taʼtil kunlari</p>
+            <p className="text-[11px] text-muted-foreground">{t("statHolidayDays")}</p>
             <p className="mt-0.5 text-base font-semibold text-foreground">{totalHolidayDays}</p>
           </div>
         </div>
@@ -378,14 +392,14 @@ export default function AcademicYearSection() {
             ))}
           </div>
         )}
-        <SettingRow title="Oʻquv yili davomiyligi" description="Oʻquv yilining boshlanish va tugash sanalari.">
+        <SettingRow title={t("yearDurationTitle")} description={t("yearDurationDescription")}>
           <RangeInputs range={calendar.range} onChange={handleYearRange} />
         </SettingRow>
       </SettingsCard>
 
       <SettingsCard
-        title="Choraklar"
-        description="Choraklik baholar ushbu belgilangan muddatlar asosida hisoblanadi."
+        title={t("quartersTitle")}
+        description={t("quartersDescription")}
       >
         {calendar.quarters.map((q) => {
           const qIssues = issuesFor({ kind: "quarter", id: q.id });
@@ -406,7 +420,7 @@ export default function AcademicYearSection() {
             >
               <SettingRow
                 title={q.name}
-                description={days > 0 ? `${Math.round(days / 7)} hafta · ${schoolDays} dars kuni` : undefined}
+                description={days > 0 ? t("weeksAndDays", { weeks: Math.round(days / 7), days: schoolDays }) : undefined}
               >
                 <RangeInputs range={q.range} onChange={(r) => handleQuarterRange(q.id, r)} />
               </SettingRow>
@@ -422,8 +436,8 @@ export default function AcademicYearSection() {
       </SettingsCard>
 
       <SettingsCard
-        title="Taʼtillar"
-        description="Taʼtil kunlarida darslar rejalashtirilmaydi hamda davomat va rejalashtiruvchida avtomatik hisobga olinadi."
+        title={t("holidaysTitle")}
+        description={t("holidaysDescription")}
       >
         {calendar.holidays.map((h) => {
           const hIssues = issuesFor({ kind: "holiday", id: h.id });
@@ -445,13 +459,13 @@ export default function AcademicYearSection() {
                   value={h.name}
                   onChange={(e) => updateHoliday(h.id, { name: e.target.value })}
                   className="w-40 min-w-0 flex-1"
-                  placeholder="Taʼtil nomi"
+                  placeholder={t("holidayNamePlaceholder")}
                 />
                 <RangeInputs range={h.range} onChange={(r) => updateHoliday(h.id, { range: r })} />
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Taʼtilni oʻchirish"
+                  aria-label={t("deleteHolidayAria")}
                   className="text-muted-foreground hover:text-destructive"
                   onClick={() => removeHoliday(h.id)}
                 >
@@ -472,14 +486,14 @@ export default function AcademicYearSection() {
             variant="outline"
             size="sm"
             className="gap-1.5"
-            onClick={() => addHoliday("Yangi taʼtil", { start: todayKey(), end: todayKey() })}
+            onClick={() => addHoliday(t("newHolidayName"), { start: todayKey(), end: todayKey() })}
           >
             <Plus className="size-4" />
-            Yangi taʼtil qoʻshish
+            {t("addHolidayButton")}
           </Button>
           {suggestions.length > 0 && (
             <>
-              <span className="text-xs text-muted-foreground">Tezkor qoʻshish:</span>
+              <span className="text-xs text-muted-foreground">{t("quickAddLabel")}</span>
               {suggestions.map((s) => (
                 <Button
                   key={s.name}
@@ -500,23 +514,22 @@ export default function AcademicYearSection() {
       <div>
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setResetOpen(true)}>
           <RotateCcw className="size-4" />
-          Dastlabki holatga qaytarish
+          {t("resetButton")}
         </Button>
       </div>
 
       <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Kalendarni tiklash?</AlertDialogTitle>
+            <AlertDialogTitle>{t("resetDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Yil chegaralari, choraklar va taʼtillar {calendar.yearLabel || "joriy yil"} rasmiy
-              holatiga qaytariladi. Kiritgan oʻzgarishlaringiz yoʻqoladi.
+              {t("resetDialogDescription", { year: calendar.yearLabel || t("resetCurrentYearFallback") })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={() => { resetToOfficialTemplate(); setResetOpen(false); }}>
-              Tiklash
+              {t("resetConfirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ChevronRight, Settings } from "lucide-react";
 import {
@@ -31,6 +32,7 @@ export default function SettingsPage() {
 }
 
 function SettingsPageInner() {
+  const t = useTranslations("SettingsPage");
   const router = useRouter();
   const searchParams = useSearchParams();
   // ?section= — yagona manba. useSearchParams reaktiv boʻlgani uchun header
@@ -84,10 +86,8 @@ function SettingsPageInner() {
               <Settings />
             </SectionIcon>
             <div className="flex min-w-0 flex-col">
-              <h1 className="heading-page text-foreground">Sozlamalar</h1>
-              <TypographyMuted>
-                Profil, taʼlim jarayoni va hisobga oid sozlamalar — bir joyda.
-              </TypographyMuted>
+              <h1 className="heading-page text-foreground">{t("title")}</h1>
+              <TypographyMuted>{t("subtitle")}</TypographyMuted>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-3 pt-1">
@@ -98,7 +98,7 @@ function SettingsPageInner() {
         <div className="flex min-h-0 flex-1">
           {/* Chap nav — faqat md+ */}
           <nav
-            aria-label="Sozlamalar boʻlimlari"
+            aria-label={t("sectionsNavLabel")}
             className="hidden w-56 shrink-0 flex-col gap-6 overflow-y-auto border-r border-border px-3 py-4 md:flex"
           >
             {SECTION_GROUPS.map((g) => (
@@ -179,7 +179,7 @@ function SettingsPageInner() {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Boʻlimlar roʻyxatiga qaytish"
+                aria-label={t("backToList")}
                 onClick={() => select(null)}
               >
                 <ArrowLeft className="size-4" />
@@ -203,21 +203,18 @@ function SettingsPageInner() {
       <AlertDialog open={pendingId !== false} onOpenChange={(o) => !o && setPendingId(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Saqlanmagan oʻzgarishlar bor</AlertDialogTitle>
-            <AlertDialogDescription>
-              Ushbu boʻlimda saqlanmagan oʻzgarishlar mavjud. Boshqa boʻlimga oʻtsangiz, ular
-              bekor boʻladi.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("unsavedTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("unsavedDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Qolish</AlertDialogCancel>
+            <AlertDialogCancel>{t("stay")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (pendingId !== false) navigate(pendingId);
                 setPendingId(false);
               }}
             >
-              Baribir oʻtish
+              {t("leaveAnyway")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

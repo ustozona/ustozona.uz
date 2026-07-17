@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { BarChart3, AlertCircle, Timer, CheckCircle2, Flag, ChevronRight } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,18 +21,17 @@ import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import type { TaskFilter } from "./TasksSidebar";
 import type { Task } from "@/lib/tasks-data";
 
-// Hafta kunlari qisqa yorligʻi (getDay 0=Yakshanba)
-const WEEKDAY_SHORT = ["Yak", "Du", "Se", "Cho", "Pay", "Ju", "Sha"];
+// Hafta kunlari qisqa yorligʻi kalitlari (getDay 0=Yakshanba) — matn TaskStats
+// i18n namespace'idan (weekdaySun..weekdaySat) olinadi.
+const WEEKDAY_SHORT_KEYS = [
+  "weekdaySun", "weekdayMon", "weekdayTue", "weekdayWed", "weekdayThu", "weekdayFri", "weekdaySat",
+] as const;
 
-const TREND_CONFIG = {
-  count: { label: "Bajarildi", color: "var(--primary)" },
-} satisfies ChartConfig;
-
-const PRIORITY_META: { id: TaskPriority; label: string; bar: string }[] = [
-  { id: "high",   label: "Yuqori", bar: "bg-destructive" },
-  { id: "medium", label: "O‘rta",  bar: "bg-warning" },
-  { id: "low",    label: "Past",   bar: "bg-info" },
-  { id: "none",   label: "Belgilanmagan",   bar: "bg-muted-foreground/40" },
+const PRIORITY_BAR: { id: TaskPriority; bar: string }[] = [
+  { id: "high",   bar: "bg-destructive" },
+  { id: "medium", bar: "bg-warning" },
+  { id: "low",    bar: "bg-info" },
+  { id: "none",   bar: "bg-muted-foreground/40" },
 ];
 
 type Props = {
@@ -99,23 +99,38 @@ function StatTile({
   );
 }
 
-function scopeLabel(f: TaskFilter, classNameOf: (id: string) => string | undefined): string {
-  if (f === "inbox") return "Kiruvchi";
-  if (f === "today") return "Bugun";
-  if (f === "upcoming") return "Rejalashtirilgan";
-  if (f === "overdue") return "Kechikkanlar";
-  if (f === "important") return "Muhim";
-  if (f === "completed") return "Bajarilgan";
-  if (f === "all") return "Barcha vazifalar";
+function scopeLabel(
+  f: TaskFilter,
+  classNameOf: (id: string) => string | undefined,
+  t: (key: string) => string
+): string {
+  if (f === "inbox") return t("filterInbox");
+  if (f === "today") return t("filterToday");
+  if (f === "upcoming") return t("filterUpcoming");
+  if (f === "overdue") return t("filterOverdue");
+  if (f === "important") return t("filterImportant");
+  if (f === "completed") return t("filterCompleted");
+  if (f === "all") return t("filterAll");
   if (f.startsWith("class-")) {
     const cid = f.replace("class-", "");
-    if (cid === "none") return "Umumiy";
-    return classNameOf(cid) ?? "Sinf";
+    if (cid === "none") return t("generalClass");
+    return classNameOf(cid) ?? t("classLabel");
   }
-  return "Barcha vazifalar";
+  return t("filterAll");
 }
 
 export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, demoClasses }: Props) {
+  const t = useTranslations("TaskStats");
+  const tPriority = useTranslations("TaskPriority");
+  const tStatus = useTranslations("TaskStatus");
+  const WEEKDAY_SHORT = WEEKDAY_SHORT_KEYS.map((k) => t(k));
+  const TREND_CONFIG = {
+    count: { label: t("completedLegend"), color: "var(--primary)" },
+  } satisfies ChartConfig;
+  const PRIORITY_META: { id: TaskPriority; label: string; bar: string }[] = PRIORITY_BAR.map((p) => ({
+    ...p,
+    label: tPriority(p.id),
+  }));
   const storedTasks = useTaskStore((s) => s.tasks);
   const tasks = demoTasks ?? storedTasks;
   const liveClassesReal = useLiveClasses();
@@ -141,12 +156,12 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
     let focusMinutes = 0;
     let focusSessions = 0;
 
-    scope.forEach((t) => {
-      statusCounts[t.status]++;
-      priorityCounts[t.priority]++;
-      if (t.status === TASK_STATUS.DONE) done++;
-      if (t.status !== TASK_STATUS.CANCELED) active++;
-      (t.pomodoroSessions || []).forEach((p) => {
+    scope.forEach((task) => {
+      statusCounts[task.status]++;
+      priorityCounts[task.priority]++;
+      if (task.status === TASK_STATUS.DONE) done++;
+      if (task.status !== TASK_STATUS.CANCELED) active++;
+      (task.pomodoroSessions || []).forEach((p) => {
         if (p.type === "focus") { focusMinutes += p.durationMin; focusSessions++; }
       });
     });
@@ -161,11 +176,11 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
   // navigatsiya nuqtalari sifatida xizmat qiladi.
   const global = useMemo(() => {
     let overdue = 0, todayTotal = 0, todayDone = 0;
-    tasks.forEach((t) => {
-      const isDone = t.status === TASK_STATUS.DONE;
-      const isCanceled = t.status === TASK_STATUS.CANCELED;
-      if (t.dueDate && t.dueDate < todayStr && !isDone && !isCanceled) overdue++;
-      if (t.dueDate === todayStr && !isCanceled) { todayTotal++; if (isDone) todayDone++; }
+    tasks.forEach((task) => {
+      const isDone = task.status === TASK_STATUS.DONE;
+      const isCanceled = task.status === TASK_STATUS.CANCELED;
+      if (task.dueDate && task.dueDate < todayStr && !isDone && !isCanceled) overdue++;
+      if (task.dueDate === todayStr && !isCanceled) { todayTotal++; if (isDone) todayDone++; }
     });
     return { overdue, todayTotal, todayDone, todayRemaining: todayTotal - todayDone };
   }, [tasks, todayStr]);
@@ -180,9 +195,9 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
       days.push({ key, day: WEEKDAY_SHORT[d.getDay()], count: 0 });
     }
     const idx = new Map(days.map((d, i) => [d.key, i]));
-    tasks.forEach((t) => {
-      if (t.status !== TASK_STATUS.DONE || !t.completedAt) return;
-      const k = t.completedAt.slice(0, 10);
+    tasks.forEach((task) => {
+      if (task.status !== TASK_STATUS.DONE || !task.completedAt) return;
+      const k = task.completedAt.slice(0, 10);
       const i = idx.get(k);
       if (i !== undefined) days[i].count++;
     });
@@ -192,10 +207,10 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
   // ── Sinf boʻyicha yuk (global) — ochiq (todo/jarayonda) vazifalar soni ──
   const classLoad = useMemo(() => {
     const counts: Record<string, number> = {};
-    tasks.forEach((t) => {
-      const open = t.status === TASK_STATUS.TODO || t.status === TASK_STATUS.IN_PROGRESS;
-      if (!open || !t.classIds?.length) return;
-      t.classIds.forEach((cid) => { counts[cid] = (counts[cid] || 0) + 1; });
+    tasks.forEach((task) => {
+      const open = task.status === TASK_STATUS.TODO || task.status === TASK_STATUS.IN_PROGRESS;
+      if (!open || !task.classIds?.length) return;
+      task.classIds.forEach((cid) => { counts[cid] = (counts[cid] || 0) + 1; });
     });
     const rows = liveClasses
       .filter((c) => counts[c.id] > 0)
@@ -221,7 +236,7 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
 
   const focusH = Math.floor(stats.focusMinutes / 60);
   const focusM = stats.focusMinutes % 60;
-  const focusLabel = focusH > 0 ? `${focusH}s ${focusM}d` : `${focusM}d`;
+  const focusLabel = focusH > 0 ? t("hoursMinutes", { hours: focusH, minutes: focusM }) : t("minutesOnly", { minutes: focusM });
 
   return (
     <div className="h-full flex flex-col">
@@ -229,7 +244,7 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
         {/* Header */}
         <div className="px-5 py-5 flex items-center shrink-0 gap-3 border-b border-border min-h-[4.5rem]">
           <SectionIcon><BarChart3 /></SectionIcon>
-          <CardTitle className="truncate">Statistika</CardTitle>
+          <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>
 
         <div className="flex-1 min-h-0 relative overflow-hidden">
@@ -240,18 +255,18 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
               <div className="grid grid-cols-2 gap-2.5">
                 <StatTile
                   icon={CheckCircle2}
-                  label="Bugun"
+                  label={t("today")}
                   value={global.todayRemaining}
-                  sub={global.todayTotal === 0 ? "Rejalar yoʻq" : `${global.todayDone}/${global.todayTotal} bajarildi`}
+                  sub={global.todayTotal === 0 ? t("noPlans") : t("doneOfTotal", { done: global.todayDone, total: global.todayTotal })}
                   tone={global.todayRemaining === 0 && global.todayTotal > 0 ? "success" : "default"}
                   active={activeFilter === "today"}
                   onClick={() => onSelectFilter("today")}
                 />
                 <StatTile
                   icon={AlertCircle}
-                  label="Muddati oʻtgan"
+                  label={t("overdueLabel")}
                   value={global.overdue}
-                  sub={global.overdue > 0 ? "eʼtibor talab qiladi" : "Kechikkanlar yoʻq"}
+                  sub={global.overdue > 0 ? t("overdueNeedsAttention") : t("noOverdue")}
                   tone={global.overdue > 0 ? "destructive" : "default"}
                   active={activeFilter === "overdue"}
                   onClick={() => onSelectFilter("overdue")}
@@ -261,11 +276,11 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
               {/* ── Bu hafta bajarish trendi (global) ── */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <TypographyLabel>Shu haftada bajarilgan</TypographyLabel>
+                  <TypographyLabel>{t("weeklyCompletedTitle")}</TypographyLabel>
                   <span className="text-sm font-semibold tabular-nums">{week.total}</span>
                 </div>
                 {week.total === 0 ? (
-                  <p className="text-sm text-muted-foreground py-1">Oxirgi 7 kunda hech qanday vazifa bajarilmadi.</p>
+                  <p className="text-sm text-muted-foreground py-1">{t("weeklyCompletedEmpty")}</p>
                 ) : !mounted ? (
                   <div className="h-24 w-full" />
                 ) : (
@@ -275,7 +290,7 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
                       <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={6} />
                       <ChartTooltip
                         cursor={false}
-                        content={<ChartTooltipContent hideLabel formatter={(v) => `${v} ta bajarildi`} />}
+                        content={<ChartTooltipContent hideLabel formatter={(v) => t("chartTooltipCompleted", { count: Number(v) })} />}
                       />
                       <Bar dataKey="count" fill="var(--color-count)" radius={4} />
                     </BarChart>
@@ -286,17 +301,17 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
               {/* ── Bajarish foizi (joriy filtr boʻyicha) ── */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <TypographyLabel>Samaradorlik</TypographyLabel>
-                  <span className="text-[11px] text-muted-foreground/70 truncate">{scopeLabel(activeFilter, (id) => liveClasses.find((c) => c.id === id)?.name)}</span>
+                  <TypographyLabel>{t("efficiencyTitle")}</TypographyLabel>
+                  <span className="text-[11px] text-muted-foreground/70 truncate">{scopeLabel(activeFilter, (id) => liveClasses.find((c) => c.id === id)?.name, t)}</span>
                 </div>
                 {stats.active === 0 ? (
-                  <p className="text-sm text-muted-foreground py-2">Bu roʻyxatda hali maʼlumotlar yoʻq.</p>
+                  <p className="text-sm text-muted-foreground py-2">{t("efficiencyEmpty")}</p>
                 ) : (
                   <>
                     <div className="flex items-end justify-between">
                       <div className="text-4xl font-bold tabular-nums leading-none">{stats.percent}%</div>
                       <div className="text-xs text-muted-foreground tabular-nums pb-0.5">
-                        {stats.done} / {stats.active} vazifa
+                        {t("tasksFraction", { done: stats.done, total: stats.active })}
                       </div>
                     </div>
                     <Progress value={stats.percent} className="h-2" />
@@ -307,20 +322,20 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
               {/* ── Holat boʻyicha taqsimot ── */}
               {stats.total > 0 && (
                 <div className="space-y-3">
-                  <TypographyLabel>Holat bo‘yicha</TypographyLabel>
+                  <TypographyLabel>{t("byStatusTitle")}</TypographyLabel>
                   <div className="flex items-center gap-5">
                     <div className="relative shrink-0 size-28">
                       <div className="size-28 rounded-full" style={{ background: donutGradient }} />
                       <div className="absolute inset-[14px] rounded-full bg-card flex flex-col items-center justify-center">
                         <span className="text-xl font-bold tabular-nums leading-none">{stats.total}</span>
-                        <span className="text-xs text-muted-foreground">jami</span>
+                        <span className="text-xs text-muted-foreground">{t("totalLabel")}</span>
                       </div>
                     </div>
                     <div className="flex-1 min-w-0 space-y-2">
                       {STATUS_META.map((s) => (
                         <div key={s.id} className="flex items-center gap-2 text-sm">
                           <span className={cn("size-2.5 rounded-full shrink-0", s.dot)} />
-                          <span className="text-foreground/80 flex-1 truncate">{s.label}</span>
+                          <span className="text-foreground/80 flex-1 truncate">{tStatus(s.id)}</span>
                           <span className="font-semibold tabular-nums text-foreground/90">
                             {stats.statusCounts[s.id]}
                           </span>
@@ -334,7 +349,7 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
               {/* ── Ustuvorlik boʻyicha taqsimot ── */}
               {stats.total > 0 && (
                 <div className="space-y-3">
-                  <TypographyLabel>Ustuvorlik bo‘yicha</TypographyLabel>
+                  <TypographyLabel>{t("byPriorityTitle")}</TypographyLabel>
                   <div className="space-y-2.5">
                     {PRIORITY_META.map((p) => {
                       const count = stats.priorityCounts[p.id];
@@ -364,7 +379,7 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
               {/* ── Sinf boʻyicha yuk (global, bosiladigan) ── */}
               {classLoad.rows.length > 0 && (
                 <div className="space-y-3">
-                  <TypographyLabel>Sinf bo‘yicha yuk</TypographyLabel>
+                  <TypographyLabel>{t("byClassLoadTitle")}</TypographyLabel>
                   <div className="space-y-2.5">
                     {classLoad.rows.map((c) => {
                       const pct = classLoad.max === 0 ? 0 : Math.round((c.count / classLoad.max) * 100);
@@ -402,10 +417,10 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
               {/* ── Fokus vaqti (Pomodoro) ── */}
               {stats.focusSessions > 0 && (
                 <div className="space-y-3">
-                  <TypographyLabel>Fokus vaqti</TypographyLabel>
+                  <TypographyLabel>{t("focusTimeTitle")}</TypographyLabel>
                   <div className="grid grid-cols-2 gap-2.5">
-                    <StatTile icon={Timer} label="Jami fokus" value={focusLabel} sub="ishlangan vaqt" />
-                    <StatTile icon={CheckCircle2} label="Seanslar" value={stats.focusSessions} sub="pomodoro" />
+                    <StatTile icon={Timer} label={t("totalFocus")} value={focusLabel} sub={t("timeSpent")} />
+                    <StatTile icon={CheckCircle2} label={t("sessions")} value={stats.focusSessions} sub={t("pomodoro")} />
                   </div>
                 </div>
               )}

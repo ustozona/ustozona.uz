@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   Check, X, Clock, FileText, ChevronLeft, ChevronRight,
   Funnel, Settings2, Calendar,
@@ -76,11 +77,11 @@ function splitName(name: string): { first: string; last: string } {
 // ─── Oʻquvchi preview (hover-card ichida) ────────────────────────────────────
 
 // Davomat legendasi — profil sahifasidagi chart bilan bir xil rang+ikona.
-const PREVIEW_LEGEND: { key: keyof AttendanceWindow; label: string; Icon: typeof Check; color: string }[] = [
-  { key: "present", label: "Keldi",    Icon: Check,    color: ATT_COLORS.present },
-  { key: "absent",  label: "Kelmadi",  Icon: X,        color: ATT_COLORS.absent },
-  { key: "late",    label: "Kechikdi", Icon: Clock,    color: ATT_COLORS.late },
-  { key: "excused", label: "Sababli",  Icon: FileText, color: ATT_COLORS.excused },
+const PREVIEW_LEGEND: { key: keyof AttendanceWindow; labelKey: string; Icon: typeof Check; color: string }[] = [
+  { key: "present", labelKey: "present", Icon: Check,    color: ATT_COLORS.present },
+  { key: "absent",  labelKey: "absent",  Icon: X,        color: ATT_COLORS.absent },
+  { key: "late",    labelKey: "late",    Icon: Clock,    color: ATT_COLORS.late },
+  { key: "excused", labelKey: "excused", Icon: FileText, color: ATT_COLORS.excused },
 ];
 
 /** Avatar + ism + sinf + profildagi davomat charti (donut + holatlar) + profil tugmasi. */
@@ -92,6 +93,7 @@ function AttendancePreview({
   classHex: string;
   summary: AttendanceWindow;
 }) {
+  const t = useTranslations("AttendanceView");
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
@@ -113,19 +115,20 @@ function AttendancePreview({
         {PREVIEW_LEGEND.map((s) => (
           <div key={s.key} className="flex items-center gap-2">
             <span className="flex size-6 shrink-0 items-center justify-center rounded-md"
-              style={{ backgroundColor: `color-mix(in srgb, ${s.color} 18%, transparent)` }}>
+              style={{ backgroundColor: `color-mix(in srgb, ${s.color} 18%, transparent)` }}
+              title={t(s.labelKey)}>
               <s.Icon className="size-3.5" strokeWidth={2.5} style={{ color: s.color }} />
             </span>
             <span className="text-sm font-semibold tabular-nums">
               {summary[s.key]}
-              <span className="ml-0.5 text-xs font-medium text-muted-foreground">marta</span>
+              <span className="ml-0.5 text-xs font-medium text-muted-foreground">{t("times")}</span>
             </span>
           </div>
         ))}
       </div>
       <Button asChild size="sm" className="w-full font-semibold">
         <a href={`/dashboard/students/${student.id}`}>
-          Profilni ochish
+          {t("openProfile")}
           <ArrowRight className="size-4" />
         </a>
       </Button>
@@ -141,6 +144,7 @@ function NoteModal({
   note: string; studentName: string; date: string;
   onSave: (v: string) => void; onClose: () => void;
 }) {
+  const t = useTranslations("AttendanceView");
   const [val, setVal] = useState(note);
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => { ref.current?.focus(); }, []);
@@ -159,7 +163,7 @@ function NoteModal({
             <SectionIcon><MessageSquareText /></SectionIcon>
             <div className="flex flex-col">
               <DialogTitle asChild>
-                <CardTitle>Izoh</CardTitle>
+                <CardTitle>{t("noteTitle")}</CardTitle>
               </DialogTitle>
               <DialogDescription className="text-caption">
                 {studentName} · {dateLabel}
@@ -168,7 +172,7 @@ function NoteModal({
           </div>
           <DialogClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
             <X className="size-4" />
-            <span className="sr-only">Yopish</span>
+            <span className="sr-only">{t("close")}</span>
           </DialogClose>
         </div>
 
@@ -176,10 +180,10 @@ function NoteModal({
           <Textarea
             ref={ref} value={val} onChange={(e) => setVal(e.target.value)}
             onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") save(); }}
-            rows={4} placeholder="Bu kun haqida izoh yozing…" className="resize-none"
+            rows={4} placeholder={t("notePlaceholder")} className="resize-none"
           />
           <p className="mt-2 inline-flex items-center gap-1.5 text-caption">
-            Saqlash uchun
+            {t("saveHint")}
             <KbdGroup>
               <Kbd>⌘/Ctrl</Kbd>
               <Kbd>Enter</Kbd>
@@ -189,11 +193,11 @@ function NoteModal({
 
         <DialogFooter className="items-center border-t border-border bg-muted/20 px-6 py-4 sm:justify-between">
           {note
-            ? <Button variant="ghost" size="sm" onClick={() => { onSave(""); onClose(); }} className="text-destructive hover:text-destructive hover:bg-destructive/10">Oʻchirish</Button>
+            ? <Button variant="ghost" size="sm" onClick={() => { onSave(""); onClose(); }} className="text-destructive hover:text-destructive hover:bg-destructive/10">{t("delete")}</Button>
             : <span />}
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>Bekor qilish</Button>
-            <Button size="sm" onClick={save}>Saqlash</Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>{t("cancel")}</Button>
+            <Button size="sm" onClick={save}>{t("save")}</Button>
           </div>
         </DialogFooter>
       </DialogContent>
@@ -206,6 +210,7 @@ function NoteModal({
 function ColHeader({
   date, isToday, statuses, onBulk, cellRef,
 }: { date: string; isToday: boolean; statuses: AttendanceStatusDef[]; onBulk: (s: AttendanceStatus) => void; cellRef?: React.Ref<HTMLTableCellElement> }) {
+  const t = useTranslations("AttendanceView");
   const [open, setOpen] = useState(false);
   const [, , dd] = date.split("-");
   const dayName = ["Yak", "Du", "Se", "Cho", "Pay", "Ju", "Sha"][new Date(date).getDay()];
@@ -241,7 +246,7 @@ function ColHeader({
                 <X className="size-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent>Tozalash</TooltipContent>
+            <TooltipContent>{t("clear")}</TooltipContent>
           </Tooltip>
         </PopoverContent>
       </Popover>
@@ -254,6 +259,7 @@ function ColHeader({
 function AttCell({
   def, note, onClick, onNote,
 }: { def: AttendanceStatusDef | null; note: string; onClick: () => void; onNote: () => void }) {
+  const t = useTranslations("AttendanceView");
   const [hov, setHov] = useState(false);
   const v = def ? statusVisual(def) : null;
   return (
@@ -271,7 +277,7 @@ function AttCell({
             {v ? <v.Icon className="size-4" strokeWidth={2.5} /> : null}
           </button>
         </TooltipTrigger>
-        <TooltipContent>{def?.label ?? "Belgilanmagan"}</TooltipContent>
+        <TooltipContent>{def?.label ?? t("unmarked")}</TooltipContent>
       </Tooltip>
       {note && <span className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-info pointer-events-none" />}
       {hov && def && (
@@ -302,6 +308,7 @@ export default function AttendanceView({
   demoRoster?: Student[];
   demoClassInfo?: ClassInfo;
 }) {
+  const t = useTranslations("AttendanceView");
   const mounted = useMounted();
   const storedRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
   // Oʻquv yili kalendari — "Choraklik %" akademik chorak diapazonidan hisoblanadi.
@@ -583,12 +590,11 @@ export default function AttendanceView({
             {todayOutsideCalendar && !isAlertDismissed && (
               <Alert variant="info" className="pr-10 relative">
                 <AlertTriangle className="size-4" aria-hidden />
-                <AlertTitle>Bugun tanlangan oʻquv yildan tashqarida</AlertTitle>
+                <AlertTitle>{t("todayOutsideYearTitle")}</AlertTitle>
                 <AlertDescription>
-                  Bugungi sana ({today}) faol kalendar ({calendar.yearLabel || "joriy yil"}) diapazonidan
-                  tashqarida — shuning uchun ayrim oylarda dars kuni koʻrinmasligi mumkin.{" "}
+                  {t("todayOutsideYearDescription", { date: today, year: calendar.yearLabel || t("currentYearFallback") })}{" "}
                   <Link href="/dashboard/settings?section=oquv-yili" className="font-medium underline underline-offset-2">
-                    Oʻquv yili sozlamalariga oʻtish
+                    {t("goToYearSettings")}
                   </Link>
                 </AlertDescription>
                 <Button
@@ -599,7 +605,7 @@ export default function AttendanceView({
                     setIsAlertDismissed(true);
                     localStorage.setItem("attendance-calendar-alert-dismissed", "true");
                   }}
-                  aria-label="Ogohlantirishni yopish"
+                  aria-label={t("dismissWarning")}
                 >
                   <X className="size-3.5" />
                 </Button>
@@ -641,13 +647,13 @@ export default function AttendanceView({
                   size="default"
                   className="h-9"
                 >
-                  <ToggleGroupItem value="month" className="px-3 text-sm font-medium">Oy</ToggleGroupItem>
+                  <ToggleGroupItem value="month" className="px-3 text-sm font-medium">{t("month")}</ToggleGroupItem>
                   <ToggleGroupItem
                     value="quarter"
                     disabled={calendar.quarters.length === 0}
                     className="px-3 text-sm font-medium"
                   >
-                    Chorak
+                    {t("quarter")}
                   </ToggleGroupItem>
                 </ToggleGroup>
               )}
@@ -663,7 +669,7 @@ export default function AttendanceView({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {onlyAttention ? "Hammasini koʻrsatish" : `Diqqat talab qiladiganlar (${attentionCount})`}
+                    {onlyAttention ? t("showAll") : t("needsAttentionCount", { count: attentionCount })}
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -673,7 +679,7 @@ export default function AttendanceView({
                   <ChevronLeft className="h-5 w-5" aria-hidden />
                 </Button>
                 <Button variant="outline" onClick={goToday} className="h-9 rounded-md bg-card border-border shadow-none font-semibold px-4">
-                  Bugun
+                  {t("today")}
                 </Button>
                 <Button variant="outline" size="icon" onClick={goNext} className={ctrlBtn}>
                   <ChevronRight className="h-5 w-5" aria-hidden />
@@ -690,7 +696,7 @@ export default function AttendanceView({
                           variant="outline"
                           size="icon"
                           className={ctrlBtn}
-                          aria-label="Davomat sozlamalari"
+                          aria-label={t("attendanceSettings")}
                         >
                           <Settings2 className="h-4 w-4" aria-hidden />
                         </Button>
@@ -698,7 +704,7 @@ export default function AttendanceView({
                     />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>Davomat sozlamalari</TooltipContent>
+                <TooltipContent>{t("attendanceSettings")}</TooltipContent>
               </Tooltip>
             </div>
           </CardHeader>
@@ -709,16 +715,16 @@ export default function AttendanceView({
               <Empty className="h-full w-full">
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                  <EmptyTitle>{period === "quarter" ? "Bu chorakda dars kuni yoʻq" : "Bu oyda dars kuni yoʻq"}</EmptyTitle>
+                  <EmptyTitle>{period === "quarter" ? t("noQuarterLessonDaysTitle") : t("noMonthLessonDaysTitle")}</EmptyTitle>
                   <EmptyDescription>
                     {period === "quarter"
-                      ? `Bu sinf uchun ${viewedQuarter?.name ?? "bu chorak"}da rejalashtirilgan dars yoʻq. Boshqa chorakka oʻting yoki oy koʻrinishiga qayting.`
-                      : `Bu sinf uchun ${MONTH_NAMES[month.month - 1]} oyida rejalashtirilgan dars yoʻq. Boshqa oyga oʻting yoki dars jadvalini tekshiring.`}
+                      ? t("noQuarterLessonDaysDescription", { quarter: viewedQuarter?.name ?? t("thisQuarterFallback") })
+                      : t("noMonthLessonDaysDescription", { month: MONTH_NAMES[month.month - 1] })}
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
                   <Button variant="outline" onClick={goToday} className="bg-card">
-                    Bugunga oʻtish
+                    {t("goToToday")}
                   </Button>
                 </EmptyContent>
               </Empty>
@@ -739,10 +745,10 @@ export default function AttendanceView({
                             <Button variant="ghost"
                               onClick={() => setSortField((f) => (f === "firstName" ? "lastName" : "firstName"))}
                               className="text-label hover:text-foreground transition-colors cursor-pointer h-auto min-h-0 p-0 hover:bg-transparent">
-                              Oʻquvchilar
+                              {t("students")}
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>{sortField === "firstName" ? "Familiya boʻyicha tartiblash" : "Ism boʻyicha tartiblash"}</TooltipContent>
+                          <TooltipContent>{sortField === "firstName" ? t("sortByLastName") : t("sortByFirstName")}</TooltipContent>
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -753,7 +759,7 @@ export default function AttendanceView({
                               <ChevronDown className={cn("size-3", sortDir === "desc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>{sortDir === "asc" ? "Z→A tartibga oʻtish" : "A→Z tartibga oʻtish"}</TooltipContent>
+                          <TooltipContent>{sortDir === "asc" ? t("sortDesc") : t("sortAsc")}</TooltipContent>
                         </Tooltip>
                       </div>
                     </TableHead>
@@ -764,7 +770,7 @@ export default function AttendanceView({
 
                     {/* Davomat % — akademik chorak boʻyicha */}
                     <TableHead className="sticky right-0 z-40 border-b border-l border-border px-2 text-center align-middle text-label whitespace-nowrap" style={{ width: 120, background: HEADER_BG }}>
-                      {viewedQuarter ? `${viewedQuarter.name} %` : "Choraklik %"}
+                      {viewedQuarter ? t("quarterPercent", { quarter: viewedQuarter.name }) : t("quarterlyPercentFallback")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -776,8 +782,8 @@ export default function AttendanceView({
                     const danger = isDanger(student.id);
                     const attention = chronic || danger;
                     const attReasons = [
-                      danger && "Past davomat",
-                      chronic && `Oyiga ${monthRateOf(student.id)?.absents ?? 0} marta kelmagan`,
+                      danger && t("lowAttendance"),
+                      chronic && t("absentTimesThisMonth", { count: monthRateOf(student.id)?.absents ?? 0 }),
                     ].filter(Boolean).join(" · ");
                     return (
                       <TableRow key={student.id} className="group hover:bg-muted/30 transition-colors">
@@ -797,7 +803,7 @@ export default function AttendanceView({
                                   </span>
                                 </a>
                               </TooltipTrigger>
-                              <TooltipContent>{student.name} profilini koʻrish</TooltipContent>
+                              <TooltipContent>{t("viewProfile", { name: student.name })}</TooltipContent>
                             </Tooltip>
                             <span className="text-data-row whitespace-nowrap inline-block pt-px">{student.name}</span>
                             {attention && (
@@ -854,12 +860,12 @@ export default function AttendanceView({
                         <Alert className="max-w-md mx-auto bg-muted/50 text-left">
                           <div className="flex items-center gap-2 mb-1">
                             <AlertTriangle className="size-4 text-muted-foreground" />
-                            <AlertTitle className="mb-0">Topilmadi</AlertTitle>
+                            <AlertTitle className="mb-0">{t("notFound")}</AlertTitle>
                           </div>
                           <AlertDescription className="text-muted-foreground ml-6">
                             {onlyAttention
-                              ? "Diqqat talab qiladigan oʻquvchi topilmadi."
-                              : "Bu sinfda oʻquvchi yoʻq."}
+                              ? t("noAttentionStudents")
+                              : t("noStudentsInClass")}
                           </AlertDescription>
                         </Alert>
                       </TableCell>
@@ -872,7 +878,7 @@ export default function AttendanceView({
 
           {/* Jonli xulosa — holat sonlari + taqsimot bari */}
           <CardFooter className={cn(panelCardFooterClass, "flex items-center gap-4")}>
-            <span className="shrink-0 text-caption">{students.length} oʻquvchi</span>
+            <span className="shrink-0 text-caption">{t("studentCount", { count: students.length })}</span>
 
             {/* Oʻrta — holat sonlari, markazda */}
             <div className="flex flex-1 items-center justify-center gap-x-5 gap-y-2 flex-wrap">
@@ -889,14 +895,14 @@ export default function AttendanceView({
 
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <div className="size-3 rounded border border-dashed border-muted-foreground/40" />
-                <span>Belgilanmagan</span>
+                <span>{t("unmarked")}</span>
                 <span className="font-semibold tabular-nums text-foreground">{unmarkedCount}</span>
               </div>
             </div>
 
             <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
               <span className="size-2 rounded-full bg-info inline-block" />
-              <span>Izoh</span>
+              <span>{t("note")}</span>
               <span className="font-semibold tabular-nums text-foreground">{noteCount}</span>
             </div>
           </CardFooter>

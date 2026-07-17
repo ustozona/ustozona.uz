@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Award, Gift, Smile, TrendingDown, TrendingUp } from "lucide-react";
 import { CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -30,6 +31,7 @@ export default function BehaviorTab({
   classId: string;
   studentId: string;
 }) {
+  const t = useTranslations("BehaviorTab");
   const events = useBehaviorStore((s) => s.eventsByClass[classId]) ?? EMPTY_EVENTS;
   const redemptions = useBehaviorStore((s) => s.redemptions);
   const deleteEventWithLog = useBehaviorStore((s) => s.deleteEventWithLog);
@@ -58,29 +60,29 @@ export default function BehaviorTab({
       {/* KPI qatori */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          label="Balans"
+          label={t("balance")}
           value={String(balance)}
-          sub="hozirgi ball"
+          sub={t("balanceSub")}
           color={balance < 0 ? NEGATIVE_HEX : POSITIVE_HEX}
           icon={<Award />}
         />
         <KpiCard
-          label="Toʻplangan"
+          label={t("earned")}
           value={`+${stats.earned}`}
-          sub="jami ijobiy ball"
+          sub={t("earnedSub")}
           color={POSITIVE_HEX}
           icon={<TrendingUp />}
         />
         <KpiCard
-          label="Yoʻqotilgan"
+          label={t("lost")}
           value={`−${stats.lost}`}
-          sub="jami salbiy ball"
+          sub={t("lostSub")}
           color={NEGATIVE_HEX}
           icon={<TrendingDown />}
         />
         <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm">
           <div className="flex items-start justify-between">
-            <TypographyLabel>Ijobiy ulush</TypographyLabel>
+            <TypographyLabel>{t("positiveShare")}</TypographyLabel>
             <SectionIcon size="sm">
               <Smile />
             </SectionIcon>
@@ -96,8 +98,8 @@ export default function BehaviorTab({
           />
           <TypographyMuted className="mt-1">
             {stats.eventCount === 0
-              ? "hali yozuv yoʻq"
-              : `${stats.eventCount} ta yozuv boʻyicha`}
+              ? t("positiveShareSubZero")
+              : t("positiveShareSub", { count: stats.eventCount })}
           </TypographyMuted>
         </div>
       </div>
@@ -109,13 +111,12 @@ export default function BehaviorTab({
             <SectionIcon size="sm">
               <Award />
             </SectionIcon>
-            <CardTitle className="heading-small">Ballar tarixi</CardTitle>
+            <CardTitle className="heading-small">{t("pointsHistory")}</CardTitle>
           </div>
           <div className="p-5">
             {myEvents.length === 0 ? (
               <TypographyMuted className="text-sm">
-                Hali ball berilmagan — sinf sahifasidagi &quot;Xulq-atvor&quot; boʻlimidan
-                boshlang.
+                {t("pointsHistoryEmpty")}
               </TypographyMuted>
             ) : (
               <EventTimeline
@@ -133,12 +134,12 @@ export default function BehaviorTab({
             <SectionIcon size="sm">
               <Gift />
             </SectionIcon>
-            <CardTitle className="heading-small">Doʻkon tarixi</CardTitle>
+            <CardTitle className="heading-small">{t("storeHistory")}</CardTitle>
           </div>
           <div className="px-5 py-3">
             {myRedemptions.length === 0 ? (
               <TypographyMuted className="py-2 text-sm">
-                Hali ball sarflanmagan.
+                {t("storeHistoryEmpty")}
               </TypographyMuted>
             ) : (
               <div className="divide-y divide-border/60">

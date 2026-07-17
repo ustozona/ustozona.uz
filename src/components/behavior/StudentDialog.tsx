@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Award, BarChart3, Gift, SquareArrowOutUpRight } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -49,11 +50,15 @@ import { useClassStreaks } from "./useClassStreaks";
 
 type PanelId = "award" | "shop" | "report";
 
-const NAV: { id: PanelId; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: "award", label: "Ball berish", icon: Award },
-  { id: "shop", label: "Ball sarflash", icon: Gift },
-  { id: "report", label: "Ballar hisoboti", icon: BarChart3 },
-];
+function useNav(
+  t: ReturnType<typeof useTranslations>
+): { id: PanelId; label: string; icon: React.ComponentType<{ className?: string }> }[] {
+  return [
+    { id: "award", label: t("navAward"), icon: Award },
+    { id: "shop", label: t("navShop"), icon: Gift },
+    { id: "report", label: t("navReport"), icon: BarChart3 },
+  ];
+}
 
 const EMPTY_EVENTS: never[] = [];
 
@@ -77,6 +82,8 @@ export function StudentDialog({
   onAward: (skill: BehaviorSkill, el: HTMLElement) => void;
   onAddSkill: (type: SkillType) => void;
 }) {
+  const t = useTranslations("StudentDialog");
+  const NAV = useNav(t);
   const skills = useBehaviorStore((s) => s.skills);
   const rewards = useBehaviorStore((s) => s.rewards);
   const events = useBehaviorStore((s) => s.eventsByClass[classId]) ?? EMPTY_EVENTS;
@@ -118,15 +125,15 @@ export function StudentDialog({
   const spend = (spendArg: { reward: BehaviorReward } | { cost: number; name: string }) => {
     const id = redeem(classId, student.id, spendArg);
     if (!id) {
-      toast.error("Balans yetarli emas");
+      toast.error(t("insufficientBalance"));
       return false;
     }
     const label =
       "reward" in spendArg
-        ? `${spendArg.reward.name} — ${spendArg.reward.cost} ball sarflandi`
-        : `${spendArg.cost} ball sarflandi`;
+        ? t("rewardSpent", { name: spendArg.reward.name, cost: spendArg.reward.cost })
+        : t("freeSpent", { cost: spendArg.cost });
     toast.success(label, {
-      action: { label: "Bekor qilish", onClick: () => removeRedemption(id) },
+      action: { label: t("undo"), onClick: () => removeRedemption(id) },
     });
     return true;
   };
@@ -156,7 +163,7 @@ export function StudentDialog({
                       : "bg-success/10 text-success"
                   )}
                 >
-                  {balance} ball
+                  {t("balancePoints", { balance })}
                 </span>
                 {streak && streak.count > 0 && (
                   <Tooltip>
@@ -166,13 +173,11 @@ export function StudentDialog({
                           code={streak.paused ? "2744-fe0f" : "1f525"}
                           className="size-3.5"
                         />
-                        {streak.count}/{streak.nextThreshold} · keyingi marra +{streak.nextBonus}
+                        {streak.count}/{streak.nextThreshold} · {t("streakNext", { bonus: streak.nextBonus })}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {streak.paused
-                        ? "Seriya kutmoqda — sogʻliq muhimroq"
-                        : "Ketma-ket toza davomat seriyasi"}
+                      {streak.paused ? t("streakPaused") : t("streakActive")}
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -180,7 +185,7 @@ export function StudentDialog({
                   href={`/dashboard/students/${encodeURIComponent(student.id)}?tab=behavior`}
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
                 >
-                  Profilni ochish
+                  {t("openProfile")}
                   <SquareArrowOutUpRight className="size-3" aria-hidden />
                 </Link>
               </div>
@@ -193,7 +198,7 @@ export function StudentDialog({
                 className="shrink-0 self-start text-muted-foreground hover:text-foreground"
               >
                 <X className="size-4" aria-hidden />
-                <span className="sr-only">Yopish</span>
+                <span className="sr-only">{t("close")}</span>
               </Button>
             </DialogClose>
           </div>
@@ -262,6 +267,7 @@ function AwardPanel({
   onAward: (skill: BehaviorSkill, el: HTMLElement) => void;
   onAddSkill: (type: SkillType) => void;
 }) {
+  const t = useTranslations("StudentDialog");
   const positive = skills.filter((s) => s.points > 0);
   const negative = skills.filter((s) => s.points < 0);
   const both = positive.length > 0 && negative.length > 0;
@@ -278,8 +284,8 @@ function AwardPanel({
   return (
     <Tabs defaultValue="positive">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="positive">Ijobiy</TabsTrigger>
-        <TabsTrigger value="negative">Salbiy</TabsTrigger>
+        <TabsTrigger value="positive">{t("positive")}</TabsTrigger>
+        <TabsTrigger value="negative">{t("negative")}</TabsTrigger>
       </TabsList>
       <TabsContent value="positive" className="mt-4">
         <SkillGrid skills={positive} onSelect={onAward} onAdd={() => onAddSkill("positive")} />
@@ -302,6 +308,7 @@ function ShopPanel({
   balance: number;
   onSpend: (spend: { reward: BehaviorReward } | { cost: number; name: string }) => boolean;
 }) {
+  const t = useTranslations("StudentDialog");
   const [amount, setAmount] = React.useState("");
   const [note, setNote] = React.useState("");
 
@@ -321,9 +328,7 @@ function ShopPanel({
     <div className="space-y-5">
       <div className="space-y-2">
         {rewards.length === 0 ? (
-          <TypographyMuted className="text-sm">
-            Doʻkon boʻsh — Sozlamalar &gt; Xulq-atvor boʻlimida mukofot qoʻshing.
-          </TypographyMuted>
+          <TypographyMuted className="text-sm">{t("shopEmpty")}</TypographyMuted>
         ) : (
           rewards.map((r) => {
             const missing = r.cost - balance;
@@ -336,9 +341,9 @@ function ShopPanel({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{r.name}</p>
                   <TypographyMuted className="text-xs tabular-nums">
-                    {r.cost} ball
+                    {t("balancePoints", { balance: r.cost })}
                     {missing > 0 && (
-                      <span className="text-destructive"> · {missing} ball yetishmaydi</span>
+                      <span className="text-destructive"> · {t("missingPoints", { count: missing })}</span>
                     )}
                   </TypographyMuted>
                 </div>
@@ -349,7 +354,7 @@ function ShopPanel({
                   disabled={missing > 0}
                   onClick={() => onSpend({ reward: r })}
                 >
-                  Almashtirish
+                  {t("exchange")}
                 </Button>
               </div>
             );
@@ -360,15 +365,13 @@ function ShopPanel({
       {/* Erkin sarflash — roʻyxatda yoʻq holatlar uchun */}
       <div className="space-y-3 rounded-xl border border-dashed border-border p-4">
         <div>
-          <p className="text-sm font-medium text-foreground">Erkin sarflash</p>
-          <TypographyMuted className="text-xs">
-            Roʻyxatda yoʻq holatlar uchun — miqdor va izoh kiriting.
-          </TypographyMuted>
+          <p className="text-sm font-medium text-foreground">{t("freeSpendTitle")}</p>
+          <TypographyMuted className="text-xs">{t("freeSpendDescription")}</TypographyMuted>
         </div>
         <div className="flex flex-wrap items-end gap-2.5">
           <div className="space-y-1.5">
             <Label htmlFor="bh-free-amount" className="text-xs">
-              Miqdor
+              {t("amountLabel")}
             </Label>
             <Input
               id="bh-free-amount"
@@ -383,18 +386,18 @@ function ShopPanel({
           </div>
           <div className="min-w-40 flex-1 space-y-1.5">
             <Label htmlFor="bh-free-note" className="text-xs">
-              Izoh
+              {t("noteLabel")}
             </Label>
             <Input
               id="bh-free-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               maxLength={500}
-              placeholder="Nimaga sarflandi?"
+              placeholder={t("notePlaceholder")}
             />
           </div>
           <Button disabled={!freeValid} onClick={submitFree}>
-            Sarflash
+            {t("spend")}
           </Button>
         </div>
       </div>

@@ -24,7 +24,7 @@ const saveSchema = z.object({
   avatarUrl: z.string().max(1_500_000),
   avatarColor: z.string().max(50),
   academicYear: z.string().max(20),
-  language: z.enum(["uz", "kaa", "ru", "en"]),
+  language: z.enum(["uz", "kaa", "ru", "en", "ky", "kk"]),
   workspaceBackground: z.enum([
     "grid",
     "parchment",

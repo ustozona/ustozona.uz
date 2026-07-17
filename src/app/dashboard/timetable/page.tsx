@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { autoClassColor, CLASS_COLOR_HEX, classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { classColor } from "@/lib/grades-data";
@@ -118,6 +119,7 @@ function stableStringify(v: unknown): string {
 }
 
 export default function TimetablePage() {
+  const t = useTranslations("TimetablePage");
   const [events, setEvents] = useState<TimetableEvent[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [saved, setSaved] = useState(true);
@@ -220,11 +222,11 @@ export default function TimetablePage() {
 
   /** Event sinfi — jonli roʻyxatdan; oʻchirilgan/legacy id uchun barqaror fallback */
   const getClass = useCallback((id: string): TimetableClass => {
-    return classById.get(id) ?? { id, name: "Nomaʼlum sinf", color: autoClassColor(id) };
-  }, [classById]);
+    return classById.get(id) ?? { id, name: t("unknownClass"), color: autoClassColor(id) };
+  }, [classById, t]);
   const getClassDisplay = useCallback((id: string): TimetableClass => {
-    return classByIdDisplay.get(id) ?? { id, name: "Nomaʼlum sinf", color: autoClassColor(id) };
-  }, [classByIdDisplay]);
+    return classByIdDisplay.get(id) ?? { id, name: t("unknownClass"), color: autoClassColor(id) };
+  }, [classByIdDisplay, t]);
 
   useEffect(() => {
     setHydrated(true);
@@ -272,7 +274,7 @@ export default function TimetablePage() {
       stableStringify(bellConfig) !== stableStringify(selectedVersion.bellConfig);
     if (!dirty) { setSaved(true); return; }
     setSaved(false);
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       // Boʻsh jadval birinchi marta toʻldirilmoqda — saqlanadigan "eski
       // tartib" yoʻq, "qachondan?" savoli maʼnosiz; jimgina joriy versiyaga
       // yozamiz va sessiya davomida boshqa soʻramaymiz.
@@ -287,7 +289,7 @@ export default function TimetablePage() {
       setSaved(true);
       setSavedSignal((n) => n + 1);
     }, 600);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [events, bellConfig, hydrated, storeHydrated, selectedVersion, mode, decisionMade, commitDraft]);
 
   // Sahifadan chiqishda kutayotgan (debounce'dagi) oʻzgarish bekor boʻlib qolmasin —
@@ -335,10 +337,10 @@ export default function TimetablePage() {
       setSavedSignal((n) => n + 1);
     } else {
       const id = createVersion({ effectiveFrom: choice.effectiveFrom, note: choice.note, baseId: selectedVersion.id });
-      if (!id) { toast.error("Bu sanada allaqachon versiya bor"); return; }
+      if (!id) { toast.error(t("versionExistsError")); return; }
       // Yangi versiya qoralamadagi holatni oladi; eski versiya snapshoti oʻzgarmaydi
       commitDraft(id, events, bellConfig);
-      toast.success(`Yangi jadval versiyasi — ${fmtDayMonthUz(choice.effectiveFrom)}dan`);
+      toast.success(t("newVersionToast", { date: fmtDayMonthUz(choice.effectiveFrom) }));
       setEffectiveDialogOpen(false);
       setSelectedVersionId(pendingSwitchRef.current ?? id);
       pendingSwitchRef.current = null;
@@ -373,7 +375,7 @@ export default function TimetablePage() {
   // Jadvalni JSON sifatida eksport qilish
   const exportSchedule = useCallback(() => {
     if (events.length === 0) {
-      toast.error("Eksport uchun jadval boʻsh");
+      toast.error(t("exportEmptyError"));
       return;
     }
     const rows = [...events]
@@ -389,8 +391,8 @@ export default function TimetablePage() {
     a.download = "dars-jadvali.json";
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Jadval eksport qilindi");
-  }, [events, getClass]);
+    toast.success(t("exportSuccessToast"));
+  }, [events, getClass, t]);
 
   // Birinchi foydalanishda drag maslahati (bir martalik, localStorage)
   useEffect(() => {
@@ -425,10 +427,10 @@ export default function TimetablePage() {
     const removed = events.filter(ev => ev.classId === classId);
     if (removed.length === 0) return;
     setEvents(prev => prev.filter(ev => ev.classId !== classId));
-    toast.success("Sinf jadvaldan olib tashlandi", {
-      action: { label: "Qaytarish", onClick: () => setEvents(prev => [...prev, ...removed]) },
+    toast.success(t("classRemovedToast"), {
+      action: { label: t("undo"), onClick: () => setEvents(prev => [...prev, ...removed]) },
     });
-  }, [events]);
+  }, [events, t]);
 
   /* ─── Native drag-and-drop ─── */
 
@@ -526,7 +528,7 @@ export default function TimetablePage() {
   /** Sinfning haftalik slotlaridan "Du 09:00, Pa 14:00" kabi xulosa matni */
   const scheduleSummary = useCallback((classId: string): string => {
     const evs = events.filter(e => e.classId === classId);
-    if (evs.length === 0) return "Jadvalga qoʻshilmagan";
+    if (evs.length === 0) return t("notScheduled");
     const seen = new Set<string>();
     const parts: { order: number; text: string }[] = [];
     evs.forEach(e => {
@@ -540,7 +542,7 @@ export default function TimetablePage() {
     parts.sort((a, b) => a.order - b.order);
     if (parts.length <= 2) return parts.map(p => p.text).join(", ");
     return `${parts[0].text}, ${parts[1].text} +${parts.length - 2}`;
-  }, [events]);
+  }, [events, t]);
 
   // Boshlanishida gridʼni maktab soatiga (yoki eng erta darsga) suradi
   useEffect(() => {
@@ -570,11 +572,11 @@ export default function TimetablePage() {
             <SectionIcon>
               <GraduationCap />
             </SectionIcon>
-            <CardTitle>Sinflar</CardTitle>
+            <CardTitle>{t("classesTitle")}</CardTitle>
             {classesAll.length > 0 && (
               <Button variant="ghost" size="sm" disabled={readOnly} className="ml-auto shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={() => setCreateOpen(true)}>
                 <PlusIcon className="size-4" />
-                Qoʻshish
+                {t("add")}
               </Button>
             )}
           </CardHeader>
@@ -583,8 +585,8 @@ export default function TimetablePage() {
           {showTip && classesAll.length > 0 && (
             <div className="mx-5 mb-3 mt-3 flex items-center gap-2 shrink-0 text-xs text-muted-foreground">
               <GripVertical className="size-3.5 shrink-0 text-muted-foreground/50" />
-              <p className="flex-1 leading-snug">Sinf kartasini bosib ushlab, oʻng tomondagi jadvalga sudrab oʻtkazing.</p>
-              <button type="button" onClick={dismissTip} aria-label="Yopish" className="shrink-0 rounded-md p-0.5 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground">
+              <p className="flex-1 leading-snug">{t("dragTip")}</p>
+              <button type="button" onClick={dismissTip} aria-label={t("closeAria")} className="shrink-0 rounded-md p-0.5 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground">
                 <XIcon className="size-3.5" />
               </button>
             </div>
@@ -600,14 +602,14 @@ export default function TimetablePage() {
                   <Empty className="py-8">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                      <EmptyTitle>Hozircha sinflar yoʻq</EmptyTitle>
+                      <EmptyTitle>{t("noClassesTitle")}</EmptyTitle>
                       <EmptyDescription>
-                        Oʻquvchilar roʻyxatini shakllantirish uchun birinchi sinfingizni qoʻshing.
+                        {t("noClassesDescription")}
                       </EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
                       <Button onClick={() => setCreateOpen(true)} disabled={readOnly} className="gap-1.5">
-                        <PlusIcon className="size-4" /> Sinf qoʻshish
+                        <PlusIcon className="size-4" /> {t("addClass")}
                       </Button>
                     </EmptyContent>
                   </Empty>
@@ -635,7 +637,7 @@ export default function TimetablePage() {
                                 <Button
                                   variant="ghost"
                                   size="icon-sm"
-                                  aria-label="Amallar"
+                                  aria-label={t("actionsAria")}
                                   onClick={(e) => e.stopPropagation()}
                                   className="absolute right-2 top-1/2 size-7 -translate-y-1/2 border border-border/50 bg-card/80 text-muted-foreground shadow-sm backdrop-blur-sm transition-opacity opacity-100 md:opacity-0 md:group-hover/cc:opacity-100 data-[state=open]:opacity-100"
                                 >
@@ -645,11 +647,11 @@ export default function TimetablePage() {
                               <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                                 <DropdownMenuItem disabled={readOnly} onClick={() => setEditingClass(merged)}>
                                   <EditIcon />
-                                  Tahrirlash
+                                  {t("edit")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem variant="destructive" disabled={readOnly} onClick={() => removeClassFromSchedule(cls.id)}>
                                   <TrashIcon />
-                                  Jadvaldan oʻchirish
+                                  {t("removeFromSchedule")}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -659,11 +661,11 @@ export default function TimetablePage() {
                       <ContextMenuContent>
                         <ContextMenuItem disabled={readOnly} onClick={() => setEditingClass(merged)}>
                           <EditIcon />
-                          Tahrirlash
+                          {t("edit")}
                         </ContextMenuItem>
                         <ContextMenuItem variant="destructive" disabled={readOnly} onClick={() => removeClassFromSchedule(cls.id)}>
                           <TrashIcon />
-                          Jadvaldan oʻchirish
+                          {t("removeFromSchedule")}
                         </ContextMenuItem>
                       </ContextMenuContent>
                     </ContextMenu>
@@ -686,7 +688,7 @@ export default function TimetablePage() {
                 <Calendar />
               </SectionIcon>
               <div className="flex min-w-0 flex-col">
-                <CardTitle>Dars jadvali</CardTitle>
+                <CardTitle>{t("scheduleTitle")}</CardTitle>
                 {versions.length > 0 && (
                   <VersionChip
                     variant="subtitle"
@@ -704,14 +706,14 @@ export default function TimetablePage() {
 
             {/* Markaz: koʻrinish rejimi */}
             <Tabs value={snapMode} onValueChange={(v) => setSnapMode(v as "free" | "lesson")} className="shrink-0">
-              <TabsList aria-label="Koʻrinish rejimi">
-                <TabsTrigger value="free" className="gap-1.5 text-xs" title="Taqvim: uzluksiz vaqt-grid, istalgan vaqtga qoʻyish">
+              <TabsList aria-label={t("viewModeAria")}>
+                <TabsTrigger value="free" className="gap-1.5 text-xs" title={t("calendarModeTitle")}>
                   <MousePointer2 className="size-4" />
-                  <span className="hidden sm:inline">Taqvim</span>
+                  <span className="hidden sm:inline">{t("calendarMode")}</span>
                 </TabsTrigger>
-                <TabsTrigger value="lesson" className="gap-1.5 text-xs" title="Jadval: tayyor katak grid (qoʻngʻiroq jadvali asosida)">
+                <TabsTrigger value="lesson" className="gap-1.5 text-xs" title={t("gridModeTitle")}>
                   <Magnet className="size-4" />
-                  <span className="hidden sm:inline">Jadval</span>
+                  <span className="hidden sm:inline">{t("gridMode")}</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -721,7 +723,7 @@ export default function TimetablePage() {
               <SavedIndicator signal={savedSignal} />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Koʻproq amallar" className="shadow-none">
+                  <Button variant="outline" size="icon" aria-label={t("moreActionsAria")} className="shadow-none">
                     <MoreVertical />
                   </Button>
                 </DropdownMenuTrigger>
@@ -729,19 +731,19 @@ export default function TimetablePage() {
                   {!readOnly && (
                     <DropdownMenuItem onSelect={() => setSettingsOpen(true)}>
                       <SlidersHorizontal />
-                      Qoʻngʻiroq jadvali
+                      {t("bellSchedule")}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onSelect={exportSchedule}>
                     <Download />
-                    Eksport qilish
+                    {t("exportAction")}
                   </DropdownMenuItem>
                   {events.length > 0 && !readOnly && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem variant="destructive" onSelect={() => setClearOpen(true)}>
                         <TrashIcon />
-                        Jadvalni tozalash
+                        {t("clearSchedule")}
                       </DropdownMenuItem>
                     </>
                   )}
@@ -753,14 +755,14 @@ export default function TimetablePage() {
             <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Jadvalni tozalash?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("clearConfirmTitle")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Barcha qoʻyilgan darslar jadvaldan olib tashlanadi. Bu amalni ortga qaytarib boʻlmaydi.
+                    {t("clearConfirmDescription")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => { setEvents([]); toast.success("Jadval tozalandi"); }} className="bg-destructive text-white hover:bg-destructive/90">Tozalash</AlertDialogAction>
+                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => { setEvents([]); toast.success(t("clearedToast")); }} className="bg-destructive text-white hover:bg-destructive/90">{t("clear")}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -771,19 +773,19 @@ export default function TimetablePage() {
             <div className="mx-6 mb-2 flex items-center gap-2.5 rounded-lg border border-border bg-muted/60 px-3.5 py-2 text-xs text-muted-foreground shrink-0">
               <Lock className="size-3.5 shrink-0" />
               <p className="flex-1 leading-snug">
-                Arxiv jadval · {selectedRangeLabel}. Faqat koʻrish rejimi.
+                {t("archiveBanner", { range: selectedRangeLabel })}
               </p>
               <Button variant="outline" size="sm" className="h-7 shrink-0 text-xs" onClick={() => setUnlockConfirmOpen(true)}>
-                Tahrirlashga ochish
+                {t("unlockToEdit")}
               </Button>
             </div>
           )}
           {mode === "past-unlocked" && (
             <Alert className="mx-6 mb-2 shrink-0 border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400">
               <TriangleAlert />
-              <AlertTitle>Arxiv tahrirlanmoqda</AlertTitle>
+              <AlertTitle>{t("archiveEditingTitle")}</AlertTitle>
               <AlertDescription className="text-amber-700/90 dark:text-amber-400/90">
-                Oʻzgarishlar {selectedRangeLabel} davri tarixiga taʼsir qiladi.
+                {t("archiveEditingDescription", { range: selectedRangeLabel })}
               </AlertDescription>
             </Alert>
           )}
@@ -792,13 +794,13 @@ export default function TimetablePage() {
               <span className="flex min-w-0 items-center gap-3">
                 <CalendarClock className="size-4 shrink-0" />
                 <AlertDescription className="truncate">
-                  Bu jadval {fmtDayMonthUz(selectedVersion.effectiveFrom)}dan kuchga kiradi.
+                  {t("futureVersionNotice", { date: fmtDayMonthUz(selectedVersion.effectiveFrom) })}
                 </AlertDescription>
               </span>
               <button
                 type="button"
                 onClick={() => dismissFutureTip(selectedVersion.id)}
-                aria-label="Yopish"
+                aria-label={t("closeAria")}
                 className="shrink-0 rounded-md p-1 text-current/60 transition-colors hover:bg-blue-500/10 hover:text-current"
               >
                 <XIcon className="size-3.5" />
@@ -818,9 +820,9 @@ export default function TimetablePage() {
                     <EmptyMedia variant="icon">
                       <Calendar />
                     </EmptyMedia>
-                    <EmptyTitle>Jadval hozircha boʻsh</EmptyTitle>
+                    <EmptyTitle>{t("scheduleEmptyTitle")}</EmptyTitle>
                     <EmptyDescription>
-                      Sinflarni chap tomondan ushbu maydonga sudrab oʻtkazing
+                      {t("scheduleEmptyDescription")}
                     </EmptyDescription>
                   </EmptyHeader>
                 </Empty>
@@ -848,7 +850,7 @@ export default function TimetablePage() {
               {/* Sarlavha (kun nomlari) — "Dars soatlari" headeri bilan bir xil dizayn */}
               <div className="sticky top-0 z-20 flex border-b border-border bg-muted">
                 <div className="w-16 shrink-0 border-r border-border py-2.5 text-center text-[13px] font-semibold text-foreground/70">
-                  Vaqt
+                  {t("time")}
                 </div>
                 {DAY_UZ.map((d, i) => (
                   <div key={d} className={cn("min-w-0 flex-1 truncate py-2.5 text-center text-sm font-medium text-foreground/80", i > 0 && "border-l border-border")}>
@@ -975,7 +977,7 @@ export default function TimetablePage() {
             const { events: remapped, moved } = remapEventsForBellChange(events, bellConfig, c);
             if (moved > 0) {
               setEvents(remapped);
-              toast.success(`${moved} ta dars yangi qoʻngʻiroq vaqtlariga moslandi`);
+              toast.success(t("bellChangeMovedToast", { count: moved }));
             }
             setBellConfig(c);
             setSettingsOpen(false);
@@ -998,16 +1000,15 @@ export default function TimetablePage() {
       <AlertDialog open={unlockConfirmOpen} onOpenChange={setUnlockConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Arxiv jadvalni tahrirlash?</AlertDialogTitle>
+            <AlertDialogTitle>{t("unlockConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu jadval {selectedRangeLabel} davrida amalda boʻlgan. Oʻzgarishlar oʻsha davr
-              tarixiga (planner, davomat) taʼsir qiladi.
+              {t("unlockConfirmDescription", { range: selectedRangeLabel })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={() => { setArchiveUnlocked(true); setUnlockConfirmOpen(false); }}>
-              Tahrirlashga ochish
+              {t("unlockToEdit")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1017,17 +1018,17 @@ export default function TimetablePage() {
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Versiyani oʻchirish?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteVersionConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
               {selectedVersion
-                ? `«${fmtDayMonthUz(selectedVersion.effectiveFrom)}dan» versiyasi oʻchiriladi. Bu davr sanalari qoʻshni versiya jadvali bilan koʻrsatiladi.`
+                ? t("deleteVersionConfirmDescription", { date: fmtDayMonthUz(selectedVersion.effectiveFrom) })
                 : ""}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteVersion} className="bg-destructive text-white hover:bg-destructive/90">
-              Oʻchirish
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1056,6 +1057,7 @@ function EventBlock({ name, startMin, endMin, stripeColor, surface, softBorder, 
   onClick: () => void;
   onRemove: () => void;
 }) {
+  const t = useTranslations("TimetablePage");
   const [resizing, setResizing] = useState(false);
 
   // Tutqichni sudrash — yuqori yoki pastki chetdan davomiylikni oʻzgartiradi (15 daq snap)
@@ -1098,7 +1100,7 @@ function EventBlock({ name, startMin, endMin, stripeColor, surface, softBorder, 
       {!readOnly && (
         <button
           type="button"
-          aria-label="Oʻchirish"
+          aria-label={t("delete")}
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
           className="absolute top-0.5 right-0.5 z-20 flex size-5 cursor-pointer items-center justify-center rounded-sm opacity-100 transition-opacity hover:bg-foreground/10 md:opacity-0 md:group-hover/event:opacity-100"
         >
@@ -1146,6 +1148,7 @@ function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
   onDelete: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslations("TimetablePage");
   const [st, setSt] = useState(minToHHMM(event.startMin));
   const [et, setEt] = useState(minToHHMM(event.endMin));
   const hex = CLASS_COLOR_HEX[color];
@@ -1155,12 +1158,12 @@ function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Dars vaqtini tahrirlash</DialogTitle>
+          <DialogTitle>{t("editEventDialogTitle")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Sinf</Label>
+            <Label>{t("classLabel")}</Label>
             <div className="flex items-center gap-2.5 rounded-md border border-input bg-muted/40 px-3 py-2">
               <ClassSwatch hex={hex} className="size-2.5" />
               <span className="text-sm font-medium">{className}</span>
@@ -1168,10 +1171,10 @@ function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
           </div>
 
           <div className="space-y-2">
-            <Label>{dayName} kuni vaqti</Label>
+            <Label>{t("dayTimeLabel", { day: dayName })}</Label>
             <div className="flex items-end gap-2">
               <div className="flex-1 space-y-1.5">
-                <TypographyLabel>Kirish</TypographyLabel>
+                <TypographyLabel>{t("startTime")}</TypographyLabel>
                 <div className="relative">
                   <Input
                     type="time"
@@ -1184,7 +1187,7 @@ function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
               </div>
               <span className="pb-2 text-muted-foreground">—</span>
               <div className="flex-1 space-y-1.5">
-                <TypographyLabel>Chiqish</TypographyLabel>
+                <TypographyLabel>{t("endTime")}</TypographyLabel>
                 <div className="relative">
                   <Input
                     type="time"
@@ -1202,11 +1205,11 @@ function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
         <DialogFooter>
           <Button variant="soft-destructive" onClick={onDelete}>
             <TrashIcon />
-            Oʻchirish
+            {t("delete")}
           </Button>
           <Button onClick={() => onSave({ startMin: hhmmToMin(st), endMin: hhmmToMin(et) })}>
             <SaveIcon />
-            Saqlash
+            {t("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

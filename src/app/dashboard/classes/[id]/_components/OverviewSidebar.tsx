@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { FileText, CheckSquare, ChevronRight, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -42,6 +43,7 @@ function shortDate(s: string): string {
 }
 
 export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
+  const t = useTranslations("OverviewSidebar");
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [tab, setTab] = useState<Tab>("notes");
   const hex = CLASS_COLOR_HEX[identity.color];
@@ -67,7 +69,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
   const toggleTaskDone = useTaskStore((s) => s.toggleTaskDone);
   const classTasks = useMemo(() => {
     if (!mounted) return [];
-    const mine = tasks.filter((t) => t.classIds.includes(identity.id));
+    const mine = tasks.filter((task) => task.classIds.includes(identity.id));
     const rank = (s: string) => (s === TASK_STATUS.DONE || s === TASK_STATUS.CANCELED ? 1 : 0);
     return mine.sort((a, b) => {
       const r = rank(a.status) - rank(b.status);
@@ -90,7 +92,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
         />
         <div className="flex items-center gap-1.5 px-2 pb-1 pt-0.5">
           <span className="size-1.5 rounded-full" style={{ backgroundColor: hex }} />
-          <TypographyMuted className="text-[11px]">Dars kunlari</TypographyMuted>
+          <TypographyMuted className="text-[11px]">{t("lessonDaysLegend")}</TypographyMuted>
         </div>
       </Card>
 
@@ -98,7 +100,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
       <Card className={panelCardClass}>
         <div className="shrink-0 border-b border-border px-4 py-3 flex items-center justify-between gap-2">
           <span className="text-sm font-semibold text-foreground">
-            {tab === "notes" ? "Eslatmalar" : "Vazifalar"}
+            {tab === "notes" ? t("notesTab") : t("tasksTab")}
             {tab === "tasks" && classTasks.length > 0 && (
               <span className="ml-1.5 text-xs font-normal text-muted-foreground tabular-nums">
                 {classTasks.length}
@@ -109,7 +111,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
             <button
               type="button"
               onClick={() => setTab("notes")}
-              title="Eslatmalar"
+              title={t("notesTab")}
               className={cn(
                 "size-7 rounded-md flex items-center justify-center transition-colors",
                 tab === "notes"
@@ -122,7 +124,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
             <button
               type="button"
               onClick={() => setTab("tasks")}
-              title="Vazifalar"
+              title={t("tasksTab")}
               className={cn(
                 "size-7 rounded-md flex items-center justify-center transition-colors",
                 tab === "tasks"
@@ -140,7 +142,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
             <Textarea
               value={mounted ? note : ""}
               onChange={(e) => setNote(identity.id, e.target.value)}
-              placeholder="Shu sinf haqida qisqa eslatma yozing..."
+              placeholder={t("notesPlaceholder")}
               className="h-full resize-none border-0 shadow-none px-0 focus-visible:ring-0 bg-transparent"
             />
           </div>
@@ -151,32 +153,32 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
                 <Empty className="p-6">
                   <EmptyHeader>
                     <EmptyMedia><Illustration name="30" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                    <EmptyTitle>Bu sinfga vazifa yoʻq</EmptyTitle>
+                    <EmptyTitle>{t("tasksEmptyTitle")}</EmptyTitle>
                   </EmptyHeader>
                   <EmptyContent>
                     <Link
                       href="/dashboard/tasks"
                       className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                     >
-                      Vazifalar boʻlimi
+                      {t("tasksSectionLink")}
                       <ChevronRight className="size-3.5" />
                     </Link>
                   </EmptyContent>
                 </Empty>
               ) : (
                 <div className="space-y-1">
-                  {classTasks.map((t) => {
-                    const done = t.status === TASK_STATUS.DONE;
-                    const canceled = t.status === TASK_STATUS.CANCELED;
+                  {classTasks.map((task) => {
+                    const done = task.status === TASK_STATUS.DONE;
+                    const canceled = task.status === TASK_STATUS.CANCELED;
                     return (
                       <div
-                        key={t.id}
+                        key={task.id}
                         className="group flex items-start gap-2.5 rounded-lg px-2 py-2 hover:bg-muted/50 transition-colors"
                       >
                         <button
                           type="button"
-                          onClick={() => toggleTaskDone(t.id)}
-                          title={done ? "Bajarilmagan deb belgilash" : "Bajarildi deb belgilash"}
+                          onClick={() => toggleTaskDone(task.id)}
+                          title={done ? t("markUndone") : t("markDone")}
                           className={cn(
                             "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-[5px] border transition-colors",
                             done ? "border-transparent text-white" : "border-muted-foreground/40 hover:border-foreground"
@@ -192,15 +194,15 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
                               done || canceled ? "text-muted-foreground line-through" : "text-foreground"
                             )}
                           >
-                            {t.title}
+                            {task.title}
                           </p>
                           <div className="mt-0.5 flex items-center gap-2">
-                            {t.priority !== "none" && (
-                              <span className={cn("size-1.5 rounded-full shrink-0", PRIORITY_STYLES[t.priority].dot)} />
+                            {task.priority !== "none" && (
+                              <span className={cn("size-1.5 rounded-full shrink-0", PRIORITY_STYLES[task.priority].dot)} />
                             )}
-                            {t.dueDate && (
+                            {task.dueDate && (
                               <TypographyMuted className="text-[11px] tabular-nums">
-                                {shortDate(t.dueDate)}
+                                {shortDate(task.dueDate)}
                               </TypographyMuted>
                             )}
                           </div>

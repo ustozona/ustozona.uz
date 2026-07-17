@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,7 @@ function formatBirth(s: string): string {
 /** Yagona modal — "Yangi oʻquvchi" tanlov ekrani + bitta yaratish + roʻyxatdan import,
  *  hammasi bitta oyna doirasida (Orqaga bilan) — typing.com "Add or Create Students" naqshi. */
 export default function AddStudentModal({ open, onOpenChange, defaultClassId, onCreate, onImport }: Props) {
+  const t = useTranslations("AddStudentModal");
   const [step, setStep] = useState<Step>("choice");
 
   // ── Bitta oʻquvchi ──
@@ -142,14 +144,14 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
     try {
       const parsed = await parseSpreadsheetFile(file);
       if (parsed.length === 0) {
-        setImportFileError("Faylda oʻquvchi topilmadi. Namuna CSV formatiga qarang.");
+        setImportFileError(t("fileErrorEmpty"));
         return;
       }
       setImportSource("file");
       setRows(parsed);
       setStep("review");
     } catch {
-      setImportFileError("Faylni oʻqib boʻlmadi. .csv, .xls yoki .xlsx fayl tanlang.");
+      setImportFileError(t("fileErrorParse"));
     }
   };
 
@@ -184,10 +186,10 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
           <SectionIcon><Users /></SectionIcon>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2.5">
-              <DialogTitle className="text-lg">Oʻquvchi qoʻshish</DialogTitle>
+              <DialogTitle className="text-lg">{t("title")}</DialogTitle>
               {selectedClass && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                  <ClassSwatch hex={classHex} className="size-2" />
+                  <ClassSwatch hex={classHex} className="size-2.5" />
                   {selectedClass.name}
                 </span>
               )}
@@ -196,7 +198,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
           <DialogClose asChild>
             <Button type="button" variant="ghost" size="icon" className="-mr-1.5 shrink-0 text-muted-foreground hover:text-foreground">
               <X className="size-4" />
-              <span className="sr-only">Yopish</span>
+              <span className="sr-only">{t("close")}</span>
             </Button>
           </DialogClose>
         </div>
@@ -212,9 +214,9 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
               <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <UserPlus className="size-6" />
               </span>
-              <span className="text-sm font-semibold">Bitta oʻquvchi</span>
+              <span className="text-sm font-semibold">{t("choiceSingleTitle")}</span>
               <TypographyMuted className="text-xs leading-snug">
-                Ism-familiyasini qoʻlda kiriting.
+                {t("choiceSingleDescription")}
               </TypographyMuted>
             </button>
 
@@ -226,9 +228,9 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
               <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <FileText className="size-6" />
               </span>
-              <span className="text-sm font-semibold">Nusxa koʻchirish</span>
+              <span className="text-sm font-semibold">{t("choicePasteTitle")}</span>
               <TypographyMuted className="text-xs leading-snug">
-                Roʻyxatni Word/Excelʼdan joylashtiring.
+                {t("choicePasteDescription")}
               </TypographyMuted>
             </button>
 
@@ -240,9 +242,9 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
               <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <FileSpreadsheet className="size-6" />
               </span>
-              <span className="text-sm font-semibold">CSV/Excel yuklash</span>
+              <span className="text-sm font-semibold">{t("choiceFileTitle")}</span>
               <TypographyMuted className="text-xs leading-snug">
-                .csv, .xls yoki .xlsx faylni yuklang.
+                {t("choiceFileDescription")}
               </TypographyMuted>
             </button>
           </div>
@@ -261,7 +263,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                     onDragOver={(e) => { e.preventDefault(); setAvatarDragActive(true); }}
                     onDragLeave={() => setAvatarDragActive(false)}
                     onDrop={handleAvatarDrop}
-                    aria-label="Rasm yuklash"
+                    aria-label={t("avatarUploadAria")}
                     className={cn(
                       "group flex size-36 flex-col items-center justify-center gap-2 overflow-hidden rounded-full border-2 border-dashed text-center transition-colors",
                       avatarDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/60"
@@ -281,7 +283,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                           <UserPlus className="size-5 text-muted-foreground" />
                         </span>
                         <span className="px-4 text-sm leading-snug text-muted-foreground">
-                          Rasmni shu yerga tashlang
+                          {t("avatarDropHint")}
                         </span>
                       </>
                     )}
@@ -290,7 +292,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                     <button
                       type="button"
                       onClick={() => setAvatarImage(null)}
-                      aria-label="Rasmni olib tashlash"
+                      aria-label={t("avatarRemoveAria")}
                       className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-colors hover:text-foreground"
                     >
                       <X className="size-3.5" />
@@ -301,22 +303,22 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-1.5">
-                  <Label className="text-sm font-medium">Ism</Label>
-                  <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Masalan: Alisher" autoFocus />
+                  <Label className="text-sm font-medium">{t("firstName")}</Label>
+                  <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t("firstNamePlaceholder")} autoFocus />
                 </div>
                 <div className="grid gap-1.5">
-                  <Label className="text-sm font-medium">Familiya</Label>
-                  <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Masalan: Aliyev" />
+                  <Label className="text-sm font-medium">{t("lastName")}</Label>
+                  <Input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t("lastNamePlaceholder")} />
                 </div>
               </div>
-              <p className="mt-1.5 text-xs text-muted-foreground">Ism yoki familiya — kamida bittasi yetarli.</p>
+              <p className="mt-1.5 text-xs text-muted-foreground">{t("nameHint")}</p>
 
               <button
                 type="button"
                 onClick={() => setShowMore((v) => !v)}
                 className="mt-5 flex w-full items-center justify-between rounded-md py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                Qoʻshimcha maʼlumot
+                {t("moreInfo")}
                 <ChevronDown className={cn("size-4 transition-transform duration-fast ease-standard", showMore && "rotate-180")} />
               </button>
 
@@ -324,11 +326,11 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                 <div className="mt-3 grid gap-4 border-t border-border pt-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-1.5">
-                      <Label className="text-sm font-medium">Jins</Label>
+                      <Label className="text-sm font-medium">{t("gender")}</Label>
                       <div className="flex gap-2">
                         {([
-                          ["male", "Oʻgʻil", Mars, "sky"],
-                          ["female", "Qiz", Venus, "pink"],
+                          ["male", t("genderMale"), Mars, "sky"],
+                          ["female", t("genderFemale"), Venus, "pink"],
                         ] as [Gender, string, typeof Mars, "sky" | "pink"][]).map(([val, lbl, Icon, tone]) => {
                           const active = gender === val;
                           return (
@@ -354,12 +356,12 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                     </div>
 
                     <div className="grid gap-1.5">
-                      <Label className="text-sm font-medium">Tugʻilgan sana</Label>
+                      <Label className="text-sm font-medium">{t("birthDate")}</Label>
                       <Popover open={dateOpen} onOpenChange={setDateOpen}>
                         <PopoverTrigger asChild>
                           <Button variant="outline" className={cn("w-full justify-start font-normal shadow-xs", !birthDate && "text-muted-foreground")}>
                             <CalendarDays className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                            {birthDate ? formatBirth(birthDate) : "Sanani tanlang"}
+                            {birthDate ? formatBirth(birthDate) : t("birthDatePlaceholder")}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto overflow-hidden p-0" align="start">
@@ -383,18 +385,18 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                   </div>
 
                   <div className="grid gap-1.5">
-                    <Label className="text-sm font-medium">Ota yoki onasining ismi sharifi</Label>
-                    <Input value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder="Masalan: Dilnoza Karimova (onasi)" />
+                    <Label className="text-sm font-medium">{t("parentName")}</Label>
+                    <Input value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder={t("parentNamePlaceholder")} />
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-1.5">
-                      <Label className="text-sm font-medium">Ota-ona telefoni</Label>
-                      <Input type="tel" value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} placeholder="+998 90 123-45-67" />
+                      <Label className="text-sm font-medium">{t("parentPhone")}</Label>
+                      <Input type="tel" value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} placeholder={t("parentPhonePlaceholder")} />
                     </div>
                     <div className="grid gap-1.5">
-                      <Label className="text-sm font-medium">Oʻquvchi telefoni</Label>
-                      <Input type="tel" value={studentPhone} onChange={(e) => setStudentPhone(e.target.value)} placeholder="+998 ..." />
+                      <Label className="text-sm font-medium">{t("studentPhone")}</Label>
+                      <Input type="tel" value={studentPhone} onChange={(e) => setStudentPhone(e.target.value)} placeholder={t("studentPhonePlaceholder")} />
                     </div>
                   </div>
                 </div>
@@ -404,11 +406,11 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
             <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-6 py-4">
               <Button type="button" variant="outline" onClick={() => setStep("choice")} className="gap-1.5">
                 <ArrowLeft className="size-4" />
-                Orqaga
+                {t("back")}
               </Button>
               <Button type="submit" disabled={!canSubmitSingle} className="gap-2">
                 <UserPlus className="size-4" />
-                Qoʻshish
+                {t("add")}
               </Button>
             </div>
           </form>
@@ -418,7 +420,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
         {step === "paste" && (
           <>
             <div className="flex min-h-0 flex-1 flex-col gap-2 px-6 py-5">
-              <label className="text-sm font-medium text-foreground">Oʻquvchilar roʻyxati</label>
+              <label className="text-sm font-medium text-foreground">{t("pasteLabel")}</label>
               <Textarea
                 autoFocus
                 value={text}
@@ -428,21 +430,21 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
               />
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <FileText className="size-3.5 shrink-0" />
-                <span>Word yoki Excelʼdan ham nusxa koʻchirib qoʻyishingiz mumkin. Dublikatlar avtomatik tozalanadi.</span>
+                <span>{t("pasteHint")}</span>
               </div>
             </div>
 
             <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-6 py-4">
               <Button type="button" variant="outline" onClick={() => setStep("choice")} className="gap-1.5">
                 <ArrowLeft className="size-4" />
-                Orqaga
+                {t("back")}
               </Button>
               <div className="flex items-center gap-3">
                 <TypographyMuted>
-                  {previewCount > 0 ? `${previewCount} ta oʻquvchi aniqlandi` : "Hali hech narsa kiritilmadi"}
+                  {previewCount > 0 ? t("pasteCountFound", { count: previewCount }) : t("pasteCountEmpty")}
                 </TypographyMuted>
                 <Button onClick={goReview} disabled={previewCount === 0} className="gap-1.5">
-                  Koʻrib chiqish
+                  {t("review")}
                   <ChevronRight className="size-4" />
                 </Button>
               </div>
@@ -455,10 +457,10 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
           <>
             <div className="flex min-h-0 flex-1 flex-col gap-3 px-6 py-5">
               <div className="flex items-center justify-between gap-2">
-                <label className="text-sm font-medium text-foreground">CSV yoki Excel fayl</label>
+                <label className="text-sm font-medium text-foreground">{t("fileLabel")}</label>
                 <Button type="button" variant="ghost" size="sm" onClick={downloadSampleCsv} className="gap-1.5 text-muted-foreground">
                   <Download className="size-3.5" />
-                  Namuna CSV
+                  {t("sampleCsv")}
                 </Button>
               </div>
 
@@ -475,7 +477,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                   }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">.csv, .xls, .xlsx — birinchi ustun Ism, ikkinchi Familiya</p>
+              <p className="text-xs text-muted-foreground">{t("fileHint")}</p>
 
               {importFileError && <p className="text-xs text-destructive">{importFileError}</p>}
             </div>
@@ -483,7 +485,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
             <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-6 py-4">
               <Button type="button" variant="outline" onClick={() => setStep("choice")} className="gap-1.5">
                 <ArrowLeft className="size-4" />
-                Orqaga
+                {t("back")}
               </Button>
             </div>
           </>
@@ -493,17 +495,17 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
         {step === "review" && (
           <>
             <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-6 py-3">
-              <p className="text-sm font-medium text-foreground">{validRows.length} ta oʻquvchi tayyor</p>
+              <p className="text-sm font-medium text-foreground">{t("reviewReady", { count: validRows.length })}</p>
               <Button variant="outline" size="sm" onClick={flipNames} className="gap-1.5 shadow-none">
                 <Repeat className="size-3.5" />
-                Ism/familiyani almashtirish
+                {t("swapNames")}
               </Button>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
               <div className="mb-2 grid grid-cols-[1fr_1fr_auto] items-center gap-3 px-1">
-                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Ism</span>
-                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Familiya</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("columnFirstName")}</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("columnLastName")}</span>
                 <span className="w-9" />
               </div>
               <div className="space-y-2">
@@ -516,7 +518,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                       size="icon"
                       onClick={() => removeRow(r.id)}
                       className="size-9 shrink-0 text-muted-foreground hover:text-destructive"
-                      aria-label="Olib tashlash"
+                      aria-label={t("removeRowAria")}
                     >
                       <Trash2 className="size-4" />
                     </Button>
@@ -528,11 +530,11 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
             <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-6 py-4">
               <Button variant="outline" onClick={() => setStep(importSource)} className="gap-1.5">
                 <ArrowLeft className="size-4" />
-                Orqaga
+                {t("back")}
               </Button>
               <Button onClick={submitImport} disabled={validRows.length === 0} className="gap-1.5">
                 <UserPlus className="size-4" />
-                {validRows.length} ta oʻquvchini qoʻshish
+                {t("submitImport", { count: validRows.length })}
               </Button>
             </div>
           </>

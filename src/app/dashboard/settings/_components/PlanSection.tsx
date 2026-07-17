@@ -1,41 +1,33 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { SettingsCard } from "./SettingsShared";
 
-const FREE_FEATURES = [
-  "Cheksiz sinf va oʻquvchi",
-  "Jurnal, davomat va dars rejalari",
-  "Maʼlumotlarni eksport qilish",
-];
-
-const PRO_FEATURES = [
-  "AI dars rejasi va baholash yordamchisi",
-  "Kengaytirilgan tahlil va hisobotlar",
-  "Ota-onalar bilan aloqa kanali",
-  "Ustuvor qoʻllab-quvvatlash",
-];
-
 export default function PlanSection() {
+  const t = useTranslations("PlanSection");
   const plan = useSettingsStore((s) => s.plan);
+
+  const FREE_FEATURES = [t("freeFeature1"), t("freeFeature2"), t("freeFeature3")];
+  const PRO_FEATURES = [t("proFeature1"), t("proFeature2"), t("proFeature3"), t("proFeature4")];
 
   return (
     <>
-      <SettingsCard title="Joriy tarif" description="Hisobingizga biriktirilgan reja.">
+      <SettingsCard title={t("currentPlanTitle")} description={t("currentPlanDescription")}>
         <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card px-4 py-4">
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-2">
               <span className="text-base font-semibold text-foreground">
-                {plan === "pro" ? "Pro" : "Bepul"}
+                {plan === "pro" ? t("planPro") : t("planFree")}
               </span>
-              <Badge variant="secondary">Joriy</Badge>
+              <Badge variant="secondary">{t("currentBadge")}</Badge>
             </div>
             <span className="text-xs text-muted-foreground">
-              Asosiy imkoniyatlar cheksiz va bepul.
+              {t("freeNote")}
             </span>
           </div>
         </div>
@@ -51,14 +43,14 @@ export default function PlanSection() {
       </SettingsCard>
 
       <SettingsCard
-        title="Pro tarif"
-        description="Koʻproq imkoniyat kerakmi?"
-        action={<Badge variant="secondary">Tez orada</Badge>}
+        title={t("proSectionTitle")}
+        description={t("proSectionDescription")}
+        action={<Badge variant="secondary">{t("comingSoon")}</Badge>}
       >
         <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5">
           <div className="mb-3 flex items-center gap-2">
             <Sparkles className="size-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Ustozona Pro</span>
+            <span className="text-sm font-semibold text-foreground">{t("proCardTitle")}</span>
           </div>
           <ul className="mb-4 space-y-2">
             {PRO_FEATURES.map((f) => (
@@ -70,7 +62,7 @@ export default function PlanSection() {
           </ul>
           <Button className="w-full sm:w-auto" disabled>
             <Sparkles className="size-4" />
-            Proʼga oʻtish
+            {t("upgradeButton")}
           </Button>
         </div>
       </SettingsCard>

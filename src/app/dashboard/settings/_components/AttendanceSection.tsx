@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { IMPACT_LABELS, IMPACT_WEIGHT, type ScoreImpact } from "@/lib/attendance-data";
@@ -18,41 +19,42 @@ import {
 } from "@/components/ui/table";
 import { SaveFooter, SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
 
-/** Vazn legendasi — har variant foizga qanday taʼsir qilishini tushuntiradi. */
-const IMPACT_LEGEND: { impact: ScoreImpact; text: string }[] = [
-  { impact: "full", text: "Davomat foiziga toʻliq qoʻshiladi" },
-  { impact: "half", text: "Yarim dars sifatida qoʻshiladi" },
-  { impact: "none", text: "Davomat foizini kamaytiradi" },
-  { impact: "excluded", text: "Umumiy foizga taʼsir qilmaydi (hisobdan chiqariladi)" },
-];
-
 export default function AttendanceSection() {
+  const t = useTranslations("AttendanceSection");
   const statuses = useAttendanceStore((s) => s.statuses);
   const setStatuses = useAttendanceStore((s) => s.setStatuses);
   const { draft, setDraft, dirty, save, reset } = useDraft(statuses, setStatuses);
   useRegisterDraft("davomat-statuslar", dirty, save, reset);
 
+  /** Vazn legendasi — har variant foizga qanday taʼsir qilishini tushuntiradi. */
+  const IMPACT_LEGEND: { impact: ScoreImpact; text: string }[] = [
+    { impact: "full", text: t("impactFull") },
+    { impact: "half", text: t("impactHalf") },
+    { impact: "none", text: t("impactNone") },
+    { impact: "excluded", text: t("impactExcluded") },
+  ];
+
   return (
     <>
       <SettingsCard
-        title="Davomat statuslari"
-        description="Statuslarni faollashtiring yoki oʻchiring hamda vaznini belgilang. Oʻzgarishlar barcha davomat hisobotlarida aks etadi."
+        title={t("statusesTitle")}
+        description={t("statusesDescription")}
         footer={<SaveFooter dirty={dirty} onSave={save} onReset={reset} />}
       >
         <AttendanceStatusesEditor value={draft} onChange={setDraft} />
       </SettingsCard>
 
       <SettingsCard
-        title="Davomat foizi"
-        description="Har bir status oʻquvchining umumiy davomat foiziga turlicha taʼsir qiladi."
+        title={t("percentTitle")}
+        description={t("percentDescription")}
       >
         <div className="overflow-hidden rounded-xl border border-border">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead className="w-32 px-4">Taʼsir</TableHead>
-                <TableHead className="w-16 text-center">Vazn</TableHead>
-                <TableHead className="px-4">Izoh</TableHead>
+                <TableHead className="w-32 px-4">{t("impactCol")}</TableHead>
+                <TableHead className="w-16 text-center">{t("weightCol")}</TableHead>
+                <TableHead className="px-4">{t("noteCol")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -84,7 +86,7 @@ export default function AttendanceSection() {
           </Table>
         </div>
         <p className="text-caption">
-          Eslatma: belgilanmagan (boʻsh qoldirilgan) kunlar umumiy hisobga taʼsir qilmaydi.
+          {t("footnote")}
         </p>
       </SettingsCard>
     </>

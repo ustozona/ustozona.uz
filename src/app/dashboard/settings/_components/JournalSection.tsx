@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { ArrowUpRight, Lock, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,15 +16,16 @@ import { SaveFooter, SettingsCard, SettingsList, useDraft, useRegisterDraft } fr
 
 /** BellSection'dagi "Faqat koʻrish" badge patterni — manba boshqa boʻlimda. */
 function ReadOnlyBadge({ source }: { source: string }) {
+  const t = useTranslations("JournalSection");
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Badge variant="outline" className="cursor-default gap-1.5 font-normal text-muted-foreground">
           <Lock data-icon="inline-start" />
-          Faqat koʻrish
+          {t("readOnlyBadge")}
         </Badge>
       </TooltipTrigger>
-      <TooltipContent>Manba: {source}</TooltipContent>
+      <TooltipContent>{t("readOnlyTooltip", { source })}</TooltipContent>
     </Tooltip>
   );
 }
@@ -37,6 +39,7 @@ type TopicGroup = {
 
 /** Baholash mezoni kartasi — draft + explicit Save. */
 function ScaleCard() {
+  const t = useTranslations("JournalSection");
   const journalScale = useClassStore((s) => s.journalScale);
   const setJournalScale = useClassStore((s) => s.setJournalScale);
   const { draft, setDraft, dirty, save, reset } = useDraft(journalScale, setJournalScale);
@@ -44,8 +47,8 @@ function ScaleCard() {
 
   return (
     <SettingsCard
-      title="Baholash mezoni"
-      description="Barcha jurnallar uchun umumiy. Tizim orqa fonda ballarni foizda hisoblaydi — bu yerda faqat koʻrinish sozlanadi."
+      title={t("scaleTitle")}
+      description={t("scaleDescription")}
       footer={<SaveFooter dirty={dirty} onSave={save} onReset={reset} />}
     >
       <ScaleControls value={draft} onChange={(p) => setDraft({ ...draft, ...p })} />
@@ -54,6 +57,7 @@ function ScaleCard() {
 }
 
 export default function JournalSection() {
+  const t = useTranslations("JournalSection");
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const hydrated = useGradesStore((s) => s._hasHydrated);
 
@@ -84,9 +88,9 @@ export default function JournalSection() {
       <ScaleCard />
 
       <SettingsCard
-        title="Baholash toifalari"
-        description="Topshiriqlar toifalar boʻyicha guruhlanadi; summativ toifalar vazni yakuniy bahoga taʼsir qiladi. Tahrirlash jurnal boʻlimida."
-        action={<ReadOnlyBadge source="Jurnal boʻlimi" />}
+        title={t("categoriesTitle")}
+        description={t("categoriesDescription")}
+        action={<ReadOnlyBadge source={t("sourceJournal")} />}
       >
         {!hydrated ? (
           <div className="h-24 animate-pulse rounded-xl bg-muted/40" />
@@ -96,9 +100,9 @@ export default function JournalSection() {
               <EmptyMedia variant="icon">
                 <Tag />
               </EmptyMedia>
-              <EmptyTitle>Baholash toifalari yaratilmagan</EmptyTitle>
+              <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
               <EmptyDescription>
-                Toifalar jurnal boʻlimida shakllantiriladi — masalan Nazorat ishi, Uy vazifasi, Choraklik imtihon.
+                {t("emptyDescription")}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -109,7 +113,7 @@ export default function JournalSection() {
               title: g.topic.name,
               description:
                 g.classNames.length > 2
-                  ? `${g.classNames.slice(0, 2).join(", ")} +${g.classNames.length - 2} sinf`
+                  ? `${g.classNames.slice(0, 2).join(", ")} ${t("moreClasses", { count: g.classNames.length - 2 })}`
                   : g.classNames.join(", "),
               leading: (
                 <span
@@ -120,19 +124,19 @@ export default function JournalSection() {
               trailing:
                 g.topic.purpose === "formative" ? (
                   <Badge variant="outline" className="font-normal text-muted-foreground">
-                    Formativ
+                    {t("formativeBadge")}
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="font-normal tabular-nums">
-                    Summativ · {g.topic.weightPercent}%
+                    {t("summativeBadge", { percent: g.topic.weightPercent })}
                   </Badge>
                 ),
             }))}
             footer={
               <>
-                <span className="text-caption">{groups.length} ta toifa</span>
+                <span className="text-caption">{t("countCategories", { count: groups.length })}</span>
                 <span className="text-caption tabular-nums">
-                  Summativ vazn: <span className="font-medium text-foreground">{summativeTotal}%</span>
+                  {t("summativeWeightLabel", { percent: summativeTotal })}
                 </span>
               </>
             }
@@ -140,7 +144,7 @@ export default function JournalSection() {
         )}
         <Button asChild variant="outline" size="sm">
           <Link href="/dashboard/grades?topics=1">
-            Jurnal boʻlimiga oʻtish
+            {t("goToJournal")}
             <ArrowUpRight />
           </Link>
         </Button>

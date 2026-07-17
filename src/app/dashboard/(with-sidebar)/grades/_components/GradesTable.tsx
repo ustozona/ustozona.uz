@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useMemo, useState, useRef, useEffect } from "react";
 import {
   ClipboardList,
@@ -161,6 +162,7 @@ function StatusBadge({
   formative: number;
   formativeCount: number;
 }) {
+  const t = useTranslations("GradesTable");
   if (showFormative) {
     if (formativeCount === 0) return null;
     return (
@@ -170,7 +172,7 @@ function StatusBadge({
             {Math.round(formative)}%
           </span>
         </TooltipTrigger>
-        <TooltipContent>Formativ signal (tushunish): {formative.toFixed(1)}%</TooltipContent>
+        <TooltipContent>{t("formativeSignalTooltip", { value: formative.toFixed(1) })}</TooltipContent>
       </Tooltip>
     );
   }
@@ -184,9 +186,9 @@ function StatusBadge({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Icon className="absolute bottom-0.5 right-1 size-3" style={{ color }} aria-label={`Trend ${label}`} />
+        <Icon className="absolute bottom-0.5 right-1 size-3" style={{ color }} aria-label={t("trendAriaLabel", { label })} />
       </TooltipTrigger>
-      <TooltipContent>Trend: {label} (so‘nggi yarim vs oldingi yarim)</TooltipContent>
+      <TooltipContent>{t("trendTooltip", { label })}</TooltipContent>
     </Tooltip>
   );
 }
@@ -220,6 +222,7 @@ function HolatStat({
   hint?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("GradesTable");
   return (
     <div className="flex flex-col gap-0.5">
       <span className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -227,7 +230,7 @@ function HolatStat({
         {hint && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Info className="size-3 cursor-help opacity-60 hover:opacity-100" aria-label={`${label} haqida`} />
+              <Info className="size-3 cursor-help opacity-60 hover:opacity-100" aria-label={t("statHintAria", { label })} />
             </TooltipTrigger>
             <TooltipContent className="max-w-[220px] text-xs leading-snug">{hint}</TooltipContent>
           </Tooltip>
@@ -240,14 +243,15 @@ function HolatStat({
 
 /** Sinf bilan vizual solishtirish: o‘quvchi to‘ldirilishi + sinf o‘rtachasi belgisi. */
 function LevelBar({ level, classAverage }: { level: number; classAverage: number }) {
+  const t = useTranslations("GradesTable");
   const delta = level - classAverage;
   const deltaColor =
     delta > 1 ? "var(--success)" : delta < -1 ? "var(--destructive)" : "var(--muted-foreground)";
-  const deltaLabel = `${delta > 0 ? "+" : ""}${delta.toFixed(0)}% sinfdan`;
+  const deltaLabel = t("classDeltaLabel", { sign: delta > 0 ? "+" : "", value: delta.toFixed(0) });
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-        <span>Sinf bilan solishtirish</span>
+        <span>{t("compareWithClass")}</span>
         <span className="font-semibold tabular-nums" style={{ color: deltaColor }}>
           {deltaLabel}
         </span>
@@ -262,10 +266,10 @@ function LevelBar({ level, classAverage }: { level: number; classAverage: number
             <div
               className="absolute -top-1 h-3.5 w-0.5 cursor-help rounded-full bg-foreground/70"
               style={{ left: `calc(${Math.min(100, Math.max(0, classAverage))}% - 1px)` }}
-              aria-label="Sinf oʻrtachasi"
+              aria-label={t("classAverage")}
             />
           </TooltipTrigger>
-          <TooltipContent className="text-xs">Sinf oʻrtachasi: {classAverage.toFixed(0)}%</TooltipContent>
+          <TooltipContent className="text-xs">{t("classAverageTooltip", { value: classAverage.toFixed(0) })}</TooltipContent>
         </Tooltip>
       </div>
     </div>
@@ -309,6 +313,7 @@ function HolatHover({
   grades: Grade[];
   children: React.ReactNode;
 }) {
+  const t = useTranslations("GradesTable");
   const journalScale = useClassStore((s) => s.journalScale);
   // Yagona jurnal shkalasi: "4 (78%)" (yoki yorliq === foiz boʻlsa, faqat bittasi).
   const levelDisplay = formatScore(level, journalScale).display;
@@ -322,7 +327,7 @@ function HolatHover({
   const TrendIcon = up ? TrendingUp : down ? TrendingDown : Minus;
   const trendColor = up ? "var(--success)" : down ? "var(--destructive)" : "var(--muted-foreground)";
   const trendDisplay =
-    trend === null ? "—" : up || down ? `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%` : "Barqaror";
+    trend === null ? "—" : up || down ? `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%` : t("stable");
   const signal = pedagogikSignal({ level, formative, formativeCount, summativeCount, up, down });
 
   return (
@@ -331,18 +336,18 @@ function HolatHover({
       <HoverCardContent align="start" className="w-72 space-y-3">
         <div>
           <p className="text-sm font-semibold text-foreground">{name}</p>
-          <TypographyMuted className="text-xs">Holat tafsiloti</TypographyMuted>
+          <TypographyMuted className="text-xs">{t("holatDetails")}</TypographyMuted>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <HolatStat
-            label="Oʻzlashtirish"
-            hint="Oʻquvchining rasmiy oʻzlashtirish darajasi — summativ (xulosalovchi) baholar asosida. Yakuniy bahoga teng."
+            label={t("masteryLabel")}
+            hint={t("masteryHint")}
           >
             {levelDisplay}
           </HolatStat>
           <HolatStat
-            label="Dinamika"
-            hint="Soʻnggi baholar oldingilarga nisbatan oʻsdimi yoki pasaydimi. Kichik oʻzgarishlar oʻlchov shovqini boʻlishi mumkin."
+            label={t("dynamicsLabel")}
+            hint={t("dynamicsHint")}
           >
             <span className="inline-flex items-center gap-1" style={{ color: trendColor }}>
               <TrendIcon className="size-3.5" />
@@ -350,17 +355,17 @@ function HolatHover({
             </span>
           </HolatStat>
           <HolatStat
-            label="Formativ baho"
-            hint="Mashq/jarayon davomidagi baholarning oʻrtachasi. Yakuniy bahoga kirmaydi — tushunish signali."
+            label={t("formativeGradeLabel")}
+            hint={t("formativeGradeHint")}
           >
             {formativeCount > 0 ? `${formative.toFixed(0)}%` : "—"}
           </HolatStat>
           <HolatStat
-            label="Summativ ishlar"
-            hint="Yakuniy bahoga asos boʻlgan summativ (nazorat) ishlari soni. 3 tadan kam boʻlsa baho ishonchliligi past."
+            label={t("summativeWorksLabel")}
+            hint={t("summativeWorksHint")}
           >
             <span className={cn(summativeCount > 0 && summativeCount < 3 && "text-warning")}>
-              {summativeCount} ta
+              {t("countUnit", { count: summativeCount })}
             </span>
           </HolatStat>
         </div>
@@ -368,7 +373,7 @@ function HolatHover({
         {student && points.length >= 2 && (
           <div>
             <TypographyMuted className="mb-1 text-[10px] uppercase tracking-wide">
-              Baho dinamikasi (oylik)
+              {t("monthlyGradeDynamics")}
             </TypographyMuted>
             <div className="h-28 w-full">
               <TrendChart points={points} color={scoreBarColor(level)} />
@@ -378,7 +383,7 @@ function HolatHover({
         <div className="flex items-start gap-2 rounded-md bg-muted/50 p-2.5">
           <Lightbulb className="mt-0.5 size-3.5 shrink-0" style={{ color: signal.tone }} aria-hidden />
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Pedagogik signal</p>
+            <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t("pedagogicalSignal")}</p>
             <p className="text-xs leading-snug text-foreground">{signal.text}</p>
           </div>
         </div>
@@ -406,6 +411,7 @@ function StudentNamePreview({
   level: number;
   trend: number | null;
 }) {
+  const t = useTranslations("GradesTable");
   const journalScale = useClassStore((s) => s.journalScale);
   const levelDisplay = formatScore(level, journalScale).display;
   const up = trend !== null && trend > 3;
@@ -413,7 +419,7 @@ function StudentNamePreview({
   const TrendIcon = up ? TrendingUp : down ? TrendingDown : Minus;
   const trendColor = up ? "var(--success)" : down ? "var(--destructive)" : "var(--muted-foreground)";
   const trendDisplay =
-    trend === null ? "—" : up || down ? `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%` : "Barqaror";
+    trend === null ? "—" : up || down ? `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%` : t("stable");
 
   return (
     <div className="space-y-3">
@@ -436,11 +442,11 @@ function StudentNamePreview({
       <Separator />
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Oʻzlashtirish</p>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("masteryLabel")}</p>
           <p className="mt-0.5 text-sm font-semibold text-foreground">{levelDisplay}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Dinamika</p>
+          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("dynamicsLabel")}</p>
           <p
             className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold"
             style={{ color: trendColor }}
@@ -452,7 +458,7 @@ function StudentNamePreview({
       </div>
       <Button asChild size="sm" className="w-full font-semibold">
         <Link href={`/dashboard/students/${encodeURIComponent(student.id)}`}>
-          Profilni ochish
+          {t("openProfile")}
           <ArrowRight className="size-4" />
         </Link>
       </Button>
@@ -500,6 +506,7 @@ export default function GradesTable({
   onPasteColumn,
   archiveNotice,
 }: Props) {
+  const t = useTranslations("GradesTable");
   const { students, assignments, grades, topics } = classData;
   const classHex = CLASS_COLOR_HEX[classColor(classData.info)];
   const [createOpen, setCreateOpen] = useState(false);
@@ -516,7 +523,7 @@ export default function GradesTable({
 
   const topicMap = useMemo(() => {
     const m = new Map<string, (typeof topics)[number]>();
-    topics.forEach((t) => m.set(t.id, t));
+    topics.forEach((topic) => m.set(topic.id, topic));
     return m;
   }, [topics]);
 
@@ -647,14 +654,14 @@ export default function GradesTable({
           <SectionIcon>
             <ClipboardList />
           </SectionIcon>
-          <CardTitle>Topshiriqlar</CardTitle>
+          <CardTitle>{t("assignments")}</CardTitle>
           <TypographyMuted className="shrink-0 text-sm">
             ({assignments.length})
           </TypographyMuted>
           {draftCount > 0 && (
             <Badge className="ml-1 border-none bg-amber-600/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400">
               <span className="size-1.5 rounded-full bg-amber-600 dark:bg-amber-400" aria-hidden="true" />
-              {draftCount} qoralama
+              {t("draftCount", { count: draftCount })}
             </Badge>
           )}
         </div>
@@ -670,12 +677,12 @@ export default function GradesTable({
                   setSearchOpen(false);
                 }
               }}
-              placeholder="Oʻquvchi qidirish…"
+              placeholder={t("searchStudentPlaceholder")}
               className="h-9 w-44 text-sm"
             />
           )}
           <IconButton
-            aria-label="Qidirish"
+            aria-label={t("search")}
             className="size-9"
             active={searchOpen}
             onClick={() => {
@@ -687,15 +694,15 @@ export default function GradesTable({
           </IconButton>
           <DropdownMenu open={filterOpen} onOpenChange={setFilterOpen}>
             <DropdownMenuTrigger asChild>
-              <IconButton aria-label="Filter" className="size-9" inactiveVariant="outline" active={colFilter !== "all"}>
+              <IconButton aria-label={t("filter")} className="size-9" inactiveVariant="outline" active={colFilter !== "all"}>
                 <ListFilter className="size-4 text-muted-foreground" />
               </IconButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 rounded-xl p-1.5">
               {([
-                ["all", "Barchasi"],
-                ["summative", "Faqat summativ"],
-                ["formative", "Faqat formativ"],
+                ["all", t("filterAll")],
+                ["summative", t("filterSummativeOnly")],
+                ["formative", t("filterFormativeOnly")],
               ] as const).map(([val, label]) => (
                 <DropdownMenuItem
                   key={val}
@@ -711,29 +718,29 @@ export default function GradesTable({
             <Tooltip>
               <TooltipTrigger asChild>
                 <PopoverTrigger asChild>
-                  <IconButton aria-label="Tezkor tugmalar" className="size-9">
+                  <IconButton aria-label={t("shortcuts")} className="size-9">
                     <Keyboard className="size-4 text-muted-foreground" />
                   </IconButton>
                 </PopoverTrigger>
               </TooltipTrigger>
-              <TooltipContent>Tezkor tugmalar</TooltipContent>
+              <TooltipContent>{t("shortcuts")}</TooltipContent>
             </Tooltip>
             <PopoverContent align="end" className="w-72 p-0">
               <div className="border-b border-border px-4 py-3">
                 <TypographySmall className="font-semibold text-foreground">
-                  Tezkor kiritish
+                  {t("quickEntry")}
                 </TypographySmall>
               </div>
               <div className="flex flex-col gap-2.5 p-4 text-sm">
                 {([
-                  ["Katakni tahrirlash", "Enter / klik"],
-                  ["Pastga / oʻngga oʻtish", "Enter / Tab"],
-                  ["Oldingi katak", "Shift + Tab"],
-                  ["Qoʻshni katakka oʻtish", "← ↑ → ↓"],
-                  ["Qatnashmadi deb belgilash", "q"],
-                  ["Topshirmadi deb belgilash", "t"],
-                  ["Ustunni toʻldirish (paste)", "Ctrl + V"],
-                  ["Bekor qilish", "Esc"],
+                  [t("shortcutEditCell"), `Enter / ${t("click")}`],
+                  [t("shortcutMoveNext"), "Enter / Tab"],
+                  [t("shortcutPrevCell"), "Shift + Tab"],
+                  [t("shortcutNeighborCell"), "← ↑ → ↓"],
+                  [t("shortcutMarkAbsent"), "q"],
+                  [t("shortcutMarkUnsubmitted"), "t"],
+                  [t("shortcutFillColumn"), "Ctrl + V"],
+                  [t("shortcutCancel"), "Esc"],
                 ] as const).map(([label, keys]) => (
                   <div key={label} className="flex items-center justify-between gap-3">
                     <TypographyMuted>{label}</TypographyMuted>
@@ -752,7 +759,7 @@ export default function GradesTable({
               <DropdownMenuTrigger asChild>
                 <Button className="ml-1 gap-2 font-semibold">
                   <Plus className="size-4" />
-                  Yaratish
+                  {t("create")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className={archiveNotice ? "w-60" : "w-44"}>
@@ -761,7 +768,7 @@ export default function GradesTable({
                   disabled={!!archiveNotice}
                 >
                   <FileText />
-                  Topshiriq
+                  {t("assignment")}
                 </DropdownMenuItem>
                 {archiveNotice && (
                   <div className="px-2 pb-1.5 pt-0.5 text-[11px] leading-snug text-muted-foreground">
@@ -770,12 +777,12 @@ export default function GradesTable({
                 )}
                 <DropdownMenuItem onClick={() => handleCreate("reuse")}>
                   <Copy />
-                  Qayta ishlatish
+                  {t("reuse")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => handleCreate("topic")}>
                   <Tag />
-                  Toifa
+                  {t("category")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -804,7 +811,7 @@ export default function GradesTable({
                 className="sticky left-0 z-40 border-r border-b border-border min-w-[260px] w-[260px] h-[176px]"
                 style={{ backgroundColor: EMPTY_BG }}
               />
-              <ColHeader label="Holat" stickyLeft />
+              <ColHeader label={t("statusColumn")} stickyLeft />
               {orderedAssignments.map((a) => {
                 const topic = topicMap.get(a.topicId);
                 const hex = topic ? TOPIC_COLOR_HEX[topic.color] : null;
@@ -876,7 +883,7 @@ export default function GradesTable({
                       variant="ghost"
                       onClick={archiveNotice ? undefined : onCreateAssignmentClick}
                       aria-disabled={archiveNotice ? true : undefined}
-                      aria-label="Topshiriq qoʻshish"
+                      aria-label={t("addAssignment")}
                       className={cn(
                         "w-full h-full flex items-center justify-center transition-colors rounded-none min-h-0",
                         archiveNotice
@@ -887,7 +894,7 @@ export default function GradesTable({
                       <Plus className="size-4 text-muted-foreground" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>{archiveNotice ?? "Topshiriq qoʻshish"}</TooltipContent>
+                  <TooltipContent>{archiveNotice ?? t("addAssignment")}</TooltipContent>
                 </Tooltip>
               </TableHead>
               <TableHead
@@ -910,10 +917,10 @@ export default function GradesTable({
                           onClick={() => setSortField((f) => f === "firstName" ? "lastName" : "firstName")}
                           className="text-xs font-bold uppercase tracking-wider text-foreground hover:text-foreground/70 transition-colors h-auto min-h-0 p-0 hover:bg-transparent"
                         >
-                          Oʻquvchi
+                          {t("student")}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>{sortField === "firstName" ? "Familiya boʻyicha tartiblash" : "Ism boʻyicha tartiblash"}</TooltipContent>
+                      <TooltipContent>{sortField === "firstName" ? t("sortByLastName") : t("sortByFirstName")}</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -927,7 +934,7 @@ export default function GradesTable({
                           <ChevronDown className={cn("size-3", sortDir === "desc" ? "text-foreground" : "text-muted-foreground/30")} />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>{sortDir === "asc" ? "Z→A tartibga oʻtish" : "A→Z tartibga oʻtish"}</TooltipContent>
+                      <TooltipContent>{sortDir === "asc" ? t("sortDescending") : t("sortAscending")}</TooltipContent>
                     </Tooltip>
                   </div>
                 </div>
@@ -937,7 +944,7 @@ export default function GradesTable({
                 style={{ backgroundColor: HOLAT_BG }}
               >
                 <HolatHover
-                  name="Sinf oʻrtachasi"
+                  name={t("classAverage")}
                   level={classAverage}
                   trend={classTrend}
                   formative={classFormative ?? 0}
@@ -959,7 +966,7 @@ export default function GradesTable({
                 </HolatHover>
               </TableCell>
               {assignmentAverages.map((aa) => {
-                const t = topicMap.get(aa.assignment.topicId);
+                const topic = topicMap.get(aa.assignment.topicId);
                 return (
                   <TableCell
                     key={aa.assignment.id}
@@ -968,8 +975,8 @@ export default function GradesTable({
                     <LetterAvg
                       percent={aa.percent}
                       binary={
-                        t?.inputMode === "select"
-                          ? { passLabel: t.passLabel, failLabel: t.failLabel }
+                        topic?.inputMode === "select"
+                          ? { passLabel: topic.passLabel, failLabel: topic.failLabel }
                           : undefined
                       }
                     />
@@ -1114,29 +1121,29 @@ export default function GradesTable({
         <CardFooter className={cn(panelCardFooterClass, "flex items-center justify-between bg-card")}>
           <div>
             <TypographySmall className="text-foreground">
-              {draftCount} qoralama baho hali qaytarilmagan
+              {t("draftNotReturned", { count: draftCount })}
             </TypographySmall>
             <TypographyMuted className="mt-0.5 text-xs">
-              Talabalar siz qaytargunga qadar bahoni koʻra olmaydi.
+              {t("draftHiddenNote")}
             </TypographyMuted>
           </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button className="gap-2 font-semibold">
                 <Send className="size-4" />
-                Hammasini qaytarish
+                {t("returnAll")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Baholarni nashr qilish</AlertDialogTitle>
+                <AlertDialogTitle>{t("publishGradesTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {draftAssignmentCount} ta topshiriqdagi jami {draftCount} ta baho oʻquvchilarga ochiladi. Bu amaldan soʻng ular bahosini koʻra oladi.
+                  {t("publishGradesDescription", { assignmentCount: draftAssignmentCount, gradeCount: draftCount })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                <AlertDialogAction onClick={onReturnAll}>Nashr qilish</AlertDialogAction>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                <AlertDialogAction onClick={onReturnAll}>{t("publish")}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -1147,12 +1154,13 @@ export default function GradesTable({
 }
 
 function GradesEmptyState() {
+  const t = useTranslations("GradesTable");
   return (
     <Empty className="min-h-[50vh]">
       <EmptyHeader>
         <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
-        <EmptyTitle>Sinfda oʻquvchi yoʻq</EmptyTitle>
-        <EmptyDescription>Baholarni kuzatishni boshlash uchun bu sinfga oʻquvchi qoʻshing.</EmptyDescription>
+        <EmptyTitle>{t("noStudentsTitle")}</EmptyTitle>
+        <EmptyDescription>{t("noStudentsDescription")}</EmptyDescription>
       </EmptyHeader>
     </Empty>
   );
@@ -1202,13 +1210,14 @@ function GradeCell({
   /** Vaznli foiz rejimi yoqilgan bo‘lsa — bahoning "Jami"ga hissasi (foiz punkt). */
   weight?: number | null;
 }) {
+  const t = useTranslations("GradesTable");
   if (!grade || grade.score === null) {
     const missing = grade?.missing ?? (grade?.isMissing ? "absent" : undefined);
     if (missing) {
       // Q = Qatnashmadi (absent), T = Topshirmadi (unsubmitted).
       // Ikkalasi ham o‘rtachadan chiqarilgan — neytral rangda.
-      const letter = missing === "absent" ? "Q" : "T";
-      const label = missing === "absent" ? "Qatnashmadi" : "Topshirmadi";
+      const letter = missing === "absent" ? t("absentLetter") : t("unsubmittedLetter");
+      const label = missing === "absent" ? t("absent") : t("unsubmitted");
       return (
         <div
           className="w-full h-full flex flex-col items-center justify-center py-3 px-2"
@@ -1225,8 +1234,8 @@ function GradeCell({
   const isSelect = topic?.inputMode === "select";
   const selectLabel = isSelect
     ? percent >= 50
-      ? topic?.passLabel ?? "Bajardi"
-      : topic?.failLabel ?? "Bajarmadi"
+      ? topic?.passLabel ?? t("passed")
+      : topic?.failLabel ?? t("failed")
     : null;
   return (
     <div
@@ -1261,7 +1270,7 @@ function GradeCell({
             <span
               className="absolute top-1 left-1.5 text-[10px] font-semibold tabular-nums leading-none"
               style={{ color: scoreBarColor(percent) }}
-              title="Yakuniy bahoga hissa"
+              title={t("contributionToFinal")}
             >
               {weight.toFixed(1)}%
             </span>
@@ -1387,8 +1396,9 @@ function BinaryCell({
   onMark: (mark: "absent" | "unsubmitted") => void;
   onClear: () => void;
 }) {
-  const passLabel = topic?.passLabel ?? "Bajardi";
-  const failLabel = topic?.failLabel ?? "Bajarmadi";
+  const t = useTranslations("GradesTable");
+  const passLabel = topic?.passLabel ?? t("passed");
+  const failLabel = topic?.failLabel ?? t("failed");
   const hasScore = grade?.score !== null && grade?.score !== undefined;
   const pass = hasScore && maxScore > 0 ? (grade!.score! / maxScore) * 100 >= 50 : null;
 
@@ -1442,12 +1452,12 @@ function BinaryCell({
         <ContextMenuSeparator />
         <ContextMenuItem onClick={() => onMark("absent")}>
           <UserX className="text-muted-foreground" />
-          Qatnashmadi
+          {t("absent")}
           <ContextMenuShortcut>Q</ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuItem onClick={() => onMark("unsubmitted")}>
           <FileX className="text-muted-foreground" />
-          Topshirmadi
+          {t("unsubmitted")}
           <ContextMenuShortcut>T</ContextMenuShortcut>
         </ContextMenuItem>
         {hasScore && (
@@ -1455,7 +1465,7 @@ function BinaryCell({
             <ContextMenuSeparator />
             <ContextMenuItem onClick={onClear}>
               <Eraser className="text-muted-foreground" />
-              Tozalash
+              {t("clear")}
               <ContextMenuShortcut>Z</ContextMenuShortcut>
             </ContextMenuItem>
           </>

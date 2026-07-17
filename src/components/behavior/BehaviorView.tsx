@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Award, BarChart3, History, Settings2, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -72,6 +73,8 @@ type Props = {
 };
 
 export default function BehaviorView({ classId, demoMode, demoStudents, demoClassInfo }: Props) {
+  const t = useTranslations("BehaviorView");
+  const tToast = useTranslations("AwardToast");
   const mounted = useMounted();
 
   const skills = useBehaviorStore((s) => s.skills);
@@ -139,7 +142,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
   const openForClass = () =>
     setTarget({
       studentIds: students.map((s) => s.id),
-      label: `${students.length} ta oʻquvchi`,
+      label: t("studentsCount", { count: students.length }),
       isGroup: true,
     });
 
@@ -150,33 +153,34 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
     if (picked.length === 0) return;
     setTarget({
       studentIds: picked.map((s) => s.id),
-      label: picked.length === 1 ? picked[0].name : `${picked.length} ta oʻquvchi`,
+      label: picked.length === 1 ? picked[0].name : t("studentsCount", { count: picked.length }),
       isGroup: picked.length > 1,
     });
   };
 
   /* Yagona yozish yoʻli — AwardDialog ham, StudentDialog ham shu orqali.
      Demo rejimida serverga yozilmaydi (namunaviy oʻquvchilar haqiqiy emas). */
-  const performAward = (t: AwardTarget, skill: BehaviorSkill, el: HTMLElement) => {
+  const performAward = (target: AwardTarget, skill: BehaviorSkill, el: HTMLElement) => {
     if (demoMode) {
       setTarget(null);
       setSelected(null);
       return;
     }
-    const eventIds = awardPoints(classId, t.studentIds, skill);
+    const eventIds = awardPoints(classId, target.studentIds, skill);
     if (eventIds.length === 0) return;
 
     if (skill.points > 0) {
-      if (t.isGroup) confettiPresets.sideCannons();
+      if (target.isGroup) confettiPresets.sideCannons();
       else confettiPresets.fromElement(el);
     }
 
     showAwardToast({
-      targetLabel: t.label,
+      targetLabel: target.label,
       skillName: skill.name,
       emoji: skill.emoji,
       points: skill.points,
       onUndo: () => removeEvents(classId, eventIds),
+      undoLabel: tToast("undo"),
     });
     setSelected(null);
   };
@@ -205,7 +209,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
           <Award aria-hidden />
         </SectionIcon>
         <div className="min-w-0 flex-1">
-          <CardTitle className="truncate">Xulq-atvor</CardTitle>
+          <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>
         <Button
           variant="outline"
@@ -215,7 +219,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
           data-tour="behavior-report"
         >
           <BarChart3 className="size-4" aria-hidden />
-          Hisobot
+          {t("report")}
         </Button>
         <Button
           variant="outline"
@@ -225,7 +229,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
           data-tour="behavior-points"
         >
           <History className="size-4" aria-hidden />
-          Ballar
+          {t("points")}
         </Button>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -236,7 +240,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
                     variant="outline"
                     size="icon"
                     className="size-8 shrink-0"
-                    aria-label="Xulq sozlamalari"
+                    aria-label={t("settingsAria")}
                   >
                     <Settings2 className="size-4" aria-hidden />
                   </Button>
@@ -244,7 +248,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
               />
             </span>
           </TooltipTrigger>
-          <TooltipContent>Xulq sozlamalari</TooltipContent>
+          <TooltipContent>{t("settingsTooltip")}</TooltipContent>
         </Tooltip>
       </div>
 
@@ -256,11 +260,8 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
               <EmptyMedia>
                 <Illustration name="15" className="h-32 text-black dark:text-white" />
               </EmptyMedia>
-              <EmptyTitle>Oʻquvchilar yoʻq</EmptyTitle>
-              <EmptyDescription>
-                Ball berish uchun avval &quot;Oʻquvchilar&quot; boʻlimida sinfga
-                oʻquvchi qoʻshing.
-              </EmptyDescription>
+              <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+              <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
@@ -293,7 +294,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
                 )}
               </span>
               <span className="w-full truncate text-center text-[13px] font-semibold leading-tight text-foreground">
-                Butun sinf
+                {t("wholeClass")}
               </span>
             </button>
 
@@ -323,17 +324,17 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
             size="sm"
             onClick={() => setSelected(new Set(students.map((s) => s.id)))}
           >
-            Hammasini tanlash
+            {t("selectAll")}
           </Button>
           <TypographyMuted className="text-xs tabular-nums">
-            {selected.size} ta tanlandi
+            {t("selectedCount", { count: selected.size })}
           </TypographyMuted>
           <div className="ml-auto flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
-              Bekor qilish
+              {t("cancel")}
             </Button>
             <Button size="sm" disabled={selected.size === 0} onClick={openForSelection}>
-              Ball berish
+              {t("giveAward")}
             </Button>
           </div>
         </div>
@@ -346,8 +347,8 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
         }}
         title={
           target?.isGroup
-            ? `${target.studentIds.length} ta oʻquvchiga ball berish`
-            : `${target?.label ?? ""}ga ball berish`
+            ? t("awardGroupTitle", { count: target.studentIds.length })
+            : t("awardSingleTitle", { label: target?.label ?? "" })
         }
         skills={skills}
         onSelect={handleSelectSkill}

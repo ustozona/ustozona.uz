@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Award, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -66,6 +67,7 @@ export function SkillFormDialog({
   /** Yangi koʻnikma uchun boshlangʻich tur (qaysi tabdan ochilgani). */
   defaultType?: SkillType;
 }) {
+  const t = useTranslations("SkillFormDialog");
   const skills = useBehaviorStore((s) => s.skills);
   const setSkills = useBehaviorStore((s) => s.setSkills);
   const eventsByClass = useBehaviorStore((s) => s.eventsByClass);
@@ -151,7 +153,7 @@ export function SkillFormDialog({
       className="text-destructive hover:text-destructive"
     >
       <Trash2 className="size-4" aria-hidden />
-      Oʻchirish
+      {t("delete")}
     </Button>
   );
 
@@ -163,7 +165,7 @@ export function SkillFormDialog({
             icon={<Award className="size-[18px]" aria-hidden />}
             title={
               <span className="flex items-center gap-2">
-                {skill ? "Koʻnikmani tahrirlash" : "Yangi koʻnikma"}
+                {skill ? t("editTitle") : t("newTitle")}
                 <span
                   className={cn(
                     "rounded-full px-1.5 py-px text-[11px] font-medium",
@@ -172,7 +174,7 @@ export function SkillFormDialog({
                       : "bg-destructive/10 text-destructive"
                   )}
                 >
-                  {type === "positive" ? "Ijobiy" : "Salbiy"}
+                  {type === "positive" ? t("positive") : t("negative")}
                 </span>
               </span>
             }
@@ -195,7 +197,7 @@ export function SkillFormDialog({
                   name.trim() ? "text-foreground" : "text-muted-foreground"
                 )}
               >
-                {name.trim() || "Nom"}
+                {name.trim() || t("namePlaceholderFallback")}
               </span>
             </div>
           </div>
@@ -210,21 +212,21 @@ export function SkillFormDialog({
                       <EmojiPickerButton value={emoji} onChange={setEmoji} size="sm" />
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>Emojini oʻzgartirish</TooltipContent>
+                  <TooltipContent>{t("changeEmoji")}</TooltipContent>
                 </Tooltip>
               </div>
               <div className="flex-1 space-y-2">
-                <Label htmlFor="bh-skill-name">Nom</Label>
+                <Label htmlFor="bh-skill-name">{t("nameLabel")}</Label>
                 <Input
                   id="bh-skill-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={200}
-                  placeholder="Masalan: Faol qatnashdi"
+                  placeholder={t("namePlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="bh-skill-magnitude">Ball</Label>
+                <Label htmlFor="bh-skill-magnitude">{t("pointsLabel")}</Label>
                 <Select value={magnitude} onValueChange={setMagnitude}>
                   <SelectTrigger id="bh-skill-magnitude" className="w-[4.5rem]">
                     <SelectValue>
@@ -253,8 +255,8 @@ export function SkillFormDialog({
 
             <div className="group space-y-2">
               <Label htmlFor="bh-skill-desc">
-                Tavsif{" "}
-                <span className="font-normal text-muted-foreground">(ixtiyoriy)</span>
+                {t("descriptionLabel")}{" "}
+                <span className="font-normal text-muted-foreground">{t("optional")}</span>
               </Label>
               <Textarea
                 id="bh-skill-desc"
@@ -262,11 +264,10 @@ export function SkillFormDialog({
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={500}
                 rows={2}
-                placeholder='Masalan: "Savolga dalil bilan javob berdi"'
+                placeholder={t("descriptionPlaceholder")}
               />
               <p className="text-caption hidden group-focus-within:block">
-                Qaysi aniq harakat nazarda tutilishini yozing — koʻnikma
-                kartasi ustiga borilganda koʻrinadi.
+                {t("descriptionHint")}
               </p>
             </div>
           </div>
@@ -286,15 +287,15 @@ export function SkillFormDialog({
                   <TooltipTrigger asChild>
                     <span className="inline-flex">{deleteButton}</span>
                   </TooltipTrigger>
-                  <TooltipContent>Kamida bitta koʻnikma qolishi kerak</TooltipContent>
+                  <TooltipContent>{t("minSkillTooltip")}</TooltipContent>
                 </Tooltip>
               ))}
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Bekor qilish
+                {t("cancel")}
               </Button>
               <Button disabled={!name.trim() || !magnitudeValid} onClick={save}>
-                Saqlash
+                {t("save")}
               </Button>
             </div>
           </DialogFooter>
@@ -305,19 +306,16 @@ export function SkillFormDialog({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              «{skill?.name}» koʻnikmasini oʻchirasizmi?
+              {t("deleteTitle", { name: skill?.name ?? "" })}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {usageCount > 0
-                ? `Bu koʻnikma bilan ${usageCount} ta ball berilgan. `
-                : ""}
-              Berilgan ballar tarixi saqlanadi — eski yozuvlar oʻchmaydi,
-              faqat koʻnikma ball berish roʻyxatidan yoʻqoladi.
+              {usageCount > 0 ? t("usageNote", { count: usageCount }) : ""}
+              {t("deleteDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-            <AlertDialogAction onClick={remove}>Oʻchirish</AlertDialogAction>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={remove}>{t("delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

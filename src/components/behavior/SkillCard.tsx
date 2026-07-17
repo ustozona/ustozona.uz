@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { BehaviorReward, BehaviorSkill } from "@/lib/behavior-data";
@@ -74,6 +75,7 @@ export function RewardCard({
   onSelect?: (reward: BehaviorReward, el: HTMLElement) => void;
   className?: string;
 }) {
+  const t = useTranslations("SkillCard");
   return (
     <button
       type="button"
@@ -81,7 +83,7 @@ export function RewardCard({
       className={cn(tileClass, className)}
     >
       <span className="absolute top-2 right-2.5 text-xs font-bold tabular-nums text-warning">
-        {reward.cost} ball
+        {t("pointsSuffix", { cost: reward.cost })}
       </span>
       <BehaviorEmoji code={reward.emoji} label={reward.name} className={tileEmojiClass} />
       <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight text-foreground">

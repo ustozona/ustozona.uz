@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -36,6 +37,7 @@ function useFullscreen() {
 }
 
 export default function Header() {
+  const t = useTranslations("Header");
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
   return (
@@ -46,7 +48,7 @@ export default function Header() {
           <SidebarTrigger className="size-8 text-muted-foreground" />
         </TooltipTrigger>
         <TooltipContent className="flex items-center gap-1.5">
-          Yon panel
+          {t("sidebar")}
           <KbdGroup>
             <Kbd>Ctrl</Kbd>
             <Kbd>B</Kbd>
@@ -66,7 +68,7 @@ export default function Header() {
             {isFullscreen ? <Minimize /> : <Maximize />}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{isFullscreen ? "Toʻliq ekrandan chiqish" : "Toʻliq ekran"}</TooltipContent>
+        <TooltipContent>{isFullscreen ? t("exitFullscreen") : t("fullscreen")}</TooltipContent>
       </Tooltip>
       <Separator orientation="vertical" className="mx-1 !h-6" />
 

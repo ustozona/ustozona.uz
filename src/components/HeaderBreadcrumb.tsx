@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Breadcrumb,
@@ -16,7 +17,7 @@ import {
   Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem,
 } from "@/components/ui/command";
 import { ClassSwatch } from "@/components/ClassSwatch";
-import { ROUTE_LABELS } from "@/lib/route-labels";
+import { ROUTE_LABEL_KEYS } from "@/lib/route-labels";
 import { CLASS_SECTIONS } from "@/app/dashboard/classes/[id]/_components/sections";
 import { useGradesStore } from "@/store/useGradesStore";
 import { locateStudent } from "@/lib/student-profile";
@@ -36,6 +37,8 @@ function humanize(segment: string) {
 }
 
 function useBreadcrumbs(): Crumb[] {
+  const tRoutes = useTranslations("RouteLabels");
+  const tSections = useTranslations("ClassSections");
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
@@ -64,7 +67,8 @@ function useBreadcrumbs(): Crumb[] {
         continue;
       }
 
-      const label = ROUTE_LABELS[acc] ?? humanize(segments[i]);
+      const routeKey = ROUTE_LABEL_KEYS[acc];
+      const label = routeKey ? tRoutes(routeKey) : humanize(segments[i]);
       crumbs.push({ kind: "link", href: acc, label });
     }
 
@@ -73,12 +77,12 @@ function useBreadcrumbs(): Crumb[] {
     if (segments[0] === "dashboard" && segments[1] === "classes" && sectionKey) {
       const section = CLASS_SECTIONS.find((s) => s.key === sectionKey);
       if (section && section.key !== "overview") {
-        crumbs.push({ kind: "page", href: `${pathname}?b=${sectionKey}`, label: section.label });
+        crumbs.push({ kind: "page", href: `${pathname}?b=${sectionKey}`, label: tSections(section.key) });
       }
     }
 
     return crumbs;
-  }, [pathname, searchParams, classDataMap]);
+  }, [pathname, searchParams, classDataMap, tSections]);
 }
 
 /* ── Umumiy: qidiruvli tanlovchi boʻgʻin (Popover+Command, StudentProfile
@@ -94,6 +98,7 @@ function SwitcherCrumb({
   placeholder: string;
   children: (close: () => void) => React.ReactNode;
 }) {
+  const t = useTranslations("HeaderBreadcrumb");
   const [open, setOpen] = React.useState(false);
   const close = React.useCallback(() => setOpen(false), []);
   return (
@@ -114,7 +119,7 @@ function SwitcherCrumb({
         <Command>
           <CommandInput placeholder={placeholder} />
           <CommandList>
-            <CommandEmpty>Topilmadi</CommandEmpty>
+            <CommandEmpty>{t("notFound")}</CommandEmpty>
             {children(close)}
           </CommandList>
         </Command>
@@ -132,6 +137,7 @@ function ClassSwitcherCrumb({
   classId: string;
   isLast: boolean;
 }) {
+  const t = useTranslations("HeaderBreadcrumb");
   const router = useRouter();
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
@@ -147,9 +153,9 @@ function ClassSwitcherCrumb({
   };
 
   return (
-    <SwitcherCrumb label={label} isLast={isLast} placeholder="Sinf qidirish…">
+    <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")}>
       {(close) => (
-        <CommandGroup heading="Mening sinflarim">
+        <CommandGroup heading={t("myClassesHeading")}>
           {classes.map((c) => (
             <CommandItem
               key={c.id}
@@ -177,6 +183,7 @@ function StudentSwitcherCrumb({
   studentId: string;
   isLast: boolean;
 }) {
+  const t = useTranslations("HeaderBreadcrumb");
   const router = useRouter();
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
@@ -196,7 +203,7 @@ function StudentSwitcherCrumb({
   }
 
   return (
-    <SwitcherCrumb label={label} isLast={isLast} placeholder="Oʻquvchi qidirish…">
+    <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchStudentPlaceholder")}>
       {(close) => (
         <CommandGroup heading={location.classInfo.name}>
           {location.roster.map((r) => (

@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Plus, Calendar as CalendarIcon, Flag, Clock2Icon, Repeat, Check, X, ChevronRight, Sun, Sunrise, CalendarPlus, CalendarDays } from "lucide-react";
 import { format, addDays, parseISO } from "date-fns";
 import { uz } from "date-fns/locale";
@@ -32,21 +33,21 @@ export type ComposerSeed = {
 
 export type TaskComposerHandle = { focus: () => void };
 
-const PRIORITY_OPTIONS: { value: TaskPriority; label: string; cls: string }[] = [
-  { value: "high", label: "Yuqori", cls: "fill-destructive text-destructive" },
-  { value: "medium", label: "Oʻrta", cls: "fill-warning text-warning" },
-  { value: "low", label: "Past", cls: "fill-info text-info" },
-  { value: "none", label: "Belgilanmagan", cls: "text-muted-foreground/60" },
+const PRIORITY_OPTION_VALUES: { value: TaskPriority; cls: string }[] = [
+  { value: "high", cls: "fill-destructive text-destructive" },
+  { value: "medium", cls: "fill-warning text-warning" },
+  { value: "low", cls: "fill-info text-info" },
+  { value: "none", cls: "text-muted-foreground/60" },
 ];
 
 const todayStr = () => format(new Date(), "yyyy-MM-dd");
 
 /** Sananing qisqa, inson oʻqiydigan yorligʻi (Bugun/Ertaga/d-MMM). */
-function dateLabel(d: string): string {
-  const t = todayStr();
-  const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
-  if (d === t) return "Bugun";
-  if (d === tomorrow) return "Ertaga";
+function dateLabel(d: string, todayLabel: string, tomorrowLabel: string): string {
+  const todayIso = todayStr();
+  const tomorrowIso = format(addDays(new Date(), 1), "yyyy-MM-dd");
+  if (d === todayIso) return todayLabel;
+  if (d === tomorrowIso) return tomorrowLabel;
   return format(parseISO(d), "d-MMM", { locale: uz });
 }
 
@@ -61,6 +62,9 @@ function dateLabel(d: string): string {
  */
 export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed }>(
   function TaskComposer({ seed }, ref) {
+    const t = useTranslations("TaskComposer");
+    const tPriority = useTranslations("TaskPriority");
+    const PRIORITY_OPTIONS = PRIORITY_OPTION_VALUES.map((p) => ({ ...p, label: tPriority(p.value) }));
     const addTask = useTaskStore((s) => s.addTask);
 
     const [expanded, setExpanded] = useState(false);
@@ -159,7 +163,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
           className="group flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
         >
           <Plus className="size-4 text-muted-foreground/70 transition-colors group-hover:text-primary" />
-          Vazifa qoʻshish
+          {t("addTask")}
         </button>
       );
     }
@@ -170,10 +174,10 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
     // Icon-only ghost tugmalar + tooltip; faolida nuqta-indikator (primary fon).
     const now = new Date();
     const quickPresets = [
-      { label: "Bugun", date: now, icon: Sun },
-      { label: "Ertaga", date: addDays(now, 1), icon: Sunrise },
-      { label: "Indinga", date: addDays(now, 2), icon: CalendarPlus },
-      { label: "Keyingi hafta", date: addDays(now, 7), icon: CalendarDays },
+      { label: t("today"), date: now, icon: Sun },
+      { label: t("tomorrow"), date: addDays(now, 1), icon: Sunrise },
+      { label: t("dayAfterTomorrow"), date: addDays(now, 2), icon: CalendarPlus },
+      { label: t("nextWeek"), date: addDays(now, 7), icon: CalendarDays },
     ];
     const presetIso = (d: Date) => format(d, "yyyy-MM-dd");
     const isPresetActive = (d: Date) => dueDate === presetIso(d);
@@ -195,7 +199,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
             onKeyDown={(e) => {
               if (e.key === "Escape") collapse();
             }}
-            placeholder="Nima qilmoqchisiz?"
+            placeholder={t("titlePlaceholder")}
             className="h-auto border-none bg-transparent p-0 text-sm font-medium shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0"
           />
         </div>
@@ -222,11 +226,11 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
                 <CalendarIcon className="size-4" />
                 {dueDate ? (
                   <span>
-                    {dateLabel(dueDate)}
+                    {dateLabel(dueDate, t("today"), t("tomorrow"))}
                     {dueTime ? `, ${dueTime}` : ""}
                   </span>
                 ) : (
-                  "Sana"
+                  t("dateLabel")
                 )}
                 {recurrenceRule && <Repeat className="size-3" />}
               </Button>
@@ -238,7 +242,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
             >
               {/* Tezkor presetlar — icon-only ghost + tooltip, butun kenglikka teng taqsim */}
               <TooltipProvider delayDuration={200}>
-                <div role="toolbar" aria-label="Tezkor sana tanlash" className="grid grid-cols-4 gap-1.5 p-2.5 pb-1">
+                <div role="toolbar" aria-label={t("quickDateToolbarLabel")} className="grid grid-cols-4 gap-1.5 p-2.5 pb-1">
                   {quickPresets.map((p) => (
                     <Tooltip key={p.label}>
                       <TooltipTrigger asChild>
@@ -278,7 +282,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
               {/* Vaqt — inline qator (yonida time input) */}
               <div className="mt-2 flex items-center gap-2.5 border-t px-3 py-2.5 text-sm">
                 <Clock2Icon className="size-4 text-muted-foreground" />
-                <span className="font-medium">Vaqt</span>
+                <span className="font-medium">{t("time")}</span>
                 <Input
                   type="time"
                   value={dueTime || ""}
@@ -292,8 +296,8 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
                 <CollapsibleTrigger asChild>
                   <button type="button" className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm hover:bg-muted/40 transition-colors">
                     <Repeat className="size-4 text-muted-foreground" />
-                    <span className="font-medium">Takrorlash</span>
-                    <span className="ml-auto text-xs text-muted-foreground">{recurrenceLabel(recurrenceRule, dueDate) ?? "Takrorlanmaydi"}</span>
+                    <span className="font-medium">{t("repeat")}</span>
+                    <span className="ml-auto text-xs text-muted-foreground">{recurrenceLabel(recurrenceRule, dueDate) ?? t("doesNotRepeat")}</span>
                     <ChevronRight className={cn("size-4 text-muted-foreground/60 transition-transform duration-fast ease-standard", repeatOpen && "rotate-90")} />
                   </button>
                 </CollapsibleTrigger>
@@ -305,10 +309,10 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
               {/* Footer: Tozalash / OK */}
               <div className="flex items-center gap-2 border-t p-3">
                 <Button type="button" variant="outline" size="sm" className="h-9 flex-1 text-xs" onClick={clearDates}>
-                  Tozalash
+                  {t("clear")}
                 </Button>
                 <Button type="button" size="sm" className="h-9 flex-1 text-xs" onClick={() => setDatePopoverOpen(false)}>
-                  OK
+                  {t("ok")}
                 </Button>
               </div>
             </PopoverContent>
@@ -358,7 +362,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
                       return (
                         <>
                           <ClassSwatch hex={first ? CLASS_COLOR_HEX[classColor(first)] : CLASS_COLOR_HEX.gray} />
-                          <span>{classIds.length === 1 ? first?.name ?? "Sinf" : `${classIds.length} sinf`}</span>
+                          <span>{classIds.length === 1 ? first?.name ?? t("classLabel") : t("classCount", { count: classIds.length })}</span>
                         </>
                       );
                     })()}
@@ -367,7 +371,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
                   <>
                     <CalendarIcon className="hidden" />
                     <span className="flex size-4 items-center justify-center rounded-[4px] border border-dashed border-muted-foreground/50" />
-                    Sinf
+                    {t("classLabel")}
                   </>
                 )}
               </Button>
@@ -409,7 +413,7 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
               <X className="size-4" />
             </Button>
             <Button type="submit" size="sm" className="h-8 gap-1.5 px-3 text-xs" disabled={!title.trim()}>
-              Qoʻshish
+              {t("submit")}
               <Kbd className="hidden bg-primary-foreground/15 text-primary-foreground sm:inline-flex">↵</Kbd>
             </Button>
           </div>

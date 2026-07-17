@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -54,6 +55,7 @@ function AutoRuleTile({
   enabled: boolean;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("AutoPointsEditor");
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -75,7 +77,7 @@ function AutoRuleTile({
             {badge}
           </span>
           <span className="absolute top-2 left-2.5 rounded bg-muted px-1 py-px text-[9px] font-medium tracking-wide text-muted-foreground uppercase">
-            Avto
+            {t("autoBadge")}
           </span>
           <BehaviorEmoji
             code={emoji}
@@ -111,13 +113,14 @@ function ControlRow({ label, children }: { label: string; children: React.ReactN
 
 /** Seriya zina jadvali — B, 2B, 4B, 6B marralar va bonuslari. */
 function StreakLadder({ base }: { base: number }) {
+  const t = useTranslations("AutoPointsEditor");
   const rows = [1, 2, 3, 4].map((k) => streakMilestoneAt(k, base));
   return (
     <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs tabular-nums text-muted-foreground">
         {rows.map((r, i) => (
           <span key={i} className="flex items-center gap-1">
-            <span className="font-medium text-foreground">{r.threshold} dars</span>
+            <span className="font-medium text-foreground">{t("lessonCount", { count: r.threshold })}</span>
             <span className="text-success">+{r.bonus}</span>
           </span>
         ))}
@@ -129,8 +132,9 @@ function StreakLadder({ base }: { base: number }) {
 
 /** Qulflangan ball qatori — qiymat oʻzgartirilmaydi (tizim standarti). */
 function LockedPointsRow({ points }: { points: number }) {
+  const t = useTranslations("AutoPointsEditor");
   return (
-    <ControlRow label="Ball">
+    <ControlRow label={t("pointsLabel")}>
       <span
         className={cn(
           "text-sm font-semibold tabular-nums",
@@ -138,7 +142,7 @@ function LockedPointsRow({ points }: { points: number }) {
         )}
       >
         {formatPoints(points)}
-        <span className="ml-1.5 font-normal text-muted-foreground">standart</span>
+        <span className="ml-1.5 font-normal text-muted-foreground">{t("standard")}</span>
       </span>
     </ControlRow>
   );
@@ -157,6 +161,7 @@ function LessonCountSelect({
   disabled?: boolean;
   ariaLabel: string;
 }) {
+  const t = useTranslations("AutoPointsEditor");
   return (
     <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
       <SelectTrigger className="w-24 tabular-nums" size="sm" disabled={disabled} aria-label={ariaLabel}>
@@ -165,7 +170,7 @@ function LessonCountSelect({
       <SelectContent>
         {options.map((o) => (
           <SelectItem key={o} value={String(o)} className="tabular-nums">
-            {o} dars
+            {t("lessonCount", { count: o })}
           </SelectItem>
         ))}
       </SelectContent>
@@ -173,20 +178,25 @@ function LessonCountSelect({
   );
 }
 
-/** Deterministik namuna-hafta — faol qoidalardan jonli hisob. */
-function weekExample(v: BehaviorAutoSettings): { parts: string[]; total: number } | null {
+/** Deterministik namuna-hafta — faol qoidalardan jonli hisob.
+    `t` — chaqiruvchi komponent useTranslations("AutoPointsEditor")'dan uzatadi
+    (bu oddiy funksiya, hook emas — komponent render ichida chaqirilmaydi). */
+function weekExample(
+  v: BehaviorAutoSettings,
+  t: (key: string, values?: Record<string, string | number>) => string
+): { parts: string[]; total: number } | null {
   const parts: string[] = [];
   let total = 0;
   if (v.attendanceEnabled && v.presentEnabled) {
-    parts.push(`2 kelgan dars (+${v.presentPoints * 2})`);
+    parts.push(t("weekPresent", { count: 2, points: v.presentPoints * 2 }));
     total += v.presentPoints * 2;
   }
   if (v.attendanceEnabled && v.lateEnabled) {
-    parts.push(`1 kechikish (${v.latePoints})`);
+    parts.push(t("weekLate", { count: 1, points: v.latePoints }));
     total += v.latePoints;
   }
   if (v.journalEnabled && v.gradedEnabled) {
-    parts.push(`1 baholangan topshiriq (+${v.gradedPoints})`);
+    parts.push(t("weekGraded", { count: 1, points: v.gradedPoints }));
     total += v.gradedPoints;
   }
   if (parts.length === 0) return null;
@@ -198,6 +208,7 @@ export function useAutoRuleTiles(
   value: BehaviorAutoSettings,
   onChange: (next: BehaviorAutoSettings) => void
 ): { positive: React.ReactNode[]; negative: React.ReactNode[] } {
+  const t = useTranslations("AutoPointsEditor");
   const patch = (partial: Partial<BehaviorAutoSettings>) =>
     onChange({ ...value, ...partial });
 
@@ -205,21 +216,18 @@ export function useAutoRuleTiles(
     <AutoRuleTile
       key="late"
       emoji={RULE_EMOJI.late}
-      title="Kechikdi"
+      title={t("late.title")}
       badge={formatPoints(value.latePoints)}
       positive={false}
       enabled={value.attendanceEnabled && value.lateEnabled}
     >
-      <RuleInfo>
-        Davomatda «Kechikdi» belgilanganda avtomatik yoziladi; belgi
-        tuzatilsa ball ham tuzatiladi.
-      </RuleInfo>
+      <RuleInfo>{t("late.info")}</RuleInfo>
       <LockedPointsRow points={value.latePoints} />
-      <ControlRow label="Yoqilgan">
+      <ControlRow label={t("enabledLabel")}>
         <Switch
           checked={value.lateEnabled}
           onCheckedChange={(on) => patch({ lateEnabled: on })}
-          aria-label="Kechikish qoidasini yoqish"
+          aria-label={t("late.enableAria")}
         />
       </ControlRow>
     </AutoRuleTile>,
@@ -227,21 +235,18 @@ export function useAutoRuleTiles(
     <AutoRuleTile
       key="absent"
       emoji={RULE_EMOJI.absent}
-      title="Sababsiz kelmadi"
+      title={t("absent.title")}
       badge={formatPoints(value.absentPoints)}
       positive={false}
       enabled={value.attendanceEnabled && value.absentEnabled}
     >
-      <RuleInfo>
-        Faqat sababsiz kelmaslik uchun — sababli kelmaslik ballga taʼsir
-        qilmaydi.
-      </RuleInfo>
+      <RuleInfo>{t("absent.info")}</RuleInfo>
       <LockedPointsRow points={value.absentPoints} />
-      <ControlRow label="Yoqilgan">
+      <ControlRow label={t("enabledLabel")}>
         <Switch
           checked={value.absentEnabled}
           onCheckedChange={(on) => patch({ absentEnabled: on })}
-          aria-label="Sababsiz kelmaslik qoidasini yoqish"
+          aria-label={t("absent.enableAria")}
         />
       </ControlRow>
     </AutoRuleTile>,
@@ -249,22 +254,18 @@ export function useAutoRuleTiles(
     <AutoRuleTile
       key="due"
       emoji={RULE_EMOJI.due}
-      title="Muddatida topshirilmadi"
+      title={t("due.title")}
       badge={formatPoints(value.missedDuePoints)}
       positive={false}
       enabled={value.journalEnabled && value.missedDueEnabled}
     >
-      <RuleInfo>
-        Muddat kiritilgan topshiriq baholanmay qolsa yoziladi. «Q»
-        belgilangan katakka minus yozilmaydi; keyin baho qoʻyilsa minus
-        qaytariladi.
-      </RuleInfo>
+      <RuleInfo>{t("due.info")}</RuleInfo>
       <LockedPointsRow points={value.missedDuePoints} />
-      <ControlRow label="Yoqilgan">
+      <ControlRow label={t("enabledLabel")}>
         <Switch
           checked={value.missedDueEnabled}
           onCheckedChange={(on) => patch({ missedDueEnabled: on })}
-          aria-label="Muddatida topshirilmadi qoidasini yoqish"
+          aria-label={t("due.enableAria")}
         />
       </ControlRow>
     </AutoRuleTile>,
@@ -274,21 +275,18 @@ export function useAutoRuleTiles(
     <AutoRuleTile
       key="present"
       emoji={RULE_EMOJI.present}
-      title="Har kelgan dars"
+      title={t("present.title")}
       badge={formatPoints(value.presentPoints)}
       positive
       enabled={value.attendanceEnabled && value.presentEnabled}
     >
-      <RuleInfo>
-        Har darsga kelgani uchun beriladi — davomati past sinflarni
-        ragʻbatlantiradi.
-      </RuleInfo>
+      <RuleInfo>{t("present.info")}</RuleInfo>
       <LockedPointsRow points={value.presentPoints} />
-      <ControlRow label="Yoqilgan">
+      <ControlRow label={t("enabledLabel")}>
         <Switch
           checked={value.presentEnabled}
           onCheckedChange={(on) => patch({ presentEnabled: on })}
-          aria-label="Har kelgan dars uchun ballni yoqish"
+          aria-label={t("present.enableAria")}
         />
       </ControlRow>
     </AutoRuleTile>,
@@ -296,33 +294,27 @@ export function useAutoRuleTiles(
     <AutoRuleTile
       key="streak"
       emoji={RULE_EMOJI.streak}
-      title="Seriya bonusi"
+      title={t("streak.title")}
       badge="+2…+5"
       positive
       enabled={value.attendanceEnabled && value.streakEnabled}
     >
-      <RuleInfo>
-        Ketma-ket toza davomat uchun zina boʻyicha oʻsuvchi bonus: boshlangʻich
-        marra→+2, 2 barobar→+3, 4 barobar→+5, keyin har 2 barobarda→+5.
-        Kechikish va sababli kelmaslik seriyani buzmaydi — pauza qiladi.
-        Sababsiz kelmaslikda hisoblagich 0 ga emas, oxirgi olingan marraga
-        qaytadi.
-      </RuleInfo>
-      <ControlRow label="Boshlangʻich marra">
+      <RuleInfo>{t("streak.info")}</RuleInfo>
+      <ControlRow label={t("streak.startLabel")}>
         <LessonCountSelect
           value={value.streakN}
           options={[3, 4, 5]}
           onChange={(v) => patch({ streakN: v })}
           disabled={!value.streakEnabled}
-          ariaLabel="Seriya boshlangʻich marrasi (dars soni)"
+          ariaLabel={t("streak.startAria")}
         />
       </ControlRow>
       <StreakLadder base={value.streakN} />
-      <ControlRow label="Yoqilgan">
+      <ControlRow label={t("enabledLabel")}>
         <Switch
           checked={value.streakEnabled}
           onCheckedChange={(on) => patch({ streakEnabled: on })}
-          aria-label="Davomat seriyasi bonusini yoqish"
+          aria-label={t("streak.enableAria")}
         />
       </ControlRow>
     </AutoRuleTile>,
@@ -330,18 +322,18 @@ export function useAutoRuleTiles(
     <AutoRuleTile
       key="graded"
       emoji={RULE_EMOJI.graded}
-      title="Topshiriq baholandi"
+      title={t("graded.title")}
       badge={formatPoints(value.gradedPoints)}
       positive
       enabled={value.journalEnabled && value.gradedEnabled}
     >
-      <RuleInfo>Bahosidan qatʼi nazar — bajarganlik uchun beriladi.</RuleInfo>
+      <RuleInfo>{t("graded.info")}</RuleInfo>
       <LockedPointsRow points={value.gradedPoints} />
-      <ControlRow label="Yoqilgan">
+      <ControlRow label={t("enabledLabel")}>
         <Switch
           checked={value.gradedEnabled}
           onCheckedChange={(on) => patch({ gradedEnabled: on })}
-          aria-label="Topshiriq baholandi qoidasini yoqish"
+          aria-label={t("graded.enableAria")}
         />
       </ControlRow>
     </AutoRuleTile>,

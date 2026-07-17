@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -54,18 +55,17 @@ const STATUS_STYLES: Record<Lesson["status"], string> = {
   Draft: "bg-muted text-muted-foreground",
 };
 
-/** Status yorliqlari — oʻzbekcha */
-const STATUS_LABELS: Record<Lesson["status"], string> = {
-  Completed: "Tugallandi",
-  Scheduled: "Rejalashtirilgan",
-  Unscheduled: "Rejasiz",
-  Draft: "Qoralama",
-};
-
 const pad = (n: number) => String(n).padStart(2, "0");
 const NONE = "__none__";
 
 export default function LessonsPage() {
+  const t = useTranslations("LessonsPage");
+  const STATUS_LABELS: Record<Lesson["status"], string> = {
+    Completed: t("statusCompleted"),
+    Scheduled: t("statusScheduled"),
+    Unscheduled: t("statusUnscheduled"),
+    Draft: t("statusDraft"),
+  };
   const router = useRouter();
   // Sinf tanlash — `?classId=` URL param (refresh/deep-link chidamli).
   // null = hech narsa tanlanmagan (Sinflar ustuni 50%). Tanlanganda URL +
@@ -104,8 +104,8 @@ export default function LessonsPage() {
     deleteUnit(unit.id);
     if (unit.id === selectedUnitId) setSelectedUnitId(null);
     setDeleteUnitTarget(null);
-    toast.success(`«${pad(unit.number)}. ${unit.title}» oʻchirildi`, {
-      action: { label: "Bekor qilish", onClick: () => restoreUnit(unit, lessonIds) },
+    toast.success(t("unitDeletedToast", { unit: `${pad(unit.number)}. ${unit.title}` }), {
+      action: { label: t("undo"), onClick: () => restoreUnit(unit, lessonIds) },
     });
   };
 
@@ -203,7 +203,7 @@ export default function LessonsPage() {
       title: "",
       status: "Draft",
     });
-    toast.success("Yangi dars yaratildi");
+    toast.success(t("newLessonToast"));
     router.push(`/lessons/${id}`);
   };
 
@@ -243,7 +243,7 @@ export default function LessonsPage() {
       <ContextMenuContent>
         <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => openEditUnit(unit)}>
           <Pencil className="size-4" />
-          Tahrirlash
+          {t("editUnit")}
         </ContextMenuItem>
         <ContextMenuItem
           variant="destructive"
@@ -251,7 +251,7 @@ export default function LessonsPage() {
           onClick={() => setDeleteUnitTarget(unit)}
         >
           <Trash2 className="size-4" />
-          Oʻchirish
+          {t("deleteUnit")}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
@@ -277,7 +277,7 @@ export default function LessonsPage() {
         </div>
         <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground/70 shrink-0 whitespace-nowrap">
           <FileText className="size-3.5" />
-          <span>{total} dars</span>
+          <span>{t("lessonsCountSuffix", { count: total })}</span>
         </div>
         <div className="hidden md:flex items-center gap-2 shrink-0 w-[130px]">
           <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
@@ -343,12 +343,12 @@ export default function LessonsPage() {
           <Layers className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">Boʻlimsiz</h4>
-          <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">Birorta boʻlimga biriktirilmagan darslar</TypographyMuted>
+          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
+          <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">{t("noUnitDescription")}</TypographyMuted>
         </div>
         <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground/70 shrink-0 whitespace-nowrap">
           <FileText className="size-3.5" />
-          <span>{total} dars</span>
+          <span>{t("lessonsCountSuffix", { count: total })}</span>
         </div>
         <div className="hidden md:flex items-center gap-2 shrink-0 w-[130px]">
           <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
@@ -374,8 +374,8 @@ export default function LessonsPage() {
             <Layers className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-semibold text-foreground leading-tight block">Boʻlimsiz</h4>
-            <TypographyMuted className="text-xs leading-snug mt-1">Biriktirilmagan darslar</TypographyMuted>
+            <h4 className="text-sm font-semibold text-foreground leading-tight block">{t("noUnitTitle")}</h4>
+            <TypographyMuted className="text-xs leading-snug mt-1">{t("noUnitShortDescription")}</TypographyMuted>
           </div>
         </button>
       );
@@ -387,7 +387,7 @@ export default function LessonsPage() {
       >
         <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
-          Boʻlimsiz
+          {t("noUnitTitle")}
         </span>
       </button>
     );
@@ -418,8 +418,8 @@ export default function LessonsPage() {
             <Empty className="flex-1">
               <EmptyHeader>
                 <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
-                <EmptyDescription>Boʻlimlarni koʻrish uchun sinf tanlang</EmptyDescription>
+                <EmptyTitle>{t("noClassTitle")}</EmptyTitle>
+                <EmptyDescription>{t("noClassDescription")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
@@ -428,11 +428,11 @@ export default function LessonsPage() {
           <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-2 border-b border-border">
             <div className="flex items-center gap-2 min-w-0">
               <SectionIcon><Layers /></SectionIcon>
-              <CardTitle className="truncate">Boʻlimlar</CardTitle>
+              <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
             </div>
             <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
               <Plus className="size-4" />
-              <span>Qoʻshish</span>
+              <span>{t("addUnit")}</span>
             </Button>
           </div>
 
@@ -459,13 +459,13 @@ export default function LessonsPage() {
                       <Empty className="py-12">
                         <EmptyHeader>
                           <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                          <EmptyTitle>Boʻlimlar yoʻq</EmptyTitle>
-                          <EmptyDescription>Boʻlim qoʻshing yoki darslarni toʻgʻridan-toʻgʻri qoʻshing.</EmptyDescription>
+                          <EmptyTitle>{t("unitsEmptyTitle")}</EmptyTitle>
+                          <EmptyDescription>{t("unitsEmptyDescription")}</EmptyDescription>
                         </EmptyHeader>
                         <EmptyContent>
                           <Button variant="outline" className="gap-2 h-9" onClick={handleCreateUnit}>
                             <Plus className="size-4" />
-                            Boʻlim qoʻshish
+                            {t("addUnitButton")}
                           </Button>
                         </EmptyContent>
                       </Empty>
@@ -490,7 +490,7 @@ export default function LessonsPage() {
                 </div>
                 <button
                   onClick={toggleUnitFooter}
-                  title={unitFooterOpen ? "Statistikani yashirish" : "Statistikani koʻrsatish"}
+                  title={unitFooterOpen ? t("hideStats") : t("showStats")}
                   aria-expanded={unitFooterOpen}
                   className="shrink-0 p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted transition-colors"
                 >
@@ -501,17 +501,17 @@ export default function LessonsPage() {
                 <div className="px-4 pb-4">
                   <div className="flex items-start divide-x divide-border">
                     <div className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
-                      <p className="text-xs text-muted-foreground truncate">Darslar:</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{unitStats.lessons} ta</p>
+                      <p className="text-xs text-muted-foreground truncate">{t("lessonsStatLabel")}</p>
+                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("lessonsUnitCount", { count: unitStats.lessons })}</p>
                     </div>
                     <div className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
-                      <p className="text-xs text-muted-foreground truncate">Bajarildi:</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{unitStats.completed} ta</p>
+                      <p className="text-xs text-muted-foreground truncate">{t("completedStatLabel")}</p>
+                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("lessonsUnitCount", { count: unitStats.completed })}</p>
                     </div>
                   </div>
                   <div className="space-y-1.5 mt-3">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Progress</span>
+                      <span className="text-muted-foreground">{t("progress")}</span>
                       <span className="font-bold tabular-nums text-foreground">{Math.round(unitStats.pct)}%</span>
                     </div>
                     <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -526,22 +526,22 @@ export default function LessonsPage() {
           <Dialog open={!!editUnitTarget} onOpenChange={(o) => !o && setEditUnitTarget(null)}>
             <DialogContent className="max-w-[440px]">
               <DialogHeader>
-                <DialogTitle>Boʻlimni tahrirlash</DialogTitle>
-                <DialogDescription>Boʻlim nomi va tavsifini yangilang.</DialogDescription>
+                <DialogTitle>{t("editUnitDialogTitle")}</DialogTitle>
+                <DialogDescription>{t("editUnitDialogDescription")}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
-                  <Label htmlFor="eu-title">Nomi</Label>
+                  <Label htmlFor="eu-title">{t("nameLabel")}</Label>
                   <Input id="eu-title" value={editUnitTitle} onChange={(e) => setEditUnitTitle(e.target.value)} autoFocus />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="eu-desc">Tavsif</Label>
+                  <Label htmlFor="eu-desc">{t("descriptionLabel")}</Label>
                   <Textarea id="eu-desc" value={editUnitDesc} onChange={(e) => setEditUnitDesc(e.target.value)} rows={3} />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setEditUnitTarget(null)}>Bekor qilish</Button>
-                <Button onClick={saveEditUnit} disabled={!editUnitTitle.trim()}>Saqlash</Button>
+                <Button variant="outline" onClick={() => setEditUnitTarget(null)}>{t("cancel")}</Button>
+                <Button onClick={saveEditUnit} disabled={!editUnitTitle.trim()}>{t("save")}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -549,20 +549,18 @@ export default function LessonsPage() {
           <AlertDialog open={!!deleteUnitTarget} onOpenChange={(o) => !o && setDeleteUnitTarget(null)}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Boʻlimni oʻchirish</AlertDialogTitle>
+                <AlertDialogTitle>{t("deleteUnitDialogTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {deleteUnitTarget && (
-                    <>«{pad(deleteUnitTarget.number)}. {deleteUnitTarget.title}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni keyinroq bekor qilishingiz mumkin.</>
-                  )}
+                  {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${pad(deleteUnitTarget.number)}. ${deleteUnitTarget.title}` })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive text-white hover:bg-destructive/90"
                   onClick={handleConfirmDeleteUnit}
                 >
-                  Oʻchirish
+                  {t("delete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -581,8 +579,8 @@ export default function LessonsPage() {
             <Empty className="flex-1">
               <EmptyHeader>
                 <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                <EmptyTitle>Boʻlim tanlanmagan</EmptyTitle>
-                <EmptyDescription>Mavzularni koʻrish uchun boʻlim tanlang.</EmptyDescription>
+                <EmptyTitle>{t("noUnitSelectedTitle")}</EmptyTitle>
+                <EmptyDescription>{t("noUnitSelectedDescription")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
@@ -591,24 +589,24 @@ export default function LessonsPage() {
           <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-2 border-b border-border">
             <div className="flex items-center gap-2 min-w-0">
               <SectionIcon><FileText /></SectionIcon>
-              <CardTitle className="truncate">Mavzular</CardTitle>
+              <CardTitle className="truncate">{t("lessonsTitle")}</CardTitle>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <div className="hidden xl:flex items-center gap-1">
-                <Button variant="ghost" size="icon" title="Tahrirlash" className="text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon" title={t("editAria")} className="text-muted-foreground hover:text-foreground">
                   <Pencil className="size-4" />
                 </Button>
-                <Button variant="ghost" size="icon" title="Qidirish" className="text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon" title={t("searchAria")} className="text-muted-foreground hover:text-foreground">
                   <Search className="size-4" />
                 </Button>
-                <Button variant="ghost" size="icon" title="Saralash" className="text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="icon" title={t("sortAria")} className="text-muted-foreground hover:text-foreground">
                   <ArrowDownUp className="size-4" />
                 </Button>
               </div>
               {selectedUnitId && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLesson}>
                   <Plus className="size-3.5" />
-                  <span className="hidden lg:inline">Yangi mavzu</span>
+                  <span className="hidden lg:inline">{t("newLesson")}</span>
                 </Button>
               )}
             </div>
@@ -623,13 +621,13 @@ export default function LessonsPage() {
                   <Empty className="py-16">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                      <EmptyTitle>Hali mavzu yoʻq</EmptyTitle>
-                      <EmptyDescription>Ushbu boʻlimga birinchi mavzuni qoʻshing.</EmptyDescription>
+                      <EmptyTitle>{t("lessonsEmptyTitle")}</EmptyTitle>
+                      <EmptyDescription>{t("lessonsEmptyDescription")}</EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
                       <Button variant="outline" className="gap-2 h-9" onClick={handleNewLesson}>
                         <Plus className="size-4" />
-                        Yangi mavzu
+                        {t("newLesson")}
                       </Button>
                     </EmptyContent>
                   </Empty>
@@ -687,7 +685,7 @@ export default function LessonsPage() {
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <button
-                                title="Oʻchirish"
+                                title={t("deleteLessonAria")}
                                 className="size-7 rounded-md flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-muted transition-colors"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -696,18 +694,18 @@ export default function LessonsPage() {
                             </AlertDialogTrigger>
                             <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Darsni oʻchirish</AlertDialogTitle>
+                                <AlertDialogTitle>{t("deleteLessonDialogTitle")}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Bu dars va uning tahrirlagichdagi barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                                  {t("deleteLessonDialogDescription")}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                                 <AlertDialogAction
                                   className="bg-destructive text-white hover:bg-destructive/90"
-                                  onClick={() => { deleteLesson(lesson.id); toast.success("Dars oʻchirildi"); }}
+                                  onClick={() => { deleteLesson(lesson.id); toast.success(t("lessonDeletedToast")); }}
                                 >
-                                  Oʻchirish
+                                  {t("delete")}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

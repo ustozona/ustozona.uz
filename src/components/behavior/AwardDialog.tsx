@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Award, ThumbsDown, ThumbsUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -27,12 +28,13 @@ export function SkillGrid({
   onSelect: (skill: BehaviorSkill, el: HTMLElement) => void;
   onAdd?: () => void;
 }) {
+  const t = useTranslations("AwardDialog");
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
       {skills.map((s) => (
         <SkillCard key={s.id} skill={s} onSelect={onSelect} />
       ))}
-      {onAdd && <AddCard label="Koʻnikma qoʻshish" onClick={onAdd} />}
+      {onAdd && <AddCard label={t("addSkill")} onClick={onAdd} />}
     </div>
   );
 }
@@ -53,6 +55,7 @@ export function AwardDialog({
   /** Shtrixli karta bosilganda — qaysi tur tabidan ochilgani bilan. */
   onAddSkill?: (type: SkillType) => void;
 }) {
+  const t = useTranslations("AwardDialog");
   const positive = skills.filter((s) => s.points > 0);
   const negative = skills.filter((s) => s.points < 0);
   const both = positive.length > 0 && negative.length > 0;
@@ -67,11 +70,11 @@ export function AwardDialog({
             <TabsList variant="line" className="w-full border-b border-border px-6">
               <TabsTrigger value="positive">
                 <ThumbsUp />
-                Ijobiy
+                {t("positive")}
               </TabsTrigger>
               <TabsTrigger value="negative">
                 <ThumbsDown />
-                Salbiy
+                {t("negative")}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="positive" className="p-6">

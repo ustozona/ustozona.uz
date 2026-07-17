@@ -19,12 +19,16 @@ export function showAwardToast({
   emoji,
   points,
   onUndo,
+  undoLabel,
 }: {
   targetLabel: string;
   skillName: string;
   emoji: string;
   points: number;
   onUndo: () => void;
+  /** Translated "Undo" label — caller provides it since this is a plain
+      imperative function, not a React component (can't call useTranslations). */
+  undoLabel: string;
 }) {
   const positive = points > 0;
 
@@ -64,7 +68,7 @@ export function showAwardToast({
           }}
         >
           <Undo2 className="size-3.5" aria-hidden />
-          Bekor qilish
+          {undoLabel}
         </Button>
 
         <span

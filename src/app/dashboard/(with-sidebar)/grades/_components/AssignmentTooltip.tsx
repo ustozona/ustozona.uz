@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Pencil, Trash2, Send, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,7 @@ export default function AssignmentTooltip({
   onFillColumn,
   onMarkRemaining,
 }: Props) {
+  const t = useTranslations("AssignmentTooltip");
   const isFormative = (topic?.purpose ?? "summative") === "formative";
   const [fillVal, setFillVal] = useState("");
 
@@ -70,7 +72,7 @@ export default function AssignmentTooltip({
             size="icon"
             onClick={onEdit}
             className="size-6 rounded-md"
-            aria-label="Tahrirlash"
+            aria-label={t("edit")}
           >
             <Pencil className="size-3.5 text-muted-foreground" />
           </Button>
@@ -80,25 +82,25 @@ export default function AssignmentTooltip({
                 variant="ghost"
                 size="icon"
                 className="size-6 rounded-md hover:bg-destructive/10"
-                aria-label="Oʻchirish"
+                aria-label={t("delete")}
               >
                 <Trash2 className="size-3.5 text-destructive" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Topshiriq oʻchirilsinmi?</AlertDialogTitle>
+                <AlertDialogTitle>{t("deleteConfirmTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Bu amal "{assignment.title}" topshirigʻini va unga bogʻlangan baholarni jurnal ichidan olib tashlaydi.
+                  {t("deleteConfirmDescription", { title: assignment.title })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={onDelete}
                   className="bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20"
                 >
-                  Oʻchirish
+                  {t("delete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -123,22 +125,22 @@ export default function AssignmentTooltip({
               isFormative && "border-dashed border-muted-foreground/40 text-muted-foreground"
             )}
           >
-            {isFormative ? "Formativ" : "Summativ"}
+            {isFormative ? t("formative") : t("summative")}
           </Badge>
           <span className="text-muted-foreground">
-            {isFormative ? "Jamiga kirmaydi" : "Jamiga kiradi"}
+            {isFormative ? t("excludedFromTotal") : t("includedInTotal")}
           </span>
         </div>
-        <div className="text-muted-foreground">{assignment.maxScore} ball</div>
+        <div className="text-muted-foreground">{t("maxScore", { score: assignment.maxScore })}</div>
         {dueDate && (
-          <div className="text-muted-foreground">Muddat: {dueDate}</div>
+          <div className="text-muted-foreground">{t("dueDate", { date: dueDate })}</div>
         )}
       </div>
 
       {ungradedCount > 0 && (onFillColumn || onMarkRemaining) && (
         <div className="flex flex-col gap-2 border-t pt-3">
           <TypographySmall className="text-xs font-medium text-muted-foreground">
-            {ungradedCount} ta baholanmagan
+            {t("ungradedCount", { count: ungradedCount })}
           </TypographySmall>
           {onFillColumn && (
             <div className="flex items-center gap-1.5">
@@ -156,7 +158,7 @@ export default function AssignmentTooltip({
                 variant="outline"
                 className="h-7 shrink-0 text-xs"
               >
-                Qo‘llash
+                {t("apply")}
               </Button>
             </div>
           )}
@@ -168,7 +170,7 @@ export default function AssignmentTooltip({
               className="w-full gap-2 text-xs"
             >
               <UserX className="size-3.5" />
-              Qolganlarni “T” deb belgilash
+              {t("markRemaining")}
             </Button>
           )}
         </div>
@@ -181,7 +183,7 @@ export default function AssignmentTooltip({
           className="w-full gap-2 mt-1"
         >
           <Send className="size-3.5" />
-          {draftCount} qoralamani nashr qilish
+          {t("publishDrafts", { count: draftCount })}
         </Button>
       )}
     </div>

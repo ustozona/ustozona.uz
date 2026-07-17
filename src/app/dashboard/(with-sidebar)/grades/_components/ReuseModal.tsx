@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -46,6 +47,7 @@ export default function ReuseModal({
   onClose,
   onReuse,
 }: Props) {
+  const t = useTranslations("ReuseModal");
   const [query, setQuery] = useState("");
   const [filterClassId, setFilterClassId] = useState<string>(currentClassId);
   const [filterTopicId, setFilterTopicId] = useState<string>("__all");
@@ -61,13 +63,13 @@ export default function ReuseModal({
     }[] = [];
     Object.entries(classDataMap).forEach(([cid, cd]) => {
       cd.assignments.forEach((a) => {
-        const t = cd.topics.find((x) => x.id === a.topicId);
+        const topic = cd.topics.find((x) => x.id === a.topicId);
         items.push({
           classId: cid,
           className: cd.info.name,
           assignment: a,
-          topicName: t?.name ?? "—",
-          topicColor: t?.color ?? "blue",
+          topicName: topic?.name ?? "—",
+          topicColor: topic?.color ?? "blue",
         });
       });
     });
@@ -102,10 +104,9 @@ export default function ReuseModal({
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl p-0 gap-0 overflow-hidden flex flex-col max-h-[85vh]">
         <DialogHeader className="p-6 border-b border-border text-left shrink-0">
-          <DialogTitle>Topshiriqni qayta ishlatish</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Mavjud topshiriqni nusxalang. Nusxa shu sinfga qoralama sifatida
-            tushadi.
+            {t("description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -115,20 +116,20 @@ export default function ReuseModal({
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Topshiriqlarni qidirish..."
+              placeholder={t("searchPlaceholder")}
               className="w-full h-9 pl-9 rounded-lg bg-card text-sm"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <FilterSelect
-              label="SINF"
+              label={t("classLabel")}
               value={filterClassId}
               onChange={(v) => {
                 setFilterClassId(v);
                 setFilterTopicId("__all");
               }}
               options={[
-                { value: "__all", label: "Barcha sinflar" },
+                { value: "__all", label: t("allClasses") },
                 ...Object.entries(classDataMap).map(([id, cd]) => ({
                   value: id,
                   label: cd.info.name,
@@ -136,12 +137,12 @@ export default function ReuseModal({
               ]}
             />
             <FilterSelect
-              label="MAVZU"
+              label={t("topicLabel")}
               value={filterTopicId}
               onChange={setFilterTopicId}
               options={[
-                { value: "__all", label: "Barcha mavzular" },
-                ...topicsForFilter.map((t) => ({ value: t.id, label: t.name })),
+                { value: "__all", label: t("allTopics") },
+                ...topicsForFilter.map((topic) => ({ value: topic.id, label: topic.name })),
               ]}
             />
           </div>
@@ -153,8 +154,8 @@ export default function ReuseModal({
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon"><Search /></EmptyMedia>
-                <EmptyTitle>Topilmadi</EmptyTitle>
-                <EmptyDescription>Sizning qidiruvingiz boʻyicha hech qanday topshiriq topilmadi.</EmptyDescription>
+                <EmptyTitle>{t("notFoundTitle")}</EmptyTitle>
+                <EmptyDescription>{t("notFoundDescription")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
@@ -184,8 +185,11 @@ export default function ReuseModal({
                         <div className="min-w-0">
                           <TypographySmall className="truncate text-foreground">{it.assignment.title}</TypographySmall>
                           <TypographyMuted className="truncate">
-                            {it.topicName} · {it.assignment.maxScore} ball ·{" "}
-                            {it.className} sinfidan
+                            {t("itemMeta", {
+                              topic: it.topicName,
+                              score: it.assignment.maxScore,
+                              className: it.className,
+                            })}
                           </TypographyMuted>
                         </div>
                       </div>
@@ -197,7 +201,7 @@ export default function ReuseModal({
                             : "bg-muted text-foreground"
                         )}
                       >
-                        {isSelected ? "Tanlandi" : "Tanlash"}
+                        {isSelected ? t("selected") : t("select")}
                       </span>
                     </Button>
                   </li>
@@ -210,10 +214,10 @@ export default function ReuseModal({
 
         <DialogFooter className="px-6 py-4 border-t border-border bg-muted/20 shrink-0">
           <Button variant="outline" size="sm" onClick={onClose}>
-            Bekor qilish
+            {t("cancel")}
           </Button>
           <Button size="sm" onClick={handleReuse} disabled={!selectedKey}>
-            Qayta ishlatish
+            {t("reuseButton")}
           </Button>
         </DialogFooter>
       </DialogContent>

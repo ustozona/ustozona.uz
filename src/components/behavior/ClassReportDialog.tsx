@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
   Avatar,
@@ -51,6 +52,7 @@ export function ClassReportDialog({
   students: { id: string; name: string; initials: string }[];
   colorHex: string;
 }) {
+  const t = useTranslations("ClassReportDialog");
   const events = useBehaviorStore((s) => s.eventsByClass[classId]) ?? EMPTY_EVENTS;
   const allDeletions = useBehaviorStore((s) => s.deletions);
   const deleteEventWithLog = useBehaviorStore((s) => s.deleteEventWithLog);
@@ -77,13 +79,13 @@ export function ClassReportDialog({
     const filtered = filterEventsByPeriod(events, period, undefined, yearRange);
     const totals = new Map<string, { positive: number; count: number }>();
     for (const e of filtered) {
-      const t = totals.get(e.studentId) ?? { positive: 0, count: 0 };
-      t.count += 1;
-      if (e.points > 0) t.positive += 1;
-      totals.set(e.studentId, t);
+      const entry = totals.get(e.studentId) ?? { positive: 0, count: 0 };
+      entry.count += 1;
+      if (e.points > 0) entry.positive += 1;
+      totals.set(e.studentId, entry);
     }
     const pct = new Map<string, number>();
-    for (const [id, t] of totals) pct.set(id, Math.round((t.positive / t.count) * 100));
+    for (const [id, entry] of totals) pct.set(id, Math.round((entry.positive / entry.count) * 100));
     return pct;
   }, [events, period, yearRange]);
 
@@ -113,8 +115,8 @@ export function ClassReportDialog({
       <DialogContent className="gap-0 p-0 sm:max-w-4xl" showCloseButton={false}>
         <DialogHeaderBar
           icon={<Users className="size-4" aria-hidden />}
-          title="Sinf hisoboti"
-          description="Berilgan ballar kesimi — butun sinf yoki bitta oʻquvchi boʻyicha."
+          title={t("title")}
+          description={t("description")}
         />
 
         <div className="flex min-h-0">
@@ -144,7 +146,7 @@ export function ClassReportDialog({
                     </AvatarGroupCount>
                   )}
                 </AvatarGroup>
-                <span className="truncate">Butun sinf</span>
+                <span className="truncate">{t("wholeClass")}</span>
               </button>
 
               {students.map((st) => {

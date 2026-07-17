@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChevronDown, MessageSquarePlus, MoreVertical, Trash2, Undo2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -41,25 +42,21 @@ import { formatPoints } from "./SkillCard";
 
    Izoh (2.6): bitta event = bitta izoh; kulrang sub-karta, inline tahrir. */
 
-const QUICK_DELETE_REASONS = ["Xato bosdim", "Notoʻgʻri oʻquvchi", "Notoʻgʻri koʻnikma"];
-
-/* Avto-event manba yorligʻi — har avto-ball yonida qayerdan kelgani
-   koʻrinadi (ekspert talabi: shaffoflik). */
-const AUTO_SOURCE_LABEL: Record<string, string> = {
-  attendance: "Davomatdan avtomatik",
-  streak: "Davomat seriyasi bonusi — davomatdan avtomatik",
-  grade: "Jurnaldan avtomatik",
-};
-
 function AutoChip({ source }: { source: string }) {
+  const t = useTranslations("EventTimeline");
+  const autoSourceLabel: Record<string, string> = {
+    attendance: t("autoLabelAttendance"),
+    streak: t("autoLabelStreak"),
+    grade: t("autoLabelGrade"),
+  };
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <span className="ml-1.5 inline-flex shrink-0 items-center rounded-full border border-border bg-muted/60 px-1.5 py-px align-middle text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          Avto
+          {t("autoBadge")}
         </span>
       </TooltipTrigger>
-      <TooltipContent>{AUTO_SOURCE_LABEL[source] ?? "Avtomatik"}</TooltipContent>
+      <TooltipContent>{autoSourceLabel[source] ?? t("autoLabelDefault")}</TooltipContent>
     </Tooltip>
   );
 }
@@ -97,6 +94,7 @@ function NoteEditor({
   onSave: (note: string) => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("EventTimeline");
   const [text, setText] = React.useState(initial);
   return (
     <div className="mt-1.5 space-y-1.5">
@@ -106,14 +104,14 @@ function NoteEditor({
         maxLength={2000}
         rows={2}
         autoFocus
-        placeholder="Izoh yozing…"
+        placeholder={t("notePlaceholder")}
       />
       <div className="flex items-center gap-1.5">
         <Button size="sm" className="h-7" onClick={() => onSave(text)}>
-          Saqlash
+          {t("save")}
         </Button>
         <Button size="sm" variant="ghost" className="h-7" onClick={onCancel}>
-          Bekor qilish
+          {t("cancel")}
         </Button>
       </div>
     </div>
@@ -236,10 +234,12 @@ function DeleteReasonField({
   /** Avto-minusni bekor qilishda sabab shart (ekspert qarori). */
   required?: boolean;
 }) {
+  const t = useTranslations("EventTimeline");
+  const quickDeleteReasons = [t("quickReason1"), t("quickReason2"), t("quickReason3")];
   return (
     <div className="space-y-2 pt-1">
       <div className="flex flex-wrap gap-1.5">
-        {QUICK_DELETE_REASONS.map((r) => (
+        {quickDeleteReasons.map((r) => (
           <button
             key={r}
             type="button"
@@ -258,7 +258,7 @@ function DeleteReasonField({
       <Textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={required ? "Sabab (majburiy)…" : "Sabab (ixtiyoriy)…"}
+        placeholder={required ? t("reasonPlaceholderRequired") : t("reasonPlaceholderOptional")}
         rows={2}
         maxLength={500}
       />
@@ -293,6 +293,7 @@ export function EventTimeline({
   onSaveNote: (event: BehaviorEvent, note: string) => void;
   className?: string;
 }) {
+  const t = useTranslations("EventTimeline");
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [confirmEvent, setConfirmEvent] = React.useState<BehaviorEvent | null>(null);
   const [confirmGroup, setConfirmGroup] = React.useState<BehaviorEvent[] | null>(null);
@@ -417,7 +418,7 @@ export function EventTimeline({
               const e = row.kind === "single" ? row.event : row.events[0];
               const positive = e.points > 0;
               const editing = row.kind === "single" && editingId === e.id;
-              const groupLabel = row.kind === "group" ? `${row.events.length} ta oʻquvchi` : undefined;
+              const groupLabel = row.kind === "group" ? t("groupLabel", { count: row.events.length }) : undefined;
               const primaryLabel = row.kind === "group" ? groupLabel : nameById?.get(e.studentId);
               const key = row.kind === "single" ? e.id : row.key;
               const hoverInfo =
@@ -507,7 +508,7 @@ export function EventTimeline({
                                 size="icon"
                                 variant="ghost"
                                 className="size-7 text-muted-foreground"
-                                aria-label={e.note ? "Izohni tahrirlash" : "Izoh qoʻshish"}
+                                aria-label={e.note ? t("editNote") : t("addNote")}
                                 onClick={(ev) => {
                                   ev.stopPropagation();
                                   setEditingId(e.id);
@@ -516,7 +517,7 @@ export function EventTimeline({
                                 <MessageSquarePlus className="size-4" aria-hidden />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>{e.note ? "Izohni tahrirlash" : "Izoh qoʻshish"}</TooltipContent>
+                            <TooltipContent>{e.note ? t("editNote") : t("addNote")}</TooltipContent>
                           </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -524,7 +525,7 @@ export function EventTimeline({
                                 size="icon"
                                 variant="ghost"
                                 className="size-7 text-muted-foreground"
-                                aria-label="Oʻchirish"
+                                aria-label={t("delete")}
                                 onClick={(ev) => {
                                   ev.stopPropagation();
                                   setDeleteReason("");
@@ -534,7 +535,7 @@ export function EventTimeline({
                                 <Undo2 className="size-4" aria-hidden />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Oʻchirish</TooltipContent>
+                            <TooltipContent>{t("delete")}</TooltipContent>
                           </Tooltip>
                         </div>
                       )}
@@ -547,7 +548,7 @@ export function EventTimeline({
                                 size="icon"
                                 variant="ghost"
                                 className="size-7 shrink-0 text-muted-foreground"
-                                aria-label="Barchasini oʻchirish"
+                                aria-label={t("deleteAll")}
                                 onClick={(ev) => {
                                   ev.stopPropagation();
                                   setDeleteReason("");
@@ -557,7 +558,7 @@ export function EventTimeline({
                                 <Undo2 className="size-4" aria-hidden />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Barchasini oʻchirish</TooltipContent>
+                            <TooltipContent>{t("deleteAll")}</TooltipContent>
                           </Tooltip>
                         </div>
                       )}
@@ -628,7 +629,7 @@ export function EventTimeline({
                           variant="ghost"
                           size="icon"
                           className="size-7 shrink-0 text-muted-foreground"
-                          aria-label="Yozuv amallari"
+                          aria-label={t("rowActions")}
                         >
                           <MoreVertical className="size-4" aria-hidden />
                         </Button>
@@ -636,7 +637,7 @@ export function EventTimeline({
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setEditingId(e.id)}>
                           <MessageSquarePlus className="size-4" aria-hidden />
-                          {e.note ? "Izohni tahrirlash" : "Izoh qoʻshish"}
+                          {e.note ? t("editNote") : t("addNote")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           variant="destructive"
@@ -646,7 +647,7 @@ export function EventTimeline({
                           }}
                         >
                           <Trash2 className="size-4" aria-hidden />
-                          Oʻchirish
+                          {t("delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -657,7 +658,7 @@ export function EventTimeline({
                       variant="ghost"
                       size="icon"
                       className="size-7 shrink-0 text-muted-foreground"
-                      aria-label="Barchasini oʻchirish"
+                      aria-label={t("deleteAll")}
                       onClick={() => {
                         setDeleteReason("");
                         setConfirmGroup(row.events);
@@ -683,13 +684,14 @@ export function EventTimeline({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Yozuvni oʻchirasizmi?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteEventTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              «{confirmEvent?.name}» ({confirmEvent ? formatPoints(confirmEvent.points) : ""})
-              yozuvi oʻchiriladi va balansdan olib tashlanadi.
-              {confirmEvent?.source &&
-                " Bu avtomatik yozuv — oʻchirilgach qayta yaratilmaydi."}
-              {requireDeleteReason && " Avtomatik minusni bekor qilish sababi yozilishi shart."}
+              {t("deleteEventDescription", {
+                name: confirmEvent?.name ?? "",
+                points: confirmEvent ? formatPoints(confirmEvent.points) : "",
+              })}
+              {confirmEvent?.source && t("autoEventNote")}
+              {requireDeleteReason && t("requireReasonNote")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <DeleteReasonField
@@ -698,7 +700,7 @@ export function EventTimeline({
             required={requireDeleteReason}
           />
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               disabled={requireDeleteReason && deleteReason.trim().length === 0}
               onClick={() => {
@@ -706,7 +708,7 @@ export function EventTimeline({
                 setConfirmEvent(null);
               }}
             >
-              Oʻchirish
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -720,15 +722,14 @@ export function EventTimeline({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Guruh yozuvini oʻchirasizmi?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteGroupTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmGroup?.length ?? 0} ta oʻquvchiga birga berilgan yozuv oʻchiriladi va
-              balanslardan olib tashlanadi.
+              {t("deleteGroupDescription", { count: confirmGroup?.length ?? 0 })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <DeleteReasonField value={deleteReason} onChange={setDeleteReason} />
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const reason = deleteReason.trim() || undefined;
@@ -736,7 +737,7 @@ export function EventTimeline({
                 setConfirmGroup(null);
               }}
             >
-              Oʻchirish
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

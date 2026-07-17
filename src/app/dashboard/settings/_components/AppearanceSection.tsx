@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 import { Sun, Moon, Monitor, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -14,9 +15,17 @@ import {
 } from "@/store/useSettingsStore";
 import { backgroundStyle } from "@/components/WorkspaceBackground";
 import { LANGUAGES } from "@/lib/languages";
+import { LOCALE_COOKIE, isLocale } from "@/i18n/config";
 import { Badge } from "@/components/ui/badge";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { KarakalpakFlag } from "@/components/ui/karakalpak-flag";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
@@ -40,6 +49,7 @@ const BACKGROUNDS: { value: BgKind; label: string }[] = [
 ];
 
 export default function AppearanceSection() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const workspaceBackground = normalizeBackground(
     useSettingsStore((s) => s.workspaceBackground)
@@ -51,6 +61,15 @@ export default function AppearanceSection() {
   const currentLanguage = LANGUAGES.find((l) => l.value === language) ?? LANGUAGES[0];
   const autoToursEnabled = useSettingsStore((s) => s.autoToursEnabled);
   const setAutoToursEnabled = useSettingsStore((s) => s.setAutoToursEnabled);
+  const setLanguage = useSettingsStore((s) => s.setLanguage);
+
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value as typeof language);
+    if (isLocale(value)) {
+      document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=31536000; samesite=lax`;
+      router.refresh();
+    }
+  };
 
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
@@ -143,7 +162,7 @@ export default function AppearanceSection() {
       </SettingsCard>
 
       {/* Til */}
-      <SettingsCard title="Til" description="Interfeys tili. Hozirda faqat oʻzbek tili toʻliq integratsiya qilingan.">
+      <SettingsCard title="Til" description="Interfeys tili.">
         <SettingRow
           title={
             <span className="flex items-center gap-2">
@@ -161,7 +180,25 @@ export default function AppearanceSection() {
           }
           description="Interfeys tili"
         >
-          <Badge variant="secondary">Boshqa tillar tez orada</Badge>
+          <Select value={language} onValueChange={handleLanguageChange}>
+            <SelectTrigger className="w-44" aria-label="Interfeys tilini tanlash">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {LANGUAGES.map((l) => (
+                <SelectItem key={l.value} value={l.value} disabled={!l.ready}>
+                  <span className="flex items-center gap-2">
+                    {l.label}
+                    {!l.ready && (
+                      <Badge variant="secondary" className="ml-1">
+                        Tez orada
+                      </Badge>
+                    )}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </SettingRow>
       </SettingsCard>
       {/* Avtomatik turlar */}

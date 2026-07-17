@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BookOpen, ArrowLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -27,16 +28,14 @@ import { StandardsSection } from "./StandardsSection";
 import { PlannerSection } from "./PlannerSection";
 import { CLASS_SECTIONS, type ClassSection } from "./sections";
 
-const SECTION_LABEL: Record<ClassSection, string> = Object.fromEntries(
-  CLASS_SECTIONS.map((s) => [s.key, s.label])
-) as Record<ClassSection, string>;
-
 type Props = {
   identity: ClassIdentity;
   initialSection: ClassSection;
 };
 
 export default function ClassDetail({ identity, initialSection }: Props) {
+  const t = useTranslations("ClassDetail");
+  const tSections = useTranslations("ClassSections");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -117,7 +116,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
               </div>
               <div className="min-w-0">
                 <h2 className="text-base font-bold text-foreground leading-tight truncate">{identity.name}</h2>
-                <TypographyMuted className="text-xs mt-0.5">Ingliz tili</TypographyMuted>
+                <TypographyMuted className="text-xs mt-0.5">{t("subjectPlaceholder")}</TypographyMuted>
               </div>
             </div>
 
@@ -125,18 +124,18 @@ export default function ClassDetail({ identity, initialSection }: Props) {
             <div className="flex items-center gap-8 mt-5 px-1 mb-2">
               <div>
                 <p className="text-2xl font-bold leading-none tabular-nums text-foreground">{stats.students}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">Oʻquvchi</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("studentsUnit")}</p>
               </div>
               <div>
                 <p className="text-2xl font-bold leading-none tabular-nums text-foreground">{stats.lessons}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">Dars</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("lessonsUnit")}</p>
               </div>
             </div>
 
             {/* Progress */}
             <div className="mt-5 space-y-2 px-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground font-medium uppercase tracking-wider text-[10px]">Oʻzlashtirildi</span>
+                <span className="text-muted-foreground font-medium uppercase tracking-wider text-[10px]">{t("masteredLabel")}</span>
                 <span className="font-bold tabular-nums text-foreground">{stats.progress}%</span>
               </div>
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -172,7 +171,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
                           isActive ? "text-foreground" : "text-foreground/70 group-hover:text-foreground"
                         )}
                       >
-                        {s.label}
+                        {tSections(s.key)}
                       </p>
                     </div>
                     {count != null && (
@@ -213,7 +212,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
                   style={isActive ? { ...tints.tint, ...tints.iconText } : undefined}
                 >
                   <Icon className="size-3.5" />
-                  {s.label}
+                  {tSections(s.key)}
                 </button>
               );
             })}
@@ -239,7 +238,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
           <PlannerSection identity={identity} />
         ) : (
           <SectionPlaceholder
-            label={SECTION_LABEL[section]}
+            label={tSections(section)}
             icon={CLASS_SECTIONS.find((s) => s.key === section)!.icon}
           />
         )}
@@ -264,6 +263,7 @@ function SectionPlaceholder({
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }) {
+  const t = useTranslations("ClassDetail");
   return (
     <Card className={cn(panelCardClass, "items-center justify-center text-center")}>
       <div className="flex flex-col items-center px-6 py-16">
@@ -272,7 +272,7 @@ function SectionPlaceholder({
         </SectionIcon>
         <p className="text-base font-semibold text-foreground">{label}</p>
         <TypographyMuted className="text-sm mt-1.5 max-w-xs">
-          Bu boʻlim tez orada shu yerda ochiladi.
+          {t("sectionPlaceholderBody")}
         </TypographyMuted>
       </div>
     </Card>

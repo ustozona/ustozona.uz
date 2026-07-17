@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Settings, LogOut, ChevronDown, Moon, Sun, Check, ShieldCheck } from "lucide-react";
 import {
@@ -22,6 +24,7 @@ import { KarakalpakFlag } from "@/components/ui/karakalpak-flag";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { LANGUAGES } from "@/lib/languages";
+import { LOCALE_COOKIE, isLocale } from "@/i18n/config";
 import { authClient } from "@/lib/auth-client";
 import { isSuperAdmin } from "@/lib/auth-roles";
 
@@ -36,31 +39,42 @@ function initialsOf(name: string) {
 
 /* Faqat super_admin'ga koʻrinadi (kosmetik — haqiqiy gate server'da). */
 function AdminPanelItem() {
+  const t = useTranslations("HeaderAccountMenu");
   const { data } = authClient.useSession();
   if (!data || !isSuperAdmin(data.user)) return null;
   return (
     <DropdownMenuItem asChild>
       <Link href="/admin">
         <ShieldCheck />
-        Admin panel
+        {t("adminPanel")}
       </Link>
     </DropdownMenuItem>
   );
 }
 
 export default function HeaderAccountMenu() {
+  const t = useTranslations("HeaderAccountMenu");
+  const router = useRouter();
   const profile = useSettingsStore((s) => s.profile);
   const hydrated = useSettingsStore((s) => s._hasHydrated);
   const language = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const activeLang = LANGUAGES.find((l) => l.value === language);
 
+  const handleLanguageChange = (value: typeof language) => {
+    setLanguage(value);
+    if (isLocale(value)) {
+      document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=31536000; samesite=lax`;
+      router.refresh();
+    }
+  };
+
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const isDark = mounted && resolvedTheme === "dark";
-  const name = hydrated ? profile.name : "Foydalanuvchi";
-  const initials = hydrated ? initialsOf(profile.name) || "F" : "F";
+  const name = hydrated ? profile.name : t("defaultUserName");
+  const initials = hydrated ? initialsOf(profile.name) || t("defaultInitial") : t("defaultInitial");
   const avatarHex = hydrated
     ? CLASS_COLOR_HEX[(profile.avatarColor as ClassColor) ?? "orange"] ?? CLASS_COLOR_HEX.orange
     : undefined;
@@ -97,7 +111,7 @@ export default function HeaderAccountMenu() {
         <DropdownMenuItem asChild>
           <Link href="/dashboard/settings">
             <Settings />
-            Sozlamalar
+            {t("settings")}
           </Link>
         </DropdownMenuItem>
         <AdminPanelItem />
@@ -111,7 +125,7 @@ export default function HeaderAccountMenu() {
           }}
         >
           {isDark ? <Sun /> : <Moon />}
-          {isDark ? "Yorugʻ rejim" : "Qorongʻu rejim"}
+          {isDark ? t("lightMode") : t("darkMode")}
         </DropdownMenuItem>
 
         {/* Til — ichki menyu */}
@@ -126,17 +140,17 @@ export default function HeaderAccountMenu() {
             ) : (
               <KarakalpakFlag className="size-4 shrink-0 rounded-[3px]" />
             )}
-            <span className="flex-1">Til</span>
+            <span className="flex-1">{t("language")}</span>
             <span className="text-xs text-muted-foreground">{activeLang?.label}</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-56">
-            <DropdownMenuLabel>Interfeys tili</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("interfaceLanguage")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {LANGUAGES.map((l) => (
               <DropdownMenuItem
                 key={l.value}
                 disabled={!l.ready}
-                onSelect={() => setLanguage(l.value)}
+                onSelect={() => handleLanguageChange(l.value)}
                 className="gap-2.5"
               >
                 {l.flagCode ? (
@@ -147,7 +161,7 @@ export default function HeaderAccountMenu() {
                 <span className="flex-1">{l.label}</span>
                 {!l.ready && (
                   <Badge variant="secondary" className="text-[10px] font-normal">
-                    Tez orada
+                    {t("comingSoon")}
                   </Badge>
                 )}
                 {language === l.value && <Check className="size-4 text-primary" />}
@@ -166,7 +180,7 @@ export default function HeaderAccountMenu() {
           }}
         >
           <LogOut />
-          Chiqish
+          {t("signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

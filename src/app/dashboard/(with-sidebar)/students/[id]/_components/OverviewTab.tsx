@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   type StudentProfile, type Granularity, type TopicBreakdown,
   aggregateTrend, aggregateAttendance, GRANULARITY_LABELS,
@@ -64,6 +65,7 @@ export function KpiCard({
 // va (xira) trekka dinamik berib, semantik svetofor emas. `mounted` bilan 0→qiymat
 // animatsiyasi (transition-all indikatorda).
 function CategoryBar({ row, mounted }: { row: TopicBreakdown; mounted: boolean }) {
+  const t = useTranslations("OverviewTab");
   const pct = row.avg;
   return (
     <div className="flex flex-col gap-1.5">
@@ -82,8 +84,8 @@ function CategoryBar({ row, mounted }: { row: TopicBreakdown; mounted: boolean }
       />
       <TypographyMuted className="text-[11px]">
         {row.count === 0
-          ? `${row.topic.weightPercent}% ulush · baholanmagan`
-          : `${row.topic.weightPercent}% ulush · ${row.count} baho`}
+          ? t("categoryShareUngraded", { weight: row.topic.weightPercent })
+          : t("categoryShareGraded", { weight: row.topic.weightPercent, count: row.count })}
       </TypographyMuted>
     </div>
   );
@@ -118,13 +120,14 @@ function GranularityDropdown({
 }
 
 export default function OverviewTab({ profile }: { profile: StudentProfile }) {
+  const t = useTranslations("OverviewTab");
   const { overallGrade, attendance, missingCount, topics, bloom, datedScores, location } = profile;
 
   // Toifa barlari uchun 0→qiymat mount animatsiyasi
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 150);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setMounted(true), 150);
+    return () => clearTimeout(timer);
   }, []);
 
   const [gran, setGran] = useState<Granularity>("monthly");
@@ -138,10 +141,10 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
   const attLegend: {
     key: keyof typeof ATT_COLORS; label: string; phrase: string; value: number;
   }[] = [
-    { key: "present", label: "Kelgan", phrase: "darsga kelgan", value: attView.present },
-    { key: "absent", label: "Kelmagan", phrase: "darsga kelmagan", value: attView.absent },
-    { key: "late", label: "Kechikkan", phrase: "darsga kechikkan", value: attView.late },
-    { key: "excused", label: "Sababli", phrase: "sababli qoldirgan", value: attView.excused },
+    { key: "present", label: t("present"), phrase: t("presentPhrase"), value: attView.present },
+    { key: "absent", label: t("absent"), phrase: t("absentPhrase"), value: attView.absent },
+    { key: "late", label: t("late"), phrase: t("latePhrase"), value: attView.late },
+    { key: "excused", label: t("excused"), phrase: t("excusedPhrase"), value: attView.excused },
   ];
   const attTotal = attLegend.reduce((sum, s) => sum + s.value, 0);
 
@@ -150,23 +153,23 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
       {/* KPI row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard
-          label="Umumiy baho"
+          label={t("overallGrade")}
           value={`${overallGrade}%`}
-          sub="Ogʻirlikka koʻra oʻrtacha"
+          sub={t("overallGradeSub")}
           color={scoreBarColor(overallGrade)}
           icon={<GraduationCap />}
         />
         <KpiCard
-          label="Davomat"
+          label={t("attendance")}
           value={`${attendance.pct}%`}
-          sub={`${attendance.present} / ${attendance.total} kun`}
+          sub={t("attendanceSub", { present: attendance.present, total: attendance.total })}
           color={attendance.pct < 90 ? scoreBarColor(attendance.pct) : undefined}
           icon={<CalendarCheck />}
         />
         <KpiCard
-          label="Topshirilmagan"
+          label={t("missing")}
           value={`${missingCount}`}
-          sub={missingCount === 0 ? "Hammasi joyida" : "ish topshirilmagan"}
+          sub={missingCount === 0 ? t("missingSubZero") : t("missingSub")}
           color={missingCount > 0 ? "#ef4444" : undefined}
           icon={<ClipboardCheck />}
         />
@@ -178,7 +181,7 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
         <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm lg:col-span-2">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <SectionIcon><TrendingUp /></SectionIcon>
-            <CardTitle>Baho dinamikasi</CardTitle>
+            <CardTitle>{t("gradeTrend")}</CardTitle>
             <GranularityDropdown value={gran} onChange={setGran} options={TREND_GRANULARITIES} />
           </div>
           <div className="flex-1 min-h-[250px]">
@@ -190,11 +193,11 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
         <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm lg:col-span-1">
           <div className="mb-4 flex items-center gap-2.5">
             <SectionIcon><Layers /></SectionIcon>
-            <CardTitle>Toifa boʻyicha</CardTitle>
+            <CardTitle>{t("byCategory")}</CardTitle>
           </div>
           <div className="flex flex-col gap-4">
-            {topics.map((t) => (
-              <CategoryBar key={t.topic.id} row={t} mounted={mounted} />
+            {topics.map((topic) => (
+              <CategoryBar key={topic.topic.id} row={topic} mounted={mounted} />
             ))}
           </div>
         </div>
@@ -206,7 +209,7 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
         <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm">
           <div className="mb-4 flex items-center gap-2.5">
             <SectionIcon><CalendarCheck /></SectionIcon>
-            <CardTitle>Davomat</CardTitle>
+            <CardTitle>{t("attendanceCard")}</CardTitle>
             <GranularityDropdown value={attGran} onChange={setAttGran} options={ATTENDANCE_GRANULARITIES} />
           </div>
           <AttendanceDonut summary={attView} />
@@ -227,12 +230,12 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
                       </span>
                       <span className="text-base font-bold tabular-nums">
                         {s.value}
-                        <span className="ml-0.5 text-sm font-medium text-muted-foreground">marta</span>
+                        <span className="ml-0.5 text-sm font-medium text-muted-foreground">{t("times")}</span>
                       </span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {s.value} marta {s.phrase} · jami {attTotal} darsdan ({share}%)
+                    {t("attendanceTooltip", { value: s.value, phrase: s.phrase, total: attTotal, share })}
                   </TooltipContent>
                 </Tooltip>
               );
@@ -244,7 +247,7 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
         <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm lg:col-span-2">
           <div className="mb-2 flex items-center gap-2.5">
             <SectionIcon><Brain /></SectionIcon>
-            <CardTitle>Blum darajalari</CardTitle>
+            <CardTitle>{t("bloomLevels")}</CardTitle>
           </div>
           <BloomRadar levels={bloom} hex={location.hex} />
           <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
@@ -263,10 +266,10 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
       <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm">
         <div className="mb-1 flex items-center gap-2.5">
           <SectionIcon><CalendarRange /></SectionIcon>
-          <CardTitle>Davomat lentasi</CardTitle>
-          <TypographyMuted className="ml-auto">{attendance.total} dars kuni</TypographyMuted>
+          <CardTitle>{t("attendanceStrip")}</CardTitle>
+          <TypographyMuted className="ml-auto">{t("attendanceStripDays", { count: attendance.total })}</TypographyMuted>
         </div>
-        <TypographyMuted className="mb-4">Butun oʻquv yili — har segment bitta dars kuni</TypographyMuted>
+        <TypographyMuted className="mb-4">{t("attendanceStripHint")}</TypographyMuted>
         <AttendanceTracker days={attendance.days} />
         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
           {attLegend.map((s) => (

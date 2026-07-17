@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -74,19 +75,21 @@ import {
 } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 
-const formSchema = z.object({
-  classIds: z.array(z.string()).min(1, "Kamida bitta sinf tanlang"),
-  name: z.string().min(1, "Nomi kiritilishi shart"),
-  color: z.enum(TOPIC_COLOR_ORDER as unknown as [string, ...string[]]),
-  purpose: z.enum(["summative", "formative"]),
-  inputMode: z.enum(["score", "select"]),
-  weightPercent: z.number().min(0).max(100),
-  scaleKind: z.string(),
-  passLabel: z.string().min(1),
-  failLabel: z.string().min(1),
-});
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    classIds: z.array(z.string()).min(1, t("classesRequired")),
+    name: z.string().min(1, t("nameRequired")),
+    color: z.enum(TOPIC_COLOR_ORDER as unknown as [string, ...string[]]),
+    purpose: z.enum(["summative", "formative"]),
+    inputMode: z.enum(["score", "select"]),
+    weightPercent: z.number().min(0).max(100),
+    scaleKind: z.string(),
+    passLabel: z.string().min(1),
+    failLabel: z.string().min(1),
+  });
+}
 
-type TopicFormValues = z.infer<typeof formSchema>;
+type TopicFormValues = z.infer<ReturnType<typeof buildFormSchema>>;
 
 /** page.tsx mavzu guruhini sinflar toʻplamiga moslash uchun oladigan yuk. */
 export type TopicApplyPayload = {
@@ -145,6 +148,7 @@ export default function NewTopicModal({
   onApply,
   onDeleteGroup,
 }: Props) {
+  const t = useTranslations("NewTopicModal");
   const [filterClassId, setFilterClassId] = useState(ALL);
   const [editing, setEditing] = useState<{ mode: "create" | "edit"; groupId: string } | null>(null);
 
@@ -203,6 +207,7 @@ export default function NewTopicModal({
   const overClasses = classTotals.filter((c) => c.total > 100);
   const underClasses = classTotals.filter((c) => c.total > 0 && c.total < 100);
 
+  const formSchema = useMemo(() => buildFormSchema(t), [t]);
   const form = useForm<TopicFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { classIds: [currentClassId], ...DEFAULTS },
@@ -283,41 +288,41 @@ export default function NewTopicModal({
           {/* Chap yoʻriqnoma */}
           <aside className="hidden md:flex w-[300px] shrink-0 flex-col border-r border-border bg-muted/30">
             <div className="px-7 pt-6 pb-5">
-              <DialogTitle className="heading-section text-foreground">Baholash toifasi</DialogTitle>
+              <DialogTitle className="heading-section text-foreground">{t("sidebarTitle")}</DialogTitle>
               <DialogDescription className="text-caption mt-1">
-                Topshiriqlarni toifalarga ajrating va har birining baholash usulini tanlang.
+                {t("sidebarDescription")}
               </DialogDescription>
             </div>
             <ScrollArea className="flex-1 min-h-0 px-7">
               <div className="space-y-5 pb-4">
-                <HelpSection title="Baholash turi">
+                <HelpSection title={t("gradingTypeSection")}>
                   <HelpItem
-                    title="Summativ"
+                    title={t("summativeHelpTitle")}
                     tag={<WeightDonut percent={20} />}
-                    text="Yakuniy bahoga vazn (%) qoʻshadi. Asosiy testlar, nazoratlar, imtihonlar uchun."
+                    text={t("summativeHelpText")}
                   />
                   <HelpItem
-                    title="Formativ"
+                    title={t("formativeHelpTitle")}
                     tag={<Ban className="size-4 text-muted-foreground" />}
-                    text="Jurnalga yoziladi, lekin yakuniy bahoga taʼsir qilmaydi. Mashq, quiz, oraliq tekshiruv uchun."
+                    text={t("formativeHelpText")}
                   />
                 </HelpSection>
 
-                <HelpSection title="Kiritish usuli">
+                <HelpSection title={t("inputModeSection")}>
                   <HelpItem
-                    title="Ball"
-                    text="Raqamli ball kiriting — tizim avtomatik shkalaga oʻgiradi. Yakuniy bahoga kiradigan ishlar uchun."
+                    title={t("scoreHelpTitle")}
+                    text={t("scoreHelpText")}
                   />
                   <HelpItem
-                    title="Tanlash"
+                    title={t("selectHelpTitle")}
                     tag={
                       <span className="flex items-center gap-0.5 text-[9px] font-bold">
-                        <span className="text-success">OʻTDI</span>
+                        <span className="text-success">{t("passShort")}</span>
                         <span className="text-muted-foreground">/</span>
-                        <span className="text-destructive">OʻTMADI</span>
+                        <span className="text-destructive">{t("failShort")}</span>
                       </span>
                     }
-                    text="Shkaladan yorliq tanlang. Sifat baholar uchun (faollik, ishtirok va h.k.) qulay."
+                    text={t("selectHelpText")}
                   />
                 </HelpSection>
 
@@ -326,9 +331,9 @@ export default function NewTopicModal({
                   className="group flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-muted/50"
                 >
                   <span className="flex flex-col">
-                    <span className="text-xs font-semibold text-foreground">Batafsil oʻqish</span>
+                    <span className="text-xs font-semibold text-foreground">{t("readMore")}</span>
                     <span className="text-[11px] text-muted-foreground">
-                      Baholash mantigʻi va pedagogik asoslar
+                      {t("readMoreDesc")}
                     </span>
                   </span>
                   <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
@@ -346,7 +351,7 @@ export default function NewTopicModal({
                   <Tag />
                 </SectionIcon>
                 <CardTitle>
-                  {editing ? (editing.mode === "edit" ? "Toifani tahrirlash" : "Yangi toifa") : "Barcha toifalar"}
+                  {editing ? (editing.mode === "edit" ? t("editTopicTitle") : t("newTopicTitle")) : t("allTopicsTitle")}
                 </CardTitle>
                 {!editing && (
                   <TypographyMuted className="text-sm">({visibleGroups.length})</TypographyMuted>
@@ -354,7 +359,7 @@ export default function NewTopicModal({
               </div>
               <DialogClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
                 <X className="size-4" />
-                <span className="sr-only">Yopish</span>
+                <span className="sr-only">{t("close")}</span>
               </DialogClose>
             </div>
 
@@ -370,7 +375,7 @@ export default function NewTopicModal({
                         <ClassSwatch hex={CLASS_COLOR_HEX[classColor(classDataMap[filterClassId]!.info)]} />
                       )}
                       <span className="truncate">
-                        {filterClassId === ALL ? "Barcha sinflar" : classDataMap[filterClassId]?.info.name}
+                        {filterClassId === ALL ? t("allClasses") : classDataMap[filterClassId]?.info.name}
                       </span>
                     </span>
                   </SelectTrigger>
@@ -378,7 +383,7 @@ export default function NewTopicModal({
                     <SelectItem value={ALL}>
                       <span className="flex items-center gap-2">
                         <AllClassesSwatch hexes={allHexes} />
-                        Barcha sinflar
+                        {t("allClasses")}
                       </span>
                     </SelectItem>
                     {classEntries.map(([id, cd]) => (
@@ -393,7 +398,7 @@ export default function NewTopicModal({
                 </Select>
                 <Button size="sm" onClick={openCreate} className="gap-1.5 font-semibold">
                   <Plus className="size-4" />
-                  Yangi toifa
+                  {t("newTopicButton")}
                 </Button>
               </div>
             )}
@@ -405,8 +410,8 @@ export default function NewTopicModal({
                   <Empty className="min-h-[300px]">
                     <EmptyHeader>
                       <EmptyMedia variant="icon"><Tag /></EmptyMedia>
-                      <EmptyTitle>Hali toifa yoʻq</EmptyTitle>
-                      <EmptyDescription>Topshiriqlarni guruhlash va yakuniy bahoga vaznlash uchun toifa yarating.</EmptyDescription>
+                      <EmptyTitle>{t("noTopicsTitle")}</EmptyTitle>
+                      <EmptyDescription>{t("noTopicsDescription")}</EmptyDescription>
                     </EmptyHeader>
                   </Empty>
                 ) : (
@@ -442,7 +447,7 @@ export default function NewTopicModal({
                               <FormItem className="flex-1 space-y-0">
                                 <FormControl>
                                   <Input
-                                    placeholder="masalan: Testlar, Uy vazifasi, Imtihonlar"
+                                    placeholder={t("namePlaceholder")}
                                     maxLength={100}
                                     autoFocus
                                     className="h-9 rounded-lg bg-card text-sm"
@@ -472,8 +477,8 @@ export default function NewTopicModal({
                           name="classIds"
                           render={() => (
                             <FormItem className="space-y-1.5">
-                              <FieldLabel hint="Bu toifa qaysi sinflarga qoʻshilsin. Bir nechtasini tanlasangiz, hammasiga bir xil sozlama bilan qoʻshiladi.">
-                                Sinflar
+                              <FieldLabel hint={t("classesFieldHint")}>
+                                {t("classesFieldLabel")}
                               </FieldLabel>
                               <ClassMultiSelect
                                 classEntries={classEntries}
@@ -494,8 +499,8 @@ export default function NewTopicModal({
                           name="purpose"
                           render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                              <FieldLabel hint="Summativ — yakuniy bahoga kiradi (vaznli). Formativ — faqat signal, yakuniyga kirmaydi.">
-                                Baholash turi
+                              <FieldLabel hint={t("purposeFieldHint")}>
+                                {t("purposeFieldLabel")}
                               </FieldLabel>
                               <ToggleGroup
                                 type="single"
@@ -503,8 +508,8 @@ export default function NewTopicModal({
                                 onValueChange={(v) => v && field.onChange(v)}
                                 className="grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1"
                               >
-                                <PurposePill value="summative" label="Summativ" hint="Jamiga kiradi" selected={field.value === "summative"} />
-                                <PurposePill value="formative" label="Formativ" hint="Jamiga kirmaydi" selected={field.value === "formative"} />
+                                <PurposePill value="summative" label={t("summativeBadge")} hint={t("includedInTotal")} selected={field.value === "summative"} />
+                                <PurposePill value="formative" label={t("formativeBadge")} hint={t("excludedFromTotal")} selected={field.value === "formative"} />
                               </ToggleGroup>
                             </FormItem>
                           )}
@@ -516,8 +521,8 @@ export default function NewTopicModal({
                           name="inputMode"
                           render={({ field }) => (
                             <FormItem className="space-y-1.5">
-                              <FieldLabel hint="Ball — raqam kiritasiz; Tanlash — shkaladan yorliq tanlaysiz.">
-                                Kiritish usuli
+                              <FieldLabel hint={t("inputModeFieldHint")}>
+                                {t("inputModeFieldLabel")}
                               </FieldLabel>
                               <ToggleGroup
                                 type="single"
@@ -525,8 +530,8 @@ export default function NewTopicModal({
                                 onValueChange={(v) => v && field.onChange(v)}
                                 className="grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1"
                               >
-                                <ToggleGroupItem value="score" className="rounded-md text-sm data-[state=on]:bg-card data-[state=on]:shadow-sm">Ball</ToggleGroupItem>
-                                <ToggleGroupItem value="select" className="rounded-md text-sm data-[state=on]:bg-card data-[state=on]:shadow-sm">Tanlash</ToggleGroupItem>
+                                <ToggleGroupItem value="score" className="rounded-md text-sm data-[state=on]:bg-card data-[state=on]:shadow-sm">{t("scoreOption")}</ToggleGroupItem>
+                                <ToggleGroupItem value="select" className="rounded-md text-sm data-[state=on]:bg-card data-[state=on]:shadow-sm">{t("selectOption")}</ToggleGroupItem>
                               </ToggleGroup>
                             </FormItem>
                           )}
@@ -539,8 +544,8 @@ export default function NewTopicModal({
                             name="weightPercent"
                             render={({ field }) => (
                               <FormItem className="space-y-1.5">
-                                <FieldLabel hint="Toifaning yakuniy bahodagi ulushi. Barcha summativ toifalar avtomatik 100% ga normallashadi.">
-                                  Vazn (ulush %)
+                                <FieldLabel hint={t("weightFieldHint")}>
+                                  {t("weightFieldLabel")}
                                 </FieldLabel>
                                 <div className="flex items-center gap-3">
                                   <div className="relative w-24 shrink-0">
@@ -571,9 +576,9 @@ export default function NewTopicModal({
                           <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2.5">
                             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
                             <TypographyMuted className="text-xs leading-snug text-foreground">
-                              Ikkilik (Bajardi/Bajarmadi) toifa yakuniy oʻrtachaga faqat{" "}
-                              <span className="font-semibold">0% yoki 100%</span> boʻlib kiradi. Aniqroq
-                              oʻlchov uchun uni <span className="font-semibold">Formativ</span> qoldirish tavsiya etiladi.
+                              {t("binaryWarningPrefix")}{" "}
+                              <span className="font-semibold">{t("binaryWarningEmphasis")}</span>{t("binaryWarningMiddle")}
+                              <span className="font-semibold">{t("formativeBadge")}</span>{t("binaryWarningSuffix")}
                             </TypographyMuted>
                           </div>
                         )}
@@ -586,7 +591,7 @@ export default function NewTopicModal({
                               name="passLabel"
                               render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                  <FieldLabel>Oʻtish yorligʻi</FieldLabel>
+                                  <FieldLabel>{t("passLabelField")}</FieldLabel>
                                   <FormControl>
                                     <Input className="h-9 rounded-lg bg-card text-sm" {...field} />
                                   </FormControl>
@@ -598,7 +603,7 @@ export default function NewTopicModal({
                               name="failLabel"
                               render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                  <FieldLabel>Yiqilish yorligʻi</FieldLabel>
+                                  <FieldLabel>{t("failLabelField")}</FieldLabel>
                                   <FormControl>
                                     <Input className="h-9 rounded-lg bg-card text-sm" {...field} />
                                   </FormControl>
@@ -624,17 +629,17 @@ export default function NewTopicModal({
                           className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
                         >
                           <Trash2 className="size-4" />
-                          Oʻchirish
+                          {t("delete")}
                         </Button>
                       ) : (
                         <span />
                       )}
                       <div className="flex items-center gap-3">
                         <Button variant="outline" size="sm" type="button" onClick={() => setEditing(null)}>
-                          Bekor qilish
+                          {t("cancel")}
                         </Button>
                         <Button size="sm" type="submit">
-                          {editing.mode === "edit" ? "Saqlash" : "Yaratish"}
+                          {editing.mode === "edit" ? t("save") : t("create")}
                         </Button>
                       </div>
                     </div>
@@ -647,7 +652,7 @@ export default function NewTopicModal({
             {!editing && (
               <div className="shrink-0 flex items-center justify-between gap-3 border-t border-border px-5 py-3">
                 <TypographyMuted className="text-xs">
-                  {visibleGroups.length} ta toifa
+                  {t("topicCount", { count: visibleGroups.length })}
                 </TypographyMuted>
                 <WeightStatus overClasses={overClasses} underClasses={underClasses} />
               </div>
@@ -696,6 +701,7 @@ function GroupRow({
   classDataMap: Record<string, ClassData>;
   onEdit: () => void;
 }) {
+  const t = useTranslations("NewTopicModal");
   const hex = TOPIC_COLOR_HEX[group.color];
   const isFormative = group.purpose === "formative";
   const minW = Math.min(...group.weights);
@@ -720,7 +726,7 @@ function GroupRow({
           <ClassesBadge group={group} totalClasses={totalClasses} classDataMap={classDataMap} />
         </div>
         <TypographyMuted className="mt-0.5 text-xs">
-          {group.inputMode === "score" ? "Ball kiritiladi" : "Yorliq tanlanadi"}
+          {group.inputMode === "score" ? t("scoreEnteredNotice") : t("labelSelectedNotice")}
         </TypographyMuted>
       </div>
       <div className="flex shrink-0 items-center gap-2">
@@ -728,10 +734,10 @@ function GroupRow({
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge variant="outline" className="gap-1 border-dashed text-[10px] text-muted-foreground">
-                <Ban className="size-3" /> Formativ
+                <Ban className="size-3" /> {t("formativeBadge")}
               </Badge>
             </TooltipTrigger>
-            <TooltipContent>Vaznsiz — yakuniy bahoga kirmaydi</TooltipContent>
+            <TooltipContent>{t("unweightedTooltip")}</TooltipContent>
           </Tooltip>
         ) : (
           <Badge variant="secondary" className="gap-1 tabular-nums text-[10px]">
@@ -742,7 +748,7 @@ function GroupRow({
         <button
           type="button"
           onClick={onEdit}
-          title="Tahrirlash"
+          title={t("edit")}
           className="flex size-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100"
         >
           <Pencil className="size-4" />
@@ -761,16 +767,17 @@ function ClassesBadge({
   totalClasses: number;
   classDataMap: Record<string, ClassData>;
 }) {
+  const t = useTranslations("NewTopicModal");
   const n = group.classIds.length;
   if (n === totalClasses) {
     return (
       <Badge variant="outline" className="shrink-0 text-[10px] font-normal text-muted-foreground">
-        Barcha sinflar
+        {t("allClasses")}
       </Badge>
     );
   }
   const names = group.classIds.map((id) => classDataMap[id]?.info.name ?? id);
-  const label = n === 1 ? names[0] : `${n} ta sinf`;
+  const label = n === 1 ? names[0] : t("nClasses", { count: n });
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -791,6 +798,7 @@ function WeightStatus({
   overClasses: { name: string; total: number }[];
   underClasses: { name: string; total: number }[];
 }) {
+  const t = useTranslations("NewTopicModal");
   const bad = [...overClasses, ...underClasses];
   if (bad.length === 0) {
     return (
@@ -798,11 +806,11 @@ function WeightStatus({
         <TooltipTrigger asChild>
           <Badge className="gap-1.5 border-success/30 bg-success/10 text-success hover:bg-success/10">
             <CheckCircle2 className="size-3.5" />
-            Vaznlar joyida
+            {t("weightsOk")}
           </Badge>
         </TooltipTrigger>
         <TooltipContent className="max-w-[260px]">
-          Summativ toifalar vazni yigʻindisi 100% boʻlishi kerak.
+          {t("weightsExplainer")}
         </TooltipContent>
       </Tooltip>
     );
@@ -812,11 +820,11 @@ function WeightStatus({
       <TooltipTrigger asChild>
         <Badge variant="destructive" className="gap-1.5 cursor-default">
           <AlertTriangle className="size-3.5" />
-          {bad.length} ta sinf 100% emas
+          {t("classesNot100", { count: bad.length })}
         </Badge>
       </TooltipTrigger>
       <TooltipContent className="max-w-[260px]">
-        <p className="mb-1.5">Summativ toifalar vazni yigʻindisi 100% boʻlishi kerak:</p>
+        <p className="mb-1.5">{t("weightsExplainer")}</p>
         <div className="space-y-0.5">
           {bad.map((c) => (
             <div key={c.name} className="flex items-center justify-between gap-4 tabular-nums">
@@ -846,16 +854,17 @@ function ClassMultiSelect({
   onToggle: (id: string) => void;
   onToggleAll: () => void;
 }) {
+  const t = useTranslations("NewTopicModal");
   const allSelected = selected.length === totalClasses && totalClasses > 0;
   const selSet = new Set(selected);
   const summary =
     selected.length === 0
-      ? "Sinf tanlang"
+      ? t("selectClasses")
       : allSelected
-      ? "Barcha sinflar"
+      ? t("allClasses")
       : selected.length === 1
-      ? classEntries.find(([id]) => id === selected[0])?.[1].info.name ?? "1 ta sinf"
-      : `${selected.length} ta sinf`;
+      ? classEntries.find(([id]) => id === selected[0])?.[1].info.name ?? t("nClasses", { count: 1 })
+      : t("nClasses", { count: selected.length });
 
   return (
     <DropdownMenu>
@@ -877,10 +886,10 @@ function ClassMultiSelect({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[240px]">
-        <DropdownMenuLabel>Qaysi sinflarga</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("whichClasses")}</DropdownMenuLabel>
         <DropdownMenuCheckboxItem checked={allSelected} onCheckedChange={onToggleAll}>
           <AllClassesSwatch hexes={allHexes} />
-          Barcha sinflar
+          {t("allClasses")}
         </DropdownMenuCheckboxItem>
         <DropdownMenuSeparator />
         <ScrollArea className="max-h-[240px]">
@@ -980,13 +989,14 @@ function WeightDonut({ percent, compact }: { percent: number; compact?: boolean 
 }
 
 function FieldLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
+  const t = useTranslations("NewTopicModal");
   return (
     <div className="flex items-center gap-1.5">
       <span className="text-label text-muted-foreground">{children}</span>
       {hint && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <button type="button" className="text-muted-foreground transition-colors hover:text-foreground" aria-label="Maʼlumot">
+            <button type="button" className="text-muted-foreground transition-colors hover:text-foreground" aria-label={t("info")}>
               <Info className="size-3.5" />
             </button>
           </TooltipTrigger>
@@ -1004,6 +1014,7 @@ function ColorPicker({
   selected: TopicColor;
   onSelect: (c: TopicColor) => void;
 }) {
+  const t = useTranslations("NewTopicModal");
   const [open, setOpen] = useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -1012,7 +1023,7 @@ function ColorPicker({
           variant="ghost"
           className="size-10 rounded-lg cursor-pointer p-0 min-h-0"
           style={{ backgroundColor: TOPIC_COLOR_HEX[selected] ?? TOPIC_COLOR_HEX.blue }}
-          aria-label="Rang tanlash"
+          aria-label={t("selectColor")}
         />
       </PopoverTrigger>
       <PopoverContent align="end" className="w-auto p-2 grid grid-cols-4 gap-2 rounded-xl z-50">

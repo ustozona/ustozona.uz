@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import type { AcademicYearCalendar } from "@/lib/academic-calendar";
 import { inRange } from "@/lib/academic-calendar";
 import { dateKeyToDate, todayKey } from "@/lib/date-keys";
@@ -33,6 +34,7 @@ export default function YearStrip({
   /** Chorak yoki taʼtil segmenti bosilganda — tegishli sozlamalar qatoriga scroll qilish uchun. */
   onSegmentClick?: (target: { kind: "quarter" | "holiday"; id: string }) => void;
 }) {
+  const t = useTranslations("YearStrip");
   const { range, quarters, holidays } = calendar;
   const total = Math.max(daysBetween(range.start, range.end) + 1, 1);
 
@@ -118,7 +120,7 @@ export default function YearStrip({
         {/* Bugungi kun */}
         {showToday && (
           <div
-            title={`Bugun: ${today}`}
+            title={t("todayPrefix", { date: today })}
             className="absolute inset-y-0 w-0.5 bg-primary"
             style={{ left: `${pct(today)}%` }}
           />
@@ -142,7 +144,7 @@ export default function YearStrip({
             className="absolute top-0 -translate-x-1/2 rounded-full bg-primary/10 px-1.5 text-[10px] font-medium text-primary"
             style={{ left: `${pct(today)}%` }}
           >
-            Bugun
+            {t("todayLabel")}
           </span>
         )}
       </div>
@@ -151,7 +153,7 @@ export default function YearStrip({
       {holidays.length > 0 && (
         <div className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-[3px] border border-border" style={hatch} />
-          <span className="text-[11px] text-muted-foreground">Taʼtil</span>
+          <span className="text-[11px] text-muted-foreground">{t("holidayLegend")}</span>
         </div>
       )}
     </div>

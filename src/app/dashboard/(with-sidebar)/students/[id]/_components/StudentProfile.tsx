@@ -381,7 +381,10 @@ export default function StudentProfile({
                   </Command>
                 </PopoverContent>
               </Popover>
-              <TypographyMuted className="mt-0.5">{location.classInfo.name} · {studentCode}</TypographyMuted>
+              <TypographyMuted className="mt-0.5 inline-flex items-center gap-1.5">
+                <ClassSwatch hex={hex} className="size-2.5" />
+                {location.classInfo.name} · {studentCode}
+              </TypographyMuted>
             </div>
           </div>
 
@@ -397,7 +400,7 @@ export default function StudentProfile({
                 <Pen className="size-3.5" /> {t("edit")}
               </Button>
             </div>
-            <div className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-4">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
               {/* Jinsi — inline dropdown */}
               <div className="min-w-0">
                 <p className="text-xs text-muted-foreground">{t("gender")}</p>
@@ -453,16 +456,32 @@ export default function StudentProfile({
                   </DropdownMenu>
                 )}
               </div>
-              {/* Sinfi — rangli nuqtali badge (Yoshi bilan oʻrin almashgan) */}
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">{t("classLabel")}</p>
-                <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                  <ClassSwatch hex={hex} className="size-2" />
-                  {location.classInfo.name}
-                </span>
-              </div>
-              {/* Tavallud sanasi — inline taqvim popover */}
-              <div className="min-w-0">
+              {/* Yoshi — tugʻilgan kunigacha qolgan vaqt tooltipda (Sinfi endi faqat sarlavhada — takror emas) */}
+              {age != null ? (
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">{t("age")}</p>
+                  {birthdayCountdown ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium decoration-muted-foreground/40 decoration-dotted underline-offset-4 hover:underline">
+                          {t("ageValue", { age })}
+                          <Cake className="size-3.5 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>{t("birthdayCountdownTooltip", { countdown: birthdayCountdown })}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <p className="mt-1 truncate text-sm font-medium">{t("ageValue", { age })}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">{t("age")}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">—</p>
+                </div>
+              )}
+              {/* Tavallud sanasi — inline taqvim popover, endi butun qatorni egallaydi */}
+              <div className="col-span-2 min-w-0">
                 <p className="text-xs text-muted-foreground">{t("birthDate")}</p>
                 <Popover open={birthDateOpen} onOpenChange={setBirthDateOpen}>
                   <PopoverTrigger asChild>
@@ -501,30 +520,6 @@ export default function StudentProfile({
                   </PopoverContent>
                 </Popover>
               </div>
-              {/* Yoshi — tugʻilgan kunigacha qolgan vaqt tooltipda (Sinfi bilan oʻrin almashgan) */}
-              {age != null ? (
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{t("age")}</p>
-                  {birthdayCountdown ? (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium decoration-muted-foreground/40 decoration-dotted underline-offset-4 hover:underline">
-                          {t("ageValue", { age })}
-                          <Cake className="size-3.5 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>{t("birthdayCountdownTooltip", { countdown: birthdayCountdown })}</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ) : (
-                    <p className="mt-1 truncate text-sm font-medium">{t("ageValue", { age })}</p>
-                  )}
-                </div>
-              ) : (
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{t("age")}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">—</p>
-                </div>
-              )}
             </div>
           </div>
 

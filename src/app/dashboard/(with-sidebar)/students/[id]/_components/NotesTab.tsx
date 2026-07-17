@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,22 +20,19 @@ export type Note = { id: string; text: string; sentiment: Sentiment; time: strin
 
 const SENTIMENT: Record<
   Sentiment,
-  { label: string; pill: string; dot: string; icon: React.ComponentType<{ className?: string }> }
+  { pill: string; dot: string; icon: React.ComponentType<{ className?: string }> }
 > = {
   positive: {
-    label: "Ijobiy",
     pill: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
     dot: "bg-emerald-500",
     icon: Smile,
   },
   concern: {
-    label: "Eʼtibor",
     pill: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
     dot: "bg-amber-500",
     icon: AlertCircle,
   },
   neutral: {
-    label: "Oddiy",
     pill: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700",
     dot: "bg-slate-400",
     icon: Minus,
@@ -48,6 +46,7 @@ export default function NotesTab({
   notes: Note[];
   onAdd: (text: string, sentiment: Sentiment) => void;
 }) {
+  const t = useTranslations("NotesTab");
   const [text, setText] = useState("");
   const [sentiment, setSentiment] = useState<Sentiment>("neutral");
   const [filter, setFilter] = useState<Sentiment | "all">("all");
@@ -69,7 +68,7 @@ export default function NotesTab({
         <Textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Bu oʻquvchi haqida qayd qoʻshing…"
+          placeholder={t("placeholder")}
           className="min-h-20 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
         />
         <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
@@ -87,13 +86,13 @@ export default function NotesTab({
                     sentiment === s ? cfg.pill : "border-border text-muted-foreground hover:bg-muted"
                   )}
                 >
-                  <Icon className="size-3.5" /> {cfg.label}
+                  <Icon className="size-3.5" /> {t(s)}
                 </button>
               );
             })}
           </div>
           <Button onClick={submit} disabled={!text.trim()} size="sm" className="shrink-0 font-semibold">
-            <Plus className="size-4" /> Qoʻshish
+            <Plus className="size-4" /> {t("add")}
           </Button>
         </div>
       </div>
@@ -102,11 +101,11 @@ export default function NotesTab({
       {notes.length > 0 && (
         <div className="flex items-center gap-1.5">
           <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
-            Hammasi ({notes.length})
+            {t("all", { count: notes.length })}
           </FilterPill>
           {(Object.keys(SENTIMENT) as Sentiment[]).map((s) => (
             <FilterPill key={s} active={filter === s} onClick={() => setFilter(s)}>
-              {SENTIMENT[s].label}
+              {t(s)}
             </FilterPill>
           ))}
         </div>
@@ -117,7 +116,7 @@ export default function NotesTab({
         <Empty>
           <EmptyHeader>
             <EmptyMedia><Illustration name="46" className="h-32 text-black dark:text-white" /></EmptyMedia>
-            <EmptyTitle>{notes.length === 0 ? "Hali qayd yoʻq" : "Bu turdagi qayd yoʻq"}</EmptyTitle>
+            <EmptyTitle>{notes.length === 0 ? t("emptyNoNotes") : t("emptyFiltered")}</EmptyTitle>
           </EmptyHeader>
         </Empty>
       ) : (
@@ -135,7 +134,7 @@ export default function NotesTab({
                     )}
                   >
                     <span className={cn("size-1.5 rounded-full", cfg.dot)} />
-                    {cfg.label}
+                    {t(n.sentiment)}
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">{n.time}</p>

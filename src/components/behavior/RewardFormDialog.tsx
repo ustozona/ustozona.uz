@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Gift, Minus, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ export function RewardFormDialog({
   /** Berilsa — tahrirlash; boʻlmasa yangi mukofot. */
   reward?: BehaviorReward;
 }) {
+  const t = useTranslations("RewardFormDialog");
   const rewards = useBehaviorStore((s) => s.rewards);
   const setRewards = useBehaviorStore((s) => s.setRewards);
   const redemptions = useBehaviorStore((s) => s.redemptions);
@@ -99,7 +101,7 @@ export function RewardFormDialog({
         <DialogContent showCloseButton={false} className="gap-0 p-0 sm:max-w-lg">
           <DialogHeaderBar
             icon={<Gift className="size-[18px]" aria-hidden />}
-            title={reward ? "Mukofotni tahrirlash" : "Yangi mukofot"}
+            title={reward ? t("editTitle") : t("newTitle")}
           />
 
           <div className="space-y-4 p-6">
@@ -108,22 +110,22 @@ export function RewardFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bh-reward-name">Nom</Label>
+              <Label htmlFor="bh-reward-name">{t("nameLabel")}</Label>
               <Input
                 id="bh-reward-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={200}
-                placeholder="Masalan: Joy tanlash huquqi"
+                placeholder={t("namePlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bh-reward-cost">Narxi (ball)</Label>
+              <Label htmlFor="bh-reward-cost">{t("costLabel")}</Label>
               <div className="flex h-9 w-32 items-stretch overflow-hidden rounded-md border border-border">
                 <button
                   type="button"
-                  aria-label="Kamaytirish"
+                  aria-label={t("decrease")}
                   onClick={() => setCost(String(Math.max(COST_MIN, (parsedCost || 0) - 1)))}
                   className="flex w-7 shrink-0 items-center justify-center border-r border-border bg-muted/40 text-muted-foreground transition-colors hover:bg-muted"
                 >
@@ -141,16 +143,14 @@ export function RewardFormDialog({
                 />
                 <button
                   type="button"
-                  aria-label="Koʻpaytirish"
+                  aria-label={t("increase")}
                   onClick={() => setCost(String(Math.min(COST_MAX, (parsedCost || 0) + 1)))}
                   className="flex w-7 shrink-0 items-center justify-center border-l border-border bg-muted/40 text-muted-foreground transition-colors hover:bg-muted"
                 >
                   <Plus className="size-3.5" aria-hidden />
                 </button>
               </div>
-              <p className="text-caption">
-                Oʻquvchi shuncha ball toʻplaganda almashtira oladi.
-              </p>
+              <p className="text-caption">{t("costHint")}</p>
             </div>
           </div>
 
@@ -168,15 +168,15 @@ export function RewardFormDialog({
                 className="text-destructive hover:text-destructive"
               >
                 <Trash2 className="size-4" aria-hidden />
-                Oʻchirish
+                {t("delete")}
               </Button>
             )}
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Bekor qilish
+                {t("cancel")}
               </Button>
               <Button disabled={!name.trim() || !costValid} onClick={save}>
-                Saqlash
+                {t("save")}
               </Button>
             </div>
           </DialogFooter>
@@ -187,19 +187,16 @@ export function RewardFormDialog({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              «{reward?.name}» mukofotini oʻchirasizmi?
+              {t("deleteTitle", { name: reward?.name ?? "" })}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {usageCount > 0
-                ? `Bu mukofot ${usageCount} marta almashtirilgan. `
-                : ""}
-              Almashtirishlar tarixi saqlanadi — mukofot faqat doʻkon
-              roʻyxatidan yoʻqoladi.
+              {usageCount > 0 ? t("usageNote", { count: usageCount }) : ""}
+              {t("deleteDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-            <AlertDialogAction onClick={remove}>Oʻchirish</AlertDialogAction>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={remove}>{t("delete")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { ArrowUpRight, Lock, Sunrise, Sunset } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ const BREAK_STRIPES = stripes("var(--muted-foreground)", 16);
    qatlam, katta tanaffus amber blok. Yorliqlar "N-soat" (jurnal tili). */
 
 export default function BellSection() {
+  const t = useTranslations("BellSection");
   const versions = useTimetableStore((s) => s.versions);
   const hydrated = useTimetableStore((s) => s._hasHydrated);
   const current = resolveVersionForDate(versions, todayKey()) ?? versions[versions.length - 1] ?? null;
@@ -54,10 +56,10 @@ export default function BellSection() {
   const shifts =
     config.profile === "double"
       ? [
-          { label: "1-smena", icon: Sunrise, cfg: config.shift1 },
-          { label: "2-smena", icon: Sunset, cfg: config.shift2 },
+          { label: t("shift1"), icon: Sunrise, cfg: config.shift1 },
+          { label: t("shift2"), icon: Sunset, cfg: config.shift2 },
         ]
-      : [{ label: "1-smena", icon: Sunrise, cfg: config.shift1 }];
+      : [{ label: t("shift1"), icon: Sunrise, cfg: config.shift1 }];
 
   // Dars soni/davomiyligi barcha smenalarda bir xil boʻlsa — umumiy qatorda
   // bir marta koʻrsatiladi, kartalar faqat vaqt oqimini chizadi.
@@ -70,30 +72,30 @@ export default function BellSection() {
   return (
     <>
       <SettingsCard
-        title="Smenalar va qoʻngʻiroqlar jadvali"
-        description="Maʼlumotlar amaldagi dars jadvalidan olinadi. Oʻzgartirishlar dars jadvali sahifasida amalga oshiriladi (yangi jadvalni saqlash paytida uning kuchga kirish sanasi soʻraladi)."
+        title={t("title")}
+        description={t("description")}
         action={
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge variant="outline" className="cursor-default gap-1.5 font-normal text-muted-foreground">
                 <Lock data-icon="inline-start" />
-                Faqat koʻrish
+                {t("readOnlyBadge")}
               </Badge>
             </TooltipTrigger>
-            <TooltipContent>Manba: Dars jadvali boʻlimi</TooltipContent>
+            <TooltipContent>{t("readOnlyTooltip")}</TooltipContent>
           </Tooltip>
         }
       >
         <div className="rounded-lg border border-border bg-card">
           <div className="flex flex-wrap items-center gap-2 px-5 py-3">
             <Badge variant="secondary" className="font-normal">
-              {config.profile === "double" ? "Ikki smenali" : "Bir smenali"}
+              {config.profile === "double" ? t("doubleShift") : t("singleShift")}
             </Badge>
             {allSame && (
               <span className="text-xs text-muted-foreground">
-                {shifts.length > 1 && "Har ikki smenada: "}
-                <span className="font-medium text-foreground">{shifts[0].cfg.lessonCount} ta dars</span> ·{" "}
-                <span className="font-medium text-foreground">{shifts[0].cfg.lessonMin} daqiqadan</span>
+                {shifts.length > 1 && t("bothShiftsPrefix")}
+                <span className="font-medium text-foreground">{t("lessonCount", { count: shifts[0].cfg.lessonCount })}</span> ·{" "}
+                <span className="font-medium text-foreground">{t("lessonMinutes", { count: shifts[0].cfg.lessonMin })}</span>
               </span>
             )}
           </div>
@@ -103,16 +105,16 @@ export default function BellSection() {
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border px-5 py-3">
-            <LegendItem style={{ backgroundColor: SKY.badge.backgroundColor, borderColor: SKY.ring.borderColor }} label="Dars" />
-            <LegendItem className="border-border" style={{ backgroundImage: BREAK_STRIPES }} label="Tanaffus" />
-            <LegendItem style={{ backgroundImage: LONG_BREAK_STRIPES, borderColor: SKY.ring.borderColor }} label="Katta tanaffus" />
+            <LegendItem style={{ backgroundColor: SKY.badge.backgroundColor, borderColor: SKY.ring.borderColor }} label={t("legendLesson")} />
+            <LegendItem className="border-border" style={{ backgroundImage: BREAK_STRIPES }} label={t("legendBreak")} />
+            <LegendItem style={{ backgroundImage: LONG_BREAK_STRIPES, borderColor: SKY.ring.borderColor }} label={t("legendLongBreak")} />
           </div>
         </div>
       </SettingsCard>
 
       <Button asChild variant="outline" size="sm">
         <Link href="/dashboard/timetable?bell=1">
-          Dars jadvali boʻlimiga oʻtish
+          {t("goToTimetable")}
           <ArrowUpRight />
         </Link>
       </Button>
@@ -164,6 +166,7 @@ function ShiftAgenda({ cfg, slots, endMin }: {
   slots: ReturnType<typeof buildSlots>;
   endMin: number;
 }) {
+  const t = useTranslations("BellSection");
   const y = (m: number) => (m - cfg.startMin) * PX_PER_MIN;
   const height = y(endMin);
 
@@ -243,7 +246,7 @@ function ShiftAgenda({ cfg, slots, endMin }: {
                   )}
                 </TooltipTrigger>
                 <TooltipContent>
-                  {afterLong ? "Katta tanaffus" : "Tanaffus"}: {breakLen} daq
+                  {afterLong ? t("longBreakTooltip") : t("breakTooltip")}: {t("breakMinutesSuffix", { minutes: breakLen })}
                 </TooltipContent>
               </Tooltip>
             )}

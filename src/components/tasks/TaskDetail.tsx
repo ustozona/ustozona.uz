@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { X, Clock, Play, Pause, RotateCcw, MessageSquare, Paperclip, Check, Trash2, Calendar, Tag, Flag, Plus, MoreHorizontal, Users, CheckCircle2, ListChecks, ClipboardList, GraduationCap, Repeat, AlignLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,7 +33,7 @@ import { Label } from "@/components/ui/label";
 import { format, parseISO, addDays } from "date-fns";
 import { uz } from "date-fns/locale";
 import { useTaskStore } from "@/store/useTaskStore";
-import { TASK_STATUS, PRIORITY_STYLES, STATUS_LABELS, STATUS_STYLES, ASSIGNEES } from "@/lib/tasks-data";
+import { TASK_STATUS, PRIORITY_STYLES, STATUS_STYLES, ASSIGNEES } from "@/lib/tasks-data";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
@@ -44,6 +45,9 @@ const FOCUS_MINUTES = 25;
 const BREAK_MINUTES = 5;
 
 export default function TaskDetail() {
+  const t = useTranslations("TaskDetail");
+  const tStatus = useTranslations("TaskStatus");
+  const tPriority = useTranslations("TaskPriority");
   const liveClasses = useLiveClasses();
   const tasks = useTaskStore(s => s.tasks);
   const selectedTaskId = useTaskStore(s => s.selectedTaskId);
@@ -58,7 +62,7 @@ export default function TaskDetail() {
   const toggleSubtaskDone = useTaskStore(s => s.toggleSubtaskDone);
   const deleteSubtask = useTaskStore(s => s.deleteSubtask);
 
-  const task = useMemo(() => tasks.find(t => t.id === selectedTaskId), [tasks, selectedTaskId]);
+  const task = useMemo(() => tasks.find(x => x.id === selectedTaskId), [tasks, selectedTaskId]);
 
   const [commentText, setCommentText] = useState("");
   const [subtaskTitle, setSubtaskTitle] = useState("");
@@ -138,8 +142,8 @@ export default function TaskDetail() {
       <Empty className="h-full bg-card rounded-xl card-elevation">
         <EmptyHeader>
           <EmptyMedia variant="icon"><ClipboardList /></EmptyMedia>
-          <EmptyTitle>Vazifa tanlanmagan</EmptyTitle>
-          <EmptyDescription>Tafsilotlarni koʻrish uchun roʻyxatdan vazifani tanlang.</EmptyDescription>
+          <EmptyTitle>{t("noTaskSelectedTitle")}</EmptyTitle>
+          <EmptyDescription>{t("noTaskSelectedDescription")}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -172,15 +176,15 @@ export default function TaskDetail() {
   };
 
   const totalTimeLabel = totalFocusMin > 60
-    ? `${Math.floor(totalFocusMin / 60)}s ${totalFocusMin % 60}d`
-    : `${totalFocusMin} daqiqa`;
+    ? t("hoursMinutes", { hours: Math.floor(totalFocusMin / 60), minutes: totalFocusMin % 60 })
+    : t("minutesOnly", { minutes: totalFocusMin });
 
   const totalSecs = timerMode === "focus" ? FOCUS_MINUTES * 60 : BREAK_MINUTES * 60;
   const ringDashoffset = 283 - (283 * (timeLeft / totalSecs));
 
   // Class names
   const selectedClassObjs = liveClasses.filter(c => task.classIds?.includes(c.id));
-  const className = selectedClassObjs.length > 0 ? selectedClassObjs.map(c => c.name).join(", ") : "Umumiy";
+  const className = selectedClassObjs.length > 0 ? selectedClassObjs.map(c => c.name).join(", ") : t("generalClass");
 
   // Overdue check
   const todayStr = new Date().toISOString().split("T")[0];
@@ -199,7 +203,7 @@ export default function TaskDetail() {
       <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-3 border-b border-border bg-card min-h-[4.5rem] z-10 relative">
         <div className="flex items-center gap-3 min-w-0">
           <SectionIcon><ClipboardList /></SectionIcon>
-          <CardTitle className="truncate">Vazifa tafsilotlari</CardTitle>
+          <CardTitle className="truncate">{t("title")}</CardTitle>
           {isActive && (
             <Badge variant="secondary" className="px-2 py-0.5 rounded-md text-xs font-medium text-primary bg-primary/10 animate-pulse gap-1.5">
               <Clock className="size-3" />
@@ -245,7 +249,7 @@ export default function TaskDetail() {
                 ref={titleRef}
                 value={task.title}
                 onChange={e => updateTask(task.id, { title: e.target.value })}
-                placeholder="Vazifa nomi..."
+                placeholder={t("titlePlaceholder")}
                 rows={1}
                 className={cn(
                   "w-full text-base font-semibold tracking-tight text-foreground/95 bg-transparent border-none outline-none resize-none leading-snug placeholder:text-muted-foreground/30",
@@ -263,10 +267,10 @@ export default function TaskDetail() {
                   <div className="flex items-center py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors cursor-pointer group">
                     <div className="w-[140px] flex items-center gap-2.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
                       <CheckCircle2 className="size-4" />
-                      <span className="text-sm font-medium">Holat</span>
+                      <span className="text-sm font-medium">{t("status")}</span>
                     </div>
                     <div className={cn("flex-1 text-sm font-medium flex items-center gap-2 truncate", STATUS_STYLES[task.status].text)}>
-                      {STATUS_LABELS[task.status]}
+                      {tStatus(task.status)}
                     </div>
                   </div>
                 </DropdownMenuTrigger>
@@ -274,7 +278,7 @@ export default function TaskDetail() {
                   {Object.values(TASK_STATUS).map(st => (
                     <DropdownMenuItem key={st} onClick={() => updateTask(task.id, { status: st, completedAt: st === TASK_STATUS.DONE ? new Date().toISOString() : null })}>
                       <span className={cn("size-2 rounded-full mr-2", STATUS_STYLES[st].bg.replace('/10', ''))} />
-                      {STATUS_LABELS[st]}
+                      {tStatus(st)}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -286,7 +290,7 @@ export default function TaskDetail() {
                   <div className="flex items-center py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors cursor-pointer group">
                     <div className="w-[140px] flex items-center gap-2.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
                       <Calendar className="size-4" />
-                      <span className="text-sm font-medium">Sana</span>
+                      <span className="text-sm font-medium">{t("date")}</span>
                     </div>
                     <div className={cn(
                       "flex-1 flex items-center gap-2 min-w-0 text-sm font-medium",
@@ -299,11 +303,11 @@ export default function TaskDetail() {
                           ) : (
                             `${format(parseISO(task.dueDate), "d-MMMM, yyyy", { locale: uz })}${task.dueTime ? `, ${task.dueTime}` : ""}`
                           )
-                        ) : "Tanlash..."}
+                        ) : t("selectEllipsis")}
                       </span>
                       {isOverdue && (
                         <span className="shrink-0 rounded-md bg-destructive/10 px-1.5 py-0.5 text-[11px] font-semibold text-destructive">
-                          {overdueDays} kun kechikkan
+                          {t("daysOverdue", { count: overdueDays })}
                         </span>
                       )}
                     </div>
@@ -339,7 +343,7 @@ export default function TaskDetail() {
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                           <Clock className="size-3.5" />
-                          <span className="text-xs font-medium">Vaqt</span>
+                          <span className="text-xs font-medium">{t("time")}</span>
                         </div>
                         <Input
                           type="time"
@@ -352,9 +356,9 @@ export default function TaskDetail() {
 
                     <div className="grid grid-cols-3 gap-1.5">
                       {[
-                        { label: "Bugun", days: 0 },
-                        { label: "Ertaga", days: 1 },
-                        { label: "1 hafta", days: 7 },
+                        { label: t("today"), days: 0 },
+                        { label: t("tomorrow"), days: 1 },
+                        { label: t("oneWeek"), days: 7 },
                       ].map((p) => (
                         <Button
                           key={p.days}
@@ -377,7 +381,7 @@ export default function TaskDetail() {
                         className="w-full h-8 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         onClick={() => updateTask(task.id, { dueDate: null, endDate: null, dueTime: null })}
                       >
-                        Sanani tozalash
+                        {t("clearDate")}
                       </Button>
                     )}
                   </div>
@@ -390,7 +394,7 @@ export default function TaskDetail() {
                   <div className="flex items-center py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors cursor-pointer group">
                     <div className="w-[140px] flex items-center gap-2.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
                       <Flag className="size-4" />
-                      <span className="text-sm font-medium">Ustuvorlik</span>
+                      <span className="text-sm font-medium">{t("priority")}</span>
                     </div>
                     <div className={cn("flex-1 text-sm font-medium flex items-center gap-2 truncate",
                       task.priority === "none" ? "text-muted-foreground" : priorityStyle.text
@@ -400,23 +404,23 @@ export default function TaskDetail() {
                           task.priority === "medium" ? "fill-warning text-warning" :
                             task.priority === "low" ? "fill-info text-info" : "text-muted-foreground"
                       )} />
-                      {task.priority === "none" ? "Belgilanmagan" : task.priority === "high" ? "Yuqori" : task.priority === "medium" ? "Oʻrta" : "Past"}
+                      {tPriority(task.priority)}
                     </div>
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => updateTask(task.id, { priority: "high" })}>
-                    <Flag className="size-3.5 fill-destructive text-destructive mr-2" /> Yuqori
+                    <Flag className="size-3.5 fill-destructive text-destructive mr-2" /> {tPriority("high")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => updateTask(task.id, { priority: "medium" })}>
-                    <Flag className="size-3.5 fill-warning text-warning mr-2" /> Oʻrta
+                    <Flag className="size-3.5 fill-warning text-warning mr-2" /> {tPriority("medium")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => updateTask(task.id, { priority: "low" })}>
-                    <Flag className="size-3.5 fill-info text-info mr-2" /> Past
+                    <Flag className="size-3.5 fill-info text-info mr-2" /> {tPriority("low")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => updateTask(task.id, { priority: "none" })}>
-                    <Flag className="size-3.5 text-muted-foreground mr-2" /> Yoʻq
+                    <Flag className="size-3.5 text-muted-foreground mr-2" /> {t("noneOption")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -427,7 +431,7 @@ export default function TaskDetail() {
                   <div className="flex items-center py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors cursor-pointer group">
                     <div className="w-[140px] flex items-center gap-2.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
                       <GraduationCap className="size-4" />
-                      <span className="text-sm font-medium">Sinf</span>
+                      <span className="text-sm font-medium">{t("classLabel")}</span>
                     </div>
                     <div className="flex-1 flex items-center gap-2 text-sm font-medium text-foreground min-w-0">
                       {selectedClassObjs.length > 0 ? (
@@ -442,7 +446,7 @@ export default function TaskDetail() {
                       ) : (
                         <div className="flex items-center gap-2 text-muted-foreground truncate">
                           <span className="size-2.5 rounded-[4px] shrink-0 border-2 border-muted-foreground/30 bg-transparent" />
-                          <span>Umumiy</span>
+                          <span>{t("generalClass")}</span>
                         </div>
                       )}
                     </div>
@@ -480,13 +484,13 @@ export default function TaskDetail() {
                   <div className="flex items-center py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors cursor-pointer group">
                     <div className="w-[140px] flex items-center gap-2.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
                       <Repeat className="size-4" />
-                      <span className="text-sm font-medium">Takrorlanish</span>
+                      <span className="text-sm font-medium">{t("recurrence")}</span>
                     </div>
                     <div className={cn(
                       "flex-1 text-sm font-medium truncate flex items-center gap-2",
                       recurLabel ? "text-foreground" : "text-muted-foreground"
                     )}>
-                      {recurLabel ?? "Takrorlanmaydi"}
+                      {recurLabel ?? t("doesNotRepeat")}
                     </div>
                   </div>
                 </PopoverTrigger>
@@ -511,7 +515,7 @@ export default function TaskDetail() {
                 <DialogContent className="sm:max-w-xs">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-base">
-                      <Clock className="size-4 text-primary" /> Pomodoro Taymer
+                      <Clock className="size-4 text-primary" /> {t("pomodoroTimer")}
                     </DialogTitle>
                   </DialogHeader>
                   <div className="flex flex-col items-center py-4">
@@ -541,21 +545,21 @@ export default function TaskDetail() {
                         variant={timerMode === "focus" ? "default" : "secondary"}
                       >
                         {isActive ? <Pause className="size-3.5 fill-current" /> : <Play className="size-3.5 fill-current" />}
-                        {isActive ? "Pauza" : "Boshlash"}
+                        {isActive ? t("pause") : t("start")}
                       </Button>
                     </div>
                     <div className="flex items-center gap-1 p-1 rounded-full bg-muted w-full max-w-[180px]">
                       <button
                         className={cn("flex-1 text-xs font-semibold py-1.5 rounded-full transition-all", timerMode === "focus" ? "bg-background shadow text-foreground" : "text-muted-foreground")}
                         onClick={() => { setTimerMode("focus"); setTimeLeft(FOCUS_MINUTES * 60); setIsActive(false); }}
-                      >Diqqat</button>
+                      >{t("focus")}</button>
                       <button
                         className={cn("flex-1 text-xs font-semibold py-1.5 rounded-full transition-all", timerMode === "break" ? "bg-background shadow text-foreground" : "text-muted-foreground")}
                         onClick={() => { setTimerMode("break"); setTimeLeft(BREAK_MINUTES * 60); setIsActive(false); }}
-                      >Tanaffus</button>
+                      >{t("breakLabel")}</button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-4 tabular-nums">
-                      {completedPomodoros}/{task.estimatedPomodoros || "—"} sessiya · {totalTimeLabel}
+                      {t("sessionsProgress", { done: completedPomodoros, total: task.estimatedPomodoros || "—" })} · {totalTimeLabel}
                     </p>
                   </div>
                 </DialogContent>
@@ -565,7 +569,7 @@ export default function TaskDetail() {
               <div className="flex items-center py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/40 transition-colors group">
                 <div className="w-[140px] flex items-center gap-2.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
                   <Users className="size-4" />
-                  <span className="text-sm font-medium">Mas'ullar</span>
+                  <span className="text-sm font-medium">{t("assignees")}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <Select
@@ -605,7 +609,7 @@ export default function TaskDetail() {
                               <div className="size-5 rounded-full border border-dashed border-muted-foreground/50 flex items-center justify-center shrink-0">
                                 <Plus className="size-3 text-muted-foreground/70" />
                               </div>
-                              <span className="text-xs">Qoʻshish</span>
+                              <span className="text-xs">{t("addAction")}</span>
                             </div>
                           )}
                         </div>
@@ -616,7 +620,7 @@ export default function TaskDetail() {
                       align="end"
                     >
                       <SelectGroup>
-                        <SelectLabel className="pl-2">Mas'ulni tanlang</SelectLabel>
+                        <SelectLabel className="pl-2">{t("selectAssignee")}</SelectLabel>
                         {ASSIGNEES.map(a => (
                           <SelectItem key={a.id} value={a.id}>
                             <Avatar size="sm">
@@ -637,7 +641,7 @@ export default function TaskDetail() {
                               updateTask(task.id, { assigneeIds: [] });
                             }}
                           >
-                            Barchani olib tashlash
+                            {t("removeAll")}
                           </button>
                         </>
                       )}
@@ -654,7 +658,7 @@ export default function TaskDetail() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ListChecks className="size-4 text-muted-foreground" />
-                  <span className="text-xs font-semibold text-foreground/80">Kichik vazifalar</span>
+                  <span className="text-xs font-semibold text-foreground/80">{t("subtasks")}</span>
                 </div>
                 {subtasks.length > 0 && (
                   <span className="text-caption tabular-nums">
@@ -709,7 +713,7 @@ export default function TaskDetail() {
                       setSubtaskTitle("");
                     }
                   }}
-                  placeholder="Kichik vazifa qoʻshish..."
+                  placeholder={t("addSubtaskPlaceholder")}
                   className="h-8 flex-1 border-none bg-transparent px-0 text-sm focus:outline-none placeholder:text-muted-foreground/60 text-foreground"
                   autoFocus={subtasksOpen}
                 />
@@ -721,20 +725,20 @@ export default function TaskDetail() {
                 onClick={() => setSubtasksOpen(true)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 -mx-2 text-sm text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
               >
-                <ListChecks className="size-4" /> Kichik vazifa qoʻshish
+                <ListChecks className="size-4" /> {t("addSubtaskAction")}
               </button>
             )}
 
             {/* ─ Description (vizual chegara bilan) ─ */}
             {(task.description || descOpen) ? (
               <div>
-                <span className="text-xs font-semibold text-foreground/80 mb-2 block">Tavsif</span>
+                <span className="text-xs font-semibold text-foreground/80 mb-2 block">{t("description")}</span>
                 <div className="bg-muted/20 rounded-lg border border-border/30 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
                   <textarea
                     ref={descRef}
                     value={task.description}
                     onChange={e => updateTask(task.id, { description: e.target.value })}
-                    placeholder="Tavsif qoʻshish..."
+                    placeholder={t("addDescriptionPlaceholder")}
                     autoFocus={descOpen && !task.description}
                     className="w-full text-sm leading-relaxed bg-transparent border-none outline-none resize-none placeholder:text-muted-foreground/60 text-foreground/85 min-h-[80px] p-3"
                   />
@@ -746,7 +750,7 @@ export default function TaskDetail() {
                 onClick={() => setDescOpen(true)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 -mx-2 text-sm text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
               >
-                <AlignLeft className="size-4" /> Tavsif qoʻshish
+                <AlignLeft className="size-4" /> {t("addDescriptionAction")}
               </button>
             )}
 
@@ -756,7 +760,7 @@ export default function TaskDetail() {
                 <Badge key={tag} variant="secondary" className="group/tag px-2 py-0.5 rounded-md text-xs font-medium gap-1">
                   {tag}
                   <button
-                    onClick={() => updateTask(task.id, { tags: task.tags.filter(t => t !== tag) })}
+                    onClick={() => updateTask(task.id, { tags: task.tags.filter(x => x !== tag) })}
                     className="opacity-50 hover:opacity-100 hover:text-destructive transition-opacity"
                   >
                     <X className="size-3" />
@@ -766,7 +770,7 @@ export default function TaskDetail() {
               <Popover onOpenChange={(o) => { if (!o) setTagText(""); }}>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-6 rounded-md px-2 text-xs text-muted-foreground hover:text-foreground gap-1">
-                    <Plus className="size-3" /> Teg
+                    <Plus className="size-3" /> {t("tag")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-2" align="start" sideOffset={6}>
@@ -784,7 +788,7 @@ export default function TaskDetail() {
                           setTagText("");
                         }
                       }}
-                      placeholder="Teg nomi..."
+                      placeholder={t("tagNamePlaceholder")}
                       className="h-8 flex-1 border-none bg-transparent px-0 text-sm focus:outline-none placeholder:text-muted-foreground/60 text-foreground"
                     />
                   </div>
@@ -797,7 +801,7 @@ export default function TaskDetail() {
               <>
                 <Separator className="bg-border/30" />
                 <div>
-                  <TypographyLabel className="mb-2.5 block text-muted-foreground">Fayllar</TypographyLabel>
+                  <TypographyLabel className="mb-2.5 block text-muted-foreground">{t("files")}</TypographyLabel>
                   <div className="space-y-1.5">
                     {task.attachments.map(file => (
                       <div key={file} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-sm hover:bg-muted/50 transition-colors cursor-pointer group">
@@ -817,7 +821,7 @@ export default function TaskDetail() {
             {(task.comments.length > 0 || commentsOpen) ? (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <TypographyLabel className="text-muted-foreground">Izohlar</TypographyLabel>
+                <TypographyLabel className="text-muted-foreground">{t("comments")}</TypographyLabel>
                 {task.comments.length > 0 && (
                   <Badge variant="secondary" className="px-1.5 h-5 text-xs rounded-full">{task.comments.length}</Badge>
                 )}
@@ -860,7 +864,7 @@ export default function TaskDetail() {
                 </Avatar>
                 <div className="flex-1 relative">
                   <Textarea
-                    placeholder="Izoh yozing..."
+                    placeholder={t("writeCommentPlaceholder")}
                     value={commentText}
                     onChange={e => setCommentText(e.target.value)}
                     autoFocus={commentsOpen && task.comments.length === 0}
@@ -884,7 +888,7 @@ export default function TaskDetail() {
                 onClick={() => setCommentsOpen(true)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-2 -mx-2 text-sm text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
               >
-                <MessageSquare className="size-4" /> Izoh qoʻshish
+                <MessageSquare className="size-4" /> {t("addCommentAction")}
               </button>
             )}
 
@@ -897,14 +901,14 @@ export default function TaskDetail() {
         <div className="flex items-center gap-1 text-muted-foreground">
           <Button variant="ghost" size="sm" className="rounded-lg h-9 px-2.5 hover:text-foreground" onClick={() => setIsPomodoroOpen(true)}>
             <Clock className="size-4 mr-1.5" />
-            <span className="text-xs">Taymer</span>
+            <span className="text-xs">{t("timer")}</span>
           </Button>
           <label className="cursor-pointer">
             <input type="file" className="hidden" onChange={(e) => {
               if (e.target.files && e.target.files[0]) {
                 const file = e.target.files[0];
                 updateTask(task.id, { attachments: [...task.attachments, file.name] });
-                toast.success(`"${file.name}" biriktirildi`);
+                toast.success(t("toastAttached", { name: file.name }));
               }
             }} />
             <div className="rounded-lg size-9 hover:text-foreground flex items-center justify-center hover:bg-muted/50 transition-colors">
@@ -919,7 +923,7 @@ export default function TaskDetail() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[180px]">
               <DropdownMenuItem onClick={() => setConfirmDeleteOpen(true)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                <Trash2 className="size-3.5 mr-2" /> Vazifani oʻchirish
+                <Trash2 className="size-3.5 mr-2" /> {t("deleteTaskAction")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -927,18 +931,18 @@ export default function TaskDetail() {
           <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Vazifani oʻchirishni tasdiqlaysizmi?</AlertDialogTitle>
+                <AlertDialogTitle>{t("deleteConfirmTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Vazifa va uning barcha kichik vazifalari, izohlari va taymer yozuvlari butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                  {t("deleteConfirmDescription")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive text-white hover:bg-destructive/90"
-                  onClick={() => { deleteTask(task.id); toast.success("Vazifa oʻchirildi"); }}
+                  onClick={() => { deleteTask(task.id); toast.success(t("toastTaskDeleted")); }}
                 >
-                  Oʻchirish
+                  {t("delete")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

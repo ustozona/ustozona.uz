@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type TocItem = { id: string; short: string };
 
 export default function ArticleToc({ items }: { items: TocItem[] }) {
+  const t = useTranslations("ArticleToc");
   const [active, setActive] = useState(items[0]?.id ?? "");
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function ArticleToc({ items }: { items: TocItem[] }) {
   return (
     <aside className="hidden lg:block">
       <nav className="sticky top-0 self-start">
-        <p className="text-label mb-3 text-muted-foreground">Mundarija</p>
+        <p className="text-label mb-3 text-muted-foreground">{t("tableOfContents")}</p>
         <ul className="space-y-1 border-l border-border">
           {items.map((it) => (
             <li key={it.id}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Cell, Label, Pie, PieChart } from "recharts";
+import { useTranslations } from "next-intl";
 import {
   ChartContainer,
   ChartTooltip,
@@ -27,6 +28,7 @@ export function BehaviorDonut({
   /** Ijobiy eventlar ulushi (soni boʻyicha), % — event boʻlmasa null. */
   positivePct: number | null;
 }) {
+  const t = useTranslations("BehaviorDonut");
   const config: ChartConfig = Object.fromEntries(
     slices.map((s) => [s.key, { label: s.name }])
   );
@@ -57,7 +59,7 @@ export function BehaviorDonut({
                   <span className="flex items-center gap-1.5 text-foreground">
                     <BehaviorEmoji code={s.emoji} label={s.name} className="size-4" />
                     <span>
-                      {s.name} · {s.count} marta ·{" "}
+                      {s.name} · {t("times", { count: s.count })} ·{" "}
                       <span className="font-semibold tabular-nums">
                         {formatPoints(s.points)}
                       </span>
@@ -101,7 +103,7 @@ export function BehaviorDonut({
                       y={(viewBox.cy ?? 0) + 24}
                       className="fill-muted-foreground text-[11px] font-medium uppercase tracking-wider"
                     >
-                      Ijobiy
+                      {t("positive")}
                     </tspan>
                   </text>
                 );

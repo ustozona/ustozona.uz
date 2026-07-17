@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ export default function RelativesSection({
   /** Qarindosh profiliga oʻtish */
   onNavigate: (id: string) => void;
 }) {
+  const t = useTranslations("RelativesSection");
   const relativeIds = useRelatives(studentId);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -68,7 +70,7 @@ export default function RelativesSection({
     <Collapsible defaultOpen={false} className="border-b border-border p-5">
       <div className="flex items-center justify-between">
         <CollapsibleTrigger className="group/col -ml-1 flex items-center gap-1.5 rounded-md px-1 py-0.5 text-left transition-colors hover:text-foreground">
-          <TypographyLabel className="cursor-pointer">Qarindoshlar</TypographyLabel>
+          <TypographyLabel className="cursor-pointer">{t("title")}</TypographyLabel>
           {relatives.length > 0 && (
             <Badge variant="secondary" className="px-1.5 py-0 text-[11px] tabular-nums">
               {relatives.length}
@@ -82,7 +84,7 @@ export default function RelativesSection({
           onClick={() => setPickerOpen(true)}
           className="h-7 gap-1.5 px-2 text-muted-foreground"
         >
-          <UserPlus className="size-3.5" /> Qoʻshish
+          <UserPlus className="size-3.5" /> {t("add")}
         </Button>
       </div>
 
@@ -95,7 +97,7 @@ export default function RelativesSection({
               className="flex w-full flex-col items-center gap-1.5 rounded-lg border border-dashed border-border py-5 text-center transition-colors hover:bg-muted/50"
             >
               <Users className="size-5 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Aka, uka, opa yoki singil qoʻshing</span>
+              <span className="text-sm font-medium text-muted-foreground">{t("emptyHint")}</span>
             </button>
           ) : (
             <div className="space-y-1">
@@ -126,11 +128,11 @@ export default function RelativesSection({
                 size="icon"
                 onClick={() => {
                   unlinkRelatives(studentId, r.id);
-                  toast.success(`${r.name} bilan bogʻlanish olib tashlandi`, {
-                    action: { label: "Qaytarish", onClick: () => linkRelatives(studentId, r.id) },
+                  toast.success(t("toastUnlinked", { name: r.name }), {
+                    action: { label: t("undo"), onClick: () => linkRelatives(studentId, r.id) },
                   });
                 }}
-                aria-label={`${r.name} bogʻlanishini olib tashlash`}
+                aria-label={t("removeAria", { name: r.name })}
                 className="size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
               >
                 <X className="size-3.5" />
@@ -146,12 +148,12 @@ export default function RelativesSection({
       <CommandDialog
         open={pickerOpen}
         onOpenChange={setPickerOpen}
-        title="Qarindosh qoʻshish"
-        description="Maktabdan oʻquvchini qidirib bogʻlang"
+        title={t("pickerTitle")}
+        description={t("pickerDescription")}
       >
-        <CommandInput placeholder="Ism boʻyicha qidirish…" />
+        <CommandInput placeholder={t("pickerPlaceholder")} />
         <CommandList>
-          <CommandEmpty>Oʻquvchi topilmadi</CommandEmpty>
+          <CommandEmpty>{t("pickerEmpty")}</CommandEmpty>
           {candidatesByClass.map(([className, students]) => (
             <CommandGroup key={className} heading={className}>
               {students.map((s) => (

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import {
   Sidebar,
@@ -41,7 +42,7 @@ import {
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: LucideIcon;
   badgeKey?: "tasks" | "changelog";
 };
@@ -49,23 +50,23 @@ type NavItem = {
 /* Tartib QASDAN GuideHub "Boshlash" checklisti bilan bir xil — sidebar
    haqiqat manbai, [[../tour/tours.ts]] shu tartibga ergashadi. */
 const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Bosh sahifa", icon: Home },
-  { href: "/dashboard/classes", label: "Mening sinflarim", icon: LayoutGrid },
-  { href: "/dashboard/students", label: "Oʻquvchilar", icon: Users },
-  { href: "/dashboard/timetable", label: "Dars jadvali", icon: Calendar },
-  { href: "/dashboard/planner", label: "Rejalashtiruvchi", icon: BookOpen },
-  { href: "/dashboard/lessons", label: "Darslar", icon: FileText },
-  { href: "/dashboard/attendance", label: "Davomat", icon: ClipboardCheck },
-  { href: "/dashboard/behavior", label: "Xulq-atvor", icon: Award },
-  { href: "/dashboard/grades", label: "Jurnal", icon: BarChart2 },
-  { href: "/dashboard/standards", label: "Standartlar", icon: Target },
-  { href: "/dashboard/tasks", label: "Vazifalar", icon: CheckCircle, badgeKey: "tasks" },
+  { href: "/dashboard", labelKey: "home", icon: Home },
+  { href: "/dashboard/classes", labelKey: "myClasses", icon: LayoutGrid },
+  { href: "/dashboard/students", labelKey: "students", icon: Users },
+  { href: "/dashboard/timetable", labelKey: "timetable", icon: Calendar },
+  { href: "/dashboard/planner", labelKey: "planner", icon: BookOpen },
+  { href: "/dashboard/lessons", labelKey: "lessons", icon: FileText },
+  { href: "/dashboard/attendance", labelKey: "attendance", icon: ClipboardCheck },
+  { href: "/dashboard/behavior", labelKey: "behavior", icon: Award },
+  { href: "/dashboard/grades", labelKey: "grades", icon: BarChart2 },
+  { href: "/dashboard/standards", labelKey: "standards", icon: Target },
+  { href: "/dashboard/tasks", labelKey: "tasks", icon: CheckCircle, badgeKey: "tasks" },
 ];
 
 const footerItems: NavItem[] = [
-  { href: "/dashboard/changelog", label: "Yangilanishlar", icon: Megaphone, badgeKey: "changelog" },
-  { href: "/dashboard/feedback", label: "Fikr-mulohaza", icon: MessagesSquare },
-  { href: "/dashboard/settings", label: "Sozlamalar", icon: Settings },
+  { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
+  { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
+  { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
 ];
 
 function useTaskCount() {
@@ -80,15 +81,17 @@ function isActivePath(pathname: string, href: string) {
 }
 
 function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
+  const t = useTranslations("AppSidebar");
   const pathname = usePathname();
   const active = isActivePath(pathname, item.href);
   const showBadge = !!badge && badge > 0;
   // Yangilanishlar — yangi kontent signali (Slack/GitHub uslubi): raqamli
   // chipdan tashqari, koʻrilmaguncha ikonka burchagida ping-nuqta pulslanadi.
   const showPing = showBadge && item.badgeKey === "changelog";
+  const label = t(item.labelKey);
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
+      <SidebarMenuButton asChild isActive={active} tooltip={label}>
         <Link href={item.href}>
           <span className="relative inline-flex size-4 shrink-0">
             <item.icon className="size-4 shrink-0" />
@@ -99,7 +102,7 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
               </span>
             )}
           </span>
-          <span>{item.label}</span>
+          <span>{label}</span>
         </Link>
       </SidebarMenuButton>
       {showBadge && (

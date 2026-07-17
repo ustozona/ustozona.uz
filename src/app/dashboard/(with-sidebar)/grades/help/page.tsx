@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Layers, Calculator, ListChecks, Scale, Sprout } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -92,12 +93,11 @@ const WORD_COUNT = [INTRO, ...SECTIONS.flatMap((s) => [s.title, ...s.paragraphs]
   .split(/\s+/).length;
 const READING_MIN = Math.max(1, Math.round(WORD_COUNT / 180));
 
-const TOC_ITEMS = [
-  { id: "kirish", short: "Kirish" },
-  ...SECTIONS.map((s) => ({ id: s.id, short: s.short })),
-];
+const TOC_ITEMS_BASE = SECTIONS.map((s) => ({ id: s.id, short: s.short }));
 
-export default function GradesHelpPage() {
+export default async function GradesHelpPage() {
+  const t = await getTranslations("GradesHelpPage");
+  const TOC_ITEMS = [{ id: "kirish", short: t("introTocLabel") }, ...TOC_ITEMS_BASE];
   return (
     <div className="flex-1 min-w-0 h-full py-4">
       <article className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden h-full">
@@ -111,11 +111,11 @@ export default function GradesHelpPage() {
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <ArrowLeft className="size-4" />
-                  Baholarga qaytish
+                  {t("backToGrades")}
                 </Link>
 
                 <header id="kirish" className="scroll-mt-8">
-                  <p className="text-label mt-6 text-primary">Pedagogik qoʻllanma</p>
+                  <p className="text-label mt-6 text-primary">{t("guideLabel")}</p>
                   <h1 className="heading-page mt-2 text-balance">{TITLE}</h1>
 
                   {/* Meta panel */}
@@ -131,13 +131,13 @@ export default function GradesHelpPage() {
                           Otabek Abdusattorov
                         </span>
                         <span className="text-caption">
-                          Ustozona TMS asoschisi
+                          {t("authorRole")}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-caption hidden sm:inline">
-                        2026-yil 19-iyun · Mutolaa vaqti: {READING_MIN} daqiqa
+                        {t("publishedMeta", { minutes: READING_MIN })}
                       </span>
                       <Separator orientation="vertical" className="hidden h-5 sm:block" />
                       <ShareActions title={TITLE} />

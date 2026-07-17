@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Check, ChevronRight, Settings2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { uz } from "date-fns/locale";
@@ -43,11 +44,12 @@ export function RecurrenceEditor({
   onChange: (rule: string | null) => void;
   refISO: string | null;
 }) {
+  const t = useTranslations("RecurrenceEditor");
   const ref = refISO ? parseISO(refISO) : new Date();
   const current = parseRule(value);
 
   // Joriy qoida presetlardan biriga mos kelmasa "Moslashtirish" ochiq turadi.
-  const presets = useMemo(() => buildPresets(ref), [refISO]);
+  const presets = useMemo(() => buildPresets(ref, t), [refISO]);
   const matchedPreset = presets.find((p) => p.rule === value);
   const [customOpen, setCustomOpen] = useState(!!current && !matchedPreset);
 
@@ -55,7 +57,7 @@ export function RecurrenceEditor({
     <div className="flex flex-col">
       {/* ── Yoʻq (takrorlanmaydi) ── */}
       <PresetRow
-        label="Takrorlanmaydi"
+        label={t("doesNotRepeat")}
         active={!value}
         onClick={() => {
           onChange(null);
@@ -87,7 +89,7 @@ export function RecurrenceEditor({
         )}
       >
         <Settings2 className={cn("size-4", customOpen ? "text-primary" : "text-muted-foreground")} />
-        <span className="font-medium">Oʻzingiz sozlang...</span>
+        <span className="font-medium">{t("customize")}</span>
         <ChevronRight className={cn("ml-auto size-4 text-muted-foreground/60 transition-transform duration-fast ease-standard", customOpen && "rotate-90")} />
       </button>
 
@@ -125,18 +127,6 @@ function PresetRow({
   );
 }
 
-const UNIT_OPTIONS: { value: RecurrenceUnit; label: string }[] = [
-  { value: "day", label: "Kun" },
-  { value: "week", label: "Hafta" },
-  { value: "month", label: "Oy" },
-  { value: "year", label: "Yil" },
-];
-
-const BASIS_OPTIONS: { value: RecurrenceBasis; label: string }[] = [
-  { value: "due", label: "Muddat sanasi" },
-  { value: "done", label: "Bajarilgan sana" },
-];
-
 function CustomEditor({
   value,
   onChange,
@@ -144,7 +134,20 @@ function CustomEditor({
   value: Recurrence;
   onChange: (rec: Recurrence) => void;
 }) {
+  const t = useTranslations("RecurrenceEditor");
   const set = (patch: Partial<Recurrence>) => onChange({ ...value, ...patch });
+
+  const UNIT_OPTIONS: { value: RecurrenceUnit; label: string }[] = [
+    { value: "day", label: t("unitDay") },
+    { value: "week", label: t("unitWeek") },
+    { value: "month", label: t("unitMonth") },
+    { value: "year", label: t("unitYear") },
+  ];
+
+  const BASIS_OPTIONS: { value: RecurrenceBasis; label: string }[] = [
+    { value: "due", label: t("basisDue") },
+    { value: "done", label: t("basisDone") },
+  ];
 
   return (
     <div className="mt-1 flex flex-col gap-3 rounded-lg border bg-muted/30 p-3">
@@ -162,7 +165,7 @@ function CustomEditor({
 
       {/* Har N [birlik] */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Har</span>
+        <span className="text-sm text-muted-foreground">{t("every")}</span>
         <Input
           type="number"
           min={1}
@@ -213,13 +216,16 @@ function CustomEditor({
 }
 
 /** Tayanch sanaga bogʻlangan tezkor presetlar (TickTick kabi). */
-function buildPresets(ref: Date): { rule: string; label: string; hint?: string }[] {
+function buildPresets(
+  ref: Date,
+  t: (key: string, values?: Record<string, string | number>) => string
+): { rule: string; label: string; hint?: string }[] {
   const wd = ref.getDay();
   return [
-    { rule: "every:due:1:day", label: "Kunlik" },
-    { rule: `every:due:1:week:days=${wd}`, label: "Haftalik", hint: WEEKDAY_SHORT[wd] },
-    { rule: "every:due:1:month", label: "Oylik", hint: `${ref.getDate()}-kun` },
-    { rule: "every:due:1:year", label: "Yillik", hint: format(ref, "d-MMM", { locale: uz }) },
-    { rule: "every:due:1:week:days=1,2,3,4,5", label: "Faqat ish kunlari", hint: "Du–Ju" },
+    { rule: "every:due:1:day", label: t("presetDaily") },
+    { rule: `every:due:1:week:days=${wd}`, label: t("presetWeekly"), hint: WEEKDAY_SHORT[wd] },
+    { rule: "every:due:1:month", label: t("presetMonthly"), hint: t("dayOfMonthHint", { day: ref.getDate() }) },
+    { rule: "every:due:1:year", label: t("presetYearly"), hint: format(ref, "d-MMM", { locale: uz }) },
+    { rule: "every:due:1:week:days=1,2,3,4,5", label: t("presetWeekdays"), hint: t("weekdaysHint") },
   ];
 }

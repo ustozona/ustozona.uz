@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BookOpen, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -29,6 +30,7 @@ function todayKey(): string {
 }
 
 export function OverviewSection({ identity }: { identity: ClassIdentity }) {
+  const t = useTranslations("OverviewSection");
   const tints = classTints(identity.color);
   const hex = CLASS_COLOR_HEX[identity.color];
 
@@ -60,14 +62,14 @@ export function OverviewSection({ identity }: { identity: ClassIdentity }) {
             <BookOpen />
           </SectionIcon>
           <div className="min-w-0">
-            <CardTitle className="truncate">Yaqin darslar</CardTitle>
+            <CardTitle className="truncate">{t("title")}</CardTitle>
           </div>
         </div>
         <Link
           href={`/dashboard/classes/${identity.id}?b=lessons`}
           className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
-          Barchasi
+          {t("viewAll")}
           <ChevronRight className="size-3.5" />
         </Link>
       </div>
@@ -79,8 +81,8 @@ export function OverviewSection({ identity }: { identity: ClassIdentity }) {
             <Empty>
               <EmptyHeader>
                 <EmptyMedia><Illustration name="28" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                <EmptyTitle>Rejalashtirilgan yaqin dars yoʻq</EmptyTitle>
-                <EmptyDescription>Reja boʻlimidan darslarni kalendarga joylashtiring.</EmptyDescription>
+                <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+                <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
@@ -97,7 +99,7 @@ export function OverviewSection({ identity }: { identity: ClassIdentity }) {
                   </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-                      {lesson.title || "Nomsiz dars"}
+                      {lesson.title || t("untitledLesson")}
                     </h4>
                     {(lesson.date || lesson.time) && (
                       <TypographyMuted className="text-xs mt-1 tabular-nums">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { classTints, type ClassColor } from "@/lib/class-colors";
@@ -128,6 +129,7 @@ function placementInEvent(p: Placement, ev: TimetableEvent): boolean {
 }
 
 export default function PlannerView({ classId }: { classId?: string }) {
+  const t = useTranslations("PlannerView");
   const router = useRouter();
 
   const [view, setView] = useState<"week" | "month">("week");
@@ -222,7 +224,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const lessonDisplay = (l: Lesson): { name: string; color: ClassColor; tints: ReturnType<typeof classTints> } => {
     const info = classInfoById(l.classId);
     const c: ClassColor = info ? liveClassColor(info) : "gray";
-    return { name: info?.name ?? "Nomaʼlum sinf", color: c, tints: classTints(c) };
+    return { name: info?.name ?? t("unknownClass"), color: c, tints: classTints(c) };
   };
   const blockedSet = useMemo(() => new Set(blocked.map((b) => b.date)), [blocked]);
   const blockedMap = useMemo(() => new Map(blocked.map((b) => [b.date, b.label])), [blocked]);
@@ -329,11 +331,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
     setBlockModal(null);
     setBlockLabel("");
     if (label) {
-      toast.success("Kun bloklandi", {
-        description: lessonsOnDay > 0 ? `Bu kunda ${lessonsOnDay} ta dars bor — ularni boshqa kunga koʻchiring` : undefined,
+      toast.success(t("dayBlockedToast"), {
+        description: lessonsOnDay > 0 ? t("dayBlockedWithLessonsHint", { count: lessonsOnDay }) : undefined,
       });
     } else {
-      toast.success("Blok olib tashlandi");
+      toast.success(t("blockRemovedToast"));
     }
   }
   function removeBlock() {
@@ -341,7 +343,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
     const k = toDateKey(blockModal.date);
     setBlocked((p) => p.filter((b) => b.date !== k));
     setBlockModal(null);
-    toast.success("Blok olib tashlandi");
+    toast.success(t("blockRemovedToast"));
   }
 
   // ── Yaratish (nom + Boʻlim + vaqt) ──
@@ -357,7 +359,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
     const startMin = HHMMToMin(cmStartStr);
     const endMin = HHMMToMin(cmEndStr);
     if (endMin <= startMin) {
-      toast.error("Tugash vaqti boshlanish vaqtidan keyin boʻlishi kerak");
+      toast.error(t("endBeforeStartError"));
       return;
     }
     const title = cmTitle.trim();
@@ -369,7 +371,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
     });
     addScheduleForClass(id, createModal.classId, toDateKey(createModal.date), startMin, endMin);
     setCreateModal(null);
-    toast.success("Dars yaratildi va joylandi", { description: title });
+    toast.success(t("lessonCreatedToast"), { description: title });
   }
   const createUnits = useMemo(
     () => (createModal ? units.filter((u) => u.classId === createModal.classId) : []),
@@ -388,7 +390,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
     const linked = lessons.find((l) => l.id === lmLessonId);
     addScheduleForClass(lmLessonId, linkModal.classId, toDateKey(linkModal.date), linkModal.startMin, linkModal.endMin);
     setLinkModal(null);
-    toast.success("Mavzu ulandi", { description: linked?.title });
+    toast.success(t("lessonLinkedToast"), { description: linked?.title });
   }
   const linkUnits = useMemo(
     () => (linkModal ? units.filter((u) => u.classId === linkModal.classId) : []),
@@ -425,7 +427,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
     const newStart = HHMMToMin(emStartStr);
     const newEnd = HHMMToMin(emEndStr);
     if (newEnd <= newStart) {
-      toast.error("Tugash vaqti boshlanish vaqtidan keyin boʻlishi kerak");
+      toast.error(t("endBeforeStartError"));
       return;
     }
     updateLesson(editLesson.id, { title: emTitle.trim() || editLesson.title });
@@ -433,18 +435,18 @@ export default function PlannerView({ classId }: { classId?: string }) {
       moveSession(editLesson.id, editTarget.classId, editTarget.date, editTarget.startMin, emDateStr, newStart, newEnd);
     }
     setEditTarget(null);
-    toast.success("Saqlandi");
+    toast.success(t("savedToast"));
   }
   function handleDelete() {
     if (!editLesson) return;
     const snap: Lesson = { ...editLesson }; // toʻliq snapshot (content/standards/scheduleByClass ham)
     deleteLessonAction(snap.id);
     setEditTarget(null);
-    toast("Mavzu oʻchirildi", {
+    toast(t("lessonDeletedToast"), {
       description: snap.title,
       action: {
-        label: "Qaytarish",
-        onClick: () => { restoreLesson(snap); toast.success("Mavzu qaytarildi"); },
+        label: t("undo"),
+        onClick: () => { restoreLesson(snap); toast.success(t("lessonRestoredToast")); },
       },
     });
   }
@@ -465,8 +467,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
     if (targetKey === payload.date) return; // oʻsha kunga tashlash — oʻzgarishsiz
     moveSession(payload.lessonId, payload.classId, payload.date, payload.startMin, targetKey, payload.startMin, payload.endMin);
     const moved = lessons.find((l) => l.id === payload.lessonId);
-    toast.success("Dars koʻchirildi", {
-      description: `${moved?.title ?? "Dars"} · ${targetDate.getDate()} ${MONTHS_UZ[targetDate.getMonth()]}`,
+    toast.success(t("lessonMovedToast"), {
+      description: `${moved?.title ?? t("lessonFallback")} · ${targetDate.getDate()} ${MONTHS_UZ[targetDate.getMonth()]}`,
     });
   }
 
@@ -538,8 +540,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
           <Tabs value={view} onValueChange={(v) => setView(v as "week" | "month")} className="self-center">
             <TabsList data-tour="planner-view-toggle">
-              <TabsTrigger value="week" className="px-5">Hafta</TabsTrigger>
-              <TabsTrigger value="month" className="px-5">Oy</TabsTrigger>
+              <TabsTrigger value="week" className="px-5">{t("week")}</TabsTrigger>
+              <TabsTrigger value="month" className="px-5">{t("month")}</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -549,19 +551,19 @@ export default function PlannerView({ classId }: { classId?: string }) {
                 variant={showOffDays ? "ghost" : "secondary"}
                 size="icon-sm"
                 onClick={() => setShowOffDays((v) => !v)}
-                title={showOffDays ? "Dam kunlarini yashirish" : "Dam kunlarini koʻrsatish"}
-                aria-label="Dam kunlari"
+                title={showOffDays ? t("hideOffDays") : t("showOffDays")}
+                aria-label={t("offDaysAria")}
               >
                 {showOffDays ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
               </Button>
             )}
-            <Button variant="ghost" size="icon-sm" onClick={prevPeriod} aria-label="Oldingi">
+            <Button variant="ghost" size="icon-sm" onClick={prevPeriod} aria-label={t("previousAria")}>
               <ChevronLeft className="size-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={() => setAnchor(new Date())} className="font-semibold">
-              Bugun
+              {t("today")}
             </Button>
-            <Button variant="ghost" size="icon-sm" onClick={nextPeriod} aria-label="Keyingi">
+            <Button variant="ghost" size="icon-sm" onClick={nextPeriod} aria-label={t("nextAria")}>
               <ChevronRight className="size-4" />
             </Button>
           </div>
@@ -575,16 +577,15 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <Empty className="h-full">
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                  <EmptyTitle>Jadval hali tuzilmagan</EmptyTitle>
+                  <EmptyTitle>{t("noScheduleTitle")}</EmptyTitle>
                   <EmptyDescription>
-                    Planner dars jadvalingiz ustiga quriladi. Avval haftalik jadvalni tuzing —
-                    keyin bu yerda darslarni rejalashtirasiz.
+                    {t("noScheduleDescription")}
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
                   <Button onClick={() => router.push("/dashboard/timetable")} className="gap-1.5">
                     <CalendarPlus className="size-4" />
-                    Jadval tuzish
+                    {t("buildSchedule")}
                   </Button>
                 </EmptyContent>
               </Empty>
@@ -635,7 +636,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                         {versionChanged && (
                           <div className="mt-1 flex justify-center">
                             <span className="max-w-full truncate rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                              Jadval yangilandi
+                              {t("scheduleUpdated")}
                             </span>
                           </div>
                         )}
@@ -645,7 +646,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             <button
                               type="button"
                               data-tour="planner-day-settings"
-                              aria-label="Kun sozlamalari"
+                              aria-label={t("daySettingsAria")}
                               className={cn(
                                 "absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-foreground/10 data-[state=open]:text-foreground",
                                 forceShowDaySettings && "opacity-100 bg-foreground/10 text-foreground"
@@ -657,11 +658,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           <DropdownMenuContent align="end" className="w-44">
                             <DropdownMenuItem onClick={() => router.push("/dashboard/timetable")}>
                               <Pencil />
-                              Jadvalni tahrirlash
+                              {t("editSchedule")}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openBlockModal(d)} variant={isBlocked ? "default" : "destructive"}>
                               {isBlocked ? <CalendarOff /> : <Ban />}
-                              {isBlocked ? "Blokni ochish" : "Kunni bloklash"}
+                              {isBlocked ? t("unblockDay") : t("blockDay")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -757,7 +758,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               {!classId && (
                                 <Link
                                   href={`/dashboard/classes/${ev.classId}`}
-                                  title="Sinfni ochish"
+                                  title={t("openClass")}
                                   className="absolute right-1.5 top-1.5 z-20 hidden size-6 items-center justify-center rounded-md bg-background/70 text-foreground/70 shadow-sm transition hover:bg-background hover:text-foreground group-hover/ev:flex"
                                 >
                                   <ArrowUpRight className="size-3.5" />
@@ -794,21 +795,21 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                     <DropdownMenuTrigger asChild>
                                       <button
                                         type="button"
-                                        aria-label="Dars qoʻshish"
+                                        aria-label={t("addLessonAria")}
                                         className="flex items-center gap-1 rounded-lg bg-background/85 px-2 py-1 text-xs font-semibold text-foreground shadow-sm ring-1 ring-inset ring-border/50 transition hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] data-[state=open]:bg-background"
                                       >
                                         <PlusIcon className="size-3.5" strokeWidth={2.5} />
-                                        Dars
+                                        {t("lessonWord")}
                                       </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-40">
                                       <DropdownMenuItem onClick={() => openCreateModal(date, ev)}>
                                         <PlusIcon />
-                                        Yaratish
+                                        {t("create")}
                                       </DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => openLinkModal(date, ev)}>
                                         <LinkIcon />
-                                        Ulash
+                                        {t("link")}
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
@@ -909,7 +910,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                         <div className="mb-0.5 flex items-center justify-between gap-1">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <button type="button" aria-label={`${date.getDate()}-kun amallari`}
+                              <button type="button" aria-label={t("dayActionsAria", { day: date.getDate() })}
                                 className={cn(
                                   "flex size-6 items-center justify-center rounded-full text-xs font-bold outline-none transition-colors hover:ring-2 hover:ring-foreground/20 focus-visible:ring-2 focus-visible:ring-[var(--ring)] data-[state=open]:ring-2 data-[state=open]:ring-foreground/30",
                                   isToday ? "bg-foreground text-background"
@@ -920,11 +921,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             <DropdownMenuContent align="start" className="w-44">
                               <DropdownMenuItem onClick={goToDay}>
                                 <CalendarIcon />
-                                Haftaga oʻtish
+                                {t("goToWeek")}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => openBlockModal(date)} variant={isBlocked ? "default" : "destructive"}>
                                 {isBlocked ? <CalendarOff /> : <Ban />}
-                                {isBlocked ? "Blokni ochish" : "Kunni bloklash"}
+                                {isBlocked ? t("unblockDay") : t("blockDay")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -949,7 +950,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             <PopoverTrigger asChild>
                               <button type="button"
                                 className="self-start rounded px-1.5 py-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
-                                +{hidden} koʻproq
+                                {t("moreItems", { count: hidden })}
                               </button>
                             </PopoverTrigger>
                             <PopoverContent align="start" className="w-60 p-2">
@@ -966,7 +967,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             </PopoverContent>
                           </Popover>
                         )}
-                        {isBlocked && <TypographyMuted className="mt-0.5 pl-0.5 text-xs font-medium text-destructive/60">Bloklangan kun</TypographyMuted>}
+                        {isBlocked && <TypographyMuted className="mt-0.5 pl-0.5 text-xs font-medium text-destructive/60">{t("blockedDay")}</TypographyMuted>}
                       </div>
                     );
                   })}
@@ -983,14 +984,14 @@ export default function PlannerView({ classId }: { classId?: string }) {
       <Dialog open={!!blockModal} onOpenChange={(o) => !o && setBlockModal(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Kunni bloklash</DialogTitle>
+            <DialogTitle>{t("blockDayDialogTitle")}</DialogTitle>
             <DialogDescription>
               {blockModal && `${blockModal.date.getDate()} ${MONTHS_UZ[blockModal.date.getMonth()]} ${blockModal.date.getFullYear()}`}
             </DialogDescription>
           </DialogHeader>
           <div className="py-1">
             <Input autoFocus type="text"
-              placeholder="Sabab (masalan: Bayram, Taʼtil...)"
+              placeholder={t("blockReasonPlaceholder")}
               value={blockLabel}
               onChange={(e) => setBlockLabel(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && saveBlock()}
@@ -1000,12 +1001,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {blockModal && blockedSet.has(toDateKey(blockModal.date)) ? (
               <Button variant="soft-destructive" className="mr-auto gap-1.5" onClick={removeBlock}>
                 <CalendarOff className="size-4" />
-                Blokni olib tashlash
+                {t("removeBlock")}
               </Button>
             ) : <div />}
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setBlockModal(null)}>Bekor</Button>
-              <Button onClick={saveBlock}>Saqlash</Button>
+              <Button variant="outline" onClick={() => setBlockModal(null)}>{t("cancelShort")}</Button>
+              <Button onClick={saveBlock}>{t("save")}</Button>
             </div>
           </DialogFooter>
         </DialogContent>
@@ -1015,7 +1016,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
       <Dialog open={!!createModal} onOpenChange={(o) => !o && setCreateModal(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Dars yaratish</DialogTitle>
+            <DialogTitle>{t("createLessonDialogTitle")}</DialogTitle>
             <DialogDescription>
               {createModal && `${createModal.date.getDate()} ${MONTHS_UZ[createModal.date.getMonth()]} ${createModal.date.getFullYear()}`}
               {slotClass(createModal) ? ` · ${slotClass(createModal)!.name}` : ""}
@@ -1024,20 +1025,20 @@ export default function PlannerView({ classId }: { classId?: string }) {
           {createModal && (
             <div className="flex flex-col gap-3 py-1">
               <div>
-                <Label htmlFor="cm-title" className="mb-1 block text-xs font-semibold text-muted-foreground">Mavzu</Label>
+                <Label htmlFor="cm-title" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("lessonWord")}</Label>
                 <Input id="cm-title" autoFocus type="text" value={cmTitle}
                   onChange={(e) => setCmTitle(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && saveCreate()}
-                  placeholder="Mavzu nomi" />
+                  placeholder={t("lessonNamePlaceholder")} />
               </div>
               <div>
-                <Label className="mb-1 block text-xs font-semibold text-muted-foreground">Boʻlim</Label>
+                <Label className="mb-1 block text-xs font-semibold text-muted-foreground">{t("unit")}</Label>
                 <Select value={cmUnitId} onValueChange={setCmUnitId}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Boʻlim tanlang" />
+                    <SelectValue placeholder={t("selectUnit")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={NO_UNIT}>Boʻlimsiz</SelectItem>
+                    <SelectItem value={NO_UNIT}>{t("noUnit")}</SelectItem>
                     {createUnits.map((u) => (
                       <SelectItem key={u.id} value={u.id}>{u.title}</SelectItem>
                     ))}
@@ -1046,19 +1047,19 @@ export default function PlannerView({ classId }: { classId?: string }) {
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <Label htmlFor="cm-start" className="mb-1 block text-xs font-semibold text-muted-foreground">Boshlanish</Label>
+                  <Label htmlFor="cm-start" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("startTime")}</Label>
                   <Input id="cm-start" type="time" value={cmStartStr} onChange={(e) => setCmStartStr(e.target.value)} />
                 </div>
                 <div className="flex-1">
-                  <Label htmlFor="cm-end" className="mb-1 block text-xs font-semibold text-muted-foreground">Tugash</Label>
+                  <Label htmlFor="cm-end" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("endTime")}</Label>
                   <Input id="cm-end" type="time" value={cmEndStr} onChange={(e) => setCmEndStr(e.target.value)} />
                 </div>
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateModal(null)}>Bekor</Button>
-            <Button onClick={saveCreate} disabled={!cmTitle.trim()}>Saqlash</Button>
+            <Button variant="outline" onClick={() => setCreateModal(null)}>{t("cancelShort")}</Button>
+            <Button onClick={saveCreate} disabled={!cmTitle.trim()}>{t("save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1067,9 +1068,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
       <Dialog open={!!linkModal} onOpenChange={(o) => !o && setLinkModal(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{slotClass(linkModal) ? `${slotClass(linkModal)!.name}ga mavzu ulash` : "Mavzuni ulash"}</DialogTitle>
+            <DialogTitle>{slotClass(linkModal) ? t("linkToClassTitle", { name: slotClass(linkModal)!.name }) : t("linkLessonTitle")}</DialogTitle>
             <DialogDescription>
-              Bu slotga ulash uchun bankdan mavzu tanlang
+              {t("linkDialogDescription")}
               {linkModal ? ` · ${minToHHMM(linkModal.startMin)}–${minToHHMM(linkModal.endMin)}` : ""}
             </DialogDescription>
           </DialogHeader>
@@ -1079,24 +1080,24 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input value={lmSearch} onChange={(e) => setLmSearch(e.target.value)} placeholder="Mavzu qidirish..." className="pl-9" />
+                  <Input value={lmSearch} onChange={(e) => setLmSearch(e.target.value)} placeholder={t("searchLessonPlaceholder")} className="pl-9" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="mb-1 block text-label">Sinf</Label>
+                    <Label className="mb-1 block text-label">{t("classLabel")}</Label>
                     <div className="flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm">
                       <span style={slotTints(linkModal)?.dot} className="size-2 shrink-0 rounded-[4px]" />
                       <span className="truncate">{slotClass(linkModal)?.name}</span>
                     </div>
                   </div>
                   <div>
-                    <Label className="mb-1 block text-label">Boʻlim</Label>
+                    <Label className="mb-1 block text-label">{t("unit")}</Label>
                     <Select value={lmUnitFilter} onValueChange={setLmUnitFilter}>
                       <SelectTrigger className="w-full" size="sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Barcha boʻlimlar</SelectItem>
+                        <SelectItem value="all">{t("allUnits")}</SelectItem>
                         {linkUnits.map((u) => (
                           <SelectItem key={u.id} value={u.id}>{u.title}</SelectItem>
                         ))}
@@ -1108,7 +1109,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
               {linkCandidates.length === 0 ? (
                 <TypographyMuted className="rounded-lg border border-border/50 bg-muted/30 p-4 text-center text-sm">
-                  Rejalanmagan mavzu topilmadi. &quot;Yaratish&quot; orqali yarating yoki lessons sahifasida qoʻshing.
+                  {t("noCandidatesFound")}
                 </TypographyMuted>
               ) : (
                 <ScrollArea className="max-h-[240px] pr-1">
@@ -1126,14 +1127,14 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           )}>
                           <span style={tints.dot} className="size-2 shrink-0 rounded-[4px]" />
                           <div className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium text-foreground">{l.title || "Nomsiz"}</span>
+                            <span className="block truncate text-sm font-medium text-foreground">{l.title || t("untitled")}</span>
                             {unitTitle && <span className="block truncate text-xs text-muted-foreground">{unitTitle}</span>}
                           </div>
                           <span className={cn(
                             "flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold",
                             sel ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                           )}>
-                            {sel ? <><Check className="size-3.5" /> Tanlandi</> : "Qoʻshish"}
+                            {sel ? <><Check className="size-3.5" /> {t("selected")}</> : t("add")}
                           </span>
                         </button>
                       );
@@ -1145,8 +1146,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLinkModal(null)}>Bekor</Button>
-            <Button onClick={saveLink} disabled={!lmLessonId}>Ulash</Button>
+            <Button variant="outline" onClick={() => setLinkModal(null)}>{t("cancelShort")}</Button>
+            <Button onClick={saveLink} disabled={!lmLessonId}>{t("link")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1155,29 +1156,29 @@ export default function PlannerView({ classId }: { classId?: string }) {
       <Dialog open={!!editLesson} onOpenChange={(o) => !o && setEditTarget(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Mavzuni tahrirlash</DialogTitle>
+            <DialogTitle>{t("editLessonDialogTitle")}</DialogTitle>
             <DialogDescription>
               {editLesson && lessonDisplay(editLesson).name}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-1">
             <div>
-              <Label htmlFor="em-title" className="mb-1 block text-xs font-semibold text-muted-foreground">Mavzu nomi</Label>
+              <Label htmlFor="em-title" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("lessonName")}</Label>
               <Input id="em-title" value={emTitle} onChange={(e) => setEmTitle(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && saveEdit()} />
             </div>
             {/* Koʻchirish — sana + vaqt shu yerda (bank orqali unschedule/relink kerak emas) */}
             <div>
-              <Label htmlFor="em-date" className="mb-1 block text-xs font-semibold text-muted-foreground">Sana</Label>
-              <DateKeyPicker value={emDateStr} onChange={setEmDateStr} ariaLabel="Sana" className="w-full" />
+              <Label htmlFor="em-date" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("dateLabel")}</Label>
+              <DateKeyPicker value={emDateStr} onChange={setEmDateStr} ariaLabel={t("dateLabel")} className="w-full" />
             </div>
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <Label htmlFor="em-start" className="mb-1 block text-xs font-semibold text-muted-foreground">Boshlanish</Label>
+                <Label htmlFor="em-start" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("startTime")}</Label>
                 <Input id="em-start" type="time" value={emStartStr} onChange={(e) => setEmStartStr(e.target.value)} />
               </div>
               <div className="flex-1">
-                <Label htmlFor="em-end" className="mb-1 block text-xs font-semibold text-muted-foreground">Tugash</Label>
+                <Label htmlFor="em-end" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("endTime")}</Label>
                 <Input id="em-end" type="time" value={emEndStr} onChange={(e) => setEmEndStr(e.target.value)} />
               </div>
             </div>
@@ -1190,19 +1191,19 @@ export default function PlannerView({ classId }: { classId?: string }) {
                     if (!editLesson) return;
                     const next = editLesson.status === "Completed" ? "Scheduled" : "Completed";
                     setStatus(editLesson.id, next);
-                    toast.success(next === "Completed" ? "Oʻtilgan deb belgilandi" : "Qayta rejalashtirildi");
+                    toast.success(next === "Completed" ? t("markedCompletedToast") : t("rescheduledToast"));
                   }}>
                   <Check className="size-4" />
-                  {editLesson.status === "Completed" ? "Oʻtilgan ✓" : "Oʻtildi"}
+                  {editLesson.status === "Completed" ? t("completedCheck") : t("markCompleted")}
                 </Button>
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
                   if (!editTarget) return;
                   unscheduleSession(editTarget.lessonId, editTarget.classId, editTarget.date, editTarget.startMin);
                   setEditTarget(null);
-                  toast.success("Mavzu bankka qaytarildi");
+                  toast.success(t("returnedToBankToast"));
                 }}>
                   <Undo2 className="size-4" />
-                  Bankka qaytarish
+                  {t("returnToBank")}
                 </Button>
               </div>
             )}
@@ -1210,11 +1211,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
           <DialogFooter className="sm:justify-between">
             <Button variant="soft-destructive" className="mr-auto gap-1.5" onClick={handleDelete}>
               <Trash2 className="size-4" />
-              Oʻchirish
+              {t("delete")}
             </Button>
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setEditTarget(null)}>Bekor</Button>
-              <Button onClick={saveEdit}>Saqlash</Button>
+              <Button variant="outline" onClick={() => setEditTarget(null)}>{t("cancelShort")}</Button>
+              <Button onClick={saveEdit}>{t("save")}</Button>
             </div>
           </DialogFooter>
         </DialogContent>

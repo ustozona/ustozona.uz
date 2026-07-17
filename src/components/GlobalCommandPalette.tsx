@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   CommandDialog,
@@ -11,7 +12,7 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { ClassSwatch } from "@/components/ClassSwatch";
-import { ROUTE_LABELS } from "@/lib/route-labels";
+import { ROUTE_LABEL_KEYS } from "@/lib/route-labels";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { classColor } from "@/lib/grades-data";
@@ -45,6 +46,8 @@ const PAGE_ICONS: Record<string, LucideIcon> = {
 const PAGE_ROUTES = Object.keys(PAGE_ICONS);
 
 export default function GlobalCommandPalette() {
+  const t = useTranslations("GlobalCommandPalette");
+  const tRoutes = useTranslations("RouteLabels");
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
   const classDataMap = useGradesStore((s) => s.classDataMap);
@@ -99,7 +102,7 @@ export default function GlobalCommandPalette() {
           </Button>
         </TooltipTrigger>
         <TooltipContent className="flex items-center gap-1.5">
-          Qidirish
+          {t("search")}
           <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-border/60 bg-background/10 px-1.5 font-mono text-[10px] font-medium">
             ⌘K
           </kbd>
@@ -109,27 +112,28 @@ export default function GlobalCommandPalette() {
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
-        title="Qidirish"
-        description="Sahifa, sinf, oʻquvchi yoki darsni qidiring"
+        title={t("search")}
+        description={t("description")}
       >
-        <CommandInput placeholder="Qidirish…" />
+        <CommandInput placeholder={t("searchPlaceholder")} />
         <CommandList>
-          <CommandEmpty>Hech narsa topilmadi.</CommandEmpty>
+          <CommandEmpty>{t("empty")}</CommandEmpty>
 
-          <CommandGroup heading="Sahifalar">
+          <CommandGroup heading={t("pagesHeading")}>
             {PAGE_ROUTES.map((href) => {
               const Icon = PAGE_ICONS[href];
+              const label = tRoutes(ROUTE_LABEL_KEYS[href]);
               return (
-                <CommandItem key={href} value={ROUTE_LABELS[href]} onSelect={() => go(href)}>
+                <CommandItem key={href} value={label} onSelect={() => go(href)}>
                   <Icon />
-                  {ROUTE_LABELS[href]}
+                  {label}
                 </CommandItem>
               );
             })}
           </CommandGroup>
 
           {classes.length > 0 && (
-            <CommandGroup heading="Sinflar">
+            <CommandGroup heading={t("classesHeading")}>
               {classes.map((c) => (
                 <CommandItem
                   key={c.id}
@@ -145,7 +149,7 @@ export default function GlobalCommandPalette() {
           )}
 
           {students.length > 0 && (
-            <CommandGroup heading="Oʻquvchilar">
+            <CommandGroup heading={t("studentsHeading")}>
               {students.map((s) => (
                 <CommandItem
                   key={s.id}
@@ -161,7 +165,7 @@ export default function GlobalCommandPalette() {
           )}
 
           {lessons.length > 0 && (
-            <CommandGroup heading="Darslar">
+            <CommandGroup heading={t("lessonsHeading")}>
               {lessons.map((l) => (
                 <CommandItem
                   key={l.id}

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { CalendarPlus, Sparkles, CopyPlus, CalendarRange, CalendarOff, TriangleAlert } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeaderBar, DialogFooter, DialogClose,
@@ -47,6 +48,7 @@ export default function CreateSemesterModal({
   /** Yil yaratilgach chaqiriladi — AcademicYearSection rollover sehrgarini ochadi. */
   onCreated?: () => void;
 }) {
+  const t = useTranslations("CreateSemesterModal");
   const current = useCalendarStore((s) => s.calendar);
   const years = useCalendarStore((s) => s.years);
   const addYear = useCalendarStore((s) => s.addYear);
@@ -120,15 +122,15 @@ export default function CreateSemesterModal({
     {
       id: "copy",
       icon: <CopyPlus className="size-4" />,
-      title: "Oldingidan nusxa",
-      desc: "Joriy yil choraklari va taʼtillarini yangi yilga koʻchiradi.",
+      title: t("modeCopyTitle"),
+      desc: t("modeCopyDesc"),
       disabled: !canCopy,
     },
     {
       id: "fresh",
       icon: <Sparkles className="size-4" />,
-      title: "Boshidan boshlash",
-      desc: "Rasmiy 4 chorak va taʼtil shabloni bilan toza yil.",
+      title: t("modeFreshTitle"),
+      desc: t("modeFreshDesc"),
     },
   ];
 
@@ -137,15 +139,15 @@ export default function CreateSemesterModal({
       <DialogContent showCloseButton={false} width="60rem" className="gap-0 overflow-hidden p-0">
         <DialogHeaderBar
           icon={<CalendarPlus className="size-[18px]" />}
-          title="Yangi oʻquv yili"
-          description="Rejim va yil davrini tanlang — oʻng tomonda jonli sharh."
+          title={t("title")}
+          description={t("description")}
         />
 
         <div className="grid gap-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           {/* ── Chap panel: forma ── */}
           <div className="space-y-5 p-6">
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Rejim</Label>
+              <Label className="text-xs font-medium text-muted-foreground">{t("modeLabel")}</Label>
               <div className="space-y-2">
                 {modes.map((m) => (
                   <button
@@ -175,7 +177,7 @@ export default function CreateSemesterModal({
                       <span className="block text-xs text-muted-foreground">{m.desc}</span>
                       {m.disabled && (
                         <span className="block text-xs text-amber-600 dark:text-amber-400">
-                          Joriy kalendar hali sozlanmagan.
+                          {t("modeDisabledNote")}
                         </span>
                       )}
                     </span>
@@ -185,24 +187,24 @@ export default function CreateSemesterModal({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Yil davri</Label>
+              <Label className="text-xs font-medium text-muted-foreground">{t("periodLabel")}</Label>
               <div className="flex items-center gap-1.5">
                 <DateKeyPicker
                   value={range.start}
                   onChange={(v) => setRange((r) => ({ ...r, start: v }))}
-                  ariaLabel="Boshlanish sanasi"
+                  ariaLabel={t("rangeStartAria")}
                   className="flex-1"
                 />
                 <span className="text-muted-foreground">—</span>
                 <DateKeyPicker
                   value={range.end}
                   onChange={(v) => setRange((r) => ({ ...r, end: v }))}
-                  ariaLabel="Tugash sanasi"
+                  ariaLabel={t("rangeEndAria")}
                   className="flex-1"
                 />
               </div>
               {!valid && (
-                <p className="text-xs text-destructive">Tugash sanasi boshlanishdan keyin boʻlishi kerak.</p>
+                <p className="text-xs text-destructive">{t("periodInvalid")}</p>
               )}
             </div>
           </div>
@@ -212,7 +214,7 @@ export default function CreateSemesterModal({
             <div className="mb-3 flex items-center gap-2">
               <CalendarRange className="size-4 text-muted-foreground" />
               <span className="text-sm font-semibold text-foreground">
-                {preview.yearLabel || "Oʻquv yili"}
+                {preview.yearLabel || t("previewDefaultTitle")}
               </span>
             </div>
 
@@ -222,30 +224,31 @@ export default function CreateSemesterModal({
                 <div className="grid grid-cols-2 gap-2">
                   <div className="rounded-lg border border-border bg-card px-3 py-2 text-center">
                     <p className="text-lg font-bold leading-none text-foreground">{preview.quarters.length}</p>
-                    <p className="mt-1 text-[10px] text-muted-foreground">Chorak</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">{t("quarterCount")}</p>
                   </div>
                   <div className="rounded-lg border border-border bg-card px-3 py-2 text-center">
                     <p className="text-lg font-bold leading-none text-foreground">{preview.holidays.length}</p>
-                    <p className="mt-1 text-[10px] text-muted-foreground">Taʼtil</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">{t("holidayCount")}</p>
                   </div>
                 </div>
                 {overlaps.length > 0 && (
                   <div className="flex items-start gap-1.5 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning">
                     <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
                     <span>
-                      Bu davr {overlaps.map((y) => y.calendar.yearLabel || "nomsiz yil").join(", ")}
-                      {" "}bilan kesishadi. Yaratsa boʻladi, lekin sanalar ikki yilga tegishli boʻladi.
+                      {t("overlapWarning", {
+                        years: overlaps
+                          .map((y) => y.calendar.yearLabel || t("unnamedYearJoin"))
+                          .join(", "),
+                      })}
                     </span>
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Yaratgach yangi oʻquv yili qoʻshiladi va FAOL boʻladi — eski yil roʻyxatda qoladi. Choraklar va taʼtillarni keyin «Oʻquv yili» sozlamalarida aniqlashtirasiz.
-                </p>
+                <p className="text-xs text-muted-foreground">{t("previewNote")}</p>
               </div>
             ) : (
               <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-center">
                 <CalendarOff className="size-6 text-muted-foreground/60" />
-                <p className="text-xs text-muted-foreground">Sharh uchun yaroqli davr kiriting.</p>
+                <p className="text-xs text-muted-foreground">{t("previewEmpty")}</p>
               </div>
             )}
           </div>
@@ -253,11 +256,11 @@ export default function CreateSemesterModal({
 
         <DialogFooter className="gap-2 border-t border-border px-6 py-4">
           <DialogClose asChild>
-            <Button variant="outline">Bekor qilish</Button>
+            <Button variant="outline">{t("cancel")}</Button>
           </DialogClose>
           <Button onClick={handleCreate} disabled={!valid} className="gap-1.5">
             <CalendarPlus className="size-4" />
-            Yaratish
+            {t("createButton")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
 import { gradeBadgeClass as gradeBadge, attendanceBadgeClass as attendanceBadge } from "@/lib/score-colors";
@@ -58,7 +59,9 @@ type StudentRow = {
 };
 type SortKey = "name" | "grade" | "attendance";
 
-const SORT_LABELS: Record<SortKey, string> = { name: "Ism", grade: "Oʻrtacha baho", attendance: "Davomat" };
+function sortLabels(t: (key: string) => string): Record<SortKey, string> {
+  return { name: t("sortName"), grade: t("sortGrade"), attendance: t("sortAttendance") };
+}
 
 /** Oʻquvchining jurnal bahosi (% — Baholar jurnali bilan bir formula:
     summativ, toifa-vaznli, foiz-normallashgan). [[grades-v1-model]] */
@@ -69,11 +72,15 @@ function computeGrade(data: ClassData | undefined, studentId: string): number {
   );
 }
 
-const STATUS_PILL: Record<Status, { cls: string; dot: string; label: string }> = {
-  active: { cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20", dot: "bg-emerald-500", label: "Oʻqimoqda" },
-  away: { cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800", dot: "bg-amber-500", label: "Taʼtilda" },
-  archived: { cls: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700", dot: "bg-slate-400", label: "Chiqib ketgan" },
+const STATUS_PILL_STYLE: Record<Status, { cls: string; dot: string }> = {
+  active: { cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20", dot: "bg-emerald-500" },
+  away: { cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800", dot: "bg-amber-500" },
+  archived: { cls: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700", dot: "bg-slate-400" },
 };
+
+function statusPillLabels(t: (key: string) => string): Record<Status, string> {
+  return { active: t("statusActive"), away: t("statusAway"), archived: t("statusArchived") };
+}
 const badgeBase = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
 
 function makeInitials(firstName: string, lastName: string): string {
@@ -83,6 +90,7 @@ function makeInitials(firstName: string, lastName: string): string {
 }
 
 export function StudentsSection({ identity }: { identity: ClassIdentity }) {
+  const t = useTranslations("StudentsSection");
   const router = useRouter();
   const classId = identity.id;
   const hex = CLASS_COLOR_HEX[identity.color];
@@ -124,7 +132,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
     };
     updateClass(data.classId, (cd) => ({ ...cd, students: [student, ...cd.students] }));
     setSelectedStudentId(student.id);
-    toast.success("Oʻquvchi qoʻshildi");
+    toast.success(t("toastCreated"));
   };
 
   const handleImport = (incoming: { firstName: string; lastName: string }[]) => {
@@ -136,7 +144,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
       status: "active",
     }));
     updateClass(classId, (cd) => ({ ...cd, students: [...rows, ...cd.students] }));
-    toast.success(`${rows.length} ta oʻquvchi qoʻshildi`);
+    toast.success(t("toastImported", { count: rows.length }));
   };
 
   const allStudents = useMemo<StudentRow[]>(() => {
@@ -192,7 +200,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
         {/* Header / toolbar */}
         <div className="flex min-h-[4.5rem] shrink-0 items-center gap-2.5 border-b border-border px-5 py-5">
           <SectionIcon><Users /></SectionIcon>
-          <CardTitle className="truncate">Oʻquvchilar</CardTitle>
+          <CardTitle className="truncate">{t("title")}</CardTitle>
           <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2.5">
@@ -205,7 +213,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
               <PopoverContent align="end" className="w-72">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Ism yoki ID boʻyicha qidirish…" className="h-9 pl-9" />
+                  <Input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("searchPlaceholder")} className="h-9 pl-9" />
                 </div>
               </PopoverContent>
             </Popover>
@@ -214,23 +222,23 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="h-9 w-9 px-0 font-semibold shadow-none @[640px]:w-auto @[640px]:px-4">
                   <ArrowUp className="size-4 @[640px]:mr-2" />
-                  <span className="hidden @[640px]:inline">Saralash: {SORT_LABELS[sortKey]}</span>
+                  <span className="hidden @[640px]:inline">{t("sortButton", { label: sortLabels(t)[sortKey] })}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Saralash</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("sortMenuLabel")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                  <DropdownMenuRadioItem value="grade">Oʻrtacha baho (pastdan)</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="attendance">Davomat (pastdan)</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="name">Ism (A–Z)</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="grade">{t("sortGradeFull")}</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="attendance">{t("sortAttendanceFull")}</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="name">{t("sortNameFull")}</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <Button className="font-semibold" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4 @[640px]:mr-1" />
-              <span className="hidden @[640px]:inline">Yangi oʻquvchi</span>
+              <span className="hidden @[640px]:inline">{t("newStudent")}</span>
             </Button>
           </div>
         </div>
@@ -243,16 +251,16 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
               <EmptyHeader>
                 <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>
-                  {search.trim() ? "Mos oʻquvchi topilmadi" : "Bu sinfda hali oʻquvchi yoʻq"}
+                  {search.trim() ? t("emptyFilteredTitle") : t("emptyTitle")}
                 </EmptyTitle>
                 <EmptyDescription>
-                  {search.trim() ? "Qidiruvni oʻzgartirib koʻring." : "Oʻquvchilarni qoʻshing."}
+                  {search.trim() ? t("emptyFilteredDescription") : t("emptyDescription")}
                 </EmptyDescription>
               </EmptyHeader>
               {!search.trim() && (
                 <EmptyContent>
                   <Button onClick={() => setCreateOpen(true)} className="gap-2">
-                    <Plus className="size-4" /> Yangi oʻquvchi
+                    <Plus className="size-4" /> {t("newStudent")}
                   </Button>
                 </EmptyContent>
               )}
@@ -262,7 +270,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
               <div className="space-y-3 px-5 pt-5 pb-5">
                 {students.map((s) => {
                   const isSelected = s.id === selectedStudentId;
-                  const pill = STATUS_PILL[s.status];
+                  const pill = { ...STATUS_PILL_STYLE[s.status], label: statusPillLabels(t)[s.status] };
                   return (
                     <div
                       key={s.id}
@@ -289,7 +297,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
-                            title={s.status === "active" ? "Yoʻq deb belgilash" : "Faol deb belgilash"}
+                            title={s.status === "active" ? t("markAway") : t("markActive")}
                             className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
                           >
                             <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
@@ -345,7 +353,8 @@ function PreviewCard({
   onToggleStatus: () => void;
   onViewProfile: () => void;
 }) {
-  const pill = STATUS_PILL[student.status];
+  const t = useTranslations("StudentsSection");
+  const pill = { ...STATUS_PILL_STYLE[student.status], label: statusPillLabels(t)[student.status] };
 
   return (
     <div className="group/card flex h-full w-full flex-col">
@@ -355,7 +364,7 @@ function PreviewCard({
         <svg className="absolute bottom-0 left-0 right-0 w-full" viewBox="0 0 400 24" preserveAspectRatio="none" style={{ height: 24 }}>
           <path d="M0,24 L0,20 Q200,0 400,20 L400,24 Z" className="fill-card" />
         </svg>
-        <button onClick={onViewProfile} className="absolute right-3 top-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/80 text-foreground/70 opacity-0 shadow-sm transition-opacity hover:bg-white hover:text-foreground group-hover/card:opacity-100" aria-label="Toʻliq profil">
+        <button onClick={onViewProfile} className="absolute right-3 top-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/80 text-foreground/70 opacity-0 shadow-sm transition-opacity hover:bg-white hover:text-foreground group-hover/card:opacity-100" aria-label={t("fullProfileAria")}>
           <ExternalLink className="size-3.5" />
         </button>
       </div>
@@ -382,11 +391,11 @@ function PreviewCard({
           </div>
 
           <Button onClick={onViewProfile} className="mb-6 h-9 w-full rounded-lg font-semibold text-white transition-all hover:brightness-110" style={{ backgroundColor: hex }}>
-            Profilni koʻrish
+            {t("viewProfile")}
           </Button>
 
           <div className="mb-6">
-            <TypographyLabel className="mb-3 block">Sinf</TypographyLabel>
+            <TypographyLabel className="mb-3 block">{t("classLabel")}</TypographyLabel>
             <div className="flex flex-wrap gap-2">
               <div className="rounded-md px-3 py-1.5 text-sm font-medium" style={{ backgroundColor: tint(13), color: hex }}>
                 {className}
@@ -395,24 +404,24 @@ function PreviewCard({
           </div>
 
           <div>
-            <TypographyLabel className="mb-3 block">Aloqa</TypographyLabel>
+            <TypographyLabel className="mb-3 block">{t("contactLabel")}</TypographyLabel>
             <div className="flex flex-col items-start gap-2.5 rounded-lg border border-dashed border-border p-4">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <User className="size-4" />
-                <TypographyMuted>Aloqa maʼlumoti kiritilmagan</TypographyMuted>
+                <TypographyMuted>{t("noContact")}</TypographyMuted>
               </div>
-              <Button variant="outline" size="sm" className="gap-1.5 shadow-none" disabled title="Tez orada">
-                <Plus className="size-3.5" /> Qoʻshish
+              <Button variant="outline" size="sm" className="gap-1.5 shadow-none" disabled title={t("soon")}>
+                <Plus className="size-3.5" /> {t("addContact")}
               </Button>
             </div>
           </div>
 
           <div className="mt-auto flex items-center gap-2 pt-6">
-            <Button variant="outline" disabled title="Tez orada" className="h-9 flex-1 rounded-lg shadow-none">
-              <Phone className="mr-2 size-4" /> Qoʻngʻiroq
+            <Button variant="outline" disabled title={t("soon")} className="h-9 flex-1 rounded-lg shadow-none">
+              <Phone className="mr-2 size-4" /> {t("call")}
             </Button>
-            <Button variant="outline" disabled title="Tez orada" className="h-9 flex-1 rounded-lg shadow-none">
-              <MessageCircle className="mr-2 size-4" /> Telegram
+            <Button variant="outline" disabled title={t("soon")} className="h-9 flex-1 rounded-lg shadow-none">
+              <MessageCircle className="mr-2 size-4" /> {t("telegram")}
             </Button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
+import { useTranslations } from "next-intl";
 import type { StudentProfile, AssignmentRow } from "@/lib/student-profile";
 import { TOPIC_COLOR_HEX, topicTints, type TopicColor } from "@/lib/grades-data";
 import { cn } from "@/lib/utils";
@@ -39,12 +40,6 @@ import {
 } from "lucide-react";
 
 type SortKey = "order" | "high" | "low" | "title";
-const SORT_LABELS: Record<SortKey, string> = {
-  order: "Tartib boʻyicha",
-  high: "Yuqori baho",
-  low: "Past baho",
-  title: "Nomi (A–Z)",
-};
 
 // Sessiya ichidagi baho oʻzgarishlari: assignmentId → yangi ball (null = baho oʻchirilgan)
 type Overrides = Record<string, number | null>;
@@ -58,6 +53,13 @@ function applyOverride(r: AssignmentRow, ov: Overrides): AssignmentRow {
 }
 
 export default function AssignmentsTab({ profile }: { profile: StudentProfile }) {
+  const t = useTranslations("AssignmentsTab");
+  const SORT_LABELS: Record<SortKey, string> = {
+    order: t("sortOrder"),
+    high: t("sortHigh"),
+    low: t("sortLow"),
+    title: t("sortTitle"),
+  };
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("order");
   const [topicFilter, setTopicFilter] = useState<string>("all");
@@ -100,7 +102,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Topshiriq nomi boʻyicha qidirish…"
+            placeholder={t("searchPlaceholder")}
             className="h-9 pl-9"
           />
         </div>
@@ -115,23 +117,23 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
                 "size-9 shrink-0 shadow-none",
                 topicFilter !== "all" && "border-foreground/30 bg-muted"
               )}
-              aria-label="Baholash turi boʻyicha filtrlash"
+              aria-label={t("filterAria")}
             >
               <ListFilter className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-48">
-            <DropdownMenuLabel>Baholash turi</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("filterLabel")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={topicFilter} onValueChange={setTopicFilter}>
-              <DropdownMenuRadioItem value="all">Barcha turlar</DropdownMenuRadioItem>
-              {topics.map((t) => (
-                <DropdownMenuRadioItem key={t.id} value={t.id}>
+              <DropdownMenuRadioItem value="all">{t("filterAll")}</DropdownMenuRadioItem>
+              {topics.map((topic) => (
+                <DropdownMenuRadioItem key={topic.id} value={topic.id}>
                   <span
                     className="mr-2 size-2 rounded-full"
-                    style={{ backgroundColor: topicHex(t.color) }}
+                    style={{ backgroundColor: topicHex(topic.color) }}
                   />
-                  {t.name}
+                  {topic.name}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
@@ -147,13 +149,13 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Saralash</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("sortAria")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-              <DropdownMenuRadioItem value="order">Tartib boʻyicha</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="high">Yuqori baho</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="low">Past baho</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="title">Nomi (A–Z)</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="order">{t("sortOrder")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="high">{t("sortHigh")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="low">{t("sortLow")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="title">{t("sortTitle")}</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -164,7 +166,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon"><FileText /></EmptyMedia>
-            <EmptyTitle>Mos topshiriq topilmadi</EmptyTitle>
+            <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
           </EmptyHeader>
         </Empty>
       ) : (
@@ -193,7 +195,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
         onSave={(score) => {
           if (editRow) {
             saveGrade(editRow.assignment.id, score);
-            toast.success("Baho saqlandi");
+            toast.success(t("toastGradeSaved"));
             setEditRow(null);
           }
         }}
@@ -203,25 +205,25 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
       <AlertDialog open={!!removeRow} onOpenChange={(open) => !open && setRemoveRow(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Bahoni oʻchirish</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteGradeTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              <span className="font-medium text-foreground">{removeRow?.assignment.title}</span>{" "}
-              uchun baho oʻchirilsinmi? Topshiriq «baholanmagan» holatiga oʻtadi. Bu
-              topshiriqning oʻzini oʻchirmaydi.
+              {t("deleteGradeDescription", {
+                title: removeRow?.assignment.title ?? "",
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className={buttonVariants({ variant: "destructive" })}
               onClick={() => {
                 if (removeRow) {
                   removeGrade(removeRow.assignment.id);
-                  toast.success("Baho oʻchirildi");
+                  toast.success(t("toastGradeRemoved"));
                 }
               }}
             >
-              Bahoni oʻchirish
+              {t("confirmRemoveGrade")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -243,6 +245,7 @@ function AssignmentItem({
   onEdit: () => void;
   onRemove: () => void;
 }) {
+  const t = useTranslations("AssignmentsTab");
   const { assignment, topic, score, pct, status } = row;
   const accent = topicHex(topic.color);
   const graded = status === "graded";
@@ -299,11 +302,11 @@ function AssignmentItem({
             </div>
           ) : status === "missing" ? (
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400">
-              <X className="size-3.5" /> Topshirilmagan
+              <X className="size-3.5" /> {t("missing")}
             </span>
           ) : (
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-              <Minus className="size-3.5" /> Baholanmagan
+              <Minus className="size-3.5" /> {t("ungraded")}
             </span>
           )}
         </div>
@@ -315,12 +318,12 @@ function AssignmentItem({
           {graded ? (
             <>
               <Pencil className="size-4 text-muted-foreground" />
-              Bahoni tahrirlash
+              {t("editGrade")}
             </>
           ) : (
             <>
               <ClipboardCheck className="size-4 text-muted-foreground" />
-              Baho qoʻyish
+              {t("setGrade")}
             </>
           )}
         </ContextMenuItem>
@@ -329,7 +332,7 @@ function AssignmentItem({
             <ContextMenuSeparator />
             <ContextMenuItem variant="destructive" onSelect={onRemove}>
               <Trash2 className="size-4" />
-              Bahoni oʻchirish
+              {t("removeGrade")}
             </ContextMenuItem>
           </>
         )}
@@ -347,6 +350,7 @@ function EditGradeDialog({
   onOpenChange: (open: boolean) => void;
   onSave: (score: number) => void;
 }) {
+  const t = useTranslations("AssignmentsTab");
   const max = row?.assignment.maxScore ?? 100;
   const [value, setValue] = useState("");
 
@@ -369,11 +373,11 @@ function EditGradeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{row?.score != null ? "Bahoni tahrirlash" : "Baho qoʻyish"}</DialogTitle>
+          <DialogTitle>{row?.score != null ? t("editGrade") : t("setGrade")}</DialogTitle>
           <DialogDescription>{row?.assignment.title}</DialogDescription>
         </DialogHeader>
         <div className="space-y-2 py-1">
-          <Label htmlFor="grade-score">Ball ({max} dan)</Label>
+          <Label htmlFor="grade-score">{t("scoreLabel", { max })}</Label>
           <Input
             id="grade-score"
             type="number"
@@ -390,10 +394,10 @@ function EditGradeDialog({
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Bekor qilish</Button>
+            <Button variant="outline">{t("cancel")}</Button>
           </DialogClose>
           <Button disabled={!valid} onClick={() => valid && onSave(num as number)}>
-            Saqlash
+            {t("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

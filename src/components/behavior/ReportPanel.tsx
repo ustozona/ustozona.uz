@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ChevronDown, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
   Collapsible,
@@ -55,6 +56,7 @@ export function ReportPanel({
   /** Berilsa — pastda yigʻiladigan "Oʻchirilgan yozuvlar" jurnali chiqadi. */
   deletions?: BehaviorDeletionLogEntry[];
 }) {
+  const t = useTranslations("ReportPanel");
   // "Bu oʻquv yili" davri uchun faol yil oynasi (calendar mirror).
   const yearRange = useCalendarStore((s) => s.calendar.range);
   const filtered = React.useMemo(
@@ -81,7 +83,7 @@ export function ReportPanel({
 
       {filtered.length === 0 ? (
         <TypographyMuted className="py-8 text-center text-sm">
-          Bu davrda yozuv yoʻq.
+          {t("noEvents")}
         </TypographyMuted>
       ) : (
         <>
@@ -89,10 +91,10 @@ export function ReportPanel({
 
           <div className="flex items-center justify-center gap-2">
             <span className="rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-success">
-              +{stats.earned} ijobiy
+              +{stats.earned} {t("positive")}
             </span>
             <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-destructive">
-              −{stats.lost} salbiy
+              −{stats.lost} {t("negative")}
             </span>
           </div>
 
@@ -130,6 +132,7 @@ function DeletionLog({
   deletions: BehaviorDeletionLogEntry[];
   nameById?: Map<string, string>;
 }) {
+  const t = useTranslations("ReportPanel");
   const [open, setOpen] = React.useState(false);
   const sorted = React.useMemo(
     () => [...deletions].sort((a, b) => b.deletedAt.localeCompare(a.deletedAt)),
@@ -144,7 +147,7 @@ function DeletionLog({
     >
       <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
         <Trash2 className="size-3.5 shrink-0" aria-hidden />
-        Oʻchirilgan yozuvlar
+        {t("deletedLog")}
         <span className="tabular-nums">({deletions.length})</span>
         <ChevronDown
           className={cn("ml-auto size-3.5 shrink-0 transition-transform duration-fast ease-standard", open && "rotate-180")}
@@ -174,7 +177,7 @@ function DeletionLog({
                     </span>
                   </p>
                   <p className="text-xs text-muted-foreground/70">
-                    {formatDeletedAt(d.deletedAt)} da oʻchirilgan
+                    {t("deletedAt", { time: formatDeletedAt(d.deletedAt) })}
                     {d.reason ? ` · ${d.reason}` : ""}
                   </p>
                 </div>

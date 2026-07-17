@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Pencil, Trash2, BadgeCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ function formatJoined(iso: string) {
 }
 
 export default function ProfileSection() {
+  const t = useTranslations("ProfileSection");
   const profile = useSettingsStore((s) => s.profile);
   const setProfile = useSettingsStore((s) => s.setProfile);
   const avatarHex =
@@ -62,19 +64,19 @@ export default function ProfileSection() {
     e.target.value = ""; // bir xil faylni qayta tanlashga ruxsat
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Faqat rasm fayli yuklang.");
+      toast.error(t("toastImageOnly"));
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
-      toast.error("Rasm hajmi 2MB dan oshmasin.");
+      toast.error(t("toastImageTooLarge"));
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       setProfile({ avatarUrl: String(reader.result) });
-      toast.success("Profil rasmi yangilandi.");
+      toast.success(t("toastAvatarUpdated"));
     };
-    reader.onerror = () => toast.error("Rasmni oʻqib boʻlmadi.");
+    reader.onerror = () => toast.error(t("toastReadError"));
     reader.readAsDataURL(file);
   };
 
@@ -82,15 +84,15 @@ export default function ProfileSection() {
     <>
       {/* Asosiy maʼlumotlar */}
       <SettingsCard
-        title="Asosiy maʼlumotlar"
-        description="Ismingiz yon panel (sidebar) hamda bosh sahifadagi salomlashuv matnida aks etadi."
+        title={t("title")}
+        description={t("description")}
         footer={<SaveFooter dirty={dirty} disabled={nameError} onSave={save} onReset={reset} />}
       >
         <div className="flex flex-col gap-4 rounded-xl border border-border bg-muted/20 px-5 py-5 sm:flex-row sm:items-start">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            aria-label="Rasmni oʻzgartirish"
+            aria-label={t("changePhotoAria")}
             className="group relative size-20 shrink-0 self-center overflow-hidden rounded-full sm:self-start"
           >
             <Avatar className="size-20">
@@ -124,7 +126,7 @@ export default function ProfileSection() {
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
                 >
                   <Trash2 className="size-3.5" />
-                  Rasmni olib tashlash
+                  {t("removePhoto")}
                 </button>
               )}
             </div>
@@ -135,12 +137,12 @@ export default function ProfileSection() {
                   <TooltipTrigger asChild>
                     <BadgeCheck className="size-4 shrink-0 text-info" />
                   </TooltipTrigger>
-                  <TooltipContent>Google orqali tasdiqlangan</TooltipContent>
+                  <TooltipContent>{t("googleVerified")}</TooltipContent>
                 </Tooltip>
               )}
             </div>
             <span className="mt-0.5 text-xs text-muted-foreground">
-              Aʼzo: {formatJoined(profile.joinedAt)}
+              {t("joined", { date: formatJoined(profile.joinedAt) })}
               {profile.school && ` · ${profile.school}`}
             </span>
           </div>
@@ -148,45 +150,45 @@ export default function ProfileSection() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="profile-name">Ism va familiya</Label>
+            <Label htmlFor="profile-name">{t("nameLabel")}</Label>
             <Input
               id="profile-name"
               value={draft.name}
               onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-              placeholder="Ism familiya"
+              placeholder={t("namePlaceholder")}
               aria-invalid={nameError}
             />
-            {nameError && <p className="text-xs text-destructive">Ism boʻsh boʻlmasin.</p>}
+            {nameError && <p className="text-xs text-destructive">{t("nameError")}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="profile-email">Email</Label>
+            <Label htmlFor="profile-email">{t("emailLabel")}</Label>
             <Input id="profile-email" type="email" value={profile.email} readOnly disabled />
             <p className="text-xs text-muted-foreground">
-              {isGoogle ? "Ushbu maʼlumot Google hisobingiz orqali boshqariladi." : "Kirish uchun ishlatiladi, shu yerdan oʻzgartirib boʻlmaydi."}
+              {isGoogle ? t("emailGoogleNote") : t("emailManualNote")}
             </p>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="profile-school">Taʼlim muassasasi / Maktab</Label>
+            <Label htmlFor="profile-school">{t("schoolLabel")}</Label>
             <Input
               id="profile-school"
               value={draft.school}
               onChange={(e) => setDraft({ ...draft, school: e.target.value })}
-              placeholder="Masalan: 24-maktab"
+              placeholder={t("schoolPlaceholder")}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="profile-subject">Fan</Label>
+            <Label htmlFor="profile-subject">{t("subjectLabel")}</Label>
             <Input
               id="profile-subject"
               value={draft.subject}
               onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
-              placeholder="Masalan: Ingliz tili"
+              placeholder={t("subjectPlaceholder")}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="profile-birth-date" className="flex items-center gap-1.5">
-              Tavallud sana
-              <span className="text-xs font-normal text-muted-foreground">(ixtiyoriy)</span>
+              {t("birthDateLabel")}
+              <span className="text-xs font-normal text-muted-foreground">{t("optional")}</span>
             </Label>
             <BirthDatePicker value={draft.birthDate} onChange={(v) => setDraft({ ...draft, birthDate: v })} />
           </div>

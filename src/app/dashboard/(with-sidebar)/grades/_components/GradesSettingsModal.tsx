@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Info, Settings2, X } from "lucide-react";
 import {
   Dialog,
@@ -27,12 +28,13 @@ const segmentItem =
 
 /** Kichik ⓘ ikona + tooltip. */
 function InfoHint({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("GradesSettingsModal");
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
-          aria-label="Tushuntirish"
+          aria-label={t("explain")}
           className="text-muted-foreground/60 transition-colors hover:text-foreground"
         >
           <Info className="size-3.5" />
@@ -121,6 +123,7 @@ export default function GradesSettingsModal({
   const journalScale = useClassStore((s) => s.journalScale);
   const setJournalScale = useClassStore((s) => s.setJournalScale);
   const { draft, setDraft, dirty, save, reset } = useDraft(journalScale, setJournalScale);
+  const t = useTranslations("GradesSettingsModal");
 
   return (
     <Dialog>
@@ -128,7 +131,7 @@ export default function GradesSettingsModal({
         <TooltipTrigger asChild>
           <DialogTrigger asChild>
             <IconButton
-              aria-label="Jurnal sozlamalari"
+              aria-label={t("title")}
               className="size-9"
               inactiveVariant="outline"
             >
@@ -136,7 +139,7 @@ export default function GradesSettingsModal({
             </IconButton>
           </DialogTrigger>
         </TooltipTrigger>
-        <TooltipContent>Jurnal sozlamalari</TooltipContent>
+        <TooltipContent>{t("title")}</TooltipContent>
       </Tooltip>
 
       <DialogContent
@@ -151,24 +154,24 @@ export default function GradesSettingsModal({
             </SectionIcon>
             <div className="flex flex-col">
               <DialogTitle asChild>
-                <CardTitle>Jurnal sozlamalari</CardTitle>
+                <CardTitle>{t("title")}</CardTitle>
               </DialogTitle>
               <DialogDescription className="text-caption">
-                Baholash mezoni va jadval koʻrinishi
+                {t("description")}
               </DialogDescription>
             </div>
           </div>
           <DialogClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
             <X className="size-4" />
-            <span className="sr-only">Yopish</span>
+            <span className="sr-only">{t("close")}</span>
           </DialogClose>
         </div>
 
         <div className="flex max-h-[70vh] flex-col gap-6 overflow-y-auto scrollbar-thin p-6">
           {/* ── Baholash mezoni ───────────────────────────────── */}
           <section className="space-y-4">
-            <SectionTitle hint="Faqat koʻrinishni oʻzgartiradi — baholar ichkarida foizda saqlanadi. Yonidagi raqam: 78% shu mezonda qanday koʻrinishini koʻrsatadi (5-ballikda «4», IB'da «6»).">
-              Baholash mezoni
+            <SectionTitle hint={t("scaleHint")}>
+              {t("scaleSectionTitle")}
             </SectionTitle>
             <ScaleControls value={draft} onChange={(p) => setDraft({ ...draft, ...p })} />
           </section>
@@ -177,11 +180,11 @@ export default function GradesSettingsModal({
 
           {/* ── Jadval koʻrinishi ───────────────────────────────── */}
           <section className="space-y-4">
-            <SectionTitle>Jadval koʻrinishi</SectionTitle>
+            <SectionTitle>{t("tableViewSectionTitle")}</SectionTitle>
 
             <SwitchRow
-              title="Vaznli foizni koʻrsatish"
-              desc="Har topshiriq ustida uning toifasi vazniga nisbatan hissasi."
+              title={t("showWeightsTitle")}
+              desc={t("showWeightsDesc")}
               checked={showWeights}
               onChange={onShowWeightsChange}
             />
@@ -190,14 +193,12 @@ export default function GradesSettingsModal({
               <FieldLabel
                 hint={
                   <>
-                    <span className="font-medium text-foreground">Trend</span> — oʻquvchining
-                    oʻsish/pasayish yoʻnalishi (↗↘).{" "}
-                    <span className="font-medium text-foreground">Formativ signal</span> —
-                    mashqlardagi diagnostik foiz (yakuniy bahoga taʼsir qilmaydi).
+                    <span className="font-medium text-foreground">{t("trendWord")}</span> — {t("trendHintPart")}{" "}
+                    <span className="font-medium text-foreground">{t("formativeSignalWord")}</span> — {t("formativeSignalHintPart")}
                   </>
                 }
               >
-                Holat ustunida koʻrsatilsin
+                {t("statusColumnFieldLabel")}
               </FieldLabel>
               <ToggleGroup
                 type="single"
@@ -205,8 +206,8 @@ export default function GradesSettingsModal({
                 onValueChange={(v) => v && onShowFormativeChange(v === "formative")}
                 className={segmentClass}
               >
-                <ToggleGroupItem value="trend" className={segmentItem}>Trend ↗↘</ToggleGroupItem>
-                <ToggleGroupItem value="formative" className={segmentItem}>Formativ signal</ToggleGroupItem>
+                <ToggleGroupItem value="trend" className={segmentItem}>{t("trendOption")}</ToggleGroupItem>
+                <ToggleGroupItem value="formative" className={segmentItem}>{t("formativeSignalWord")}</ToggleGroupItem>
               </ToggleGroup>
             </div>
           </section>

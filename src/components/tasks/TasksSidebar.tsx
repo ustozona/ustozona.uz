@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { ListTodo, Inbox, Calendar, CalendarDays, AlertCircle, CheckCircle2, Layers, Flag } from "lucide-react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -70,6 +71,7 @@ const TASK_TEMPLATES: TaskTemplate[] = [
 ];
 
 export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, demoClasses }: Props) {
+  const t = useTranslations("TasksSidebar");
   const liveClassesReal = useLiveClasses();
   const liveClasses = demoClasses && liveClassesReal.length === 0 ? demoClasses : liveClassesReal;
   const storedTasks = useTaskStore((s) => s.tasks);
@@ -80,7 +82,7 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
   const handleUseTemplate = (tpl: TaskTemplate) => {
     const id = addTask(tpl.data);
     setSelectedTaskId(id);
-    toast.success(`"${tpl.label}" shablonidan vazifa yaratildi`);
+    toast.success(t("templateCreatedToast", { label: tpl.label }));
   };
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -92,18 +94,18 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
     let inbox = 0, today = 0, upcoming = 0, overdue = 0, important = 0, completed = 0;
     const classCounts: Record<string, number> = {};
 
-    tasks.forEach((t) => {
-      const isDone = t.status === TASK_STATUS.DONE;
+    tasks.forEach((task) => {
+      const isDone = task.status === TASK_STATUS.DONE;
 
       if (isDone) completed++;
-      if (t.priority === "high") important++;
-      if ((t.classIds?.length ?? 0) === 0 && !t.dueDate) inbox++;
-      if (t.dueDate === todayStr || t.status === "in-progress") today++;
-      if (t.dueDate && t.dueDate > todayStr && t.dueDate <= nextWeekStr) upcoming++;
-      if (t.dueDate && t.dueDate < todayStr && !isDone) overdue++;
+      if (task.priority === "high") important++;
+      if ((task.classIds?.length ?? 0) === 0 && !task.dueDate) inbox++;
+      if (task.dueDate === todayStr || task.status === "in-progress") today++;
+      if (task.dueDate && task.dueDate > todayStr && task.dueDate <= nextWeekStr) upcoming++;
+      if (task.dueDate && task.dueDate < todayStr && !isDone) overdue++;
 
-      if (t.classIds && t.classIds.length > 0) {
-        t.classIds.forEach(id => {
+      if (task.classIds && task.classIds.length > 0) {
+        task.classIds.forEach(id => {
           classCounts[id] = (classCounts[id] || 0) + 1;
         });
       } else {
@@ -118,13 +120,13 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
   const tint = (h: string, pct: number) => `color-mix(in srgb, ${h} ${pct}%, transparent)`;
 
   const smartLists = [
-    { id: "inbox", label: "Kiruvchi", icon: Inbox, count: counts.inbox },
-    { id: "today", label: "Bugun", icon: Calendar, count: counts.today },
-    { id: "upcoming", label: "Rejalashtirilgan", icon: CalendarDays, count: counts.upcoming },
-    { id: "important", label: "Muhim", icon: Flag, count: counts.important },
-    { id: "overdue", label: "Kechikkanlar", icon: AlertCircle, count: counts.overdue },
-    { id: "completed", label: "Bajarilgan", icon: CheckCircle2, count: counts.completed },
-    { id: "all", label: "Barchasi", icon: Layers, count: counts.all },
+    { id: "inbox", label: t("inbox"), icon: Inbox, count: counts.inbox },
+    { id: "today", label: t("today"), icon: Calendar, count: counts.today },
+    { id: "upcoming", label: t("upcoming"), icon: CalendarDays, count: counts.upcoming },
+    { id: "important", label: t("important"), icon: Flag, count: counts.important },
+    { id: "overdue", label: t("overdue"), icon: AlertCircle, count: counts.overdue },
+    { id: "completed", label: t("completed"), icon: CheckCircle2, count: counts.completed },
+    { id: "all", label: t("all"), icon: Layers, count: counts.all },
   ] as const;
 
   const renderSmartListItem = (item: typeof smartLists[number]) => {
@@ -204,7 +206,7 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
         {/* Header */}
         <div className="px-5 py-5 flex items-center shrink-0 gap-3 border-b border-border min-h-[4.5rem]">
           <SectionIcon><ListTodo /></SectionIcon>
-          <CardTitle className="truncate">Vazifalar</CardTitle>
+          <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>
 
         {/* List */}
@@ -215,7 +217,7 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
             
             {/* Smart Lists */}
             <div>
-              <TypographyLabel className="px-3 mb-2 block text-muted-foreground">Aqlli roʻyxatlar</TypographyLabel>
+              <TypographyLabel className="px-3 mb-2 block text-muted-foreground">{t("smartListsHeader")}</TypographyLabel>
               <div className="space-y-0.5">
                 {smartLists.map(renderSmartListItem)}
               </div>
@@ -223,32 +225,35 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
 
             {/* Classes */}
             <div className="mt-6">
-              <TypographyLabel className="px-3 mb-2 block text-muted-foreground">Sinflar</TypographyLabel>
+              <TypographyLabel className="px-3 mb-2 block text-muted-foreground">{t("classesHeader")}</TypographyLabel>
               <div className="space-y-0.5">
                 {liveClasses.map((cls) => {
                   const colorHex = CLASS_COLOR_HEX[classColor(cls)];
                   const count = counts.classCounts[cls.id] || 0;
                   return renderClassItem(cls.id, cls.name, colorHex, count);
                 })}
-                {renderClassItem("none", "Umumiy", "var(--muted-foreground)", counts.classCounts["none"] || 0)}
+                {renderClassItem("none", t("generalClass"), "var(--muted-foreground)", counts.classCounts["none"] || 0)}
               </div>
             </div>
 
             {/* Templates */}
             <div className="mt-6">
-              <TypographyLabel className="px-3 mb-2 block text-muted-foreground">Shablonlar</TypographyLabel>
+              <TypographyLabel className="px-3 mb-2 block text-muted-foreground">{t("templatesHeader")}</TypographyLabel>
               <div className="space-y-0.5">
-                {TASK_TEMPLATES.map((tpl) => (
-                  <button
-                    key={tpl.id}
-                    onClick={() => handleUseTemplate(tpl)}
-                    title={`"${tpl.label}" shablonidan yangi vazifa yaratish`}
-                    className="group w-full flex items-center text-left gap-3 px-3 py-1.5 border-2 border-transparent rounded-lg cursor-pointer transition-transform duration-fast ease-standard hover:translate-x-1"
-                  >
-                    <div className={cn("size-2.5 rounded-full shrink-0 opacity-80", tpl.dotColor)} />
-                    <span className="text-sm text-foreground/70 truncate flex-1 transition-all duration-fast ease-standard group-hover:text-foreground group-hover:font-medium">{tpl.label}</span>
-                  </button>
-                ))}
+                {TASK_TEMPLATES.map((tpl) => {
+                  const label = t(`templates.${tpl.id}` as "templates.parents-meeting" | "templates.quarterly-report");
+                  return (
+                    <button
+                      key={tpl.id}
+                      onClick={() => handleUseTemplate({ ...tpl, label })}
+                      title={t("templateTitleAttr", { label })}
+                      className="group w-full flex items-center text-left gap-3 px-3 py-1.5 border-2 border-transparent rounded-lg cursor-pointer transition-transform duration-fast ease-standard hover:translate-x-1"
+                    >
+                      <div className={cn("size-2.5 rounded-full shrink-0 opacity-80", tpl.dotColor)} />
+                      <span className="text-sm text-foreground/70 truncate flex-1 transition-all duration-fast ease-standard group-hover:text-foreground group-hover:font-medium">{label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

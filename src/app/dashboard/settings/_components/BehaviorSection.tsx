@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AddCard, RewardCard, SkillCard } from "@/components/behavior/SkillCard";
 import { RewardFormDialog } from "@/components/behavior/RewardFormDialog";
@@ -24,6 +25,7 @@ import { SaveFooter, SettingsCard, useDraft, useRegisterDraft } from "./Settings
 const GRID_CLASS = "grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-3";
 
 export default function BehaviorSection() {
+  const t = useTranslations("BehaviorSection");
   const skills = useBehaviorStore((s) => s.skills);
   const rewards = useBehaviorStore((s) => s.rewards);
   const autoSettings = useBehaviorStore((s) => s.autoSettings);
@@ -57,7 +59,7 @@ export default function BehaviorSection() {
         />
       ))}
       <AddCard
-        label="Koʻnikma qoʻshish"
+        label={t("addSkill")}
         onClick={() => setSkillDialog({ type })}
       />
     </div>
@@ -66,14 +68,14 @@ export default function BehaviorSection() {
   return (
     <>
       <SettingsCard
-        title="Xulq ballari"
-        description="«Avto» nishonli kartalar — avtomatik qoidalar: davomat va jurnaldan oʻzi hisoblanadi, bosib yoqib-oʻchirasiz. Qolganlari — ball berish modalida chiqadigan koʻnikmalar (±2 dan)."
+        title={t("title")}
+        description={t("description")}
         footer={<SaveFooter dirty={dirty} onSave={save} onReset={reset} />}
       >
         <Tabs defaultValue="positive">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="positive">Ijobiy ({positive.length + autoTiles.positive.length})</TabsTrigger>
-            <TabsTrigger value="negative">Salbiy ({negative.length + autoTiles.negative.length})</TabsTrigger>
+            <TabsTrigger value="positive">{t("tabPositive", { count: positive.length + autoTiles.positive.length })}</TabsTrigger>
+            <TabsTrigger value="negative">{t("tabNegative", { count: negative.length + autoTiles.negative.length })}</TabsTrigger>
           </TabsList>
           <TabsContent value="positive" className="mt-3">
             {skillGrid(positive, "positive", autoTiles.positive)}
@@ -85,8 +87,8 @@ export default function BehaviorSection() {
       </SettingsCard>
 
       <SettingsCard
-        title="Ragʻbat doʻkoni"
-        description="Oʻquvchilar toʻplagan ballarini shu mukofotlarga almashtiradi. Ijtimoiy-maqom mukofotlari (imtiyoz, rol) moddiy sovgʻalardan koʻra yaxshiroq ishlaydi."
+        title={t("rewardsTitle")}
+        description={t("rewardsDescription")}
       >
         <div className={GRID_CLASS}>
           {rewards.map((r) => (
@@ -96,7 +98,7 @@ export default function BehaviorSection() {
               onSelect={(rw) => setRewardDialog({ reward: rw })}
             />
           ))}
-          <AddCard label="Mukofot qoʻshish" onClick={() => setRewardDialog({})} />
+          <AddCard label={t("addReward")} onClick={() => setRewardDialog({})} />
         </div>
       </SettingsCard>
 

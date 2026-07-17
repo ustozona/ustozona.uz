@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Download, LogOut, Trash2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ import { SettingsCard, SettingsList } from "./SettingsShared";
 const CONFIRM_WORD = "OʻCHIRISH";
 
 export default function DataSection() {
+  const t = useTranslations("DataSection");
   const lessons = useLessonStore((s) => s.lessons);
   const tasks = useTaskStore((s) => s.tasks);
   const classDataMap = useGradesStore((s) => s.classDataMap);
@@ -52,9 +54,9 @@ export default function DataSection() {
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(tasks), "Topshiriqlar");
       const date = new Date().toISOString().slice(0, 10);
       XLSX.writeFile(wb, `ustozona-zaxira-${date}.xlsx`);
-      toast.success("Maʼlumotlar yuklab olindi.");
+      toast.success(t("toastExportSuccess"));
     } catch {
-      toast.error("Eksport amalga oshmadi.");
+      toast.error(t("toastExportError"));
     }
   };
 
@@ -68,11 +70,11 @@ export default function DataSection() {
       try {
         localStorage.clear();
       } catch {}
-      toast.success("Hisob va barcha maʼlumotlar oʻchirildi.");
+      toast.success(t("toastDeleteSuccess"));
       window.location.href = "/";
     } catch {
       setDeleting(false);
-      toast.error("Oʻchirish amalga oshmadi. Qayta urinib koʻring.");
+      toast.error(t("toastDeleteError"));
     }
   };
 
@@ -80,40 +82,40 @@ export default function DataSection() {
     <>
       {/* Ma'lumot */}
       <SettingsCard
-        title="Maʼlumotlaringiz"
-        description="Barcha maʼlumotlaringizni bitta jadval faylida (har boʻlim alohida varaqda) yuklab oling."
+        title={t("dataTitle")}
+        description={t("dataDescription")}
       >
         <SettingsList
           items={[
             {
               key: "export",
-              title: "Maʼlumotlarni eksport qilish",
-              description: "Oʻquvchilar, sinflar, darslar va topshiriqlar (.xlsx).",
+              title: t("exportTitle"),
+              description: t("exportDescription"),
               trailing: (
                 <Button variant="outline" size="sm" onClick={handleExport}>
                   <Download className="size-4" />
-                  Yuklab olish
+                  {t("exportButton")}
                 </Button>
               ),
             },
             {
               key: "dpa",
-              title: "Maʼlumotlarni qayta ishlash shartnomasi (DPA)",
-              description: "Maktab yozuvlaringiz uchun DPA (GDPR 28-modda / FERPA).",
+              title: t("dpaTitle"),
+              description: t("dpaDescription"),
               trailing: (
                 <>
-                  <Badge variant="secondary">Tez orada</Badge>
+                  <Badge variant="secondary">{t("comingSoon")}</Badge>
                   <Button variant="outline" size="sm" disabled>
                     <ShieldCheck className="size-4" />
-                    DPA imzolash
+                    {t("dpaButton")}
                   </Button>
                 </>
               ),
             },
             {
               key: "signout",
-              title: "Chiqish",
-              description: "Joriy seansni yakunlash.",
+              title: t("signoutTitle"),
+              description: t("signoutDescription"),
               trailing: (
                 <Button
                   variant="outline"
@@ -126,7 +128,7 @@ export default function DataSection() {
                   }}
                 >
                   <LogOut className="size-4" />
-                  Chiqish
+                  {t("signoutButton")}
                 </Button>
               ),
             },
@@ -136,33 +138,31 @@ export default function DataSection() {
 
       {/* Danger zone */}
       <SettingsCard
-        title="Xavfli hudud"
-        description="Bu yerdagi amallarni ortga qaytarib boʻlmaydi."
+        title={t("dangerTitle")}
+        description={t("dangerDescription")}
         destructive
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="text-sm font-medium text-foreground">Hisobni oʻchirish</span>
+            <span className="text-sm font-medium text-foreground">{t("deleteAccountLabel")}</span>
             <span className="text-xs text-muted-foreground">
-              Hisob va unga bogʻliq barcha maʼlumotlar (sinflar, oʻquvchilar, baholar, davomat,
-              sozlamalar) butunlay oʻchadi.
+              {t("deleteAccountDescription")}
             </span>
           </div>
             <AlertDialog onOpenChange={() => setConfirmText("")}>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" className="shrink-0">
                   <Trash2 className="size-4" />
-                  Hisobni oʻchirish
+                  {t("deleteAccountButton")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Hisobni butunlay oʻchirasizmi?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("deleteDialogTitle")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Hisobingiz va serverdagi barcha maʼlumotlar (sinflar, oʻquvchilar, baholar,
-                    davomat, sozlamalar) butunlay oʻchiriladi va tiklab boʻlmaydi. Avval eksport
-                    qilib olishni tavsiya qilamiz. Tasdiqlash uchun quyiga{" "}
-                    <span className="font-semibold text-foreground">{CONFIRM_WORD}</span> deb yozing.
+                    {t("deleteDialogDescription", {
+                      word: CONFIRM_WORD,
+                    })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <Input
@@ -172,7 +172,7 @@ export default function DataSection() {
                   autoFocus
                 />
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={(e) => {
                       // Xato boʻlsa dialog ochiq qolsin (Radix aks holda yopadi).
@@ -182,7 +182,7 @@ export default function DataSection() {
                     disabled={confirmText.trim() !== CONFIRM_WORD || deleting}
                     className="bg-destructive text-white hover:bg-destructive/90 disabled:opacity-50"
                   >
-                    {deleting ? "Oʻchirilmoqda…" : "Ha, oʻchirilsin"}
+                    {deleting ? t("deleting") : t("confirmDelete")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

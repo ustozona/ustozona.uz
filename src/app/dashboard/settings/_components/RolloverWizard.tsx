@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, GraduationCap, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -43,6 +44,7 @@ export default function RolloverWizard({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
+  const t = useTranslations("RolloverWizard");
   const activeClasses = useLiveClasses();
   const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
   const yearLabel = useCalendarStore((s) => s.calendar.yearLabel);
@@ -108,9 +110,9 @@ export default function RolloverWizard({
       return next;
     });
     const parts: string[] = [];
-    if (counts.bump) parts.push(`${counts.bump} koʻchirildi`);
-    if (counts.archive) parts.push(`${counts.archive} arxivlandi`);
-    toast.success(parts.length ? `Sinflar: ${parts.join(", ")}` : "Sinflar oʻzgarmadi");
+    if (counts.bump) parts.push(t("toastMoved", { count: counts.bump }));
+    if (counts.archive) parts.push(t("toastArchived", { count: counts.archive }));
+    toast.success(parts.length ? t("toastSummary", { parts: parts.join(", ") }) : t("toastUnchanged"));
     onOpenChange(false);
   };
 
@@ -119,18 +121,18 @@ export default function RolloverWizard({
       <DialogContent showCloseButton={false} width="46rem" className="gap-0 overflow-hidden p-0">
         <DialogHeaderBar
           icon={<Sparkles className="size-[18px]" />}
-          title="Sinflarni yangi yilga oʻtkazish"
+          title={t("title")}
           description={
             yearLabel
-              ? `${yearLabel} oʻquv yili — sinf nomlarini yangilang yoki bitiruvchilarni arxivlang.`
-              : "Sinf nomlarini yangilang yoki bitiruvchilarni arxivlang."
+              ? t("descriptionWithYear", { year: yearLabel })
+              : t("descriptionNoYear")
           }
         />
 
         <div className="max-h-[26rem] space-y-1.5 overflow-y-auto p-5">
           {activeClasses.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Oʻtkaziladigan faol sinf yoʻq.
+              {t("noActiveClasses")}
             </p>
           ) : (
             activeClasses.map((c) => {
@@ -158,33 +160,33 @@ export default function RolloverWizard({
                           value={st.newName}
                           onChange={(e) => setName(c.id, e.target.value)}
                           className="h-8 w-24"
-                          aria-label={`${c.name} yangi nomi`}
+                          aria-label={t("newNameAria", { name: c.name })}
                         />
                       </>
                     )}
                     {st.action === "archive" && (
-                      <span className="text-xs text-muted-foreground line-through">arxivlanadi</span>
+                      <span className="text-xs text-muted-foreground line-through">{t("archivedLabel")}</span>
                     )}
                     {st.action === "keep" && (
-                      <span className="text-xs text-muted-foreground">oʻzgarmaydi</span>
+                      <span className="text-xs text-muted-foreground">{t("unchangedLabel")}</span>
                     )}
                   </div>
 
                   <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-0.5">
                     {canBump && (
                       <RolloverActionButton
-                        label="Koʻchirish"
+                        label={t("actionMove")}
                         active={st.action === "bump"}
                         onClick={() => setAction(c.id, "bump")}
                       />
                     )}
                     <RolloverActionButton
-                      label="Saqlash"
+                      label={t("actionKeep")}
                       active={st.action === "keep"}
                       onClick={() => setAction(c.id, "keep")}
                     />
                     <RolloverActionButton
-                      label="Arxivlash"
+                      label={t("actionArchive")}
                       active={st.action === "archive"}
                       onClick={() => setAction(c.id, "archive")}
                       danger
@@ -198,15 +200,15 @@ export default function RolloverWizard({
 
         <DialogFooter className="items-center gap-2 border-t border-border px-5 py-3.5 sm:justify-between">
           <span className="text-xs text-muted-foreground">
-            {counts.bump} koʻchiriladi · {counts.archive} arxivlanadi · {counts.keep} oʻzgarmaydi
+            {t("summary", { bump: counts.bump, archive: counts.archive, keep: counts.keep })}
           </span>
           <div className="flex gap-2">
             <DialogClose asChild>
-              <Button variant="outline">Oʻtkazib yuborish</Button>
+              <Button variant="outline">{t("skip")}</Button>
             </DialogClose>
             <Button onClick={apply} disabled={activeClasses.length === 0} className="gap-1.5">
               <Sparkles className="size-4" />
-              Oʻtkazish
+              {t("applyButton")}
             </Button>
           </div>
         </DialogFooter>

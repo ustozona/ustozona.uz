@@ -61,11 +61,11 @@ export type Task = {
   completedAt: string | null;
 };
 
-export const PRIORITY_STYLES: Record<TaskPriority, { bg: string; text: string; dot: string; label: string }> = {
-  high:   { bg: "bg-destructive/10", text: "text-destructive", dot: "bg-destructive", label: "Yuqori" },
-  medium: { bg: "bg-warning/10", text: "text-warning-foreground", dot: "bg-warning", label: "O'rta" },
-  low:    { bg: "bg-info/10", text: "text-info", dot: "bg-info", label: "Past" },
-  none:   { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground/40", label: "Belgilanmagan" },
+export const PRIORITY_STYLES: Record<TaskPriority, { bg: string; text: string; dot: string }> = {
+  high:   { bg: "bg-destructive/10", text: "text-destructive", dot: "bg-destructive" },
+  medium: { bg: "bg-warning/10", text: "text-warning-foreground", dot: "bg-warning" },
+  low:    { bg: "bg-info/10", text: "text-info", dot: "bg-info" },
+  none:   { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground/40" },
 };
 
 export const STATUS_STYLES: Record<TaskStatus, { bg: string; text: string }> = {
@@ -75,23 +75,17 @@ export const STATUS_STYLES: Record<TaskStatus, { bg: string; text: string }> = {
   [TASK_STATUS.CANCELED]:    { bg: "bg-destructive/10", text: "text-destructive" },
 };
 
-export const STATUS_LABELS: Record<TaskStatus, string> = {
-  [TASK_STATUS.TODO]: "Kutilmoqda",
-  [TASK_STATUS.IN_PROGRESS]: "Jarayonda",
-  [TASK_STATUS.DONE]: "Bajarildi",
-  [TASK_STATUS.CANCELED]: "Bekor qilindi",
-};
-
 /**
  * Holat ranglari — yagona manba. `dot` = ro'yxat guruh sarlavhasidagi Tailwind
  * klass (TasksList), `cssVar` = donut/diagramma kabi inline rang kerak bo'lganda
- * (Tailwind v4 palitra tokeni, xom hex emas). Label = guruh sarlavhasi matni.
+ * (Tailwind v4 palitra tokeni, xom hex emas). Label matnlari endi `TaskStatus`
+ * i18n namespace'idan `id` orqali olinadi (bu yerda faqat stil/identifikator).
  */
-export const STATUS_META: { id: TaskStatus; label: string; groupLabel: string; dot: string; cssVar: string }[] = [
-  { id: TASK_STATUS.TODO,        label: "Kutilmoqda",    groupLabel: "Bajarilishi kerak", dot: "bg-purple-500",  cssVar: "var(--color-purple-500)" },
-  { id: TASK_STATUS.IN_PROGRESS, label: "Jarayonda",     groupLabel: "Jarayonda",         dot: "bg-orange-500",  cssVar: "var(--color-orange-500)" },
-  { id: TASK_STATUS.DONE,        label: "Bajarildi",     groupLabel: "Bajarildi",         dot: "bg-emerald-500", cssVar: "var(--color-emerald-500)" },
-  { id: TASK_STATUS.CANCELED,    label: "Bekor qilindi", groupLabel: "Bekor qilindi",     dot: "bg-rose-500",    cssVar: "var(--color-rose-500)" },
+export const STATUS_META: { id: TaskStatus; dot: string; cssVar: string }[] = [
+  { id: TASK_STATUS.TODO,        dot: "bg-purple-500",  cssVar: "var(--color-purple-500)" },
+  { id: TASK_STATUS.IN_PROGRESS, dot: "bg-orange-500",  cssVar: "var(--color-orange-500)" },
+  { id: TASK_STATUS.DONE,        dot: "bg-emerald-500", cssVar: "var(--color-emerald-500)" },
+  { id: TASK_STATUS.CANCELED,    dot: "bg-rose-500",    cssVar: "var(--color-rose-500)" },
 ];
 
 /**

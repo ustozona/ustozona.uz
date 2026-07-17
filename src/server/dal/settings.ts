@@ -60,7 +60,7 @@ const BACKGROUNDS: readonly string[] = [
   "graph45",
   "circuit",
 ];
-const LANGUAGES: readonly string[] = ["uz", "kaa", "ru", "en"];
+const LANGUAGES: readonly string[] = ["uz", "kaa", "ru", "en", "ky", "kk"];
 
 type TeacherPrefs = {
   avatarColor?: string;

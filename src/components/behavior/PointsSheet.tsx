@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { History, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
@@ -45,6 +46,7 @@ export function PointsSheet({
   students: { id: string; name: string; initials: string }[];
   classHex?: string;
 }) {
+  const t = useTranslations("PointsSheet");
   const events = useBehaviorStore((s) => s.eventsByClass[classId]) ?? EMPTY_EVENTS;
   const redemptions = useBehaviorStore((s) => s.redemptions);
   const deleteEventWithLog = useBehaviorStore((s) => s.deleteEventWithLog);
@@ -84,20 +86,20 @@ export function PointsSheet({
           <SectionIcon>
             <History />
           </SectionIcon>
-          <CardTitle className="min-w-0 flex-1 truncate">Ballar</CardTitle>
+          <CardTitle className="min-w-0 flex-1 truncate">{t("title")}</CardTitle>
           <Select value={groupBy} onValueChange={(v) => setGroupBy(v as EventGroupBy)}>
             <SelectTrigger size="sm" className="h-8 w-auto shrink-0 gap-1.5">
               <SelectValue />
             </SelectTrigger>
             <SelectContent align="end">
-              <SelectItem value="date">Sana boʻyicha</SelectItem>
-              <SelectItem value="student">Oʻquvchi boʻyicha</SelectItem>
-              <SelectItem value="skill">Koʻnikma boʻyicha</SelectItem>
+              <SelectItem value="date">{t("sortByDate")}</SelectItem>
+              <SelectItem value="student">{t("sortByStudent")}</SelectItem>
+              <SelectItem value="skill">{t("sortBySkill")}</SelectItem>
             </SelectContent>
           </Select>
           <SheetClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
             <X className="size-4" />
-            <span className="sr-only">Yopish</span>
+            <span className="sr-only">{t("close")}</span>
           </SheetClose>
         </div>
 
@@ -109,10 +111,8 @@ export function PointsSheet({
                   <EmptyMedia>
                     <Illustration name="22" className="h-32 text-black dark:text-white" />
                   </EmptyMedia>
-                  <EmptyTitle>Hali yozuv yoʻq</EmptyTitle>
-                  <EmptyDescription>
-                    Oʻquvchi kartasini bosib birinchi ballni bering.
-                  </EmptyDescription>
+                  <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+                  <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             ) : (

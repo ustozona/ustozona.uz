@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -37,16 +38,18 @@ import { Badge } from "@/components/ui/badge";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { TOPIC_COLOR_HEX, type Topic, type Assignment } from "@/lib/grades-data";
 
-const formSchema = z.object({
-  title: z.string().min(1, "Sarlavha kiritilishi shart"),
-  maxScore: z.number().min(1, "Noldan katta boʻlishi kerak").max(1000, "Juda katta ball"),
-  topicId: z.string().min(1, "Toifa tanlanishi shart"),
-  date: z.string().min(1, "Sana tanlanishi shart"),
-  /** Topshirish muddati — ixtiyoriy; xulq avto-ball qoidasi shu muddatga qaraydi. */
-  dueDate: z.string().optional(),
-});
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    title: z.string().min(1, t("titleRequired")),
+    maxScore: z.number().min(1, t("maxScoreMin")).max(1000, t("maxScoreMax")),
+    topicId: z.string().min(1, t("topicRequired")),
+    date: z.string().min(1, t("dateRequired")),
+    /** Topshirish muddati — ixtiyoriy; xulq avto-ball qoidasi shu muddatga qaraydi. */
+    dueDate: z.string().optional(),
+  });
+}
 
-export type AssignmentFormValues = z.infer<typeof formSchema>;
+export type AssignmentFormValues = z.infer<ReturnType<typeof buildFormSchema>>;
 
 type Props = {
   topics: Topic[];
@@ -113,6 +116,8 @@ export default function NewAssignmentModal({
   onClose,
   onSubmit: onSubmitProp,
 }: Props) {
+  const t = useTranslations("NewAssignmentModal");
+  const formSchema = useMemo(() => buildFormSchema(t), [t]);
   const form = useForm<AssignmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -153,7 +158,7 @@ export default function NewAssignmentModal({
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
         <DialogHeader className="p-6 border-b border-border text-left shrink-0">
-          <DialogTitle>{mode === "edit" ? "Topshiriqni tahrirlash" : "Yangi topshiriq"}</DialogTitle>
+          <DialogTitle>{mode === "edit" ? t("editTitle") : t("createTitle")}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -164,10 +169,10 @@ export default function NewAssignmentModal({
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-label">Sarlavha</FormLabel>
+                    <FormLabel className="text-label">{t("titleLabel")}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="masalan: 1-bob: Tinglab tushunish"
+                        placeholder={t("titlePlaceholder")}
                         autoFocus
                         className="h-9 rounded-lg bg-card text-sm"
                         {...field}
@@ -185,11 +190,11 @@ export default function NewAssignmentModal({
                   const selected = topics.find((t) => t.id === field.value);
                   return (
                     <FormItem>
-                      <FormLabel className="text-label">Toifa</FormLabel>
+                      <FormLabel className="text-label">{t("topicLabel")}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="h-9 rounded-lg bg-card text-sm w-full">
-                            <SelectValue placeholder="Toifani tanlang" />
+                            <SelectValue placeholder={t("topicPlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -217,11 +222,11 @@ export default function NewAssignmentModal({
                             )}
                           >
                             {selected.purpose === "formative"
-                              ? "Formativ — jamiga kirmaydi"
-                              : "Summativ — jamiga kiradi"}
+                              ? t("formativeBadge")
+                              : t("summativeBadge")}
                           </Badge>
                           <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground">
-                            {selected.inputMode === "select" ? "Yorliq bilan" : "Ball bilan"}
+                            {selected.inputMode === "select" ? t("labelModeBadge") : t("scoreModeBadge")}
                           </Badge>
                         </div>
                       )}
@@ -236,7 +241,7 @@ export default function NewAssignmentModal({
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="text-label">Sana</FormLabel>
+                    <FormLabel className="text-label">{t("dateLabel")}</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -249,7 +254,7 @@ export default function NewAssignmentModal({
                             )}
                           >
                             <CalendarIcon className="size-4 text-muted-foreground" />
-                            {field.value ? formatDate(field.value) : "Sanani tanlang"}
+                            {field.value ? formatDate(field.value) : t("datePlaceholder")}
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -275,21 +280,19 @@ export default function NewAssignmentModal({
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <div className="flex items-center gap-1.5">
-                      <FormLabel className="text-label">Topshirish muddati</FormLabel>
+                      <FormLabel className="text-label">{t("dueDateLabel")}</FormLabel>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
                             type="button"
                             className="text-muted-foreground transition-colors hover:text-foreground"
-                            aria-label="Topshirish muddati haqida"
+                            aria-label={t("dueDateAriaAbout")}
                           >
                             <Info className="size-3.5" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[240px] text-xs leading-snug">
-                          Ixtiyoriy. Muddat oʻtgach katak boʻsh qolgan oʻquvchi xulq
-                          balidan avtomatik minus oladi (Sozlamalar &gt; Xulq'da
-                          oʻchirish mumkin). Bahoga taʼsir qilmaydi.
+                          {t("dueDateTooltip")}
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -299,7 +302,7 @@ export default function NewAssignmentModal({
                           value={field.value ?? ""}
                           onChange={field.onChange}
                           className="h-9 flex-1 rounded-lg bg-card text-sm shadow-none"
-                          ariaLabel="Topshirish muddati"
+                          ariaLabel={t("dueDateLabel")}
                         />
                       </FormControl>
                       {field.value && (
@@ -310,7 +313,7 @@ export default function NewAssignmentModal({
                           className="h-9 px-2 text-muted-foreground"
                           onClick={() => field.onChange("")}
                         >
-                          Tozalash
+                          {t("clear")}
                         </Button>
                       )}
                     </div>
@@ -326,21 +329,19 @@ export default function NewAssignmentModal({
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center gap-1.5">
-                        <FormLabel className="text-label">Maksimal ball</FormLabel>
+                        <FormLabel className="text-label">{t("maxScoreLabel")}</FormLabel>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
                               type="button"
                               className="text-muted-foreground transition-colors hover:text-foreground"
-                              aria-label="Maksimal ball haqida"
+                              aria-label={t("maxScoreAriaAbout")}
                             >
                               <Info className="size-3.5" />
                             </button>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-[240px] text-xs leading-snug">
-                            Bu ish necha balldan ekanini bildiradi (masalan test 20 dan, imtihon 100 dan).
-                            Baho avtomatik foizga aylanadi va toifa shkalasida koʻrsatiladi —
-                            har topshiriq oʻz maksimal baliga ega.
+                            {t("maxScoreTooltip")}
                           </TooltipContent>
                         </Tooltip>
                       </div>
@@ -359,7 +360,7 @@ export default function NewAssignmentModal({
                       </FormControl>
                       {suggestions.length > 0 && (
                         <div className="mt-1.5 flex items-center gap-1.5">
-                          <span className="text-[11px] text-muted-foreground">Tez tanlash:</span>
+                          <span className="text-[11px] text-muted-foreground">{t("quickPick")}</span>
                           {suggestions.map((s) => {
                             const active = field.value === s;
                             return (
@@ -388,7 +389,7 @@ export default function NewAssignmentModal({
                 />
               ) : (
                 <div className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
-                  Bu toifa yorliq bilan baholanadi
+                  {t("labelModeNotice")}
                   {selectedTopic && (
                     <>
                       {" ("}
@@ -398,16 +399,16 @@ export default function NewAssignmentModal({
                       {")"}
                     </>
                   )}
-                  . Maksimal ball talab qilinmaydi.
+                  {t("labelModeNoticeSuffix")}
                 </div>
               )}
             </div>
 
             <DialogFooter className="px-6 py-4 border-t border-border bg-muted/20 shrink-0">
-              <Button variant="outline" size="sm" type="button" onClick={onClose}>Bekor qilish</Button>
+              <Button variant="outline" size="sm" type="button" onClick={onClose}>{t("cancel")}</Button>
               <Button size="sm" type="submit">
                 <Plus className="size-4" />
-                {mode === "edit" ? "Saqlash" : "Yaratish"}
+                {mode === "edit" ? t("save") : t("create")}
               </Button>
             </DialogFooter>
           </form>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import confetti from "canvas-confetti";
 import { Check, ChevronDown, ChevronRight, LayoutGrid, Plus, ListTodo, Repeat, CalendarClock, Trash2, CheckCheck, X, SlidersHorizontal, ArrowUpDown, Flag, Inbox, Calendar, CalendarDays, AlertCircle, CheckCircle2, Layers, ListPlus, Pin, Ban, Link2, Timer, Files, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,9 +35,25 @@ import { format, parseISO } from "date-fns";
 import { uz } from "date-fns/locale";
 import type { ClassInfo } from "@/lib/grades-data";
 
-const STATUS_GROUPS = STATUS_META.map((s) => ({ id: s.id, label: s.groupLabel, color: s.dot }));
+const GROUP_LABEL_KEYS: Record<string, "groupTodo" | "groupInProgress" | "groupDone" | "groupCanceled"> = {
+  todo: "groupTodo",
+  "in-progress": "groupInProgress",
+  done: "groupDone",
+  canceled: "groupCanceled",
+};
 
+// NOTE: qiymatlar useFilteredTasks.ts (koʻlamdan tashqarida) bilan mos kalitlar
+// sifatida ishlatiladi — bu yerda faqat KALITLAR, matn emas; koʻrsatiladigan
+// matn DATE_GROUP_LABEL_KEYS orqali tarjima qilinadi.
 const DATE_GROUPS = ["bugun", "ertaga", "kelasi hafta", "muddatsiz", "oʻtgan"];
+
+const DATE_GROUP_LABEL_KEYS: Record<string, string> = {
+  bugun: "dateGroupToday",
+  ertaga: "dateGroupTomorrow",
+  "kelasi hafta": "dateGroupNextWeek",
+  muddatsiz: "dateGroupNoDate",
+  "oʻtgan": "dateGroupOverdue",
+};
 
 type Props = {
   activeFilter: TaskFilter;
@@ -47,6 +64,10 @@ type Props = {
 };
 
 export default function TasksList({ activeFilter, onSelectFilter, demoTasks, demoClasses }: Props) {
+  const t = useTranslations("TasksList");
+  const tStatus = useTranslations("TaskStatus");
+  const tPriority = useTranslations("TaskPriority");
+  const STATUS_GROUPS = STATUS_META.map((s) => ({ id: s.id, label: tStatus(GROUP_LABEL_KEYS[s.id]), color: s.dot }));
   const liveClassesReal = useLiveClasses();
   const liveClasses = demoClasses && liveClassesReal.length === 0 ? demoClasses : liveClassesReal;
   const storedTasks = useTaskStore((s) => s.tasks);
@@ -121,7 +142,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
       setDragOverId(null);
       return;
     }
-    const ids = (groupedTasks[groupId] || []).map(t => t.id);
+    const ids = (groupedTasks[groupId] || []).map(x => x.id);
     const from = ids.indexOf(draggedId);
     const to = ids.indexOf(targetId);
     if (from === -1 || to === -1) {
@@ -171,16 +192,16 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
   };
 
   const selectAll = () => {
-    setSelectedIds(new Set(tasksList.map(t => t.id)));
+    setSelectedIds(new Set(tasksList.map(x => x.id)));
   };
 
   const bulkMarkDone = () => {
     selectedIds.forEach(id => {
-      const task = tasks.find(t => t.id === id);
+      const task = tasks.find(x => x.id === id);
       if (task && task.status !== TASK_STATUS.DONE) toggleTaskDone(id);
     });
     clearSelection();
-    toast.success("Bajarildi");
+    toast.success(t("toastMarkedDone"));
   };
 
   // Oʻchirishni tasdiqlash — bitta yoki tanlangan (bulk) vazifalar uchun bitta AlertDialog.
@@ -192,7 +213,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
     ids.forEach(id => deleteTask(id));
     if (bulk) clearSelection();
     setPendingDelete(null);
-    toast.success(ids.length > 1 ? `${ids.length} ta vazifa oʻchirildi` : "Vazifa oʻchirildi");
+    toast.success(ids.length > 1 ? t("toastBulkDeleted", { count: ids.length }) : t("toastDeleted"));
   };
 
   const bulkSnooze = () => {
@@ -201,7 +222,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
     const snoozeDateStr = snoozeDate.toISOString().split("T")[0];
     selectedIds.forEach(id => updateTask(id, { dueDate: snoozeDateStr }));
     clearSelection();
-    toast.info("Ertaga uzaytirildi");
+    toast.info(t("toastSnoozed"));
   };
 
   // Faol filtr (smart-list) konteksti → composer pillalari uchun default urug'.
@@ -221,19 +242,19 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
   })();
 
   const getFilterTitle = () => {
-    if (activeFilter === "inbox") return "Kiruvchi";
-    if (activeFilter === "today") return "Bugun";
-    if (activeFilter === "upcoming") return "Rejalashtirilgan";
-    if (activeFilter === "overdue") return "Kechikkanlar";
-    if (activeFilter === "important") return "Muhim vazifalar";
-    if (activeFilter === "completed") return "Bajarilgan";
-    if (activeFilter === "all") return "Mening vazifalarim";
+    if (activeFilter === "inbox") return t("filterInbox");
+    if (activeFilter === "today") return t("filterToday");
+    if (activeFilter === "upcoming") return t("filterUpcoming");
+    if (activeFilter === "overdue") return t("filterOverdue");
+    if (activeFilter === "important") return t("filterImportant");
+    if (activeFilter === "completed") return t("filterCompleted");
+    if (activeFilter === "all") return t("filterAll");
     if (activeFilter.startsWith("class-")) {
       const cid = activeFilter.replace("class-", "");
-      if (cid === "none") return "Umumiy";
-      return liveClasses.find(c => c.id === cid)?.name || "Vazifalar";
+      if (cid === "none") return t("generalClass");
+      return liveClasses.find(c => c.id === cid)?.name || t("title");
     }
-    return "Mening vazifalarim";
+    return t("filterAll");
   };
 
   const getFilterIcon = () => {
@@ -258,26 +279,26 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
   })();
 
   const PRIORITY_GROUPS: Record<string, { label: string; color: string }> = {
-    high: { label: "Yuqori", color: "bg-destructive" },
-    medium: { label: "Oʻrta", color: "bg-warning" },
-    low: { label: "Past", color: "bg-info" },
-    none: { label: "Belgilanmagan", color: "bg-muted-foreground/40" },
+    high: { label: tPriority("high"), color: "bg-destructive" },
+    medium: { label: tPriority("medium"), color: "bg-warning" },
+    low: { label: tPriority("low"), color: "bg-info" },
+    none: { label: tPriority("none"), color: "bg-muted-foreground/40" },
   };
 
   const GROUP_BY_LABELS: Record<GroupByMode, string> = {
-    status: "Holati boʻyicha",
-    date: "Sanasi boʻyicha",
-    priority: "Ustuvorligi boʻyicha",
-    class: "Sinf boʻyicha",
-    none: "Guruhlamaslik",
+    status: t("groupByStatus"),
+    date: t("groupByDate"),
+    priority: t("groupByPriority"),
+    class: t("groupByClass"),
+    none: t("groupByNone"),
   };
 
   const SORT_BY_LABELS: Record<SortByMode, string> = {
-    default: "Odatiy tartib",
-    date: "Sanasi boʻyicha",
-    title: "Nomi boʻyicha",
-    priority: "Ustuvorligi boʻyicha",
-    created: "Yaratilgan vaqti boʻyicha",
+    default: t("sortDefault"),
+    date: t("sortDate"),
+    title: t("sortTitle"),
+    priority: t("sortPriority"),
+    created: t("sortCreated"),
   };
   const hasSelection = selectedIds.size > 0;
 
@@ -292,9 +313,9 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
             <CardTitle className="truncate">
               {getFilterTitle()}
             </CardTitle>
-            {tasksList.filter(t => t.status !== TASK_STATUS.DONE).length > 0 && (
+            {tasksList.filter(x => x.status !== TASK_STATUS.DONE).length > 0 && (
               <Badge variant="secondary" className="font-mono text-xs">
-                {tasksList.filter(t => t.status !== TASK_STATUS.DONE).length}
+                {tasksList.filter(x => x.status !== TASK_STATUS.DONE).length}
               </Badge>
             )}
           </div>
@@ -319,7 +340,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                   <CheckCheck className="size-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">{hasSelection ? "Tanlovni bekor qilish" : "Tanlash rejimi"}</TooltipContent>
+              <TooltipContent side="bottom">{hasSelection ? t("cancelSelection") : t("selectMode")}</TooltipContent>
             </Tooltip>
 
             <Popover open={filterPopoverOpen} onOpenChange={(open) => { setFilterPopoverOpen(open); if (!open) setFilterSubMenu(null); }}>
@@ -331,20 +352,20 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                     </Button>
                   </PopoverTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Filtrlash va Saralash</TooltipContent>
+                <TooltipContent side="bottom">{t("filterAndSort")}</TooltipContent>
               </Tooltip>
               <PopoverContent align="end" className="w-60 p-0" sideOffset={8}>
                 {filterSubMenu === null && (
                   <div className="py-1.5">
                     <button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent transition-colors text-left" onClick={() => setFilterSubMenu("group")}>
                       <LayoutGrid className="size-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm font-medium flex-1">Guruhlash</span>
+                      <span className="text-sm font-medium flex-1">{t("groupingLabel")}</span>
                       <span className="text-sm text-muted-foreground">{GROUP_BY_LABELS[groupBy]}</span>
                       <ChevronRight className="size-3.5 text-muted-foreground/60" />
                     </button>
                     <button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent transition-colors text-left" onClick={() => setFilterSubMenu("sort")}>
                       <ArrowUpDown className="size-4 text-muted-foreground shrink-0" />
-                      <span className="text-sm font-medium flex-1">Saralash</span>
+                      <span className="text-sm font-medium flex-1">{t("sortingLabel")}</span>
                       <span className="text-sm text-muted-foreground">{SORT_BY_LABELS[sortBy]}</span>
                       <ChevronRight className="size-3.5 text-muted-foreground/60" />
                     </button>
@@ -356,7 +377,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                           onClick={() => setShowCompleted((v) => !v)}
                         >
                           <CheckCircle2 className="size-4 text-muted-foreground shrink-0" />
-                          <span className="text-sm font-medium flex-1">Bajarilganlarni koʻrsatish</span>
+                          <span className="text-sm font-medium flex-1">{t("showCompleted")}</span>
                           {showCompleted && <Check className="size-4 text-primary" />}
                         </button>
                       </>
@@ -367,7 +388,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                   <div className="py-1.5">
                     <button className="w-full flex items-center gap-2 px-4 py-1.5 hover:bg-accent transition-colors text-left text-sm text-muted-foreground" onClick={() => setFilterSubMenu(null)}>
                       <ChevronRight className="size-3.5 rotate-180" />
-                      <span className="font-medium">Guruhlash</span>
+                      <span className="font-medium">{t("groupingLabel")}</span>
                     </button>
                     <Separator className="my-1" />
                     {(["status", "date", "priority", "class", "none"] as GroupByMode[]).map(mode => (
@@ -382,7 +403,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                   <div className="py-1.5">
                     <button className="w-full flex items-center gap-2 px-4 py-1.5 hover:bg-accent transition-colors text-left text-sm text-muted-foreground" onClick={() => setFilterSubMenu(null)}>
                       <ChevronRight className="size-3.5 rotate-180" />
-                      <span className="font-medium">Saralash</span>
+                      <span className="font-medium">{t("sortingLabel")}</span>
                     </button>
                     <Separator className="my-1" />
                     {(["default", "date", "title", "priority", "created"] as SortByMode[]).map(mode => (
@@ -409,38 +430,38 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button size="sm" variant="ghost" onClick={selectAll}>
-                  <CheckCheck className="size-4 mr-1" /> Barchasi
+                  <CheckCheck className="size-4 mr-1" /> {t("all")}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top">Barcha topshiriqlarni belgilash</TooltipContent>
+              <TooltipContent side="top">{t("selectAllTooltip")}</TooltipContent>
             </Tooltip>
-            
+
             {hasSelection && (
               <>
                 <div className="w-px h-4 bg-border/50 mx-1" />
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="ghost" onClick={bulkMarkDone}>
-                      <Check className="size-4 mr-1" /> Bajarildi
+                      <Check className="size-4 mr-1" /> {t("markDone")}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top">Tanlangan topshiriqlarni bajarilgan deb belgilaydi</TooltipContent>
+                  <TooltipContent side="top">{t("bulkMarkDoneTooltip")}</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="ghost" onClick={bulkSnooze}>
-                      <CalendarClock className="size-4 mr-1" /> Ertaga
+                      <CalendarClock className="size-4 mr-1" /> {t("tomorrow")}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top">Tanlangan topshiriqlarni ertaga uzaytiradi</TooltipContent>
+                  <TooltipContent side="top">{t("bulkSnoozeTooltip")}</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button size="sm" variant="destructive" onClick={() => setPendingDelete({ ids: [...selectedIds], bulk: true })}>
-                      <Trash2 className="size-4 mr-1" /> Oʻchirish
+                      <Trash2 className="size-4 mr-1" /> {t("delete")}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top">Tanlangan topshiriqlarni o‘chiradi</TooltipContent>
+                  <TooltipContent side="top">{t("bulkDeleteTooltip")}</TooltipContent>
                 </Tooltip>
               </>
             )}
@@ -451,18 +472,18 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {pendingDelete?.bulk ? "Tanlangan vazifalarni oʻchirasizmi?" : "Vazifani oʻchirasizmi?"}
+                {pendingDelete?.bulk ? t("deleteSelectedTitle") : t("deleteOneTitle")}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {pendingDelete?.bulk
-                  ? `${pendingDelete.ids.length} ta vazifa butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.`
-                  : "Vazifa va uning barcha maʼlumotlari butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi."}
+                  ? t("deleteSelectedDescription", { count: pendingDelete.ids.length })
+                  : t("deleteOneDescription")}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={performDelete}>
-                Oʻchirish
+                {t("delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -491,7 +512,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                   groupColor = meta?.color ?? "bg-muted-foreground";
                 } else if (groupBy === "class") {
                   if (groupId === "none") {
-                    groupLabel = "Umumiy";
+                    groupLabel = t("generalClass");
                     groupColor = "bg-muted-foreground";
                   } else {
                     const cls = liveClasses.find(c => c.id === groupId);
@@ -499,8 +520,11 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                     groupColor = "bg-primary";
                   }
                 } else if (groupBy === "none") {
-                  groupLabel = "Barchasi";
+                  groupLabel = t("all");
                   groupColor = "bg-foreground";
+                } else if (groupBy === "date") {
+                  groupLabel = t(DATE_GROUP_LABEL_KEYS[groupId] ?? "all");
+                  groupColor = "bg-muted-foreground";
                 } else {
                   groupLabel = groupId.charAt(0).toUpperCase() + groupId.slice(1);
                   groupColor = "bg-muted-foreground";
@@ -512,7 +536,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                 if (groupTasks.length === 0) return null;
 
                 const isCollapsed = collapsedGroups[groupId];
-                const groupDoneCount = groupTasks.filter(t => t.status === TASK_STATUS.DONE).length;
+                const groupDoneCount = groupTasks.filter(x => x.status === TASK_STATUS.DONE).length;
 
                 return (
                   <div key={groupId} className="flex flex-col mb-2">
@@ -553,7 +577,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                           const contextMenuItems: ContextMenuItem[] = [
                             {
                               icon: ListPlus,
-                              label: "Ost vazifa qoʻshish",
+                              label: t("contextAddSubtask"),
                               shortcut: "⌘S",
                               iconBg: "bg-blue-500/10",
                               iconColor: "text-blue-500",
@@ -561,7 +585,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                             },
                             {
                               icon: Pin,
-                              label: "Qadab qoʻyish",
+                              label: t("contextPin"),
                               shortcut: "⌘P",
                               iconBg: "bg-orange-500/10",
                               iconColor: "text-orange-500",
@@ -569,7 +593,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                             },
                             {
                               icon: Ban,
-                              label: "Bajarishdan voz kechish",
+                              label: t("contextCancel"),
                               shortcut: "⌘W",
                               iconBg: "bg-red-500/10",
                               iconColor: "text-red-500",
@@ -577,34 +601,34 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                             },
                             {
                               icon: Timer,
-                              label: "Fokus rejimini boshlash",
+                              label: t("contextStartFocus"),
                               shortcut: "⌘F",
                               iconBg: "bg-primary/10",
                               iconColor: "text-primary",
-                              onClick: () => { setSelectedTaskId(task.id); toast.info("Fokus rejimi: Tafsilot panelidagi Pomodoro ni oching"); },
+                              onClick: () => { setSelectedTaskId(task.id); toast.info(t("toastFocusHint")); },
                             },
                             {
                               icon: Files,
-                              label: "Dublikat qilish",
+                              label: t("contextDuplicate"),
                               shortcut: "⌘D",
                               iconBg: "bg-violet-500/10",
                               iconColor: "text-violet-500",
                               onClick: () => {
-                                const t = tasks.find(t => t.id === task.id);
-                                if (t) { addTask({ title: t.title + " (nusxa)", dueDate: t.dueDate, classIds: t.classIds, status: TASK_STATUS.TODO, priority: t.priority }); toast.success("Vazifa nusxalandi"); }
+                                const found = tasks.find(x => x.id === task.id);
+                                if (found) { addTask({ title: found.title + t("copySuffix"), dueDate: found.dueDate, classIds: found.classIds, status: TASK_STATUS.TODO, priority: found.priority }); toast.success(t("toastDuplicated")); }
                               },
                             },
                             {
                               icon: Link2,
-                              label: "Havolani nusxalash",
+                              label: t("contextCopyLink"),
                               shortcut: "⌘L",
                               iconBg: "bg-teal-500/10",
                               iconColor: "text-teal-500",
-                              onClick: () => { navigator.clipboard.writeText(`task://${task.id}`); toast.success("Havola nusxalandi"); },
+                              onClick: () => { navigator.clipboard.writeText(`task://${task.id}`); toast.success(t("toastLinkCopied")); },
                             },
                             {
                               icon: Trash2,
-                              label: "Oʻchirish",
+                              label: t("delete"),
                               shortcut: "⌫",
                               iconBg: "bg-red-500/10",
                               iconColor: "text-red-500",
@@ -666,7 +690,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                                       const next = recurring ? nextRecurrenceDate(task.dueDate, task.recurrenceRule) : null;
                                       toggleTaskDone(task.id);
                                       if (next) {
-                                        toast.success(`Bajarildi — keyingi muddat: ${format(parseISO(next), "d-MMM", { locale: uz })}`);
+                                        toast.success(t("toastDoneNextDue", { date: format(parseISO(next), "d-MMM", { locale: uz }) }));
                                       }
                                     }
                                   }}
@@ -707,17 +731,17 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                                         <TooltipTrigger asChild>
                                           <Repeat className="size-3 text-muted-foreground/50 shrink-0" />
                                         </TooltipTrigger>
-                                        <TooltipContent>{recurrenceLabel(task.recurrenceRule, task.dueDate) ?? "Takrorlanuvchi"}</TooltipContent>
+                                        <TooltipContent>{recurrenceLabel(task.recurrenceRule, task.dueDate) ?? t("recurring")}</TooltipContent>
                                       </Tooltip>
                                     )}
                                     {(task.classIds?.length ?? 0) > 1 && (
                                       <Badge variant="secondary" className="h-[18px] px-1.5 text-[9px] uppercase tracking-wider font-semibold shrink-0">
-                                        {(task.classIds?.length ?? 0)} sinf
+                                        {t("classCount", { count: task.classIds?.length ?? 0 })}
                                       </Badge>
                                     )}
                                     {isOverdue && (
                                       <Badge variant="outline" className="h-[18px] px-1.5 text-[9px] uppercase tracking-wider font-semibold border-destructive/30 text-destructive bg-destructive/5 shrink-0">
-                                        Oʻtgan
+                                        {t("overdueBadge")}
                                       </Badge>
                                     )}
                                     {task.dueDate && !isOverdue && (
@@ -751,14 +775,14 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                 <Empty className="py-16 animate-in fade-in zoom-in duration-500">
                   <EmptyHeader>
                     <EmptyMedia><Illustration name="30" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                    <EmptyTitle>Hozircha vazifalar mavjud emas</EmptyTitle>
+                    <EmptyTitle>{t("emptyZeroTitle")}</EmptyTitle>
                     <EmptyDescription>
-                      Baholash, darslarni rejalashtirish yoki ota-onalar bilan muloqot — kunlik rejalaringizni vazifalar roʻyxatiga qayd etib boring.
+                      {t("emptyZeroDescription")}
                     </EmptyDescription>
                   </EmptyHeader>
                   <Button size="sm" onClick={() => captureBarRef.current?.focus()}>
                     <Plus className="size-4" />
-                    Yangi vazifa qoʻshish
+                    {t("emptyZeroAction")}
                   </Button>
                 </Empty>
               )}
@@ -769,16 +793,16 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                     <EmptyMedia variant="icon">
                       <Inbox className="size-6" />
                     </EmptyMedia>
-                    <EmptyTitle>Bu koʻrinishga mos vazifa yoʻq</EmptyTitle>
+                    <EmptyTitle>{t("emptyFilteredTitle")}</EmptyTitle>
                     <EmptyDescription>
                       {activeFilter === "completed"
-                        ? "Hali bajarilgan vazifa yoʻq."
-                        : "Tanlangan filtrga mos vazifa topilmadi."}
+                        ? t("emptyFilteredCompletedDescription")
+                        : t("emptyFilteredDescription")}
                     </EmptyDescription>
                   </EmptyHeader>
                   {onSelectFilter && activeFilter !== "completed" && (
                     <Button variant="outline" size="sm" onClick={() => onSelectFilter("all")}>
-                      Barcha vazifalarga oʻtish
+                      {t("emptyFilteredAction")}
                     </Button>
                   )}
                 </Empty>
@@ -788,9 +812,9 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
                 <Empty className="py-16 animate-in fade-in zoom-in duration-500">
                   <EmptyHeader>
                     <EmptyMedia><Illustration name="48" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                    <EmptyTitle>Hamma vazifalar bajarildi! ✨</EmptyTitle>
+                    <EmptyTitle>{t("emptyClearedTitle")}</EmptyTitle>
                     <EmptyDescription>
-                      Kuningiz unumli oʻtdi! Yangi vazifa qoʻshish uchun yuqoridagi maydondan foydalaning yoki maroqli dam oling.
+                      {t("emptyClearedDescription")}
                     </EmptyDescription>
                   </EmptyHeader>
                 </Empty>

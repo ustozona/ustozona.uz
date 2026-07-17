@@ -2,6 +2,7 @@
 
 import { Link2, MoreHorizontal, Check } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,23 +56,24 @@ const NETWORKS: { name: string; path: string; url: (u: string, t: string) => str
 ];
 
 export default function ShareActions({ title }: { title: string }) {
+  const t = useTranslations("ShareActions");
   const [copied, setCopied] = useState(false);
 
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
-      toast.success("Havola nusxalandi");
+      toast.success(t("linkCopied"));
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      toast.error("Nusxalab boʻlmadi");
+      toast.error(t("copyFailed"));
     }
   }
 
-  function share(buildUrl: (u: string, t: string) => string) {
+  function share(buildUrl: (u: string, txt: string) => string) {
     const u = encodeURIComponent(window.location.href);
-    const t = encodeURIComponent(title);
-    window.open(buildUrl(u, t), "_blank", "noopener,noreferrer,width=600,height=600");
+    const txt = encodeURIComponent(title);
+    window.open(buildUrl(u, txt), "_blank", "noopener,noreferrer,width=600,height=600");
   }
 
   return (
@@ -84,12 +86,12 @@ export default function ShareActions({ title }: { title: string }) {
             size="icon"
             className="size-9 rounded-full text-muted-foreground hover:text-foreground"
             onClick={copyLink}
-            aria-label="Havolani nusxalash"
+            aria-label={t("copyLink")}
           >
             {copied ? <Check className="size-4 text-success" /> : <Link2 className="size-4" />}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Havolani nusxalash</TooltipContent>
+        <TooltipContent>{t("copyLink")}</TooltipContent>
       </Tooltip>
 
       <DropdownMenu>
@@ -99,7 +101,7 @@ export default function ShareActions({ title }: { title: string }) {
             variant="ghost"
             size="icon"
             className="size-9 rounded-full text-muted-foreground hover:text-foreground"
-            aria-label="Ulashish"
+            aria-label={t("share")}
           >
             <MoreHorizontal className="size-4" />
           </Button>
