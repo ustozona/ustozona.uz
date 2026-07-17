@@ -9,7 +9,7 @@ export const LANGUAGES: { value: AppLanguage; label: string; flagCode?: string; 
   { value: "uz", label: "Oʻzbekcha", flagCode: "1f1fa-1f1ff", ready: true },
   { value: "en", label: "Inglizcha", flagCode: "1f1ec-1f1e7", ready: true },
   { value: "ru", label: "Ruscha", flagCode: "1f1f7-1f1fa", ready: true },
-  { value: "kaa", label: "Qoraqalpoqcha", ready: false },
+  { value: "kaa", label: "Qoraqalpoqcha", ready: true },
   { value: "ky", label: "Qirgʻizcha", flagCode: "1f1f0-1f1ec", ready: false },
   { value: "kk", label: "Qozoqcha", flagCode: "1f1f0-1f1ff", ready: false },
 ];
