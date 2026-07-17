@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
 import { gradeBadgeClass as gradeBadge } from "@/lib/score-colors";
 import { classColor, type Student } from "@/lib/grades-data";
@@ -75,12 +76,6 @@ type StudentRow = {
 type SortKey = "name" | "grade" | "attendance";
 type StatusFilter = "all" | "active" | "away" | "archived";
 
-const SORT_LABELS: Record<SortKey, string> = {
-  name: "Ism",
-  grade: "Oʻrtacha baho",
-  attendance: "Davomat",
-};
-
 // ─── Yordamchilar ────────────────────────────────────────────────────────────
 /** Ism + familiyadan bosh harflar ("Abdulloh Xasanov" → "AX"). */
 function makeInitials(firstName: string, lastName: string): string {
@@ -89,28 +84,25 @@ function makeInitials(firstName: string, lastName: string): string {
   );
 }
 
-const STATUS_PILL: Record<
+const STATUS_META: Record<
   Status,
-  { cls: string; dot: string; label: string; icon: React.ComponentType<{ className?: string }>; iconColor: string }
+  { cls: string; dot: string; icon: React.ComponentType<{ className?: string }>; iconColor: string }
 > = {
   active: {
     cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     dot: "bg-emerald-500",
-    label: "Oʻqimoqda",
     icon: GraduationCap,
     iconColor: "text-emerald-500",
   },
   away: {
     cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
     dot: "bg-amber-500",
-    label: "Taʼtilda",
     icon: Clock,
     iconColor: "text-amber-500",
   },
   archived: {
     cls: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700",
     dot: "bg-slate-400",
-    label: "Chiqib ketgan",
     icon: Archive,
     iconColor: "text-slate-400",
   },
@@ -121,6 +113,7 @@ const badgeBase =
 
 // ─── Sahifa ──────────────────────────────────────────────────────────────────
 export default function StudentsPage() {
+  const t = useTranslations("StudentsPage");
   // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni keng).
   // Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
   const router = useRouter();
@@ -174,14 +167,14 @@ export default function StudentsPage() {
     const data = classDataMap[selectedClassId];
     if (!data) return [];
     const records = attendanceRecords ?? [];
-    return data.students.map((s, i) => {
+    return data.students.map((s) => {
       const att = studentStats(records, s.id);
       const attTotal = att.present + att.absent + att.late + att.excused;
       return {
         id: s.id,
         name: s.name,
         initials: s.initials,
-        studentId: `ID-${1001 + i}`,
+        studentId: s.studentNumber != null ? `ID-${1000 + s.studentNumber}` : "—",
         // Jurnal bilan bir xil kanonik hisob (summativ, vaznli, Q/T chiqarilgan)
         grade: Math.round(
           studentSummary(s.id, data.assignments, data.grades, data.topics).summative
@@ -261,7 +254,7 @@ export default function StudentsPage() {
     };
     updateClass(data.classId, (cd) => ({ ...cd, students: [student, ...cd.students] }));
     if (data.classId === selectedClassId) setSelectedStudentId(student.id);
-    toast.success("Oʻquvchi qoʻshildi");
+    toast.success(t("toastCreated"));
   };
 
   // Roʻyxatdan bir nechta oʻquvchini joriy sinfga qoʻshish (faqat ism/familiya)
@@ -274,16 +267,18 @@ export default function StudentsPage() {
       status: "active",
     }));
     updateClass(selectedClassId, (cd) => ({ ...cd, students: [...rows, ...cd.students] }));
-    toast.success(`${rows.length} ta oʻquvchi qoʻshildi`);
+    toast.success(t("toastImported", { count: rows.length }));
   };
 
   // Joriy sinf oʻquvchilarini CSV faylga eksport qilish (Excelʼda UTF-8 uchun BOM bilan)
   const handleExport = () => {
     if (allStudents.length === 0) return;
     const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
-    const header = ["Toʻliq ism", "Oʻquvchi ID", "Oʻrtacha baho (%)", "Davomat (%)", "Holat"];
+    const header = [
+      t("csvHeaderName"), t("csvHeaderId"), t("csvHeaderGrade"), t("csvHeaderAttendance"), t("csvHeaderStatus"),
+    ];
     const lines = allStudents.map((s) =>
-      [s.name, s.studentId, s.grade, s.attendance, STATUS_PILL[s.status].label].map(esc).join(",")
+      [s.name, s.studentId, s.grade, s.attendance, t(`status.${s.status}`)].map(esc).join(",")
     );
     const csv = "﻿" + [header.map(esc).join(","), ...lines].join("\r\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -293,7 +288,7 @@ export default function StudentsPage() {
     a.download = `${selectedInfo?.name ?? "sinf"}-oquvchilar.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Oʻquvchilar roʻyxati eksport qilindi");
+    toast.success(t("exportToast"));
   };
 
   // Header toolbar tugmasi — outline, tekis (soyasiz), 36px. CTA (Yangi oʻquvchi) primary.
@@ -319,8 +314,8 @@ export default function StudentsPage() {
             <Empty className="h-full border-0">
               <EmptyHeader>
                 <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
-                <EmptyDescription>Oʻquvchilar va ularning maʼlumotlarini koʻrish uchun chap menyudan kerakli sinfni tanlang.</EmptyDescription>
+                <EmptyTitle>{t("noClassTitle")}</EmptyTitle>
+                <EmptyDescription>{t("noClassDescription")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
@@ -328,14 +323,14 @@ export default function StudentsPage() {
           {/* Header / toolbar */}
           <div className="flex min-h-[4.5rem] shrink-0 items-center gap-2.5 border-b border-border px-5 py-5">
             <SectionIcon><Users /></SectionIcon>
-            <CardTitle className="truncate">Oʻquvchilar</CardTitle>
+            <CardTitle className="truncate">{t("title")}</CardTitle>
             <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
 
             <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2.5">
               {/* Qidiruv */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Qidirish" className={cn(toolbarBtn, search.trim() && "ring-2 ring-primary ring-offset-2")}>
+                  <Button variant="outline" size="icon" aria-label={t("searchAria")} className={cn(toolbarBtn, search.trim() && "ring-2 ring-primary ring-offset-2")}>
                     <Search className="size-4" />
                   </Button>
                 </PopoverTrigger>
@@ -346,7 +341,7 @@ export default function StudentsPage() {
                       autoFocus
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Ism yoki ID boʻyicha qidirish…"
+                      placeholder={t("searchPlaceholder")}
                       className="h-9 pl-9"
                     />
                   </div>
@@ -356,19 +351,14 @@ export default function StudentsPage() {
               {/* Filtr */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button data-tour="students-filter" variant="outline" size="icon" aria-label="Holat boʻyicha filtrlash" className={cn(toolbarBtn, statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
+                  <Button data-tour="students-filter" variant="outline" size="icon" aria-label={t("filterAria")} className={cn(toolbarBtn, statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
                     <Filter className="size-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-56">
-                  <p className="mb-2 text-sm font-medium">Holat boʻyicha</p>
+                  <p className="mb-2 text-sm font-medium">{t("filterByStatus")}</p>
                   <div className="flex flex-col gap-1">
-                    {([
-                      ["all", "Hammasi"],
-                      ["active", "Oʻqimoqda"],
-                      ["away", "Taʼtilda"],
-                      ["archived", "Chiqib ketgan"],
-                    ] as [StatusFilter, string][]).map(([val, label]) => (
+                    {(["all", "active", "away", "archived"] as StatusFilter[]).map((val) => (
                       <button
                         key={val}
                         onClick={() => setStatusFilter(val)}
@@ -377,7 +367,7 @@ export default function StudentsPage() {
                           statusFilter === val ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"
                         )}
                       >
-                        {label}
+                        {val === "all" ? t("statusFilterAll") : t(`status.${val}`)}
                         {statusFilter === val && <span className="size-1.5 rounded-full bg-primary" />}
                       </button>
                     ))}
@@ -390,16 +380,16 @@ export default function StudentsPage() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="h-9 w-9 px-0 font-semibold shadow-none @[700px]:w-auto @[700px]:px-4">
                     <ArrowUp className="size-4 @[700px]:mr-2" />
-                    <span className="hidden @[700px]:inline">Saralash: {SORT_LABELS[sortKey]}</span>
+                    <span className="hidden @[700px]:inline">{t("sortButton", { label: t(`sortLabels.${sortKey}`) })}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Saralash</DropdownMenuLabel>
+                  <DropdownMenuLabel>{t("sortMenuLabel")}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                    <DropdownMenuRadioItem value="grade">Oʻrtacha baho (pastdan)</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="attendance">Davomat (pastdan)</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="name">Ism (A–Z)</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="grade">{t("sortGrade")}</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="attendance">{t("sortAttendance")}</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -408,8 +398,8 @@ export default function StudentsPage() {
               <Button
                 variant="outline"
                 size="icon"
-                aria-label="Eksport"
-                title="Eksport"
+                aria-label={t("exportAria")}
+                title={t("exportAria")}
                 className={toolbarBtn}
                 onClick={handleExport}
                 disabled={allStudents.length === 0}
@@ -420,7 +410,7 @@ export default function StudentsPage() {
               {/* Yangi oʻquvchi — tanlov modalini ochadi (bitta / import) */}
               <Button onClick={() => setAddOpen(true)} className="w-9 px-0 font-semibold @[560px]:w-auto @[560px]:px-4">
                 <Plus className="size-4 @[560px]:mr-1" />
-                <span className="hidden @[560px]:inline">Yangi oʻquvchi</span>
+                <span className="hidden @[560px]:inline">{t("newStudent")}</span>
               </Button>
             </div>
           </div>
@@ -433,19 +423,19 @@ export default function StudentsPage() {
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="15" className="h-32 text-black dark:text-white" /></EmptyMedia>
                   <EmptyTitle>
-                    {filterActive ? "Mos oʻquvchi topilmadi" : "Bu sinfda hali oʻquvchi yoʻq"}
+                    {filterActive ? t("emptyFilteredTitle") : t("emptyTitle")}
                   </EmptyTitle>
                   <EmptyDescription>
                     {filterActive
-                      ? "Filtr yoki qidiruvni oʻzgartirib koʻring."
-                      : "Birinchi oʻquvchini qoʻshing yoki tayyor roʻyxatni import qiling."}
+                      ? t("emptyFilteredDescription")
+                      : t("emptyDescription")}
                   </EmptyDescription>
                 </EmptyHeader>
                 {!filterActive && (
                   <EmptyContent>
                     <div className="flex flex-wrap items-center justify-center gap-2">
                       <Button onClick={() => setAddOpen(true)} className="gap-2">
-                        <Plus className="size-4" /> Yangi oʻquvchi
+                        <Plus className="size-4" /> {t("newStudent")}
                       </Button>
                     </div>
                   </EmptyContent>
@@ -456,7 +446,7 @@ export default function StudentsPage() {
                 <div className="space-y-3 px-5 pt-5 pb-5">
                   {students.map((s) => {
                     const isSelected = s.id === selectedStudentId;
-                    const pill = STATUS_PILL[s.status];
+                    const pill = STATUS_META[s.status];
                     return (
                       <ContextMenu key={s.id}>
                         <ContextMenuTrigger asChild>
@@ -500,11 +490,11 @@ export default function StudentsPage() {
                               <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
-                                title={s.status === "active" ? "Yoʻq deb belgilash" : "Faol deb belgilash"}
+                                title={s.status === "active" ? t("markAway") : t("markActive")}
                                 className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
                               >
                                 <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
-                                {pill.label}
+                                {t(`status.${s.status}`)}
                               </button>
                             </div>
                           </div>
@@ -512,22 +502,22 @@ export default function StudentsPage() {
                         </ContextMenuTrigger>
                         <ContextMenuContent className="w-52">
                           <ContextMenuItem onSelect={() => openProfile(s.id)}>
-                            <Eye className="size-4" /> Profilni koʻrish
+                            <Eye className="size-4" /> {t("viewProfile")}
                           </ContextMenuItem>
                           <ContextMenuItem onSelect={() => setSelectedStudentId(s.id)}>
-                            <Pen className="size-4" /> Tahrirlash
+                            <Pen className="size-4" /> {t("edit")}
                           </ContextMenuItem>
                           <ContextMenuItem onSelect={() => setSelectedStudentId(s.id)}>
-                            <NotebookPen className="size-4 shrink-0" /> Izoh qoʻshish
+                            <NotebookPen className="size-4 shrink-0" /> {t("addNote")}
                           </ContextMenuItem>
                           <ContextMenuSeparator />
                           <ContextMenuSub>
                             <ContextMenuSubTrigger className="gap-2">
                               {(() => {
-                                const StatusIcon = STATUS_PILL[s.status].icon;
-                                return <StatusIcon className={cn("size-4 shrink-0", STATUS_PILL[s.status].iconColor)} />;
+                                const StatusIcon = STATUS_META[s.status].icon;
+                                return <StatusIcon className={cn("size-4 shrink-0", STATUS_META[s.status].iconColor)} />;
                               })()}
-                              Holati
+                              {t("statusLabel")}
                             </ContextMenuSubTrigger>
                             <ContextMenuSubContent>
                               <ContextMenuRadioGroup
@@ -535,20 +525,20 @@ export default function StudentsPage() {
                                 onValueChange={(v) => setStatus(s.id, v as Status)}
                               >
                                 <ContextMenuRadioItem value="active">
-                                  <GraduationCap className={cn("size-4 shrink-0", STATUS_PILL.active.iconColor)} /> Oʻqimoqda
+                                  <GraduationCap className={cn("size-4 shrink-0", STATUS_META.active.iconColor)} /> {t("status.active")}
                                 </ContextMenuRadioItem>
                                 <ContextMenuRadioItem value="away">
-                                  <Clock className={cn("size-4 shrink-0", STATUS_PILL.away.iconColor)} /> Taʼtilda
+                                  <Clock className={cn("size-4 shrink-0", STATUS_META.away.iconColor)} /> {t("status.away")}
                                 </ContextMenuRadioItem>
                                 <ContextMenuRadioItem value="archived">
-                                  <Archive className={cn("size-4 shrink-0", STATUS_PILL.archived.iconColor)} /> Chiqib ketgan
+                                  <Archive className={cn("size-4 shrink-0", STATUS_META.archived.iconColor)} /> {t("status.archived")}
                                 </ContextMenuRadioItem>
                               </ContextMenuRadioGroup>
                             </ContextMenuSubContent>
                           </ContextMenuSub>
                           <ContextMenuSeparator />
                           <ContextMenuItem variant="destructive" onSelect={() => setDeleteTarget(s)}>
-                            <Trash2 className="size-4" /> Oʻchirish
+                            <Trash2 className="size-4" /> {t("delete")}
                           </ContextMenuItem>
                         </ContextMenuContent>
                       </ContextMenu>
@@ -591,24 +581,24 @@ export default function StudentsPage() {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Oʻquvchini oʻchirish</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteTarget ? `«${deleteTarget.name}» ` : ""}oʻquvchisi va uning barcha baholari butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+              {t("deleteDialogDescription", { name: deleteTarget?.name ?? "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={() => {
                 if (deleteTarget) {
                   deleteStudent(deleteTarget.id);
-                  toast.success("Oʻquvchi oʻchirildi");
+                  toast.success(t("toastDeleted"));
                 }
                 setDeleteTarget(null);
               }}
             >
-              Oʻchirish
+              {t("confirmDelete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -628,11 +618,12 @@ function PreviewCard({
   onToggleStatus: () => void;
   onViewProfile: () => void;
 }) {
-  const pill = STATUS_PILL[student.status];
+  const t = useTranslations("StudentsPage");
+  const pill = STATUS_META[student.status];
   const contacts: { icon: React.ReactNode; label: string; value?: string }[] = [
-    { icon: <User className="size-4" />, label: "Ota yoki onasining ismi sharifi", value: student.parentName },
-    { icon: <Phone className="size-4" />, label: "Ota-ona telefoni", value: student.parentPhone },
-    { icon: <Phone className="size-4" />, label: "Oʻquvchi telefoni", value: student.studentPhone },
+    { icon: <User className="size-4" />, label: t("parentName"), value: student.parentName },
+    { icon: <Phone className="size-4" />, label: t("parentPhone"), value: student.parentPhone },
+    { icon: <Phone className="size-4" />, label: t("studentPhone"), value: student.studentPhone },
   ];
 
   return (
@@ -647,10 +638,10 @@ function PreviewCard({
         <svg className="absolute bottom-0 left-0 right-0 w-full" viewBox="0 0 400 24" preserveAspectRatio="none" style={{ height: 24 }}>
           <path d="M0,24 L0,20 Q200,0 400,20 L400,24 Z" className="fill-card" />
         </svg>
-        <button className="absolute left-3 top-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/80 text-foreground/70 opacity-0 shadow-sm transition-opacity hover:bg-white hover:text-foreground group-hover/card:opacity-100" aria-label="Tahrirlash">
+        <button className="absolute left-3 top-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/80 text-foreground/70 opacity-0 shadow-sm transition-opacity hover:bg-white hover:text-foreground group-hover/card:opacity-100" aria-label={t("editAria")}>
           <Pen className="size-3.5" />
         </button>
-        <button onClick={onViewProfile} className="absolute right-3 top-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/80 text-foreground/70 opacity-0 shadow-sm transition-opacity hover:bg-white hover:text-foreground group-hover/card:opacity-100" aria-label="Toʻliq profil">
+        <button onClick={onViewProfile} className="absolute right-3 top-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/80 text-foreground/70 opacity-0 shadow-sm transition-opacity hover:bg-white hover:text-foreground group-hover/card:opacity-100" aria-label={t("fullProfileAria")}>
           <ExternalLink className="size-3.5" />
         </button>
       </div>
@@ -681,7 +672,7 @@ function PreviewCard({
                 className={cn(badgeBase, "cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
               >
                 <span className={cn("size-1.5 rounded-full", pill.dot)} />
-                {pill.label}
+                {t(`status.${student.status}`)}
               </button>
             </div>
             <CardTitle className="text-xl">{student.name}</CardTitle>
@@ -693,11 +684,11 @@ function PreviewCard({
             className="mb-6 h-9 w-full rounded-lg font-semibold text-white transition-all hover:brightness-110"
             style={{ backgroundColor: hex }}
           >
-            Profilni koʻrish
+            {t("viewProfile")}
           </Button>
 
           <div className="mb-6">
-            <TypographyLabel className="mb-3 block">Sinf</TypographyLabel>
+            <TypographyLabel className="mb-3 block">{t("classLabel")}</TypographyLabel>
             <div className="flex flex-wrap gap-2">
               <div className="rounded-md px-3 py-1.5 text-sm font-medium" style={{ backgroundColor: tint(13), color: hex }}>
                 {className}
@@ -706,12 +697,12 @@ function PreviewCard({
           </div>
 
           <div>
-            <TypographyLabel className="mb-3 block">Aloqa</TypographyLabel>
+            <TypographyLabel className="mb-3 block">{t("contactLabel")}</TypographyLabel>
             {contacts.every((c) => !c.value) ? (
               <div className="flex flex-col items-start gap-2.5 rounded-lg border border-dashed border-border p-4">
-                <TypographyMuted>Aloqa maʼlumoti kiritilmagan</TypographyMuted>
+                <TypographyMuted>{t("noContact")}</TypographyMuted>
                 <Button variant="outline" size="sm" className="gap-1.5 shadow-none">
-                  <Plus className="size-3.5" /> Qoʻshish
+                  <Plus className="size-3.5" /> {t("addContact")}
                 </Button>
               </div>
             ) : (
@@ -740,14 +731,14 @@ function PreviewCard({
             >
               {student.parentPhone ? (
                 <a href={`tel:${student.parentPhone}`}>
-                  <Phone className="mr-2 size-4" /> Qoʻngʻiroq
+                  <Phone className="mr-2 size-4" /> {t("call")}
                 </a>
               ) : (
-                <span><Phone className="mr-2 size-4" /> Qoʻngʻiroq</span>
+                <span><Phone className="mr-2 size-4" /> {t("call")}</span>
               )}
             </Button>
-            <Button variant="outline" disabled title="Tez orada" className="h-9 flex-1 rounded-lg shadow-none">
-              <MessageCircle className="mr-2 size-4" /> Telegram
+            <Button variant="outline" disabled title={t("telegramSoon")} className="h-9 flex-1 rounded-lg shadow-none">
+              <MessageCircle className="mr-2 size-4" /> {t("telegram")}
             </Button>
           </div>
         </div>

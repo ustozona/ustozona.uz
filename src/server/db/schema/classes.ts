@@ -51,6 +51,10 @@ export const students = pgTable(
   "students",
   {
     id: text("id").primaryKey(),
+    /** Avto-beriladigan oʻquvchi raqami (global ketma-ket, DB tomonidan
+        insert paytida beriladi — ilova hech qachon qiymat yubormaydi va
+        uni oʻzgartirmaydi, shu bois barqaror va takrorlanmas). */
+    studentNumber: integer("student_number").generatedAlwaysAsIdentity(),
     teacherId: text("teacher_id")
       .notNull()
       .references(() => teachers.id, { onDelete: "cascade" }),

@@ -19,6 +19,9 @@ export type ClassInfo = {
 
 export type Student = {
   id: string;
+  /** Avto-beriladigan raqam (DB identity, serverda tugʻiladi) — yangi
+      demo/lokal oʻquvchilarda hali serverga sinxronlanmagan boʻlishi mumkin. */
+  studentNumber?: number | null;
   name: string;
   initials: string;
   status?: "active" | "away" | "archived";

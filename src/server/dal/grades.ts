@@ -73,6 +73,7 @@ function rowToInfo(c: ClassRow): ClassInfo {
 function rowToStudent(s: StudentRow): Student {
   return {
     id: s.id,
+    studentNumber: s.studentNumber,
     name: s.name,
     initials: s.initials,
     status: s.status as Student["status"],
