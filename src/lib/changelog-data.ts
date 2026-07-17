@@ -35,9 +35,9 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     id: "multi-language-support",
     date: "2026-07-17",
     type: "yangi",
-    title: "Ilova endi ingliz va rus tilida ham ishlaydi",
+    title: "Ilova endi 6 tilda ishlaydi",
     body:
-      "Sozlamalar boʻlimidan tilni tanlash mumkin — butun ilova (menyu, tugmalar, sahifalar) shu tilda koʻrsatiladi. Qoraqalpoqcha, qirgʻizcha va qozoqcha tez orada qoʻshiladi.",
+      "Sozlamalar boʻlimidan tilni tanlash mumkin — oʻzbekcha, qoraqalpoqcha, qirgʻizcha, qozoqcha, ruscha va inglizcha. Tanlangan til boʻyicha butun ilova (menyu, tugmalar, sahifalar) shu tilda koʻrsatiladi.",
     href: "/dashboard/settings",
   },
   {
