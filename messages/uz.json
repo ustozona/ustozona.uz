@@ -248,7 +248,12 @@
     "toastExportSuccess": "Maʼlumotlar yuklab olindi.",
     "toastExportError": "Eksport amalga oshmadi.",
     "toastDeleteSuccess": "Hisob va barcha maʼlumotlar oʻchirildi.",
-    "toastDeleteError": "Oʻchirish amalga oshmadi. Qayta urinib koʻring."
+    "toastDeleteError": "Oʻchirish amalga oshmadi. Qayta urinib koʻring.",
+    "confirmWord": "OʻCHIRISH",
+    "sheetStudents": "Oʻquvchilar",
+    "sheetClasses": "Sinflar",
+    "sheetLessons": "Darslar",
+    "sheetTasks": "Topshiriqlar"
   },
   "BellSection": {
     "title": "Smenalar va qoʻngʻiroqlar jadvali",
@@ -268,7 +273,46 @@
     "shift2": "2-smena",
     "breakTooltip": "Tanaffus",
     "longBreakTooltip": "Katta tanaffus",
-    "breakMinutesSuffix": "{minutes} daq"
+    "breakMinutesSuffix": "{minutes} daq",
+    "lessonHourLabel": "{index}-soat"
+  },
+  "AppearanceSection": {
+    "themeTitle": "Mavzu",
+    "themeDescription": "Kunduzgi, tungi yoki qurilma tizimiga mos keladigan mavzuni tanlang.",
+    "themeAriaLabel": "Mavzu",
+    "themeLight": "Kunduzgi",
+    "themeDark": "Tungi",
+    "themeSystem": "Tizim",
+    "backgroundTitle": "Ishchi maydon foni",
+    "backgroundDescription": "Asosiy ishchi maydon foni koʻrinishi.",
+    "backgroundAriaLabel": "Ishchi maydon foni",
+    "bgPlain": "Toza",
+    "bgGrid": "Katakli",
+    "bgLined": "Qatorli",
+    "bgParchment": "Nuqtali",
+    "bgStripes": "Diagonal",
+    "bgChecker": "Shaxmatli",
+    "bgGraphDashed": "Grafik (shtrixli)",
+    "bgGraph45": "Grafik (45°)",
+    "bgCircuit": "Sxema",
+    "patternSizeTitle": "Naqsh oʻlchami",
+    "patternSizeDescription": "Katakcha/nuqta oraligʻini uzluksiz kattalashtiring yoki kichraytiring.",
+    "languageTitle": "Til",
+    "languageDescription": "Interfeys tili.",
+    "languageRowDescription": "Interfeys tili",
+    "languageSelectAria": "Interfeys tilini tanlash",
+    "comingSoon": "Tez orada",
+    "defaultLanguageLabel": "Oʻzbekcha",
+    "autoTourTitle": "Avtomatik yoʻl-yoʻriq",
+    "autoTourDescription": "Yangi sahifaga kirganingizda u haqida qisqacha maʼlumot beruvchi turlarni avtomatik koʻrsatish.",
+    "autoTourRowTitle": "Turlarni avtomatik boshlash",
+    "autoTourRowDescription": "Oʻchirib qoʻyilsa, turlar faqat Yoʻl-yoʻriq markazidan qoʻlda ishga tushiriladi."
+  },
+  "SettingsShared": {
+    "unsavedChanges": "Saqlanmagan oʻzgarishlar bor",
+    "saved": "Saqlandi",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash"
   },
   "AcademicYearSection": {
     "rangeStartAria": "Boshlanish sanasi",
@@ -2088,5 +2132,160 @@
   },
   "FeedbackQuoteBlock": {
     "jumpTitle": "Belgilangan xabarga oʻtish"
+  },
+  "LoginForm": {
+    "title": "Hisobingizga kiring",
+    "subtitle": "Ustozonaga xush kelibsiz — davom etish uchun kiring.",
+    "continueWithGoogle": "Google orqali kirish",
+    "orWithEmail": "yoki email bilan",
+    "emailLabel": "Elektron pochta",
+    "emailPlaceholder": "falonchi@email.uz",
+    "passwordLabel": "Parol",
+    "passwordPlaceholder": "Parolingizni kiriting",
+    "forgotPassword": "Parolni unutdingizmi?",
+    "rememberMe": "Parolni eslab qolish",
+    "signingIn": "Kirilmoqda…",
+    "signIn": "Tizimga kirish",
+    "noAccount": "Hisobingiz yoʻqmi?",
+    "getStartedFree": "Bepul boshlash",
+    "googleNotConfigured": "Google orqali kirish hozircha sozlanmagan.",
+    "errors": {
+      "invalidEmailOrPassword": "Email yoki parol notoʻgʻri.",
+      "userNotFound": "Bunday hisob topilmadi.",
+      "invalidEmail": "Email manzili notoʻgʻri koʻrinishda.",
+      "generic": "Kirishda xatolik yuz berdi. Qayta urinib koʻring."
+    }
+  },
+  "SignupForm": {
+    "title": "Bepul boshlash",
+    "subtitle": "Bank kartasi talab qilinmaydi. Bir daqiqada ishga tushasiz.",
+    "continueWithGoogle": "Google orqali davom etish",
+    "orWithEmail": "yoki email bilan",
+    "firstNameLabel": "Ism",
+    "firstNamePlaceholder": "Ismingiz",
+    "lastNameLabel": "Familiya",
+    "lastNamePlaceholder": "Familiyangiz",
+    "emailLabel": "Elektron pochta",
+    "emailPlaceholder": "falonchi@email.uz",
+    "passwordLabel": "Parol",
+    "passwordPlaceholder": "Kamida 8 belgi",
+    "creating": "Yaratilmoqda…",
+    "submit": "Bepul boshlash",
+    "haveAccount": "Hisobingiz bormi?",
+    "signIn": "Tizimga kirish",
+    "googleNotConfigured": "Google orqali kirish hozircha sozlanmagan.",
+    "errors": {
+      "userAlreadyExists": "Bu email bilan hisob allaqachon mavjud.",
+      "passwordTooShort": "Parol kamida 8 belgidan iborat boʻlsin.",
+      "passwordTooLong": "Parol juda uzun.",
+      "invalidEmail": "Email manzili notoʻgʻri koʻrinishda.",
+      "generic": "Roʻyxatdan oʻtishda xatolik yuz berdi. Qayta urinib koʻring."
+    }
+  },
+  "ForgotPasswordPage": {
+    "title": "Parolni unutdingizmi?",
+    "subtitle": "Elektron pochtangizni kiriting — parolni tiklash havolasini yuboramiz.",
+    "sentMessage": "Havola yuborildi — elektron pochtangizni tekshiring.",
+    "emailLabel": "Elektron pochta",
+    "emailPlaceholder": "falonchi@email.uz",
+    "sending": "Yuborilmoqda…",
+    "submit": "Parolni tiklash",
+    "backToLogin": "Kirish sahifasiga qaytish",
+    "errorSending": "Xat yuborishda xatolik yuz berdi. Qayta urinib koʻring."
+  },
+  "ResetPasswordPage": {
+    "title": "Yangi parol oʻrnating",
+    "subtitle": "Hisobingiz uchun yangi parol kiriting.",
+    "newPasswordLabel": "Yangi parol",
+    "passwordPlaceholder": "Kamida 8 belgi",
+    "updating": "Yangilanmoqda…",
+    "submit": "Parolni yangilash",
+    "requestNewLink": "Qayta soʻrov yuboring",
+    "errors": {
+      "invalidLink": "Havola notoʻgʻri yoki muddati oʻtgan.",
+      "passwordTooShort": "Parol kamida 8 belgidan iborat boʻlsin.",
+      "updateFailed": "Parolni yangilashda xatolik yuz berdi. Havola muddati oʻtgan boʻlishi mumkin."
+    }
+  },
+  "TwoFactorAuthPage": {
+    "title": "Ikki bosqichli tasdiqlash",
+    "subtitle": "Ilovangiz tomonidan taqdim etilgan kodni kiritish orqali hisobingizga kirishni tasdiqlang",
+    "didntGetCode": "Kodni olmadingizmi?",
+    "resend": "Qayta yuborish",
+    "confirm": "Tasdiqlash"
+  },
+  "VerifyEmailPage": {
+    "title": "Elektron pochtangizni tasdiqlang",
+    "description": "Faollashtirish havolasi elektron pochtangizga yuborildi: {email}. Iltimos, pochta qutingizni tekshiring va faollashtirish jarayonini yakunlash uchun havolani bosing.",
+    "verifyNow": "Hozir tasdiqlash",
+    "didntGetEmail": "Xat kelmadimi?",
+    "resend": "Qayta yuborish"
+  },
+  "OnboardingWizard": {
+    "steps": {
+      "welcome": {
+        "title": "Xush kelibsiz",
+        "description": "Ustozona bilan tanishing"
+      },
+      "profile": {
+        "title": "Profil",
+        "description": "Oʻzingiz haqingizda"
+      },
+      "academic-year": {
+        "title": "Oʻquv yili",
+        "description": "Sanalarni tasdiqlang"
+      },
+      "done": {
+        "title": "Tayyor",
+        "description": "Hammasi sozlandi"
+      }
+    },
+    "welcome": {
+      "greeting": "Xush kelibsiz!",
+      "greetingWithName": "Xush kelibsiz, {name}!",
+      "smileLabel": "Tabassum",
+      "subtitle": "Ustozona bilan ishlashni boshlaymiz — quyida sizni nima kutayotganini koʻring."
+    },
+    "profileStep": {
+      "title": "Oʻzingiz haqingizda",
+      "desc": "Bu maʼlumotlar profil va hisobotlarda koʻrinadi. Keyin Sozlamalarda oʻzgartirasiz.",
+      "nameLabel": "Ism-familiya",
+      "namePlaceholder": "Masalan, Otabek Abdusattorov",
+      "schoolLabel": "Maktab / muassasa",
+      "schoolPlaceholder": "Masalan, 24-maktab",
+      "subjectLabel": "Asosiy fan",
+      "subjectPlaceholder": "Masalan, Ingliz tili",
+      "birthDateLabel": "Tavallud sana"
+    },
+    "yearStep": {
+      "title": "Oʻquv yilini tasdiqlang",
+      "desc": "Rasmiy oʻzbek oʻquv yili sanalarini oldindan tayyorladik. Toʻgʻri boʻlsa davom eting yoki sanalarni oʻzgartiring — choraklar va taʼtillar avtomatik toʻldiriladi.",
+      "academicYearLabel": "{year}-oʻquv yili",
+      "rangeSummary": "{start} — {end} · 4 chorak",
+      "setDatesHint": "Sanalarni belgilash uchun «Sanalarni oʻzgartirish»ni bosing.",
+      "changeDates": "Sanalarni oʻzgartirish",
+      "yearNamePlaceholder": "Oʻquv yili nomi",
+      "periodLabel": "Yil davri",
+      "startDateAria": "Boshlanish sanasi",
+      "endDateAria": "Tugash sanasi"
+    },
+    "doneStep": {
+      "title": "Hammasi tayyor!",
+      "subtitle": "{year} oʻquv yili sozlandi. Boshlagach, ish maydoni bilan tanishtiruvchi qisqa yoʻriqnoma sizni kutib turadi."
+    },
+    "footer": {
+      "later": "Keyinroq",
+      "back": "Orqaga",
+      "continue": "Davom etish",
+      "start": "Boshlash"
+    },
+    "requiredFieldAria": "Majburiy maydon",
+    "requiredFieldTooltip": "Toʻldirilishi shart"
+  },
+  "GuideHub": {
+    "tooltip": "Yoʻl-yoʻriq",
+    "heading": "Boshlash",
+    "description": "Har bir boʻlimdan toʻliq foydalanishni oʻrganing.",
+    "dismissedTitle": "O'tkazib yuborilgan — qayta boshlash uchun bosing"
   }
 }

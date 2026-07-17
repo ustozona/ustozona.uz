@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { create } from "zustand";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -176,20 +177,21 @@ export function SaveFooter({
   onSave: () => void;
   onReset: () => void;
 }) {
+  const t = useTranslations("SettingsShared");
   // SavedIndicator ishlatilmaydi: u dirty paytida unmount boʻlib, saqlashdan
   // keyingi birinchi renderda "signal oʻzgarishi"ni koʻrmay qoladi.
   const [showSaved, setShowSaved] = React.useState(false);
   React.useEffect(() => {
     if (!showSaved) return;
-    const t = setTimeout(() => setShowSaved(false), 1600);
-    return () => clearTimeout(t);
+    const timeout = setTimeout(() => setShowSaved(false), 1600);
+    return () => clearTimeout(timeout);
   }, [showSaved]);
 
   return (
     <>
       <span className="min-w-0">
         {dirty ? (
-          <span className="text-caption">Saqlanmagan oʻzgarishlar bor</span>
+          <span className="text-caption">{t("unsavedChanges")}</span>
         ) : (
           <span
             aria-live="polite"
@@ -199,14 +201,14 @@ export function SaveFooter({
             )}
           >
             <Check className="size-3.5" strokeWidth={2.5} />
-            Saqlandi
+            {t("saved")}
           </span>
         )}
       </span>
       <span className="flex shrink-0 items-center gap-2">
         {dirty && (
           <Button variant="ghost" size="sm" onClick={onReset}>
-            Bekor qilish
+            {t("cancel")}
           </Button>
         )}
         <Button
@@ -217,7 +219,7 @@ export function SaveFooter({
             setShowSaved(true);
           }}
         >
-          Saqlash
+          {t("save")}
         </Button>
       </span>
     </>
@@ -286,6 +288,7 @@ export function SaveSignalPing({ signal }: { signal: unknown }) {
  * pulsni tinglaydi, aks holda cheksiz halqa boʻlardi).
  */
 export function SavedIndicator({ signal, bubble = true }: { signal: unknown; bubble?: boolean }) {
+  const t = useTranslations("SettingsShared");
   const [visible, setVisible] = React.useState(false);
   const first = React.useRef(true);
 
@@ -296,8 +299,8 @@ export function SavedIndicator({ signal, bubble = true }: { signal: unknown; bub
     }
     setVisible(true);
     if (bubble) useSaveSignal.getState().ping();
-    const t = setTimeout(() => setVisible(false), 1600);
-    return () => clearTimeout(t);
+    const timeout = setTimeout(() => setVisible(false), 1600);
+    return () => clearTimeout(timeout);
   }, [signal]);
 
   return (
@@ -309,7 +312,7 @@ export function SavedIndicator({ signal, bubble = true }: { signal: unknown; bub
       )}
     >
       <Check className="size-3.5" strokeWidth={2.5} />
-      Saqlandi
+      {t("saved")}
     </span>
   );
 }

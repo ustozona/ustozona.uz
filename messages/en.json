@@ -248,7 +248,12 @@
     "toastExportSuccess": "Data downloaded.",
     "toastExportError": "Export failed.",
     "toastDeleteSuccess": "Account and all data deleted.",
-    "toastDeleteError": "Deletion failed. Please try again."
+    "toastDeleteError": "Deletion failed. Please try again.",
+    "confirmWord": "DELETE",
+    "sheetStudents": "Students",
+    "sheetClasses": "Classes",
+    "sheetLessons": "Lessons",
+    "sheetTasks": "Tasks"
   },
   "BellSection": {
     "title": "Shifts and bell schedule",
@@ -268,7 +273,46 @@
     "shift2": "Shift 2",
     "breakTooltip": "Break",
     "longBreakTooltip": "Long break",
-    "breakMinutesSuffix": "{minutes} min"
+    "breakMinutesSuffix": "{minutes} min",
+    "lessonHourLabel": "Period {index}"
+  },
+  "AppearanceSection": {
+    "themeTitle": "Theme",
+    "themeDescription": "Choose a light, dark, or system-matching theme.",
+    "themeAriaLabel": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "backgroundTitle": "Workspace background",
+    "backgroundDescription": "The look of the main workspace background.",
+    "backgroundAriaLabel": "Workspace background",
+    "bgPlain": "Plain",
+    "bgGrid": "Grid",
+    "bgLined": "Lined",
+    "bgParchment": "Dotted",
+    "bgStripes": "Diagonal",
+    "bgChecker": "Checkered",
+    "bgGraphDashed": "Graph (dashed)",
+    "bgGraph45": "Graph (45°)",
+    "bgCircuit": "Circuit",
+    "patternSizeTitle": "Pattern size",
+    "patternSizeDescription": "Continuously enlarge or shrink the grid/dot spacing.",
+    "languageTitle": "Language",
+    "languageDescription": "Interface language.",
+    "languageRowDescription": "Interface language",
+    "languageSelectAria": "Select interface language",
+    "comingSoon": "Coming soon",
+    "defaultLanguageLabel": "Uzbek",
+    "autoTourTitle": "Automatic guided tours",
+    "autoTourDescription": "Automatically show tours that briefly explain a new page when you visit it.",
+    "autoTourRowTitle": "Start tours automatically",
+    "autoTourRowDescription": "When off, tours only launch manually from the Guide Hub."
+  },
+  "SettingsShared": {
+    "unsavedChanges": "Unsaved changes",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "AcademicYearSection": {
     "rangeStartAria": "Start date",
@@ -2088,5 +2132,160 @@
   },
   "FeedbackQuoteBlock": {
     "jumpTitle": "Go to the referenced message"
+  },
+  "LoginForm": {
+    "title": "Sign in to your account",
+    "subtitle": "Welcome to Ustozona — sign in to continue.",
+    "continueWithGoogle": "Sign in with Google",
+    "orWithEmail": "or with email",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot your password?",
+    "rememberMe": "Remember me",
+    "signingIn": "Signing in…",
+    "signIn": "Sign in",
+    "noAccount": "Don't have an account?",
+    "getStartedFree": "Get started for free",
+    "googleNotConfigured": "Google sign-in isn't configured yet.",
+    "errors": {
+      "invalidEmailOrPassword": "Email or password is incorrect.",
+      "userNotFound": "No account found with these details.",
+      "invalidEmail": "That email address doesn't look right.",
+      "generic": "Something went wrong signing in. Please try again."
+    }
+  },
+  "SignupForm": {
+    "title": "Get started for free",
+    "subtitle": "No credit card required. You'll be up and running in a minute.",
+    "continueWithGoogle": "Continue with Google",
+    "orWithEmail": "or with email",
+    "firstNameLabel": "First name",
+    "firstNamePlaceholder": "Your first name",
+    "lastNameLabel": "Last name",
+    "lastNamePlaceholder": "Your last name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "creating": "Creating…",
+    "submit": "Get started for free",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "googleNotConfigured": "Google sign-in isn't configured yet.",
+    "errors": {
+      "userAlreadyExists": "An account with this email already exists.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordTooLong": "Password is too long.",
+      "invalidEmail": "That email address doesn't look right.",
+      "generic": "Something went wrong signing up. Please try again."
+    }
+  },
+  "ForgotPasswordPage": {
+    "title": "Forgot your password?",
+    "subtitle": "Enter your email and we'll send you a password reset link.",
+    "sentMessage": "Link sent — check your email inbox.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "sending": "Sending…",
+    "submit": "Reset password",
+    "backToLogin": "Back to sign in",
+    "errorSending": "Something went wrong sending the email. Please try again."
+  },
+  "ResetPasswordPage": {
+    "title": "Set a new password",
+    "subtitle": "Enter a new password for your account.",
+    "newPasswordLabel": "New password",
+    "passwordPlaceholder": "At least 8 characters",
+    "updating": "Updating…",
+    "submit": "Update password",
+    "requestNewLink": "Request a new link",
+    "errors": {
+      "invalidLink": "This link is invalid or has expired.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "updateFailed": "Something went wrong updating your password. The link may have expired."
+    }
+  },
+  "TwoFactorAuthPage": {
+    "title": "Two-factor authentication",
+    "subtitle": "Confirm access to your account by entering the code provided by your app",
+    "didntGetCode": "Didn't get the code?",
+    "resend": "Resend",
+    "confirm": "Confirm"
+  },
+  "VerifyEmailPage": {
+    "title": "Verify your email",
+    "description": "An activation link has been sent to your email address: {email}. Please check your inbox and click on the link to complete the activation process.",
+    "verifyNow": "Verify now",
+    "didntGetEmail": "Didn't get the email?",
+    "resend": "Resend"
+  },
+  "OnboardingWizard": {
+    "steps": {
+      "welcome": {
+        "title": "Welcome",
+        "description": "Get to know Ustozona"
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "About you"
+      },
+      "academic-year": {
+        "title": "Academic year",
+        "description": "Confirm the dates"
+      },
+      "done": {
+        "title": "Done",
+        "description": "Everything is set up"
+      }
+    },
+    "welcome": {
+      "greeting": "Welcome!",
+      "greetingWithName": "Welcome, {name}!",
+      "smileLabel": "Smile",
+      "subtitle": "Let's get you started with Ustozona — here's what's waiting for you."
+    },
+    "profileStep": {
+      "title": "About you",
+      "desc": "This information appears on your profile and in reports. You can change it later in Settings.",
+      "nameLabel": "Full name",
+      "namePlaceholder": "e.g. Otabek Abdusattorov",
+      "schoolLabel": "School / institution",
+      "schoolPlaceholder": "e.g. School No. 24",
+      "subjectLabel": "Main subject",
+      "subjectPlaceholder": "e.g. English",
+      "birthDateLabel": "Date of birth"
+    },
+    "yearStep": {
+      "title": "Confirm the academic year",
+      "desc": "We've pre-filled the official Uzbek academic year dates. Continue if they're correct, or change the dates — quarters and holidays will refill automatically.",
+      "academicYearLabel": "{year} academic year",
+      "rangeSummary": "{start} — {end} · 4 quarters",
+      "setDatesHint": "Click \"Change dates\" to set the dates.",
+      "changeDates": "Change dates",
+      "yearNamePlaceholder": "Academic year name",
+      "periodLabel": "Year period",
+      "startDateAria": "Start date",
+      "endDateAria": "End date"
+    },
+    "doneStep": {
+      "title": "All set!",
+      "subtitle": "The {year} academic year is configured. Once you get started, a short workspace tour will be waiting for you."
+    },
+    "footer": {
+      "later": "Later",
+      "back": "Back",
+      "continue": "Continue",
+      "start": "Get started"
+    },
+    "requiredFieldAria": "Required field",
+    "requiredFieldTooltip": "This field is required"
+  },
+  "GuideHub": {
+    "tooltip": "Guide",
+    "heading": "Getting started",
+    "description": "Learn how to make the most of every section.",
+    "dismissedTitle": "Skipped — click to start again"
   }
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -12,18 +13,18 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { GoogleIcon } from "@/components/google-icon";
 
-/** Better Auth xato kodlari → oʻzbekcha xabarlar. */
-const ERROR_UZ: Record<string, string> = {
-  USER_ALREADY_EXISTS: "Bu email bilan hisob allaqachon mavjud.",
-  PASSWORD_TOO_SHORT: "Parol kamida 8 belgidan iborat boʻlsin.",
-  PASSWORD_TOO_LONG: "Parol juda uzun.",
-  INVALID_EMAIL: "Email manzili notoʻgʻri koʻrinishda.",
-};
-
 export function SignupForm({ className, ...props }: React.ComponentProps<"form">) {
+  const t = useTranslations("SignupForm");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const ERROR_MAP: Record<string, string> = {
+    USER_ALREADY_EXISTS: t("errors.userAlreadyExists"),
+    PASSWORD_TOO_SHORT: t("errors.passwordTooShort"),
+    PASSWORD_TOO_LONG: t("errors.passwordTooLong"),
+    INVALID_EMAIL: t("errors.invalidEmail"),
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,7 +34,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
     const name = `${firstName} ${lastName}`.trim();
     const password = String(form.get("password") ?? "");
     if (password.length < 8) {
-      setError(ERROR_UZ.PASSWORD_TOO_SHORT);
+      setError(ERROR_MAP.PASSWORD_TOO_SHORT);
       return;
     }
     setPending(true);
@@ -45,9 +46,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
     });
     if (err) {
       setPending(false);
-      setError(
-        ERROR_UZ[err.code ?? ""] ?? "Roʻyxatdan oʻtishda xatolik yuz berdi. Qayta urinib koʻring."
-      );
+      setError(ERROR_MAP[err.code ?? ""] ?? t("errors.generic"));
       return;
     }
     router.push("/dashboard");
@@ -60,7 +59,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
       callbackURL: "/dashboard",
     });
     if (err) {
-      toast.error("Google orqali kirish hozircha sozlanmagan.");
+      toast.error(t("googleNotConfigured"));
     }
   };
 
@@ -68,9 +67,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
     <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center text-center gap-1">
-          <h1 className="text-2xl font-medium">Bepul boshlash</h1>
+          <h1 className="text-2xl font-medium">{t("title")}</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            Bank kartasi talab qilinmaydi. Bir daqiqada ishga tushasiz.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -78,32 +77,32 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
         <Field>
           <Button variant="outline" type="button" onClick={handleGoogle}>
             <GoogleIcon className="h-4 w-4" />
-            Google orqali davom etish
+            {t("continueWithGoogle")}
           </Button>
         </Field>
 
-        <FieldSeparator>yoki email bilan</FieldSeparator>
+        <FieldSeparator>{t("orWithEmail")}</FieldSeparator>
 
         <div className="grid grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="firstName">Ism</FieldLabel>
+            <FieldLabel htmlFor="firstName">{t("firstNameLabel")}</FieldLabel>
             <Input
               id="firstName"
               name="firstName"
               type="text"
-              placeholder="Ismingiz"
+              placeholder={t("firstNamePlaceholder")}
               autoComplete="given-name"
               required
             />
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="lastName">Familiya</FieldLabel>
+            <FieldLabel htmlFor="lastName">{t("lastNameLabel")}</FieldLabel>
             <Input
               id="lastName"
               name="lastName"
               type="text"
-              placeholder="Familiyangiz"
+              placeholder={t("lastNamePlaceholder")}
               autoComplete="family-name"
               required
             />
@@ -111,23 +110,23 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
         </div>
 
         <Field>
-          <FieldLabel htmlFor="email">Elektron pochta</FieldLabel>
+          <FieldLabel htmlFor="email">{t("emailLabel")}</FieldLabel>
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder="falonchi@email.uz"
+            placeholder={t("emailPlaceholder")}
             autoComplete="email"
             required
           />
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="password">Parol</FieldLabel>
+          <FieldLabel htmlFor="password">{t("passwordLabel")}</FieldLabel>
           <PasswordInput
             id="password"
             name="password"
-            placeholder="Kamida 8 belgi"
+            placeholder={t("passwordPlaceholder")}
             autoComplete="new-password"
             required
             minLength={8}
@@ -142,14 +141,14 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
 
         <Field>
           <RainbowButton type="submit" disabled={pending} className="w-full h-9">
-            {pending ? "Yaratilmoqda…" : "Bepul boshlash"}
+            {pending ? t("creating") : t("submit")}
           </RainbowButton>
         </Field>
 
         <FieldDescription className="text-center">
-          Hisobingiz bormi?{" "}
+          {t("haveAccount")}{" "}
           <a href="/login" className="font-medium text-foreground hover:underline">
-            Tizimga kirish
+            {t("signIn")}
           </a>
         </FieldDescription>
       </FieldGroup>

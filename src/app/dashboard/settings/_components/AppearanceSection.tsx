@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Sun, Moon, Monitor, Check } from "lucide-react";
@@ -30,25 +31,8 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
 
-const THEMES: { value: string; label: string; icon: React.ElementType }[] = [
-  { value: "light", label: "Kunduzgi", icon: Sun },
-  { value: "dark", label: "Tungi", icon: Moon },
-  { value: "system", label: "Tizim", icon: Monitor },
-];
-
-const BACKGROUNDS: { value: BgKind; label: string }[] = [
-  { value: "plain", label: "Toza" },
-  { value: "grid", label: "Katakli" },
-  { value: "lined", label: "Qatorli" },
-  { value: "parchment", label: "Nuqtali" },
-  { value: "stripes", label: "Diagonal" },
-  { value: "checker", label: "Shaxmatli" },
-  { value: "graphDashed", label: "Grafik (shtrixli)" },
-  { value: "graph45", label: "Grafik (45°)" },
-  { value: "circuit", label: "Sxema" },
-];
-
 export default function AppearanceSection() {
+  const t = useTranslations("AppearanceSection");
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const workspaceBackground = normalizeBackground(
@@ -75,24 +59,42 @@ export default function AppearanceSection() {
   React.useEffect(() => setMounted(true), []);
   const activeTheme = mounted ? theme ?? "light" : "light";
 
+  const themes: { value: string; label: string; icon: React.ElementType }[] = [
+    { value: "light", label: t("themeLight"), icon: Sun },
+    { value: "dark", label: t("themeDark"), icon: Moon },
+    { value: "system", label: t("themeSystem"), icon: Monitor },
+  ];
+
+  const backgrounds: { value: BgKind; label: string }[] = [
+    { value: "plain", label: t("bgPlain") },
+    { value: "grid", label: t("bgGrid") },
+    { value: "lined", label: t("bgLined") },
+    { value: "parchment", label: t("bgParchment") },
+    { value: "stripes", label: t("bgStripes") },
+    { value: "checker", label: t("bgChecker") },
+    { value: "graphDashed", label: t("bgGraphDashed") },
+    { value: "graph45", label: t("bgGraph45") },
+    { value: "circuit", label: t("bgCircuit") },
+  ];
+
   return (
     <>
       {/* Mavzu */}
       <SettingsCard
-        title="Mavzu"
-        description="Kunduzgi, tungi yoki qurilma tizimiga mos keladigan mavzuni tanlang."
+        title={t("themeTitle")}
+        description={t("themeDescription")}
         action={<SaveSignalPing signal={activeTheme} />}
       >
-        <div role="radiogroup" aria-label="Mavzu" className="grid grid-cols-3 gap-2">
-          {THEMES.map((t) => {
-            const active = activeTheme === t.value;
+        <div role="radiogroup" aria-label={t("themeAriaLabel")} className="grid grid-cols-3 gap-2">
+          {themes.map((th) => {
+            const active = activeTheme === th.value;
             return (
               <button
-                key={t.value}
+                key={th.value}
                 type="button"
                 role="radio"
                 aria-checked={active}
-                onClick={() => setTheme(t.value)}
+                onClick={() => setTheme(th.value)}
                 className={cn(
                   "flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-sm transition-colors",
                   active
@@ -100,8 +102,8 @@ export default function AppearanceSection() {
                     : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                <t.icon className="size-5" strokeWidth={2} />
-                <span className="font-medium">{t.label}</span>
+                <th.icon className="size-5" strokeWidth={2} />
+                <span className="font-medium">{th.label}</span>
               </button>
             );
           })}
@@ -110,12 +112,12 @@ export default function AppearanceSection() {
 
       {/* Ishchi maydon foni */}
       <SettingsCard
-        title="Ishchi maydon foni"
-        description="Asosiy ishchi maydon foni koʻrinishi."
+        title={t("backgroundTitle")}
+        description={t("backgroundDescription")}
         action={<SaveSignalPing signal={`${workspaceBackground}-${backgroundScale}`} />}
       >
-        <div role="radiogroup" aria-label="Ishchi maydon foni" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {BACKGROUNDS.map((b) => {
+        <div role="radiogroup" aria-label={t("backgroundAriaLabel")} className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {backgrounds.map((b) => {
             const active = workspaceBackground === b.value;
             return (
               <button
@@ -143,10 +145,10 @@ export default function AppearanceSection() {
           })}
         </div>
 
-        <SettingRow title="Naqsh oʻlchami" description="Katakcha/nuqta oraligʻini uzluksiz kattalashtiring yoki kichraytiring.">
+        <SettingRow title={t("patternSizeTitle")} description={t("patternSizeDescription")}>
           <div className="flex w-44 items-center gap-3">
             <Slider
-              aria-label="Naqsh oʻlchami"
+              aria-label={t("patternSizeTitle")}
               value={[backgroundScale]}
               onValueChange={([v]) => setBackgroundScale(v)}
               min={BACKGROUND_SCALE_MIN}
@@ -162,7 +164,7 @@ export default function AppearanceSection() {
       </SettingsCard>
 
       {/* Til */}
-      <SettingsCard title="Til" description="Interfeys tili.">
+      <SettingsCard title={t("languageTitle")} description={t("languageDescription")}>
         <SettingRow
           title={
             <span className="flex items-center gap-2">
@@ -175,13 +177,13 @@ export default function AppearanceSection() {
               ) : (
                 <KarakalpakFlag className="size-4 shrink-0 rounded-[3px]" />
               )}
-              {currentLanguage?.label ?? "Oʻzbekcha"}
+              {currentLanguage?.label ?? t("defaultLanguageLabel")}
             </span>
           }
-          description="Interfeys tili"
+          description={t("languageRowDescription")}
         >
           <Select value={language} onValueChange={handleLanguageChange}>
-            <SelectTrigger className="w-44" aria-label="Interfeys tilini tanlash">
+            <SelectTrigger className="w-44" aria-label={t("languageSelectAria")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent align="end">
@@ -191,7 +193,7 @@ export default function AppearanceSection() {
                     {l.label}
                     {!l.ready && (
                       <Badge variant="secondary" className="ml-1">
-                        Tez orada
+                        {t("comingSoon")}
                       </Badge>
                     )}
                   </span>
@@ -202,16 +204,16 @@ export default function AppearanceSection() {
         </SettingRow>
       </SettingsCard>
       {/* Avtomatik turlar */}
-      <SettingsCard 
-        title="Avtomatik yoʻl-yoʻriq" 
-        description="Yangi sahifaga kirganingizda u haqida qisqacha ma'lumot beruvchi turlarni avtomatik ko'rsatish."
+      <SettingsCard
+        title={t("autoTourTitle")}
+        description={t("autoTourDescription")}
         action={<SaveSignalPing signal={`${autoToursEnabled}`} />}
       >
         <SettingRow
-          title="Turlarni avtomatik boshlash"
-          description="O'chirib qo'yilsa, turlar faqat Yo'l-yo'riq markazidan qo'lda ishga tushiriladi."
+          title={t("autoTourRowTitle")}
+          description={t("autoTourRowDescription")}
         >
-          <Switch 
+          <Switch
             checked={autoToursEnabled}
             onCheckedChange={setAutoToursEnabled}
           />

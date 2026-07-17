@@ -1,9 +1,11 @@
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
-const TwoFactorAuthForm = () => {
+const TwoFactorAuthForm = async () => {
+  const t = await getTranslations("TwoFactorAuthPage");
   return (
     <section className="bg-foreground dark:bg-background min-h-screen relative flex items-center justify-center">
       <div className="pointer-events-none absolute inset-0 right-0 overflow-hidden md:block hidden">
@@ -23,10 +25,10 @@ const TwoFactorAuthForm = () => {
             </div>
             <div className="flex flex-col gap-1">
               <CardTitle className="text-2xl font-medium text-card-foreground">
-                Ikki bosqichli tasdiqlash
+                {t("title")}
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground font-normal">
-                Ilovangiz tomonidan taqdim etilgan kodni kiritish orqali hisobingizga kirishni tasdiqlang
+                {t("subtitle")}
               </CardDescription>
             </div>
           </CardHeader>
@@ -47,16 +49,16 @@ const TwoFactorAuthForm = () => {
 
                   <Field className="gap-6">
                     <FieldDescription className="text-center text-sm font-normal text-muted-foreground">
-                      Kodni olmadingizmi?{" "}
+                      {t("didntGetCode")}{" "}
                       <a
                         href="#"
                         className="font-medium text-card-foreground no-underline!"
                       >
-                        Qayta yuborish
+                        {t("resend")}
                       </a>
                     </FieldDescription>
                     <Button type="submit" size={"lg"} className="rounded-lg h-10 hover:bg-primary/80 cursor-pointer">
-                      Tasdiqlash
+                      {t("confirm")}
                     </Button>
                   </Field>
                 </div>

@@ -248,7 +248,12 @@
     "toastExportSuccess": "Данные скачаны.",
     "toastExportError": "Не удалось выполнить экспорт.",
     "toastDeleteSuccess": "Аккаунт и все данные удалены.",
-    "toastDeleteError": "Не удалось удалить. Попробуйте ещё раз."
+    "toastDeleteError": "Не удалось удалить. Попробуйте ещё раз.",
+    "confirmWord": "УДАЛИТЬ",
+    "sheetStudents": "Ученики",
+    "sheetClasses": "Классы",
+    "sheetLessons": "Уроки",
+    "sheetTasks": "Задачи"
   },
   "BellSection": {
     "title": "Смены и расписание звонков",
@@ -268,7 +273,46 @@
     "shift2": "2-я смена",
     "breakTooltip": "Перемена",
     "longBreakTooltip": "Большая перемена",
-    "breakMinutesSuffix": "{minutes} мин"
+    "breakMinutesSuffix": "{minutes} мин",
+    "lessonHourLabel": "{index}-й урок"
+  },
+  "AppearanceSection": {
+    "themeTitle": "Тема",
+    "themeDescription": "Выберите светлую, тёмную или системную тему.",
+    "themeAriaLabel": "Тема",
+    "themeLight": "Светлая",
+    "themeDark": "Тёмная",
+    "themeSystem": "Системная",
+    "backgroundTitle": "Фон рабочей области",
+    "backgroundDescription": "Внешний вид фона основной рабочей области.",
+    "backgroundAriaLabel": "Фон рабочей области",
+    "bgPlain": "Без узора",
+    "bgGrid": "Клетка",
+    "bgLined": "Линии",
+    "bgParchment": "Точки",
+    "bgStripes": "Диагональ",
+    "bgChecker": "Шахматка",
+    "bgGraphDashed": "Графика (штрихи)",
+    "bgGraph45": "Графика (45°)",
+    "bgCircuit": "Схема",
+    "patternSizeTitle": "Размер узора",
+    "patternSizeDescription": "Плавно увеличивайте или уменьшайте шаг клетки/точек.",
+    "languageTitle": "Язык",
+    "languageDescription": "Язык интерфейса.",
+    "languageRowDescription": "Язык интерфейса",
+    "languageSelectAria": "Выбрать язык интерфейса",
+    "comingSoon": "Скоро",
+    "defaultLanguageLabel": "Узбекский",
+    "autoTourTitle": "Автоматические туры",
+    "autoTourDescription": "Автоматически показывать туры с кратким описанием новой страницы при её открытии.",
+    "autoTourRowTitle": "Запускать туры автоматически",
+    "autoTourRowDescription": "Если выключено, туры запускаются только вручную из Центра поддержки."
+  },
+  "SettingsShared": {
+    "unsavedChanges": "Есть несохранённые изменения",
+    "saved": "Сохранено",
+    "cancel": "Отмена",
+    "save": "Сохранить"
   },
   "AcademicYearSection": {
     "rangeStartAria": "Дата начала",
@@ -2088,5 +2132,160 @@
   },
   "FeedbackQuoteBlock": {
     "jumpTitle": "Перейти к отмеченному сообщению"
+  },
+  "LoginForm": {
+    "title": "Войдите в свой аккаунт",
+    "subtitle": "Добро пожаловать в Ustozona — войдите, чтобы продолжить.",
+    "continueWithGoogle": "Войти через Google",
+    "orWithEmail": "или по email",
+    "emailLabel": "Электронная почта",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "forgotPassword": "Забыли пароль?",
+    "rememberMe": "Запомнить меня",
+    "signingIn": "Выполняется вход…",
+    "signIn": "Войти",
+    "noAccount": "Нет аккаунта?",
+    "getStartedFree": "Начать бесплатно",
+    "googleNotConfigured": "Вход через Google пока не настроен.",
+    "errors": {
+      "invalidEmailOrPassword": "Неверный email или пароль.",
+      "userNotFound": "Такой аккаунт не найден.",
+      "invalidEmail": "Некорректный адрес электронной почты.",
+      "generic": "Ошибка при входе. Попробуйте снова."
+    }
+  },
+  "SignupForm": {
+    "title": "Начать бесплатно",
+    "subtitle": "Банковская карта не требуется. Вы начнёте работу за минуту.",
+    "continueWithGoogle": "Продолжить через Google",
+    "orWithEmail": "или по email",
+    "firstNameLabel": "Имя",
+    "firstNamePlaceholder": "Ваше имя",
+    "lastNameLabel": "Фамилия",
+    "lastNamePlaceholder": "Ваша фамилия",
+    "emailLabel": "Электронная почта",
+    "emailPlaceholder": "you@email.com",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Минимум 8 символов",
+    "creating": "Создание…",
+    "submit": "Начать бесплатно",
+    "haveAccount": "Уже есть аккаунт?",
+    "signIn": "Войти",
+    "googleNotConfigured": "Вход через Google пока не настроен.",
+    "errors": {
+      "userAlreadyExists": "Аккаунт с таким email уже существует.",
+      "passwordTooShort": "Пароль должен содержать не менее 8 символов.",
+      "passwordTooLong": "Пароль слишком длинный.",
+      "invalidEmail": "Некорректный адрес электронной почты.",
+      "generic": "Ошибка при регистрации. Попробуйте снова."
+    }
+  },
+  "ForgotPasswordPage": {
+    "title": "Забыли пароль?",
+    "subtitle": "Введите email — мы отправим ссылку для восстановления пароля.",
+    "sentMessage": "Ссылка отправлена — проверьте почту.",
+    "emailLabel": "Электронная почта",
+    "emailPlaceholder": "you@email.com",
+    "sending": "Отправка…",
+    "submit": "Восстановить пароль",
+    "backToLogin": "Вернуться к входу",
+    "errorSending": "Ошибка при отправке письма. Попробуйте снова."
+  },
+  "ResetPasswordPage": {
+    "title": "Установите новый пароль",
+    "subtitle": "Введите новый пароль для своего аккаунта.",
+    "newPasswordLabel": "Новый пароль",
+    "passwordPlaceholder": "Минимум 8 символов",
+    "updating": "Обновление…",
+    "submit": "Обновить пароль",
+    "requestNewLink": "Запросить новую ссылку",
+    "errors": {
+      "invalidLink": "Ссылка неверна или срок её действия истёк.",
+      "passwordTooShort": "Пароль должен содержать не менее 8 символов.",
+      "updateFailed": "Ошибка при обновлении пароля. Возможно, срок действия ссылки истёк."
+    }
+  },
+  "TwoFactorAuthPage": {
+    "title": "Двухфакторная аутентификация",
+    "subtitle": "Подтвердите доступ к аккаунту, введя код из приложения",
+    "didntGetCode": "Не получили код?",
+    "resend": "Отправить снова",
+    "confirm": "Подтвердить"
+  },
+  "VerifyEmailPage": {
+    "title": "Подтвердите свою почту",
+    "description": "Ссылка для активации отправлена на адрес: {email}. Проверьте почту и перейдите по ссылке, чтобы завершить активацию.",
+    "verifyNow": "Подтвердить сейчас",
+    "didntGetEmail": "Не получили письмо?",
+    "resend": "Отправить снова"
+  },
+  "OnboardingWizard": {
+    "steps": {
+      "welcome": {
+        "title": "Добро пожаловать",
+        "description": "Познакомьтесь с Ustozona"
+      },
+      "profile": {
+        "title": "Профиль",
+        "description": "О вас"
+      },
+      "academic-year": {
+        "title": "Учебный год",
+        "description": "Подтвердите даты"
+      },
+      "done": {
+        "title": "Готово",
+        "description": "Всё настроено"
+      }
+    },
+    "welcome": {
+      "greeting": "Добро пожаловать!",
+      "greetingWithName": "Добро пожаловать, {name}!",
+      "smileLabel": "Улыбка",
+      "subtitle": "Начнём работу с Ustozona — посмотрите, что вас ждёт."
+    },
+    "profileStep": {
+      "title": "О вас",
+      "desc": "Эта информация отображается в профиле и отчётах. Позже вы сможете изменить её в настройках.",
+      "nameLabel": "Имя и фамилия",
+      "namePlaceholder": "Например, Отабек Абдусатторов",
+      "schoolLabel": "Школа / учреждение",
+      "schoolPlaceholder": "Например, школа №24",
+      "subjectLabel": "Основной предмет",
+      "subjectPlaceholder": "Например, английский язык",
+      "birthDateLabel": "Дата рождения"
+    },
+    "yearStep": {
+      "title": "Подтвердите учебный год",
+      "desc": "Мы заранее заполнили официальные даты узбекского учебного года. Если всё верно — продолжайте, либо измените даты — четверти и каникулы заполнятся автоматически.",
+      "academicYearLabel": "{year} учебный год",
+      "rangeSummary": "{start} — {end} · 4 четверти",
+      "setDatesHint": "Нажмите «Изменить даты», чтобы задать даты.",
+      "changeDates": "Изменить даты",
+      "yearNamePlaceholder": "Название учебного года",
+      "periodLabel": "Период года",
+      "startDateAria": "Дата начала",
+      "endDateAria": "Дата окончания"
+    },
+    "doneStep": {
+      "title": "Всё готово!",
+      "subtitle": "Учебный год {year} настроен. Когда вы начнёте, вас будет ждать короткий тур по рабочему пространству."
+    },
+    "footer": {
+      "later": "Позже",
+      "back": "Назад",
+      "continue": "Продолжить",
+      "start": "Начать"
+    },
+    "requiredFieldAria": "Обязательное поле",
+    "requiredFieldTooltip": "Это поле обязательно для заполнения"
+  },
+  "GuideHub": {
+    "tooltip": "Руководство",
+    "heading": "Начало работы",
+    "description": "Узнайте, как эффективно использовать каждый раздел.",
+    "dismissedTitle": "Пропущено — нажмите, чтобы начать заново"
   }
 }

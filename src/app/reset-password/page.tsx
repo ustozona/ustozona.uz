@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 import { AuthShell } from "@/components/auth-shell";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui
 import { PasswordInput } from "@/components/ui/password-input";
 
 function ResetPasswordForm() {
+  const t = useTranslations("ResetPasswordPage");
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -18,13 +20,13 @@ function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!token) {
-      setError("Havola notoʻgʻri yoki muddati oʻtgan. Qayta soʻrov yuboring.");
+      setError(t("errors.invalidLink"));
       return;
     }
     const form = new FormData(e.currentTarget);
     const newPassword = String(form.get("password") ?? "");
     if (newPassword.length < 8) {
-      setError("Parol kamida 8 belgidan iborat boʻlsin.");
+      setError(t("errors.passwordTooShort"));
       return;
     }
     setPending(true);
@@ -32,7 +34,7 @@ function ResetPasswordForm() {
     const { error: err } = await authClient.resetPassword({ newPassword, token });
     setPending(false);
     if (err) {
-      setError("Parolni yangilashda xatolik yuz berdi. Havola muddati oʻtgan boʻlishi mumkin.");
+      setError(t("errors.updateFailed"));
       return;
     }
     router.push("/login");
@@ -42,24 +44,24 @@ function ResetPasswordForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <FieldGroup>
         <div className="flex flex-col items-center text-center gap-1">
-          <h1 className="text-2xl font-medium">Yangi parol oʻrnating</h1>
+          <h1 className="text-2xl font-medium">{t("title")}</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            Hisobingiz uchun yangi parol kiriting.
+            {t("subtitle")}
           </p>
         </div>
 
         {!token ? (
           <FieldDescription className="text-center text-destructive">
-            Havola notoʻgʻri yoki muddati oʻtgan. <a href="/forgot-password">Qayta soʻrov yuboring</a>.
+            {t("errors.invalidLink")} <a href="/forgot-password">{t("requestNewLink")}</a>.
           </FieldDescription>
         ) : (
           <>
             <Field>
-              <FieldLabel htmlFor="password">Yangi parol</FieldLabel>
+              <FieldLabel htmlFor="password">{t("newPasswordLabel")}</FieldLabel>
               <PasswordInput
                 id="password"
                 name="password"
-                placeholder="Kamida 8 belgi"
+                placeholder={t("passwordPlaceholder")}
                 autoComplete="new-password"
                 required
                 minLength={8}
@@ -74,7 +76,7 @@ function ResetPasswordForm() {
 
             <Field>
               <Button type="submit" disabled={pending}>
-                {pending ? "Yangilanmoqda…" : "Parolni yangilash"}
+                {pending ? t("updating") : t("submit")}
               </Button>
             </Field>
           </>

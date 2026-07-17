@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { type DateRange } from "react-day-picker";
 import {
   GraduationCap,
@@ -76,16 +77,23 @@ import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
    chiqish faqat "Keyinroq" yoki qadamlarni tugatish orqali.
    ════════════════════════════════════════════════════════════════════ */
 
-/** Vertikal stepper navigatsiyasi — 4 qadam (id, sarlavha, tavsif, ikonka). */
-const STEPS = [
-  { id: "welcome", title: "Xush kelibsiz", description: "Ustozona bilan tanishing", icon: <GraduationCap /> },
-  { id: "profile", title: "Profil", description: "Oʻzingiz haqingizda", icon: <Users /> },
-  { id: "academic-year", title: "Oʻquv yili", description: "Sanalarni tasdiqlang", icon: <CalendarRange /> },
-  { id: "done", title: "Tayyor", description: "Hammasi sozlandi", icon: <Check /> },
-];
-const STEP_COUNT = STEPS.length;
+/** Vertikal stepper navigatsiyasi — 4 qadam (id, ikonka; sarlavha/tavsif t() orqali). */
+const STEP_IDS = ["welcome", "profile", "academic-year", "done"] as const;
+const STEP_ICONS = [<GraduationCap key="welcome" />, <Users key="profile" />, <CalendarRange key="academic-year" />, <Check key="done" />];
+const STEP_COUNT = STEP_IDS.length;
 
 export default function OnboardingWizard() {
+  const t = useTranslations("OnboardingWizard");
+  const STEPS = React.useMemo(
+    () =>
+      STEP_IDS.map((id, i) => ({
+        id,
+        title: t(`steps.${id}.title`),
+        description: t(`steps.${id}.description`),
+        icon: STEP_ICONS[i],
+      })),
+    [t]
+  );
   const profile = useSettingsStore((s) => s.profile);
   const setProfile = useSettingsStore((s) => s.setProfile);
   const setAcademicYear = useSettingsStore((s) => s.setAcademicYear);
@@ -258,11 +266,11 @@ export default function OnboardingWizard() {
             <div className="flex flex-col gap-5 text-center animate-in fade-in-50 duration-base">
               <div className="space-y-1">
                 <DialogTitle className="text-lg">
-                  Xush kelibsiz{firstName ? `, ${firstName}` : ""}!{" "}
-                  <AppleEmoji code="1f60a" label="Tabassum" />
+                  {firstName ? t("welcome.greetingWithName", { name: firstName }) : t("welcome.greeting")}{" "}
+                  <AppleEmoji code="1f60a" label={t("welcome.smileLabel")} />
                 </DialogTitle>
                 <DialogDescription className="text-sm/relaxed">
-                  Ustozona bilan ishlashni boshlaymiz — quyida sizni nima kutayotganini koʻring.
+                  {t("welcome.subtitle")}
                 </DialogDescription>
               </div>
               <FeatureLoop items={PRODUCT_FEATURES} className="pt-1" />
@@ -273,11 +281,11 @@ export default function OnboardingWizard() {
           <StepperContent value="profile">
             <div className="flex flex-col gap-5 animate-in fade-in-50 duration-base">
               <StepHeader
-                title="Oʻzingiz haqingizda"
-                desc="Bu maʼlumotlar profil va hisobotlarda koʻrinadi. Keyin Sozlamalarda oʻzgartirasiz."
+                title={t("profileStep.title")}
+                desc={t("profileStep.desc")}
               />
               <div className="flex flex-col gap-4">
-                <Field label="Ism-familiya" htmlFor="ob-name" required>
+                <Field label={t("profileStep.nameLabel")} htmlFor="ob-name" required>
                   <InputGroup>
                     <InputGroupAddon>
                       <User className="size-4" />
@@ -286,7 +294,7 @@ export default function OnboardingWizard() {
                       id="ob-name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Masalan, Otabek Abdusattorov"
+                      placeholder={t("profileStep.namePlaceholder")}
                       autoFocus
                     />
                   </InputGroup>
@@ -298,7 +306,7 @@ export default function OnboardingWizard() {
                     Majburiy "Ism-familiya" — "*" + tooltip bilan. */}
                 <div className="flex flex-col gap-4 border-t border-border pt-4">
                   <div className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-2">
-                    <Field label="Maktab / muassasa" htmlFor="ob-school">
+                    <Field label={t("profileStep.schoolLabel")} htmlFor="ob-school">
                       <InputGroup>
                         <InputGroupAddon>
                           <School className="size-4" />
@@ -307,11 +315,11 @@ export default function OnboardingWizard() {
                           id="ob-school"
                           value={school}
                           onChange={(e) => setSchool(e.target.value)}
-                          placeholder="Masalan, 24-maktab"
+                          placeholder={t("profileStep.schoolPlaceholder")}
                         />
                       </InputGroup>
                     </Field>
-                    <Field label="Asosiy fan" htmlFor="ob-subject">
+                    <Field label={t("profileStep.subjectLabel")} htmlFor="ob-subject">
                       <InputGroup>
                         <InputGroupAddon>
                           <BookOpen className="size-4" />
@@ -320,12 +328,12 @@ export default function OnboardingWizard() {
                           id="ob-subject"
                           value={subject}
                           onChange={(e) => setSubject(e.target.value)}
-                          placeholder="Masalan, Ingliz tili"
+                          placeholder={t("profileStep.subjectPlaceholder")}
                         />
                       </InputGroup>
                     </Field>
                   </div>
-                  <Field label="Tavallud sana" htmlFor="ob-birth-date">
+                  <Field label={t("profileStep.birthDateLabel")} htmlFor="ob-birth-date">
                     <BirthDatePicker value={birthDate} onChange={setBirthDate} />
                   </Field>
                 </div>
@@ -337,8 +345,8 @@ export default function OnboardingWizard() {
           <StepperContent value="academic-year">
             <div className="flex flex-col gap-4 animate-in fade-in-50 duration-base">
               <StepHeader
-                title="Oʻquv yilini tasdiqlang"
-                desc="Rasmiy oʻzbek oʻquv yili sanalarini oldindan tayyorladik. Toʻgʻri boʻlsa davom eting yoki sanalarni oʻzgartiring — choraklar va taʼtillar avtomatik toʻldiriladi."
+                title={t("yearStep.title")}
+                desc={t("yearStep.desc")}
               />
 
               {!editing ? (
@@ -346,14 +354,14 @@ export default function OnboardingWizard() {
                   <div className="rounded-xl border border-border bg-muted/30 px-4 py-4">
                     {hasFullRange ? (
                       <>
-                        <p className="text-lg font-semibold tabular-nums">{yearLabel}-oʻquv yili</p>
+                        <p className="text-lg font-semibold tabular-nums">{t("yearStep.academicYearLabel", { year: yearLabel })}</p>
                         <p className="text-sm text-muted-foreground mt-0.5 tabular-nums">
-                          {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
+                          {t("yearStep.rangeSummary", { start: fmtDayMonthUz(startKey), end: fmtDayMonthUz(endKey) })}
                         </p>
                       </>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Sanalarni belgilash uchun «Sanalarni oʻzgartirish»ni bosing.
+                        {t("yearStep.setDatesHint")}
                       </p>
                     )}
                   </div>
@@ -364,7 +372,7 @@ export default function OnboardingWizard() {
                     onClick={() => setEditing(true)}
                   >
                     <CalendarRange className="size-4" />
-                    Sanalarni oʻzgartirish
+                    {t("yearStep.changeDates")}
                   </Button>
                 </>
               ) : (
@@ -376,30 +384,30 @@ export default function OnboardingWizard() {
                   <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-3">
                     <CalendarRange className="size-4 shrink-0 text-muted-foreground" />
                     <span className="text-sm font-semibold tabular-nums">
-                      {hasFullRange ? yearLabel : "Oʻquv yili nomi"}
+                      {hasFullRange ? yearLabel : t("yearStep.yearNamePlaceholder")}
                     </span>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium text-muted-foreground">Yil davri</Label>
+                    <Label className="text-xs font-medium text-muted-foreground">{t("yearStep.periodLabel")}</Label>
                     <div className="flex items-center gap-1.5">
                       <DateKeyPicker
                         value={startKey}
                         onChange={(v) => setRange((r) => ({ from: dateKeyToDate(v), to: r?.to }))}
-                        ariaLabel="Boshlanish sanasi"
+                        ariaLabel={t("yearStep.startDateAria")}
                         className="flex-1"
                       />
                       <span className="text-muted-foreground">—</span>
                       <DateKeyPicker
                         value={endKey}
                         onChange={(v) => setRange((r) => ({ from: r?.from, to: dateKeyToDate(v) }))}
-                        ariaLabel="Tugash sanasi"
+                        ariaLabel={t("yearStep.endDateAria")}
                         className="flex-1"
                       />
                     </div>
                     {hasFullRange && (
                       <p className="text-xs text-muted-foreground tabular-nums">
-                        {fmtDayMonthUz(startKey)} — {fmtDayMonthUz(endKey)} · 4 chorak
+                        {t("yearStep.rangeSummary", { start: fmtDayMonthUz(startKey), end: fmtDayMonthUz(endKey) })}
                       </p>
                     )}
                   </div>
@@ -413,9 +421,9 @@ export default function OnboardingWizard() {
             <div className="flex h-full flex-col items-center justify-center gap-4 text-center animate-in fade-in-50 duration-base">
               <Illustration name="48" className="h-32 text-black dark:text-white" />
               <div className="space-y-1.5">
-                <DialogTitle className="text-xl">Hammasi tayyor!</DialogTitle>
+                <DialogTitle className="text-xl">{t("doneStep.title")}</DialogTitle>
                 <DialogDescription className="text-balance">
-                  {yearLabel} oʻquv yili sozlandi. Boshlagach, ish maydoni bilan tanishtiruvchi qisqa yoʻriqnoma sizni kutib turadi.
+                  {t("doneStep.subtitle", { year: yearLabel })}
                 </DialogDescription>
               </div>
             </div>
@@ -431,12 +439,12 @@ export default function OnboardingWizard() {
               boshqa maʼnodagi tugmani bosib yuborardi. */}
           {step === 0 ? (
             <Button key="later" variant="ghost" className="text-muted-foreground" onClick={safeComplete}>
-              Keyinroq
+              {t("footer.later")}
             </Button>
           ) : (
             <Button key="back" variant="ghost" className="gap-1.5 text-muted-foreground" onClick={back}>
               <ArrowLeft className="size-4" />
-              Orqaga
+              {t("footer.back")}
             </Button>
           )}
 
@@ -448,7 +456,7 @@ export default function OnboardingWizard() {
               onClick={next}
               disabled={(step === 1 && !canContinueProfile) || (step === 2 && !hasFullRange)}
             >
-              Davom etish
+              {t("footer.continue")}
               <ArrowRight className="size-4" />
             </Button>
           ) : (
@@ -458,7 +466,7 @@ export default function OnboardingWizard() {
               className="gap-1.5 focus-visible:ring-2 focus-visible:ring-ring/25"
               onClick={safeComplete}
             >
-              Boshlash
+              {t("footer.start")}
               <ArrowRight className="size-4" />
             </Button>
           )}
@@ -492,6 +500,7 @@ function Field({
   required?: boolean;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("OnboardingWizard");
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={htmlFor} className="flex items-center gap-1">
@@ -499,11 +508,11 @@ function Field({
         {required && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-destructive cursor-default" aria-label="Majburiy maydon">
+              <span className="text-destructive cursor-default" aria-label={t("requiredFieldAria")}>
                 *
               </span>
             </TooltipTrigger>
-            <TooltipContent>Toʻldirilishi shart</TooltipContent>
+            <TooltipContent>{t("requiredFieldTooltip")}</TooltipContent>
           </Tooltip>
         )}
       </Label>

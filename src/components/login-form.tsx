@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -13,18 +14,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { GoogleIcon } from "@/components/google-icon";
 
-/** Better Auth xato kodlari → oʻzbekcha xabarlar. */
-const ERROR_UZ: Record<string, string> = {
-  INVALID_EMAIL_OR_PASSWORD: "Email yoki parol notoʻgʻri.",
-  USER_NOT_FOUND: "Bunday hisob topilmadi.",
-  INVALID_EMAIL: "Email manzili notoʻgʻri koʻrinishda.",
-};
-
 export function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
+  const t = useTranslations("LoginForm");
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(true);
+
+  const ERROR_MAP: Record<string, string> = {
+    INVALID_EMAIL_OR_PASSWORD: t("errors.invalidEmailOrPassword"),
+    USER_NOT_FOUND: t("errors.userNotFound"),
+    INVALID_EMAIL: t("errors.invalidEmail"),
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -38,7 +39,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
     });
     if (err) {
       setPending(false);
-      setError(ERROR_UZ[err.code ?? ""] ?? "Kirishda xatolik yuz berdi. Qayta urinib koʻring.");
+      setError(ERROR_MAP[err.code ?? ""] ?? t("errors.generic"));
       return;
     }
     router.push("/dashboard");
@@ -51,7 +52,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
       callbackURL: "/dashboard",
     });
     if (err) {
-      toast.error("Google orqali kirish hozircha sozlanmagan.");
+      toast.error(t("googleNotConfigured"));
     }
   };
 
@@ -59,9 +60,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
     <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center text-center gap-1">
-          <h1 className="text-2xl font-medium">Hisobingizga kiring</h1>
+          <h1 className="text-2xl font-medium">{t("title")}</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            Ustozonaga xush kelibsiz — davom etish uchun kiring.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -69,19 +70,19 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
         <Field>
           <Button variant="outline" type="button" onClick={handleGoogle}>
             <GoogleIcon className="h-4 w-4" />
-            Google orqali kirish
+            {t("continueWithGoogle")}
           </Button>
         </Field>
 
-        <FieldSeparator>yoki email bilan</FieldSeparator>
+        <FieldSeparator>{t("orWithEmail")}</FieldSeparator>
 
         <Field>
-          <FieldLabel htmlFor="email">Elektron pochta</FieldLabel>
+          <FieldLabel htmlFor="email">{t("emailLabel")}</FieldLabel>
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder="falonchi@email.uz"
+            placeholder={t("emailPlaceholder")}
             autoComplete="email"
             required
           />
@@ -89,15 +90,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
 
         <Field>
           <div className="flex items-center">
-            <FieldLabel htmlFor="password">Parol</FieldLabel>
+            <FieldLabel htmlFor="password">{t("passwordLabel")}</FieldLabel>
             <a href="/forgot-password" className="ml-auto text-sm underline-offset-2 hover:underline">
-              Parolni unutdingizmi?
+              {t("forgotPassword")}
             </a>
           </div>
           <PasswordInput
             id="password"
             name="password"
-            placeholder="Parolingizni kiriting"
+            placeholder={t("passwordPlaceholder")}
             autoComplete="current-password"
             required
           />
@@ -110,7 +111,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
             onCheckedChange={(v) => setRememberMe(v === true)}
           />
           <FieldLabel htmlFor="remember" className="font-normal cursor-pointer">
-            Parolni eslab qolish
+            {t("rememberMe")}
           </FieldLabel>
         </Field>
 
@@ -122,14 +123,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
 
         <Field>
           <RainbowButton type="submit" disabled={pending} className="w-full h-9">
-            {pending ? "Kirilmoqda…" : "Tizimga kirish"}
+            {pending ? t("signingIn") : t("signIn")}
           </RainbowButton>
         </Field>
 
         <FieldDescription className="text-center">
-          Hisobingiz yoʻqmi?{" "}
+          {t("noAccount")}{" "}
           <a href="/register" className="font-medium text-foreground hover:underline">
-            Bepul boshlash
+            {t("getStartedFree")}
           </a>
         </FieldDescription>
       </FieldGroup>

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,7 +9,8 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldDescription, FieldGroup } from "@/components/ui/field";
 
-const VerifyEmail = () => {
+const VerifyEmail = async () => {
+  const t = await getTranslations("VerifyEmailPage");
   return (
     <section className="bg-foreground dark:bg-background min-h-screen flex items-center relative">
       <div className="pointer-events-none absolute inset-0 right-0 overflow-hidden md:block hidden">
@@ -36,12 +38,10 @@ const VerifyEmail = () => {
             </div>
             <div className="flex flex-col gap-1">
               <CardTitle className="text-2xl font-medium text-card-foreground">
-                Verify your email
+                {t("title")}
               </CardTitle>
               <CardDescription className="text-sm font-normal text-muted-foreground">
-                An activation link has been sent to your email address:
-                hello@example.com. Please check your inbox and click on the link
-                to complete the activation process.
+                {t("description", { email: "hello@example.com" })}
               </CardDescription>
             </div>
           </CardHeader>
@@ -50,15 +50,15 @@ const VerifyEmail = () => {
               <FieldGroup>
                 <Field className="gap-4">
                   <Button type="submit" size={"lg"} className="rounded-xl h-10 hover:bg-primary/80 cursor-pointer">
-                    Verify Now
+                    {t("verifyNow")}
                   </Button>
                   <FieldDescription className="text-center text-sm font-normal text-muted-foreground">
-                    Didn&apos;t get the email?{" "}
+                    {t("didntGetEmail")}{" "}
                     <a
                       href="#"
                       className="font-medium text-card-foreground no-underline!"
                     >
-                      Resend
+                      {t("resend")}
                     </a>
                   </FieldDescription>
                 </Field>

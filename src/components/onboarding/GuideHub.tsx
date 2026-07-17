@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
   CircleHelp,
@@ -59,6 +60,7 @@ const TOUR_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 export default function GuideHub() {
+  const t = useTranslations("GuideHub");
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const completedTours = useSettingsStore((s) => s.completedTours);
@@ -72,7 +74,7 @@ export default function GuideHub() {
   };
 
   // Faqat completed (skip emas) turlar progress'ga kiradi
-  const doneCount = TOURS.filter((t) => completedTours.includes(t.id)).length;
+  const doneCount = TOURS.filter((tour) => completedTours.includes(tour.id)).length;
   const progress = TOURS.length > 0 ? (doneCount / TOURS.length) * 100 : 0;
 
   return (
@@ -85,13 +87,13 @@ export default function GuideHub() {
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent>Yoʻl-yoʻriq</TooltipContent>
+        <TooltipContent>{t("tooltip")}</TooltipContent>
       </Tooltip>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="space-y-2 px-4 pb-3 pt-4">
-          <p className="text-sm font-medium leading-none">Boshlash</p>
+          <p className="text-sm font-medium leading-none">{t("heading")}</p>
           <p className="text-xs text-muted-foreground">
-            Har bir boʻlimdan toʻliq foydalanishni oʻrganing.
+            {t("description")}
           </p>
           <div className="flex items-center gap-2 pt-1">
             <Progress value={progress} className="h-1.5 flex-1" />
@@ -101,16 +103,16 @@ export default function GuideHub() {
           </div>
         </div>
         <div className="flex flex-col gap-0.5 p-2">
-          {TOURS.map((t) => {
-            const Icon = TOUR_ICONS[t.id] ?? Home;
-            const completed = completedTours.includes(t.id);
-            const dismissed = !completed && dismissedTours.includes(t.id);
+          {TOURS.map((tour) => {
+            const Icon = TOUR_ICONS[tour.id] ?? Home;
+            const completed = completedTours.includes(tour.id);
+            const dismissed = !completed && dismissedTours.includes(tour.id);
             return (
               <button
-                key={t.id}
+                key={tour.id}
                 type="button"
-                onClick={() => openTour(t.id, t.route)}
-                title={dismissed ? "O'tkazib yuborilgan — qayta boshlash uchun bosing" : undefined}
+                onClick={() => openTour(tour.id, tour.route)}
+                title={dismissed ? t("dismissedTitle") : undefined}
                 className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted"
               >
                 <div
@@ -122,7 +124,7 @@ export default function GuideHub() {
                 >
                   <Icon className="size-3.5" />
                 </div>
-                <span className={cn("flex-1", dismissed && "text-muted-foreground")}>{t.label}</span>
+                <span className={cn("flex-1", dismissed && "text-muted-foreground")}>{tour.label}</span>
                 {completed ? (
                   <CircleCheck className="size-4 shrink-0 text-primary" strokeWidth={2} />
                 ) : dismissed ? (

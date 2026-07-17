@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 export function ForgotPasswordForm({ className, ...props }: React.ComponentProps<"form">) {
+  const t = useTranslations("ForgotPasswordPage");
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +27,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
     });
     setPending(false);
     if (err) {
-      setError("Xat yuborishda xatolik yuz berdi. Qayta urinib koʻring.");
+      setError(t("errorSending"));
       return;
     }
     setSent(true);
@@ -35,22 +37,20 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
     <form onSubmit={handleSubmit} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center text-center gap-1">
-          <h1 className="text-2xl font-medium">Parolni unutdingizmi?</h1>
+          <h1 className="text-2xl font-medium">{t("title")}</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            {sent
-              ? "Havola yuborildi — elektron pochtangizni tekshiring."
-              : "Elektron pochtangizni kiriting — parolni tiklash havolasini yuboramiz."}
+            {sent ? t("sentMessage") : t("subtitle")}
           </p>
         </div>
 
         {!sent && (
           <Field>
-            <FieldLabel htmlFor="email">Elektron pochta</FieldLabel>
+            <FieldLabel htmlFor="email">{t("emailLabel")}</FieldLabel>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="falonchi@email.uz"
+              placeholder={t("emailPlaceholder")}
               autoComplete="email"
               required
             />
@@ -66,7 +66,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
         {!sent && (
           <Field>
             <Button type="submit" disabled={pending}>
-              {pending ? "Yuborilmoqda…" : "Parolni tiklash"}
+              {pending ? t("sending") : t("submit")}
             </Button>
           </Field>
         )}
@@ -80,7 +80,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
           >
             <a href="/login">
               <ChevronLeft className="size-4" />
-              Kirish sahifasiga qaytish
+              {t("backToLogin")}
             </a>
           </Button>
         </Field>
