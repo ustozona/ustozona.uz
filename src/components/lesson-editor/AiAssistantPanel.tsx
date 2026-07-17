@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRef, useState, useEffect } from "react";
 import { marked } from "marked";
 import { Bot, X, RotateCcw, SendHorizontal, Square, Plus, Copy, Check } from "lucide-react";
@@ -18,6 +19,7 @@ export default function AiAssistantPanel({
   onClose: () => void;
   onInsert: (html: string) => void;
 }) {
+  const t = useTranslations("LessonAiAssistantPanel");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -49,7 +51,7 @@ export default function AiAssistantPanel({
         signal: ctrl.signal,
       });
       if (!res.ok || !res.body) {
-        const errText = await res.text().catch(() => "AI xatosi");
+        const errText = await res.text().catch(() => t("aiError"));
         setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: `_${errText}_` }; return c; });
         return;
       }
@@ -64,7 +66,7 @@ export default function AiAssistantPanel({
       }
     } catch (e) {
       if ((e as Error).name !== "AbortError") {
-        setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: "_Ulanishda xatolik._" }; return c; });
+        setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: `_${t("connectionError")}_` }; return c; });
       }
     } finally {
       setStreaming(false);
@@ -74,8 +76,8 @@ export default function AiAssistantPanel({
 
   const stop = () => abortRef.current?.abort();
   const reset = () => { stop(); setMessages([]); };
-  const copy = (i: number, text: string) => { navigator.clipboard.writeText(text); setCopiedIdx(i); toast.success("Nusxalandi"); setTimeout(() => setCopiedIdx(null), 1500); };
-  const addToLesson = (text: string) => { onInsert(md(text)); toast.success("Darsga qoʻshildi"); };
+  const copy = (i: number, text: string) => { navigator.clipboard.writeText(text); setCopiedIdx(i); toast.success(t("toast.copied")); setTimeout(() => setCopiedIdx(null), 1500); };
+  const addToLesson = (text: string) => { onInsert(md(text)); toast.success(t("toast.added")); };
 
   return (
     <div className="h-full flex flex-col">
@@ -83,13 +85,13 @@ export default function AiAssistantPanel({
       <div className="px-5 h-[60px] flex items-center justify-between shrink-0 border-b border-border">
         <div className="flex items-center gap-2.5">
           <span className="size-8 rounded-lg bg-muted flex items-center justify-center"><Bot className="size-5 text-foreground" /></span>
-          <span className="text-lg font-bold text-foreground">Ustozona AI</span>
+          <span className="text-lg font-bold text-foreground">{t("title")}</span>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={reset} title="Suhbatni tozalash" className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+          <button onClick={reset} title={t("clearConversation")} className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
             <RotateCcw className="size-4" />
           </button>
-          <button onClick={onClose} title="Yopish" className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+          <button onClick={onClose} title={t("close")} className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
             <X className="size-4.5" />
           </button>
         </div>
@@ -100,15 +102,15 @@ export default function AiAssistantPanel({
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
             <span className="size-14 rounded-2xl bg-muted flex items-center justify-center mb-4"><Bot className="size-7 text-muted-foreground" /></span>
-            <p className="text-base font-bold text-foreground">AI oʻqituvchi yordamchisi</p>
+            <p className="text-base font-bold text-foreground">{t("emptyTitle")}</p>
             <p className="text-sm text-muted-foreground mt-1.5 max-w-[280px] leading-relaxed">
-              Quyida savol yozing yoki darsingiz boʻyicha yordam oling.
+              {t("emptyDescription")}
             </p>
             <div className="mt-5 flex flex-col gap-2 w-full max-w-[300px]">
               {[
-                "Shu mavzu uchun 45 daqiqalik dars rejasi tuz",
-                "Mavzu boʻyicha 5 ta mashq va javoblar ber",
-                "Oʻquvchilar uchun 3 ta nazorat savoli yoz",
+                t("suggestion.lessonPlan"),
+                t("suggestion.exercises"),
+                t("suggestion.quizQuestions"),
               ].map((s) => (
                 <button key={s} onClick={() => setInput(s)}
                   className="text-left text-xs text-muted-foreground border border-border rounded-lg px-3 py-2 hover:bg-muted hover:text-foreground transition-colors">
@@ -138,10 +140,10 @@ export default function AiAssistantPanel({
                     {m.content && !(streaming && i === messages.length - 1) && (
                       <div className="flex items-center gap-1.5 mt-2">
                         <button onClick={() => addToLesson(m.content)} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1 transition-colors">
-                          <Plus className="size-3.5" /> Darsga qoʻshish
+                          <Plus className="size-3.5" /> {t("addToLesson")}
                         </button>
                         <button onClick={() => copy(i, m.content)} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1 transition-colors">
-                          {copiedIdx === i ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />} Nusxalash
+                          {copiedIdx === i ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />} {t("copy")}
                         </button>
                       </div>
                     )}
@@ -160,17 +162,17 @@ export default function AiAssistantPanel({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder="Darsingiz haqida soʻrang…"
+            placeholder={t("composerPlaceholder")}
             rows={2}
             className="block w-full resize-none field-sizing-content max-h-[40vh] min-h-[3.5rem] bg-transparent px-3.5 pt-2.5 pb-12 text-sm leading-relaxed outline-none placeholder:text-muted-foreground"
           />
           <div className="absolute right-2.5 bottom-2.5">
             {streaming ? (
-              <button onClick={stop} title="Toʻxtatish" className="size-9 rounded-xl bg-muted text-foreground flex items-center justify-center hover:bg-muted/70 transition-colors">
+              <button onClick={stop} title={t("stop")} className="size-9 rounded-xl bg-muted text-foreground flex items-center justify-center hover:bg-muted/70 transition-colors">
                 <Square className="size-4 fill-current" />
               </button>
             ) : (
-              <button onClick={send} disabled={!input.trim()} title="Yuborish"
+              <button onClick={send} disabled={!input.trim()} title={t("send")}
                 className="size-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:opacity-90 transition-opacity">
                 <SendHorizontal className="size-4" />
               </button>

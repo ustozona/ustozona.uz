@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { SlidersHorizontal, X, ChevronDown, Ban, Layers, CalendarDays, ClipboardList, Plus, Check, GraduationCap, Clock } from "lucide-react";
 import {
@@ -36,6 +37,7 @@ export default function DetailsPanel({
   onAddScheduleForClass: (classId: string, date: string, startMin: number, endMin: number) => void;
   onRemoveScheduleForClass: (classId: string, index: number) => void;
 }) {
+  const t = useTranslations("LessonDetailsPanel");
   const liveClasses = useLiveClasses();
   const selectedIds = lessonClassIds(lesson);
   const selectedClasses = liveClasses.filter((c) => selectedIds.includes(c.id));
@@ -57,9 +59,9 @@ export default function DetailsPanel({
       <div className="px-5 h-[60px] flex items-center justify-between shrink-0 border-b border-border">
         <div className="flex items-center gap-2.5">
           <SlidersHorizontal className="size-5 text-foreground" />
-          <span className="text-lg font-bold text-foreground">Tafsilotlar</span>
+          <span className="text-lg font-bold text-foreground">{t("title")}</span>
         </div>
-        <button onClick={onClose} title="Yopish" className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+        <button onClick={onClose} title={t("close")} className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
           <X className="size-4.5" />
         </button>
       </div>
@@ -68,7 +70,7 @@ export default function DetailsPanel({
       <div className="flex-1 min-h-0 overflow-y-auto px-5 py-6 space-y-7">
         {/* CLASSES (koʻp tanlov) */}
         <div>
-          <SectionLabel>Sinflar</SectionLabel>
+          <SectionLabel>{t("classes")}</SectionLabel>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button type="button" className="w-full">
@@ -76,7 +78,7 @@ export default function DetailsPanel({
                   <span className="flex items-center gap-1.5 flex-wrap min-w-0">
                     {selectedClasses.length === 0 ? (
                       <span className="flex items-center gap-2.5 text-muted-foreground">
-                        <Ban className="size-4 shrink-0" /> Sinf tanlanmagan
+                        <Ban className="size-4 shrink-0" /> {t("noClassSelected")}
                       </span>
                     ) : selectedClasses.length >= 3 ? (
                       /* Yigʻiq koʻrinish — ustma-ust avatarlar + "N sinf" */
@@ -92,7 +94,7 @@ export default function DetailsPanel({
                             );
                           })}
                         </span>
-                        <span className="font-semibold text-foreground">{selectedClasses.length} sinf</span>
+                        <span className="font-semibold text-foreground">{t("classCount", { count: selectedClasses.length })}</span>
                       </span>
                     ) : (
                       selectedClasses.map((c) => {
@@ -132,7 +134,7 @@ export default function DetailsPanel({
         {/* UNITS (har sinf uchun alohida) */}
         {selectedClasses.length > 0 && (
           <div>
-            <SectionLabel>Boʻlimlar</SectionLabel>
+            <SectionLabel>{t("units")}</SectionLabel>
             <div className="space-y-2.5">
               {selectedClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
@@ -150,7 +152,7 @@ export default function DetailsPanel({
                           <span className="flex flex-col min-w-0">
                             <span className="text-xs text-muted-foreground leading-tight">{c.name}</span>
                             <span className="text-sm font-semibold text-foreground truncate leading-tight">
-                              {unit ? `${String(unit.number).padStart(2, "0")}. ${unit.title}` : "Boʻlim tanlanmagan"}
+                              {unit ? `${String(unit.number).padStart(2, "0")}. ${unit.title}` : t("noUnitSelected")}
                             </span>
                           </span>
                         </span>
@@ -160,11 +162,11 @@ export default function DetailsPanel({
                     <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[260px] overflow-y-auto p-1.5">
                       <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-2.5 py-2 rounded-lg">
                         <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
-                        <span className="flex-1 truncate text-muted-foreground">Boʻlimsiz</span>
+                        <span className="flex-1 truncate text-muted-foreground">{t("noUnit")}</span>
                         {!unit && <Check className="size-4 shrink-0" />}
                       </DropdownMenuItem>
                       {unitsForClass.length === 0 ? (
-                        <div className="px-2 py-2 text-xs text-muted-foreground">Bu sinfda boʻlim yoʻq</div>
+                        <div className="px-2 py-2 text-xs text-muted-foreground">{t("noUnitsInClass")}</div>
                       ) : unitsForClass.map((u) => {
                         const on = u.id === curUnitId;
                         return (
@@ -186,7 +188,7 @@ export default function DetailsPanel({
         {/* SCHEDULE (har sinf uchun alohida) */}
         {selectedClasses.length > 0 && (
           <div>
-            <SectionLabel>Jadval</SectionLabel>
+            <SectionLabel>{t("schedule")}</SectionLabel>
             <div className="space-y-2.5">
               {selectedClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
@@ -222,7 +224,7 @@ export default function DetailsPanel({
                                 <div key={it.idx} className="group/time flex items-center gap-1.5 text-xs text-muted-foreground">
                                   <Clock className="size-3 shrink-0" />
                                   <span className="flex-1 truncate">{fmtClock(it.startMin)} – {fmtClock(it.endMin)}</span>
-                                  <button onClick={() => onRemoveScheduleForClass(c.id, it.idx)} title="Olib tashlash"
+                                  <button onClick={() => onRemoveScheduleForClass(c.id, it.idx)} title={t("removeSchedule")}
                                     className="shrink-0 text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover/time:opacity-100">
                                     <X className="size-3.5" />
                                   </button>
@@ -238,7 +240,7 @@ export default function DetailsPanel({
                     <button type="button" onClick={() => setSchedOpen(c.id)}
                       className="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
                       <CalendarDays className="size-4" />
-                      {sessions.length ? "Yana sana qoʻshish" : "Sana qoʻshish"}
+                      {sessions.length ? t("addMoreDate") : t("addDate")}
                     </button>
                   </div>
                 );
@@ -249,19 +251,19 @@ export default function DetailsPanel({
 
         {/* ASSIGNMENTS (keyin) */}
         <div>
-          <SectionLabel>Baholar</SectionLabel>
+          <SectionLabel>{t("grades")}</SectionLabel>
           <Button variant="outline" className="w-full justify-center gap-2 h-auto py-3 text-muted-foreground font-normal border-dashed">
             <ClipboardList className="size-4" />
-            Baholash uchun sinf biriktirish
+            {t("attachClassForGrading")}
           </Button>
         </div>
 
         {/* STANDARDS (keyin) */}
         <div>
-          <SectionLabel>Standartlar</SectionLabel>
+          <SectionLabel>{t("standards")}</SectionLabel>
           <Button variant="outline" className="w-full justify-center gap-2 h-auto py-3 text-muted-foreground font-normal border-dashed">
             <Plus className="size-4" />
-            Standart qoʻshish
+            {t("addStandard")}
           </Button>
         </div>
       </div>
@@ -269,7 +271,7 @@ export default function DetailsPanel({
       {/* Sana tanlash modali — markazlashgan, panelga bogʻliq emas (sakramaydi) */}
       <Dialog open={!!schedOpen} onOpenChange={(o) => !o && setSchedOpen(null)}>
         <DialogContent className="p-0 w-auto max-w-fit gap-0 overflow-hidden">
-          <DialogTitle className="sr-only">Sana qoʻshish</DialogTitle>
+          <DialogTitle className="sr-only">{t("addDate")}</DialogTitle>
           {schedOpen && (
             <ClassSchedulePicker
               classId={schedOpen}

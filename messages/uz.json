@@ -2287,5 +2287,268 @@
     "heading": "Boshlash",
     "description": "Har bir boʻlimdan toʻliq foydalanishni oʻrganing.",
     "dismissedTitle": "O'tkazib yuborilgan — qayta boshlash uchun bosing"
+  },
+  "LessonEditor": {
+    "contentPlaceholder": "Dars matnini yozishni boshlang…",
+    "notFoundTitle": "Dars topilmadi",
+    "notFoundDescription": "Bu dars mavjud emas yoki oʻchirilgan.",
+    "backToLessons": "Darslar roʻyxatiga qaytish",
+    "status": {
+      "completed": "Tugallandi",
+      "scheduled": "Rejalashtirilgan",
+      "unscheduled": "Rejasiz",
+      "draft": "Qoralama"
+    },
+    "rail": {
+      "details": "Tafsilotlar",
+      "materials": "Materiallar",
+      "goals": "Maqsadlar",
+      "resources": "Resurslar",
+      "ai": "Ustozona AI"
+    },
+    "toast": {
+      "saved": "Saqlandi",
+      "duplicated": "Dars nusxalandi",
+      "deleted": "Dars oʻchirildi",
+      "templateSoon": "Shablon sifatida saqlash — tez orada"
+    },
+    "untitled": "Nomsiz",
+    "copySuffix": "nusxa",
+    "more": "Koʻproq",
+    "menu": {
+      "saveNow": "Hozir saqlash",
+      "downloadPdf": "Yuklab olish (PDF)",
+      "duplicate": "Nusxalash",
+      "saveAsTemplate": "Shablon sifatida saqlash",
+      "deleteLesson": "Darsni oʻchirish"
+    },
+    "deleteDialog": {
+      "title": "Darsni oʻchirish",
+      "description": "Bu dars va uning barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.",
+      "cancel": "Bekor qilish",
+      "confirm": "Oʻchirish"
+    },
+    "close": "Yopish",
+    "saving": "Saqlanmoqda…",
+    "saved": "Saqlandi",
+    "justEdited": "Hozirgina tahrirlandi"
+  },
+  "LessonDetailsPanel": {
+    "title": "Tafsilotlar",
+    "close": "Yopish",
+    "classes": "Sinflar",
+    "noClassSelected": "Sinf tanlanmagan",
+    "classCount": "{count} sinf",
+    "units": "Boʻlimlar",
+    "noUnitSelected": "Boʻlim tanlanmagan",
+    "noUnit": "Boʻlimsiz",
+    "noUnitsInClass": "Bu sinfda boʻlim yoʻq",
+    "schedule": "Jadval",
+    "removeSchedule": "Olib tashlash",
+    "addMoreDate": "Yana sana qoʻshish",
+    "addDate": "Sana qoʻshish",
+    "grades": "Baholar",
+    "attachClassForGrading": "Baholash uchun sinf biriktirish",
+    "standards": "Standartlar",
+    "addStandard": "Standart qoʻshish"
+  },
+  "LessonEditorToolbar": {
+    "linkPrompt": "Havola manzili (URL):",
+    "undo": "Bekor qilish",
+    "redo": "Qaytarish",
+    "bold": "Qalin",
+    "italic": "Kursiv",
+    "underline": "Tagchiziq",
+    "strikethrough": "Oʻchirilgan",
+    "highlight": "Ajratish (highlight)",
+    "heading1": "Sarlavha 1",
+    "heading2": "Sarlavha 2",
+    "heading3": "Sarlavha 3",
+    "bulletList": "Belgili roʻyxat",
+    "orderedList": "Raqamli roʻyxat",
+    "taskList": "Vazifa roʻyxati",
+    "alignLeft": "Chapga",
+    "alignCenter": "Markazga",
+    "alignRight": "Oʻngga",
+    "blockquote": "Iqtibos",
+    "codeBlock": "Kod bloki",
+    "horizontalRule": "Chiziq",
+    "tableActions": "Jadval amallari",
+    "table": {
+      "rowAbove": "Yuqoriga qator",
+      "rowBelow": "Pastga qator",
+      "columnLeft": "Chapga ustun",
+      "columnRight": "Oʻngga ustun",
+      "headerRow": "Sarlavha qatori",
+      "deleteRow": "Qatorni oʻchirish",
+      "deleteColumn": "Ustunni oʻchirish",
+      "deleteTable": "Jadvalni oʻchirish"
+    },
+    "insertTable": "Jadval qoʻshish",
+    "link": "Havola",
+    "insertImage": "Rasm qoʻshish",
+    "insertCallout": "Callout qoʻshish"
+  },
+  "LessonAiAssistantPanel": {
+    "aiError": "AI xatosi",
+    "connectionError": "Ulanishda xatolik.",
+    "toast": {
+      "copied": "Nusxalandi",
+      "added": "Darsga qoʻshildi"
+    },
+    "title": "Ustozona AI",
+    "clearConversation": "Suhbatni tozalash",
+    "close": "Yopish",
+    "emptyTitle": "AI oʻqituvchi yordamchisi",
+    "emptyDescription": "Quyida savol yozing yoki darsingiz boʻyicha yordam oling.",
+    "suggestion": {
+      "lessonPlan": "Shu mavzu uchun 45 daqiqalik dars rejasi tuz",
+      "exercises": "Mavzu boʻyicha 5 ta mashq va javoblar ber",
+      "quizQuestions": "Oʻquvchilar uchun 3 ta nazorat savoli yoz"
+    },
+    "addToLesson": "Darsga qoʻshish",
+    "copy": "Nusxalash",
+    "composerPlaceholder": "Darsingiz haqida soʻrang…",
+    "stop": "Toʻxtatish",
+    "send": "Yuborish"
+  },
+  "ClassSchedulePicker": {
+    "fromClassSchedule": "Sinf jadvalidan",
+    "noSchedule": "(jadval yoʻq)",
+    "pickDayHint": "Kun tanlang — jadvaldagi darslar chiqadi.",
+    "noLessonThisDay": "Bu kuni bu sinfda dars yoʻq. Boshqa kun tanlang yoki belgini olib qoʻlda kiriting.",
+    "start": "Boshlanish",
+    "end": "Tugash",
+    "select": "Tanlang",
+    "cancel": "Bekor",
+    "addCount": "Qoʻshish ({count})",
+    "add": "Qoʻshish"
+  },
+  "BellScheduleDialog": {
+    "title": "Qoʻngʻiroq jadvali",
+    "description": "Dars hamda tanaffus vaqtlarini sozlash.",
+    "close": "Yopish",
+    "schoolProfile": "Maktab rejimi",
+    "profile": {
+      "single": {
+        "title": "Bir smenali",
+        "desc": "Darslar faqat ertalabki smenada boʻladi."
+      },
+      "double": {
+        "title": "Ikki smenali",
+        "desc": "Darslar ikki smenada (ertalab va tushdan keyin) boʻladi."
+      }
+    },
+    "shift1": "1-smena",
+    "shift2": "2-smena",
+    "effectiveDateHint": "Oʻzgarishlar qaysi kundan kuchga kirishi saqlash paytida soʻraladi.",
+    "movedCountHint": "Saqlanganda {count} ta dars yangi vaqtlarga moslashtiriladi.",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash",
+    "breaks": "Tanaffuslar",
+    "default": "Odatiy",
+    "break": "Tanaffus",
+    "longBreak": "Katta tanaffus",
+    "minutesSuffix": "daq",
+    "startsAt": "{time} dan boshlanadi",
+    "startsAtTip": "Smenaning birinchi darsi boshlanadigan vaqt",
+    "lessonCount": "{count} ta dars",
+    "lessonCountTip": "Smenadagi darslar soni",
+    "lessonDuration": "har dars {minutes} daqiqa",
+    "lessonDurationTip": "Har bir dars davomiyligi",
+    "overlapWarning": "1-smena {end1} da tugaydi, 2-smena esa {start2} da boshlanadi — vaqtlar kesishadi.",
+    "pastMidnightWarning": "Darslar yarim tundan oshib ketmoqda — boshlanish vaqti yoki darslar sonini tekshiring."
+  },
+  "EffectiveDateDialog": {
+    "title": "Yangi dars jadvali qachondan kuchga kiradi?",
+    "description": "Ungacha boʻlgan dars va baholar tarixi oldingi jadvalda saqlanadi.",
+    "close": "Yopish",
+    "options": {
+      "monday": {
+        "title": "Keyingi dushanbadan",
+        "caption": "Yangi jadval '{date}'dan kuchga kiradi. Ungacha darslar eski tartibda boʻladi."
+      },
+      "today": {
+        "title": "Bugundan boshlab",
+        "caption": "'{date}'dan boshlanadi. Oʻtgan kunlar tarixiga taʼsir qilmaydi."
+      },
+      "custom": {
+        "title": "Boshqa sanadan…",
+        "caption": "'{date}'dan kuchga kiradi",
+        "pickFromCalendar": "Sanani kalendardan tanlang."
+      },
+      "inPlace": {
+        "title": "Xatoni toʻgʻrilash",
+        "caption": "Yangi jadval yaratilmaydi, oʻzgarishlar barcha kunlarga qoʻllanadi."
+      }
+    },
+    "dateAlreadyTaken": "Ushbu sanaga dars jadvali tuzilgan",
+    "effectiveDateLabel": "Kuchga kirish sanasi",
+    "pickDate": "Sanani tanlang",
+    "dateAlreadyTakenFull": "Ushbu sanaga dars jadvali tuzilgan.",
+    "pastDateWarning": "Oʻtmishdagi sana — shu kundan keyingi kunlar tarixi ham yangi jadval bilan koʻrsatiladi.",
+    "noteLabel": "Oʻzgarishlar haqida izoh (ixtiyoriy)",
+    "notePlaceholder": "Masalan: 7-B darsi juma kuniga oʻtkazildi",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash"
+  },
+  "ClassFormModal": {
+    "createTitle": "Yangi sinf yaratish",
+    "editTitle": "Sinfni tahrirlash{name}",
+    "createDescription": "Sinf nomi, rangi va haftalik jadvalini kiriting.",
+    "editDescription": "Sinf maʼlumotlari va jadvalini yangilang.",
+    "className": "Sinf nomi",
+    "classNamePlaceholder": "Masalan, Algebra 101",
+    "pickIcon": "Ikonka tanlash",
+    "pickColor": "Rang tanlash",
+    "grade": "Sinf",
+    "notSelected": "Tanlanmagan",
+    "gradeValue": "{grade}-sinf",
+    "subject": "Fan",
+    "subjectPlaceholder": "Masalan, Matematika",
+    "descriptionLabel": "Tavsif",
+    "descriptionPlaceholder": "Masalan, 10-sinflar uchun chuqurlashtirilgan matematika",
+    "weeklySchedule": "Haftalik jadval",
+    "addTime": "Vaqt qoʻshish",
+    "noRegularSchedule": "Muntazam jadval yoʻq. Vaqt qoʻshing.",
+    "cancel": "Bekor qilish",
+    "create": "Yaratish",
+    "save": "Saqlash"
+  },
+  "ClassListPanel": {
+    "toast": {
+      "deleted": "«{name}» oʻchirildi",
+      "undo": "Bekor qilish"
+    },
+    "title": "Sinflar",
+    "addClass": "Sinf qoʻshish",
+    "add": "Qoʻshish",
+    "emptyTitle": "Hozircha sinflar yoʻq",
+    "emptyDescription": "Oʻquvchilar roʻyxatini shakllantirish uchun birinchi sinfingizni qoʻshing.",
+    "edit": "Tahrirlash",
+    "delete": "Oʻchirish",
+    "openClass": "Sinfni ochish",
+    "hideStats": "Statistikani yashirish",
+    "showStats": "Statistikani koʻrsatish",
+    "countSuffix": "{value} ta",
+    "deleteDialog": {
+      "title": "Sinfni oʻchirish",
+      "description": "«{name}» sinfi oʻchiriladi. Bu amalni keyinroq bekor qilishingiz mumkin.",
+      "cancel": "Bekor qilish",
+      "confirm": "Oʻchirish"
+    }
+  },
+  "CreateUnitModal": {
+    "title": "Boʻlim yaratish",
+    "description": "Darslaringizni tartiblash uchun yangi boʻlim qoʻshing.",
+    "nameLabel": "Nomi",
+    "namePlaceholder": "Masalan, Algebraga kirish, Chiziqli tenglamalar",
+    "linkToClasses": "Sinflarga bogʻlash",
+    "selectClassPlaceholder": "Sinf tanlang...",
+    "linkHint": "Bu boʻlimdagi darslar shu sinflarga avtomatik biriktiriladi.",
+    "descriptionLabel": "Tavsif",
+    "descriptionPlaceholder": "Bu boʻlim nimani qamrab olishi haqida qisqa tavsif...",
+    "cancel": "Bekor qilish",
+    "submit": "Boʻlim yaratish"
   }
 }

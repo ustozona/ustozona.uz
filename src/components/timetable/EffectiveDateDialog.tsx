@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { uz } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,7 @@ export default function EffectiveDateDialog({
   onConfirm: (choice: EffectiveChoice) => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("EffectiveDateDialog");
   const monday = nextMonday(todayKey);
   const [kind, setKind] = useState<OptionKind>("monday");
   const [customDate, setCustomDate] = useState("");
@@ -116,36 +118,36 @@ export default function EffectiveDateDialog({
     {
       key: "monday",
       icon: <CalendarClock className="size-4" />,
-      title: "Keyingi dushanbadan",
+      title: t("options.monday.title"),
       caption: mondayTaken
-        ? "Ushbu sanaga dars jadvali tuzilgan"
-        : withDate(monday, "Yangi jadval {date}dan kuchga kiradi. Ungacha darslar eski tartibda boʻladi."),
+        ? t("dateAlreadyTaken")
+        : withDate(monday, t("options.monday.caption")),
       disabled: mondayTaken,
     },
     {
       key: "today",
       icon: <CalendarDays className="size-4" />,
-      title: "Bugundan boshlab",
+      title: t("options.today.title"),
       caption: todayTaken
-        ? "Ushbu sanaga dars jadvali tuzilgan"
-        : withDate(todayKey, "{date}dan boshlanadi. Oʻtgan kunlar tarixiga taʼsir qilmaydi."),
+        ? t("dateAlreadyTaken")
+        : withDate(todayKey, t("options.today.caption")),
       disabled: todayTaken,
     },
     {
       key: "custom",
       icon: <CalendarSearch className="size-4" />,
-      title: "Boshqa sanadan…",
+      title: t("options.custom.title"),
       caption: customDate
-        ? withDate(customDate, "{date}dan kuchga kiradi")
-        : "Sanani kalendardan tanlang.",
+        ? withDate(customDate, t("options.custom.caption"))
+        : t("options.custom.pickFromCalendar"),
     },
     ...(allowInPlace
       ? [
           {
             key: "in-place" as const,
             icon: <Wrench className="size-4" />,
-            title: "Xatoni toʻgʻrilash",
-            caption: "Yangi jadval yaratilmaydi, oʻzgarishlar barcha kunlarga qoʻllanadi.",
+            title: t("options.inPlace.title"),
+            caption: t("options.inPlace.caption"),
           },
         ]
       : []),
@@ -165,16 +167,16 @@ export default function EffectiveDateDialog({
             </SectionIcon>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <DialogTitle asChild>
-                <CardTitle>Yangi dars jadvali qachondan kuchga kiradi?</CardTitle>
+                <CardTitle>{t("title")}</CardTitle>
               </DialogTitle>
               <DialogDescription className="text-caption">
-                Ungacha boʻlgan dars va baholar tarixi oldingi jadvalda saqlanadi.
+                {t("description")}
               </DialogDescription>
             </div>
           </div>
           <DialogClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
             <X className="size-4" />
-            <span className="sr-only">Yopish</span>
+            <span className="sr-only">{t("close")}</span>
           </DialogClose>
         </div>
 
@@ -211,7 +213,7 @@ export default function EffectiveDateDialog({
 
           {kind === "custom" && (
             <div className="space-y-1.5 rounded-lg border border-border bg-muted/30 p-3">
-              <Label>Kuchga kirish sanasi</Label>
+              <Label>{t("effectiveDateLabel")}</Label>
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -222,7 +224,7 @@ export default function EffectiveDateDialog({
                     )}
                   >
                     <CalendarSearch className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                    {customDate ? fmtDayMonthUz(customDate) : "Sanani tanlang"}
+                    {customDate ? fmtDayMonthUz(customDate) : t("pickDate")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto overflow-hidden p-0" align="start">
@@ -248,13 +250,12 @@ export default function EffectiveDateDialog({
                 </PopoverContent>
               </Popover>
               {customTaken && (
-                <p className="text-xs text-destructive">Ushbu sanaga dars jadvali tuzilgan.</p>
+                <p className="text-xs text-destructive">{t("dateAlreadyTakenFull")}</p>
               )}
               {!customTaken && customPast && (
                 <p className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500">
                   <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-                  Oʻtmishdagi sana — shu kundan keyingi kunlar tarixi ham yangi jadval bilan
-                  koʻrsatiladi.
+                  {t("pastDateWarning")}
                 </p>
               )}
             </div>
@@ -262,12 +263,12 @@ export default function EffectiveDateDialog({
 
           {kind !== "in-place" && (
             <div className="space-y-1.5 pt-4">
-              <Label htmlFor="version-note">Oʻzgarishlar haqida izoh (ixtiyoriy)</Label>
+              <Label htmlFor="version-note">{t("noteLabel")}</Label>
               <Input
                 id="version-note"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Masalan: 7-B darsi juma kuniga oʻtkazildi"
+                placeholder={t("notePlaceholder")}
               />
             </div>
           )}
@@ -275,7 +276,7 @@ export default function EffectiveDateDialog({
 
         <DialogFooter className="border-t border-border bg-muted/20 px-6 py-4">
           <Button variant="outline" onClick={onCancel}>
-            Bekor qilish
+            {t("cancel")}
           </Button>
           <Button
             disabled={confirmDisabled}
@@ -287,7 +288,7 @@ export default function EffectiveDateDialog({
               )
             }
           >
-            Saqlash
+            {t("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

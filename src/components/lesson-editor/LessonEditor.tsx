@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -36,14 +37,15 @@ import { TaskList, TaskItem } from "@tiptap/extension-list";
 import { Callout, CalloutTitle } from "./callout-extension";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 
-const STATUS = {
-  Completed: { label: "Tugallandi", cls: "bg-success/10 text-success" },
-  Scheduled: { label: "Rejalashtirilgan", cls: "bg-info/10 text-info" },
-  Unscheduled: { label: "Rejasiz", cls: "bg-warning/10 text-warning-foreground" },
-  Draft: { label: "Qoralama", cls: "bg-muted text-muted-foreground" },
+const STATUS_CLS = {
+  Completed: "bg-success/10 text-success",
+  Scheduled: "bg-info/10 text-info",
+  Unscheduled: "bg-warning/10 text-warning-foreground",
+  Draft: "bg-muted text-muted-foreground",
 } as const;
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
+  const t = useTranslations("LessonEditor");
   const router = useRouter();
   const liveClasses = useLiveClasses();
   const hydrated = useLessonStore((s) => s._hasHydrated);
@@ -70,7 +72,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
         heading: { levels: [1, 2, 3] },
         link: { openOnClick: false, autolink: true, HTMLAttributes: { rel: "noopener noreferrer" } },
       }),
-      Placeholder.configure({ placeholder: "Dars matnini yozishni boshlang…" }),
+      Placeholder.configure({ placeholder: t("contentPlaceholder") }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight,
       Image.configure({ inline: false, allowBase64: true }),
@@ -108,26 +110,32 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       <Empty className="h-dvh">
         <EmptyHeader>
           <EmptyMedia variant="icon"><FileText /></EmptyMedia>
-          <EmptyTitle>Dars topilmadi</EmptyTitle>
-          <EmptyDescription>Bu dars mavjud emas yoki oʻchirilgan.</EmptyDescription>
+          <EmptyTitle>{t("notFoundTitle")}</EmptyTitle>
+          <EmptyDescription>{t("notFoundDescription")}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={() => router.push("/dashboard/lessons")}>
-            Darslar roʻyxatiga qaytish
+            {t("backToLessons")}
           </Button>
         </EmptyContent>
       </Empty>
     );
   }
 
+  const STATUS = {
+    Completed: { label: t("status.completed"), cls: STATUS_CLS.Completed },
+    Scheduled: { label: t("status.scheduled"), cls: STATUS_CLS.Scheduled },
+    Unscheduled: { label: t("status.unscheduled"), cls: STATUS_CLS.Unscheduled },
+    Draft: { label: t("status.draft"), cls: STATUS_CLS.Draft },
+  } as const;
   const st = lesson ? STATUS[lesson.status] : STATUS.Draft;
 
   const railItems = [
-    { icon: SlidersHorizontal, title: "Tafsilotlar", active: detailsOpen && !aiOpen, onClick: () => { setAiOpen(false); setDetailsOpen((o) => !o); } },
-    { icon: FolderOpen, title: "Materiallar" },
-    { icon: Target, title: "Maqsadlar" },
-    { icon: BookOpen, title: "Resurslar" },
-    { icon: Sparkles, title: "Ustozona AI", active: aiOpen, onClick: () => setAiOpen((o) => !o) },
+    { icon: SlidersHorizontal, title: t("rail.details"), active: detailsOpen && !aiOpen, onClick: () => { setAiOpen(false); setDetailsOpen((o) => !o); } },
+    { icon: FolderOpen, title: t("rail.materials") },
+    { icon: Target, title: t("rail.goals") },
+    { icon: BookOpen, title: t("rail.resources") },
+    { icon: Sparkles, title: t("rail.ai"), active: aiOpen, onClick: () => setAiOpen((o) => !o) },
   ];
 
   /* ── "..." menyu amallari ── */
@@ -136,11 +144,11 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     if (editor) updateLesson(lessonId, { content: editor.getHTML() });
     await flushLessonsNow();
     setSaving(false);
-    toast.success("Saqlandi");
+    toast.success(t("toast.saved"));
   };
   const handleDuplicate = () => {
     if (!lesson) return;
-    const newId = addLesson({ classId: lesson.classId, unitId: lesson.unitId, title: `${lesson.title || "Nomsiz"} (nusxa)`, status: "Draft" });
+    const newId = addLesson({ classId: lesson.classId, unitId: lesson.unitId, title: `${lesson.title || t("untitled")} (${t("copySuffix")})`, status: "Draft" });
     updateLesson(newId, {
       content: editor?.getHTML() ?? lesson.content,
       classIds: lessonClassIds(lesson),
@@ -148,12 +156,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       scheduleByClass: lesson.scheduleByClass,
       classCount: lessonClassIds(lesson).length,
     });
-    toast.success("Dars nusxalandi");
+    toast.success(t("toast.duplicated"));
     router.push(`/lessons/${newId}`);
   };
   const performDelete = () => {
     deleteLesson(lessonId);
-    toast.success("Dars oʻchirildi");
+    toast.success(t("toast.deleted"));
     router.push("/dashboard/lessons");
   };
 
@@ -168,43 +176,43 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">
               <h1 className="text-base font-bold text-foreground truncate max-w-[40vw]">
-                {lesson?.title?.trim() || "Nomsiz"}
+                {lesson?.title?.trim() || t("untitled")}
               </h1>
               <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold", st.cls)}>
                 {st.label}
               </span>
               <span className="shrink-0 inline-flex items-center gap-1 text-xs text-muted-foreground">
                 {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5 text-success" />}
-                {saving ? "Saqlanmoqda…" : "Saqlandi"}
+                {saving ? t("saving") : t("saved")}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Hozirgina tahrirlandi</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("justEdited")}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button title="Koʻproq" className="size-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <button title={t("more")} className="size-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                 <MoreHorizontal className="size-5" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuItem onClick={handleSaveNow} className="gap-2">
-                <Save className="size-4" /> Hozir saqlash
+                <Save className="size-4" /> {t("menu.saveNow")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.print()} className="gap-2">
-                <Download className="size-4" /> Yuklab olish (PDF)
+                <Download className="size-4" /> {t("menu.downloadPdf")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDuplicate} className="gap-2">
-                <Copy className="size-4" /> Nusxalash
+                <Copy className="size-4" /> {t("menu.duplicate")}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast("Shablon sifatida saqlash — tez orada")} className="gap-2">
-                <BookmarkPlus className="size-4" /> Shablon sifatida saqlash
+              <DropdownMenuItem onClick={() => toast(t("toast.templateSoon"))} className="gap-2">
+                <BookmarkPlus className="size-4" /> {t("menu.saveAsTemplate")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setConfirmDeleteOpen(true)} className="gap-2 text-destructive focus:text-destructive">
-                <Trash2 className="size-4" /> Darsni oʻchirish
+                <Trash2 className="size-4" /> {t("menu.deleteLesson")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -212,22 +220,22 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Darsni oʻchirish</AlertDialogTitle>
+                <AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Bu dars va uning barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                  {t("deleteDialog.description")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                <AlertDialogCancel>{t("deleteDialog.cancel")}</AlertDialogCancel>
                 <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={performDelete}>
-                  Oʻchirish
+                  {t("deleteDialog.confirm")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
           <button
             onClick={() => router.push("/dashboard/lessons")}
-            title="Yopish"
+            title={t("close")}
             className="size-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <X className="size-5" />
@@ -249,7 +257,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               <input
                 value={lesson?.title ?? ""}
                 onChange={(e) => updateLesson(lessonId, { title: e.target.value })}
-                placeholder="Nomsiz"
+                placeholder={t("untitled")}
                 className="w-full bg-transparent border-0 outline-none text-4xl font-bold text-foreground placeholder:text-muted-foreground/40 mb-5"
               />
               <EditorContent editor={editor} />

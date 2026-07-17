@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { CLASS_COLOR_HEX, nextAutoClassColor, type ClassColor } from "@/lib/class-colors";
@@ -35,6 +36,7 @@ export function ClassFormModal({
   onSubmit: (values: ClassFormValues) => void;
   onClose: () => void;
 }) {
+  const t = useTranslations("ClassFormModal");
   const colorEntries = (Object.entries(CLASS_COLOR_HEX) as [ClassColor, string][]).filter(([n]) => n !== "gray");
   const presetHexes = colorEntries.map(([, hex]) => hex);
 
@@ -54,7 +56,7 @@ export function ClassFormModal({
     (initial?.slots ?? []).map((s) => ({ ...s, id: Math.random().toString(36).slice(2, 9) }))
   );
 
-  const addTimeSlot = () => setTimeSlots((prev) => [...prev, { id: Math.random().toString(36).slice(2, 9), day: "Dushanba", start: "09:00", end: "10:00" }]);
+  const addTimeSlot = () => setTimeSlots((prev) => [...prev, { id: Math.random().toString(36).slice(2, 9), day: DAYS[0], start: "09:00", end: "10:00" }]);
   const removeTimeSlot = (id: string) => setTimeSlots((prev) => prev.filter((s) => s.id !== id));
   const updateDay = (id: string, day: string) => setTimeSlots((prev) => prev.map((s) => (s.id === id ? { ...s, day } : s)));
   const updateTime = (id: string, key: "start" | "end", val: string) => setTimeSlots((prev) => prev.map((s) => (s.id === id ? { ...s, [key]: val } : s)));
@@ -67,22 +69,22 @@ export function ClassFormModal({
       <DialogContent showCloseButton={false} className="max-w-[540px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeaderBar
           icon={<GraduationCap className="size-[18px]" aria-hidden />}
-          title={mode === "create" ? "Yangi sinf yaratish" : `Sinfni tahrirlash${initial?.name ? `: ${initial.name}` : ""}`}
-          description={mode === "create" ? "Sinf nomi, rangi va haftalik jadvalini kiriting." : "Sinf maʼlumotlari va jadvalini yangilang."}
+          title={mode === "create" ? t("createTitle") : t("editTitle", { name: initial?.name ? `: ${initial.name}` : "" })}
+          description={mode === "create" ? t("createDescription") : t("editDescription")}
         />
 
         <ScrollArea className="flex-1">
           <div className="p-6 pt-4 space-y-4">
             {/* Nom + rang */}
             <div className="space-y-2">
-              <Label htmlFor="cfm-name">Sinf nomi <span className="text-destructive">*</span></Label>
+              <Label htmlFor="cfm-name">{t("className")} <span className="text-destructive">*</span></Label>
               <div className="flex gap-2">
-                <Input id="cfm-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Masalan, Algebra 101" className="flex-1" />
+                <Input id="cfm-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("classNamePlaceholder")} className="flex-1" />
 
                 {/* Ikonka tanlash */}
                 <Popover open={isIconPickerOpen} onOpenChange={setIsIconPickerOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" aria-label="Ikonka tanlash" className="shrink-0 border-0 shadow-sm text-white hover:opacity-90" style={{ backgroundColor: selectedHex }}>
+                    <Button variant="outline" size="icon" aria-label={t("pickIcon")} className="shrink-0 border-0 shadow-sm text-white hover:opacity-90" style={{ backgroundColor: selectedHex }}>
                       <SelectedIcon className="size-4" />
                     </Button>
                   </PopoverTrigger>
@@ -125,7 +127,7 @@ export function ClassFormModal({
                 {/* Rang tanlash */}
                 <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" aria-label="Rang tanlash" className="shrink-0 border-0 shadow-sm hover:opacity-90" style={{ background: `conic-gradient(${presetHexes.join(", ")}, ${presetHexes[0]})` }}>
+                    <Button variant="outline" size="icon" aria-label={t("pickColor")} className="shrink-0 border-0 shadow-sm hover:opacity-90" style={{ background: `conic-gradient(${presetHexes.join(", ")}, ${presetHexes[0]})` }}>
                       <PaletteIcon className="size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
                     </Button>
                   </PopoverTrigger>
@@ -151,44 +153,44 @@ export function ClassFormModal({
             {/* Sinf + Fan nomi */}
             <div className="flex gap-3">
               <div className="space-y-2 shrink-0">
-                <Label>Sinf</Label>
+                <Label>{t("grade")}</Label>
                 <DropdownMenu>
                   <DropdownMenuTrigger className="flex items-center justify-between rounded-md border border-border px-3 h-9 text-sm w-[140px] bg-card hover:bg-accent/50 transition-colors">
-                    <span className={grade === null ? "text-muted-foreground" : ""}>{grade === null ? "Tanlanmagan" : `${grade}-sinf`}</span>
+                    <span className={grade === null ? "text-muted-foreground" : ""}>{grade === null ? t("notSelected") : t("gradeValue", { grade })}</span>
                     <ChevronDownIcon className="size-4 opacity-50" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-[140px] max-h-[260px] overflow-y-auto">
                     <DropdownMenuRadioGroup value={grade === null ? "" : String(grade)} onValueChange={(val) => setGrade(val ? Number(val) : null)}>
-                      {GRADES.map((g) => <DropdownMenuRadioItem key={g} value={String(g)}>{g}-sinf</DropdownMenuRadioItem>)}
+                      {GRADES.map((g) => <DropdownMenuRadioItem key={g} value={String(g)}>{t("gradeValue", { grade: g })}</DropdownMenuRadioItem>)}
                     </DropdownMenuRadioGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
               <div className="space-y-2 flex-1 min-w-0">
-                <Label htmlFor="cfm-subject">Fan</Label>
-                <Input id="cfm-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Masalan, Matematika" />
+                <Label htmlFor="cfm-subject">{t("subject")}</Label>
+                <Input id="cfm-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t("subjectPlaceholder")} />
               </div>
             </div>
 
             {/* Tavsif */}
             <div className="space-y-2">
-              <Label htmlFor="cfm-desc">Tavsif</Label>
-              <Input id="cfm-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Masalan, 10-sinflar uchun chuqurlashtirilgan matematika" />
+              <Label htmlFor="cfm-desc">{t("descriptionLabel")}</Label>
+              <Input id="cfm-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("descriptionPlaceholder")} />
             </div>
 
             {/* Haftalik jadval */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium select-none">Haftalik jadval</Label>
+                <Label className="text-sm font-medium select-none">{t("weeklySchedule")}</Label>
                 <Button variant="ghost" size="sm" onClick={addTimeSlot} className="gap-1.5">
                   <PlusIcon className="size-4" />
-                  Vaqt qoʻshish
+                  {t("addTime")}
                 </Button>
               </div>
 
               {timeSlots.length === 0 ? (
                 <TypographyMuted className="text-sm py-4 text-center border border-dashed rounded-lg">
-                  Muntazam jadval yoʻq. Vaqt qoʻshing.
+                  {t("noRegularSchedule")}
                 </TypographyMuted>
               ) : (
                 <div className="space-y-3">
@@ -230,8 +232,8 @@ export function ClassFormModal({
         </ScrollArea>
 
         <DialogFooter className="px-6 py-4 border-t bg-muted/20 shrink-0">
-          <Button variant="outline" onClick={onClose}>Bekor qilish</Button>
-          <Button onClick={submit} disabled={!canSubmit}>{mode === "create" ? "Yaratish" : "Saqlash"}</Button>
+          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
+          <Button onClick={submit} disabled={!canSubmit}>{mode === "create" ? t("create") : t("save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

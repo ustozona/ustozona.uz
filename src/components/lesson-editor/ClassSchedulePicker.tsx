@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useMemo, useState } from "react";
 import { Check } from "lucide-react";
@@ -33,6 +34,7 @@ export default function ClassSchedulePicker({
   onSubmit: (date: string, sessions: { startMin: number; endMin: number }[]) => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("ClassSchedulePicker");
   const cls = useLiveClassInfo(classId);
   const hex = cls ? CLASS_COLOR_HEX[classColor(cls)] : "var(--primary)";
   // Bugungi versiya boʻyicha jadval bor-yoʻqligi (checkbox holati uchun)
@@ -129,17 +131,17 @@ export default function ClassSchedulePicker({
         </span>
         <input type="checkbox" className="sr-only" checked={useClassSchedule} disabled={!hasTimetable}
           onChange={(e) => setUseClassSchedule(e.target.checked)} />
-        Sinf jadvalidan
-        {!hasTimetable && <span className="text-xs text-muted-foreground">(jadval yoʻq)</span>}
+        {t("fromClassSchedule")}
+        {!hasTimetable && <span className="text-xs text-muted-foreground">{t("noSchedule")}</span>}
       </label>
 
       {/* Vaqt tanlash */}
       {useClassSchedule ? (
         <div className="mt-2.5">
           {!selectedKey ? (
-            <p className="text-xs text-muted-foreground py-2">Kun tanlang — jadvaldagi darslar chiqadi.</p>
+            <p className="text-xs text-muted-foreground py-2">{t("pickDayHint")}</p>
           ) : daySlots.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-2">Bu kuni bu sinfda dars yoʻq. Boshqa kun tanlang yoki belgini olib qoʻlda kiriting.</p>
+            <p className="text-xs text-muted-foreground py-2">{t("noLessonThisDay")}</p>
           ) : (
             <div className="space-y-1 max-h-[120px] overflow-y-auto">
               {daySlots.map((s) => {
@@ -161,17 +163,17 @@ export default function ClassSchedulePicker({
         </div>
       ) : (
         <div className="mt-2.5 grid grid-cols-2 gap-2">
-          <label className="text-xs text-muted-foreground">Boshlanish
+          <label className="text-xs text-muted-foreground">{t("start")}
             <select value={startMin ?? ""} onChange={(e) => setStartMin(Number(e.target.value))}
               className="mt-1 w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm text-foreground">
-              <option value="" disabled>Tanlang</option>
+              <option value="" disabled>{t("select")}</option>
               {MANUAL_TIMES.map((m) => <option key={m} value={m}>{fmtClock(m)}</option>)}
             </select>
           </label>
-          <label className="text-xs text-muted-foreground">Tugash
+          <label className="text-xs text-muted-foreground">{t("end")}
             <select value={endMin ?? ""} onChange={(e) => setEndMin(Number(e.target.value))}
               className="mt-1 w-full rounded-md border border-border bg-card px-2 py-1.5 text-sm text-foreground">
-              <option value="" disabled>Tanlang</option>
+              <option value="" disabled>{t("select")}</option>
               {MANUAL_TIMES.map((m) => <option key={m} value={m}>{fmtClock(m)}</option>)}
             </select>
           </label>
@@ -180,14 +182,14 @@ export default function ClassSchedulePicker({
 
       {/* Amallar */}
       <div className="flex items-center justify-end gap-2 mt-3">
-        <button onClick={onCancel} className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-muted transition-colors">Bekor</button>
+        <button onClick={onCancel} className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-muted transition-colors">{t("cancel")}</button>
         <button
           disabled={!canAdd}
           onClick={submit}
           className="px-3.5 py-1.5 rounded-md text-sm font-medium text-white disabled:opacity-40 transition-colors"
           style={{ backgroundColor: hex }}
         >
-          {useClassSchedule && picked.size > 1 ? `Qoʻshish (${picked.size})` : "Qoʻshish"}
+          {useClassSchedule && picked.size > 1 ? t("addCount", { count: picked.size }) : t("add")}
         </button>
       </div>
     </div>

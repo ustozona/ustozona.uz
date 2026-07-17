@@ -2287,5 +2287,268 @@
     "heading": "Getting started",
     "description": "Learn how to make the most of every section.",
     "dismissedTitle": "Skipped — click to start again"
+  },
+  "LessonEditor": {
+    "contentPlaceholder": "Start writing your lesson content…",
+    "notFoundTitle": "Lesson not found",
+    "notFoundDescription": "This lesson doesn't exist or has been deleted.",
+    "backToLessons": "Back to lessons list",
+    "status": {
+      "completed": "Completed",
+      "scheduled": "Scheduled",
+      "unscheduled": "Unscheduled",
+      "draft": "Draft"
+    },
+    "rail": {
+      "details": "Details",
+      "materials": "Materials",
+      "goals": "Goals",
+      "resources": "Resources",
+      "ai": "Ustozona AI"
+    },
+    "toast": {
+      "saved": "Saved",
+      "duplicated": "Lesson duplicated",
+      "deleted": "Lesson deleted",
+      "templateSoon": "Save as template — coming soon"
+    },
+    "untitled": "Untitled",
+    "copySuffix": "copy",
+    "more": "More",
+    "menu": {
+      "saveNow": "Save now",
+      "downloadPdf": "Download (PDF)",
+      "duplicate": "Duplicate",
+      "saveAsTemplate": "Save as template",
+      "deleteLesson": "Delete lesson"
+    },
+    "deleteDialog": {
+      "title": "Delete lesson",
+      "description": "This lesson and all its content will be permanently deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "close": "Close",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "justEdited": "Just edited"
+  },
+  "LessonDetailsPanel": {
+    "title": "Details",
+    "close": "Close",
+    "classes": "Classes",
+    "noClassSelected": "No class selected",
+    "classCount": "{count} classes",
+    "units": "Units",
+    "noUnitSelected": "No unit selected",
+    "noUnit": "No unit",
+    "noUnitsInClass": "No units in this class",
+    "schedule": "Schedule",
+    "removeSchedule": "Remove",
+    "addMoreDate": "Add another date",
+    "addDate": "Add date",
+    "grades": "Grades",
+    "attachClassForGrading": "Attach a class for grading",
+    "standards": "Standards",
+    "addStandard": "Add standard"
+  },
+  "LessonEditorToolbar": {
+    "linkPrompt": "Link URL:",
+    "undo": "Undo",
+    "redo": "Redo",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "strikethrough": "Strikethrough",
+    "highlight": "Highlight",
+    "heading1": "Heading 1",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "bulletList": "Bullet list",
+    "orderedList": "Numbered list",
+    "taskList": "Task list",
+    "alignLeft": "Align left",
+    "alignCenter": "Align center",
+    "alignRight": "Align right",
+    "blockquote": "Quote",
+    "codeBlock": "Code block",
+    "horizontalRule": "Divider",
+    "tableActions": "Table actions",
+    "table": {
+      "rowAbove": "Row above",
+      "rowBelow": "Row below",
+      "columnLeft": "Column left",
+      "columnRight": "Column right",
+      "headerRow": "Header row",
+      "deleteRow": "Delete row",
+      "deleteColumn": "Delete column",
+      "deleteTable": "Delete table"
+    },
+    "insertTable": "Insert table",
+    "link": "Link",
+    "insertImage": "Insert image",
+    "insertCallout": "Insert callout"
+  },
+  "LessonAiAssistantPanel": {
+    "aiError": "AI error",
+    "connectionError": "Connection error.",
+    "toast": {
+      "copied": "Copied",
+      "added": "Added to lesson"
+    },
+    "title": "Ustozona AI",
+    "clearConversation": "Clear conversation",
+    "close": "Close",
+    "emptyTitle": "AI teaching assistant",
+    "emptyDescription": "Type a question below or get help with your lesson.",
+    "suggestion": {
+      "lessonPlan": "Create a 45-minute lesson plan for this topic",
+      "exercises": "Give me 5 exercises with answers on this topic",
+      "quizQuestions": "Write 3 quiz questions for students"
+    },
+    "addToLesson": "Add to lesson",
+    "copy": "Copy",
+    "composerPlaceholder": "Ask about your lesson…",
+    "stop": "Stop",
+    "send": "Send"
+  },
+  "ClassSchedulePicker": {
+    "fromClassSchedule": "From class schedule",
+    "noSchedule": "(no schedule)",
+    "pickDayHint": "Select a day — lessons from the schedule will appear.",
+    "noLessonThisDay": "No lesson for this class on this day. Pick another day or uncheck to enter manually.",
+    "start": "Start",
+    "end": "End",
+    "select": "Select",
+    "cancel": "Cancel",
+    "addCount": "Add ({count})",
+    "add": "Add"
+  },
+  "BellScheduleDialog": {
+    "title": "Bell schedule",
+    "description": "Configure lesson and break times.",
+    "close": "Close",
+    "schoolProfile": "School mode",
+    "profile": {
+      "single": {
+        "title": "Single shift",
+        "desc": "Lessons only take place in the morning shift."
+      },
+      "double": {
+        "title": "Double shift",
+        "desc": "Lessons take place in two shifts (morning and afternoon)."
+      }
+    },
+    "shift1": "Shift 1",
+    "shift2": "Shift 2",
+    "effectiveDateHint": "You'll be asked which day the changes take effect from when saving.",
+    "movedCountHint": "{count} lessons will be moved to new times when saved.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "breaks": "Breaks",
+    "default": "Default",
+    "break": "Break",
+    "longBreak": "Long break",
+    "minutesSuffix": "min",
+    "startsAt": "starts at {time}",
+    "startsAtTip": "The time the shift's first lesson starts",
+    "lessonCount": "{count} lessons",
+    "lessonCountTip": "Number of lessons in the shift",
+    "lessonDuration": "each lesson {minutes} min",
+    "lessonDurationTip": "Duration of each lesson",
+    "overlapWarning": "Shift 1 ends at {end1}, but shift 2 starts at {start2} — the times overlap.",
+    "pastMidnightWarning": "Lessons run past midnight — check the start time or number of lessons."
+  },
+  "EffectiveDateDialog": {
+    "title": "When should the new lesson schedule take effect?",
+    "description": "Lesson and grade history before that date will be kept on the previous schedule.",
+    "close": "Close",
+    "options": {
+      "monday": {
+        "title": "From next Monday",
+        "caption": "The new schedule takes effect on '{date}'. Until then, lessons follow the old schedule."
+      },
+      "today": {
+        "title": "Starting today",
+        "caption": "Starts on '{date}'. Past days' history is not affected."
+      },
+      "custom": {
+        "title": "From another date…",
+        "caption": "Takes effect on '{date}'",
+        "pickFromCalendar": "Pick a date from the calendar."
+      },
+      "inPlace": {
+        "title": "Fix a mistake",
+        "caption": "No new schedule is created, changes apply to all days."
+      }
+    },
+    "dateAlreadyTaken": "A schedule already exists for this date",
+    "effectiveDateLabel": "Effective date",
+    "pickDate": "Pick a date",
+    "dateAlreadyTakenFull": "A schedule already exists for this date.",
+    "pastDateWarning": "This is a past date — history from this day onward will also show the new schedule.",
+    "noteLabel": "Note about the changes (optional)",
+    "notePlaceholder": "For example: Class 7-B moved to Friday",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "ClassFormModal": {
+    "createTitle": "Create new class",
+    "editTitle": "Edit class{name}",
+    "createDescription": "Enter the class name, color, and weekly schedule.",
+    "editDescription": "Update the class details and schedule.",
+    "className": "Class name",
+    "classNamePlaceholder": "e.g. Algebra 101",
+    "pickIcon": "Pick icon",
+    "pickColor": "Pick color",
+    "grade": "Grade",
+    "notSelected": "Not selected",
+    "gradeValue": "Grade {grade}",
+    "subject": "Subject",
+    "subjectPlaceholder": "e.g. Mathematics",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "e.g. Advanced mathematics for 10th grade",
+    "weeklySchedule": "Weekly schedule",
+    "addTime": "Add time",
+    "noRegularSchedule": "No regular schedule. Add a time.",
+    "cancel": "Cancel",
+    "create": "Create",
+    "save": "Save"
+  },
+  "ClassListPanel": {
+    "toast": {
+      "deleted": "«{name}» removed",
+      "undo": "Undo"
+    },
+    "title": "Classes",
+    "addClass": "Add class",
+    "add": "Add",
+    "emptyTitle": "No classes yet",
+    "emptyDescription": "Add your first class to start building the student roster.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "openClass": "Open class",
+    "hideStats": "Hide stats",
+    "showStats": "Show stats",
+    "countSuffix": "{value}",
+    "deleteDialog": {
+      "title": "Delete class",
+      "description": "«{name}» will be removed. You can undo this action later.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    }
+  },
+  "CreateUnitModal": {
+    "title": "Create unit",
+    "description": "Add a new unit to organize your lessons.",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Intro to algebra, Linear equations",
+    "linkToClasses": "Link to classes",
+    "selectClassPlaceholder": "Select class...",
+    "linkHint": "Lessons in this unit will be automatically attached to these classes.",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "A short description of what this unit covers...",
+    "cancel": "Cancel",
+    "submit": "Create unit"
   }
 }

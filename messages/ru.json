@@ -2287,5 +2287,268 @@
     "heading": "Начало работы",
     "description": "Узнайте, как эффективно использовать каждый раздел.",
     "dismissedTitle": "Пропущено — нажмите, чтобы начать заново"
+  },
+  "LessonEditor": {
+    "contentPlaceholder": "Начните писать текст урока…",
+    "notFoundTitle": "Урок не найден",
+    "notFoundDescription": "Этот урок не существует или был удалён.",
+    "backToLessons": "Вернуться к списку уроков",
+    "status": {
+      "completed": "Завершено",
+      "scheduled": "Запланировано",
+      "unscheduled": "Без расписания",
+      "draft": "Черновик"
+    },
+    "rail": {
+      "details": "Детали",
+      "materials": "Материалы",
+      "goals": "Цели",
+      "resources": "Ресурсы",
+      "ai": "Ustozona AI"
+    },
+    "toast": {
+      "saved": "Сохранено",
+      "duplicated": "Урок продублирован",
+      "deleted": "Урок удалён",
+      "templateSoon": "Сохранение как шаблон — скоро"
+    },
+    "untitled": "Без названия",
+    "copySuffix": "копия",
+    "more": "Ещё",
+    "menu": {
+      "saveNow": "Сохранить сейчас",
+      "downloadPdf": "Скачать (PDF)",
+      "duplicate": "Дублировать",
+      "saveAsTemplate": "Сохранить как шаблон",
+      "deleteLesson": "Удалить урок"
+    },
+    "deleteDialog": {
+      "title": "Удалить урок",
+      "description": "Этот урок и всё его содержимое будут удалены безвозвратно. Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "confirm": "Удалить"
+    },
+    "close": "Закрыть",
+    "saving": "Сохранение…",
+    "saved": "Сохранено",
+    "justEdited": "Только что отредактировано"
+  },
+  "LessonDetailsPanel": {
+    "title": "Детали",
+    "close": "Закрыть",
+    "classes": "Классы",
+    "noClassSelected": "Класс не выбран",
+    "classCount": "{count} классов",
+    "units": "Разделы",
+    "noUnitSelected": "Раздел не выбран",
+    "noUnit": "Без раздела",
+    "noUnitsInClass": "В этом классе нет разделов",
+    "schedule": "Расписание",
+    "removeSchedule": "Убрать",
+    "addMoreDate": "Добавить ещё дату",
+    "addDate": "Добавить дату",
+    "grades": "Оценки",
+    "attachClassForGrading": "Прикрепить класс для оценивания",
+    "standards": "Стандарты",
+    "addStandard": "Добавить стандарт"
+  },
+  "LessonEditorToolbar": {
+    "linkPrompt": "Адрес ссылки (URL):",
+    "undo": "Отменить",
+    "redo": "Повторить",
+    "bold": "Жирный",
+    "italic": "Курсив",
+    "underline": "Подчёркнутый",
+    "strikethrough": "Зачёркнутый",
+    "highlight": "Выделение",
+    "heading1": "Заголовок 1",
+    "heading2": "Заголовок 2",
+    "heading3": "Заголовок 3",
+    "bulletList": "Маркированный список",
+    "orderedList": "Нумерованный список",
+    "taskList": "Список задач",
+    "alignLeft": "По левому краю",
+    "alignCenter": "По центру",
+    "alignRight": "По правому краю",
+    "blockquote": "Цитата",
+    "codeBlock": "Блок кода",
+    "horizontalRule": "Линия",
+    "tableActions": "Действия с таблицей",
+    "table": {
+      "rowAbove": "Строка выше",
+      "rowBelow": "Строка ниже",
+      "columnLeft": "Столбец слева",
+      "columnRight": "Столбец справа",
+      "headerRow": "Строка заголовка",
+      "deleteRow": "Удалить строку",
+      "deleteColumn": "Удалить столбец",
+      "deleteTable": "Удалить таблицу"
+    },
+    "insertTable": "Вставить таблицу",
+    "link": "Ссылка",
+    "insertImage": "Вставить изображение",
+    "insertCallout": "Вставить выноску"
+  },
+  "LessonAiAssistantPanel": {
+    "aiError": "Ошибка ИИ",
+    "connectionError": "Ошибка соединения.",
+    "toast": {
+      "copied": "Скопировано",
+      "added": "Добавлено в урок"
+    },
+    "title": "Ustozona AI",
+    "clearConversation": "Очистить беседу",
+    "close": "Закрыть",
+    "emptyTitle": "ИИ-помощник учителя",
+    "emptyDescription": "Введите вопрос ниже или получите помощь по своему уроку.",
+    "suggestion": {
+      "lessonPlan": "Составь план урока на 45 минут по этой теме",
+      "exercises": "Дай 5 упражнений с ответами по теме",
+      "quizQuestions": "Напиши 3 контрольных вопроса для учеников"
+    },
+    "addToLesson": "Добавить в урок",
+    "copy": "Копировать",
+    "composerPlaceholder": "Спросите о вашем уроке…",
+    "stop": "Остановить",
+    "send": "Отправить"
+  },
+  "ClassSchedulePicker": {
+    "fromClassSchedule": "Из расписания класса",
+    "noSchedule": "(расписания нет)",
+    "pickDayHint": "Выберите день — появятся уроки из расписания.",
+    "noLessonThisDay": "В этот день у класса нет урока. Выберите другой день или снимите отметку для ручного ввода.",
+    "start": "Начало",
+    "end": "Конец",
+    "select": "Выберите",
+    "cancel": "Отмена",
+    "addCount": "Добавить ({count})",
+    "add": "Добавить"
+  },
+  "BellScheduleDialog": {
+    "title": "Расписание звонков",
+    "description": "Настройка времени уроков и перемен.",
+    "close": "Закрыть",
+    "schoolProfile": "Режим школы",
+    "profile": {
+      "single": {
+        "title": "Одна смена",
+        "desc": "Уроки проходят только в утренней смене."
+      },
+      "double": {
+        "title": "Две смены",
+        "desc": "Уроки проходят в двух сменах (утром и после обеда)."
+      }
+    },
+    "shift1": "1-я смена",
+    "shift2": "2-я смена",
+    "effectiveDateHint": "При сохранении будет запрошено, с какого дня изменения вступят в силу.",
+    "movedCountHint": "При сохранении {count} уроков будут перенесены на новое время.",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "breaks": "Перемены",
+    "default": "По умолчанию",
+    "break": "Перемена",
+    "longBreak": "Большая перемена",
+    "minutesSuffix": "мин",
+    "startsAt": "начинается в {time}",
+    "startsAtTip": "Время начала первого урока смены",
+    "lessonCount": "{count} уроков",
+    "lessonCountTip": "Количество уроков в смене",
+    "lessonDuration": "каждый урок {minutes} мин",
+    "lessonDurationTip": "Продолжительность каждого урока",
+    "overlapWarning": "1-я смена заканчивается в {end1}, а 2-я смена начинается в {start2} — время пересекается.",
+    "pastMidnightWarning": "Уроки выходят за полночь — проверьте время начала или количество уроков."
+  },
+  "EffectiveDateDialog": {
+    "title": "С какого момента вступает в силу новое расписание уроков?",
+    "description": "История уроков и оценок до этой даты сохранится в прежнем расписании.",
+    "close": "Закрыть",
+    "options": {
+      "monday": {
+        "title": "Со следующего понедельника",
+        "caption": "Новое расписание вступит в силу с '{date}'. До этого уроки идут по старому порядку."
+      },
+      "today": {
+        "title": "Начиная с сегодня",
+        "caption": "Начинается с '{date}'. На историю прошедших дней это не влияет."
+      },
+      "custom": {
+        "title": "С другой даты…",
+        "caption": "Вступает в силу с '{date}'",
+        "pickFromCalendar": "Выберите дату в календаре."
+      },
+      "inPlace": {
+        "title": "Исправить ошибку",
+        "caption": "Новое расписание не создаётся, изменения применяются ко всем дням."
+      }
+    },
+    "dateAlreadyTaken": "На эту дату уже составлено расписание уроков",
+    "effectiveDateLabel": "Дата вступления в силу",
+    "pickDate": "Выберите дату",
+    "dateAlreadyTakenFull": "На эту дату уже составлено расписание уроков.",
+    "pastDateWarning": "Это дата в прошлом — история начиная с этого дня также будет показана по новому расписанию.",
+    "noteLabel": "Примечание об изменениях (необязательно)",
+    "notePlaceholder": "Например: урок 7-Б перенесён на пятницу",
+    "cancel": "Отмена",
+    "save": "Сохранить"
+  },
+  "ClassFormModal": {
+    "createTitle": "Создать новый класс",
+    "editTitle": "Редактировать класс{name}",
+    "createDescription": "Введите название, цвет и недельное расписание класса.",
+    "editDescription": "Обновите данные и расписание класса.",
+    "className": "Название класса",
+    "classNamePlaceholder": "Например, Алгебра 101",
+    "pickIcon": "Выбрать иконку",
+    "pickColor": "Выбрать цвет",
+    "grade": "Класс",
+    "notSelected": "Не выбрано",
+    "gradeValue": "{grade} класс",
+    "subject": "Предмет",
+    "subjectPlaceholder": "Например, Математика",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Например, углублённая математика для 10 класса",
+    "weeklySchedule": "Недельное расписание",
+    "addTime": "Добавить время",
+    "noRegularSchedule": "Регулярного расписания нет. Добавьте время.",
+    "cancel": "Отмена",
+    "create": "Создать",
+    "save": "Сохранить"
+  },
+  "ClassListPanel": {
+    "toast": {
+      "deleted": "«{name}» удалён",
+      "undo": "Отменить"
+    },
+    "title": "Классы",
+    "addClass": "Добавить класс",
+    "add": "Добавить",
+    "emptyTitle": "Пока нет классов",
+    "emptyDescription": "Добавьте свой первый класс, чтобы сформировать список учеников.",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "openClass": "Открыть класс",
+    "hideStats": "Скрыть статистику",
+    "showStats": "Показать статистику",
+    "countSuffix": "{value}",
+    "deleteDialog": {
+      "title": "Удалить класс",
+      "description": "«{name}» будет удалён. Это действие можно будет отменить позже.",
+      "cancel": "Отмена",
+      "confirm": "Удалить"
+    }
+  },
+  "CreateUnitModal": {
+    "title": "Создать раздел",
+    "description": "Добавьте новый раздел для организации уроков.",
+    "nameLabel": "Название",
+    "namePlaceholder": "Например, Введение в алгебру, Линейные уравнения",
+    "linkToClasses": "Привязать к классам",
+    "selectClassPlaceholder": "Выберите класс...",
+    "linkHint": "Уроки в этом разделе будут автоматически привязаны к этим классам.",
+    "descriptionLabel": "Описание",
+    "descriptionPlaceholder": "Краткое описание того, что охватывает этот раздел...",
+    "cancel": "Отмена",
+    "submit": "Создать раздел"
   }
 }

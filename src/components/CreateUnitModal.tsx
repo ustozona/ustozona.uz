@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,7 @@ export default function CreateUnitModal({
   onSubmit: (values: CreateUnitValues) => void;
   onClose: () => void;
 }) {
+  const t = useTranslations("CreateUnitModal");
   const selectableClasses = useLiveClasses();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -46,19 +48,19 @@ export default function CreateUnitModal({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-[480px] p-0 gap-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2 text-left">
-          <DialogTitle>Boʻlim yaratish</DialogTitle>
-          <DialogDescription>Darslaringizni tartiblash uchun yangi boʻlim qoʻshing.</DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
         <div className="p-6 pt-4 space-y-4">
           {/* Nomi */}
           <div className="space-y-2">
-            <Label htmlFor="cum-name">Nomi <span className="text-destructive">*</span></Label>
+            <Label htmlFor="cum-name">{t("nameLabel")} <span className="text-destructive">*</span></Label>
             <Input
               id="cum-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Masalan, Algebraga kirish, Chiziqli tenglamalar"
+              placeholder={t("namePlaceholder")}
               autoFocus
             />
           </div>
@@ -67,7 +69,7 @@ export default function CreateUnitModal({
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
               <Lock className="size-3.5 text-muted-foreground" />
-              Sinflarga bogʻlash
+              {t("linkToClasses")}
             </Label>
             <div className="relative">
               <button
@@ -77,7 +79,7 @@ export default function CreateUnitModal({
               >
                 <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                   {selected.length === 0 ? (
-                    <span className="text-muted-foreground">Sinf tanlang...</span>
+                    <span className="text-muted-foreground">{t("selectClassPlaceholder")}</span>
                   ) : (
                     selected.map((c) => {
                       const hex = CLASS_COLOR_HEX[classColor(c)];
@@ -127,26 +129,26 @@ export default function CreateUnitModal({
               )}
             </div>
             <TypographyMuted className="text-xs">
-              Bu boʻlimdagi darslar shu sinflarga avtomatik biriktiriladi.
+              {t("linkHint")}
             </TypographyMuted>
           </div>
 
           {/* Tavsif */}
           <div className="space-y-2">
-            <Label htmlFor="cum-desc">Tavsif</Label>
+            <Label htmlFor="cum-desc">{t("descriptionLabel")}</Label>
             <Textarea
               id="cum-desc"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Bu boʻlim nimani qamrab olishi haqida qisqa tavsif..."
+              placeholder={t("descriptionPlaceholder")}
               rows={3}
             />
           </div>
         </div>
 
         <DialogFooter className="px-6 py-4 border-t bg-muted/20">
-          <Button variant="outline" onClick={onClose}>Bekor qilish</Button>
-          <Button onClick={submit} disabled={!canSubmit}>Boʻlim yaratish</Button>
+          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
+          <Button onClick={submit} disabled={!canSubmit}>{t("submit")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

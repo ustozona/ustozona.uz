@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { type Editor } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -42,6 +43,7 @@ function Btn({
 const Div = () => <Separator orientation="vertical" className="h-5 mx-1" />;
 
 export default function EditorToolbar({ editor }: { editor: Editor | null }) {
+  const t = useTranslations("LessonEditorToolbar");
   const fileRef = useRef<HTMLInputElement>(null);
   // Tiptap v3 useEditor har tranzaksiyada qayta render qilmaydi — toolbar
   // active/disabled holatlari va jadval menyusi yangilanishi uchun obuna.
@@ -77,7 +79,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
 
   const addLink = () => {
     const prev = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Havola manzili (URL):", prev ?? "https://");
+    const url = window.prompt(t("linkPrompt"), prev ?? "https://");
     if (url === null) return;
     if (url === "") { editor.chain().focus().extendMarkRange("link").unsetLink().run(); return; }
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
@@ -94,56 +96,56 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
 
   return (
     <div className="flex items-center gap-0.5 flex-wrap">
-      <Btn title="Bekor qilish" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="size-4" /></Btn>
-      <Btn title="Qaytarish" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="size-4" /></Btn>
+      <Btn title={t("undo")} onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="size-4" /></Btn>
+      <Btn title={t("redo")} onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="size-4" /></Btn>
       <Div />
-      <Btn title="Qalin" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="size-4" /></Btn>
-      <Btn title="Kursiv" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="size-4" /></Btn>
-      <Btn title="Tagchiziq" active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="size-4" /></Btn>
-      <Btn title="Oʻchirilgan" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="size-4" /></Btn>
-      <Btn title="Ajratish (highlight)" active={editor.isActive("highlight")} onClick={() => editor.chain().focus().toggleHighlight().run()}><Highlighter className="size-4" /></Btn>
+      <Btn title={t("bold")} active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="size-4" /></Btn>
+      <Btn title={t("italic")} active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="size-4" /></Btn>
+      <Btn title={t("underline")} active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="size-4" /></Btn>
+      <Btn title={t("strikethrough")} active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="size-4" /></Btn>
+      <Btn title={t("highlight")} active={editor.isActive("highlight")} onClick={() => editor.chain().focus().toggleHighlight().run()}><Highlighter className="size-4" /></Btn>
       <Div />
-      <Btn title="Sarlavha 1" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="size-4" /></Btn>
-      <Btn title="Sarlavha 2" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="size-4" /></Btn>
-      <Btn title="Sarlavha 3" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="size-4" /></Btn>
+      <Btn title={t("heading1")} active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="size-4" /></Btn>
+      <Btn title={t("heading2")} active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="size-4" /></Btn>
+      <Btn title={t("heading3")} active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="size-4" /></Btn>
       <Div />
-      <Btn title="Belgili roʻyxat" active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="size-4" /></Btn>
-      <Btn title="Raqamli roʻyxat" active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="size-4" /></Btn>
-      <Btn title="Vazifa roʻyxati" active={editor.isActive("taskList")} onClick={() => editor.chain().focus().toggleTaskList().run()}><ListTodo className="size-4" /></Btn>
+      <Btn title={t("bulletList")} active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="size-4" /></Btn>
+      <Btn title={t("orderedList")} active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="size-4" /></Btn>
+      <Btn title={t("taskList")} active={editor.isActive("taskList")} onClick={() => editor.chain().focus().toggleTaskList().run()}><ListTodo className="size-4" /></Btn>
       <Div />
-      <Btn title="Chapga" active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="size-4" /></Btn>
-      <Btn title="Markazga" active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="size-4" /></Btn>
-      <Btn title="Oʻngga" active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="size-4" /></Btn>
+      <Btn title={t("alignLeft")} active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="size-4" /></Btn>
+      <Btn title={t("alignCenter")} active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="size-4" /></Btn>
+      <Btn title={t("alignRight")} active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="size-4" /></Btn>
       <Div />
-      <Btn title="Iqtibos" active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="size-4" /></Btn>
-      <Btn title="Kod bloki" active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code className="size-4" /></Btn>
-      <Btn title="Chiziq" onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="size-4" /></Btn>
+      <Btn title={t("blockquote")} active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="size-4" /></Btn>
+      <Btn title={t("codeBlock")} active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code className="size-4" /></Btn>
+      <Btn title={t("horizontalRule")} onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="size-4" /></Btn>
       {editor.isActive("table") ? (
         /* Jadval ichida — amallar menyusi (qator/ustun qoʻshish/oʻchirish) */
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button type="button" title="Jadval amallari" className="h-8 px-1.5 rounded-md flex items-center gap-0.5 transition-colors shrink-0 bg-muted text-foreground hover:bg-muted/70">
+            <button type="button" title={t("tableActions")} className="h-8 px-1.5 rounded-md flex items-center gap-0.5 transition-colors shrink-0 bg-muted text-foreground hover:bg-muted/70">
               <Table className="size-4" /><ChevronDown className="size-3 opacity-60" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-52">
-            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowBefore().run()} className="gap-2.5"><ArrowUp className="size-4 text-muted-foreground" /> Yuqoriga qator</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowAfter().run()} className="gap-2.5"><ArrowDown className="size-4 text-muted-foreground" /> Pastga qator</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnBefore().run()} className="gap-2.5"><ArrowLeft className="size-4 text-muted-foreground" /> Chapga ustun</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnAfter().run()} className="gap-2.5"><ArrowRight className="size-4 text-muted-foreground" /> Oʻngga ustun</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowBefore().run()} className="gap-2.5"><ArrowUp className="size-4 text-muted-foreground" /> {t("table.rowAbove")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowAfter().run()} className="gap-2.5"><ArrowDown className="size-4 text-muted-foreground" /> {t("table.rowBelow")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnBefore().run()} className="gap-2.5"><ArrowLeft className="size-4 text-muted-foreground" /> {t("table.columnLeft")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnAfter().run()} className="gap-2.5"><ArrowRight className="size-4 text-muted-foreground" /> {t("table.columnRight")}</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => editor.chain().focus().toggleHeaderRow().run()} className="gap-2.5"><PanelTop className="size-4 text-muted-foreground" /> Sarlavha qatori</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().toggleHeaderRow().run()} className="gap-2.5"><PanelTop className="size-4 text-muted-foreground" /> {t("table.headerRow")}</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteRow().run()} className="gap-2.5"><Trash2 className="size-4 text-muted-foreground" /> Qatorni oʻchirish</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteColumn().run()} className="gap-2.5"><Trash2 className="size-4 text-muted-foreground" /> Ustunni oʻchirish</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteTable().run()} className="gap-2.5 text-destructive focus:text-destructive"><Trash2 className="size-4" /> Jadvalni oʻchirish</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteRow().run()} className="gap-2.5"><Trash2 className="size-4 text-muted-foreground" /> {t("table.deleteRow")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteColumn().run()} className="gap-2.5"><Trash2 className="size-4 text-muted-foreground" /> {t("table.deleteColumn")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteTable().run()} className="gap-2.5 text-destructive focus:text-destructive"><Trash2 className="size-4" /> {t("table.deleteTable")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Btn title="Jadval qoʻshish" onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table className="size-4" /></Btn>
+        <Btn title={t("insertTable")} onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table className="size-4" /></Btn>
       )}
-      <Btn title="Havola" active={editor.isActive("link")} onClick={addLink}><Link2 className="size-4" /></Btn>
-      <Btn title="Rasm qoʻshish" onClick={() => fileRef.current?.click()}><ImageIcon className="size-4" /></Btn>
+      <Btn title={t("link")} active={editor.isActive("link")} onClick={addLink}><Link2 className="size-4" /></Btn>
+      <Btn title={t("insertImage")} onClick={() => fileRef.current?.click()}><ImageIcon className="size-4" /></Btn>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
       <Div />
       {/* "+" — callout qoʻshish menyusi (Obsidian uslubi, lucide ikonlar) */}
@@ -151,7 +153,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            title="Callout qoʻshish"
+            title={t("insertCallout")}
             className="size-8 rounded-md flex items-center justify-center transition-colors shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <Plus className="size-4" />

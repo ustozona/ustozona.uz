@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { remapEventsForBellChange, type BellConfig } from "@/lib/bell-schedule";
 import { buildSlots, defaultsForProfile, type ShiftConfig, type SchoolProfile, type TimetableEvent } from "@/lib/timetable";
@@ -25,18 +26,8 @@ import { BellRing, BookOpen, Check, Clock3, Info, RotateCcw, SaveIcon, Sunrise, 
 import { cn } from "@/lib/utils";
 
 const PROFILE_OPTIONS = [
-  {
-    id: "single",
-    title: "Bir smenali",
-    desc: "Darslar faqat ertalabki smenada boʻladi.",
-    icon: Sunrise,
-  },
-  {
-    id: "double",
-    title: "Ikki smenali",
-    desc: "Darslar ikki smenada (ertalab va tushdan keyin) boʻladi.",
-    icon: Sunset,
-  },
+  { id: "single", icon: Sunrise },
+  { id: "double", icon: Sunset },
 ] as const;
 
 const minToHHMM = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
@@ -73,6 +64,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
   onSave: (c: BellConfig) => void;
   onClose: () => void;
 }) {
+  const t = useTranslations("BellScheduleDialog");
   const [draft, setDraft] = useState<BellConfig>(() => structuredClone(config));
 
   const setShift = (key: "shift1" | "shift2", patch: Partial<ShiftConfig>) =>
@@ -112,16 +104,16 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
             </SectionIcon>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <DialogTitle asChild>
-                <CardTitle>Qoʻngʻiroq jadvali</CardTitle>
+                <CardTitle>{t("title")}</CardTitle>
               </DialogTitle>
               <DialogDescription className="text-caption">
-                Dars hamda tanaffus vaqtlarini sozlash.
+                {t("description")}
               </DialogDescription>
             </div>
           </div>
           <DialogClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
             <X className="size-4" />
-            <span className="sr-only">Yopish</span>
+            <span className="sr-only">{t("close")}</span>
           </DialogClose>
         </div>
 
@@ -129,7 +121,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
           <div className="flex flex-col gap-5 overflow-y-auto scrollbar-thin p-5">
             <BellWarnings cfg={draft} />
             <div className="space-y-2">
-              <Label>Maktab rejimi</Label>
+              <Label>{t("schoolProfile")}</Label>
               <RadioGroup
                 value={draft.profile}
                 onValueChange={(v) => changeProfile(v as SchoolProfile)}
@@ -161,8 +153,8 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
                         />
                       </div>
                       <div className="grid w-full gap-1.5">
-                        <p className="font-medium leading-none">{item.title}</p>
-                        <p className="text-xs font-normal text-muted-foreground">{item.desc}</p>
+                        <p className="font-medium leading-none">{t(`profile.${item.id}.title`)}</p>
+                        <p className="text-xs font-normal text-muted-foreground">{t(`profile.${item.id}.desc`)}</p>
                       </div>
                       <RadioGroupItem value={item.id} id={`profile-${item.id}`} className="sr-only" />
                       <span
@@ -191,8 +183,8 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
               ) : (
                 <Tabs defaultValue="shift1">
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="shift1">1-smena</TabsTrigger>
-                    <TabsTrigger value="shift2">2-smena</TabsTrigger>
+                    <TabsTrigger value="shift1">{t("shift1")}</TabsTrigger>
+                    <TabsTrigger value="shift2">{t("shift2")}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="shift1">
                     <ShiftFields
@@ -212,7 +204,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
               )}
 
               <p className="pt-5 text-xs leading-relaxed text-muted-foreground">
-                Oʻzgarishlar qaysi kundan kuchga kirishi saqlash paytida soʻraladi.
+                {t("effectiveDateHint")}
               </p>
             </AutoHeight>
           </div>
@@ -222,11 +214,11 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
           {movedCount > 0 && (
             <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground sm:mr-auto">
               <Info className="size-3.5 shrink-0" />
-              Saqlanganda {movedCount} ta dars yangi vaqtlarga moslashtiriladi.
+              {t("movedCountHint", { count: movedCount })}
             </span>
           )}
-          <Button variant="outline" onClick={onClose}>Bekor qilish</Button>
-          <Button onClick={() => onSave(draft)}><SaveIcon />Saqlash</Button>
+          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
+          <Button onClick={() => onSave(draft)}><SaveIcon />{t("save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -258,6 +250,7 @@ function AutoHeight({ children }: { children: React.ReactNode }) {
 
 /* ─── Ogohlantirishlar — smena kesishuvi va yarim tundan oshish ─── */
 function BellWarnings({ cfg }: { cfg: BellConfig }) {
+  const t = useTranslations("BellScheduleDialog");
   const end1 = buildSlots(cfg.shift1).at(-1)?.endMin ?? 0;
   const end2 = cfg.profile === "double" ? buildSlots(cfg.shift2).at(-1)?.endMin ?? 0 : 0;
   const overlap = cfg.profile === "double" && cfg.shift2.startMin < end1;
@@ -269,8 +262,7 @@ function BellWarnings({ cfg }: { cfg: BellConfig }) {
         <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400">
           <TriangleAlert />
           <AlertDescription className="text-amber-700/90 dark:text-amber-400/90">
-            1-smena {minToHHMM(end1)} da tugaydi, 2-smena esa {minToHHMM(cfg.shift2.startMin)} da
-            boshlanadi — vaqtlar kesishadi.
+            {t("overlapWarning", { end1: minToHHMM(end1), start2: minToHHMM(cfg.shift2.startMin) })}
           </AlertDescription>
         </Alert>
       )}
@@ -278,7 +270,7 @@ function BellWarnings({ cfg }: { cfg: BellConfig }) {
         <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400">
           <TriangleAlert />
           <AlertDescription className="text-amber-700/90 dark:text-amber-400/90">
-            Darslar yarim tundan oshib ketmoqda — boshlanish vaqti yoki darslar sonini tekshiring.
+            {t("pastMidnightWarning")}
           </AlertDescription>
         </Alert>
       )}
@@ -293,12 +285,13 @@ function ShiftFields({ cfg, onChange, onReset }: {
   onChange: (patch: Partial<ShiftConfig>) => void;
   onReset: () => void;
 }) {
+  const t = useTranslations("BellScheduleDialog");
   const bigBreakTotal = cfg.breakMin + cfg.longBreakExtraMin;
 
   return (
     <div className="space-y-3 rounded-lg border border-border p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-foreground">Tanaffuslar</p>
+        <p className="text-sm font-semibold text-foreground">{t("breaks")}</p>
         <Button
           variant="ghost"
           size="sm"
@@ -306,35 +299,35 @@ function ShiftFields({ cfg, onChange, onReset }: {
           className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
         >
           <RotateCcw className="size-3.5" />
-          Odatiy
+          {t("default")}
         </Button>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">Tanaffus</Label>
+          <Label className="text-xs">{t("break")}</Label>
           <NumField
             value={cfg.breakMin}
             min={0}
             max={60}
-            suffix="daq"
+            suffix={t("minutesSuffix")}
             onCommit={(n) => onChange({ breakMin: n })}
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Katta tanaffus</Label>
+          <Label className="text-xs">{t("longBreak")}</Label>
           <NumField
             value={bigBreakTotal}
             min={cfg.breakMin}
             max={90}
-            suffix="daq"
+            suffix={t("minutesSuffix")}
             onCommit={(n) => onChange({ longBreakExtraMin: Math.max(0, n - cfg.breakMin) })}
           />
         </div>
       </div>
       <div className="flex flex-wrap gap-1.5">
-        <InfoChip icon={Clock3} label={`${minToHHMM(cfg.startMin)} dan boshlanadi`} tip="Smenaning birinchi darsi boshlanadigan vaqt" />
-        <InfoChip icon={BookOpen} label={`${cfg.lessonCount} ta dars`} tip="Smenadagi darslar soni" />
-        <InfoChip icon={Timer} label={`har dars ${cfg.lessonMin} daqiqa`} tip="Har bir dars davomiyligi" />
+        <InfoChip icon={Clock3} label={t("startsAt", { time: minToHHMM(cfg.startMin) })} tip={t("startsAtTip")} />
+        <InfoChip icon={BookOpen} label={t("lessonCount", { count: cfg.lessonCount })} tip={t("lessonCountTip")} />
+        <InfoChip icon={Timer} label={t("lessonDuration", { minutes: cfg.lessonMin })} tip={t("lessonDurationTip")} />
       </div>
     </div>
   );

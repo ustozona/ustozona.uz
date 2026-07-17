@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { GraduationCap, Plus, ArrowUpRight, ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -51,6 +52,7 @@ export default function ClassListPanel({
   onAddClass,
   demoClasses,
 }: Props) {
+  const t = useTranslations("ClassListPanel");
   const liveClassesReal = useLiveClasses();
   const liveClasses = demoClasses && liveClassesReal.length === 0 ? demoClasses : liveClassesReal;
   const hydrated = useLiveClassesHydrated();
@@ -90,8 +92,8 @@ export default function ClassListPanel({
       const next = liveClasses.find((c) => c.id !== id);
       if (next) onSelect(next.id);
     }
-    toast.success(`«${name}» oʻchirildi`, {
-      action: { label: "Bekor qilish", onClick: () => handleRestoreClass(id) },
+    toast.success(t("toast.deleted", { name }), {
+      action: { label: t("toast.undo"), onClick: () => handleRestoreClass(id) },
     });
   };
 
@@ -116,7 +118,7 @@ export default function ClassListPanel({
         <div className="flex min-h-[4.5rem] items-center justify-between shrink-0 gap-3 border-b border-border px-5 py-5">
           <div className="flex items-center gap-2 min-w-0">
             <SectionIcon><GraduationCap /></SectionIcon>
-            <CardTitle className="truncate">Sinflar</CardTitle>
+            <CardTitle className="truncate">{t("title")}</CardTitle>
           </div>
           {liveClasses.length > 0 && (
             <Button
@@ -124,10 +126,10 @@ export default function ClassListPanel({
               size="sm"
               onClick={handleAddClass}
               className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground"
-              aria-label="Sinf qoʻshish"
+              aria-label={t("addClass")}
             >
               <Plus className="size-4" aria-hidden="true" />
-              Qoʻshish
+              {t("add")}
             </Button>
           )}
         </div>
@@ -148,14 +150,14 @@ export default function ClassListPanel({
                 <Empty className="py-8">
                   <EmptyHeader>
                     <EmptyMedia><Illustration name="23" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                    <EmptyTitle>Hozircha sinflar yoʻq</EmptyTitle>
+                    <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
                     <EmptyDescription>
-                      Oʻquvchilar roʻyxatini shakllantirish uchun birinchi sinfingizni qoʻshing.
+                      {t("emptyDescription")}
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
                     <Button onClick={handleAddClass} className="gap-1.5">
-                      <Plus className="size-4" /> Sinf qoʻshish
+                      <Plus className="size-4" /> {t("addClass")}
                     </Button>
                   </EmptyContent>
                 </Empty>
@@ -190,7 +192,7 @@ export default function ClassListPanel({
                     <ContextMenuContent>
                       <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => setEditTarget(cls)}>
                         <Pencil className="size-4" />
-                        Tahrirlash
+                        {t("edit")}
                       </ContextMenuItem>
                       <ContextMenuItem
                         variant="destructive"
@@ -198,7 +200,7 @@ export default function ClassListPanel({
                         onClick={() => setDeleteTarget(cls)}
                       >
                         <Trash2 className="size-4" />
-                        Oʻchirish
+                        {t("delete")}
                       </ContextMenuItem>
                     </ContextMenuContent>
                   </ContextMenu>
@@ -214,7 +216,7 @@ export default function ClassListPanel({
             <div className="flex items-center gap-3 px-4 py-3">
               <Link
                 href={`/dashboard/classes/${selected!.id}`}
-                title="Sinfni ochish"
+                title={t("openClass")}
                 className="relative group/icon size-9 rounded-full shrink-0 flex items-center justify-center text-white overflow-hidden"
                 style={tints!.gradientTile}
               >
@@ -235,7 +237,7 @@ export default function ClassListPanel({
               </div>
               <button
                 onClick={toggleFooter}
-                title={footerOpen ? "Statistikani yashirish" : "Statistikani koʻrsatish"}
+                title={footerOpen ? t("hideStats") : t("showStats")}
                 aria-expanded={footerOpen}
                 className="shrink-0 p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted transition-colors"
               >
@@ -248,7 +250,7 @@ export default function ClassListPanel({
                   {stats!.items.map((item, i) => (
                     <div key={i} className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
                       <p className="text-xs text-muted-foreground truncate">{item.label}:</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{item.value} ta</p>
+                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("countSuffix", { value: item.value })}</p>
                     </div>
                   ))}
                 </div>
@@ -303,20 +305,18 @@ export default function ClassListPanel({
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Sinfni oʻchirish</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteTarget && (
-                <>«{deleteTarget.name}» sinfi oʻchiriladi. Bu amalni keyinroq bekor qilishingiz mumkin.</>
-              )}
+              {deleteTarget && t("deleteDialog.description", { name: deleteTarget.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("deleteDialog.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={handleConfirmDelete}
             >
-              Oʻchirish
+              {t("deleteDialog.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
