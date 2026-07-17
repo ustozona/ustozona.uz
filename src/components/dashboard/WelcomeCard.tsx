@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { BookOpen, ClipboardList, Users, GraduationCap, ArrowRight, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
@@ -46,13 +47,14 @@ export function WelcomeCard({
   /** Bugungi darslar (vaqt boʻyicha tartiblangan). Boʻsh boʻlsa metrik qator. */
   todayAgenda: WelcomeAgendaItem[];
 }) {
+  const t = useTranslations("WelcomeCard");
   const hasAgenda = todayAgenda.length > 0;
   // Yangi hisob — hali biror sinf qoʻshilmagan: metrika oʻrniga boshlash CTA.
   const isSetup = classCount > 0;
   const subtitle = hasAgenda
-    ? `${dateLabel} · ${todayAgenda.length} ta dars rejalashtirilgan`
+    ? t("subtitleWithAgenda", { dateLabel, count: todayAgenda.length })
     : !isSetup
-      ? "Boshlash uchun birinchi sinfingizni qoʻshing"
+      ? t("subtitleGetStarted")
       : dateLabel;
 
   return (
@@ -81,7 +83,7 @@ export function WelcomeCard({
                 href="/dashboard/timetable"
                 className="hidden shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
               >
-                Jadval
+                {t("schedule")}
                 <ArrowRight className="size-3.5" />
               </Link>
             ) : isSetup ? (
@@ -97,7 +99,7 @@ export function WelcomeCard({
                 className="hidden shrink-0 items-center gap-1.5 rounded-lg border border-white/60 bg-white/50 px-3.5 py-2 text-sm font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-white/80 dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20 sm:inline-flex"
               >
                 <Plus className="size-4" />
-                Sinf qoʻshish
+                {t("addClass")}
               </Link>
             )}
           </div>
@@ -114,6 +116,7 @@ export function WelcomeCard({
  * 3 qator, qolgani "+N" chipiga yigʻiladi. Har qatori jadvalga oltadi.
  */
 function AgendaList({ items }: { items: WelcomeAgendaItem[] }) {
+  const t = useTranslations("WelcomeCard");
   const shown = items.slice(0, 3);
   const extra = items.length - shown.length;
   return (
@@ -142,7 +145,7 @@ function AgendaList({ items }: { items: WelcomeAgendaItem[] }) {
           href="/dashboard/timetable"
           className="mt-0.5 pl-14 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
-          Yana {extra} ta dars
+          {t("moreLessons", { count: extra })}
         </Link>
       ) : null}
     </div>
@@ -165,12 +168,13 @@ function MetricGrid({
   studentCount: number;
   classCount: number;
 }) {
+  const t = useTranslations("WelcomeCard");
   return (
     <div className="hidden shrink-0 grid-cols-2 gap-1.5 sm:grid">
-      <MetricTile href="/dashboard/timetable" icon={<BookOpen />} color="sky" value={todayLessonCount} noun="dars" emphasize={todayLessonCount > 0} />
-      <MetricTile href="/dashboard/tasks" icon={<ClipboardList />} color="green" value={todayTaskCount} noun="vazifa" emphasize={todayTaskCount > 0} />
-      <MetricTile href="/dashboard/students" icon={<Users />} color="violet" value={studentCount} noun="oʻquvchi" />
-      <MetricTile href="/dashboard/grades" icon={<GraduationCap />} color="amber" value={classCount} noun="sinf" />
+      <MetricTile href="/dashboard/timetable" icon={<BookOpen />} color="sky" value={todayLessonCount} noun={t("nounLesson")} emphasize={todayLessonCount > 0} />
+      <MetricTile href="/dashboard/tasks" icon={<ClipboardList />} color="green" value={todayTaskCount} noun={t("nounTask")} emphasize={todayTaskCount > 0} />
+      <MetricTile href="/dashboard/students" icon={<Users />} color="violet" value={studentCount} noun={t("nounStudent")} />
+      <MetricTile href="/dashboard/grades" icon={<GraduationCap />} color="amber" value={classCount} noun={t("nounClass")} />
     </div>
   );
 }
@@ -195,6 +199,7 @@ function MetricTile({
   noun: string;
   emphasize?: boolean;
 }) {
+  const t = useTranslations("WelcomeCard");
   const tints = classTints(color);
   return (
     <Link
@@ -210,7 +215,7 @@ function MetricTile({
       >
         <AnimatedCounter value={value} />
       </span>
-      <span className="text-xs text-muted-foreground">ta {noun}</span>
+      <span className="text-xs text-muted-foreground">{t("unitLabel", { noun })}</span>
     </Link>
   );
 }

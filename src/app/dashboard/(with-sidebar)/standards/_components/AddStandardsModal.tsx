@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Search, Plus, Check, ChevronRight, Globe, PencilLine,
   Trash2, Upload, X, Loader2, Target,
@@ -39,6 +40,7 @@ type Props = {
 const ALL = "__all__";
 
 export default function AddStandardsModal({ open, onOpenChange, classId }: Props) {
+  const t = useTranslations("AddStandardsModal");
   const [tab, setTab] = useState<"browse" | "my">("browse");
 
   return (
@@ -49,21 +51,21 @@ export default function AddStandardsModal({ open, onOpenChange, classId }: Props
           <SectionIcon>
             <Target className="size-[18px]" aria-hidden />
           </SectionIcon>
-          <DialogTitle className="text-lg">Standart qoʻshish</DialogTitle>
+          <DialogTitle className="text-lg">{t("title")}</DialogTitle>
           <Tabs
             value={tab}
             onValueChange={(v) => setTab(v as "browse" | "my")}
             className="absolute left-1/2 -translate-x-1/2"
           >
             <TabsList variant="line">
-              <TabsTrigger value="browse">Hammasi</TabsTrigger>
-              <TabsTrigger value="my">Mening standartlarim</TabsTrigger>
+              <TabsTrigger value="browse">{t("tabAll")}</TabsTrigger>
+              <TabsTrigger value="my">{t("tabMine")}</TabsTrigger>
             </TabsList>
           </Tabs>
           <DialogClose asChild>
             <Button type="button" variant="ghost" size="icon" className="-mr-1.5 ml-auto shrink-0 text-muted-foreground hover:text-foreground">
               <X className="size-4" aria-hidden />
-              <span className="sr-only">Yopish</span>
+              <span className="sr-only">{t("close")}</span>
             </Button>
           </DialogClose>
         </div>
@@ -75,8 +77,8 @@ export default function AddStandardsModal({ open, onOpenChange, classId }: Props
         )}
 
         <div className="px-6 py-4 border-t border-border flex justify-end gap-2 shrink-0">
-          <Button variant="outline" className="shadow-none" onClick={() => onOpenChange(false)}>Bekor qilish</Button>
-          <Button onClick={() => onOpenChange(false)}>Tayyor</Button>
+          <Button variant="outline" className="shadow-none" onClick={() => onOpenChange(false)}>{t("cancel")}</Button>
+          <Button onClick={() => onOpenChange(false)}>{t("done")}</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -86,6 +88,7 @@ export default function AddStandardsModal({ open, onOpenChange, classId }: Props
 /* ════════════ Browse All ════════════ */
 
 function BrowseTab({ classId }: { classId: string }) {
+  const t = useTranslations("AddStandardsModal");
   const sets = useStandardsStore((s) => s.sets);
   const createSet = useStandardsStore((s) => s.createSet);
 
@@ -116,10 +119,10 @@ function BrowseTab({ classId }: { classId: string }) {
     setQuery(""); setCountry(ALL); setSubject(ALL); setGrade(ALL);
   }
 
-  function addTemplate(t: SetTemplate) {
+  function addTemplate(tpl: SetTemplate) {
     createSet({
-      name: t.name, subject: t.subject, classIds: [classId], standards: t.standards,
-      source: t.source, grade: t.grade, frameworkCode: t.frameworkCode, templateId: t.id,
+      name: tpl.name, subject: tpl.subject, classIds: [classId], standards: tpl.standards,
+      source: tpl.source, grade: tpl.grade, frameworkCode: tpl.frameworkCode, templateId: tpl.id,
     });
   }
 
@@ -129,60 +132,60 @@ function BrowseTab({ classId }: { classId: string }) {
         <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-label">Qidiruv</span>
+              <span className="text-label">{t("search")}</span>
               {dirty && (
                 <button type="button" onClick={clearFilters} className="text-caption text-primary hover:underline cursor-pointer">
-                  Tozalash
+                  {t("clear")}
                 </button>
               )}
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" aria-hidden />
-              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nom, fan yoki ramka boʻyicha…" className="pl-9 bg-background" />
+              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("browseSearchPlaceholder")} className="pl-9 bg-background" />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <FilterSelect label="Mamlakat" value={country} onChange={setCountry} options={ALL_COUNTRIES} nonEmpty={NONEMPTY_COUNTRIES} allLabel="Barcha mamlakatlar" />
-            <FilterSelect label="Fan" value={subject} onChange={setSubject} options={ALL_SUBJECTS} nonEmpty={NONEMPTY_SUBJECTS} allLabel="Barcha fanlar" />
-            <FilterSelect label="Sinf" value={grade} onChange={setGrade} options={ALL_GRADES} nonEmpty={NONEMPTY_GRADES} allLabel="Barcha sinflar" />
+            <FilterSelect label={t("country")} value={country} onChange={setCountry} options={ALL_COUNTRIES} nonEmpty={NONEMPTY_COUNTRIES} allLabel={t("allCountries")} />
+            <FilterSelect label={t("subject")} value={subject} onChange={setSubject} options={ALL_SUBJECTS} nonEmpty={NONEMPTY_SUBJECTS} allLabel={t("allSubjects")} />
+            <FilterSelect label={t("grade")} value={grade} onChange={setGrade} options={ALL_GRADES} nonEmpty={NONEMPTY_GRADES} allLabel={t("allGrades")} />
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-between px-6 pt-3 pb-2">
-        <span className="heading-small">Standartlar</span>
-        <span className="text-caption text-muted-foreground">{results.length} natija</span>
+        <span className="heading-small">{t("standardsHeading")}</span>
+        <span className="text-caption text-muted-foreground">{t("resultsCount", { count: results.length })}</span>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-4 space-y-2.5">
         {results.length === 0 ? (
-          <p className="text-center text-caption text-muted-foreground py-10">Filtrlarga mos toʻplam yoʻq.</p>
+          <p className="text-center text-caption text-muted-foreground py-10">{t("noMatchingSets")}</p>
         ) : (
-          results.map((t) => {
-            const added = addedIds.has(t.id);
+          results.map((tpl) => {
+            const added = addedIds.has(tpl.id);
             return (
-              <Collapsible key={t.id} className="rounded-xl border border-border overflow-hidden">
+              <Collapsible key={tpl.id} className="rounded-xl border border-border overflow-hidden">
                 <div className="flex items-center gap-2 p-3 hover:bg-muted/40 transition-colors">
                   <CollapsibleTrigger className="group/t flex flex-1 items-center gap-2.5 text-left min-w-0 cursor-pointer">
                     <ChevronRight className="size-4 text-muted-foreground shrink-0 transition-transform duration-fast ease-standard group-data-[state=open]/t:rotate-90" aria-hidden />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold truncate">{t.name}</span>
+                        <span className="text-sm font-semibold truncate">{tpl.name}</span>
                         <Badge variant="outline" className="shadow-none gap-1 text-muted-foreground shrink-0">
-                          <Globe className="size-3" aria-hidden />{t.source}
+                          <Globe className="size-3" aria-hidden />{tpl.source}
                         </Badge>
                       </div>
                       <span className="text-caption text-muted-foreground">
-                        {t.frameworkCode} · {t.subject} · {t.grade}
+                        {tpl.frameworkCode} · {tpl.subject} · {tpl.grade}
                       </span>
                     </div>
                   </CollapsibleTrigger>
-                  <span className="text-caption text-muted-foreground shrink-0 tabular-nums">{t.standards.length} ta</span>
-                  <AddBtn added={added} onClick={() => addTemplate(t)} />
+                  <span className="text-caption text-muted-foreground shrink-0 tabular-nums">{t("countUnit", { count: tpl.standards.length })}</span>
+                  <AddBtn added={added} onClick={() => addTemplate(tpl)} />
                 </div>
                 <CollapsibleContent>
                   <ul className="divide-y divide-border border-t border-border">
-                    {t.standards.map((std) => (
+                    {tpl.standards.map((std) => (
                       <li key={std.id} className="flex items-start gap-3 px-4 py-2.5">
                         <span className="font-mono text-xs font-semibold text-foreground/70 shrink-0 w-24">{std.id}</span>
                         <span className="text-body text-foreground/90 leading-relaxed">{std.desc}</span>
@@ -227,16 +230,17 @@ function FilterSelect({ label, value, onChange, options, nonEmpty, allLabel }: {
 }
 
 function AddBtn({ added, onClick }: { added: boolean; onClick: () => void }) {
+  const t = useTranslations("AddStandardsModal");
   if (added) {
     return (
       <Button size="sm" disabled className="h-8 shrink-0 gap-1 bg-success text-success-foreground opacity-100 disabled:opacity-100">
-        <Check className="size-4" aria-hidden /> Qoʻshildi
+        <Check className="size-4" aria-hidden /> {t("addedShort")}
       </Button>
     );
   }
   return (
     <Button size="sm" className="h-8 shrink-0 gap-1" onClick={onClick}>
-      <Plus className="size-4" aria-hidden /> Qoʻshish
+      <Plus className="size-4" aria-hidden /> {t("add")}
     </Button>
   );
 }
@@ -244,6 +248,7 @@ function AddBtn({ added, onClick }: { added: boolean; onClick: () => void }) {
 /* ════════════ My Standards ════════════ */
 
 function MyStandardsTab({ classId }: { classId: string }) {
+  const t = useTranslations("AddStandardsModal");
   const sets = useStandardsStore((s) => s.sets);
   const customSets = useStandardsStore((s) => s.customSets);
   const createSet = useStandardsStore((s) => s.createSet);
@@ -294,12 +299,12 @@ function MyStandardsTab({ classId }: { classId: string }) {
         const setName = name.trim() || file.name.replace(/\.[^.]+$/, "");
         addCustomSet({ name: setName, subject: subject.trim() || "—", grade: grade.trim() || undefined, standards: items });
         resetForm();
-        toast.success(`${items.length} ta standart import qilindi`);
+        toast.success(t("importSuccess", { count: items.length }));
       } else {
-        toast.warning("Faylda standart topilmadi");
+        toast.warning(t("importNoStandards"));
       }
     } catch {
-      toast.error("Faylni oʻqib boʻlmadi");
+      toast.error(t("importReadError"));
     }
     finally { setImporting(false); }
   }
@@ -317,14 +322,14 @@ function MyStandardsTab({ classId }: { classId: string }) {
       <div className="px-6 py-4">
         <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3">
           <div className="space-y-1">
-            <span className="text-label">Nomi</span>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="mas. Informatika (Boshlangʻich)" className="bg-background" />
+            <span className="text-label">{t("name")}</span>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} className="bg-background" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div className="space-y-1">
-              <span className="text-label">Fan</span>
+              <span className="text-label">{t("subject")}</span>
               <Select value={subject} onValueChange={setSubject}>
-                <SelectTrigger className="w-full bg-background"><SelectValue placeholder="Tanlang…" /></SelectTrigger>
+                <SelectTrigger className="w-full bg-background"><SelectValue placeholder={t("selectPlaceholder")} /></SelectTrigger>
                 <SelectContent className="max-h-72">
                   {SUBJECT_GROUPS.map((g) => (
                     <SelectGroup key={g.label}>
@@ -336,9 +341,9 @@ function MyStandardsTab({ classId }: { classId: string }) {
               </Select>
             </div>
             <div className="space-y-1">
-              <span className="text-label">Sinf/daraja</span>
+              <span className="text-label">{t("gradeLevel")}</span>
               <Select value={grade} onValueChange={setGrade}>
-                <SelectTrigger className="w-full bg-background"><SelectValue placeholder="Tanlang…" /></SelectTrigger>
+                <SelectTrigger className="w-full bg-background"><SelectValue placeholder={t("selectPlaceholder")} /></SelectTrigger>
                 <SelectContent className="max-h-72">
                   {GRADE_GROUPS.map((g) => (
                     <SelectGroup key={g.label}>
@@ -353,29 +358,29 @@ function MyStandardsTab({ classId }: { classId: string }) {
           <div className="flex items-center gap-2">
             <Button onClick={handleSubmit} disabled={!canSubmit} className="gap-1.5">
               {editingId ? <Check className="size-4" aria-hidden /> : <Plus className="size-4" aria-hidden />}
-              {editingId ? "Saqlash" : "Yaratish"}
+              {editingId ? t("save") : t("create")}
             </Button>
             {editingId && (
-              <Button variant="ghost" className="shadow-none" onClick={resetForm}>Bekor</Button>
+              <Button variant="ghost" className="shadow-none" onClick={resetForm}>{t("cancelShort")}</Button>
             )}
             <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleFile} />
             <Button variant="outline" className="shadow-none gap-1.5 ml-auto" disabled={importing} onClick={() => fileRef.current?.click()}>
               {importing ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Upload className="size-4" aria-hidden />}
-              Excel/CSV import
+              {t("importButton")}
             </Button>
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-between px-6 pt-3 pb-2">
-        <span className="heading-small">Standartlar</span>
-        <span className="text-caption text-muted-foreground">{customSets.length} custom toʻplam</span>
+        <span className="heading-small">{t("standardsHeading")}</span>
+        <span className="text-caption text-muted-foreground">{t("customSetsCount", { count: customSets.length })}</span>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-4 space-y-2.5">
         {customSets.length === 0 ? (
           <p className="text-center text-caption text-muted-foreground py-10">
-            Hali custom toʻplam yoʻq. Yuqorida nom kiritib «Yaratish» bosing.
+            {t("noCustomSetsYet")}
           </p>
         ) : (
           customSets.map((cs) => (
@@ -405,6 +410,7 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
   onAddStandard: (item: StandardItem) => void;
   onRemoveStandard: (code: string) => void;
 }) {
+  const t = useTranslations("AddStandardsModal");
   const [code, setCode] = useState("");
   const [desc, setDesc] = useState("");
   const [bloom, setBloom] = useState("bilish");
@@ -431,45 +437,45 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
           <div className="min-w-0">
             <span className="text-sm font-semibold truncate">{cs.name}</span>
             <span className="block text-caption text-muted-foreground">
-              {cs.subject}{cs.grade ? ` · ${cs.grade}` : ""} · {cs.standards.length} standart
+              {t("customSetSummary", { subject: cs.subject, grade: cs.grade ? ` · ${cs.grade}` : "", count: cs.standards.length })}
             </span>
           </div>
         </CollapsibleTrigger>
 
-        <button type="button" onClick={onEdit} aria-label="Tahrirlash"
+        <button type="button" onClick={onEdit} aria-label={t("editAria")}
           className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover/cs:opacity-100 transition-opacity cursor-pointer">
           <PencilLine className="size-4" aria-hidden />
         </button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <button type="button" aria-label="Oʻchirish"
+            <button type="button" aria-label={t("delete")}
               className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover/cs:opacity-100 transition-opacity cursor-pointer">
               <Trash2 className="size-4" aria-hidden />
             </button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Toʻplam oʻchirilsinmi?</AlertDialogTitle>
+              <AlertDialogTitle>{t("deleteSetTitle")}</AlertDialogTitle>
               <AlertDialogDescription>
-                «{cs.name}» toʻplami va undagi barcha {cs.standards.length} ta standart butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                {t("deleteSetDescription", { name: cs.name, total: cs.standards.length })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={onDelete}>
-                Oʻchirish
+                {t("delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <span className="text-caption text-muted-foreground shrink-0 tabular-nums">{cs.standards.length} ta</span>
+        <span className="text-caption text-muted-foreground shrink-0 tabular-nums">{t("countUnit", { count: cs.standards.length })}</span>
         <AddBtn added={added} onClick={onAttach} />
       </div>
 
       <CollapsibleContent>
         <div className="border-t border-border">
           {cs.standards.length === 0 ? (
-            <p className="text-center text-caption text-muted-foreground py-4">Hali standart yoʻq. Quyida birinchisini qoʻshing.</p>
+            <p className="text-center text-caption text-muted-foreground py-4">{t("noStandardsYetAddFirst")}</p>
           ) : (
             <ul className="divide-y divide-border">
               {cs.standards.map((std) => {
@@ -481,7 +487,7 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
                       {bl && <Badge variant="secondary" className={cn("shadow-none", bl.color)}>{bl.label}</Badge>}
                       <p className="text-body text-foreground/90 leading-relaxed">{std.desc}</p>
                     </div>
-                    <button type="button" onClick={() => onRemoveStandard(std.id)} aria-label="Standartni oʻchirish"
+                    <button type="button" onClick={() => onRemoveStandard(std.id)} aria-label={t("deleteStandardAria")}
                       className="text-muted-foreground hover:text-destructive opacity-0 group-hover/std:opacity-100 transition-opacity shrink-0">
                       <X className="size-4" aria-hidden />
                     </button>
@@ -492,7 +498,7 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
           )}
           {/* Inline add row — kod + Bloom + tavsif + qoʻshish */}
           <div className="flex items-center gap-2 px-4 py-3 border-t border-border bg-muted/20">
-            <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="KOD" className="w-24 font-mono h-9 bg-background shrink-0" />
+            <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder={t("codePlaceholder")} className="w-24 font-mono h-9 bg-background shrink-0" />
             <Select value={bloom} onValueChange={setBloom}>
               <SelectTrigger className="w-36 h-9 bg-background shrink-0"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -503,10 +509,10 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") add(); }}
-              placeholder="Oʻquvchi … qila oladi."
+              placeholder={t("fieldDescPlaceholder")}
               className="flex-1 h-9 bg-background"
             />
-            <Button size="icon" className="size-9 shrink-0" onClick={add} disabled={!desc.trim()} aria-label="Qoʻshish">
+            <Button size="icon" className="size-9 shrink-0" onClick={add} disabled={!desc.trim()} aria-label={t("add")}>
               <Plus className="size-4" aria-hidden />
             </Button>
           </div>

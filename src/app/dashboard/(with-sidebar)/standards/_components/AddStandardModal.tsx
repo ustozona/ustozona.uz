@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Search, Plus, Check, Library, PenLine } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -34,6 +35,7 @@ function nextCode(codes: string[]): string {
 }
 
 export default function AddStandardModal({ open, onOpenChange, existingCodes, onAdd }: Props) {
+  const t = useTranslations("AddStandardModal");
   const [tab, setTab] = useState<"library" | "create">("library");
 
   // Avto-kod uchun: kutubxona + sinf kodlari birga.
@@ -54,9 +56,9 @@ export default function AddStandardModal({ open, onOpenChange, existingCodes, on
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl p-0 gap-0 overflow-hidden">
         <div className="px-6 pt-6 pb-4 border-b border-border">
-          <DialogTitle>Standart qoʻshish</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription className="mt-1">
-            Tayyor kutubxonadan tanlang yoki yangi standart yarating.
+            {t("description")}
           </DialogDescription>
         </div>
 
@@ -65,11 +67,11 @@ export default function AddStandardModal({ open, onOpenChange, existingCodes, on
             <TabsList className="w-full">
               <TabsTrigger value="library" className="flex-1">
                 <Library className="size-4" aria-hidden />
-                Katalog
+                {t("tabCatalog")}
               </TabsTrigger>
               <TabsTrigger value="create" className="flex-1">
                 <PenLine className="size-4" aria-hidden />
-                Yangi yaratish
+                {t("tabCreate")}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -103,6 +105,7 @@ function LibraryTab({
   onAdd: (items: StandardItem[]) => void;
   onDone: () => void;
 }) {
+  const t = useTranslations("AddStandardModal");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -141,7 +144,7 @@ function LibraryTab({
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Kod yoki taʼrif boʻyicha qidirish…"
+            placeholder={t("searchPlaceholder")}
             className="pl-9"
           />
         </div>
@@ -150,7 +153,7 @@ function LibraryTab({
       <div className="max-h-[46vh] overflow-y-auto px-6 pb-2 space-y-2">
         {filtered.length === 0 ? (
           <div className="py-10 text-center">
-            <TypographyMuted>Kutubxonada mos standart topilmadi.</TypographyMuted>
+            <TypographyMuted>{t("noMatchInLibrary")}</TypographyMuted>
           </div>
         ) : (
           filtered.map((std) => {
@@ -183,7 +186,7 @@ function LibraryTab({
                     {already && (
                       <Badge variant="outline" className="shadow-none text-muted-foreground gap-1">
                         <Check className="size-3" aria-hidden />
-                        Qoʻshilgan
+                        {t("added")}
                       </Badge>
                     )}
                   </div>
@@ -197,11 +200,11 @@ function LibraryTab({
 
       <DialogFooter className="px-6 py-4 border-t border-border">
         <DialogClose asChild>
-          <Button variant="outline" className="shadow-none">Bekor qilish</Button>
+          <Button variant="outline" className="shadow-none">{t("cancel")}</Button>
         </DialogClose>
         <Button onClick={handleAdd} disabled={selected.size === 0} className="gap-1.5">
           <Plus className="size-4" aria-hidden />
-          Qoʻshish{selected.size > 0 ? ` (${selected.size})` : ""}
+          {selected.size > 0 ? t("addWithCount", { count: selected.size }) : t("add")}
         </Button>
       </DialogFooter>
     </div>
@@ -221,6 +224,7 @@ function CreateTab({
   onAdd: (items: StandardItem[]) => void;
   onDone: () => void;
 }) {
+  const t = useTranslations("AddStandardModal");
   const [code, setCode] = useState(suggestedCode);
   const [desc, setDesc] = useState("");
   const [bloom, setBloom] = useState("");
@@ -230,9 +234,9 @@ function CreateTab({
   const codeTrim = code.trim();
   const descTrim = desc.trim();
   const duplicate = codeTrim.length > 0 && existingSet.has(codeTrim.toLowerCase());
-  const codeError = codeTrim.length === 0 ? "Kod kerak" : duplicate ? "Bu kod sinfda mavjud" : "";
-  const descError = descTrim.length === 0 ? "Taʼrif kerak" : "";
-  const bloomError = bloom ? "" : "Bloom darajasi kerak";
+  const codeError = codeTrim.length === 0 ? t("codeRequired") : duplicate ? t("codeDuplicate") : "";
+  const descError = descTrim.length === 0 ? t("descRequired") : "";
+  const bloomError = bloom ? "" : t("bloomRequired");
   const valid = !codeError && !descError && !bloomError;
 
   function handleSubmit() {
@@ -246,7 +250,7 @@ function CreateTab({
     <div className="flex flex-col">
       <div className="px-6 py-4 space-y-4 max-h-[46vh] overflow-y-auto">
         <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-4">
-          <Field label="Kod" error={touched ? codeError : ""}>
+          <Field label={t("fieldCode")} error={touched ? codeError : ""}>
             <Input
               value={code}
               onChange={(e) => setCode(e.target.value)}
@@ -255,10 +259,10 @@ function CreateTab({
               className="font-mono"
             />
           </Field>
-          <Field label="Bloom darajasi" error={touched ? bloomError : ""}>
+          <Field label={t("fieldBloom")} error={touched ? bloomError : ""}>
             <Select value={bloom} onValueChange={setBloom}>
               <SelectTrigger aria-invalid={touched && !!bloomError} className="w-full">
-                <SelectValue placeholder="Tanlang…" />
+                <SelectValue placeholder={t("selectPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
                 {BLOOM_LEVELS.map((b) => (
@@ -269,32 +273,32 @@ function CreateTab({
           </Field>
         </div>
 
-        <Field label="Taʼrif" error={touched ? descError : ""}>
+        <Field label={t("fieldDesc")} error={touched ? descError : ""}>
           <Textarea
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
-            placeholder="Oʻquvchi … qila oladi."
+            placeholder={t("fieldDescPlaceholder")}
             rows={3}
             aria-invalid={touched && !!descError}
           />
         </Field>
 
-        <Field label="Bogʻlangan dars" hint="ixtiyoriy">
+        <Field label={t("fieldLinkedLesson")} hint={t("optional")}>
           <Input
             value={file}
             onChange={(e) => setFile(e.target.value)}
-            placeholder="mas. 03. Elektron pochta"
+            placeholder={t("fieldLinkedLessonPlaceholder")}
           />
         </Field>
       </div>
 
       <DialogFooter className="px-6 py-4 border-t border-border">
         <DialogClose asChild>
-          <Button variant="outline" className="shadow-none">Bekor qilish</Button>
+          <Button variant="outline" className="shadow-none">{t("cancel")}</Button>
         </DialogClose>
         <Button onClick={handleSubmit} className="gap-1.5">
           <Plus className="size-4" aria-hidden />
-          Qoʻshish
+          {t("add")}
         </Button>
       </DialogFooter>
     </div>

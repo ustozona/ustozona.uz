@@ -2,6 +2,7 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { dateToKey } from "@/lib/date-keys";
 import { MONTHS_UZ } from "@/lib/localization";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,7 @@ export function WeekStrip({
   hasLesson: (key: string) => boolean;
   isBlocked: (date: Date) => boolean;
 }) {
+  const t = useTranslations("WeekStrip");
   const [weekStart, setWeekStart] = useState(() => startOfWeekMon(selected));
 
   const days = useMemo(
@@ -70,7 +72,7 @@ export function WeekStrip({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            aria-label="Oldingi hafta"
+            aria-label={t("prevWeek")}
             onClick={() => setWeekStart((w) => addDays(w, -7))}
             className="inline-flex size-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
@@ -78,7 +80,7 @@ export function WeekStrip({
           </button>
           <button
             type="button"
-            aria-label="Keyingi hafta"
+            aria-label={t("nextWeek")}
             onClick={() => setWeekStart((w) => addDays(w, 7))}
             className="inline-flex size-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >

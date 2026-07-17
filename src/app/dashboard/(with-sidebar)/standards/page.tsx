@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
@@ -17,6 +18,7 @@ import {
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 
 export default function StandardsPage() {
+  const t = useTranslations("StandardsPage");
   // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni 50%).
   // Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
   const [selectedClassId, handleSelectClass] = useClassIdParam();
@@ -61,8 +63,8 @@ export default function StandardsPage() {
             <Empty className="h-full border-0">
               <EmptyHeader>
                 <EmptyMedia><Illustration name="2" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                <EmptyTitle>Sinf tanlanmagan</EmptyTitle>
-                <EmptyDescription>Standartlarni koʻrish uchun sinf tanlang</EmptyDescription>
+                <EmptyTitle>{t("noClassSelected")}</EmptyTitle>
+                <EmptyDescription>{t("selectClassToView")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { BookOpen, SquareCheckBig, ArrowRight, ArrowUpRight, FileText, Trash2, Clock } from "lucide-react";
 import * as React from "react";
 import { useState, useEffect, useMemo } from "react";
@@ -50,6 +51,7 @@ import DashboardPageLayout, {
 
 
 export default function DashboardPage() {
+  const t = useTranslations("DashboardPage");
   const [mounted, setMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const firstName = useSettingsStore((s) => s.profile.name).split(/\s+/)[0];
@@ -94,7 +96,7 @@ export default function DashboardPage() {
       .sort((a, b) => a.startMin - b.startMin);
   }, [versions, selectedKey, selectedHoliday, selectedDow]);
   const selectedDayLabel = isSelectedToday
-    ? "Bugungi darslar"
+    ? t("todayLessons")
     : `${selectedDate.getDate()}-${MONTHS_UZ[selectedDate.getMonth()].toLowerCase()} (${DAYS_UZ_SUN[selectedDow].toLowerCase()})`;
 
   // ── Kelgusi darslar — jonli mavzu bankidan (rejalangan, bugundan boshlab) ──
@@ -122,7 +124,7 @@ export default function DashboardPage() {
         const meta = classMetaById.get(ev.classId);
         return {
           id: ev.id,
-          className: meta?.name ?? "Nomaʼlum sinf",
+          className: meta?.name ?? t("unknownClass"),
           timeLabel: fmtMin(ev.startMin),
           hex: meta?.hex ?? "#94a3b8",
         };
@@ -147,8 +149,8 @@ export default function DashboardPage() {
           id: l.id,
           dayName: DAYS_UZ_SUN[date.getDay()],
           date: `${d}-${MONTHS_UZ[mo - 1].toLowerCase()}`,
-          className: meta?.name ?? "Sinf",
-          topic: l.title || "(nomsiz mavzu)",
+          className: meta?.name ?? t("classFallback"),
+          topic: l.title || t("untitledTopic"),
           startTime: l.startMin != null ? fmtMin(l.startMin) : (l.time ?? ""),
           isReady: !!(l.content && l.content.trim().length > 0),
           color: hex,
@@ -162,7 +164,7 @@ export default function DashboardPage() {
   const openTasks = useMemo(
     () =>
       allTasks
-        .filter((t) => t.status !== TASK_STATUS.DONE && t.status !== TASK_STATUS.CANCELED)
+        .filter((task) => task.status !== TASK_STATUS.DONE && task.status !== TASK_STATUS.CANCELED)
         .sort((a, b) => {
           if (!a.dueDate) return 1;
           if (!b.dueDate) return -1;
@@ -172,7 +174,7 @@ export default function DashboardPage() {
   );
   // Bugun muddati keladigan ochiq vazifalar (WelcomeCard chipi)
   const todayTaskCount = useMemo(
-    () => openTasks.filter((t) => t.dueDate === todayKey).length,
+    () => openTasks.filter((task) => task.dueDate === todayKey).length,
     [openTasks, todayKey]
   );
   // Tanlangan kun vazifalari — bugun tanlansa yaqin vazifalar, aks holda oʻsha kun muddatlilari
@@ -180,7 +182,7 @@ export default function DashboardPage() {
     () =>
       isSelectedToday
         ? openTasks.slice(0, 5)
-        : openTasks.filter((t) => t.dueDate === selectedKey),
+        : openTasks.filter((task) => task.dueDate === selectedKey),
     [openTasks, isSelectedToday, selectedKey]
   );
 
@@ -214,9 +216,9 @@ export default function DashboardPage() {
   };
 
   const PHASE_GREETING: Record<typeof dayPhase, string> = {
-    tong: "Xayrli tong",
-    kun: "Xayrli kun",
-    kech: "Xayrli kech",
+    tong: t("greetingMorning"),
+    kun: t("greetingDay"),
+    kech: t("greetingEvening"),
   };
   const greetingText = () => PHASE_GREETING[dayPhase];
 
@@ -243,8 +245,8 @@ export default function DashboardPage() {
             <WelcomeCard
               firstName={firstName}
               greeting={greetingText()}
-              dateLabel={`Bugun ${currentTime.getDate()}-${MONTHS_UZ[currentTime.getMonth()].toLowerCase()}, ${DAYS_UZ_SUN[todayDow].toLowerCase()}`}
-              restNote={holiday ? `${holiday.name}. Yaxshi dam oling!` : todayDow === 0 ? "Yaxshi dam oling!" : undefined}
+              dateLabel={t("todayDateLabel", { date: `${currentTime.getDate()}-${MONTHS_UZ[currentTime.getMonth()].toLowerCase()}`, day: DAYS_UZ_SUN[todayDow].toLowerCase() })}
+              restNote={holiday ? t("restNoteWithHoliday", { holiday: holiday.name }) : todayDow === 0 ? t("restNote") : undefined}
               todayLessonCount={welcomeDemo ? welcomeDemo.todayLessonCount : todaysEvents.length}
               todayTaskCount={welcomeDemo ? welcomeDemo.todayTaskCount : todayTaskCount}
               studentCount={welcomeDemo ? welcomeDemo.studentCount : studentCount}
@@ -257,10 +259,10 @@ export default function DashboardPage() {
               <CardHeader className={cn(panelCardHeaderClass, "justify-between min-h-[4.5rem] px-5 py-5!")}>
                 <div className="flex items-center gap-2">
                   <SectionIcon><BookOpen /></SectionIcon>
-                  <CardTitle>Kelgusi darslar</CardTitle>
+                  <CardTitle>{t("upcomingLessons")}</CardTitle>
                 </div>
                 <Link href="/dashboard/lessons" className="hidden md:inline-block text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-                  Barchasi
+                  {t("all")}
                 </Link>
               </CardHeader>
               <CardContent className={panelCardContentClass}>
@@ -269,12 +271,12 @@ export default function DashboardPage() {
                       <Empty className="border-0 p-4 gap-4">
                         <EmptyHeader>
                           <EmptyMedia><Illustration name="22" className="h-[clamp(5rem,14vh,8rem)] text-black dark:text-white" /></EmptyMedia>
-                          <EmptyTitle>Haftalik darslar belgilanmagan</EmptyTitle>
-                          <EmptyDescription>Jadval boʻsh — darslarni rejalashtiring.</EmptyDescription>
+                          <EmptyTitle>{t("noWeeklyLessons")}</EmptyTitle>
+                          <EmptyDescription>{t("scheduleEmpty")}</EmptyDescription>
                         </EmptyHeader>
                         <EmptyContent>
                           <Button asChild variant="link" size="sm" className="h-auto p-0 underline">
-                            <Link href="/dashboard/planner">Rejalashtirish</Link>
+                            <Link href="/dashboard/planner">{t("planIt")}</Link>
                           </Button>
                         </EmptyContent>
                       </Empty>
@@ -318,12 +320,12 @@ export default function DashboardPage() {
                                 {lesson.isReady ? (
                                   <Badge variant="outline" className="hidden px-2.5 py-1 md:inline-flex items-center gap-1.5 rounded-full border-success/30 bg-success/10 text-success text-xs font-medium shrink-0">
                                     <span className="size-1.5 rounded-full flex-shrink-0 bg-success" />
-                                    Tayyor
+                                    {t("ready")}
                                   </Badge>
                                 ) : (
                                   <Badge variant="outline" className="hidden px-2.5 py-1 md:inline-flex items-center gap-1.5 rounded-full border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 text-xs font-medium shrink-0">
                                     <span className="size-1.5 rounded-full flex-shrink-0 bg-amber-500" />
-                                    Reja yoʻq
+                                    {t("noPlan")}
                                   </Badge>
                                 )}
                               <div className="shrink-0 group/actions relative flex items-center before:content-[''] before:absolute before:-inset-y-4 before:-left-10 before:-right-4">
@@ -360,20 +362,20 @@ export default function DashboardPage() {
                         <EmptyMedia><Illustration name="28" className="h-[clamp(5rem,14vh,8rem)] text-black dark:text-white" /></EmptyMedia>
                         <EmptyTitle>
                           {selectedHoliday
-                            ? `${isSelectedToday ? "Bugun" : "Bu kun"} — ${selectedHoliday.name}`
+                            ? t("holidayTitle", { when: isSelectedToday ? t("today") : t("thisDay"), holiday: selectedHoliday.name })
                             : isSelectedToday
-                              ? "Bugun darslar rejalashtirilmagan"
-                              : "Bu kunga dars yoʻq"}
+                              ? t("noLessonsPlannedToday")
+                              : t("noLessonsThisDay")}
                         </EmptyTitle>
                         <EmptyDescription>
                           {isSelectedToday
-                            ? "Bugunga mashgʻulot yoʻq — jadvalni tekshiring."
-                            : "Bu kunga dars rejalanmagan — jadvalni tekshiring."}
+                            ? t("noClassesTodayCheckSchedule")
+                            : t("noClassesThisDayCheckSchedule")}
                         </EmptyDescription>
                       </EmptyHeader>
                       <EmptyContent>
                         <Button asChild variant="link" size="sm" className="h-auto p-0 underline">
-                          <Link href="/dashboard/timetable">Dars jadvalini ochish</Link>
+                          <Link href="/dashboard/timetable">{t("openSchedule")}</Link>
                         </Button>
                       </EmptyContent>
                     </Empty>
@@ -408,7 +410,7 @@ export default function DashboardPage() {
                               <div className="relative shrink-0 mb-0.5">
                                 <div className="flex items-baseline gap-1.5 min-w-0">
                                   <TypographySmall className="text-sm font-semibold truncate min-w-0 leading-none">
-                                    {cls?.name ?? demoName ?? "Nomaʼlum sinf"}
+                                    {cls?.name ?? demoName ?? t("unknownClass")}
                                   </TypographySmall>
                                   <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">{fmtMin(ev.startMin)} - {fmtMin(ev.endMin)}</span>
                                 </div>
@@ -421,7 +423,7 @@ export default function DashboardPage() {
                                         </Link>
                                       </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Sinfni ochish</TooltipContent>
+                                    <TooltipContent>{t("openClass")}</TooltipContent>
                                   </Tooltip>
                                 </div>
                               </div>
@@ -466,7 +468,7 @@ export default function DashboardPage() {
               <CardHeader className="min-h-[4.5rem] px-5 py-5! flex flex-row items-center justify-between gap-2 space-y-0 border-b border-border">
                 <div className="flex items-center gap-2 min-w-0">
                   <SectionIcon><SquareCheckBig /></SectionIcon>
-                  <CardTitle className="truncate">Vazifalar</CardTitle>
+                  <CardTitle className="truncate">{t("tasks")}</CardTitle>
                   {!isSelectedToday && (
                     <span className="text-xs text-muted-foreground shrink-0">· {selectedDate.getDate()}-{MONTHS_UZ[selectedDate.getMonth()].toLowerCase()}</span>
                   )}
@@ -482,18 +484,18 @@ export default function DashboardPage() {
                       <EmptyMedia><Illustration name="30" className="h-[clamp(3.5rem,11vh,6rem)] text-black dark:text-white" /></EmptyMedia>
                       <EmptyTitle>
                         {isSelectedToday
-                          ? "Faol vazifa yoʻq"
-                          : "Bu kunga vazifa yoʻq"}
+                          ? t("noActiveTasks")
+                          : t("noTasksThisDay")}
                       </EmptyTitle>
                       <EmptyDescription>
                         {isSelectedToday
-                          ? "Yangi vazifa qoʻshib rejani boshlang."
-                          : "Bu kunga vazifa qoʻshing."}
+                          ? t("addTaskToStart")
+                          : t("addTaskThisDay")}
                       </EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
                       <Button asChild variant="link" size="sm" className="h-auto p-0 underline">
-                        <Link href="/dashboard/tasks">Vazifa qoʻshish</Link>
+                        <Link href="/dashboard/tasks">{t("addTask")}</Link>
                       </Button>
                     </EmptyContent>
                   </Empty>

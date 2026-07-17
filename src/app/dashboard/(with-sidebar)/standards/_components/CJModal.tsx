@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Scale, Trophy, ArrowRight, RotateCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const STUDENT_NAME = new Map(
 );
 
 export default function CJModal({ open, onOpenChange, standardId, standardDesc }: Props) {
+  const t = useTranslations("CJModal");
   // Demo insho banki — mavjud CJ seed (OPEN_TASK/SCRIPTS).
   const scripts = SCRIPTS;
   const scriptById = useMemo(() => new Map(scripts.map((s) => [s.id, s])), [scripts]);
@@ -57,11 +59,10 @@ export default function CJModal({ open, onOpenChange, standardId, standardDesc }
         <div className="px-6 pt-6 pb-4 border-b border-border">
           <DialogTitle className="flex items-center gap-2">
             <Scale className="size-4 text-muted-foreground" aria-hidden />
-            Qiyosiy baholash — {standardId}
+            {t("title", { standardId })}
           </DialogTitle>
           <DialogDescription className="mt-1">
-            Ikki ishdan qaysi biri standartni yaxshiroq qondiradi? Tanlang. Mutlaq ball emas —
-            taqqoslashlardan ishonchli tartib (ranking) hosil boʻladi.
+            {t("description")}
           </DialogDescription>
         </div>
 
@@ -82,10 +83,10 @@ export default function CJModal({ open, onOpenChange, standardId, standardDesc }
                     onClick={() => choose(sid)}
                     className="group text-left rounded-xl border border-border bg-card p-4 hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer flex flex-col gap-3 min-h-[180px]"
                   >
-                    <span className="text-caption font-medium text-muted-foreground">Ish #{ids.indexOf(sid) + 1}</span>
+                    <span className="text-caption font-medium text-muted-foreground">{t("workNumber", { n: ids.indexOf(sid) + 1 })}</span>
                     <p className="text-body text-foreground/90 leading-relaxed flex-1">{sc.content}</p>
                     <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                      Bu yaxshiroq <ArrowRight className="size-3.5" aria-hidden />
+                      {t("thisIsBetter")} <ArrowRight className="size-3.5" aria-hidden />
                     </span>
                   </button>
                 );
@@ -93,15 +94,15 @@ export default function CJModal({ open, onOpenChange, standardId, standardDesc }
             </div>
 
             <p className="text-caption text-muted-foreground text-center">
-              {judgements.length} ta taqqoslash · {totalPairs - judgements.length} ta qoldi
+              {t("progressStatus", { done: judgements.length, remaining: totalPairs - judgements.length })}
             </p>
           </div>
         ) : (
           <div className="px-6 py-5 space-y-3">
             <div className="flex items-center gap-2">
               <Trophy className="size-4 text-warning-foreground" aria-hidden />
-              <span className="heading-small">Reyting natijasi</span>
-              <Badge variant="outline" className="shadow-none tabular-nums">{judgements.length} taqqoslash</Badge>
+              <span className="heading-small">{t("rankingResult")}</span>
+              <Badge variant="outline" className="shadow-none tabular-nums">{t("comparisonsCount", { count: judgements.length })}</Badge>
             </div>
             <ul className="space-y-2 max-h-[46vh] overflow-y-auto">
               {ranks.map((r, i) => {
@@ -116,9 +117,9 @@ export default function CJModal({ open, onOpenChange, standardId, standardDesc }
                     </span>
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium truncate">{STUDENT_NAME.get(sc.studentId) ?? "Oʻquvchi"}</span>
+                        <span className="text-sm font-medium truncate">{STUDENT_NAME.get(sc.studentId) ?? t("studentFallback")}</span>
                         <Badge variant="outline" className="shadow-none tabular-nums shrink-0">
-                          {Math.round(r.score * 100)}% gʻalaba
+                          {t("winRate", { pct: Math.round(r.score * 100) })}
                         </Badge>
                       </div>
                       <p className="text-caption text-muted-foreground line-clamp-2">{sc.content}</p>
@@ -134,16 +135,16 @@ export default function CJModal({ open, onOpenChange, standardId, standardDesc }
           {atResults && !done && (
             <Button variant="outline" className="shadow-none gap-1.5" onClick={() => setShowResults(false)}>
               <RotateCcw className="size-4" aria-hidden />
-              Davom etish
+              {t("continue")}
             </Button>
           )}
           {!atResults && judgements.length > 0 && (
             <Button variant="outline" className="shadow-none" onClick={() => setShowResults(true)}>
-              Natijani koʻrish
+              {t("viewResults")}
             </Button>
           )}
           <DialogClose asChild>
-            <Button>Yopish</Button>
+            <Button>{t("close")}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

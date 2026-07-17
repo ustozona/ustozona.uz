@@ -4,6 +4,7 @@
 // ikkalasi shu komponentni ishlatadi (DRY). Qoʻshish oqimi AddStandardsModal (2 tab).
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Target, Plus, Search, ChevronRight, CheckCircle2, Circle, FileText, Trash2, BookOpen, Star, Scale, History, AlertTriangle } from "lucide-react";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
@@ -51,6 +52,7 @@ export default function StandardsView({
   demoMode?: boolean;
   demoSets?: StandardSet[];
 }) {
+  const t = useTranslations("StandardsView");
   const classNames = useClassNameMap();
   const sets = useStandardsStore((s) => s.sets);
   const removeSet = useStandardsStore((s) => s.removeSet);
@@ -94,14 +96,14 @@ export default function StandardsView({
             <SectionIcon>
               <Target className="size-[18px]" aria-hidden />
             </SectionIcon>
-            <CardTitle>Standartlar</CardTitle>
+            <CardTitle>{t("title")}</CardTitle>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="outline"
               size="icon"
               className="size-9 shadow-none"
-              aria-label="Qidirish"
+              aria-label={t("search")}
               aria-pressed={searchOpen}
               disabled={classSets.length === 0}
               onClick={() => {
@@ -113,7 +115,7 @@ export default function StandardsView({
             </Button>
             <Button data-tour="standards-add" className="h-9 gap-1.5" onClick={() => !demoMode && setAddOpen(true)}>
               <Plus className="size-4" aria-hidden />
-              Standart qoʻshish
+              {t("addStandard")}
             </Button>
           </div>
         </div>
@@ -127,7 +129,7 @@ export default function StandardsView({
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Kod yoki taʼrif boʻyicha qidirish…"
+                placeholder={t("searchPlaceholder")}
                 className="pl-9"
               />
             </div>
@@ -142,16 +144,16 @@ export default function StandardsView({
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="2" className="h-32 text-black dark:text-white" /></EmptyMedia>
                   <EmptyTitle>
-                    {classNames.get(classId) ?? "Sinf"} uchun toʻplam yoʻq
+                    {t("emptyTitleFor", { className: classNames.get(classId) ?? t("classFallback") })}
                   </EmptyTitle>
                   <EmptyDescription>
-                    Tayyor toʻplamdan tanlang yoki oʻzingiz yarating (Excel/CSV import ham bor).
+                    {t("emptyDescription")}
                   </EmptyDescription>
                 </EmptyHeader>
                 <EmptyContent>
                   <Button className="gap-1.5" onClick={() => setAddOpen(true)}>
                     <Plus className="size-4" aria-hidden />
-                    Standart qoʻshish
+                    {t("addStandard")}
                   </Button>
                 </EmptyContent>
               </Empty>
@@ -161,8 +163,8 @@ export default function StandardsView({
               <Empty>
                 <EmptyHeader>
                   <EmptyMedia variant="icon"><Search aria-hidden /></EmptyMedia>
-                  <EmptyTitle>Hech narsa topilmadi</EmptyTitle>
-                  <EmptyDescription>Qidiruv yoki filtrni oʻzgartirib koʻring.</EmptyDescription>
+                  <EmptyTitle>{t("noResultsTitle")}</EmptyTitle>
+                  <EmptyDescription>{t("noResultsDescription")}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             </div>
@@ -218,6 +220,7 @@ function SetCard({
   onToggle: (code: string) => void;
   onRemove: (code: string) => void;
 }) {
+  const t = useTranslations("StandardsView");
   const classNames = useClassNameMap();
   // Qamrov = qoʻlda (std.covered) YOKI darsdan avtomatik (v3 §9 Q4).
   const lessons = useLessonStore((s) => s.lessons);
@@ -250,7 +253,7 @@ function SetCard({
               <span className="heading-small truncate">{set.name}</span>
               <Badge variant="secondary" className="shadow-none shrink-0">{set.subject}</Badge>
               {set.source === "custom" ? (
-                <Badge variant="outline" className="shadow-none shrink-0 text-muted-foreground">Custom</Badge>
+                <Badge variant="outline" className="shadow-none shrink-0 text-muted-foreground">{t("custom")}</Badge>
               ) : set.frameworkCode ? (
                 <Badge variant="outline" className="shadow-none shrink-0 gap-1 text-muted-foreground font-mono">
                   {set.frameworkCode}
@@ -264,7 +267,7 @@ function SetCard({
                 </Badge>
               ))}
               <TypographyMuted className="text-caption">
-                · {total} standart · {covered} oʻqitildi
+                {t("setStats", { total, covered })}
               </TypographyMuted>
             </div>
           </div>
@@ -278,7 +281,7 @@ function SetCard({
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
-            Ogʻirlikli qamrov: {covered}/{total} standart oʻqitildi (bazaviy standart ×2 ogʻirlik)
+            {t("coverageTooltip", { covered, total })}
           </TooltipContent>
         </Tooltip>
         {summary.tested && (
@@ -290,7 +293,7 @@ function SetCard({
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
-              Oʻzlashtirish: {summary.testedStandards} ta dalili bor standart boʻyicha oʻrtacha mustahkamlik
+              {t("masteryTooltip", { tested: summary.testedStandards })}
             </TooltipContent>
           </Tooltip>
         )}
@@ -301,7 +304,7 @@ function SetCard({
           onClick={onAddStandard}
         >
           <Plus className="size-4" aria-hidden />
-          Standart
+          {t("addStandardShort")}
         </Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -309,22 +312,22 @@ function SetCard({
               variant="ghost"
               size="icon"
               className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
-              aria-label="Toʻplamni oʻchirish"
+              aria-label={t("deleteSetAria")}
             >
               <Trash2 className="size-4" aria-hidden />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Toʻplam oʻchirilsinmi?</AlertDialogTitle>
+              <AlertDialogTitle>{t("deleteSetTitle")}</AlertDialogTitle>
               <AlertDialogDescription>
-                «{set.name}» toʻplami va undagi barcha {total} ta standart butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+                {t("deleteSetDescription", { name: set.name, total })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={onRemoveSet}>
-                Oʻchirish
+                {t("delete")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -334,17 +337,17 @@ function SetCard({
       <CollapsibleContent>
         {total === 0 ? (
           <div className="px-4 py-8 text-center border-t border-border space-y-3">
-            <TypographyMuted>Bu toʻplamda hali standart yoʻq.</TypographyMuted>
+            <TypographyMuted>{t("noStandardsYet")}</TypographyMuted>
             <div>
               <Button variant="outline" size="sm" className="h-8 shadow-none gap-1" onClick={onAddStandard}>
                 <Plus className="size-4" aria-hidden />
-                Standart qoʻshish
+                {t("addStandard")}
               </Button>
             </div>
           </div>
         ) : items.length === 0 ? (
           <div className="px-4 py-8 text-center border-t border-border">
-            <TypographyMuted>Hech narsa topilmadi.</TypographyMuted>
+            <TypographyMuted>{t("noResultsInSet")}</TypographyMuted>
           </div>
         ) : (
           <ul className="divide-y divide-border border-t border-border">
@@ -369,6 +372,7 @@ function StandardRow({
   onToggle: (code: string) => void;
   onRemove: (code: string) => void;
 }) {
+  const t = useTranslations("StandardsView");
   const subjective = std.assessType === "subjective";
   // Oʻzlashtirish (Mastery) — dalil-engine'dan, sinf darajasida (v3 §9 Q3).
   const m = useMemo(() => classStandardMastery(classId, std.id), [classId, std.id]);
@@ -391,16 +395,16 @@ function StandardRow({
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            Darsdan avtomatik oʻqitildi: {lessonCov.lessons.map((l) => l.title).join(", ")}
+            {t("autoTaughtTooltip", { lessons: lessonCov.lessons.map((l) => l.title).join(", ") })}
           </TooltipContent>
         </Tooltip>
       ) : (
         <button
           type="button"
           onClick={() => onToggle(std.id)}
-          aria-label={std.covered ? "Oʻtilmagan deb belgilash" : "Oʻqitildi deb belgilash"}
+          aria-label={std.covered ? t("markNotCoveredAria") : t("markCoveredAria")}
           className="shrink-0 mt-0.5 rounded-full transition-transform hover:scale-110 cursor-pointer"
-          title={std.covered ? "Oʻqitildi (qoʻlda)" : "Hali oʻqitilmagan"}
+          title={std.covered ? t("coveredManualTitle") : t("notCoveredTitle")}
         >
           {std.covered ? (
             <span className="size-7 rounded-full bg-success/10 flex items-center justify-center">
@@ -422,10 +426,10 @@ function StandardRow({
               <TooltipTrigger asChild>
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950 px-1.5 py-0.5 text-amber-700 dark:text-amber-300">
                   <Star className="size-3 fill-current" aria-hidden />
-                  <span className="text-caption font-medium">Bazaviy</span>
+                  <span className="text-caption font-medium">{t("foundational")}</span>
                 </span>
               </TooltipTrigger>
-              <TooltipContent>Poydevor standart — qamrovga koʻproq ogʻirlik beradi</TooltipContent>
+              <TooltipContent>{t("foundationalTooltip")}</TooltipContent>
             </Tooltip>
           )}
         </div>
@@ -436,10 +440,10 @@ function StandardRow({
           {covered ? (
             <Badge variant="outline" className="shadow-none border-success/30 text-success gap-1">
               {lessonCov.taught ? <BookOpen className="size-3" aria-hidden /> : <CheckCircle2 className="size-3" aria-hidden />}
-              {lessonCov.taught ? "Oʻqitildi · Darsdan" : "Oʻqitildi"}
+              {lessonCov.taught ? t("taughtFromLesson") : t("taught")}
             </Badge>
           ) : (
-            <Badge variant="outline" className="shadow-none text-muted-foreground">Oʻtilmagan</Badge>
+            <Badge variant="outline" className="shadow-none text-muted-foreground">{t("notCovered")}</Badge>
           )}
 
           {subjective ? (
@@ -451,10 +455,10 @@ function StandardRow({
                   className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-caption font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer"
                 >
                   <Scale className="size-3" aria-hidden />
-                  Subʼektiv · CJ baholash
+                  {t("subjectiveCJ")}
                 </button>
               </TooltipTrigger>
-              <TooltipContent>Quiz emas — Comparative Judgement (qiyosiy baholash) bilan baholanadi. Ochish uchun bosing.</TooltipContent>
+              <TooltipContent>{t("subjectiveTooltip")}</TooltipContent>
             </Tooltip>
           ) : m.tested ? (
             <Tooltip>
@@ -462,16 +466,16 @@ function StandardRow({
                 <span className="inline-flex items-center gap-1.5">
                   <Badge variant="outline" className={cn("shadow-none tabular-nums gap-1", masteryChipClass(m.masteredPct))}>
                     <Target className="size-3" aria-hidden />
-                    Oʻzlashtirish {m.masteredPct}%
+                    {t("masteryPct", { pct: m.masteredPct })}
                   </Badge>
                   <MasteryBar m={m} />
                 </span>
               </TooltipTrigger>
               <TooltipContent className="space-y-1">
-                <p className="font-medium">{m.total} oʻquvchi baholangan</p>
-                <p><span className="text-success">●</span> {m.secure} mustahkam (≥80%)</p>
-                <p><span className="text-warning-foreground">●</span> {m.developing} shakllanmoqda (50–80%)</p>
-                <p><span className="text-destructive">●</span> {m.beginning} boshlangʻich (&lt;50%)</p>
+                <p className="font-medium">{t("masteryTooltipStudents", { total: m.total })}</p>
+                <p><span className="text-success">●</span> {t("secureLabel", { count: m.secure })}</p>
+                <p><span className="text-warning-foreground">●</span> {t("developingLabel", { count: m.developing })}</p>
+                <p><span className="text-destructive">●</span> {t("beginningLabel", { count: m.beginning })}</p>
               </TooltipContent>
             </Tooltip>
           ) : (
@@ -479,10 +483,10 @@ function StandardRow({
               <TooltipTrigger asChild>
                 <Badge variant="outline" className="shadow-none text-muted-foreground gap-1">
                   <Target className="size-3" aria-hidden />
-                  Baholanmagan
+                  {t("notAssessed")}
                 </Badge>
               </TooltipTrigger>
-              <TooltipContent>Bu standart boʻyicha hali quiz dalili yoʻq</TooltipContent>
+              <TooltipContent>{t("notAssessedTooltip")}</TooltipContent>
             </Tooltip>
           )}
 
@@ -492,11 +496,11 @@ function StandardRow({
               <TooltipTrigger asChild>
                 <Badge variant="outline" className="shadow-none gap-1 border-warning/30 text-warning-foreground">
                   <History className="size-3" aria-hidden />
-                  Takrorlash kerak
+                  {t("retrievalNeeded")}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent>
-                Oxirgi baholangani {m.daysSinceAssessed} kun oldin — uzoq muddatli xotira uchun takroriy baholash tavsiya etiladi
+                {t("retrievalTooltip", { days: m.daysSinceAssessed ?? 0 })}
               </TooltipContent>
             </Tooltip>
           )}
@@ -507,13 +511,13 @@ function StandardRow({
           <div className="mt-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 space-y-1.5">
             <div className="flex items-center gap-1.5">
               <AlertTriangle className="size-3.5 text-warning-foreground shrink-0" aria-hidden />
-              <span className="text-caption font-medium text-warning-foreground">Keng tarqalgan tushunmovchiliklar</span>
+              <span className="text-caption font-medium text-warning-foreground">{t("misconceptionsTitle")}</span>
             </div>
             <ul className="space-y-1">
               {misconceptions.map((mc) => (
                 <li key={mc.misconception.id} className="flex items-start gap-2 text-caption text-foreground/80">
                   <Badge variant="outline" className="shadow-none shrink-0 tabular-nums border-warning/30 text-warning-foreground">
-                    {mc.count} oʻquvchi
+                    {t("studentsCount", { count: mc.count })}
                   </Badge>
                   <span className="leading-relaxed">
                     {mc.misconception.label}
@@ -544,22 +548,22 @@ function StandardRow({
             variant="ghost"
             size="icon"
             className="size-8 shrink-0 self-center text-muted-foreground hover:text-destructive opacity-0 group-hover/row:opacity-100 focus-visible:opacity-100 transition-opacity"
-            aria-label="Standartni oʻchirish"
+            aria-label={t("deleteStandardAria")}
           >
             <Trash2 className="size-4" aria-hidden />
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Standart oʻchirilsinmi?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteStandardTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu standart toʻplamdan butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.
+              {t("deleteStandardDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={() => onRemove(std.id)}>
-              Oʻchirish
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

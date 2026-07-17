@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowUpRight, ChevronDown, ChevronUp, ListFilter, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,78 +31,91 @@ const INITIAL_VISIBLE = 20;
     yigʻiladigan qatorga jamlanadi (referens: "N minor updates · hide"). */
 const COLLAPSE_THRESHOLD = 2;
 
-function TypePill({ type }: { type: ChangelogEntry["type"] }) {
+function TypePill({ type, label }: { type: ChangelogEntry["type"]; label: string }) {
   const meta = TYPE_META[type];
   return (
     <Badge variant="outline" className={cn("shrink-0 gap-1", meta.pill)}>
       <meta.icon className="size-3" />
-      {meta.label}
+      {label}
     </Badge>
   );
 }
 
 /** Tegishli sahifaga oʻng chetga tekislangan kichik havola-chip. */
-function HrefChip({ href }: { href: string }) {
+function HrefChip({ href, routeLabels }: { href: string; routeLabels: Record<string, string> }) {
   const label = href.split("/").pop() ?? "";
   return (
     <Link
       href={href}
       className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
     >
-      {ROUTE_CHIP_LABELS[href] ?? label}
+      {routeLabels[href] ?? label}
       <ArrowUpRight className="size-3" />
     </Link>
   );
 }
 
-const ROUTE_CHIP_LABELS: Record<string, string> = {
-  "/dashboard": "Bosh sahifa",
-  "/dashboard/classes": "Mening sinflarim",
-  "/dashboard/students": "Oʻquvchilar",
-  "/dashboard/timetable": "Dars jadvali",
-  "/dashboard/attendance": "Davomat",
-  "/dashboard/behavior": "Xulq-atvor",
-  "/dashboard/standards": "Standartlar",
-  "/dashboard/settings": "Sozlamalar",
-  "/dashboard/feedback": "Fikr-mulohaza",
-  "/dashboard/lessons": "Darslar",
-};
-
-function FullEntryRow({ entry }: { entry: ChangelogEntry }) {
+function FullEntryRow({
+  entry,
+  typeLabel,
+  routeLabels,
+}: {
+  entry: ChangelogEntry;
+  typeLabel: string;
+  routeLabels: Record<string, string>;
+}) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0 space-y-1.5">
         <div className="flex flex-wrap items-center gap-2">
-          <TypePill type={entry.type} />
+          <TypePill type={entry.type} label={typeLabel} />
           <span className="text-sm font-medium text-foreground">{entry.title}</span>
         </div>
         <p className="text-sm leading-relaxed text-muted-foreground">{entry.body}</p>
       </div>
-      {entry.href && <HrefChip href={entry.href} />}
+      {entry.href && <HrefChip href={entry.href} routeLabels={routeLabels} />}
     </div>
   );
 }
 
-function CompactEntryRow({ entry }: { entry: ChangelogEntry }) {
+function CompactEntryRow({
+  entry,
+  typeLabel,
+  routeLabels,
+}: {
+  entry: ChangelogEntry;
+  typeLabel: string;
+  routeLabels: Record<string, string>;
+}) {
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-2">
-        <TypePill type={entry.type} />
+        <TypePill type={entry.type} label={typeLabel} />
         <span className="truncate text-sm font-medium text-foreground">{entry.title}</span>
       </div>
-      {entry.href && <HrefChip href={entry.href} />}
+      {entry.href && <HrefChip href={entry.href} routeLabels={routeLabels} />}
     </div>
   );
 }
 
 /** Ketma-ket kompakt yozuvlarni "N ta kichik yangilanish" qatoriga jamlaydi. */
-function CompactGroup({ entries }: { entries: ChangelogEntry[] }) {
+function CompactGroup({
+  entries,
+  typeLabels,
+  routeLabels,
+  compactCountLabel,
+}: {
+  entries: ChangelogEntry[];
+  typeLabels: Record<ChangelogEntry["type"], string>;
+  routeLabels: Record<string, string>;
+  compactCountLabel: string;
+}) {
   const [open, setOpen] = useState(false);
   if (entries.length < COLLAPSE_THRESHOLD) {
     return (
       <div className="space-y-3">
         {entries.map((e) => (
-          <CompactEntryRow key={e.id} entry={e} />
+          <CompactEntryRow key={e.id} entry={e} typeLabel={typeLabels[e.type]} routeLabels={routeLabels} />
         ))}
       </div>
     );
@@ -115,14 +129,14 @@ function CompactGroup({ entries }: { entries: ChangelogEntry[] }) {
       >
         <span className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-muted-foreground/50" />
-          {entries.length} ta kichik yangilanish
+          {compactCountLabel}
         </span>
         {open ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
       </button>
       {open && (
         <div className="mt-3 space-y-3 border-t border-border pt-3">
           {entries.map((e) => (
-            <CompactEntryRow key={e.id} entry={e} />
+            <CompactEntryRow key={e.id} entry={e} typeLabel={typeLabels[e.type]} routeLabels={routeLabels} />
           ))}
         </div>
       )}
@@ -156,6 +170,33 @@ function toBlocks(items: ChangelogEntry[]): Block[] {
 }
 
 export default function ChangelogPage() {
+  const t = useTranslations("Changelog");
+
+  const routeLabels: Record<string, string> = useMemo(
+    () => ({
+      "/dashboard": t("routes.dashboard"),
+      "/dashboard/classes": t("routes.classes"),
+      "/dashboard/students": t("routes.students"),
+      "/dashboard/timetable": t("routes.timetable"),
+      "/dashboard/attendance": t("routes.attendance"),
+      "/dashboard/behavior": t("routes.behavior"),
+      "/dashboard/standards": t("routes.standards"),
+      "/dashboard/settings": t("routes.settings"),
+      "/dashboard/feedback": t("routes.feedback"),
+      "/dashboard/lessons": t("routes.lessons"),
+    }),
+    [t]
+  );
+
+  const typeLabels: Record<ChangelogType, string> = useMemo(
+    () => ({
+      yangi: t("types.yangi"),
+      yaxshilandi: t("types.yaxshilandi"),
+      tuzatildi: t("types.tuzatildi"),
+    }),
+    [t]
+  );
+
   // Sahifa ochildi — hamma yozuv koʻrildi (sidebar badge darhol oʻchadi).
   useEffect(() => {
     markChangelogSeen();
@@ -166,7 +207,7 @@ export default function ChangelogPage() {
   // Tur boʻyicha soni (filtr menyusida koʻrsatish uchun)
   const typeCounts = useMemo(() => {
     const map = { all: 0 } as Record<TypeFilter, number>;
-    for (const t of TYPE_ORDER) map[t] = 0;
+    for (const type of TYPE_ORDER) map[type] = 0;
     for (const g of groups) for (const it of g.items) { map.all++; map[it.type]++; }
     return map;
   }, [groups]);
@@ -231,7 +272,7 @@ export default function ChangelogPage() {
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                 <Megaphone className="size-4.5 text-primary" />
               </div>
-              <h1 className="heading-page text-foreground">Yangilanishlar</h1>
+              <h1 className="heading-page text-foreground">{t("title")}</h1>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
@@ -257,25 +298,25 @@ export default function ChangelogPage() {
                       </Button>
                     </DropdownMenuTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>Filtr</TooltipContent>
+                  <TooltipContent>{t("filter")}</TooltipContent>
                 </Tooltip>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuCheckboxItem
                     checked={typeFilter === "all"}
                     onCheckedChange={() => setTypeFilter("all")}
                   >
-                    Hammasi
+                    {t("filterAll")}
                     <span className="ml-auto text-xs text-muted-foreground">{typeCounts.all}</span>
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuSeparator />
-                  {TYPE_ORDER.map((t) => (
+                  {TYPE_ORDER.map((type) => (
                     <DropdownMenuCheckboxItem
-                      key={t}
-                      checked={typeFilter === t}
-                      onCheckedChange={() => setTypeFilter(typeFilter === t ? "all" : t)}
+                      key={type}
+                      checked={typeFilter === type}
+                      onCheckedChange={() => setTypeFilter(typeFilter === type ? "all" : type)}
                     >
-                      {TYPE_META[t].label}
-                      <span className="ml-auto text-xs text-muted-foreground">{typeCounts[t]}</span>
+                      {typeLabels[type]}
+                      <span className="ml-auto text-xs text-muted-foreground">{typeCounts[type]}</span>
                     </DropdownMenuCheckboxItem>
                   ))}
                 </DropdownMenuContent>
@@ -284,14 +325,14 @@ export default function ChangelogPage() {
           </div>
 
           <TypographyMuted className="mt-1.5 text-sm leading-relaxed">
-            Ustozona qanday rivojlanmoqda — yangi imkoniyatlar, yaxshilanishlar va
-            tuzatishlar.
+            {t("description")}
             {recentCount > 0 && (
               <span className="text-muted-foreground/80">
                 {" "}
-                Oxirgi 30 kunda{" "}
-                <span className="font-medium text-foreground/80">{recentCount} ta</span>{" "}
-                yangilanish.
+                {t.rich("recentUpdates", {
+                  count: recentCount,
+                  b: (chunks) => <span className="font-medium text-foreground/80">{chunks}</span>,
+                })}
               </span>
             )}
           </TypographyMuted>
@@ -328,7 +369,7 @@ export default function ChangelogPage() {
                       {fmtChangelogDateUz(group.date)}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {group.items.length} ta yangilanish
+                      {t("updatesCount", { count: group.items.length })}
                     </span>
                     {collapsedDates.has(group.date) ? (
                       <ChevronDown className="size-3.5 text-muted-foreground" />
@@ -340,9 +381,20 @@ export default function ChangelogPage() {
                     <div className="mt-2.5 space-y-4">
                       {toBlocks(group.items).map((block, bi) =>
                         block.kind === "full" ? (
-                          <FullEntryRow key={block.entry.id} entry={block.entry} />
+                          <FullEntryRow
+                            key={block.entry.id}
+                            entry={block.entry}
+                            typeLabel={typeLabels[block.entry.type]}
+                            routeLabels={routeLabels}
+                          />
                         ) : (
-                          <CompactGroup key={`compact-${bi}`} entries={block.entries} />
+                          <CompactGroup
+                            key={`compact-${bi}`}
+                            entries={block.entries}
+                            typeLabels={typeLabels}
+                            routeLabels={routeLabels}
+                            compactCountLabel={t("compactGroup", { count: block.entries.length })}
+                          />
                         )
                       )}
                     </div>
@@ -354,7 +406,7 @@ export default function ChangelogPage() {
             {!expanded && totalEntries > INITIAL_VISIBLE && (
               <div className="mt-4 flex justify-center">
                 <Button variant="ghost" size="sm" onClick={() => setExpanded(true)}>
-                  Oldingi yangilanishlarni koʻrsatish
+                  {t("showPrevious")}
                 </Button>
               </div>
             )}
