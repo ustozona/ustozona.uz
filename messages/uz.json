@@ -1927,5 +1927,166 @@
     "addTaskToStart": "Yangi vazifa qoʻshib rejani boshlang.",
     "addTaskThisDay": "Bu kunga vazifa qoʻshing.",
     "addTask": "Vazifa qoʻshish"
+  },
+  "FeedbackMeta": {
+    "categories": {
+      "taklif": "Taklif",
+      "xato": "Xato",
+      "savol": "Savol",
+      "maqtov": "Maqtov",
+      "boshqa": "Boshqa"
+    },
+    "statuses": {
+      "yangi": "Yangi",
+      "jarayonda": "Jarayonda",
+      "bajarildi": "Bajarildi",
+      "rad": "Rad etilgan"
+    },
+    "months": {
+      "m0": "yan",
+      "m1": "fev",
+      "m2": "mar",
+      "m3": "apr",
+      "m4": "may",
+      "m5": "iyun",
+      "m6": "iyul",
+      "m7": "avg",
+      "m8": "sen",
+      "m9": "okt",
+      "m10": "noy",
+      "m11": "dek"
+    },
+    "relative": {
+      "now": "hozir",
+      "minutesAgo": "{count} daqiqa oldin",
+      "hoursAgo": "{count} soat oldin",
+      "yesterday": "kecha"
+    }
+  },
+  "FeedbackPage": {
+    "title": "Fikr-mulohaza",
+    "subtitle": "Ustozona haqidagi taklif, xato, savol va maqtovlaringiz — biz oʻqiymiz va ovoz bera olasiz.",
+    "sort": {
+      "votes": "Eng koʻp ovoz",
+      "new": "Eng yangi",
+      "replies": "Eng koʻp izoh"
+    },
+    "tabs": {
+      "all": "Hammasi",
+      "process": "Jarayonda",
+      "done": "Bajarilgan"
+    },
+    "search": {
+      "aria": "Qidirish",
+      "placeholder": "Fikrlar ichidan qidirish…"
+    },
+    "filter": {
+      "aria": "Filtr",
+      "mineOnly": "Faqat meniki",
+      "category": "Turkum",
+      "all": "Hammasi",
+      "status": "Holat",
+      "clear": "Filtrni tozalash"
+    },
+    "sortMenu": {
+      "title": "Saralash",
+      "tooltip": "Saralash: {label}"
+    },
+    "loading": "Yuklanmoqda…",
+    "empty": {
+      "filterTitle": "Mos fikr topilmadi",
+      "filterDesc": "Filtr yoki qidiruvni oʻzgartirib koʻring.",
+      "defaultTitle": "Hali fikr yoʻq",
+      "defaultDesc": "Birinchi boʻlib taklif yoki fikr bildiring.",
+      "processTitle": "Jarayonda fikr yoʻq",
+      "processDesc": "Koʻrib chiqilayotgan yoki ish boshlangan fikrlar shu yerda koʻrinadi.",
+      "doneTitle": "Hali bajarilgan fikr yoʻq",
+      "doneDesc": "Amalga oshirilgan taklif va tuzatilgan xatolar shu yerda koʻrinadi."
+    },
+    "toast": {
+      "replySent": "Javob yuborildi",
+      "replySentDesc": "{author}ga bildirishnoma yuborildi.",
+      "deleted": "Fikr oʻchirildi",
+      "edited": "Fikr tahrirlandi"
+    },
+    "notify": {
+      "title": "Fikringizga javob keldi",
+      "body": "Ustozona jamoasi: “{excerpt}”"
+    },
+    "teamAuthorName": "Ustozona jamoasi"
+  },
+  "FeedbackCard": {
+    "quoteReplyButton": "Iqtibos bilan javob",
+    "edited": "· tahrirlangan",
+    "actionsAria": "Fikr amallari",
+    "edit": "Tahrirlash",
+    "delete": "Oʻchirish",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash",
+    "imageZoomAria": "{index}-rasmni kattalashtirish",
+    "imageAlt": "Biriktirilgan rasm {index}",
+    "imageDialogTitle": "Biriktirilgan rasm",
+    "reply": "Javob",
+    "discussion": "Muhokama · {count}",
+    "comments": "Izohlar",
+    "showReplies": "{count} ta javobni koʻrsatish",
+    "hideReplies": "Javoblarni yashirish",
+    "contextReply": "Javob berish",
+    "deleteDialog": {
+      "title": "Fikrni oʻchirasizmi?",
+      "desc": "Bu amal qaytarib boʻlmaydi — fikr va unga yozilgan barcha javoblar butunlay oʻchiriladi.",
+      "cancel": "Bekor qilish",
+      "confirm": "Oʻchirish"
+    }
+  },
+  "FeedbackForm": {
+    "placeholder": {
+      "taklif": "Qanday imkoniyat qoʻshilishini xohlaysiz? Batafsil yozing…",
+      "xato": "Nima ishlamayapti? Qanday yuz berdi?",
+      "savol": "Savolingizni yozing…",
+      "maqtov": "Nima yoqdi? Bizga ilhom bering!",
+      "boshqa": "Fikringizni yozing…"
+    },
+    "submitDefault": "Yuborish",
+    "toastSuccess": "Fikringiz yuborildi. Rahmat! 🎉",
+    "toastSuccessDesc": "Doskaga qoʻshildi — boshqa ustozlar ham ovoz bera oladi.",
+    "toastViewAction": "Koʻrish",
+    "helpHintPrefix": "Tezkor javob kerak boʻlsa,",
+    "helpLink": "Yordam sahifasi",
+    "helpHintSuffix": "qulayroq boʻlishi mumkin.",
+    "similarTitle": "Shunga oʻxshash fikr bormi? Ovoz bering — takror yozishni shart emas",
+    "screenshotPrefix": "Skrinshot:",
+    "screenshotThen": "soʻng",
+    "attachAria": "Rasm biriktirish"
+  },
+  "FeedbackComposer": {
+    "placeholder": "Fikr bildirish — taklif, xato, savol yoki maqtov…",
+    "submitLabel": "Fikr bildirish",
+    "cancelAria": "Bekor qilish"
+  },
+  "FeedbackAttachments": {
+    "toastMax": "Koʻpi bilan {max} ta rasm biriktirish mumkin.",
+    "toastPartial": "Faqat {room} ta rasm qoʻshildi — chegara {max} ta.",
+    "toastReadError": "Rasmni oʻqib boʻlmadi.",
+    "imageAlt": "Biriktirilgan rasm {index}",
+    "imageTitle": "Rasm {index}",
+    "removeAria": "{index}-rasmni olib tashlash"
+  },
+  "FeedbackReactionBar": {
+    "otherEmojiAria": "Boshqa emoji"
+  },
+  "FeedbackReplyRow": {
+    "official": "Rasmiy",
+    "reply": "Javob"
+  },
+  "FeedbackReplyComposer": {
+    "placeholderTeam": "Rasmiy javob yozing…",
+    "placeholderUser": "Javob yozing…",
+    "asTeamLabel": "Jamoa nomidan",
+    "clearTargetAria": "Belgilashni bekor qilish",
+    "submit": "Javob berish"
+  },
+  "FeedbackQuoteBlock": {
+    "jumpTitle": "Belgilangan xabarga oʻtish"
   }
 }

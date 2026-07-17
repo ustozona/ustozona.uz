@@ -1927,5 +1927,166 @@
     "addTaskToStart": "Добавьте новую задачу, чтобы начать планирование.",
     "addTaskThisDay": "Добавьте задачу на этот день.",
     "addTask": "Добавить задачу"
+  },
+  "FeedbackMeta": {
+    "categories": {
+      "taklif": "Предложение",
+      "xato": "Ошибка",
+      "savol": "Вопрос",
+      "maqtov": "Похвала",
+      "boshqa": "Другое"
+    },
+    "statuses": {
+      "yangi": "Новое",
+      "jarayonda": "В процессе",
+      "bajarildi": "Выполнено",
+      "rad": "Отклонено"
+    },
+    "months": {
+      "m0": "янв",
+      "m1": "фев",
+      "m2": "мар",
+      "m3": "апр",
+      "m4": "май",
+      "m5": "июн",
+      "m6": "июл",
+      "m7": "авг",
+      "m8": "сен",
+      "m9": "окт",
+      "m10": "ноя",
+      "m11": "дек"
+    },
+    "relative": {
+      "now": "сейчас",
+      "minutesAgo": "{count} мин назад",
+      "hoursAgo": "{count} ч назад",
+      "yesterday": "вчера"
+    }
+  },
+  "FeedbackPage": {
+    "title": "Отзывы",
+    "subtitle": "Ваши предложения, ошибки, вопросы и похвала об Ustozona — мы читаем всё, и вы можете голосовать.",
+    "sort": {
+      "votes": "Больше голосов",
+      "new": "Сначала новые",
+      "replies": "Больше ответов"
+    },
+    "tabs": {
+      "all": "Все",
+      "process": "В процессе",
+      "done": "Выполнено"
+    },
+    "search": {
+      "aria": "Поиск",
+      "placeholder": "Поиск по отзывам…"
+    },
+    "filter": {
+      "aria": "Фильтр",
+      "mineOnly": "Только мои",
+      "category": "Категория",
+      "all": "Все",
+      "status": "Статус",
+      "clear": "Очистить фильтр"
+    },
+    "sortMenu": {
+      "title": "Сортировка",
+      "tooltip": "Сортировка: {label}"
+    },
+    "loading": "Загрузка…",
+    "empty": {
+      "filterTitle": "Подходящих отзывов не найдено",
+      "filterDesc": "Попробуйте изменить фильтр или поиск.",
+      "defaultTitle": "Пока нет отзывов",
+      "defaultDesc": "Будьте первым, кто оставит предложение или отзыв.",
+      "processTitle": "Нет отзывов в процессе",
+      "processDesc": "Здесь появятся отзывы на рассмотрении или в работе.",
+      "doneTitle": "Пока нет выполненных отзывов",
+      "doneDesc": "Здесь появятся реализованные предложения и исправленные ошибки."
+    },
+    "toast": {
+      "replySent": "Ответ отправлен",
+      "replySentDesc": "{author} получил уведомление.",
+      "deleted": "Отзыв удалён",
+      "edited": "Отзыв отредактирован"
+    },
+    "notify": {
+      "title": "Пришёл ответ на ваш отзыв",
+      "body": "Команда Ustozona: «{excerpt}»"
+    },
+    "teamAuthorName": "Команда Ustozona"
+  },
+  "FeedbackCard": {
+    "quoteReplyButton": "Ответить с цитатой",
+    "edited": "· отредактировано",
+    "actionsAria": "Действия с отзывом",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "imageZoomAria": "Увеличить изображение {index}",
+    "imageAlt": "Прикреплённое изображение {index}",
+    "imageDialogTitle": "Прикреплённое изображение",
+    "reply": "Ответить",
+    "discussion": "Обсуждение · {count}",
+    "comments": "Комментарии",
+    "showReplies": "Показать {count} ответов",
+    "hideReplies": "Скрыть ответы",
+    "contextReply": "Ответить",
+    "deleteDialog": {
+      "title": "Удалить этот отзыв?",
+      "desc": "Это действие необратимо — отзыв и все ответы на него будут удалены навсегда.",
+      "cancel": "Отмена",
+      "confirm": "Удалить"
+    }
+  },
+  "FeedbackForm": {
+    "placeholder": {
+      "taklif": "Какую возможность вы хотите видеть? Опишите подробнее…",
+      "xato": "Что не работает? Как это произошло?",
+      "savol": "Напишите свой вопрос…",
+      "maqtov": "Что понравилось? Вдохновите нас!",
+      "boshqa": "Напишите свой отзыв…"
+    },
+    "submitDefault": "Отправить",
+    "toastSuccess": "Ваш отзыв отправлен. Спасибо! 🎉",
+    "toastSuccessDesc": "Добавлено на доску — другие учителя тоже смогут проголосовать.",
+    "toastViewAction": "Смотреть",
+    "helpHintPrefix": "Если нужен быстрый ответ,",
+    "helpLink": "страница помощи",
+    "helpHintSuffix": "может быть удобнее.",
+    "similarTitle": "Есть похожий отзыв? Проголосуйте — не нужно писать заново",
+    "screenshotPrefix": "Скриншот:",
+    "screenshotThen": "затем",
+    "attachAria": "Прикрепить изображение"
+  },
+  "FeedbackComposer": {
+    "placeholder": "Оставить отзыв — предложение, ошибка, вопрос или похвала…",
+    "submitLabel": "Оставить отзыв",
+    "cancelAria": "Отмена"
+  },
+  "FeedbackAttachments": {
+    "toastMax": "Можно прикрепить не более {max} изображений.",
+    "toastPartial": "Добавлено только {room} изображений — лимит {max}.",
+    "toastReadError": "Не удалось прочитать изображение.",
+    "imageAlt": "Прикреплённое изображение {index}",
+    "imageTitle": "Изображение {index}",
+    "removeAria": "Удалить изображение {index}"
+  },
+  "FeedbackReactionBar": {
+    "otherEmojiAria": "Другой эмодзи"
+  },
+  "FeedbackReplyRow": {
+    "official": "Официально",
+    "reply": "Ответить"
+  },
+  "FeedbackReplyComposer": {
+    "placeholderTeam": "Напишите официальный ответ…",
+    "placeholderUser": "Напишите ответ…",
+    "asTeamLabel": "От имени команды",
+    "clearTargetAria": "Отменить выбор",
+    "submit": "Ответить"
+  },
+  "FeedbackQuoteBlock": {
+    "jumpTitle": "Перейти к отмеченному сообщению"
   }
 }

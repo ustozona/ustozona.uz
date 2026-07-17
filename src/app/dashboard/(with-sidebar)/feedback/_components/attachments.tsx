@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import {
   Attachment,
@@ -34,6 +35,7 @@ async function downscaleToDataUrl(file: File, maxDim = 1000, quality = 0.72): Pr
 }
 
 export function useImageAttachments(max = MAX_FEEDBACK_IMAGES) {
+  const t = useTranslations("FeedbackAttachments");
   const [images, setImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,17 +44,17 @@ export function useImageAttachments(max = MAX_FEEDBACK_IMAGES) {
     if (imgFiles.length === 0) return;
     const room = max - images.length;
     if (room <= 0) {
-      toast.error(`Koʻpi bilan ${max} ta rasm biriktirish mumkin.`);
+      toast.error(t("toastMax", { max }));
       return;
     }
     if (imgFiles.length > room) {
-      toast.error(`Faqat ${room} ta rasm qoʻshildi — chegara ${max} ta.`);
+      toast.error(t("toastPartial", { room, max }));
     }
     try {
       const urls = await Promise.all(imgFiles.slice(0, room).map((f) => downscaleToDataUrl(f)));
       setImages((prev) => [...prev, ...urls].slice(0, max));
     } catch {
-      toast.error("Rasmni oʻqib boʻlmadi.");
+      toast.error(t("toastReadError"));
     }
   };
 
@@ -86,6 +88,7 @@ export function AttachmentPreviewList({
   images: string[];
   onRemove: (index: number) => void;
 }) {
+  const t = useTranslations("FeedbackAttachments");
   if (images.length === 0) return null;
   return (
     <AttachmentGroup>
@@ -93,13 +96,13 @@ export function AttachmentPreviewList({
         <Attachment key={i} size="sm">
           <AttachmentMedia variant="image">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={`Biriktirilgan rasm ${i + 1}`} />
+            <img src={src} alt={t("imageAlt", { index: i + 1 })} />
           </AttachmentMedia>
           <AttachmentContent>
-            <AttachmentTitle>Rasm {i + 1}</AttachmentTitle>
+            <AttachmentTitle>{t("imageTitle", { index: i + 1 })}</AttachmentTitle>
           </AttachmentContent>
           <AttachmentActions>
-            <AttachmentAction aria-label={`${i + 1}-rasmni olib tashlash`} onClick={() => onRemove(i)}>
+            <AttachmentAction aria-label={t("removeAria", { index: i + 1 })} onClick={() => onRemove(i)}>
               <X />
             </AttachmentAction>
           </AttachmentActions>

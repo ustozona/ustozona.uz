@@ -6,8 +6,9 @@ import {
   Tooltip, TooltipTrigger, TooltipContent,
 } from "@/components/ui/tooltip";
 import { ShieldCheck, Star, CornerUpLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { initialsOf, type FeedbackReply } from "@/store/useFeedbackStore";
-import { formatFeedbackAgo, formatFeedbackFull } from "./feedback-meta";
+import { formatFeedbackAgo, formatFeedbackFull, useMonthsShort, useRelativeT } from "./feedback-meta";
 import { QuoteBlock } from "./QuoteBlock";
 import { ReactionChips, QuickReactionBar } from "./ReactionBar";
 
@@ -26,6 +27,9 @@ type Props = {
 };
 
 export default function ReplyRow({ reply: r, flashId, userAvatarUrl, onToggleReaction, onReply, onJump }: Props) {
+  const t = useTranslations("FeedbackReplyRow");
+  const monthsShort = useMonthsShort();
+  const relativeT = useRelativeT();
   return (
     <div className="group/reply flex items-start gap-3">
       <Avatar size="default" className="mt-0.5 shrink-0">
@@ -56,17 +60,17 @@ export default function ReplyRow({ reply: r, flashId, userAvatarUrl, onToggleRea
             <>
               <Star className="size-3.5 shrink-0 fill-amber-400 text-amber-400" />
               <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                Rasmiy
+                {t("official")}
               </span>
             </>
           )}
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="cursor-default text-xs text-muted-foreground/70">
-                · {formatFeedbackAgo(r.createdAt)}
+                · {formatFeedbackAgo(r.createdAt, relativeT)}
               </span>
             </TooltipTrigger>
-            <TooltipContent>{formatFeedbackFull(r.createdAt)}</TooltipContent>
+            <TooltipContent>{formatFeedbackFull(r.createdAt, monthsShort)}</TooltipContent>
           </Tooltip>
         </div>
         {r.quote && <QuoteBlock quote={r.quote} className="mt-1.5" onJump={onJump} />}
@@ -86,7 +90,7 @@ export default function ReplyRow({ reply: r, flashId, userAvatarUrl, onToggleRea
             className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
           >
             <CornerUpLeft className="size-3" />
-            Javob
+            {t("reply")}
           </button>
         </div>
       </div>

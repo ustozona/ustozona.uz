@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { AppleEmojiSprite as AppleEmoji } from "@/components/ui/apple-emoji";
@@ -62,6 +63,7 @@ export function QuickReactionBar({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("FeedbackReactionBar");
   return (
     <div
       className={cn(
@@ -85,7 +87,7 @@ export function QuickReactionBar({
         <PopoverTrigger asChild>
           <button
             type="button"
-            aria-label="Boshqa emoji"
+            aria-label={t("otherEmojiAria")}
             className="flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <SmilePlus className="size-5" />

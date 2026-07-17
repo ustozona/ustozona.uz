@@ -1927,5 +1927,166 @@
     "addTaskToStart": "Add a new task to start planning.",
     "addTaskThisDay": "Add a task for this day.",
     "addTask": "Add task"
+  },
+  "FeedbackMeta": {
+    "categories": {
+      "taklif": "Suggestion",
+      "xato": "Bug",
+      "savol": "Question",
+      "maqtov": "Praise",
+      "boshqa": "Other"
+    },
+    "statuses": {
+      "yangi": "New",
+      "jarayonda": "In progress",
+      "bajarildi": "Done",
+      "rad": "Rejected"
+    },
+    "months": {
+      "m0": "Jan",
+      "m1": "Feb",
+      "m2": "Mar",
+      "m3": "Apr",
+      "m4": "May",
+      "m5": "Jun",
+      "m6": "Jul",
+      "m7": "Aug",
+      "m8": "Sep",
+      "m9": "Oct",
+      "m10": "Nov",
+      "m11": "Dec"
+    },
+    "relative": {
+      "now": "just now",
+      "minutesAgo": "{count} min ago",
+      "hoursAgo": "{count} h ago",
+      "yesterday": "yesterday"
+    }
+  },
+  "FeedbackPage": {
+    "title": "Feedback",
+    "subtitle": "Your suggestions, bugs, questions, and praise about Ustozona — we read every one and you can vote.",
+    "sort": {
+      "votes": "Most votes",
+      "new": "Newest",
+      "replies": "Most replies"
+    },
+    "tabs": {
+      "all": "All",
+      "process": "In progress",
+      "done": "Done"
+    },
+    "search": {
+      "aria": "Search",
+      "placeholder": "Search through feedback…"
+    },
+    "filter": {
+      "aria": "Filter",
+      "mineOnly": "Mine only",
+      "category": "Category",
+      "all": "All",
+      "status": "Status",
+      "clear": "Clear filter"
+    },
+    "sortMenu": {
+      "title": "Sort",
+      "tooltip": "Sort: {label}"
+    },
+    "loading": "Loading…",
+    "empty": {
+      "filterTitle": "No matching feedback found",
+      "filterDesc": "Try changing the filter or search.",
+      "defaultTitle": "No feedback yet",
+      "defaultDesc": "Be the first to share a suggestion or comment.",
+      "processTitle": "No feedback in progress",
+      "processDesc": "Feedback under review or being worked on appears here.",
+      "doneTitle": "No completed feedback yet",
+      "doneDesc": "Implemented suggestions and fixed bugs appear here."
+    },
+    "toast": {
+      "replySent": "Reply sent",
+      "replySentDesc": "{author} was notified.",
+      "deleted": "Feedback deleted",
+      "edited": "Feedback edited"
+    },
+    "notify": {
+      "title": "You got a reply to your feedback",
+      "body": "Ustozona team: “{excerpt}”"
+    },
+    "teamAuthorName": "Ustozona team"
+  },
+  "FeedbackCard": {
+    "quoteReplyButton": "Reply with quote",
+    "edited": "· edited",
+    "actionsAria": "Feedback actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "imageZoomAria": "Zoom image {index}",
+    "imageAlt": "Attached image {index}",
+    "imageDialogTitle": "Attached image",
+    "reply": "Reply",
+    "discussion": "Discussion · {count}",
+    "comments": "Comments",
+    "showReplies": "Show {count} replies",
+    "hideReplies": "Hide replies",
+    "contextReply": "Reply",
+    "deleteDialog": {
+      "title": "Delete this feedback?",
+      "desc": "This action cannot be undone — the feedback and all its replies will be permanently deleted.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    }
+  },
+  "FeedbackForm": {
+    "placeholder": {
+      "taklif": "What feature would you like to see? Write in detail…",
+      "xato": "What's not working? What happened?",
+      "savol": "Write your question…",
+      "maqtov": "What did you like? Inspire us!",
+      "boshqa": "Write your feedback…"
+    },
+    "submitDefault": "Submit",
+    "toastSuccess": "Your feedback was sent. Thank you! 🎉",
+    "toastSuccessDesc": "Added to the board — other teachers can vote on it too.",
+    "toastViewAction": "View",
+    "helpHintPrefix": "If you need a quick answer,",
+    "helpLink": "the Help page",
+    "helpHintSuffix": "might be more convenient.",
+    "similarTitle": "Is there similar feedback already? Vote instead of writing it again",
+    "screenshotPrefix": "Screenshot:",
+    "screenshotThen": "then",
+    "attachAria": "Attach image"
+  },
+  "FeedbackComposer": {
+    "placeholder": "Share feedback — suggestion, bug, question, or praise…",
+    "submitLabel": "Send feedback",
+    "cancelAria": "Cancel"
+  },
+  "FeedbackAttachments": {
+    "toastMax": "You can attach up to {max} images.",
+    "toastPartial": "Only {room} images were added — limit is {max}.",
+    "toastReadError": "Could not read the image.",
+    "imageAlt": "Attached image {index}",
+    "imageTitle": "Image {index}",
+    "removeAria": "Remove image {index}"
+  },
+  "FeedbackReactionBar": {
+    "otherEmojiAria": "Other emoji"
+  },
+  "FeedbackReplyRow": {
+    "official": "Official",
+    "reply": "Reply"
+  },
+  "FeedbackReplyComposer": {
+    "placeholderTeam": "Write an official reply…",
+    "placeholderUser": "Write a reply…",
+    "asTeamLabel": "On behalf of the team",
+    "clearTargetAria": "Clear selection",
+    "submit": "Reply"
+  },
+  "FeedbackQuoteBlock": {
+    "jumpTitle": "Go to the referenced message"
   }
 }

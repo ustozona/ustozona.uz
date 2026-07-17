@@ -28,12 +28,14 @@ import {
   MessageSquare, MoreHorizontal, Trash2, ChevronDown, ChevronRight,
   CornerUpLeft, Quote, Pencil,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   type FeedbackItem, type FeedbackReply, type ReplyQuote,
   upvoteCount, isUpvotedByMe,
 } from "@/store/useFeedbackStore";
 import {
-  CATEGORY_META, STATUS_META, formatFeedbackAgo, formatFeedbackFull,
+  useCategoryMeta, useStatusMeta, useMonthsShort, useRelativeT,
+  formatFeedbackAgo, formatFeedbackFull,
 } from "./feedback-meta";
 import { ReactionChips, QuickReactionBar } from "./ReactionBar";
 import { excerptOf } from "./QuoteBlock";
@@ -73,8 +75,13 @@ export default function FeedbackCard({
   item, index = 0, flashOnMount = false, userInitials, userAvatarUrl,
   onToggleReaction, onToggleReplyReaction, onAddReply, onEdit, onDelete, tourTarget = false,
 }: Props) {
-  const cat = CATEGORY_META[item.category];
-  const status = STATUS_META[item.status];
+  const t = useTranslations("FeedbackCard");
+  const categoryMeta = useCategoryMeta();
+  const statusMeta = useStatusMeta();
+  const monthsShort = useMonthsShort();
+  const relativeT = useRelativeT();
+  const cat = categoryMeta[item.category];
+  const status = statusMeta[item.status];
   const CatIcon = cat.icon;
   const images = item.images ?? [];
   const replyCount = item.replies.length;
@@ -242,7 +249,7 @@ export default function FeedbackCard({
                 className="flex items-center gap-1.5 rounded-lg bg-foreground px-2.5 py-1.5 text-xs font-semibold text-background shadow-lg transition-transform hover:scale-105 active:scale-95"
               >
                 <Quote className="size-3.5" />
-                Iqtibos bilan javob
+                {t("quoteReplyButton")}
               </button>
             </div>
           )}
@@ -264,19 +271,19 @@ export default function FeedbackCard({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-default text-xs text-muted-foreground/70">
-                          {formatFeedbackAgo(item.createdAt)}
+                          {formatFeedbackAgo(item.createdAt, relativeT)}
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent>{formatFeedbackFull(item.createdAt)}</TooltipContent>
+                      <TooltipContent>{formatFeedbackFull(item.createdAt, monthsShort)}</TooltipContent>
                     </Tooltip>
                     {item.editedAt && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="cursor-default text-xs text-muted-foreground/50">
-                            · tahrirlangan
+                            {t("edited")}
                           </span>
                         </TooltipTrigger>
-                        <TooltipContent>{formatFeedbackFull(item.editedAt)}</TooltipContent>
+                        <TooltipContent>{formatFeedbackFull(item.editedAt, monthsShort)}</TooltipContent>
                       </Tooltip>
                     )}
                   </div>
@@ -296,7 +303,7 @@ export default function FeedbackCard({
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Fikr amallari"
+                        aria-label={t("actionsAria")}
                         className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
                       >
                         <MoreHorizontal className="size-4" />
@@ -304,13 +311,13 @@ export default function FeedbackCard({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuItem onSelect={startEdit}>
-                        <Pencil className="size-4" /> Tahrirlash
+                        <Pencil className="size-4" /> {t("edit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         variant="destructive"
                         onSelect={() => setDeleteConfirmOpen(true)}
                       >
-                        <Trash2 className="size-4" /> Oʻchirish
+                        <Trash2 className="size-4" /> {t("delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -347,10 +354,10 @@ export default function FeedbackCard({
                     />
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                        Bekor qilish
+                        {t("cancel")}
                       </Button>
                       <Button size="sm" disabled={!editDraft.trim()} onClick={submitEdit}>
-                        Saqlash
+                        {t("save")}
                       </Button>
                     </div>
                   </div>
@@ -368,17 +375,17 @@ export default function FeedbackCard({
                       <DialogTrigger asChild>
                         <button
                           type="button"
-                          aria-label={`${i + 1}-rasmni kattalashtirish`}
+                          aria-label={t("imageZoomAria", { index: i + 1 })}
                           className="overflow-hidden rounded-lg border border-border transition-opacity hover:opacity-85"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={src} alt={`Biriktirilgan rasm ${i + 1}`} className="h-24 w-auto max-w-40 object-cover" />
+                          <img src={src} alt={t("imageAlt", { index: i + 1 })} className="h-24 w-auto max-w-40 object-cover" />
                         </button>
                       </DialogTrigger>
                       <DialogContent className="max-w-3xl p-2">
-                        <DialogTitle className="sr-only">Biriktirilgan rasm</DialogTitle>
+                        <DialogTitle className="sr-only">{t("imageDialogTitle")}</DialogTitle>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={src} alt={`Biriktirilgan rasm ${i + 1}`} className="max-h-[80vh] w-full rounded-md object-contain" />
+                        <img src={src} alt={t("imageAlt", { index: i + 1 })} className="max-h-[80vh] w-full rounded-md object-contain" />
                       </DialogContent>
                     </Dialog>
                   ))}
@@ -401,7 +408,7 @@ export default function FeedbackCard({
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <CornerUpLeft className="size-3.5" />
-                  Javob
+                  {t("reply")}
                 </button>
                 <CollapsibleTrigger asChild>
                   <button
@@ -409,7 +416,7 @@ export default function FeedbackCard({
                     className="group inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <MessageSquare className="size-3.5" />
-                    {replyCount > 0 ? `Muhokama · ${replyCount}` : "Izohlar"}
+                    {replyCount > 0 ? t("discussion", { count: replyCount }) : t("comments")}
                     <ChevronDown className="size-3.5 transition-transform duration-fast ease-standard group-data-[state=open]:rotate-180" />
                   </button>
                 </CollapsibleTrigger>
@@ -443,7 +450,7 @@ export default function FeedbackCard({
                                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary/90 transition-colors hover:text-primary"
                               >
                                 <ChevronRight className={cn("size-3.5 transition-transform duration-fast ease-standard", expanded && "rotate-90")} />
-                                {expanded ? "Javoblarni yashirish" : `${kids.length} ta javobni koʻrsatish`}
+                                {expanded ? t("hideReplies") : t("showReplies", { count: kids.length })}
                               </button>
                             )}
                             {expanded &&
@@ -476,33 +483,32 @@ export default function FeedbackCard({
 
       <ContextMenuContent className="w-52">
         <ContextMenuItem onSelect={() => openComposer(undefined)}>
-          <CornerUpLeft className="size-4" /> Javob berish
+          <CornerUpLeft className="size-4" /> {t("contextReply")}
         </ContextMenuItem>
         <ContextMenuItem onSelect={startEdit}>
-          <Pencil className="size-4" /> Tahrirlash
+          <Pencil className="size-4" /> {t("edit")}
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem variant="destructive" onSelect={() => setDeleteConfirmOpen(true)}>
-          <Trash2 className="size-4" /> Oʻchirish
+          <Trash2 className="size-4" /> {t("delete")}
         </ContextMenuItem>
       </ContextMenuContent>
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Fikrni oʻchirasizmi?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteDialog.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu amal qaytarib boʻlmaydi — fikr va unga yozilgan barcha javoblar butunlay
-              oʻchiriladi.
+              {t("deleteDialog.desc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogCancel>{t("deleteDialog.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={onDelete}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
-              Oʻchirish
+              {t("deleteDialog.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
@@ -31,7 +32,7 @@ import {
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useNotificationsStore } from "@/store/useNotificationsStore";
 import {
-  CATEGORY_META, CATEGORY_ORDER, STATUS_META, STATUS_ORDER,
+  useCategoryMeta, CATEGORY_ORDER, useStatusMeta, STATUS_ORDER,
 } from "./_components/feedback-meta";
 import FeedbackComposer from "./_components/FeedbackComposer";
 import FeedbackCard from "./_components/FeedbackCard";
@@ -43,20 +44,22 @@ type StatFilter = FeedbackStatus | "all";
     orqali koʻrinadi) + Jarayonda + Bajarilgan. */
 type ViewTab = "all" | "process" | "done";
 
-const SORT_LABELS: Record<SortKey, string> = {
-  votes: "Eng koʻp ovoz",
-  new: "Eng yangi",
-  replies: "Eng koʻp izoh",
-};
-
 /** Tab → holat: 4-bosqichli sodda model, "yangi" va "rad etilgan" hech
     qaysi tabga tegishli emas — faqat "Hammasi"da va Filtrda koʻrinadi. */
-const TAB_META: Record<Exclude<ViewTab, "all">, { label: string; status: FeedbackStatus }> = {
-  process: { label: "Jarayonda", status: "jarayonda" },
-  done: { label: "Bajarilgan", status: "bajarildi" },
+const TAB_STATUS: Record<Exclude<ViewTab, "all">, FeedbackStatus> = {
+  process: "jarayonda",
+  done: "bajarildi",
 };
 
 export default function FeedbackPage() {
+  const t = useTranslations("FeedbackPage");
+  const categoryMeta = useCategoryMeta();
+  const statusMeta = useStatusMeta();
+  const SORT_LABELS: Record<SortKey, string> = {
+    votes: t("sort.votes"),
+    new: t("sort.new"),
+    replies: t("sort.replies"),
+  };
   const items = useFeedbackStore((s) => s.items);
   const hydrated = useFeedbackStore((s) => s._hasHydrated);
   const toggleReaction = useFeedbackStore((s) => s.toggleReaction);
@@ -128,8 +131,8 @@ export default function FeedbackPage() {
 
   const tabCounts = useMemo(
     () => ({
-      process: items.filter((it) => it.status === TAB_META.process.status).length,
-      done: items.filter((it) => it.status === TAB_META.done.status).length,
+      process: items.filter((it) => it.status === TAB_STATUS.process).length,
+      done: items.filter((it) => it.status === TAB_STATUS.done).length,
     }),
     [items]
   );
@@ -169,7 +172,7 @@ export default function FeedbackPage() {
   // boʻyicha filtrlangan (Kanban/accordion emas, oddiy tab-uslub oqim).
   const tabList = useMemo(() => {
     if (tab === "all") return feedList;
-    return sortItems(filtered.filter((it) => it.status === TAB_META[tab].status));
+    return sortItems(filtered.filter((it) => it.status === TAB_STATUS[tab]));
   }, [tab, feedList, filtered, sortItems]);
 
   const filterActive =
@@ -197,9 +200,10 @@ export default function FeedbackPage() {
     parentId?: string,
   ) => {
     const item = items.find((it) => it.id === id);
+    const teamAuthorName = t("teamAuthorName");
     addReply(id, {
       body,
-      author: asTeam ? "Ustozona jamoasi" : userName,
+      author: asTeam ? teamAuthorName : userName,
       isOfficial: asTeam,
       quote,
       parentId,
@@ -208,27 +212,27 @@ export default function FeedbackPage() {
       // Fikr egasiga bildirishnoma (header qoʻngʻiroqda koʻrinadi).
       notify({
         kind: "reply",
-        title: "Fikringizga javob keldi",
-        body: `Ustozona jamoasi: “${body.length > 90 ? `${body.slice(0, 90)}…` : body}”`,
+        title: t("notify.title"),
+        body: t("notify.body", { excerpt: body.length > 90 ? `${body.slice(0, 90)}…` : body }),
         href: `/dashboard/feedback?item=${id}`,
       });
-      toast.success("Javob yuborildi", {
-        description: item ? `${item.author}ga bildirishnoma yuborildi.` : undefined,
+      toast.success(t("toast.replySent"), {
+        description: item ? t("toast.replySentDesc", { author: item.author }) : undefined,
       });
     } else {
-      toast.success("Javob yuborildi");
+      toast.success(t("toast.replySent"));
     }
   };
 
   /** Oʻchirish — FeedbackCard'dagi AlertDialog tasdigʻidan keyin chaqiriladi. */
   const handleDelete = (id: string) => {
     deleteFeedback(id);
-    toast.success("Fikr oʻchirildi");
+    toast.success(t("toast.deleted"));
   };
 
   const handleEdit = (id: string, body: string) => {
     editFeedback(id, body);
-    toast.success("Fikr tahrirlandi");
+    toast.success(t("toast.edited"));
   };
 
   const renderCard = (it: (typeof items)[number], i: number) => (
@@ -253,10 +257,10 @@ export default function FeedbackPage() {
       <div className="mx-auto w-full max-w-3xl space-y-4 p-4 md:p-6">
         {/* Sarlavha */}
         <div className="flex items-center gap-2.5">
-          <h1 className="heading-page text-foreground">Fikr-mulohaza</h1>
+          <h1 className="heading-page text-foreground">{t("title")}</h1>
         </div>
         <TypographyMuted className="-mt-2.5 text-sm">
-          Ustozona haqidagi taklif, xato, savol va maqtovlaringiz — biz oʻqiymiz va ovoz bera olasiz.
+          {t("subtitle")}
         </TypographyMuted>
 
         {/* Umumiy card: kompozer + toolbar + lenta */}
@@ -279,21 +283,21 @@ export default function FeedbackPage() {
             <TabsList variant="line">
               <TabsTrigger value="all" className="gap-1.5">
                 <MessageSquare className="size-3.5" />
-                Hammasi
+                {t("tabs.all")}
                 <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
                   {items.length}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="process" className="gap-1.5">
                 <Clock className="size-3.5" />
-                Jarayonda
+                {t("tabs.process")}
                 <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
                   {tabCounts.process}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="done" className="gap-1.5">
                 <CheckCircle2 className="size-3.5" />
-                Bajarilgan
+                {t("tabs.done")}
                 <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
                   {tabCounts.done}
                 </span>
@@ -310,7 +314,7 @@ export default function FeedbackPage() {
                     <Button
                       variant="outline"
                       size="icon"
-                      aria-label="Qidirish"
+                      aria-label={t("search.aria")}
                       className={cn(
                         "size-9 shadow-none",
                         search.trim() && "border-primary/40 text-primary"
@@ -320,7 +324,7 @@ export default function FeedbackPage() {
                     </Button>
                   </PopoverTrigger>
                 </TooltipTrigger>
-                <TooltipContent>Qidirish</TooltipContent>
+                <TooltipContent>{t("search.aria")}</TooltipContent>
               </Tooltip>
               <PopoverContent align="end" className="w-72">
                 <div className="relative">
@@ -329,7 +333,7 @@ export default function FeedbackPage() {
                     autoFocus
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Fikrlar ichidan qidirish…"
+                    placeholder={t("search.placeholder")}
                     className="h-9 pl-9"
                   />
                 </div>
@@ -358,16 +362,16 @@ export default function FeedbackPage() {
                     </Button>
                   </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent>Filtr</TooltipContent>
+                <TooltipContent>{t("filter.aria")}</TooltipContent>
               </Tooltip>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuCheckboxItem checked={mineOnly} onCheckedChange={(v) => setMineOnly(v === true)}>
-                  Faqat meniki
+                  {t("filter.mineOnly")}
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>Turkum</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("filter.category")}</DropdownMenuLabel>
                 <DropdownMenuCheckboxItem checked={catFilter === "all"} onCheckedChange={() => setCatFilter("all")}>
-                  Hammasi <span className="ml-auto text-xs text-muted-foreground">{catCounts.all}</span>
+                  {t("filter.all")} <span className="ml-auto text-xs text-muted-foreground">{catCounts.all}</span>
                 </DropdownMenuCheckboxItem>
                 {CATEGORY_ORDER.map((c) => (
                   <DropdownMenuCheckboxItem
@@ -375,14 +379,14 @@ export default function FeedbackPage() {
                     checked={catFilter === c}
                     onCheckedChange={() => setCatFilter(catFilter === c ? "all" : c)}
                   >
-                    {CATEGORY_META[c].label}
+                    {categoryMeta[c].label}
                     <span className="ml-auto text-xs text-muted-foreground">{catCounts[c]}</span>
                   </DropdownMenuCheckboxItem>
                 ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>Holat</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("filter.status")}</DropdownMenuLabel>
                 <DropdownMenuCheckboxItem checked={statFilter === "all"} onCheckedChange={() => setStatFilter("all")}>
-                  Hammasi <span className="ml-auto text-xs text-muted-foreground">{statCounts.all}</span>
+                  {t("filter.all")} <span className="ml-auto text-xs text-muted-foreground">{statCounts.all}</span>
                 </DropdownMenuCheckboxItem>
                 {STATUS_ORDER.map((s) => (
                   <DropdownMenuCheckboxItem
@@ -390,7 +394,7 @@ export default function FeedbackPage() {
                     checked={statFilter === s}
                     onCheckedChange={() => setStatFilter(statFilter === s ? "all" : s)}
                   >
-                    {STATUS_META[s].label}
+                    {statusMeta[s].label}
                     <span className="ml-auto text-xs text-muted-foreground">{statCounts[s]}</span>
                   </DropdownMenuCheckboxItem>
                 ))}
@@ -398,7 +402,7 @@ export default function FeedbackPage() {
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onSelect={() => { setCatFilter("all"); setStatFilter("all"); setMineOnly(false); }}>
-                      Filtrni tozalash
+                      {t("filter.clear")}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -415,15 +419,15 @@ export default function FeedbackPage() {
                     </Button>
                   </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent>Saralash: {SORT_LABELS[sortKey]}</TooltipContent>
+                <TooltipContent>{t("sortMenu.tooltip", { label: SORT_LABELS[sortKey] })}</TooltipContent>
               </Tooltip>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Saralash</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("sortMenu.title")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                  <DropdownMenuRadioItem value="votes">Eng koʻp ovoz</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="new">Eng yangi</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="replies">Eng koʻp izoh</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="votes">{SORT_LABELS.votes}</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="new">{SORT_LABELS.new}</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="replies">{SORT_LABELS.replies}</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -434,7 +438,7 @@ export default function FeedbackPage() {
           {!hydrated ? (
             <div className="flex h-40 flex-col items-center justify-center gap-2">
               <Spinner className="size-6 text-muted-foreground" />
-              <TypographyMuted>Yuklanmoqda…</TypographyMuted>
+              <TypographyMuted>{t("loading")}</TypographyMuted>
             </div>
           ) : tabList.length === 0 ? (
             <div className="p-4 md:p-5">
@@ -449,26 +453,27 @@ export default function FeedbackPage() {
   );
 }
 
-const EMPTY_TAB_COPY: Record<Exclude<ViewTab, "all">, { title: string; desc: string }> = {
-  process: { title: "Jarayonda fikr yoʻq", desc: "Koʻrib chiqilayotgan yoki ish boshlangan fikrlar shu yerda koʻrinadi." },
-  done: { title: "Hali bajarilgan fikr yoʻq", desc: "Amalga oshirilgan taklif va tuzatilgan xatolar shu yerda koʻrinadi." },
-};
-
 function EmptyState({ filterActive, tab }: { filterActive: boolean; tab: ViewTab }) {
-  const copy = tab !== "all" ? EMPTY_TAB_COPY[tab] : null;
+  const t = useTranslations("FeedbackPage");
+  const copy =
+    tab === "process"
+      ? { title: t("empty.processTitle"), desc: t("empty.processDesc") }
+      : tab === "done"
+      ? { title: t("empty.doneTitle"), desc: t("empty.doneDesc") }
+      : null;
   return (
     <Empty>
       <EmptyHeader>
         <EmptyMedia><Illustration name="4" className="h-32 text-black dark:text-white" /></EmptyMedia>
         <EmptyTitle>
-          {copy ? copy.title : filterActive ? "Mos fikr topilmadi" : "Hali fikr yoʻq"}
+          {copy ? copy.title : filterActive ? t("empty.filterTitle") : t("empty.defaultTitle")}
         </EmptyTitle>
         <EmptyDescription>
           {copy
             ? copy.desc
             : filterActive
-            ? "Filtr yoki qidiruvni oʻzgartirib koʻring."
-            : "Birinchi boʻlib taklif yoki fikr bildiring."}
+            ? t("empty.filterDesc")
+            : t("empty.defaultDesc")}
         </EmptyDescription>
       </EmptyHeader>
     </Empty>

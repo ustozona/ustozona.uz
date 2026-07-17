@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquarePlus, X } from "lucide-react";
@@ -21,6 +22,7 @@ type Props = {
  */
 export default function FeedbackComposer({ userInitials, userAvatarUrl, onSubmitted }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const t = useTranslations("FeedbackComposer");
 
   // ── Yopiq holat: sokin qator ──
   if (!expanded) {
@@ -36,7 +38,7 @@ export default function FeedbackComposer({ userInitials, userAvatarUrl, onSubmit
             {userInitials}
           </AvatarFallback>
         </Avatar>
-        <span className="flex-1 text-sm text-muted-foreground/70">Fikr bildirish — taklif, xato, savol yoki maqtov…</span>
+        <span className="flex-1 text-sm text-muted-foreground/70">{t("placeholder")}</span>
         <MessageSquarePlus className="size-4 text-muted-foreground/70 transition-colors group-hover:text-primary" />
       </button>
     );
@@ -48,7 +50,7 @@ export default function FeedbackComposer({ userInitials, userAvatarUrl, onSubmit
       <FeedbackForm
         autoFocus
         rows={3}
-        submitLabel="Fikr bildirish"
+        submitLabel={t("submitLabel")}
         leading={
           <Avatar size="sm" className="mt-0.5">
             {userAvatarUrl && <AvatarImage src={userAvatarUrl} alt="" />}
@@ -62,7 +64,7 @@ export default function FeedbackComposer({ userInitials, userAvatarUrl, onSubmit
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Bekor qilish"
+            aria-label={t("cancelAria")}
             onClick={() => setExpanded(false)}
             className="size-8 text-muted-foreground hover:text-foreground"
           >

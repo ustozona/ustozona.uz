@@ -1,6 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -32,6 +33,7 @@ export default function ReplyComposer({
   quote, draft, asTeam, userInitials, textareaRef,
   onDraftChange, onAsTeamChange, onClearTarget, onSubmit, onJump,
 }: Props) {
+  const t = useTranslations("FeedbackReplyComposer");
   return (
     <div className="flex items-start gap-3">
       <Avatar size="default" className="mt-0.5 shrink-0">
@@ -53,7 +55,7 @@ export default function ReplyComposer({
               <button
                 type="button"
                 onClick={onClearTarget}
-                aria-label="Belgilashni bekor qilish"
+                aria-label={t("clearTargetAria")}
                 className="shrink-0 rounded-md p-0.5 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <X className="size-3.5" />
@@ -68,14 +70,14 @@ export default function ReplyComposer({
               if (e.key === "Escape") onClearTarget();
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
             }}
-            placeholder={asTeam ? "Rasmiy javob yozing…" : "Javob yozing…"}
+            placeholder={asTeam ? t("placeholderTeam") : t("placeholderUser")}
             rows={2}
             className="min-h-0 resize-none border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
           />
           <div className="mt-1.5 flex items-center justify-between gap-2">
             <label className="flex cursor-pointer select-none items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
               <Switch size="sm" checked={asTeam} onCheckedChange={onAsTeamChange} />
-              Jamoa nomidan
+              {t("asTeamLabel")}
             </label>
             <Button
               type="button"
@@ -85,7 +87,7 @@ export default function ReplyComposer({
               onClick={onSubmit}
             >
               <Send className="size-3.5" />
-              Javob berish
+              {t("submit")}
             </Button>
           </div>
         </div>
