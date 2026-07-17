@@ -32,6 +32,33 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "multi-language-support",
+    date: "2026-07-17",
+    type: "yangi",
+    title: "Ilova endi ingliz va rus tilida ham ishlaydi",
+    body:
+      "Sozlamalar boʻlimidan tilni tanlash mumkin — butun ilova (menyu, tugmalar, sahifalar) shu tilda koʻrsatiladi. Qoraqalpoqcha, qirgʻizcha va qozoqcha tez orada qoʻshiladi.",
+    href: "/dashboard/settings",
+  },
+  {
+    id: "student-profile-class-badge-fix",
+    date: "2026-07-17",
+    type: "tuzatildi",
+    title: "Oʻquvchi profilidagi sinf belgisi tuzatildi",
+    body:
+      "Sinf rangi belgisi juda kichik boʻlgani uchun dumaloq koʻrinib qolardi — endi barcha joyda bir xil, burchaklari yumaloqlangan kvadrat shaklda chiqadi. Ismning tagida va \"Shaxsiy maʼlumotlar\" boʻlimida sinf ikki marta takrorlanardi — endi faqat bir joyda koʻrsatiladi.",
+    href: "/dashboard/students",
+  },
+  {
+    id: "student-auto-id",
+    date: "2026-07-17",
+    type: "yangi",
+    title: "Har bir oʻquvchiga avtomatik ID beriladi",
+    body:
+      "Yangi oʻquvchi qoʻshilganda endi unga avtomatik tartib raqami (ID) biriktiriladi — qoʻlda kiritish shart emas.",
+    href: "/dashboard/students",
+  },
+  {
     id: "card-passport-v2",
     date: "2026-07-16",
     type: "yaxshilandi",
