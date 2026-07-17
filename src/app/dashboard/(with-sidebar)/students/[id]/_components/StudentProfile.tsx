@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { getStudentProfile, locateStudent } from "@/lib/student-profile";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -47,7 +48,7 @@ import BehaviorTab from "./BehaviorTab";
 import CreateStudentModal, { type NewStudentInput } from "../../_components/CreateStudentModal";
 import { toast } from "sonner";
 import {
-  ChevronsUpDown, ChevronLeft, ChevronRight, ArrowLeft, Check, AlertTriangle,
+  ChevronsUpDown, ChevronLeft, ChevronRight, ArrowLeft, Check,
   Phone, MessageCircle, Pen, BarChart3, ClipboardList,
   StickyNote, Cake, Mars, Venus, Award, CalendarDays,
 } from "lucide-react";
@@ -87,6 +88,7 @@ export default function StudentProfile({
   studentId: string;
   initialTab?: string;
 }) {
+  const t = useTranslations("StudentProfile");
   const router = useRouter();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
@@ -195,12 +197,12 @@ export default function StudentProfile({
       <Empty className="h-full border-0">
         <EmptyHeader>
           <EmptyMedia><Illustration name="14" className="h-32 text-black dark:text-white" /></EmptyMedia>
-          <EmptyTitle>Oʻquvchi topilmadi</EmptyTitle>
-          <EmptyDescription>Bu oʻquvchi mavjud emas yoki oʻchirilgan.</EmptyDescription>
+          <EmptyTitle>{t("notFoundTitle")}</EmptyTitle>
+          <EmptyDescription>{t("notFoundDescription")}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button onClick={() => router.push("/dashboard/students")} variant="outline" className="shadow-none">
-            <ArrowLeft className="size-4" /> Oʻquvchilarga qaytish
+            <ArrowLeft className="size-4" /> {t("backToStudents")}
           </Button>
         </EmptyContent>
       </Empty>
@@ -232,7 +234,7 @@ export default function StudentProfile({
         return a;
       })()
     : undefined;
-  const genderLabel = info.gender ? (info.gender === "male" ? "Oʻgʻil" : "Qiz") : undefined;
+  const genderLabel = info.gender ? (info.gender === "male" ? t("genderMale") : t("genderFemale")) : undefined;
   // Tugʻilgan sana — "2016-yil 9-yanvar" koʻrinishida
   const birthDateText = info.birthDate
     ? (() => {
@@ -249,11 +251,11 @@ export default function StudentProfile({
         let next = new Date(today.getFullYear(), b.getMonth(), b.getDate());
         if (next < today) next = new Date(today.getFullYear() + 1, b.getMonth(), b.getDate());
         const days = Math.round((next.getTime() - today.getTime()) / 86_400_000);
-        if (days === 0) return "Bugun! 🎉";
-        if (days === 1) return "Ertaga";
-        if (days < 30) return `${days} kun qoldi`;
+        if (days === 0) return t("birthdayToday");
+        if (days === 1) return t("birthdayTomorrow");
+        if (days < 30) return t("birthdayDays", { days });
         const months = Math.round(days / 30);
-        return `~${months} oy qoldi`;
+        return t("birthdayMonths", { months });
       })()
     : undefined;
 
@@ -284,7 +286,7 @@ export default function StudentProfile({
         ),
       }));
     }
-    toast.success("Maʼlumot saqlandi");
+    toast.success(t("toastSaved"));
   };
 
   // Inline gender oʻzgartirish
@@ -297,7 +299,7 @@ export default function StudentProfile({
       }));
     }
     setGenderOpen(false);
-    toast.success("Jinsi saqlandi");
+    toast.success(t("toastGenderSaved"));
   };
 
   // Inline birthDate oʻzgartirish
@@ -312,7 +314,7 @@ export default function StudentProfile({
         }));
       }
       setBirthDateOpen(false);
-      toast.success("Tavallud sanasi saqlandi");
+      toast.success(t("toastBirthDateSaved"));
     }
   };
 
@@ -327,14 +329,14 @@ export default function StudentProfile({
       }));
     }
     setEditingContact(null);
-    if (trimmed) toast.success("Maʼlumot saqlandi");
+    if (trimmed) toast.success(t("toastSaved"));
   };
 
   const TABS: { id: TabId; label: string; sub: string; icon: React.ComponentType<{ className?: string }>; count?: number }[] = [
-    { id: "overview", label: "Umumiy", sub: "Baho, davomat va koʻrsatkichlar", icon: BarChart3 },
-    { id: "assignments", label: "Topshiriqlar", sub: "Ishlar va natijalar", icon: ClipboardList, count: profile.assignments.length },
-    { id: "notes", label: "Qaydlar", sub: "Kuzatuvlar va eslatmalar", icon: StickyNote, count: notes.length },
-    { id: "behavior", label: "Xulq-atvor", sub: "Ballar va ragʻbat", icon: Award },
+    { id: "overview", label: t("tabOverview"), sub: t("tabOverviewSub"), icon: BarChart3 },
+    { id: "assignments", label: t("tabAssignments"), sub: t("tabAssignmentsSub"), icon: ClipboardList, count: profile.assignments.length },
+    { id: "notes", label: t("tabNotes"), sub: t("tabNotesSub"), icon: StickyNote, count: notes.length },
+    { id: "behavior", label: t("tabBehavior"), sub: t("tabBehaviorSub"), icon: Award },
   ];
 
   return (
@@ -357,9 +359,9 @@ export default function StudentProfile({
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-72 p-0">
                   <Command>
-                    <CommandInput placeholder="Oʻquvchi qidirish…" />
+                    <CommandInput placeholder={t("searchPlaceholder")} />
                     <CommandList>
-                      <CommandEmpty>Topilmadi</CommandEmpty>
+                      <CommandEmpty>{t("notFound")}</CommandEmpty>
                       <CommandGroup heading={location.classInfo.name}>
                         {location.roster.map((r) => (
                           <CommandItem
@@ -383,27 +385,6 @@ export default function StudentProfile({
             </div>
           </div>
 
-          {/* Risk statusi — doimiy, glanceable (banner oʻrniga) */}
-          {profile.risk.level !== "ok" && (
-            <div className="mt-3">
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-                  profile.risk.level === "risk"
-                    ? "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300"
-                    : "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
-                )}
-              >
-                <AlertTriangle className="size-3.5" />
-                {profile.risk.level === "risk" ? "Diqqat talab qiladi" : "Kuzatuvda"}
-              </span>
-              {profile.risk.reasons.length > 0 && (
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  {profile.risk.reasons.map((r) => r.text).join(" · ")}
-                </p>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Boʻlimlar — bitta karta ichida, chiziq bilan ajratilgan (scroll) */}
@@ -411,15 +392,15 @@ export default function StudentProfile({
           {/* Shaxsiy maʼlumotlar */}
           <div className="border-b border-border p-5">
             <div className="mb-4 flex items-center justify-between">
-              <TypographyLabel>Shaxsiy maʼlumotlar</TypographyLabel>
+              <TypographyLabel>{t("personalInfo")}</TypographyLabel>
               <Button variant="ghost" size="sm" onClick={() => setEditOpen(true)} className="h-7 gap-1.5 px-2 text-muted-foreground">
-                <Pen className="size-3.5" /> Tahrirlash
+                <Pen className="size-3.5" /> {t("edit")}
               </Button>
             </div>
             <div className="grid grid-cols-[1fr_auto] gap-x-6 gap-y-4">
               {/* Jinsi — inline dropdown */}
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Jinsi</p>
+                <p className="text-xs text-muted-foreground">{t("gender")}</p>
                 {info.gender ? (
                   <DropdownMenu open={genderOpen} onOpenChange={setGenderOpen}>
                     <DropdownMenuTrigger asChild>
@@ -439,12 +420,12 @@ export default function StudentProfile({
                     <DropdownMenuContent align="start" className="min-w-[140px]">
                       <DropdownMenuItem onClick={() => handleGenderChange("male")} className="gap-2">
                         <Mars className="size-4 text-sky-500" />
-                        <span>Oʻgʻil</span>
+                        <span>{t("genderMale")}</span>
                         {info.gender === "male" && <Check className="ml-auto size-4" />}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleGenderChange("female")} className="gap-2">
                         <Venus className="size-4 text-pink-500" />
-                        <span>Qiz</span>
+                        <span>{t("genderFemale")}</span>
                         {info.gender === "female" && <Check className="ml-auto size-4" />}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -456,17 +437,17 @@ export default function StudentProfile({
                         type="button"
                         className="mt-1 block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        + Qoʻshish
+                        {t("addValue")}
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="min-w-[140px]">
                       <DropdownMenuItem onClick={() => handleGenderChange("male")} className="gap-2">
                         <Mars className="size-4 text-sky-500" />
-                        <span>Oʻgʻil</span>
+                        <span>{t("genderMale")}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleGenderChange("female")} className="gap-2">
                         <Venus className="size-4 text-pink-500" />
-                        <span>Qiz</span>
+                        <span>{t("genderFemale")}</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -474,7 +455,7 @@ export default function StudentProfile({
               </div>
               {/* Sinfi — rangli nuqtali badge (Yoshi bilan oʻrin almashgan) */}
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Sinfi</p>
+                <p className="text-xs text-muted-foreground">{t("classLabel")}</p>
                 <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
                   <ClassSwatch hex={hex} className="size-2" />
                   {location.classInfo.name}
@@ -482,7 +463,7 @@ export default function StudentProfile({
               </div>
               {/* Tavallud sanasi — inline taqvim popover */}
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Tavallud sanasi</p>
+                <p className="text-xs text-muted-foreground">{t("birthDate")}</p>
                 <Popover open={birthDateOpen} onOpenChange={setBirthDateOpen}>
                   <PopoverTrigger asChild>
                     {birthDateText ? (
@@ -498,7 +479,7 @@ export default function StudentProfile({
                         type="button"
                         className="mt-1 block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        + Qoʻshish
+                        {t("addValue")}
                       </button>
                     )}
                   </PopoverTrigger>
@@ -523,24 +504,24 @@ export default function StudentProfile({
               {/* Yoshi — tugʻilgan kunigacha qolgan vaqt tooltipda (Sinfi bilan oʻrin almashgan) */}
               {age != null ? (
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Yoshi</p>
+                  <p className="text-xs text-muted-foreground">{t("age")}</p>
                   {birthdayCountdown ? (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium decoration-muted-foreground/40 decoration-dotted underline-offset-4 hover:underline">
-                          {age} yosh
+                          {t("ageValue", { age })}
                           <Cake className="size-3.5 text-muted-foreground" />
                         </TooltipTrigger>
-                        <TooltipContent>Tugʻilgan kunigacha {birthdayCountdown}</TooltipContent>
+                        <TooltipContent>{t("birthdayCountdownTooltip", { countdown: birthdayCountdown })}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   ) : (
-                    <p className="mt-1 truncate text-sm font-medium">{age} yosh</p>
+                    <p className="mt-1 truncate text-sm font-medium">{t("ageValue", { age })}</p>
                   )}
                 </div>
               ) : (
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Yoshi</p>
+                  <p className="text-xs text-muted-foreground">{t("age")}</p>
                   <p className="mt-1 text-sm text-muted-foreground">—</p>
                 </div>
               )}
@@ -552,36 +533,36 @@ export default function StudentProfile({
 
           {/* Aloqa — inline tahrirlash */}
           <div className="p-5">
-            <TypographyLabel className="mb-4 block">Aloqa</TypographyLabel>
+            <TypographyLabel className="mb-4 block">{t("contact")}</TypographyLabel>
             <div className="grid grid-cols-2 gap-x-4 gap-y-4">
               <InlineEditField
                 className="col-span-2"
-                label="Ota-ona"
+                label={t("parentName")}
                 value={info.parentName}
                 fieldKey="parentName"
                 editingContact={editingContact}
                 setEditingContact={setEditingContact}
                 onSave={handleContactSave}
-                placeholder="Masalan: Dilnoza Karimova (onasi)"
+                placeholder={t("parentNamePlaceholder")}
               />
               <InlineEditField
-                label="Ota-ona telefoni"
+                label={t("parentPhone")}
                 value={info.parentPhone}
                 fieldKey="parentPhone"
                 editingContact={editingContact}
                 setEditingContact={setEditingContact}
                 onSave={handleContactSave}
-                placeholder="+998 90 123-45-67"
+                placeholder={t("parentPhonePlaceholder")}
                 inputType="tel"
               />
               <InlineEditField
-                label="Oʻquvchi telefoni"
+                label={t("studentPhone")}
                 value={info.studentPhone}
                 fieldKey="studentPhone"
                 editingContact={editingContact}
                 setEditingContact={setEditingContact}
                 onSave={handleContactSave}
-                placeholder="+998 ..."
+                placeholder={t("studentPhonePlaceholder")}
                 inputType="tel"
               />
             </div>
@@ -590,12 +571,12 @@ export default function StudentProfile({
 
         {/* Footer boʻlimi — telefon va chat tugmalari */}
         <div className="flex shrink-0 items-center gap-2 border-t border-border p-4">
-          <Button asChild variant="outline" size="icon" disabled={!info.parentPhone} className="size-9 shadow-none" aria-label="Ota-onaga qoʻngʻiroq">
+          <Button asChild variant="outline" size="icon" disabled={!info.parentPhone} className="size-9 shadow-none" aria-label={t("callParentAria")}>
             <a href={info.parentPhone ? `tel:${info.parentPhone.replace(/\s/g, "")}` : undefined}>
               <Phone className="size-4" />
             </a>
           </Button>
-          <Button className="h-9 flex-1 font-semibold"><MessageCircle className="size-4" /> Chat</Button>
+          <Button className="h-9 flex-1 font-semibold"><MessageCircle className="size-4" /> {t("chat")}</Button>
         </div>
       </aside>
 
@@ -697,6 +678,7 @@ function StudentPager({
   go: (id: string | null) => void;
   className?: string;
 }) {
+  const t = useTranslations("StudentProfile");
   return (
     <TooltipProvider>
       <div className={cn("flex items-center gap-1", className)}>
@@ -708,12 +690,12 @@ function StudentPager({
               className="size-8 shadow-none"
               disabled={!prevId}
               onClick={() => prevId && go(prevId)}
-              aria-label="Oldingi oʻquvchi"
+              aria-label={t("prevStudent")}
             >
               <ChevronLeft className="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Oldingi oʻquvchi</TooltipContent>
+          <TooltipContent>{t("prevStudent")}</TooltipContent>
         </Tooltip>
         <span className="px-1.5 text-sm tabular-nums text-muted-foreground">{pos} / {total}</span>
         <Tooltip>
@@ -724,12 +706,12 @@ function StudentPager({
               className="size-8 shadow-none"
               disabled={!nextId}
               onClick={() => nextId && go(nextId)}
-              aria-label="Keyingi oʻquvchi"
+              aria-label={t("nextStudent")}
             >
               <ChevronRight className="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Keyingi oʻquvchi</TooltipContent>
+          <TooltipContent>{t("nextStudent")}</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>
@@ -744,6 +726,7 @@ function Field({
   onAdd?: () => void;
   className?: string;
 }) {
+  const t = useTranslations("StudentProfile");
   return (
     <div className={cn("min-w-0", className)}>
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -755,7 +738,7 @@ function Field({
           onClick={onAdd}
           className="mt-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          + Qoʻshish
+          {t("addValue")}
         </button>
       ) : (
         <p className="mt-1 text-sm text-muted-foreground">—</p>
@@ -786,6 +769,7 @@ function InlineEditField({
   inputType?: string;
   className?: string;
 }) {
+  const t = useTranslations("StudentProfile");
   const inputRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(value ?? "");
   const isEditing = editingContact === fieldKey;
@@ -799,8 +783,8 @@ function InlineEditField({
   useEffect(() => {
     if (isEditing) {
       // Kichik kechikish — DOM renderdan keyin
-      const t = setTimeout(() => inputRef.current?.focus(), 50);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => inputRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
     }
   }, [isEditing]);
 
@@ -848,7 +832,7 @@ function InlineEditField({
           type="button"
           onClick={startEdit}
           className="mt-1 truncate text-sm font-medium text-foreground transition-colors hover:text-primary cursor-pointer text-left"
-          title="Tahrirlash uchun bosing"
+          title={t("editHint")}
         >
           {value}
         </button>
@@ -858,7 +842,7 @@ function InlineEditField({
           onClick={startEdit}
           className="mt-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          + Qoʻshish
+          {t("addValue")}
         </button>
       )}
     </div>
