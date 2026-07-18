@@ -30,7 +30,8 @@ import { Illustration } from "@/components/ui/illustration";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollFade } from "@/components/ui/scroll-fade";
 import { CardStripes } from "@/components/CardStripes";
-import { WeekStrip, startOfWeekMon } from "@/components/dashboard/WeekStrip";
+import { WeekStrip } from "@/components/dashboard/WeekStrip";
+import { addDays, startOfWeekMon } from "@/lib/calendar-core/date-math";
 import { panelCardClass, panelCardHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
@@ -66,12 +67,6 @@ import { cn } from "@/lib/utils";
 type RailEvent = { id: string; classId: string; startMin: number; endMin: number };
 
 type LessonInfo = { title: string; status: LessonStatus };
-
-function addDays(d: Date, n: number): Date {
-  const x = new Date(d);
-  x.setDate(x.getDate() + n);
-  return x;
-}
 
 export function TodayRail({ now }: { now: Date }) {
   const t = useTranslations("TodayRail");

@@ -50,6 +50,7 @@ import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { todayKey as getTodayKey } from "@/lib/date-keys";
+import { minToHHMM, hhmmToMin, snapMin, clamp } from "@/lib/calendar-core/date-math";
 import { SavedIndicator } from "@/app/dashboard/settings/_components/SettingsShared";
 import { toast } from "sonner";
 import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, GripVertical, MoreVertical, Download, PencilIcon as EditIcon, MousePointer2, Magnet, Hourglass, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
@@ -81,10 +82,6 @@ const DAY_END_MIN = END_HOUR * 60;
 const INITIAL_SCROLL_HOUR = 8;
 
 function uid() { return Math.random().toString(36).slice(2, 9); }
-function minToHHMM(min: number) { return `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`; }
-function hhmmToMin(s: string) { const [h, m] = s.split(":").map(Number); return (h || 0) * 60 + (m || 0); }
-function snapMin(m: number) { return Math.round(m / SNAP) * SNAP; }
-function clamp(v: number, lo: number, hi: number) { return Math.min(Math.max(v, lo), hi); }
 
 /** Dars davomiyligini oʻqiladigan matnga aylantirish: 45 → "45 daq", 90 → "1 soat 30 daq" */
 function fmtDuration(min: number) {

@@ -4,22 +4,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { dateToKey } from "@/lib/date-keys";
+import { addDays, startOfWeekMon } from "@/lib/calendar-core/date-math";
 import { cn } from "@/lib/utils";
 
-/** Dushanba boshlangʻich hafta boshi (00:00). */
-export function startOfWeekMon(d: Date): Date {
-  const x = new Date(d);
-  const dow = (x.getDay() + 6) % 7; // Ya=0 → 6, Du=1 → 0
-  x.setDate(x.getDate() - dow);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-
-export function addDays(d: Date, n: number): Date {
-  const x = new Date(d);
-  x.setDate(x.getDate() + n);
-  return x;
-}
+// Tarixiy import yoʻli saqlansin (TodayRail va b.) — yagona manba calendar-core.
+export { addDays, startOfWeekMon };
 
 /** Yakshanba doim dam olish kuni — tasmada koʻrsatilmaydi. */
 const WEEKDAYS_UZ = ["Du", "Se", "Ch", "Pa", "Ju", "Sh"] as const;

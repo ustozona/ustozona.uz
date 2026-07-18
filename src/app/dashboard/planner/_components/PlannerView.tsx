@@ -12,6 +12,16 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
+import {
+  dateToKey as toDateKey,
+  minToHHMM,
+  hhmmToMin as HHMMToMin,
+  getWeekDates,
+  getMonthGrid,
+  isSameDay,
+  jsDayToIsoDay,
+} from "@/lib/calendar-core/date-math";
+import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
 import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
 import { lessonSessions, lessonClassIds, unitIdForClass, type Lesson } from "@/lib/lessons-data";
 import { cn } from "@/lib/utils";
@@ -82,50 +92,14 @@ const START_HOUR = 7;
 const END_HOUR = 22;
 const VISIBLE_HOURS = END_HOUR - START_HOUR;
 
-function toDateKey(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-function minToHHMM(min: number) {
-  return `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
-}
-function HHMMToMin(s: string) {
-  const [h, m] = s.split(":").map(Number);
-  return (h || 0) * 60 + (m || 0);
-}
-function getWeekDates(anchor: Date): Date[] {
-  const dow = anchor.getDay();
-  const monday = new Date(anchor);
-  monday.setDate(anchor.getDate() - ((dow + 6) % 7));
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d;
-  });
-}
-function isSameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
+/** Kun kaliti — calendar-core konvensiyasi. */
 function dateToTimetableDay(d: Date): number {
-  const dow = d.getDay();
-  return dow === 0 ? 7 : dow;
+  return jsDayToIsoDay(d.getDay());
 }
-function getDaysInMonth(y: number, m: number) {
-  return new Date(y, m + 1, 0).getDate();
-}
-function getMonthGrid(year: number, month: number): (Date | null)[] {
-  const firstDow = new Date(year, month, 1).getDay();
-  const offset = (firstDow + 6) % 7;
-  const days = getDaysInMonth(year, month);
-  const cells: (Date | null)[] = [];
-  for (let i = 0; i < offset; i++) cells.push(null);
-  for (let d = 1; d <= days; d++) cells.push(new Date(year, month, d));
-  while (cells.length % 7 !== 0) cells.push(null);
-  return cells;
-}
-/** Placement timetable eventiga tegishlimi — sinf mos VA boshlanish event
-    oraligʻida (vaqt biroz siljigan boʻlsa ham slot ichida qoladi). */
+/** Placement timetable eventiga tegishlimi — kanonik sessionMatchesSlot
+    ("start-in-slot": sinf mos VA boshlanish event oraligʻida). */
 function placementInEvent(p: Placement, ev: TimetableEvent): boolean {
-  return p.classId === ev.classId && p.startMin >= ev.startMin && p.startMin < ev.endMin;
+  return sessionMatchesSlot(ev, p, "start-in-slot");
 }
 
 export default function PlannerView({ classId }: { classId?: string }) {

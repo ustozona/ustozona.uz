@@ -93,11 +93,8 @@ export function defaultsForProfile(profile: SchoolProfile): TimetableConfig {
   return profile === "single" ? SINGLE_SHIFT_DEFAULTS : DOUBLE_SHIFT_DEFAULTS;
 }
 
-export function fmtMin(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-}
+// fmtMin — calendar-core minToHHMM'ning tarixiy nomi (yagona manba oʻsha yerda).
+export { minToHHMM as fmtMin } from "@/lib/calendar-core/date-math";
 
 export function buildSlots(cfg: ShiftConfig): LessonSlot[] {
   const slots: LessonSlot[] = [];
