@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tasks-calendar-launch",
+    date: "2026-07-19",
+    type: "yangi",
+    title: "Vazifalar sahifasida kalendar koʻrinishi",
+    body:
+      "Endi Vazifalar sahifasida roʻyxat bilan bir qatorda kalendar ham bor: kun, hafta, oy, chorak va yil boʻyicha darslar, vazifa muddatlari, taʼtillar va tugʻilgan kunlar bitta joyda koʻrinadi. Har qanday belgi ustiga bosib toʻgʻridan-toʻgʻri tegishli joyga oʻtish mumkin.",
+    href: "/dashboard/tasks",
+  },
+  {
     id: "statistics-launch",
     date: "2026-07-18",
     type: "yangi",
