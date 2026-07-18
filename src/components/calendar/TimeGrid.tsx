@@ -39,6 +39,8 @@ export function TimeGrid({
   endHour,
   pxPerHour,
   gutterWidth = 56,
+  gutterHeader,
+  gutterVariant = "axis",
   nowMin,
   lines = "half",
   renderColumn,
@@ -52,6 +54,11 @@ export function TimeGrid({
   /** 1 soat balandligi px (planner/jadval 180, ixcham 60). */
   pxPerHour: number;
   gutterWidth?: number;
+  /** Yuqori-chap sticky katak mazmuni (masalan "Vaqt" yorligʻi). */
+  gutterHeader?: ReactNode;
+  /** Soat yorliqlari uslubi: "axis" (oʻngga tekis, planner) yoki
+      "centered" (chiziq ustida markazda, jadval muharriri). */
+  gutterVariant?: "axis" | "centered";
   /** Daqiqalarda "hozir" — berilmasa chiziq chizilmaydi. */
   nowMin?: number | null;
   /** Yordamchi chiziqlar zichligi. */
@@ -73,7 +80,7 @@ export function TimeGrid({
         style={{ gridTemplateColumns: `${gutterWidth}px repeat(${columns.length}, minmax(0,1fr))` }}
       >
         {/* Sticky sarlavha (opaque) */}
-        <div className="sticky top-0 z-30 border-b border-border bg-muted" />
+        <div className="sticky top-0 z-30 border-b border-border bg-muted">{gutterHeader}</div>
         {columns.map((c) => (
           <div
             key={c.key}
@@ -88,16 +95,24 @@ export function TimeGrid({
         ))}
 
         {/* Vaqt oʻqi */}
-        <div className="border-r border-border/40">
-          {hourIdx.map((h) => (
-            <div
-              key={h}
-              className="border-t border-border/40 pr-2 pt-1 text-right text-xs font-medium tabular-nums text-muted-foreground"
-              style={{ height: pxPerHour }}
-            >
-              {minToHHMM((startHour + h) * 60)}
-            </div>
-          ))}
+        <div className={cn(gutterVariant === "axis" ? "border-r border-border/40" : "border-r border-border")}>
+          {hourIdx.map((h) =>
+            gutterVariant === "axis" ? (
+              <div
+                key={h}
+                className="border-t border-border/40 pr-2 pt-1 text-right text-xs font-medium tabular-nums text-muted-foreground"
+                style={{ height: pxPerHour }}
+              >
+                {minToHHMM((startHour + h) * 60)}
+              </div>
+            ) : (
+              <div key={h} className={cn("relative", h > 0 && "border-t border-border")} style={{ height: pxPerHour }}>
+                <span className="absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium tabular-nums text-muted-foreground">
+                  {minToHHMM((startHour + h) * 60)}
+                </span>
+              </div>
+            ),
+          )}
         </div>
 
         {/* Ustunlar */}
@@ -108,7 +123,16 @@ export function TimeGrid({
             className={cn("relative border-l border-border/40", col.columnProps?.className)}
           >
             {hourIdx.map((h) => (
-              <div key={h} className="relative border-t border-border/40" style={{ height: pxPerHour }}>
+              <div
+                key={h}
+                className={cn(
+                  "relative",
+                  // "quarter" (jadval muharriri): soat chizigʻi kuchli va birinchi katakda yoʻq;
+                  // "half"/"hour" (planner): har katakda yumshoq chiziq.
+                  lines === "quarter" ? h > 0 && "border-t border-border" : "border-t border-border/40",
+                )}
+                style={{ height: pxPerHour }}
+              >
                 {lines === "half" && (
                   <div
                     className="pointer-events-none absolute inset-x-0 border-t border-dashed border-border/40"

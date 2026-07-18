@@ -51,6 +51,7 @@ import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { todayKey as getTodayKey } from "@/lib/date-keys";
 import { minToHHMM, hhmmToMin, snapMin, clamp } from "@/lib/calendar-core/date-math";
+import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { SavedIndicator } from "@/app/dashboard/settings/_components/SettingsShared";
 import { toast } from "sonner";
 import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, GripVertical, MoreVertical, Download, PencilIcon as EditIcon, MousePointer2, Magnet, Hourglass, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
@@ -840,56 +841,37 @@ export default function TimetablePage() {
                 onEditEvent={setEditEvent}
               />
             ) : (
-            <>
-            {/* Yagona scroll konteyneri: sticky sarlavha + grid bitta oqimda →
-                ustunlar aniq mos keladi (scrollbar ikkalasiga ham bir xil taʼsir qiladi) */}
-            <div ref={scrollRef} className="mx-6 my-2 min-h-0 flex-1 overflow-y-auto rounded-md border border-border [scrollbar-width:thin]">
-              {/* Sarlavha (kun nomlari) — "Dars soatlari" headeri bilan bir xil dizayn */}
-              <div className="sticky top-0 z-20 flex border-b border-border bg-muted">
-                <div className="w-16 shrink-0 border-r border-border py-2.5 text-center text-[13px] font-semibold text-foreground/70">
-                  {t("time")}
-                </div>
-                {DAY_UZ.map((d, i) => (
-                  <div key={d} className={cn("min-w-0 flex-1 truncate py-2.5 text-center text-sm font-medium text-foreground/80", i > 0 && "border-l border-border")}>
-                    {d}
-                  </div>
-                ))}
-              </div>
-
-              {/* Grid tanasi */}
-              <div className="flex">
-                {/* Vaqt oʻqi — soatlar soat chizigʻiga (tepaga) tekislangan */}
-                <div className="w-16 shrink-0 border-r border-border">
-                  {HOURS.map((h, idx) => (
-                    <div key={h} style={{ height: HOUR_H }} className={cn("relative", idx > 0 && "border-t border-border")}>
-                      <span className="absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium tabular-nums text-muted-foreground">{minToHHMM(h * 60)}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Kun ustunlari */}
-                {DAY_UZ.map((d, col) => {
-                  const day = col + 1;
-                  const dayEvents = eventsDisplay.filter(e => e.day === day);
-                  return (
-                    <div
-                      key={d}
-                      onDragOver={(e) => { if (readOnly || isDemoMode) return; e.preventDefault(); e.dataTransfer.dropEffect = grabOffsetRef.current != null ? "move" : "copy"; if (dragOverDay !== day) setDragOverDay(day); }}
-                      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverDay(prev => (prev === day ? null : prev)); }}
-                      onDrop={(e) => { if (isDemoMode) return; onColumnDrop(e, day); }}
-                      className={cn("relative min-w-0 flex-1 transition-colors", col > 0 && "border-l border-border/50", dragOverDay === day && "bg-primary/[0.04]")}
-                      style={{ height: HOURS.length * HOUR_H }}
-                    >
-                      {/* 15-daqiqalik chiziqlar — :30 biroz aniqroq, :15/:45 eng xira */}
-                      {HOURS.map((h, idx) => [1, 2, 3].map(q => (
-                        <div key={`q-${h}-${q}`} className={cn("pointer-events-none absolute inset-x-0 border-t", q === 2 ? "border-border/50" : "border-border/25")} style={{ top: idx * HOUR_H + (q * HOUR_H) / 4 }} />
-                      )))}
-                      {/* Soat chiziqlari — aniqroq (asosiy) */}
-                      {HOURS.map((h, idx) => (
-                        idx > 0 ? <div key={h} className="pointer-events-none absolute inset-x-0 border-t border-border" style={{ top: idx * HOUR_H }} /> : null
-                      ))}
-
-                      {/* Darslar */}
+            <TimeGrid
+              scrollRef={scrollRef}
+              startHour={START_HOUR}
+              endHour={END_HOUR}
+              pxPerHour={HOUR_H}
+              gutterWidth={64}
+              gutterVariant="centered"
+              lines="quarter"
+              gutterHeader={
+                <div className="py-2.5 text-center text-[13px] font-semibold text-foreground/70">{t("time")}</div>
+              }
+              className="mx-6 my-2 h-auto min-h-0 flex-1 rounded-md border border-border [scrollbar-width:thin]"
+              columns={DAY_UZ.map((d, col): TimeGridColumn => {
+                const day = col + 1;
+                return {
+                  key: String(day),
+                  header: d,
+                  headerProps: { className: "min-w-0 truncate py-2.5 text-center text-sm font-medium text-foreground/80" },
+                  columnProps: {
+                    onDragOver: (e) => { if (readOnly || isDemoMode) return; e.preventDefault(); e.dataTransfer.dropEffect = grabOffsetRef.current != null ? "move" : "copy"; if (dragOverDay !== day) setDragOverDay(day); },
+                    onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverDay(prev => (prev === day ? null : prev)); },
+                    onDrop: (e) => { if (isDemoMode) return; onColumnDrop(e, day); },
+                    className: cn("min-w-0 transition-colors", col === 0 ? "border-l-0" : "border-border/50", dragOverDay === day && "bg-primary/[0.04]"),
+                  },
+                };
+              })}
+              renderColumn={(colDef) => {
+                const day = Number(colDef.key);
+                const dayEvents = eventsDisplay.filter(e => e.day === day);
+                return (
+                  <>
                       {dayEvents.map(ev => {
                         const cls = isDemoMode ? getClassDisplay(ev.classId) : getClass(ev.classId);
                         const tints = classTints(cls.color);
@@ -918,12 +900,10 @@ export default function TimetablePage() {
                           />
                         );
                       })}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            </>
+                  </>
+                );
+              }}
+            />
             )}
           </CardContent>
         </Card>
