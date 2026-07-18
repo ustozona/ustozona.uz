@@ -2952,6 +2952,13 @@
     "viewQuarter": "Chorak",
     "viewYear": "Yil",
     "more": "+{count} ta",
-    "allDay": "Kun boʻyi"
+    "allDay": "Kun boʻyi",
+    "hourHeader": "Soat",
+    "periodLabel": "{index}-soat",
+    "secondShift": "2-smena",
+    "extraLessons": "Qoʻshimcha darslar",
+    "remove": "Oʻchirish",
+    "searchClass": "Sinf qidirish...",
+    "notFound": "Topilmadi"
   }
 }

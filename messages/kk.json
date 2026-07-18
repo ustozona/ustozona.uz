@@ -2952,6 +2952,13 @@
     "viewQuarter": "Тоқсан",
     "viewYear": "Жыл",
     "more": "+{count}",
-    "allDay": "Күні бойы"
+    "allDay": "Күні бойы",
+    "hourHeader": "Сабақ",
+    "periodLabel": "{index}-сабақ",
+    "secondShift": "2-ауысым",
+    "extraLessons": "Қосымша сабақтар",
+    "remove": "Жою",
+    "searchClass": "Сыныпты іздеу...",
+    "notFound": "Табылмады"
   }
 }

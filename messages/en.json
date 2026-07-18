@@ -2952,6 +2952,13 @@
     "viewQuarter": "Quarter",
     "viewYear": "Year",
     "more": "+{count} more",
-    "allDay": "All day"
+    "allDay": "All day",
+    "hourHeader": "Period",
+    "periodLabel": "Period {index}",
+    "secondShift": "2nd shift",
+    "extraLessons": "Extra lessons",
+    "remove": "Remove",
+    "searchClass": "Search class...",
+    "notFound": "Not found"
   }
 }

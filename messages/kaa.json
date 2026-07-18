@@ -2952,6 +2952,13 @@
     "viewQuarter": "Shérek",
     "viewYear": "Jıl",
     "more": "+{count}",
-    "allDay": "Kún boyı"
+    "allDay": "Kún boyı",
+    "hourHeader": "Sabaq",
+    "periodLabel": "{index}-sabaq",
+    "secondShift": "2-smena",
+    "extraLessons": "Qosımsha sabaqlar",
+    "remove": "Óshiriw",
+    "searchClass": "Klasstı izlew...",
+    "notFound": "Tabılmadı"
   }
 }

@@ -2952,6 +2952,13 @@
     "viewQuarter": "Чейрек",
     "viewYear": "Жыл",
     "more": "+{count}",
-    "allDay": "Күн бою"
+    "allDay": "Күн бою",
+    "hourHeader": "Сабак",
+    "periodLabel": "{index}-сабак",
+    "secondShift": "2-смена",
+    "extraLessons": "Кошумча сабактар",
+    "remove": "Өчүрүү",
+    "searchClass": "Классты издөө...",
+    "notFound": "Табылган жок"
   }
 }

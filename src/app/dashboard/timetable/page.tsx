@@ -8,7 +8,8 @@ import { classColor } from "@/lib/grades-data";
 import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
 import { cn } from "@/lib/utils";
-import { DAYS_UZ, DAYS_UZ_SHORT } from "@/lib/localization";
+import { DAYS_UZ } from "@/lib/localization";
+import { useCalendarFormat } from "@/components/calendar/format";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -66,9 +67,10 @@ import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calend
 
 const TIP_KEY = "murabbiyona-timetable-drag-tip-v1";
 const FUTURE_TIP_KEY = "murabbiyona-timetable-future-tip-dismissed-v1";
-// Jadval faqat 6 ish kuni (Dushanba–Shanba) — kanonik `DAYS_UZ`dan slice.
+// ClassFormModal bilan qiymat-protokoli: slot.day = OʻZBEKCHA kun nomi
+// (indexOf bilan qayta raqamlanadi) — bu roʻyxat DISPLAY uchun emas.
+// Koʻrsatish endi useCalendarFormat (Calendar namespace) orqali.
 const DAY_UZ = DAYS_UZ.slice(0, 6);
-const DAY_UZ_SHORT = DAYS_UZ_SHORT.slice(0, 6);
 
 /* ─── Grid oʻlchamlari — toʻliq 24 soat (00:00–24:00) ─── */
 const START_HOUR = 0;
@@ -118,6 +120,7 @@ function stableStringify(v: unknown): string {
 
 export default function TimetablePage() {
   const t = useTranslations("TimetablePage");
+  const fmt = useCalendarFormat();
   const [events, setEvents] = useState<TimetableEvent[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [saved, setSaved] = useState(true);
@@ -380,7 +383,7 @@ export default function TimetablePage() {
       .sort((a, b) => a.day - b.day || a.startMin - b.startMin)
       .map(e => {
         const cls = getClass(e.classId);
-        return { sinf: cls.name, kun: DAY_UZ[e.day - 1], boshlanish: minToHHMM(e.startMin), tugash: minToHHMM(e.endMin) };
+        return { sinf: cls.name, kun: fmt.dayName(e.day), boshlanish: minToHHMM(e.startMin), tugash: minToHHMM(e.endMin) };
       });
     const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -532,7 +535,7 @@ export default function TimetablePage() {
     evs.forEach(e => {
       const idx = e.day - 1;
       if (idx < 0 || idx > 5) return;
-      const text = `${DAY_UZ_SHORT[idx]} ${minToHHMM(e.startMin)}`;
+      const text = `${fmt.dayShort(idx + 1)} ${minToHHMM(e.startMin)}`;
       if (seen.has(text)) return;
       seen.add(text);
       parts.push({ order: idx * 1440 + e.startMin, text });
@@ -853,11 +856,11 @@ export default function TimetablePage() {
                 <div className="py-2.5 text-center text-[13px] font-semibold text-foreground/70">{t("time")}</div>
               }
               className="mx-6 my-2 h-auto min-h-0 flex-1 rounded-md border border-border [scrollbar-width:thin]"
-              columns={DAY_UZ.map((d, col): TimeGridColumn => {
+              columns={DAY_UZ.map((_, col): TimeGridColumn => {
                 const day = col + 1;
                 return {
                   key: String(day),
-                  header: d,
+                  header: fmt.dayName(day),
                   headerProps: { className: "min-w-0 truncate py-2.5 text-center text-sm font-medium text-foreground/80" },
                   columnProps: {
                     onDragOver: (e) => { if (readOnly || isDemoMode) return; e.preventDefault(); e.dataTransfer.dropEffect = grabOffsetRef.current != null ? "move" : "copy"; if (dragOverDay !== day) setDragOverDay(day); },
@@ -1127,9 +1130,10 @@ function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
 }) {
   const t = useTranslations("TimetablePage");
   const [st, setSt] = useState(minToHHMM(event.startMin));
+  const fmt = useCalendarFormat();
   const [et, setEt] = useState(minToHHMM(event.endMin));
   const hex = CLASS_COLOR_HEX[color];
-  const dayName = DAY_UZ[event.day - 1] ?? "";
+  const dayName = fmt.dayName(event.day);
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>

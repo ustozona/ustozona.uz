@@ -2952,6 +2952,13 @@
     "viewQuarter": "Четверть",
     "viewYear": "Год",
     "more": "ещё {count}",
-    "allDay": "Весь день"
+    "allDay": "Весь день",
+    "hourHeader": "Урок",
+    "periodLabel": "{index}-й урок",
+    "secondShift": "2-я смена",
+    "extraLessons": "Дополнительные занятия",
+    "remove": "Удалить",
+    "searchClass": "Поиск класса...",
+    "notFound": "Не найдено"
   }
 }

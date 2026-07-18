@@ -9,9 +9,11 @@ import type { ClassIconKey } from "@/lib/class-icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { XIcon, Plus, Check } from "lucide-react";
+import { minToHHMM } from "@/lib/calendar-core/date-math";
+import { useCalendarFormat } from "@/components/calendar/format";
 
-const DAY_UZ = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
-const minToHHMM = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+/** Jadval 6 ish kuni (Du..Sha) — ISO kun raqamlari. */
+const WORK_DAYS = [1, 2, 3, 4, 5, 6];
 
 /** Jadval UI'sining sinf koʻrinishi — jonli ClassInfo'dan hosil qilinadi
     (rang allaqachon hal qilingan; timetable sahifasi getClass shu shaklda qaytaradi). */
@@ -42,6 +44,7 @@ export type PeriodGridProps = {
 };
 
 export default function PeriodGrid({ periods, events, classes, getClass, profile, readOnly = false, onPlace, onAddClub, onRemove, onEditEvent }: PeriodGridProps) {
+  const fmt = useCalendarFormat();
   const isPeriodTime = (s: number) => periods.some((p) => p.startMin === s);
   const lastPeriodEnd = periods.length ? Math.max(...periods.map((p) => p.endMin)) : 15 * 60;
 
@@ -49,9 +52,9 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
     <div className="mx-6 my-2 min-h-0 flex-1 overflow-auto rounded-md border border-border [scrollbar-width:thin]">
       <div className="grid min-w-[680px]" style={{ gridTemplateColumns: "6.5rem repeat(6, minmax(0, 1fr))" }}>
         {/* Sarlavha */}
-        <div className="sticky top-0 z-20 border-b border-r border-border bg-muted py-2.5 text-center text-[13px] font-semibold text-foreground/70">Soat</div>
-        {DAY_UZ.map((d, i) => (
-          <div key={d} className={cn("sticky top-0 z-20 truncate border-b border-border bg-muted py-2.5 text-center text-sm font-medium text-foreground/80", i > 0 && "border-l")}>{d}</div>
+        <div className="sticky top-0 z-20 border-b border-r border-border bg-muted py-2.5 text-center text-[13px] font-semibold text-foreground/70">{fmt.t("hourHeader")}</div>
+        {WORK_DAYS.map((day, i) => (
+          <div key={day} className={cn("sticky top-0 z-20 truncate border-b border-border bg-muted py-2.5 text-center text-sm font-medium text-foreground/80", i > 0 && "border-l")}>{fmt.dayName(day)}</div>
         ))}
 
         {/* Period qatorlari */}
@@ -61,15 +64,14 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
             <Fragment key={`${p.shift}-${p.index}`}>
               {showShiftSep && (
                 <div className="col-span-full border-b border-border bg-muted/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  2-smena
+                  {fmt.t("secondShift")}
                 </div>
               )}
               <div className="flex flex-col items-center justify-center border-b border-r border-border bg-card/60 px-2 py-2 text-center">
-                <span className="text-xs font-semibold text-foreground">{p.label}</span>
+                <span className="text-xs font-semibold text-foreground">{fmt.t("periodLabel", { index: p.index })}</span>
                 <span className="text-[10px] tabular-nums text-muted-foreground">{minToHHMM(p.startMin)} — {minToHHMM(p.endMin)}</span>
               </div>
-              {DAY_UZ.map((_, ci) => {
-                const day = ci + 1;
+              {WORK_DAYS.map((day, ci) => {
                 const ev = events.find((e) => e.day === day && e.startMin === p.startMin);
                 return (
                   <PeriodCell
@@ -93,10 +95,9 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
 
         {/* Qoʻshimcha darslar (erkin vaqtli) zonasi */}
         <div className="flex items-center justify-center border-r border-border bg-card/60 px-2 py-2 text-center">
-          <span className="text-xs font-semibold leading-tight text-foreground">Qoʻshimcha darslar</span>
+          <span className="text-xs font-semibold leading-tight text-foreground">{fmt.t("extraLessons")}</span>
         </div>
-        {DAY_UZ.map((_, ci) => {
-          const day = ci + 1;
+        {WORK_DAYS.map((day, ci) => {
           const clubs = events.filter((e) => e.day === day && !isPeriodTime(e.startMin)).sort((a, b) => a.startMin - b.startMin);
           // Yangi qoʻshimcha dars vaqti: oxirgisidan (yoki oxirgi darsdan) keyin, 45 daq
           const base = clubs.length ? clubs[clubs.length - 1].endMin + 5 : lastPeriodEnd + 15;
@@ -123,7 +124,7 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
                     {!readOnly && (
                       <button
                         type="button"
-                        aria-label="Oʻchirish"
+                        aria-label={fmt.t("remove")}
                         onClick={(e) => { e.stopPropagation(); onRemove(ev.id); }}
                         className="absolute top-0.5 right-0.5 flex size-4 items-center justify-center rounded-sm opacity-0 transition-opacity hover:bg-foreground/10 group-hover/club:opacity-100"
                       >
@@ -172,6 +173,7 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
   onEdit: (ev: TimetableEvent) => void;
   borderLeft: boolean;
 }) {
+  const fmt = useCalendarFormat();
   const [open, setOpen] = useState(false);
   const allowDrop = (e: React.DragEvent) => { if (!readOnly && Array.from(e.dataTransfer.types).includes("text/class-id")) e.preventDefault(); };
   const handleDrop = (e: React.DragEvent) => {
@@ -193,7 +195,7 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
         {!readOnly && (
           <button
             type="button"
-            aria-label="Oʻchirish"
+            aria-label={fmt.t("remove")}
             onClick={(e) => { e.stopPropagation(); onRemove(event.id); }}
             className="absolute top-0.5 right-0.5 z-10 flex size-4 items-center justify-center rounded-sm opacity-0 transition-opacity hover:bg-foreground/10 group-hover/cell:opacity-100"
           >
@@ -241,11 +243,12 @@ function ClassPicker({ classes, selectedId, onSelect }: {
   selectedId?: string;
   onSelect: (classId: string) => void;
 }) {
+  const fmt = useCalendarFormat();
   return (
     <Command>
-      <CommandInput placeholder="Sinf qidirish..." className="h-9" />
+      <CommandInput placeholder={fmt.t("searchClass")} className="h-9" />
       <CommandList>
-        <CommandEmpty>Topilmadi</CommandEmpty>
+        <CommandEmpty>{fmt.t("notFound")}</CommandEmpty>
         <CommandGroup>
           {classes.map((c) => {
             const tints = classTints(c.color);
