@@ -31,10 +31,14 @@ export type AttentionThresholds = {
   attendanceMinCounted: number;
   /** Baho trendi tushish chegarasi (foiz punkt, musbat son). */
   gradeDropPp: number;
+  /** Baho trendi koʻtarilish chegarasi (foiz punkt, musbat son — ijobiy signal). */
+  gradeRisePp: number;
   /** Salbiy avto-ball oynasi (kun). */
   behaviorWindowDays: number;
   /** Oynadagi salbiy avto-ball soni chegarasi. */
   behaviorNegCount: number;
+  /** Davomat tiklanishi taqqoslash oynasi (kun) — hozirgi vs oldingi shu uzunlikdagi oyna. */
+  attendanceRecoveryWindowDays: number;
 };
 
 export const ATTENTION_DEFAULTS: AttentionThresholds = {
@@ -42,11 +46,13 @@ export const ATTENTION_DEFAULTS: AttentionThresholds = {
   attendanceMinPct: 80,
   attendanceMinCounted: 5,
   gradeDropPp: 3,
+  gradeRisePp: 3,
   behaviorWindowDays: 7,
   behaviorNegCount: 3,
+  attendanceRecoveryWindowDays: 14,
 };
 
-export type AttentionSeverity = "warning" | "destructive";
+export type AttentionSeverity = "warning" | "destructive" | "success";
 
 export type AttentionSignal = {
   /** Barqaror kalit — kunlik "koʻrdim" dismiss shu id bilan saqlanadi. */
@@ -59,7 +65,13 @@ export type AttentionSignal = {
   | { kind: "grade-drop"; studentId: string; studentName: string; delta: number }
   | { kind: "behavior-cluster"; studentId: string; studentName: string; count: number }
   | { kind: "attendance-missing"; date: string }
+  | { kind: "grade-rise"; studentId: string; studentName: string; delta: number }
+  | { kind: "attendance-recovery"; studentId: string; studentName: string; pct: number }
 );
+
+/** Ijobiy signal turlari — Google Classroom "3 oʻquvchining bahosi
+    koʻtarildi" naqshi. Alohida roʻyxatda koʻrsatish uchun ajratiladi. */
+export const POSITIVE_KINDS: readonly AttentionSignal["kind"][] = ["grade-rise", "attendance-recovery"];
 
 const KIND_RANK: Record<AttentionSignal["kind"], number> = {
   "absent-streak": 0,
@@ -67,6 +79,8 @@ const KIND_RANK: Record<AttentionSignal["kind"], number> = {
   "grade-drop": 2,
   "behavior-cluster": 3,
   "attendance-missing": 4,
+  "grade-rise": 5,
+  "attendance-recovery": 6,
 };
 
 export type AttentionInput = {
@@ -132,7 +146,7 @@ export function deriveAttentionSignals(input: AttentionInput): AttentionSignal[]
       }
     }
 
-    // ── C: baho — davr-oʻrtacha tushishi (Holat ustuni deadband bilan bir xil) ──
+    // ── C: baho — davr-oʻrtacha tushishi/koʻtarilishi (Holat ustuni deadband bilan bir xil) ──
     for (const st of students) {
       const trend = studentTrend(st.id, cd.assignments, cd.grades);
       if (trend !== null && trend <= -th.gradeDropPp) {
@@ -144,6 +158,46 @@ export function deriveAttentionSignals(input: AttentionInput): AttentionSignal[]
           studentId: st.id,
           studentName: st.name,
           delta: Math.round(trend * 10) / 10,
+        });
+      } else if (trend !== null && trend >= th.gradeRisePp) {
+        signals.push({
+          kind: "grade-rise",
+          id: `grade-rise:${classId}:${st.id}`,
+          severity: "success",
+          classId,
+          studentId: st.id,
+          studentName: st.name,
+          delta: Math.round(trend * 10) / 10,
+        });
+      }
+    }
+
+    // ── A(ijobiy): davomat tiklanishi — oldingi oyna past, hozirgi oyna meʼyorda ──
+    const recentStart = addDaysKey(input.todayKey, -(th.attendanceRecoveryWindowDays - 1));
+    const priorEnd = addDaysKey(recentStart, -1);
+    const priorStart = addDaysKey(priorEnd, -(th.attendanceRecoveryWindowDays - 1));
+    const recentDates = new Set(
+      records.map((r) => r.date).filter((d) => d >= recentStart && d <= input.todayKey)
+    );
+    const priorDates = new Set(
+      records.map((r) => r.date).filter((d) => d >= priorStart && d <= priorEnd)
+    );
+    for (const st of students) {
+      const recent = weightedRate(records, st.id, input.weights, recentDates);
+      const prior = weightedRate(records, st.id, input.weights, priorDates);
+      if (
+        recent && prior &&
+        recent.counted >= th.attendanceMinCounted && prior.counted >= th.attendanceMinCounted &&
+        prior.pct < th.attendanceMinPct && recent.pct >= th.attendanceMinPct
+      ) {
+        signals.push({
+          kind: "attendance-recovery",
+          id: `attendance-recovery:${classId}:${st.id}`,
+          severity: "success",
+          classId,
+          studentId: st.id,
+          studentName: st.name,
+          pct: recent.pct,
         });
       }
     }
@@ -199,8 +253,9 @@ export function deriveAttentionSignals(input: AttentionInput): AttentionSignal[]
     }
   }
 
+  const SEVERITY_RANK: Record<AttentionSeverity, number> = { destructive: 0, warning: 1, success: 2 };
   return signals.sort((a, b) => {
-    if (a.severity !== b.severity) return a.severity === "destructive" ? -1 : 1;
+    if (a.severity !== b.severity) return SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
     if (KIND_RANK[a.kind] !== KIND_RANK[b.kind]) return KIND_RANK[a.kind] - KIND_RANK[b.kind];
     return a.id.localeCompare(b.id);
   });

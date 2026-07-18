@@ -10,7 +10,7 @@ import { classBalance } from '@/lib/behavior-data';
 import { classSummativeAverage } from '@/lib/grades-stats';
 import { useStandardsStore } from '@/store/useStandardsStore';
 
-export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "tasks" | "behavior";
+export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "tasks" | "behavior" | "statistics";
 
 export function useClassPanelStats(page: Page, classId: string): {
   items: { value: number | string; label: string }[];
@@ -156,6 +156,23 @@ export function useClassPanelStats(page: Page, classId: string): {
             { value: done.length, label: "Bajarilgan" }
           ],
           progress: { value: donePct, label: "Bajarilganlik" }
+        };
+      }
+      case 'statistics': {
+        const classData = classDataMap[classId];
+        if (!classData) return undefined;
+
+        const classAverage = Math.round(
+          classSummativeAverage(classData.students, classData.assignments, classData.grades, classData.topics)
+        );
+        const activeCount = classData.students.filter((s) => s.status !== 'archived').length;
+
+        return {
+          items: [
+            { value: activeCount, label: "Oʻquvchilar" },
+            { value: classData.assignments.length, label: "Topshiriqlar" },
+          ],
+          progress: { value: classAverage, label: "Sinf oʻrtachasi" },
         };
       }
       default:

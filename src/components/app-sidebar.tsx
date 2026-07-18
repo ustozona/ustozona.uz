@@ -37,6 +37,7 @@ import {
   Megaphone,
   Settings,
   Award,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -59,6 +60,7 @@ const navItems: NavItem[] = [
   { href: "/dashboard/attendance", labelKey: "attendance", icon: ClipboardCheck },
   { href: "/dashboard/behavior", labelKey: "behavior", icon: Award },
   { href: "/dashboard/grades", labelKey: "grades", icon: BarChart2 },
+  { href: "/dashboard/statistics", labelKey: "statistics", icon: TrendingUp },
   { href: "/dashboard/standards", labelKey: "standards", icon: Target },
   { href: "/dashboard/tasks", labelKey: "tasks", icon: CheckCircle, badgeKey: "tasks" },
 ];

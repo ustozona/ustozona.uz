@@ -9,7 +9,9 @@ import {
   ClipboardX,
   HeartCrack,
   TrendingDown,
+  TrendingUp,
   UserX,
+  UserCheck,
   X,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -31,6 +33,7 @@ import { statusWeights } from "@/lib/attendance-data";
 import {
   deriveAttentionSignals,
   ATTENTION_DEFAULTS,
+  POSITIVE_KINDS,
   type AttentionSignal,
 } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
@@ -68,6 +71,8 @@ const KIND_ICON: Record<AttentionSignal["kind"], typeof UserX> = {
   "grade-drop": TrendingDown,
   "behavior-cluster": HeartCrack,
   "attendance-missing": ClipboardX,
+  "grade-rise": TrendingUp,
+  "attendance-recovery": UserCheck,
 };
 
 export function AttentionSection({ now }: { now: Date }) {
@@ -97,7 +102,7 @@ export function AttentionSection({ now }: { now: Date }) {
         calendar,
         weights: statusWeights(statuses),
         todayKey,
-      }).filter((s) => classNameById.has(s.classId)),
+      }).filter((s) => classNameById.has(s.classId) && !POSITIVE_KINDS.includes(s.kind)),
     [classDataMap, recordsByClass, eventsByClass, versions, calendar, statuses, todayKey, classNameById]
   );
 
@@ -131,6 +136,10 @@ export function AttentionSection({ now }: { now: Date }) {
         });
       case "attendance-missing":
         return t("detailAttendanceMissing");
+      case "grade-rise":
+        return t("detailGradeRise", { delta: s.delta });
+      case "attendance-recovery":
+        return t("detailAttendanceRecovery", { pct: s.pct });
     }
   };
 
@@ -155,6 +164,13 @@ export function AttentionSection({ now }: { now: Date }) {
         ];
       case "attendance-missing":
         return [{ ...attendance, label: t("actionEnter") }];
+      case "grade-rise":
+        return [
+          { label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` },
+          { label: t("actionGrades"), href: `/dashboard/grades?classId=${encodeURIComponent(s.classId)}` },
+        ];
+      case "attendance-recovery":
+        return [{ label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` }, attendance];
     }
   };
 

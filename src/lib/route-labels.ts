@@ -12,6 +12,7 @@ export const ROUTE_LABEL_KEYS: Record<string, string> = {
   "/dashboard/behavior": "behavior",
   "/dashboard/grades": "grades",
   "/dashboard/grades/help": "gradesHelp",
+  "/dashboard/statistics": "statistics",
   "/dashboard/standards": "standards",
   "/dashboard/tasks": "tasks",
   "/dashboard/changelog": "changelog",
