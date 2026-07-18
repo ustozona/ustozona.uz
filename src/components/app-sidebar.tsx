@@ -10,6 +10,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuBadge,
@@ -48,22 +49,44 @@ type NavItem = {
   badgeKey?: "tasks" | "changelog";
 };
 
+type NavGroup = {
+  labelKey?: string;
+  items: NavItem[];
+};
+
 /* Tartib QASDAN GuideHub "Boshlash" checklisti bilan bir xil — sidebar
-   haqiqat manbai, [[../tour/tours.ts]] shu tartibga ergashadi. */
-const navItems: NavItem[] = [
-  { href: "/dashboard", labelKey: "home", icon: Home },
-  { href: "/dashboard/classes", labelKey: "myClasses", icon: LayoutGrid },
-  { href: "/dashboard/students", labelKey: "students", icon: Users },
-  { href: "/dashboard/timetable", labelKey: "timetable", icon: Calendar },
-  { href: "/dashboard/planner", labelKey: "planner", icon: BookOpen },
-  { href: "/dashboard/lessons", labelKey: "lessons", icon: FileText },
-  { href: "/dashboard/attendance", labelKey: "attendance", icon: ClipboardCheck },
-  { href: "/dashboard/behavior", labelKey: "behavior", icon: Award },
-  { href: "/dashboard/grades", labelKey: "grades", icon: BarChart2 },
-  { href: "/dashboard/statistics", labelKey: "statistics", icon: TrendingUp },
-  { href: "/dashboard/standards", labelKey: "standards", icon: Target },
-  { href: "/dashboard/tasks", labelKey: "tasks", icon: CheckCircle, badgeKey: "tasks" },
+   haqiqat manbai, [[../tour/tours.ts]] shu tartibga ergashadi. Guruhlash
+   faqat vizual — item ketma-ketligi umumiy roʻyxatda oʻzgarmaydi. */
+const navGroups: NavGroup[] = [
+  {
+    items: [{ href: "/dashboard", labelKey: "home", icon: Home }],
+  },
+  {
+    labelKey: "groupTeaching",
+    items: [
+      { href: "/dashboard/classes", labelKey: "myClasses", icon: LayoutGrid },
+      { href: "/dashboard/students", labelKey: "students", icon: Users },
+      { href: "/dashboard/timetable", labelKey: "timetable", icon: Calendar },
+      { href: "/dashboard/planner", labelKey: "planner", icon: BookOpen },
+      { href: "/dashboard/lessons", labelKey: "lessons", icon: FileText },
+    ],
+  },
+  {
+    labelKey: "groupTracking",
+    items: [
+      { href: "/dashboard/attendance", labelKey: "attendance", icon: ClipboardCheck },
+      { href: "/dashboard/behavior", labelKey: "behavior", icon: Award },
+      { href: "/dashboard/grades", labelKey: "grades", icon: BarChart2 },
+      { href: "/dashboard/statistics", labelKey: "statistics", icon: TrendingUp },
+      { href: "/dashboard/standards", labelKey: "standards", icon: Target },
+    ],
+  },
+  {
+    labelKey: "groupPersonal",
+    items: [{ href: "/dashboard/tasks", labelKey: "tasks", icon: CheckCircle, badgeKey: "tasks" }],
+  },
 ];
+
 
 const footerItems: NavItem[] = [
   { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
@@ -122,6 +145,7 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
 }
 
 export function AppSidebar() {
+  const t = useTranslations("AppSidebar");
   const taskCount = useTaskCount();
   const changelogCount = useChangelogUnseenCount();
   const badgeCounts: Record<NonNullable<NavItem["badgeKey"]>, number> = {
@@ -149,19 +173,22 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent data-tour="sidebar-nav">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <NavMenuItem
-                  key={item.href}
-                  item={item}
-                  badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined}
-                />
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navGroups.map((group, i) => (
+          <SidebarGroup key={group.labelKey ?? `group-${i}`}>
+            {group.labelKey && <SidebarGroupLabel>{t(group.labelKey)}</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <NavMenuItem
+                    key={item.href}
+                    item={item}
+                    badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined}
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter>

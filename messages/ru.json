@@ -1,5 +1,8 @@
 {
   "AppSidebar": {
+    "groupTeaching": "Учебный процесс",
+    "groupTracking": "Оценивание и контроль",
+    "groupPersonal": "Личное",
     "home": "Главная",
     "myClasses": "Мои классы",
     "students": "Ученики",

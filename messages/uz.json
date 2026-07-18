@@ -1,5 +1,8 @@
 {
   "AppSidebar": {
+    "groupTeaching": "Oʻquv jarayoni",
+    "groupTracking": "Baholash va kuzatuv",
+    "groupPersonal": "Shaxsiy",
     "home": "Bosh sahifa",
     "myClasses": "Mening sinflarim",
     "students": "Oʻquvchilar",

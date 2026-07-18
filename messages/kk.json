@@ -1,5 +1,8 @@
 {
   "AppSidebar": {
+    "groupTeaching": "Оқу үдерісі",
+    "groupTracking": "Бағалау және қадағалау",
+    "groupPersonal": "Жеке",
     "home": "Басты бет",
     "myClasses": "Менің сыныптарым",
     "students": "Оқушылар",

@@ -1,5 +1,8 @@
 {
   "AppSidebar": {
+    "groupTeaching": "Teaching",
+    "groupTracking": "Assessment & tracking",
+    "groupPersonal": "Personal",
     "home": "Home",
     "myClasses": "My classes",
     "students": "Students",
