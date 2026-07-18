@@ -2897,5 +2897,61 @@
         }
       }
     }
+  },
+  "Calendar": {
+    "days": {
+      "d1": "Dúyshembi",
+      "d2": "Siyshembi",
+      "d3": "Sárshembi",
+      "d4": "Piyshembi",
+      "d5": "Juma",
+      "d6": "Shembi",
+      "d7": "Ekshembi"
+    },
+    "daysShort": {
+      "d1": "Dú",
+      "d2": "Si",
+      "d3": "Sá",
+      "d4": "Pi",
+      "d5": "Ju",
+      "d6": "Sh",
+      "d7": "Ek"
+    },
+    "months": {
+      "m1": "Yanvar",
+      "m2": "Fevral",
+      "m3": "Mart",
+      "m4": "Aprel",
+      "m5": "May",
+      "m6": "Iyun",
+      "m7": "Iyul",
+      "m8": "Avgust",
+      "m9": "Sentyabr",
+      "m10": "Oktyabr",
+      "m11": "Noyabr",
+      "m12": "Dekabr"
+    },
+    "monthsShort": {
+      "m1": "yan",
+      "m2": "fev",
+      "m3": "mar",
+      "m4": "apr",
+      "m5": "may",
+      "m6": "iyun",
+      "m7": "iyul",
+      "m8": "avg",
+      "m9": "sen",
+      "m10": "okt",
+      "m11": "noy",
+      "m12": "dek"
+    },
+    "today": "Búgin",
+    "viewDay": "Kún",
+    "viewWeek": "Hápte",
+    "viewMonth": "Ay",
+    "viewQuarter": "Shérek",
+    "viewYear": "Jıl",
+    "more": "+{count}",
+    "allDay": "Kún boyı"
   }
 }

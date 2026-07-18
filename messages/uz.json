@@ -2897,5 +2897,61 @@
         }
       }
     }
+  },
+  "Calendar": {
+    "days": {
+      "d1": "Dushanba",
+      "d2": "Seshanba",
+      "d3": "Chorshanba",
+      "d4": "Payshanba",
+      "d5": "Juma",
+      "d6": "Shanba",
+      "d7": "Yakshanba"
+    },
+    "daysShort": {
+      "d1": "Du",
+      "d2": "Se",
+      "d3": "Ch",
+      "d4": "Pa",
+      "d5": "Ju",
+      "d6": "Sha",
+      "d7": "Yak"
+    },
+    "months": {
+      "m1": "Yanvar",
+      "m2": "Fevral",
+      "m3": "Mart",
+      "m4": "Aprel",
+      "m5": "May",
+      "m6": "Iyun",
+      "m7": "Iyul",
+      "m8": "Avgust",
+      "m9": "Sentabr",
+      "m10": "Oktabr",
+      "m11": "Noyabr",
+      "m12": "Dekabr"
+    },
+    "monthsShort": {
+      "m1": "yan",
+      "m2": "fev",
+      "m3": "mar",
+      "m4": "apr",
+      "m5": "may",
+      "m6": "iyun",
+      "m7": "iyul",
+      "m8": "avg",
+      "m9": "sen",
+      "m10": "okt",
+      "m11": "noy",
+      "m12": "dek"
+    },
+    "today": "Bugun",
+    "viewDay": "Kun",
+    "viewWeek": "Hafta",
+    "viewMonth": "Oy",
+    "viewQuarter": "Chorak",
+    "viewYear": "Yil",
+    "more": "+{count} ta",
+    "allDay": "Kun boʻyi"
   }
 }

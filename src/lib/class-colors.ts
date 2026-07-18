@@ -256,6 +256,8 @@ export function makeColorTints(c: string) {
     gradient: { backgroundImage: `linear-gradient(155deg, ${mix(13)} 0%, ${mix(4)} 100%)` } as CSSProperties,
     /** Karta pasporti v2: 44px iconbox uchun toʻyingan gradient (-300 dan -400 ga — "portlab turishi" uchun) */
     gradientTile: { backgroundImage: `linear-gradient(135deg, ${lightC} 0%, ${c} 100%)` } as CSSProperties,
+    /** Oy-koʻrinish chipi (EventPill) — surfaceStrong'dan toʻyinganroq yuza */
+    chipFill: { backgroundColor: mix(55, "var(--card)") } as CSSProperties,
     /** Oʻrtacha toʻyingan karta yuzasi — timetable/planner event kartalari */
     surfaceStrong: { backgroundImage: `linear-gradient(155deg, ${mix(35, "var(--card)")} 0%, ${mix(25, "var(--card)")} 100%)` } as CSSProperties,
     /** Rangli matn (badge ichidagi yozuv) */
