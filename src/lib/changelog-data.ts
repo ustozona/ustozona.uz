@@ -32,12 +32,12 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
-    id: "statistics-risk-list-class-id-fix",
+    id: "statistics-launch",
     date: "2026-07-18",
-    type: "tuzatildi",
-    title: "Statistikada \"Eʼtibor kerak\" roʻyxatidagi xatolik tuzatildi",
+    type: "yangi",
+    title: "Yangi boʻlim: Statistika",
     body:
-      "Sinf ichidagi statistika sahifasida \"davomat kiritilmagan\" signali baʼzida sinf nomi oʻrniga tushunarsiz kod koʻrsatib qoʻyar edi — endi bu joyda doim oʻqiladigan sarlavha chiqadi.",
+      "Endi barcha sinflaringiz boʻyicha umumiy manzara bitta joyda: kim eʼtibor talab qilayotgani, qaysi sinfga koʻproq vaqt kerakligi, baholar taqsimoti, mavzu oʻzlashtirish, davomat va xulq trendlari. Sinfni tanlab ichkariga kirsangiz — topshiriq qiyinligi va sinf ichidagi tafsilotlar ham shu yerda.",
     href: "/dashboard/statistics",
   },
   {
