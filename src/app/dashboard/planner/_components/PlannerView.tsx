@@ -22,13 +22,15 @@ import {
   jsDayToIsoDay,
 } from "@/lib/calendar-core/date-math";
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
+import { EventPill as CalendarEventPill } from "@/components/calendar/EventPill";
+import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
+import { MonthGrid, MonthMorePopover } from "@/components/calendar/MonthGrid";
+import { useCalendarFormat } from "@/components/calendar/format";
 import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
 import { lessonSessions, lessonClassIds, unitIdForClass, type Lesson } from "@/lib/lessons-data";
 import { cn } from "@/lib/utils";
-import { DAYS_UZ, DAYS_UZ_SHORT, MONTHS_UZ } from "@/lib/localization";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
@@ -42,7 +44,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { panelCardClass, panelCardHeaderClass } from "@/components/DashboardPage";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import {
   Empty,
   EmptyHeader,
@@ -104,6 +106,7 @@ function placementInEvent(p: Placement, ev: TimetableEvent): boolean {
 
 export default function PlannerView({ classId }: { classId?: string }) {
   const t = useTranslations("PlannerView");
+  const fmt = useCalendarFormat();
   const router = useRouter();
 
   const [view, setView] = useState<"week" | "month">("week");
@@ -283,9 +286,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const weekTitle = useMemo(() => {
     if (view !== "week" || allWeekDates.length === 0) return null;
     const a = allWeekDates[0], b = allWeekDates[allWeekDates.length - 1];
-    if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()} ${MONTHS_UZ[a.getMonth()]}`;
-    return `${a.getDate()} ${MONTHS_UZ[a.getMonth()]} – ${b.getDate()} ${MONTHS_UZ[b.getMonth()]}`;
-  }, [view, allWeekDates]);
+    if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()} ${fmt.monthName(a.getMonth())}`;
+    return `${a.getDate()} ${fmt.monthName(a.getMonth())} – ${b.getDate()} ${fmt.monthName(b.getMonth())}`;
+  }, [view, allWeekDates, fmt]);
 
   // ── Bayram ──
   function openBlockModal(date: Date) {
@@ -442,46 +445,36 @@ export default function PlannerView({ classId }: { classId?: string }) {
     moveSession(payload.lessonId, payload.classId, payload.date, payload.startMin, targetKey, payload.startMin, payload.endMin);
     const moved = lessons.find((l) => l.id === payload.lessonId);
     toast.success(t("lessonMovedToast"), {
-      description: `${moved?.title ?? t("lessonFallback")} · ${targetDate.getDate()} ${MONTHS_UZ[targetDate.getMonth()]}`,
+      description: `${moved?.title ?? t("lessonFallback")} · ${targetDate.getDate()} ${fmt.monthName(targetDate.getMonth())}`,
     });
   }
 
   const slotClass = (m: SlotModal | null) => (m ? classInfoById(m.classId) : undefined);
   const slotTints = (m: SlotModal | null) => { const c = slotClass(m); return c ? classTints(liveClassColor(c)) : null; };
-  const weekColsStyle = { gridTemplateColumns: `56px repeat(${weekDates.length}, minmax(0,1fr))` };
 
-  /** Oy-pillari uchun toʻyingan (deyarli "solid") fon — [[color-system-layers]]
-      OKLCH mix dvigatelidan, faqat yuqoriroq foizda (kartalardagi
-      surfaceStrong'dan qalinroq koʻrinish uchun). */
-  const chipFill = (color: ClassColor) => ({ backgroundColor: `color-mix(in oklch, ${classTints(color).solid} 55%, var(--card))` });
-
+  // Oy-koʻrinish chiplari — umumiy CalendarEventPill (chipFill retsepti u yerda).
   function EventPill({ ev, onOpen }: { ev: TimetableEvent; onOpen?: () => void }) {
     const cls = classInfoById(ev.classId);
     if (!cls) return null;
-    const color = liveClassColor(cls);
-    const tints = classTints(color);
-    return (
-      <button type="button" onClick={onOpen} style={chipFill(color)}
-        className="flex w-full items-center truncate rounded-lg px-2 py-1.5 text-left transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
-        <span style={tints.textStrong} className="min-w-0 truncate text-xs font-bold">{cls.name}</span>
-      </button>
-    );
+    return <CalendarEventPill color={liveClassColor(cls)} label={cls.name} onClick={onOpen} />;
   }
 
   // Joylangan mavzu pili (oy koʻrinishi) — MAVZU nomini koʻrsatadi (sinf emas).
   function PlacedPill({ p, dateKey }: { p: Placement; dateKey: string }) {
     const { color, tints } = lessonDisplay(p.lesson);
     return (
-      <button type="button" onClick={() => openEdit(p, dateKey)}
-        style={chipFill(color)}
-        className="flex w-full items-center gap-1.5 truncate rounded-lg px-2 py-1.5 text-left transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
-        <span style={tints.textStrong} className="min-w-0 truncate text-xs font-bold">{p.lesson.title}</span>
-        <span className="ml-auto flex size-4 shrink-0 items-center justify-center rounded bg-[var(--card)]/60">
-          {p.lesson.status === "Completed"
-            ? <Check style={tints.textStrong} className="size-2.5" strokeWidth={3} />
-            : <FileText style={tints.textStrong} className="size-2.5" />}
-        </span>
-      </button>
+      <CalendarEventPill
+        color={color}
+        label={p.lesson.title}
+        onClick={() => openEdit(p, dateKey)}
+        trailing={
+          <span className="flex size-4 shrink-0 items-center justify-center rounded bg-[var(--card)]/60">
+            {p.lesson.status === "Completed"
+              ? <Check style={tints.textStrong} className="size-2.5" strokeWidth={3} />
+              : <FileText style={tints.textStrong} className="size-2.5" />}
+          </span>
+        }
+      />
     );
   }
 
@@ -500,7 +493,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                 <span className="truncate">{weekTitle}</span>
               ) : (
                 <>
-                  {MONTHS_UZ[anchor.getMonth()]}
+                  {fmt.monthName(anchor.getMonth())}
                   <span className="font-normal text-muted-foreground">{anchor.getFullYear()}</span>
                 </>
               )}
@@ -567,24 +560,46 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <>
             {/* ── Hafta ── */}
             {view === "week" && (
-              <div ref={scrollerRef} data-tour="planner-grid" className={cn("h-full overflow-y-auto scrollbar-thin", isDemoMode && "pointer-events-none")}>
-                <div className="grid" style={weekColsStyle}>
-
-                  {/* Sticky sarlavha (opaque) */}
-                  <div className="sticky top-0 z-30 border-b border-border bg-muted" />
-                  {weekDates.map((d, i) => {
-                    const isToday = isSameDay(d, today);
-                    const key = toDateKey(d);
-                    const isBlocked = blockedSet.has(key);
-                    const holiday = getHolidayForDate(calendar, key);
-                    // Versiya chegarasi: kecha va bugun har xil versiyaga tushsa
-                    const prevDate = new Date(d); prevDate.setDate(d.getDate() - 1);
-                    const vNow = resolveVersionForDate(versions, key);
-                    const versionChanged =
-                      versions.length > 1 && vNow != null && vNow.id !== resolveVersionForDate(versions, toDateKey(prevDate))?.id;
-                    const full = DAYS_UZ[dateToTimetableDay(d) - 1];
-                    return (
-                      <div key={i} data-tour={i === 0 ? "planner-day-cell" : undefined} className="group/day relative sticky top-0 z-30 border-l border-b border-border bg-muted px-2 py-3 text-center">
+              <TimeGrid
+                scrollRef={scrollerRef}
+                data-tour="planner-grid"
+                className={cn(isDemoMode && "pointer-events-none")}
+                startHour={START_HOUR}
+                endHour={END_HOUR}
+                pxPerHour={SLOT_HEIGHT}
+                nowMin={nowMin}
+                lines="half"
+                columns={weekDates.map((d, i): TimeGridColumn => {
+                  const isToday = isSameDay(d, today);
+                  const key = toDateKey(d);
+                  const isBlocked = blockedSet.has(key);
+                  const holiday = getHolidayForDate(calendar, key);
+                  // Versiya chegarasi: kecha va bugun har xil versiyaga tushsa
+                  const prevDate = new Date(d); prevDate.setDate(d.getDate() - 1);
+                  const vNow = resolveVersionForDate(versions, key);
+                  const versionChanged =
+                    versions.length > 1 && vNow != null && vNow.id !== resolveVersionForDate(versions, toDateKey(prevDate))?.id;
+                  const full = fmt.dayName(dateToTimetableDay(d));
+                  return {
+                    key,
+                    isToday,
+                    headerProps: {
+                      "data-tour": i === 0 ? "planner-day-cell" : undefined,
+                      className: "group/day relative px-2 py-3 text-center",
+                    },
+                    columnProps: {
+                      onDragOver: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverKey !== key) setDragOverKey(key); },
+                      onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === key ? null : k)); },
+                      onDrop: (e) => dropOnDay(e, d),
+                      className: cn(
+                        isToday && "bg-muted/50",
+                        isBlocked && "bg-destructive/5",
+                        !isBlocked && holiday && "bg-muted/40",
+                        dragOverKey === key && "outline outline-2 -outline-offset-2 outline-[var(--ring)] bg-primary/5"
+                      ),
+                    },
+                    header: (
+                      <>
                         <div className="flex flex-col items-center gap-1">
                           <span className="truncate max-w-full text-label">{full}</span>
                           {isToday ? (
@@ -640,51 +655,19 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </div>
-                    );
-                  })}
-
-                  {/* Vaqt oʻqi */}
-                  <div className="border-r border-border/40">
-                    {Array.from({ length: VISIBLE_HOURS }, (_, h) => (
-                      <div key={h}
-                        className="border-t border-border/40 pr-2 pt-1 text-right text-xs font-medium tabular-nums text-muted-foreground"
-                        style={{ height: SLOT_HEIGHT }}>
-                        {String(START_HOUR + h).padStart(2, "0")}:00
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Kun ustunlari */}
-                  {weekDates.map((date, colIdx) => {
-                    const dayEvents = eventsForDate(date);
-                    const isToday = isSameDay(date, today);
-                    const dateKey = toDateKey(date);
-                    const isBlocked = blockedSet.has(dateKey);
-                    const holiday = getHolidayForDate(calendar, dateKey);
-                    const nowTop = (nowMin / 60 - START_HOUR) * SLOT_HEIGHT;
-                    const placed = placedByDate.get(dateKey) ?? [];
-                    const isDragOver = dragOverKey === dateKey;
-
-                    return (
-                      <div key={colIdx}
-                        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverKey !== dateKey) setDragOverKey(dateKey); }}
-                        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === dateKey ? null : k)); }}
-                        onDrop={(e) => dropOnDay(e, date)}
-                        className={cn(
-                          "relative border-l border-border/40",
-                          isToday && "bg-muted/50",
-                          isBlocked && "bg-destructive/5",
-                          !isBlocked && holiday && "bg-muted/40",
-                          isDragOver && "outline outline-2 -outline-offset-2 outline-[var(--ring)] bg-primary/5"
-                        )}
-                      >
-                        {Array.from({ length: VISIBLE_HOURS }, (_, h) => (
-                          <div key={h} className="relative border-t border-border/40" style={{ height: SLOT_HEIGHT }}>
-                            <div className="pointer-events-none absolute inset-x-0 border-t border-dashed border-border/40" style={{ top: SLOT_HEIGHT / 2 }} />
-                          </div>
-                        ))}
-
+                      </>
+                    ),
+                  };
+                })}
+                renderColumn={(col) => {
+                  const date = weekDates.find((dd) => toDateKey(dd) === col.key)!;
+                  const dateKey = col.key;
+                  const dayEvents = eventsForDate(date);
+                  const isBlocked = blockedSet.has(dateKey);
+                  const holiday = getHolidayForDate(calendar, dateKey);
+                  const placed = placedByDate.get(dateKey) ?? [];
+                  return (
+                    <>
                         {isBlocked && (
                           <div className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center pt-3">
                             <span className="-rotate-45 select-none text-xs font-semibold text-destructive/40">
@@ -698,13 +681,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             <span className="-rotate-45 select-none text-xs font-semibold text-muted-foreground/50">
                               {holiday.name}
                             </span>
-                          </div>
-                        )}
-
-                        {isToday && nowTop >= 0 && nowTop <= VISIBLE_HOURS * SLOT_HEIGHT && (
-                          <div className="pointer-events-none absolute inset-x-0 z-20 flex items-center" style={{ top: nowTop }}>
-                            <div className="-ml-1.5 size-2.5 shrink-0 rounded-full bg-destructive" />
-                            <div className="h-px flex-1 bg-destructive" />
                           </div>
                         )}
 
@@ -828,30 +804,39 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             </button>
                           );
                         })}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+                    </>
+                  );
+                }}
+              />
             )}
 
             {/* ── Oy ── */}
             {view === "month" && (
-              <div className={cn("flex h-full flex-col overflow-y-auto scrollbar-thin", isDemoMode && "pointer-events-none")}>
-                <div className="grid shrink-0 border-b border-border bg-muted" style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}>
-                  {DAYS_UZ_SHORT.map((d) => (
-                    <div key={d} className="border-l border-border/40 py-3 text-center first:border-l-0">
-                      <TypographyLabel>{d}</TypographyLabel>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid flex-1" style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}>
-                  {monthGrid.map((date, idx) => {
-                    if (!date) return <div key={idx} className="min-h-[96px] border-l border-t border-border/40 bg-muted/10 first:border-l-0" />;
+              <MonthGrid
+                year={anchor.getFullYear()}
+                month={anchor.getMonth()}
+                className={cn(isDemoMode && "pointer-events-none")}
+                getCellProps={(date, key) => {
+                  const isToday = isSameDay(date, today);
+                  const isCurrentMonth = date.getMonth() === anchor.getMonth();
+                  const isBlocked = blockedSet.has(key);
+                  const holiday = getHolidayForDate(calendar, key);
+                  return {
+                    onDragOver: (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverKey !== key) setDragOverKey(key); },
+                    onDragLeave: (e: React.DragEvent<HTMLDivElement>) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === key ? null : k)); },
+                    onDrop: (e: React.DragEvent<HTMLDivElement>) => dropOnDay(e, date),
+                    className: cn(
+                      !isCurrentMonth && "bg-muted/10",
+                      isBlocked && "bg-destructive/5",
+                      !isBlocked && holiday && "bg-muted/40",
+                      isToday && !isBlocked && "bg-muted/50",
+                      dragOverKey === key && "outline outline-2 -outline-offset-2 outline-[var(--ring)]"
+                    ),
+                  };
+                }}
+                renderCell={(date, key) => {
                     const isToday = isSameDay(date, today);
                     const dayEvents = eventsForDate(date);
-                    const isCurrentMonth = date.getMonth() === anchor.getMonth();
-                    const key = toDateKey(date);
                     const isBlocked = blockedSet.has(key);
                     const blockLbl = blockedMap.get(key);
                     const holiday = getHolidayForDate(calendar, key);
@@ -868,19 +853,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
                     const hidden = items.length - shown.length;
 
                     const goToDay = () => { setAnchor(date); setView("week"); };
+                    const isCurrentMonth = date.getMonth() === anchor.getMonth();
                     return (
-                      <div key={idx}
-                        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverKey !== key) setDragOverKey(key); }}
-                        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === key ? null : k)); }}
-                        onDrop={(e) => dropOnDay(e, date)}
-                        className={cn(
-                          "group/cell relative flex min-h-[104px] flex-col gap-1 border-l border-t border-border/40 p-2 text-left transition-colors first:border-l-0",
-                          !isCurrentMonth && "bg-muted/10",
-                          isBlocked && "bg-destructive/5",
-                          !isBlocked && holiday && "bg-muted/40",
-                          isToday && !isBlocked && "bg-muted/50",
-                          dragOverKey === key && "outline outline-2 -outline-offset-2 outline-[var(--ring)]"
-                        )}>
+                      <>
                         <div className="mb-0.5 flex items-center justify-between gap-1">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -919,34 +894,18 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             ? <PlacedPill key={`l-${it.p.lesson.id}-${it.p.classId}-${it.p.startMin}`} p={it.p} dateKey={key} />
                             : <EventPill key={`e-${it.ev.id}-${k}`} ev={it.ev} onOpen={goToDay} />
                         )}
-                        {hidden > 0 && (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <button type="button"
-                                className="self-start rounded px-1.5 py-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
-                                {t("moreItems", { count: hidden })}
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent align="start" className="w-60 p-2">
-                              <div className="mb-1.5 px-1 text-xs font-semibold text-muted-foreground">
-                                {date.getDate()} {MONTHS_UZ[date.getMonth()]}
-                              </div>
-                              <div className="flex max-h-64 flex-col gap-1 overflow-y-auto">
-                                {items.map((it, k) =>
-                                  it.t === "l"
-                                    ? <PlacedPill key={`pl-${it.p.lesson.id}-${it.p.classId}-${it.p.startMin}`} p={it.p} dateKey={key} />
-                                    : <EventPill key={`pe-${it.ev.id}-${k}`} ev={it.ev} onOpen={goToDay} />
-                                )}
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        )}
+                        <MonthMorePopover count={hidden} title={`${date.getDate()} ${fmt.monthName(date.getMonth())}`}>
+                          {items.map((it, k) =>
+                            it.t === "l"
+                              ? <PlacedPill key={`pl-${it.p.lesson.id}-${it.p.classId}-${it.p.startMin}`} p={it.p} dateKey={key} />
+                              : <EventPill key={`pe-${it.ev.id}-${k}`} ev={it.ev} onOpen={goToDay} />
+                          )}
+                        </MonthMorePopover>
                         {isBlocked && <TypographyMuted className="mt-0.5 pl-0.5 text-xs font-medium text-destructive/60">{t("blockedDay")}</TypographyMuted>}
-                      </div>
+                      </>
                     );
-                  })}
-                </div>
-              </div>
+                }}
+              />
             )}
               </>
             )}
@@ -960,7 +919,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
           <DialogHeader>
             <DialogTitle>{t("blockDayDialogTitle")}</DialogTitle>
             <DialogDescription>
-              {blockModal && `${blockModal.date.getDate()} ${MONTHS_UZ[blockModal.date.getMonth()]} ${blockModal.date.getFullYear()}`}
+              {blockModal && `${blockModal.date.getDate()} ${fmt.monthName(blockModal.date.getMonth())} ${blockModal.date.getFullYear()}`}
             </DialogDescription>
           </DialogHeader>
           <div className="py-1">
@@ -992,7 +951,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
           <DialogHeader>
             <DialogTitle>{t("createLessonDialogTitle")}</DialogTitle>
             <DialogDescription>
-              {createModal && `${createModal.date.getDate()} ${MONTHS_UZ[createModal.date.getMonth()]} ${createModal.date.getFullYear()}`}
+              {createModal && `${createModal.date.getDate()} ${fmt.monthName(createModal.date.getMonth())} ${createModal.date.getFullYear()}`}
               {slotClass(createModal) ? ` · ${slotClass(createModal)!.name}` : ""}
             </DialogDescription>
           </DialogHeader>

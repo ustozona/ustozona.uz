@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -14,7 +15,8 @@ import { useTranslations } from "next-intl";
 
 export function useCalendarFormat() {
   const t = useTranslations("Calendar");
-  return {
+  // Memo — useMemo deplarida bemalol ishlatish uchun barqaror obyekt.
+  return useMemo(() => ({
     t,
     /** ISO kun (1=Du..7=Ya) → toʻliq nom. */
     dayName: (isoDay: number) => t(`days.d${isoDay}`),
@@ -24,5 +26,5 @@ export function useCalendarFormat() {
     monthName: (month0: number) => t(`months.m${month0 + 1}`),
     /** JS oy indeksi → qisqa nom. */
     monthShort: (month0: number) => t(`monthsShort.m${month0 + 1}`),
-  };
+  }), [t]);
 }
