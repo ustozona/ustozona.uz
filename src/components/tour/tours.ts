@@ -78,6 +78,16 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     ],
   },
   {
+    id: "timetable",
+    route: "/dashboard/timetable",
+    steps: [
+      { target: '[data-tour="timetable-class-selector"]', placement: "right" },
+      { target: '[data-tour="timetable-grid"]', placement: "left" },
+      { mock: "timetableDrag" },
+      { mock: "timetablePick" },
+    ],
+  },
+  {
     id: "classes",
     route: "/dashboard/classes",
     steps: [
@@ -95,16 +105,6 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
       { target: '[data-tour="students-list"]', placement: "left" },
       { target: '[data-tour="students-preview"]', placement: "left" },
       { target: '[data-tour="students-filter"]', placement: "bottom" },
-    ],
-  },
-  {
-    id: "timetable",
-    route: "/dashboard/timetable",
-    steps: [
-      { target: '[data-tour="timetable-class-selector"]', placement: "right" },
-      { target: '[data-tour="timetable-grid"]', placement: "left" },
-      { mock: "timetableDrag" },
-      { mock: "timetablePick" },
     ],
   },
   {

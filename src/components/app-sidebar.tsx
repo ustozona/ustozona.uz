@@ -64,9 +64,9 @@ const navGroups: NavGroup[] = [
   {
     labelKey: "groupTeaching",
     items: [
+      { href: "/dashboard/timetable", labelKey: "timetable", icon: Calendar },
       { href: "/dashboard/classes", labelKey: "myClasses", icon: LayoutGrid },
       { href: "/dashboard/students", labelKey: "students", icon: Users },
-      { href: "/dashboard/timetable", labelKey: "timetable", icon: Calendar },
       { href: "/dashboard/planner", labelKey: "planner", icon: BookOpen },
       { href: "/dashboard/lessons", labelKey: "lessons", icon: FileText },
     ],
@@ -77,8 +77,8 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/attendance", labelKey: "attendance", icon: ClipboardCheck },
       { href: "/dashboard/behavior", labelKey: "behavior", icon: Award },
       { href: "/dashboard/grades", labelKey: "grades", icon: BarChart2 },
-      { href: "/dashboard/statistics", labelKey: "statistics", icon: TrendingUp },
       { href: "/dashboard/standards", labelKey: "standards", icon: Target },
+      { href: "/dashboard/statistics", labelKey: "statistics", icon: TrendingUp },
     ],
   },
   {
