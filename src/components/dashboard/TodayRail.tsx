@@ -29,9 +29,10 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyCont
 import { Illustration } from "@/components/ui/illustration";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollFade } from "@/components/ui/scroll-fade";
-import { CardStripes } from "@/components/CardStripes";
 import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { addDays, startOfWeekMon } from "@/lib/calendar-core/date-math";
+import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
+import { EventCard } from "@/components/calendar/EventCard";
 import { panelCardClass, panelCardHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
@@ -132,10 +133,9 @@ export function TodayRail({ now }: { now: Date }) {
     }
     return list;
   }, [allLessons, selectedKey]);
+  // "overlap" — rail'ning tarixiy semantikasi (planner "start-in-slot" ishlatadi).
   const lessonFor = (ev: RailEvent): LessonInfo | undefined =>
-    daySessions.find(
-      (s) => s.classId === ev.classId && s.startMin < ev.endMin && s.endMin > ev.startMin
-    )?.info;
+    daySessions.find((s) => sessionMatchesSlot(ev, s, "overlap"))?.info;
 
   // ── "Nazorat" belgisi — shu kunga summativ topshiriq muddati bor sinflar ──
   const controlClassIds = useMemo(() => {
@@ -397,42 +397,26 @@ function DayGridView({
         const height = Math.max((ev.endMin - ev.startMin) * PX_PER_MIN, 32);
         const compact = height < 44;
         return (
-          <div
+          <EventCard
             key={ev.id}
-            className={cn(
-              "group absolute isolate overflow-hidden rounded-lg border p-2",
-              temporal === "past" && "opacity-55"
-            )}
-            style={{
-              top,
-              height,
-              left: 48,
-              right: 0,
-              ...tints.surfaceStrong,
-              ...tints.borderMedium,
-              ...(temporal === "current" ? { boxShadow: `0 0 0 2px ${tints.solid}55` } : null),
-              ...(temporal === "next" ? { boxShadow: `0 0 0 1px ${tints.solid}30` } : null),
-            }}
-          >
-            <CardStripes color={meta.color} variant="cover" />
-            <div className="flex items-center gap-1.5 pr-14">
-              <span
-                className="h-3 w-0.5 shrink-0 rounded-full"
-                style={{ backgroundColor: tints.solid }}
-                aria-hidden
-              />
-              <span style={tints.textStrong} className="truncate text-sm font-bold leading-tight">
-                {meta.name}
-              </span>
-              {control && (
+            color={meta.color}
+            title={meta.name}
+            corner={false}
+            temporal={temporal === "none" ? undefined : temporal}
+            titleRowClassName="pr-14"
+            badges={
+              control ? (
                 <Badge
                   variant="outline"
                   className="shrink-0 rounded-full border-warning/40 bg-warning/10 px-1.5 py-0 text-[10px] font-semibold text-warning"
                 >
                   {t("controlBadge")}
                 </Badge>
-              )}
-            </div>
+              ) : undefined
+            }
+            className="group absolute isolate rounded-lg p-2"
+            style={{ top, height, left: 48, right: 0 }}
+          >
             {!compact && (
               <p
                 style={lesson ? { ...tints.textStrong } : undefined}
@@ -453,7 +437,7 @@ function DayGridView({
             <div className="absolute right-1.5 top-1.5 z-10">
               <EventActions classId={ev.classId} solidBg />
             </div>
-          </div>
+          </EventCard>
         );
       })}
     </div>

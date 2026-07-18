@@ -22,11 +22,13 @@ export function EventCard({
   color,
   title,
   subtitle,
+  badges,
   temporal,
   compact = false,
   muted = false,
   interactive = false,
   corner = true,
+  titleRowClassName,
   className,
   style,
   children,
@@ -36,18 +38,21 @@ export function EventCard({
   title: string;
   /** Sarlavha ostidagi qator (vaqt, ikona bilan). */
   subtitle?: ReactNode;
+  /** Sarlavha qatorining oxiridagi belgilar (masalan "Nazorat" badge). */
+  badges?: ReactNode;
   temporal?: EventCardTemporal;
   compact?: boolean;
   muted?: boolean;
   interactive?: boolean;
   corner?: boolean;
+  titleRowClassName?: string;
 } & HTMLAttributes<HTMLDivElement>) {
   const tints = classTints(color);
   const ringStyle: CSSProperties =
     temporal === "current"
-      ? { boxShadow: `0 0 0 2px ${tints.solid}` }
+      ? { boxShadow: `0 0 0 2px color-mix(in oklch, ${tints.solid} 55%, transparent)` }
       : temporal === "next"
-        ? { boxShadow: `0 0 0 1px color-mix(in oklch, ${tints.solid} 45%, transparent)` }
+        ? { boxShadow: `0 0 0 1px color-mix(in oklch, ${tints.solid} 35%, transparent)` }
         : {};
   return (
     <div
@@ -64,7 +69,7 @@ export function EventCard({
     >
       <CardStripes color={color} variant="cover" />
       {corner && <CardCorner color={color} className="-right-5 -top-5 size-16" />}
-      <span className="relative flex items-center gap-1.5">
+      <span className={cn("relative flex items-center gap-1.5", titleRowClassName)}>
         <span style={{ backgroundColor: tints.solid }} className="h-3.5 w-0.5 shrink-0 rounded-full" aria-hidden />
         <span
           style={tints.textStrong}
@@ -72,6 +77,7 @@ export function EventCard({
         >
           {title}
         </span>
+        {badges}
       </span>
       {subtitle != null && (
         <span
