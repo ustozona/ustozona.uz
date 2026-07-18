@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import { scoreBarColor } from "@/lib/score-colors";
 import type { TopicStudentMatrix } from "@/lib/class-stats";
 
@@ -13,19 +13,13 @@ export function TopicStudentMatrixCard({ matrix }: { matrix: TopicStudentMatrix 
   const t = useTranslations("StatisticsPage");
 
   if (matrix.topics.length === 0 || matrix.students.length === 0) {
-    return (
-      <div className="space-y-3">
-        <TypographyLabel>{t("matrixTitle")}</TypographyLabel>
-        <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
-      </div>
-    );
+    return <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>;
   }
 
   const cellByKey = new Map(matrix.cells.map((c) => [`${c.studentId}:${c.topicId}`, c.avg]));
 
   return (
-    <div className="space-y-3">
-      <TypographyLabel>{t("matrixTitle")}</TypographyLabel>
+    <div>
       <div className="overflow-x-auto -mx-1 px-1">
         <table className="min-w-full border-separate border-spacing-0.5 text-xs">
           <thead>

@@ -2,11 +2,11 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import {
-  panelCardClass, panelCardContentClass, panelScrollInnerClass,
-} from "@/components/DashboardPage";
+  Users, CalendarClock, CalendarCheck, ShieldAlert, BarChart3, Layers, ClipboardCheck,
+  Table as TableIcon, TrendingUp, UserX, HeartPulse, GraduationCap, Percent,
+} from "lucide-react";
+import { TypographyMuted } from "@/components/ui/typography";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
@@ -22,6 +22,8 @@ import {
   assignmentQuality, topicStudentMatrix,
   STAT_DEADBAND_PP, type StatPeriod,
 } from "@/lib/class-stats";
+import { StatCard } from "@/components/StatCard";
+import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { DistributionCard } from "./DistributionCard";
 import { TopicMasteryCard } from "./TopicMasteryCard";
 import { RiskList } from "./RiskList";
@@ -68,13 +70,9 @@ export function ClassStatsView({
 
   if (!classData || !period) {
     return (
-      <div className="h-full flex flex-col">
-        <Card className={panelCardClass}>
-          <CardContent className={panelCardContentClass}>
-            <TypographyMuted className="p-6 text-sm">{t("notEnoughData")}</TypographyMuted>
-          </CardContent>
-        </Card>
-      </div>
+      <DashboardSectionCard>
+        <TypographyMuted className="text-sm">{t("notEnoughData")}</TypographyMuted>
+      </DashboardSectionCard>
     );
   }
 
@@ -93,69 +91,82 @@ export function ClassStatsView({
   const deadlines = upcomingDeadlines(classData, todayKey);
   const quality = assignmentQuality(classData, period.range, isYear);
   const matrix = topicStudentMatrix(classData, period.range, isYear);
+  const hasFlaggedAbsence = summaries.some((s) => s.absenceTier === "watch" || s.absenceTier === "chronic");
 
   const deltaStable = summary.summativeDelta === null || Math.abs(summary.summativeDelta) < STAT_DEADBAND_PP;
 
   return (
-    <div className="h-full flex flex-col">
-      <Card className={panelCardClass}>
-        <CardContent className={panelCardContentClass}>
-          <div className={panelScrollInnerClass + " space-y-7"}>
-            {group === "overview" && (
-              <>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                  <KpiTile
-                    label={t("kpiSummative")}
-                    value={summary.summativeAvg !== null ? `${Math.round(summary.summativeAvg)}%` : "—"}
-                    sub={summary.summativeDelta !== null ? (deltaStable ? t("deltaStable") : `${summary.summativeDelta > 0 ? "+" : ""}${Math.round(summary.summativeDelta)}pp`) : undefined}
-                  />
-                  <KpiTile label={t("kpiMedian")} value={summary.summativeMedian !== null ? `${Math.round(summary.summativeMedian)}%` : "—"} />
-                  <KpiTile label={t("kpiAttendance")} value={summary.attendanceAvg !== null ? `${Math.round(summary.attendanceAvg)}%` : "—"} />
-                  <KpiTile label={t("kpiPositiveBehavior")} value={summary.positivePct !== null ? `${summary.positivePct}%` : "—"} />
-                  <KpiTile label={t("kpiCompletion")} value={completion !== null ? `${completion.pct}%` : "—"} />
-                </div>
+    <div className="h-full min-h-0 overflow-y-auto">
+      <div className="flex flex-col gap-4 pb-1">
+        {group === "overview" && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <StatCard
+                icon={GraduationCap}
+                label={t("kpiSummative")}
+                value={summary.summativeAvg !== null ? `${Math.round(summary.summativeAvg)}%` : "—"}
+                sub={summary.summativeDelta !== null && deltaStable ? t("deltaStable") : undefined}
+                delta={summary.summativeDelta !== null && !deltaStable ? `${Math.round(Math.abs(summary.summativeDelta))}pp` : undefined}
+                deltaType={summary.summativeDelta !== null && summary.summativeDelta > 0 ? "positive" : "negative"}
+              />
+              <StatCard icon={Percent} label={t("kpiMedian")} value={summary.summativeMedian !== null ? `${Math.round(summary.summativeMedian)}%` : "—"} />
+              <StatCard icon={CalendarCheck} label={t("kpiAttendance")} value={summary.attendanceAvg !== null ? `${Math.round(summary.attendanceAvg)}%` : "—"} />
+              <StatCard icon={HeartPulse} label={t("kpiPositiveBehavior")} value={summary.positivePct !== null ? `${summary.positivePct}%` : "—"} />
+              <StatCard icon={ClipboardCheck} label={t("kpiCompletion")} value={completion !== null ? `${completion.pct}%` : "—"} />
+            </div>
 
-                <GenderDonutChart gender={gender} boysLabel={t("boysShort")} girlsLabel={t("girlsShort")} totalLabel={t("kpiActiveStudents")} />
+            <DashboardSectionCard icon={Users} title={t("genderTitle")}>
+              <GenderDonutChart gender={gender} boysLabel={t("boysFull")} girlsLabel={t("girlsFull")} unitLabel={t("unitPeople")} />
+            </DashboardSectionCard>
 
+            {deadlines.length > 0 && (
+              <DashboardSectionCard icon={CalendarClock} title={t("deadlinesTitle")}>
                 <DeadlinesCard deadlines={deadlines} />
-
-                <div className="space-y-3">
-                  <TypographyLabel>{t("riskTitle")}</TypographyLabel>
-                  <RiskList signals={signals} />
-                </div>
-              </>
+              </DashboardSectionCard>
             )}
 
-            {group === "grades" && (
-              <>
-                <DistributionCard bins={bins} />
-                <TopicMasteryCard rows={topics} />
-                <AssignmentQualityCard rows={quality} />
-                <TopicStudentMatrixCard matrix={matrix} />
-              </>
-            )}
+            <DashboardSectionCard icon={ShieldAlert} title={t("riskTitle")}>
+              <RiskList signals={signals} />
+            </DashboardSectionCard>
+          </>
+        )}
 
-            {group === "attendance" && (
-              <>
-                <AttendanceTrendCard weeks={attendanceWeeks} />
+        {group === "grades" && (
+          <>
+            <DashboardSectionCard icon={BarChart3} title={t("distributionTitle")}>
+              <DistributionCard bins={bins} />
+            </DashboardSectionCard>
+            <DashboardSectionCard icon={Layers} title={t("topicsTitle")}>
+              <TopicMasteryCard rows={topics} />
+            </DashboardSectionCard>
+            <DashboardSectionCard icon={ClipboardCheck} title={t("assignmentQualityTitle")}>
+              <AssignmentQualityCard rows={quality} />
+            </DashboardSectionCard>
+            <DashboardSectionCard icon={TableIcon} title={t("matrixTitle")}>
+              <TopicStudentMatrixCard matrix={matrix} />
+            </DashboardSectionCard>
+          </>
+        )}
+
+        {group === "attendance" && (
+          <>
+            <DashboardSectionCard icon={TrendingUp} title={t("attendanceTrendTitle")}>
+              <AttendanceTrendCard weeks={attendanceWeeks} />
+            </DashboardSectionCard>
+            {hasFlaggedAbsence && (
+              <DashboardSectionCard icon={UserX} title={t("absenceTiersTitle")}>
                 <AbsenceTierList summaries={summaries} students={classData.students} />
-              </>
+              </DashboardSectionCard>
             )}
+          </>
+        )}
 
-            {group === "behavior" && <BehaviorClimateCard climate={climate} />}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function KpiTile({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
-  return (
-    <div className="rounded-xl border border-border/60 bg-muted/30 px-3.5 py-3 flex flex-col gap-1">
-      <TypographyLabel className="truncate">{label}</TypographyLabel>
-      <div className="text-2xl font-bold tabular-nums leading-none">{value}</div>
-      {sub && <div className="text-xs text-muted-foreground/80 truncate">{sub}</div>}
+        {group === "behavior" && (
+          <DashboardSectionCard icon={HeartPulse} title={t("behaviorClimateTitle")}>
+            <BehaviorClimateCard climate={climate} />
+          </DashboardSectionCard>
+        )}
+      </div>
     </div>
   );
 }

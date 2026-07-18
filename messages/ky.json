@@ -433,9 +433,7 @@
     "overviewTitle": "Жалпы көрүнүш",
     "kpiActiveStudents": "Активдүү окуучулар",
     "kpiGenderSub": "{boys} эркек ({boysPct}%) · {girls} кыз ({girlsPct}%)",
-    "kpiSignals": "Сигналдар",
     "kpiClasses": "Класстар",
-    "kpiAttendanceToday": "Бүгүнкү катышуу",
     "kpiSummative": "Суммативдик орточо",
     "kpiMedian": "Медиана",
     "kpiAttendance": "Катышуу",
@@ -475,7 +473,12 @@
     "floorChip": "Өтө кыйын",
     "difficultyLabel": "Кыйындык",
     "discriminationLabel": "Айырмалоо",
-    "matrixTitle": "Тема × окуучу картасы"
+    "matrixTitle": "Тема × окуучу картасы",
+    "genderTitle": "Окуучулардын катышы",
+    "unitPeople": "окуучу",
+    "unitCount": "",
+    "boysFull": "Уул балдар",
+    "girlsFull": "Кыз балдар"
   },
   "AssignmentTooltip": {
     "edit": "Түзөтүү",

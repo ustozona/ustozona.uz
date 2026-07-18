@@ -433,9 +433,7 @@
     "overviewTitle": "Жалпы көрініс",
     "kpiActiveStudents": "Белсенді оқушылар",
     "kpiGenderSub": "{boys} ұл ({boysPct}%) · {girls} қыз ({girlsPct}%)",
-    "kpiSignals": "Сигналдар",
     "kpiClasses": "Сыныптар",
-    "kpiAttendanceToday": "Бүгінгі қатысу",
     "kpiSummative": "Сумативті орташа",
     "kpiMedian": "Медиана",
     "kpiAttendance": "Қатысу",
@@ -475,7 +473,12 @@
     "floorChip": "Тым қиын",
     "difficultyLabel": "Қиындық",
     "discriminationLabel": "Ажырату",
-    "matrixTitle": "Тақырып × оқушы картасы"
+    "matrixTitle": "Тақырып × оқушы картасы",
+    "genderTitle": "Оқушылар қатынасы",
+    "unitPeople": "оқушы",
+    "unitCount": "",
+    "boysFull": "Ұл балалар",
+    "girlsFull": "Қыз балалар"
   },
   "AssignmentTooltip": {
     "edit": "Өңдеу",

@@ -433,9 +433,7 @@
     "overviewTitle": "Overview",
     "kpiActiveStudents": "Active students",
     "kpiGenderSub": "{boys} boys ({boysPct}%) · {girls} girls ({girlsPct}%)",
-    "kpiSignals": "Signals",
     "kpiClasses": "Classes",
-    "kpiAttendanceToday": "Today's attendance",
     "kpiSummative": "Summative average",
     "kpiMedian": "Median",
     "kpiAttendance": "Attendance",
@@ -475,7 +473,12 @@
     "floorChip": "Too hard",
     "difficultyLabel": "Difficulty",
     "discriminationLabel": "Discrimination",
-    "matrixTitle": "Topic × student map"
+    "matrixTitle": "Topic × student map",
+    "genderTitle": "Student ratio",
+    "unitPeople": "students",
+    "unitCount": "",
+    "boysFull": "Boys",
+    "girlsFull": "Girls"
   },
   "AssignmentTooltip": {
     "edit": "Edit",

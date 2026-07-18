@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import type { Student } from "@/lib/grades-data";
 import type { StudentPeriodSummary } from "@/lib/class-stats";
@@ -22,9 +22,8 @@ export function AbsenceTierList({ summaries, students }: { summaries: StudentPer
   const copyEntries = flagged.map((s) => ({ name: s.name, parentPhone: studentById.get(s.studentId)?.parentPhone }));
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <TypographyLabel>{t("absenceTiersTitle")}</TypographyLabel>
+    <div>
+      <div className="flex justify-end mb-2">
         <CopyListButton entries={copyEntries} />
       </div>
       <div className="flex flex-col divide-y divide-border/60">

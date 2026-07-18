@@ -433,9 +433,7 @@
     "overviewTitle": "Общий обзор",
     "kpiActiveStudents": "Активные ученики",
     "kpiGenderSub": "{boys} мальчиков ({boysPct}%) · {girls} девочек ({girlsPct}%)",
-    "kpiSignals": "Сигналы",
     "kpiClasses": "Классы",
-    "kpiAttendanceToday": "Посещаемость сегодня",
     "kpiSummative": "Средний суммативный балл",
     "kpiMedian": "Медиана",
     "kpiAttendance": "Посещаемость",
@@ -475,7 +473,12 @@
     "floorChip": "Слишком трудно",
     "difficultyLabel": "Сложность",
     "discriminationLabel": "Различение",
-    "matrixTitle": "Карта тема × ученик"
+    "matrixTitle": "Карта тема × ученик",
+    "genderTitle": "Соотношение учеников",
+    "unitPeople": "учеников",
+    "unitCount": "",
+    "boysFull": "Мальчики",
+    "girlsFull": "Девочки"
   },
   "AssignmentTooltip": {
     "edit": "Редактировать",

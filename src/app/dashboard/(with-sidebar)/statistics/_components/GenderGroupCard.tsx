@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import { STAT_DEADBAND_PP, type GenderGroupAverages } from "@/lib/class-stats";
 
 /** Oʻgʻil/qiz oʻrtachalari — har guruh MIN_GENDER_GROUP dan kam boʻlsa
@@ -22,26 +22,23 @@ export function GenderGroupCard({ averages }: { averages: GenderGroupAverages })
   ];
 
   return (
-    <div className="space-y-3">
-      <TypographyLabel>{t("genderGroupTitle")}</TypographyLabel>
-      <div className="space-y-2.5">
-        {rows.map((r) => {
-          const diff = r.b !== null && r.g !== null ? r.b - r.g : null;
-          const stable = diff === null || Math.abs(diff) < STAT_DEADBAND_PP;
-          return (
-            <div key={r.label} className="flex items-center justify-between text-sm gap-2">
-              <span className="text-foreground/80">{r.label}</span>
-              <div className="flex items-center gap-3 tabular-nums text-xs">
-                <span>{t("boysShort")}: {r.b !== null ? `${Math.round(r.b)}${r.suffix}` : "—"}</span>
-                <span>{t("girlsShort")}: {r.g !== null ? `${Math.round(r.g)}${r.suffix}` : "—"}</span>
-                <TypographyMuted className={stable ? "" : "text-foreground/70 font-medium"}>
-                  {diff === null ? "—" : stable ? t("deltaStable") : `Δ ${Math.round(Math.abs(diff))}${r.suffix}`}
-                </TypographyMuted>
-              </div>
+    <div className="space-y-2.5">
+      {rows.map((r) => {
+        const diff = r.b !== null && r.g !== null ? r.b - r.g : null;
+        const stable = diff === null || Math.abs(diff) < STAT_DEADBAND_PP;
+        return (
+          <div key={r.label} className="flex items-center justify-between text-sm gap-2">
+            <span className="text-foreground/80">{r.label}</span>
+            <div className="flex items-center gap-3 tabular-nums text-xs">
+              <span>{t("boysShort")}: {r.b !== null ? `${Math.round(r.b)}${r.suffix}` : "—"}</span>
+              <span>{t("girlsShort")}: {r.g !== null ? `${Math.round(r.g)}${r.suffix}` : "—"}</span>
+              <TypographyMuted className={stable ? "" : "text-foreground/70 font-medium"}>
+                {diff === null ? "—" : stable ? t("deltaStable") : `Δ ${Math.round(Math.abs(diff))}${r.suffix}`}
+              </TypographyMuted>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

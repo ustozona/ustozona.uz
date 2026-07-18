@@ -2,13 +2,8 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { BarChart3 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { SectionIcon } from "@/components/ui/section-icon";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
-import {
-  panelCardClass, panelCardHeaderClass, panelCardContentClass, panelScrollInnerClass,
-} from "@/components/DashboardPage";
+import { Users, GraduationCap, ShieldAlert, CalendarCheck, TrendingUp } from "lucide-react";
+import { TypographyMuted } from "@/components/ui/typography";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
@@ -20,12 +15,15 @@ import { deriveAttentionSignals } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
   overviewRows, genderBreakdown, signalCountsByClass,
-  studentPeriodSummaries, genderGroupAverages, type StatPeriod,
+  studentPeriodSummaries, genderGroupAverages, attendanceWeeklyTrend, type StatPeriod,
 } from "@/lib/class-stats";
+import { StatCard } from "@/components/StatCard";
+import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { ClassRowsCard } from "./ClassRowsCard";
 import { RiskList } from "./RiskList";
 import { GenderGroupCard } from "./GenderGroupCard";
 import { GenderDonutChart } from "./GenderDonutChart";
+import { AttendanceTrendCard } from "./AttendanceTrendCard";
 
 export function OverviewPanel({
   onSelectClass, period, prevPeriod,
@@ -91,65 +89,62 @@ export function OverviewPanel({
   }, [classDataMap, classNameById, recordsByClass, eventsByClass, weights, period]);
 
   const activeStudents = rows.reduce((sum, r) => sum + r.studentCount, 0);
-  const todayAttendance = rows.length > 0
-    ? Math.round(rows.filter((r) => r.attendanceAvg !== null).reduce((s, r) => s + (r.attendanceAvg ?? 0), 0) /
-        Math.max(1, rows.filter((r) => r.attendanceAvg !== null).length))
+  const attendanceRows = rows.filter((r) => r.attendanceAvg !== null);
+  const periodAttendance = attendanceRows.length > 0
+    ? Math.round(attendanceRows.reduce((s, r) => s + (r.attendanceAvg ?? 0), 0) / attendanceRows.length)
     : null;
 
-  return (
-    <div className="h-full flex flex-col">
-      <Card className={panelCardClass}>
-        <CardHeader className={cnHeader()}>
-          <div className="flex min-w-0 items-center gap-2 flex-1">
-            <SectionIcon><BarChart3 /></SectionIcon>
-            <CardTitle className="truncate">{t("overviewTitle")}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className={panelCardContentClass}>
-          <div className={panelScrollInnerClass + " space-y-7"}>
-            {/* ── KPI plitkalar ── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-              <KpiTile label={t("kpiActiveStudents")} value={activeStudents} />
-              <KpiTile label={t("kpiSignals")} value={signals.length} />
-              <KpiTile label={t("kpiClasses")} value={rows.length} />
-              <KpiTile label={t("kpiAttendanceToday")} value={todayAttendance !== null ? `${todayAttendance}%` : "—"} />
-            </div>
-
-            <GenderDonutChart gender={gender} boysLabel={t("boysShort")} girlsLabel={t("girlsShort")} totalLabel={t("kpiActiveStudents")} />
-
-            {/* ── Sinf qatorlari ── */}
-            <div className="space-y-3">
-              <TypographyLabel>{t("classesTitle")}</TypographyLabel>
-              <ClassRowsCard rows={rows} onSelect={onSelectClass} />
-            </div>
-
-            {genderGroups && <GenderGroupCard averages={genderGroups} />}
-
-            {/* ── Risk registri ── */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <TypographyLabel>{t("riskTitle")}</TypographyLabel>
-                <TypographyMuted className="text-xs">{t("riskTodayNote")}</TypographyMuted>
-              </div>
-              <RiskList signals={signals} classNameOf={(id) => classNameById.get(id)} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+  const allRecords = useMemo(
+    () =>
+      Object.entries(recordsByClass)
+        .filter(([classId]) => classNameById.has(classId))
+        .flatMap(([, records]) => records),
+    [recordsByClass, classNameById]
   );
-}
+  const attendanceWeeks = useMemo(
+    () => (period ? attendanceWeeklyTrend(allRecords, weights, period.range) : []),
+    [allRecords, weights, period]
+  );
 
-function cnHeader() {
-  return panelCardHeaderClass + " justify-between min-h-[4.5rem] px-5 py-5! gap-3";
-}
-
-function KpiTile({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-muted/30 px-3.5 py-3 flex flex-col gap-1">
-      <TypographyLabel className="truncate">{label}</TypographyLabel>
-      <div className="text-2xl font-bold tabular-nums leading-none">{value}</div>
-      {sub && <div className="text-xs text-muted-foreground/80 truncate">{sub}</div>}
+    <div className="h-full min-h-0 overflow-y-auto">
+      <div className="flex flex-col gap-4 pb-1">
+        {/* ── KPI plitkalar ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudents} unit={t("unitPeople")} />
+          <StatCard icon={ShieldAlert} label={t("riskTitle")} value={signals.length} unit={t("unitCount")} />
+          <StatCard icon={GraduationCap} label={t("kpiClasses")} value={rows.length} unit={t("unitCount")} />
+          <StatCard icon={CalendarCheck} label={t("kpiAttendance")} value={periodAttendance !== null ? `${periodAttendance}%` : "—"} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-4">
+          <DashboardSectionCard icon={Users} title={t("genderTitle")}>
+            <GenderDonutChart gender={gender} boysLabel={t("boysFull")} girlsLabel={t("girlsFull")} unitLabel={t("unitPeople")} />
+          </DashboardSectionCard>
+
+          <DashboardSectionCard icon={TrendingUp} title={t("attendanceTrendTitle")}>
+            <AttendanceTrendCard weeks={attendanceWeeks} />
+          </DashboardSectionCard>
+        </div>
+
+        <DashboardSectionCard icon={GraduationCap} title={t("classesTitle")}>
+          <ClassRowsCard rows={rows} onSelect={onSelectClass} />
+        </DashboardSectionCard>
+
+        {genderGroups && (
+          <DashboardSectionCard icon={Users} title={t("genderGroupTitle")}>
+            <GenderGroupCard averages={genderGroups} />
+          </DashboardSectionCard>
+        )}
+
+        <DashboardSectionCard
+          icon={ShieldAlert}
+          title={t("riskTitle")}
+          action={<TypographyMuted className="text-xs">{t("riskTodayNote")}</TypographyMuted>}
+        >
+          <RiskList signals={signals} classNameOf={(id) => classNameById.get(id)} />
+        </DashboardSectionCard>
+      </div>
     </div>
   );
 }

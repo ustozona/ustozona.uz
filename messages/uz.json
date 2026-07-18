@@ -433,9 +433,7 @@
     "overviewTitle": "Umumiy koʻrinish",
     "kpiActiveStudents": "Faol oʻquvchilar",
     "kpiGenderSub": "{boys} oʻgʻil ({boysPct}%) · {girls} qiz ({girlsPct}%)",
-    "kpiSignals": "Signallar",
     "kpiClasses": "Sinflar",
-    "kpiAttendanceToday": "Bugungi davomat",
     "kpiSummative": "Summativ oʻrtacha",
     "kpiMedian": "Median",
     "kpiAttendance": "Davomat",
@@ -475,7 +473,12 @@
     "floorChip": "Juda qiyin",
     "difficultyLabel": "Qiyinlik",
     "discriminationLabel": "Farqlash",
-    "matrixTitle": "Mavzu × oʻquvchi xaritasi"
+    "matrixTitle": "Mavzu × oʻquvchi xaritasi",
+    "genderTitle": "Oʻquvchilar nisbati",
+    "unitPeople": "nafar",
+    "unitCount": "ta",
+    "boysFull": "Oʻgʻil bolalar",
+    "girlsFull": "Qiz bolalar"
   },
   "AssignmentTooltip": {
     "edit": "Tahrirlash",

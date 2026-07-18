@@ -2,29 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { Mars, Venus } from "lucide-react";
-import { Label, Pie, PieChart } from "recharts";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { Pie, PieChart } from "recharts";
+import { TypographyMuted } from "@/components/ui/typography";
+import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 
 // Jins ranglari — StudentProfile'dagi qatʼiy naqsh bilan bir xil manba
 // (Mars/sky = oʻgʻil, Venus/pink = qiz), boshqa joyda ixtiro qilinmaydi.
-const GENDER_CHART_CONFIG = {
-  count: { label: "" },
-  male: { label: "", color: "var(--color-sky-500)" },
-  female: { label: "", color: "var(--color-pink-500)" },
-} satisfies ChartConfig;
+function chartConfig(boysLabel: string, girlsLabel: string): ChartConfig {
+  return {
+    count: { label: "" },
+    male: { label: boysLabel, color: "var(--color-sky-500)" },
+    female: { label: girlsLabel, color: "var(--color-pink-500)" },
+  };
+}
 
-/** Oʻgʻil/qiz nisbati — markazida jami son bilan donut chart (recharts).
+/** Oʻgʻil/qiz nisbati — markazida jami son bilan donut chart (recharts),
+    pastida markazlashtirilgan izoh (son + foiz), hover'da tooltip.
     Statistika sahifasida ham butun-maktab Umumiy, ham sinf detali darajasida
     ishlatiladi. Serverda ResponsiveContainer oʻlchovsiz boʻlgani uchun faqat
     mount'dan keyin chiziladi (task-stats-panel'dagi bilan bir xil gotcha). */
 export function GenderDonutChart({
-  gender, boysLabel, girlsLabel, totalLabel,
+  gender, boysLabel, girlsLabel, unitLabel,
 }: {
   gender: { boys: number; girls: number; boysPct: number | null; girlsPct: number | null };
   boysLabel: string;
   girlsLabel: string;
-  totalLabel: string;
+  /** "nafar" kabi ikkilamchi birlik — legend qatorlari va tooltip'da sonlardan keyin. */
+  unitLabel?: string;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -40,41 +44,49 @@ export function GenderDonutChart({
   ];
 
   return (
-    <div className="rounded-xl border border-border/60 p-4 flex items-center gap-4">
+    <div className="flex w-full flex-col items-center gap-4">
       {!mounted ? (
-        <div className="size-[120px] shrink-0" />
+        <div className="size-[160px] shrink-0" />
       ) : (
-        <ChartContainer config={GENDER_CHART_CONFIG} className="aspect-square size-[120px] shrink-0">
+        <ChartContainer config={chartConfig(boysLabel, girlsLabel)} className="aspect-square size-[160px] shrink-0">
           <PieChart>
-            <Pie data={chartData} dataKey="count" nameKey="gender" innerRadius={38} outerRadius={58} strokeWidth={3}>
-              <Label
-                content={({ viewBox }) => {
-                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                    return (
-                      <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                        <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-xl font-bold">
-                          {total}
-                        </tspan>
-                      </text>
-                    );
-                  }
-                }}
-              />
-            </Pie>
+            <ChartTooltip
+              cursor={false}
+              content={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const item = payload[0] as { value: number; payload: { gender: string } };
+                const pct = item.payload.gender === "male" ? boysPct : girlsPct;
+                return (
+                  <div className="rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+                    <span className="font-semibold tabular-nums">{item.value}</span>
+                    {unitLabel && <span className="text-muted-foreground"> {unitLabel}</span>}
+                    <span className="text-muted-foreground"> ({pct}%)</span>
+                  </div>
+                );
+              }}
+            />
+            <Pie data={chartData} dataKey="count" nameKey="gender" innerRadius={52} outerRadius={78} strokeWidth={3} />
           </PieChart>
         </ChartContainer>
       )}
-      <div className="min-w-0 flex-1 space-y-2">
-        <TypographyLabel>{totalLabel}</TypographyLabel>
-        <div className="flex items-center gap-2 text-sm">
-          <Mars className="size-4 text-sky-500 shrink-0" />
-          <span className="text-foreground/80">{boysLabel}</span>
-          <span className="ml-auto font-semibold tabular-nums">{gender.boys} <TypographyMuted className="inline">({boysPct}%)</TypographyMuted></span>
+      <div className="flex w-full flex-col gap-2">
+        <div className="flex items-center justify-between gap-2 text-sm">
+          <span className="flex items-center gap-1.5 text-foreground/80">
+            <Mars className="size-3.5 shrink-0 text-sky-500" />
+            {boysLabel}
+          </span>
+          <span className="font-semibold tabular-nums">
+            {gender.boys}{unitLabel ? ` ${unitLabel}` : ""} <TypographyMuted className="inline">({boysPct}%)</TypographyMuted>
+          </span>
         </div>
-        <div className="flex items-center gap-2 text-sm">
-          <Venus className="size-4 text-pink-500 shrink-0" />
-          <span className="text-foreground/80">{girlsLabel}</span>
-          <span className="ml-auto font-semibold tabular-nums">{gender.girls} <TypographyMuted className="inline">({girlsPct}%)</TypographyMuted></span>
+        <div className="flex items-center justify-between gap-2 text-sm">
+          <span className="flex items-center gap-1.5 text-foreground/80">
+            <Venus className="size-3.5 shrink-0 text-pink-500" />
+            {girlsLabel}
+          </span>
+          <span className="font-semibold tabular-nums">
+            {gender.girls}{unitLabel ? ` ${unitLabel}` : ""} <TypographyMuted className="inline">({girlsPct}%)</TypographyMuted>
+          </span>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { MIN_TREND_WEEKS, type AttendanceWeekPoint } from "@/lib/class-stats";
 
@@ -18,8 +18,7 @@ export function AttendanceTrendCard({ weeks }: { weeks: AttendanceWeekPoint[] })
   const notEnough = withData.length < MIN_TREND_WEEKS;
 
   return (
-    <div className="space-y-3">
-      <TypographyLabel>{t("attendanceTrendTitle")}</TypographyLabel>
+    <div>
       {notEnough ? (
         <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
       ) : !mounted ? (

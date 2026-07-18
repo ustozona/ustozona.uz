@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import type { BehaviorClimateTrend } from "@/lib/class-stats";
 
@@ -12,14 +12,13 @@ export function BehaviorClimateCard({ climate }: { climate: BehaviorClimateTrend
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <TypographyLabel>{t("behaviorClimateTitle")}</TypographyLabel>
-        {climate.autoCount + climate.manualCount > 0 && (
+      {climate.autoCount + climate.manualCount > 0 && (
+        <div className="flex justify-end">
           <TypographyMuted className="text-xs">
             {t("autoManualSplit", { auto: climate.autoCount, manual: climate.manualCount })}
           </TypographyMuted>
-        )}
-      </div>
+        </div>
+      )}
       {weeksWithData.length === 0 ? (
         <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
       ) : (

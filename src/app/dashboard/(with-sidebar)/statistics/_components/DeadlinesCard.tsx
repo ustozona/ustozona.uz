@@ -1,18 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { CalendarClock } from "lucide-react";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import type { UpcomingDeadline } from "@/lib/class-stats";
 
 export function DeadlinesCard({ deadlines }: { deadlines: UpcomingDeadline[] }) {
-  const t = useTranslations("StatisticsPage");
-
   if (deadlines.length === 0) return null;
 
   return (
-    <div className="space-y-3">
-      <TypographyLabel>{t("deadlinesTitle")}</TypographyLabel>
+    <div>
       <div className="space-y-2">
         {deadlines.map((d) => (
           <div key={d.assignmentId} className="flex items-center gap-2.5 text-sm">

@@ -433,9 +433,7 @@
     "overviewTitle": "Ulıwma kórinis",
     "kpiActiveStudents": "Belsendi oqıwshılar",
     "kpiGenderSub": "{boys} ul ({boysPct}%) · {girls} qız ({girlsPct}%)",
-    "kpiSignals": "Signallar",
     "kpiClasses": "Klaslar",
-    "kpiAttendanceToday": "Búgingi dawamat",
     "kpiSummative": "Summativ ortasha",
     "kpiMedian": "Mediana",
     "kpiAttendance": "Dawamat",
@@ -475,7 +473,12 @@
     "floorChip": "Tım qıyın",
     "difficultyLabel": "Qıyınlıq",
     "discriminationLabel": "Ajıratıw",
-    "matrixTitle": "Tema × oqıwshı kartası"
+    "matrixTitle": "Tema × oqıwshı kartası",
+    "genderTitle": "Oqıwshılar qatnası",
+    "unitPeople": "oqıwshı",
+    "unitCount": "ta",
+    "boysFull": "Ul balalar",
+    "girlsFull": "Qız balalar"
   },
   "AssignmentTooltip": {
     "edit": "Ózgertiw",

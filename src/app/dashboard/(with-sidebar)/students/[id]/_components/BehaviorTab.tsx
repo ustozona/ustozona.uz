@@ -4,23 +4,18 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Award, Gift, Smile, TrendingDown, TrendingUp } from "lucide-react";
 import { CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { SectionIcon } from "@/components/ui/section-icon";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
+import { StatCard } from "@/components/StatCard";
 import { studentBalance, studentBehaviorStats } from "@/lib/behavior-data";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { BehaviorEmoji } from "@/components/behavior/BehaviorEmoji";
 import { EventTimeline, formatDateLabel } from "@/components/behavior/EventTimeline";
-import { KpiCard } from "./OverviewTab";
 
 /* Profil "Xulq" tabi — stat kartalar (Balans · Toʻplangan · Yoʻqotilgan ·
    Ijobiy ulush progress bilan, rechartsʼsiz), sana boʻyicha ballar
    tarixi va doʻkon (sarflar) tarixi. Batafsil donut-hisobot sinf
    sahifasidagi oʻquvchi modalida. */
-
-// Xulq semantik juftligi — ATT_COLORS.present/absent bilan bir xil.
-const POSITIVE_HEX = "#22c55e";
-const NEGATIVE_HEX = "#ef4444";
 
 const EMPTY_EVENTS: never[] = [];
 
@@ -59,49 +54,35 @@ export default function BehaviorTab({
     <div className="space-y-4">
       {/* KPI qatori */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
+        <StatCard
           label={t("balance")}
           value={String(balance)}
           sub={t("balanceSub")}
-          color={balance < 0 ? NEGATIVE_HEX : POSITIVE_HEX}
-          icon={<Award />}
+          tone={balance < 0 ? "destructive" : "success"}
+          icon={Award}
         />
-        <KpiCard
+        <StatCard
           label={t("earned")}
           value={`+${stats.earned}`}
           sub={t("earnedSub")}
-          color={POSITIVE_HEX}
-          icon={<TrendingUp />}
+          tone="success"
+          icon={TrendingUp}
         />
-        <KpiCard
+        <StatCard
           label={t("lost")}
           value={`−${stats.lost}`}
           sub={t("lostSub")}
-          color={NEGATIVE_HEX}
-          icon={<TrendingDown />}
+          tone="destructive"
+          icon={TrendingDown}
         />
-        <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm">
-          <div className="flex items-start justify-between">
-            <TypographyLabel>{t("positiveShare")}</TypographyLabel>
-            <SectionIcon size="sm">
-              <Smile />
-            </SectionIcon>
-          </div>
-          <span className="mt-2 text-3xl font-bold tracking-tight tabular-nums">
-            {stats.positivePct === null ? "—" : `${stats.positivePct}%`}
-          </span>
-          <Progress
-            value={stats.positivePct ?? 0}
-            indicatorColor={POSITIVE_HEX}
-            className="mt-3"
-            style={{ backgroundColor: `color-mix(in srgb, ${POSITIVE_HEX} 16%, transparent)` }}
-          />
-          <TypographyMuted className="mt-1">
-            {stats.eventCount === 0
-              ? t("positiveShareSubZero")
-              : t("positiveShareSub", { count: stats.eventCount })}
-          </TypographyMuted>
-        </div>
+        <StatCard
+          label={t("positiveShare")}
+          value={stats.positivePct === null ? "—" : `${stats.positivePct}%`}
+          sub={stats.eventCount === 0 ? t("positiveShareSubZero") : t("positiveShareSub", { count: stats.eventCount })}
+          tone="success"
+          icon={Smile}
+          progress={stats.positivePct ?? 0}
+        />
       </div>
 
       <div className="grid items-start gap-4 lg:grid-cols-[1fr_320px]">

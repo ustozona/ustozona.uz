@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import { scoreBarColor } from "@/lib/score-colors";
 import { cn } from "@/lib/utils";
 import type { TopicMasteryRow } from "@/lib/class-stats";
@@ -10,8 +10,7 @@ export function TopicMasteryCard({ rows }: { rows: TopicMasteryRow[] }) {
   const t = useTranslations("StatisticsPage");
 
   return (
-    <div className="space-y-3">
-      <TypographyLabel>{t("topicsTitle")}</TypographyLabel>
+    <div>
       {rows.length === 0 ? (
         <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
       ) : (

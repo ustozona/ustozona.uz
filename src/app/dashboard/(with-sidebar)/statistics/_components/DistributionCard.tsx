@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Bar, BarChart, CartesianGrid, XAxis, Cell } from "recharts";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { scoreBarColor } from "@/lib/score-colors";
 import type { DistributionBin } from "@/lib/class-stats";
@@ -16,8 +16,7 @@ export function DistributionCard({ bins }: { bins: DistributionBin[] | null }) {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="space-y-3">
-      <TypographyLabel>{t("distributionTitle")}</TypographyLabel>
+    <div>
       {bins === null ? (
         <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
       ) : !mounted ? (

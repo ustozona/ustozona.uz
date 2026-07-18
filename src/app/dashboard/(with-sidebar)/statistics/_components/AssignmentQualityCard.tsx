@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import { scoreBarColor } from "@/lib/score-colors";
 import { cn } from "@/lib/utils";
 import type { AssignmentQuality } from "@/lib/class-stats";
@@ -10,17 +10,11 @@ export function AssignmentQualityCard({ rows }: { rows: AssignmentQuality[] }) {
   const t = useTranslations("StatisticsPage");
 
   if (rows.length === 0) {
-    return (
-      <div className="space-y-3">
-        <TypographyLabel>{t("assignmentQualityTitle")}</TypographyLabel>
-        <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
-      </div>
-    );
+    return <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>;
   }
 
   return (
-    <div className="space-y-3">
-      <TypographyLabel>{t("assignmentQualityTitle")}</TypographyLabel>
+    <div>
       <div className="flex flex-col divide-y divide-border/60">
         {rows.map((r) => (
           <div key={r.assignmentId} className="flex items-center gap-2.5 py-2.5 text-sm">

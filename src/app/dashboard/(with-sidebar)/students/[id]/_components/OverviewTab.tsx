@@ -11,6 +11,7 @@ import { scoreBarColor } from "@/lib/score-colors";
 import { CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { SectionIcon } from "@/components/ui/section-icon";
+import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -37,27 +38,11 @@ const ATT_ICONS = {
 const TREND_GRANULARITIES: Granularity[] = ["weekly", "monthly", "quarterly"];
 const ATTENDANCE_GRANULARITIES: Granularity[] = ["weekly", "monthly", "quarterly", "yearly"];
 
-export function KpiCard({
-  label, value, sub, color, icon,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  color?: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm">
-      <div className="flex items-start justify-between">
-        <TypographyLabel>{label}</TypographyLabel>
-        <SectionIcon size="sm">{icon}</SectionIcon>
-      </div>
-      <span className="mt-2 text-3xl font-bold tracking-tight" style={color ? { color } : undefined}>
-        {value}
-      </span>
-      <TypographyMuted className="mt-1">{sub}</TypographyMuted>
-    </div>
-  );
+/** 80%+ = success, 60-79% = default, <60% = destructive — StatCard tone bilan mos. */
+export function scoreTone(pct: number): "default" | "success" | "destructive" {
+  if (pct >= 80) return "success";
+  if (pct >= 60) return "default";
+  return "destructive";
 }
 
 // Toifa (baho turi) bari — oʻzlashtirish %, ulush (ogʻirlik) va baholar soni.
@@ -152,26 +137,26 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
     <div className="space-y-5">
       {/* KPI row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard
+        <StatCard
           label={t("overallGrade")}
           value={`${overallGrade}%`}
           sub={t("overallGradeSub")}
-          color={scoreBarColor(overallGrade)}
-          icon={<GraduationCap />}
+          tone={scoreTone(overallGrade)}
+          icon={GraduationCap}
         />
-        <KpiCard
+        <StatCard
           label={t("attendance")}
           value={`${attendance.pct}%`}
           sub={t("attendanceSub", { present: attendance.present, total: attendance.total })}
-          color={attendance.pct < 90 ? scoreBarColor(attendance.pct) : undefined}
-          icon={<CalendarCheck />}
+          tone={attendance.pct < 90 ? scoreTone(attendance.pct) : "default"}
+          icon={CalendarCheck}
         />
-        <KpiCard
+        <StatCard
           label={t("missing")}
           value={`${missingCount}`}
           sub={missingCount === 0 ? t("missingSubZero") : t("missingSub")}
-          color={missingCount > 0 ? "#ef4444" : undefined}
-          icon={<ClipboardCheck />}
+          tone={missingCount > 0 ? "destructive" : "default"}
+          icon={ClipboardCheck}
         />
       </div>
 
