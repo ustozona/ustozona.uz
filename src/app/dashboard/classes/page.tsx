@@ -98,6 +98,7 @@ export type LiveClass = {
 
 export default function ClassesPage() {
   const t = useTranslations("ClassesPage");
+  const router = useRouter();
   const [view, setView] = useState<ViewMode>("grid");
   useEffect(() => {
     const stored = localStorage.getItem(CLASSES_VIEW_STORAGE_KEY);
@@ -481,7 +482,7 @@ export default function ClassesPage() {
                   <Button
                     variant="ghost"
                     className="mt-2 justify-start gap-1.5 text-muted-foreground hover:text-foreground"
-                    onClick={() => toast(t("fullStatsToast"))}
+                    onClick={() => router.push("/dashboard/statistics")}
                   >
                     {t("viewFullStats")}
                     <ArrowRight className="size-4" />

@@ -1,15 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowLeft } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { SectionIcon } from "@/components/ui/section-icon";
+import { Card, CardContent } from "@/components/ui/card";
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
-import { ClassSwatch } from "@/components/ClassSwatch";
 import {
-  panelCardClass, panelCardHeaderClass, panelCardContentClass, panelScrollInnerClass,
+  panelCardClass, panelCardContentClass, panelScrollInnerClass,
 } from "@/components/DashboardPage";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
@@ -17,19 +13,15 @@ import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useClassStore } from "@/store/useClassStore";
-import { classColor } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { statusWeights } from "@/lib/attendance-data";
 import { deriveAttentionSignals } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
-  statPeriods, currentStatPeriod, previousStatPeriod,
   studentPeriodSummaries, classPeriodSummary, gradeDistribution, topicMastery, genderBreakdown,
   attendanceWeeklyTrend, behaviorClimateTrend, assignmentCompletionRate, upcomingDeadlines,
   assignmentQuality, topicStudentMatrix,
-  STAT_DEADBAND_PP,
+  STAT_DEADBAND_PP, type StatPeriod,
 } from "@/lib/class-stats";
-import { PeriodSelect } from "./PeriodSelect";
 import { DistributionCard } from "./DistributionCard";
 import { TopicMasteryCard } from "./TopicMasteryCard";
 import { RiskList } from "./RiskList";
@@ -39,12 +31,23 @@ import { DeadlinesCard } from "./DeadlinesCard";
 import { AbsenceTierList } from "./AbsenceTierList";
 import { AssignmentQualityCard } from "./AssignmentQualityCard";
 import { TopicStudentMatrixCard } from "./TopicStudentMatrixCard";
+import { GenderDonutChart } from "./GenderDonutChart";
 
-export function ClassStatsView({ classId, onBack }: { classId: string; onBack: () => void }) {
+export type StatsGroup = "overview" | "grades" | "attendance" | "behavior";
+
+export function ClassStatsView({
+  classId, period, prevPeriod, group,
+}: {
+  classId: string;
+  period: StatPeriod | null;
+  prevPeriod: StatPeriod | null;
+  group: StatsGroup;
+}) {
   const t = useTranslations("StatisticsPage");
   const todayKey = dateToKey(new Date());
 
   const classData = useGradesStore((s) => s.classDataMap[classId]);
+  const classDataMap = useGradesStore((s) => s.classDataMap);
   const recordsByClass = useAttendanceStore((s) => s.recordsByClass);
   const statuses = useAttendanceStore((s) => s.statuses);
   const eventsByClass = useBehaviorStore((s) => s.eventsByClass);
@@ -54,16 +57,6 @@ export function ClassStatsView({ classId, onBack }: { classId: string; onBack: (
   const weights = useMemo(() => statusWeights(statuses), [statuses]);
   const records = useMemo(() => recordsByClass[classId] ?? [], [recordsByClass, classId]);
   const events = useMemo(() => eventsByClass[classId] ?? [], [eventsByClass, classId]);
-
-  const periods = useMemo(() => statPeriods(calendar), [calendar]);
-  const [periodId, setPeriodId] = useState<string | null>(null);
-  const period = useMemo(() => {
-    if (periodId) return periods.find((p) => p.id === periodId) ?? null;
-    return currentStatPeriod(calendar, todayKey);
-  }, [periods, periodId, calendar, todayKey]);
-  const prevPeriod = useMemo(() => (period ? previousStatPeriod(calendar, period) : null), [calendar, period]);
-
-  const classDataMap = useGradesStore((s) => s.classDataMap);
 
   const signals = useMemo(
     () =>
@@ -94,7 +87,6 @@ export function ClassStatsView({ classId, onBack }: { classId: string; onBack: (
   const bins = gradeDistribution(summaries, journalScale.kind, journalScale.labelStyle);
   const topics = topicMastery(classData, period.range, isYear);
   const gender = genderBreakdown(classData.students);
-  const hex = CLASS_COLOR_HEX[classColor(classData.info)];
   const attendanceWeeks = attendanceWeeklyTrend(records, weights, period.range);
   const climate = behaviorClimateTrend(events, period.range);
   const completion = assignmentCompletionRate(classData, period.range, isYear);
@@ -107,49 +99,50 @@ export function ClassStatsView({ classId, onBack }: { classId: string; onBack: (
   return (
     <div className="h-full flex flex-col">
       <Card className={panelCardClass}>
-        <CardHeader className={panelCardHeaderClass + " justify-between min-h-[4.5rem] px-5 py-5! gap-3"}>
-          <div className="flex min-w-0 items-center gap-2 flex-1">
-            <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label={t("backToOverview")}>
-              <ArrowLeft className="size-4" />
-            </Button>
-            <SectionIcon><ClassSwatch hex={hex} className="size-4" /></SectionIcon>
-            <div className="min-w-0">
-              <CardTitle className="truncate">{classData.info.name}</CardTitle>
-              <TypographyMuted className="text-xs truncate">
-                {t("genderSummary", { boys: gender.boys, boysPct: gender.boysPct ?? 0, girls: gender.girls, girlsPct: gender.girlsPct ?? 0 })}
-              </TypographyMuted>
-            </div>
-          </div>
-          <PeriodSelect periods={periods} value={period.id} onChange={setPeriodId} />
-        </CardHeader>
         <CardContent className={panelCardContentClass}>
           <div className={panelScrollInnerClass + " space-y-7"}>
-            {/* ── KPI qatori ── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-              <KpiTile
-                label={t("kpiSummative")}
-                value={summary.summativeAvg !== null ? `${Math.round(summary.summativeAvg)}%` : "—"}
-                sub={summary.summativeDelta !== null ? (deltaStable ? t("deltaStable") : `${summary.summativeDelta > 0 ? "+" : ""}${Math.round(summary.summativeDelta)}pp`) : undefined}
-              />
-              <KpiTile label={t("kpiMedian")} value={summary.summativeMedian !== null ? `${Math.round(summary.summativeMedian)}%` : "—"} />
-              <KpiTile label={t("kpiAttendance")} value={summary.attendanceAvg !== null ? `${Math.round(summary.attendanceAvg)}%` : "—"} />
-              <KpiTile label={t("kpiPositiveBehavior")} value={summary.positivePct !== null ? `${summary.positivePct}%` : "—"} />
-              <KpiTile label={t("kpiCompletion")} value={completion !== null ? `${completion.pct}%` : "—"} />
-            </div>
+            {group === "overview" && (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                  <KpiTile
+                    label={t("kpiSummative")}
+                    value={summary.summativeAvg !== null ? `${Math.round(summary.summativeAvg)}%` : "—"}
+                    sub={summary.summativeDelta !== null ? (deltaStable ? t("deltaStable") : `${summary.summativeDelta > 0 ? "+" : ""}${Math.round(summary.summativeDelta)}pp`) : undefined}
+                  />
+                  <KpiTile label={t("kpiMedian")} value={summary.summativeMedian !== null ? `${Math.round(summary.summativeMedian)}%` : "—"} />
+                  <KpiTile label={t("kpiAttendance")} value={summary.attendanceAvg !== null ? `${Math.round(summary.attendanceAvg)}%` : "—"} />
+                  <KpiTile label={t("kpiPositiveBehavior")} value={summary.positivePct !== null ? `${summary.positivePct}%` : "—"} />
+                  <KpiTile label={t("kpiCompletion")} value={completion !== null ? `${completion.pct}%` : "—"} />
+                </div>
 
-            <DistributionCard bins={bins} />
-            <TopicMasteryCard rows={topics} />
-            <AttendanceTrendCard weeks={attendanceWeeks} />
-            <BehaviorClimateCard climate={climate} />
-            <DeadlinesCard deadlines={deadlines} />
-            <AbsenceTierList summaries={summaries} students={classData.students} />
-            <AssignmentQualityCard rows={quality} />
-            <TopicStudentMatrixCard matrix={matrix} />
+                <GenderDonutChart gender={gender} boysLabel={t("boysShort")} girlsLabel={t("girlsShort")} totalLabel={t("kpiActiveStudents")} />
 
-            <div className="space-y-3">
-              <TypographyLabel>{t("riskTitle")}</TypographyLabel>
-              <RiskList signals={signals} />
-            </div>
+                <DeadlinesCard deadlines={deadlines} />
+
+                <div className="space-y-3">
+                  <TypographyLabel>{t("riskTitle")}</TypographyLabel>
+                  <RiskList signals={signals} />
+                </div>
+              </>
+            )}
+
+            {group === "grades" && (
+              <>
+                <DistributionCard bins={bins} />
+                <TopicMasteryCard rows={topics} />
+                <AssignmentQualityCard rows={quality} />
+                <TopicStudentMatrixCard matrix={matrix} />
+              </>
+            )}
+
+            {group === "attendance" && (
+              <>
+                <AttendanceTrendCard weeks={attendanceWeeks} />
+                <AbsenceTierList summaries={summaries} students={classData.students} />
+              </>
+            )}
+
+            {group === "behavior" && <BehaviorClimateCard climate={climate} />}
           </div>
         </CardContent>
       </Card>

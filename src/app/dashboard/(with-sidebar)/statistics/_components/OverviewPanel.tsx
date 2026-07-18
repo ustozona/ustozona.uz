@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { BarChart3 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -19,16 +19,21 @@ import { statusWeights } from "@/lib/attendance-data";
 import { deriveAttentionSignals } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
-  statPeriods, currentStatPeriod, previousStatPeriod,
   overviewRows, genderBreakdown, signalCountsByClass,
-  studentPeriodSummaries, genderGroupAverages,
+  studentPeriodSummaries, genderGroupAverages, type StatPeriod,
 } from "@/lib/class-stats";
-import { PeriodSelect } from "./PeriodSelect";
 import { ClassRowsCard } from "./ClassRowsCard";
 import { RiskList } from "./RiskList";
 import { GenderGroupCard } from "./GenderGroupCard";
+import { GenderDonutChart } from "./GenderDonutChart";
 
-export function OverviewPanel({ onSelectClass }: { onSelectClass: (id: string) => void }) {
+export function OverviewPanel({
+  onSelectClass, period, prevPeriod,
+}: {
+  onSelectClass: (id: string) => void;
+  period: StatPeriod | null;
+  prevPeriod: StatPeriod | null;
+}) {
   const t = useTranslations("StatisticsPage");
   const todayKey = dateToKey(new Date());
 
@@ -40,14 +45,6 @@ export function OverviewPanel({ onSelectClass }: { onSelectClass: (id: string) =
   const calendar = useCalendarStore((s) => s.calendar);
   const liveClasses = useLiveClasses();
   const weights = useMemo(() => statusWeights(statuses), [statuses]);
-
-  const periods = useMemo(() => statPeriods(calendar), [calendar]);
-  const [periodId, setPeriodId] = useState<string | null>(null);
-  const period = useMemo(() => {
-    if (periodId) return periods.find((p) => p.id === periodId) ?? null;
-    return currentStatPeriod(calendar, todayKey);
-  }, [periods, periodId, calendar, todayKey]);
-  const prevPeriod = useMemo(() => (period ? previousStatPeriod(calendar, period) : null), [calendar, period]);
 
   const classNameById = useMemo(() => new Map(liveClasses.map((c) => [c.id, c.name])), [liveClasses]);
 
@@ -107,19 +104,18 @@ export function OverviewPanel({ onSelectClass }: { onSelectClass: (id: string) =
             <SectionIcon><BarChart3 /></SectionIcon>
             <CardTitle className="truncate">{t("overviewTitle")}</CardTitle>
           </div>
-          {period && <PeriodSelect periods={periods} value={period.id} onChange={setPeriodId} />}
         </CardHeader>
         <CardContent className={panelCardContentClass}>
           <div className={panelScrollInnerClass + " space-y-7"}>
             {/* ── KPI plitkalar ── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-              <KpiTile label={t("kpiActiveStudents")} value={activeStudents} sub={t("kpiGenderSub", {
-                boys: gender.boys, boysPct: gender.boysPct ?? 0, girls: gender.girls, girlsPct: gender.girlsPct ?? 0,
-              })} />
+              <KpiTile label={t("kpiActiveStudents")} value={activeStudents} />
               <KpiTile label={t("kpiSignals")} value={signals.length} />
               <KpiTile label={t("kpiClasses")} value={rows.length} />
               <KpiTile label={t("kpiAttendanceToday")} value={todayAttendance !== null ? `${todayAttendance}%` : "—"} />
             </div>
+
+            <GenderDonutChart gender={gender} boysLabel={t("boysShort")} girlsLabel={t("girlsShort")} totalLabel={t("kpiActiveStudents")} />
 
             {/* ── Sinf qatorlari ── */}
             <div className="space-y-3">

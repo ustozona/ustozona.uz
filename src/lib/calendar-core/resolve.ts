@@ -1,7 +1,7 @@
 import { resolveVersionForDate, type TimetableVersion } from "@/lib/timetable-versions";
 import { getHolidayForDate, inRange, type AcademicYearCalendar } from "@/lib/academic-calendar";
 import { lessonSessions, type Lesson } from "@/lib/lessons-data";
-import { addDaysKey, isoDayOfKey } from "./date-math";
+import { addDaysKey, hhmmToMin, isoDayOfKey } from "./date-math";
 import { occurrenceId, type CalendarOccurrence } from "./occurrence";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -34,7 +34,15 @@ export function sessionMatchesSlot(
 
 /* Manba tiplarga strukturaviy (duck-typed) qaraladi — store tiplarini
    pure qatlamga import qilmaslik uchun. */
-export type TaskLike = { id: string; title: string; dueDate?: string | null };
+export type TaskLike = {
+  id: string;
+  title: string;
+  dueDate?: string | null;
+  /** "HH:MM" — berilsa vazifa vaqt oʻqida chiqadi, boʻlmasa butun-kun chip. */
+  dueTime?: string | null;
+  endTime?: string | null;
+  classIds?: string[];
+};
 export type StudentLike = { id: string; name: string; birthDate?: string | null };
 export type BlockedDayLike = { date: string; label: string };
 
@@ -140,10 +148,13 @@ export function resolveOccurrences(
     }
 
     for (const task of tasksByDate.get(key) ?? []) {
+      const startMin = task.dueTime ? hhmmToMin(task.dueTime) : null;
+      const endMin =
+        startMin == null ? null : Math.min(task.endTime ? hhmmToMin(task.endTime) : startMin + 45, 24 * 60);
       day.push({
-        id: occurrenceId("task-due", task.id, key, null),
-        source: "task-due", dateKey: key, startMin: null, endMin: null, allDay: true,
-        title: task.title, masterId: task.id,
+        id: occurrenceId("task-due", task.id, key, startMin),
+        source: "task-due", dateKey: key, startMin, endMin, allDay: startMin == null,
+        title: task.title, classId: task.classIds?.[0], masterId: task.id,
         ref: { kind: "task-due", taskId: task.id },
       });
     }

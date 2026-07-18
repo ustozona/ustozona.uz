@@ -158,23 +158,12 @@ export function useClassPanelStats(page: Page, classId: string): {
           progress: { value: donePct, label: "Bajarilganlik" }
         };
       }
-      case 'statistics': {
-        const classData = classDataMap[classId];
-        if (!classData) return undefined;
-
-        const classAverage = Math.round(
-          classSummativeAverage(classData.students, classData.assignments, classData.grades, classData.topics)
-        );
-        const activeCount = classData.students.filter((s) => s.status !== 'archived').length;
-
-        return {
-          items: [
-            { value: activeCount, label: "Oʻquvchilar" },
-            { value: classData.assignments.length, label: "Topshiriqlar" },
-          ],
-          progress: { value: classAverage, label: "Sinf oʻrtachasi" },
-        };
-      }
+      case 'statistics':
+        // Statistika sahifasida oʻng panel shu sinf uchun toʻliq (davr-asosli)
+        // statistikani koʻrsatadi — footer'dagi mini-KPI shu bilan takrorlanib,
+        // ikki xil hisoblash manbai orqali nomuvofiq raqam koʻrsatish xavfi
+        // tugʻdirardi. Ataylab footer chiqarilmaydi.
+        return undefined;
       default:
         return undefined;
     }
