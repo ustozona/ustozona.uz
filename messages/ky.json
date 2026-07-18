@@ -2055,6 +2055,7 @@
     "detailLowAttendance": "Катышуу төмөн — {pct}%",
     "detailGradeDrop": "Жетишүү тренди {delta} п.п. төмөндөдү",
     "detailBehaviorCluster": "Акыркы {days} күндө {count} терс авто-упай",
+    "attendanceMissingTitle": "Кечээки катышуу",
     "detailAttendanceMissing": "Кечээки сабакка катышуу киргизилген эмес",
     "detailGradeRise": "Өздөштүрүү тренди {delta} пп жогорулады",
     "detailAttendanceRecovery": "Катышуу калыбына келди — азыр {pct}%",

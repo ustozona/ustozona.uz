@@ -2055,6 +2055,7 @@
     "detailLowAttendance": "Qatnasıw tómen — {pct}%",
     "detailGradeDrop": "Ózlestiriw trendi {delta} p.p. tómenledi",
     "detailBehaviorCluster": "Sońǵı {days} kúnde {count} keri avto-ball",
+    "attendanceMissingTitle": "Kesheǵi qatnasıw",
     "detailAttendanceMissing": "Kesheǵi sabaqqa qatnasıw kirgizilmegen",
     "detailGradeRise": "Ózlestiriw trendi {delta} pp koʻterildi",
     "detailAttendanceRecovery": "Dawamat tiklendi — endi {pct}%",

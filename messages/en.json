@@ -2055,6 +2055,7 @@
     "detailLowAttendance": "Low attendance — {pct}%",
     "detailGradeDrop": "Grade trend dropped by {delta} pp",
     "detailBehaviorCluster": "{count} negative auto-points in the last {days} days",
+    "attendanceMissingTitle": "Yesterday's attendance",
     "detailAttendanceMissing": "Yesterday's attendance is not recorded",
     "detailGradeRise": "Grade trend rose by {delta} pp",
     "detailAttendanceRecovery": "Attendance recovered — now {pct}%",

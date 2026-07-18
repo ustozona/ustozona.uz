@@ -2055,6 +2055,7 @@
     "detailLowAttendance": "Низкая посещаемость — {pct}%",
     "detailGradeDrop": "Тренд успеваемости упал на {delta} п.п.",
     "detailBehaviorCluster": "{count} отрицательных авто-баллов за последние {days} дней",
+    "attendanceMissingTitle": "Вчерашняя посещаемость",
     "detailAttendanceMissing": "Вчерашняя посещаемость не внесена",
     "detailGradeRise": "Тренд оценок вырос на {delta} пп",
     "detailAttendanceRecovery": "Посещаемость восстановилась — теперь {pct}%",

@@ -1990,6 +1990,7 @@
     "detailLowAttendance": "Davomat past — {pct}%",
     "detailGradeDrop": "Oʻzlashtirish trendi {delta} pp ga tushdi",
     "detailBehaviorCluster": "Soʻnggi {days} kunda {count} ta salbiy avto-ball",
+    "attendanceMissingTitle": "Kechagi davomat",
     "detailAttendanceMissing": "Kechagi dars uchun davomat kiritilmagan",
     "detailGradeRise": "Oʻzlashtirish trendi {delta} pp ga koʻtarildi",
     "detailAttendanceRecovery": "Davomat tiklandi — endi {pct}%",

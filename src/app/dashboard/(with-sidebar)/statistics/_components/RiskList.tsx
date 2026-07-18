@@ -86,7 +86,7 @@ export function RiskList({
     <div className="flex flex-col divide-y divide-border/60">
       {signals.map((s) => {
         const Icon = KIND_ICON[s.kind];
-        const title = s.kind === "attendance-missing" ? classNameOf?.(s.classId) ?? s.classId : s.studentName;
+        const title = s.kind === "attendance-missing" ? classNameOf?.(s.classId) ?? t("attendanceMissingTitle") : s.studentName;
         const subtitle = s.kind === "attendance-missing" ? null : classNameOf?.(s.classId);
         return (
           <div key={s.id} className="flex items-start gap-3 py-3">
