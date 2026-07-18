@@ -6,12 +6,11 @@
    "home") bosh sahifa boʻsh roʻyxatlar oʻrniga shu namunaviy maʼlumotni
    chizadi; tur yopilishi bilan hammasi yoʻqoladi.
 
-   Shakllar page.tsx dagi jonli hisob-kitob natijalariga mos: kelgusi
-   darslar (upcomingLessons), kun jadvali eventlari (selectedEvents) va
-   vazifalar (dayTasks) renderlarida ishlatiladigan maydonlargina bor.
+   Shakllar isteʼmolchilarning jonli hisob-kitob natijalariga mos:
+   kun jadvali eventlari (TodayRail), vazifalar (QueueSection) va hero
+   sinf soni (page.tsx) renderlarida ishlatiladigan maydonlargina bor.
    ════════════════════════════════════════════════════════════════════ */
 
-import { DAYS_UZ_SUN, MONTHS_UZ } from "@/lib/localization";
 import { TASK_STATUS } from "@/lib/tasks-data";
 
 /** Jadval eventi renderida ishlatiladigan minimal maydonlar. */
@@ -28,58 +27,10 @@ export const DEMO_CLASS_NAMES: Record<string, string> = {
   "demo-8b": "8-B",
 };
 
-const DEMO_HEX = {
-  blue: "#3b82f6",
-  green: "#10b981",
-  amber: "#f59e0b",
-} as const;
-
-function dayLabel(d: Date) {
-  return {
-    dayName: DAYS_UZ_SUN[d.getDay()],
-    date: `${d.getDate()}-${MONTHS_UZ[d.getMonth()].toLowerCase()}`,
-  };
-}
-
 /** Bosh sahifa tur-demo toʻplami — `now` ga nisbatan sanalar. */
 export function makeHomeTourDemo(now: Date) {
   const tomorrow = new Date(now);
   tomorrow.setDate(now.getDate() + 1);
-  const after = new Date(now);
-  after.setDate(now.getDate() + 2);
-
-  const upcomingLessons = [
-    {
-      id: "demo-l1",
-      ...dayLabel(tomorrow),
-      className: "7-A",
-      topic: "Kasrlarga kirish",
-      startTime: "08:00",
-      isReady: true,
-      color: DEMO_HEX.blue,
-      classColor: null,
-    },
-    {
-      id: "demo-l2",
-      ...dayLabel(tomorrow),
-      className: "8-B",
-      topic: "Suv aylanishi",
-      startTime: "09:00",
-      isReady: false,
-      color: DEMO_HEX.green,
-      classColor: null,
-    },
-    {
-      id: "demo-l3",
-      ...dayLabel(after),
-      className: "7-A",
-      topic: "Oʻnli kasrlar",
-      startTime: "10:00",
-      isReady: false,
-      color: DEMO_HEX.amber,
-      classColor: null,
-    },
-  ];
 
   const events: DemoEvent[] = [
     { id: "demo-e1", classId: "demo-7a", startMin: 8 * 60, endMin: 8 * 60 + 45 },
@@ -95,14 +46,11 @@ export function makeHomeTourDemo(now: Date) {
     { id: "demo-t2", title: "Laboratoriya mashgʻulotini tayyorlash", dueDate: tomorrowKey, status: TASK_STATUS.TODO },
   ];
 
-  // Salomlashuv kartasi — metrik 2×2 panjara (agenda EMAS: u "bugun dars
-  // rejalashtirilgan" degan daʼvo qiladi, demo'da yolgʻon boʻlardi).
+  // Hero "sozlangan" koʻrinishda chiqishi uchun — boʻsh hisobda tur
+  // "Sinf qoʻshish" CTA variantini yoritib qoʻymasin.
   const welcome = {
     classCount: 2,
-    studentCount: 34,
-    todayLessonCount: 3,
-    todayTaskCount: 2,
   };
 
-  return { upcomingLessons, events, tasks, welcome };
+  return { events, tasks, welcome };
 }

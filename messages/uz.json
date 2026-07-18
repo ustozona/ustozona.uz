@@ -1926,55 +1926,106 @@
     "codePlaceholder": "KOD",
     "fieldDescPlaceholder": "Oʻquvchi … qila oladi."
   },
-  "WelcomeCard": {
-    "subtitleWithAgenda": "{dateLabel} · {count} ta dars rejalashtirilgan",
-    "subtitleGetStarted": "Boshlash uchun birinchi sinfingizni qoʻshing",
-    "schedule": "Jadval",
-    "addClass": "Sinf qoʻshish",
-    "moreLessons": "Yana {count} ta dars",
-    "nounLesson": "dars",
-    "nounTask": "vazifa",
-    "nounStudent": "oʻquvchi",
-    "nounClass": "sinf",
-    "unitLabel": "ta {noun}"
-  },
   "WeekStrip": {
     "prevWeek": "Oldingi hafta",
     "nextWeek": "Keyingi hafta"
   },
-  "DashboardPage": {
-    "todayLessons": "Bugungi darslar",
+  "AttentionSection": {
+    "title": "Eʼtibor kerak",
+    "emptyTitle": "Hammasi joyida",
+    "emptyDescription": "Signal yoʻq — sinflaringiz meʼyorda.",
+    "detailAbsentStreak": "Ketma-ket {days} kun darsda yoʻq",
+    "detailLowAttendance": "Davomat past — {pct}%",
+    "detailGradeDrop": "Oʻzlashtirish trendi {delta} pp ga tushdi",
+    "detailBehaviorCluster": "Soʻnggi {days} kunda {count} ta salbiy avto-ball",
+    "detailAttendanceMissing": "Kechagi dars uchun davomat kiritilmagan",
+    "actionProfile": "Profil",
+    "actionAttendance": "Davomat",
+    "actionGrades": "Jurnal",
+    "actionBehavior": "Xulq",
+    "actionEnter": "Kiritish",
+    "dismiss": "Koʻrdim",
+    "moreSignals": "Yana {count} ta signal bor"
+  },
+  "BirthdayCard": {
+    "title": "Tugʻilgan kunlar",
+    "turnsAge": "{age} yoshga toʻladi",
+    "today": "Bugun",
+    "tomorrow": "Ertaga"
+  },
+  "QueueSection": {
+    "title": "Ishlar navbati",
+    "addTask": "Vazifa",
+    "scopeToday": "Bugun",
+    "scopeWeek": "Hafta",
+    "scopeAll": "Hammasi",
+    "groupOverdue": "Muddati oʻtgan",
+    "groupToday": "Bugun",
+    "groupLater": "Keyinroq",
+    "markDone": "Bajarildi deb belgilash",
+    "checkStatus": "Tekshirishda",
+    "controlBadge": "Nazorat",
+    "enteredOf": "{entered}/{total} kiritildi",
+    "noDue": "Muddatsiz",
+    "dueToday": "Bugun",
+    "dueTomorrow": "Ertaga",
+    "footerDone": "Bugun: {done}/{total} bajarildi",
+    "emptyTitle": "Hammasi tekshirilgan",
+    "emptyDescription": "Navbat boʻsh — yangi vazifa qoʻshing yoki dam oling."
+  },
+  "TodayRail": {
+    "title": "Bugungi darslar",
     "unknownClass": "Nomaʼlum sinf",
-    "classFallback": "Sinf",
+    "emptyHolidayTitle": "{holiday}",
+    "emptySundayTitle": "Yakshanba — dam olish kuni",
+    "emptyTodayTitle": "Bugun darslar rejalashtirilmagan",
+    "emptyDayTitle": "Bu kunga dars yoʻq",
+    "emptyDescription": "Jadval boʻsh — dars jadvalini tekshiring.",
+    "emptyRestDescription": "Yaxshi dam oling!",
+    "openSchedule": "Dars jadvalini ochish",
+    "controlBadge": "Nazorat",
+    "noPlan": "Reja yoʻq",
     "untitledTopic": "(nomsiz mavzu)",
+    "dayDone": "Bugungi darslar yakunlandi",
+    "tomorrowInfo": "Ertaga: {count} ta dars, {time}dan boshlanadi",
+    "tomorrowFree": "Ertaga dars yoʻq — bemalol dam oling!",
+    "quotesManage": "Iqtiboslarni boshqarish",
+    "quotesTitle": "Iqtiboslar",
+    "quotesDescription": "Kun yakunida koʻrsatiladigan iqtiboslar roʻyxatini oʻzingiz boshqarasiz.",
+    "quotesEmpty": "Roʻyxat boʻsh — birinchi iqtibosni qoʻshing.",
+    "quotesDelete": "Oʻchirish",
+    "quotesAddPlaceholder": "Yangi iqtibos matni…",
+    "quotesAuthorPlaceholder": "Muallif (ixtiyoriy)",
+    "quotesAdd": "Qoʻshish",
+    "attendanceAction": "Davomat",
+    "gradesAction": "Jurnal"
+  },
+  "HomeHero": {
+    "subtitleGetStarted": "Boshlash uchun birinchi sinfingizni qoʻshing",
+    "lessonsCount": "Bugun {count} ta dars",
+    "ongoing": "hozir dars: {className}",
+    "firstInMinutes": "birinchisi {minutes} daqiqadan soʻng",
+    "nextInMinutes": "keyingisi {minutes} daqiqadan soʻng",
+    "firstAt": "birinchisi soat {time} da",
+    "nextAt": "keyingisi soat {time} da",
+    "allDone": "darslar yakunlandi",
+    "chipChecks": "tekshirishda",
+    "chipAttendance": "davomat",
+    "addClass": "Sinf qoʻshish"
+  },
+  "YearProgress": {
+    "ariaLabel": "Oʻquv yili jarayoni: {year}",
+    "quarterWeek": "{quarter} · {week}/{weeks}-hafta",
+    "quarterUntil": "{name} — {date}gacha"
+  },
+  "DashboardPage": {
+    "unknownClass": "Nomaʼlum sinf",
     "greetingMorning": "Xayrli tong",
     "greetingDay": "Xayrli kun",
     "greetingEvening": "Xayrli kech",
     "todayDateLabel": "Bugun {date}, {day}",
     "restNoteWithHoliday": "{holiday}. Yaxshi dam oling!",
-    "restNote": "Yaxshi dam oling!",
-    "upcomingLessons": "Kelgusi darslar",
-    "all": "Barchasi",
-    "noWeeklyLessons": "Haftalik darslar belgilanmagan",
-    "scheduleEmpty": "Jadval boʻsh — darslarni rejalashtiring.",
-    "planIt": "Rejalashtirish",
-    "ready": "Tayyor",
-    "noPlan": "Reja yoʻq",
-    "holidayTitle": "{when} — {holiday}",
-    "today": "Bugun",
-    "thisDay": "Bu kun",
-    "noLessonsPlannedToday": "Bugun darslar rejalashtirilmagan",
-    "noLessonsThisDay": "Bu kunga dars yoʻq",
-    "noClassesTodayCheckSchedule": "Bugunga mashgʻulot yoʻq — jadvalni tekshiring.",
-    "noClassesThisDayCheckSchedule": "Bu kunga dars rejalanmagan — jadvalni tekshiring.",
-    "openSchedule": "Dars jadvalini ochish",
-    "openClass": "Sinfni ochish",
-    "tasks": "Vazifalar",
-    "noActiveTasks": "Faol vazifa yoʻq",
-    "noTasksThisDay": "Bu kunga vazifa yoʻq",
-    "addTaskToStart": "Yangi vazifa qoʻshib rejani boshlang.",
-    "addTaskThisDay": "Bu kunga vazifa qoʻshing.",
-    "addTask": "Vazifa qoʻshish"
+    "restNote": "Yaxshi dam oling!"
   },
   "FeedbackMeta": {
     "categories": {
@@ -2606,22 +2657,26 @@
           "body": "Har bir sahifa — jadval, darslar, baholar, davomat — shu yon panelda. Koʻproq joy kerak boʻlsa, yuqoridagi tugma bilan panelni yigʻib qoʻying."
         },
         "1": {
-          "title": "Kunlik umumiy koʻrinish",
-          "body": "Har kuni ertalab shu yerdan kunni boshlang: salomlashuv kartasida bugungi darslar va vazifalar soni, pastda esa kelgusi darslar. Darsni bossangiz — toʻgʻridan-toʻgʻri tahrirga oʻtasiz."
+          "title": "Kunni boshqarish markazi",
+          "body": "Salomdagi chiplar bosiladi: tekshirishlar jurnalga, davomat sanashi davomat sahifasiga olib boradi. Pastdagi yupqa chiziq — oʻquv yili progressi; fasl belgilariga kursorni olib borsangiz chorak sanalari chiqadi."
         },
         "2": {
-          "title": "Kun jadvali",
-          "body": "Tanlangan kunning dars jadvali soatma-soat shu yerda. Joriy vaqt chizigʻi qaysi dars ketayotganini koʻrsatib turadi."
+          "title": "Ishlar navbati",
+          "body": "Vazifalar, tekshirilmagan ishlar va nazorat muddatlari bitta navbatda. Sarlavhadagi «Bugun» bilan ufqni kengaytirasiz (hafta yoki hammasi), «+ Vazifa» esa shu yerning oʻzida tez qoʻshadi."
         },
         "3": {
-          "title": "Taqvim va vazifalar",
-          "body": "Haftalik taqvimdan kunni tanlasangiz, jadval va vazifalar oʻsha kunga moslashadi. Pastda muddati yaqin vazifalaringiz turadi."
+          "title": "Bugungi darslar",
+          "body": "Roʻyxat va vaqt oʻqi orasida almashtirgich bor — tanlovingiz eslab qolinadi. Oʻtgan darslar xira, joriysi ajralib turadi; oxirgi darsdan soʻng kun yakuni kartasi chiqadi, undagi tugma bilan iqtiboslarni oʻzingiz boshqarasiz."
         },
         "4": {
+          "title": "Haftalik tasma",
+          "body": "Kun tanlasangiz faqat darslar paneli oʻsha kunga oʻtadi — ishlar navbati bugunga qarayveradi. Kun ostidagi nuqta oʻsha kunga dars rejalanganini bildiradi."
+        },
+        "5": {
           "title": "Yoʻl-yoʻriq markazi",
           "body": "Biror boʻlim qanday ishlashini unutsangiz, shu tugmani bosing — har bir sahifaning qoʻllanmasini istalgan vaqt qayta koʻrasiz."
         },
-        "5": {
+        "6": {
           "title": "Fikringiz biz uchun muhim",
           "body": "Xato topdingizmi yoki taklif bormi? Shu yerdan jamoaga toʻgʻridan-toʻgʻri yozing — skrinshot ham biriktirsa boʻladi."
         }

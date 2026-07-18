@@ -70,6 +70,7 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     steps: [
       { target: '[data-tour="sidebar-nav"]', placement: "right" },
       { target: '[data-tour="home-overview"]', placement: "right" },
+      { target: '[data-tour="home-queue"]', placement: "right" },
       { target: '[data-tour="home-schedule"]', placement: "left" },
       { target: '[data-tour="home-week"]', placement: "left" },
       { target: '[data-tour="header-guide"]', placement: "bottom" },

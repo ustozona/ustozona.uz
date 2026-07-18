@@ -1926,55 +1926,106 @@
     "codePlaceholder": "KOD",
     "fieldDescPlaceholder": "Oqıwshı … qıla aladı."
   },
-  "WelcomeCard": {
-    "subtitleWithAgenda": "{dateLabel} · {count} sabaq rejelestirilgen",
-    "subtitleGetStarted": "Baslaw ushın birinshi klasıńızdı qosıń",
-    "schedule": "Keste",
-    "addClass": "Klas qosıw",
-    "moreLessons": "Jáne {count} sabaq",
-    "nounLesson": "sabaq",
-    "nounTask": "wazıypa",
-    "nounStudent": "oqıwshı",
-    "nounClass": "klas",
-    "unitLabel": "dana {noun}"
-  },
   "WeekStrip": {
     "prevWeek": "Aldınǵı hápte",
     "nextWeek": "Keyingi hápte"
   },
-  "DashboardPage": {
-    "todayLessons": "Búgingi sabaqlar",
+  "HomeHero": {
+    "subtitleGetStarted": "Baslaw ushın birinshi klasıńızdı qosıń",
+    "lessonsCount": "Búgin {count} sabaq",
+    "ongoing": "házir sabaq: {className}",
+    "firstInMinutes": "birinshisi {minutes} minuttan keyin",
+    "nextInMinutes": "keyingisi {minutes} minuttan keyin",
+    "firstAt": "birinshisi saat {time} de",
+    "nextAt": "keyingisi saat {time} de",
+    "allDone": "sabaqlar juwmaqlandı",
+    "chipChecks": "tekseriwde",
+    "chipAttendance": "qatnasıw",
+    "addClass": "Klas qosıw"
+  },
+  "YearProgress": {
+    "ariaLabel": "Oqıw jılınıń barısı: {year}",
+    "quarterWeek": "{quarter} · {week}/{weeks}-hápte",
+    "quarterUntil": "{name} — {date} shekem"
+  },
+  "QueueSection": {
+    "title": "Isler gezegi",
+    "addTask": "Wazıypa",
+    "scopeToday": "Búgin",
+    "scopeWeek": "Hápte",
+    "scopeAll": "Barlıǵı",
+    "groupOverdue": "Múddeti ótken",
+    "groupToday": "Búgin",
+    "groupLater": "Keyinirek",
+    "markDone": "Orınlandı dep belgilew",
+    "checkStatus": "Tekseriwde",
+    "controlBadge": "Qadaǵalaw",
+    "enteredOf": "{entered}/{total} kirgizildi",
+    "noDue": "Múddetsiz",
+    "dueToday": "Búgin",
+    "dueTomorrow": "Erteń",
+    "footerDone": "Búgin: {done}/{total} orınlandı",
+    "emptyTitle": "Barlıǵı tekserildi",
+    "emptyDescription": "Gezek bos — jańa wazıypa qosıń yamasa dem alıń."
+  },
+  "TodayRail": {
+    "title": "Búgingi sabaqlar",
     "unknownClass": "Belgisiz klas",
-    "classFallback": "Klas",
+    "emptyHolidayTitle": "{holiday}",
+    "emptySundayTitle": "Ekshembi — dem alıs kúni",
+    "emptyTodayTitle": "Búgin sabaqlar rejelestirilmegen",
+    "emptyDayTitle": "Bul kúnge sabaq joq",
+    "emptyDescription": "Keste bos — sabaq kestesin tekseriń.",
+    "emptyRestDescription": "Jaqsı dem alıń!",
+    "openSchedule": "Sabaq kestesin ashıw",
+    "controlBadge": "Qadaǵalaw",
+    "noPlan": "Reje joq",
     "untitledTopic": "(atsız tema)",
+    "dayDone": "Búgingi sabaqlar juwmaqlandı",
+    "tomorrowInfo": "Erteń: {count} sabaq, {time} den baslanadı",
+    "tomorrowFree": "Erteń sabaq joq — tınısh dem alıń!",
+    "quotesManage": "Sitatalardı basqarıw",
+    "quotesTitle": "Sitatalar",
+    "quotesDescription": "Kún aqırında kórsetiletuǵın sitatalar dizimin ózińiz basqarasız.",
+    "quotesEmpty": "Dizim bos — birinshi sitatanı qosıń.",
+    "quotesDelete": "Óshiriw",
+    "quotesAddPlaceholder": "Jańa sitata teksti…",
+    "quotesAuthorPlaceholder": "Avtor (miynetli emes)",
+    "quotesAdd": "Qosıw",
+    "attendanceAction": "Qatnasıw",
+    "gradesAction": "Jurnal"
+  },
+  "AttentionSection": {
+    "title": "Dıqqat kerek",
+    "emptyTitle": "Barlıǵı ornında",
+    "emptyDescription": "Signal joq — klaslarıńız qálipte.",
+    "detailAbsentStreak": "Qatarınan {days} kún sabaqta joq",
+    "detailLowAttendance": "Qatnasıw tómen — {pct}%",
+    "detailGradeDrop": "Ózlestiriw trendi {delta} p.p. tómenledi",
+    "detailBehaviorCluster": "Sońǵı {days} kúnde {count} keri avto-ball",
+    "detailAttendanceMissing": "Kesheǵi sabaqqa qatnasıw kirgizilmegen",
+    "actionProfile": "Profil",
+    "actionAttendance": "Qatnasıw",
+    "actionGrades": "Jurnal",
+    "actionBehavior": "Minez-qulıq",
+    "actionEnter": "Kirgiziw",
+    "dismiss": "Kórdim",
+    "moreSignals": "Jáne {count} signal bar"
+  },
+  "BirthdayCard": {
+    "title": "Tuwılǵan kúnler",
+    "turnsAge": "{age} jasqa toladı",
+    "today": "Búgin",
+    "tomorrow": "Erteń"
+  },
+  "DashboardPage": {
+    "unknownClass": "Belgisiz klas",
     "greetingMorning": "Qayırjlı tań",
     "greetingDay": "Qayırlı kún",
     "greetingEvening": "Qayırlı kesh",
     "todayDateLabel": "Búgin {date}, {day}",
     "restNoteWithHoliday": "{holiday}. Jaqsı dem alıń!",
-    "restNote": "Jaqsı dem alıń!",
-    "upcomingLessons": "Kelesi sabaqlar",
-    "all": "Barlıǵı",
-    "noWeeklyLessons": "Háptelik sabaqlar belgilenbegen",
-    "scheduleEmpty": "Keste bos — sabaqlardı rejelestiriń.",
-    "planIt": "Rejelestiriw",
-    "ready": "Tayın",
-    "noPlan": "Reje joq",
-    "holidayTitle": "{when} — {holiday}",
-    "today": "Búgin",
-    "thisDay": "Bul kún",
-    "noLessonsPlannedToday": "Búgin sabaqlar rejelestirilmegen",
-    "noLessonsThisDay": "Bul kúnge sabaq joq",
-    "noClassesTodayCheckSchedule": "Búginge sabaq joq — kesteni tekseriń.",
-    "noClassesThisDayCheckSchedule": "Bul kúnge sabaq rejelestirilmegen — kesteni tekseriń.",
-    "openSchedule": "Sabaq kestesin ashıw",
-    "openClass": "Klastı ashıw",
-    "tasks": "Wazıypalar",
-    "noActiveTasks": "Aktiv wazıypa joq",
-    "noTasksThisDay": "Bul kúnge wazıypa joq",
-    "addTaskToStart": "Jańa wazıypa qosıp rejeni baslań.",
-    "addTaskThisDay": "Bul kúnge wazıypa qosıń.",
-    "addTask": "Wazıypa qosıw"
+    "restNote": "Jaqsı dem alıń!"
   },
   "FeedbackMeta": {
     "categories": {
@@ -2606,22 +2657,26 @@
           "body": "Hár bir bet — keste, sabaqlar, bahalar, qatnasıw — usı qaptal panelde. Kóbirek orın kerek bolsa, joqarıdaǵı túyme menen paneldi jıynap qoyıń."
         },
         "1": {
-          "title": "Kúnlik ulıwma kórinis",
-          "body": "Hár kúni azanda usı jerden kúndi baslań: sálemlesiw kartasında búgingi sabaqlar hám wazıypalar sanı, tómende bolsa keleshek sabaqlar. Sabaqtı bassańız — tuwrıdan-tuwrı redaktorlawǵa ótesiz."
+          "title": "Kúndi basqarıw orayı",
+          "body": "Sálemlesiwdegi chipler basıladı: tekseriwler jurnalǵa, qatnasıw sanaǵıshı qatnasıw betine alıp baradı. Tómendegi jińishke sızıq — oqıw jılınıń barısı; máwsim belgilerine kursordı alıp barsańız, sherek kúnleri shıǵadı."
         },
         "2": {
-          "title": "Kún kestesi",
-          "body": "Tańlanǵan kúnniń sabaq kestesi saatba-saat usı jerde. Háziqgi waqıt sızıǵı qaysı sabaq ketip atırǵanın kórsetip turadı."
+          "title": "Isler gezegi",
+          "body": "Wazıypalar, tekserilmegen isler hám qadaǵalaw múddetleri bir gezekte. Atamadaǵı «Búgin» arqalı gorizonttı keńeytesiz (hápte yamasa barlıǵı), «+ Wazıypa» usı jerden tez qosadı."
         },
         "3": {
-          "title": "Kalendar hám wazıypalar",
-          "body": "Háptelik kalendardan kúndi tańlasańız, keste hám wazıypalar sol kúnge sáykeslesedi. Tómende múddeti jaqın wazıypalarıńız turadı."
+          "title": "Búgingi sabaqlar",
+          "body": "Dizim menen waqıt kósheri arasında almastırǵısh bar — tańlawıńız este saqlanadı. Ótken sabaqlar kúńgirt, házirgisi ajıralıp turadı; sońǵı sabaqtan keyin kún juwmaǵı kartası shıǵadı, ondaǵı túyme menen sitatalardı ózińiz basqarasız."
         },
         "4": {
+          "title": "Háptelik taspa",
+          "body": "Kúndi tańlasańız tek sabaqlar paneli sol kúnge ótedi — isler gezegi búginge qaray beredi. Kún astındaǵı noqat sol kúnge sabaq rejelestirilgenin bildiredi."
+        },
+        "5": {
           "title": "Jol-joba orayı",
           "body": "Biraq bólim qalay islewiniń unıtsańız, usı túymeni basıń — hár bir bettiń qollanbasın qálegen waqıtta qaytadan kóresiz."
         },
-        "5": {
+        "6": {
           "title": "Pikirińiz biz ushın áhmiyetli",
           "body": "Qáte taptıńız ba yamasa usınıs bar ma? Usı jerden komandaǵa tuwrıdan-tuwrı jazıń — skrinshot ta biriktirse boladı."
         }

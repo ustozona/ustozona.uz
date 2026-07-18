@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "home-redesign-command-center",
+    date: "2026-07-18",
+    type: "yangi",
+    title: "Bosh sahifa kunni boshqarish markaziga aylandi",
+    body:
+      "Endi bosh sahifada kuningiz bir qarashda: «Ishlar navbati» vazifalar, tekshirilmagan ishlar va nazorat muddatlarini bitta roʻyxatga jamlaydi; «Eʼtibor kerak» davomati tushgan yoki oʻzlashtirishi pasaygan oʻquvchilarni oʻzi koʻrsatadi; oʻngda bugungi darslar roʻyxat yoki vaqt oʻqi koʻrinishida. Yaqin tugʻilgan kunlar ham shu yerda, kun yakunida esa oʻzingiz boshqaradigan iqtiboslar chiqadi.",
+    href: "/dashboard",
+  },
+  {
     id: "multi-language-support",
     date: "2026-07-17",
     type: "yangi",

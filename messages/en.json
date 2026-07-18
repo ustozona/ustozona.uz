@@ -1926,55 +1926,106 @@
     "codePlaceholder": "CODE",
     "fieldDescPlaceholder": "Students will be able to…"
   },
-  "WelcomeCard": {
-    "subtitleWithAgenda": "{dateLabel} · {count} lessons scheduled",
-    "subtitleGetStarted": "Add your first class to get started",
-    "schedule": "Schedule",
-    "addClass": "Add class",
-    "moreLessons": "{count} more lessons",
-    "nounLesson": "lessons",
-    "nounTask": "tasks",
-    "nounStudent": "students",
-    "nounClass": "classes",
-    "unitLabel": "{noun}"
-  },
   "WeekStrip": {
     "prevWeek": "Previous week",
     "nextWeek": "Next week"
   },
-  "DashboardPage": {
-    "todayLessons": "Today's lessons",
+  "HomeHero": {
+    "subtitleGetStarted": "Add your first class to get started",
+    "lessonsCount": "{count} lessons today",
+    "ongoing": "now in class: {className}",
+    "firstInMinutes": "first starts in {minutes} min",
+    "nextInMinutes": "next starts in {minutes} min",
+    "firstAt": "first starts at {time}",
+    "nextAt": "next starts at {time}",
+    "allDone": "lessons are done",
+    "chipChecks": "to grade",
+    "chipAttendance": "attendance",
+    "addClass": "Add class"
+  },
+  "YearProgress": {
+    "ariaLabel": "Academic year progress: {year}",
+    "quarterWeek": "{quarter} · week {week}/{weeks}",
+    "quarterUntil": "{name} — until {date}"
+  },
+  "QueueSection": {
+    "title": "Work queue",
+    "addTask": "Task",
+    "scopeToday": "Today",
+    "scopeWeek": "Week",
+    "scopeAll": "All",
+    "groupOverdue": "Overdue",
+    "groupToday": "Today",
+    "groupLater": "Later",
+    "markDone": "Mark as done",
+    "checkStatus": "Grading",
+    "controlBadge": "Assessment",
+    "enteredOf": "{entered}/{total} entered",
+    "noDue": "No due date",
+    "dueToday": "Today",
+    "dueTomorrow": "Tomorrow",
+    "footerDone": "Today: {done}/{total} done",
+    "emptyTitle": "All caught up",
+    "emptyDescription": "The queue is empty — add a task or take a break."
+  },
+  "TodayRail": {
+    "title": "Today's lessons",
     "unknownClass": "Unknown class",
-    "classFallback": "Class",
+    "emptyHolidayTitle": "{holiday}",
+    "emptySundayTitle": "Sunday — day off",
+    "emptyTodayTitle": "No lessons planned for today",
+    "emptyDayTitle": "No lessons on this day",
+    "emptyDescription": "The schedule is empty — check the timetable.",
+    "emptyRestDescription": "Enjoy your day off!",
+    "openSchedule": "Open timetable",
+    "controlBadge": "Assessment",
+    "noPlan": "No plan",
     "untitledTopic": "(untitled topic)",
+    "dayDone": "Today's lessons are done",
+    "tomorrowInfo": "Tomorrow: {count} lessons, starting at {time}",
+    "tomorrowFree": "No lessons tomorrow — enjoy the rest!",
+    "quotesManage": "Manage quotes",
+    "quotesTitle": "Quotes",
+    "quotesDescription": "Curate the quotes shown at the end of the day.",
+    "quotesEmpty": "The list is empty — add your first quote.",
+    "quotesDelete": "Delete",
+    "quotesAddPlaceholder": "New quote text…",
+    "quotesAuthorPlaceholder": "Author (optional)",
+    "quotesAdd": "Add",
+    "attendanceAction": "Attendance",
+    "gradesAction": "Gradebook"
+  },
+  "AttentionSection": {
+    "title": "Needs attention",
+    "emptyTitle": "All good",
+    "emptyDescription": "No signals — your classes are on track.",
+    "detailAbsentStreak": "Absent {days} days in a row",
+    "detailLowAttendance": "Low attendance — {pct}%",
+    "detailGradeDrop": "Grade trend dropped by {delta} pp",
+    "detailBehaviorCluster": "{count} negative auto-points in the last {days} days",
+    "detailAttendanceMissing": "Yesterday's attendance is not recorded",
+    "actionProfile": "Profile",
+    "actionAttendance": "Attendance",
+    "actionGrades": "Gradebook",
+    "actionBehavior": "Behavior",
+    "actionEnter": "Record",
+    "dismiss": "Dismiss",
+    "moreSignals": "{count} more signals"
+  },
+  "BirthdayCard": {
+    "title": "Birthdays",
+    "turnsAge": "turns {age}",
+    "today": "Today",
+    "tomorrow": "Tomorrow"
+  },
+  "DashboardPage": {
+    "unknownClass": "Unknown class",
     "greetingMorning": "Good morning",
     "greetingDay": "Good afternoon",
     "greetingEvening": "Good evening",
     "todayDateLabel": "Today {date}, {day}",
     "restNoteWithHoliday": "{holiday}. Enjoy your day off!",
-    "restNote": "Enjoy your day off!",
-    "upcomingLessons": "Upcoming lessons",
-    "all": "See all",
-    "noWeeklyLessons": "No lessons scheduled for the week",
-    "scheduleEmpty": "Your schedule is empty — plan your lessons.",
-    "planIt": "Plan lessons",
-    "ready": "Ready",
-    "noPlan": "No plan",
-    "holidayTitle": "{when} — {holiday}",
-    "today": "Today",
-    "thisDay": "This day",
-    "noLessonsPlannedToday": "No lessons planned for today",
-    "noLessonsThisDay": "No lessons on this day",
-    "noClassesTodayCheckSchedule": "Nothing scheduled today — check the timetable.",
-    "noClassesThisDayCheckSchedule": "No lessons planned for this day — check the timetable.",
-    "openSchedule": "Open timetable",
-    "openClass": "Open class",
-    "tasks": "Tasks",
-    "noActiveTasks": "No active tasks",
-    "noTasksThisDay": "No tasks on this day",
-    "addTaskToStart": "Add a new task to start planning.",
-    "addTaskThisDay": "Add a task for this day.",
-    "addTask": "Add task"
+    "restNote": "Enjoy your day off!"
   },
   "FeedbackMeta": {
     "categories": {
@@ -2606,22 +2657,26 @@
           "body": "Every page — schedule, lessons, grades, attendance — lives in this sidebar. Need more room? Collapse it with the button above."
         },
         "1": {
-          "title": "Your daily overview",
-          "body": "Start every morning here: the greeting card shows today's lesson and task counts, with upcoming lessons below. Click a lesson to jump straight into editing it."
+          "title": "Your day's command center",
+          "body": "The greeting chips are clickable: checks lead to the gradebook, the attendance counter to the attendance page. The thin bar below tracks the school year — hover the season marks to see quarter dates."
         },
         "2": {
-          "title": "Daily schedule",
-          "body": "The selected day's lesson schedule is laid out hour by hour here. The current-time line shows which lesson is running right now."
+          "title": "Work queue",
+          "body": "Tasks, ungraded work, and upcoming assessments share one queue. Use “Today” in the header to widen the horizon (week or all), and “+ Task” adds one right here."
         },
         "3": {
-          "title": "Calendar and tasks",
-          "body": "Pick a day from the weekly calendar and the schedule and tasks adjust to match. Tasks due soon appear below."
+          "title": "Today's lessons",
+          "body": "Switch between list and timeline — your choice is remembered. Past lessons fade, the current one stands out; after the last lesson a day-summary card appears where you can manage your own quotes."
         },
         "4": {
+          "title": "Week strip",
+          "body": "Picking a day changes only the lessons panel — the work queue keeps looking at today. A dot under a day means a lesson is planned."
+        },
+        "5": {
           "title": "Guide hub",
           "body": "Forgot how a section works? Click this button — you can replay any page's guide at any time."
         },
-        "5": {
+        "6": {
           "title": "Your feedback matters",
           "body": "Found a bug or have a suggestion? Send it straight to the team from here — you can attach a screenshot too."
         }
