@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Gauge, BookOpen, CalendarCheck, HeartPulse, GraduationCap } from "lucide-react";
+import { Gauge, BookOpen, CalendarCheck, HeartPulse, GraduationCap, Table as TableIcon } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useCalendarStore } from "@/store/useCalendarStore";
+import { activeYear } from "@/lib/academic-years";
 import { statPeriods, currentStatPeriod, previousStatPeriod } from "@/lib/class-stats";
 import { dateToKey } from "@/lib/date-keys";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
@@ -12,9 +13,11 @@ import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { OverviewPanel } from "./_components/OverviewPanel";
+import { ClassesTablePanel } from "./_components/ClassesTablePanel";
 import { ClassStatsView, type StatsGroup } from "./_components/ClassStatsView";
 import { StatsTabs, type StatsTabItem } from "./_components/StatsTabs";
 import { PeriodSelect } from "./_components/PeriodSelect";
+import { YearSelect } from "./_components/YearSelect";
 
 export default function StatisticsPage() {
   const t = useTranslations("StatisticsPage");
@@ -33,28 +36,47 @@ export default function StatisticsPage() {
   // boʻladi (toggle): tanlangan boʻlsa sinf maʼlumoti, boʻlmasa butun
   // maktab boʻyicha umumiy maʼlumot koʻrsatiladi.
   const [selectedClassId, handleSelectClass] = useClassIdParam();
-  const handleToggleClass = (id: string) => {
-    handleSelectClass(id === selectedClassId ? null : id);
-  };
 
   // Navbar doim mantiqiy guruhlangan holatda turadi: Umumiy/Baholar/Davomat/
   // Xulq. Sinf tanlangan-tanlanmaganidan qatʼi nazar bir xil tab toʻplami —
-  // faqat kontent doirasi (sinf vs butun maktab) oʻzgaradi.
+  // faqat kontent doirasi (sinf vs butun maktab) oʻzgaradi. "Sinflar" jadval
+  // tabi esa faqat sinf tanlanmaganda maʼnoli (butun maktab roʻyxati).
   const [group, setGroup] = useState<StatsGroup>("overview");
+  const handleToggleClass = (id: string) => {
+    const next = id === selectedClassId ? null : id;
+    if (next && group === "classes") setGroup("overview");
+    handleSelectClass(next);
+  };
   const groupTabs: StatsTabItem[] = useMemo(
     () => [
       { id: "overview", label: t("groupOverview"), icon: Gauge },
+      ...(selectedClassId ? [] : [{ id: "classes", label: t("groupClasses"), icon: TableIcon }]),
       { id: "grades", label: t("groupGrades"), icon: BookOpen },
       { id: "attendance", label: t("groupAttendance"), icon: CalendarCheck },
       { id: "behavior", label: t("groupBehavior"), icon: HeartPulse },
     ],
-    [t]
+    [t, selectedClassId]
   );
+
+  // Oʻquv yili filtri — bitta yildan koʻp boʻlsa tanlash mumkin (masalan,
+  // faol yil yangisiga oʻtganda oʻtgan yil maʼlumotini koʻrish uchun).
+  // Global faol yilni OʻZGARTIRMAYDI — faqat shu sahifaning koʻrinishi.
+  const years = useCalendarStore((s) => s.years);
+  const activeCalendar = useCalendarStore((s) => s.calendar);
+  const [yearId, setYearId] = useState<string | null>(null);
+  const selectedYear = useMemo(
+    () => years.find((y) => y.id === yearId) ?? activeYear(years),
+    [years, yearId]
+  );
+  const calendar = selectedYear?.calendar ?? activeCalendar;
+  const handleYearChange = (id: string) => {
+    setYearId(id);
+    setPeriodId(null); // yangi yilning davrlari boshqa — eski tanlov endi mos kelmasligi mumkin
+  };
 
   // Davr filtri — butun sahifa uchun YAGONA manba (Umumiy va sinf detali bir
   // xil davrni koʻrsatadi); navbarda tab'lar yonida joylashadi.
   const todayKey = dateToKey(new Date());
-  const calendar = useCalendarStore((s) => s.calendar);
   const periods = useMemo(() => statPeriods(calendar), [calendar]);
   const [periodId, setPeriodId] = useState<string | null>(null);
   const period = useMemo(() => {
@@ -84,17 +106,22 @@ export default function StatisticsPage() {
           <div className="shrink-0">
             <div className="bg-card rounded-xl card-elevation flex items-center justify-between gap-3 pr-3">
               <StatsTabs tabs={groupTabs} value={group} onChange={(v) => setGroup(v as StatsGroup)} />
-              {period && periods.length > 0 && (
-                <PeriodSelect periods={periods} value={period.id} onChange={setPeriodId} />
-              )}
+              <div className="flex items-center gap-2">
+                {selectedYear && <YearSelect years={years} value={selectedYear.id} onChange={handleYearChange} />}
+                {period && periods.length > 0 && (
+                  <PeriodSelect periods={periods} value={period.id} onChange={setPeriodId} />
+                )}
+              </div>
             </div>
           </div>
 
           <div className="flex min-w-0 min-h-0 flex-1 flex-col">
             {selectedClassId ? (
-              <ClassStatsView classId={selectedClassId} period={period} prevPeriod={prevPeriod} group={group} />
+              <ClassStatsView classId={selectedClassId} period={period} prevPeriod={prevPeriod} group={group} calendar={calendar} />
             ) : group === "overview" ? (
-              <OverviewPanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} />
+              <OverviewPanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} calendar={calendar} />
+            ) : group === "classes" ? (
+              <ClassesTablePanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : (
               <SelectClassPrompt />
             )}

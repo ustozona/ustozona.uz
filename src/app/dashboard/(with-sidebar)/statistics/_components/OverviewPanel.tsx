@@ -8,7 +8,7 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
-import { useCalendarStore } from "@/store/useCalendarStore";
+import type { AcademicYearCalendar } from "@/lib/academic-calendar";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { statusWeights } from "@/lib/attendance-data";
 import { deriveAttentionSignals } from "@/lib/attention";
@@ -26,11 +26,12 @@ import { GenderDonutChart } from "./GenderDonutChart";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 
 export function OverviewPanel({
-  onSelectClass, period, prevPeriod,
+  onSelectClass, period, prevPeriod, calendar,
 }: {
   onSelectClass: (id: string) => void;
   period: StatPeriod | null;
   prevPeriod: StatPeriod | null;
+  calendar: AcademicYearCalendar;
 }) {
   const t = useTranslations("StatisticsPage");
   const todayKey = dateToKey(new Date());
@@ -40,7 +41,6 @@ export function OverviewPanel({
   const statuses = useAttendanceStore((s) => s.statuses);
   const eventsByClass = useBehaviorStore((s) => s.eventsByClass);
   const versions = useTimetableStore((s) => s.versions);
-  const calendar = useCalendarStore((s) => s.calendar);
   const liveClasses = useLiveClasses();
   const weights = useMemo(() => statusWeights(statuses), [statuses]);
 

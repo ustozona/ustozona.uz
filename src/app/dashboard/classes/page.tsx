@@ -40,11 +40,14 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  XIcon, PlusIcon, ChevronDownIcon, ListFilter,
-  LayoutGrid, List as ListIcon, PencilIcon, Trash2 as TrashIcon,
+  XIcon, PlusIcon, ChevronDownIcon,
+  LayoutGrid, List as ListIcon, Table as TableIcon, PencilIcon, Trash2 as TrashIcon,
   GraduationCap, Search, ArrowUpDown, BarChart3, Users, BookOpen,
   ClipboardList, MoreHorizontal, ArrowRight, Archive as ArchiveIcon, ArchiveRestore,
 } from "lucide-react";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CLASS_COLOR_HEX, classTints, classColorValue, type ClassColor } from "@/lib/class-colors";
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
@@ -78,7 +81,7 @@ import DashboardPage, {
    oʻzgarishni avtomatik serverga sinxronlaydi. */
 
 type SortKey = "name" | "students" | "lessons";
-type ViewMode = "grid" | "list";
+type ViewMode = "grid" | "list" | "table";
 const CLASSES_VIEW_STORAGE_KEY = "classes-view-mode";
 
 /** Sahifa koʻrinishi uchun jonli sinf modeli (statistika bilan). */
@@ -102,10 +105,11 @@ export default function ClassesPage() {
   const [view, setView] = useState<ViewMode>("grid");
   useEffect(() => {
     const stored = localStorage.getItem(CLASSES_VIEW_STORAGE_KEY);
-    if (stored === "grid" || stored === "list") setView(stored);
+    if (stored === "grid" || stored === "list" || stored === "table") setView(stored);
   }, []);
   const handleViewChange = (v: ViewMode) => {
     setView(v);
+    if (v !== "table") setSelectedIds(new Set());
     localStorage.setItem(CLASSES_VIEW_STORAGE_KEY, v);
   };
   const [search, setSearch] = useState("");
@@ -113,7 +117,9 @@ export default function ClassesPage() {
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<LiveClass | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<LiveClass | null>(null);
+  const [deleteTargets, setDeleteTargets] = useState<LiveClass[] | null>(null);
+  // Jadval koʻrinishida qator tanlash — faqat bulk arxivlash/oʻchirish uchun.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Onboarding CTA'dan (`?new=1`) kelganda create-modalni avtomatik ochish —
   // "Birinchi sinfni yaratish" tugmasi vaʼda qilgan ishni bajaradi.
@@ -191,15 +197,24 @@ export default function ClassesPage() {
   };
 
   const handleDelete = () => {
-    if (!deleteTarget) return;
-    const name = deleteTarget.name;
+    if (!deleteTargets || deleteTargets.length === 0) return;
+    const ids = new Set(deleteTargets.map((c) => c.id));
     setClassDataMap((prev) => {
       const next = { ...prev };
-      delete next[deleteTarget.id];
+      for (const id of ids) delete next[id];
       return next;
     });
-    setDeleteTarget(null);
-    toast.success(t("deleteToast", { name }));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) next.delete(id);
+      return next;
+    });
+    toast.success(
+      deleteTargets.length === 1
+        ? t("deleteToast", { name: deleteTargets[0].name })
+        : t("deleteBulkToast", { count: deleteTargets.length })
+    );
+    setDeleteTargets(null);
   };
 
   // Arxivlash — sinf pickerlardan yashirin boʻladi, lekin id/tarixi saqlanadi.
@@ -210,6 +225,24 @@ export default function ClassesPage() {
     }));
     toast.success(t("archiveToast", { name: cls.name }), {
       action: { label: t("archiveUndo"), onClick: () => handleRestore(cls.id) },
+    });
+  };
+
+  const handleBulkArchive = (targets: LiveClass[]) => {
+    const ids = targets.map((c) => c.id);
+    for (const id of ids) {
+      updateClass(id, (cd) => ({
+        ...cd,
+        info: { ...cd.info, archivedAt: new Date().toISOString() },
+      }));
+    }
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) next.delete(id);
+      return next;
+    });
+    toast.success(t("archiveBulkToast", { count: targets.length }), {
+      action: { label: t("archiveUndo"), onClick: () => ids.forEach(handleRestore) },
     });
   };
 
@@ -248,13 +281,64 @@ export default function ClassesPage() {
 
         {/* ── Main: classes panel ── */}
         <Card data-tour="classes-list" className={cn("flex-1 min-w-0", panelCardClass)}>
-          <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-[4.5rem] px-5 py-5!")}>
-            <div className="flex items-center gap-2.5 shrink-0">
+          <CardHeader className={cn(panelCardHeaderClass, "grid grid-cols-[1fr_auto_1fr] gap-3 min-h-[4.5rem] px-5 py-5!")}>
+            <div className="flex items-center gap-2.5 shrink-0 justify-self-start">
               <SectionIcon><GraduationCap /></SectionIcon>
               <CardTitle>{t("title")}</CardTitle>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Koʻrinish toggle — sarlavha va amallar orasida, markazda */}
+            <ToggleGroup
+              data-tour="classes-view-toggle"
+              type="single"
+              value={view}
+              onValueChange={(v) => v && handleViewChange(v as ViewMode)}
+              variant="outline"
+              size="default"
+              className="hidden sm:flex shadow-none justify-self-center"
+            >
+              <ToggleGroupItem value="grid" aria-label={t("gridViewAria")}>
+                <LayoutGrid className="size-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label={t("listViewAria")}>
+                <ListIcon className="size-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="table" aria-label={t("tableViewAria")}>
+                <TableIcon className="size-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+
+            {view === "table" && selectedIds.size > 0 ? (
+              /* Bulk-amal paneli — tanlash paytida oddiy toolbar oʻrnini bosadi
+                 (Gmail/Linear/Notion naqshi). */
+              <div className="flex items-center gap-2 justify-self-end animate-in fade-in-0 slide-in-from-top-1 duration-fast">
+                <TypographySmall className="text-muted-foreground px-2">
+                  {t("selectedCount", { count: selectedIds.size })}
+                </TypographySmall>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => handleBulkArchive(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
+                >
+                  <ArchiveIcon className="size-4" />
+                  {t("archive")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-destructive hover:text-destructive"
+                  onClick={() => setDeleteTargets(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
+                >
+                  <TrashIcon className="size-4" />
+                  {t("delete")}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
+                  {t("cancel")}
+                </Button>
+              </div>
+            ) : (
+            <div className="flex items-center gap-2 justify-self-end">
               {/* Search */}
               <div className={cn("flex items-center transition-all duration-fast", searchOpen ? "w-52" : "w-8")}>
                 {searchOpen ? (
@@ -280,27 +364,6 @@ export default function ClassesPage() {
                   </Button>
                 )}
               </div>
-
-              {/* Filter */}
-              <DropdownMenu>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <ListFilter className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>{t("filter")}</TooltipContent>
-                </Tooltip>
-                <DropdownMenuContent align="end" className="w-44">
-                  <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-                    <DropdownMenuRadioItem value="name">{t("filterAllClasses")}</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="students">{t("filterMoreStudents")}</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="lessons">{t("filterMoreLessons")}</DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
 
               {/* Sort */}
               <DropdownMenu>
@@ -330,25 +393,8 @@ export default function ClassesPage() {
                 <PlusIcon className="size-4" />
                 {t("newClass")}
               </Button>
-
-              {/* View toggle - ToggleGroup (outline/sm — Filter va Sort bilan bir xil) */}
-              <ToggleGroup
-                data-tour="classes-view-toggle"
-                type="single"
-                value={view}
-                onValueChange={(v) => v && handleViewChange(v as ViewMode)}
-                variant="outline"
-                size="default"
-                className="hidden sm:flex shadow-none"
-              >
-                <ToggleGroupItem value="grid" aria-label={t("gridViewAria")}>
-                  <LayoutGrid className="size-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="list" aria-label={t("listViewAria")}>
-                  <ListIcon className="size-4" />
-                </ToggleGroupItem>
-              </ToggleGroup>
             </div>
+            )}
           </CardHeader>
 
           {/* Scrollable content */}
@@ -404,12 +450,12 @@ export default function ClassesPage() {
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onArchive={() => handleArchive(cls)}
-                          onDelete={() => setDeleteTarget(cls)}
+                          onDelete={() => setDeleteTargets([cls])}
                         />
                       ))}
                       <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
                     </div>
-                  ) : (
+                  ) : view === "list" ? (
                     <div className="flex flex-col gap-2">
                       {filteredAndSorted.map((cls, i) => (
                         <ClassListRow
@@ -419,10 +465,34 @@ export default function ClassesPage() {
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onArchive={() => handleArchive(cls)}
-                          onDelete={() => setDeleteTarget(cls)}
+                          onDelete={() => setDeleteTargets([cls])}
                         />
                       ))}
                     </div>
+                  ) : (
+                    <ClassesDataTable
+                      rows={filteredAndSorted}
+                      disabled={isDemoMode}
+                      selectedIds={selectedIds}
+                      onToggleSelect={(id) =>
+                        setSelectedIds((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(id)) next.delete(id);
+                          else next.add(id);
+                          return next;
+                        })
+                      }
+                      onToggleSelectAll={() =>
+                        setSelectedIds((prev) =>
+                          prev.size === filteredAndSorted.length
+                            ? new Set()
+                            : new Set(filteredAndSorted.map((c) => c.id))
+                        )
+                      }
+                      onEdit={setEditTarget}
+                      onArchive={handleArchive}
+                      onDelete={(cls) => setDeleteTargets([cls])}
+                    />
                   )}
                 </div>
               )}
@@ -519,14 +589,19 @@ export default function ClassesPage() {
         />
       )}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+      <AlertDialog open={!!deleteTargets} onOpenChange={(o) => !o && setDeleteTargets(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("deleteDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteTarget && deleteTarget.students > 0
-                ? t("deleteDialogWithStudents", { name: deleteTarget.name, count: deleteTarget.students })
-                : t("deleteDialogWithoutStudents", { name: deleteTarget?.name ?? "" })}
+              {deleteTargets && deleteTargets.length > 1
+                ? t("deleteDialogBulk", {
+                    count: deleteTargets.length,
+                    students: deleteTargets.reduce((s, c) => s + c.students, 0),
+                  })
+                : deleteTargets && deleteTargets[0].students > 0
+                ? t("deleteDialogWithStudents", { name: deleteTargets[0].name, count: deleteTargets[0].students })
+                : t("deleteDialogWithoutStudents", { name: deleteTargets?.[0]?.name ?? "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -883,6 +958,137 @@ function ArchivedClassesSection({
         </div>
       )}
     </div>
+  );
+}
+
+/* ─────────────────────────── Data Table ─────────────────────────── */
+
+/** Sinflar jadval koʻrinishi — statistikadagi ClassesTable naqshiga
+ * moslangan (butun qator bosiladi), lekin bu yerda haqiqiy CRUD amallar
+ * bor, shuning uchun oxirgi ustunda ClassCardMenu saqlanadi. */
+function ClassesDataTable({
+  rows,
+  disabled,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
+  onEdit,
+  onArchive,
+  onDelete,
+}: {
+  rows: LiveClass[];
+  disabled?: boolean;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onToggleSelectAll: () => void;
+  onEdit: (cls: LiveClass) => void;
+  onArchive: (cls: LiveClass) => void;
+  onDelete: (cls: LiveClass) => void;
+}) {
+  const router = useRouter();
+  const t = useTranslations("ClassesPage");
+  const allSelected = rows.length > 0 && selectedIds.size === rows.length;
+  const someSelected = selectedIds.size > 0 && !allSelected;
+
+  return (
+    <table className="w-full min-w-3xl caption-bottom text-sm animate-in fade-in-0 slide-in-from-bottom-2 duration-fast">
+      <TableHeader>
+        <TableRow className="hover:bg-transparent! border-b-0!">
+          {!disabled && (
+            <TableHead className="w-11 px-4 py-3">
+              <Checkbox
+                checked={someSelected ? "indeterminate" : allSelected}
+                onCheckedChange={onToggleSelectAll}
+                aria-label={t("selectAllAria")}
+                className="cursor-pointer"
+              />
+            </TableHead>
+          )}
+          <TableHead className={cn("pr-3 py-3 min-w-48", disabled ? "pl-4" : "pl-0")}>{t("columnClass")}</TableHead>
+          <TableHead className="px-3 py-3">{t("columnStudents")}</TableHead>
+          <TableHead className="px-3 py-3">{t("columnLessons")}</TableHead>
+          <TableHead className="px-3 py-3 min-w-40">{t("columnLessonPlan")}</TableHead>
+          {!disabled && <TableHead className="w-10 px-4 py-3" />}
+        </TableRow>
+      </TableHeader>
+      <TableBody className="divide-y divide-border/60 [&_tr]:border-0">
+        {rows.map((cls, i) => {
+          const hex = CLASS_COLOR_HEX[cls.color];
+          const progress = Math.round((cls.coveredLessons / Math.max(cls.lessons, 1)) * 100);
+          return (
+            <TableRow
+              key={cls.id}
+              className={cn(
+                "group animate-fade-slide-up",
+                disabled ? "cursor-default" : "cursor-pointer",
+                selectedIds.has(cls.id) && "bg-muted/40"
+              )}
+              style={{ animationDelay: `${i * 25}ms` } as React.CSSProperties}
+              onClick={disabled ? undefined : () => router.push(`/dashboard/classes/${cls.id}`)}
+            >
+              {!disabled && (
+                <TableCell className="px-4 py-3.5">
+                  <Checkbox
+                    checked={selectedIds.has(cls.id)}
+                    onCheckedChange={() => onToggleSelect(cls.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="cursor-pointer"
+                  />
+                </TableCell>
+              )}
+              <TableCell className={cn("whitespace-nowrap py-3.5 pr-3", disabled ? "pl-4" : "pl-0")}>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="size-9 shrink-0 rounded-full flex items-center justify-center text-white"
+                    style={classTints(cls.color).gradientTile}
+                  >
+                    <GraduationCap className="size-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{cls.name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
+                    </p>
+                  </div>
+                </div>
+              </TableCell>
+
+              <TableCell className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
+                {t("studentsCount", { count: cls.students })}
+              </TableCell>
+
+              <TableCell className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
+                {t("lessonsCount", { count: cls.lessons })}
+              </TableCell>
+
+              <TableCell className="whitespace-nowrap px-3 py-3.5">
+                <div className="flex items-center gap-2.5">
+                  <Progress
+                    value={progress}
+                    indicatorColor={hex}
+                    className="w-full h-1.5 max-w-28"
+                    style={{ backgroundColor: `color-mix(in srgb, ${hex} 16%, transparent)` }}
+                  />
+                  <span className="shrink-0 text-sm font-semibold tabular-nums">{progress}%</span>
+                </div>
+              </TableCell>
+
+              {!disabled && (
+                <TableCell className="whitespace-nowrap px-4 py-3.5">
+                  <div className="flex items-center justify-end">
+                    <ClassCardMenu
+                      onEdit={() => onEdit(cls)}
+                      onArchive={() => onArchive(cls)}
+                      onDelete={() => onDelete(cls)}
+                    />
+                  </div>
+                </TableCell>
+              )}
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </table>
   );
 }
 

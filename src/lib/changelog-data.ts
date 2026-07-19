@@ -32,6 +32,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "classes-table-view",
+    date: "2026-07-19",
+    type: "yangi",
+    title: "Mening sinflarim sahifasiga Jadval koʻrinishi qoʻshildi",
+    body:
+      "Endi sinflaringizni Karta, Roʻyxat yoki ixcham Jadval koʻrinishida koʻrishingiz mumkin. Jadval koʻrinishida bir nechta sinfni belgilab, birdaniga arxivlash yoki oʻchirish ham mumkin.",
+    href: "/dashboard/classes",
+  },
+  {
+    id: "statistics-table-polish",
+    date: "2026-07-19",
+    type: "tuzatildi",
+    title: "Statistika jadvalidagi mayda nosozliklar tuzatildi",
+    body:
+      "Davomat foizi baʼzan uzun kasr son bilan chiqib qolardi — endi doim yaxlitlangan koʻrinadi. Sarlavha tagidagi keraksiz chiziq va foydasiz belgilash/amal ustunlari olib tashlandi.",
+    href: "/dashboard/statistics",
+  },
+  {
     id: "tasks-calendar-launch",
     date: "2026-07-19",
     type: "yangi",

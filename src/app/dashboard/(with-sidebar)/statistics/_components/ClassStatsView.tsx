@@ -11,8 +11,8 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
-import { useCalendarStore } from "@/store/useCalendarStore";
 import { useClassStore } from "@/store/useClassStore";
+import type { AcademicYearCalendar } from "@/lib/academic-calendar";
 import { statusWeights } from "@/lib/attendance-data";
 import { deriveAttentionSignals } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
@@ -35,15 +35,16 @@ import { AssignmentQualityCard } from "./AssignmentQualityCard";
 import { TopicStudentMatrixCard } from "./TopicStudentMatrixCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 
-export type StatsGroup = "overview" | "grades" | "attendance" | "behavior";
+export type StatsGroup = "overview" | "classes" | "grades" | "attendance" | "behavior";
 
 export function ClassStatsView({
-  classId, period, prevPeriod, group,
+  classId, period, prevPeriod, group, calendar,
 }: {
   classId: string;
   period: StatPeriod | null;
   prevPeriod: StatPeriod | null;
   group: StatsGroup;
+  calendar: AcademicYearCalendar;
 }) {
   const t = useTranslations("StatisticsPage");
   const todayKey = dateToKey(new Date());
@@ -54,7 +55,6 @@ export function ClassStatsView({
   const statuses = useAttendanceStore((s) => s.statuses);
   const eventsByClass = useBehaviorStore((s) => s.eventsByClass);
   const versions = useTimetableStore((s) => s.versions);
-  const calendar = useCalendarStore((s) => s.calendar);
   const journalScale = useClassStore((s) => s.journalScale);
   const weights = useMemo(() => statusWeights(statuses), [statuses]);
   const records = useMemo(() => recordsByClass[classId] ?? [], [recordsByClass, classId]);

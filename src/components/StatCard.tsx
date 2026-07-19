@@ -65,7 +65,7 @@ export function StatCard({
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">
           {Icon && (
-            <SectionIcon className="size-8 [&_svg:not([class*='size-'])]:size-4">
+            <SectionIcon className="rounded-full">
               <Icon />
             </SectionIcon>
           )}
