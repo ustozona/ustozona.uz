@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Users, GraduationCap, ShieldAlert, CalendarCheck, TrendingUp } from "lucide-react";
+import { Users, GraduationCap, ShieldAlert, CalendarCheck } from "lucide-react";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
@@ -13,22 +13,22 @@ import { statusWeights } from "@/lib/attendance-data";
 import { deriveAttentionSignals, aggregateStudentRisk } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
-  overviewRows, genderBreakdown, signalCountsByClass,
-  studentPeriodSummaries, genderGroupAverages, attendanceWeeklyTrend, type StatPeriod,
+  overviewRows, genderBreakdown, genderPerformanceSplit, signalCountsByClass,
+  studentPeriodSummaries, type StatPeriod,
 } from "@/lib/class-stats";
 import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { StudentRiskCard, PositiveStudentsStrip } from "./StudentRiskCard";
-import { GenderGroupCard } from "./GenderGroupCard";
 import { GenderDonutChart } from "./GenderDonutChart";
-import { AttendanceTrendCard } from "./AttendanceTrendCard";
+import { ClassRankingCard } from "./ClassRankingCard";
 
 export function OverviewPanel({
-  period, prevPeriod, calendar,
+  period, prevPeriod, calendar, onSelectClass,
 }: {
   period: StatPeriod | null;
   prevPeriod: StatPeriod | null;
   calendar: AcademicYearCalendar;
+  onSelectClass?: (classId: string) => void;
 }) {
   const t = useTranslations("StatisticsPage");
   const todayKey = dateToKey(new Date());
@@ -67,10 +67,10 @@ export function OverviewPanel({
     return genderBreakdown(students);
   }, [classDataMap, classNameById]);
 
-  const genderGroups = useMemo(() => {
+  const genderGap = useMemo(() => {
     if (!period) return null;
     const isYear = period.kind === "year";
-    const allSummaries = Object.entries(classDataMap)
+    const summaries = Object.entries(classDataMap)
       .filter(([classId, cd]) => cd && classNameById.has(classId))
       .flatMap(([classId, cd]) =>
         studentPeriodSummaries({
@@ -82,7 +82,7 @@ export function OverviewPanel({
           isYear,
         })
       );
-    return genderGroupAverages(allSummaries);
+    return genderPerformanceSplit(summaries);
   }, [classDataMap, classNameById, recordsByClass, eventsByClass, weights, period]);
 
   const riskSummaries = useMemo(() => aggregateStudentRisk(signals), [signals]);
@@ -110,26 +110,13 @@ export function OverviewPanel({
   const attendanceDelta =
     periodAttendance !== null && prevPeriodAttendance !== null ? periodAttendance - prevPeriodAttendance : null;
 
-  const allRecords = useMemo(
-    () =>
-      Object.entries(recordsByClass)
-        .filter(([classId]) => classNameById.has(classId))
-        .flatMap(([, records]) => records),
-    [recordsByClass, classNameById]
-  );
-  const attendanceWeeks = useMemo(
-    () => (period ? attendanceWeeklyTrend(allRecords, weights, period.range) : []),
-    [allRecords, weights, period]
-  );
-
   return (
     <div className="h-full min-h-0 overflow-y-auto">
       <div className="flex flex-col gap-4 pb-1">
         {/* ── KPI plitkalar ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudents} unit={t("unitPeople")} />
-          <StatCard icon={ShieldAlert} label={t("riskTitle")} value={riskStudentCount} unit={t("unitPeople")} />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <StatCard icon={GraduationCap} label={t("kpiClasses")} value={rows.length} unit={t("unitCount")} />
+          <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudents} unit={t("unitPeople")} />
           <StatCard
             icon={CalendarCheck}
             label={t("kpiAttendance")}
@@ -137,26 +124,33 @@ export function OverviewPanel({
             delta={attendanceDelta !== null && Math.abs(attendanceDelta) >= 1 ? `${Math.round(Math.abs(attendanceDelta))}pp` : undefined}
             deltaType={attendanceDelta !== null && attendanceDelta > 0 ? "positive" : "negative"}
           />
+          <StatCard icon={ShieldAlert} label={t("riskTitle")} value={riskStudentCount} unit={t("unitPeople")} />
         </div>
 
-        <DashboardSectionCard icon={TrendingUp} title={t("attendanceTrendTitle")}>
-          <AttendanceTrendCard weeks={attendanceWeeks} />
-        </DashboardSectionCard>
+        <ClassRankingCard
+          icon={ShieldAlert}
+          title={t("riskRankingTitle")}
+          format="count"
+          limit={3}
+          rows={rows.map((r) => ({ classId: r.classId, name: r.name, color: r.color, studentCount: r.studentCount, value: r.signalCount }))}
+          onSelect={onSelectClass}
+        />
 
         <StudentRiskCard summaries={riskSummaries} classNameOf={(id) => classNameById.get(id)} />
         <PositiveStudentsStrip summaries={riskSummaries} classNameOf={(id) => classNameById.get(id)} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-4">
-          <DashboardSectionCard icon={Users} title={t("genderTitle")}>
-            <GenderDonutChart gender={gender} boysLabel={t("boysFull")} girlsLabel={t("girlsFull")} unitLabel={t("unitPeople")} />
-          </DashboardSectionCard>
-
-          {genderGroups && (
-            <DashboardSectionCard icon={Users} title={t("genderGroupTitle")}>
-              <GenderGroupCard averages={genderGroups} />
-            </DashboardSectionCard>
-          )}
-        </div>
+        <DashboardSectionCard icon={Users} title={t("genderTitle")}>
+          <GenderDonutChart
+            gender={gender}
+            boysLabel={t("boysFull")}
+            girlsLabel={t("girlsFull")}
+            unitLabel={t("unitPeople")}
+            totalLabel={t("totalStudentsLabel")}
+            gap={genderGap ?? undefined}
+            gapGradeLabel={t("kpiSummative")}
+            gapAttendanceLabel={t("kpiAttendance")}
+          />
+        </DashboardSectionCard>
       </div>
     </div>
   );

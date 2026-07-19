@@ -454,6 +454,7 @@
     "attendanceTrendTitle": "Haftalik davomat trendi",
     "attendanceRankingTitle": "Sinflar boʻyicha davomat",
     "gradesRankingTitle": "Sinflar boʻyicha oʻzlashtirish",
+    "riskRankingTitle": "Eʼtibor zichligi boʻyicha sinflar",
     "behaviorClimateTitle": "Xulq iqlimi",
     "autoManualSplit": "{auto} avto · {manual} qoʻlda",
     "positiveShareLabel": "ijobiy ulush (soʻnggi hafta)",
@@ -461,12 +462,6 @@
     "absenceTiersTitle": "Davomat darajasi",
     "tierChronic": "Surunkali",
     "tierWatch": "Kuzatuv",
-    "genderGroupTitle": "Jins kesimida oʻrtachalar",
-    "genderMetricGrade": "Baho",
-    "genderMetricAttendance": "Davomat",
-    "genderMetricBehavior": "Xulq",
-    "boysShort": "Oʻgʻil",
-    "girlsShort": "Qiz",
     "copyList": "Roʻyxatni nusxalash",
     "copyListSuccess": "{count} ta oʻquvchi nusxalandi",
     "copyListError": "Nusxalab boʻlmadi",
@@ -477,6 +472,7 @@
     "discriminationLabel": "Farqlash",
     "matrixTitle": "Mavzu × oʻquvchi xaritasi",
     "genderTitle": "Oʻquvchilar nisbati",
+    "totalStudentsLabel": "Jami:",
     "unitPeople": "nafar",
     "unitCount": "ta",
     "boysFull": "Oʻgʻil bolalar",
@@ -1889,6 +1885,14 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "statistics-class-risk-ranking": {
+        "title": "Statistika: eng koʻp eʼtibor talab qiladigan sinflar reytingi qoʻshildi",
+        "body": "Umumiy boʻlimda endi signal soni boʻyicha eng muammoli 3 ta sinf koʻrinadi — bosilsa oʻsha sinfga oʻtiladi. Jins taqsimoti kartasiga oʻgʻil/qiz kesimida oʻrtacha baho va davomat qoʻshildi."
+      },
+      "statistics-overview-redesign": {
+        "title": "Statistika: Umumiy boʻlim qayta tuzildi",
+        "body": "KPI kartalar mantiqiy tartibga keltirildi: Sinflar → Oʻquvchilar → Davomat → Eʼtibor. Oʻquvchilar nisbati kartasi markazida jami son bilan yangilandi, foydasiz „Jins kesimida oʻrtachalar“ kartasi olib tashlandi."
+      },
       "statistics-domain-aggregates": {
         "title": "Statistika: Baholar/Davomat/Xulq tablariga maktab boʻyicha grafiklar qoʻshildi",
         "body": "Sinf tanlanmaganda endi bu boʻlimlarda haftalik davomat trendi, baholar taqsimoti, xulq iqlimi va sinflar reytingi koʻrinadi. Roʻyxatlardagi qatorlar endi butunlay bosiluvchi — ortiqcha tugmalar olib tashlandi."

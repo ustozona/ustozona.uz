@@ -453,6 +453,7 @@
     "kpiCompletion": "Completion",
     "attendanceTrendTitle": "Weekly attendance trend",
     "attendanceRankingTitle": "Attendance by class",
+    "riskRankingTitle": "Classes by attention density",
     "gradesRankingTitle": "Grades by class",
     "behaviorClimateTitle": "Behavior climate",
     "autoManualSplit": "{auto} auto · {manual} manual",
@@ -461,12 +462,6 @@
     "absenceTiersTitle": "Attendance tier",
     "tierChronic": "Chronic",
     "tierWatch": "Watch",
-    "genderGroupTitle": "Gender group averages",
-    "genderMetricGrade": "Grade",
-    "genderMetricAttendance": "Attendance",
-    "genderMetricBehavior": "Behavior",
-    "boysShort": "Boys",
-    "girlsShort": "Girls",
     "copyList": "Copy list",
     "copyListSuccess": "{count} students copied",
     "copyListError": "Could not copy",
@@ -477,6 +472,7 @@
     "discriminationLabel": "Discrimination",
     "matrixTitle": "Topic × student map",
     "genderTitle": "Student ratio",
+    "totalStudentsLabel": "Total:",
     "unitPeople": "students",
     "unitCount": "",
     "boysFull": "Boys",
@@ -1889,6 +1885,14 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "statistics-class-risk-ranking": {
+        "title": "Statistics: added a ranking of classes needing the most attention",
+        "body": "The Overview tab now shows the 3 classes with the most attention signals — tap one to jump to that class. The gender chart now also shows average grade and attendance by gender."
+      },
+      "statistics-overview-redesign": {
+        "title": "Statistics: Overview tab redesigned",
+        "body": "KPI cards are now in a more logical order: Classes → Students → Attendance → Attention. The student ratio card was updated to show the total in the center; the unhelpful \"Averages by gender\" card was removed."
+      },
       "statistics-domain-aggregates": {
         "title": "Statistics: school-wide charts added to the Grades/Attendance/Behavior tabs",
         "body": "With no class selected, these tabs now show a weekly attendance trend, grade distribution, behavior climate, and a class ranking. List rows are now fully clickable — extra buttons were removed."

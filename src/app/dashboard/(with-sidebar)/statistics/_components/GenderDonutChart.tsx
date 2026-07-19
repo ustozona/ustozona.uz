@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Mars, Venus } from "lucide-react";
-import { Pie, PieChart } from "recharts";
+import { Label, Pie, PieChart } from "recharts";
 import { TypographyMuted } from "@/components/ui/typography";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 
@@ -22,13 +22,19 @@ function chartConfig(boysLabel: string, girlsLabel: string): ChartConfig {
     ishlatiladi. Serverda ResponsiveContainer oʻlchovsiz boʻlgani uchun faqat
     mount'dan keyin chiziladi (task-stats-panel'dagi bilan bir xil gotcha). */
 export function GenderDonutChart({
-  gender, boysLabel, girlsLabel, unitLabel,
+  gender, boysLabel, girlsLabel, unitLabel, totalLabel, gap, gapGradeLabel, gapAttendanceLabel,
 }: {
   gender: { boys: number; girls: number; boysPct: number | null; girlsPct: number | null };
   boysLabel: string;
   girlsLabel: string;
   /** "nafar" kabi ikkilamchi birlik — legend qatorlari va tooltip'da sonlardan keyin. */
   unitLabel?: string;
+  /** Donut markazidagi kichik yorliq, masalan "Jami:". */
+  totalLabel: string;
+  /** Jins boʻyicha oʻrtacha baho/davomat (DIF-uslub gap) — berilsa legend ostida qoʻshimcha mini-jadval chiziladi. */
+  gap?: { boys: { gradeAvg: number | null; attendanceAvg: number | null }; girls: { gradeAvg: number | null; attendanceAvg: number | null } };
+  gapGradeLabel?: string;
+  gapAttendanceLabel?: string;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -65,7 +71,24 @@ export function GenderDonutChart({
                 );
               }}
             />
-            <Pie data={chartData} dataKey="count" nameKey="gender" innerRadius={52} outerRadius={78} strokeWidth={3} />
+            <Pie data={chartData} dataKey="count" nameKey="gender" innerRadius={52} outerRadius={78} strokeWidth={3}>
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    return (
+                      <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) - 12} className="fill-muted-foreground text-xs">
+                          {totalLabel}
+                        </tspan>
+                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 12} className="fill-foreground text-2xl font-bold">
+                          {total}
+                        </tspan>
+                      </text>
+                    );
+                  }
+                }}
+              />
+            </Pie>
           </PieChart>
         </ChartContainer>
       )}
@@ -89,6 +112,26 @@ export function GenderDonutChart({
           </span>
         </div>
       </div>
+
+      {gap && (
+        <div className="grid w-full grid-cols-3 gap-x-2 gap-y-1.5 border-t border-border/60 pt-3 text-xs">
+          <span />
+          <span className="flex items-center justify-end gap-1 text-muted-foreground">
+            <Mars className="size-3 text-sky-500" />
+          </span>
+          <span className="flex items-center justify-end gap-1 text-muted-foreground">
+            <Venus className="size-3 text-pink-500" />
+          </span>
+
+          <span className="text-muted-foreground">{gapGradeLabel}</span>
+          <span className="text-right font-semibold tabular-nums">{gap.boys.gradeAvg !== null ? `${gap.boys.gradeAvg}%` : "—"}</span>
+          <span className="text-right font-semibold tabular-nums">{gap.girls.gradeAvg !== null ? `${gap.girls.gradeAvg}%` : "—"}</span>
+
+          <span className="text-muted-foreground">{gapAttendanceLabel}</span>
+          <span className="text-right font-semibold tabular-nums">{gap.boys.attendanceAvg !== null ? `${gap.boys.attendanceAvg}%` : "—"}</span>
+          <span className="text-right font-semibold tabular-nums">{gap.girls.attendanceAvg !== null ? `${gap.girls.attendanceAvg}%` : "—"}</span>
+        </div>
+      )}
     </div>
   );
 }

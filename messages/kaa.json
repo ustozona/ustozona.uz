@@ -453,6 +453,7 @@
     "kpiCompletion": "Orınlaniw",
     "attendanceTrendTitle": "Haptalıq dawamat trendi",
     "attendanceRankingTitle": "Klaslar boyınsha qatnasıw",
+    "riskRankingTitle": "Itibar tıgızlıgı boyınsha klaslar",
     "gradesRankingTitle": "Klaslar boyınsha ózlestiriw",
     "behaviorClimateTitle": "Minez-qulıq klimatı",
     "autoManualSplit": "{auto} avto · {manual} qolman",
@@ -461,12 +462,6 @@
     "absenceTiersTitle": "Dawamat dárejesi",
     "tierChronic": "Surunkeli",
     "tierWatch": "Baqlaw",
-    "genderGroupTitle": "Jins kesiminde ortashalar",
-    "genderMetricGrade": "Baha",
-    "genderMetricAttendance": "Dawamat",
-    "genderMetricBehavior": "Minez-qulıq",
-    "boysShort": "Ul",
-    "girlsShort": "Qız",
     "copyList": "Dizimdi kóshiriw",
     "copyListSuccess": "{count} oqıwshı kóshirildi",
     "copyListError": "Kóshirilmedi",
@@ -477,6 +472,7 @@
     "discriminationLabel": "Ajıratıw",
     "matrixTitle": "Tema × oqıwshı kartası",
     "genderTitle": "Oqıwshılar qatnası",
+    "totalStudentsLabel": "Barlıgı:",
     "unitPeople": "oqıwshı",
     "unitCount": "ta",
     "boysFull": "Ul balalar",
@@ -1889,6 +1885,14 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "statistics-class-risk-ranking": {
+        "title": "Statistika: eń kóp itibar talap etetuǵın klaslar reytingi qosıldı",
+        "body": "Ulıwma bólimde endi signal sanı boyınsha eń máseleli 3 klas kórinedi — basılsa sol klaska ótiledi. Jınıs diagramması kartasına ul/qız kesiminde ortasha baha hám qatnasıw qosıldı."
+      },
+      "statistics-overview-redesign": {
+        "title": "Statistika: Ulıwma bólim qayta dúzildi",
+        "body": "KPI kartaları mántiqiy tártipke keltirildi: Klaslar → Oqıwshılar → Qatnasıw → Itibar. Oqıwshılar dıramı kartası ortasında jámi san menen jańalandı, paydasız „Jınıs kesiminde ortashalar“ kartası alıp taslandı."
+      },
       "statistics-domain-aggregates": {
         "title": "Statistika: Bahalar/Qatnasıw/Qılıq-hárekat taplarına mektep boyınsha grafikler qosıldı",
         "body": "Klas tańlanbaǵanda, bul bólimlerde endi haptalıq qatnasıw trendi, bahalar bólistiriliwi, qılıq-hárekat klimatı hám klaslar reytingi kórinedi. Dizim qatarları endi tolıq basıluwshı — artıq túymeler alıp taslandı."

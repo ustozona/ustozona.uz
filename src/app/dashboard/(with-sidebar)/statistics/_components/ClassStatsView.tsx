@@ -17,7 +17,7 @@ import { statusWeights } from "@/lib/attendance-data";
 import { deriveAttentionSignals, aggregateStudentRisk } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
-  studentPeriodSummaries, classPeriodSummary, gradeDistribution, topicMastery, genderBreakdown,
+  studentPeriodSummaries, classPeriodSummary, gradeDistribution, topicMastery, genderBreakdown, genderPerformanceSplit,
   attendanceWeeklyTrend, behaviorClimateTrend, assignmentCompletionRate, upcomingDeadlines,
   assignmentQuality, topicStudentMatrix,
   STAT_DEADBAND_PP, type StatPeriod,
@@ -85,6 +85,7 @@ export function ClassStatsView({
   const bins = gradeDistribution(summaries, journalScale.kind, journalScale.labelStyle);
   const topics = topicMastery(classData, period.range, isYear);
   const gender = genderBreakdown(classData.students);
+  const genderGap = genderPerformanceSplit(summaries);
   const attendanceWeeks = attendanceWeeklyTrend(records, weights, period.range);
   const climate = behaviorClimateTrend(events, period.range);
   const completion = assignmentCompletionRate(classData, period.range, isYear);
@@ -117,7 +118,16 @@ export function ClassStatsView({
             </div>
 
             <DashboardSectionCard icon={Users} title={t("genderTitle")}>
-              <GenderDonutChart gender={gender} boysLabel={t("boysFull")} girlsLabel={t("girlsFull")} unitLabel={t("unitPeople")} />
+              <GenderDonutChart
+                gender={gender}
+                boysLabel={t("boysFull")}
+                girlsLabel={t("girlsFull")}
+                unitLabel={t("unitPeople")}
+                totalLabel={t("totalStudentsLabel")}
+                gap={genderGap}
+                gapGradeLabel={t("kpiSummative")}
+                gapAttendanceLabel={t("kpiAttendance")}
+              />
             </DashboardSectionCard>
 
             {deadlines.length > 0 && (

@@ -371,6 +371,30 @@ export function genderBreakdown(students: Student[]): GenderBreakdown {
   };
 }
 
+export type GenderPerformanceSplit = {
+  boys: { gradeAvg: number | null; attendanceAvg: number | null };
+  girls: { gradeAvg: number | null; attendanceAvg: number | null };
+};
+
+function avg(values: number[]): number | null {
+  return values.length > 0 ? Math.round(values.reduce((s, v) => s + v, 0) / values.length) : null;
+}
+
+/** Jins boʻyicha oʻrtacha baho/davomat (DIF — differential item functioning
+    naqshiga yaqin, lekin oddiy oʻrtacha taqqoslash) — kutilmagan farqni
+    koʻrsatish uchun. Kichik namunada ham koʻrsatiladi (yashirilmaydi),
+    maʼlumot yoʻq boʻlsa `null` qaytadi va chaqiruvchi "—" chizadi. */
+export function genderPerformanceSplit(summaries: StudentPeriodSummary[]): GenderPerformanceSplit {
+  const boys = summaries.filter((s) => s.gender === "male");
+  const girls = summaries.filter((s) => s.gender === "female");
+  const grades = (list: StudentPeriodSummary[]) => list.map((s) => s.summative).filter((v): v is number => v !== null);
+  const attendance = (list: StudentPeriodSummary[]) => list.map((s) => s.attendancePct).filter((v): v is number => v !== null);
+  return {
+    boys: { gradeAvg: avg(grades(boys)), attendanceAvg: avg(attendance(boys)) },
+    girls: { gradeAvg: avg(grades(girls)), attendanceAvg: avg(attendance(girls)) },
+  };
+}
+
 /* ── Risk registri (attention.ts ga tegishmaydi, faqat qayta eksport shakl) ── */
 
 export type ClassSignalCounts = Record<string, number>;
@@ -385,8 +409,6 @@ export function signalCountsByClass(signals: AttentionSignal[]): ClassSignalCoun
 /* ════════════════════════════════════════════════════════════════════
    V2 — Trendlar va chuqurlik
    ════════════════════════════════════════════════════════════════════ */
-
-export const MIN_GENDER_GROUP = 3;
 
 /** Dushanba-boshlanuvchi hafta chegaralari roʻyxati — davr ichida, davr
     bilan kesishgan qismi (birinchi/oxirgi hafta qisqarishi mumkin). */
@@ -499,30 +521,6 @@ export function upcomingDeadlines(
       topicName: topicMap.get(a.topicId)?.name ?? "",
     }))
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-}
-
-export type GenderGroupStats = { count: number; summativeAvg: number | null; attendanceAvg: number | null; positivePct: number | null };
-export type GenderGroupAverages = { boys: GenderGroupStats; girls: GenderGroupStats };
-
-/** Jins kesimida oʻrtachalar — har guruh MIN_GENDER_GROUP dan kam boʻlsa
-    oʻsha guruh koʻrsatkichlari `null` (kichik tanlama shovqini). Farqni
-    "barqaror"/"farqli" deb belgilash chaqiruvchida STAT_DEADBAND_PP bilan. */
-export function genderGroupAverages(summaries: StudentPeriodSummary[]): GenderGroupAverages {
-  const avg = (vals: number[]) => (vals.length === 0 ? null : vals.reduce((a, b) => a + b, 0) / vals.length);
-  const groupOf = (gender: "male" | "female"): GenderGroupStats => {
-    const group = summaries.filter((s) => s.gender === gender);
-    if (group.length < MIN_GENDER_GROUP) return { count: group.length, summativeAvg: null, attendanceAvg: null, positivePct: null };
-    const scored = group.filter((s) => s.summative !== null);
-    const attended = group.filter((s) => s.attendancePct !== null);
-    const behaved = group.filter((s) => s.behaviorPositivePct !== null);
-    return {
-      count: group.length,
-      summativeAvg: avg(scored.map((s) => s.summative!)),
-      attendanceAvg: avg(attended.map((s) => s.attendancePct!)),
-      positivePct: avg(behaved.map((s) => s.behaviorPositivePct!)),
-    };
-  };
-  return { boys: groupOf("male"), girls: groupOf("female") };
 }
 
 /* ════════════════════════════════════════════════════════════════════

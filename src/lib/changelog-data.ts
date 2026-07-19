@@ -32,6 +32,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "statistics-class-risk-ranking",
+    date: "2026-07-19",
+    type: "yangi",
+    title: "Statistika: eng koʻp eʼtibor talab qiladigan sinflar reytingi qoʻshildi",
+    body:
+      "Umumiy boʻlimda endi signal soni boʻyicha eng muammoli 3 ta sinf koʻrinadi — bosilsa oʻsha sinfga oʻtiladi. Jins taqsimoti kartasiga oʻgʻil/qiz kesimida oʻrtacha baho va davomat qoʻshildi.",
+    href: "/dashboard/statistics",
+  },
+  {
+    id: "statistics-overview-redesign",
+    date: "2026-07-19",
+    type: "yaxshilandi",
+    title: "Statistika: Umumiy boʻlim qayta tuzildi",
+    body:
+      "KPI kartalar mantiqiy tartibga keltirildi: Sinflar → Oʻquvchilar → Davomat → Eʼtibor. Oʻquvchilar nisbati kartasi markazida jami son bilan yangilandi, foydasiz „Jins kesimida oʻrtachalar“ kartasi olib tashlandi.",
+    href: "/dashboard/statistics",
+  },
+  {
     id: "statistics-domain-aggregates",
     date: "2026-07-19",
     type: "yangi",
