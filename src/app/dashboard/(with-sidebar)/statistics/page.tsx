@@ -40,25 +40,22 @@ export default function StatisticsPage() {
   // maktab boʻyicha umumiy maʼlumot koʻrsatiladi.
   const [selectedClassId, handleSelectClass] = useClassIdParam();
 
-  // Navbar doim mantiqiy guruhlangan holatda turadi: Umumiy/Baholar/Davomat/
-  // Xulq. Sinf tanlangan-tanlanmaganidan qatʼi nazar bir xil tab toʻplami —
-  // faqat kontent doirasi (sinf vs butun maktab) oʻzgaradi. "Sinflar" jadval
-  // tabi esa faqat sinf tanlanmaganda maʼnoli (butun maktab roʻyxati).
+  // Navbar doim mantiqiy guruhlangan holatda turadi: Umumiy/Oʻquvchilar/
+  // Baholar/Davomat/Xulq. "Oʻquvchilar" tabi sinf tanlangan-tanlanmaganidan
+  // qatʼi nazar koʻrinadi — faqat roʻyxat doirasi (sinf vs butun maktab)
+  // oʻzgaradi. "Sinflar" jadval tabi esa faqat sinf tanlanmaganda maʼnoli
+  // (butun maktab roʻyxati).
   const [group, setGroup] = useState<StatsGroup>("overview");
   const handleToggleClass = (id: string) => {
     const next = id === selectedClassId ? null : id;
-    if (next && (group === "classes" || group === "students")) setGroup("overview");
+    if (next && group === "classes") setGroup("overview");
     handleSelectClass(next);
   };
   const groupTabs: StatsTabItem[] = useMemo(
     () => [
       { id: "overview", label: t("groupOverview"), icon: Gauge },
-      ...(selectedClassId
-        ? []
-        : [
-            { id: "classes", label: t("groupClasses"), icon: TableIcon },
-            { id: "students", label: t("groupStudents"), icon: Users },
-          ]),
+      ...(selectedClassId ? [] : [{ id: "classes", label: t("groupClasses"), icon: TableIcon }]),
+      { id: "students", label: t("groupStudents"), icon: Users },
       { id: "grades", label: t("groupGrades"), icon: BookOpen },
       { id: "attendance", label: t("groupAttendance"), icon: CalendarCheck },
       { id: "behavior", label: t("groupBehavior"), icon: HeartPulse },
@@ -124,14 +121,19 @@ export default function StatisticsPage() {
           </div>
 
           <div className="flex min-w-0 min-h-0 flex-1 flex-col">
-            {selectedClassId ? (
+            {group === "students" ? (
+              <StudentsTablePanel
+                onSelectStudent={(id) => router.push(`/dashboard/students/${id}`)}
+                period={period}
+                calendar={calendar}
+                classId={selectedClassId ?? undefined}
+              />
+            ) : selectedClassId ? (
               <ClassStatsView classId={selectedClassId} period={period} prevPeriod={prevPeriod} group={group} calendar={calendar} />
             ) : group === "overview" ? (
               <OverviewPanel period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : group === "classes" ? (
               <ClassesTablePanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} calendar={calendar} />
-            ) : group === "students" ? (
-              <StudentsTablePanel onSelectStudent={(id) => router.push(`/dashboard/students/${id}`)} period={period} calendar={calendar} />
             ) : (
               <SelectClassPrompt />
             )}

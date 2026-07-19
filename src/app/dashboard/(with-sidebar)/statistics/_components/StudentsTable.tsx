@@ -37,10 +37,14 @@ export function StudentsTable({
   rows,
   scrolled = false,
   onSelect,
+  hideClassColumn = false,
 }: {
   rows: StudentOverviewRow[];
   scrolled?: boolean;
   onSelect: (studentId: string) => void;
+  /** Bitta sinf doirasida koʻrsatilganda "Sinf" ustuni ortiqcha (barcha
+      qatorda bir xil qiymat) — shu holatda yashiriladi. */
+  hideClassColumn?: boolean;
 }) {
   const t = useTranslations("StatisticsPage");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "absenceTier", dir: "desc" });
@@ -103,7 +107,7 @@ export function StudentsTable({
           <TableHeader>
             <TableRow className="hover:bg-transparent! border-b-0!">
               <SortHeader label={t("columnStudent")} sortKey="name" className="min-w-48 pl-4" />
-              <SortHeader label={t("columnClass")} sortKey="className" className="w-36" />
+              {!hideClassColumn && <SortHeader label={t("columnClass")} sortKey="className" className="w-36" />}
               <SortHeader label={t("columnAttendance")} sortKey="attendancePct" className="w-20" align="center" />
               <SortHeader label={t("columnGrade")} sortKey="summative" className="w-44" />
               <SortHeader label={t("columnTrend")} sortKey="trendDelta" className="w-24" align="center" />
@@ -130,9 +134,11 @@ export function StudentsTable({
                     </div>
                   </TableCell>
 
-                  <TableCell className="whitespace-nowrap w-36 truncate px-3 py-3.5 text-sm text-muted-foreground">
-                    {r.className}
-                  </TableCell>
+                  {!hideClassColumn && (
+                    <TableCell className="whitespace-nowrap w-36 truncate px-3 py-3.5 text-sm text-muted-foreground">
+                      {r.className}
+                    </TableCell>
+                  )}
 
                   <TableCell className="whitespace-nowrap w-20 px-3 py-3.5">
                     <div className="flex justify-center">

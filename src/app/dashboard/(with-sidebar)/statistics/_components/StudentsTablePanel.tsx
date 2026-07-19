@@ -28,11 +28,14 @@ type TierFilter = "all" | Exclude<AbsenceTier, null>;
     roʻyxatga aylantiradi (`ClassesTablePanel`ning oʻquvchi darajasidagi
     hamkasbi). Qatorga sinf nomi/rangi ham biriktiriladi. */
 export function StudentsTablePanel({
-  onSelectStudent, period, calendar,
+  onSelectStudent, period, calendar, classId,
 }: {
   onSelectStudent: (studentId: string) => void;
   period: StatPeriod | null;
   calendar: AcademicYearCalendar;
+  /** Berilsa, roʻyxat shu sinf oʻquvchilari bilan cheklanadi (sinf detali
+      ichidagi "Oʻquvchilar" tabi) — aks holda butun maktab boʻyicha. */
+  classId?: string;
 }) {
   const t = useTranslations("StatisticsPage");
   const [query, setQuery] = useState("");
@@ -49,7 +52,8 @@ export function StudentsTablePanel({
   const rows = useMemo<StudentOverviewRow[]>(() => {
     if (!period) return [];
     const isYear = period.kind === "year";
-    return liveClasses.flatMap((cls) => {
+    const scoped = classId ? liveClasses.filter((cls) => cls.id === classId) : liveClasses;
+    return scoped.flatMap((cls) => {
       const classData = classDataMap[cls.id];
       if (!classData) return [];
       const color = classColor({ id: cls.id, name: cls.name, color: cls.color });
@@ -63,7 +67,7 @@ export function StudentsTablePanel({
       });
       return summaries.map((s) => ({ ...s, classId: cls.id, className: cls.name, classColor: color }));
     });
-  }, [liveClasses, classDataMap, recordsByClass, eventsByClass, weights, period]);
+  }, [liveClasses, classDataMap, recordsByClass, eventsByClass, weights, period, classId]);
 
   const tierCounts = useMemo(
     () => ({
@@ -140,7 +144,7 @@ export function StudentsTablePanel({
           className="flex-1 min-h-0 overflow-auto"
           onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}
         >
-          <StudentsTable rows={filteredRows} scrolled={scrolled} onSelect={onSelectStudent} />
+          <StudentsTable rows={filteredRows} scrolled={scrolled} onSelect={onSelectStudent} hideClassColumn={!!classId} />
         </div>
 
         <div className="mt-3 shrink-0 text-xs text-muted-foreground">
