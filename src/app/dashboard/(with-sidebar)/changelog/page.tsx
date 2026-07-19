@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useMessages } from "next-intl";
 import { ArrowUpRight, ChevronDown, ChevronUp, ListFilter, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -98,19 +98,59 @@ function CompactEntryRow({
   );
 }
 
+/** Guruhlangan yozuvlar uchun subdued qator — bir jumla ichida tur+sarlavha,
+    rangli badge yoʻq, faqat turga mos rangli nuqta (guruh oʻzi allaqachon
+    "mayda" signalini beradi, lekin tur farqi yoʻqolib ketmasligi kerak). */
+function MutedCompactRow({
+  entry,
+  typeLabel,
+  routeLabels,
+}: {
+  entry: ChangelogEntry;
+  typeLabel: string;
+  routeLabels: Record<string, string>;
+}) {
+  const meta = TYPE_META[entry.type];
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <p className="min-w-0 truncate text-sm text-muted-foreground">
+        <span className={cn("mr-1.5 inline-block size-1.5 rounded-full align-middle", meta.iconColor.replace("text-", "bg-"))} />
+        <span className="font-medium text-foreground">{typeLabel}:</span>{" "}
+        {entry.title}
+        {!/[.!?]$/.test(entry.title) && "."}
+      </p>
+      {entry.href && (
+        <Link
+          href={entry.href}
+          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+        >
+          {routeLabels[entry.href] ?? entry.href.split("/").pop()}
+          <ArrowUpRight className="size-3" />
+        </Link>
+      )}
+    </div>
+  );
+}
+
 /** Ketma-ket kompakt yozuvlarni "N ta kichik yangilanish" qatoriga jamlaydi. */
 function CompactGroup({
   entries,
   typeLabels,
   routeLabels,
   compactCountLabel,
+  hideLabel,
+  showLabel,
 }: {
   entries: ChangelogEntry[];
   typeLabels: Record<ChangelogEntry["type"], string>;
   routeLabels: Record<string, string>;
   compactCountLabel: string;
+  hideLabel: string;
+  showLabel: string;
 }) {
-  const [open, setOpen] = useState(false);
+  // EMStudio uslubi: kompakt guruh dastlab OCHIQ (foydalanuvchi darhol koʻradi),
+  // "yashirish" bilan yigʻish mumkin — yigʻilganini eslatish uchun soʻz + ikonka.
+  const [open, setOpen] = useState(true);
   if (entries.length < COLLAPSE_THRESHOLD) {
     return (
       <div className="space-y-3">
@@ -121,7 +161,7 @@ function CompactGroup({
     );
   }
   return (
-    <div>
+    <div className="rounded-xl bg-muted/40 px-3.5 py-3">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -131,12 +171,15 @@ function CompactGroup({
           <span className="size-1.5 rounded-full bg-muted-foreground/50" />
           {compactCountLabel}
         </span>
-        {open ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+        <span className="inline-flex items-center gap-1 text-xs transition-colors hover:text-foreground">
+          {open ? hideLabel : showLabel}
+          {open ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+        </span>
       </button>
       {open && (
-        <div className="mt-3 space-y-3 border-t border-border pt-3">
+        <div className="mt-3 flex flex-col gap-2.5 border-t border-border/70 pt-3">
           {entries.map((e) => (
-            <CompactEntryRow key={e.id} entry={e} typeLabel={typeLabels[e.type]} routeLabels={routeLabels} />
+            <MutedCompactRow key={e.id} entry={e} typeLabel={typeLabels[e.type]} routeLabels={routeLabels} />
           ))}
         </div>
       )}
@@ -149,6 +192,17 @@ function CompactGroup({
 type Block =
   | { kind: "full"; entry: ChangelogEntry }
   | { kind: "compact"; entries: ChangelogEntry[] };
+
+/** Tanlangan tildagi tarjima boʻlsa, uz-standart title/body ustidan yozadi
+    (`Changelog.entries.<id>`); tarjima yoʻq boʻlsa uz matni koʻrinadi. */
+function localizeEntry(
+  entry: ChangelogEntry,
+  dict?: Record<string, { title?: string; body?: string }>
+): ChangelogEntry {
+  const tr = dict?.[entry.id];
+  if (!tr) return entry;
+  return { ...entry, title: tr.title ?? entry.title, body: tr.body ?? entry.body };
+}
 
 function toBlocks(items: ChangelogEntry[]): Block[] {
   const blocks: Block[] = [];
@@ -186,6 +240,7 @@ export default function ChangelogPage() {
       "/dashboard/lessons": t("routes.lessons"),
       "/dashboard/statistics": t("routes.statistics"),
       "/dashboard/tasks": t("routes.tasks"),
+      "/dashboard/changelog": t("routes.changelog"),
     }),
     [t]
   );
@@ -204,7 +259,15 @@ export default function ChangelogPage() {
     markChangelogSeen();
   }, []);
 
-  const groups = useMemo(() => groupChangelogByDate(), []);
+  const messages = useMessages() as { Changelog?: { entries?: Record<string, { title?: string; body?: string }> } };
+  const entryTranslations = messages?.Changelog?.entries;
+
+  const groups = useMemo(() => {
+    return groupChangelogByDate().map((g) => ({
+      date: g.date,
+      items: g.items.map((it) => localizeEntry(it, entryTranslations)),
+    }));
+  }, [entryTranslations]);
 
   // Tur boʻyicha soni (filtr menyusida koʻrsatish uchun)
   const typeCounts = useMemo(() => {
@@ -396,6 +459,8 @@ export default function ChangelogPage() {
                             typeLabels={typeLabels}
                             routeLabels={routeLabels}
                             compactCountLabel={t("compactGroup", { count: block.entries.length })}
+                            hideLabel={t("compactGroupHide")}
+                            showLabel={t("compactGroupShow")}
                           />
                         )
                       )}

@@ -1855,6 +1855,8 @@
     "recentUpdates": "Aqırǵı 30 kúnde <b>{count} ta</b> jańalanıw.",
     "updatesCount": "{count} jańalanıw",
     "compactGroup": "{count} kishi jańalanıw",
+    "compactGroupHide": "jasırıw",
+    "compactGroupShow": "kórsetiw",
     "showPrevious": "Aldınǵı jańalanıwlardı kórsetiw",
     "types": {
       "yangi": "Jańa",
@@ -1873,7 +1875,169 @@
       "feedback": "Pikir-usınıs",
       "lessons": "Sabaqlar",
       "statistics": "Statistika",
-      "tasks": "Wazıypalar"
+      "tasks": "Wazıypalar",
+      "changelog": "Jańalanıwlar"
+    },
+    "entries": {
+      "classes-page-rename": {
+        "title": "«Meniń klaslarım» bólimi endi qısqasha «Klaslar» dep ataladı"
+      },
+      "changelog-link-labels-fix": {
+        "title": "Jańalanıwlar betindegi siltew belgileri dúzetildi"
+      },
+      "classes-table-view": {
+        "title": "Klaslar betine Keste kórinisi qosıldı",
+        "body": "Endi klaslarıńızdı Karta, Dizim yamasa ıqsham Keste kórinisinde kóriwińiz múmkin. Keste kórinisinde birneshe klastı belgilep, birden arxivlew yamasa óshiriw de múmkin."
+      },
+      "statistics-table-polish": {
+        "title": "Statistika kestesindegi kishkene qátelikler dúzetildi",
+        "body": "Dawamat protsenti gáhi-gáhi uzın bólshek san menen shıǵıp qalatuǵın edi — endi hámishe dógereklengen kórinede. Taqırıp astındaǵı kereksiz sızıq hám paydasız belgilew/ámel baganaları alıp taslandı."
+      },
+      "tasks-calendar-launch": {
+        "title": "Wazıypalar betinde kalendar kórinisi",
+        "body": "Endi Wazıypalar betinde dizim menen bir qatarda kalendar da bar: kún, hápte, ay, shirek hám jıl boyınsha sabaqlar, wazıypa múddetleri, dem alıslar hám tuwılǵan kúnler bir jerde kórinedi. Qálegen belgige basıp, tuwrıdan-tuwrı tiyisli jerge ótiw múmkin."
+      },
+      "statistics-launch": {
+        "title": "Jańa bólim: Statistika",
+        "body": "Endi barlıq klaslarıńız boyınsha jalpı kórinis bir jerde: kimge itibar kerek, qaysı klasqa kóbirek waqıt kerek, baha bólistiriliwi, tema iyelew, dawamat hám minez-qulıq trendleri. Klastı tańlap ishine kirseńiz — tapsırma qıyınlıǵı hám klas ishindegi tuwrılıqlar da usı jerde."
+      },
+      "home-redesign-command-center": {
+        "title": "Bas bet kúndi basqarıw ortalıǵına aylandı",
+        "body": "Endi bas bette kúnińiz bir qaraǵanda kórinedi: «Náwbettegi isler» wazıypalardı, tekserilmegen jumıslardı hám baqlaw múddetlerin bir dizimge jıynaydı; «Itibar kerek» dawamatı túsken yamasa iyelewi páseygen oqıwshılardı ózi kórsetedi; oń jaqta búgingi sabaqlar dizim yamasa waqıt oqı kórinisinde. Jaqın tuwılǵan kúnler de usı jerde, kún aqırında ózińiz basqaratuǵın dóregen sózler shıǵadı."
+      },
+      "multi-language-support": {
+        "title": "Qosımsha endi 6 tilde isleydi",
+        "body": "Sazlawlar bóliminen tildi tańlaw múmkin — ózbekshe, qaraqalpaqsha, qırgʻızsha, qazaqsha, orıssha hám aglıshsha. Tańlanǵan til boyınsha pútkil qosımsha (menyu, túymeler, betler) sol tilde kórsetiledi."
+      },
+      "student-profile-class-badge-fix": {
+        "title": "Oqıwshı profilindegi klas belgisi dúzetildi",
+        "body": "Klas reńi belgisi tım kishkene bolǵanı ushın dógerek kórinip qalatuǵın edi — endi barlıq jerde bir qıylı, múyeshleri dógereklengen kvadrat pishinde shıǵadı. Klas atı-jóni astında hám «Jeke maǵlıwmatlar» bóliminde eki márte qaytalanatuǵın edi — endi tek bir jerde kórsetiledi."
+      },
+      "student-auto-id": {
+        "title": "Hár bir oqıwshıǵa avtomatlıq ID beriledi",
+        "body": "Jańa oqıwshı qosılǵanda endi oǵan avtomatlıq túrde tártip nomeri (ID) biriktiriledi — qol menen kirgiziw shárt emes."
+      },
+      "card-passport-v2": {
+        "title": "Kartalar hám dizimler jańa kóriniske ótti",
+        "body": "Klaslar, sabaqlar, oqıwshılar hám keste boyınsha barlıq kartalar bir qıylı, jańa kóriniske keldi: dógerek gradientli ikonalar, tańlanǵanda sol jaqtan jińishke reńli sızıq. Oqıwshı kartalarındaǵı artıqsha maǵlıwmatlar (ID qatarı) alıp taslandı, áhmiyetli kórsetkishler anıqraq shıǵadı."
+      },
+      "class-color-palette-expanded": {
+        "title": "Klas reńleri palitrası keńeytildi",
+        "body": "Jańa klas jaratqanda reń endi avtomatlıq tańlanadı — barlıq reńler tawısılǵansha bir reń qaytarılmaydı. Reń tańlaw penjeresine tag'ı 7 jańa ottenka (sarı, laym, zumrad, kók-jasıl, binapsha, fuksiya, atirgul) qosıldı — jámi 17 reńnen qálegenińizdi tańlaw múmkin."
+      },
+      "guided-tour-reliability": {
+        "title": "Qollanba turları endi isenimlirek",
+        "body": "Kishkene ekranda yamasa tur ortasında basqa betke ótip ketkende tur endi nadurıs «kórildi» dep belgilenbeydi. Ótkerip jiberilgen tur «orınlandı» menen aralaspaydı, klaviatura arqalı basqarıw (Esc, Oń/Sol) qosıldı."
+      },
+      "profile-birthdate-save-fix": {
+        "title": "Profilde tuwılǵan kúndi saqlaw endi isleydi",
+        "body": "Sazlawlar > Profilde tuwılǵan kúndi jıl/kún/ay arqalı tańlaǵanda gáhi-gáhi «Saqlaw» túymesi belsendirilmey qalatuǵın edi — dúzetildi."
+      },
+      "students-add-flow": {
+        "title": "Oqıwshı qosıw endi isleydi",
+        "body": "«Klas tańlanbaǵan» qátesi sebepli geypara jaǵdaylarda oqıwshı qosıp bolmay atırǵan edi — dúzetildi. Sonıń menen birge oqıwshı qosıw penjeresi de jańalandı: bir oqıwshı qosıw, dizimdi qoyıw yamasa CSV/Excel fayldan import etiw endi bir qolaylı penjerede."
+      },
+      "lesson-editor-save-fix": {
+        "title": "Sabaq redaktorındaǵı saqlaw endi isenimli",
+        "body": "Aldın sabaq redaktorında jazǵan tekstińiz gáhi-gáhi joǵalıp qalatuǵın edi — sabaqlar dizimine qaytqanıńızda ózgeris saqlanbaǵanday kórinetuǵın edi. Endi hár bir jazba serverge dárhal saqlanadı, betten shıqqanda hesh nárse joǵalmaydı."
+      },
+      "notifications-polish": {
+        "title": "Bildirisler qolaylıraq boldı",
+        "body": "Pikirińiz halı ózgerse, dál qaysı basqıshta ekeni (máselen, kóriliwde) reńli belgi menen dárhal kórinedi. Bildiriske basqanda endi tuwrıdan-tuwrı tiyisli pikir kartasına alıp baradı."
+      },
+      "changelog-launch": {
+        "title": "Jańalanıwlar beti iske tústi",
+        "body": "Ustozona-da ne ózgergenin endi usı jerden baqlap barasız. Jańa múmkinshilik shıqsa, panelde belgi payda boladı."
+      },
+      "feedback-v2": {
+        "title": "Pikir-usınıs kúsheydi",
+        "body": "Pikirińizge komanda rásmiy juwap jazǵanda yamasa onıń halı ózgergende bildiris alasız — onnan bir basıw menen sol pikirge ótesiz."
+      },
+      "prod-launch": {
+        "title": "Ustozona endi internette: www.ustozona.uz",
+        "body": "Platforma rásmiy mánzilde iske tústi. Hisabıńızǵa Google arqalı bir basıw menen kiresiz."
+      },
+      "command-palette": {
+        "title": "Tezkor izlew — Ctrl+K",
+        "body": "Klaviaturadan Ctrl+K (Mac'ta ⌘K) basıńız, qálegen bet, klas yamasa oqıwshını bir demde tabasız. Bettiń joqarısındaǵı jol arqalı klaslar hám oqıwshılar arasında da tez almasasız."
+      },
+      "student-profile-real": {
+        "title": "Oqıwshı profili tolıq qanlı boldı",
+        "body": "Profildegi belgileriniz endi saqlanıp qaladı, dawamat bólimi bolsa haqıyqıy joqlama nátiyjelerin kórsetedi."
+      },
+      "motion-polish": {
+        "title": "Interfeys jandandı",
+        "body": "Betler jumsaq animatsiya menen ashıladı, kartalar basılǵanda juwap sezimin beredi — paydalanıw jaqımlıraq boldı."
+      },
+      "attendance-simpler": {
+        "title": "Dawamat beti ápiwayılastırıldı"
+      },
+      "multi-year": {
+        "title": "Kóp oqıw jılı menen jumıs",
+        "body": "Jańa oqıw jılına ótiw jeńillesti: eski klaslardı arxivlep, jańa jıldı taza jurnal menen baslaysız. Aldıńǵı jıllardıń maǵlıwmatı joǵalmaydı — qálegen waqıtta qaytıp kóriwińiz múmkin."
+      },
+      "behavior-auto-points": {
+        "title": "Minez-qulıq ballı avtomatlıq túrde de jıynaladı",
+        "body": "Dawamat hám jurnal nátiyjeleri tiykarında oqıwshınıń minez-qulıq ballına avtomatlıq qosımshalar túsedi — qol menen kirgiziw shárt emes."
+      },
+      "settings-redesign": {
+        "title": "Sazlawlar qayta tártipke salındı",
+        "body": "Bólimler tema boyınsha toparlanǵan, ózgerisler anıq «Saqlaw» túymesi menen tastıyıqlanadı — ne ózgertkenińiz hámishe kórinip turadı."
+      },
+      "behavior-launch": {
+        "title": "Minez-qulıq beti",
+        "body": "Oqıwshılarǵa kónlikpeler ushın ball beriw, sıylıqlar hám klas boyınsha minez-qulıq esabatı — hámmesi bir bette."
+      },
+      "page-tours": {
+        "title": "Hár bette jol-jobalar",
+        "body": "Rejelestiriwshi, jurnal, dawamat hám basqa betlerde endi basqıshpa-basqısh qollanbalar bar — joqarıdaǵı qalpaqsha belgisinen qálegen waqıtta shaqırasız."
+      },
+      "guidehub": {
+        "title": "Qollanbalar ortalıǵı: kerek waqıtta ózińiz ashasız"
+      },
+      "fullscreen": {
+        "title": "Tolıq ekran rejimi túymesi"
+      },
+      "onboarding-v2": {
+        "title": "Baslaw sıykırshısı jańa kórinisde"
+      },
+      "bell-settings": {
+        "title": "Qońıraw kestesi hám oqıw jılı sazlawları",
+        "body": "Qońıraw kestesin kalendar kórinisinde kóresiz, oqıw jılınıń shirekleri hám dem alısların lentada basqarasız."
+      },
+      "home-redesign": {
+        "title": "Bas bet jańa kórinisde",
+        "body": "Búgingi sabaqlarıńız, háptelik kalendar hám sálemlesiw kartası — kúnińizdi bir qaraǵanda rejelestiresiz."
+      },
+      "onboarding-launch": {
+        "title": "Jańa paydalanıwshılar ushın tayar start",
+        "body": "Dizimnen ótkeningizde klaslarıńızdı kirgizesiz, kalendar bolsa oqıw jılına sáykes avtomatlıq tayarlanadı."
+      },
+      "account-delete-fix": {
+        "title": "Hisab óshiriw qátesi tuwrılandı",
+        "body": "Hisabıńızdı óshirseńiz de qayta kirgende maǵlıwmatlar qaytıp keliw jaǵdayı baqlanǵan edi — endi óshiriw pútkilley isleydi."
+      },
+      "nav-simpler": {
+        "title": "Navigatsiya ápiwayılastırıldı: taza panel hám sárlawha"
+      },
+      "backend-v1": {
+        "title": "Haqıyqıy hisablar hám bultta saqlaw",
+        "body": "Maǵlıwmatlarıńız endi brauzerde emes, qáwipsiz serverde saqlanadı. Qálegen qurılǵıdan kirseńiz — klaslarıńız, jurnalıńız ornında."
+      },
+      "timetable-uz": {
+        "title": "Sabaq kestesi endi ózbek tilinde hám 24-saatlıq formatta"
+      },
+      "classes-polish": {
+        "title": "Bas bet hám klaslar jaqsılandı"
+      },
+      "standards-launch": {
+        "title": "Standartlar beti",
+        "body": "Bilimlendiriw standartların Blum taksonomiyası dárejeleri boyınsha baqlap barasız."
+      },
+      "initial-release": {
+        "title": "Ustozona jolǵa shıqtı",
+        "body": "Birinshi versiya: klaslar, dawamat hám sabaq kestesi. Hámmesi oqıtıwshınıń kúndelikli isin jeńillestiriw ushın."
+      }
     }
   },
   "StandardsView": {

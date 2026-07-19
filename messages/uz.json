@@ -1855,6 +1855,8 @@
     "recentUpdates": "Oxirgi 30 kunda <b>{count} ta</b> yangilanish.",
     "updatesCount": "{count} ta yangilanish",
     "compactGroup": "{count} ta kichik yangilanish",
+    "compactGroupHide": "yashirish",
+    "compactGroupShow": "koʻrsatish",
     "showPrevious": "Oldingi yangilanishlarni koʻrsatish",
     "types": {
       "yangi": "Yangi",
@@ -1873,7 +1875,8 @@
       "feedback": "Fikr-mulohaza",
       "lessons": "Darslar",
       "statistics": "Statistika",
-      "tasks": "Vazifalar"
+      "tasks": "Vazifalar",
+      "changelog": "Yangilanishlar"
     }
   },
   "StandardsView": {

@@ -1855,6 +1855,8 @@
     "recentUpdates": "<b>{count}</b> updates in the last 30 days.",
     "updatesCount": "{count} updates",
     "compactGroup": "{count} minor updates",
+    "compactGroupHide": "hide",
+    "compactGroupShow": "show",
     "showPrevious": "Show earlier updates",
     "types": {
       "yangi": "New",
@@ -1873,7 +1875,169 @@
       "feedback": "Feedback",
       "lessons": "Lessons",
       "statistics": "Statistics",
-      "tasks": "Tasks"
+      "tasks": "Tasks",
+      "changelog": "Changelog"
+    },
+    "entries": {
+      "classes-page-rename": {
+        "title": "The “My classes” section is now called “Classes” for short"
+      },
+      "changelog-link-labels-fix": {
+        "title": "Fixed link labels on the Updates page"
+      },
+      "classes-table-view": {
+        "title": "Table view added to the Classes page",
+        "body": "You can now view your classes as Cards, a List, or a compact Table. In Table view, you can select multiple classes and archive or delete them all at once."
+      },
+      "statistics-table-polish": {
+        "title": "Minor fixes in the Statistics table",
+        "body": "The attendance percentage used to show as a long decimal — it's now always rounded. The unnecessary line under the header and the unused selection/action columns were removed."
+      },
+      "tasks-calendar-launch": {
+        "title": "Calendar view on the Tasks page",
+        "body": "The Tasks page now has a calendar alongside the list: lessons, task deadlines, holidays, and birthdays for the day, week, month, quarter, and year all show in one place. Click any entry to jump straight to it."
+      },
+      "statistics-launch": {
+        "title": "New section: Statistics",
+        "body": "See the full picture across all your classes in one place: who needs attention, which class needs more of your time, grade distribution, standards mastery, and attendance and behavior trends. Open a class for assignment difficulty and class-level detail."
+      },
+      "home-redesign-command-center": {
+        "title": "The home page is now your command center for the day",
+        "body": "Your day is now visible at a glance: “Up next” gathers tasks, ungraded work, and deadlines into one list; “Needs attention” surfaces students with dropping attendance or falling grades on its own; today's lessons appear on the right as a list or a timeline. Upcoming birthdays are here too, and quotes you control appear at the end of the day."
+      },
+      "multi-language-support": {
+        "title": "The app now works in 6 languages",
+        "body": "Choose your language from Settings — Uzbek, Karakalpak, Kyrgyz, Kazakh, Russian, or English. The whole app (menus, buttons, pages) switches to that language."
+      },
+      "student-profile-class-badge-fix": {
+        "title": "Fixed the class badge on the student profile",
+        "body": "The class color badge was too small and looked like a circle — it's now the same rounded-square shape everywhere. The class used to appear twice, under the name and in “Personal info” — now it shows only once."
+      },
+      "student-auto-id": {
+        "title": "Every student now gets an automatic ID",
+        "body": "When you add a new student, they're now automatically assigned a sequential ID — no need to enter one by hand."
+      },
+      "card-passport-v2": {
+        "title": "Cards and lists have a new look",
+        "body": "Classes, lessons, students, and timetable cards all share a new, consistent look: rounded gradient icons, a thin colored line on the left when selected. Extra info on student cards (the ID row) was removed, so key metrics stand out more clearly."
+      },
+      "class-color-palette-expanded": {
+        "title": "Class color palette expanded",
+        "body": "When you create a new class, a color is now assigned automatically — no color repeats until every color has been used. 7 new shades (yellow, lime, emerald, teal, violet, fuchsia, rose) were added to the color picker — choose from 17 colors in total."
+      },
+      "guided-tour-reliability": {
+        "title": "Guided tours are now more reliable",
+        "body": "A tour is no longer wrongly marked “seen” if you're on a small screen or navigate away mid-tour. A skipped tour no longer gets confused with a completed one, and you can now navigate with the keyboard (Esc, arrow keys)."
+      },
+      "profile-birthdate-save-fix": {
+        "title": "Saving a birth date in your profile now works",
+        "body": "In Settings > Profile, picking a birth date via year/day/month sometimes left the “Save” button inactive — fixed."
+      },
+      "students-add-flow": {
+        "title": "Adding students now works",
+        "body": "A “No class selected” error was blocking students from being added in some cases — fixed. The add-student dialog was also redesigned: adding one student, pasting a list, or importing from a CSV/Excel file now all happen in one convenient dialog. (Thanks to Omadbek Odilov for finding these bugs in testing!)"
+      },
+      "lesson-editor-save-fix": {
+        "title": "Saving in the lesson editor is now reliable",
+        "body": "Text you wrote in the lesson editor could previously disappear — going back to the lessons list made it look like your changes weren't saved. Every change is now saved to the server immediately, so nothing is lost when you leave the page."
+      },
+      "notifications-polish": {
+        "title": "Notifications are more convenient",
+        "body": "When your feedback's status changes, the exact stage (e.g. under review) now shows immediately with a colored badge. Clicking a notification now takes you straight to the right feedback card."
+      },
+      "changelog-launch": {
+        "title": "The Updates page is live",
+        "body": "You can now track what's changing in Ustozona right from this page. A badge appears in the sidebar whenever something new ships."
+      },
+      "feedback-v2": {
+        "title": "Feedback got stronger",
+        "body": "You get a notification when the team replies to your feedback or its status changes — one click takes you straight to it."
+      },
+      "prod-launch": {
+        "title": "Ustozona is now live on the internet: www.ustozona.uz",
+        "body": "The platform launched at its official address. Sign in to your account with one click via Google."
+      },
+      "command-palette": {
+        "title": "Quick search — Ctrl+K",
+        "body": "Press Ctrl+K (⌘K on Mac) to instantly find any page, class, or student. The bar at the top of the page also lets you switch quickly between classes and students."
+      },
+      "student-profile-real": {
+        "title": "The student profile is now fully functional",
+        "body": "Notes on the profile are now saved for good, and the attendance section shows real attendance results."
+      },
+      "motion-polish": {
+        "title": "The interface came to life",
+        "body": "Pages open with smooth animation, and cards give a responsive feel when clicked — everything feels more pleasant to use."
+      },
+      "attendance-simpler": {
+        "title": "The Attendance page was simplified"
+      },
+      "multi-year": {
+        "title": "Work across multiple academic years",
+        "body": "Moving to a new academic year is now easier: archive last year's classes and start the new one with a clean gradebook. Past years' data isn't lost — you can revisit it anytime."
+      },
+      "behavior-auto-points": {
+        "title": "Behavior points are now also added automatically",
+        "body": "Based on attendance and gradebook results, automatic additions are now made to a student's behavior score — no need to enter them by hand."
+      },
+      "settings-redesign": {
+        "title": "Settings was reorganized",
+        "body": "Sections are now grouped by topic, and changes are confirmed with a clear “Save” button — you always see exactly what you've changed."
+      },
+      "behavior-launch": {
+        "title": "Behavior page",
+        "body": "Award points to students for skills, give out rewards, and see a class-wide behavior report — all on one page."
+      },
+      "page-tours": {
+        "title": "Guided walkthroughs on every page",
+        "body": "The Planner, Gradebook, Attendance, and other pages now have step-by-step walkthroughs — open one anytime from the cap icon at the top."
+      },
+      "guidehub": {
+        "title": "Guide hub: open a walkthrough whenever you need it"
+      },
+      "fullscreen": {
+        "title": "Fullscreen mode button"
+      },
+      "onboarding-v2": {
+        "title": "The setup wizard has a new look"
+      },
+      "bell-settings": {
+        "title": "Bell schedule and academic year settings",
+        "body": "View the bell schedule as a calendar, and manage the academic year's quarters and breaks on a timeline."
+      },
+      "home-redesign": {
+        "title": "The home page has a new look",
+        "body": "Today's lessons, a weekly calendar, and a greeting card — plan your day at a glance."
+      },
+      "onboarding-launch": {
+        "title": "A ready-made start for new users",
+        "body": "When you sign up, you add your classes, and the calendar is automatically set up to match the academic year."
+      },
+      "account-delete-fix": {
+        "title": "Fixed an account deletion bug",
+        "body": "Deleted data used to reappear when signing back in even after deleting your account — deletion now works completely."
+      },
+      "nav-simpler": {
+        "title": "Navigation simplified: a cleaner sidebar and header"
+      },
+      "backend-v1": {
+        "title": "Real accounts and cloud storage",
+        "body": "Your data is no longer stored in the browser — it's now kept securely on a server. Sign in from any device and your classes and gradebook are right there."
+      },
+      "timetable-uz": {
+        "title": "The timetable is now in Uzbek and uses 24-hour format"
+      },
+      "classes-polish": {
+        "title": "The home page and classes were polished"
+      },
+      "standards-launch": {
+        "title": "Standards page",
+        "body": "Track education standards by Bloom's taxonomy levels."
+      },
+      "initial-release": {
+        "title": "Ustozona launched",
+        "body": "First version: classes, attendance, and timetable — all built to make a teacher's daily work easier."
+      }
     }
   },
   "StandardsView": {
