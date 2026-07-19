@@ -1,10 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { TypographyMuted } from "@/components/ui/typography";
+import { Layers } from "lucide-react";
 import { scoreBarColor } from "@/lib/score-colors";
 import { cn } from "@/lib/utils";
 import type { TopicMasteryRow } from "@/lib/class-stats";
+import { StatEmpty } from "./StatEmpty";
 
 export function TopicMasteryCard({ rows }: { rows: TopicMasteryRow[] }) {
   const t = useTranslations("StatisticsPage");
@@ -12,7 +13,7 @@ export function TopicMasteryCard({ rows }: { rows: TopicMasteryRow[] }) {
   return (
     <div>
       {rows.length === 0 ? (
-        <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
+        <StatEmpty icon={Layers} title={t("notEnoughData")} />
       ) : (
         <div className="space-y-2.5">
           {rows.map((r) => (

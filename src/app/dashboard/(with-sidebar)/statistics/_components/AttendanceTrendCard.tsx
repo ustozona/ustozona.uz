@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { TypographyMuted } from "@/components/ui/typography";
+import { TrendingUp } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { MIN_TREND_WEEKS, type AttendanceWeekPoint } from "@/lib/class-stats";
+import { StatEmpty } from "./StatEmpty";
 
 const CHART_CONFIG = { pct: { label: "pct", color: "var(--primary)" } } satisfies ChartConfig;
 
@@ -20,7 +21,7 @@ export function AttendanceTrendCard({ weeks }: { weeks: AttendanceWeekPoint[] })
   return (
     <div>
       {notEnough ? (
-        <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
+        <StatEmpty icon={TrendingUp} title={t("notEnoughData")} />
       ) : !mounted ? (
         <div className="h-32 w-full" />
       ) : (

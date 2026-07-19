@@ -6,7 +6,7 @@ import {
   CalendarX, ClipboardX, HeartCrack, TrendingDown, TrendingUp, UserX, UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TypographyMuted } from "@/components/ui/typography";
+import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { ATTENTION_DEFAULTS, type AttentionSignal } from "@/lib/attention";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,13 @@ export function RiskList({
   const t = useTranslations("AttentionSection");
 
   if (signals.length === 0) {
-    return <TypographyMuted className="py-6 text-center text-sm">{t("emptyTitle")}</TypographyMuted>;
+    return (
+      <div className="flex flex-col items-center gap-2 py-8 text-center">
+        <AppleEmojiSprite emoji="✨" className="size-7" />
+        <p className="text-sm font-medium text-foreground">{t("emptyTitle")}</p>
+        <p className="text-xs text-muted-foreground">{t("emptyDescription")}</p>
+      </div>
+    );
   }
 
   const detailOf = (s: AttentionSignal): string => {

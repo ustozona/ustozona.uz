@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { TypographyMuted } from "@/components/ui/typography";
+import { Table as TableIcon } from "lucide-react";
 import { scoreBarColor } from "@/lib/score-colors";
 import type { TopicStudentMatrix } from "@/lib/class-stats";
+import { StatEmpty } from "./StatEmpty";
 
 function cellTint(pct: number): string {
   return scoreBarColor(pct).replace(")", " / 0.16)");
@@ -13,7 +14,7 @@ export function TopicStudentMatrixCard({ matrix }: { matrix: TopicStudentMatrix 
   const t = useTranslations("StatisticsPage");
 
   if (matrix.topics.length === 0 || matrix.students.length === 0) {
-    return <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>;
+    return <StatEmpty icon={TableIcon} title={t("notEnoughData")} />;
   }
 
   const cellByKey = new Map(matrix.cells.map((c) => [`${c.studentId}:${c.topicId}`, c.avg]));

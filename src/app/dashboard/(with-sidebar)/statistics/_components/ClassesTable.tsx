@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, GraduationCap } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, GraduationCap, SearchX } from "lucide-react";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { TypographyMuted } from "@/components/ui/typography";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
 import { STAT_DEADBAND_PP, type ClassOverviewRow } from "@/lib/class-stats";
 import { cn } from "@/lib/utils";
+import { StatEmpty } from "./StatEmpty";
 
 type SortKey = "name" | "studentCount" | "attendanceAvg" | "summativeAvg" | "signalCount";
 
@@ -84,7 +84,7 @@ export function ClassesTable({
   return (
     <>
       {sorted.length === 0 ? (
-        <TypographyMuted className="py-6 text-center text-sm">{t("noClassesFound")}</TypographyMuted>
+        <StatEmpty icon={SearchX} title={t("noClassesFound")} className="h-full" />
       ) : (
         <table className="w-full min-w-3xl caption-bottom text-sm">
             <TableHeader>

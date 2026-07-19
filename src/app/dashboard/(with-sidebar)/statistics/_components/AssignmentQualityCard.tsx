@@ -1,16 +1,18 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { ClipboardCheck } from "lucide-react";
 import { TypographyMuted } from "@/components/ui/typography";
 import { scoreBarColor } from "@/lib/score-colors";
 import { cn } from "@/lib/utils";
 import type { AssignmentQuality } from "@/lib/class-stats";
+import { StatEmpty } from "./StatEmpty";
 
 export function AssignmentQualityCard({ rows }: { rows: AssignmentQuality[] }) {
   const t = useTranslations("StatisticsPage");
 
   if (rows.length === 0) {
-    return <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>;
+    return <StatEmpty icon={ClipboardCheck} title={t("notEnoughData")} />;
   }
 
   return (

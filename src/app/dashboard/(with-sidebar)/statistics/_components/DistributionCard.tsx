@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Bar, BarChart, CartesianGrid, XAxis, Cell } from "recharts";
-import { TypographyMuted } from "@/components/ui/typography";
+import { BarChart3 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { scoreBarColor } from "@/lib/score-colors";
 import type { DistributionBin } from "@/lib/class-stats";
+import { StatEmpty } from "./StatEmpty";
 
 const CHART_CONFIG = { count: { label: "count" } } satisfies ChartConfig;
 
@@ -18,7 +19,7 @@ export function DistributionCard({ bins }: { bins: DistributionBin[] | null }) {
   return (
     <div>
       {bins === null ? (
-        <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
+        <StatEmpty icon={BarChart3} title={t("notEnoughData")} />
       ) : !mounted ? (
         <div className="h-40 w-full" />
       ) : (

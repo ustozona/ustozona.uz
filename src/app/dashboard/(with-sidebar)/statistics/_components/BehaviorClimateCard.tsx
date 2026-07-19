@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { HeartPulse } from "lucide-react";
 import { TypographyMuted } from "@/components/ui/typography";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import type { BehaviorClimateTrend } from "@/lib/class-stats";
+import { StatEmpty } from "./StatEmpty";
 
 export function BehaviorClimateCard({ climate }: { climate: BehaviorClimateTrend }) {
   const t = useTranslations("StatisticsPage");
@@ -20,7 +22,7 @@ export function BehaviorClimateCard({ climate }: { climate: BehaviorClimateTrend
         </div>
       )}
       {weeksWithData.length === 0 ? (
-        <TypographyMuted className="py-4 text-sm">{t("notEnoughData")}</TypographyMuted>
+        <StatEmpty icon={HeartPulse} title={t("notEnoughData")} />
       ) : (
         <>
           <div className="flex items-baseline gap-2">

@@ -1,13 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { ArrowDown, ArrowUp, GraduationCap, Minus } from "lucide-react";
 import { TypographyMuted } from "@/components/ui/typography";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { STAT_DEADBAND_PP, type ClassOverviewRow } from "@/lib/class-stats";
 import { cn } from "@/lib/utils";
+import { StatEmpty } from "./StatEmpty";
 
 export function ClassRowsCard({
   rows,
@@ -19,7 +20,7 @@ export function ClassRowsCard({
   const t = useTranslations("StatisticsPage");
 
   if (rows.length === 0) {
-    return <TypographyMuted className="py-6 text-center text-sm">{t("notEnoughData")}</TypographyMuted>;
+    return <StatEmpty icon={GraduationCap} title={t("notEnoughData")} />;
   }
 
   return (
