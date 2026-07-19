@@ -72,7 +72,7 @@ export function DomainSignalsPanel({
 
   return (
     <div className="h-full min-h-0 overflow-y-auto">
-      <div className="flex flex-col gap-4 pb-1">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <SeveritySignalCard severity="destructive" signals={signals.filter((s) => s.severity === "destructive")} classNameOf={(id) => classNameById.get(id)} />
         <SeveritySignalCard severity="warning" signals={signals.filter((s) => s.severity === "warning")} classNameOf={(id) => classNameById.get(id)} />
         <SeveritySignalCard severity="success" signals={signals.filter((s) => s.severity === "success")} classNameOf={(id) => classNameById.get(id)} />

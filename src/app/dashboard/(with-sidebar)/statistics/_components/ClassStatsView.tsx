@@ -135,11 +135,11 @@ export function ClassStatsView({
                 </div>
               </DashboardSectionCard>
             ) : (
-              <>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <SeveritySignalCard severity="destructive" signals={signals.filter((s) => s.severity === "destructive")} />
                 <SeveritySignalCard severity="warning" signals={signals.filter((s) => s.severity === "warning")} />
                 <SeveritySignalCard severity="success" signals={signals.filter((s) => s.severity === "success")} />
-              </>
+              </div>
             )}
           </>
         )}
