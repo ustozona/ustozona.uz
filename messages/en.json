@@ -1887,6 +1887,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "statistics-risk-view": {
+        "title": "Statistics: the “Needs attention” section is now student-centric",
+        "body": "At-risk students now show in a single list ranked by risk level — no student is scattered across several cards. The attendance KPI now shows the trend vs. the previous period."
+      },
       "statistics-students-tab": {
         "title": "Added a “Students” tab to the Statistics page",
         "body": "You can now see every student across all your classes in one table: sort by attendance, grade, trend, and risk level."
@@ -2283,7 +2287,12 @@
     "filterEmpty": "No signals of this type",
     "severityDestructive": "Critical",
     "severityWarning": "Needs attention",
-    "severitySuccess": "Improving"
+    "severitySuccess": "Improving",
+    "riskStudentsTitle": "Students needing attention",
+    "riskLevelHigh": "High risk",
+    "riskLevelMedium": "Watch",
+    "moreStudents": "{count} more students",
+    "positiveStudentsTitle": "Improving students"
   },
   "BirthdayCard": {
     "title": "Birthdays",

@@ -260,3 +260,55 @@ export function deriveAttentionSignals(input: AttentionInput): AttentionSignal[]
     return a.id.localeCompare(b.id);
   });
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   OʻQUVCHI-MARKAZLI AGREGATSIYA — xom signal roʻyxatini (yuzlab yozuv)
+   bitta oʻquvchi = bitta qator shakliga yigʻadi (EWS "composite risk"
+   naqshi: bir bola bir necha kartada sochilib ketmasin). destructive=3,
+   warning=1 ballik oddiy vaznlash; success signal riskga qoʻshilmaydi,
+   alohida hisoblanadi (positiveCount) — ijobiy signal xavfni kamaytirmaydi,
+   shunchaki alohida "yaxshilanmoqda" roʻyxatiga tegishli. */
+export type StudentRiskSummary = {
+  studentId: string;
+  studentName: string;
+  classId: string;
+  riskScore: number;
+  destructiveCount: number;
+  warningCount: number;
+  positiveCount: number;
+  signals: AttentionSignal[];
+};
+
+const SEVERITY_RISK_WEIGHT: Record<AttentionSeverity, number> = { destructive: 3, warning: 1, success: 0 };
+
+/** `deriveAttentionSignals` natijasini oʻquvchi boʻyicha yigʻadi va risk
+    balli boʻyicha kamayish tartibida qaytaradi (`attendance-missing` kabi
+    oʻquvchisiz signallar bu yerda ishtirok etmaydi). */
+export function aggregateStudentRisk(signals: AttentionSignal[]): StudentRiskSummary[] {
+  const byStudent = new Map<string, StudentRiskSummary>();
+  for (const s of signals) {
+    if (!("studentId" in s)) continue;
+    let entry = byStudent.get(s.studentId);
+    if (!entry) {
+      entry = {
+        studentId: s.studentId,
+        studentName: s.studentName,
+        classId: s.classId,
+        riskScore: 0,
+        destructiveCount: 0,
+        warningCount: 0,
+        positiveCount: 0,
+        signals: [],
+      };
+      byStudent.set(s.studentId, entry);
+    }
+    entry.signals.push(s);
+    entry.riskScore += SEVERITY_RISK_WEIGHT[s.severity];
+    if (s.severity === "destructive") entry.destructiveCount++;
+    else if (s.severity === "warning") entry.warningCount++;
+    else entry.positiveCount++;
+  }
+  return [...byStudent.values()].sort(
+    (a, b) => b.riskScore - a.riskScore || a.studentName.localeCompare(b.studentName)
+  );
+}

@@ -3,11 +3,10 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Users, CalendarClock, CalendarCheck, ShieldAlert, BarChart3, Layers, ClipboardCheck,
+  Users, CalendarClock, CalendarCheck, BarChart3, Layers, ClipboardCheck,
   Table as TableIcon, TrendingUp, UserX, HeartPulse, GraduationCap, Percent,
 } from "lucide-react";
 import { TypographyMuted } from "@/components/ui/typography";
-import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
@@ -15,7 +14,7 @@ import { useTimetableStore } from "@/store/useTimetableStore";
 import { useClassStore } from "@/store/useClassStore";
 import type { AcademicYearCalendar } from "@/lib/academic-calendar";
 import { statusWeights } from "@/lib/attendance-data";
-import { deriveAttentionSignals } from "@/lib/attention";
+import { deriveAttentionSignals, aggregateStudentRisk } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
   studentPeriodSummaries, classPeriodSummary, gradeDistribution, topicMastery, genderBreakdown,
@@ -27,8 +26,7 @@ import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { DistributionCard } from "./DistributionCard";
 import { TopicMasteryCard } from "./TopicMasteryCard";
-import { SeveritySignalCard, signalGridColsClass } from "./SeveritySignalCard";
-import { cn } from "@/lib/utils";
+import { StudentRiskCard, PositiveStudentsStrip } from "./StudentRiskCard";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 import { BehaviorClimateCard } from "./BehaviorClimateCard";
 import { DeadlinesCard } from "./DeadlinesCard";
@@ -49,7 +47,6 @@ export function ClassStatsView({
   calendar: AcademicYearCalendar;
 }) {
   const t = useTranslations("StatisticsPage");
-  const tAttention = useTranslations("AttentionSection");
   const todayKey = dateToKey(new Date());
 
   const classData = useGradesStore((s) => s.classDataMap[classId]);
@@ -95,6 +92,7 @@ export function ClassStatsView({
   const quality = assignmentQuality(classData, period.range, isYear);
   const matrix = topicStudentMatrix(classData, period.range, isYear);
   const hasFlaggedAbsence = summaries.some((s) => s.absenceTier === "watch" || s.absenceTier === "chronic");
+  const riskSummaries = aggregateStudentRisk(signals);
 
   const deltaStable = summary.summativeDelta === null || Math.abs(summary.summativeDelta) < STAT_DEADBAND_PP;
 
@@ -128,28 +126,8 @@ export function ClassStatsView({
               </DashboardSectionCard>
             )}
 
-            {signals.length === 0 ? (
-              <DashboardSectionCard icon={ShieldAlert} title={t("riskTitle")}>
-                <div className="flex flex-col items-center gap-2 py-8 text-center">
-                  <AppleEmojiSprite emoji="✨" className="size-7" />
-                  <p className="text-sm font-medium text-foreground">{tAttention("emptyTitle")}</p>
-                </div>
-              </DashboardSectionCard>
-            ) : (
-              (() => {
-                const destructive = signals.filter((s) => s.severity === "destructive");
-                const warning = signals.filter((s) => s.severity === "warning");
-                const success = signals.filter((s) => s.severity === "success");
-                const activeCount = [destructive, warning, success].filter((g) => g.length > 0).length;
-                return (
-                  <div className={cn("grid gap-4", signalGridColsClass(activeCount))}>
-                    <SeveritySignalCard severity="destructive" signals={destructive} />
-                    <SeveritySignalCard severity="warning" signals={warning} />
-                    <SeveritySignalCard severity="success" signals={success} />
-                  </div>
-                );
-              })()
-            )}
+            <StudentRiskCard summaries={riskSummaries} />
+            <PositiveStudentsStrip summaries={riskSummaries} />
           </>
         )}
 

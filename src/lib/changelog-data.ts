@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "statistics-risk-view",
+    date: "2026-07-19",
+    type: "yaxshilandi",
+    title: "Statistika: „Eʼtibor kerak“ boʻlimi oʻquvchi-markazli qilib qayta qurildi",
+    body:
+      "Endi xavfdagi oʻquvchilar bitta roʻyxatda, risk darajasi boʻyicha saralangan holda koʻrinadi — bir oʻquvchi bir necha kartada takrorlanmaydi. Davomat KPI'siga oldingi davr bilan solishtirma trend qoʻshildi.",
+    href: "/dashboard/statistics",
+  },
+  {
     id: "statistics-students-tab",
     date: "2026-07-19",
     type: "yangi",

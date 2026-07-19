@@ -1885,6 +1885,12 @@
       "statistics": "Statistika",
       "tasks": "Vazifalar",
       "changelog": "Yangilanishlar"
+    },
+    "entries": {
+      "statistics-risk-view": {
+        "title": "Statistika: „Eʼtibor kerak“ boʻlimi oʻquvchi-markazli qilib qayta qurildi",
+        "body": "Endi xavfdagi oʻquvchilar bitta roʻyxatda, risk darajasi boʻyicha saralangan holda koʻrinadi — bir oʻquvchi bir necha kartada takrorlanmaydi. Davomat KPI'siga oldingi davr bilan solishtirma trend qoʻshildi."
+      }
     }
   },
   "StandardsView": {
@@ -2053,7 +2059,12 @@
     "filterEmpty": "Bu turda signal yoʻq",
     "severityDestructive": "Keskin",
     "severityWarning": "Eʼtibor kerak",
-    "severitySuccess": "Yaxshilanmoqda"
+    "severitySuccess": "Yaxshilanmoqda",
+    "riskStudentsTitle": "Eʼtibor talab qiluvchi oʻquvchilar",
+    "riskLevelHigh": "Yuqori xavf",
+    "riskLevelMedium": "Kuzatuvda",
+    "moreStudents": "yana {count} ta oʻquvchi",
+    "positiveStudentsTitle": "Yaxshilanish kuzatilmoqda"
   },
   "BirthdayCard": {
     "title": "Tugʻilgan kunlar",

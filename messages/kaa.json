@@ -1887,6 +1887,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "statistics-risk-view": {
+        "title": "Statistika: «Itibar kerek» bólimi endi oqıwshı-orayliq",
+        "body": "Qáwip astındaǵı oqıwshılar endi qáwip dárejesi boyınsha sûriplengen bir dizimde kórsetiledi — bir oqıwshı bir neshe kartada qaytalanbaydı. Qatnasıw KPI-ge aldınǵı dáwir menen salıstırmalı trend qosıldı."
+      },
       "statistics-students-tab": {
         "title": "«Statistika» betine «Oqıwshılar» bólimi qosıldı",
         "body": "Endi barlıq klaslarıńızdaǵı oqıwshılardı bir kestede kóre alasız: qatnasıw, baha, trend hám qáwip dárejesi boyınsha sûriplep."
@@ -2283,7 +2287,12 @@
     "filterEmpty": "Bul túrde signal joq",
     "severityDestructive": "Áywmet",
     "severityWarning": "Itibar kerek",
-    "severitySuccess": "Jaqsılanıp atır"
+    "severitySuccess": "Jaqsılanıp atır",
+    "riskStudentsTitle": "Itibar kerek oqıwshılar",
+    "riskLevelHigh": "Joqarı qáwip",
+    "riskLevelMedium": "Baqlawda",
+    "moreStudents": "jáne {count} oqıwshı",
+    "positiveStudentsTitle": "Jaqsılanıw baqlanıp atır"
   },
   "BirthdayCard": {
     "title": "Tuwılǵan kúnler",

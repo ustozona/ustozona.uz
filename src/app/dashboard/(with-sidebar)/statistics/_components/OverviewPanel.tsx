@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Users, GraduationCap, ShieldAlert, CalendarCheck, TrendingUp } from "lucide-react";
-import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
@@ -11,7 +10,7 @@ import { useTimetableStore } from "@/store/useTimetableStore";
 import type { AcademicYearCalendar } from "@/lib/academic-calendar";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { statusWeights } from "@/lib/attendance-data";
-import { deriveAttentionSignals } from "@/lib/attention";
+import { deriveAttentionSignals, aggregateStudentRisk } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
   overviewRows, genderBreakdown, signalCountsByClass,
@@ -19,8 +18,7 @@ import {
 } from "@/lib/class-stats";
 import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
-import { SeveritySignalCard, signalGridColsClass } from "./SeveritySignalCard";
-import { cn } from "@/lib/utils";
+import { StudentRiskCard, PositiveStudentsStrip } from "./StudentRiskCard";
 import { GenderGroupCard } from "./GenderGroupCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
@@ -33,7 +31,6 @@ export function OverviewPanel({
   calendar: AcademicYearCalendar;
 }) {
   const t = useTranslations("StatisticsPage");
-  const tAttention = useTranslations("AttentionSection");
   const todayKey = dateToKey(new Date());
 
   const classDataMap = useGradesStore((s) => s.classDataMap);
@@ -88,11 +85,30 @@ export function OverviewPanel({
     return genderGroupAverages(allSummaries);
   }, [classDataMap, classNameById, recordsByClass, eventsByClass, weights, period]);
 
+  const riskSummaries = useMemo(() => aggregateStudentRisk(signals), [signals]);
+  const riskStudentCount = riskSummaries.filter((s) => s.riskScore > 0).length;
+
+  const prevRows = useMemo(() => {
+    if (!prevPeriod) return [];
+    return overviewRows({
+      classDataMap, recordsByClass, eventsByClass, weights,
+      range: prevPeriod.range, prevRange: null,
+      isYear: prevPeriod.kind === "year", signalCounts: {},
+    });
+  }, [classDataMap, recordsByClass, eventsByClass, weights, prevPeriod]);
+
+  const avgAttendance = (list: typeof rows) => {
+    const withRate = list.filter((r) => r.attendanceAvg !== null);
+    return withRate.length > 0
+      ? Math.round(withRate.reduce((s, r) => s + (r.attendanceAvg ?? 0), 0) / withRate.length)
+      : null;
+  };
+
   const activeStudents = rows.reduce((sum, r) => sum + r.studentCount, 0);
-  const attendanceRows = rows.filter((r) => r.attendanceAvg !== null);
-  const periodAttendance = attendanceRows.length > 0
-    ? Math.round(attendanceRows.reduce((s, r) => s + (r.attendanceAvg ?? 0), 0) / attendanceRows.length)
-    : null;
+  const periodAttendance = avgAttendance(rows);
+  const prevPeriodAttendance = avgAttendance(prevRows);
+  const attendanceDelta =
+    periodAttendance !== null && prevPeriodAttendance !== null ? periodAttendance - prevPeriodAttendance : null;
 
   const allRecords = useMemo(
     () =>
@@ -112,49 +128,35 @@ export function OverviewPanel({
         {/* ── KPI plitkalar ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudents} unit={t("unitPeople")} />
-          <StatCard icon={ShieldAlert} label={t("riskTitle")} value={signals.length} unit={t("unitCount")} />
+          <StatCard icon={ShieldAlert} label={t("riskTitle")} value={riskStudentCount} unit={t("unitPeople")} />
           <StatCard icon={GraduationCap} label={t("kpiClasses")} value={rows.length} unit={t("unitCount")} />
-          <StatCard icon={CalendarCheck} label={t("kpiAttendance")} value={periodAttendance !== null ? `${periodAttendance}%` : "—"} />
+          <StatCard
+            icon={CalendarCheck}
+            label={t("kpiAttendance")}
+            value={periodAttendance !== null ? `${periodAttendance}%` : "—"}
+            delta={attendanceDelta !== null && Math.abs(attendanceDelta) >= 1 ? `${Math.round(Math.abs(attendanceDelta))}pp` : undefined}
+            deltaType={attendanceDelta !== null && attendanceDelta > 0 ? "positive" : "negative"}
+          />
         </div>
+
+        <DashboardSectionCard icon={TrendingUp} title={t("attendanceTrendTitle")}>
+          <AttendanceTrendCard weeks={attendanceWeeks} />
+        </DashboardSectionCard>
+
+        <StudentRiskCard summaries={riskSummaries} classNameOf={(id) => classNameById.get(id)} />
+        <PositiveStudentsStrip summaries={riskSummaries} classNameOf={(id) => classNameById.get(id)} />
 
         <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-4">
           <DashboardSectionCard icon={Users} title={t("genderTitle")}>
             <GenderDonutChart gender={gender} boysLabel={t("boysFull")} girlsLabel={t("girlsFull")} unitLabel={t("unitPeople")} />
           </DashboardSectionCard>
 
-          <DashboardSectionCard icon={TrendingUp} title={t("attendanceTrendTitle")}>
-            <AttendanceTrendCard weeks={attendanceWeeks} />
-          </DashboardSectionCard>
+          {genderGroups && (
+            <DashboardSectionCard icon={Users} title={t("genderGroupTitle")}>
+              <GenderGroupCard averages={genderGroups} />
+            </DashboardSectionCard>
+          )}
         </div>
-
-        {genderGroups && (
-          <DashboardSectionCard icon={Users} title={t("genderGroupTitle")}>
-            <GenderGroupCard averages={genderGroups} />
-          </DashboardSectionCard>
-        )}
-
-        {signals.length === 0 ? (
-          <DashboardSectionCard icon={ShieldAlert} title={t("riskTitle")}>
-            <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <AppleEmojiSprite emoji="✨" className="size-7" />
-              <p className="text-sm font-medium text-foreground">{tAttention("emptyTitle")}</p>
-            </div>
-          </DashboardSectionCard>
-        ) : (
-          (() => {
-            const destructive = signals.filter((s) => s.severity === "destructive");
-            const warning = signals.filter((s) => s.severity === "warning");
-            const success = signals.filter((s) => s.severity === "success");
-            const activeCount = [destructive, warning, success].filter((g) => g.length > 0).length;
-            return (
-              <div className={cn("grid gap-4", signalGridColsClass(activeCount))}>
-                <SeveritySignalCard severity="destructive" signals={destructive} classNameOf={(id) => classNameById.get(id)} />
-                <SeveritySignalCard severity="warning" signals={warning} classNameOf={(id) => classNameById.get(id)} />
-                <SeveritySignalCard severity="success" signals={success} classNameOf={(id) => classNameById.get(id)} />
-              </div>
-            );
-          })()
-        )}
       </div>
     </div>
   );
