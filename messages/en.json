@@ -489,7 +489,15 @@
     "columnAction": "Action",
     "viewDetails": "Details",
     "noClassesFound": "No classes found",
-    "classesDescription": "Check statistics across all your classes"
+    "classesDescription": "Check statistics across all your classes",
+    "groupStudents": "Students",
+    "studentsSearchPlaceholder": "Search students...",
+    "columnStudent": "Student",
+    "columnTier": "Tier",
+    "noStudentsFound": "No students found",
+    "columnTrend": "Trend",
+    "tierAll": "All",
+    "studentsShownCount": "{count} / {total} shown"
   },
   "AssignmentTooltip": {
     "edit": "Edit",

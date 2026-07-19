@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -990,12 +990,32 @@ function ClassesDataTable({
   const allSelected = rows.length > 0 && selectedIds.size === rows.length;
   const someSelected = selectedIds.size > 0 && !allSelected;
 
+  // Sarlavha qatorini scroll konteynerga nisbatan qotiradi (statistikadagi
+  // ClassesTable bilan bir xil naqsh) — pastga siljitilganda ustunlar
+  // koʻrinishda qoladi. Jadval oʻzi emas, uni oʻrab turgan CardContent
+  // (panelCardContentClass, overflow-y-auto) scroll boʻladi — shuning
+  // uchun soya holati shu eng yaqin scroll ota-elementini topib kuzatiladi.
+  const [scrolled, setScrolled] = useState(false);
+  const tableRef = useRef<HTMLTableElement>(null);
+  useEffect(() => {
+    const scrollEl = tableRef.current?.closest<HTMLElement>(".overflow-y-auto");
+    if (!scrollEl) return;
+    const onScroll = () => setScrolled(scrollEl.scrollTop > 0);
+    onScroll();
+    scrollEl.addEventListener("scroll", onScroll);
+    return () => scrollEl.removeEventListener("scroll", onScroll);
+  }, []);
+  const stickyHead = cn(
+    "sticky top-0 z-20 bg-card after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-3 after:bg-linear-to-b after:from-black/4 after:to-transparent after:transition-opacity",
+    scrolled ? "after:opacity-100" : "after:opacity-0"
+  );
+
   return (
-    <table className="w-full min-w-3xl caption-bottom text-sm animate-in fade-in-0 slide-in-from-bottom-2 duration-fast">
+    <table ref={tableRef} className="w-full min-w-3xl caption-bottom text-sm animate-in fade-in-0 slide-in-from-bottom-2 duration-fast">
       <TableHeader>
         <TableRow className="hover:bg-transparent! border-b-0!">
           {!disabled && (
-            <TableHead className="w-11 px-4 py-3">
+            <TableHead className={cn(stickyHead, "w-11 px-4 py-3")}>
               <Checkbox
                 checked={someSelected ? "indeterminate" : allSelected}
                 onCheckedChange={onToggleSelectAll}
@@ -1004,14 +1024,14 @@ function ClassesDataTable({
               />
             </TableHead>
           )}
-          <TableHead className={cn("pr-3 py-3 min-w-48", disabled ? "pl-4" : "pl-0")}>{t("columnClass")}</TableHead>
-          <TableHead className="px-3 py-3">{t("columnStudents")}</TableHead>
-          <TableHead className="px-3 py-3">{t("columnLessons")}</TableHead>
-          <TableHead className="px-3 py-3 min-w-40">{t("columnLessonPlan")}</TableHead>
-          {!disabled && <TableHead className="w-10 px-4 py-3" />}
+          <TableHead className={cn(stickyHead, "pr-3 py-3 min-w-48", disabled ? "pl-4" : "pl-0")}>{t("columnClass")}</TableHead>
+          <TableHead className={cn(stickyHead, "px-3 py-3")}>{t("columnStudents")}</TableHead>
+          <TableHead className={cn(stickyHead, "px-3 py-3")}>{t("columnLessons")}</TableHead>
+          <TableHead className={cn(stickyHead, "px-3 py-3 min-w-40")}>{t("columnLessonPlan")}</TableHead>
+          {!disabled && <TableHead className={cn(stickyHead, "w-10 px-4 py-3")} />}
         </TableRow>
       </TableHeader>
-      <TableBody className="divide-y divide-border/60 [&_tr]:border-0">
+      <TableBody>
         {rows.map((cls, i) => {
           const hex = CLASS_COLOR_HEX[cls.color];
           const progress = Math.round((cls.coveredLessons / Math.max(cls.lessons, 1)) * 100);

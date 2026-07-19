@@ -35,7 +35,7 @@ import { AssignmentQualityCard } from "./AssignmentQualityCard";
 import { TopicStudentMatrixCard } from "./TopicStudentMatrixCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 
-export type StatsGroup = "overview" | "classes" | "grades" | "attendance" | "behavior";
+export type StatsGroup = "overview" | "classes" | "students" | "grades" | "attendance" | "behavior";
 
 export function ClassStatsView({
   classId, period, prevPeriod, group, calendar,

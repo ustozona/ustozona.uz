@@ -489,7 +489,15 @@
     "columnAction": "Аракет",
     "viewDetails": "Толук маалымат",
     "noClassesFound": "Класс табылган жок",
-    "classesDescription": "Бардык класстар боюнча көрсөткүчтөрдү текшериңиз"
+    "classesDescription": "Бардык класстар боюнча көрсөткүчтөрдү текшериңиз",
+    "groupStudents": "Окуучулар",
+    "studentsSearchPlaceholder": "Окуучуну издөө...",
+    "columnStudent": "Окуучу",
+    "columnTier": "Деңгээл",
+    "noStudentsFound": "Окуучу табылган жок",
+    "columnTrend": "Тренд",
+    "tierAll": "Баары",
+    "studentsShownCount": "{count} / {total} көрсөтүлдү"
   },
   "AssignmentTooltip": {
     "edit": "Түзөтүү",

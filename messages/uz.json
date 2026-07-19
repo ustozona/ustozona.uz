@@ -489,7 +489,15 @@
     "columnAction": "Amal",
     "viewDetails": "Batafsil",
     "noClassesFound": "Sinf topilmadi",
-    "classesDescription": "Barcha sinflar boʻyicha koʻrsatkichlarni tekshiring"
+    "classesDescription": "Barcha sinflar boʻyicha koʻrsatkichlarni tekshiring",
+    "groupStudents": "Oʻquvchilar",
+    "studentsSearchPlaceholder": "Oʻquvchi qidirish...",
+    "columnStudent": "Oʻquvchi",
+    "columnTier": "Daraja",
+    "columnTrend": "Trend",
+    "noStudentsFound": "Oʻquvchi topilmadi",
+    "tierAll": "Barchasi",
+    "studentsShownCount": "{count} / {total} koʻrsatildi"
   },
   "AssignmentTooltip": {
     "edit": "Tahrirlash",

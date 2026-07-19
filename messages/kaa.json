@@ -489,7 +489,15 @@
     "columnAction": "Ámel",
     "viewDetails": "Tolıq maǵlıwmat",
     "noClassesFound": "Klass tabılmadı",
-    "classesDescription": "Barlıq klasslar boyınsha kórsetkishlerdi tekseriń"
+    "classesDescription": "Barlıq klasslar boyınsha kórsetkishlerdi tekseriń",
+    "groupStudents": "Oqıwshılar",
+    "studentsSearchPlaceholder": "Oqıwshını izlew...",
+    "columnStudent": "Oqıwshı",
+    "columnTier": "Dáreje",
+    "noStudentsFound": "Oqıwshı tabılmadı",
+    "columnTrend": "Trend",
+    "tierAll": "Barlıǵı",
+    "studentsShownCount": "{count} / {total} kórsetildi"
   },
   "AssignmentTooltip": {
     "edit": "Ózgertiw",

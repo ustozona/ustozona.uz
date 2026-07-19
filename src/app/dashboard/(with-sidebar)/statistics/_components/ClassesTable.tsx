@@ -5,13 +5,23 @@ import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, GraduationCap, SearchX } from "lucide-react";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { classColor } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
+import { classTints } from "@/lib/class-colors";
 import { STAT_DEADBAND_PP, type ClassOverviewRow } from "@/lib/class-stats";
+import { scoreBarColor } from "@/lib/score-colors";
 import { cn } from "@/lib/utils";
+import { AttendanceRing } from "./AttendanceRing";
 import { StatEmpty } from "./StatEmpty";
 
 type SortKey = "name" | "studentCount" | "attendanceAvg" | "summativeAvg" | "signalCount";
+
+const AVATAR_LIMIT = 3;
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
+}
 
 /**
  * Sinflar boʻyicha toʻliq maʼlumot jadvali — "Sinflar" tabida. Shadcn-space
@@ -60,16 +70,21 @@ export function ClassesTable({
   // background — shunda soya sarlavhaga zich yopishadi, oraliq boʻshliq yoʻq.
   // Faqat scroll boshlanganda koʻrinadi — tepada turganda chiziq boʻlmaydi.
   const stickyHeadCell = cn(
-    "sticky top-0 z-20 bg-card after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-1.5 after:bg-linear-to-b after:from-black/6 after:to-transparent after:transition-opacity",
+    "sticky top-0 z-20 bg-card after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-3 after:bg-linear-to-b after:from-black/4 after:to-transparent after:transition-opacity",
     scrolled ? "after:opacity-100" : "after:opacity-0"
   );
 
-  const SortHeader = ({ label, sortKey, className }: { label: string; sortKey: SortKey; className?: string }) => (
-    <TableHead className={cn(stickyHeadCell, "px-3 py-3", className)}>
+  const SortHeader = ({
+    label, sortKey, className, align = "left",
+  }: { label: string; sortKey: SortKey; className?: string; align?: "left" | "center" }) => (
+    <TableHead className={cn(stickyHeadCell, "px-3 py-3", align === "center" && "text-center", className)}>
       <button
         type="button"
         onClick={() => toggleSort(sortKey)}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        className={cn(
+          "inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors",
+          align === "center" && "justify-center"
+        )}
       >
         {label}
         {sort.key === sortKey ? (
@@ -90,20 +105,20 @@ export function ClassesTable({
             <TableHeader>
               <TableRow className="hover:bg-transparent! border-b-0!">
                 <SortHeader label={t("columnClass")} sortKey="name" className="min-w-48 pl-4" />
-                <SortHeader label={t("columnStudents")} sortKey="studentCount" />
-                <SortHeader label={t("columnAttendance")} sortKey="attendanceAvg" />
-                <SortHeader label={t("columnGrade")} sortKey="summativeAvg" className="min-w-40" />
-                <SortHeader label={t("columnSignal")} sortKey="signalCount" />
+                <SortHeader label={t("columnStudents")} sortKey="studentCount" className="w-32" />
+                <SortHeader label={t("columnAttendance")} sortKey="attendanceAvg" className="w-20" align="center" />
+                <SortHeader label={t("columnGrade")} sortKey="summativeAvg" className="w-52" />
+                <SortHeader label={t("columnSignal")} sortKey="signalCount" className="w-24" align="center" />
                 <TableHead className={cn(stickyHeadCell, "w-10 px-4 py-3")} />
               </TableRow>
             </TableHeader>
-            {/* Qatorlar orasidagi yagona chiziq manbai: divide-y. TableRow'ning
-                oʻz border-b'i (birinchi qator ustida ham chiqib ketmasligi
-                uchun) shu yerda oʻchiriladi. */}
-            <TableBody className="divide-y divide-border/60 [&_tr]:border-0">
+            {/* Qatorlar orasidagi chiziq — TableRow'ning standart border-b'i
+                (shadcn table-01 naqshi); oxirgi qatorda TableBody avtomatik
+                oʻchiradi. */}
+            <TableBody>
               {sorted.map((r) => {
                 const color = classColor({ id: r.classId, name: r.name, color: r.color });
-                const hex = CLASS_COLOR_HEX[color];
+                const scoreColor = scoreBarColor(r.summativeAvg ?? 0);
                 const delta = r.summativeDelta;
                 const stable = delta === null || Math.abs(delta) < STAT_DEADBAND_PP;
                 return (
@@ -124,21 +139,36 @@ export function ClassesTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
-                      {t("studentsCount", { count: r.studentCount })}
+                    <TableCell className="whitespace-nowrap w-32 px-3 py-3.5">
+                      <AvatarGroup>
+                        {r.students.slice(0, AVATAR_LIMIT).map((s) => (
+                          <Avatar key={s.id} size="sm">
+                            <AvatarFallback style={classTints(color).gradientTile} className="text-white text-[10px] font-semibold">
+                              {initials(s.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {r.studentCount > AVATAR_LIMIT && (
+                          <AvatarGroupCount className="size-6 text-[10px]">
+                            +{r.studentCount - AVATAR_LIMIT}
+                          </AvatarGroupCount>
+                        )}
+                      </AvatarGroup>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-foreground">
-                      {r.attendanceAvg !== null ? `${Math.round(r.attendanceAvg)}%` : "—"}
+                    <TableCell className="whitespace-nowrap w-20 px-3 py-3.5">
+                      <div className="flex justify-center">
+                        <AttendanceRing pct={r.attendanceAvg} />
+                      </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap px-3 py-3.5">
+                    <TableCell className="whitespace-nowrap w-52 px-3 py-3.5">
                       <div className="flex items-center gap-2.5">
                         <Progress
                           value={r.summativeAvg ?? 0}
-                          indicatorColor={hex}
-                          className="w-full h-1.5 max-w-28"
-                          style={{ backgroundColor: `color-mix(in srgb, ${hex} 16%, transparent)` }}
+                          indicatorColor={scoreColor}
+                          className="w-full h-1.5 max-w-24"
+                          style={{ backgroundColor: `color-mix(in srgb, ${scoreColor} 16%, transparent)` }}
                         />
                         <span className="shrink-0 text-sm font-semibold tabular-nums">
                           {r.summativeAvg !== null ? `${Math.round(r.summativeAvg)}%` : "—"}
@@ -152,7 +182,7 @@ export function ClassesTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap px-3 py-3.5">
+                    <TableCell className="whitespace-nowrap w-24 px-3 py-3.5 text-center">
                       {r.signalCount > 0 ? (
                         <span className="inline-flex rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-warning">
                           {r.signalCount}

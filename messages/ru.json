@@ -489,7 +489,15 @@
     "columnAction": "Действие",
     "viewDetails": "Подробнее",
     "noClassesFound": "Классы не найдены",
-    "classesDescription": "Проверьте показатели по всем классам"
+    "classesDescription": "Проверьте показатели по всем классам",
+    "groupStudents": "Ученики",
+    "studentsSearchPlaceholder": "Поиск ученика...",
+    "columnStudent": "Ученик",
+    "columnTier": "Уровень",
+    "noStudentsFound": "Ученики не найдены",
+    "columnTrend": "Тренд",
+    "tierAll": "Все",
+    "studentsShownCount": "Показано {count} / {total}"
   },
   "AssignmentTooltip": {
     "edit": "Редактировать",

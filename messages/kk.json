@@ -489,7 +489,15 @@
     "columnAction": "Әрекет",
     "viewDetails": "Толығырақ",
     "noClassesFound": "Сынып табылмады",
-    "classesDescription": "Барлық сыныптар бойынша көрсеткіштерді тексеріңіз"
+    "classesDescription": "Барлық сыныптар бойынша көрсеткіштерді тексеріңіз",
+    "groupStudents": "Оқушылар",
+    "studentsSearchPlaceholder": "Оқушыны іздеу...",
+    "columnStudent": "Оқушы",
+    "columnTier": "Деңгей",
+    "noStudentsFound": "Оқушы табылмады",
+    "columnTrend": "Тренд",
+    "tierAll": "Барлығы",
+    "studentsShownCount": "{count} / {total} көрсетілді"
   },
   "AssignmentTooltip": {
     "edit": "Өңдеу",

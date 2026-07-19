@@ -293,6 +293,7 @@ export type ClassOverviewRow = {
   name: string;
   color?: ClassColor;
   studentCount: number;
+  students: { id: string; name: string }[];
   summativeAvg: number | null;
   summativeDelta: number | null;
   attendanceAvg: number | null;
@@ -330,6 +331,7 @@ export function overviewRows(input: {
       name: cd.info.name,
       color: cd.info.color,
       studentCount: students.length,
+      students: students.map((s) => ({ id: s.id, name: s.name })),
       summativeAvg: summary.summativeAvg,
       summativeDelta: summary.summativeDelta,
       attendanceAvg: summary.attendanceAvg,

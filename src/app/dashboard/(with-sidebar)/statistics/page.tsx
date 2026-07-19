@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Gauge, BookOpen, CalendarCheck, HeartPulse, GraduationCap, Table as TableIcon } from "lucide-react";
+import { Gauge, BookOpen, CalendarCheck, HeartPulse, GraduationCap, Table as TableIcon, Users } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { activeYear } from "@/lib/academic-years";
@@ -14,6 +15,7 @@ import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { OverviewPanel } from "./_components/OverviewPanel";
 import { ClassesTablePanel } from "./_components/ClassesTablePanel";
+import { StudentsTablePanel } from "./_components/StudentsTablePanel";
 import { ClassStatsView, type StatsGroup } from "./_components/ClassStatsView";
 import { StatsTabs, type StatsTabItem } from "./_components/StatsTabs";
 import { PeriodSelect } from "./_components/PeriodSelect";
@@ -22,6 +24,7 @@ import { YearSelect } from "./_components/YearSelect";
 export default function StatisticsPage() {
   const t = useTranslations("StatisticsPage");
   const { setOpen } = useSidebar();
+  const router = useRouter();
 
   // Statistika — toʻliq-canvas rejim: ilova sidebar'i icon-holatga siqiladi
   // (koʻproq joy uchun), sahifadan chiqishda avvalgi holatga qaytadi.
@@ -44,13 +47,18 @@ export default function StatisticsPage() {
   const [group, setGroup] = useState<StatsGroup>("overview");
   const handleToggleClass = (id: string) => {
     const next = id === selectedClassId ? null : id;
-    if (next && group === "classes") setGroup("overview");
+    if (next && (group === "classes" || group === "students")) setGroup("overview");
     handleSelectClass(next);
   };
   const groupTabs: StatsTabItem[] = useMemo(
     () => [
       { id: "overview", label: t("groupOverview"), icon: Gauge },
-      ...(selectedClassId ? [] : [{ id: "classes", label: t("groupClasses"), icon: TableIcon }]),
+      ...(selectedClassId
+        ? []
+        : [
+            { id: "classes", label: t("groupClasses"), icon: TableIcon },
+            { id: "students", label: t("groupStudents"), icon: Users },
+          ]),
       { id: "grades", label: t("groupGrades"), icon: BookOpen },
       { id: "attendance", label: t("groupAttendance"), icon: CalendarCheck },
       { id: "behavior", label: t("groupBehavior"), icon: HeartPulse },
@@ -122,6 +130,8 @@ export default function StatisticsPage() {
               <OverviewPanel period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : group === "classes" ? (
               <ClassesTablePanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} calendar={calendar} />
+            ) : group === "students" ? (
+              <StudentsTablePanel onSelectStudent={(id) => router.push(`/dashboard/students/${id}`)} period={period} calendar={calendar} />
             ) : (
               <SelectClassPrompt />
             )}

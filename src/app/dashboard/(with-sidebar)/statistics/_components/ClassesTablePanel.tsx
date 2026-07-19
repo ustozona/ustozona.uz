@@ -14,6 +14,8 @@ import { deriveAttentionSignals } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import { overviewRows, signalCountsByClass, type StatPeriod } from "@/lib/class-stats";
 import { Input } from "@/components/ui/input";
+import { CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { ClassesTable } from "./ClassesTable";
 
@@ -70,22 +72,28 @@ export function ClassesTablePanel({
 
   return (
     <div className="h-full min-h-0">
-      <DashboardSectionCard
-        icon={TableIcon}
-        title={t("groupClasses")}
-        className="h-full min-h-0 flex flex-col"
-        action={
-          <div className="relative w-56">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("classesSearchPlaceholder")}
-              className="pl-9 h-9 text-sm"
-            />
+      <DashboardSectionCard className="h-full min-h-0 flex flex-col">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <SectionIcon>
+              <TableIcon />
+            </SectionIcon>
+            <CardTitle className="truncate">{t("groupClasses")}</CardTitle>
           </div>
-        }
-      >
+
+          <div className="flex-1 flex justify-center">
+            <div className="relative w-72 max-w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("classesSearchPlaceholder")}
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+          </div>
+        </div>
+
         <div
           className="flex-1 min-h-0 overflow-auto"
           onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}
