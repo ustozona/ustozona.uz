@@ -27,7 +27,8 @@ import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { DistributionCard } from "./DistributionCard";
 import { TopicMasteryCard } from "./TopicMasteryCard";
-import { SeveritySignalCard } from "./SeveritySignalCard";
+import { SeveritySignalCard, signalGridColsClass } from "./SeveritySignalCard";
+import { cn } from "@/lib/utils";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 import { BehaviorClimateCard } from "./BehaviorClimateCard";
 import { DeadlinesCard } from "./DeadlinesCard";
@@ -135,11 +136,19 @@ export function ClassStatsView({
                 </div>
               </DashboardSectionCard>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <SeveritySignalCard severity="destructive" signals={signals.filter((s) => s.severity === "destructive")} />
-                <SeveritySignalCard severity="warning" signals={signals.filter((s) => s.severity === "warning")} />
-                <SeveritySignalCard severity="success" signals={signals.filter((s) => s.severity === "success")} />
-              </div>
+              (() => {
+                const destructive = signals.filter((s) => s.severity === "destructive");
+                const warning = signals.filter((s) => s.severity === "warning");
+                const success = signals.filter((s) => s.severity === "success");
+                const activeCount = [destructive, warning, success].filter((g) => g.length > 0).length;
+                return (
+                  <div className={cn("grid gap-4", signalGridColsClass(activeCount))}>
+                    <SeveritySignalCard severity="destructive" signals={destructive} />
+                    <SeveritySignalCard severity="warning" signals={warning} />
+                    <SeveritySignalCard severity="success" signals={success} />
+                  </div>
+                );
+              })()
             )}
           </>
         )}

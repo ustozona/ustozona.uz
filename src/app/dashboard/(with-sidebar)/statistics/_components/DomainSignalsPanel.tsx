@@ -13,7 +13,8 @@ import { statusWeights } from "@/lib/attendance-data";
 import { deriveAttentionSignals, type AttentionSignal } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
-import { SeveritySignalCard } from "./SeveritySignalCard";
+import { SeveritySignalCard, signalGridColsClass } from "./SeveritySignalCard";
+import { cn } from "@/lib/utils";
 
 export type SignalDomain = "attendance" | "grades" | "behavior";
 
@@ -58,7 +59,7 @@ export function DomainSignalsPanel({
 
   if (signals.length === 0) {
     return (
-      <div className="h-full min-h-0 overflow-y-auto">
+      <div className="h-full min-h-0">
         <DashboardSectionCard className="h-full flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 py-8 text-center">
             <AppleEmojiSprite emoji="✨" className="size-7" />
@@ -70,13 +71,16 @@ export function DomainSignalsPanel({
     );
   }
 
+  const destructive = signals.filter((s) => s.severity === "destructive");
+  const warning = signals.filter((s) => s.severity === "warning");
+  const success = signals.filter((s) => s.severity === "success");
+  const activeCount = [destructive, warning, success].filter((g) => g.length > 0).length;
+
   return (
-    <div className="h-full min-h-0 overflow-y-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <SeveritySignalCard severity="destructive" signals={signals.filter((s) => s.severity === "destructive")} classNameOf={(id) => classNameById.get(id)} />
-        <SeveritySignalCard severity="warning" signals={signals.filter((s) => s.severity === "warning")} classNameOf={(id) => classNameById.get(id)} />
-        <SeveritySignalCard severity="success" signals={signals.filter((s) => s.severity === "success")} classNameOf={(id) => classNameById.get(id)} />
-      </div>
+    <div className={cn("h-full min-h-0 grid auto-rows-fr gap-4", signalGridColsClass(activeCount))}>
+      <SeveritySignalCard severity="destructive" signals={destructive} classNameOf={(id) => classNameById.get(id)} variant="fill" />
+      <SeveritySignalCard severity="warning" signals={warning} classNameOf={(id) => classNameById.get(id)} variant="fill" />
+      <SeveritySignalCard severity="success" signals={success} classNameOf={(id) => classNameById.get(id)} variant="fill" />
     </div>
   );
 }

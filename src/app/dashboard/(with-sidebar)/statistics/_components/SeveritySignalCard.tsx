@@ -34,6 +34,15 @@ const SEVERITY_TITLE_KEY: Record<AttentionSeverity, string> = {
   success: "severitySuccess",
 };
 
+/** Nechta jiddiylik kartasi haqiqatda koʻrsatiladigan boʻlsa (boʻsh
+    turkumlar render qilinmaydi), grid ustunlari shunga moslashadi — 3 ta
+    joy band qilinmaydi, masalan Davomatda faqat 2 tur boʻlsa 2 ustun. */
+export function signalGridColsClass(activeCount: number): string {
+  if (activeCount <= 1) return "grid-cols-1";
+  if (activeCount === 2) return "grid-cols-1 lg:grid-cols-2";
+  return "grid-cols-1 lg:grid-cols-3";
+}
+
 /** Bitta jiddiylik turkumi (Keskin / Eʼtibor kerak / Yaxshilanmoqda) uchun
     alohida karta — foydalanuvchi aniq soʻradi: aralash roʻyxat/sarlavha
     oʻrniga har biri OʻZ kartasida (Statistika Umumiy/Sinf/Baholar/Davomat/
@@ -44,10 +53,16 @@ export function SeveritySignalCard({
   severity,
   signals,
   classNameOf,
+  variant = "capped",
 }: {
   severity: AttentionSeverity;
   signals: AttentionSignal[];
   classNameOf?: (classId: string) => string | undefined;
+  /** "fill" — ota konteyner balandligini toʻliq egallaydi (Baholar/Davomat/
+      Xulq tablari — yagona kontent, ClassListPanel bilan bir xil boʻyda).
+      "capped" — sahifada boshqa boʻlimlar bilan birga (Umumiy), balandlik
+      kontentga qarab, ichki roʻyxat max-h bilan chegaralanadi. */
+  variant?: "fill" | "capped";
 }) {
   const t = useTranslations("AttentionSection");
   const Icon = SEVERITY_ICON[severity];
@@ -106,8 +121,9 @@ export function SeveritySignalCard({
       icon={Icon}
       title={t(SEVERITY_TITLE_KEY[severity])}
       action={<span className="text-xs tabular-nums text-muted-foreground">{signals.length}</span>}
+      className={cn("flex flex-col", variant === "fill" && "h-full min-h-0")}
     >
-      <div className="max-h-[24rem] overflow-y-auto">
+      <div className={cn(variant === "fill" ? "flex-1 min-h-0 overflow-y-auto" : "max-h-[24rem] overflow-y-auto")}>
         <div className="flex flex-col divide-y divide-border/60">
           {signals.map((s) => {
             const KindIcon = KIND_ICON[s.kind];

@@ -19,7 +19,8 @@ import {
 } from "@/lib/class-stats";
 import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
-import { SeveritySignalCard } from "./SeveritySignalCard";
+import { SeveritySignalCard, signalGridColsClass } from "./SeveritySignalCard";
+import { cn } from "@/lib/utils";
 import { GenderGroupCard } from "./GenderGroupCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
@@ -140,11 +141,19 @@ export function OverviewPanel({
             </div>
           </DashboardSectionCard>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <SeveritySignalCard severity="destructive" signals={signals.filter((s) => s.severity === "destructive")} classNameOf={(id) => classNameById.get(id)} />
-            <SeveritySignalCard severity="warning" signals={signals.filter((s) => s.severity === "warning")} classNameOf={(id) => classNameById.get(id)} />
-            <SeveritySignalCard severity="success" signals={signals.filter((s) => s.severity === "success")} classNameOf={(id) => classNameById.get(id)} />
-          </div>
+          (() => {
+            const destructive = signals.filter((s) => s.severity === "destructive");
+            const warning = signals.filter((s) => s.severity === "warning");
+            const success = signals.filter((s) => s.severity === "success");
+            const activeCount = [destructive, warning, success].filter((g) => g.length > 0).length;
+            return (
+              <div className={cn("grid gap-4", signalGridColsClass(activeCount))}>
+                <SeveritySignalCard severity="destructive" signals={destructive} classNameOf={(id) => classNameById.get(id)} />
+                <SeveritySignalCard severity="warning" signals={warning} classNameOf={(id) => classNameById.get(id)} />
+                <SeveritySignalCard severity="success" signals={success} classNameOf={(id) => classNameById.get(id)} />
+              </div>
+            );
+          })()
         )}
       </div>
     </div>
