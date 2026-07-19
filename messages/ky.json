@@ -2280,7 +2280,10 @@
     "filterAttendance": "Катышуу",
     "filterGrades": "Баалар",
     "filterBehavior": "Жүрүм-турум",
-    "filterEmpty": "Бул түрдө сигнал жок"
+    "filterEmpty": "Бул түрдө сигнал жок",
+    "severityDestructive": "Курч",
+    "severityWarning": "Көңүл буруу керек",
+    "severitySuccess": "Жакшырууда"
   },
   "BirthdayCard": {
     "title": "Туулган күндөр",

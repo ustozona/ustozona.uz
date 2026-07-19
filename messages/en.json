@@ -2280,7 +2280,10 @@
     "filterAttendance": "Attendance",
     "filterGrades": "Grades",
     "filterBehavior": "Behavior",
-    "filterEmpty": "No signals of this type"
+    "filterEmpty": "No signals of this type",
+    "severityDestructive": "Critical",
+    "severityWarning": "Needs attention",
+    "severitySuccess": "Improving"
   },
   "BirthdayCard": {
     "title": "Birthdays",

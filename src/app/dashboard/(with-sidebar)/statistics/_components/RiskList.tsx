@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
-import { ATTENTION_DEFAULTS, type AttentionSignal } from "@/lib/attention";
+import { ATTENTION_DEFAULTS, type AttentionSeverity, type AttentionSignal } from "@/lib/attention";
 import { cn } from "@/lib/utils";
 
 const KIND_ICON: Record<AttentionSignal["kind"], typeof UserX> = {
@@ -81,6 +81,12 @@ export function RiskList({
 
   const visible = limit ? filtered.slice(0, limit) : filtered;
   const overflowDomains = (["attendance", "grades", "behavior"] as const).filter((d) => limit && counts[d] > 0);
+
+  const SEVERITY_LABEL: Record<AttentionSeverity, string> = {
+    destructive: t("severityDestructive"),
+    warning: t("severityWarning"),
+    success: t("severitySuccess"),
+  };
 
   if (signals.length === 0) {
     return (
@@ -172,13 +178,28 @@ export function RiskList({
         <p className="py-6 text-center text-xs text-muted-foreground">{t("filterEmpty")}</p>
       ) : (
         <div className="max-h-[32rem] overflow-y-auto">
-          <div className="flex flex-col divide-y divide-border/60">
-            {visible.map((s) => {
+          <div className="flex flex-col">
+            {visible.map((s, i) => {
               const Icon = KIND_ICON[s.kind];
               const title = s.kind === "attendance-missing" ? classNameOf?.(s.classId) ?? t("attendanceMissingTitle") : s.studentName;
               const subtitle = s.kind === "attendance-missing" ? null : classNameOf?.(s.classId);
+              const newSeverityGroup = i === 0 || visible[i - 1].severity !== s.severity;
+              const isLastInGroup = i === visible.length - 1 || visible[i + 1].severity !== s.severity;
               return (
-                <div key={s.id} className="flex items-start gap-3 py-3">
+                <div key={s.id}>
+                  {newSeverityGroup && (
+                    <p
+                      className={cn(
+                        "px-0 pt-4 pb-1.5 text-xs font-semibold first:pt-0",
+                        s.severity === "destructive" && "text-destructive",
+                        s.severity === "warning" && "text-warning",
+                        s.severity === "success" && "text-success"
+                      )}
+                    >
+                      {SEVERITY_LABEL[s.severity]}
+                    </p>
+                  )}
+                <div className={cn("flex items-start gap-3 py-3", !isLastInGroup && "border-b border-border/60")}>
                   <span
                     className={cn(
                       "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
@@ -203,6 +224,7 @@ export function RiskList({
                       ))}
                     </div>
                   </div>
+                </div>
                 </div>
               );
             })}

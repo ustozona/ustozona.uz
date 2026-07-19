@@ -2050,7 +2050,10 @@
     "filterAttendance": "Davomat",
     "filterGrades": "Baholar",
     "filterBehavior": "Xulq",
-    "filterEmpty": "Bu turda signal yoʻq"
+    "filterEmpty": "Bu turda signal yoʻq",
+    "severityDestructive": "Keskin",
+    "severityWarning": "Eʼtibor kerak",
+    "severitySuccess": "Yaxshilanmoqda"
   },
   "BirthdayCard": {
     "title": "Tugʻilgan kunlar",

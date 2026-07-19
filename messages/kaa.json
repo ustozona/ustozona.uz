@@ -2280,7 +2280,10 @@
     "filterAttendance": "Qatnasıw",
     "filterGrades": "Bahalar",
     "filterBehavior": "Qılıq-hárekat",
-    "filterEmpty": "Bul túrde signal joq"
+    "filterEmpty": "Bul túrde signal joq",
+    "severityDestructive": "Áywmet",
+    "severityWarning": "Itibar kerek",
+    "severitySuccess": "Jaqsılanıp atır"
   },
   "BirthdayCard": {
     "title": "Tuwılǵan kúnler",

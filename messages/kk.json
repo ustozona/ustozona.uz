@@ -2280,7 +2280,10 @@
     "filterAttendance": "Қатысу",
     "filterGrades": "Бағалар",
     "filterBehavior": "Мінез-құлық",
-    "filterEmpty": "Бұл түрде сигнал жоқ"
+    "filterEmpty": "Бұл түрде сигнал жоқ",
+    "severityDestructive": "Күрделі",
+    "severityWarning": "Назар аудару керек",
+    "severitySuccess": "Жақсаруда"
   },
   "BirthdayCard": {
     "title": "Туған күндер",

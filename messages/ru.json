@@ -2280,7 +2280,10 @@
     "filterAttendance": "Посещаемость",
     "filterGrades": "Оценки",
     "filterBehavior": "Поведение",
-    "filterEmpty": "Сигналов такого типа нет"
+    "filterEmpty": "Сигналов такого типа нет",
+    "severityDestructive": "Критично",
+    "severityWarning": "Требует внимания",
+    "severitySuccess": "Улучшается"
   },
   "BirthdayCard": {
     "title": "Дни рождения",
