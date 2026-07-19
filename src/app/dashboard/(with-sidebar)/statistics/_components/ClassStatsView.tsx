@@ -7,6 +7,7 @@ import {
   Table as TableIcon, TrendingUp, UserX, HeartPulse, GraduationCap, Percent,
 } from "lucide-react";
 import { TypographyMuted } from "@/components/ui/typography";
+import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
@@ -26,7 +27,7 @@ import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { DistributionCard } from "./DistributionCard";
 import { TopicMasteryCard } from "./TopicMasteryCard";
-import { RiskList } from "./RiskList";
+import { SeveritySignalCard } from "./SeveritySignalCard";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 import { BehaviorClimateCard } from "./BehaviorClimateCard";
 import { DeadlinesCard } from "./DeadlinesCard";
@@ -47,6 +48,7 @@ export function ClassStatsView({
   calendar: AcademicYearCalendar;
 }) {
   const t = useTranslations("StatisticsPage");
+  const tAttention = useTranslations("AttentionSection");
   const todayKey = dateToKey(new Date());
 
   const classData = useGradesStore((s) => s.classDataMap[classId]);
@@ -125,9 +127,20 @@ export function ClassStatsView({
               </DashboardSectionCard>
             )}
 
-            <DashboardSectionCard icon={ShieldAlert} title={t("riskTitle")}>
-              <RiskList signals={signals} />
-            </DashboardSectionCard>
+            {signals.length === 0 ? (
+              <DashboardSectionCard icon={ShieldAlert} title={t("riskTitle")}>
+                <div className="flex flex-col items-center gap-2 py-8 text-center">
+                  <AppleEmojiSprite emoji="✨" className="size-7" />
+                  <p className="text-sm font-medium text-foreground">{tAttention("emptyTitle")}</p>
+                </div>
+              </DashboardSectionCard>
+            ) : (
+              <>
+                <SeveritySignalCard severity="destructive" signals={signals.filter((s) => s.severity === "destructive")} />
+                <SeveritySignalCard severity="warning" signals={signals.filter((s) => s.severity === "warning")} />
+                <SeveritySignalCard severity="success" signals={signals.filter((s) => s.severity === "success")} />
+              </>
+            )}
           </>
         )}
 

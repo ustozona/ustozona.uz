@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Users, GraduationCap, ShieldAlert, CalendarCheck, TrendingUp } from "lucide-react";
-import { TypographyMuted } from "@/components/ui/typography";
+import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
@@ -19,22 +19,20 @@ import {
 } from "@/lib/class-stats";
 import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
-import { RiskList } from "./RiskList";
+import { SeveritySignalCard } from "./SeveritySignalCard";
 import { GenderGroupCard } from "./GenderGroupCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 
 export function OverviewPanel({
-  period, prevPeriod, calendar, onSelectGroup,
+  period, prevPeriod, calendar,
 }: {
   period: StatPeriod | null;
   prevPeriod: StatPeriod | null;
   calendar: AcademicYearCalendar;
-  /** "Eʼtibor kerak" kartasida cheklangan (top) roʻyxatdan tashqarida qolgan
-      signallar uchun tegishli domen tabiga oʻtish. */
-  onSelectGroup?: (group: "attendance" | "grades" | "behavior") => void;
 }) {
   const t = useTranslations("StatisticsPage");
+  const tAttention = useTranslations("AttentionSection");
   const todayKey = dateToKey(new Date());
 
   const classDataMap = useGradesStore((s) => s.classDataMap);
@@ -134,19 +132,20 @@ export function OverviewPanel({
           </DashboardSectionCard>
         )}
 
-        <DashboardSectionCard
-          icon={ShieldAlert}
-          title={t("riskTitle")}
-          action={<TypographyMuted className="text-xs">{t("riskTodayNote")}</TypographyMuted>}
-        >
-          <RiskList
-            signals={signals}
-            classNameOf={(id) => classNameById.get(id)}
-            limit={6}
-            onOverflowSelect={onSelectGroup}
-            domainLabels={{ attendance: t("groupAttendance"), grades: t("groupGrades"), behavior: t("groupBehavior") }}
-          />
-        </DashboardSectionCard>
+        {signals.length === 0 ? (
+          <DashboardSectionCard icon={ShieldAlert} title={t("riskTitle")}>
+            <div className="flex flex-col items-center gap-2 py-8 text-center">
+              <AppleEmojiSprite emoji="✨" className="size-7" />
+              <p className="text-sm font-medium text-foreground">{tAttention("emptyTitle")}</p>
+            </div>
+          </DashboardSectionCard>
+        ) : (
+          <>
+            <SeveritySignalCard severity="destructive" signals={signals.filter((s) => s.severity === "destructive")} classNameOf={(id) => classNameById.get(id)} />
+            <SeveritySignalCard severity="warning" signals={signals.filter((s) => s.severity === "warning")} classNameOf={(id) => classNameById.get(id)} />
+            <SeveritySignalCard severity="success" signals={signals.filter((s) => s.severity === "success")} classNameOf={(id) => classNameById.get(id)} />
+          </>
+        )}
       </div>
     </div>
   );

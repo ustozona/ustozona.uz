@@ -131,7 +131,7 @@ export default function StatisticsPage() {
             ) : selectedClassId ? (
               <ClassStatsView classId={selectedClassId} period={period} prevPeriod={prevPeriod} group={group} calendar={calendar} />
             ) : group === "overview" ? (
-              <OverviewPanel period={period} prevPeriod={prevPeriod} calendar={calendar} onSelectGroup={setGroup} />
+              <OverviewPanel period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : group === "classes" ? (
               <ClassesTablePanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : (
