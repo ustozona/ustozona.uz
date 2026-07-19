@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
@@ -20,8 +21,23 @@ const KIND_ICON: Record<AttentionSignal["kind"], typeof UserX> = {
   "attendance-recovery": UserCheck,
 };
 
+type Domain = "attendance" | "grades" | "behavior";
+
+const KIND_DOMAIN: Record<AttentionSignal["kind"], Domain> = {
+  "absent-streak": "attendance",
+  "low-attendance": "attendance",
+  "attendance-missing": "attendance",
+  "attendance-recovery": "attendance",
+  "grade-drop": "grades",
+  "grade-rise": "grades",
+  "behavior-cluster": "behavior",
+};
+
 /** AttentionSection'dan moslashtirilgan — dismisssiz, cheklovsiz, faqat
-    oʻqish uchun risk registri (Statistika Umumiy/Sinf ikkala darajasida). */
+    oʻqish uchun risk registri (Statistika Umumiy/Sinf ikkala darajasida).
+    Turlar ustuvorlik boʻyicha bitta ro‘yxatda aralash chiqadi (GitHub
+    Notifications/Linear Inbox naqshi) — domen boʻyicha ajratilgan bir necha
+    kartaga BOʻLINMAYDI, ustida ixtiyoriy filtr-chip qatori bor xolos. */
 export function RiskList({
   signals,
   classNameOf,
@@ -30,6 +46,21 @@ export function RiskList({
   classNameOf?: (classId: string) => string | undefined;
 }) {
   const t = useTranslations("AttentionSection");
+  const [filter, setFilter] = useState<"all" | Domain>("all");
+
+  const counts = useMemo(
+    () => ({
+      attendance: signals.filter((s) => KIND_DOMAIN[s.kind] === "attendance").length,
+      grades: signals.filter((s) => KIND_DOMAIN[s.kind] === "grades").length,
+      behavior: signals.filter((s) => KIND_DOMAIN[s.kind] === "behavior").length,
+    }),
+    [signals]
+  );
+
+  const filtered = useMemo(
+    () => (filter === "all" ? signals : signals.filter((s) => KIND_DOMAIN[s.kind] === filter)),
+    [signals, filter]
+  );
 
   if (signals.length === 0) {
     return (
@@ -40,6 +71,13 @@ export function RiskList({
       </div>
     );
   }
+
+  const chips: { id: "all" | Domain; label: string; count: number }[] = [
+    { id: "all", label: t("filterAll"), count: signals.length },
+    { id: "attendance", label: t("filterAttendance"), count: counts.attendance },
+    { id: "grades", label: t("filterGrades"), count: counts.grades },
+    { id: "behavior", label: t("filterBehavior"), count: counts.behavior },
+  ];
 
   const detailOf = (s: AttentionSignal): string => {
     switch (s.kind) {
@@ -89,8 +127,30 @@ export function RiskList({
   };
 
   return (
-    <div className="flex flex-col divide-y divide-border/60">
-      {signals.map((s) => {
+    <div className="flex flex-col">
+      <div className="flex flex-wrap items-center gap-1.5 pb-3">
+        {chips.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => setFilter(c.id)}
+            disabled={c.id !== "all" && c.count === 0}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-40",
+              filter === c.id ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {c.label}
+            <span className={cn("tabular-nums", filter === c.id ? "opacity-70" : "opacity-60")}>{c.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="py-6 text-center text-xs text-muted-foreground">{t("filterEmpty")}</p>
+      ) : (
+        <div className="flex flex-col divide-y divide-border/60">
+          {filtered.map((s) => {
         const Icon = KIND_ICON[s.kind];
         const title = s.kind === "attendance-missing" ? classNameOf?.(s.classId) ?? t("attendanceMissingTitle") : s.studentName;
         const subtitle = s.kind === "attendance-missing" ? null : classNameOf?.(s.classId);
@@ -121,8 +181,10 @@ export function RiskList({
               </div>
             </div>
           </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

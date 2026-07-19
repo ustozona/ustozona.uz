@@ -2275,7 +2275,12 @@
     "actionBehavior": "Поведение",
     "actionEnter": "Внести",
     "dismiss": "Скрыть",
-    "moreSignals": "Ещё сигналов: {count}"
+    "moreSignals": "Ещё сигналов: {count}",
+    "filterAll": "Все",
+    "filterAttendance": "Посещаемость",
+    "filterGrades": "Оценки",
+    "filterBehavior": "Поведение",
+    "filterEmpty": "Сигналов такого типа нет"
   },
   "BirthdayCard": {
     "title": "Дни рождения",

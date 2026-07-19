@@ -2275,7 +2275,12 @@
     "actionBehavior": "Жүрүм-турум",
     "actionEnter": "Киргизүү",
     "dismiss": "Көрдүм",
-    "moreSignals": "Дагы {count} сигнал бар"
+    "moreSignals": "Дагы {count} сигнал бар",
+    "filterAll": "Баары",
+    "filterAttendance": "Катышуу",
+    "filterGrades": "Баалар",
+    "filterBehavior": "Жүрүм-турум",
+    "filterEmpty": "Бул түрдө сигнал жок"
   },
   "BirthdayCard": {
     "title": "Туулган күндөр",

@@ -2275,7 +2275,12 @@
     "actionBehavior": "Behavior",
     "actionEnter": "Record",
     "dismiss": "Dismiss",
-    "moreSignals": "{count} more signals"
+    "moreSignals": "{count} more signals",
+    "filterAll": "All",
+    "filterAttendance": "Attendance",
+    "filterGrades": "Grades",
+    "filterBehavior": "Behavior",
+    "filterEmpty": "No signals of this type"
   },
   "BirthdayCard": {
     "title": "Birthdays",

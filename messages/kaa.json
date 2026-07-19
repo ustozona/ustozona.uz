@@ -2275,7 +2275,12 @@
     "actionBehavior": "Minez-qulıq",
     "actionEnter": "Kirgiziw",
     "dismiss": "Kórdim",
-    "moreSignals": "Jáne {count} signal bar"
+    "moreSignals": "Jáne {count} signal bar",
+    "filterAll": "Barlıǵı",
+    "filterAttendance": "Qatnasıw",
+    "filterGrades": "Bahalar",
+    "filterBehavior": "Qılıq-hárekat",
+    "filterEmpty": "Bul túrde signal joq"
   },
   "BirthdayCard": {
     "title": "Tuwılǵan kúnler",

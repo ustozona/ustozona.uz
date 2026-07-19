@@ -2275,7 +2275,12 @@
     "actionBehavior": "Тәртіп",
     "actionEnter": "Енгізу",
     "dismiss": "Көрдім",
-    "moreSignals": "Тағы {count} сигнал бар"
+    "moreSignals": "Тағы {count} сигнал бар",
+    "filterAll": "Барлығы",
+    "filterAttendance": "Қатысу",
+    "filterGrades": "Бағалар",
+    "filterBehavior": "Мінез-құлық",
+    "filterEmpty": "Бұл түрде сигнал жоқ"
   },
   "BirthdayCard": {
     "title": "Туған күндер",

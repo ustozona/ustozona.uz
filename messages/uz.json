@@ -2045,7 +2045,12 @@
     "actionBehavior": "Xulq",
     "actionEnter": "Kiritish",
     "dismiss": "Koʻrdim",
-    "moreSignals": "Yana {count} ta signal bor"
+    "moreSignals": "Yana {count} ta signal bor",
+    "filterAll": "Hammasi",
+    "filterAttendance": "Davomat",
+    "filterGrades": "Baholar",
+    "filterBehavior": "Xulq",
+    "filterEmpty": "Bu turda signal yoʻq"
   },
   "BirthdayCard": {
     "title": "Tugʻilgan kunlar",
