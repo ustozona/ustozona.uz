@@ -14,8 +14,10 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { BrandWordmark } from "@/assets/logo/brand-wordmark";
+import { BrandShield } from "@/assets/logo/brand-shield";
 import {
   LayoutGrid,
   Users,
@@ -56,24 +58,37 @@ function NavMenuItem({ item }: { item: NavItem }) {
   );
 }
 
+function AdminBrandHeader() {
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton size="lg" asChild className="h-auto">
+          <Link href="/admin">
+            {collapsed ? (
+              <BrandShield className="size-[30px] shrink-0" />
+            ) : (
+              <BrandWordmark
+                shieldClassName="size-[30px]"
+                textClassName="text-base"
+                gapClassName="gap-3"
+                rollerSize="base"
+              />
+            )}
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
 export default function AdminSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="h-auto">
-              <Link href="/admin">
-                <BrandWordmark
-                  shieldClassName="size-[30px]"
-                  textClassName="text-base"
-                  gapClassName="gap-3"
-                  rollerSize="base"
-                />
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <AdminBrandHeader />
       </SidebarHeader>
 
       <SidebarContent>

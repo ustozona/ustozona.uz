@@ -18,10 +18,12 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useTaskStore } from "@/store/useTaskStore";
 import { useChangelogUnseenCount } from "@/hooks/useChangelogSeen";
 import { BrandWordmark } from "@/assets/logo/brand-wordmark";
+import { BrandShield } from "@/assets/logo/brand-shield";
 import {
   LayoutGrid,
   Calendar,
@@ -144,6 +146,32 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
   );
 }
 
+function SidebarBrandHeader() {
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton size="lg" asChild className="h-auto">
+          <Link href="/dashboard">
+            {collapsed ? (
+              <BrandShield className="size-[30px] shrink-0" />
+            ) : (
+              <BrandWordmark
+                shieldClassName="size-[30px]"
+                textClassName="text-base"
+                gapClassName="gap-3"
+                rollerSize="base"
+              />
+            )}
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
 export function AppSidebar() {
   const t = useTranslations("AppSidebar");
   const taskCount = useTaskCount();
@@ -156,20 +184,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="h-auto">
-              <Link href="/dashboard">
-                <BrandWordmark
-                  shieldClassName="size-[30px]"
-                  textClassName="text-base"
-                  gapClassName="gap-3"
-                  rollerSize="base"
-                />
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <SidebarBrandHeader />
       </SidebarHeader>
 
       <SidebarContent data-tour="sidebar-nav">
