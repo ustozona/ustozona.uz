@@ -19,16 +19,14 @@ import {
 } from "@/lib/class-stats";
 import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
-import { ClassRowsCard } from "./ClassRowsCard";
 import { RiskList } from "./RiskList";
 import { GenderGroupCard } from "./GenderGroupCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 
 export function OverviewPanel({
-  onSelectClass, period, prevPeriod, calendar,
+  period, prevPeriod, calendar,
 }: {
-  onSelectClass: (id: string) => void;
   period: StatPeriod | null;
   prevPeriod: StatPeriod | null;
   calendar: AcademicYearCalendar;
@@ -126,10 +124,6 @@ export function OverviewPanel({
             <AttendanceTrendCard weeks={attendanceWeeks} />
           </DashboardSectionCard>
         </div>
-
-        <DashboardSectionCard icon={GraduationCap} title={t("classesTitle")}>
-          <ClassRowsCard rows={rows} onSelect={onSelectClass} />
-        </DashboardSectionCard>
 
         {genderGroups && (
           <DashboardSectionCard icon={Users} title={t("genderGroupTitle")}>
