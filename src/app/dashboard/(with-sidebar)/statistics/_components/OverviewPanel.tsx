@@ -25,11 +25,14 @@ import { GenderDonutChart } from "./GenderDonutChart";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 
 export function OverviewPanel({
-  period, prevPeriod, calendar,
+  period, prevPeriod, calendar, onSelectGroup,
 }: {
   period: StatPeriod | null;
   prevPeriod: StatPeriod | null;
   calendar: AcademicYearCalendar;
+  /** "Eʼtibor kerak" kartasida cheklangan (top) roʻyxatdan tashqarida qolgan
+      signallar uchun tegishli domen tabiga oʻtish. */
+  onSelectGroup?: (group: "attendance" | "grades" | "behavior") => void;
 }) {
   const t = useTranslations("StatisticsPage");
   const todayKey = dateToKey(new Date());
@@ -136,7 +139,13 @@ export function OverviewPanel({
           title={t("riskTitle")}
           action={<TypographyMuted className="text-xs">{t("riskTodayNote")}</TypographyMuted>}
         >
-          <RiskList signals={signals} classNameOf={(id) => classNameById.get(id)} />
+          <RiskList
+            signals={signals}
+            classNameOf={(id) => classNameById.get(id)}
+            limit={6}
+            onOverflowSelect={onSelectGroup}
+            domainLabels={{ attendance: t("groupAttendance"), grades: t("groupGrades"), behavior: t("groupBehavior") }}
+          />
         </DashboardSectionCard>
       </div>
     </div>

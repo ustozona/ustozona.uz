@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
-  CalendarX, ClipboardX, HeartCrack, TrendingDown, TrendingUp, UserX, UserCheck,
+  ArrowRight, CalendarX, ClipboardX, HeartCrack, TrendingDown, TrendingUp, UserX, UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
@@ -21,9 +21,9 @@ const KIND_ICON: Record<AttentionSignal["kind"], typeof UserX> = {
   "attendance-recovery": UserCheck,
 };
 
-type Domain = "attendance" | "grades" | "behavior";
+export type SignalDomain = "attendance" | "grades" | "behavior";
 
-const KIND_DOMAIN: Record<AttentionSignal["kind"], Domain> = {
+const KIND_DOMAIN: Record<AttentionSignal["kind"], SignalDomain> = {
   "absent-streak": "attendance",
   "low-attendance": "attendance",
   "attendance-missing": "attendance",
@@ -34,19 +34,36 @@ const KIND_DOMAIN: Record<AttentionSignal["kind"], Domain> = {
 };
 
 /** AttentionSection'dan moslashtirilgan — dismisssiz, cheklovsiz, faqat
-    oʻqish uchun risk registri (Statistika Umumiy/Sinf ikkala darajasida).
-    Turlar ustuvorlik boʻyicha bitta ro‘yxatda aralash chiqadi (GitHub
-    Notifications/Linear Inbox naqshi) — domen boʻyicha ajratilgan bir necha
-    kartaga BOʻLINMAYDI, ustida ixtiyoriy filtr-chip qatori bor xolos. */
+    oʻqish uchun risk registri (Statistika Umumiy/Sinf/Baholar/Davomat/Xulq
+    darajalarida). Turlar ustuvorlik boʻyicha bitta ro‘yxatda aralash chiqadi
+    (GitHub Notifications/Linear Inbox naqshi) — domen boʻyicha ajratilgan
+    bir necha kartaga BOʻLINMAYDI, ustida ixtiyoriy filtr-chip qatori bor
+    xolos. Umumiy tabida `limit` bilan qisqa "top" koʻrinish + toʻliq
+    roʻyxat domen tabiga havola qilinadi (`onOverflowSelect`); domen
+    tabining oʻzida `limit`siz, ichki scroll bilan toʻliq roʻyxat
+    koʻrsatiladi (sahifa cheksiz uzunlashib ketmasligi uchun). */
 export function RiskList({
   signals,
   classNameOf,
+  limit,
+  showFilters = true,
+  onOverflowSelect,
+  domainLabels,
 }: {
   signals: AttentionSignal[];
   classNameOf?: (classId: string) => string | undefined;
+  /** Berilsa, roʻyxat shuncha qatorga qisqaradi (Umumiy tabidagi "top" preview). */
+  limit?: number;
+  /** Domen filtr-chip qatorini yashirish — signallar allaqachon bitta domenga
+      cheklangan boʻlsa (domen tabining oʻzida) foydali. */
+  showFilters?: boolean;
+  /** `limit` sabab yashiringan qatorlar uchun domen tabiga oʻtish. */
+  onOverflowSelect?: (domain: SignalDomain) => void;
+  /** `onOverflowSelect` havolalarida koʻrsatiladigan domen nomlari. */
+  domainLabels?: Record<SignalDomain, string>;
 }) {
   const t = useTranslations("AttentionSection");
-  const [filter, setFilter] = useState<"all" | Domain>("all");
+  const [filter, setFilter] = useState<"all" | SignalDomain>("all");
 
   const counts = useMemo(
     () => ({
@@ -62,6 +79,9 @@ export function RiskList({
     [signals, filter]
   );
 
+  const visible = limit ? filtered.slice(0, limit) : filtered;
+  const overflowDomains = (["attendance", "grades", "behavior"] as const).filter((d) => limit && counts[d] > 0);
+
   if (signals.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center">
@@ -72,7 +92,7 @@ export function RiskList({
     );
   }
 
-  const chips: { id: "all" | Domain; label: string; count: number }[] = [
+  const chips: { id: "all" | SignalDomain; label: string; count: number }[] = [
     { id: "all", label: t("filterAll"), count: signals.length },
     { id: "attendance", label: t("filterAttendance"), count: counts.attendance },
     { id: "grades", label: t("filterGrades"), count: counts.grades },
@@ -128,61 +148,84 @@ export function RiskList({
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-wrap items-center gap-1.5 pb-3">
-        {chips.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => setFilter(c.id)}
-            disabled={c.id !== "all" && c.count === 0}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-40",
-              filter === c.id ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {c.label}
-            <span className={cn("tabular-nums", filter === c.id ? "opacity-70" : "opacity-60")}>{c.count}</span>
-          </button>
-        ))}
-      </div>
+      {showFilters && (
+        <div className="flex flex-wrap items-center gap-1.5 pb-3">
+          {chips.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setFilter(c.id)}
+              disabled={c.id !== "all" && c.count === 0}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors disabled:pointer-events-none disabled:opacity-40",
+                filter === c.id ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {c.label}
+              <span className={cn("tabular-nums", filter === c.id ? "opacity-70" : "opacity-60")}>{c.count}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <p className="py-6 text-center text-xs text-muted-foreground">{t("filterEmpty")}</p>
       ) : (
-        <div className="flex flex-col divide-y divide-border/60">
-          {filtered.map((s) => {
-        const Icon = KIND_ICON[s.kind];
-        const title = s.kind === "attendance-missing" ? classNameOf?.(s.classId) ?? t("attendanceMissingTitle") : s.studentName;
-        const subtitle = s.kind === "attendance-missing" ? null : classNameOf?.(s.classId);
-        return (
-          <div key={s.id} className="flex items-start gap-3 py-3">
-            <span
-              className={cn(
-                "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
-                s.severity === "destructive" && "bg-destructive/10 text-destructive",
-                s.severity === "warning" && "bg-warning/15 text-warning",
-                s.severity === "success" && "bg-success/15 text-success"
-              )}
-            >
-              <Icon className="size-4" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline gap-1.5">
-                <span className="truncate text-sm font-semibold text-foreground">{title}</span>
-                {subtitle && <span className="shrink-0 text-xs text-muted-foreground">{subtitle}</span>}
-              </div>
-              <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{detailOf(s)}</p>
-              <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                {actionsOf(s).map((a) => (
-                  <Button key={a.href + a.label} asChild variant="outline" size="sm" className="h-6 rounded-full px-2.5 text-xs font-medium">
-                    <Link href={a.href}>{a.label}</Link>
-                  </Button>
-                ))}
-              </div>
-            </div>
+        <div className="max-h-[32rem] overflow-y-auto">
+          <div className="flex flex-col divide-y divide-border/60">
+            {visible.map((s) => {
+              const Icon = KIND_ICON[s.kind];
+              const title = s.kind === "attendance-missing" ? classNameOf?.(s.classId) ?? t("attendanceMissingTitle") : s.studentName;
+              const subtitle = s.kind === "attendance-missing" ? null : classNameOf?.(s.classId);
+              return (
+                <div key={s.id} className="flex items-start gap-3 py-3">
+                  <span
+                    className={cn(
+                      "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
+                      s.severity === "destructive" && "bg-destructive/10 text-destructive",
+                      s.severity === "warning" && "bg-warning/15 text-warning",
+                      s.severity === "success" && "bg-success/15 text-success"
+                    )}
+                  >
+                    <Icon className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="truncate text-sm font-semibold text-foreground">{title}</span>
+                      {subtitle && <span className="shrink-0 text-xs text-muted-foreground">{subtitle}</span>}
+                    </div>
+                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{detailOf(s)}</p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                      {actionsOf(s).map((a) => (
+                        <Button key={a.href + a.label} asChild variant="outline" size="sm" className="h-6 rounded-full px-2.5 text-xs font-medium">
+                          <Link href={a.href}>{a.label}</Link>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-            );
-          })}
+        </div>
+      )}
+
+      {overflowDomains.length > 0 && (
+        <div className="mt-3 flex flex-col gap-1 border-t border-border/60 pt-3">
+          {overflowDomains.map((d) => (
+            <button
+              key={d}
+              type="button"
+              disabled={!onOverflowSelect}
+              onClick={() => onOverflowSelect?.(d)}
+              className="group flex items-center justify-between gap-2 text-left text-xs text-muted-foreground disabled:pointer-events-none enabled:hover:text-foreground"
+            >
+              <span>
+                {domainLabels?.[d] ?? d} — <span className="tabular-nums">{counts[d]}</span>
+              </span>
+              {onOverflowSelect && <ArrowRight className="size-3 shrink-0 opacity-50 transition-transform group-hover:translate-x-0.5" />}
+            </button>
+          ))}
         </div>
       )}
     </div>
