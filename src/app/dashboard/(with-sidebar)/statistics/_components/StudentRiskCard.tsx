@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ShieldAlert, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronRight, ShieldAlert, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import type { StudentRiskSummary } from "@/lib/attention";
@@ -51,7 +50,11 @@ export function StudentRiskCard({
         {shown.map((s) => {
           const high = s.destructiveCount > 0;
           return (
-            <div key={s.studentId} className="flex items-start gap-3 py-3">
+            <Link
+              key={s.studentId}
+              href={`/dashboard/students/${s.studentId}`}
+              className="group/row -mx-1.5 flex items-start gap-3 rounded-md px-1.5 py-3 transition-colors hover:bg-muted/40"
+            >
               <span
                 className={cn(
                   "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
@@ -74,10 +77,8 @@ export function StudentRiskCard({
                   <span className="text-xs text-muted-foreground">{t("moreSignals", { count: s.signals.length })}</span>
                 </div>
               </div>
-              <Button asChild variant="outline" size="sm" className="h-7 shrink-0 rounded-full px-3 text-xs font-medium">
-                <Link href={`/dashboard/students/${s.studentId}`}>{t("actionProfile")}</Link>
-              </Button>
-            </div>
+              <ChevronRight className="mt-1.5 size-3.5 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover/row:opacity-100" />
+            </Link>
           );
         })}
       </div>

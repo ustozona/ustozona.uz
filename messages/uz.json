@@ -452,6 +452,8 @@
     "notEnoughData": "Maʼlumot yetarli emas",
     "kpiCompletion": "Bajarilganlik",
     "attendanceTrendTitle": "Haftalik davomat trendi",
+    "attendanceRankingTitle": "Sinflar boʻyicha davomat",
+    "gradesRankingTitle": "Sinflar boʻyicha oʻzlashtirish",
     "behaviorClimateTitle": "Xulq iqlimi",
     "autoManualSplit": "{auto} avto · {manual} qoʻlda",
     "positiveShareLabel": "ijobiy ulush (soʻnggi hafta)",
@@ -1887,6 +1889,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "statistics-domain-aggregates": {
+        "title": "Statistika: Baholar/Davomat/Xulq tablariga maktab boʻyicha grafiklar qoʻshildi",
+        "body": "Sinf tanlanmaganda endi bu boʻlimlarda haftalik davomat trendi, baholar taqsimoti, xulq iqlimi va sinflar reytingi koʻrinadi. Roʻyxatlardagi qatorlar endi butunlay bosiluvchi — ortiqcha tugmalar olib tashlandi."
+      },
       "statistics-risk-view": {
         "title": "Statistika: „Eʼtibor kerak“ boʻlimi oʻquvchi-markazli qilib qayta qurildi",
         "body": "Endi xavfdagi oʻquvchilar bitta roʻyxatda, risk darajasi boʻyicha saralangan holda koʻrinadi — bir oʻquvchi bir necha kartada takrorlanmaydi. Davomat KPI'siga oldingi davr bilan solishtirma trend qoʻshildi."

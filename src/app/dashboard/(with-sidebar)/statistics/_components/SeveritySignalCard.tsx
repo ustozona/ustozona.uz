@@ -3,11 +3,9 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
-  AlertTriangle, CalendarX, ClipboardX, HeartCrack, ShieldAlert, TrendingDown, TrendingUp, UserX, UserCheck,
+  AlertTriangle, CalendarX, ChevronRight, ClipboardX, HeartCrack, ShieldAlert, TrendingDown, TrendingUp, UserX, UserCheck,
   type LucideIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { ATTENTION_DEFAULTS, type AttentionSeverity, type AttentionSignal } from "@/lib/attention";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { cn } from "@/lib/utils";
@@ -86,33 +84,13 @@ export function SeveritySignalCard({
     }
   };
 
-  const actionsOf = (s: AttentionSignal): { label: string; href: string }[] => {
-    const attendance = { label: t("actionAttendance"), href: `/dashboard/attendance?classId=${encodeURIComponent(s.classId)}` };
-    switch (s.kind) {
-      case "absent-streak":
-      case "low-attendance":
-        return [{ label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` }, attendance];
-      case "grade-drop":
-        return [
-          { label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` },
-          { label: t("actionGrades"), href: `/dashboard/grades?classId=${encodeURIComponent(s.classId)}` },
-        ];
-      case "behavior-cluster":
-        return [
-          { label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` },
-          { label: t("actionBehavior"), href: "/dashboard/behavior" },
-        ];
-      case "attendance-missing":
-        return [{ ...attendance, label: t("actionEnter") }];
-      case "grade-rise":
-        return [
-          { label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` },
-          { label: t("actionGrades"), href: `/dashboard/grades?classId=${encodeURIComponent(s.classId)}` },
-        ];
-      case "attendance-recovery":
-        return [{ label: t("actionProfile"), href: `/dashboard/students/${s.studentId}` }, attendance];
-    }
-  };
+  /** Qator butunlay bosiluvchi — bitta asosiy manzil (student-signallarda
+      profil, davomat-yozuvsiz kunda oʻsha sinf davomati). Ikkilamchi
+      tugma-chiplar shovqin edi, olib tashlandi. */
+  const primaryHrefOf = (s: AttentionSignal): string =>
+    s.kind === "attendance-missing"
+      ? `/dashboard/attendance?classId=${encodeURIComponent(s.classId)}`
+      : `/dashboard/students/${s.studentId}`;
 
   if (signals.length === 0) return null;
 
@@ -130,7 +108,11 @@ export function SeveritySignalCard({
             const title = s.kind === "attendance-missing" ? classNameOf?.(s.classId) ?? t("attendanceMissingTitle") : s.studentName;
             const subtitle = s.kind === "attendance-missing" ? null : classNameOf?.(s.classId);
             return (
-              <div key={s.id} className="flex items-start gap-3 py-3">
+              <Link
+                key={s.id}
+                href={primaryHrefOf(s)}
+                className="group/row -mx-1.5 flex items-start gap-3 rounded-md px-1.5 py-3 transition-colors hover:bg-muted/40"
+              >
                 <span
                   className={cn(
                     "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
@@ -147,15 +129,9 @@ export function SeveritySignalCard({
                     {subtitle && <span className="shrink-0 text-xs text-muted-foreground">{subtitle}</span>}
                   </div>
                   <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{detailOf(s)}</p>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                    {actionsOf(s).map((a) => (
-                      <Button key={a.href + a.label} asChild variant="outline" size="sm" className="h-6 rounded-full px-2.5 text-xs font-medium">
-                        <Link href={a.href}>{a.label}</Link>
-                      </Button>
-                    ))}
-                  </div>
                 </div>
-              </div>
+                <ChevronRight className="mt-1.5 size-3.5 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover/row:opacity-100" />
+              </Link>
             );
           })}
         </div>

@@ -135,7 +135,12 @@ export default function StatisticsPage() {
             ) : group === "classes" ? (
               <ClassesTablePanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : (
-              <DomainSignalsPanel domain={group as "grades" | "attendance" | "behavior"} calendar={calendar} />
+              <DomainSignalsPanel
+                domain={group as "grades" | "attendance" | "behavior"}
+                calendar={calendar}
+                period={period}
+                onSelectClass={handleSelectClass}
+              />
             )}
           </div>
         </div>

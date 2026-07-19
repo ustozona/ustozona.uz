@@ -452,6 +452,8 @@
     "notEnoughData": "Maǵlıwmat jetkilikli emes",
     "kpiCompletion": "Orınlaniw",
     "attendanceTrendTitle": "Haptalıq dawamat trendi",
+    "attendanceRankingTitle": "Klaslar boyınsha qatnasıw",
+    "gradesRankingTitle": "Klaslar boyınsha ózlestiriw",
     "behaviorClimateTitle": "Minez-qulıq klimatı",
     "autoManualSplit": "{auto} avto · {manual} qolman",
     "positiveShareLabel": "oń úlesi (ótken hapta)",
@@ -1887,6 +1889,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "statistics-domain-aggregates": {
+        "title": "Statistika: Bahalar/Qatnasıw/Qılıq-hárekat taplarına mektep boyınsha grafikler qosıldı",
+        "body": "Klas tańlanbaǵanda, bul bólimlerde endi haptalıq qatnasıw trendi, bahalar bólistiriliwi, qılıq-hárekat klimatı hám klaslar reytingi kórinedi. Dizim qatarları endi tolıq basıluwshı — artıq túymeler alıp taslandı."
+      },
       "statistics-risk-view": {
         "title": "Statistika: «Itibar kerek» bólimi endi oqıwshı-orayliq",
         "body": "Qáwip astındaǵı oqıwshılar endi qáwip dárejesi boyınsha sûriplengen bir dizimde kórsetiledi — bir oqıwshı bir neshe kartada qaytalanbaydı. Qatnasıw KPI-ge aldınǵı dáwir menen salıstırmalı trend qosıldı."

@@ -452,6 +452,8 @@
     "notEnoughData": "Not enough data",
     "kpiCompletion": "Completion",
     "attendanceTrendTitle": "Weekly attendance trend",
+    "attendanceRankingTitle": "Attendance by class",
+    "gradesRankingTitle": "Grades by class",
     "behaviorClimateTitle": "Behavior climate",
     "autoManualSplit": "{auto} auto · {manual} manual",
     "positiveShareLabel": "positive share (last week)",
@@ -1887,6 +1889,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "statistics-domain-aggregates": {
+        "title": "Statistics: school-wide charts added to the Grades/Attendance/Behavior tabs",
+        "body": "With no class selected, these tabs now show a weekly attendance trend, grade distribution, behavior climate, and a class ranking. List rows are now fully clickable — extra buttons were removed."
+      },
       "statistics-risk-view": {
         "title": "Statistics: the “Needs attention” section is now student-centric",
         "body": "At-risk students now show in a single list ranked by risk level — no student is scattered across several cards. The attendance KPI now shows the trend vs. the previous period."

@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "statistics-domain-aggregates",
+    date: "2026-07-19",
+    type: "yangi",
+    title: "Statistika: Baholar/Davomat/Xulq tablariga maktab boʻyicha grafiklar qoʻshildi",
+    body:
+      "Sinf tanlanmaganda endi bu boʻlimlarda haftalik davomat trendi, baholar taqsimoti, xulq iqlimi va sinflar reytingi koʻrinadi. Roʻyxatlardagi qatorlar endi butunlay bosiluvchi — ortiqcha tugmalar olib tashlandi.",
+    href: "/dashboard/statistics",
+  },
+  {
     id: "statistics-risk-view",
     date: "2026-07-19",
     type: "yaxshilandi",
