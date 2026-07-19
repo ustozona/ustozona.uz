@@ -1887,6 +1887,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "statistics-students-tab": {
+        "title": "Added a “Students” tab to the Statistics page",
+        "body": "You can now see every student across all your classes in one table: sort by attendance, grade, trend, and risk level."
+      },
       "classes-page-rename": {
         "title": "The “My classes” section is now called “Classes” for short"
       },

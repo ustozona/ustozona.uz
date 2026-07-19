@@ -1887,6 +1887,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "statistics-students-tab": {
+        "title": "«Statistika» betine «Oqıwshılar» bólimi qosıldı",
+        "body": "Endi barlıq klaslarıńızdaǵı oqıwshılardı bir kestede kóre alasız: qatnasıw, baha, trend hám qáwip dárejesi boyınsha sûriplep."
+      },
       "classes-page-rename": {
         "title": "«Meniń klaslarım» bólimi endi qısqasha «Klaslar» dep ataladı"
       },

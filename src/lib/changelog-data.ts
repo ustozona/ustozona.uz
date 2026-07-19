@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "statistics-students-tab",
+    date: "2026-07-19",
+    type: "yangi",
+    title: "Statistika sahifasiga „Oʻquvchilar“ boʻlimi qoʻshildi",
+    body:
+      "Endi barcha sinflaringizdagi oʻquvchilarni bitta jadvalda koʻrishingiz mumkin: davomat, baho, trend va xavf darajasi boʻyicha saralang.",
+    href: "/dashboard/statistics",
+  },
+  {
     id: "classes-page-rename",
     date: "2026-07-19",
     type: "yaxshilandi",
