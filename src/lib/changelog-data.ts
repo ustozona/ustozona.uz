@@ -32,6 +32,20 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "classes-page-rename",
+    date: "2026-07-19",
+    type: "yaxshilandi",
+    title: "„Mening sinflarim“ boʻlimi endi qisqacha „Sinflar“ deb ataladi",
+    href: "/dashboard/classes",
+  },
+  {
+    id: "changelog-link-labels-fix",
+    date: "2026-07-19",
+    type: "tuzatildi",
+    title: "Yangilanishlar sahifasidagi havola belgilari toʻgʻrilandi",
+    href: "/dashboard/changelog",
+  },
+  {
     id: "classes-table-view",
     date: "2026-07-19",
     type: "yangi",

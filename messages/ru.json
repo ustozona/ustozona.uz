@@ -4,7 +4,7 @@
     "groupTracking": "Оценивание и контроль",
     "groupPersonal": "Личное",
     "home": "Главная",
-    "myClasses": "Мои классы",
+    "myClasses": "Классы",
     "students": "Ученики",
     "timetable": "Расписание",
     "planner": "Планировщик",
@@ -26,7 +26,7 @@
   },
   "RouteLabels": {
     "home": "Главная",
-    "myClasses": "Мои классы",
+    "myClasses": "Классы",
     "students": "Ученики",
     "timetable": "Расписание",
     "planner": "Планировщик",
@@ -65,7 +65,7 @@
   "HeaderBreadcrumb": {
     "notFound": "Не найдено",
     "searchClassPlaceholder": "Поиск класса…",
-    "myClassesHeading": "Мои классы",
+    "myClassesHeading": "Классы",
     "searchStudentPlaceholder": "Поиск ученика…"
   },
   "HeaderAccountMenu": {
@@ -1054,7 +1054,7 @@
     "noAttendanceData": "Нет данных о посещаемости"
   },
   "ClassesPage": {
-    "title": "Мои классы",
+    "title": "Классы",
     "searchPlaceholder": "Название класса...",
     "filter": "Фильтр",
     "filterAllClasses": "Все классы",
@@ -1863,7 +1863,7 @@
     },
     "routes": {
       "dashboard": "Главная",
-      "classes": "Мои классы",
+      "classes": "Классы",
       "students": "Ученики",
       "timetable": "Расписание",
       "attendance": "Посещаемость",
@@ -1871,7 +1871,9 @@
       "standards": "Стандарты",
       "settings": "Настройки",
       "feedback": "Обратная связь",
-      "lessons": "Уроки"
+      "lessons": "Уроки",
+      "statistics": "Статистика",
+      "tasks": "Задачи"
     }
   },
   "StandardsView": {
@@ -2770,7 +2772,7 @@
       }
     },
     "classes": {
-      "label": "Мои классы",
+      "label": "Классы",
       "steps": {
         "0": {
           "title": "Всё начинается здесь",

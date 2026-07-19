@@ -4,7 +4,7 @@
     "groupTracking": "Баалоо жана көзөмөл",
     "groupPersonal": "Жеке",
     "home": "Башкы бет",
-    "myClasses": "Менин класстарым",
+    "myClasses": "Класстар",
     "students": "Окуучулар",
     "timetable": "Сабак жадыбалы",
     "planner": "Пландаштыргыч",
@@ -26,7 +26,7 @@
   },
   "RouteLabels": {
     "home": "Башкы бет",
-    "myClasses": "Менин класстарым",
+    "myClasses": "Класстар",
     "students": "Окуучулар",
     "timetable": "Сабак жадыбалы",
     "planner": "Пландаштыргыч",
@@ -65,7 +65,7 @@
   "HeaderBreadcrumb": {
     "notFound": "Табылган жок",
     "searchClassPlaceholder": "Класс издөө…",
-    "myClassesHeading": "Менин класстарым",
+    "myClassesHeading": "Класстар",
     "searchStudentPlaceholder": "Окуучу издөө…"
   },
   "HeaderAccountMenu": {
@@ -1054,7 +1054,7 @@
     "noAttendanceData": "Катышуу маалыматы жок"
   },
   "ClassesPage": {
-    "title": "Менин класстарым",
+    "title": "Класстар",
     "searchPlaceholder": "Класстын аты...",
     "filter": "Фильтр",
     "filterAllClasses": "Бардык класстар",
@@ -1863,7 +1863,7 @@
     },
     "routes": {
       "dashboard": "Башкы бет",
-      "classes": "Менин класстарым",
+      "classes": "Класстар",
       "students": "Окуучулар",
       "timetable": "Сабак жадыбалы",
       "attendance": "Катышуу",
@@ -1871,7 +1871,9 @@
       "standards": "Стандарттар",
       "settings": "Жөндөөлөр",
       "feedback": "Кайтарым байланыш",
-      "lessons": "Сабактар"
+      "lessons": "Сабактар",
+      "statistics": "Статистика",
+      "tasks": "Тапшырмалар"
     }
   },
   "StandardsView": {
@@ -2770,7 +2772,7 @@
       }
     },
     "classes": {
-      "label": "Менин класстарым",
+      "label": "Класстар",
       "steps": {
         "0": {
           "title": "Баары ушул жерден башталат",

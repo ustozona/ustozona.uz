@@ -4,7 +4,7 @@
     "groupTracking": "Бағалау және қадағалау",
     "groupPersonal": "Жеке",
     "home": "Басты бет",
-    "myClasses": "Менің сыныптарым",
+    "myClasses": "Сыныптар",
     "students": "Оқушылар",
     "timetable": "Сабақ кестесі",
     "planner": "Жоспарлаушы",
@@ -26,7 +26,7 @@
   },
   "RouteLabels": {
     "home": "Басты бет",
-    "myClasses": "Менің сыныптарым",
+    "myClasses": "Сыныптар",
     "students": "Оқушылар",
     "timetable": "Сабақ кестесі",
     "planner": "Жоспарлаушы",
@@ -65,7 +65,7 @@
   "HeaderBreadcrumb": {
     "notFound": "Табылмады",
     "searchClassPlaceholder": "Сыныпты іздеу…",
-    "myClassesHeading": "Менің сыныптарым",
+    "myClassesHeading": "Сыныптар",
     "searchStudentPlaceholder": "Оқушыны іздеу…"
   },
   "HeaderAccountMenu": {
@@ -1054,7 +1054,7 @@
     "noAttendanceData": "Қатысу мәліметі жоқ"
   },
   "ClassesPage": {
-    "title": "Менің сыныптарым",
+    "title": "Сыныптар",
     "searchPlaceholder": "Сынып атауы...",
     "filter": "Сүзгі",
     "filterAllClasses": "Барлық сыныптар",
@@ -1863,7 +1863,7 @@
     },
     "routes": {
       "dashboard": "Басты бет",
-      "classes": "Менің сыныптарым",
+      "classes": "Сыныптар",
       "students": "Оқушылар",
       "timetable": "Сабақ кестесі",
       "attendance": "Қатысу",
@@ -1871,7 +1871,9 @@
       "standards": "Стандарттар",
       "settings": "Параметрлер",
       "feedback": "Кері байланыс",
-      "lessons": "Сабақтар"
+      "lessons": "Сабақтар",
+      "statistics": "Статистика",
+      "tasks": "Тапсырмалар"
     }
   },
   "StandardsView": {
@@ -2770,7 +2772,7 @@
       }
     },
     "classes": {
-      "label": "Менің сыныптарым",
+      "label": "Сыныптар",
       "steps": {
         "0": {
           "title": "Барлығы осы жерден басталады",

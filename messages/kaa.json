@@ -4,7 +4,7 @@
     "groupTracking": "Bahalaw hám qadaǵalaw",
     "groupPersonal": "Jеke",
     "home": "Bas bet",
-    "myClasses": "Meniń klaslarım",
+    "myClasses": "Klaslar",
     "students": "Oqıwshılar",
     "timetable": "Sabaq kestesi",
     "planner": "Jobalawshı",
@@ -26,7 +26,7 @@
   },
   "RouteLabels": {
     "home": "Bas bet",
-    "myClasses": "Meniń klaslarım",
+    "myClasses": "Klaslar",
     "students": "Oqıwshılar",
     "timetable": "Sabaq kestesi",
     "planner": "Jobalawshı",
@@ -65,7 +65,7 @@
   "HeaderBreadcrumb": {
     "notFound": "Tabılmadı",
     "searchClassPlaceholder": "Klastı izlew…",
-    "myClassesHeading": "Meniń klaslarım",
+    "myClassesHeading": "Klaslar",
     "searchStudentPlaceholder": "Oqıwshını izlew…"
   },
   "HeaderAccountMenu": {
@@ -1054,7 +1054,7 @@
     "noAttendanceData": "Dawamat maǵlıwmatı joq"
   },
   "ClassesPage": {
-    "title": "Meniń klaslarım",
+    "title": "Klaslar",
     "searchPlaceholder": "Klas atı...",
     "filter": "Filtr",
     "filterAllClasses": "Barlıq klaslar",
@@ -1863,7 +1863,7 @@
     },
     "routes": {
       "dashboard": "Bas bet",
-      "classes": "Meniń klaslarım",
+      "classes": "Klaslar",
       "students": "Oqıwshılar",
       "timetable": "Sabaq kestesi",
       "attendance": "Dawamat",
@@ -1871,7 +1871,9 @@
       "standards": "Standartlar",
       "settings": "Sazlawlar",
       "feedback": "Pikir-usınıs",
-      "lessons": "Sabaqlar"
+      "lessons": "Sabaqlar",
+      "statistics": "Statistika",
+      "tasks": "Wazıypalar"
     }
   },
   "StandardsView": {

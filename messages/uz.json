@@ -4,7 +4,7 @@
     "groupTracking": "Baholash va kuzatuv",
     "groupPersonal": "Shaxsiy",
     "home": "Bosh sahifa",
-    "myClasses": "Mening sinflarim",
+    "myClasses": "Sinflar",
     "students": "Oʻquvchilar",
     "timetable": "Dars jadvali",
     "planner": "Rejalashtiruvchi",
@@ -26,7 +26,7 @@
   },
   "RouteLabels": {
     "home": "Bosh sahifa",
-    "myClasses": "Mening sinflarim",
+    "myClasses": "Sinflar",
     "students": "Oʻquvchilar",
     "timetable": "Dars jadvali",
     "planner": "Rejalashtiruvchi",
@@ -65,7 +65,7 @@
   "HeaderBreadcrumb": {
     "notFound": "Topilmadi",
     "searchClassPlaceholder": "Sinf qidirish…",
-    "myClassesHeading": "Mening sinflarim",
+    "myClassesHeading": "Sinflar",
     "searchStudentPlaceholder": "Oʻquvchi qidirish…"
   },
   "HeaderAccountMenu": {
@@ -1054,7 +1054,7 @@
     "noAttendanceData": "Davomat maʼlumoti yoʻq"
   },
   "ClassesPage": {
-    "title": "Mening sinflarim",
+    "title": "Sinflar",
     "searchPlaceholder": "Sinf nomi...",
     "filter": "Filtr",
     "filterAllClasses": "Barcha sinflar",
@@ -1863,7 +1863,7 @@
     },
     "routes": {
       "dashboard": "Bosh sahifa",
-      "classes": "Mening sinflarim",
+      "classes": "Sinflar",
       "students": "Oʻquvchilar",
       "timetable": "Dars jadvali",
       "attendance": "Davomat",
@@ -1871,7 +1871,9 @@
       "standards": "Standartlar",
       "settings": "Sozlamalar",
       "feedback": "Fikr-mulohaza",
-      "lessons": "Darslar"
+      "lessons": "Darslar",
+      "statistics": "Statistika",
+      "tasks": "Vazifalar"
     }
   },
   "StandardsView": {
@@ -2770,7 +2772,7 @@
       }
     },
     "classes": {
-      "label": "Mening sinflarim",
+      "label": "Sinflar",
       "steps": {
         "0": {
           "title": "Hammasi shu yerdan boshlanadi",

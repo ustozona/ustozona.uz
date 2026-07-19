@@ -4,7 +4,7 @@
     "groupTracking": "Assessment & tracking",
     "groupPersonal": "Personal",
     "home": "Home",
-    "myClasses": "My classes",
+    "myClasses": "Classes",
     "students": "Students",
     "timetable": "Timetable",
     "planner": "Planner",
@@ -26,7 +26,7 @@
   },
   "RouteLabels": {
     "home": "Home",
-    "myClasses": "My classes",
+    "myClasses": "Classes",
     "students": "Students",
     "timetable": "Timetable",
     "planner": "Planner",
@@ -65,7 +65,7 @@
   "HeaderBreadcrumb": {
     "notFound": "Not found",
     "searchClassPlaceholder": "Search class…",
-    "myClassesHeading": "My classes",
+    "myClassesHeading": "Classes",
     "searchStudentPlaceholder": "Search student…"
   },
   "HeaderAccountMenu": {
@@ -1054,7 +1054,7 @@
     "noAttendanceData": "No attendance data"
   },
   "ClassesPage": {
-    "title": "My classes",
+    "title": "Classes",
     "searchPlaceholder": "Class name...",
     "filter": "Filter",
     "filterAllClasses": "All classes",
@@ -1863,7 +1863,7 @@
     },
     "routes": {
       "dashboard": "Home",
-      "classes": "My classes",
+      "classes": "Classes",
       "students": "Students",
       "timetable": "Timetable",
       "attendance": "Attendance",
@@ -1871,7 +1871,9 @@
       "standards": "Standards",
       "settings": "Settings",
       "feedback": "Feedback",
-      "lessons": "Lessons"
+      "lessons": "Lessons",
+      "statistics": "Statistics",
+      "tasks": "Tasks"
     }
   },
   "StandardsView": {
@@ -2770,7 +2772,7 @@
       }
     },
     "classes": {
-      "label": "My classes",
+      "label": "Classes",
       "steps": {
         "0": {
           "title": "It all starts here",
