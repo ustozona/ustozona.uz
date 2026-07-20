@@ -779,6 +779,7 @@
     "searchPlaceholder": "Аты-жөнү же ID боюнча издөө…",
     "filterAria": "Статус боюнча чыпкалоо",
     "filterByStatus": "Статус боюнча",
+    "filterChip": "Абалы: {label}",
     "sortButton": "Сорттоо: {label}",
     "sortMenuLabel": "Сорттоо",
     "sortGrade": "Орточо баа (төмөндөн)",
@@ -787,6 +788,7 @@
     "exportAria": "Экспорт",
     "exportToast": "Окуучулардын тизмеси экспорттолду",
     "newStudent": "Жаңы окуучу",
+    "addShort": "Кошуу",
     "emptyFilteredTitle": "Ылайыктуу окуучу табылган жок",
     "emptyTitle": "Бул класста азырынча окуучу жок",
     "emptyFilteredDescription": "Фильтр же издөөнү өзгөртүп көрүңүз.",
@@ -821,7 +823,24 @@
     "addContact": "Кошуу",
     "call": "Чалуу",
     "telegram": "Telegram",
-    "telegramSoon": "Жакында"
+    "telegramSoon": "Жакында",
+    "viewCardAria": "Карточка көрүнүшү",
+    "viewTableAria": "Таблица көрүнүшү",
+    "tableColName": "Аты-жөнү",
+    "tableColId": "ID",
+    "tableColGrade": "Баа",
+    "tableColAttendance": "Катышуу",
+    "tableColStatus": "Абалы",
+    "tableColParentName": "Ата-эненин аты",
+    "tableColParentPhone": "Ата-эне телефону",
+    "tableColStudentPhone": "Окуучу телефону",
+    "selectAllAria": "Баарын тандоо",
+    "toastUpdated": "Окуучу маалыматы жаңыртылды",
+    "moreActionsAria": "Башка аракеттер",
+    "exportCsv": "CSV форматында жүктөп алуу",
+    "selectedCount": "{count} тандалды",
+    "deleteBulkDialogDescription": "{count} окуучу жана алардын бардык баалары биротоло өчүрүлөт. Бул аракетти артка кайтарууга болбойт.",
+    "toastDeletedBulk": "{count} окуучу өчүрүлдү"
   },
   "CreateStudentModal": {
     "titleCreate": "Жаңы окуучу",
@@ -1886,6 +1905,10 @@
       "changelog": "Жаңылануулар"
     },
     "entries": {
+      "students-table-view": {
+        "title": "Окуучулар: таблица көрүнүшү жана тез аракеттер кошулду",
+        "body": "Тизмени эми таблица түрүндө да көрүүгө болот — мамычаны басып сортту, бир нече окуучуну белгилеп абалын бирге өзгөртүңүз же өчүрүңүз. Издөө жана активдүү чыпка эми даана көрүнөт."
+      },
       "student-attendance-strip-fullyear": {
         "title": "Окуучу профили: Катышуу тасмасы бүткүл окуу жылын көрсөтөт",
         "body": "Тасма эми бүткүл окуу жылын камтыйт — азырынча болбогон күндөр өчүк түстө көрүнөт. Күн үстүнө басканда эми жалгыз гана дата чыгат."

@@ -779,6 +779,7 @@
     "searchPlaceholder": "Atı yamasa ID boyınsha izlew…",
     "filterAria": "Jaǵday boyınsha filtrllew",
     "filterByStatus": "Jaǵday boyınsha",
+    "filterChip": "Jaǵday: {label}",
     "sortButton": "Saralaw: {label}",
     "sortMenuLabel": "Saralaw",
     "sortGrade": "Ortasha baha (pásten)",
@@ -787,6 +788,7 @@
     "exportAria": "Eksport",
     "exportToast": "Oqıwshılar dizimi eksport qılındı",
     "newStudent": "Jańa oqıwshı",
+    "addShort": "Qosıw",
     "emptyFilteredTitle": "Sáykes oqıwshı tabılmadı",
     "emptyTitle": "Bul klaste ele oqıwshı joq",
     "emptyFilteredDescription": "Filtr yamasa izlewdi ózgertip kóriń.",
@@ -821,7 +823,24 @@
     "addContact": "Qosıw",
     "call": "Qońıraw",
     "telegram": "Telegram",
-    "telegramSoon": "Tez arada"
+    "telegramSoon": "Tez arada",
+    "viewCardAria": "Kartochka koʻrinisi",
+    "viewTableAria": "Kesте koʻrinisi",
+    "tableColName": "Толық аты",
+    "tableColId": "ID",
+    "tableColGrade": "Baha",
+    "tableColAttendance": "Qatnasıw",
+    "tableColStatus": "Jag'day",
+    "tableColParentName": "Ata-ana atı",
+    "tableColParentPhone": "Ata-ana telefonı",
+    "tableColStudentPhone": "Oqıwshı telefonı",
+    "selectAllAria": "Barlıǵın belgilew",
+    "toastUpdated": "Oqıwshı maǵlıwmatları jańalandı",
+    "moreActionsAria": "Basqa areketler",
+    "exportCsv": "CSV formatında júklep alıw",
+    "selectedCount": "{count} belgilendi",
+    "deleteBulkDialogDescription": "{count} oqıwshı hám olardıń barlıq bahaları pútkilley óshiriledi. Bul areketti biykarlap bolmaydı.",
+    "toastDeletedBulk": "{count} oqıwshı óshirildi"
   },
   "CreateStudentModal": {
     "titleCreate": "Jańa oqıwshı",
@@ -1886,6 +1905,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "students-table-view": {
+        "title": "Oqıwshılar: keste kórinisi hám tez areketler qosıldı",
+        "body": "Dizimdi endi keste túrinde de kóriwge boladı — bағananı basıp saralań, bir neshe oqıwshını belgilep birdey jaǵdayın ózgertiń yamasa óshiriń. Izlew hám aktiv filtr kóriw jenilledi."
+      },
       "student-attendance-strip-fullyear": {
         "title": "Oqıwshı profili: Qatnasıw tasması pútkil oqıw jılın kórsetedi",
         "body": "Tasma endi pútkil oqıw jılı sabaq kúnlerin qamtıydı — áli bolmaǵan kúnler xıra túste kórinedi. Kún ústine basqanda endi tek sáne shıǵadı."

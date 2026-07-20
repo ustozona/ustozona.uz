@@ -779,6 +779,7 @@
     "searchPlaceholder": "Search by name or ID…",
     "filterAria": "Filter by status",
     "filterByStatus": "By status",
+    "filterChip": "Status: {label}",
     "sortButton": "Sort: {label}",
     "sortMenuLabel": "Sort",
     "sortGrade": "Average grade (lowest first)",
@@ -787,6 +788,7 @@
     "exportAria": "Export",
     "exportToast": "Student list exported",
     "newStudent": "New student",
+    "addShort": "Add",
     "emptyFilteredTitle": "No matching students found",
     "emptyTitle": "No students in this class yet",
     "emptyFilteredDescription": "Try adjusting the filter or search.",
@@ -821,7 +823,24 @@
     "addContact": "Add",
     "call": "Call",
     "telegram": "Telegram",
-    "telegramSoon": "Coming soon"
+    "telegramSoon": "Coming soon",
+    "viewCardAria": "Card view",
+    "viewTableAria": "Table view",
+    "tableColName": "Full name",
+    "tableColId": "ID",
+    "tableColGrade": "Grade",
+    "tableColAttendance": "Attendance",
+    "tableColStatus": "Status",
+    "tableColParentName": "Parent name",
+    "tableColParentPhone": "Parent phone",
+    "tableColStudentPhone": "Student phone",
+    "selectAllAria": "Select all",
+    "toastUpdated": "Student updated",
+    "moreActionsAria": "More actions",
+    "exportCsv": "Download as CSV",
+    "selectedCount": "{count} selected",
+    "deleteBulkDialogDescription": "{count} students and all their grades will be permanently deleted. This action cannot be undone.",
+    "toastDeletedBulk": "{count} students deleted"
   },
   "CreateStudentModal": {
     "titleCreate": "New student",
@@ -1886,6 +1905,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "students-table-view": {
+        "title": "Students: table view and quick actions added",
+        "body": "You can now view the roster as a table too — click a column to sort, select multiple students to change their status or delete them together. Search and the active filter are now easier to see."
+      },
       "student-attendance-strip-fullyear": {
         "title": "Student profile: Attendance strip now shows the whole school year",
         "body": "The strip now spans the full academic year — days that haven't happened yet show as a faded placeholder. Hovering a day now shows just the date."

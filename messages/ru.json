@@ -779,6 +779,7 @@
     "searchPlaceholder": "Поиск по имени или ID…",
     "filterAria": "Фильтр по статусу",
     "filterByStatus": "По статусу",
+    "filterChip": "Статус: {label}",
     "sortButton": "Сортировка: {label}",
     "sortMenuLabel": "Сортировка",
     "sortGrade": "Средний балл (по возрастанию)",
@@ -787,6 +788,7 @@
     "exportAria": "Экспорт",
     "exportToast": "Список учеников экспортирован",
     "newStudent": "Новый ученик",
+    "addShort": "Добавить",
     "emptyFilteredTitle": "Подходящих учеников не найдено",
     "emptyTitle": "В этом классе пока нет учеников",
     "emptyFilteredDescription": "Попробуйте изменить фильтр или запрос.",
@@ -821,7 +823,24 @@
     "addContact": "Добавить",
     "call": "Позвонить",
     "telegram": "Телеграм",
-    "telegramSoon": "Скоро"
+    "telegramSoon": "Скоро",
+    "viewCardAria": "Карточный вид",
+    "viewTableAria": "Табличный вид",
+    "tableColName": "ФИО",
+    "tableColId": "ID",
+    "tableColGrade": "Оценка",
+    "tableColAttendance": "Посещаемость",
+    "tableColStatus": "Статус",
+    "tableColParentName": "Имя родителя",
+    "tableColParentPhone": "Телефон родителя",
+    "tableColStudentPhone": "Телефон ученика",
+    "selectAllAria": "Выбрать все",
+    "toastUpdated": "Данные ученика обновлены",
+    "moreActionsAria": "Другие действия",
+    "exportCsv": "Скачать в формате CSV",
+    "selectedCount": "Выбрано: {count}",
+    "deleteBulkDialogDescription": "{count} учеников и все их оценки будут безвозвратно удалены. Это действие нельзя отменить.",
+    "toastDeletedBulk": "Удалено учеников: {count}"
   },
   "CreateStudentModal": {
     "titleCreate": "Новый ученик",
@@ -1886,6 +1905,10 @@
       "changelog": "Обновления"
     },
     "entries": {
+      "students-table-view": {
+        "title": "Ученики: добавлен табличный вид и быстрые действия",
+        "body": "Список теперь можно смотреть и в виде таблицы — сортируйте по колонке, выделяйте нескольких учеников, чтобы сразу изменить статус или удалить. Поиск и активный фильтр стали заметнее."
+      },
       "student-attendance-strip-fullyear": {
         "title": "Профиль ученика: лента посещаемости теперь на весь учебный год",
         "body": "Лента теперь охватывает весь учебный год — ещё не наступившие дни показаны блёклым цветом. При наведении на день теперь видна только дата."

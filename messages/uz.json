@@ -779,6 +779,7 @@
     "searchPlaceholder": "Ism yoki ID boʻyicha qidirish…",
     "filterAria": "Holat boʻyicha filtrlash",
     "filterByStatus": "Holat boʻyicha",
+    "filterChip": "Holat: {label}",
     "sortButton": "Saralash: {label}",
     "sortMenuLabel": "Saralash",
     "sortGrade": "Oʻrtacha baho (pastdan)",
@@ -787,6 +788,7 @@
     "exportAria": "Eksport",
     "exportToast": "Oʻquvchilar roʻyxati eksport qilindi",
     "newStudent": "Yangi oʻquvchi",
+    "addShort": "Qoʻshish",
     "emptyFilteredTitle": "Mos oʻquvchi topilmadi",
     "emptyTitle": "Bu sinfda hali oʻquvchi yoʻq",
     "emptyFilteredDescription": "Filtr yoki qidiruvni oʻzgartirib koʻring.",
@@ -821,7 +823,24 @@
     "addContact": "Qoʻshish",
     "call": "Qoʻngʻiroq",
     "telegram": "Telegram",
-    "telegramSoon": "Tez orada"
+    "telegramSoon": "Tez orada",
+    "viewCardAria": "Karta koʻrinishi",
+    "viewTableAria": "Jadval koʻrinishi",
+    "tableColName": "Ism sharifi",
+    "tableColId": "ID",
+    "tableColGrade": "Baho",
+    "tableColAttendance": "Davomat",
+    "tableColStatus": "Holat",
+    "tableColParentName": "Ota-ona ismi",
+    "tableColParentPhone": "Ota-ona telefoni",
+    "tableColStudentPhone": "Oʻquvchi telefoni",
+    "selectAllAria": "Barchasini belgilash",
+    "toastUpdated": "Oʻquvchi maʼlumotlari yangilandi",
+    "moreActionsAria": "Qoʻshimcha amallar",
+    "exportCsv": "CSV formatida yuklab olish",
+    "selectedCount": "{count} ta tanlandi",
+    "deleteBulkDialogDescription": "{count} ta oʻquvchi va ularning barcha baholari butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.",
+    "toastDeletedBulk": "{count} ta oʻquvchi oʻchirildi"
   },
   "CreateStudentModal": {
     "titleCreate": "Yangi oʻquvchi",
@@ -1886,6 +1905,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "students-table-view": {
+        "title": "Oʻquvchilar: jadval koʻrinishi va tez amallar qoʻshildi",
+        "body": "Roʻyxatni endi jadval sifatida ham koʻrish mumkin — ustunni bosib saralang, bir nechta oʻquvchini belgilab birga holatini oʻzgartiring yoki oʻchiring. Qidiruv va faol filtrni koʻrish tezlashdi."
+      },
       "student-attendance-strip-fullyear": {
         "title": "Oʻquvchi profili: Davomat tasmasi butun oʻquv yilini koʻrsatadi",
         "body": "Tasma endi butun oʻquv yili dars kunlarini koʻrsatadi — hali oʻtilmagan kunlar xira rangda turadi. Kun ustiga bosganda endi faqat sana chiqadi."

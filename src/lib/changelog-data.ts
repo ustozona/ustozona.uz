@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "students-table-view",
+    date: "2026-07-20",
+    type: "yangi",
+    title: "Oʻquvchilar: jadval koʻrinishi va tez amallar qoʻshildi",
+    body:
+      "Roʻyxatni endi jadval sifatida ham koʻrish mumkin — ustunni bosib saralang, bir nechta oʻquvchini belgilab birga holatini oʻzgartiring yoki oʻchiring. Qidiruv va faol filtrni koʻrish tezlashdi.",
+    href: "/dashboard/students",
+  },
+  {
     id: "student-attendance-strip-fullyear",
     date: "2026-07-20",
     type: "yaxshilandi",

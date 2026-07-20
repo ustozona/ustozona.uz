@@ -779,6 +779,7 @@
     "searchPlaceholder": "Аты немесе ID бойынша іздеу…",
     "filterAria": "Күйі бойынша сүзгілеу",
     "filterByStatus": "Күйі бойынша",
+    "filterChip": "Күйі: {label}",
     "sortButton": "Сұрыптау: {label}",
     "sortMenuLabel": "Сұрыптау",
     "sortGrade": "Орташа баға (төменнен)",
@@ -787,6 +788,7 @@
     "exportAria": "Экспорт",
     "exportToast": "Оқушылар тізімі экспортталды",
     "newStudent": "Жаңа оқушы",
+    "addShort": "Қосу",
     "emptyFilteredTitle": "Сәйкес оқушы табылмады",
     "emptyTitle": "Бұл сыныпта әлі оқушы жоқ",
     "emptyFilteredDescription": "Сүзгіні немесе іздеуді өзгертіп көріңіз.",
@@ -821,7 +823,24 @@
     "addContact": "Қосу",
     "call": "Қоңырау шалу",
     "telegram": "Telegram",
-    "telegramSoon": "Жақында"
+    "telegramSoon": "Жақында",
+    "viewCardAria": "Карточка көрінісі",
+    "viewTableAria": "Кесте көрінісі",
+    "tableColName": "Толық аты",
+    "tableColId": "ID",
+    "tableColGrade": "Баға",
+    "tableColAttendance": "Қатысу",
+    "tableColStatus": "Күйі",
+    "tableColParentName": "Ата-ана аты",
+    "tableColParentPhone": "Ата-ана телефоны",
+    "tableColStudentPhone": "Оқушы телефоны",
+    "selectAllAria": "Барлығын таңдау",
+    "toastUpdated": "Оқушы деректері жаңартылды",
+    "moreActionsAria": "Басқа әрекеттер",
+    "exportCsv": "CSV форматында жүктеп алу",
+    "selectedCount": "{count} таңдалды",
+    "deleteBulkDialogDescription": "{count} оқушы және олардың барлық бағалары толығымен өшіріледі. Бұл әрекетті қайтаруға болмайды.",
+    "toastDeletedBulk": "{count} оқушы өшірілді"
   },
   "CreateStudentModal": {
     "titleCreate": "Жаңа оқушы",
@@ -1886,6 +1905,10 @@
       "changelog": "Жаңартулар"
     },
     "entries": {
+      "students-table-view": {
+        "title": "Оқушылар: кесте көрінісі және жылдам әрекеттер қосылды",
+        "body": "Тізімді енді кесте түрінде де көруге болады — бағанды басып сұрыптаңыз, бірнеше оқушыны белгілеп күйін бірге өзгертіңіз немесе өшіріңіз. Іздеу мен белсенді сүзгі енді анық көрінеді."
+      },
       "student-attendance-strip-fullyear": {
         "title": "Оқушы профилі: Қатысу таспасы бүкіл оқу жылын көрсетеді",
         "body": "Таспа енді бүкіл оқу жылын қамтиды — әлі болмаған күндер бозғылт түсте көрінеді. Күнге басқанда енді тек күні шығады."
