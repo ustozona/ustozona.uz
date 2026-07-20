@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import CreateStudentModal, { type NewStudentInput } from "./_components/CreateStudentModal";
 import AddStudentModal from "./_components/AddStudentModal";
 import StudentsDataTable from "./_components/StudentsDataTable";
+import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2, X,
@@ -428,46 +429,6 @@ export default function StudentsPage() {
               </ToggleGroupItem>
             </ToggleGroup>
 
-            {view === "table" && selectedRowIds.size > 0 ? (
-              /* Bulk-amal paneli — Sinflar sahifasidagi bilan bir xil naqsh:
-                 tanlash paytida oddiy toolbar oʻrnini bosadi. */
-              <div className="flex shrink-0 items-center gap-2 justify-self-end animate-in fade-in-0 slide-in-from-top-1 duration-fast">
-                <TypographyMuted className="px-2 text-sm">
-                  {t("selectedCount", { count: selectedRowIds.size })}
-                </TypographyMuted>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1.5 shadow-none">
-                      <GraduationCap className="size-4" />
-                      {t("statusLabel")}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleBulkStatus("active")}>
-                      <GraduationCap className={cn("size-4", STATUS_META.active.iconColor)} /> {t("status.active")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkStatus("away")}>
-                      <Clock className={cn("size-4", STATUS_META.away.iconColor)} /> {t("status.away")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkStatus("archived")}>
-                      <Archive className={cn("size-4", STATUS_META.archived.iconColor)} /> {t("status.archived")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 text-destructive shadow-none hover:text-destructive"
-                  onClick={() => setDeleteTargets(students.filter((s) => selectedRowIds.has(s.id)))}
-                >
-                  <Trash2 className="size-4" />
-                  {t("delete")}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedRowIds(new Set())}>
-                  {t("cancel")}
-                </Button>
-              </div>
-            ) : (
             <div className="flex shrink-0 items-center gap-1.5 justify-self-end md:gap-2.5">
               {/* Qidiruv — popover emas, joyida kengayadigan input (Sinflar bilan bir xil naqsh) */}
               <div className={cn("flex items-center transition-all duration-fast", searchOpen ? "w-44 sm:w-56" : "w-9")}>
@@ -598,12 +559,49 @@ export default function StudentsPage() {
                 </DropdownMenu>
               </div>
             </div>
-            )}
           </div>
 
           {/* Roʻyxat */}
           <div className="relative min-h-0 flex-1 overflow-hidden rounded-b-xl">
             <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-4 bg-gradient-to-t from-card to-transparent" />
+
+            {view === "table" && selectedRowIds.size > 0 && (
+              /* Guruhaviy amallar — header bilan joy talashmasin deb roʻyxat
+                 ustiga suzuvchi panel sifatida chiqadi (Gmail/Linear naqshi). */
+              <BulkActionBar>
+                <BulkActionCount>{t("selectedCount", { count: selectedRowIds.size })}</BulkActionCount>
+                <BulkActionDivider />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <BulkActionButton icon={<GraduationCap className="size-4" />} hasChevron>
+                      {t("statusLabel")}
+                    </BulkActionButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => handleBulkStatus("active")}>
+                      <GraduationCap className={cn("size-4", STATUS_META.active.iconColor)} /> {t("status.active")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkStatus("away")}>
+                      <Clock className={cn("size-4", STATUS_META.away.iconColor)} /> {t("status.away")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBulkStatus("archived")}>
+                      <Archive className={cn("size-4", STATUS_META.archived.iconColor)} /> {t("status.archived")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <BulkActionButton
+                  icon={<Trash2 className="size-4" />}
+                  variant="destructive"
+                  onClick={() => setDeleteTargets(students.filter((s) => selectedRowIds.has(s.id)))}
+                >
+                  {t("delete")}
+                </BulkActionButton>
+                <BulkActionDivider />
+                <BulkActionButton onClick={() => setSelectedRowIds(new Set())}>
+                  {t("cancel")}
+                </BulkActionButton>
+              </BulkActionBar>
+            )}
             {students.length === 0 ? (
               <Empty className="h-full">
                 <EmptyHeader>

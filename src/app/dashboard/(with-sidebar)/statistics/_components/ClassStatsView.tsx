@@ -19,7 +19,7 @@ import { deriveAttentionSignals, aggregateStudentRisk } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
   studentPeriodSummaries, classPeriodSummary, gradeDistribution, topicMastery, genderBreakdown,
-  attendanceWeeklyTrend, behaviorClimateTrend, assignmentCompletionRate, upcomingDeadlines,
+  attendanceWeeklyTrend, assignmentCompletionRate, upcomingDeadlines,
   assignmentQuality, topicStudentMatrix, assignmentsInRange,
   type StatPeriod,
 } from "@/lib/class-stats";
@@ -30,7 +30,6 @@ import { DistributionCard } from "./DistributionCard";
 import { TopicMasteryCard } from "./TopicMasteryCard";
 import { StudentRiskCard, PositiveStudentsStrip } from "./StudentRiskCard";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
-import { BehaviorClimateCard } from "./BehaviorClimateCard";
 import { DeadlinesCard } from "./DeadlinesCard";
 import { AbsenceTierList } from "./AbsenceTierList";
 import { AssignmentQualityCard } from "./AssignmentQualityCard";
@@ -91,7 +90,6 @@ export function ClassStatsView({
   const topics = topicMastery(classData, period.range, isYear);
   const gender = genderBreakdown(classData.students);
   const attendanceWeeks = attendanceWeeklyTrend(records, weights, period.range);
-  const climate = behaviorClimateTrend(events, period.range);
   const completion = assignmentCompletionRate(classData, period.range, isYear);
   const deadlines = upcomingDeadlines(classData, todayKey);
   const quality = assignmentQuality(classData, period.range, isYear);
@@ -180,10 +178,6 @@ export function ClassStatsView({
             <AbsenceTierList summaries={summaries} students={classData.students} />
           </DashboardSectionCard>
         )}
-
-        <DashboardSectionCard icon={HeartPulse} title={t("behaviorClimateTitle")}>
-          <BehaviorClimateCard climate={climate} />
-        </DashboardSectionCard>
       </div>
     </div>
   );

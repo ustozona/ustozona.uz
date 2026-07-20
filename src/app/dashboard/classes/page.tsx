@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
+import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { useSidebar } from "@/components/ui/sidebar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -308,36 +309,6 @@ export default function ClassesPage() {
               </ToggleGroupItem>
             </ToggleGroup>
 
-            {view === "table" && selectedIds.size > 0 ? (
-              /* Bulk-amal paneli — tanlash paytida oddiy toolbar oʻrnini bosadi
-                 (Gmail/Linear/Notion naqshi). */
-              <div className="flex items-center gap-2 justify-self-end animate-in fade-in-0 slide-in-from-top-1 duration-fast">
-                <TypographySmall className="text-muted-foreground px-2">
-                  {t("selectedCount", { count: selectedIds.size })}
-                </TypographySmall>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={() => handleBulkArchive(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
-                >
-                  <ArchiveIcon className="size-4" />
-                  {t("archive")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 text-destructive hover:text-destructive"
-                  onClick={() => setDeleteTargets(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
-                >
-                  <TrashIcon className="size-4" />
-                  {t("delete")}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
-                  {t("cancel")}
-                </Button>
-              </div>
-            ) : (
             <div className="flex items-center gap-2 justify-self-end">
               {/* Search */}
               <div className={cn("flex items-center transition-all duration-fast", searchOpen ? "w-52" : "w-8")}>
@@ -394,11 +365,35 @@ export default function ClassesPage() {
                 {t("newClass")}
               </Button>
             </div>
-            )}
           </CardHeader>
 
           {/* Scrollable content */}
-          <CardContent className={panelCardContentClass}>
+          <CardContent className={cn(panelCardContentClass, "relative")}>
+            {view === "table" && selectedIds.size > 0 && (
+              /* Guruhaviy amallar — header bilan joy talashmasin deb roʻyxat
+                 ustiga suzuvchi panel sifatida chiqadi (Gmail/Linear naqshi). */
+              <BulkActionBar>
+                <BulkActionCount>{t("selectedCount", { count: selectedIds.size })}</BulkActionCount>
+                <BulkActionDivider />
+                <BulkActionButton
+                  icon={<ArchiveIcon className="size-4" />}
+                  onClick={() => handleBulkArchive(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
+                >
+                  {t("archive")}
+                </BulkActionButton>
+                <BulkActionButton
+                  icon={<TrashIcon className="size-4" />}
+                  variant="destructive"
+                  onClick={() => setDeleteTargets(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
+                >
+                  {t("delete")}
+                </BulkActionButton>
+                <BulkActionDivider />
+                <BulkActionButton onClick={() => setSelectedIds(new Set())}>
+                  {t("cancel")}
+                </BulkActionButton>
+              </BulkActionBar>
+            )}
             <div className={panelScrollInnerClass}>
               {loading ? (
                 <div className={cn(

@@ -444,6 +444,8 @@
     "riskTitle": "Eʼtibor kerak",
     "riskTodayNote": "Bugungi holat",
     "distributionTitle": "Baholar taqsimoti",
+    "distributionTitleShort": "Baholar",
+    "distributionHint": "Tanlangan davr boʻyicha oʻquvchilarning yakuniy baholari qanday taqsimlanganini koʻrsatadi",
     "topicsTitle": "Mavzu oʻzlashtirish",
     "topicLow": "{count} past",
     "formativeChip": "Formativ",
@@ -1905,6 +1907,14 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "statistics-overview-redesign": {
+        "title": "Statistika: Umumiy boʻlim qayta ishlab chiqildi",
+        "body": "Darslar va Topshiriqlar KPI kartalari, Xulq-atvor va Topshiriqlar bajarilishi donut-kartalari qoʻshildi. Kartalar joylashuvi tartibga solindi, Baholar taqsimoti va Davomat trendi grafiklari yaxshilandi."
+      },
+      "bulk-action-floating-bar": {
+        "title": "Guruhaviy amallar endi suzuvchi panelda",
+        "body": "Oʻquvchilar va Sinflar sahifalarida bir nechta qatorni belgilaganda endi roʻyxat ustida alohida suzuvchi panel chiqadi — sarlavha va boshqa tugmalar joyidan siljimaydi."
+      },
       "students-table-view": {
         "title": "Oʻquvchilar: jadval koʻrinishi va tez amallar qoʻshildi",
         "body": "Roʻyxatni endi jadval sifatida ham koʻrish mumkin — ustunni bosib saralang, bir nechta oʻquvchini belgilab birga holatini oʻzgartiring yoki oʻchiring. Qidiruv va faol filtrni koʻrish tezlashdi."

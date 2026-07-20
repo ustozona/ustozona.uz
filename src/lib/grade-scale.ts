@@ -104,6 +104,23 @@ const IB7_TIERS: [number, string][] = [[85, "7"], [75, "6"], [65, "5"], [55, "4"
 const GCSE_TIERS: [number, string][] = [[90, "9"], [80, "8"], [70, "7"], [60, "6"], [50, "5"], [40, "4"], [30, "3"], [20, "2"], [0, "1"]];
 const GERMAN6_TIERS: [number, string][] = [[90, "1"], [75, "2"], [60, "3"], [45, "4"], [30, "5"], [0, "6"]];
 const SCALE6_TIERS: [number, string][] = [[90, "6"], [75, "5"], [60, "4"], [45, "3"], [30, "2"], [0, "1"]];
+// `getLetterGrade`dagi chegaralar bilan bir xil (A+ dan F gacha).
+const LETTER_PLUS_TIERS: [number, string][] = [
+  [93, "A"], [90, "A-"], [87, "B+"], [83, "B"], [80, "B-"],
+  [77, "C+"], [73, "C"], [70, "C-"], [67, "D+"], [60, "D"], [0, "F"],
+];
+// `toTen()`dagi yaxlitlash bilan bir xil (round(percent/10), 1..10 oraliqda qisilgan).
+const TEN_TIERS: [number, string][] = [
+  [95, "10"], [85, "9"], [75, "8"], [65, "7"], [55, "6"], [45, "5"], [35, "4"], [25, "3"], [15, "2"], [0, "1"],
+];
+const PASS_FAIL_TIERS: [number, string][] = [[PASS_THRESHOLD, "Bajardi"], [0, "Bajarmadi"]];
+// 100-ballik/foiz — 10 balllik oraliqlarga guruhlangan (uzluksiz qiymatni jadvalga aylantirish uchun).
+const PERCENT_TIERS: [number, string][] = [
+  [90, "90–100"], [80, "80–89"], [70, "70–79"], [60, "60–69"], [50, "50–59"],
+  [40, "40–49"], [30, "30–39"], [20, "20–29"], [10, "10–19"], [0, "0–9"],
+];
+// Fransiya 0–20: mashhur "mention" chegaralariga mos (16+/14+/12+/10+/pastda), ball oralig'i sifatida.
+const FRENCH20_TIERS: [number, string][] = [[80, "16–20"], [70, "14–15"], [60, "12–13"], [50, "10–11"], [0, "0–9"]];
 
 /**
  * TOIFA shkalasi (`scaleKind`) boʻyicha foizni yorliqqa oʻgiradi — katak va
@@ -168,6 +185,8 @@ export function getScaleBoundaries(kind: GradingScale, labelStyle: LabelStyle = 
       return FIVE_CUTS.map((t) => ({ min: t.min, label: labelStyle === "word" ? t.word : t.number }));
     case "letter_basic":
       return LETTER_BASIC_TIERS.map(([min, label]) => ({ min, label }));
+    case "letter_plus":
+      return LETTER_PLUS_TIERS.map(([min, label]) => ({ min, label }));
     case "ib7":
       return IB7_TIERS.map(([min, label]) => ({ min, label }));
     case "gcse":
@@ -176,6 +195,14 @@ export function getScaleBoundaries(kind: GradingScale, labelStyle: LabelStyle = 
       return GERMAN6_TIERS.map(([min, label]) => ({ min, label }));
     case "scale_6":
       return SCALE6_TIERS.map(([min, label]) => ({ min, label }));
+    case "ten":
+      return TEN_TIERS.map(([min, label]) => ({ min, label }));
+    case "percent":
+      return PERCENT_TIERS.map(([min, label]) => ({ min, label }));
+    case "pass_fail":
+      return PASS_FAIL_TIERS.map(([min, label]) => ({ min, label }));
+    case "french20":
+      return FRENCH20_TIERS.map(([min, label]) => ({ min, label }));
     default:
       return null;
   }

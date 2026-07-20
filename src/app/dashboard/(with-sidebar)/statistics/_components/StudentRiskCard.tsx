@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 export function StudentRiskCard({
   summaries,
   classNameOf,
-  limit = 10,
+  limit = 25,
 }: {
   summaries: StudentRiskSummary[];
   classNameOf?: (classId: string) => string | undefined;
@@ -46,7 +46,7 @@ export function StudentRiskCard({
       title={t("riskStudentsTitle")}
       action={<span className="text-xs tabular-nums text-muted-foreground">{risky.length}</span>}
     >
-      <div className="flex flex-col divide-y divide-border/60">
+      <div className="-mx-1.5 flex max-h-[22rem] flex-col divide-y divide-border/60 overflow-y-auto px-1.5">
         {shown.map((s) => {
           const high = s.destructiveCount > 0;
           return (

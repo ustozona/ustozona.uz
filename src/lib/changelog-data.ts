@@ -32,6 +32,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "statistics-overview-redesign",
+    date: "2026-07-20",
+    type: "yaxshilandi",
+    title: "Statistika: Umumiy boʻlim qayta ishlab chiqildi",
+    body:
+      "Darslar va Topshiriqlar KPI kartalari, Xulq-atvor va Topshiriqlar bajarilishi donut-kartalari qoʻshildi. Kartalar joylashuvi tartibga solindi, Baholar taqsimoti va Davomat trendi grafiklari yaxshilandi.",
+    href: "/dashboard/statistics",
+  },
+  {
+    id: "bulk-action-floating-bar",
+    date: "2026-07-20",
+    type: "yaxshilandi",
+    title: "Guruhaviy amallar endi suzuvchi panelda",
+    body:
+      "Oʻquvchilar va Sinflar sahifalarida bir nechta qatorni belgilaganda endi roʻyxat ustida alohida suzuvchi panel chiqadi — sarlavha va boshqa tugmalar joyidan siljimaydi.",
+    href: "/dashboard/students",
+  },
+  {
     id: "students-table-view",
     date: "2026-07-20",
     type: "yangi",

@@ -444,6 +444,8 @@
     "riskTitle": "Needs attention",
     "riskTodayNote": "Today's status",
     "distributionTitle": "Grade distribution",
+    "distributionTitleShort": "Grades",
+    "distributionHint": "Shows how students' final grades are distributed for the selected period",
     "topicsTitle": "Topic mastery",
     "topicLow": "{count} low",
     "formativeChip": "Formative",
@@ -1905,6 +1907,14 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "statistics-overview-redesign": {
+        "title": "Statistics: Overview section redesigned",
+        "body": "Added Lessons and Assignments KPI cards, plus Behavior and Assignment-completion donut cards. Card layout was reorganized, and the grade-distribution and attendance-trend charts were improved."
+      },
+      "bulk-action-floating-bar": {
+        "title": "Bulk actions now appear in a floating bar",
+        "body": "Selecting multiple rows on the Students or Classes pages now shows a floating bar above the list instead of replacing the toolbar — the header and other buttons stay put."
+      },
       "students-table-view": {
         "title": "Students: table view and quick actions added",
         "body": "You can now view the roster as a table too — click a column to sort, select multiple students to change their status or delete them together. Search and the active filter are now easier to see."

@@ -135,7 +135,7 @@ export default function StatisticsPage() {
             ) : group === "classes" ? (
               <ClassesTablePanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : (
-              <OverviewPanel period={period} prevPeriod={prevPeriod} calendar={calendar} onSelectClass={handleSelectClass} />
+              <OverviewPanel period={period} prevPeriod={prevPeriod} calendar={calendar} />
             )}
           </div>
         </div>

@@ -444,6 +444,8 @@
     "riskTitle": "Itibar kerek",
     "riskTodayNote": "Búgingi jaǵday",
     "distributionTitle": "Baha bólistiriliwi",
+    "distributionTitleShort": "Bahalar",
+    "distributionHint": "Tańlanǵan dáwir boyınsha oqıwshılardıń juwmaqlawshı bahaları qalay bólistirilgenin kórsetedi",
     "topicsTitle": "Tema ózlestiriw",
     "topicLow": "{count} tómen",
     "formativeChip": "Formativ",
@@ -1905,6 +1907,14 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "statistics-overview-redesign": {
+        "title": "Statistika: Ulıwma bólimi qayta islep shıǵıldı",
+        "body": "Sabaqlar hám Tapsırmalar KPI kartaları, Ózin-ózi tutıw hám Tapsırmalar orınlanıwı donut-kartaları qosıldı. Kartalar ornalasıwı tártipke salındı, Baha bólistiriliwi hám Qatnasıw trendi grafikleri jaqsılandı."
+      },
+      "bulk-action-floating-bar": {
+        "title": "Top areketler endi qalqıp turıwshı panelde",
+        "body": "Oqıwshılar hám Sınıplar betlerinde bir neshe qatardı belgilegende endi dizim ústinde aytarılǵan panel shıǵadı — atawı hám basqa túymeler ornınan qozǵalmaydı."
+      },
       "students-table-view": {
         "title": "Oqıwshılar: keste kórinisi hám tez areketler qosıldı",
         "body": "Dizimdi endi keste túrinde de kóriwge boladı — bағananı basıp saralań, bir neshe oqıwshını belgilep birdey jaǵdayın ózgertiń yamasa óshiriń. Izlew hám aktiv filtr kóriw jenilledi."
