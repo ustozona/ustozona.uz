@@ -434,11 +434,9 @@
     "kpiActiveStudents": "Belsendi oqıwshılar",
     "kpiGenderSub": "{boys} ul ({boysPct}%) · {girls} qız ({girlsPct}%)",
     "kpiClasses": "Klaslar",
-    "kpiSummative": "Summativ ortasha",
-    "kpiMedian": "Mediana",
     "kpiAttendance": "Dawamat",
-    "kpiPositiveBehavior": "Oń minez-qulıq",
-    "deltaStable": "Turaqlı",
+    "kpiLessons": "Sabaqlar",
+    "kpiAssignments": "Tapsırmalar",
     "genderSummary": "{boys} ul ({boysPct}%) · {girls} qız ({girlsPct}%)",
     "studentsCount": "{count} oqıwshı",
     "attendanceShort": "dawamat {pct}%",
@@ -450,7 +448,10 @@
     "topicLow": "{count} tómen",
     "formativeChip": "Formativ",
     "notEnoughData": "Maǵlıwmat jetkilikli emes",
-    "kpiCompletion": "Orınlaniw",
+    "kpiCompletion": "Tapsırmalar",
+    "behaviorSplitTitle": "Óz-ózin tutıw",
+    "completedLabel": "Orınlanǵan",
+    "notCompletedLabel": "Orınlanbaǵan",
     "attendanceTrendTitle": "Haptalıq dawamat trendi",
     "attendanceRankingTitle": "Klaslar boyınsha qatnasıw",
     "riskRankingTitle": "Itibar tıgızlıgı boyınsha klaslar",
@@ -1885,6 +1886,18 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "statistics-class-kpi-expand": {
+        "title": "Statistika: klass tafsilatına jańa KPI kartaları qosıldı",
+        "body": "Belsendi oqıwshılar hám Qatnasıw qatarına endi Sabaqlar hám Tapsırmalar sanı da qosıldı — klass haqqında bir qaraǵanda tolıq súwret."
+      },
+      "statistics-behavior-completion-donuts": {
+        "title": "Statistika: Oń xulıq hám Orınlanıw endi dóńgelek diagrammada",
+        "body": "Klass tafsilatında bul eki kórsetkish endi ápiwayı process-karta emes — Ulıwma óz-ózin tutıw (oń/teris, kónlikpe boyınsha) hám Orınlanıw (tapsırılǵan/tapsırılmaǵan tapsırmalar) endi dóńgelek diagramma sıpatında, jınıs diagrammasınıń qatarında kórinedi."
+      },
+      "statistics-simplified": {
+        "title": "Statistika: bet ápiwayılastırıldı",
+        "body": "Baalar, Qatnasıw hám Óz-ózin tutıw endi bólek bólimler emes — olardıń grafikaları endi Ulıwma bóliminde turadı. Klass saylanǵanda barlıq kórsetkishler bólim almastırmay bir lentada kórinedi."
+      },
       "statistics-class-risk-ranking": {
         "title": "Statistika: eń kóp itibar talap etetuǵın klaslar reytingi qosıldı",
         "body": "Ulıwma bólimde endi signal sanı boyınsha eń máseleli 3 klas kórinedi — basılsa sol klaska ótiledi. Jınıs diagramması kartasına ul/qız kesiminde ortasha baha hám qatnasıw qosıldı."

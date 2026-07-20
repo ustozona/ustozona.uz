@@ -2,26 +2,37 @@
 
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Users, GraduationCap, ShieldAlert, CalendarCheck } from "lucide-react";
+import {
+  Users, GraduationCap, ShieldAlert, CalendarCheck, TrendingUp, BarChart3, HeartPulse,
+} from "lucide-react";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
+import { useClassStore } from "@/store/useClassStore";
 import type { AcademicYearCalendar } from "@/lib/academic-calendar";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { statusWeights } from "@/lib/attendance-data";
 import { deriveAttentionSignals, aggregateStudentRisk } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
-  overviewRows, genderBreakdown, genderPerformanceSplit, signalCountsByClass,
-  studentPeriodSummaries, type StatPeriod,
+  overviewRows, genderBreakdown, signalCountsByClass,
+  studentPeriodSummaries, gradeDistribution, attendanceWeeklyTrend, behaviorClimateTrend,
+  type StatPeriod,
 } from "@/lib/class-stats";
 import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { StudentRiskCard, PositiveStudentsStrip } from "./StudentRiskCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 import { ClassRankingCard } from "./ClassRankingCard";
+import { AttendanceTrendCard } from "./AttendanceTrendCard";
+import { DistributionCard } from "./DistributionCard";
+import { BehaviorClimateCard } from "./BehaviorClimateCard";
 
+/** Butun maktab boʻyicha YAGONA koʻrinish — avvalgi Umumiy/Baholar/Davomat/
+    Xulq tablari shu bitta oqimga yigʻildi: KPI + eʼtibor roʻyxati + jins
+    donut + domen grafiklari (davomat trendi, baho taqsimoti, xulq iqlimi).
+    Sinf tanlansa oʻrnini ClassStatsView egallaydi. */
 export function OverviewPanel({
   period, prevPeriod, calendar, onSelectClass,
 }: {
@@ -38,6 +49,7 @@ export function OverviewPanel({
   const statuses = useAttendanceStore((s) => s.statuses);
   const eventsByClass = useBehaviorStore((s) => s.eventsByClass);
   const versions = useTimetableStore((s) => s.versions);
+  const journalScale = useClassStore((s) => s.journalScale);
   const liveClasses = useLiveClasses();
   const weights = useMemo(() => statusWeights(statuses), [statuses]);
 
@@ -67,10 +79,12 @@ export function OverviewPanel({
     return genderBreakdown(students);
   }, [classDataMap, classNameById]);
 
-  const genderGap = useMemo(() => {
-    if (!period) return null;
+  // Barcha jonli sinflar oʻquvchilarining davr xulosalari — baho taqsimoti
+  // shu hisobdan foydalanadi.
+  const allSummaries = useMemo(() => {
+    if (!period) return [];
     const isYear = period.kind === "year";
-    const summaries = Object.entries(classDataMap)
+    return Object.entries(classDataMap)
       .filter(([classId, cd]) => cd && classNameById.has(classId))
       .flatMap(([classId, cd]) =>
         studentPeriodSummaries({
@@ -82,8 +96,36 @@ export function OverviewPanel({
           isYear,
         })
       );
-    return genderPerformanceSplit(summaries);
   }, [classDataMap, classNameById, recordsByClass, eventsByClass, weights, period]);
+
+  const bins = useMemo(
+    () => (period ? gradeDistribution(allSummaries, journalScale.kind, journalScale.labelStyle) : null),
+    [allSummaries, journalScale, period]
+  );
+
+  const allRecords = useMemo(
+    () =>
+      Object.entries(recordsByClass)
+        .filter(([classId]) => classNameById.has(classId))
+        .flatMap(([, records]) => records),
+    [recordsByClass, classNameById]
+  );
+  const attendanceWeeks = useMemo(
+    () => (period ? attendanceWeeklyTrend(allRecords, weights, period.range) : []),
+    [allRecords, weights, period]
+  );
+
+  const allEvents = useMemo(
+    () =>
+      Object.entries(eventsByClass)
+        .filter(([classId]) => classNameById.has(classId))
+        .flatMap(([, events]) => events),
+    [eventsByClass, classNameById]
+  );
+  const climate = useMemo(
+    () => (period ? behaviorClimateTrend(allEvents, period.range) : null),
+    [allEvents, period]
+  );
 
   const riskSummaries = useMemo(() => aggregateStudentRisk(signals), [signals]);
   const riskStudentCount = riskSummaries.filter((s) => s.riskScore > 0).length;
@@ -146,11 +188,23 @@ export function OverviewPanel({
             girlsLabel={t("girlsFull")}
             unitLabel={t("unitPeople")}
             totalLabel={t("totalStudentsLabel")}
-            gap={genderGap ?? undefined}
-            gapGradeLabel={t("kpiSummative")}
-            gapAttendanceLabel={t("kpiAttendance")}
           />
         </DashboardSectionCard>
+
+        {/* ── Domen grafiklari (avvalgi Davomat/Baholar/Xulq tablaridan) ── */}
+        <DashboardSectionCard icon={TrendingUp} title={t("attendanceTrendTitle")}>
+          <AttendanceTrendCard weeks={attendanceWeeks} />
+        </DashboardSectionCard>
+
+        <DashboardSectionCard icon={BarChart3} title={t("distributionTitle")}>
+          <DistributionCard bins={bins} />
+        </DashboardSectionCard>
+
+        {climate && (
+          <DashboardSectionCard icon={HeartPulse} title={t("behaviorClimateTitle")}>
+            <BehaviorClimateCard climate={climate} />
+          </DashboardSectionCard>
+        )}
       </div>
     </div>
   );

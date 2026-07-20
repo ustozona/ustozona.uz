@@ -434,11 +434,9 @@
     "kpiActiveStudents": "Faol oʻquvchilar",
     "kpiGenderSub": "{boys} oʻgʻil ({boysPct}%) · {girls} qiz ({girlsPct}%)",
     "kpiClasses": "Sinflar",
-    "kpiSummative": "Summativ oʻrtacha",
-    "kpiMedian": "Median",
     "kpiAttendance": "Davomat",
-    "kpiPositiveBehavior": "Ijobiy xulq",
-    "deltaStable": "Barqaror",
+    "kpiLessons": "Darslar",
+    "kpiAssignments": "Topshiriqlar",
     "genderSummary": "{boys} oʻgʻil ({boysPct}%) · {girls} qiz ({girlsPct}%)",
     "studentsCount": "{count} oʻquvchi",
     "attendanceShort": "davomat {pct}%",
@@ -450,7 +448,10 @@
     "topicLow": "{count} past",
     "formativeChip": "Formativ",
     "notEnoughData": "Maʼlumot yetarli emas",
-    "kpiCompletion": "Bajarilganlik",
+    "kpiCompletion": "Topshiriqlar",
+    "behaviorSplitTitle": "Xulq-atvor",
+    "completedLabel": "Bajarilgan",
+    "notCompletedLabel": "Bajarilmagan",
     "attendanceTrendTitle": "Haftalik davomat trendi",
     "attendanceRankingTitle": "Sinflar boʻyicha davomat",
     "gradesRankingTitle": "Sinflar boʻyicha oʻzlashtirish",
@@ -1885,6 +1886,18 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "statistics-class-kpi-expand": {
+        "title": "Statistika: sinf tafsilotiga yangi KPI kartalar qoʻshildi",
+        "body": "Faol oʻquvchilar va Davomat qatoriga endi Darslar va Topshiriqlar soni ham qoʻshildi — sinf haqida bir qarashda toʻliqroq rasm."
+      },
+      "statistics-behavior-completion-donuts": {
+        "title": "Statistika: Ijobiy xulq va Bajarilganlik endi doira chartda",
+        "body": "Sinf tafsilotida bu ikki koʻrsatkich endi foiz-karta emas — Umumiy xulq (ijobiy/salbiy, koʻnikma boʻyicha) va Bajarilganlik (bajarilgan/bajarilmagan topshiriqlar) doira chart sifatida, Jins nisbati kartasi qatorida chiqadi."
+      },
+      "statistics-simplified": {
+        "title": "Statistika: sahifa soddalashtirildi",
+        "body": "Baholar, Davomat va Xulq alohida boʻlim boʻlmay qoldi — grafiklari endi Umumiy boʻlimning oʻzida turadi. Sinf tanlanganda ham barcha koʻrsatkichlar boʻlim almashtirmasdan bitta lentada koʻriladi."
+      },
       "statistics-class-risk-ranking": {
         "title": "Statistika: eng koʻp eʼtibor talab qiladigan sinflar reytingi qoʻshildi",
         "body": "Umumiy boʻlimda endi signal soni boʻyicha eng muammoli 3 ta sinf koʻrinadi — bosilsa oʻsha sinfga oʻtiladi. Jins taqsimoti kartasiga oʻgʻil/qiz kesimida oʻrtacha baho va davomat qoʻshildi."

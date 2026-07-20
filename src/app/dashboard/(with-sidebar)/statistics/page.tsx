@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Gauge, BookOpen, CalendarCheck, HeartPulse, Table as TableIcon, Users } from "lucide-react";
+import { Gauge, Table as TableIcon, Users } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { activeYear } from "@/lib/academic-years";
@@ -15,9 +15,13 @@ import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { OverviewPanel } from "./_components/OverviewPanel";
 import { ClassesTablePanel } from "./_components/ClassesTablePanel";
 import { StudentsTablePanel } from "./_components/StudentsTablePanel";
-import { DomainSignalsPanel } from "./_components/DomainSignalsPanel";
-import { ClassStatsView, type StatsGroup } from "./_components/ClassStatsView";
+import { ClassStatsView } from "./_components/ClassStatsView";
 import { StatsTabs, type StatsTabItem } from "./_components/StatsTabs";
+
+/** Sahifa tablari — domen (Baholar/Davomat/Xulq) tablari olib tashlandi:
+    ular endi Umumiy (maktab) va sinf koʻrinishining oʻzida karta sifatida
+    turadi. */
+type StatsGroup = "overview" | "classes" | "students";
 import { PeriodSelect } from "./_components/PeriodSelect";
 import { YearSelect } from "./_components/YearSelect";
 
@@ -40,11 +44,10 @@ export default function StatisticsPage() {
   // maktab boʻyicha umumiy maʼlumot koʻrsatiladi.
   const [selectedClassId, handleSelectClass] = useClassIdParam();
 
-  // Navbar doim mantiqiy guruhlangan holatda turadi: Umumiy/Oʻquvchilar/
-  // Baholar/Davomat/Xulq. "Oʻquvchilar" tabi sinf tanlangan-tanlanmaganidan
-  // qatʼi nazar koʻrinadi — faqat roʻyxat doirasi (sinf vs butun maktab)
-  // oʻzgaradi. "Sinflar" jadval tabi esa faqat sinf tanlanmaganda maʼnoli
-  // (butun maktab roʻyxati).
+  // Uch tab: Umumiy / Sinflar / Oʻquvchilar. "Oʻquvchilar" sinf tanlangan-
+  // tanlanmaganidan qatʼi nazar koʻrinadi — faqat roʻyxat doirasi (sinf vs
+  // butun maktab) oʻzgaradi. "Sinflar" jadvali faqat sinf tanlanmaganda
+  // maʼnoli (butun maktab roʻyxati).
   const [group, setGroup] = useState<StatsGroup>("overview");
   const handleToggleClass = (id: string) => {
     const next = id === selectedClassId ? null : id;
@@ -56,9 +59,6 @@ export default function StatisticsPage() {
       { id: "overview", label: t("groupOverview"), icon: Gauge },
       ...(selectedClassId ? [] : [{ id: "classes", label: t("groupClasses"), icon: TableIcon }]),
       { id: "students", label: t("groupStudents"), icon: Users },
-      { id: "grades", label: t("groupGrades"), icon: BookOpen },
-      { id: "attendance", label: t("groupAttendance"), icon: CalendarCheck },
-      { id: "behavior", label: t("groupBehavior"), icon: HeartPulse },
     ],
     [t, selectedClassId]
   );
@@ -112,7 +112,9 @@ export default function StatisticsPage() {
             <div className="bg-card rounded-xl card-elevation flex items-center justify-between gap-3 pr-3">
               <StatsTabs tabs={groupTabs} value={group} onChange={(v) => setGroup(v as StatsGroup)} />
               <div className="flex items-center gap-2">
-                {selectedYear && <YearSelect years={years} value={selectedYear.id} onChange={handleYearChange} />}
+                {selectedYear && years.length > 1 && (
+                  <YearSelect years={years} value={selectedYear.id} onChange={handleYearChange} />
+                )}
                 {period && periods.length > 0 && (
                   <PeriodSelect periods={periods} value={period.id} onChange={setPeriodId} />
                 )}
@@ -129,18 +131,11 @@ export default function StatisticsPage() {
                 classId={selectedClassId ?? undefined}
               />
             ) : selectedClassId ? (
-              <ClassStatsView classId={selectedClassId} period={period} prevPeriod={prevPeriod} group={group} calendar={calendar} />
-            ) : group === "overview" ? (
-              <OverviewPanel period={period} prevPeriod={prevPeriod} calendar={calendar} onSelectClass={handleSelectClass} />
+              <ClassStatsView classId={selectedClassId} period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : group === "classes" ? (
               <ClassesTablePanel onSelectClass={handleSelectClass} period={period} prevPeriod={prevPeriod} calendar={calendar} />
             ) : (
-              <DomainSignalsPanel
-                domain={group as "grades" | "attendance" | "behavior"}
-                calendar={calendar}
-                period={period}
-                onSelectClass={handleSelectClass}
-              />
+              <OverviewPanel period={period} prevPeriod={prevPeriod} calendar={calendar} onSelectClass={handleSelectClass} />
             )}
           </div>
         </div>

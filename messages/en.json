@@ -434,11 +434,9 @@
     "kpiActiveStudents": "Active students",
     "kpiGenderSub": "{boys} boys ({boysPct}%) · {girls} girls ({girlsPct}%)",
     "kpiClasses": "Classes",
-    "kpiSummative": "Summative average",
-    "kpiMedian": "Median",
     "kpiAttendance": "Attendance",
-    "kpiPositiveBehavior": "Positive behavior",
-    "deltaStable": "Stable",
+    "kpiLessons": "Lessons",
+    "kpiAssignments": "Assignments",
     "genderSummary": "{boys} boys ({boysPct}%) · {girls} girls ({girlsPct}%)",
     "studentsCount": "{count} students",
     "attendanceShort": "attendance {pct}%",
@@ -450,7 +448,10 @@
     "topicLow": "{count} low",
     "formativeChip": "Formative",
     "notEnoughData": "Not enough data",
-    "kpiCompletion": "Completion",
+    "kpiCompletion": "Assignments",
+    "behaviorSplitTitle": "Behavior",
+    "completedLabel": "Completed",
+    "notCompletedLabel": "Not completed",
     "attendanceTrendTitle": "Weekly attendance trend",
     "attendanceRankingTitle": "Attendance by class",
     "riskRankingTitle": "Classes by attention density",
@@ -1885,6 +1886,18 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "statistics-class-kpi-expand": {
+        "title": "Statistics: new KPI cards added to the class view",
+        "body": "Alongside Active students and Attendance, the class view now also shows Lessons and Assignments counts — a fuller picture of the class at a glance."
+      },
+      "statistics-behavior-completion-donuts": {
+        "title": "Statistics: Positive behavior and Completion are now donut charts",
+        "body": "In the class view, these two indicators are no longer plain percentage cards — Overall behavior (positive/negative, by skill) and Completion (submitted/missing assignments) now render as donut charts next to the gender chart."
+      },
+      "statistics-simplified": {
+        "title": "Statistics: the page got simpler",
+        "body": "Grades, Attendance and Behavior are no longer separate tabs — their charts now live right in Overview. With a class selected, every indicator appears in one feed without switching sections."
+      },
       "statistics-class-risk-ranking": {
         "title": "Statistics: added a ranking of classes needing the most attention",
         "body": "The Overview tab now shows the 3 classes with the most attention signals — tap one to jump to that class. The gender chart now also shows average grade and attendance by gender."

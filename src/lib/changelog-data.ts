@@ -32,6 +32,33 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "statistics-class-kpi-expand",
+    date: "2026-07-20",
+    type: "yangi",
+    title: "Statistika: sinf tafsilotiga yangi KPI kartalar qoʻshildi",
+    body:
+      "Faol oʻquvchilar va Davomat qatoriga endi Darslar va Topshiriqlar soni ham qoʻshildi — sinf haqida bir qarashda toʻliqroq rasm.",
+    href: "/dashboard/statistics",
+  },
+  {
+    id: "statistics-behavior-completion-donuts",
+    date: "2026-07-20",
+    type: "yaxshilandi",
+    title: "Statistika: Ijobiy xulq va Bajarilganlik endi doira chartda",
+    body:
+      "Sinf tafsilotida bu ikki koʻrsatkich endi foiz-karta emas — Umumiy xulq (ijobiy/salbiy, koʻnikma boʻyicha) va Bajarilganlik (bajarilgan/bajarilmagan topshiriqlar) doira chart sifatida, Jins nisbati kartasi qatorida chiqadi.",
+    href: "/dashboard/statistics",
+  },
+  {
+    id: "statistics-simplified",
+    date: "2026-07-20",
+    type: "yaxshilandi",
+    title: "Statistika: sahifa soddalashtirildi",
+    body:
+      "Baholar, Davomat va Xulq alohida boʻlim boʻlmay qoldi — grafiklari endi Umumiy boʻlimning oʻzida turadi. Sinf tanlanganda ham barcha koʻrsatkichlar boʻlim almashtirmasdan bitta lentada koʻriladi.",
+    href: "/dashboard/statistics",
+  },
+  {
     id: "statistics-class-risk-ranking",
     date: "2026-07-19",
     type: "yangi",

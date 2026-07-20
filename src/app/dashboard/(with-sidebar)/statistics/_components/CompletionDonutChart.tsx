@@ -1,48 +1,43 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mars, Venus } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { Label, Pie, PieChart } from "recharts";
 import { TypographyMuted } from "@/components/ui/typography";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
+import type { CompletionRate } from "@/lib/class-stats";
 
-// Jins ranglari — StudentProfile'dagi qatʼiy naqsh bilan bir xil manba
-// (Mars/sky = oʻgʻil, Venus/pink = qiz), boshqa joyda ixtiro qilinmaydi.
-function chartConfig(boysLabel: string, girlsLabel: string): ChartConfig {
-  return {
-    count: { label: "" },
-    male: { label: boysLabel, color: "var(--color-sky-500)" },
-    female: { label: girlsLabel, color: "var(--color-pink-500)" },
-  };
-}
+const chartConfig: ChartConfig = {
+  count: { label: "" },
+  completed: { label: "", color: "var(--success)" },
+  missing: { label: "", color: "var(--destructive)" },
+};
 
-/** Oʻgʻil/qiz nisbati — markazida jami son bilan donut chart (recharts),
-    pastida markazlashtirilgan izoh (son + foiz), hover'da tooltip.
-    Statistika sahifasida ham butun-maktab Umumiy, ham sinf detali darajasida
-    ishlatiladi. Serverda ResponsiveContainer oʻlchovsiz boʻlgani uchun faqat
-    mount'dan keyin chiziladi (task-stats-panel'dagi bilan bir xil gotcha). */
-export function GenderDonutChart({
-  gender, boysLabel, girlsLabel, unitLabel, totalLabel,
+/** Topshiriqlar bajarilishi — bajarilgan/bajarilmagan nisbati donut chart
+    (GenderDonutChart bilan bir xil vizual naqsh: markazda jami, pastda
+    ikki qatorli izoh). Sinf-darajali `assignmentCompletionRate`dan keladi. */
+export function CompletionDonutChart({
+  completion, completedLabel, notCompletedLabel, totalLabel, unitLabel,
 }: {
-  gender: { boys: number; girls: number; boysPct: number | null; girlsPct: number | null };
-  boysLabel: string;
-  girlsLabel: string;
-  /** "nafar" kabi ikkilamchi birlik — legend qatorlari va tooltip'da sonlardan keyin. */
-  unitLabel?: string;
-  /** Donut markazidagi kichik yorliq, masalan "Jami:". */
+  completion: CompletionRate;
+  completedLabel: string;
+  notCompletedLabel: string;
   totalLabel: string;
+  unitLabel?: string;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const total = gender.boys + gender.girls;
+  const completed = completion.totalSlots - completion.unsubmittedCount;
+  const missing = completion.unsubmittedCount;
+  const total = completed + missing;
   if (total === 0) return null;
-  const boysPct = gender.boysPct ?? 0;
-  const girlsPct = gender.girlsPct ?? 0;
+  const completedPct = Math.round((completed / total) * 100);
+  const missingPct = 100 - completedPct;
 
   const chartData = [
-    { gender: "male", count: gender.boys, fill: "var(--color-male)" },
-    { gender: "female", count: gender.girls, fill: "var(--color-female)" },
+    { kind: "completed", count: completed, fill: "var(--color-completed)" },
+    { kind: "missing", count: missing, fill: "var(--color-missing)" },
   ];
 
   return (
@@ -50,14 +45,14 @@ export function GenderDonutChart({
       {!mounted ? (
         <div className="size-[160px] shrink-0" />
       ) : (
-        <ChartContainer config={chartConfig(boysLabel, girlsLabel)} className="aspect-square size-[160px] shrink-0">
+        <ChartContainer config={chartConfig} className="aspect-square size-[160px] shrink-0">
           <PieChart>
             <ChartTooltip
               cursor={false}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null;
-                const item = payload[0] as { value: number; payload: { gender: string } };
-                const pct = item.payload.gender === "male" ? boysPct : girlsPct;
+                const item = payload[0] as { value: number; payload: { kind: string } };
+                const pct = item.payload.kind === "completed" ? completedPct : missingPct;
                 return (
                   <div className="rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
                     <span className="font-semibold tabular-nums">{item.value}</span>
@@ -67,7 +62,7 @@ export function GenderDonutChart({
                 );
               }}
             />
-            <Pie data={chartData} dataKey="count" nameKey="gender" innerRadius={52} outerRadius={78} strokeWidth={3}>
+            <Pie data={chartData} dataKey="count" nameKey="kind" innerRadius={52} outerRadius={78} strokeWidth={3}>
               <Label
                 content={({ viewBox }) => {
                   if (viewBox && "cx" in viewBox && "cy" in viewBox) {
@@ -77,7 +72,7 @@ export function GenderDonutChart({
                           {totalLabel}
                         </tspan>
                         <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 12} className="fill-foreground text-2xl font-bold">
-                          {total}
+                          {completedPct}%
                         </tspan>
                       </text>
                     );
@@ -91,20 +86,20 @@ export function GenderDonutChart({
       <div className="flex w-full flex-col gap-2">
         <div className="flex items-center justify-between gap-2 text-sm">
           <span className="flex items-center gap-1.5 text-foreground/80">
-            <Mars className="size-3.5 shrink-0 text-sky-500" />
-            {boysLabel}
+            <CheckCircle2 className="size-3.5 shrink-0 text-success" />
+            {completedLabel}
           </span>
           <span className="font-semibold tabular-nums">
-            {gender.boys}{unitLabel ? ` ${unitLabel}` : ""} <TypographyMuted className="inline">({boysPct}%)</TypographyMuted>
+            {completed}{unitLabel ? ` ${unitLabel}` : ""} <TypographyMuted className="inline">({completedPct}%)</TypographyMuted>
           </span>
         </div>
         <div className="flex items-center justify-between gap-2 text-sm">
           <span className="flex items-center gap-1.5 text-foreground/80">
-            <Venus className="size-3.5 shrink-0 text-pink-500" />
-            {girlsLabel}
+            <XCircle className="size-3.5 shrink-0 text-destructive" />
+            {notCompletedLabel}
           </span>
           <span className="font-semibold tabular-nums">
-            {gender.girls}{unitLabel ? ` ${unitLabel}` : ""} <TypographyMuted className="inline">({girlsPct}%)</TypographyMuted>
+            {missing}{unitLabel ? ` ${unitLabel}` : ""} <TypographyMuted className="inline">({missingPct}%)</TypographyMuted>
           </span>
         </div>
       </div>
