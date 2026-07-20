@@ -973,7 +973,7 @@
     "latePhrase": "darsga kechikkan",
     "excusedPhrase": "sababli qoldirgan",
     "bloomLevels": "Blum darajalari",
-    "attendanceStrip": "Davomat lentasi",
+    "attendanceStrip": "Davomat tasmasi",
     "attendanceStripDays": "{count} dars kuni",
     "attendanceStripHint": "Butun oʻquv yili — har segment bitta dars kuni"
   },
@@ -1886,6 +1886,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "student-attendance-strip-fullyear": {
+        "title": "Oʻquvchi profili: Davomat tasmasi butun oʻquv yilini koʻrsatadi",
+        "body": "Tasma endi butun oʻquv yili dars kunlarini koʻrsatadi — hali oʻtilmagan kunlar xira rangda turadi. Kun ustiga bosganda endi faqat sana chiqadi."
+      },
       "statistics-class-kpi-expand": {
         "title": "Statistika: sinf tafsilotiga yangi KPI kartalar qoʻshildi",
         "body": "Faol oʻquvchilar va Davomat qatoriga endi Darslar va Topshiriqlar soni ham qoʻshildi — sinf haqida bir qarashda toʻliqroq rasm."

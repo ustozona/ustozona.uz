@@ -10,7 +10,6 @@ import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { deriveLessonDays, statusWeights, type AttendanceRecord } from "@/lib/attendance-data";
-import { todayKey } from "@/lib/date-keys";
 import { useStudentNotesStore, formatNoteTime } from "@/store/useStudentNotesStore";
 import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -103,9 +102,7 @@ export default function StudentProfile({
   const timetableVersions = useTimetableStore((s) => s.versions);
   const lessonDays = useMemo(() => {
     if (!classId) return [];
-    const today = todayKey();
-    const end = today < calendar.range.end ? today : calendar.range.end;
-    return deriveLessonDays(classId, { start: calendar.range.start, end }, calendar, timetableVersions);
+    return deriveLessonDays(classId, { start: calendar.range.start, end: calendar.range.end }, calendar, timetableVersions);
   }, [classId, calendar, timetableVersions]);
   const attendanceWeights = useMemo(() => statusWeights(attendanceStatuses), [attendanceStatuses]);
 

@@ -252,10 +252,10 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
         <div className="mb-1 flex items-center gap-2.5">
           <SectionIcon><CalendarRange /></SectionIcon>
           <CardTitle>{t("attendanceStrip")}</CardTitle>
-          <TypographyMuted className="ml-auto">{t("attendanceStripDays", { count: attendance.total })}</TypographyMuted>
+          <TypographyMuted className="ml-auto">{t("attendanceStripDays", { count: attendance.allDays.length })}</TypographyMuted>
         </div>
         <TypographyMuted className="mb-4">{t("attendanceStripHint")}</TypographyMuted>
-        <AttendanceTracker days={attendance.days} />
+        <AttendanceTracker days={attendance.allDays} />
         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
           {attLegend.map((s) => (
             <div key={s.key} className="flex items-center gap-2">

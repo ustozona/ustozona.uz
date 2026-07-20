@@ -26,6 +26,7 @@ import { BLOOM_LEVELS } from "@/lib/standards-data";
 import { getQuarterForDate } from "@/lib/academic-calendar";
 import { getCurrentCalendar } from "@/store/useCalendarStore";
 import { dateToKey, dateKeyToDate } from "@/lib/date-keys";
+import { MONTHS_UZ } from "@/lib/localization";
 import { getStatus, weightedRate, type AttendanceRecord, type LessonDay } from "@/lib/attendance-data";
 
 // ─── Tiplar ──────────────────────────────────────────────────────────────────
@@ -82,6 +83,8 @@ export const GRANULARITY_LABELS: Record<Granularity, string> = {
 };
 
 export type AttendanceDay = { date: string; label: string; status: AttendanceStatus };
+/** Lenta uchun — belgilanmagan (hali boʻlmagan/oʻtilmagan) kunlar `status: null`. */
+export type AttendanceStripDay = { date: string; label: string; status: AttendanceStatus | null };
 
 export type AttendanceSummary = {
   total: number;
@@ -90,8 +93,10 @@ export type AttendanceSummary = {
   late: number;
   excused: number;
   pct: number;
-  /** Butun oʻquv yili dars kunlari (oraliq boʻyicha agregatsiya uchun) */
+  /** Butun oʻquv yili dars kunlari (oraliq boʻyicha agregatsiya uchun) — faqat belgilanganlar */
   days: AttendanceDay[];
+  /** Lenta uchun — butun oʻquv yilining BARCHA dars kunlari, belgilanmaganlar ham (status null) */
+  allDays: AttendanceStripDay[];
 };
 
 /** Tanlangan vaqt oraligʻi uchun davomat xulosasi */
@@ -235,6 +240,10 @@ function pad2(n: number): number | string {
 function fmt(d: Date): string {
   return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}`;
 }
+/** "20-iyul" — davomat lentasi tooltipi uchun toʻliq (kun-oy nomi) format. */
+function fmtFullDate(d: Date): string {
+  return `${d.getDate()}-${MONTHS_UZ[d.getMonth()].toLowerCase()}`;
+}
 
 // ─── Baho dinamikasi (oʻquv yili boʻyicha) ───────────────────────────────────
 
@@ -363,10 +372,16 @@ function buildAttendance(
   weights: Record<string, number | null>
 ): AttendanceSummary {
   const days: AttendanceDay[] = [];
+  const allDays: AttendanceStripDay[] = [];
   for (const ld of lessonDays) {
     const status = getStatus(records, studentId, ld.date);
-    if (status === "unmarked") continue;
-    days.push({ date: ld.date, label: fmt(dateKeyToDate(ld.date)), status: status as AttendanceStatus });
+    const label = fmtFullDate(dateKeyToDate(ld.date));
+    if (status === "unmarked") {
+      allDays.push({ date: ld.date, label, status: null });
+      continue;
+    }
+    days.push({ date: ld.date, label, status: status as AttendanceStatus });
+    allDays.push({ date: ld.date, label, status: status as AttendanceStatus });
   }
   const total = days.length;
   const present = days.filter((d) => d.status === "present").length;
@@ -375,7 +390,7 @@ function buildAttendance(
   const excused = days.filter((d) => d.status === "excused").length;
   const pct = weightedRate(records, studentId, weights)?.pct ?? 0;
 
-  return { total, present, absent, late, excused, pct, days };
+  return { total, present, absent, late, excused, pct, days, allDays };
 }
 
 // Oraliq → oxirgi N dars kuni (yillik = hammasi)

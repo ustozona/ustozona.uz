@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "student-attendance-strip-fullyear",
+    date: "2026-07-20",
+    type: "yaxshilandi",
+    title: "Oʻquvchi profili: Davomat tasmasi butun oʻquv yilini koʻrsatadi",
+    body:
+      "Tasma endi butun oʻquv yili dars kunlarini koʻrsatadi — hali oʻtilmagan kunlar xira rangda turadi. Kun ustiga bosganda endi faqat sana chiqadi.",
+    href: "/dashboard/students",
+  },
+  {
     id: "statistics-class-kpi-expand",
     date: "2026-07-20",
     type: "yangi",

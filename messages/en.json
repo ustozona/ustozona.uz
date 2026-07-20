@@ -1886,6 +1886,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "student-attendance-strip-fullyear": {
+        "title": "Student profile: Attendance strip now shows the whole school year",
+        "body": "The strip now spans the full academic year — days that haven't happened yet show as a faded placeholder. Hovering a day now shows just the date."
+      },
       "statistics-class-kpi-expand": {
         "title": "Statistics: new KPI cards added to the class view",
         "body": "Alongside Active students and Attendance, the class view now also shows Lessons and Assignments counts — a fuller picture of the class at a glance."

@@ -19,7 +19,7 @@ import {
   Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
 } from "@/components/ui/tooltip";
 import type {
-  TrendPoint, BloomBreakdown, AttendanceWindow, AttendanceDay,
+  TrendPoint, BloomBreakdown, AttendanceWindow, AttendanceStripDay,
 } from "@/lib/student-profile";
 
 // Davomat semantik ranglari (yagona joy)
@@ -248,17 +248,13 @@ export function AttendanceDonut({ summary }: { summary: AttendanceWindow }) {
 }
 
 // ─── Davomat tracker (segment lenta — "qachon") ──────────────────────────────
-// Har dars kuni = bitta segment; rang ATT_COLORS dan, hover'da sana + holat.
-// Donut "qancha"ni, tracker "qachon"ni koʻrsatadi.
+// Har dars kuni (butun oʻquv yili) = bitta segment; rang ATT_COLORS dan,
+// belgilanmagan (hali oʻtilmagan/hali belgilanmagan) kunlar xira (muted).
+// Hover'da FAQAT toʻliq sana (holat soʻzsiz). Donut "qancha"ni, tracker
+// "qachon"ni koʻrsatadi.
 
-export function AttendanceTracker({ days }: { days: AttendanceDay[] }) {
+export function AttendanceTracker({ days }: { days: AttendanceStripDay[] }) {
   const t = useTranslations("StudentCharts");
-  const attStatusLabels = {
-    present: t("present"),
-    absent: t("absent"),
-    late: t("late"),
-    excused: t("excused"),
-  } as const;
   if (days.length === 0) {
     return (
       <div className="flex h-9 items-center justify-center text-sm text-muted-foreground">
@@ -274,13 +270,10 @@ export function AttendanceTracker({ days }: { days: AttendanceDay[] }) {
             <TooltipTrigger asChild>
               <div
                 className="h-9 min-w-px flex-1 rounded-[2px] transition-opacity hover:opacity-70 sm:rounded-[3px]"
-                style={{ backgroundColor: ATT_COLORS[d.status] }}
+                style={{ backgroundColor: d.status ? ATT_COLORS[d.status] : "var(--muted)" }}
               />
             </TooltipTrigger>
-            <TooltipContent>
-              <span className="font-medium">{d.label}</span>
-              <span className="opacity-70"> · {attStatusLabels[d.status]}</span>
-            </TooltipContent>
+            <TooltipContent>{d.label}</TooltipContent>
           </Tooltip>
         ))}
       </div>
