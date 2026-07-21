@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import {
@@ -44,7 +44,7 @@ import OverviewTab from "./OverviewTab";
 import AssignmentsTab from "./AssignmentsTab";
 import NotesTab, { type Note, type Sentiment } from "./NotesTab";
 import BehaviorTab from "./BehaviorTab";
-import CreateStudentModal, { type NewStudentInput } from "../../_components/CreateStudentModal";
+import type { NewStudentInput } from "../../_components/CreateStudentModal";
 import { toast } from "sonner";
 import {
   ChevronsUpDown, ChevronLeft, ChevronRight, ArrowLeft, Check,
@@ -122,14 +122,24 @@ export default function StudentProfile({
   const noteEntries = useStudentNotesStore((s) => s.items);
   const addNoteEntry = useStudentNotesStore((s) => s.addNote);
   // Profil tahriri (sessiya ichida) — boshqa oʻquvchiga oʻtganda tozalanadi
-  const [editOpen, setEditOpen] = useState(false);
   const [override, setOverride] = useState<Partial<NewStudentInput>>({});
-  useEffect(() => setOverride({}), [studentId]);
+  const [nameOverride, setNameOverride] = useState<string | undefined>(undefined);
+  useEffect(() => { setOverride({}); setNameOverride(undefined); }, [studentId]);
 
-  // Inline tahrirlash uchun holatlar
+  // Yagona tahrirlash rejimi — bitta "Tahrirlash" tugma bilan boshlanadi,
+  // BARCHA maydonlar (ism, jinsi, tugʻilgan sana, aloqa) shu paytda tahrirlanadigan
+  // boʻladi, faqat "Saqlash" bosilganda commit qilinadi (avto-saqlash yoʻq).
+  const [cardEditing, setCardEditing] = useState(false);
   const [genderOpen, setGenderOpen] = useState(false);
   const [birthDateOpen, setBirthDateOpen] = useState(false);
-  const [editingContact, setEditingContact] = useState<string | null>(null);
+  const [draft, setDraft] = useState<{
+    name: string;
+    gender?: Gender;
+    birthDate?: string;
+    parentName?: string;
+    parentPhone?: string;
+    studentPhone?: string;
+  }>({ name: "" });
 
   const setTab = useCallback((next: TabId) => {
     setTabState(next);
@@ -206,7 +216,17 @@ export default function StudentProfile({
     );
   }
 
-  const { location, name, initials, studentCode } = profile;
+  const { location, name: baseName, initials: baseInitials, studentCode } = profile;
+  const name = nameOverride ?? baseName;
+  const initials = nameOverride
+    ? nameOverride
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((p) => p[0])
+        .join("")
+        .toUpperCase()
+    : baseInitials;
   const hex = location.hex;
   const pos = location.index + 1;
   const total = location.roster.length;
@@ -256,15 +276,37 @@ export default function StudentProfile({
       })()
     : undefined;
 
-  // Tahrirlash uchun joriy qiymatlar (ism/familiya ajratilgan)
-  const [firstName, ...rest] = name.split(" ");
-  const handleSaveEdit = (data: NewStudentInput) => {
+  // Bitta "Tahrirlash" tugmasi — butun kartani (ism + shaxsiy + aloqa) draft
+  // holatiga oʻtkazadi; hech narsa saqlanmaydi toki "Saqlash" bosilmaguncha.
+  const startCardEdit = () => {
+    setDraft({
+      name,
+      gender: info.gender,
+      birthDate: info.birthDate,
+      parentName: info.parentName,
+      parentPhone: info.parentPhone,
+      studentPhone: info.studentPhone,
+    });
+    setCardEditing(true);
+  };
+
+  const cancelCardEdit = () => {
+    setCardEditing(false);
+    setGenderOpen(false);
+    setBirthDateOpen(false);
+  };
+
+  const saveCardEdit = () => {
+    const trimmedName = draft.name.trim() || name;
+    const [fn, ...rest] = trimmedName.split(" ");
+    const ln = rest.join(" ");
+    setNameOverride(trimmedName);
     setOverride({
-      gender: data.gender,
-      birthDate: data.birthDate,
-      parentName: data.parentName,
-      parentPhone: data.parentPhone,
-      studentPhone: data.studentPhone,
+      gender: draft.gender,
+      birthDate: draft.birthDate,
+      parentName: draft.parentName?.trim() || undefined,
+      parentPhone: draft.parentPhone?.trim() || undefined,
+      studentPhone: draft.studentPhone?.trim() || undefined,
     });
     if (location?.classId) {
       updateClass(location.classId, (cd) => ({
@@ -272,61 +314,21 @@ export default function StudentProfile({
         students: cd.students.map((s) =>
           s.id === studentId ? {
             ...s,
-            name: `${data.firstName} ${data.lastName}`.trim(),
-            initials: (data.firstName[0] + (data.lastName?.[0] || "")).toUpperCase(),
-            gender: data.gender,
-            birthDate: data.birthDate,
-            parentName: data.parentName,
-            parentPhone: data.parentPhone,
-            studentPhone: data.studentPhone,
+            name: trimmedName,
+            initials: (fn[0] + (ln[0] || "")).toUpperCase(),
+            gender: draft.gender,
+            birthDate: draft.birthDate,
+            parentName: draft.parentName?.trim() || undefined,
+            parentPhone: draft.parentPhone?.trim() || undefined,
+            studentPhone: draft.studentPhone?.trim() || undefined,
           } : s
         ),
       }));
     }
-    toast.success(t("toastSaved"));
-  };
-
-  // Inline gender oʻzgartirish
-  const handleGenderChange = (val: Gender) => {
-    setOverride((prev) => ({ ...prev, gender: val }));
-    if (location?.classId) {
-      updateClass(location.classId, (cd) => ({
-        ...cd,
-        students: cd.students.map((s) => s.id === studentId ? { ...s, gender: val } : s),
-      }));
-    }
+    setCardEditing(false);
     setGenderOpen(false);
-    toast.success(t("toastGenderSaved"));
-  };
-
-  // Inline birthDate oʻzgartirish
-  const handleBirthDateChange = (d: Date | undefined) => {
-    if (d) {
-      const iso = toISO(d);
-      setOverride((prev) => ({ ...prev, birthDate: iso }));
-      if (location?.classId) {
-        updateClass(location.classId, (cd) => ({
-          ...cd,
-          students: cd.students.map((s) => s.id === studentId ? { ...s, birthDate: iso } : s),
-        }));
-      }
-      setBirthDateOpen(false);
-      toast.success(t("toastBirthDateSaved"));
-    }
-  };
-
-  // Inline aloqa maydonlarni oʻzgartirish
-  const handleContactSave = (field: string, value: string) => {
-    const trimmed = value.trim();
-    setOverride((prev) => ({ ...prev, [field]: trimmed || undefined }));
-    if (location?.classId) {
-      updateClass(location.classId, (cd) => ({
-        ...cd,
-        students: cd.students.map((s) => s.id === studentId ? { ...s, [field]: trimmed || undefined } : s),
-      }));
-    }
-    setEditingContact(null);
-    if (trimmed) toast.success(t("toastSaved"));
+    setBirthDateOpen(false);
+    toast.success(t("toastSaved"));
   };
 
   const TABS: { id: TabId; label: string; sub: string; icon: React.ComponentType<{ className?: string }>; count?: number }[] = [
@@ -342,19 +344,29 @@ export default function StudentProfile({
       <aside className="hidden w-[360px] shrink-0 flex-col overflow-hidden rounded-xl bg-card border border-border/50 shadow-sm lg:flex">
         {/* Oʻquvchi + switcher (sarlavha boʻlimi) */}
         <div className="shrink-0 border-b border-border p-5">
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3">
             <div className="flex size-14 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white" style={{ backgroundColor: hex }}>
               {initials}
             </div>
             <div className="min-w-0 flex-1">
-              <Popover open={switcherOpen} onOpenChange={setSwitcherOpen}>
-                <PopoverTrigger asChild>
-                  <button className="group flex w-full items-center gap-1.5 text-left">
-                    <span className="truncate text-lg font-bold tracking-tight">{name}</span>
-                    <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-72 p-0">
+              <div className="flex items-center gap-1">
+                {cardEditing ? (
+                  <Input
+                    value={draft.name}
+                    onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+                    className="h-7 min-w-0 px-1.5 py-0 text-lg font-bold tracking-tight"
+                    autoFocus
+                  />
+                ) : (
+                  <span className="truncate text-lg font-bold tracking-tight">{name}</span>
+                )}
+                <Popover open={switcherOpen} onOpenChange={setSwitcherOpen}>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="group shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground">
+                      <ChevronsUpDown className="size-4" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-72 p-0">
                   <Command>
                     <CommandInput placeholder={t("searchPlaceholder")} />
                     <CommandList>
@@ -376,81 +388,83 @@ export default function StudentProfile({
                       </CommandGroup>
                     </CommandList>
                   </Command>
-                </PopoverContent>
-              </Popover>
+                  </PopoverContent>
+                </Popover>
+              </div>
               <TypographyMuted className="mt-0.5 inline-flex items-center gap-1.5">
                 <ClassSwatch hex={hex} className="size-2.5" />
                 {location.classInfo.name} · {studentCode}
               </TypographyMuted>
             </div>
+            {!cardEditing && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={startCardEdit}
+                className="size-8 shrink-0 shadow-none"
+                aria-label={t("edit")}
+                title={t("edit")}
+              >
+                <Pen className="size-3.5" />
+              </Button>
+            )}
           </div>
-
         </div>
 
         {/* Boʻlimlar — bitta karta ichida, chiziq bilan ajratilgan (scroll) */}
         <div className="min-h-0 flex-1 overflow-y-auto">
           {/* Shaxsiy maʼlumotlar */}
           <div className="border-b border-border p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <TypographyLabel>{t("personalInfo")}</TypographyLabel>
-              <Button variant="ghost" size="sm" onClick={() => setEditOpen(true)} className="h-7 gap-1.5 px-2 text-muted-foreground">
-                <Pen className="size-3.5" /> {t("edit")}
-              </Button>
-            </div>
+            <TypographyLabel className="mb-4 block">{t("personalInfo")}</TypographyLabel>
             <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              {/* Jinsi — inline dropdown */}
+              {/* Jinsi — faqat tahrirlash rejimida oʻzgartiriladi */}
               <div className="min-w-0">
                 <p className="text-xs text-muted-foreground">{t("gender")}</p>
-                {info.gender ? (
+                {cardEditing ? (
                   <DropdownMenu open={genderOpen} onOpenChange={setGenderOpen}>
                     <DropdownMenuTrigger asChild>
                       <button
                         type="button"
                         className={cn(
                           "mt-1 inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium cursor-pointer transition-opacity hover:opacity-80",
-                          info.gender === "male"
+                          draft.gender === "male"
                             ? "border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400"
-                            : "border-pink-500 bg-pink-500/10 text-pink-600 dark:text-pink-400"
+                            : draft.gender === "female"
+                            ? "border-pink-500 bg-pink-500/10 text-pink-600 dark:text-pink-400"
+                            : "border-border text-muted-foreground"
                         )}
                       >
-                        {info.gender === "male" ? <Mars className="size-3.5" /> : <Venus className="size-3.5" />}
-                        {genderLabel}
+                        {draft.gender === "male" ? <Mars className="size-3.5" /> : draft.gender === "female" ? <Venus className="size-3.5" /> : null}
+                        {draft.gender ? (draft.gender === "male" ? t("genderMale") : t("genderFemale")) : t("addValue")}
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="min-w-[140px]">
-                      <DropdownMenuItem onClick={() => handleGenderChange("male")} className="gap-2">
+                      <DropdownMenuItem onClick={() => setDraft((d) => ({ ...d, gender: "male" }))} className="gap-2">
                         <Mars className="size-4 text-sky-500" />
                         <span>{t("genderMale")}</span>
-                        {info.gender === "male" && <Check className="ml-auto size-4" />}
+                        {draft.gender === "male" && <Check className="ml-auto size-4" />}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleGenderChange("female")} className="gap-2">
+                      <DropdownMenuItem onClick={() => setDraft((d) => ({ ...d, gender: "female" }))} className="gap-2">
                         <Venus className="size-4 text-pink-500" />
                         <span>{t("genderFemale")}</span>
-                        {info.gender === "female" && <Check className="ml-auto size-4" />}
+                        {draft.gender === "female" && <Check className="ml-auto size-4" />}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                ) : info.gender ? (
+                  <span
+                    className={cn(
+                      "mt-1 inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-sm font-medium",
+                      info.gender === "male"
+                        ? "border-sky-500 bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                        : "border-pink-500 bg-pink-500/10 text-pink-600 dark:text-pink-400"
+                    )}
+                  >
+                    {info.gender === "male" ? <Mars className="size-3.5" /> : <Venus className="size-3.5" />}
+                    {genderLabel}
+                  </span>
                 ) : (
-                  <DropdownMenu open={genderOpen} onOpenChange={setGenderOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="mt-1 block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {t("addValue")}
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="min-w-[140px]">
-                      <DropdownMenuItem onClick={() => handleGenderChange("male")} className="gap-2">
-                        <Mars className="size-4 text-sky-500" />
-                        <span>{t("genderMale")}</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleGenderChange("female")} className="gap-2">
-                        <Venus className="size-4 text-pink-500" />
-                        <span>{t("genderFemale")}</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <p className="mt-1 text-sm text-muted-foreground">—</p>
                 )}
               </div>
               {/* Yoshi — tugʻilgan kunigacha qolgan vaqt tooltipda (Sinfi endi faqat sarlavhada — takror emas) */}
@@ -477,45 +491,61 @@ export default function StudentProfile({
                   <p className="mt-1 text-sm text-muted-foreground">—</p>
                 </div>
               )}
-              {/* Tavallud sanasi — inline taqvim popover, endi butun qatorni egallaydi */}
+              {/* Tavallud sanasi — faqat tahrirlash rejimida taqvim popover orqali oʻzgartiriladi */}
               <div className="col-span-2 min-w-0">
                 <p className="text-xs text-muted-foreground">{t("birthDate")}</p>
-                <Popover open={birthDateOpen} onOpenChange={setBirthDateOpen}>
-                  <PopoverTrigger asChild>
-                    {birthDateText ? (
-                      <button
-                        type="button"
-                        className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-primary cursor-pointer whitespace-nowrap"
-                      >
-                        <CalendarDays className="size-3.5 text-muted-foreground shrink-0" />
-                        <span className="truncate">{birthDateText}</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="mt-1 block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {t("addValue")}
-                      </button>
-                    )}
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      locale={uz}
-                      formatters={{
-                        formatMonthDropdown: (date: Date) => MONTHS_UZ[date.getMonth()],
-                        formatWeekdayName: (date: Date) => DAYS_UZ_SUN_SHORT[date.getDay()],
-                      }}
-                      selected={fromISO(info.birthDate ?? "")}
-                      defaultMonth={fromISO(info.birthDate ?? "") ?? new Date(2012, 0)}
-                      captionLayout="dropdown"
-                      startMonth={new Date(2000, 0)}
-                      endMonth={new Date(2027, 11)}
-                      onSelect={handleBirthDateChange}
-                    />
-                  </PopoverContent>
-                </Popover>
+                {cardEditing ? (
+                  <Popover open={birthDateOpen} onOpenChange={setBirthDateOpen}>
+                    <PopoverTrigger asChild>
+                      {draft.birthDate ? (
+                        <button
+                          type="button"
+                          className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-primary cursor-pointer whitespace-nowrap"
+                        >
+                          <CalendarDays className="size-3.5 text-muted-foreground shrink-0" />
+                          <span className="truncate">
+                            {(() => {
+                              const [y, m, d] = draft.birthDate.split("-").map(Number);
+                              return `${y}-yil ${d}-${UZ_MONTHS[m - 1]}`;
+                            })()}
+                          </span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="mt-1 block text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          {t("addValue")}
+                        </button>
+                      )}
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        locale={uz}
+                        formatters={{
+                          formatMonthDropdown: (date: Date) => MONTHS_UZ[date.getMonth()],
+                          formatWeekdayName: (date: Date) => DAYS_UZ_SUN_SHORT[date.getDay()],
+                        }}
+                        selected={fromISO(draft.birthDate ?? "")}
+                        defaultMonth={fromISO(draft.birthDate ?? "") ?? new Date(2012, 0)}
+                        captionLayout="dropdown"
+                        startMonth={new Date(2000, 0)}
+                        endMonth={new Date(2027, 11)}
+                        onSelect={(d) => {
+                          if (d) { setDraft((prev) => ({ ...prev, birthDate: toISO(d) })); setBirthDateOpen(false); }
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                ) : birthDateText ? (
+                  <span className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-foreground whitespace-nowrap">
+                    <CalendarDays className="size-3.5 text-muted-foreground shrink-0" />
+                    <span className="truncate">{birthDateText}</span>
+                  </span>
+                ) : (
+                  <p className="mt-1 text-sm text-muted-foreground">—</p>
+                )}
               </div>
             </div>
           </div>
@@ -523,37 +553,34 @@ export default function StudentProfile({
           {/* Qarindoshlar — bogʻlangan aka/uka/opa/singil, bosilganda profilga oʻtadi */}
           <RelativesSection studentId={studentId} onNavigate={go} />
 
-          {/* Aloqa — inline tahrirlash */}
+          {/* Aloqa — faqat tahrirlash rejimida oʻzgartiriladi (bitta Saqlash bilan) */}
           <div className="p-5">
             <TypographyLabel className="mb-4 block">{t("contact")}</TypographyLabel>
             <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-              <InlineEditField
+              <ContactField
                 className="col-span-2"
                 label={t("parentName")}
                 value={info.parentName}
-                fieldKey="parentName"
-                editingContact={editingContact}
-                setEditingContact={setEditingContact}
-                onSave={handleContactSave}
+                editing={cardEditing}
+                draftValue={draft.parentName ?? ""}
+                onDraftChange={(v) => setDraft((d) => ({ ...d, parentName: v }))}
                 placeholder={t("parentNamePlaceholder")}
               />
-              <InlineEditField
+              <ContactField
                 label={t("parentPhone")}
                 value={info.parentPhone}
-                fieldKey="parentPhone"
-                editingContact={editingContact}
-                setEditingContact={setEditingContact}
-                onSave={handleContactSave}
+                editing={cardEditing}
+                draftValue={draft.parentPhone ?? ""}
+                onDraftChange={(v) => setDraft((d) => ({ ...d, parentPhone: v }))}
                 placeholder={t("parentPhonePlaceholder")}
                 inputType="tel"
               />
-              <InlineEditField
+              <ContactField
                 label={t("studentPhone")}
                 value={info.studentPhone}
-                fieldKey="studentPhone"
-                editingContact={editingContact}
-                setEditingContact={setEditingContact}
-                onSave={handleContactSave}
+                editing={cardEditing}
+                draftValue={draft.studentPhone ?? ""}
+                onDraftChange={(v) => setDraft((d) => ({ ...d, studentPhone: v }))}
                 placeholder={t("studentPhonePlaceholder")}
                 inputType="tel"
               />
@@ -561,14 +588,27 @@ export default function StudentProfile({
           </div>
         </div>
 
-        {/* Footer boʻlimi — telefon va chat tugmalari */}
+        {/* Footer boʻlimi — odatda telefon/chat, tahrirlash rejimida Bekor qilish/Saqlash */}
         <div className="flex shrink-0 items-center gap-2 border-t border-border p-4">
-          <Button asChild variant="outline" size="icon" disabled={!info.parentPhone} className="size-9 shadow-none" aria-label={t("callParentAria")}>
-            <a href={info.parentPhone ? `tel:${info.parentPhone.replace(/\s/g, "")}` : undefined}>
-              <Phone className="size-4" />
-            </a>
-          </Button>
-          <Button className="h-9 flex-1 font-semibold"><MessageCircle className="size-4" /> {t("chat")}</Button>
+          {cardEditing ? (
+            <>
+              <Button variant="outline" onClick={cancelCardEdit} className="h-9 flex-1 shadow-none">
+                {t("cancel")}
+              </Button>
+              <Button onClick={saveCardEdit} className="h-9 flex-1 font-semibold">
+                {t("save")}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button asChild variant="outline" size="icon" disabled={!info.parentPhone} className="size-9 shadow-none" aria-label={t("callParentAria")}>
+                <a href={info.parentPhone ? `tel:${info.parentPhone.replace(/\s/g, "")}` : undefined}>
+                  <Phone className="size-4" />
+                </a>
+              </Button>
+              <Button className="h-9 flex-1 font-semibold"><MessageCircle className="size-4" /> {t("chat")}</Button>
+            </>
+          )}
         </div>
       </aside>
 
@@ -582,27 +622,43 @@ export default function StudentProfile({
         >
           <div className="mb-4 mr-4 shrink-0 rounded-xl bg-card px-3 py-2 border border-border/50 shadow-sm md:mr-6">
             <div className="flex items-center gap-3">
-              {/* Boʻlim tablari (markaz) */}
-              <TabsList variant="line" className="mx-auto">
+              {/* Boʻlim tablari — Statistika sahifasidagi pill-tab uslubi (StatsTabs) */}
+              <div role="tablist" className="flex items-center gap-1.5">
                 {TABS.map((t) => {
                   const Icon = t.icon;
+                  const isActive = tab === t.id;
                   return (
-                    <TabsTrigger
+                    <button
                       key={t.id}
-                      value={t.id}
-                      className="gap-1.5 px-3"
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => setTab(t.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
                     >
-                      <Icon />
+                      <Icon className="size-4" aria-hidden="true" />
                       {t.label}
                       {t.count !== undefined && (
-                        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted-foreground tabular-nums">
+                        <span
+                          className={cn(
+                            "rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums",
+                            isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+                          )}
+                        >
                           {t.count}
                         </span>
                       )}
-                    </TabsTrigger>
+                    </button>
                   );
                 })}
-              </TabsList>
+              </div>
+
+              <div className="flex-1" />
 
               {/* Oʻquvchilar orasida navigatsiya — oʻng tomonda, icon-only */}
               <StudentPager
@@ -634,26 +690,6 @@ export default function StudentProfile({
           )}
         </Tabs>
       </div>
-
-      {/* Tahrirlash — yaratish modali edit rejimida (sessiya ichida saqlanadi) */}
-      <CreateStudentModal
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        mode="edit"
-        defaultClassId={location.classId}
-        initial={{
-          firstName,
-          lastName: rest.join(" "),
-          classId: location.classId,
-          gender: info.gender,
-          birthDate: info.birthDate,
-          parentName: info.parentName,
-          parentPhone: info.parentPhone,
-          studentPhone: info.studentPhone,
-          avatarColor: hex,
-        }}
-        onCreate={handleSaveEdit}
-      />
     </div>
   );
 }
@@ -739,79 +775,39 @@ function Field({
   );
 }
 
-/** Aloqa maydoni — bosganda inline Input chiqadi, Enter bilan saqlanadi, Escape bilan bekor qilinadi */
-function InlineEditField({
+/** Aloqa maydoni — faqat kartaning yagona tahrirlash rejimida (`cardEditing`)
+    Input'ga aylanadi; oʻzgarish darhol saqlanmaydi, faqat draft holatida
+    turadi — "Saqlash" bosilganda barcha maydonlar bilan birga commit boʻladi. */
+function ContactField({
   label,
   value,
-  fieldKey,
-  editingContact,
-  setEditingContact,
-  onSave,
+  editing,
+  draftValue,
+  onDraftChange,
   placeholder,
   inputType = "text",
   className,
 }: {
   label: string;
   value?: string;
-  fieldKey: string;
-  editingContact: string | null;
-  setEditingContact: (key: string | null) => void;
-  onSave: (field: string, value: string) => void;
+  editing: boolean;
+  draftValue: string;
+  onDraftChange: (value: string) => void;
   placeholder?: string;
   inputType?: string;
   className?: string;
 }) {
-  const t = useTranslations("StudentProfile");
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [draft, setDraft] = useState(value ?? "");
-  const isEditing = editingContact === fieldKey;
-
-  // Draft qiymati tashqaridan oʻzgarganda sinxronlash
-  useEffect(() => {
-    if (!isEditing) setDraft(value ?? "");
-  }, [value, isEditing]);
-
-  // Tahrirlash rejimiga kirganda autofocus
-  useEffect(() => {
-    if (isEditing) {
-      // Kichik kechikish — DOM renderdan keyin
-      const timer = setTimeout(() => inputRef.current?.focus(), 50);
-      return () => clearTimeout(timer);
-    }
-  }, [isEditing]);
-
-  const startEdit = () => {
-    setDraft(value ?? "");
-    setEditingContact(fieldKey);
-  };
-
-  const save = () => onSave(fieldKey, draft);
-  const cancel = () => {
-    setDraft(value ?? "");
-    setEditingContact(null);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") { e.preventDefault(); save(); }
-    if (e.key === "Escape") { e.preventDefault(); cancel(); }
-  };
-
-  if (isEditing) {
+  if (editing) {
     return (
       <div className={cn("min-w-0", className)}>
         <p className="text-xs text-muted-foreground mb-1">{label}</p>
-        <div className="flex items-center gap-1.5">
-          <Input
-            ref={inputRef}
-            type={inputType}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={save}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className="h-8 text-sm"
-          />
-        </div>
+        <Input
+          type={inputType}
+          value={draftValue}
+          onChange={(e) => onDraftChange(e.target.value)}
+          placeholder={placeholder}
+          className="h-8 text-sm"
+        />
       </div>
     );
   }
@@ -820,22 +816,9 @@ function InlineEditField({
     <div className={cn("min-w-0", className)}>
       <p className="text-xs text-muted-foreground">{label}</p>
       {value ? (
-        <button
-          type="button"
-          onClick={startEdit}
-          className="mt-1 truncate text-sm font-medium text-foreground transition-colors hover:text-primary cursor-pointer text-left"
-          title={t("editHint")}
-        >
-          {value}
-        </button>
+        <p className="mt-1 truncate text-sm font-medium text-foreground">{value}</p>
       ) : (
-        <button
-          type="button"
-          onClick={startEdit}
-          className="mt-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {t("addValue")}
-        </button>
+        <p className="mt-1 text-sm text-muted-foreground">—</p>
       )}
     </div>
   );

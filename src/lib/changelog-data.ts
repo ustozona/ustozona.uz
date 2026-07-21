@@ -32,6 +32,38 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "student-profile-tabs-pill-style",
+    date: "2026-07-21",
+    type: "yaxshilandi",
+    title: "Oʻquvchi profili boʻlim tablari Statistika uslubiga moslashtirildi",
+    href: "/dashboard/students",
+  },
+  {
+    id: "student-profile-bloom-coming-soon",
+    date: "2026-07-21",
+    type: "yaxshilandi",
+    title: "Blum darajalari kartasiga \"Tez orada\" belgisi qoʻyildi",
+    href: "/dashboard/students",
+  },
+  {
+    id: "student-profile-single-edit-mode",
+    date: "2026-07-21",
+    type: "yaxshilandi",
+    title: "Oʻquvchi profili: shaxsiy maʼlumotlar bitta tugma bilan tahrirlanadi",
+    body:
+      "Ism, jinsi, tugʻilgan sana va aloqa maydonlari endi faqat \"Tahrirlash\" bosilganda oʻzgartiriladi va faqat \"Saqlash\" bosilganda saqlanadi — tasodifiy oʻzgarishning oldi olindi.",
+    href: "/dashboard/students",
+  },
+  {
+    id: "student-breadcrumb-class-crumb",
+    date: "2026-07-21",
+    type: "yaxshilandi",
+    title: "Oʻquvchilar/profil: breadcrumb'da sinf ham koʻrinadi",
+    body:
+      "Sinf tanlab oʻquvchi ochilganda header breadcrumb'ida endi sinf nomi ham chiqadi — bosilsa boshqa sinfga tez oʻtish mumkin.",
+    href: "/dashboard/students",
+  },
+  {
     id: "student-preview-card-redesign",
     date: "2026-07-21",
     type: "yaxshilandi",

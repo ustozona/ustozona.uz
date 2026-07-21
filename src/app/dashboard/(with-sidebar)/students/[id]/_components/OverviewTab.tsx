@@ -20,6 +20,7 @@ import {
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { TrendChart, BloomRadar, AttendanceDonut, AttendanceTracker, ATT_COLORS } from "./charts";
+import { GlowBadge } from "@/components/shadcn-space/badge/glow-badge";
 import {
   GraduationCap, CalendarCheck, CalendarRange, TrendingUp, ClipboardCheck, Layers, ChevronDown, Brain,
   Check, X, Clock, FileText,
@@ -208,10 +209,10 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
                   <TooltipTrigger asChild>
                     <div className="flex cursor-default items-center gap-2.5">
                       <span
-                        className="flex size-9 shrink-0 items-center justify-center rounded-lg"
+                        className="flex size-8 shrink-0 items-center justify-center rounded-lg"
                         style={{ backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)` }}
                       >
-                        <Icon className="size-[18px]" strokeWidth={2.5} style={{ color }} />
+                        <Icon className="size-3.5" strokeWidth={2.5} style={{ color }} />
                       </span>
                       <span className="text-base font-bold tabular-nums">
                         {s.value}
@@ -228,21 +229,30 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
           </div>
         </div>
 
-        {/* Blum darajalari — radar */}
-        <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm lg:col-span-2">
+        {/* Blum darajalari — radar. Hali haqiqiy maʼlumot yoʻq (soxta demo
+            qiymatlar) — shuning uchun sarlavha aniq qoladi, faqat tanadagi
+            grafik+legend bulutlanadi; "Tez orada" (GlowBadge, landing
+            pricing-02 bilan bir xil) sarlavha yonida — markazda muallaq emas. */}
+        <div className="relative flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm lg:col-span-2">
           <div className="mb-2 flex items-center gap-2.5">
             <SectionIcon><Brain /></SectionIcon>
             <CardTitle>{t("bloomLevels")}</CardTitle>
+            <GlowBadge tone="pending" className="ml-auto">{t("comingSoon")}</GlowBadge>
           </div>
-          <BloomRadar levels={bloom} hex={location.hex} />
-          <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
-            {bloom.map((l) => (
-              <div key={l.id} className="flex items-center gap-2 text-sm">
-                <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: location.hex }} />
-                <span className="truncate text-muted-foreground">{l.label}</span>
-                <span className="ml-auto font-semibold tabular-nums">{l.value}%</span>
+          <div className="relative">
+            <div className="pointer-events-none select-none blur-sm">
+              <BloomRadar levels={bloom} hex={location.hex} />
+              <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                {bloom.map((l) => (
+                  <div key={l.id} className="flex items-center gap-2 text-sm">
+                    <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: location.hex }} />
+                    <span className="truncate text-muted-foreground">{l.label}</span>
+                    <span className="ml-auto font-semibold tabular-nums">{l.value}%</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+            <div className="absolute inset-0 rounded-lg bg-card/25" />
           </div>
         </div>
       </div>

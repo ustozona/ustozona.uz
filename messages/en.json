@@ -945,6 +945,8 @@
     "notFound": "Not found",
     "personalInfo": "Personal information",
     "edit": "Edit",
+    "cancel": "Cancel",
+    "save": "Save",
     "gender": "Gender",
     "genderMale": "Boy",
     "genderFemale": "Girl",
@@ -1004,6 +1006,7 @@
     "latePhrase": "late",
     "excusedPhrase": "excused",
     "bloomLevels": "Bloom's levels",
+    "comingSoon": "Coming soon",
     "attendanceStrip": "Attendance timeline",
     "attendanceStripDays": "{count} school days",
     "attendanceStripHint": "The whole school year — each segment is one school day"
@@ -1917,6 +1920,20 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "student-profile-tabs-pill-style": {
+        "title": "Student profile section tabs now match the Statistics style"
+      },
+      "student-profile-bloom-coming-soon": {
+        "title": "Added a \"Coming soon\" badge to the Bloom's levels card"
+      },
+      "student-profile-single-edit-mode": {
+        "title": "Student profile: personal info now edits with a single button",
+        "body": "Name, gender, birth date, and contact fields now only change when you press \"Edit\", and only save when you press \"Save\" — no more accidental changes."
+      },
+      "student-breadcrumb-class-crumb": {
+        "title": "Students/profile: the class now shows in the breadcrumb",
+        "body": "Opening a student from a selected class now shows the class name in the header breadcrumb — click it to quickly jump to another class."
+      },
       "student-preview-card-redesign": {
         "title": "Student profile: side panel redesigned",
         "body": "Attendance, grade, and behavior metrics now show together with an icon and percentage. \"Metrics\" and \"Contact\" sections are now clearly separated, and the \"View Profile\" button always stays pinned to the bottom of the panel."

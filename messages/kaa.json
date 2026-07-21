@@ -945,6 +945,8 @@
     "notFound": "Tabılmadı",
     "personalInfo": "Jeke maǵlıwmatlar",
     "edit": "Ózgertiw",
+    "cancel": "Biykarlaw",
+    "save": "Saqlaw",
     "gender": "Jınısı",
     "genderMale": "Ul",
     "genderFemale": "Qız",
@@ -1004,6 +1006,7 @@
     "latePhrase": "sabaqqa keshikken",
     "excusedPhrase": "sebepli qaldırǵan",
     "bloomLevels": "Blum dárejeleri",
+    "comingSoon": "Jaqında",
     "attendanceStrip": "Dawamat lentası",
     "attendanceStripDays": "{count} sabaq kúni",
     "attendanceStripHint": "Pútkil oqıw jılı — hár segment bir sabaq kúni"
@@ -1917,6 +1920,20 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "student-profile-tabs-pill-style": {
+        "title": "Oqıwshı profilindegi bólim tablari Statistika stiline sáykeslestirildi"
+      },
+      "student-profile-bloom-coming-soon": {
+        "title": "Blum dárejeleri kartasına \"Jaqında\" belgisi qoyıldı"
+      },
+      "student-profile-single-edit-mode": {
+        "title": "Oqıwshı profili: jeke maǵlıwmatlar bir túyme menen ózgertiledi",
+        "body": "Atı, jınısı, tuwılǵan kúni hám baylanıs maydanları endi tek \"Ózgertiw\" basılǵanda ózgeredi hám tek \"Saqlaw\" basılǵanda saqlanadı — tosattan ózgeriw joq boladı."
+      },
+      "student-breadcrumb-class-crumb": {
+        "title": "Oqıwshılar/profil: breadcrumb'da klass ta kórinedi",
+        "body": "Klass tańlap oqıwshı ashılǵanda header breadcrumb'ında endi klass atı da shıǵadı — basılsa basqa klasqa tez ótiw múmkin."
+      },
       "student-preview-card-redesign": {
         "title": "Oqıwshı profili: yan panel qayta islep shıgıldı",
         "body": "Qatnasıw, baha hám qılıq kórsetkishleri endi ikonka hám procent penen bir qatarda kórinedi. \"Kórsetkishler\" hám \"Baylanıs\" bólimleri anıq ajıratıldı, \"Profildi kóriw\" túymesi endi hámishe paneldiń tabanında turadı."

@@ -30,6 +30,7 @@ type Crumb =
   | { kind: "link" | "page"; href: string; label: string }
   | { kind: "class-switcher"; href: string; label: string; classId: string }
   | { kind: "stats-class-switcher"; href: string; label: string; classId: string }
+  | { kind: "student-class-switcher"; href: string; label: string; classId: string }
   | { kind: "student-switcher"; href: string; label: string; studentId: string };
 
 function humanize(segment: string) {
@@ -68,6 +69,14 @@ function useBreadcrumbs(): Crumb[] {
       if (prevSegment === "students" && segments[i]) {
         const studentId = decodeURIComponent(segments[i]);
         const location = locateStudent(classDataMap, studentId);
+        if (location) {
+          crumbs.push({
+            kind: "student-class-switcher",
+            href: `/dashboard/students?classId=${location.classId}`,
+            label: location.classInfo.name,
+            classId: location.classId,
+          });
+        }
         const name = location?.roster[location.index]?.name ?? studentId;
         crumbs.push({ kind: "student-switcher", href: acc, label: name, studentId });
         continue;
@@ -87,10 +96,10 @@ function useBreadcrumbs(): Crumb[] {
       }
     }
 
-    // Statistika sahifasida ?classId= sinf tanlovi — yo'l bo'g'ini emas,
-    // shuning uchun query-parametrdan alohida o'qiladi (sinf detali
+    // Statistika/O'quvchilar sahifasida ?classId= sinf tanlovi — yo'l bo'g'ini
+    // emas, shuning uchun query-parametrdan alohida o'qiladi (sinf detali
     // sahifasidagi kabi qidiriladigan switcher sifatida).
-    if (pathname === "/dashboard/statistics" && statsClassId) {
+    if ((pathname === "/dashboard/statistics" || pathname === "/dashboard/students") && statsClassId) {
       const name = classDataMap[statsClassId]?.info?.name ?? statsClassId;
       crumbs.push({ kind: "stats-class-switcher", href: `${pathname}?classId=${statsClassId}`, label: name, classId: statsClassId });
     }
@@ -237,6 +246,53 @@ function StatsClassSwitcherCrumb({
   );
 }
 
+/** Oʻquvchi profilidagi sinf boʻgʻini — `ClassSwitcherCrumb`dan farqli,
+    sinf detali sahifasiga emas, `/dashboard/students?classId=`ga oʻtadi
+    (oʻquvchilar roʻyxati sinf boʻyicha filtrlanadi). */
+function StudentClassSwitcherCrumb({
+  label,
+  classId,
+  isLast,
+}: {
+  label: string;
+  classId: string;
+  isLast: boolean;
+}) {
+  const t = useTranslations("HeaderBreadcrumb");
+  const router = useRouter();
+  const classDataMap = useGradesStore((s) => s.classDataMap);
+  const classes = React.useMemo(
+    () => Object.values(classDataMap).map((cd) => cd.info).filter((c) => !c.archivedAt),
+    [classDataMap]
+  );
+  const currentInfo = classDataMap[classId]?.info;
+  const swatchHex = currentInfo ? CLASS_COLOR_HEX[classColor(currentInfo)] : undefined;
+
+  return (
+    <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
+      {(close) => (
+        <CommandGroup heading={t("myClassesHeading")}>
+          {classes.map((c) => (
+            <CommandItem
+              key={c.id}
+              value={`${c.name} ${c.subject ?? ""}`}
+              onSelect={() => {
+                close();
+                router.push(`/dashboard/students?classId=${encodeURIComponent(c.id)}`);
+              }}
+            >
+              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
+              <span className="truncate">{c.name}</span>
+              {c.subject && <span className="truncate text-muted-foreground">· {c.subject}</span>}
+              {c.id === classId && <Check className="ml-auto size-4" />}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      )}
+    </SwitcherCrumb>
+  );
+}
+
 function StudentSwitcherCrumb({
   label,
   studentId,
@@ -321,6 +377,8 @@ function HeaderBreadcrumbInner() {
                   <ClassSwitcherCrumb label={crumb.label} classId={crumb.classId} isLast={isLast} />
                 ) : crumb.kind === "stats-class-switcher" ? (
                   <StatsClassSwitcherCrumb label={crumb.label} classId={crumb.classId} isLast={isLast} />
+                ) : crumb.kind === "student-class-switcher" ? (
+                  <StudentClassSwitcherCrumb label={crumb.label} classId={crumb.classId} isLast={isLast} />
                 ) : crumb.kind === "student-switcher" ? (
                   <StudentSwitcherCrumb label={crumb.label} studentId={crumb.studentId} isLast={isLast} />
                 ) : isLast ? (
