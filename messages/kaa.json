@@ -1954,7 +1954,8 @@
     },
     "entries": {
       "toggle-ui-polish": {
-        "title": "Kórinis almastırıwshılar hám bos halatlar pútkil qollanba boyınsha birdeylestirildi"
+        "title": "Kórinis almastırıwshılar birdey dizaynǵa keltirildi",
+        "body": "Barlıq almastırıwshılar endi bir stilde: kontur shegara, tańlanǵanı tiykarǵı reńde, hover ıqtıda tek foni ózgeredi hám ólshemi standart túyme menen birdey."
       },
       "tactile-button-depth": {
         "title": "Tiykarǵı túymeler hám segmentli tańlawlar endi basılatuǵınday kórinedi",

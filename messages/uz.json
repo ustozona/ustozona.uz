@@ -1954,7 +1954,8 @@
     },
     "entries": {
       "toggle-ui-polish": {
-        "title": "Koʻrinish almashtirgichlar (togglelar) va boʻsh holatlar butun ilova boʻyicha bir xillashtirildi"
+        "title": "Koʻrinish almashtirgichlar (togglelar) yagona dizaynga keltirildi",
+        "body": "Barcha togglelar endi bitta uslubda: outline chegara, tanlangani primary rangda, hoverda faqat foni oʻzgaradi va oʻlchami standart tugma bilan bir xil."
       },
       "tactile-button-depth": {
         "title": "Asosiy tugmalar va segmentli tanlovlar bosiladigan koʻrinishga ega boʻldi",

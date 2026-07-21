@@ -1954,7 +1954,8 @@
     },
     "entries": {
       "toggle-ui-polish": {
-        "title": "View toggles and empty states are now consistent across the whole app"
+        "title": "View toggles now share one consistent design",
+        "body": "All toggles now follow one style: outline border, primary color when selected, background-only hover, and a size that matches the standard button."
       },
       "tactile-button-depth": {
         "title": "Primary buttons and segmented toggles now feel pressable",

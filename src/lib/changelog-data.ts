@@ -35,7 +35,8 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     id: "toggle-ui-polish",
     date: "2026-07-21",
     type: "yaxshilandi",
-    title: "Koʻrinish almashtirgichlar (togglelar) va boʻsh holatlar butun ilova boʻyicha bir xillashtirildi",
+    title: "Koʻrinish almashtirgichlar (togglelar) yagona dizaynga keltirildi",
+    body: "Barcha togglelar endi bitta uslubda: outline chegara, tanlangani primary rangda, hoverda faqat foni oʻzgaradi va oʻlchami standart tugma bilan bir xil.",
   },
   {
     id: "tactile-button-depth",
