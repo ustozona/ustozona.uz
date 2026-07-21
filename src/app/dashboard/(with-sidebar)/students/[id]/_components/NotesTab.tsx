@@ -1,11 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { TypographyMuted } from "@/components/ui/typography";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeaderBar,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Empty,
   EmptyHeader,
@@ -13,136 +46,389 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
-import { Plus, Smile, AlertCircle, Minus } from "lucide-react";
+import {
+  Plus,
+  X,
+  Search,
+  Mic,
+  FileText,
+  StickyNote,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+import type { Visibility } from "@/store/useStudentNotesStore";
 
-export type Sentiment = "positive" | "concern" | "neutral";
-export type Note = { id: string; text: string; sentiment: Sentiment; time: string };
+export type Note = {
+  id: string;
+  title: string | null;
+  text: string;
+  tags: string[];
+  visibility: Visibility;
+  time: string;
+  createdAt: string;
+  authorName?: string;
+  authorAvatarUrl?: string | null;
+};
 
-const SENTIMENT: Record<
-  Sentiment,
-  { pill: string; dot: string; icon: React.ComponentType<{ className?: string }> }
-> = {
-  positive: {
-    pill: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400",
-    dot: "bg-emerald-500",
-    icon: Smile,
-  },
-  concern: {
-    pill: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
-    dot: "bg-amber-500",
-    icon: AlertCircle,
-  },
-  neutral: {
-    pill: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700",
-    dot: "bg-slate-400",
-    icon: Minus,
-  },
+type Mode = "short" | "full";
+
+const TAG_META = {
+  pill: "bg-primary/10 text-primary border-primary/20",
+  dot: "bg-primary",
 };
 
 export default function NotesTab({
   notes,
   onAdd,
+  onUpdate,
+  onDelete,
 }: {
   notes: Note[];
-  onAdd: (text: string, sentiment: Sentiment) => void;
+  onAdd: (
+    text: string,
+    tags: string[],
+    visibility: Visibility,
+    title?: string | null
+  ) => void;
+  onUpdate: (id: string, text: string, tags: string[], title?: string | null) => void;
+  onDelete: (id: string) => void;
 }) {
   const t = useTranslations("NotesTab");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("short");
+  const [title, setTitle] = useState("");
   const [text, setText] = useState("");
-  const [sentiment, setSentiment] = useState<Sentiment>("neutral");
-  const [filter, setFilter] = useState<Sentiment | "all">("all");
+  const [tags, setTags] = useState<string[]>([]);
+  const [customTagInput, setCustomTagInput] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-  const visible = filter === "all" ? notes : notes.filter((n) => n.sentiment === filter);
+  const [query, setQuery] = useState("");
+  const [tagFilter, setTagFilter] = useState<string | "all">("all");
+  const [sort, setSort] = useState<"newest" | "oldest">("newest");
 
-  const submit = () => {
-    const t = text.trim();
-    if (!t) return;
-    onAdd(t, sentiment);
-    setText("");
-    setSentiment("neutral");
+  const openComposer = (m: Mode) => {
+    setEditingId(null);
+    setMode(m);
+    setDialogOpen(true);
   };
 
+  const openEdit = (n: Note) => {
+    setEditingId(n.id);
+    setMode(n.title ? "full" : "short");
+    setTitle(n.title ?? "");
+    setText(n.text);
+    setTags(n.tags);
+    setDialogOpen(true);
+  };
+
+  const toggleTag = (tag: string) => {
+    setTags((prev) => (prev.includes(tag) ? prev.filter((x) => x !== tag) : [...prev, tag]));
+  };
+
+  const addCustomTag = () => {
+    const v = customTagInput.trim();
+    if (!v || tags.includes(v)) return setCustomTagInput("");
+    setTags((prev) => [...prev, v]);
+    setCustomTagInput("");
+  };
+
+  const resetComposer = () => {
+    setDialogOpen(false);
+    setMode("short");
+    setTitle("");
+    setText("");
+    setTags([]);
+    setCustomTagInput("");
+    setEditingId(null);
+  };
+
+  const submit = () => {
+    const v = text.trim();
+    if (!v) return;
+    if (editingId) {
+      onUpdate(editingId, v, tags, mode === "full" ? title : null);
+    } else {
+      onAdd(v, tags, "teachers", mode === "full" ? title : null);
+    }
+    resetComposer();
+  };
+
+  const confirmDelete = () => {
+    if (deleteTargetId) onDelete(deleteTargetId);
+    setDeleteTargetId(null);
+  };
+
+  const allTags = useMemo(() => {
+    const s = new Set<string>();
+    for (const n of notes) for (const tg of n.tags) s.add(tg);
+    return Array.from(s);
+  }, [notes]);
+
+  const visible = useMemo(() => {
+    let list = notes;
+    if (tagFilter !== "all") list = list.filter((n) => n.tags.includes(tagFilter));
+    const q = query.trim().toLowerCase();
+    if (q) list = list.filter((n) => n.text.toLowerCase().includes(q) || (n.title ?? "").toLowerCase().includes(q));
+    list = [...list].sort((a, b) =>
+      sort === "newest"
+        ? b.createdAt.localeCompare(a.createdAt)
+        : a.createdAt.localeCompare(b.createdAt)
+    );
+    return list;
+  }, [notes, tagFilter, query, sort]);
+
   return (
-    <div className="space-y-4">
-      {/* Add note */}
-      <div className="rounded-xl border border-border bg-background p-4">
-        <Textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder={t("placeholder")}
-          className="min-h-20 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-        />
-        <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
-          <div className="flex items-center gap-1.5">
-            {(Object.keys(SENTIMENT) as Sentiment[]).map((s) => {
-              const cfg = SENTIMENT[s];
-              const Icon = cfg.icon;
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setSentiment(s)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all",
-                    sentiment === s ? cfg.pill : "border-border text-muted-foreground hover:bg-muted"
-                  )}
-                >
-                  <Icon className="size-3.5" /> {t(s)}
-                </button>
-              );
-            })}
+    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
+      {/* Header — qotib turadi, faqat pastdagi roʻyxat scroll boʻladi */}
+      {notes.length > 0 && (
+      <div className="shrink-0 space-y-3 border-b border-border p-4">
+        {notes.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-40 flex-1">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("searchPlaceholder")}
+                className="h-8 pl-8 text-xs"
+              />
+            </div>
+            <Select value={sort} onValueChange={(v) => setSort(v as "newest" | "oldest")}>
+              <SelectTrigger size="sm" className="h-8 w-auto text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="newest">{t("sortNewest")}</SelectItem>
+                <SelectItem value="oldest">{t("sortOldest")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Button onClick={submit} disabled={!text.trim()} size="sm" className="shrink-0 font-semibold">
-            <Plus className="size-4" /> {t("add")}
-          </Button>
+        )}
+        {allTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <FilterPill active={tagFilter === "all"} onClick={() => setTagFilter("all")}>
+              {t("all", { count: notes.length })}
+            </FilterPill>
+            {allTags.map((tag) => (
+              <FilterPill key={tag} active={tagFilter === tag} onClick={() => setTagFilter(tag)}>
+                {tag}
+              </FilterPill>
+            ))}
+          </div>
+        )}
+      </div>
+      )}
+
+      {/* Roʻyxat — kartaning oʻzida scroll boʻladi */}
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="p-4">
+          {visible.length === 0 ? (
+            <Empty className="border-0">
+              <EmptyHeader>
+                <EmptyMedia><Illustration name="46" className="h-32 text-black dark:text-white" /></EmptyMedia>
+                <EmptyTitle>{notes.length === 0 ? t("emptyNoNotes") : t("emptyFiltered")}</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {visible.map((n) => (
+            <div
+              key={n.id}
+              className="flex flex-col rounded-xl border border-border bg-muted/30 p-4"
+            >
+              {n.title && <p className="mb-1 text-sm font-semibold text-foreground">{n.title}</p>}
+              <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-foreground">{n.text}</p>
+              {n.tags.length > 0 && (
+                <div className="mt-2 flex flex-wrap items-center gap-1">
+                  {n.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
+                        TAG_META.pill
+                      )}
+                    >
+                      <span className={cn("size-1.5 rounded-full", TAG_META.dot)} />
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-2.5">
+                <Avatar size="sm">
+                  <AvatarImage src={n.authorAvatarUrl ?? undefined} alt={n.authorName ?? ""} />
+                  <AvatarFallback>{(n.authorName ?? "?").slice(0, 1).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                  {n.authorName ?? t("unknownAuthor")} · {n.time}
+                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-6 shrink-0 text-muted-foreground"
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => openEdit(n)}>
+                      <Pencil className="size-4" /> {t("edit")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() => setDeleteTargetId(n.id)}
+                    >
+                      <Trash2 className="size-4" /> {t("delete")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+              ))}
+            </div>
+          )}
         </div>
+      </ScrollArea>
+
+      {/* Floating add button */}
+      <div className="pointer-events-none absolute bottom-4 right-4 z-10">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              className="pointer-events-auto size-12 rounded-full shadow-lg"
+            >
+              <Plus className="size-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top" className="pointer-events-auto w-56">
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setTimeout(() => openComposer("short"), 0);
+              }}
+            >
+              <StickyNote className="size-4" /> {t("modeShort")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setTimeout(() => openComposer("full"), 0);
+              }}
+            >
+              <FileText className="size-4" /> {t("modeFull")}
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled className="justify-between">
+              <span className="flex items-center gap-2">
+                <Mic className="size-4" /> {t("modeAudio")}
+              </span>
+              <Badge variant="secondary" className="text-[10px]">{t("soon")}</Badge>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {/* Filter */}
-      {notes.length > 0 && (
-        <div className="flex items-center gap-1.5">
-          <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>
-            {t("all", { count: notes.length })}
-          </FilterPill>
-          {(Object.keys(SENTIMENT) as Sentiment[]).map((s) => (
-            <FilterPill key={s} active={filter === s} onClick={() => setFilter(s)}>
-              {t(s)}
-            </FilterPill>
-          ))}
-        </div>
-      )}
+      {/* Composer dialog */}
+      <Dialog open={dialogOpen} onOpenChange={(o) => (o ? setDialogOpen(true) : resetComposer())}>
+        <DialogContent showCloseButton={false} className="p-0" width="32rem">
+          <DialogHeaderBar title={editingId ? t("editTitle") : mode === "full" ? t("modeFull") : t("modeShort")} />
+          <div className="space-y-3 px-6 py-4">
+            {mode === "full" && (
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t("titlePlaceholder")}
+                className="h-9 border-0 bg-transparent px-0 text-base font-semibold shadow-none focus-visible:ring-0"
+              />
+            )}
+            <Textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={t("placeholder")}
+              className="min-h-24 resize-none"
+              autoFocus
+            />
 
-      {/* List */}
-      {visible.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia><Illustration name="46" className="h-32 text-black dark:text-white" /></EmptyMedia>
-            <EmptyTitle>{notes.length === 0 ? t("emptyNoNotes") : t("emptyFiltered")}</EmptyTitle>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <div className="space-y-2.5">
-          {visible.map((n) => {
-            const cfg = SENTIMENT[n.sentiment];
-            return (
-              <div key={n.id} className="rounded-xl border border-border bg-background p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-foreground">{n.text}</p>
-                  <span
-                    className={cn(
-                      "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
-                      cfg.pill
-                    )}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium",
+                    TAG_META.pill
+                  )}
+                >
+                  {tag}
+                  <button type="button" onClick={() => toggleTag(tag)} aria-label={t("removeTagAria", { tag })}>
+                    <X className="size-3" />
+                  </button>
+                </span>
+              ))}
+              <Input
+                value={customTagInput}
+                onChange={(e) => setCustomTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === ",") {
+                    e.preventDefault();
+                    addCustomTag();
+                  }
+                }}
+                onBlur={addCustomTag}
+                placeholder={t("addTagPlaceholder")}
+                className="h-7 w-32 border-0 bg-transparent px-1.5 text-xs shadow-none focus-visible:ring-0"
+              />
+            </div>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="relative inline-flex w-fit shrink-0">
+                  <Button type="button" variant="outline" size="icon" disabled className="size-7 opacity-60">
+                    <Mic className="size-3.5" />
+                  </Button>
+                  <Badge
+                    variant="secondary"
+                    className="absolute -right-2 -top-2 px-1 py-0 text-[9px] leading-4"
                   >
-                    <span className={cn("size-1.5 rounded-full", cfg.dot)} />
-                    {t(n.sentiment)}
-                  </span>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">{n.time}</p>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                    {t("soon")}
+                  </Badge>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t("audioSoonTooltip")}</TooltipContent>
+            </Tooltip>
+          </div>
+          <DialogFooter className="px-6 pb-6">
+            <Button variant="outline" onClick={resetComposer}>{t("cancel")}</Button>
+            <Button onClick={submit} disabled={!text.trim()} className="font-semibold">
+              {editingId ? t("save") : (<><Plus className="size-4" /> {t("add")}</>)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTargetId} onOpenChange={(o) => !o && setDeleteTargetId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("deleteConfirmDescription")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

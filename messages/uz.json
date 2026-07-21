@@ -1059,7 +1059,38 @@
     "add": "Qoʻshish",
     "all": "Hammasi ({count})",
     "emptyNoNotes": "Hali qayd yoʻq",
-    "emptyFiltered": "Bu turdagi qayd yoʻq"
+    "emptyFiltered": "Bu turdagi qayd yoʻq",
+    "soon": "Tez orada",
+    "audioSoonTooltip": "Audio qayd + AI transkripsiya tez orada qoʻshiladi",
+    "aiSoonHint": "AI qaydlaringizni tahlil qilib, haftalik xulosa chiqarib beradi — tez orada",
+    "removeTagAria": "{tag} tegini olib tashlash",
+    "addTagPlaceholder": "Teg qoʻshish…",
+    "visibilityTeachers": "Faqat oʻqituvchilar",
+    "visibilityGuardians": "Ota-ona va oʻquvchi ham koʻradi",
+    "searchPlaceholder": "Qaydlardan qidirish…",
+    "sortNewest": "Avval yangilari",
+    "sortOldest": "Avval eskilari",
+    "unknownAuthor": "Nomaʼlum",
+    "addNoteCta": "Qayd qoʻshish",
+    "modeShort": "Qisqa qayd",
+    "modeFull": "Toʻliq qayd",
+    "modeAudio": "Audio qayd",
+    "titlePlaceholder": "Sarlavha…",
+    "cancel": "Bekor qilish",
+    "color_none": "Rangsiz",
+    "color_rose": "Atirgul",
+    "color_orange": "Apelsin",
+    "color_amber": "Sariq",
+    "color_green": "Yashil",
+    "color_sky": "Moviy",
+    "color_violet": "Binafsha",
+    "color_pink": "Pushti",
+    "edit": "Tahrirlash",
+    "delete": "Oʻchirish",
+    "editTitle": "Qaydni tahrirlash",
+    "save": "Saqlash",
+    "deleteConfirmTitle": "Qayd oʻchirilsinmi?",
+    "deleteConfirmDescription": "Bu amalni ortga qaytarib boʻlmaydi."
   },
   "RelativesSection": {
     "title": "Qarindoshlar",
@@ -1920,6 +1951,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "student-notes-rebuild": {
+        "title": "Oʻquvchi qaydlari qayta qurildi: qisqa/toʻliq yozuv, erkin teglar va tahrirlash",
+        "body": "Endi qaydga sarlavha qoʻshish, oʻzingiz teg yaratish, qidirish va saralash mumkin. Har bir qaydni keyinchalik tahrirlash yoki oʻchirish ham qoʻshildi."
+      },
       "student-profile-tabs-pill-style": {
         "title": "Oʻquvchi profili boʻlim tablari Statistika uslubiga moslashtirildi"
       },

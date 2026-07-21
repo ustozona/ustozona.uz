@@ -1,0 +1,1 @@
+ALTER TABLE "student_notes" ADD COLUMN "color" text;

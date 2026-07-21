@@ -1059,7 +1059,38 @@
     "add": "Добавить",
     "all": "Все ({count})",
     "emptyNoNotes": "Заметок пока нет",
-    "emptyFiltered": "Заметок такого типа нет"
+    "emptyFiltered": "Заметок такого типа нет",
+    "soon": "Скоро",
+    "audioSoonTooltip": "Аудиозаметки + AI-транскрипция появятся скоро",
+    "aiSoonHint": "AI проанализирует ваши заметки и составит недельную сводку — скоро",
+    "removeTagAria": "Удалить тег {tag}",
+    "addTagPlaceholder": "Добавить тег…",
+    "visibilityTeachers": "Только учителя",
+    "visibilityGuardians": "Видно родителю и ученику",
+    "searchPlaceholder": "Поиск по заметкам…",
+    "sortNewest": "Сначала новые",
+    "sortOldest": "Сначала старые",
+    "unknownAuthor": "Неизвестно",
+    "addNoteCta": "Добавить заметку",
+    "modeShort": "Короткая заметка",
+    "modeFull": "Полная заметка",
+    "modeAudio": "Аудиозаметка",
+    "titlePlaceholder": "Заголовок…",
+    "cancel": "Отмена",
+    "color_none": "Без цвета",
+    "color_rose": "Розовый",
+    "color_orange": "Оранжевый",
+    "color_amber": "Жёлтый",
+    "color_green": "Зелёный",
+    "color_sky": "Голубой",
+    "color_violet": "Фиолетовый",
+    "color_pink": "Малиновый",
+    "edit": "Изменить",
+    "delete": "Удалить",
+    "editTitle": "Изменить заметку",
+    "save": "Сохранить",
+    "deleteConfirmTitle": "Удалить эту заметку?",
+    "deleteConfirmDescription": "Это действие нельзя отменить."
   },
   "RelativesSection": {
     "title": "Родственники",
@@ -1920,6 +1951,10 @@
       "changelog": "Обновления"
     },
     "entries": {
+      "student-notes-rebuild": {
+        "title": "Заметки об ученике переработаны: короткие/полные записи, свои теги и редактирование",
+        "body": "Теперь заметку можно снабдить заголовком, своими тегами, искать и сортировать. Также появилась возможность редактировать или удалять заметку."
+      },
       "student-profile-tabs-pill-style": {
         "title": "Вкладки профиля ученика оформлены в стиле Статистики"
       },

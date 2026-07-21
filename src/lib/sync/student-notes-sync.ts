@@ -16,8 +16,11 @@ function toUpsert(n: StudentNoteEntry): StudentNoteUpsert {
   return {
     id: n.id,
     studentId: n.studentId,
+    title: n.title,
     text: n.text,
-    sentiment: n.sentiment,
+    tags: n.tags,
+    color: n.color,
+    visibility: n.visibility,
     createdAt: n.createdAt,
   };
 }

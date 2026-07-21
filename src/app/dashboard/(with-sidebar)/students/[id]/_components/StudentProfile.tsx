@@ -42,7 +42,8 @@ import { ClassSwatch } from "@/components/ClassSwatch";
 import RelativesSection from "./RelativesSection";
 import OverviewTab from "./OverviewTab";
 import AssignmentsTab from "./AssignmentsTab";
-import NotesTab, { type Note, type Sentiment } from "./NotesTab";
+import NotesTab, { type Note } from "./NotesTab";
+import type { Visibility } from "@/store/useStudentNotesStore";
 import BehaviorTab from "./BehaviorTab";
 import type { NewStudentInput } from "../../_components/CreateStudentModal";
 import { toast } from "sonner";
@@ -121,6 +122,8 @@ export default function StudentProfile({
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const noteEntries = useStudentNotesStore((s) => s.items);
   const addNoteEntry = useStudentNotesStore((s) => s.addNote);
+  const updateNoteEntry = useStudentNotesStore((s) => s.updateNote);
+  const deleteNoteEntry = useStudentNotesStore((s) => s.deleteNote);
   // Profil tahriri (sessiya ichida) — boshqa oʻquvchiga oʻtganda tozalanadi
   const [override, setOverride] = useState<Partial<NewStudentInput>>({});
   const [nameOverride, setNameOverride] = useState<string | undefined>(undefined);
@@ -179,14 +182,31 @@ export default function StudentProfile({
     () =>
       noteEntries
         .filter((n) => n.studentId === studentId)
-        .map((n) => ({ id: n.id, text: n.text, sentiment: n.sentiment, time: formatNoteTime(n.createdAt) })),
+        .map((n) => ({
+          id: n.id,
+          title: n.title,
+          text: n.text,
+          tags: n.tags,
+          visibility: n.visibility,
+          time: formatNoteTime(n.createdAt),
+          createdAt: n.createdAt,
+          authorName: n.authorName,
+          authorAvatarUrl: n.authorAvatarUrl,
+        })),
     [noteEntries, studentId]
   );
 
   const addNote = useCallback(
-    (text: string, sentiment: Sentiment) => addNoteEntry(studentId, text, sentiment),
+    (text: string, tags: string[], visibility: Visibility, title?: string | null) =>
+      addNoteEntry(studentId, text, tags, visibility, title),
     [addNoteEntry, studentId]
   );
+  const updateNote = useCallback(
+    (id: string, text: string, tags: string[], title?: string | null) =>
+      updateNoteEntry(id, text, tags, title),
+    [updateNoteEntry]
+  );
+  const deleteNote = useCallback((id: string) => deleteNoteEntry(id), [deleteNoteEntry]);
 
   // ── Server hydration tugamagan — hali "topilmadi" deb boʻlmaydi ──
   if (!profile && !hydrated) {
@@ -677,11 +697,15 @@ export default function StudentProfile({
             <div className="flex min-h-0 flex-1 flex-col pr-4 md:pr-6">
               <AssignmentsTab profile={profile} />
             </div>
+          ) : tab === "notes" ? (
+            // Qaydlar: bitta karta ichida, roʻyxat kartaning oʻzida scroll boʻladi
+            <div className="flex min-h-0 flex-1 flex-col pb-6 pr-4 md:pr-6">
+              <NotesTab notes={notes} onAdd={addNote} onUpdate={updateNote} onDelete={deleteNote} />
+            </div>
           ) : (
             <ScrollArea className="min-h-0 flex-1">
               <div className="pb-6 pr-4 md:pr-6">
                 <TabsContent value="overview"><OverviewTab profile={profile} /></TabsContent>
-                <TabsContent value="notes"><NotesTab notes={notes} onAdd={addNote} /></TabsContent>
                 <TabsContent value="behavior">
                   <BehaviorTab classId={location.classId} studentId={studentId} />
                 </TabsContent>

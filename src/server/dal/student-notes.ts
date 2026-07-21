@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { studentNotes } from "@/server/db/schema";
+import { studentNotes, teachers } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import type { StudentNoteEntry } from "@/store/useStudentNotesStore";
 import type { StudentNotesBatch } from "@/lib/sync/student-notes-batch";
@@ -14,17 +14,36 @@ export type StudentNotesPayload = { items: StudentNoteEntry[] };
 export async function getStudentNotesPayload(): Promise<StudentNotesPayload> {
   const teacher = await requireTeacher();
   const rows = await db
-    .select()
+    .select({
+      id: studentNotes.id,
+      studentId: studentNotes.studentId,
+      title: studentNotes.title,
+      text: studentNotes.text,
+      tags: studentNotes.tags,
+      color: studentNotes.color,
+      visibility: studentNotes.visibility,
+      createdAt: studentNotes.createdAt,
+      authorId: studentNotes.teacherId,
+      authorName: teachers.name,
+      authorAvatarUrl: teachers.avatarUrl,
+    })
     .from(studentNotes)
+    .innerJoin(teachers, eq(teachers.id, studentNotes.teacherId))
     .where(eq(studentNotes.teacherId, teacher.id))
     .orderBy(desc(studentNotes.createdAt));
   return {
     items: rows.map((r) => ({
       id: r.id,
       studentId: r.studentId,
+      title: r.title,
       text: r.text,
-      sentiment: r.sentiment as StudentNoteEntry["sentiment"],
+      tags: (r.tags as string[]) ?? [],
+      color: r.color,
+      visibility: r.visibility as StudentNoteEntry["visibility"],
       createdAt: r.createdAt,
+      authorId: r.authorId,
+      authorName: r.authorName,
+      authorAvatarUrl: r.authorAvatarUrl,
     })),
   };
 }
@@ -41,16 +60,22 @@ export async function applyStudentNotesBatch(batch: StudentNotesBatch): Promise<
           id: n.id,
           teacherId: tid,
           studentId: n.studentId,
+          title: n.title,
           text: n.text,
-          sentiment: n.sentiment,
+          tags: n.tags,
+          color: n.color,
+          visibility: n.visibility,
           createdAt: n.createdAt,
         }))
       )
       .onConflictDoUpdate({
         target: studentNotes.id,
         set: {
+          title: sql`excluded.title`,
           text: sql`excluded.text`,
-          sentiment: sql`excluded.sentiment`,
+          tags: sql`excluded.tags`,
+          color: sql`excluded.color`,
+          visibility: sql`excluded.visibility`,
         },
         setWhere: eq(studentNotes.teacherId, tid),
       });

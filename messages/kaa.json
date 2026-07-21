@@ -1059,7 +1059,38 @@
     "add": "Qosıw",
     "all": "Hámmesi ({count})",
     "emptyNoNotes": "Ele qayd joq",
-    "emptyFiltered": "Bul túrdegi qayd joq"
+    "emptyFiltered": "Bul túrdegi qayd joq",
+    "soon": "Jaqında",
+    "audioSoonTooltip": "Audio qayd + AI transkripsiya jaqında qosıladı",
+    "aiSoonHint": "AI qaydlarıńızdı tallap, hápteligi juwmaq shıǵarıp beredi — jaqında",
+    "removeTagAria": "{tag} tegin alıp taslaw",
+    "addTagPlaceholder": "Teg qosıw…",
+    "visibilityTeachers": "Tek oqıtıwshılar",
+    "visibilityGuardians": "Ata-ana hám oqıwshıǵa da kórinedi",
+    "searchPlaceholder": "Qaydlardan izlew…",
+    "sortNewest": "Áwele jańaları",
+    "sortOldest": "Áwele eskileri",
+    "unknownAuthor": "Belgisiz",
+    "addNoteCta": "Qayd qosıw",
+    "modeShort": "Qısqa qayd",
+    "modeFull": "Tolıq qayd",
+    "modeAudio": "Audio qayd",
+    "titlePlaceholder": "Sarlawha…",
+    "cancel": "Biykar etiw",
+    "color_none": "Rangsiz",
+    "color_rose": "Atirgul",
+    "color_orange": "Apelsin",
+    "color_amber": "Sarı",
+    "color_green": "Jasıl",
+    "color_sky": "Kók",
+    "color_violet": "Binapsha",
+    "color_pink": "Pushti",
+    "edit": "Redaktorlaw",
+    "delete": "Óshiriw",
+    "editTitle": "Qaydti redaktorlaw",
+    "save": "Saqlaw",
+    "deleteConfirmTitle": "Bul qayd óshirilsinbe?",
+    "deleteConfirmDescription": "Bul ámeldi qaytarıp bolmaydı."
   },
   "RelativesSection": {
     "title": "Tuwısqanlar",
@@ -1920,6 +1951,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "student-notes-rebuild": {
+        "title": "Oqıwshı qaydları qayta qurıldı: qısqa/tolıq jazba, óz tegleri hám redaktorlaw",
+        "body": "Endi qaydǵa sarlawha qosıw, óz teginizdi jasaw, izlew hám saralaw múmkin. Qaydtı keyin redaktorlaw yamasa óshiriw de qosıldı."
+      },
       "student-profile-tabs-pill-style": {
         "title": "Oqıwshı profilindegi bólim tablari Statistika stiline sáykeslestirildi"
       },

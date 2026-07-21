@@ -120,6 +120,27 @@
       "when": 1784262807384,
       "tag": "0016_bumpy_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1784628250786,
+      "tag": "0017_watery_miracleman",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1784629672166,
+      "tag": "0018_curly_rhino",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1784630081181,
+      "tag": "0019_massive_shatterstar",
+      "breakpoints": true
     }
   ]
 }

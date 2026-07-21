@@ -1059,7 +1059,38 @@
     "add": "Кошуу",
     "all": "Бардыгы ({count})",
     "emptyNoNotes": "Азырынча жазуу жок",
-    "emptyFiltered": "Бул түрдөгү жазуу жок"
+    "emptyFiltered": "Бул түрдөгү жазуу жок",
+    "soon": "Жакында",
+    "audioSoonTooltip": "Аудио жазуу + AI транскрипция жакында кошулат",
+    "aiSoonHint": "AI жазууларыңызды талдап, жумалык корутунду чыгарып берет — жакында",
+    "removeTagAria": "{tag} тегин алып салуу",
+    "addTagPlaceholder": "Тег кошуу…",
+    "visibilityTeachers": "Тек мугалимдер",
+    "visibilityGuardians": "Ата-эне жана окуучуга да көрүнөт",
+    "searchPlaceholder": "Жазуулардан издөө…",
+    "sortNewest": "Алгач жаңылары",
+    "sortOldest": "Алгач эскилери",
+    "unknownAuthor": "Белгисиз",
+    "addNoteCta": "Жазуу кошуу",
+    "modeShort": "Кыска жазуу",
+    "modeFull": "Толук жазуу",
+    "modeAudio": "Аудио жазуу",
+    "titlePlaceholder": "Аталышы…",
+    "cancel": "Жокко чыгаруу",
+    "color_none": "Түссүз",
+    "color_rose": "Раушан",
+    "color_orange": "Кызгылт сары",
+    "color_amber": "Сары",
+    "color_green": "Жашыл",
+    "color_sky": "Асман түстүү",
+    "color_violet": "Кюлгин",
+    "color_pink": "Ачык кызыл",
+    "edit": "Оңдоо",
+    "delete": "Өчүрүү",
+    "editTitle": "Жазууну оңдоо",
+    "save": "Сактоо",
+    "deleteConfirmTitle": "Бул жазуу өчүрүлсүнбү?",
+    "deleteConfirmDescription": "Бул аракетти артка кайтарууга болбойт."
   },
   "RelativesSection": {
     "title": "Туугандар",
@@ -1920,6 +1951,10 @@
       "changelog": "Жаңылануулар"
     },
     "entries": {
+      "student-notes-rebuild": {
+        "title": "Окуучу жазуулары кайра түзүлдү: кыска/толук жазуу, өз тегдер жана оңдоо",
+        "body": "Эми жазууга аталыш кошсоңуз, өз тегиңизди түзсөңүз, издесеңиз жана иреттесеңиз болот. Жазууну кийин оңдоо же өчүрүү мүмкүнчүлүгү да кошулду."
+      },
       "student-profile-tabs-pill-style": {
         "title": "Окуучу профилиндеги бөлүм таптары Статистика стилине ылайыкташтырылды"
       },

@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "student-notes-rebuild",
+    date: "2026-07-21",
+    type: "yangi",
+    title: "Oʻquvchi qaydlari qayta qurildi: qisqa/toʻliq yozuv, erkin teglar va tahrirlash",
+    body: "Endi qaydga sarlavha qoʻshish, oʻzingiz teg yaratish, qidirish va saralash mumkin. Har bir qaydni keyinchalik tahrirlash yoki oʻchirish ham qoʻshildi.",
+    href: "/dashboard/students",
+  },
+  {
     id: "student-profile-tabs-pill-style",
     date: "2026-07-21",
     type: "yaxshilandi",

@@ -1059,7 +1059,38 @@
     "add": "Add",
     "all": "All ({count})",
     "emptyNoNotes": "No notes yet",
-    "emptyFiltered": "No notes of this type"
+    "emptyFiltered": "No notes of this type",
+    "soon": "Coming soon",
+    "audioSoonTooltip": "Audio notes + AI transcription are coming soon",
+    "aiSoonHint": "AI will analyze your notes and produce a weekly summary — coming soon",
+    "removeTagAria": "Remove tag {tag}",
+    "addTagPlaceholder": "Add a tag…",
+    "visibilityTeachers": "Teachers only",
+    "visibilityGuardians": "Visible to parent and student",
+    "searchPlaceholder": "Search notes…",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "unknownAuthor": "Unknown",
+    "addNoteCta": "Add a note",
+    "modeShort": "Short note",
+    "modeFull": "Full note",
+    "modeAudio": "Audio note",
+    "titlePlaceholder": "Title…",
+    "cancel": "Cancel",
+    "color_none": "No color",
+    "color_rose": "Rose",
+    "color_orange": "Orange",
+    "color_amber": "Amber",
+    "color_green": "Green",
+    "color_sky": "Sky",
+    "color_violet": "Violet",
+    "color_pink": "Pink",
+    "edit": "Edit",
+    "delete": "Delete",
+    "editTitle": "Edit note",
+    "save": "Save",
+    "deleteConfirmTitle": "Delete this note?",
+    "deleteConfirmDescription": "This action cannot be undone."
   },
   "RelativesSection": {
     "title": "Relatives",
@@ -1920,6 +1951,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "student-notes-rebuild": {
+        "title": "Student notes rebuilt: short/full entries, custom tags, and editing",
+        "body": "Notes can now have a title, your own tags, search and sorting. You can also edit or delete a note afterwards."
+      },
       "student-profile-tabs-pill-style": {
         "title": "Student profile section tabs now match the Statistics style"
       },

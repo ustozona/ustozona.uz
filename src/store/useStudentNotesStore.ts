@@ -5,17 +5,26 @@ import { create } from "zustand";
 
    Server-backed (useFeedbackStore uslubi): StudentNotesServerSync
    mount'da serverdan {items}ni yuklaydi, oʻzgarishlar diff bilan
-   saqlanadi. Append-only — hozircha UI'da tahrirlash/oʻchirish yoʻq.
+   saqlanadi. Tahrirlash/oʻchirish — faqat oʻz qaydi ustida (DAL
+   setWhere teacherId bilan himoyalangan).
    ════════════════════════════════════════════════════════════════════ */
 
-export type Sentiment = "positive" | "concern" | "neutral";
+export type Visibility = "teachers" | "guardians";
 
 export type StudentNoteEntry = {
   id: string;
   studentId: string;
+  /** Toʻliq qayd rejimida sarlavha; qisqa qaydda null. */
+  title: string | null;
   text: string;
-  sentiment: Sentiment;
+  tags: string[];
+  color: string | null;
+  visibility: Visibility;
   createdAt: string; // ISO
+  /** Server javobida qoʻshiladi (join orqali) — clientda hech qachon yozilmaydi. */
+  authorId?: string;
+  authorName?: string;
+  authorAvatarUrl?: string | null;
 };
 
 function uid(): string {
@@ -43,7 +52,16 @@ interface StudentNotesState {
   items: StudentNoteEntry[];
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
-  addNote: (studentId: string, text: string, sentiment: Sentiment) => void;
+  addNote: (
+    studentId: string,
+    text: string,
+    tags: string[],
+    visibility: Visibility,
+    title?: string | null,
+    color?: string | null
+  ) => void;
+  updateNote: (id: string, text: string, tags: string[], title?: string | null) => void;
+  deleteNote: (id: string) => void;
 }
 
 export const useStudentNotesStore = create<StudentNotesState>()((set) => ({
@@ -51,14 +69,29 @@ export const useStudentNotesStore = create<StudentNotesState>()((set) => ({
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),
 
-  addNote: (studentId, text, sentiment) => {
+  addNote: (studentId, text, tags, visibility, title, color) => {
     const note: StudentNoteEntry = {
       id: uid(),
       studentId,
+      title: title?.trim() || null,
       text: text.trim(),
-      sentiment,
+      tags,
+      color: color ?? null,
+      visibility,
       createdAt: new Date().toISOString(),
     };
     set((s) => ({ items: [note, ...s.items] }));
+  },
+
+  updateNote: (id, text, tags, title) => {
+    set((s) => ({
+      items: s.items.map((n) =>
+        n.id === id ? { ...n, text: text.trim(), tags, title: title?.trim() || null } : n
+      ),
+    }));
+  },
+
+  deleteNote: (id) => {
+    set((s) => ({ items: s.items.filter((n) => n.id !== id) }));
   },
 }));

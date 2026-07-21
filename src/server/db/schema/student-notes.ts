@@ -1,10 +1,16 @@
-import { index, pgTable, text } from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, text } from "drizzle-orm/pg-core";
 import { teachers } from "./teachers";
 import { students } from "./classes";
 
 /* ════════════════════════════════════════════════════════════════════
-   OʻQUVCHI QAYDLARI — profil sahifasidagi "Qaydlar" tab (append-only,
-   behavior_events uslubi: flat jadval, tahrirlanmaydi, faqat qoʻshiladi).
+   OʻQUVCHI QAYDLARI — profil sahifasidagi "Qaydlar" tab. Muallif oʻz
+   qaydini tahrirlashi/oʻchirishi mumkin (DAL setWhere teacherId bilan
+   himoyalangan — faqat oʻzinikini).
+
+   `tags` — erkin teglar roʻyxati (default uchlik: positive/concern/neutral
+   taklif qilinadi, lekin majburiy emas va istalganini olib tashlash mumkin).
+   `visibility` — "teachers" (faqat oʻqituvchilar) | "guardians" (ota-ona +
+   oʻquvchi ham koʻradi).
    ════════════════════════════════════════════════════════════════════ */
 
 export const studentNotes = pgTable(
@@ -17,8 +23,15 @@ export const studentNotes = pgTable(
     studentId: text("student_id")
       .notNull()
       .references(() => students.id, { onDelete: "cascade" }),
+    /** Toʻliq qayd rejimida ixtiyoriy sarlavha; qisqa qaydda yoʻq. */
+    title: text("title"),
     text: text("text").notNull(),
-    sentiment: text("sentiment").notNull(), // "positive"|"concern"|"neutral"
+    /** Karta foni uchun och (pastel) rang id; null = neytral. */
+    color: text("color"),
+    /** @deprecated tags'ga koʻchdi — faqat eski qatorlar uchun saqlanadi, endi yozilmaydi. */
+    sentiment: text("sentiment"),
+    tags: jsonb("tags").$type<string[]>().notNull().default([]),
+    visibility: text("visibility").notNull().default("teachers"), // "teachers"|"guardians"
     createdAt: text("created_at").notNull(), // ISO
   },
   (t) => [

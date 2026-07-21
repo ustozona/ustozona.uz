@@ -1059,7 +1059,38 @@
     "add": "Қосу",
     "all": "Барлығы ({count})",
     "emptyNoNotes": "Әлі жазба жоқ",
-    "emptyFiltered": "Бұл түрдегі жазба жоқ"
+    "emptyFiltered": "Бұл түрдегі жазба жоқ",
+    "soon": "Жақында",
+    "audioSoonTooltip": "Аудио жазба + AI транскрипция жақында қосылады",
+    "aiSoonHint": "AI жазбаларыңызды талдап, апталық қорытынды шығарады — жақында",
+    "removeTagAria": "{tag} тегін алып тастау",
+    "addTagPlaceholder": "Тег қосу…",
+    "visibilityTeachers": "Тек мұғалімдер",
+    "visibilityGuardians": "Ата-ана мен оқушыға да көрінеді",
+    "searchPlaceholder": "Жазбалардан іздеу…",
+    "sortNewest": "Алдымен жаңалары",
+    "sortOldest": "Алдымен ескілері",
+    "unknownAuthor": "Белгісіз",
+    "addNoteCta": "Жазба қосу",
+    "modeShort": "Қысқа жазба",
+    "modeFull": "Толық жазба",
+    "modeAudio": "Аудио жазба",
+    "titlePlaceholder": "Тақырып…",
+    "cancel": "Бас тарту",
+    "color_none": "Түссіз",
+    "color_rose": "Раушан",
+    "color_orange": "Қызғылт сары",
+    "color_amber": "Сары",
+    "color_green": "Жасыл",
+    "color_sky": "Көгілдір",
+    "color_violet": "Күлгін",
+    "color_pink": "Ашық қызыл",
+    "edit": "Өзгерту",
+    "delete": "Жою",
+    "editTitle": "Жазбаны өзгерту",
+    "save": "Сақтау",
+    "deleteConfirmTitle": "Бұл жазба жойылсын ба?",
+    "deleteConfirmDescription": "Бұл әрекетті қайтару мүмкін емес."
   },
   "RelativesSection": {
     "title": "Туыстар",
@@ -1920,6 +1951,10 @@
       "changelog": "Жаңартулар"
     },
     "entries": {
+      "student-notes-rebuild": {
+        "title": "Оқушы жазбалары қайта құрылды: қысқа/толық жазба, өз тегтері және өзгерту",
+        "body": "Енді жазбаға тақырып қосуға, өз тегіңізді жасауға, іздеуге және сұрыптауға болады. Жазбаны кейін өзгерту немесе жоюға да мүмкіндік бар."
+      },
       "student-profile-tabs-pill-style": {
         "title": "Оқушы профиліндегі бөлім қойындылары Статистика стиліне сәйкестендірілді"
       },
