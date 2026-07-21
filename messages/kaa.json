@@ -481,12 +481,17 @@
     "boysFull": "Ul balalar",
     "girlsFull": "Qız balalar",
     "groupClasses": "Klasslar",
+    "periodKindWeek": "Apta",
+    "periodKindMonth": "Ay",
+    "periodKindQuarter": "Shárek",
+    "periodKindYear": "Jıl",
+    "periodSearchPlaceholder": "Dáwirdi izlew...",
+    "periodNotFound": "Dáwir tabılmadı",
     "classesSearchPlaceholder": "Klass izlew...",
     "columnClass": "Klass",
     "columnStudents": "Oqıwshılar",
     "columnAttendance": "Qatnasıw",
     "columnGrade": "Baha",
-    "columnSignal": "Signal",
     "columnAction": "Ámel",
     "viewDetails": "Tolıq maǵlıwmat",
     "noClassesFound": "Klass tabılmadı",
@@ -1907,6 +1912,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "statistics-period-filter-unified": {
+        "title": "Statistika: dáwir filtri birdey menyuge birlestirildi",
+        "body": "Apta/Ay/Shárek/Jıl tańlawı hám dáwir mánisi endi bir izlenetuǵın menyuda. Klaslar kestesinde oqıwshılar sanı endi san penen kórsetiledi, shatasqan «Signal» bagany alıp taslandı."
+      },
       "statistics-overview-redesign": {
         "title": "Statistika: Ulıwma bólimi qayta islep shıǵıldı",
         "body": "Sabaqlar hám Tapsırmalar KPI kartaları, Ózin-ózi tutıw hám Tapsırmalar orınlanıwı donut-kartaları qosıldı. Kartalar ornalasıwı tártipke salındı, Baha bólistiriliwi hám Qatnasıw trendi grafikleri jaqsılandı."

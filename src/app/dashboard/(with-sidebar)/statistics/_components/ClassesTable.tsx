@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, GraduationCap, SearchX } from "lucide-react";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { classColor } from "@/lib/grades-data";
 import { classTints } from "@/lib/class-colors";
 import { STAT_DEADBAND_PP, type ClassOverviewRow } from "@/lib/class-stats";
@@ -14,14 +13,7 @@ import { cn } from "@/lib/utils";
 import { AttendanceRing } from "./AttendanceRing";
 import { StatEmpty } from "./StatEmpty";
 
-type SortKey = "name" | "studentCount" | "attendanceAvg" | "summativeAvg" | "signalCount";
-
-const AVATAR_LIMIT = 3;
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  return parts.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
-}
+type SortKey = "name" | "studentCount" | "attendanceAvg" | "summativeAvg" | "behaviorPositivePct";
 
 /**
  * Sinflar boʻyicha toʻliq maʼlumot jadvali — "Sinflar" tabida. Shadcn-space
@@ -29,23 +21,28 @@ function initials(name: string): string {
  * ustun) — lekin maʼlumotlar haqiqiy (soxta byudjet/menejer emas). Butun
  * qator bosiladi (checkbox/amal menyusi yoʻq, oxirida faqat hover chevron).
  * Ikonka `classTints(color).gradientTile` — "Mening
- * sinflarim" bilan bir xil kanonik gradient-doira. Qidiruv/karta sarlavhasi
- * ota-komponentda (`ClassesTablePanel`), sarlavha qator `sticky` — faqat
- * tana scroll boʻladi. `ClassRowsCard` (Umumiy tabidagi triage vidjeti)
- * bilan ADASHTIRMANG — bu yerda barcha sinflar, saralash bilan.
+ * sinflarim" bilan bir xil kanonik gradient-doira. Oʻquvchilar ustuni SON
+ * ("N nafar", ikonkasiz — Davomat/Baho ustunlari bilan bir xil naqsh) —
+ * avatar stack emas: 15-30 kishining bosh harflari identifikatsiya bermaydi,
+ * bu yerda "kim" emas "nechta" savoli muhim (Stripe/Linear/GitHub qator-son
+ * ustunlari kabi). Qidiruv/karta
+ * sarlavhasi ota-komponentda (`OverviewPanel`). Jadval oʻz balandligicha
+ * render boʻladi va tashqi sahifa scroll'ining bir qismi — ichki scroll YOʻQ
+ * (ikkita ustma-ust scrollbar — nested-scroll antipattern). `ClassRowsCard`
+ * (Umumiy tabidagi triage vidjeti) bilan ADASHTIRMANG — bu yerda barcha
+ * sinflar, saralash bilan. Oxirgi ustun ("Xulq-atvor") — sahifa tepasidagi
+ * donut kartaning sinf darajasidagi versiyasi (avvalgi notoʻgʻri "Signal"
+ * ustuni oʻrniga — u ijobiy va salbiy signallarni aralashtirib yuborardi).
  */
 export function ClassesTable({
   rows,
-  scrolled = false,
   onSelect,
 }: {
   rows: ClassOverviewRow[];
-  /** Scroll konteyner tepadan siljiganmi — sticky sarlavha soyasi shunda chiqadi. */
-  scrolled?: boolean;
   onSelect: (classId: string) => void;
 }) {
   const t = useTranslations("StatisticsPage");
-  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "signalCount", dir: "desc" });
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "attendanceAvg", dir: "asc" });
 
   const sorted = useMemo(() => {
     const dirMul = sort.dir === "asc" ? 1 : -1;
@@ -63,21 +60,10 @@ export function ClassesTable({
     );
   };
 
-  // border-collapse rejimida <th>ga toʻgʻridan-toʻgʻri box-shadow render
-  // boʻlmaydi — shuning uchun "soya" pseudo-element (::after) orqali chiziladi:
-  // sarlavhaning tagidan boshlanadigan, pastga soʻnib boruvchi qoramtir
-  // gradient polosa (GitHub/Linear sticky-header naqshi). box-shadow emas,
-  // background — shunda soya sarlavhaga zich yopishadi, oraliq boʻshliq yoʻq.
-  // Faqat scroll boshlanganda koʻrinadi — tepada turganda chiziq boʻlmaydi.
-  const stickyHeadCell = cn(
-    "sticky top-0 z-20 bg-card after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-3 after:bg-linear-to-b after:from-black/4 after:to-transparent after:transition-opacity",
-    scrolled ? "after:opacity-100" : "after:opacity-0"
-  );
-
   const SortHeader = ({
     label, sortKey, className, align = "left",
   }: { label: string; sortKey: SortKey; className?: string; align?: "left" | "center" }) => (
-    <TableHead className={cn(stickyHeadCell, "px-3 py-3", align === "center" && "text-center", className)}>
+    <TableHead className={cn("px-3 py-3", align === "center" && "text-center", className)}>
       <button
         type="button"
         onClick={() => toggleSort(sortKey)}
@@ -99,7 +85,7 @@ export function ClassesTable({
   return (
     <>
       {sorted.length === 0 ? (
-        <StatEmpty icon={SearchX} title={t("noClassesFound")} className="h-full" />
+        <StatEmpty icon={SearchX} title={t("noClassesFound")} className="py-10" />
       ) : (
         <table className="w-full min-w-3xl caption-bottom text-sm">
             <TableHeader>
@@ -108,8 +94,8 @@ export function ClassesTable({
                 <SortHeader label={t("columnStudents")} sortKey="studentCount" className="w-32" />
                 <SortHeader label={t("columnAttendance")} sortKey="attendanceAvg" className="w-20" align="center" />
                 <SortHeader label={t("columnGrade")} sortKey="summativeAvg" className="w-52" />
-                <SortHeader label={t("columnSignal")} sortKey="signalCount" className="w-24" align="center" />
-                <TableHead className={cn(stickyHeadCell, "w-10 px-4 py-3")} />
+                <SortHeader label={t("behaviorSplitTitle")} sortKey="behaviorPositivePct" className="w-24" align="center" />
+                <TableHead className="w-10 px-4 py-3" />
               </TableRow>
             </TableHeader>
             {/* Qatorlar orasidagi chiziq — TableRow'ning standart border-b'i
@@ -140,20 +126,10 @@ export function ClassesTable({
                     </TableCell>
 
                     <TableCell className="whitespace-nowrap w-32 px-3 py-3.5">
-                      <AvatarGroup>
-                        {r.students.slice(0, AVATAR_LIMIT).map((s) => (
-                          <Avatar key={s.id} size="sm">
-                            <AvatarFallback style={classTints(color).gradientTile} className="text-white text-[10px] font-semibold">
-                              {initials(s.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                        ))}
-                        {r.studentCount > AVATAR_LIMIT && (
-                          <AvatarGroupCount className="size-6 text-[10px]">
-                            +{r.studentCount - AVATAR_LIMIT}
-                          </AvatarGroupCount>
-                        )}
-                      </AvatarGroup>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <span className="font-semibold text-foreground tabular-nums">{r.studentCount}</span>
+                        {t("unitPeople")}
+                      </div>
                     </TableCell>
 
                     <TableCell className="whitespace-nowrap w-20 px-3 py-3.5">
@@ -183,9 +159,9 @@ export function ClassesTable({
                     </TableCell>
 
                     <TableCell className="whitespace-nowrap w-24 px-3 py-3.5 text-center">
-                      {r.signalCount > 0 ? (
-                        <span className="inline-flex rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-warning">
-                          {r.signalCount}
+                      {r.behaviorPositivePct !== null ? (
+                        <span className="text-sm font-semibold tabular-nums" style={{ color: scoreBarColor(r.behaviorPositivePct) }}>
+                          {Math.round(r.behaviorPositivePct)}%
                         </span>
                       ) : (
                         <span className="text-xs text-muted-foreground/50">—</span>

@@ -481,12 +481,17 @@
     "boysFull": "Мальчики",
     "girlsFull": "Девочки",
     "groupClasses": "Классы",
+    "periodKindWeek": "Неделя",
+    "periodKindMonth": "Месяц",
+    "periodKindQuarter": "Четверть",
+    "periodKindYear": "Год",
+    "periodSearchPlaceholder": "Поиск периода...",
+    "periodNotFound": "Период не найден",
     "classesSearchPlaceholder": "Поиск классов...",
     "columnClass": "Класс",
     "columnStudents": "Ученики",
     "columnAttendance": "Посещаемость",
     "columnGrade": "Оценка",
-    "columnSignal": "Сигнал",
     "columnAction": "Действие",
     "viewDetails": "Подробнее",
     "noClassesFound": "Классы не найдены",
@@ -1907,6 +1912,10 @@
       "changelog": "Обновления"
     },
     "entries": {
+      "statistics-period-filter-unified": {
+        "title": "Статистика: фильтр периода объединён в одно меню",
+        "body": "Выбор Неделя/Месяц/Четверть/Год и значение периода теперь в одном меню с поиском. В таблице классов число учеников теперь показано просто числом, запутанный столбец «Сигнал» удалён."
+      },
       "statistics-overview-redesign": {
         "title": "Статистика: раздел «Общее» переработан",
         "body": "Добавлены карточки KPI «Уроки» и «Задания», а также донат-карточки поведения и выполнения заданий. Расположение карточек упорядочено, графики распределения оценок и посещаемости улучшены."

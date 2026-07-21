@@ -481,12 +481,17 @@
     "boysFull": "Oʻgʻil bolalar",
     "girlsFull": "Qiz bolalar",
     "groupClasses": "Sinflar",
+    "periodKindWeek": "Hafta",
+    "periodKindMonth": "Oy",
+    "periodKindQuarter": "Chorak",
+    "periodKindYear": "Yil",
+    "periodSearchPlaceholder": "Davr qidirish...",
+    "periodNotFound": "Davr topilmadi",
     "classesSearchPlaceholder": "Sinf qidirish...",
     "columnClass": "Sinf",
     "columnStudents": "Oʻquvchilar",
     "columnAttendance": "Davomat",
     "columnGrade": "Baho",
-    "columnSignal": "Signal",
     "columnAction": "Amal",
     "viewDetails": "Batafsil",
     "noClassesFound": "Sinf topilmadi",
@@ -1907,6 +1912,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "statistics-period-filter-unified": {
+        "title": "Statistika: davr filtri yagona menyuga birlashtirildi",
+        "body": "Hafta/Oy/Chorak/Yil tanlovi va davr qiymati endi bitta qidiriladigan menyuda. Sinflar jadvalida oʻquvchilar soni endi son bilan koʻrsatiladi, chalkash \"Signal\" ustuni olib tashlandi."
+      },
       "statistics-overview-redesign": {
         "title": "Statistika: Umumiy boʻlim qayta ishlab chiqildi",
         "body": "Darslar va Topshiriqlar KPI kartalari, Xulq-atvor va Topshiriqlar bajarilishi donut-kartalari qoʻshildi. Kartalar joylashuvi tartibga solindi, Baholar taqsimoti va Davomat trendi grafiklari yaxshilandi."

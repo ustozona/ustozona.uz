@@ -8,7 +8,8 @@ import { weightedRate, percentile } from "@/lib/attendance-data";
 import { eventStats, skillBreakdown, type SkillSlice } from "@/lib/behavior-data";
 import { getScaleBoundaries, FIVE_CUTS, type LabelStyle } from "@/lib/grade-scale";
 import type { AttentionSignal } from "@/lib/attention";
-import { addDaysKey, dateKeyToDate } from "@/lib/date-keys";
+import { addDaysKey, dateKeyToDate, dateToKey } from "@/lib/date-keys";
+import { MONTHS_UZ, MONTHS_UZ_SHORT } from "@/lib/localization";
 
 /* ════════════════════════════════════════════════════════════════════
    STATISTIKA — sof agregatsiya qatlami (Umumiy + Sinf koʻrinishlari).
@@ -30,7 +31,8 @@ export const CHRONIC_ABSENCE_PCT = 10;
 
 /* ── Davr modeli ─────────────────────────────────────────────────────── */
 
-export type StatPeriod = { kind: "quarter" | "year"; id: string; label: string; range: DateRange };
+export type StatPeriodKind = "week" | "month" | "quarter" | "year";
+export type StatPeriod = { kind: StatPeriodKind; id: string; label: string; range: DateRange };
 
 /** Tanlash uchun davrlar roʻyxati: har chorak + "Butun oʻquv yili".
     Kalendar sozlanmagan boʻlsa boʻsh massiv qaytadi (chaqiruvchi selektorni yashiradi). */
@@ -48,8 +50,82 @@ export function statPeriods(cal: AcademicYearCalendar): StatPeriod[] {
   ];
 }
 
-/** Bugungi sanaga mos joriy davr (chorak topilmasa yil qamrovi). */
-export function currentStatPeriod(cal: AcademicYearCalendar, todayKey: string): StatPeriod | null {
+/** Kalendar oraligʻidagi barcha haftalar (Dushanba-boshlanuvchi), toʻliq
+    roʻyxat sifatida — PeriodSelect'ning "Hafta" tanlovi shundan oʻqiydi.
+    Birinchi/oxirgi hafta kalendar chegarasiga qisqarishi mumkin. */
+export function weekStatPeriods(cal: AcademicYearCalendar): StatPeriod[] {
+  if (!cal.range.start || !cal.range.end) return [];
+  return weekBuckets(cal.range).map(({ weekStart, range }) => ({
+    kind: "week",
+    id: `week:${weekStart}`,
+    label: weekPeriodLabel(range),
+    range,
+  }));
+}
+
+/** Kalendar oraligʻidagi barcha kalendar oylari — PeriodSelect'ning "Oy"
+    tanlovi shundan oʻqiydi. Birinchi/oxirgi oy kalendar chegarasiga qisqaradi. */
+export function monthStatPeriods(cal: AcademicYearCalendar): StatPeriod[] {
+  if (!cal.range.start || !cal.range.end) return [];
+  const out: StatPeriod[] = [];
+  let cursor = startOfMonthKey(cal.range.start);
+  const lastMonth = startOfMonthKey(cal.range.end);
+  while (cursor <= lastMonth) {
+    const monthEnd = endOfMonthKey(cursor);
+    const range: DateRange = {
+      start: cursor > cal.range.start ? cursor : cal.range.start,
+      end: monthEnd < cal.range.end ? monthEnd : cal.range.end,
+    };
+    out.push({ kind: "month", id: `month:${cursor.slice(0, 7)}`, label: monthPeriodLabel(cursor), range });
+    cursor = nextMonthKey(cursor);
+  }
+  return out;
+}
+
+function startOfMonthKey(key: string): string {
+  const [y, m] = key.split("-");
+  return `${y}-${m}-01`;
+}
+function nextMonthKey(key: string): string {
+  const d = dateKeyToDate(startOfMonthKey(key));
+  d.setMonth(d.getMonth() + 1);
+  return dateToKey(d);
+}
+function endOfMonthKey(key: string): string {
+  return addDaysKey(nextMonthKey(key), -1);
+}
+function monthPeriodLabel(monthStartKey: string): string {
+  const d = dateKeyToDate(monthStartKey);
+  return `${MONTHS_UZ[d.getMonth()]} ${d.getFullYear()}`;
+}
+function weekPeriodLabel(range: DateRange): string {
+  const start = dateKeyToDate(range.start);
+  const end = dateKeyToDate(range.end);
+  const sameMonth = start.getMonth() === end.getMonth();
+  const startLabel = `${start.getDate()}${sameMonth ? "" : ` ${MONTHS_UZ_SHORT[start.getMonth()]}`}`;
+  const endLabel = `${end.getDate()} ${MONTHS_UZ_SHORT[end.getMonth()]}`;
+  return `${startLabel}–${endLabel}`;
+}
+
+/** Berilgan turdagi roʻyxatdan bugungi sanaga mos davrni topadi (topilmasa
+    oxirgisi — masalan yoz taʼtilida "joriy hafta" yoʻq, eng yaqin oʻtganini
+    koʻrsatish maʼnoliroq). Boʻsh roʻyxatda `null`. */
+function currentFromList(periods: StatPeriod[], todayKey: string): StatPeriod | null {
+  if (periods.length === 0) return null;
+  return periods.find((p) => todayKey >= p.range.start && todayKey <= p.range.end)
+    ?? [...periods].reverse().find((p) => p.range.end <= todayKey)
+    ?? periods[0];
+}
+
+/** Bugungi sanaga mos joriy davr, berilgan granulyarlik boʻyicha (default:
+    chorak, topilmasa yil qamrovi — avvalgi xatti-harakat). */
+export function currentStatPeriod(
+  cal: AcademicYearCalendar,
+  todayKey: string,
+  kind: StatPeriodKind = "quarter"
+): StatPeriod | null {
+  if (kind === "week") return currentFromList(weekStatPeriods(cal), todayKey);
+  if (kind === "month") return currentFromList(monthStatPeriods(cal), todayKey);
   const periods = statPeriods(cal);
   if (periods.length === 0) return null;
   const q = getQuarterForDate(cal, todayKey);
@@ -57,9 +133,21 @@ export function currentStatPeriod(cal: AcademicYearCalendar, todayKey: string): 
   return periods.find((p) => p.kind === "year") ?? null;
 }
 
-/** Joriy davrdan oldingi taqqoslash davri (Δ hisoblash uchun).
-    Chorak → undan oldingi chorak; yil → null (taqqoslanadigan oldingi yoʻq). */
+/** Joriy davrdan oldingi taqqoslash davri (Δ hisoblash uchun) — hafta/oy
+    uchun bir xil granulyarlikdagi roʻyxatdagi oldingi element (uzunlik
+    farqi kalendar chegarasida tabiiy qisqarishi hisobga olinadi); chorak →
+    undan oldingi chorak; yil → null (taqqoslanadigan oldingi yoʻq). */
 export function previousStatPeriod(cal: AcademicYearCalendar, period: StatPeriod): StatPeriod | null {
+  if (period.kind === "week") {
+    const list = weekStatPeriods(cal);
+    const idx = list.findIndex((p) => p.id === period.id);
+    return idx > 0 ? list[idx - 1] : null;
+  }
+  if (period.kind === "month") {
+    const list = monthStatPeriods(cal);
+    const idx = list.findIndex((p) => p.id === period.id);
+    return idx > 0 ? list[idx - 1] : null;
+  }
   if (period.kind !== "quarter") return null;
   const idx = cal.quarters.findIndex((q) => q.id === period.id);
   if (idx <= 0) return null;
@@ -298,6 +386,7 @@ export type ClassOverviewRow = {
   summativeDelta: number | null;
   attendanceAvg: number | null;
   signalCount: number;
+  behaviorPositivePct: number | null;
 };
 
 export function overviewRows(input: {
@@ -326,6 +415,9 @@ export function overviewRows(input: {
       prevRange,
       isYear,
     });
+    const eventsInRange = (eventsByClass[classId] ?? []).filter((e) => e.date >= range.start && e.date <= range.end);
+    const behaviorPositivePct = eventsInRange.length > 0 ? eventStats(eventsInRange).positivePct : null;
+
     rows.push({
       classId,
       name: cd.info.name,
@@ -336,6 +428,7 @@ export function overviewRows(input: {
       summativeDelta: summary.summativeDelta,
       attendanceAvg: summary.attendanceAvg,
       signalCount: signalCounts[classId] ?? 0,
+      behaviorPositivePct,
     });
   }
 

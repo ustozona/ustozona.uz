@@ -51,15 +51,35 @@ export function StatCard({
   const toneHex =
     tone === "destructive" ? "var(--destructive)" : tone === "success" ? "var(--success)" : "var(--primary)";
 
-  const Wrapper = onClick ? "button" : "div";
-
+  // `<button>` emas — ichidagi sparkline/Progress kabi murakkab elementlar
+  // bilan native button ba'zi brauzerlarda hover/fokusda gʻalati render
+  // beradi. Boshqa bosiluvchi kartalar/qatorlar (ClassesTable) bilan bir xil
+  // naqsh: `div` + onClick + klaviatura qoʻllovi.
+  //
+  // MUHIM: hoverda fon RANGI oʻzgartirilmaydi — karta sahifadagi katak-
+  // naqsh fon ustida turadi, har qanday shaffof/xira fon shu naqsh bilan
+  // "kurashadi" va karta "erib ketgandek" koʻrinadi (sinab koʻrilgan: ham
+  // bg-muted/40, ham toʻliq bg-muted shu muammoni beradi). Jahon amaliyoti
+  // (Stripe/Linear/Vercel KPI kartalari): fon emas, soya bilan "koʻtarilish"
+  // + border toʻqlashishi — bu naqsh bilan hech qachon ziddiyatga kirmaydi.
   return (
-    <Wrapper
-      type={onClick ? "button" : undefined}
+    <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
       className={cn(
-        "group/stat w-full rounded-xl border border-border/60 bg-card p-5 flex flex-col gap-4 text-left transition-colors",
-        onClick && "hover:bg-muted/40 cursor-pointer"
+        "group/stat w-full rounded-xl border border-border/60 bg-card p-5 flex flex-col gap-4 text-left transition-all",
+        onClick && "hover:border-border hover:shadow-md cursor-pointer focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
       )}
     >
       <div className="flex items-center justify-between gap-2">
@@ -132,6 +152,6 @@ export function StatCard({
       )}
 
       {sub && <TypographyMuted className="truncate text-xs">{sub}</TypographyMuted>}
-    </Wrapper>
+    </div>
   );
 }

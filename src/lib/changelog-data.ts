@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "statistics-period-filter-unified",
+    date: "2026-07-21",
+    type: "yaxshilandi",
+    title: "Statistika: davr filtri yagona menyuga birlashtirildi",
+    body:
+      "Hafta/Oy/Chorak/Yil tanlovi va davr qiymati endi bitta qidiriladigan menyuda. Sinflar jadvalida oʻquvchilar soni endi son bilan koʻrsatiladi, chalkash \"Signal\" ustuni olib tashlandi.",
+    href: "/dashboard/statistics",
+  },
+  {
     id: "statistics-overview-redesign",
     date: "2026-07-20",
     type: "yaxshilandi",

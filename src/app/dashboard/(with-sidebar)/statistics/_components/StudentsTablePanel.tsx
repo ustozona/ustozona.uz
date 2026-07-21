@@ -25,8 +25,8 @@ type TierFilter = "all" | Exclude<AbsenceTier, null>;
 
 /** "Oʻquvchilar" tabining sahifa darajasidagi qobigʻi — barcha jonli
     sinflar boʻyicha `studentPeriodSummaries`ni yigʻib, bitta tekis
-    roʻyxatga aylantiradi (`ClassesTablePanel`ning oʻquvchi darajasidagi
-    hamkasbi). Qatorga sinf nomi/rangi ham biriktiriladi. */
+    roʻyxatga aylantiradi (Umumiy koʻrinishdagi sinflar jadvalining oʻquvchi
+    darajasidagi hamkasbi). Qatorga sinf nomi/rangi ham biriktiriladi. */
 export function StudentsTablePanel({
   onSelectStudent, period, calendar, classId,
 }: {

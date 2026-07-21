@@ -23,11 +23,13 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { locateStudent } from "@/lib/student-profile";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { useClassIdParamValue, setClassIdParam } from "@/hooks/useClassIdParam";
 import { Check, ChevronsUpDown } from "lucide-react";
 
 type Crumb =
   | { kind: "link" | "page"; href: string; label: string }
   | { kind: "class-switcher"; href: string; label: string; classId: string }
+  | { kind: "stats-class-switcher"; href: string; label: string; classId: string }
   | { kind: "student-switcher"; href: string; label: string; studentId: string };
 
 function humanize(segment: string) {
@@ -42,6 +44,10 @@ function useBreadcrumbs(): Crumb[] {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
+  // Statistika sahifasi ?classId=ni router.replace EMAS, xom
+  // history.replaceState orqali yozadi (useClassIdParam) — useSearchParams()
+  // buni sezmaydi, shuning uchun alohida jonli hook orqali oʻqiladi.
+  const statsClassId = useClassIdParamValue(pathname);
 
   return React.useMemo(() => {
     const segments = pathname.split("/").filter(Boolean); // ["dashboard", ...]
@@ -81,8 +87,16 @@ function useBreadcrumbs(): Crumb[] {
       }
     }
 
+    // Statistika sahifasida ?classId= sinf tanlovi — yo'l bo'g'ini emas,
+    // shuning uchun query-parametrdan alohida o'qiladi (sinf detali
+    // sahifasidagi kabi qidiriladigan switcher sifatida).
+    if (pathname === "/dashboard/statistics" && statsClassId) {
+      const name = classDataMap[statsClassId]?.info?.name ?? statsClassId;
+      crumbs.push({ kind: "stats-class-switcher", href: `${pathname}?classId=${statsClassId}`, label: name, classId: statsClassId });
+    }
+
     return crumbs;
-  }, [pathname, searchParams, classDataMap, tSections]);
+  }, [pathname, searchParams, classDataMap, tSections, statsClassId]);
 }
 
 /* ── Umumiy: qidiruvli tanlovchi boʻgʻin (Popover+Command, StudentProfile
@@ -91,11 +105,14 @@ function SwitcherCrumb({
   label,
   isLast,
   placeholder,
+  swatchHex,
   children,
 }: {
   label: string;
   isLast: boolean;
   placeholder: string;
+  /** Sinf rangi — kanonik ClassSwatch (rounded-[4px]) label oldida. */
+  swatchHex?: string;
   children: (close: () => void) => React.ReactNode;
 }) {
   const t = useTranslations("HeaderBreadcrumb");
@@ -106,11 +123,12 @@ function SwitcherCrumb({
       <PopoverTrigger asChild>
         <button
           className={
-            "group flex min-w-0 items-center gap-1 transition-colors hover:text-foreground " +
+            "group flex min-w-0 items-center gap-1.5 transition-colors hover:text-foreground " +
             (isLast ? "text-foreground" : "")
           }
           aria-current={isLast ? "page" : undefined}
         >
+          {swatchHex && <ClassSwatch hex={swatchHex} className="shrink-0" />}
           <span className="max-w-[10rem] truncate sm:max-w-[16rem]">{label}</span>
           <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
         </button>
@@ -145,6 +163,8 @@ function ClassSwitcherCrumb({
     () => Object.values(classDataMap).map((cd) => cd.info).filter((c) => !c.archivedAt),
     [classDataMap]
   );
+  const currentInfo = classDataMap[classId]?.info;
+  const swatchHex = currentInfo ? CLASS_COLOR_HEX[classColor(currentInfo)] : undefined;
 
   const go = (id: string) => {
     const b = searchParams.get("b");
@@ -153,7 +173,7 @@ function ClassSwitcherCrumb({
   };
 
   return (
-    <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")}>
+    <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
       {(close) => (
         <CommandGroup heading={t("myClassesHeading")}>
           {classes.map((c) => (
@@ -161,6 +181,49 @@ function ClassSwitcherCrumb({
               key={c.id}
               value={`${c.name} ${c.subject ?? ""}`}
               onSelect={() => { close(); if (c.id !== classId) go(c.id); }}
+            >
+              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
+              <span className="truncate">{c.name}</span>
+              {c.subject && <span className="truncate text-muted-foreground">· {c.subject}</span>}
+              {c.id === classId && <Check className="ml-auto size-4" />}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      )}
+    </SwitcherCrumb>
+  );
+}
+
+/** `ClassSwitcherCrumb`ning Statistika sahifasidagi hamkasbi — real sahifa
+    navigatsiyasi (`router.push`) emas, `?classId=` yozadi (`setClassIdParam`,
+    `useClassIdParam` yozuv yoʻli bilan bir xil manba). */
+function StatsClassSwitcherCrumb({
+  label,
+  classId,
+  isLast,
+}: {
+  label: string;
+  classId: string;
+  isLast: boolean;
+}) {
+  const t = useTranslations("HeaderBreadcrumb");
+  const classDataMap = useGradesStore((s) => s.classDataMap);
+  const classes = React.useMemo(
+    () => Object.values(classDataMap).map((cd) => cd.info).filter((c) => !c.archivedAt),
+    [classDataMap]
+  );
+  const currentInfo = classDataMap[classId]?.info;
+  const swatchHex = currentInfo ? CLASS_COLOR_HEX[classColor(currentInfo)] : undefined;
+
+  return (
+    <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
+      {(close) => (
+        <CommandGroup heading={t("myClassesHeading")}>
+          {classes.map((c) => (
+            <CommandItem
+              key={c.id}
+              value={`${c.name} ${c.subject ?? ""}`}
+              onSelect={() => { close(); if (c.id !== classId) setClassIdParam(c.id); }}
             >
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
               <span className="truncate">{c.name}</span>
@@ -256,6 +319,8 @@ function HeaderBreadcrumbInner() {
               <BreadcrumbItem className={cnHidden(hiddenOnMobile, isLast)}>
                 {crumb.kind === "class-switcher" ? (
                   <ClassSwitcherCrumb label={crumb.label} classId={crumb.classId} isLast={isLast} />
+                ) : crumb.kind === "stats-class-switcher" ? (
+                  <StatsClassSwitcherCrumb label={crumb.label} classId={crumb.classId} isLast={isLast} />
                 ) : crumb.kind === "student-switcher" ? (
                   <StudentSwitcherCrumb label={crumb.label} studentId={crumb.studentId} isLast={isLast} />
                 ) : isLast ? (

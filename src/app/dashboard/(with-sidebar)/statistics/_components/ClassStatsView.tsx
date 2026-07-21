@@ -3,9 +3,10 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Users, CalendarClock, CalendarCheck, BarChart3, Layers, ClipboardCheck,
-  Table as TableIcon, TrendingUp, UserX, HeartPulse, BookOpen, FileText,
+  Users, CalendarClock, CalendarCheck, BarChart3, ClipboardCheck,
+  TrendingUp, HeartPulse, BookOpen, FileText, Info,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TypographyMuted } from "@/components/ui/typography";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
@@ -18,22 +19,18 @@ import { skillBreakdown, eventStats } from "@/lib/behavior-data";
 import { deriveAttentionSignals, aggregateStudentRisk } from "@/lib/attention";
 import { dateToKey } from "@/lib/date-keys";
 import {
-  studentPeriodSummaries, classPeriodSummary, gradeDistribution, topicMastery, genderBreakdown,
+  studentPeriodSummaries, classPeriodSummary, gradeDistribution, genderBreakdown,
   attendanceWeeklyTrend, assignmentCompletionRate, upcomingDeadlines,
-  assignmentQuality, topicStudentMatrix, assignmentsInRange,
+  assignmentsInRange,
   type StatPeriod,
 } from "@/lib/class-stats";
 import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { BehaviorDonut } from "@/components/behavior/BehaviorDonut";
 import { DistributionCard } from "./DistributionCard";
-import { TopicMasteryCard } from "./TopicMasteryCard";
-import { StudentRiskCard, PositiveStudentsStrip } from "./StudentRiskCard";
+import { PositiveStudentsStrip } from "./StudentRiskCard";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 import { DeadlinesCard } from "./DeadlinesCard";
-import { AbsenceTierList } from "./AbsenceTierList";
-import { AssignmentQualityCard } from "./AssignmentQualityCard";
-import { TopicStudentMatrixCard } from "./TopicStudentMatrixCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 import { CompletionDonutChart } from "./CompletionDonutChart";
 import { StatEmpty } from "./StatEmpty";
@@ -43,12 +40,14 @@ import { StatEmpty } from "./StatEmpty";
     aylantiriladigan oqimda: KPI → jins → muddatlar → eʼtibor → baholar
     (taqsimot/mavzular/sifat/matritsa) → davomat (trend/darajalar) → xulq. */
 export function ClassStatsView({
-  classId, period, prevPeriod, calendar,
+  classId, period, prevPeriod, calendar, onViewStudents,
 }: {
   classId: string;
   period: StatPeriod | null;
   prevPeriod: StatPeriod | null;
   calendar: AcademicYearCalendar;
+  /** "Faol oʻquvchilar" KPI bosilganda "Oʻquvchilar" tabiga oʻtish. */
+  onViewStudents: () => void;
 }) {
   const t = useTranslations("StatisticsPage");
   const todayKey = dateToKey(new Date());
@@ -87,14 +86,10 @@ export function ClassStatsView({
     prevRange: prevPeriod?.range ?? null, isYear,
   });
   const bins = gradeDistribution(summaries, journalScale.kind, journalScale.labelStyle);
-  const topics = topicMastery(classData, period.range, isYear);
   const gender = genderBreakdown(classData.students);
   const attendanceWeeks = attendanceWeeklyTrend(records, weights, period.range);
   const completion = assignmentCompletionRate(classData, period.range, isYear);
   const deadlines = upcomingDeadlines(classData, todayKey);
-  const quality = assignmentQuality(classData, period.range, isYear);
-  const matrix = topicStudentMatrix(classData, period.range, isYear);
-  const hasFlaggedAbsence = summaries.some((s) => s.absenceTier === "watch" || s.absenceTier === "chronic");
   const riskSummaries = aggregateStudentRisk(signals);
   const activeStudentCount = classData.students.filter((s) => s.status !== "archived").length;
   const lessonsCount = deriveLessonDays(classId, period.range, calendar, versions).length;
@@ -108,13 +103,13 @@ export function ClassStatsView({
     <div className="h-full min-h-0 overflow-y-auto">
       <div className="flex flex-col gap-4 pb-1">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudentCount} unit={t("unitPeople")} />
+          <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudentCount} unit={t("unitPeople")} onClick={onViewStudents} />
           <StatCard icon={CalendarCheck} label={t("kpiAttendance")} value={summary.attendanceAvg !== null ? `${Math.round(summary.attendanceAvg)}%` : "—"} />
           <StatCard icon={BookOpen} label={t("kpiLessons")} value={lessonsCount} unit={t("unitCount")} />
           <StatCard icon={FileText} label={t("kpiAssignments")} value={assignmentsCount} unit={t("unitCount")} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <DashboardSectionCard icon={Users} title={t("genderTitle")}>
             <GenderDonutChart
               gender={gender}
@@ -146,6 +141,25 @@ export function ClassStatsView({
               />
             )}
           </DashboardSectionCard>
+
+          <DashboardSectionCard
+            icon={BarChart3}
+            title={t("distributionTitleShort")}
+            action={
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="text-muted-foreground/60 hover:text-muted-foreground" aria-label={t("distributionHint")}>
+                    <Info className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-56">{t("distributionHint")}</TooltipContent>
+              </Tooltip>
+            }
+          >
+            <div className="flex min-h-0 flex-1 flex-col">
+              <DistributionCard bins={bins} />
+            </div>
+          </DashboardSectionCard>
         </div>
 
         {deadlines.length > 0 && (
@@ -154,30 +168,11 @@ export function ClassStatsView({
           </DashboardSectionCard>
         )}
 
-        <StudentRiskCard summaries={riskSummaries} />
         <PositiveStudentsStrip summaries={riskSummaries} />
-
-        <DashboardSectionCard icon={BarChart3} title={t("distributionTitle")}>
-          <DistributionCard bins={bins} />
-        </DashboardSectionCard>
-        <DashboardSectionCard icon={Layers} title={t("topicsTitle")}>
-          <TopicMasteryCard rows={topics} />
-        </DashboardSectionCard>
-        <DashboardSectionCard icon={ClipboardCheck} title={t("assignmentQualityTitle")}>
-          <AssignmentQualityCard rows={quality} />
-        </DashboardSectionCard>
-        <DashboardSectionCard icon={TableIcon} title={t("matrixTitle")}>
-          <TopicStudentMatrixCard matrix={matrix} />
-        </DashboardSectionCard>
 
         <DashboardSectionCard icon={TrendingUp} title={t("attendanceTrendTitle")}>
           <AttendanceTrendCard weeks={attendanceWeeks} />
         </DashboardSectionCard>
-        {hasFlaggedAbsence && (
-          <DashboardSectionCard icon={UserX} title={t("absenceTiersTitle")}>
-            <AbsenceTierList summaries={summaries} students={classData.students} />
-          </DashboardSectionCard>
-        )}
       </div>
     </div>
   );

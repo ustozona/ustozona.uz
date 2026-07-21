@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Users, GraduationCap, ShieldAlert, CalendarCheck, TrendingUp, BarChart3, HeartPulse,
-  BookOpen, ClipboardList, Info, ClipboardCheck,
+  BookOpen, ClipboardList, Info, ClipboardCheck, Search, Table as TableIcon,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
@@ -28,23 +29,31 @@ import {
 import { StatCard } from "@/components/StatCard";
 import { DashboardSectionCard } from "@/components/DashboardSectionCard";
 import { BehaviorDonut } from "@/components/behavior/BehaviorDonut";
+import { CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { PositiveStudentsStrip } from "./StudentRiskCard";
 import { GenderDonutChart } from "./GenderDonutChart";
 import { CompletionDonutChart } from "./CompletionDonutChart";
 import { AttendanceTrendCard } from "./AttendanceTrendCard";
 import { DistributionCard } from "./DistributionCard";
+import { ClassesTable } from "./ClassesTable";
 import { StatEmpty } from "./StatEmpty";
 
 /** Butun maktab boʻyicha YAGONA koʻrinish — avvalgi Umumiy/Baholar/Davomat/
     Xulq tablari shu bitta oqimga yigʻildi: KPI + eʼtibor roʻyxati + jins
-    donut + domen grafiklari (davomat trendi, baho taqsimoti, xulq iqlimi).
-    Sinf tanlansa oʻrnini ClassStatsView egallaydi. */
+    donut + domen grafiklari (davomat trendi, baho taqsimoti, xulq iqlimi) +
+    sinflar taqqoslash jadvali (avvalgi mustaqil "Sinflar" tabidan — endi
+    alohida navigatsiya emas, shu koʻrinishning bir qismi). Sinf tanlansa
+    oʻrnini ClassStatsView egallaydi. */
 export function OverviewPanel({
-  period, prevPeriod, calendar,
+  period, prevPeriod, calendar, onSelectClass, onViewStudents,
 }: {
   period: StatPeriod | null;
   prevPeriod: StatPeriod | null;
   calendar: AcademicYearCalendar;
+  onSelectClass: (id: string) => void;
+  /** "Faol oʻquvchilar" KPI bosilganda "Oʻquvchilar" tabiga oʻtish. */
+  onViewStudents: () => void;
 }) {
   const t = useTranslations("StatisticsPage");
   const todayKey = dateToKey(new Date());
@@ -206,13 +215,19 @@ export function OverviewPanel({
   const attendanceDelta =
     periodAttendance !== null && prevPeriodAttendance !== null ? periodAttendance - prevPeriodAttendance : null;
 
+  const [classQuery, setClassQuery] = useState("");
+  const filteredRows = useMemo(
+    () => rows.filter((r) => r.name.toLowerCase().includes(classQuery.trim().toLowerCase())),
+    [rows, classQuery]
+  );
+
   return (
     <div ref={scrollRef} className="h-full min-h-0 overflow-y-auto" style={{ overflowAnchor: "none" }}>
       <div className="flex flex-col gap-4 pb-1">
         {/* ── KPI plitkalar ── */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <StatCard icon={GraduationCap} label={t("kpiClasses")} value={rows.length} unit={t("unitCount")} />
-          <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudents} unit={t("unitPeople")} />
+          <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudents} unit={t("unitPeople")} onClick={onViewStudents} />
           <StatCard
             icon={CalendarCheck}
             label={t("kpiAttendance")}
@@ -294,6 +309,32 @@ export function OverviewPanel({
         {/* ── Domen grafigi (avvalgi Davomat tabidan) ── */}
         <DashboardSectionCard icon={TrendingUp} title={t("attendanceTrendTitle")}>
           <AttendanceTrendCard weeks={attendanceWeeks} />
+        </DashboardSectionCard>
+
+        {/* ── Sinflar taqqoslash jadvali (avvalgi mustaqil "Sinflar" tabidan) ── */}
+        <DashboardSectionCard>
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex items-center gap-2.5 shrink-0">
+              <SectionIcon>
+                <TableIcon />
+              </SectionIcon>
+              <CardTitle className="truncate">{t("groupClasses")}</CardTitle>
+            </div>
+            <div className="flex-1 flex justify-center">
+              <div className="relative w-72 max-w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input
+                  value={classQuery}
+                  onChange={(e) => setClassQuery(e.target.value)}
+                  placeholder={t("classesSearchPlaceholder")}
+                  className="pl-9 h-9 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <ClassesTable rows={filteredRows} onSelect={onSelectClass} />
+          </div>
         </DashboardSectionCard>
       </div>
     </div>

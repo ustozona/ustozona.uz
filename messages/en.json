@@ -481,12 +481,17 @@
     "boysFull": "Boys",
     "girlsFull": "Girls",
     "groupClasses": "Classes",
+    "periodKindWeek": "Week",
+    "periodKindMonth": "Month",
+    "periodKindQuarter": "Quarter",
+    "periodKindYear": "Year",
+    "periodSearchPlaceholder": "Search period...",
+    "periodNotFound": "Period not found",
     "classesSearchPlaceholder": "Search classes...",
     "columnClass": "Class",
     "columnStudents": "Students",
     "columnAttendance": "Attendance",
     "columnGrade": "Grade",
-    "columnSignal": "Signal",
     "columnAction": "Action",
     "viewDetails": "Details",
     "noClassesFound": "No classes found",
@@ -1907,6 +1912,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "statistics-period-filter-unified": {
+        "title": "Statistics: period filter merged into one menu",
+        "body": "The Week/Month/Quarter/Year toggle and the period value now live in a single searchable menu. The class table shows student count as a plain number, and the confusing \"Signal\" column was removed."
+      },
       "statistics-overview-redesign": {
         "title": "Statistics: Overview section redesigned",
         "body": "Added Lessons and Assignments KPI cards, plus Behavior and Assignment-completion donut cards. Card layout was reorganized, and the grade-distribution and attendance-trend charts were improved."

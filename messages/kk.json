@@ -481,12 +481,17 @@
     "boysFull": "Ұл балалар",
     "girlsFull": "Қыз балалар",
     "groupClasses": "Сыныптар",
+    "periodKindWeek": "Апта",
+    "periodKindMonth": "Ай",
+    "periodKindQuarter": "Тоқсан",
+    "periodKindYear": "Жыл",
+    "periodSearchPlaceholder": "Кезеңді іздеу...",
+    "periodNotFound": "Кезең табылмады",
     "classesSearchPlaceholder": "Сынып іздеу...",
     "columnClass": "Сынып",
     "columnStudents": "Оқушылар",
     "columnAttendance": "Қатысу",
     "columnGrade": "Баға",
-    "columnSignal": "Сигнал",
     "columnAction": "Әрекет",
     "viewDetails": "Толығырақ",
     "noClassesFound": "Сынып табылмады",
@@ -1907,6 +1912,10 @@
       "changelog": "Жаңартулар"
     },
     "entries": {
+      "statistics-period-filter-unified": {
+        "title": "Статистика: кезең сүзгісі бір мәзірге біріктірілді",
+        "body": "Апта/Ай/Тоқсан/Жыл таңдауы мен кезең мәні енді бір іздеу мәзірінде. Сыныптар кестесінде оқушылар саны енді жай сан түрінде көрсетіледі, түсініксіз «Сигнал» бағаны алып тасталды."
+      },
       "statistics-overview-redesign": {
         "title": "Статистика: «Жалпы» бөлімі қайта әзірленді",
         "body": "Сабақтар мен Тапсырмалар KPI карталары, Мінез-құлық және Тапсырмалардың орындалуы донат-карталары қосылды. Карталардың орналасуы ретке келтірілді, Баға таралуы мен Қатысу трендінің графиктері жақсартылды."
