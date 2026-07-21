@@ -824,6 +824,7 @@
     "studentPhone": "Student's phone",
     "editAria": "Edit",
     "fullProfileAria": "Full profile",
+    "attendanceRingTitle": "Attendance: {pct}%",
     "classLabel": "Class",
     "contactLabel": "Contact",
     "noContact": "No contact information entered",
@@ -831,6 +832,10 @@
     "call": "Call",
     "telegram": "Telegram",
     "telegramSoon": "Coming soon",
+    "chat": "Chat",
+    "behaviorLabel": "Behavior",
+    "statsLabel": "Metrics",
+    "contactLabel": "Contact",
     "viewCardAria": "Card view",
     "viewTableAria": "Table view",
     "tableColName": "Full name",
@@ -1912,6 +1917,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "student-preview-card-redesign": {
+        "title": "Student profile: side panel redesigned",
+        "body": "Attendance, grade, and behavior metrics now show together with an icon and percentage. \"Metrics\" and \"Contact\" sections are now clearly separated, and the \"View Profile\" button always stays pinned to the bottom of the panel."
+      },
       "statistics-period-filter-unified": {
         "title": "Statistics: period filter merged into one menu",
         "body": "The Week/Month/Quarter/Year toggle and the period value now live in a single searchable menu. The class table shows student count as a plain number, and the confusing \"Signal\" column was removed."

@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "student-preview-card-redesign",
+    date: "2026-07-21",
+    type: "yaxshilandi",
+    title: "Oʻquvchi profili: yon panel qayta ishlab chiqildi",
+    body:
+      "Davomat, baho va xulq koʻrsatkichlari endi ikonka va foiz bilan bitta qatorda koʻrinadi. \"Koʻrsatkichlar\" va \"Aloqa\" boʻlimlari aniq ajratildi, \"Profilni koʻrish\" tugmasi endi doim panelning tagida turadi.",
+    href: "/dashboard/students",
+  },
+  {
     id: "statistics-period-filter-unified",
     date: "2026-07-21",
     type: "yaxshilandi",

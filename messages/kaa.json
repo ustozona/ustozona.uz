@@ -824,6 +824,7 @@
     "studentPhone": "Oqıwshı telefonı",
     "editAria": "Ózgertiw",
     "fullProfileAria": "Tolıq profil",
+    "attendanceRingTitle": "Qatnasıw: {pct}%",
     "classLabel": "Klas",
     "contactLabel": "Baylanıs",
     "noContact": "Baylanıs maǵlıwmatı kirgizilmegen",
@@ -831,6 +832,10 @@
     "call": "Qońıraw",
     "telegram": "Telegram",
     "telegramSoon": "Tez arada",
+    "chat": "Chat",
+    "behaviorLabel": "Qılıq",
+    "statsLabel": "Kórsetkishler",
+    "contactLabel": "Baylanıs",
     "viewCardAria": "Kartochka koʻrinisi",
     "viewTableAria": "Kesте koʻrinisi",
     "tableColName": "Толық аты",
@@ -1912,6 +1917,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "student-preview-card-redesign": {
+        "title": "Oqıwshı profili: yan panel qayta islep shıgıldı",
+        "body": "Qatnasıw, baha hám qılıq kórsetkishleri endi ikonka hám procent penen bir qatarda kórinedi. \"Kórsetkishler\" hám \"Baylanıs\" bólimleri anıq ajıratıldı, \"Profildi kóriw\" túymesi endi hámishe paneldiń tabanında turadı."
+      },
       "statistics-period-filter-unified": {
         "title": "Statistika: dáwir filtri birdey menyuge birlestirildi",
         "body": "Apta/Ay/Shárek/Jıl tańlawı hám dáwir mánisi endi bir izlenetuǵın menyuda. Klaslar kestesinde oqıwshılar sanı endi san penen kórsetiledi, shatasqan «Signal» bagany alıp taslandı."

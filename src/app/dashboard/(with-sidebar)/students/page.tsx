@@ -23,7 +23,11 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
+import { ClassSwatch } from "@/components/ClassSwatch";
+import { StripedPattern } from "@/components/ui/striped-pattern";
+import { useBehaviorStore } from "@/store/useBehaviorStore";
+import { studentBalance } from "@/lib/behavior-data";
 import {
   Popover, PopoverTrigger, PopoverContent,
 } from "@/components/ui/popover";
@@ -53,8 +57,9 @@ import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } f
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2, X,
-  TrendingUp, Phone, MessageCircle, ExternalLink, Pen, Download, ChevronDown, MoreHorizontal,
+  TrendingUp, Phone, MessageCircle, Pen, Download, ChevronDown, MoreHorizontal,
   Eye, NotebookPen, Clock, Archive, GraduationCap, LayoutGrid, Table as TableIcon,
+  CalendarCheck, Award,
 } from "lucide-react";
 
 // ─── Tiplar ────────────────────────────────────────────────────────────────
@@ -539,10 +544,22 @@ export default function StudentsPage() {
 
               {/* Yangi oʻquvchi — tanlov modalini ochadi (bitta / import); chevron = Eksport */}
               <div className="flex">
-                <Button onClick={() => setAddOpen(true)} className="rounded-r-none px-2.5 font-semibold @[420px]:px-3 @[560px]:px-4">
-                  <Plus className="size-4 shrink-0 @[420px]:mr-1" />
-                  <span className="hidden @[420px]:inline @[560px]:hidden">{t("addShort")}</span>
-                  <span className="hidden @[560px]:inline">{t("newStudent")}</span>
+                <Button
+                  onClick={() => setAddOpen(true)}
+                  className={cn(
+                    "rounded-r-none px-2.5 font-semibold",
+                    !selectedStudent && "@[420px]:px-3 @[560px]:px-4"
+                  )}
+                >
+                  <Plus className={cn("size-4 shrink-0", !selectedStudent && "@[420px]:mr-1")} />
+                  {selectedStudent ? (
+                    <span className="inline">{t("addShort")}</span>
+                  ) : (
+                    <>
+                      <span className="hidden @[420px]:inline @[560px]:hidden">{t("addShort")}</span>
+                      <span className="hidden @[560px]:inline">{t("newStudent")}</span>
+                    </>
+                  )}
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -759,6 +776,7 @@ export default function StudentsPage() {
                 key={selectedStudent.id}
                 student={selectedStudent}
                 className={selectedInfo?.name ?? ""}
+                classId={selectedClassId ?? ""}
                 hex={selHex}
                 tint={tint}
                 onToggleStatus={() => toggleStatus(selectedStudent.id, selectedStudent.status)}
@@ -838,142 +856,179 @@ export default function StudentsPage() {
   );
 }
 
+function hexToRgb(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
+const EMPTY_BEHAVIOR_EVENTS: never[] = [];
+
 // ─── Preview kartasi ──────────────────────────────────────────────────────────
 function PreviewCard({
-  student, className, hex, tint, onToggleStatus, onViewProfile,
+  student, className, classId, hex, tint, onToggleStatus, onViewProfile,
 }: {
   student: StudentRow;
   className: string;
+  classId: string;
   hex: string;
   tint: (pct: number) => string;
   onToggleStatus: () => void;
   onViewProfile: () => void;
 }) {
   const t = useTranslations("StudentsPage");
-  const pill = STATUS_META[student.status];
-  const contacts: { icon: React.ReactNode; label: string; value?: string }[] = [
-    { icon: <User className="size-4" />, label: t("parentName"), value: student.parentName },
-    { icon: <Phone className="size-4" />, label: t("parentPhone"), value: student.parentPhone },
-    { icon: <Phone className="size-4" />, label: t("studentPhone"), value: student.studentPhone },
-  ];
+  const attendancePct = Math.max(0, Math.min(100, student.attendance));
+  const hasParent = !!(student.parentName || student.parentPhone);
+  const rgb = hexToRgb(hex);
+
+  const behaviorEvents = useBehaviorStore((s) => s.eventsByClass[classId]) ?? EMPTY_BEHAVIOR_EVENTS;
+  const behaviorRedemptions = useBehaviorStore((s) => s.redemptions);
+  const behaviorBalance = useMemo(
+    () => studentBalance(behaviorEvents, behaviorRedemptions.filter((r) => r.classId === classId), student.id),
+    [behaviorEvents, behaviorRedemptions, classId, student.id]
+  );
 
   return (
     <div className="group/card flex h-full w-full flex-col">
-      {/* Gradient header */}
+      {/* Rangli cover band — Sinflar kartasidagi bilan bir xil naqsh; avatar teng yarmidan boʻladi */}
       <div
-        className="relative h-32 shrink-0 overflow-hidden"
-        style={{ background: `linear-gradient(${tint(27)}, ${tint(33)})` }}
+        className="relative h-24 shrink-0 overflow-hidden"
+        style={{ background: `linear-gradient(135deg, rgba(${rgb}, 0.20), rgba(${rgb}, 0.06))` }}
       >
-        <div className="absolute -right-6 -top-6 size-24 rounded-full" style={{ backgroundColor: tint(19) }} />
-        <div className="absolute right-4 top-10 size-12 rounded-full" style={{ backgroundColor: tint(31) }} />
-        <svg className="absolute bottom-0 left-0 right-0 w-full" viewBox="0 0 400 24" preserveAspectRatio="none" style={{ height: 24 }}>
-          <path d="M0,24 L0,20 Q200,0 400,20 L400,24 Z" className="fill-card" />
-        </svg>
-        <button className="absolute left-3 top-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/80 text-foreground/70 opacity-0 shadow-sm transition-opacity hover:bg-white hover:text-foreground group-hover/card:opacity-100" aria-label={t("editAria")}>
-          <Pen className="size-3.5" />
-        </button>
-        <button onClick={onViewProfile} className="absolute right-3 top-3 z-10 inline-flex size-8 items-center justify-center rounded-full bg-white/80 text-foreground/70 opacity-0 shadow-sm transition-opacity hover:bg-white hover:text-foreground group-hover/card:opacity-100" aria-label={t("fullProfileAria")}>
-          <ExternalLink className="size-3.5" />
-        </button>
+        <StripedPattern className="opacity-50" style={{ color: `rgba(${rgb}, 0.5)` }} />
       </div>
-
-      <div className="relative z-20 -mt-16 mb-4 flex shrink-0 justify-center px-6">
-        <div className="size-28 overflow-hidden rounded-full border-4 border-card bg-card shadow-md">
-          <div
-            className="flex size-full items-center justify-center overflow-hidden text-2xl font-semibold text-white"
-            style={{ backgroundColor: student.avatarColor ?? hex }}
-          >
-            {student.avatarImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={student.avatarImage} alt="" className="size-full object-cover" />
-            ) : (
-              student.initials
-            )}
+      {/* Avatar (davomat foizini halqa sifatida koʻrsatadi) — ScrollArea'dan TASHQARIDA,
+          aks holda uning overflow-hidden viewport'i negative-margin bilan chiqib turgan
+          qismini kesib tashlaydi (Sinflar kartasida bu muammo yoʻq, chunki u ScrollArea ichida emas). */}
+      <div className="flex shrink-0 justify-center px-5">
+        <div
+          className="relative -mt-12 size-24 shrink-0 rounded-full p-[3px]"
+          style={{ background: `conic-gradient(${hex} ${attendancePct * 3.6}deg, ${tint(10)} 0deg)` }}
+          title={t("attendanceRingTitle", { pct: attendancePct })}
+        >
+          <div className="flex size-full items-center justify-center overflow-hidden rounded-full border-[3px] border-card bg-card">
+            <div
+              className="flex size-full items-center justify-center overflow-hidden text-xl font-semibold text-white"
+              style={{ backgroundImage: `linear-gradient(135deg, color-mix(in oklch, white 30%, ${student.avatarColor ?? hex}), ${student.avatarColor ?? hex})` }}
+            >
+              {student.avatarImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={student.avatarImage} alt="" className="size-full object-cover" />
+              ) : (
+                student.initials
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex min-h-full flex-col px-6 pb-6">
-          <div className="mb-4 space-y-2 text-center">
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={onToggleStatus}
-                className={cn(badgeBase, "cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
-              >
-                <span className={cn("size-1.5 rounded-full", pill.dot)} />
-                {t(`status.${student.status}`)}
-              </button>
-            </div>
-            <CardTitle className="text-xl">{student.name}</CardTitle>
-            <TypographyMuted className="text-sm">{student.studentId}</TypographyMuted>
-          </div>
+        <div className="flex flex-col items-center px-5 pb-6 pt-0 text-center">
+          {/* 2. Ism va familiyasi — karta ichidagi ism = heading-small (dizayn tizimi) */}
+          <p className="heading-small mt-4 text-foreground">{student.name}</p>
 
-          <Button
-            onClick={onViewProfile}
-            className="mb-6 h-9 w-full rounded-lg font-semibold text-white transition-all hover:brightness-110"
-            style={{ backgroundColor: hex }}
+          {/* 4. Sinf — kvadrat-radiusli rangli belgi + nom */}
+          <div
+            className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium"
+            style={{ backgroundColor: tint(13), color: hex }}
           >
-            {t("viewProfile")}
-          </Button>
-
-          <div className="mb-6">
-            <TypographyLabel className="mb-3 block">{t("classLabel")}</TypographyLabel>
-            <div className="flex flex-wrap gap-2">
-              <div className="rounded-md px-3 py-1.5 text-sm font-medium" style={{ backgroundColor: tint(13), color: hex }}>
-                {className}
-              </div>
-            </div>
+            <ClassSwatch hex={hex} className="size-2.5" />
+            {className}
           </div>
 
-          <div>
-            <TypographyLabel className="mb-3 block">{t("contactLabel")}</TypographyLabel>
-            {contacts.every((c) => !c.value) ? (
-              <div className="flex flex-col items-start gap-2.5 rounded-lg border border-dashed border-border p-4">
-                <TypographyMuted>{t("noContact")}</TypographyMuted>
-                <Button variant="outline" size="sm" className="gap-1.5 shadow-none">
-                  <Plus className="size-3.5" /> {t("addContact")}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-5">
-                {contacts.filter((c) => c.value).map((c, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="mt-0.5 shrink-0 rounded-lg p-2" style={{ backgroundColor: tint(13), color: hex }}>
-                      {c.icon}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <TypographyMuted>{c.label}</TypographyMuted>
-                      <p className="text-sm">{c.value}</p>
-                    </div>
+          {/* Oʻrtada: davomat / baholar / xulq — icon-box + raqam, izoh tooltip orqali */}
+          <p className="text-label mt-9 w-full text-left text-muted-foreground">{t("statsLabel")}</p>
+          <div className="mt-2 flex w-full items-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex flex-1 cursor-default flex-col items-center gap-1.5">
+                  <div className="flex size-9 items-center justify-center rounded-full" style={{ backgroundColor: tint(13), color: hex }}>
+                    <CalendarCheck className="size-4" />
                   </div>
-                ))}
+                  <span className="text-sm font-semibold">{attendancePct}%</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{t("sortLabels.attendance")}</TooltipContent>
+            </Tooltip>
+            <div className="h-9 w-px shrink-0 bg-border" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex flex-1 cursor-default flex-col items-center gap-1.5">
+                  <div className="flex size-9 items-center justify-center rounded-full" style={{ backgroundColor: tint(13), color: hex }}>
+                    <TrendingUp className="size-4" />
+                  </div>
+                  <span className="text-sm font-semibold">{student.grade}%</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{t("sortLabels.grade")}</TooltipContent>
+            </Tooltip>
+            <div className="h-9 w-px shrink-0 bg-border" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex flex-1 cursor-default flex-col items-center gap-1.5">
+                  <div className="flex size-9 items-center justify-center rounded-full" style={{ backgroundColor: tint(13), color: hex }}>
+                    <Award className="size-4" />
+                  </div>
+                  <span className="text-sm font-semibold">{behaviorBalance}</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{t("behaviorLabel")}</TooltipContent>
+            </Tooltip>
+          </div>
+
+          <div className="mt-7 flex w-full flex-col">
+            <p className="text-label w-full text-left text-muted-foreground">{t("contactLabel")}</p>
+            {/* 5. Ota-onasining ismi va telefon raqami */}
+            {hasParent && (
+              <div className="mt-2 flex w-full items-center gap-3 text-left">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: tint(13), color: hex }}>
+                  <User className="size-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{student.parentName || t("noContact")}</p>
+                  {student.parentPhone && <TypographyMuted className="text-xs">{student.parentPhone}</TypographyMuted>}
+                </div>
               </div>
             )}
-          </div>
 
-          <div className="mt-auto flex items-center gap-2 pt-6">
-            <Button
-              variant="outline"
-              disabled={!student.parentPhone}
-              asChild={!!student.parentPhone}
-              className="h-9 flex-1 rounded-lg shadow-none"
-            >
-              {student.parentPhone ? (
-                <a href={`tel:${student.parentPhone}`}>
-                  <Phone className="mr-2 size-4" /> {t("call")}
-                </a>
-              ) : (
-                <span><Phone className="mr-2 size-4" /> {t("call")}</span>
-              )}
-            </Button>
-            <Button variant="outline" disabled title={t("telegramSoon")} className="h-9 flex-1 rounded-lg shadow-none">
-              <MessageCircle className="mr-2 size-4" /> {t("telegram")}
-            </Button>
+            {/* 6. Qoʻngʻiroq va chat */}
+            <div className="mt-3 flex w-full items-center gap-3">
+              <Button
+                variant="outline"
+                disabled={!student.parentPhone}
+                asChild={!!student.parentPhone}
+                className="h-9 flex-1 rounded-lg shadow-none"
+              >
+                {student.parentPhone ? (
+                  <a href={`tel:${student.parentPhone}`}>
+                    <Phone className="mr-2 size-4" /> {t("call")}
+                  </a>
+                ) : (
+                  <span><Phone className="mr-2 size-4" /> {t("call")}</span>
+                )}
+              </Button>
+              <Button variant="outline" disabled title={t("telegramSoon")} className="h-9 flex-1 rounded-lg shadow-none">
+                <MessageCircle className="mr-2 size-4" /> {t("chat")}
+              </Button>
+            </div>
+
           </div>
         </div>
       </ScrollArea>
+
+      {/* 7. Profilga oʻtish — ScrollArea'dan TASHQARIDA, shrink-0 pastki panel: shu sabab
+          balandlikdan qatʼi nazar doim kartaning tagida turadi (Radix ScrollArea Viewport
+          balandligi notoʻgʻri hisoblanganda mt-auto ishonchsiz boʻladi). */}
+      <div className="shrink-0 border-t border-border/60 px-5 py-4">
+        <Button
+          onClick={onViewProfile}
+          className="h-9 w-full rounded-lg font-semibold text-white transition-all hover:brightness-110"
+          style={{ backgroundColor: hex }}
+        >
+          {t("viewProfile")}
+        </Button>
+      </div>
     </div>
   );
 }

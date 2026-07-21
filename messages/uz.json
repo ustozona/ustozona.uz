@@ -824,6 +824,7 @@
     "studentPhone": "Oʻquvchi telefoni",
     "editAria": "Tahrirlash",
     "fullProfileAria": "Toʻliq profil",
+    "attendanceRingTitle": "Davomat: {pct}%",
     "classLabel": "Sinf",
     "contactLabel": "Aloqa",
     "noContact": "Aloqa maʼlumoti kiritilmagan",
@@ -831,6 +832,10 @@
     "call": "Qoʻngʻiroq",
     "telegram": "Telegram",
     "telegramSoon": "Tez orada",
+    "chat": "Chat",
+    "behaviorLabel": "Xulq",
+    "statsLabel": "Koʻrsatkichlar",
+    "contactLabel": "Aloqa",
     "viewCardAria": "Karta koʻrinishi",
     "viewTableAria": "Jadval koʻrinishi",
     "tableColName": "Ism sharifi",
@@ -1912,6 +1917,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "student-preview-card-redesign": {
+        "title": "Oʻquvchi profili: yon panel qayta ishlab chiqildi",
+        "body": "Davomat, baho va xulq koʻrsatkichlari endi ikonka va foiz bilan bitta qatorda koʻrinadi. \"Koʻrsatkichlar\" va \"Aloqa\" boʻlimlari aniq ajratildi, \"Profilni koʻrish\" tugmasi endi doim panelning tagida turadi."
+      },
       "statistics-period-filter-unified": {
         "title": "Statistika: davr filtri yagona menyuga birlashtirildi",
         "body": "Hafta/Oy/Chorak/Yil tanlovi va davr qiymati endi bitta qidiriladigan menyuda. Sinflar jadvalida oʻquvchilar soni endi son bilan koʻrsatiladi, chalkash \"Signal\" ustuni olib tashlandi."
