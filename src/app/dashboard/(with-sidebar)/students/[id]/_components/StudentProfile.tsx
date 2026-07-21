@@ -621,12 +621,34 @@ export default function StudentProfile({
             </>
           ) : (
             <>
-              <Button asChild variant="outline" size="icon" disabled={!info.parentPhone} className="size-9 shadow-none" aria-label={t("callParentAria")}>
-                <a href={info.parentPhone ? `tel:${info.parentPhone.replace(/\s/g, "")}` : undefined}>
-                  <Phone className="size-4" />
-                </a>
+              {info.parentPhone ? (
+                <Button asChild variant="outline" size="icon" className="size-9 shadow-none" aria-label={t("callParentAria")}>
+                  <a href={`tel:${info.parentPhone.replace(/\s/g, "")}`}>
+                    <Phone className="size-4" />
+                  </a>
+                </Button>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={startCardEdit}
+                      className="size-9 border-dashed text-muted-foreground shadow-none"
+                      aria-label={t("addPhoneAria")}
+                    >
+                      <Phone className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("addPhoneAria")}</TooltipContent>
+                </Tooltip>
+              )}
+              <Button
+                style={{ backgroundColor: hex }}
+                className="h-9 flex-1 font-semibold text-white hover:brightness-110"
+              >
+                <MessageCircle className="size-4" /> {t("chat")}
               </Button>
-              <Button className="h-9 flex-1 font-semibold"><MessageCircle className="size-4" /> {t("chat")}</Button>
             </>
           )}
         </div>
@@ -700,7 +722,7 @@ export default function StudentProfile({
           ) : tab === "notes" ? (
             // Qaydlar: bitta karta ichida, roʻyxat kartaning oʻzida scroll boʻladi
             <div className="flex min-h-0 flex-1 flex-col pr-4 md:pr-6">
-              <NotesTab notes={notes} onAdd={addNote} onUpdate={updateNote} onDelete={deleteNote} />
+              <NotesTab notes={notes} onAdd={addNote} onUpdate={updateNote} onDelete={deleteNote} hex={hex} />
             </div>
           ) : (
             <ScrollArea className="min-h-0 flex-1">

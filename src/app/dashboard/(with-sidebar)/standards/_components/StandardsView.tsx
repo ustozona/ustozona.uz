@@ -113,10 +113,12 @@ export default function StandardsView({
             >
               <Search className="size-4" aria-hidden />
             </Button>
-            <Button data-tour="standards-add" className="h-9 gap-1.5" onClick={() => !demoMode && setAddOpen(true)}>
-              <Plus className="size-4" aria-hidden />
-              {t("addStandard")}
-            </Button>
+            {classSets.length > 0 && (
+              <Button data-tour="standards-add" className="h-9 gap-1.5" onClick={() => !demoMode && setAddOpen(true)}>
+                <Plus className="size-4" aria-hidden />
+                {t("addStandard")}
+              </Button>
+            )}
           </div>
         </div>
 

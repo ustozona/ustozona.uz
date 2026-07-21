@@ -224,5 +224,5 @@ export function formatFeedbackAgo(iso: string, t: RelativeT = RELATIVE_T_UZ): st
 export function formatFeedbackFull(iso: string, monthsShort: string[] = MONTHS_SHORT_UZ): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return `${d.getDate()} ${monthsShort[d.getMonth()]} ${d.getFullYear()}, ${formatFeedbackTime(iso)}`;
+  return `${formatFeedbackTime(iso)}, ${d.getFullYear()}-yil ${d.getDate()}-${monthsShort[d.getMonth()]}`;
 }

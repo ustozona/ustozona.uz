@@ -32,7 +32,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TypographyLabel } from "@/components/ui/typography";
 import { CardStripes } from "@/components/CardStripes";
 import { CardCorner } from "@/components/CardCorner";
@@ -706,18 +706,24 @@ export default function TimetablePage() {
             </div>
 
             {/* Markaz: koʻrinish rejimi */}
-            <Tabs value={snapMode} onValueChange={(v) => setSnapMode(v as "free" | "lesson")} className="shrink-0">
-              <TabsList aria-label={t("viewModeAria")}>
-                <TabsTrigger value="free" className="gap-1.5 text-xs" title={t("calendarModeTitle")}>
-                  <MousePointer2 className="size-4" />
-                  <span className="hidden sm:inline">{t("calendarMode")}</span>
-                </TabsTrigger>
-                <TabsTrigger value="lesson" className="gap-1.5 text-xs" title={t("gridModeTitle")}>
-                  <Magnet className="size-4" />
-                  <span className="hidden sm:inline">{t("gridMode")}</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <ToggleGroup
+              type="single"
+              value={snapMode}
+              onValueChange={(v) => v && setSnapMode(v as "free" | "lesson")}
+              variant="outline"
+              size="default"
+              className="shrink-0"
+              aria-label={t("viewModeAria")}
+            >
+              <ToggleGroupItem value="free" className="gap-1.5 text-xs" title={t("calendarModeTitle")}>
+                <MousePointer2 className="size-4" />
+                <span className="hidden sm:inline">{t("calendarMode")}</span>
+              </ToggleGroupItem>
+              <ToggleGroupItem value="lesson" className="gap-1.5 text-xs" title={t("gridModeTitle")}>
+                <Magnet className="size-4" />
+                <span className="hidden sm:inline">{t("gridMode")}</span>
+              </ToggleGroupItem>
+            </ToggleGroup>
 
             {/* Oʻng: avto-saqlash holati + koʻproq amallar */}
             <div className="flex flex-1 items-center justify-end gap-2">

@@ -39,7 +39,7 @@ import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { Label } from "@/components/ui/label";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -505,12 +505,18 @@ export default function PlannerView({ classId }: { classId?: string }) {
             </CardTitle>
           </div>
 
-          <Tabs value={view} onValueChange={(v) => setView(v as "week" | "month")} className="self-center">
-            <TabsList data-tour="planner-view-toggle">
-              <TabsTrigger value="week" className="px-5">{t("week")}</TabsTrigger>
-              <TabsTrigger value="month" className="px-5">{t("month")}</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <ToggleGroup
+            type="single"
+            value={view}
+            onValueChange={(v) => v && setView(v as "week" | "month")}
+            variant="outline"
+            size="default"
+            className="self-center"
+            data-tour="planner-view-toggle"
+          >
+            <ToggleGroupItem value="week" className="px-5 text-sm font-medium">{t("week")}</ToggleGroupItem>
+            <ToggleGroupItem value="month" className="px-5 text-sm font-medium">{t("month")}</ToggleGroupItem>
+          </ToggleGroup>
 
           <div className="flex items-center justify-end gap-1">
             {view === "week" && (

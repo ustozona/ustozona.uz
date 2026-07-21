@@ -969,6 +969,7 @@
     "studentPhonePlaceholder": "+998 ...",
     "editHint": "Tahrirlash uchun bosing",
     "callParentAria": "Ota-onaga qoʻngʻiroq",
+    "addPhoneAria": "Telefon raqami qoʻshish",
     "chat": "Chat",
     "toastSaved": "Maʼlumot saqlandi",
     "toastGenderSaved": "Jinsi saqlandi",
@@ -985,6 +986,7 @@
   "OverviewTab": {
     "overallGrade": "Umumiy baho",
     "overallGradeSub": "Ogʻirlikka koʻra oʻrtacha",
+    "overallGradeSubEmpty": "Hali baholangan ish yoʻq",
     "attendance": "Davomat",
     "attendanceSub": "{present} / {total} kun",
     "missing": "Topshirilmagan",
@@ -1951,6 +1953,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "toggle-ui-polish": {
+        "title": "Koʻrinish almashtirgichlar (togglelar) va boʻsh holatlar butun ilova boʻyicha bir xillashtirildi"
+      },
       "tactile-button-depth": {
         "title": "Asosiy tugmalar va segmentli tanlovlar bosiladigan koʻrinishga ega boʻldi",
         "body": "Tugmalar endi yorugʻlik-soya effekti bilan haqiqiy tugmadek his qiladi, tanlangan segmentlar esa botiq koʻrinadi."

@@ -430,10 +430,12 @@ export default function LessonsPage() {
               <SectionIcon><Layers /></SectionIcon>
               <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
             </div>
-            <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
-              <Plus className="size-4" />
-              <span>{t("addUnit")}</span>
-            </Button>
+            {unitsForClass.length > 0 && (
+              <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
+                <Plus className="size-4" />
+                <span>{t("addUnit")}</span>
+              </Button>
+            )}
           </div>
 
           {/* List */}
@@ -463,7 +465,7 @@ export default function LessonsPage() {
                           <EmptyDescription>{t("unitsEmptyDescription")}</EmptyDescription>
                         </EmptyHeader>
                         <EmptyContent>
-                          <Button variant="outline" className="gap-2 h-9" onClick={handleCreateUnit}>
+                          <Button className="gap-2 h-9" onClick={handleCreateUnit}>
                             <Plus className="size-4" />
                             {t("addUnitButton")}
                           </Button>
@@ -603,7 +605,7 @@ export default function LessonsPage() {
                   <ArrowDownUp className="size-4" />
                 </Button>
               </div>
-              {selectedUnitId && (
+              {selectedUnitId && lessonsForUnit.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLesson}>
                   <Plus className="size-3.5" />
                   <span className="hidden lg:inline">{t("newLesson")}</span>
@@ -625,7 +627,7 @@ export default function LessonsPage() {
                       <EmptyDescription>{t("lessonsEmptyDescription")}</EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
-                      <Button variant="outline" className="gap-2 h-9" onClick={handleNewLesson}>
+                      <Button className="gap-2 h-9" onClick={handleNewLesson}>
                         <Plus className="size-4" />
                         {t("newLesson")}
                       </Button>

@@ -645,7 +645,6 @@ export default function AttendanceView({
                   }}
                   variant="outline"
                   size="default"
-                  className="h-9"
                 >
                   <ToggleGroupItem value="month" className="px-3 text-sm font-medium">{t("month")}</ToggleGroupItem>
                   <ToggleGroupItem

@@ -1156,8 +1156,6 @@ function ClassListRow({
 
       {/* Statistika */}
       <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-        <span className="font-medium text-foreground">{t("studentsCount", { count: cls.students })}</span>
-        <span className="text-border">·</span>
         <span className="font-medium text-foreground">{t("lessonsCount", { count: cls.lessons })}</span>
         <span className="text-border">·</span>
         <span className="font-medium text-foreground">{t("assignmentsCount", { count: cls.assignments })}</span>

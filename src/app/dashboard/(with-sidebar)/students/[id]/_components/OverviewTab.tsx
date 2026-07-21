@@ -107,7 +107,8 @@ function GranularityDropdown({
 
 export default function OverviewTab({ profile }: { profile: StudentProfile }) {
   const t = useTranslations("OverviewTab");
-  const { overallGrade, attendance, missingCount, topics, bloom, datedScores, location } = profile;
+  const { overallGrade, attendance, missingCount, gradedCount, topics, bloom, datedScores, location } = profile;
+  const hasGrades = gradedCount > 0;
 
   // Toifa barlari uchun 0→qiymat mount animatsiyasi
   const [mounted, setMounted] = useState(false);
@@ -140,9 +141,9 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           label={t("overallGrade")}
-          value={`${overallGrade}%`}
-          sub={t("overallGradeSub")}
-          tone={scoreTone(overallGrade)}
+          value={hasGrades ? `${overallGrade}%` : "—"}
+          sub={hasGrades ? t("overallGradeSub") : t("overallGradeSubEmpty")}
+          tone={hasGrades ? scoreTone(overallGrade) : "default"}
           icon={GraduationCap}
         />
         <StatCard

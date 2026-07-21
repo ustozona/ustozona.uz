@@ -83,6 +83,7 @@ export default function NotesTab({
   onAdd,
   onUpdate,
   onDelete,
+  hex,
 }: {
   notes: Note[];
   onAdd: (
@@ -93,6 +94,7 @@ export default function NotesTab({
   ) => void;
   onUpdate: (id: string, text: string, tags: string[], title?: string | null) => void;
   onDelete: (id: string) => void;
+  hex: string;
 }) {
   const t = useTranslations("NotesTab");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -302,7 +304,8 @@ export default function NotesTab({
             <Button
               type="button"
               size="icon"
-              className="pointer-events-auto size-12 rounded-full shadow-[0_3px_5px_-1px_rgba(0,0,0,0.2),0_6px_10px_0_rgba(0,0,0,0.14),0_1px_18px_0_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_5px_5px_-3px_rgba(0,0,0,0.2),0_8px_10px_1px_rgba(0,0,0,0.14),0_3px_14px_2px_rgba(0,0,0,0.12)]"
+              style={{ backgroundColor: hex }}
+              className="pointer-events-auto size-12 rounded-full text-white shadow-[0_3px_5px_-1px_rgba(0,0,0,0.2),0_6px_10px_0_rgba(0,0,0,0.14),0_1px_18px_0_rgba(0,0,0,0.12)] transition-shadow hover:brightness-110 hover:shadow-[0_5px_5px_-3px_rgba(0,0,0,0.2),0_8px_10px_1px_rgba(0,0,0,0.14),0_3px_14px_2px_rgba(0,0,0,0.12)]"
             >
               <Plus className="size-5" />
             </Button>

@@ -969,6 +969,7 @@
     "studentPhonePlaceholder": "+998 ...",
     "editHint": "Click to edit",
     "callParentAria": "Call parent",
+    "addPhoneAria": "Add phone number",
     "chat": "Chat",
     "toastSaved": "Information saved",
     "toastGenderSaved": "Gender saved",
@@ -985,6 +986,7 @@
   "OverviewTab": {
     "overallGrade": "Overall grade",
     "overallGradeSub": "Weighted average",
+    "overallGradeSubEmpty": "No graded work yet",
     "attendance": "Attendance",
     "attendanceSub": "{present} / {total} days",
     "missing": "Missing",
@@ -1951,6 +1953,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "toggle-ui-polish": {
+        "title": "View toggles and empty states are now consistent across the whole app"
+      },
       "tactile-button-depth": {
         "title": "Primary buttons and segmented toggles now feel pressable",
         "body": "Buttons now feel like real buttons with a light-and-shadow effect, and selected segments look pressed in."

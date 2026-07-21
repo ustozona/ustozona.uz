@@ -969,6 +969,7 @@
     "studentPhonePlaceholder": "+998 ...",
     "editHint": "Ózgertiw ushın basıń",
     "callParentAria": "Ata-anaǵa qońıraw",
+    "addPhoneAria": "Telefon nomerin qosıw",
     "chat": "Chat",
     "toastSaved": "Maǵlıwmat saqlandı",
     "toastGenderSaved": "Jınısı saqlandı",
@@ -985,6 +986,7 @@
   "OverviewTab": {
     "overallGrade": "Ulıwma baha",
     "overallGradeSub": "Salmaqqa qaray ortasha",
+    "overallGradeSubEmpty": "Hali bahalangan jumıs joq",
     "attendance": "Dawamat",
     "attendanceSub": "{present} / {total} kún",
     "missing": "Tapsırılmaǵan",
@@ -1951,6 +1953,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "toggle-ui-polish": {
+        "title": "Kórinis almastırıwshılar hám bos halatlar pútkil qollanba boyınsha birdeylestirildi"
+      },
       "tactile-button-depth": {
         "title": "Tiykarǵı túymeler hám segmentli tańlawlar endi basılatuǵınday kórinedi",
         "body": "Túymeler endi jaqtılıq-kólege effekti menen haqıyqıy túymedey seziledi, tańlanǵan segmentler botıp turǵanday kórinedi."

@@ -59,11 +59,6 @@ export default function TasksPage() {
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
       <TourDemoBanner tourId="tasks" active={isDemoMode} />
-      {!isDemoMode && (
-        <div className="flex justify-end px-4 md:px-6 pt-4 md:pt-6">
-          <TasksViewToggle value={view} onChange={changeView} />
-        </div>
-      )}
       <div className="flex-1 min-w-0 h-full min-h-0 flex gap-6 p-4 md:p-6 overflow-hidden">
       {/* ── Column 1: Sidebar (doim ~20%) ── */}
       <div data-tour="tasks-sidebar" className="hidden lg:block min-w-0 min-h-0 h-full shrink-0 lg:w-64 xl:w-[20%]" >
@@ -82,6 +77,7 @@ export default function TasksPage() {
           onSelectFilter={setActiveFilter}
           demoTasks={demoTasks ?? undefined}
           demoClasses={demoClasses ?? undefined}
+          viewToggle={!isDemoMode ? <TasksViewToggle value={view} onChange={changeView} /> : undefined}
         />
       </div>
 

@@ -34,8 +34,8 @@ import {
   upvoteCount, isUpvotedByMe,
 } from "@/store/useFeedbackStore";
 import {
-  useCategoryMeta, useStatusMeta, useMonthsShort, useRelativeT,
-  formatFeedbackAgo, formatFeedbackFull,
+  useCategoryMeta, useStatusMeta, useMonthsShort,
+  formatFeedbackFull,
 } from "./feedback-meta";
 import { ReactionChips, QuickReactionBar } from "./ReactionBar";
 import { excerptOf } from "./QuoteBlock";
@@ -79,7 +79,6 @@ export default function FeedbackCard({
   const categoryMeta = useCategoryMeta();
   const statusMeta = useStatusMeta();
   const monthsShort = useMonthsShort();
-  const relativeT = useRelativeT();
   const cat = categoryMeta[item.category];
   const status = statusMeta[item.status];
   const CatIcon = cat.icon;
@@ -268,14 +267,9 @@ export default function FeedbackCard({
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="truncate text-sm font-semibold text-foreground">{item.author}</span>
                   <div className="flex items-center gap-1.5">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="cursor-default text-xs text-muted-foreground/70">
-                          {formatFeedbackAgo(item.createdAt, relativeT)}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>{formatFeedbackFull(item.createdAt, monthsShort)}</TooltipContent>
-                    </Tooltip>
+                    <span className="text-xs text-muted-foreground/70">
+                      {formatFeedbackFull(item.createdAt, monthsShort)}
+                    </span>
                     {item.editedAt && (
                       <Tooltip>
                         <TooltipTrigger asChild>

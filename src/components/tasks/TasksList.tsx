@@ -61,9 +61,11 @@ type Props = {
   /** Tur demo rejimida haqiqiy vazifa/sinf oʻrniga koʻrsatiladigan namunaviy maʼlumot. */
   demoTasks?: Task[];
   demoClasses?: ClassInfo[];
+  /** Roʻyxat/Kalendar almashtirgichi — headerʼda markazda koʻrsatiladi. */
+  viewToggle?: React.ReactNode;
 };
 
-export default function TasksList({ activeFilter, onSelectFilter, demoTasks, demoClasses }: Props) {
+export default function TasksList({ activeFilter, onSelectFilter, demoTasks, demoClasses, viewToggle }: Props) {
   const t = useTranslations("TasksList");
   const tStatus = useTranslations("TaskStatus");
   const tPriority = useTranslations("TaskPriority");
@@ -305,8 +307,8 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
   return (
     <TooltipProvider delayDuration={300}>
       <div className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden relative">
-        <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-3 border-b border-border min-h-[4.5rem] bg-card z-10 relative">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="grid grid-cols-[1fr_auto_1fr] px-5 py-5 items-center shrink-0 gap-3 border-b border-border min-h-[4.5rem] bg-card z-10 relative">
+          <div className="flex items-center gap-3 min-w-0 justify-self-start">
             <SectionIcon>
               {(() => { const Icon = getFilterIcon(); return <Icon />; })()}
             </SectionIcon>
@@ -320,7 +322,9 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="justify-self-center">{viewToggle}</div>
+
+          <div className="flex items-center gap-1.5 shrink-0 justify-self-end">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

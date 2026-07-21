@@ -32,6 +32,12 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "toggle-ui-polish",
+    date: "2026-07-21",
+    type: "yaxshilandi",
+    title: "Koʻrinish almashtirgichlar (togglelar) va boʻsh holatlar butun ilova boʻyicha bir xillashtirildi",
+  },
+  {
     id: "tactile-button-depth",
     date: "2026-07-21",
     type: "yaxshilandi",
