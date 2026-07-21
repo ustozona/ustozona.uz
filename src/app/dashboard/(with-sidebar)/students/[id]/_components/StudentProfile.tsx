@@ -699,7 +699,7 @@ export default function StudentProfile({
             </div>
           ) : tab === "notes" ? (
             // Qaydlar: bitta karta ichida, roʻyxat kartaning oʻzida scroll boʻladi
-            <div className="flex min-h-0 flex-1 flex-col pb-6 pr-4 md:pr-6">
+            <div className="flex min-h-0 flex-1 flex-col pr-4 md:pr-6">
               <NotesTab notes={notes} onAdd={addNote} onUpdate={updateNote} onDelete={deleteNote} />
             </div>
           ) : (

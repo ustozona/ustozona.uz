@@ -32,6 +32,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tactile-button-depth",
+    date: "2026-07-21",
+    type: "yaxshilandi",
+    title: "Asosiy tugmalar va segmentli tanlovlar bosiladigan koʻrinishga ega boʻldi",
+    body: "Tugmalar endi yorugʻlik-soya effekti bilan haqiqiy tugmadek his qiladi, tanlangan segmentlar esa botiq koʻrinadi.",
+  },
+  {
     id: "student-notes-rebuild",
     date: "2026-07-21",
     type: "yangi",

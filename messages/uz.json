@@ -1951,6 +1951,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "tactile-button-depth": {
+        "title": "Asosiy tugmalar va segmentli tanlovlar bosiladigan koʻrinishga ega boʻldi",
+        "body": "Tugmalar endi yorugʻlik-soya effekti bilan haqiqiy tugmadek his qiladi, tanlangan segmentlar esa botiq koʻrinadi."
+      },
       "student-notes-rebuild": {
         "title": "Oʻquvchi qaydlari qayta qurildi: qisqa/toʻliq yozuv, erkin teglar va tahrirlash",
         "body": "Endi qaydga sarlavha qoʻshish, oʻzingiz teg yaratish, qidirish va saralash mumkin. Har bir qaydni keyinchalik tahrirlash yoki oʻchirish ham qoʻshildi."

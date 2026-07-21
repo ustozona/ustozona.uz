@@ -1951,6 +1951,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "tactile-button-depth": {
+        "title": "Primary buttons and segmented toggles now feel pressable",
+        "body": "Buttons now feel like real buttons with a light-and-shadow effect, and selected segments look pressed in."
+      },
       "student-notes-rebuild": {
         "title": "Student notes rebuilt: short/full entries, custom tags, and editing",
         "body": "Notes can now have a title, your own tags, search and sorting. You can also edit or delete a note afterwards."

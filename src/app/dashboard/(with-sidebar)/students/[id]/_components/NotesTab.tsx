@@ -223,9 +223,9 @@ export default function NotesTab({
 
       {/* Roʻyxat — kartaning oʻzida scroll boʻladi */}
       <ScrollArea className="min-h-0 flex-1">
-        <div className="p-4">
+        <div className="flex h-full min-h-full flex-col p-4">
           {visible.length === 0 ? (
-            <Empty className="border-0">
+            <Empty className="flex-1 border-0">
               <EmptyHeader>
                 <EmptyMedia><Illustration name="46" className="h-32 text-black dark:text-white" /></EmptyMedia>
                 <EmptyTitle>{notes.length === 0 ? t("emptyNoNotes") : t("emptyFiltered")}</EmptyTitle>
@@ -302,7 +302,7 @@ export default function NotesTab({
             <Button
               type="button"
               size="icon"
-              className="pointer-events-auto size-12 rounded-full shadow-lg"
+              className="pointer-events-auto size-12 rounded-full shadow-[0_3px_5px_-1px_rgba(0,0,0,0.2),0_6px_10px_0_rgba(0,0,0,0.14),0_1px_18px_0_rgba(0,0,0,0.12)] transition-shadow hover:shadow-[0_5px_5px_-3px_rgba(0,0,0,0.2),0_8px_10px_1px_rgba(0,0,0,0.14),0_3px_14px_2px_rgba(0,0,0,0.12)]"
             >
               <Plus className="size-5" />
             </Button>
