@@ -4,12 +4,10 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect, useMemo } from "react";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
-import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { HomeHero, type HeroEvent } from "@/components/dashboard/HomeHero";
 import { TodayRail } from "@/components/dashboard/TodayRail";
 import { QueueSection } from "@/components/dashboard/QueueSection";
 import { NextLessonsCard } from "@/components/dashboard/NextLessonsCard";
-import { attendanceEntryForDay } from "@/lib/home-metrics";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
@@ -64,12 +62,6 @@ export default function DashboardPage() {
   );
   // ── Hero konteksti ──
   const classCount = liveClasses.length;
-  // Hero chiplari — davomat kiritilishi va tekshirish navbati (sof helperlar)
-  const recordsByClass = useAttendanceStore((s) => s.recordsByClass);
-  const attendanceEntry = useMemo(
-    () => attendanceEntryForDay(todaysEvents.map((e) => e.classId), recordsByClass, todayKey),
-    [todaysEvents, recordsByClass, todayKey]
-  );
 
   // ── Tur-demo rejimi — home tur ochiq boʻlsa boʻsh panellar namunaviy
   //    maʼlumot bilan toʻldiriladi (faqat vizual, store'larga yozilmaydi) ──
@@ -127,7 +119,6 @@ export default function DashboardPage() {
               classCount={heroClassCount}
               todayEvents={heroEvents}
               nowMin={nowMin}
-              attendance={attendanceEntry}
               calendar={calendar}
               todayKey={todayKey}
             />

@@ -1,15 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { UserCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { YearProgress } from "@/components/dashboard/YearProgress";
-import { cn } from "@/lib/utils";
 import { fmtMin } from "@/lib/timetable";
 import type { AcademicYearCalendar } from "@/lib/academic-calendar";
-import type { AttendanceEntryStatus } from "@/lib/home-metrics";
 
 /** Bugungi dars — hero subtitle hisobi uchun minimal koʻrinish. */
 export type HeroEvent = { startMin: number; endMin: number; className: string };
@@ -26,7 +22,6 @@ export function HomeHero({
   classCount,
   todayEvents,
   nowMin,
-  attendance,
   calendar,
   todayKey,
 }: {
@@ -40,8 +35,6 @@ export function HomeHero({
   todayEvents: HeroEvent[];
   /** Joriy vaqt (kun boshidan daqiqada). */
   nowMin: number;
-  /** Bugun davomat kiritilishi (darsi bor sinflar boʻyicha). */
-  attendance: AttendanceEntryStatus;
   calendar: AcademicYearCalendar;
   todayKey: string;
 }) {
@@ -80,9 +73,6 @@ export function HomeHero({
     subtitle = `${t("lessonsCount", { count: todayEvents.length })} · ${status}`;
   }
 
-  const attendanceDone = attendance.total > 0 && attendance.entered >= attendance.total;
-  const showChips = isSetup && attendance.total > 0;
-
   return (
     <Card className="relative shrink-0 overflow-hidden rounded-xl border border-border p-0 shadow-none">
       <CardContent className="p-0">
@@ -103,21 +93,6 @@ export function HomeHero({
                   <span className="text-foreground/70">. {restNote}</span>
                 ) : null}
               </p>
-              {showChips ? (
-                <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  {attendance.total > 0 ? (
-                    <HeroChip href="/dashboard/attendance">
-                      <UserCheck
-                        className={cn("size-4", attendanceDone ? "text-success" : "text-sky-600 dark:text-sky-400")}
-                      />
-                      <span className="text-muted-foreground">{t("chipAttendance")}</span>
-                      <span className={cn("tabular-nums font-medium", attendanceDone && "text-success")}>
-                        {attendance.entered}/{attendance.total}
-                      </span>
-                    </HeroChip>
-                  ) : null}
-                </div>
-              ) : null}
             </div>
           </div>
 
@@ -125,17 +100,5 @@ export function HomeHero({
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-/** Hero harakat-chipi — frosted yuza. */
-function HeroChip({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-white/60 bg-white/45 px-2.5 py-1.5 text-sm backdrop-blur-sm transition-colors hover:bg-white/80 dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20"
-    >
-      {children}
-    </Link>
   );
 }
