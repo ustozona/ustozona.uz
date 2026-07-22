@@ -307,7 +307,7 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
   return (
     <TooltipProvider delayDuration={300}>
       <div className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden relative">
-        <div className="grid grid-cols-[1fr_auto_1fr] px-5 py-5 items-center shrink-0 gap-3 border-b border-border min-h-[4.5rem] bg-card z-10 relative">
+        <div className="grid grid-cols-[1fr_auto_1fr] px-5 py-4 items-center shrink-0 gap-3 border-b border-border min-h-16 bg-card z-10 relative">
           <div className="flex items-center gap-3 min-w-0 justify-self-start">
             <SectionIcon>
               {(() => { const Icon = getFilterIcon(); return <Icon />; })()}

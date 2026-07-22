@@ -569,7 +569,7 @@ export default function TimetablePage() {
         <div className="min-w-0 min-h-0 grid">
         <Card className={cn(panelCardClass)} data-tour="timetable-class-selector">
           {/* Header */}
-          <CardHeader className={cn(panelCardHeaderClass, "gap-3 border-b min-h-[4.5rem] px-5 py-5!")}>
+          <CardHeader className={cn(panelCardHeaderClass, "gap-3 border-b min-h-16 px-5 pt-4! pb-4!")}>
             <SectionIcon>
               <GraduationCap />
             </SectionIcon>
@@ -682,7 +682,7 @@ export default function TimetablePage() {
       <div className="min-w-0 min-h-0 grid">
         <Card className={panelCardClass} data-tour="timetable-grid">
           {/* Header */}
-          <CardHeader className={cn(panelCardHeaderClass, "gap-3 border-b-0 min-h-[4.5rem] px-5 py-5")}>
+          <CardHeader className={cn(panelCardHeaderClass, "gap-3 border-b-0 min-h-16 px-5 pt-4! pb-4!")}>
             {/* Chap: sarlavha + versiya satri (ostki qatorda) */}
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <SectionIcon>

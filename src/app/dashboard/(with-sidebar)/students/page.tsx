@@ -400,7 +400,7 @@ export default function StudentsPage() {
           ) : (
             <>
           {/* Header / toolbar */}
-          <div className="grid min-h-[4.5rem] shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-border px-5 py-5">
+          <div className="grid min-h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-border px-5 py-4">
             <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
               <SectionIcon><Users /></SectionIcon>
               <CardTitle className="min-w-0 shrink truncate">{t("title")}</CardTitle>

@@ -200,7 +200,7 @@ export default function TaskDetail() {
     <div className="h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 relative">
 
       {/* ── Header ── */}
-      <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-3 border-b border-border bg-card min-h-[4.5rem] z-10 relative">
+      <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-3 border-b border-border bg-card min-h-16 z-10 relative">
         <div className="flex items-center gap-3 min-w-0">
           <SectionIcon><ClipboardList /></SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>

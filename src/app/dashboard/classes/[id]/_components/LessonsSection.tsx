@@ -359,7 +359,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
         style={{ flexGrow: grow.units, flexBasis: 0 }}
       >
-        <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-2 border-b border-border">
+        <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
           <div className="flex items-center gap-2 min-w-0">
             <SectionIcon><Layers /></SectionIcon>
             <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
@@ -509,7 +509,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
           </div>
         ) : (
           <>
-            <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-2 border-b border-border">
+            <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
               <div className="flex items-center gap-2 min-w-0">
                 <SectionIcon><FileText /></SectionIcon>
                 <CardTitle className="truncate">{t("lessonsTitle")}</CardTitle>

@@ -74,7 +74,7 @@ export default function QuizPage() {
       <div className={withSidebarPageClass}>
         <div className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
           {/* Header */}
-          <div className={cn(panelHeaderClass, "items-center justify-between gap-3 min-h-[4.5rem]")}>
+          <div className={cn(panelHeaderClass, "items-center justify-between gap-3 min-h-16")}>
             <div className="flex items-center gap-3 min-w-0">
               <SectionIcon>
                 <Sparkles className="size-[18px]" aria-hidden />

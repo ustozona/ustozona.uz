@@ -47,7 +47,7 @@ export default function AddStandardsModal({ open, onOpenChange, classId }: Props
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false} className="sm:max-w-[64rem] p-0 gap-0 overflow-hidden flex flex-col h-[720px] max-h-[90vh]">
         {/* Header — ikon + titul (chap), line-tab (markaz), ghost X (oʻng) */}
-        <div className="relative flex items-center gap-3 px-6 py-5 border-b border-border min-h-[4.5rem]">
+        <div className="relative flex items-center gap-3 px-6 py-4 border-b border-border min-h-16">
           <SectionIcon>
             <Target className="size-[18px]" aria-hidden />
           </SectionIcon>

@@ -121,7 +121,7 @@ function DialogHeaderBar({
     <div
       data-slot="dialog-header-bar"
       className={cn(
-        "relative flex items-center gap-3 px-6 py-5 border-b border-border min-h-[4.5rem] shrink-0",
+        "relative flex items-center gap-3 px-6 py-4 border-b border-border min-h-16 shrink-0",
         className
       )}
       {...props}

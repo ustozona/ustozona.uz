@@ -109,7 +109,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
       <aside className="hidden lg:flex min-w-0 min-h-0 h-full">
         <Card className={cn(panelCardClass, "w-full")} style={classColorStyle(identity.color)}>
           {/* Header */}
-          <div className="shrink-0 border-b border-border px-5 py-5">
+          <div className="shrink-0 border-b border-border px-5 py-4">
             <div className="flex items-center gap-3">
               <div className="size-11 rounded-xl shrink-0 flex items-center justify-center" style={tints.iconBg}>
                 <BookOpen className="size-5" style={tints.iconText} />

@@ -352,7 +352,7 @@ export function TasksCalendar({
     <Card className={cn("flex h-full min-h-0 flex-1 flex-col rounded-2xl border-border shadow-sm", panelCardClass)}>
       {/* ── Toolbar ── */}
       <CardHeader
-        className={cn(panelCardHeaderClass, "grid items-center gap-2 space-y-0 border-b-0 min-h-[4.5rem] px-5 py-4")}
+        className={cn(panelCardHeaderClass, "grid items-center gap-2 space-y-0 border-b-0 min-h-16 px-5 pt-4! pb-4!")}
         style={{ gridTemplateColumns: "1fr auto 1fr" }}
       >
         <div className="flex min-w-0 items-center gap-3">

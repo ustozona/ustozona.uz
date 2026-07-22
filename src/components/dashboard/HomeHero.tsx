@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ClipboardCheck, UserCheck } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
-import { AnimatedCounter } from "@/components/dashboard/AnimatedCounter";
 import { YearProgress } from "@/components/dashboard/YearProgress";
 import { cn } from "@/lib/utils";
 import { fmtMin } from "@/lib/timetable";
@@ -27,7 +26,6 @@ export function HomeHero({
   classCount,
   todayEvents,
   nowMin,
-  checkCount,
   attendance,
   calendar,
   todayKey,
@@ -42,8 +40,6 @@ export function HomeHero({
   todayEvents: HeroEvent[];
   /** Joriy vaqt (kun boshidan daqiqada). */
   nowMin: number;
-  /** Tekshirilishi kutayotgan ishlar soni. */
-  checkCount: number;
   /** Bugun davomat kiritilishi (darsi bor sinflar boʻyicha). */
   attendance: AttendanceEntryStatus;
   calendar: AcademicYearCalendar;
@@ -85,7 +81,7 @@ export function HomeHero({
   }
 
   const attendanceDone = attendance.total > 0 && attendance.entered >= attendance.total;
-  const showChips = isSetup && (checkCount > 0 || attendance.total > 0);
+  const showChips = isSetup && attendance.total > 0;
 
   return (
     <Card className="relative shrink-0 overflow-hidden rounded-xl border-0 p-0 card-elevation">
@@ -109,15 +105,6 @@ export function HomeHero({
               </p>
               {showChips ? (
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                  {checkCount > 0 ? (
-                    <HeroChip href="/dashboard/grades">
-                      <ClipboardCheck className="size-4 text-amber-600 dark:text-amber-400" />
-                      <span className="tabular-nums font-medium">
-                        <AnimatedCounter value={checkCount} />
-                      </span>
-                      <span className="text-muted-foreground">{t("chipChecks")}</span>
-                    </HeroChip>
-                  ) : null}
                   {attendance.total > 0 ? (
                     <HeroChip href="/dashboard/attendance">
                       <UserCheck

@@ -3,14 +3,13 @@
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useMemo } from "react";
 import { useTimetableStore } from "@/store/useTimetableStore";
-import { useGradesStore } from "@/store/useGradesStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { HomeHero, type HeroEvent } from "@/components/dashboard/HomeHero";
 import { TodayRail } from "@/components/dashboard/TodayRail";
 import { QueueSection } from "@/components/dashboard/QueueSection";
 import { NextLessonsCard } from "@/components/dashboard/NextLessonsCard";
-import { attendanceEntryForDay, pendingCheckCount } from "@/lib/home-metrics";
+import { attendanceEntryForDay } from "@/lib/home-metrics";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
@@ -47,7 +46,6 @@ export default function DashboardPage() {
   // ── Bugungi darslar — bugun amaldagi jadval versiyasidan ──
   const versions = useTimetableStore((s) => s.versions);
   const calendar = useCalendarStore((s) => s.calendar);
-  const classDataMap = useGradesStore((s) => s.classDataMap);
   const todayKey = dateToKey(currentTime);
   const holiday = getHolidayForDate(calendar, todayKey);
   const todayDow = currentTime.getDay(); // 0=Yakshanba
@@ -72,7 +70,6 @@ export default function DashboardPage() {
     () => attendanceEntryForDay(todaysEvents.map((e) => e.classId), recordsByClass, todayKey),
     [todaysEvents, recordsByClass, todayKey]
   );
-  const checkCount = useMemo(() => pendingCheckCount(classDataMap, todayKey), [classDataMap, todayKey]);
 
   // ── Tur-demo rejimi — home tur ochiq boʻlsa boʻsh panellar namunaviy
   //    maʼlumot bilan toʻldiriladi (faqat vizual, store'larga yozilmaydi) ──
@@ -130,7 +127,6 @@ export default function DashboardPage() {
               classCount={heroClassCount}
               todayEvents={heroEvents}
               nowMin={nowMin}
-              checkCount={checkCount}
               attendance={attendanceEntry}
               calendar={calendar}
               todayKey={todayKey}

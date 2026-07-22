@@ -204,7 +204,7 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
     <div className="h-full flex flex-col">
       <div className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
         {/* Header */}
-        <div className="px-5 py-5 flex items-center shrink-0 gap-3 border-b border-border min-h-[4.5rem]">
+        <div className="px-5 py-4 flex items-center shrink-0 gap-3 border-b border-border min-h-16">
           <SectionIcon><ListTodo /></SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>

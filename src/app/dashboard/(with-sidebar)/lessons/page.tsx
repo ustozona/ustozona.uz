@@ -425,7 +425,7 @@ export default function LessonsPage() {
           ) : (
             <>
           {/* Header */}
-          <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-2 border-b border-border">
+          <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
             <div className="flex items-center gap-2 min-w-0">
               <SectionIcon><Layers /></SectionIcon>
               <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
@@ -588,7 +588,7 @@ export default function LessonsPage() {
           ) : (
             <>
           {/* Header */}
-          <div className="px-5 py-5 flex items-center justify-between shrink-0 gap-2 border-b border-border">
+          <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
             <div className="flex items-center gap-2 min-w-0">
               <SectionIcon><FileText /></SectionIcon>
               <CardTitle className="truncate">{t("lessonsTitle")}</CardTitle>

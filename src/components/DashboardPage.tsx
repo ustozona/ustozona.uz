@@ -45,9 +45,9 @@ export const panelCardFooterClass =
 /** ScrollArea ichidagi kontent padding */
 export const panelScrollInnerClass = "px-6 py-6";
 
-/** Custom panel (Card ishlatilmagan) header — standart px-5 py-5 (+consumer min-h-[4.5rem] ≈ 76px). */
+/** Custom panel (Card ishlatilmagan) header — standart px-5 py-4 (+consumer min-h-16 ≈ 68px). */
 export const panelHeaderClass =
-  "flex shrink-0 border-b border-border px-5 py-5";
+  "flex shrink-0 border-b border-border px-5 py-4";
 
 type DashboardPageProps = {
   children: React.ReactNode;

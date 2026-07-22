@@ -616,7 +616,7 @@ export default function AttendanceView({
         )}
         <Card className={cn("min-w-0", panelCardClass)} style={{ height: "100%" }}>
           {/* Header */}
-          <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-[4.5rem] px-5 py-5!")}>
+          <CardHeader className={cn(panelCardHeaderClass, "justify-between gap-3 min-h-16 px-5 pt-4! pb-4!")}>
             <div className="flex items-center gap-3 shrink-0">
               <SectionIcon><Calendar /></SectionIcon>
               <CardTitle className="flex items-baseline gap-1.5">

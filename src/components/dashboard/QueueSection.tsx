@@ -288,7 +288,7 @@ export function QueueSection({ now }: { now: Date }) {
 
   return (
     <Card data-tour="home-queue" className={cn("shadow-sm", panelCardClass)}>
-      <CardHeader className={cn(panelCardHeaderClass, "justify-between min-h-[4.5rem] px-5 py-5!")}>
+      <CardHeader className={cn(panelCardHeaderClass, "justify-between min-h-16 px-5 pt-4! pb-4!")}>
         <div className="flex min-w-0 items-center gap-2">
           <SectionIcon>
             <ListTodo />

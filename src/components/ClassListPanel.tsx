@@ -115,7 +115,7 @@ export default function ClassListPanel({
     <div className="h-full flex flex-col">
       <div className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
         {/* Header */}
-        <div className="flex min-h-[4.5rem] items-center justify-between shrink-0 gap-3 border-b border-border px-5 py-5">
+        <div className="flex min-h-16 items-center justify-between shrink-0 gap-3 border-b border-border px-5 py-4">
           <div className="flex items-center gap-2 min-w-0">
             <SectionIcon><GraduationCap /></SectionIcon>
             <CardTitle className="truncate">{t("title")}</CardTitle>

@@ -649,7 +649,7 @@ export default function GradesTable({
   return (
     <Card className={cn("min-w-0 rounded-xl", panelCardClass)}>
       {/* Sarlavha qatori */}
-      <CardHeader className={cn(panelCardHeaderClass, "justify-between py-5!")}>
+      <CardHeader className={cn(panelCardHeaderClass, "justify-between pt-4! pb-4!")}>
         <div className="flex items-center gap-3 shrink-0">
           <SectionIcon>
             <ClipboardList />

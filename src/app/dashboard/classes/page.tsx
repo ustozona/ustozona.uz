@@ -282,7 +282,7 @@ export default function ClassesPage() {
 
         {/* ── Main: classes panel ── */}
         <Card data-tour="classes-list" className={cn("flex-1 min-w-0", panelCardClass)}>
-          <CardHeader className={cn(panelCardHeaderClass, "grid grid-cols-[1fr_auto_1fr] gap-3 min-h-[4.5rem] px-5 py-5!")}>
+          <CardHeader className={cn(panelCardHeaderClass, "grid grid-rows-[auto] grid-cols-[1fr_auto_1fr] gap-3 min-h-16 px-5 pt-4! pb-4!")}>
             <div className="flex items-center gap-2.5 shrink-0 justify-self-start">
               <SectionIcon><GraduationCap /></SectionIcon>
               <CardTitle>{t("title")}</CardTitle>
@@ -503,7 +503,7 @@ export default function ClassesPage() {
         {/* ── Overview sidebar ── */}
         <div className="hidden lg:flex w-72 shrink-0 flex-col">
           <Card data-tour="classes-stats" className={cn(panelCardClass)}>
-            <CardHeader className={cn(panelCardHeaderClass, "items-center gap-2 min-h-[4.5rem] px-5 py-5!")}>
+            <CardHeader className={cn(panelCardHeaderClass, "items-center gap-2 min-h-16 px-5 pt-4! pb-4!")}>
               <SectionIcon><BarChart3 /></SectionIcon>
               <CardTitle>{t("statsTitle")}</CardTitle>
             </CardHeader>

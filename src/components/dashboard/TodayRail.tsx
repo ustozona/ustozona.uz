@@ -197,7 +197,7 @@ export function TodayRail({ now }: { now: Date }) {
 
   return (
     <Card className={cn(panelCardClass, "shadow-sm")}>
-      <CardHeader className={cn(panelCardHeaderClass, "min-h-[4.5rem] px-5 py-5! border-b-0!")}>
+      <CardHeader className={cn(panelCardHeaderClass, "min-h-16 px-5 pt-4! pb-4! border-b-0!")}>
         <div className="flex min-w-0 items-center gap-2">
           <SectionIcon>
             <CalendarDays />

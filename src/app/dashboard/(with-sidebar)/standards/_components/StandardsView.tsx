@@ -91,7 +91,7 @@ export default function StandardsView({
     <div className="flex-1 min-w-0 min-h-0 flex flex-col">
       <div className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
         {/* Header + toolbar */}
-        <div className={cn(panelHeaderClass, "items-center justify-between gap-3 min-h-[4.5rem]")}>
+        <div className={cn(panelHeaderClass, "items-center justify-between gap-3 min-h-16")}>
           <div className="flex items-center gap-3 min-w-0">
             <SectionIcon>
               <Target className="size-[18px]" aria-hidden />

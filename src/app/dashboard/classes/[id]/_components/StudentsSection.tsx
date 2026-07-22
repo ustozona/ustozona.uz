@@ -198,7 +198,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
         style={{ flexGrow: selectedStudent ? 3 : 5, flexBasis: 0 }}
       >
         {/* Header / toolbar */}
-        <div className="flex min-h-[4.5rem] shrink-0 items-center gap-2.5 border-b border-border px-5 py-5">
+        <div className="flex min-h-16 shrink-0 items-center gap-2.5 border-b border-border px-5 py-4">
           <SectionIcon><Users /></SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>
           <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
