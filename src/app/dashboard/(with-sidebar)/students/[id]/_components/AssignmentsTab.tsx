@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TypographyMuted } from "@/components/ui/typography";
 import { Card } from "@/components/ui/card";
+import { panelCardClass } from "@/components/DashboardPage";
 import {
   Empty,
   EmptyHeader,
@@ -94,7 +95,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
   const removeGrade = (id: string) => setOverrides((cur) => ({ ...cur, [id]: null }));
 
   return (
-    <Card className="flex h-full min-h-0 flex-col gap-0 overflow-hidden py-0">
+    <Card className={panelCardClass}>
       {/* Toolbar — qotib turadi */}
       <div className="flex shrink-0 items-center gap-2.5 border-b border-border/60 p-4">
         <div className="relative flex-1">

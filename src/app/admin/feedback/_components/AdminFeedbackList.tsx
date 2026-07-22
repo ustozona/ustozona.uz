@@ -55,7 +55,7 @@ export default function AdminFeedbackList({
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <div className="overflow-hidden rounded-2xl border border-border bg-card card-elevation">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="flex flex-wrap items-center gap-3 border-b border-border px-3 py-2.5 md:px-4">
           <SectionIcon>
             <MessageSquareText />

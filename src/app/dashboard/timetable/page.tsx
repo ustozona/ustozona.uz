@@ -682,7 +682,8 @@ export default function TimetablePage() {
       <div className="min-w-0 min-h-0 grid">
         <Card className={panelCardClass} data-tour="timetable-grid">
           {/* Header */}
-          <CardHeader className={cn(panelCardHeaderClass, "gap-3 border-b-0 min-h-16 px-5 pt-4! pb-4!")}>
+          {/* border-b-0: ostida darhol jadval grid chizigʻi boshlanadi, ikkinchi ajratuvchi ortiqcha — panel-language-v1 "no-divider" istisnosi */}
+          <CardHeader className={cn(panelCardHeaderClass, "border-b-0 gap-3 pt-4! pb-4!")}>
             {/* Chap: sarlavha + versiya satri (ostki qatorda) */}
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <SectionIcon>

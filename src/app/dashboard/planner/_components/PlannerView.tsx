@@ -480,10 +480,10 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <Card className={cn("rounded-2xl shadow-sm border-border flex-1", panelCardClass)}>
+      <Card className={cn("flex-1", panelCardClass)}>
 
         {/* ── Toolbar ── */}
-        <CardHeader className={cn(panelCardHeaderClass, "grid grid-rows-[auto] items-center gap-0 space-y-0 border-b-0 min-h-16 px-5 pt-4! pb-4!")} style={{ gridTemplateColumns: "1fr auto 1fr" }}>
+        <CardHeader className={cn(panelCardHeaderClass, "grid grid-rows-[auto] items-center gap-0 space-y-0 pt-4! pb-4!")} style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           <div className="flex min-w-0 items-center gap-3">
             <SectionIcon>
               <CalendarIcon />

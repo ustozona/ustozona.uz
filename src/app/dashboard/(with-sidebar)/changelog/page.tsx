@@ -329,7 +329,7 @@ export default function ChangelogPage() {
 
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col p-4 md:p-6">
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card card-elevation">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
         {/* Sarlavha — qotib turadi, faqat pastdagi roʻyxat scroll boʻladi */}
         <div className="shrink-0 border-b border-border p-4 md:p-6">
           <div className="flex items-start justify-between gap-3">

@@ -81,11 +81,48 @@ toolbar tugmalari va inputlari bir qatorda 36px balandlikda boʻladi.
 
 ---
 
-## 4. Panel konvensiyalari
+## 4. Panel konvensiyalari — Ustozona panel tili v1
 
-- Panel/karta: `bg-card rounded-xl card-elevation` (chegara emas, yumshoq soya).
-- Panel headeri: `border-b border-border px-5 py-5`, `min-h-[4.5rem]` (~76px).
+**Yuza modeli (3 qatlam, har birining oʻz tili — aralashtirilmaydi):**
+
+| Qatlam | Til |
+|---|---|
+| Sahifa foni | `bg-background`, tekis |
+| **Panel** (statik kontent qutisi) | `bg-card` + **1px `border border-border`** + `rounded-xl` + **soya YOʻQ** |
+| Koʻtarilgan qatlam (vaqtinchalik/interaktiv: modal, dropdown, drag, hover-lift) | border + `.card-elevation` (yumshoq soya) |
+
+`.card-elevation` panel darajasida ISHLATILMAYDI — u faqat yuqoridagi
+"koʻtarilgan qatlam" uchun qoladi. Sabab: dark mode'da soya deyarli
+koʻrinmaydi, zich yonma-yon panellarda soyalar bir-biriga tushib "iflos"
+oraliq hosil qiladi, va statik qutiga soya berish notoʻgʻri semantik signal
+(interaktivlik/vaqtinchalik) beradi. Border + shadow bir vaqtda ishlatilmaydi
+— ikkisidan bittasi tanlanadi (bu holatda border).
+
+Amalga oshirish: `<Panel>`/`<PanelHeader>`/`<PanelBody>`/`<PanelFooter>`
+(`src/components/ui/panel.tsx`) — yangi kod shu komponentdan foydalanadi.
+Mavjud `Card`-asosli sahifalar `panelCardClass`/`panelCardHeaderClass`/
+`panelCardContentClass`/`panelCardFooterClass` orqali bir xil natijaga keladi
+(`src/components/DashboardPage.tsx`) — bu konstantalar allaqachon border+
+shadow-none/px-5/py-4/min-h-16 qotirilgan holda.
+
+- Panel/karta: `bg-card rounded-xl border border-border` (soya emas, chegara).
+- Panel headeri: `border-b border-border px-5 py-4`, `min-h-16` (68px).
   Ichida: `SectionIcon` + `CardTitle` + (ixtiyoriy) `TypographyMuted` sanoq.
+- Panel footeri: `border-t border-border bg-muted/20 px-5 py-4` — modal
+  footeri bilan bir xil (7-boʻlim).
+- **Header ajratuvchi chizigʻi — qoida, tasodifiy tanlanmaydi.** Default:
+  header `border-b` saqlaydi. **Istisno** (`border-b-0` / `<PanelHeader
+  divider={false}>`): kontent header ostida bevosita davom etganda va oʻzi
+  tabiiy chegara hosil qilganda — masalan taqvim tarmogʻi (`TodayRail`,
+  "Bugungi darslar") yoki jadval grid chizigʻi (`timetable/page.tsx`,
+  "Dars jadvali" paneli). Bunda header'ning oʻz chizigʻi ikkinchi, ortiqcha
+  ajratuvchi boʻlib koʻrinadi. Roʻyxat/scroll kontent (fade bilan tugaydigan)
+  panellarida esa border-b HAR DOIM qoladi — bu istisno faqat "kontent
+  oʻzi grid/tarmoq chizigʻi bilan boshlanadi" holatiga tegishli.
+- **Gorizontal gutter — bitta qiymat: `px-5` (20px)** — header, ichki kontent
+  (`inset` rejim), footer, roʻyxat boʻshligʻi hammasida bir xil.
+- Radius — bitta qiymat: `rounded-xl` (14px) barcha panel/karta/modalga.
+  `rounded-2xl` faqat hero/banner blokka (masalan `HomeHero`), panelga emas.
 - **Header toolbar tugmalari** — yagona uslub: ikkilamchi amallar `variant="outline"`
   **`shadow-none`** (tekis, faqat chegara, 36px), asosiy CTA `variant="default"` (solid).
   Soya QOʻSHMANG (shadcn outline'ning `shadow-xs`ini `shadow-none` bilan oʻchiring).
@@ -154,7 +191,9 @@ hosila): sm 6 · md 8 · lg 10 · xl 14 · 2xl 18 · 3xl 22 · 4xl 26 px.
    track ichidagi toggle-pill, avatar ring. Agar ichki element burchakdan uzoq
    (katta padding, yoki ustida header) boʻlsa — burchaklarni boʻlishmaydi,
    ikkalasi mustaqil radius olishi mumkin.
-- Elevation: `.card-elevation` (ikki qatlamli yumshoq soya, dark mode mos).
+- Elevation: `.card-elevation` (ikki qatlamli yumshoq soya, dark mode mos) —
+  FAQAT koʻtarilgan qatlam uchun (modal, dropdown, drag, hover-lift), panel
+  darajasida emas (4-boʻlimga qarang).
 - Interaktiv: `.card-interactive` (hover scale+shadow), `.animate-fade-slide-up`,
   `.animate-fade-in`. (`.animate-spring-bounce` — list-card uchun ishlatilmaydi.)
 
@@ -294,6 +333,10 @@ kabi 24px vertikal padding footer'ni kerakidan baland qiladi.
 1. Xom rang (`#hex`, `rgb()`) yoki ixtiyoriy `text-[13px]` ishlatmang — token/shkaladan.
 2. Yangi sarlavha = mavjud `heading-*` / `text-*` klassidan. Yangi oʻlcham kerak boʻlsa,
    avval shu fayl + bu hujjatga qoʻshing.
-3. Toolbar = 36px. Panel header = `border-b px-5 py-5`.
+3. Toolbar = 36px. Panel header = `border-b px-5 py-4`, `min-h-16`.
+6. Yangi panel/karta qoʻlda klass yozmang — `<Panel>`/`<PanelHeader>`/
+   `<PanelBody>`/`<PanelFooter>` (`src/components/ui/panel.tsx`) yoki mavjud
+   `panelCard*Class` konstantalaridan foydalaning; `card-elevation`ni panelga
+   qoʻshmang (4-boʻlim).
 4. Sinf rangi = `classTints` / `CLASS_COLOR_HEX`, qoʻlda hex yozmang.
 5. Dark mode'ni alohida kod bilan emas, tokenlar orqali hal qiling.

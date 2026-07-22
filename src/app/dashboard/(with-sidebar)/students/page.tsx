@@ -17,7 +17,7 @@ import {
 } from "@/components/tour/students-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import ClassListPanel from "@/components/ClassListPanel";
-import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
+import { DashboardColumns, DashboardColumn, panelHeaderClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -388,7 +388,7 @@ export default function StudentsPage() {
         </DashboardColumn>
 
         {/* ── Ustun 2: Oʻquvchilar roʻyxati ── */}
-        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl bg-card card-elevation">
+        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
@@ -400,7 +400,7 @@ export default function StudentsPage() {
           ) : (
             <>
           {/* Header / toolbar */}
-          <div className="grid min-h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-border px-5 py-4">
+          <div className={cn(panelHeaderClass, "grid grid-cols-[1fr_auto_1fr] items-center gap-3")}>
             <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
               <SectionIcon><Users /></SectionIcon>
               <CardTitle className="min-w-0 shrink truncate">{t("title")}</CardTitle>
@@ -771,7 +771,7 @@ export default function StudentsPage() {
         {/* ── Ustun 3: Preview (oʻquvchi tanlanganda) ── */}
         {selectedStudent && (
           <DashboardColumn hideBelow="lg" data-tour="students-preview">
-            <div className="h-full overflow-hidden rounded-xl bg-card card-elevation">
+            <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
               <PreviewCard
                 key={selectedStudent.id}
                 student={selectedStudent}

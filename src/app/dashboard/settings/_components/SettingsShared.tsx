@@ -47,7 +47,7 @@ export function SettingsCard({
     >
       <div
         className={cn(
-          "flex items-start justify-between gap-3 border-b px-5 py-3.5",
+          "flex items-start justify-between gap-3 border-b px-5 py-4",
           destructive ? "border-destructive/30" : "border-border"
         )}
       >
@@ -61,7 +61,7 @@ export function SettingsCard({
       {footer && (
         <div
           className={cn(
-            "flex items-center justify-between gap-3 border-t bg-muted/20 px-5 py-3",
+            "flex items-center justify-between gap-3 border-t bg-muted/20 px-5 py-4",
             destructive ? "border-destructive/30" : "border-border"
           )}
         >
@@ -373,7 +373,7 @@ export function SettingsList({
         </div>
       ))}
       {footer && (
-        <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/20 px-4 py-2.5">
+        <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/20 px-5 py-4">
           {footer}
         </div>
       )}

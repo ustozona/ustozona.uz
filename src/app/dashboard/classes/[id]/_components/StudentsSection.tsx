@@ -194,7 +194,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
     <div className="flex h-full min-h-0 gap-6 overflow-hidden">
       {/* ── Roʻyxat ── */}
       <div
-        className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl bg-card card-elevation"
+        className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl border border-border bg-card"
         style={{ flexGrow: selectedStudent ? 3 : 5, flexBasis: 0 }}
       >
         {/* Header / toolbar */}
@@ -317,7 +317,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
       {/* ── Preview (oʻquvchi tanlanganda) ── */}
       {selectedStudent && (
         <div className="hidden min-w-0 min-h-0 h-full xl:block" style={{ flexGrow: 2, flexBasis: 0 }}>
-          <div className="h-full overflow-hidden rounded-xl bg-card card-elevation">
+          <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
             <PreviewCard
               key={selectedStudent.id}
               student={selectedStudent}

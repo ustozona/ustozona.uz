@@ -6,6 +6,7 @@ import { ListTodo, Inbox, Calendar, CalendarDays, AlertCircle, CheckCircle2, Lay
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { panelHeaderClass } from "@/components/DashboardPage";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { TypographyLabel } from "@/components/ui/typography";
@@ -202,9 +203,9 @@ export default function TasksSidebar({ activeFilter, onSelectFilter, demoTasks, 
 
   return (
     <div className="h-full flex flex-col">
-      <div className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
+      <div className="bg-card rounded-xl border border-border flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
         {/* Header */}
-        <div className="px-5 py-4 flex items-center shrink-0 gap-3 border-b border-border min-h-16">
+        <div className={cn(panelHeaderClass, "items-center gap-3")}>
           <SectionIcon><ListTodo /></SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>

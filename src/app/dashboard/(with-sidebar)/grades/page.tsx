@@ -60,7 +60,7 @@ export default function GradesPage() {
 
         <div className="flex min-w-0 min-h-0 h-full flex-col">
           {noClass ? (
-            <div className="h-full overflow-hidden rounded-xl bg-card card-elevation">
+            <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
               <Empty className="h-full border-0">
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>

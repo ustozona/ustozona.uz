@@ -647,7 +647,7 @@ export default function GradesTable({
   }
 
   return (
-    <Card className={cn("min-w-0 rounded-xl", panelCardClass)}>
+    <Card className={cn("min-w-0", panelCardClass)}>
       {/* Sarlavha qatori */}
       <CardHeader className={cn(panelCardHeaderClass, "justify-between pt-4! pb-4!")}>
         <div className="flex items-center gap-3 shrink-0">
@@ -1118,7 +1118,7 @@ export default function GradesTable({
       </CardContent>
 
       {draftCount > 0 && (
-        <CardFooter className={cn(panelCardFooterClass, "flex items-center justify-between bg-card")}>
+        <CardFooter className={cn(panelCardFooterClass, "flex items-center justify-between")}>
           <div>
             <TypographySmall className="text-foreground">
               {t("draftNotReturned", { count: draftCount })}

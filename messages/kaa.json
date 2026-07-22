@@ -1953,6 +1953,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "panel-language-v1": {
+        "title": "Panellar hám kartalar pútkil qollanba boyınsha birdey kórinedi",
+        "body": "«Klasslar», «Qatnasıw», «Jurnal», «Tapsırmalar» hám basqa bólimlerdegi panellar endi bir stilde: birdey shegara, radius hám atama biyikligi. Aldın bir-birinen sáykes ayırmalanǵan bólimler endi bir ónim retinde seziledi."
+      },
       "toggle-ui-polish": {
         "title": "Kórinis almastırıwshılar birdey dizaynǵa keltirildi",
         "body": "Barlıq almastırıwshılar endi bir stilde: kontur shegara, tańlanǵanı tiykarǵı reńde, hover ıqtıda tek foni ózgeredi hám ólshemi standart túyme menen birdey."

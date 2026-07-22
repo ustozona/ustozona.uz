@@ -161,7 +161,7 @@ export default function UsersTable({
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
 
   return (
-    <Card className="card-elevation gap-0 overflow-hidden p-0">
+    <Card className="shadow-none gap-0 overflow-hidden p-0">
       {/* Sarlavha + toolbar */}
       <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4">
         <SectionIcon>

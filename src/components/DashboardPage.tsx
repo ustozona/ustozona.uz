@@ -27,27 +27,30 @@ export const withSidebarPageClass =
 export const withSidebarRowPageClass =
   "stagger-children flex h-full min-h-0 gap-6 p-4 md:p-6 lg:pl-0 overflow-hidden";
 
-/** Toʻliq balandlikdagi panel Card */
+/**
+ * Toʻliq balandlikdagi panel Card — Ustozona panel tili v1: `border`, soya YOʻQ
+ * (bazaviy Card'ning `shadow-sm`i shu yerda oʻchiriladi).
+ */
 export const panelCardClass =
-  "flex flex-col overflow-hidden gap-0 py-0 h-full min-h-0";
+  "flex flex-col overflow-hidden gap-0 py-0 h-full min-h-0 shadow-none border border-border";
 
-/** CardHeader — default px-6 + border-b pb-6; py-0 panel uchun pt-6 */
+/** CardHeader — yagona oʻlchov: px-5 py-4, min-h-16 (68px), border-b. */
 export const panelCardHeaderClass =
-  "flex flex-row items-center shrink-0 space-y-0 border-b border-border pt-6";
+  "flex flex-row items-center shrink-0 space-y-0 border-b border-border min-h-16 px-5 py-4";
 
 export const panelCardContentClass =
   "flex-1 min-h-0 overflow-y-auto p-0";
 
-/** CardFooter — default px-6 + border-t pt-6; py-0 panel uchun pb-6 */
+/** CardFooter — modal footeri bilan bir xil: px-5 py-4, bg-muted/20. */
 export const panelCardFooterClass =
-  "border-t border-border shrink-0 py-6";
+  "border-t border-border shrink-0 px-5 py-4 bg-muted/20";
 
-/** ScrollArea ichidagi kontent padding */
-export const panelScrollInnerClass = "px-6 py-6";
+/** ScrollArea ichidagi kontent padding — panel gutter (px-5) bilan mos. */
+export const panelScrollInnerClass = "px-5 py-5";
 
-/** Custom panel (Card ishlatilmagan) header — standart px-5 py-4 (+consumer min-h-16 ≈ 68px). */
+/** Custom panel (Card ishlatilmagan) header — standart px-5 py-4, min-h-16 (≈68px). */
 export const panelHeaderClass =
-  "flex shrink-0 border-b border-border px-5 py-4";
+  "flex shrink-0 border-b border-border min-h-16 px-5 py-4";
 
 type DashboardPageProps = {
   children: React.ReactNode;

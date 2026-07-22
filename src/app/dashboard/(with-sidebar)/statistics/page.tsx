@@ -109,7 +109,7 @@ export default function StatisticsPage() {
 
         <div className="flex flex-col min-w-0 min-h-0 h-full gap-4 md:gap-6">
           <div className="shrink-0">
-            <div className="bg-card rounded-xl card-elevation flex items-center gap-3 px-3 py-2.5">
+            <div className="bg-card rounded-xl border border-border flex items-center gap-3 px-3 py-2.5">
               {/* ── Doira (scope) endi bu yerda EMAS — global header
                     breadcrumb'ida (`Bosh sahifa › Statistika › 5-A`,
                     HeaderBreadcrumb.tsx). Sahifada faqat koʻrinish tab'lari

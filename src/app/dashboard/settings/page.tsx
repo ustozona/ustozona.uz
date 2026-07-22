@@ -20,6 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { TypographyMuted } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
+import { panelCardClass } from "@/components/DashboardPage";
 import { SavedIndicator, useDraftRegistry, useSaveSignal } from "./_components/SettingsShared";
 import { SECTION_GROUPS, SECTIONS } from "./sections";
 
@@ -78,7 +79,7 @@ function SettingsPageInner() {
 
   return (
     <div className="h-full min-h-0 p-4 md:p-6">
-      <Card className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col gap-0 overflow-hidden py-0">
+      <Card className={cn("mx-auto w-full max-w-5xl", panelCardClass)}>
         {/* Sahifa sarlavhasi */}
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-5 py-4 md:px-6 md:py-5">
           <div className="flex items-center gap-3">

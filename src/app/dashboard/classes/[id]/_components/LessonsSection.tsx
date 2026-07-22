@@ -192,8 +192,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   if (!mounted) {
     return (
       <div className="flex h-full min-h-0 gap-6 overflow-hidden">
-        <div className="flex-[2] min-w-0 h-full bg-card rounded-xl card-elevation" />
-        <div className="flex-1 min-w-0 h-full bg-card rounded-xl card-elevation" />
+        <div className="flex-[2] min-w-0 h-full bg-card rounded-xl border border-border" />
+        <div className="flex-1 min-w-0 h-full bg-card rounded-xl border border-border" />
       </div>
     );
   }
@@ -356,7 +356,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
     <div className="flex h-full min-h-0 gap-6 overflow-hidden">
       {/* ── Boʻlimlar (Units) ── */}
       <div
-        className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
+        className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden"
         style={{ flexGrow: grow.units, flexBasis: 0 }}
       >
         <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
@@ -498,7 +498,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
 
       {/* ── Mavzular (Lessons) ── */}
       <div
-        className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
+        className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden"
         style={{ flexGrow: grow.lessons, flexBasis: 0 }}
       >
         {!selectedUnitId ? (

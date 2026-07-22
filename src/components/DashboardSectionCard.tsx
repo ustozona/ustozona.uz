@@ -22,7 +22,7 @@ export function DashboardSectionCard({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm", className)}>
+    <div className={cn("flex flex-col rounded-xl bg-card p-5 border border-border", className)}>
       {(title || action) && (
         <div className="mb-4 flex items-center gap-2.5">
           {Icon && (

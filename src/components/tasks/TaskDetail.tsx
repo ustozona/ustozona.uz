@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { X, Clock, Play, Pause, RotateCcw, MessageSquare, Paperclip, Check, Trash2, Calendar, Tag, Flag, Plus, MoreHorizontal, Users, CheckCircle2, ListChecks, ClipboardList, GraduationCap, Repeat, AlignLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { panelHeaderClass } from "@/components/DashboardPage";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,7 +140,7 @@ export default function TaskDetail() {
 
   if (!task) {
     return (
-      <Empty className="h-full bg-card rounded-xl card-elevation">
+      <Empty className="h-full bg-card rounded-xl border border-border">
         <EmptyHeader>
           <EmptyMedia variant="icon"><ClipboardList /></EmptyMedia>
           <EmptyTitle>{t("noTaskSelectedTitle")}</EmptyTitle>
@@ -197,10 +198,10 @@ export default function TaskDetail() {
   const recurLabel = task.recurrenceRule ? recurrenceLabel(task.recurrenceRule, task.dueDate) : null;
 
   return (
-    <div className="h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 relative">
+    <div className="h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden min-w-0 relative">
 
       {/* ── Header ── */}
-      <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-3 border-b border-border bg-card min-h-16 z-10 relative">
+      <div className={cn(panelHeaderClass, "items-center justify-between gap-3 bg-card z-10 relative")}>
         <div className="flex items-center gap-3 min-w-0">
           <SectionIcon><ClipboardList /></SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>

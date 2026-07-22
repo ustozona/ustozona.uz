@@ -264,7 +264,7 @@ export default function FeedbackPage() {
         </TypographyMuted>
 
         {/* Umumiy card: kompozer + toolbar + lenta */}
-        <div className="overflow-hidden rounded-2xl border border-border bg-card card-elevation">
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
           {/* Inline kompozer */}
           <div className="border-b border-border p-3 md:p-4" data-tour="feedback-composer">
             <FeedbackComposer

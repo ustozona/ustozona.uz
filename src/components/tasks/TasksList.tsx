@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import confetti from "canvas-confetti";
 import { Check, ChevronDown, ChevronRight, LayoutGrid, Plus, ListTodo, Repeat, CalendarClock, Trash2, CheckCheck, X, SlidersHorizontal, ArrowUpDown, Flag, Inbox, Calendar, CalendarDays, AlertCircle, CheckCircle2, Layers, ListPlus, Pin, Ban, Link2, Timer, Files, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { panelHeaderClass } from "@/components/DashboardPage";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -306,8 +307,8 @@ export default function TasksList({ activeFilter, onSelectFilter, demoTasks, dem
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden relative">
-        <div className="grid grid-cols-[1fr_auto_1fr] px-5 py-4 items-center shrink-0 gap-3 border-b border-border min-h-16 bg-card z-10 relative">
+      <div className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden relative">
+        <div className={cn(panelHeaderClass, "grid grid-cols-[1fr_auto_1fr] items-center gap-3 bg-card z-10 relative")}>
           <div className="flex items-center gap-3 min-w-0 justify-self-start">
             <SectionIcon>
               {(() => { const Icon = getFilterIcon(); return <Icon />; })()}

@@ -30,7 +30,7 @@ export default function FeedbackComposer({ userInitials, userAvatarUrl, onSubmit
       <button
         type="button"
         onClick={() => setExpanded(true)}
-        className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left card-elevation transition-colors hover:border-primary/40"
+        className="group flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/40"
       >
         <Avatar size="sm">
           {userAvatarUrl && <AvatarImage src={userAvatarUrl} alt="" />}

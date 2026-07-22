@@ -184,7 +184,7 @@ export default function TaskStats({ activeFilter, onSelectFilter, demoTasks, dem
 
   return (
     <div className="h-full flex flex-col">
-      <div className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
+      <div className="bg-card rounded-xl border border-border flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
         {/* Header */}
         <div className="px-5 py-4 flex items-center shrink-0 gap-3 border-b border-border min-h-16">
           <SectionIcon><BarChart3 /></SectionIcon>

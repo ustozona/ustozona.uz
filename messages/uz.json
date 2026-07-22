@@ -1953,6 +1953,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "panel-language-v1": {
+        "title": "Panel va kartalar butun ilova boʻyicha bir xil koʻrinishga keltirildi",
+        "body": "Sinflar, Davomat, Jurnal, Vazifalar va boshqa boʻlimlardagi panellar endi bitta uslubda: yagona chegara, radius va sarlavha balandligi. Ilgari bir-biridan sal farq qilib turadigan boʻlimlar endi bir xil his qiladi."
+      },
       "toggle-ui-polish": {
         "title": "Koʻrinish almashtirgichlar (togglelar) yagona dizaynga keltirildi",
         "body": "Barcha togglelar endi bitta uslubda: outline chegara, tanlangani primary rangda, hoverda faqat foni oʻzgaradi va oʻlchami standart tugma bilan bir xil."

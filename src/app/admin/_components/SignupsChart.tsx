@@ -26,7 +26,7 @@ export default function SignupsChart({
   React.useEffect(() => setMounted(true), []);
 
   return (
-    <Card className="card-elevation gap-0 p-0">
+    <Card className="shadow-none gap-0 p-0">
       <div className="border-b border-border px-5 py-4">
         <h2 className="heading-small">Roʻyxatdan oʻtishlar</h2>
         <p className="text-caption text-muted-foreground">Oxirgi 30 kun</p>

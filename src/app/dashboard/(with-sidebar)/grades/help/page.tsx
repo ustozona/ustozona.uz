@@ -100,7 +100,7 @@ export default async function GradesHelpPage() {
   const TOC_ITEMS = [{ id: "kirish", short: t("introTocLabel") }, ...TOC_ITEMS_BASE];
   return (
     <div className="flex-1 min-w-0 h-full py-4">
-      <article className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden h-full">
+      <article className="bg-card rounded-xl border border-border flex flex-col overflow-hidden h-full">
         <ScrollArea className="h-full">
           <div className="mx-auto w-full max-w-[1080px] px-6 py-8 md:px-10 md:py-12">
             <div className="lg:grid lg:grid-cols-[1fr_240px] lg:gap-12">

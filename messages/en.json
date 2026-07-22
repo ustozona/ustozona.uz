@@ -1953,6 +1953,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "panel-language-v1": {
+        "title": "Panels and cards now look consistent across the whole app",
+        "body": "Classes, Attendance, Gradebook, Tasks and other sections now share one style: the same border, radius, and header height. Sections that used to look slightly different now feel like one product."
+      },
       "toggle-ui-polish": {
         "title": "View toggles now share one consistent design",
         "body": "All toggles now follow one style: outline border, primary color when selected, background-only hover, and a size that matches the standard button."

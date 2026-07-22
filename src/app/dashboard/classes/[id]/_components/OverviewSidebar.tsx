@@ -81,7 +81,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
   return (
     <div className="flex h-full min-h-0 w-full flex-col gap-6">
       {/* Calendar */}
-      <Card className="shrink-0 p-2">
+      <Card className="shrink-0 p-2 shadow-none">
         <Calendar
           mode="single"
           selected={date}

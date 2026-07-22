@@ -84,7 +84,7 @@ export function HomeHero({
   const showChips = isSetup && attendance.total > 0;
 
   return (
-    <Card className="relative shrink-0 overflow-hidden rounded-xl border-0 p-0 card-elevation">
+    <Card className="relative shrink-0 overflow-hidden rounded-xl border border-border p-0 shadow-none">
       <CardContent className="p-0">
         {/* Landing hero gradienti — yumshoq blur blob (sky → white → amber) */}
         <div

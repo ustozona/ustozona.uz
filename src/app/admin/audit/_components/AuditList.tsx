@@ -70,7 +70,7 @@ export default function AuditList({
   };
 
   return (
-    <Card className="card-elevation gap-0 overflow-hidden p-0">
+    <Card className="shadow-none gap-0 overflow-hidden p-0">
       <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4">
         <SectionIcon>
           <ScrollText />

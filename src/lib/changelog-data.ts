@@ -32,6 +32,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "panel-language-v1",
+    date: "2026-07-22",
+    type: "yaxshilandi",
+    title: "Panel va kartalar butun ilova boʻyicha bir xil koʻrinishga keltirildi",
+    body: "Sinflar, Davomat, Jurnal, Vazifalar va boshqa boʻlimlardagi panellar endi bitta uslubda: yagona chegara, radius va sarlavha balandligi. Ilgari bir-biridan sal farq qilib turadigan boʻlimlar endi bir xil his qiladi.",
+  },
+  {
     id: "toggle-ui-polish",
     date: "2026-07-21",
     type: "yaxshilandi",

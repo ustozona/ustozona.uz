@@ -437,7 +437,7 @@ export default function GradesView({
     <div className="flex-1 min-w-0 min-h-0 flex flex-col">
       <section className="flex-1 min-w-0 min-h-0 flex flex-col" data-tour="grades-grid">
         {!classData ? (
-          <Card className="flex flex-col items-center justify-center h-full gap-3">
+          <Card className="flex flex-col items-center justify-center h-full gap-3 shadow-none">
             <Alert className="max-w-md bg-muted/50">
               <BookOpen className="size-4" />
               <AlertTitle>{t("noStudentsTitle")}</AlertTitle>

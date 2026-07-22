@@ -22,7 +22,7 @@ export default async function AdminHomePage() {
     <div className="flex flex-col gap-5 p-5">
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         {tiles.map((t) => (
-          <Card key={t.label} className="card-elevation flex-row items-center gap-3.5 p-5">
+          <Card key={t.label} className="shadow-none flex-row items-center gap-3.5 p-5">
             <SectionIcon size="lg">
               <t.icon />
             </SectionIcon>
@@ -40,7 +40,7 @@ export default async function AdminHomePage() {
       <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
         <SignupsChart data={stats.signupsByDay} />
 
-        <Card className="card-elevation gap-0 p-0">
+        <Card className="shadow-none gap-0 p-0">
           <div className="border-b border-border px-5 py-4">
             <h2 className="heading-small">Tarif taqsimoti</h2>
             <p className="text-caption text-muted-foreground">

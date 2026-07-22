@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { GraduationCap, Plus, ArrowUpRight, ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { panelHeaderClass } from "@/components/DashboardPage";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
@@ -113,9 +114,9 @@ export default function ClassListPanel({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="bg-card rounded-xl card-elevation flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
+      <div className="bg-card rounded-xl border border-border flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
         {/* Header */}
-        <div className="flex min-h-16 items-center justify-between shrink-0 gap-3 border-b border-border px-5 py-4">
+        <div className={cn(panelHeaderClass, "items-center justify-between gap-3")}>
           <div className="flex items-center gap-2 min-w-0">
             <SectionIcon><GraduationCap /></SectionIcon>
             <CardTitle className="truncate">{t("title")}</CardTitle>

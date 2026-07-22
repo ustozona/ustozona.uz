@@ -411,7 +411,7 @@ export default function LessonsPage() {
       {/* ── Column 2: Boʻlimlar ── */}
       <div
         data-tour="lessons-units"
-        className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
+        className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden"
       >
           {noClass ? (
             /* Sinf tanlanmagan — headerʼsiz, markaziy placeholder (2-rasm) */
@@ -574,7 +574,7 @@ export default function LessonsPage() {
         {/* ── Column 3: Mavzular ── */}
         <div
           data-tour="lessons-list"
-          className="min-w-0 min-h-0 h-full bg-card rounded-xl card-elevation flex flex-col overflow-hidden"
+          className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden"
         >
           {!effectiveUnitId ? (
             /* Boʻlim tanlanmagan — headerʼsiz, faqat markaziy placeholder (1-rasm) */

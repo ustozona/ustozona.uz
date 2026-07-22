@@ -196,8 +196,9 @@ export function TodayRail({ now }: { now: Date }) {
   const quote = useMemo(() => dailyQuote(quotes, todayKey), [quotes, todayKey]);
 
   return (
-    <Card className={cn(panelCardClass, "shadow-sm")}>
-      <CardHeader className={cn(panelCardHeaderClass, "min-h-16 px-5 pt-4! pb-4! border-b-0!")}>
+    <Card className={panelCardClass}>
+      {/* border-b-0: kontent (kun tasmasi) darhol davom etadi, ajratuvchi chiziq keraksiz — panel-language-v1 "no-divider" istisnosi */}
+      <CardHeader className={cn(panelCardHeaderClass, "border-b-0 pt-4! pb-4!")}>
         <div className="flex min-w-0 items-center gap-2">
           <SectionIcon>
             <CalendarDays />
