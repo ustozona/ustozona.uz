@@ -10,7 +10,6 @@ import AttendanceServerSync from "@/components/sync/AttendanceServerSync";
 import LessonsServerSync from "@/components/sync/LessonsServerSync";
 import TimetableServerSync from "@/components/sync/TimetableServerSync";
 import CalendarServerSync from "@/components/sync/CalendarServerSync";
-import TasksServerSync from "@/components/sync/TasksServerSync";
 import StandardsServerSync from "@/components/sync/StandardsServerSync";
 import ClassNotesServerSync from "@/components/sync/ClassNotesServerSync";
 import RelationsServerSync from "@/components/sync/RelationsServerSync";
@@ -40,7 +39,6 @@ export default function DashboardLayout({
       <LessonsServerSync />
       <TimetableServerSync />
       <CalendarServerSync />
-      <TasksServerSync />
       <StandardsServerSync />
       <ClassNotesServerSync />
       <RelationsServerSync />

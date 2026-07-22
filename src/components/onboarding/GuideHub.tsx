@@ -14,7 +14,6 @@ import {
   ClipboardCheck,
   BarChart2,
   Target,
-  CheckCircle,
   CircleCheck,
   ChevronRight,
   Award,
@@ -55,7 +54,6 @@ const TOUR_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   behavior: Award,
   grades: BarChart2,
   standards: Target,
-  tasks: CheckCircle,
   feedback: MessagesSquare,
 };
 

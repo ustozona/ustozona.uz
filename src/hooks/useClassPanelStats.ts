@@ -3,14 +3,13 @@ import { useMounted } from '@/lib/use-mounted';
 import { useLessonStore } from '@/store/useLessonStore';
 import { useGradesStore } from '@/store/useGradesStore';
 import { useAttendanceStore } from '@/store/useAttendanceStore';
-import { useTaskStore } from '@/store/useTaskStore';
 import { useBehaviorStore } from '@/store/useBehaviorStore';
 import { studentStats } from '@/lib/attendance-data';
 import { classBalance } from '@/lib/behavior-data';
 import { classSummativeAverage } from '@/lib/grades-stats';
 import { useStandardsStore } from '@/store/useStandardsStore';
 
-export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "tasks" | "behavior" | "statistics";
+export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "behavior" | "statistics";
 
 export function useClassPanelStats(page: Page, classId: string): {
   items: { value: number | string; label: string }[];
@@ -19,7 +18,6 @@ export function useClassPanelStats(page: Page, classId: string): {
   const mounted = useMounted();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const attendanceRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
-  const tasksAll = useTaskStore((s) => s.tasks);
   const behaviorEvents = useBehaviorStore((s) => s.eventsByClass[classId]);
   const behaviorRedemptions = useBehaviorStore((s) => s.redemptions);
   const lessonUnits = useLessonStore((s) => s.units);
@@ -143,21 +141,6 @@ export function useClassPanelStats(page: Page, classId: string): {
           progress: { value: positivePct, label: "Ijobiy ulushi" },
         };
       }
-      case 'tasks': {
-        const classTasks = tasksAll.filter((t) => t.classIds.includes(classId));
-        if (classTasks.length === 0) return undefined;
-
-        const done = classTasks.filter((t) => t.status === "done");
-        const donePct = classTasks.length > 0 ? Math.round((done.length / classTasks.length) * 100) : 0;
-        
-        return {
-          items: [
-            { value: classTasks.length, label: "Vazifalar" },
-            { value: done.length, label: "Bajarilgan" }
-          ],
-          progress: { value: donePct, label: "Bajarilganlik" }
-        };
-      }
       case 'statistics':
         // Statistika sahifasida oʻng panel shu sinf uchun toʻliq (davr-asosli)
         // statistikani koʻrsatadi — footer'dagi mini-KPI shu bilan takrorlanib,
@@ -167,5 +150,5 @@ export function useClassPanelStats(page: Page, classId: string): {
       default:
         return undefined;
     }
-  }, [page, classId, classDataMap, attendanceRecords, tasksAll, lessonUnits, lessonsAll, standardSets, behaviorEvents, behaviorRedemptions, mounted]);
+  }, [page, classId, classDataMap, attendanceRecords, lessonUnits, lessonsAll, standardSets, behaviorEvents, behaviorRedemptions, mounted]);
 }

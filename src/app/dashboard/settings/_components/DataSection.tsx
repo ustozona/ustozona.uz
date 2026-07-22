@@ -21,7 +21,6 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { deleteAccountAction } from "@/server/actions/account";
 import { useLessonStore } from "@/store/useLessonStore";
-import { useTaskStore } from "@/store/useTaskStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { SettingsCard, SettingsList } from "./SettingsShared";
 
@@ -29,7 +28,6 @@ export default function DataSection() {
   const t = useTranslations("DataSection");
   const CONFIRM_WORD = t("confirmWord");
   const lessons = useLessonStore((s) => s.lessons);
-  const tasks = useTaskStore((s) => s.tasks);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const [confirmText, setConfirmText] = React.useState("");
   const [deleting, setDeleting] = React.useState(false);
@@ -50,7 +48,6 @@ export default function DataSection() {
         t("sheetClasses")
       );
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(lessons), t("sheetLessons"));
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(tasks), t("sheetTasks"));
       const date = new Date().toISOString().slice(0, 10);
       XLSX.writeFile(wb, `ustozona-zaxira-${date}.xlsx`);
       toast.success(t("toastExportSuccess"));

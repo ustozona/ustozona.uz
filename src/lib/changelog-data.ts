@@ -257,7 +257,6 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     title: "Vazifalar sahifasida kalendar koʻrinishi",
     body:
       "Endi Vazifalar sahifasida roʻyxat bilan bir qatorda kalendar ham bor: kun, hafta, oy, chorak va yil boʻyicha darslar, vazifa muddatlari, taʼtillar va tugʻilgan kunlar bitta joyda koʻrinadi. Har qanday belgi ustiga bosib toʻgʻridan-toʻgʻri tegishli joyga oʻtish mumkin.",
-    href: "/dashboard/tasks",
   },
   {
     id: "statistics-launch",

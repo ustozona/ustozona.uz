@@ -1,32 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { ClipboardList, ListTodo, Plus } from "lucide-react";
+import { ListTodo } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { ClassSwatch } from "@/components/ClassSwatch";
-import { TaskComposer, type TaskComposerHandle } from "@/components/tasks/TaskComposer";
 import {
   panelCardClass,
   panelCardContentClass,
   panelCardHeaderClass,
 } from "@/components/DashboardPage";
-import { useTaskStore } from "@/store/useTaskStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
-import { useTourRequest } from "@/components/tour/tour-request";
-import { makeHomeTourDemo } from "@/components/tour/home-tour-demo";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { TASK_STATUS, type TaskStatus } from "@/lib/tasks-data";
 import {
   pendingCheckRows,
   upcomingSummativeDeadlines,
@@ -38,32 +31,20 @@ import { MONTHS_UZ } from "@/lib/localization";
 import { cn } from "@/lib/utils";
 
 /* ════════════════════════════════════════════════════════════════════
-   ISHLAR NAVBATI — bosh sahifa chap ustuni (redesign M3).
+   ISHLAR NAVBATI — bosh sahifa chap ustuni.
 
-   Uch manba, yangi model YOʻQ: ochiq vazifalar (useTaskStore) +
-   tekshirish qatorlari (ball kiritilishi chala assignmentlar) + kelgusi
-   summativ muddatlar (useGradesStore). Guruhlar: Muddati oʻtgan / Bugun /
-   Keyinroq (Keyinroq ufqi qattiq — 7 kun).
+   Ikki manba: tekshirish qatorlari (ball kiritilishi chala assignmentlar)
+   + kelgusi summativ muddatlar (useGradesStore). Guruhlar: Muddati oʻtgan /
+   Bugun / Keyinroq (Keyinroq ufqi qattiq — 7 kun).
    ════════════════════════════════════════════════════════════════════ */
-
-/** Navbat ishlatadigan minimal vazifa koʻrinishi (tur-demo ham shu shaklda). */
-type QueueTask = {
-  id: string;
-  title: string;
-  dueDate: string | null;
-  status: TaskStatus;
-  classIds?: string[];
-};
 
 type QueueRow =
   | { kind: "check"; key: string; row: CheckRow }
-  | { kind: "task"; key: string; task: QueueTask }
   | { kind: "deadline"; key: string; row: DeadlineRow };
 
-const KIND_RANK: Record<QueueRow["kind"], number> = { check: 0, task: 1, deadline: 2 };
+const KIND_RANK: Record<QueueRow["kind"], number> = { check: 0, deadline: 1 };
 
 function rowDue(r: QueueRow): string | null {
-  if (r.kind === "task") return r.task.dueDate;
   return r.row.due;
 }
 
@@ -75,10 +56,7 @@ function addDaysKey(base: Date, n: number): string {
 
 export function QueueSection({ now }: { now: Date }) {
   const t = useTranslations("QueueSection");
-  const composerRef = useRef<TaskComposerHandle>(null);
 
-  const allTasks = useTaskStore((s) => s.tasks);
-  const toggleTaskDone = useTaskStore((s) => s.toggleTaskDone);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const liveClasses = useLiveClasses();
 
@@ -91,27 +69,11 @@ export function QueueSection({ now }: { now: Date }) {
     [liveClasses]
   );
 
-  const openTasks = useMemo<QueueTask[]>(
-    () =>
-      allTasks.filter(
-        (task) => task.status !== TASK_STATUS.DONE && task.status !== TASK_STATUS.CANCELED
-      ),
-    [allTasks]
-  );
   const checkRows = useMemo(() => pendingCheckRows(classDataMap, todayKey), [classDataMap, todayKey]);
   const deadlineRows = useMemo(
     () => upcomingSummativeDeadlines(classDataMap, todayKey),
     [classDataMap, todayKey]
   );
-
-  // ── Tur-demo — boʻsh hisobda namunaviy vazifalar ──
-  const tourDemoActive = useTourRequest((s) => s.activeTourId === "home");
-  const demoTasks = useMemo<QueueTask[]>(() => {
-    if (!tourDemoActive) return [];
-    return makeHomeTourDemo(now).tasks.map((task) => ({ ...task, classIds: [] }));
-  }, [tourDemoActive, now]);
-  const tasks =
-    demoTasks.length > 0 && openTasks.length === 0 && checkRows.length === 0 ? demoTasks : openTasks;
 
   // ── Guruhlash: Muddati oʻtgan / Bugun / Keyinroq (scope ufqi) ──
   const groups = useMemo(() => {
@@ -122,12 +84,6 @@ export function QueueSection({ now }: { now: Date }) {
     for (const row of checkRows) {
       const item: QueueRow = { kind: "check", key: `c-${row.classId}-${row.assignmentId}`, row };
       (row.due < todayKey ? overdue : today).push(item);
-    }
-    for (const task of tasks) {
-      const item: QueueRow = { kind: "task", key: `t-${task.id}`, task };
-      if (task.dueDate && task.dueDate < todayKey) overdue.push(item);
-      else if (task.dueDate === todayKey) today.push(item);
-      else if (task.dueDate && task.dueDate <= weekKey) later.push(item);
     }
     for (const row of deadlineRows) {
       if (row.due > weekKey) continue;
@@ -148,20 +104,9 @@ export function QueueSection({ now }: { now: Date }) {
     today.sort(byDue);
     later.sort(byDue);
     return { overdue, today, later };
-  }, [checkRows, tasks, deadlineRows, todayKey, weekKey]);
+  }, [checkRows, deadlineRows, todayKey, weekKey]);
 
   const isEmpty = groups.overdue.length + groups.today.length + groups.later.length === 0;
-
-  // ── Footer: bugungi vazifalar bajarilishi ──
-  const todayDone = useMemo(() => {
-    const todays = allTasks.filter(
-      (task) => task.dueDate === todayKey && task.status !== TASK_STATUS.CANCELED
-    );
-    return {
-      done: todays.filter((task) => task.status === TASK_STATUS.DONE).length,
-      total: todays.length,
-    };
-  }, [allTasks, todayKey]);
 
   // ── Muddat matni + jiddiylik rangi ──
   const dueLabel = (due: string | null): { text: string; cls: string } => {
@@ -193,30 +138,6 @@ export function QueueSection({ now }: { now: Date }) {
         </div>
         <div className="flex flex-col divide-y divide-dashed divide-border/70">
           {rows.map((row) => {
-            if (row.kind === "task") {
-              const meta = row.task.classIds?.length
-                ? classMeta.get(row.task.classIds[0])
-                : undefined;
-              const due = dueLabel(row.task.dueDate);
-              return (
-                <div key={row.key} className="group flex items-center gap-3 py-2.5">
-                  <Checkbox
-                    checked={row.task.status === TASK_STATUS.DONE}
-                    onCheckedChange={() => toggleTaskDone(row.task.id)}
-                    aria-label={t("markDone")}
-                  />
-                  <Link href="/dashboard/tasks" className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground transition-colors duration-fast group-hover:text-primary">
-                      {row.task.title}
-                    </p>
-                  </Link>
-                  {meta && <ClassChip name={meta.name} hex={meta.hex} />}
-                  <span className={cn("shrink-0 text-xs font-medium tabular-nums", due.cls)}>
-                    {due.text}
-                  </span>
-                </div>
-              );
-            }
             if (row.kind === "check") {
               const meta = classMeta.get(row.row.classId);
               const due = dueLabel(row.row.due);
@@ -295,22 +216,10 @@ export function QueueSection({ now }: { now: Date }) {
           </SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <Button
-            size="icon"
-            aria-label={t("addTask")}
-            onClick={() => composerRef.current?.focus()}
-          >
-            <Plus className="size-4" />
-          </Button>
-        </div>
       </CardHeader>
       <CardContent className={panelCardContentClass}>
         <div className="flex h-full min-h-0 flex-col">
-          <div className="shrink-0 px-5 pt-4 empty:hidden">
-            <TaskComposer ref={composerRef} seed={{ dueDate: todayKey }} hideTrigger />
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin px-5 pb-5 pt-3">
+          <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin px-5 pb-5 pt-4">
             {isEmpty ? (
               <Empty className="border-0 p-4 gap-4">
                 <EmptyHeader>
@@ -332,20 +241,6 @@ export function QueueSection({ now }: { now: Date }) {
               </div>
             )}
           </div>
-          {todayDone.total > 0 && (
-            <div className="flex shrink-0 items-center justify-center border-t border-border px-5 py-2.5">
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium tabular-nums",
-                  todayDone.done >= todayDone.total
-                    ? "bg-success/10 text-success"
-                    : "bg-muted text-muted-foreground"
-                )}
-              >
-                {t("footerDone", { done: todayDone.done, total: todayDone.total })}
-              </span>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

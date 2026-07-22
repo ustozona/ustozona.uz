@@ -14,7 +14,6 @@ import { resolveDefaultLinks } from "@/lib/relations";
 import { UNITS, LESSONS } from "@/lib/lessons-data";
 import { DEFAULT_CALENDAR_2025_2026 } from "@/lib/academic-calendar";
 import { defaultBellConfig } from "@/lib/bell-schedule";
-import { TASKS_DATA } from "@/lib/tasks-data";
 import { STANDARDS_DATA } from "@/lib/standards-data";
 import { SEED_NOTIFICATIONS } from "@/store/useNotificationsStore";
 import { SEED_FEEDBACK } from "@/store/feedback-seed";
@@ -118,7 +117,6 @@ async function main() {
     .delete(schema.timetableVersions)
     .where(eq(schema.timetableVersions.teacherId, userId));
   await db.delete(schema.calendars).where(eq(schema.calendars.teacherId, userId));
-  await db.delete(schema.tasks).where(eq(schema.tasks.teacherId, userId));
   await db
     .delete(schema.standardSets)
     .where(eq(schema.standardSets.teacherId, userId));
@@ -366,17 +364,7 @@ async function main() {
   });
   console.log("  + calendars: 1");
 
-  /* ── 4.7. Vazifalar + standartlar (7-bosqich) ────────────────────── */
-  const taskRows = TASKS_DATA.map((t, i) => ({
-    id: t.id,
-    teacherId: userId,
-    status: t.status,
-    dueDate: t.dueDate ?? null,
-    sortOrder: i,
-    data: t as unknown as Record<string, unknown>,
-  }));
-  await insertChunked("tasks", taskRows, (b) => db.insert(schema.tasks).values(b));
-
+  /* ── 4.7. Standartlar (7-bosqich) ────────────────────── */
   // Bitta demo papka: STANDARDS_DATA (ingliz tili) 7-a sinfiga biriktirilgan.
   const demoStandardSet = {
     id: "std-seed-english",
@@ -449,7 +437,6 @@ async function main() {
     ["behavior_rewards", await db.select({ count: count() }).from(schema.behaviorRewards).where(eq(schema.behaviorRewards.teacherId, userId))],
     ["behavior_redemptions", await db.select({ count: count() }).from(schema.behaviorRedemptions).where(eq(schema.behaviorRedemptions.teacherId, userId))],
     ["student_relations", await db.select({ count: count() }).from(schema.studentRelations).where(eq(schema.studentRelations.teacherId, userId))],
-    ["tasks", await db.select({ count: count() }).from(schema.tasks).where(eq(schema.tasks.teacherId, userId))],
     ["standard_sets", await db.select({ count: count() }).from(schema.standardSets).where(eq(schema.standardSets.teacherId, userId))],
     ["notifications", await db.select({ count: count() }).from(schema.notifications).where(eq(schema.notifications.teacherId, userId))],
     ["feedback", await db.select({ count: count() }).from(schema.feedback).where(eq(schema.feedback.teacherId, userId))],

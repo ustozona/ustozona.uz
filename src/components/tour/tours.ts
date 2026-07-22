@@ -165,16 +165,6 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     ],
   },
   {
-    id: "tasks",
-    route: "/dashboard/tasks",
-    steps: [
-      { target: '[data-tour="tasks-sidebar"]', placement: "right" },
-      { target: '[data-tour="tasks-list"]', placement: "right" },
-      { target: '[data-tour="tasks-composer"]', placement: "bottom" },
-      { target: '[data-tour="tasks-stats"]', placement: "left" },
-    ],
-  },
-  {
     id: "feedback",
     route: "/dashboard/feedback",
     steps: [

@@ -21,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Button } from "@/components/ui/button";
 import {
   LayoutGrid, Users, Calendar, BookOpen, FileText, ClipboardCheck,
-  Award, BarChart2, Target, CheckCircle, MessagesSquare, Megaphone, Settings, Home,
+  Award, BarChart2, Target, MessagesSquare, Megaphone, Settings, Home,
   Search,
   type LucideIcon,
 } from "lucide-react";
@@ -37,7 +37,6 @@ const PAGE_ICONS: Record<string, LucideIcon> = {
   "/dashboard/behavior": Award,
   "/dashboard/grades": BarChart2,
   "/dashboard/standards": Target,
-  "/dashboard/tasks": CheckCircle,
   "/dashboard/changelog": Megaphone,
   "/dashboard/feedback": MessagesSquare,
   "/dashboard/settings": Settings,

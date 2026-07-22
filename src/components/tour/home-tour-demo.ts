@@ -7,11 +7,9 @@
    chizadi; tur yopilishi bilan hammasi yoʻqoladi.
 
    Shakllar isteʼmolchilarning jonli hisob-kitob natijalariga mos:
-   kun jadvali eventlari (TodayRail), vazifalar (QueueSection) va hero
-   sinf soni (page.tsx) renderlarida ishlatiladigan maydonlargina bor.
+   kun jadvali eventlari (TodayRail) va hero sinf soni (page.tsx)
+   renderlarida ishlatiladigan maydonlargina bor.
    ════════════════════════════════════════════════════════════════════ */
-
-import { TASK_STATUS } from "@/lib/tasks-data";
 
 /** Jadval eventi renderida ishlatiladigan minimal maydonlar. */
 export type DemoEvent = {
@@ -29,21 +27,12 @@ export const DEMO_CLASS_NAMES: Record<string, string> = {
 
 /** Bosh sahifa tur-demo toʻplami — `now` ga nisbatan sanalar. */
 export function makeHomeTourDemo(now: Date) {
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
+  void now;
 
   const events: DemoEvent[] = [
     { id: "demo-e1", classId: "demo-7a", startMin: 8 * 60, endMin: 8 * 60 + 45 },
     { id: "demo-e2", classId: "demo-8b", startMin: 9 * 60, endMin: 9 * 60 + 45 },
     { id: "demo-e3", classId: "demo-7a", startMin: 11 * 60, endMin: 11 * 60 + 45 },
-  ];
-
-  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const tomorrowKey = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
-
-  const tasks = [
-    { id: "demo-t1", title: "Matematika daftarlarini tekshirish", dueDate: todayKey, status: TASK_STATUS.TODO },
-    { id: "demo-t2", title: "Laboratoriya mashgʻulotini tayyorlash", dueDate: tomorrowKey, status: TASK_STATUS.TODO },
   ];
 
   // Hero "sozlangan" koʻrinishda chiqishi uchun — boʻsh hisobda tur
@@ -52,5 +41,5 @@ export function makeHomeTourDemo(now: Date) {
     classCount: 2,
   };
 
-  return { events, tasks, welcome };
+  return { events, welcome };
 }

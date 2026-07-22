@@ -20,7 +20,6 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useTaskStore } from "@/store/useTaskStore";
 import { useChangelogUnseenCount } from "@/hooks/useChangelogSeen";
 import { BrandWordmark } from "@/assets/logo/brand-wordmark";
 import { BrandShield } from "@/assets/logo/brand-shield";
@@ -32,7 +31,6 @@ import {
   Users,
   BarChart2,
   ClipboardCheck,
-  CheckCircle,
   Home,
   Target,
   BookMarked,
@@ -48,7 +46,7 @@ type NavItem = {
   href: string;
   labelKey: string;
   icon: LucideIcon;
-  badgeKey?: "tasks" | "changelog";
+  badgeKey?: "changelog";
 };
 
 type NavGroup = {
@@ -83,10 +81,6 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/statistics", labelKey: "statistics", icon: TrendingUp },
     ],
   },
-  {
-    labelKey: "groupPersonal",
-    items: [{ href: "/dashboard/tasks", labelKey: "tasks", icon: CheckCircle, badgeKey: "tasks" }],
-  },
 ];
 
 
@@ -95,12 +89,6 @@ const footerItems: NavItem[] = [
   { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
 ];
-
-function useTaskCount() {
-  const tasks = useTaskStore((s) => s.tasks);
-  const hydrated = useTaskStore((s) => s._hasHydrated);
-  return hydrated ? tasks.filter((t) => t.status === "todo").length : 0;
-}
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
@@ -174,10 +162,8 @@ function SidebarBrandHeader() {
 
 export function AppSidebar() {
   const t = useTranslations("AppSidebar");
-  const taskCount = useTaskCount();
   const changelogCount = useChangelogUnseenCount();
   const badgeCounts: Record<NonNullable<NavItem["badgeKey"]>, number> = {
-    tasks: taskCount,
     changelog: changelogCount,
   };
 

@@ -239,7 +239,6 @@ export default function ChangelogPage() {
       "/dashboard/feedback": t("routes.feedback"),
       "/dashboard/lessons": t("routes.lessons"),
       "/dashboard/statistics": t("routes.statistics"),
-      "/dashboard/tasks": t("routes.tasks"),
       "/dashboard/changelog": t("routes.changelog"),
     }),
     [t]
