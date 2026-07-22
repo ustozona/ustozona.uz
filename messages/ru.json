@@ -2355,7 +2355,7 @@
     "quarterUntil": "{name} — до {date}"
   },
   "QueueSection": {
-    "title": "Очередь дел",
+    "title": "Задачи",
     "addTask": "Задача",
     "scopeToday": "Сегодня",
     "scopeWeek": "Неделя",
@@ -2434,11 +2434,13 @@
     "moreStudents": "ещё {count} учеников",
     "positiveStudentsTitle": "Есть улучшение"
   },
-  "BirthdayCard": {
-    "title": "Дни рождения",
-    "turnsAge": "исполняется {age}",
-    "today": "Сегодня",
-    "tomorrow": "Завтра"
+  "NextLessonsCard": {
+    "title": "Предстоящие уроки",
+    "unknownClass": "Неизвестный класс",
+    "untitledTopic": "(без темы)",
+    "tomorrow": "Завтра",
+    "emptyTitle": "Нет предстоящих уроков",
+    "emptyDescription": "Пока ничего не запланировано — проверьте расписание."
   },
   "DashboardPage": {
     "unknownClass": "Неизвестный класс",

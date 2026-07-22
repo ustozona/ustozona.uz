@@ -2355,7 +2355,7 @@
     "quarterUntil": "{name} — {date} shekem"
   },
   "QueueSection": {
-    "title": "Isler gezegi",
+    "title": "Wazıypalar",
     "addTask": "Wazıypa",
     "scopeToday": "Búgin",
     "scopeWeek": "Hápte",
@@ -2434,11 +2434,13 @@
     "moreStudents": "jáne {count} oqıwshı",
     "positiveStudentsTitle": "Jaqsılanıw baqlanıp atır"
   },
-  "BirthdayCard": {
-    "title": "Tuwılǵan kúnler",
-    "turnsAge": "{age} jasqa toladı",
-    "today": "Búgin",
-    "tomorrow": "Erteń"
+  "NextLessonsCard": {
+    "title": "Aldag'ı sabaqlar",
+    "unknownClass": "Belgisiz klass",
+    "untitledTopic": "(ataqsız tema)",
+    "tomorrow": "Erteń",
+    "emptyTitle": "Aldag'ı sabaq joq",
+    "emptyDescription": "Ăli jobalanbagan — sabaq kestesin tekseriń."
   },
   "DashboardPage": {
     "unknownClass": "Belgisiz klas",

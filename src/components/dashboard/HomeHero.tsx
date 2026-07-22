@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Plus, ClipboardCheck, UserCheck } from "lucide-react";
+import { ClipboardCheck, UserCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { AnimatedCounter } from "@/components/dashboard/AnimatedCounter";
@@ -132,16 +132,6 @@ export function HomeHero({
                 </div>
               ) : null}
             </div>
-
-            {!isSetup ? (
-              <Link
-                href="/dashboard/grades"
-                className="hidden shrink-0 items-center gap-1.5 rounded-lg border border-white/60 bg-white/50 px-3.5 py-2 text-sm font-medium text-foreground backdrop-blur-sm transition-colors hover:bg-white/80 dark:border-white/15 dark:bg-white/10 dark:hover:bg-white/20 sm:inline-flex"
-              >
-                <Plus className="size-4" />
-                {t("addClass")}
-              </Link>
-            ) : null}
           </div>
 
           <YearProgress calendar={calendar} todayKey={todayKey} className="mt-3" />

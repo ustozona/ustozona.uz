@@ -2206,14 +2206,16 @@
     "moreStudents": "yana {count} ta oʻquvchi",
     "positiveStudentsTitle": "Yaxshilanish kuzatilmoqda"
   },
-  "BirthdayCard": {
-    "title": "Tugʻilgan kunlar",
-    "turnsAge": "{age} yoshga toʻladi",
-    "today": "Bugun",
-    "tomorrow": "Ertaga"
+  "NextLessonsCard": {
+    "title": "Kelgusi darslar",
+    "unknownClass": "Nomaʼlum sinf",
+    "untitledTopic": "(nomsiz mavzu)",
+    "tomorrow": "Ertaga",
+    "emptyTitle": "Kelgusi darslar yoʻq",
+    "emptyDescription": "Hali reja tuzilmagan — dars jadvalini tekshiring."
   },
   "QueueSection": {
-    "title": "Ishlar navbati",
+    "title": "Vazifalar",
     "addTask": "Vazifa",
     "scopeToday": "Bugun",
     "scopeWeek": "Hafta",

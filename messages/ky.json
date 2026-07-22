@@ -2355,7 +2355,7 @@
     "quarterUntil": "{name} — {date} чейин"
   },
   "QueueSection": {
-    "title": "Иштер кезеги",
+    "title": "Тапшырмалар",
     "addTask": "Тапшырма",
     "scopeToday": "Бүгүн",
     "scopeWeek": "Апта",
@@ -2434,11 +2434,13 @@
     "moreStudents": "дагы {count} окуучу",
     "positiveStudentsTitle": "Жакшыруу байкалууда"
   },
-  "BirthdayCard": {
-    "title": "Туулган күндөр",
-    "turnsAge": "{age} жашка толот",
-    "today": "Бүгүн",
-    "tomorrow": "Эртең"
+  "NextLessonsCard": {
+    "title": "Кийинки сабактар",
+    "unknownClass": "Белгисиз класс",
+    "untitledTopic": "(аталышсыз тема)",
+    "tomorrow": "Эртең",
+    "emptyTitle": "Кийинки сабак жок",
+    "emptyDescription": "Азырынча пландалган жок — сабак жадвалын текшериңиз."
   },
   "DashboardPage": {
     "unknownClass": "Белгисиз класс",

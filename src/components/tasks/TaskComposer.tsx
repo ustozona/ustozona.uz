@@ -60,8 +60,8 @@ function dateLabel(d: string, todayLabel: string, tomorrowLabel: string): string
  * ustuvorlik, sinf va takrorlash. Davomiylik (boshlanish–muhlat), tavsif,
  * masʼullar va eslatma kabi ogʻir maydonlar Vazifa tafsiloti panelida tahrirlanadi.
  */
-export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed }>(
-  function TaskComposer({ seed }, ref) {
+export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed; hideTrigger?: boolean }>(
+  function TaskComposer({ seed, hideTrigger }, ref) {
     const t = useTranslations("TaskComposer");
     const tPriority = useTranslations("TaskPriority");
     const PRIORITY_OPTIONS = PRIORITY_OPTION_VALUES.map((p) => ({ ...p, label: tPriority(p.value) }));
@@ -154,8 +154,9 @@ export const TaskComposer = forwardRef<TaskComposerHandle, { seed?: ComposerSeed
       requestAnimationFrame(() => inputRef.current?.focus());
     };
 
-    // ── Yopiq holat: sokin qator ──
+    // ── Yopiq holat: sokin qator (yoki hideTrigger boʻlsa umuman koʻrinmaydi) ──
     if (!expanded) {
+      if (hideTrigger) return null;
       return (
         <button
           type="button"

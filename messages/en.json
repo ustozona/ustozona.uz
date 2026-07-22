@@ -2355,7 +2355,7 @@
     "quarterUntil": "{name} — until {date}"
   },
   "QueueSection": {
-    "title": "Work queue",
+    "title": "Tasks",
     "addTask": "Task",
     "scopeToday": "Today",
     "scopeWeek": "Week",
@@ -2434,11 +2434,13 @@
     "moreStudents": "{count} more students",
     "positiveStudentsTitle": "Improving students"
   },
-  "BirthdayCard": {
-    "title": "Birthdays",
-    "turnsAge": "turns {age}",
-    "today": "Today",
-    "tomorrow": "Tomorrow"
+  "NextLessonsCard": {
+    "title": "Upcoming lessons",
+    "unknownClass": "Unknown class",
+    "untitledTopic": "(untitled topic)",
+    "tomorrow": "Tomorrow",
+    "emptyTitle": "No upcoming lessons",
+    "emptyDescription": "Nothing planned yet — check the timetable."
   },
   "DashboardPage": {
     "unknownClass": "Unknown class",

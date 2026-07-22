@@ -1,20 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown, ClipboardList, ListTodo, Plus } from "lucide-react";
+import { ClipboardList, ListTodo, Plus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { SectionIcon } from "@/components/ui/section-icon";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
@@ -49,10 +43,8 @@ import { cn } from "@/lib/utils";
    Uch manba, yangi model YOʻQ: ochiq vazifalar (useTaskStore) +
    tekshirish qatorlari (ball kiritilishi chala assignmentlar) + kelgusi
    summativ muddatlar (useGradesStore). Guruhlar: Muddati oʻtgan / Bugun /
-   Keyinroq; scope tanlovi Keyinroq ufqini boshqaradi (Bugun/Hafta/Hammasi).
+   Keyinroq (Keyinroq ufqi qattiq — 7 kun).
    ════════════════════════════════════════════════════════════════════ */
-
-type QueueScope = "today" | "week" | "all";
 
 /** Navbat ishlatadigan minimal vazifa koʻrinishi (tur-demo ham shu shaklda). */
 type QueueTask = {
@@ -83,7 +75,6 @@ function addDaysKey(base: Date, n: number): string {
 
 export function QueueSection({ now }: { now: Date }) {
   const t = useTranslations("QueueSection");
-  const [scope, setScope] = useState<QueueScope>("today");
   const composerRef = useRef<TaskComposerHandle>(null);
 
   const allTasks = useTaskStore((s) => s.tasks);
@@ -136,14 +127,11 @@ export function QueueSection({ now }: { now: Date }) {
       const item: QueueRow = { kind: "task", key: `t-${task.id}`, task };
       if (task.dueDate && task.dueDate < todayKey) overdue.push(item);
       else if (task.dueDate === todayKey) today.push(item);
-      else if (scope === "all") later.push(item);
-      else if (scope === "week" && task.dueDate && task.dueDate <= weekKey) later.push(item);
+      else if (task.dueDate && task.dueDate <= weekKey) later.push(item);
     }
-    if (scope !== "today") {
-      for (const row of deadlineRows) {
-        if (scope === "week" && row.due > weekKey) continue;
-        later.push({ kind: "deadline", key: `d-${row.classId}-${row.assignmentId}`, row });
-      }
+    for (const row of deadlineRows) {
+      if (row.due > weekKey) continue;
+      later.push({ kind: "deadline", key: `d-${row.classId}-${row.assignmentId}`, row });
     }
 
     const byDue = (a: QueueRow, b: QueueRow) => {
@@ -160,7 +148,7 @@ export function QueueSection({ now }: { now: Date }) {
     today.sort(byDue);
     later.sort(byDue);
     return { overdue, today, later };
-  }, [checkRows, tasks, deadlineRows, scope, todayKey, weekKey]);
+  }, [checkRows, tasks, deadlineRows, todayKey, weekKey]);
 
   const isEmpty = groups.overdue.length + groups.today.length + groups.later.length === 0;
 
@@ -186,12 +174,6 @@ export function QueueSection({ now }: { now: Date }) {
     if (due === tomorrowKey) return { text: t("dueTomorrow"), cls: "text-warning" };
     const [, m, d] = due.split("-").map(Number);
     return { text: `${d}-${MONTHS_UZ[m - 1].toLowerCase()}`, cls: "text-muted-foreground" };
-  };
-
-  const SCOPE_LABEL: Record<QueueScope, string> = {
-    today: t("scopeToday"),
-    week: t("scopeWeek"),
-    all: t("scopeAll"),
   };
 
   const renderGroup = (label: string, rows: QueueRow[], accent?: "destructive") => {
@@ -314,36 +296,19 @@ export function QueueSection({ now }: { now: Date }) {
           <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
-                {SCOPE_LABEL[scope]}
-                <ChevronDown className="size-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {(Object.keys(SCOPE_LABEL) as QueueScope[]).map((s) => (
-                <DropdownMenuItem key={s} onSelect={() => setScope(s)}>
-                  {SCOPE_LABEL[s]}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
           <Button
-            variant="outline"
-            size="sm"
-            className="gap-1"
+            size="icon"
+            aria-label={t("addTask")}
             onClick={() => composerRef.current?.focus()}
           >
-            <Plus className="size-3.5" />
-            {t("addTask")}
+            <Plus className="size-4" />
           </Button>
         </div>
       </CardHeader>
       <CardContent className={panelCardContentClass}>
         <div className="flex h-full min-h-0 flex-col">
-          <div className="shrink-0 px-5 pt-4">
-            <TaskComposer ref={composerRef} seed={{ dueDate: todayKey }} />
+          <div className="shrink-0 px-5 pt-4 empty:hidden">
+            <TaskComposer ref={composerRef} seed={{ dueDate: todayKey }} hideTrigger />
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin px-5 pb-5 pt-3">
             {isEmpty ? (

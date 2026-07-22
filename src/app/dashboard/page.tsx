@@ -9,8 +9,7 @@ import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { HomeHero, type HeroEvent } from "@/components/dashboard/HomeHero";
 import { TodayRail } from "@/components/dashboard/TodayRail";
 import { QueueSection } from "@/components/dashboard/QueueSection";
-import { AttentionSection } from "@/components/dashboard/AttentionSection";
-import { BirthdayCard } from "@/components/dashboard/BirthdayCard";
+import { NextLessonsCard } from "@/components/dashboard/NextLessonsCard";
 import { attendanceEntryForDay, pendingCheckCount } from "@/lib/home-metrics";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
@@ -119,40 +118,38 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full">
       <DashboardPageLayout className="flex-1">
-        <div className={cn(dashboardGridClass, "stagger-children flex-1 min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,23rem)] lg:grid-rows-[1fr]")}>
+        <div data-tour="home-overview" className={cn(dashboardGridClass, "stagger-children flex-1 min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,45fr)_minmax(0,30fr)_minmax(0,25fr)] lg:grid-rows-[1fr]")}>
 
-          {/* Asosiy maydon — hero+navbat / eʼtibor+tugʻilgan kunlar ustunlari */}
-          <div data-tour="home-overview" className={cn(dashboardGridClass, "flex-1 min-h-0 grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:grid-rows-[1fr]")}>
-            <div className={cn(dashboardStackClass, "h-full min-h-0")}>
-              <HomeHero
-                firstName={firstName}
-                greeting={greetingText()}
-                dateLabel={t("todayDateLabel", { date: `${currentTime.getDate()}-${MONTHS_UZ[currentTime.getMonth()].toLowerCase()}`, day: DAYS_UZ_SUN[todayDow].toLowerCase() })}
-                restNote={holiday ? t("restNoteWithHoliday", { holiday: holiday.name }) : todayDow === 0 ? t("restNote") : undefined}
-                classCount={heroClassCount}
-                todayEvents={heroEvents}
-                nowMin={nowMin}
-                checkCount={checkCount}
-                attendance={attendanceEntry}
-                calendar={calendar}
-                todayKey={todayKey}
-              />
-              {/* Ishlar navbati — vazifalar + tekshirish + summativ muddatlar */}
-              <div className="flex-1 min-h-0">
-                <QueueSection now={currentTime} />
-              </div>
-            </div>
-            {/* Eʼtibor kerak (ABC signallari) + Tugʻilgan kunlar */}
-            <div className={cn(dashboardStackClass, "h-full min-h-0")}>
-              <div className="flex-1 min-h-0">
-                <AttentionSection now={currentTime} />
-              </div>
-              <BirthdayCard now={currentTime} />
+          {/* Chap ustun (45%) — Hero + Kelgusi darslar */}
+          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+            <HomeHero
+              firstName={firstName}
+              greeting={greetingText()}
+              dateLabel={t("todayDateLabel", { date: `${currentTime.getDate()}-${MONTHS_UZ[currentTime.getMonth()].toLowerCase()}`, day: DAYS_UZ_SUN[todayDow].toLowerCase() })}
+              restNote={holiday ? t("restNoteWithHoliday", { holiday: holiday.name }) : todayDow === 0 ? t("restNote") : undefined}
+              classCount={heroClassCount}
+              todayEvents={heroEvents}
+              nowMin={nowMin}
+              checkCount={checkCount}
+              attendance={attendanceEntry}
+              calendar={calendar}
+              todayKey={todayKey}
+            />
+            {/* Kelgusi darslar — bugundan keyingi rejalashtirilgan sessiyalar */}
+            <div className="flex-1 min-h-0">
+              <NextLessonsCard now={currentTime} />
             </div>
           </div>
 
-          {/* Oʻng rail — Bugungi darslar (WeekStrip + roʻyxat ⇄ vaqt oʻqi) */}
-          <TodayRail now={currentTime} />
+          {/* Oʻrta ustun (30%) — Bugungi darslar (WeekStrip + roʻyxat ⇄ vaqt oʻqi) */}
+          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+            <TodayRail now={currentTime} />
+          </div>
+
+          {/* Oʻng ustun (25%) — Vazifalar (tekshirish + summativ muddatlar) */}
+          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+            <QueueSection now={currentTime} />
+          </div>
 
         </div>
       </DashboardPageLayout>
