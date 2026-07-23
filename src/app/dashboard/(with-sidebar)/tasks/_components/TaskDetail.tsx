@@ -11,6 +11,7 @@ import {
   Flag,
   GraduationCap,
   Pencil,
+  Repeat,
   Trash2,
   X,
 } from "lucide-react";
@@ -19,8 +20,10 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/
 import { Illustration } from "@/components/ui/illustration";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import {
@@ -34,7 +37,15 @@ import { cn } from "@/lib/utils";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { formatDateGroupLabel, PRIORITY_META, PRIORITY_ORDER, type Task, type TaskPriority } from "@/lib/tasks-data";
+import { buildRule, recurrenceLabel } from "@/lib/recurrence";
+import {
+  formatDateGroupLabel,
+  PRIORITY_META,
+  PRIORITY_ORDER,
+  TAG_PILL_CLASS,
+  type Task,
+  type TaskPriority,
+} from "@/lib/tasks-data";
 
 function fmtDueMin(min: number): string {
   const h = Math.floor(min / 60);
@@ -50,6 +61,8 @@ export function TaskDetail({
   onSetClassId,
   onSetNote,
   onSetTitle,
+  onSetTags,
+  onSetRepeat,
   onDelete,
   onCancel,
 }: {
@@ -60,6 +73,8 @@ export function TaskDetail({
   onSetClassId: (id: string | null) => void;
   onSetNote: (note: string) => void;
   onSetTitle: (title: string) => void;
+  onSetTags: (tags: string[]) => void;
+  onSetRepeat: (repeat: Task["repeat"]) => void;
   onDelete: () => void;
   onCancel: () => void;
 }) {
@@ -68,10 +83,12 @@ export function TaskDetail({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [note, setNote] = useState(task?.note ?? "");
   const [title, setTitle] = useState(task?.title ?? "");
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     setNote(task?.note ?? "");
     setTitle(task?.title ?? "");
+    setTagInput("");
   }, [task?.id]);
 
   if (!task) {
@@ -234,6 +251,56 @@ export function TaskDetail({
                 <TypographyMuted className="px-2">{t(`source.${task.source.kind}`)}</TypographyMuted>
               )}
             </MetaRow>
+
+            {isManual && (
+              <MetaRow icon={<Repeat className="size-4" />} label={t("repeatLabel")}>
+                <RepeatPicker
+                  repeat={task.repeat ?? null}
+                  refDate={task.dueDate}
+                  onChange={onSetRepeat}
+                  label={t("repeatNone")}
+                />
+              </MetaRow>
+            )}
+          </div>
+
+          {/* Teglar */}
+          <div className="flex flex-col gap-1.5">
+            <TypographyLabel>{t("tagsLabel")}</TypographyLabel>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(task.tags ?? []).map((tag) => (
+                <span
+                  key={tag}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium",
+                    TAG_PILL_CLASS
+                  )}
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => onSetTags((task.tags ?? []).filter((x) => x !== tag))}
+                    aria-label={t("removeTagAria", { tag })}
+                  >
+                    <X className="size-3" />
+                  </button>
+                </span>
+              ))}
+              <Input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  e.preventDefault();
+                  const v = tagInput.trim();
+                  if (!v || (task.tags ?? []).includes(v)) return setTagInput("");
+                  onSetTags([...(task.tags ?? []), v]);
+                  setTagInput("");
+                }}
+                placeholder={t("addTagPlaceholder")}
+                className="h-7 w-32 border-0 bg-transparent px-1.5 text-xs shadow-none focus-visible:ring-0"
+              />
+            </div>
           </div>
 
           {/* Izoh */}
@@ -297,6 +364,100 @@ export function TaskDetail({
         </AlertDialogContent>
       </AlertDialog>
     </Panel>
+  );
+}
+
+type TaskRepeatUnit = "day" | "week" | "month";
+const REPEAT_UNITS: TaskRepeatUnit[] = ["day", "week", "month"];
+
+function RepeatPicker({
+  repeat,
+  refDate,
+  onChange,
+  label,
+}: {
+  repeat: Task["repeat"];
+  refDate: string | null;
+  onChange: (repeat: Task["repeat"]) => void;
+  label: string;
+}) {
+  const t = useTranslations("TasksPage.detail");
+  const [open, setOpen] = useState(false);
+  const [every, setEvery] = useState(repeat?.every ?? 1);
+  const [unit, setUnit] = useState<TaskRepeatUnit>(repeat?.unit ?? "week");
+
+  useEffect(() => {
+    setEvery(repeat?.every ?? 1);
+    setUnit(repeat?.unit ?? "week");
+  }, [repeat?.every, repeat?.unit]);
+
+  const displayLabel = repeat
+    ? recurrenceLabel(buildRule({ interval: repeat.every, unit: repeat.unit, weekdays: [], basis: "due" }), refDate)
+    : label;
+
+  const apply = (nextEvery: number, nextUnit: TaskRepeatUnit) => {
+    setEvery(nextEvery);
+    setUnit(nextUnit);
+    onChange({ every: Math.max(1, nextEvery), unit: nextUnit });
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "flex h-8 items-center gap-1.5 rounded px-2 text-sm hover:bg-muted",
+            !repeat && "text-muted-foreground"
+          )}
+        >
+          {displayLabel}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-56 space-y-3 p-3">
+        <div className="flex items-center gap-2">
+          <TypographyMuted>{t("repeatEvery")}</TypographyMuted>
+          <Input
+            type="number"
+            min={1}
+            max={30}
+            value={every}
+            onChange={(e) => apply(Number(e.target.value) || 1, unit)}
+            className="h-8 w-16"
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-1">
+          {REPEAT_UNITS.map((u) => (
+            <button
+              key={u}
+              type="button"
+              onClick={() => apply(every, u)}
+              className={cn(
+                "rounded-md border px-2 py-1.5 text-xs font-medium transition-colors",
+                unit === u
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:bg-muted"
+              )}
+            >
+              {t(`repeatUnit.${u}`)}
+            </button>
+          ))}
+        </div>
+        {repeat && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full gap-1.5 text-muted-foreground hover:text-destructive"
+            onClick={() => {
+              onChange(null);
+              setOpen(false);
+            }}
+          >
+            <X className="size-3.5" /> {t("repeatClear")}
+          </Button>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
 

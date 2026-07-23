@@ -3402,7 +3402,8 @@
       "planned": "Пландаштырылган",
       "nodate": "Күнсүз",
       "done": "Аткарылган",
-      "classesLabel": "Класстар"
+      "classesLabel": "Класстар",
+      "tagsLabel": "Тегдер"
     },
     "list": {
       "todayGroup": "Бүгүн",
@@ -3439,7 +3440,15 @@
       "deleteDialogTitle": "Бул тапшырманы өчүрөсүзбү?",
       "deleteDialogDescription": "Бул тапшырма биротоло өчүрүлөт. Бул аракетти артка кайтарууга болбойт.",
       "cancel": "Жокко чыгаруу",
-      "confirmDelete": "Өчүрүү"
+      "confirmDelete": "Өчүрүү",
+      "repeatLabel": "Кайталануу",
+      "repeatNone": "Жок",
+      "repeatEvery": "Ар",
+      "repeatUnit": { "day": "күн", "week": "жума", "month": "ай" },
+      "repeatClear": "Алып салуу",
+      "tagsLabel": "Тегдер",
+      "addTagPlaceholder": "Тег кошуу...",
+      "removeTagAria": "{tag} тегин алып салуу"
     }
   },
   "TasksSection": {

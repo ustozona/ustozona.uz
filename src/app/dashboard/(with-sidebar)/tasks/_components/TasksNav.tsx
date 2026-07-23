@@ -20,6 +20,29 @@ import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import type { SmartListKey } from "@/lib/tasks-data";
 
+function TagPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+        active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 const SMART_LIST_ICONS: Record<SmartListKey, React.ComponentType<{ className?: string }>> = {
   today: Sun,
   tomorrow: Sunrise,
@@ -37,6 +60,9 @@ export function TasksNav({
   onSearchChange,
   onSelectList,
   onSelectClass,
+  allTags,
+  activeTag,
+  onSelectTag,
 }: {
   listKey: SmartListKey | null;
   classId: string | null;
@@ -45,6 +71,9 @@ export function TasksNav({
   onSearchChange: (v: string) => void;
   onSelectList: (list: SmartListKey) => void;
   onSelectClass: (id: string) => void;
+  allTags: string[];
+  activeTag: string | null;
+  onSelectTag: (tag: string | null) => void;
 }) {
   const t = useTranslations("TasksPage.nav");
   const liveClasses = useLiveClasses();
@@ -137,6 +166,25 @@ export function TasksNav({
                   </button>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {allTags.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <div className="px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              {t("tagsLabel")}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 px-3">
+              {allTags.map((tag) => (
+                <TagPill
+                  key={tag}
+                  active={activeTag === tag}
+                  onClick={() => onSelectTag(activeTag === tag ? null : tag)}
+                >
+                  {tag}
+                </TagPill>
+              ))}
             </div>
           </div>
         )}

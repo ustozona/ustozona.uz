@@ -21,6 +21,7 @@ import {
   groupTasksByDate,
   PRIORITY_META,
   PRIORITY_ORDER,
+  TAG_PILL_CLASS,
   type Task,
   type TaskPriority,
 } from "@/lib/tasks-data";
@@ -214,6 +215,18 @@ function TaskGroup({
               {task.title}
               {canceled && <span className="ml-1.5 text-xs">· {t("canceledBadge")}</span>}
             </span>
+            {(task.tags ?? []).length > 0 && (
+              <span className="hidden shrink-0 items-center gap-1 sm:flex">
+                {(task.tags ?? []).slice(0, 2).map((tag) => (
+                  <span
+                    key={tag}
+                    className={cn("rounded-full border px-2 py-0.5 text-[11px] font-medium", TAG_PILL_CLASS)}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </span>
+            )}
             {cls && <ClassSwatch hex={cls.hex} className="shrink-0" />}
           </div>
         );

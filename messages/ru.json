@@ -3402,7 +3402,8 @@
       "planned": "Запланировано",
       "nodate": "Без даты",
       "done": "Выполнено",
-      "classesLabel": "Классы"
+      "classesLabel": "Классы",
+      "tagsLabel": "Теги"
     },
     "list": {
       "todayGroup": "Сегодня",
@@ -3439,7 +3440,15 @@
       "deleteDialogTitle": "Удалить эту задачу?",
       "deleteDialogDescription": "Задача будет удалена навсегда. Это действие нельзя отменить.",
       "cancel": "Отмена",
-      "confirmDelete": "Удалить"
+      "confirmDelete": "Удалить",
+      "repeatLabel": "Повтор",
+      "repeatNone": "Нет",
+      "repeatEvery": "Каждые",
+      "repeatUnit": { "day": "день", "week": "неделя", "month": "месяц" },
+      "repeatClear": "Убрать",
+      "tagsLabel": "Теги",
+      "addTagPlaceholder": "Добавить тег...",
+      "removeTagAria": "Удалить тег {tag}"
     }
   },
   "TasksSection": {

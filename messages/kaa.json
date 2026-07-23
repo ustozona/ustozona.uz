@@ -3402,7 +3402,8 @@
       "planned": "Josparlanǵan",
       "nodate": "Sanasız",
       "done": "Orınlanǵan",
-      "classesLabel": "Klasslar"
+      "classesLabel": "Klasslar",
+      "tagsLabel": "Teglar"
     },
     "list": {
       "todayGroup": "Búgin",
@@ -3439,7 +3440,15 @@
       "deleteDialogTitle": "Wazıypanı óshiresizbe?",
       "deleteDialogDescription": "Bul wazıypa pútkilley óshiriledi. Bul ámeldi qaytarıp bolmaydı.",
       "cancel": "Biykar qılıw",
-      "confirmDelete": "Óshiriw"
+      "confirmDelete": "Óshiriw",
+      "repeatLabel": "Qaytalanıw",
+      "repeatNone": "Joq",
+      "repeatEvery": "Hár",
+      "repeatUnit": { "day": "kún", "week": "hápte", "month": "ay" },
+      "repeatClear": "Alıp taslaw",
+      "tagsLabel": "Teglar",
+      "addTagPlaceholder": "Teg qosıw...",
+      "removeTagAria": "{tag} tegin alıp taslaw"
     }
   },
   "TasksSection": {

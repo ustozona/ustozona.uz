@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { newManualTask, type Task, type TaskPriority, type TaskStatus } from "@/lib/tasks-data";
+import { manualTaskId, newManualTask, type Task, type TaskPriority, type TaskStatus } from "@/lib/tasks-data";
+import { nextDate, type Recurrence } from "@/lib/recurrence";
 
 /* ════════════════════════════════════════════════════════════════════
    VAZIFALAR — server-backed store (grades/behavior/student-notes qolipi).
@@ -30,6 +31,9 @@ interface TasksState {
   setNote: (id: string, note: string) => void;
   setDueDate: (id: string, dueDate: string | null, dueMin?: number | null) => void;
   setClassId: (id: string, classId: string | null) => void;
+  setTags: (id: string, tags: string[]) => void;
+  /** Faqat manual vazifalar uchun. */
+  setRepeat: (id: string, repeat: Task["repeat"]) => void;
   /** Faqat manual vazifalar uchun — avto-vazifalar "Bekor qilish"ga ega. */
   deleteTask: (id: string) => void;
   /** Avto-vazifani bekor qilish (tombstone — reconciler qayta tug'dirmaydi). */
@@ -54,10 +58,11 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
     set((s) => ({ items: s.items.map((t) => (t.id === id ? updater(t) : t)) })),
 
   setStatus: (id, status) =>
-    set((s) => ({
-      items: s.items.map((t) => {
+    set((s) => {
+      const target = s.items.find((t) => t.id === id);
+      const done = status === "done";
+      const items = s.items.map((t) => {
         if (t.id !== id) return t;
-        const done = status === "done";
         return {
           ...t,
           status,
@@ -65,8 +70,27 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
           // Foydalanuvchi qo'lda belgilagani — reconciler shu vazifani qayta ochmaydi.
           doneManually: done,
         };
-      }),
-    })),
+      });
+      // Takrorlanuvchi manual vazifa done boʻlsa — keyingi nusxa yaratiladi.
+      if (done && target && target.source.kind === "manual" && target.repeat) {
+        const rec: Recurrence = { interval: target.repeat.every, unit: target.repeat.unit, weekdays: [], basis: "due" };
+        const nd = nextDate(rec, target.dueDate);
+        if (nd) {
+          items.push({
+            ...target,
+            id: manualTaskId(),
+            status: "todo",
+            dueDate: nd,
+            doneManually: false,
+            notifiedAt: null,
+            sortOrder: items.length,
+            createdAt: new Date().toISOString(),
+            completedAt: null,
+          });
+        }
+      }
+      return { items };
+    }),
 
   setPriority: (id, priority) =>
     set((s) => ({ items: s.items.map((t) => (t.id === id ? { ...t, priority } : t)) })),
@@ -81,6 +105,12 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
 
   setClassId: (id, classId) =>
     set((s) => ({ items: s.items.map((t) => (t.id === id ? { ...t, classId } : t)) })),
+
+  setTags: (id, tags) =>
+    set((s) => ({ items: s.items.map((t) => (t.id === id ? { ...t, tags } : t)) })),
+
+  setRepeat: (id, repeat) =>
+    set((s) => ({ items: s.items.map((t) => (t.id === id ? { ...t, repeat } : t)) })),
 
   deleteTask: (id) => set((s) => ({ items: s.items.filter((t) => t.id !== id) })),
 

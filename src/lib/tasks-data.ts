@@ -113,6 +113,20 @@ export const PRIORITY_META: Record<
   none: { ring: "ring-border", text: "text-muted-foreground", dot: "bg-muted-foreground/40" },
 };
 
+/* ── Teglar (erkin) ───────────────────────────────────────────────────
+   Bitta yagona uslub (student-notes NotesTab TAG_META bilan bir xil) —
+   teg boʻyicha hashlangan rang yoʻq, dizayn tizimida ham qoʻllanmagan. */
+
+export const TAG_PILL_CLASS = "bg-primary/10 text-primary border-primary/20";
+export const TAG_DOT_CLASS = "bg-primary";
+
+/** Barcha vazifalardagi noyob teglar (chap panel filtri uchun). */
+export function collectTags(tasks: Task[]): string[] {
+  const set = new Set<string>();
+  for (const t of tasks) for (const tag of t.tags ?? []) set.add(tag);
+  return [...set].sort();
+}
+
 /* ── Aqlli roʻyxatlar (chap panel) ────────────────────────────────── */
 
 export type SmartListKey = "today" | "tomorrow" | "week" | "planned" | "nodate" | "done";

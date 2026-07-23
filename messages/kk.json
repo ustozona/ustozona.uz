@@ -3402,7 +3402,8 @@
       "planned": "Жоспарланған",
       "nodate": "Күнсіз",
       "done": "Орындалған",
-      "classesLabel": "Сыныптар"
+      "classesLabel": "Сыныптар",
+      "tagsLabel": "Тегтер"
     },
     "list": {
       "todayGroup": "Бүгін",
@@ -3439,7 +3440,15 @@
       "deleteDialogTitle": "Бұл тапсырманы жоясыз ба?",
       "deleteDialogDescription": "Бұл тапсырма мүлдем жойылады. Бұл әрекетті қайтаруға болмайды.",
       "cancel": "Болдырмау",
-      "confirmDelete": "Жою"
+      "confirmDelete": "Жою",
+      "repeatLabel": "Қайталану",
+      "repeatNone": "Жоқ",
+      "repeatEvery": "Әр",
+      "repeatUnit": { "day": "күн", "week": "апта", "month": "ай" },
+      "repeatClear": "Алып тастау",
+      "tagsLabel": "Тегтер",
+      "addTagPlaceholder": "Тег қосу...",
+      "removeTagAria": "{tag} тегін алып тастау"
     }
   },
   "TasksSection": {

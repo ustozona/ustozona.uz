@@ -3239,7 +3239,8 @@
       "planned": "Rejalashtirilgan",
       "nodate": "Sanasiz",
       "done": "Bajarilgan",
-      "classesLabel": "Sinflar"
+      "classesLabel": "Sinflar",
+      "tagsLabel": "Teglar"
     },
     "list": {
       "todayGroup": "Bugun",
@@ -3276,7 +3277,15 @@
       "deleteDialogTitle": "Vazifani oʻchirasizmi?",
       "deleteDialogDescription": "Bu vazifa butunlay oʻchiriladi. Bu amalni orqaga qaytarib boʻlmaydi.",
       "cancel": "Bekor qilish",
-      "confirmDelete": "Oʻchirish"
+      "confirmDelete": "Oʻchirish",
+      "repeatLabel": "Takrorlanish",
+      "repeatNone": "Yoʻq",
+      "repeatEvery": "Har",
+      "repeatUnit": { "day": "kun", "week": "hafta", "month": "oy" },
+      "repeatClear": "Olib tashlash",
+      "tagsLabel": "Teglar",
+      "addTagPlaceholder": "Teg qoʻshish...",
+      "removeTagAria": "{tag} tegini olib tashlash"
     }
   },
   "TasksSection": {

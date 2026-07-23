@@ -9,7 +9,13 @@ import { useTasksStore } from "@/store/useTasksStore";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { todayKey } from "@/lib/date-keys";
-import { matchesSmartList, SMART_LIST_KEYS, type SmartListKey, type TaskPriority } from "@/lib/tasks-data";
+import {
+  collectTags,
+  matchesSmartList,
+  SMART_LIST_KEYS,
+  type SmartListKey,
+  type TaskPriority,
+} from "@/lib/tasks-data";
 import { TasksNav } from "./_components/TasksNav";
 import { TasksList } from "./_components/TasksList";
 import { TaskDetail } from "./_components/TaskDetail";
@@ -37,6 +43,7 @@ export default function TasksPage() {
   const [urlList, setUrlList] = useListParam();
   const [classId, setClassId] = useClassIdParam();
   const [search, setSearch] = useState("");
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const items = useTasksStore((s) => s.items);
@@ -48,6 +55,8 @@ export default function TasksPage() {
   const setNote = useTasksStore((s) => s.setNote);
   const setDueDate = useTasksStore((s) => s.setDueDate);
   const setTaskClassId = useTasksStore((s) => s.setClassId);
+  const setTags = useTasksStore((s) => s.setTags);
+  const setRepeat = useTasksStore((s) => s.setRepeat);
   const deleteTask = useTasksStore((s) => s.deleteTask);
   const cancelTask = useTasksStore((s) => s.cancelTask);
 
@@ -83,10 +92,13 @@ export default function TasksPage() {
     return items.filter((t) => t.title.toLowerCase().includes(q));
   }, [items, search]);
 
-  const scoped = useMemo(
-    () => (classId ? searchFiltered.filter((t) => t.classId === classId) : searchFiltered),
-    [searchFiltered, classId]
-  );
+  const allTags = useMemo(() => collectTags(items), [items]);
+
+  const scoped = useMemo(() => {
+    let list = classId ? searchFiltered.filter((t) => t.classId === classId) : searchFiltered;
+    if (activeTag) list = list.filter((t) => (t.tags ?? []).includes(activeTag));
+    return list;
+  }, [searchFiltered, classId, activeTag]);
 
   const counts = useMemo(() => {
     const c = { today: 0, tomorrow: 0, week: 0, planned: 0, nodate: 0, done: 0 } as Record<SmartListKey, number>;
@@ -131,6 +143,9 @@ export default function TasksPage() {
             onSearchChange={setSearch}
             onSelectList={handleSelectList}
             onSelectClass={handleSelectClass}
+            allTags={allTags}
+            activeTag={activeTag}
+            onSelectTag={setActiveTag}
           />
         </DashboardColumn>
 
@@ -173,6 +188,8 @@ export default function TasksPage() {
               onSetClassId={(id) => setTaskClassId(selectedTask.id, id)}
               onSetNote={(note) => setNote(selectedTask.id, note)}
               onSetTitle={(title) => updateTask(selectedTask.id, (t) => ({ ...t, title }))}
+              onSetTags={(tags) => setTags(selectedTask.id, tags)}
+              onSetRepeat={(repeat) => setRepeat(selectedTask.id, repeat)}
               onDelete={() => {
                 deleteTask(selectedTask.id);
                 setSelectedTaskId(null);

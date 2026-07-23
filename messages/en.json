@@ -3402,7 +3402,8 @@
       "planned": "Planned",
       "nodate": "No date",
       "done": "Completed",
-      "classesLabel": "Classes"
+      "classesLabel": "Classes",
+      "tagsLabel": "Tags"
     },
     "list": {
       "todayGroup": "Today",
@@ -3439,7 +3440,15 @@
       "deleteDialogTitle": "Delete this task?",
       "deleteDialogDescription": "This task will be permanently deleted. This action cannot be undone.",
       "cancel": "Cancel",
-      "confirmDelete": "Delete"
+      "confirmDelete": "Delete",
+      "repeatLabel": "Repeat",
+      "repeatNone": "None",
+      "repeatEvery": "Every",
+      "repeatUnit": { "day": "day", "week": "week", "month": "month" },
+      "repeatClear": "Remove",
+      "tagsLabel": "Tags",
+      "addTagPlaceholder": "Add tag...",
+      "removeTagAria": "Remove tag {tag}"
     }
   },
   "TasksSection": {
