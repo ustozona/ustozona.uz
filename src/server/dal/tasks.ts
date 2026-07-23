@@ -13,14 +13,41 @@ import type { TasksBatch } from "@/lib/sync/tasks-batch";
 
 export type TasksPayload = { items: Task[] };
 
+/** Yangi Task shaklini tekshiradi — `tasks` jadvali eski (o'chirilgan)
+    Tasks funksiyasidan qolgan boshqa shakldagi yozuvlarni ham saqlab
+    qolgan bo'lishi mumkin (jadval hech qachon DROP qilinmagan). */
+function isValidTask(data: unknown): data is Task {
+  if (!data || typeof data !== "object") return false;
+  const d = data as Record<string, unknown>;
+  return (
+    typeof d.id === "string" &&
+    typeof d.title === "string" &&
+    typeof d.status === "string" &&
+    typeof d.priority === "string" &&
+    !!d.source &&
+    typeof (d.source as Record<string, unknown>).kind === "string"
+  );
+}
+
 export async function getTasksPayload(): Promise<TasksPayload> {
   const teacher = await requireTeacher();
   const rows = await db
-    .select({ data: tasks.data })
+    .select({ id: tasks.id, data: tasks.data })
     .from(tasks)
     .where(eq(tasks.teacherId, teacher.id))
     .orderBy(asc(tasks.sortOrder));
-  return { items: rows.map((r) => r.data as Task) };
+
+  const items: Task[] = [];
+  const staleIds: string[] = [];
+  for (const r of rows) {
+    if (isValidTask(r.data)) items.push(r.data);
+    else staleIds.push(r.id);
+  }
+  // Eski (o'chirilgan) Tasks funksiyasidan qolgan mos kelmaydigan yozuvlar — tozalanadi.
+  if (staleIds.length) {
+    await db.delete(tasks).where(and(eq(tasks.teacherId, teacher.id), inArray(tasks.id, staleIds)));
+  }
+  return { items };
 }
 
 export async function applyTasksBatch(batch: TasksBatch): Promise<void> {

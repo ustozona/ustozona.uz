@@ -183,12 +183,19 @@ function TaskGroup({
         const cls = task.classId ? classesById.get(task.classId) : undefined;
         const prio = PRIORITY_META[task.priority];
         return (
-          <button
+          <div
             key={task.id}
-            type="button"
+            role="button"
+            tabIndex={0}
             onClick={() => onSelectTask(task.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelectTask(task.id);
+              }
+            }}
             data-active={selectedTaskId === task.id || undefined}
-            className="list-row w-full"
+            className="list-row w-full cursor-pointer"
           >
             <Checkbox
               checked={done}
@@ -205,7 +212,7 @@ function TaskGroup({
               {task.title}
             </span>
             {cls && <ClassSwatch hex={cls.hex} className="shrink-0" />}
-          </button>
+          </div>
         );
       })}
     </div>
