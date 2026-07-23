@@ -39,6 +39,7 @@ import {
   Settings,
   Award,
   TrendingUp,
+  ListTodo,
   type LucideIcon,
 } from "lucide-react";
 
@@ -59,7 +60,10 @@ type NavGroup = {
    faqat vizual — item ketma-ketligi umumiy roʻyxatda oʻzgarmaydi. */
 const navGroups: NavGroup[] = [
   {
-    items: [{ href: "/dashboard", labelKey: "home", icon: Home }],
+    items: [
+      { href: "/dashboard", labelKey: "home", icon: Home },
+      { href: "/dashboard/tasks", labelKey: "tasks", icon: ListTodo },
+    ],
   },
   {
     labelKey: "groupTeaching",

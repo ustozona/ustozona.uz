@@ -7,6 +7,7 @@ import { Panel, PanelHeader, PanelBody } from "@/components/ui/panel";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import {
@@ -32,6 +33,7 @@ export function TasksList({
   activeTasks,
   doneTasks,
   isDoneView,
+  hydrated,
   todayKey,
   selectedTaskId,
   onSelectTask,
@@ -45,6 +47,7 @@ export function TasksList({
   activeTasks: Task[];
   doneTasks: Task[];
   isDoneView: boolean;
+  hydrated: boolean;
   todayKey: string;
   selectedTaskId: string | null;
   onSelectTask: (id: string) => void;
@@ -71,6 +74,14 @@ export function TasksList({
       <PanelHeader title={title} count={count > 0 ? count : undefined} />
       <PanelBody>
         <div className="flex flex-col">
+          {!hydrated ? (
+            <div className="flex flex-col gap-2 px-3 py-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : (
+            <>
           {!isDoneView && (
             <QuickAddRow onSubmit={onQuickAdd} liveClasses={liveClasses} />
           )}
@@ -135,6 +146,8 @@ export function TasksList({
                 </Collapsible>
               )}
             </div>
+          )}
+            </>
           )}
         </div>
       </PanelBody>

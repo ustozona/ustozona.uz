@@ -2,12 +2,11 @@ import { create } from "zustand";
 import { newManualTask, type Task, type TaskPriority, type TaskStatus } from "@/lib/tasks-data";
 
 /* ════════════════════════════════════════════════════════════════════
-   VAZIFALAR — server-backed store (grades/behavior qolipi).
+   VAZIFALAR — server-backed store (grades/behavior/student-notes qolipi).
 
-   B1'da faqat manual CRUD; sync (TasksServerSync) B2'da qoʻshiladi —
-   shu sabab `_hasHydrated` hozircha `true` (kutiladigan server chaqiruv
-   yoʻq). B2 ulanganda default `false`ga oʻzgaradi (boshqa server-backed
-   store'lar bilan bir xil naqsh).
+   TasksServerSync (dashboard layout) mount'da useHydrateStore orqali
+   serverdan {items}ni yuklaydi, keyin har oʻzgarishni diff qilib server
+   action'ga yuboradi.
 
    Avto-manba vazifalar (lesson/grading/birthday) B3/B4'da reconciler
    orqali yoziladi — bu yerdagi amallar hozircha faqat manual vazifalar
@@ -38,7 +37,7 @@ interface TasksState {
 
 export const useTasksStore = create<TasksState>()((set, get) => ({
   items: [],
-  _hasHydrated: true,
+  _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),
 
   addManualTask: (input) => {

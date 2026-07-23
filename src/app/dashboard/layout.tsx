@@ -18,6 +18,7 @@ import NotificationsServerSync from "@/components/sync/NotificationsServerSync";
 import FeedbackServerSync from "@/components/sync/FeedbackServerSync";
 import BehaviorServerSync from "@/components/sync/BehaviorServerSync";
 import StudentNotesServerSync from "@/components/sync/StudentNotesServerSync";
+import TasksServerSync from "@/components/sync/TasksServerSync";
 import BehaviorAutoReconciler from "@/components/behavior/BehaviorAutoReconciler";
 import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
 import OnboardingGate from "@/components/onboarding/OnboardingGate";
@@ -47,6 +48,7 @@ export default function DashboardLayout({
       <FeedbackServerSync />
       <BehaviorServerSync />
       <StudentNotesServerSync />
+      <TasksServerSync />
       <BehaviorAutoReconciler />
       <LegacyStorageCleanup />
       <OnboardingGate />

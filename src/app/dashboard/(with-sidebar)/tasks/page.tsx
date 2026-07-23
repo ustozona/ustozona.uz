@@ -40,6 +40,7 @@ export default function TasksPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const items = useTasksStore((s) => s.items);
+  const hydrated = useTasksStore((s) => s._hasHydrated);
   const addManualTask = useTasksStore((s) => s.addManualTask);
   const updateTask = useTasksStore((s) => s.updateTask);
   const setStatus = useTasksStore((s) => s.setStatus);
@@ -136,6 +137,7 @@ export default function TasksPage() {
             activeTasks={activeTasks}
             doneTasks={doneTasks}
             isDoneView={isDoneView}
+            hydrated={hydrated}
             todayKey={today}
             selectedTaskId={selectedTaskId}
             onSelectTask={(id) => setSelectedTaskId((prev) => (prev === id ? null : id))}
