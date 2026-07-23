@@ -3390,5 +3390,54 @@
     "notFound": "Not found",
     "listView": "List",
     "calendarView": "Calendar"
+  },
+  "TasksPage": {
+    "nav": {
+      "title": "Tasks",
+      "searchPlaceholder": "Search tasks...",
+      "clearSearch": "Clear search",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "week": "This week",
+      "planned": "Planned",
+      "nodate": "No date",
+      "done": "Completed",
+      "classesLabel": "Classes"
+    },
+    "list": {
+      "todayGroup": "Today",
+      "tomorrowGroup": "Tomorrow",
+      "noDateGroup": "No date",
+      "emptyTitle": "No tasks",
+      "emptyDescription": "Nothing here yet — add a new task below.",
+      "doneSection": "Completed ({count})",
+      "quickAddPlaceholder": "New task...",
+      "addAction": "Add",
+      "priorityLabel": "Priority",
+      "classLabel": "Class",
+      "noClass": "No class",
+      "priority": { "none": "None", "low": "Low", "medium": "Medium", "high": "High" }
+    },
+    "detail": {
+      "emptyTitle": "No task selected",
+      "emptyDescription": "Select a task from the list to see its details.",
+      "dueLabel": "Due",
+      "clearDue": "Clear due date",
+      "classLabel": "Class",
+      "noClass": "No class",
+      "priorityLabel": "Priority",
+      "priority": { "none": "None", "low": "Low", "medium": "Medium", "high": "High" },
+      "sourceLabel": "Source",
+      "source": { "manual": "Manual", "lesson": "Lesson", "grading": "Grading", "birthday": "Birthday" },
+      "noteLabel": "Note",
+      "notePlaceholder": "Write a note...",
+      "createdAt": "Created: {date}",
+      "delete": "Delete",
+      "cancelAuto": "Cancel",
+      "deleteDialogTitle": "Delete this task?",
+      "deleteDialogDescription": "This task will be permanently deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirmDelete": "Delete"
+    }
   }
 }

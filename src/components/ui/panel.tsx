@@ -24,7 +24,7 @@ function Panel({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-type PanelHeaderProps = React.ComponentProps<"div"> & {
+type PanelHeaderProps = Omit<React.ComponentProps<"div">, "title"> & {
   icon?: React.ReactNode
   title?: React.ReactNode
   count?: React.ReactNode

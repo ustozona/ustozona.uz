@@ -3390,5 +3390,54 @@
     "notFound": "Табылган жок",
     "listView": "Тизме",
     "calendarView": "Календарь"
+  },
+  "TasksPage": {
+    "nav": {
+      "title": "Тапшырмалар",
+      "searchPlaceholder": "Тапшырма издөө...",
+      "clearSearch": "Издөөнү тазалоо",
+      "today": "Бүгүн",
+      "tomorrow": "Эртең",
+      "week": "Ушул жума",
+      "planned": "Пландаштырылган",
+      "nodate": "Күнсүз",
+      "done": "Аткарылган",
+      "classesLabel": "Класстар"
+    },
+    "list": {
+      "todayGroup": "Бүгүн",
+      "tomorrowGroup": "Эртең",
+      "noDateGroup": "Күнсүз",
+      "emptyTitle": "Тапшырмалар жок",
+      "emptyDescription": "Бул тизмеде азырынча эч нерсе жок — төмөндөн жаңы тапшырма кошуңуз.",
+      "doneSection": "Аткарылган ({count})",
+      "quickAddPlaceholder": "Жаңы тапшырма...",
+      "addAction": "Кошуу",
+      "priorityLabel": "Артыкчылык",
+      "classLabel": "Класс",
+      "noClass": "Класссыз",
+      "priority": { "none": "Жок", "low": "Төмөн", "medium": "Орточо", "high": "Жогорку" }
+    },
+    "detail": {
+      "emptyTitle": "Тапшырма тандалган жок",
+      "emptyDescription": "Толук маалымат үчүн тизмеден тапшырма тандаңыз.",
+      "dueLabel": "Мөөнөт",
+      "clearDue": "Мөөнөттү тазалоо",
+      "classLabel": "Класс",
+      "noClass": "Класссыз",
+      "priorityLabel": "Артыкчылык",
+      "priority": { "none": "Жок", "low": "Төмөн", "medium": "Орточо", "high": "Жогорку" },
+      "sourceLabel": "Булак",
+      "source": { "manual": "Кол менен", "lesson": "Сабак", "grading": "Баалоо", "birthday": "Туулган күн" },
+      "noteLabel": "Эскертүү",
+      "notePlaceholder": "Эскертүү жазыңыз...",
+      "createdAt": "Түзүлдү: {date}",
+      "delete": "Өчүрүү",
+      "cancelAuto": "Жокко чыгаруу",
+      "deleteDialogTitle": "Бул тапшырманы өчүрөсүзбү?",
+      "deleteDialogDescription": "Бул тапшырма биротоло өчүрүлөт. Бул аракетти артка кайтарууга болбойт.",
+      "cancel": "Жокко чыгаруу",
+      "confirmDelete": "Өчүрүү"
+    }
   }
 }

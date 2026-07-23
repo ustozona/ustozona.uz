@@ -3390,5 +3390,54 @@
     "notFound": "Не найдено",
     "listView": "Список",
     "calendarView": "Календарь"
+  },
+  "TasksPage": {
+    "nav": {
+      "title": "Задачи",
+      "searchPlaceholder": "Поиск задач...",
+      "clearSearch": "Очистить поиск",
+      "today": "Сегодня",
+      "tomorrow": "Завтра",
+      "week": "На этой неделе",
+      "planned": "Запланировано",
+      "nodate": "Без даты",
+      "done": "Выполнено",
+      "classesLabel": "Классы"
+    },
+    "list": {
+      "todayGroup": "Сегодня",
+      "tomorrowGroup": "Завтра",
+      "noDateGroup": "Без даты",
+      "emptyTitle": "Нет задач",
+      "emptyDescription": "Здесь пока пусто — добавьте новую задачу ниже.",
+      "doneSection": "Выполнено ({count})",
+      "quickAddPlaceholder": "Новая задача...",
+      "addAction": "Добавить",
+      "priorityLabel": "Приоритет",
+      "classLabel": "Класс",
+      "noClass": "Без класса",
+      "priority": { "none": "Нет", "low": "Низкий", "medium": "Средний", "high": "Высокий" }
+    },
+    "detail": {
+      "emptyTitle": "Задача не выбрана",
+      "emptyDescription": "Выберите задачу из списка, чтобы увидеть детали.",
+      "dueLabel": "Срок",
+      "clearDue": "Очистить срок",
+      "classLabel": "Класс",
+      "noClass": "Без класса",
+      "priorityLabel": "Приоритет",
+      "priority": { "none": "Нет", "low": "Низкий", "medium": "Средний", "high": "Высокий" },
+      "sourceLabel": "Источник",
+      "source": { "manual": "Вручную", "lesson": "Урок", "grading": "Оценивание", "birthday": "День рождения" },
+      "noteLabel": "Заметка",
+      "notePlaceholder": "Напишите заметку...",
+      "createdAt": "Создано: {date}",
+      "delete": "Удалить",
+      "cancelAuto": "Отменить",
+      "deleteDialogTitle": "Удалить эту задачу?",
+      "deleteDialogDescription": "Задача будет удалена навсегда. Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "confirmDelete": "Удалить"
+    }
   }
 }

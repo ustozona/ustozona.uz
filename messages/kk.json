@@ -3390,5 +3390,54 @@
     "notFound": "Табылмады",
     "listView": "Тізім",
     "calendarView": "Күнтізбе"
+  },
+  "TasksPage": {
+    "nav": {
+      "title": "Тапсырмалар",
+      "searchPlaceholder": "Тапсырма іздеу...",
+      "clearSearch": "Іздеуді тазалау",
+      "today": "Бүгін",
+      "tomorrow": "Ертең",
+      "week": "Осы апта",
+      "planned": "Жоспарланған",
+      "nodate": "Күнсіз",
+      "done": "Орындалған",
+      "classesLabel": "Сыныптар"
+    },
+    "list": {
+      "todayGroup": "Бүгін",
+      "tomorrowGroup": "Ертең",
+      "noDateGroup": "Күнсіз",
+      "emptyTitle": "Тапсырмалар жоқ",
+      "emptyDescription": "Бұл тізімде әзірше ештеңе жоқ — төменнен жаңа тапсырма қосыңыз.",
+      "doneSection": "Орындалған ({count})",
+      "quickAddPlaceholder": "Жаңа тапсырма...",
+      "addAction": "Қосу",
+      "priorityLabel": "Басымдық",
+      "classLabel": "Сынып",
+      "noClass": "Сыныпсыз",
+      "priority": { "none": "Жоқ", "low": "Төмен", "medium": "Орташа", "high": "Жоғары" }
+    },
+    "detail": {
+      "emptyTitle": "Тапсырма таңдалмаған",
+      "emptyDescription": "Толық мәліметтерді көру үшін тізімнен тапсырма таңдаңыз.",
+      "dueLabel": "Мерзім",
+      "clearDue": "Мерзімді тазалау",
+      "classLabel": "Сынып",
+      "noClass": "Сыныпсыз",
+      "priorityLabel": "Басымдық",
+      "priority": { "none": "Жоқ", "low": "Төмен", "medium": "Орташа", "high": "Жоғары" },
+      "sourceLabel": "Дереккөз",
+      "source": { "manual": "Қолмен", "lesson": "Сабақ", "grading": "Бағалау", "birthday": "Туған күн" },
+      "noteLabel": "Ескертпе",
+      "notePlaceholder": "Ескертпе жазыңыз...",
+      "createdAt": "Жасалды: {date}",
+      "delete": "Жою",
+      "cancelAuto": "Болдырмау",
+      "deleteDialogTitle": "Бұл тапсырманы жоясыз ба?",
+      "deleteDialogDescription": "Бұл тапсырма мүлдем жойылады. Бұл әрекетті қайтаруға болмайды.",
+      "cancel": "Болдырмау",
+      "confirmDelete": "Жою"
+    }
   }
 }

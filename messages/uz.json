@@ -3227,5 +3227,54 @@
     "notFound": "Topilmadi",
     "listView": "Roʻyxat",
     "calendarView": "Kalendar"
+  },
+  "TasksPage": {
+    "nav": {
+      "title": "Vazifalar",
+      "searchPlaceholder": "Vazifa qidirish...",
+      "clearSearch": "Qidiruvni tozalash",
+      "today": "Bugun",
+      "tomorrow": "Ertaga",
+      "week": "Shu hafta",
+      "planned": "Rejalashtirilgan",
+      "nodate": "Sanasiz",
+      "done": "Bajarilgan",
+      "classesLabel": "Sinflar"
+    },
+    "list": {
+      "todayGroup": "Bugun",
+      "tomorrowGroup": "Ertaga",
+      "noDateGroup": "Sanasiz",
+      "emptyTitle": "Vazifalar yoʻq",
+      "emptyDescription": "Bu roʻyxatda hozircha hech narsa yoʻq — pastdan yangi vazifa qoʻshing.",
+      "doneSection": "Bajarilgan ({count})",
+      "quickAddPlaceholder": "Yangi vazifa...",
+      "addAction": "Qoʻshish",
+      "priorityLabel": "Ustuvorlik",
+      "classLabel": "Sinf",
+      "noClass": "Sinfsiz",
+      "priority": { "none": "Yoʻq", "low": "Past", "medium": "Oʻrta", "high": "Yuqori" }
+    },
+    "detail": {
+      "emptyTitle": "Vazifa tanlanmagan",
+      "emptyDescription": "Tafsilotlarni koʻrish uchun roʻyxatdan vazifa tanlang.",
+      "dueLabel": "Muddat",
+      "clearDue": "Muddatni tozalash",
+      "classLabel": "Sinf",
+      "noClass": "Sinfsiz",
+      "priorityLabel": "Ustuvorlik",
+      "priority": { "none": "Yoʻq", "low": "Past", "medium": "Oʻrta", "high": "Yuqori" },
+      "sourceLabel": "Manba",
+      "source": { "manual": "Qoʻlda", "lesson": "Dars", "grading": "Baholash", "birthday": "Tugʻilgan kun" },
+      "noteLabel": "Izoh",
+      "notePlaceholder": "Izoh yozing...",
+      "createdAt": "Yaratildi: {date}",
+      "delete": "Oʻchirish",
+      "cancelAuto": "Bekor qilish",
+      "deleteDialogTitle": "Vazifani oʻchirasizmi?",
+      "deleteDialogDescription": "Bu vazifa butunlay oʻchiriladi. Bu amalni orqaga qaytarib boʻlmaydi.",
+      "cancel": "Bekor qilish",
+      "confirmDelete": "Oʻchirish"
+    }
   }
 }

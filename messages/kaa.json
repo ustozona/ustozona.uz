@@ -3390,5 +3390,54 @@
     "notFound": "Tabılmadı",
     "listView": "Dizim",
     "calendarView": "Kalendar"
+  },
+  "TasksPage": {
+    "nav": {
+      "title": "Wazıypalar",
+      "searchPlaceholder": "Wazıypa izlew...",
+      "clearSearch": "Izlewdi tazalaw",
+      "today": "Búgin",
+      "tomorrow": "Erte",
+      "week": "Usı hápte",
+      "planned": "Josparlanǵan",
+      "nodate": "Sanasız",
+      "done": "Orınlanǵan",
+      "classesLabel": "Klasslar"
+    },
+    "list": {
+      "todayGroup": "Búgin",
+      "tomorrowGroup": "Erte",
+      "noDateGroup": "Sanasız",
+      "emptyTitle": "Wazıypalar joq",
+      "emptyDescription": "Bul dizimde házirshe hesh nárse joq — tómennen jańa wazıypa qosıń.",
+      "doneSection": "Orınlanǵan ({count})",
+      "quickAddPlaceholder": "Jańa wazıypa...",
+      "addAction": "Qosıw",
+      "priorityLabel": "Áhmiyet",
+      "classLabel": "Klass",
+      "noClass": "Klasssız",
+      "priority": { "none": "Joq", "low": "Tómen", "medium": "Ortasha", "high": "Joqarı" }
+    },
+    "detail": {
+      "emptyTitle": "Wazıypa tańlanbaǵan",
+      "emptyDescription": "Tolıq maǵlıwmat ushın dizimnen wazıypa tańlań.",
+      "dueLabel": "Múddet",
+      "clearDue": "Múddetti tazalaw",
+      "classLabel": "Klass",
+      "noClass": "Klasssız",
+      "priorityLabel": "Áhmiyet",
+      "priority": { "none": "Joq", "low": "Tómen", "medium": "Ortasha", "high": "Joqarı" },
+      "sourceLabel": "Dárek",
+      "source": { "manual": "Qolman", "lesson": "Sabaq", "grading": "Bahalaw", "birthday": "Tuwılǵan kún" },
+      "noteLabel": "Eskertpe",
+      "notePlaceholder": "Eskertpe jazıń...",
+      "createdAt": "Jaratıldı: {date}",
+      "delete": "Óshiriw",
+      "cancelAuto": "Biykar qılıw",
+      "deleteDialogTitle": "Wazıypanı óshiresizbe?",
+      "deleteDialogDescription": "Bul wazıypa pútkilley óshiriledi. Bul ámeldi qaytarıp bolmaydı.",
+      "cancel": "Biykar qılıw",
+      "confirmDelete": "Óshiriw"
+    }
   }
 }
