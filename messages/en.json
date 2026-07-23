@@ -1953,6 +1953,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "tasks-hub-launch": {
+        "title": "Tasks — a new automatic task hub",
+        "body": "Lessons and assignments now turn into tasks on their own, and you'll get a reminder for each student's birthday. Priority, tags, repeat, and a pomodoro timer — all in one place."
+      },
       "panel-language-v1": {
         "title": "Panels and cards now look consistent across the whole app",
         "body": "Classes, Attendance, Gradebook, Tasks and other sections now share one style: the same border, radius, and header height. Sections that used to look slightly different now feel like one product."

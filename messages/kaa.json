@@ -1953,6 +1953,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "tasks-hub-launch": {
+        "title": "Wazıypalar — avtomatik wazıypalar orayı qosıldı",
+        "body": "Sabaqlar hám tapsırmalar endi óz-ózinen wazıypaǵa aylanadı, oqıwshılardıń tuwılǵan kúnin eske salıp turadı. Áhmiyet, teglar, qaytalanıw hám pomodoro taymeri — hámmesi bir orında."
+      },
       "panel-language-v1": {
         "title": "Panellar hám kartalar pútkil qollanba boyınsha birdey kórinedi",
         "body": "«Klasslar», «Qatnasıw», «Jurnal», «Tapsırmalar» hám basqa bólimlerdegi panellar endi bir stilde: birdey shegara, radius hám atama biyikligi. Aldın bir-birinen sáykes ayırmalanǵan bólimler endi bir ónim retinde seziledi."

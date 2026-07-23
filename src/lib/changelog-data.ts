@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tasks-hub-launch",
+    date: "2026-07-23",
+    type: "yangi",
+    title: "Vazifalar — avtomatik vazifalar markazi qoʻshildi",
+    body: "Darslar va topshiriqlar endi oʻz-oʻzidan vazifaga aylanadi, oʻquvchilar tugʻilgan kunini eslatib turadi. Ustuvorlik, teglar, takrorlanish va pomodoro taymeri bilan — barchasi bitta joyda.",
+    href: "/dashboard/tasks",
+  },
+  {
     id: "panel-language-v1",
     date: "2026-07-22",
     type: "yaxshilandi",

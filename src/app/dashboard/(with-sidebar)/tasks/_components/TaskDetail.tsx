@@ -22,6 +22,7 @@ import {
 import { Panel, PanelHeader, PanelBody, PanelFooter } from "@/components/ui/panel";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
+import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -109,7 +110,10 @@ export function TaskDetail({
             <EmptyMedia>
               <Illustration name="18" className="h-32 text-black dark:text-white" />
             </EmptyMedia>
-            <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+            <EmptyTitle className="flex items-center justify-center gap-1.5">
+              {t("emptyTitle")}
+              <AppleEmojiSprite emoji="👈" className="size-4.5" />
+            </EmptyTitle>
             <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
           </EmptyHeader>
         </Empty>

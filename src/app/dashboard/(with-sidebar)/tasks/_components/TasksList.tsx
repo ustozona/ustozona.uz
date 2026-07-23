@@ -6,6 +6,7 @@ import { ChevronDown, GraduationCap, Play, Plus } from "lucide-react";
 import { Panel, PanelHeader, PanelBody } from "@/components/ui/panel";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
+import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
@@ -120,7 +121,10 @@ export function TasksList({
                 <EmptyMedia>
                   <Illustration name="31" className="h-28 text-black dark:text-white" />
                 </EmptyMedia>
-                <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
+                <EmptyTitle className="flex items-center justify-center gap-1.5">
+                  {t("emptyTitle")}
+                  <AppleEmojiSprite emoji="📝" className="size-4.5" />
+                </EmptyTitle>
                 <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -240,7 +244,7 @@ function TaskGroup({
             />
             <span
               className={cn(
-                "min-w-0 flex-1 truncate text-left text-sm",
+                "min-w-0 flex-1 truncate text-left text-sm transition-colors duration-base",
                 done ? "text-muted-foreground line-through" : canceled ? "text-muted-foreground/70" : "text-foreground"
               )}
             >
