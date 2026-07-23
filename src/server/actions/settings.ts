@@ -39,6 +39,10 @@ const saveSchema = z.object({
   backgroundScale: z.number().min(200).max(400),
   onboardingCompleted: z.boolean(),
   completedTours: z.array(z.string().max(50)).max(50),
+  tasksSettings: z.object({
+    birthdayTasks: z.boolean(),
+    birthdayLead: z.union([z.literal(0), z.literal(1), z.literal(3)]),
+  }),
 });
 
 export type SettingsSaveInput = z.infer<typeof saveSchema>;

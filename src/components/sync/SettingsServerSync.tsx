@@ -30,6 +30,7 @@ function selectSaveInput(s: SettingsState): SettingsSaveInput {
     backgroundScale: s.backgroundScale,
     onboardingCompleted: s.onboardingCompleted,
     completedTours: s.completedTours,
+    tasksSettings: s.tasksSettings,
   };
 }
 

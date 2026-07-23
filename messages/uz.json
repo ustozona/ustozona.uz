@@ -3278,5 +3278,15 @@
       "cancel": "Bekor qilish",
       "confirmDelete": "Oʻchirish"
     }
+  },
+  "TasksSection": {
+    "title": "Vazifalar",
+    "description": "Oʻquvchilar tugʻilgan kunini avtomatik eslatish.",
+    "birthdayToggleTitle": "Tugʻilgan kun vazifalari",
+    "birthdayToggleDescription": "Yoqilsa, har oʻquvchining tugʻilgan kuni Vazifalar sahifasida avtomatik vazifa sifatida paydo boʻladi va bildirishnoma keladi.",
+    "leadLabel": "Qachon eslatilsin",
+    "leadSameDay": "Oʻsha kuni",
+    "lead1Day": "1 kun oldin",
+    "lead3Days": "3 kun oldin"
   }
 }

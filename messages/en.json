@@ -3441,5 +3441,15 @@
       "cancel": "Cancel",
       "confirmDelete": "Delete"
     }
+  },
+  "TasksSection": {
+    "title": "Tasks",
+    "description": "Automatically remind about students' birthdays.",
+    "birthdayToggleTitle": "Birthday tasks",
+    "birthdayToggleDescription": "When enabled, each student's birthday appears as an automatic task on the Tasks page and triggers a notification.",
+    "leadLabel": "Remind",
+    "leadSameDay": "Same day",
+    "lead1Day": "1 day before",
+    "lead3Days": "3 days before"
   }
 }

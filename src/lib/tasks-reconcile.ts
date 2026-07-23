@@ -1,8 +1,8 @@
 import type { ClassData } from "@/lib/grades-data";
 import type { Lesson } from "@/lib/lessons-data";
 import { lessonSessions } from "@/lib/lessons-data";
-import { addDaysKey } from "@/lib/date-keys";
-import { gradingTaskId, lessonTaskId, type Task } from "@/lib/tasks-data";
+import { addDaysKey, dateToKey } from "@/lib/date-keys";
+import { birthdayTaskId, gradingTaskId, lessonTaskId, type Task } from "@/lib/tasks-data";
 
 /* ════════════════════════════════════════════════════════════════════
    DARS + BAHOLASH AVTO-VAZIFALARI — pure reconcile (derive-and-reconcile,
@@ -164,4 +164,110 @@ export function reconcileLessonAndGradingTasks(
   }
 
   return { upserts, deleteIds, lessonsToComplete };
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   TUGʻILGAN KUN AVTO-VAZIFALARI (B4).
+
+   Sozlamada oʻchirilgan boʻlsa — barcha "todo" tugʻilgan kun vazifalari
+   pruning qilinadi (done/canceled tarixda qoladi). Yoqilgan boʻlsa —
+   oyna [bugun-7, bugun+30] ichidagi tugʻilgan kunlar uchun vazifa
+   yaratiladi. Bildirishnoma — sozlamadagi muddatda (birthdayLead kun
+   oldin) bir marta, `notifiedAt` bilan idempotent.
+   ════════════════════════════════════════════════════════════════════ */
+
+export type BirthdaySettings = { birthdayTasks: boolean; birthdayLead: 0 | 1 | 3 };
+
+export type BirthdayNotify = { taskId: string; studentId: string; studentName: string; dateKey: string };
+
+export type BirthdayReconcileResult = {
+  upserts: Task[];
+  deleteIds: string[];
+  notify: BirthdayNotify[];
+};
+
+/** Berilgan oy/kun uchun oynadagi eng yaqin yillik takror — topilmasa null. */
+function occurrenceInWindow(
+  month: number,
+  day: number,
+  todayKey: string,
+  windowStart: string,
+  windowEnd: string
+): { dateKey: string; year: number } | null {
+  const todayYear = Number(todayKey.slice(0, 4));
+  for (const year of [todayYear - 1, todayYear, todayYear + 1]) {
+    const dateKey = dateToKey(new Date(year, month - 1, day));
+    if (dateKey >= windowStart && dateKey <= windowEnd) return { dateKey, year };
+  }
+  return null;
+}
+
+export function reconcileBirthdayTasks(
+  items: Task[],
+  classDataMap: Record<string, ClassData | undefined>,
+  settings: BirthdaySettings,
+  todayKey: string
+): BirthdayReconcileResult {
+  const existingById = new Map(items.map((t) => [t.id, t]));
+  const upserts: Task[] = [];
+  const notify: BirthdayNotify[] = [];
+  const keepIds = new Set<string>();
+  const nowIso = new Date().toISOString();
+
+  if (settings.birthdayTasks) {
+    const windowStart = addDaysKey(todayKey, -7);
+    const windowEnd = addDaysKey(todayKey, 30);
+
+    for (const [classId, cd] of Object.entries(classDataMap)) {
+      if (!isLive(cd)) continue;
+      for (const s of cd.students) {
+        if (s.status === "archived" || !s.birthDate) continue;
+        const [, m, d] = s.birthDate.split("-").map(Number);
+        if (!m || !d) continue;
+        const occ = occurrenceInWindow(m, d, todayKey, windowStart, windowEnd);
+        if (!occ) continue;
+
+        const id = birthdayTaskId(s.id, occ.year);
+        keepIds.add(id);
+        const existing = existingById.get(id);
+        const leadStart = addDaysKey(occ.dateKey, -settings.birthdayLead);
+        const shouldNotifyNow = todayKey >= leadStart && todayKey <= occ.dateKey;
+
+        if (!existing) {
+          const task: Task = {
+            id,
+            title: `${s.name} — tugʻilgan kun`,
+            status: "todo",
+            priority: "none",
+            dueDate: occ.dateKey,
+            dueMin: null,
+            classId,
+            tags: [],
+            repeat: null,
+            source: { kind: "birthday", studentId: s.id, year: occ.year },
+            sortOrder: items.length + upserts.length,
+            createdAt: nowIso,
+            completedAt: null,
+            notifiedAt: shouldNotifyNow ? nowIso : null,
+          };
+          upserts.push(task);
+          if (shouldNotifyNow) notify.push({ taskId: id, studentId: s.id, studentName: s.name, dateKey: occ.dateKey });
+          continue;
+        }
+
+        if (!existing.notifiedAt && shouldNotifyNow) {
+          upserts.push({ ...existing, notifiedAt: nowIso });
+          notify.push({ taskId: id, studentId: s.id, studentName: s.name, dateKey: occ.dateKey });
+        }
+      }
+    }
+  }
+
+  const deleteIds: string[] = [];
+  for (const t of items) {
+    if (t.status !== "todo") continue;
+    if (t.source.kind === "birthday" && !keepIds.has(t.id)) deleteIds.push(t.id);
+  }
+
+  return { upserts, deleteIds, notify };
 }

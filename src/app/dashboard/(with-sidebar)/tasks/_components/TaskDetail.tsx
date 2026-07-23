@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
   BookOpen,
+  Cake,
   CalendarClock,
   ClipboardCheck,
   Flag,
@@ -99,7 +100,9 @@ export function TaskDetail({
       ? `/dashboard/lessons?classId=${encodeURIComponent(task.source.classId)}`
       : task.source.kind === "grading"
         ? `/dashboard/grades?classId=${encodeURIComponent(task.source.classId)}`
-        : null;
+        : task.source.kind === "birthday"
+          ? `/dashboard/students/${encodeURIComponent(task.source.studentId)}`
+          : null;
 
   return (
     <Panel>
@@ -300,6 +303,7 @@ export function TaskDetail({
 function SourceIcon({ kind, className }: { kind: Task["source"]["kind"]; className?: string }) {
   if (kind === "lesson") return <BookOpen className={className} />;
   if (kind === "grading") return <ClipboardCheck className={className} />;
+  if (kind === "birthday") return <Cake className={className} />;
   return <Pencil className={className} />;
 }
 

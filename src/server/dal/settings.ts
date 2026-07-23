@@ -6,6 +6,7 @@ import { requireTeacher } from "@/server/session";
 import {
   normalizeBackgroundScale,
   type AppLanguage,
+  type TasksSettings,
   type TeacherProfile,
   type WorkspaceBackground,
 } from "@/store/useSettingsStore";
@@ -32,6 +33,7 @@ export type SettingsPayload = {
   plan: "free" | "pro";
   onboardingCompleted: boolean;
   completedTours: string[];
+  tasksSettings: TasksSettings;
 };
 
 export type SettingsUpdate = {
@@ -47,6 +49,7 @@ export type SettingsUpdate = {
   backgroundScale: number;
   onboardingCompleted: boolean;
   completedTours: string[];
+  tasksSettings: TasksSettings;
 };
 
 const BACKGROUNDS: readonly string[] = [
@@ -68,6 +71,8 @@ type TeacherPrefs = {
   backgroundScale?: number;
   onboardingCompleted?: boolean;
   completedTours?: string[];
+  birthdayTasks?: boolean;
+  birthdayLead?: number;
 };
 
 export async function getSettings(): Promise<SettingsPayload> {
@@ -109,6 +114,10 @@ export async function getSettings(): Promise<SettingsPayload> {
     plan: teacher.plan === "pro" ? "pro" : "free",
     onboardingCompleted: prefs.onboardingCompleted === true,
     completedTours: Array.isArray(prefs.completedTours) ? prefs.completedTours : [],
+    tasksSettings: {
+      birthdayTasks: prefs.birthdayTasks === true,
+      birthdayLead: prefs.birthdayLead === 1 || prefs.birthdayLead === 3 ? prefs.birthdayLead : 0,
+    },
   };
 }
 
@@ -122,6 +131,8 @@ export async function updateSettings(input: SettingsUpdate): Promise<void> {
     backgroundScale: input.backgroundScale,
     onboardingCompleted: input.onboardingCompleted,
     completedTours: input.completedTours,
+    birthdayTasks: input.tasksSettings.birthdayTasks,
+    birthdayLead: input.tasksSettings.birthdayLead,
   } satisfies TeacherPrefs);
   await db
     .update(teachers)

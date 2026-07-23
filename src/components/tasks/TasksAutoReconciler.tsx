@@ -4,11 +4,13 @@ import * as React from "react";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useTasksStore } from "@/store/useTasksStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { useNotificationsStore } from "@/store/useNotificationsStore";
 import { todayKey } from "@/lib/date-keys";
-import { reconcileLessonAndGradingTasks } from "@/lib/tasks-reconcile";
+import { reconcileLessonAndGradingTasks, reconcileBirthdayTasks } from "@/lib/tasks-reconcile";
 
 /* ════════════════════════════════════════════════════════════════════
-   VAZIFALAR AVTO-RECONCILER (renderi yoʻq, dashboard layoutda) — B3.
+   VAZIFALAR AVTO-RECONCILER (renderi yoʻq, dashboard layoutda) — B3+B4.
 
    BehaviorAutoReconciler patterni: darslar/baholash oʻzgarishini kuzatib,
    "boʻlishi kerak boʻlgan" avto-vazifalarni hisoblaydi, faqat FARQNI
@@ -29,20 +31,23 @@ export default function TasksAutoReconciler() {
   const lessonsHydrated = useLessonStore((s) => s._hasHydrated);
   const gradesHydrated = useGradesStore((s) => s._hasHydrated);
   const tasksHydrated = useTasksStore((s) => s._hasHydrated);
-  const allHydrated = lessonsHydrated && gradesHydrated && tasksHydrated;
+  const settingsHydrated = useSettingsStore((s) => s._hasHydrated);
+  const allHydrated = lessonsHydrated && gradesHydrated && tasksHydrated && settingsHydrated;
 
   const lessons = useLessonStore((s) => s.lessons);
   const classDataMap = useGradesStore((s) => s.classDataMap);
+  const tasksSettings = useSettingsStore((s) => s.tasksSettings);
 
   React.useEffect(() => {
     if (!allHydrated) return;
     const timer = setTimeout(() => {
       const items = useTasksStore.getState().items;
+      const today = todayKey();
       const { upserts, deleteIds, lessonsToComplete } = reconcileLessonAndGradingTasks(
         items,
         lessons,
         classDataMap,
-        todayKey()
+        today
       );
       if (upserts.length > 0 || deleteIds.length > 0) {
         useTasksStore.getState().applyAutoReconcile(upserts, deleteIds);
@@ -51,9 +56,27 @@ export default function TasksAutoReconciler() {
         const setStatus = useLessonStore.getState().setStatus;
         for (const id of lessonsToComplete) setStatus(id, "Completed");
       }
+
+      // Bugungi holatga tayanadi — yuqoridagi upsert/delete'dan KEYINGI itemsni oling.
+      const itemsAfter = useTasksStore.getState().items;
+      const birthday = reconcileBirthdayTasks(itemsAfter, classDataMap, tasksSettings, today);
+      if (birthday.upserts.length > 0 || birthday.deleteIds.length > 0) {
+        useTasksStore.getState().applyAutoReconcile(birthday.upserts, birthday.deleteIds);
+      }
+      if (birthday.notify.length > 0) {
+        const notify = useNotificationsStore.getState().notify;
+        for (const n of birthday.notify) {
+          notify({
+            kind: "system",
+            title: `${n.studentName} — tugʻilgan kuni`,
+            body: "Vazifalar sahifasida tabriklashni belgilashni unutmang.",
+            href: `/dashboard/students/${encodeURIComponent(n.studentId)}`,
+          });
+        }
+      }
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [allHydrated, lessons, classDataMap]);
+  }, [allHydrated, lessons, classDataMap, tasksSettings]);
 
   return null;
 }

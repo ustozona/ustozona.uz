@@ -50,6 +50,11 @@ export function normalizeBackgroundScale(v: unknown): number {
   return Math.min(BACKGROUND_SCALE_MAX, Math.max(BACKGROUND_SCALE_MIN, n));
 }
 export type AppLanguage = "uz" | "kaa" | "ru" | "en" | "ky" | "kk";
+
+/** Vazifalar sahifasi — tugʻilgan kun avto-vazifasi sozlamalari.
+    `birthdayLead` — bildirishnoma necha kun oldin (0 = oʻsha kuni). */
+export type TasksSettings = { birthdayTasks: boolean; birthdayLead: 0 | 1 | 3 };
+export const DEFAULT_TASKS_SETTINGS: TasksSettings = { birthdayTasks: false, birthdayLead: 0 };
 export type AuthProvider = "google" | "email";
 
 export type TeacherProfile = {
@@ -135,6 +140,9 @@ interface SettingsState {
   autoToursEnabled: boolean;
   setAutoToursEnabled: (v: boolean) => void;
 
+  tasksSettings: TasksSettings;
+  setTasksSettings: (v: TasksSettings) => void;
+
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 }
@@ -174,6 +182,9 @@ export const useSettingsStore = create<SettingsState>()((set) => ({
 
   autoToursEnabled: true,
   setAutoToursEnabled: (v) => set({ autoToursEnabled: v }),
+
+  tasksSettings: DEFAULT_TASKS_SETTINGS,
+  setTasksSettings: (v) => set({ tasksSettings: v }),
 
   _hasHydrated: false,
   setHasHydrated: (v) => set({ _hasHydrated: v }),

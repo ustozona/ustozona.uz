@@ -3441,5 +3441,15 @@
       "cancel": "Biykar qılıw",
       "confirmDelete": "Óshiriw"
     }
+  },
+  "TasksSection": {
+    "title": "Wazıypalar",
+    "description": "Oqıwshılardıń tuwılǵan kúnin avtomatik eske salıw.",
+    "birthdayToggleTitle": "Tuwılǵan kún wazıypaları",
+    "birthdayToggleDescription": "Qosılsa, hár oqıwshınıń tuwılǵan kúni Wazıypalar betinde avtomatik wazıypa sıpatında shıǵadı hám bildiriw keledi.",
+    "leadLabel": "Qashan eske salınsın",
+    "leadSameDay": "Sol kúni",
+    "lead1Day": "1 kún aldın",
+    "lead3Days": "3 kún aldın"
   }
 }

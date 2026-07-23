@@ -9,6 +9,7 @@ import {
   CalendarRange,
   CreditCard,
   ShieldCheck,
+  ListTodo,
   type LucideIcon,
 } from "lucide-react";
 
@@ -91,6 +92,14 @@ export const SECTIONS: SectionDef[] = [
     subtitle: "Baholash shkalasi",
     icon: BarChart2,
     Component: dynamic(() => import("./_components/JournalSection")),
+  },
+  {
+    id: "vazifalar",
+    group: "talim",
+    label: "Vazifalar",
+    subtitle: "Tugʻilgan kun avto-vazifasi",
+    icon: ListTodo,
+    Component: dynamic(() => import("./_components/TasksSection")),
   },
   {
     id: "tarif",
