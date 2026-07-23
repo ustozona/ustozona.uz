@@ -3416,7 +3416,8 @@
       "priorityLabel": "Басымдық",
       "classLabel": "Сынып",
       "noClass": "Сыныпсыз",
-      "priority": { "none": "Жоқ", "low": "Төмен", "medium": "Орташа", "high": "Жоғары" }
+      "priority": { "none": "Жоқ", "low": "Төмен", "medium": "Орташа", "high": "Жоғары" },
+      "canceledBadge": "болдырылды"
     },
     "detail": {
       "emptyTitle": "Тапсырма таңдалмаған",
@@ -3434,6 +3435,7 @@
       "createdAt": "Жасалды: {date}",
       "delete": "Жою",
       "cancelAuto": "Болдырмау",
+      "canceledLabel": "Болдырылды",
       "deleteDialogTitle": "Бұл тапсырманы жоясыз ба?",
       "deleteDialogDescription": "Бұл тапсырма мүлдем жойылады. Бұл әрекетті қайтаруға болмайды.",
       "cancel": "Болдырмау",

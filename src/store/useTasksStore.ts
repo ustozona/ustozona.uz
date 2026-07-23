@@ -8,9 +8,8 @@ import { newManualTask, type Task, type TaskPriority, type TaskStatus } from "@/
    serverdan {items}ni yuklaydi, keyin har oʻzgarishni diff qilib server
    action'ga yuboradi.
 
-   Avto-manba vazifalar (lesson/grading/birthday) B3/B4'da reconciler
-   orqali yoziladi — bu yerdagi amallar hozircha faqat manual vazifalar
-   uchun ishlatiladi.
+   Avto-manba vazifalar (lesson/grading) TasksAutoReconciler orqali
+   `applyAutoReconcile` bilan yoziladi; birthday B4'da qo'shiladi.
    ════════════════════════════════════════════════════════════════════ */
 
 interface TasksState {
@@ -31,8 +30,12 @@ interface TasksState {
   setNote: (id: string, note: string) => void;
   setDueDate: (id: string, dueDate: string | null, dueMin?: number | null) => void;
   setClassId: (id: string, classId: string | null) => void;
-  /** Faqat manual vazifalar uchun — avto-vazifalar "Bekor qilish"ga ega boʻladi (B3+). */
+  /** Faqat manual vazifalar uchun — avto-vazifalar "Bekor qilish"ga ega. */
   deleteTask: (id: string) => void;
+  /** Avto-vazifani bekor qilish (tombstone — reconciler qayta tug'dirmaydi). */
+  cancelTask: (id: string) => void;
+  /** Reconciler yozuvi — bitta immutable yangilanishda upsert + delete. */
+  applyAutoReconcile: (upserts: Task[], deleteIds: string[]) => void;
 }
 
 export const useTasksStore = create<TasksState>()((set, get) => ({
@@ -59,7 +62,8 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
           ...t,
           status,
           completedAt: done ? new Date().toISOString() : null,
-          ...(t.source.kind === "manual" ? { doneManually: done } : {}),
+          // Foydalanuvchi qo'lda belgilagani — reconciler shu vazifani qayta ochmaydi.
+          doneManually: done,
         };
       }),
     })),
@@ -79,4 +83,26 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
     set((s) => ({ items: s.items.map((t) => (t.id === id ? { ...t, classId } : t)) })),
 
   deleteTask: (id) => set((s) => ({ items: s.items.filter((t) => t.id !== id) })),
+
+  cancelTask: (id) =>
+    set((s) => ({
+      items: s.items.map((t) =>
+        t.id === id ? { ...t, status: "canceled" as const, completedAt: null } : t
+      ),
+    })),
+
+  applyAutoReconcile: (upserts, deleteIds) => {
+    if (upserts.length === 0 && deleteIds.length === 0) return;
+    const upsertById = new Map(upserts.map((t) => [t.id, t]));
+    const deleteSet = new Set(deleteIds);
+    set((s) => {
+      const next: Task[] = [];
+      for (const t of s.items) {
+        if (deleteSet.has(t.id)) continue;
+        next.push(upsertById.get(t.id) ?? t);
+      }
+      for (const t of upserts) if (!s.items.some((x) => x.id === t.id)) next.push(t);
+      return { items: next };
+    });
+  },
 }));

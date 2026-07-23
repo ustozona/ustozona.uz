@@ -3416,7 +3416,8 @@
       "priorityLabel": "Priority",
       "classLabel": "Class",
       "noClass": "No class",
-      "priority": { "none": "None", "low": "Low", "medium": "Medium", "high": "High" }
+      "priority": { "none": "None", "low": "Low", "medium": "Medium", "high": "High" },
+      "canceledBadge": "cancelled"
     },
     "detail": {
       "emptyTitle": "No task selected",
@@ -3434,6 +3435,7 @@
       "createdAt": "Created: {date}",
       "delete": "Delete",
       "cancelAuto": "Cancel",
+      "canceledLabel": "Cancelled",
       "deleteDialogTitle": "Delete this task?",
       "deleteDialogDescription": "This task will be permanently deleted. This action cannot be undone.",
       "cancel": "Cancel",

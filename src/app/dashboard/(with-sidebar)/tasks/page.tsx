@@ -49,6 +49,7 @@ export default function TasksPage() {
   const setDueDate = useTasksStore((s) => s.setDueDate);
   const setTaskClassId = useTasksStore((s) => s.setClassId);
   const deleteTask = useTasksStore((s) => s.deleteTask);
+  const cancelTask = useTasksStore((s) => s.cancelTask);
 
   const liveClasses = useLiveClasses();
   const classesById = useMemo(() => {
@@ -99,7 +100,10 @@ export default function TasksPage() {
     if (classId) return scoped.filter((t) => t.status !== "done" && t.status !== "canceled");
     return scoped.filter((t) => matchesSmartList(t, effectiveList!, today));
   }, [scoped, classId, effectiveList, isDoneView, today]);
-  const doneTasks = useMemo(() => scoped.filter((t) => t.status === "done"), [scoped]);
+  const doneTasks = useMemo(
+    () => scoped.filter((t) => t.status === "done" || t.status === "canceled"),
+    [scoped]
+  );
 
   const title = classId
     ? (classesById.get(classId)?.name ?? "")
@@ -173,6 +177,7 @@ export default function TasksPage() {
                 deleteTask(selectedTask.id);
                 setSelectedTaskId(null);
               }}
+              onCancel={() => cancelTask(selectedTask.id)}
             />
           </DashboardColumn>
         )}

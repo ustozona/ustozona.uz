@@ -170,6 +170,7 @@ function TaskGroup({
   onToggleStatus: (id: string) => void;
   classesById: Map<string, ClassMeta>;
 }) {
+  const t = useTranslations("TasksPage.list");
   if (tasks.length === 0) return null;
   return (
     <div className="flex flex-col gap-0.5">
@@ -180,6 +181,7 @@ function TaskGroup({
       )}
       {tasks.map((task) => {
         const done = task.status === "done";
+        const canceled = task.status === "canceled";
         const cls = task.classId ? classesById.get(task.classId) : undefined;
         const prio = PRIORITY_META[task.priority];
         return (
@@ -206,10 +208,11 @@ function TaskGroup({
             <span
               className={cn(
                 "min-w-0 flex-1 truncate text-left text-sm",
-                done ? "text-muted-foreground line-through" : "text-foreground"
+                done ? "text-muted-foreground line-through" : canceled ? "text-muted-foreground/70" : "text-foreground"
               )}
             >
               {task.title}
+              {canceled && <span className="ml-1.5 text-xs">· {t("canceledBadge")}</span>}
             </span>
             {cls && <ClassSwatch hex={cls.hex} className="shrink-0" />}
           </div>

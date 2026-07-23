@@ -3416,7 +3416,8 @@
       "priorityLabel": "Áhmiyet",
       "classLabel": "Klass",
       "noClass": "Klasssız",
-      "priority": { "none": "Joq", "low": "Tómen", "medium": "Ortasha", "high": "Joqarı" }
+      "priority": { "none": "Joq", "low": "Tómen", "medium": "Ortasha", "high": "Joqarı" },
+      "canceledBadge": "biykar qılınǵan"
     },
     "detail": {
       "emptyTitle": "Wazıypa tańlanbaǵan",
@@ -3434,6 +3435,7 @@
       "createdAt": "Jaratıldı: {date}",
       "delete": "Óshiriw",
       "cancelAuto": "Biykar qılıw",
+      "canceledLabel": "Biykar qılınǵan",
       "deleteDialogTitle": "Wazıypanı óshiresizbe?",
       "deleteDialogDescription": "Bul wazıypa pútkilley óshiriledi. Bul ámeldi qaytarıp bolmaydı.",
       "cancel": "Biykar qılıw",

@@ -3253,7 +3253,8 @@
       "priorityLabel": "Ustuvorlik",
       "classLabel": "Sinf",
       "noClass": "Sinfsiz",
-      "priority": { "none": "Yoʻq", "low": "Past", "medium": "Oʻrta", "high": "Yuqori" }
+      "priority": { "none": "Yoʻq", "low": "Past", "medium": "Oʻrta", "high": "Yuqori" },
+      "canceledBadge": "bekor qilingan"
     },
     "detail": {
       "emptyTitle": "Vazifa tanlanmagan",
@@ -3271,6 +3272,7 @@
       "createdAt": "Yaratildi: {date}",
       "delete": "Oʻchirish",
       "cancelAuto": "Bekor qilish",
+      "canceledLabel": "Bekor qilingan",
       "deleteDialogTitle": "Vazifani oʻchirasizmi?",
       "deleteDialogDescription": "Bu vazifa butunlay oʻchiriladi. Bu amalni orqaga qaytarib boʻlmaydi.",
       "cancel": "Bekor qilish",

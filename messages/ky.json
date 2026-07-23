@@ -3416,7 +3416,8 @@
       "priorityLabel": "Артыкчылык",
       "classLabel": "Класс",
       "noClass": "Класссыз",
-      "priority": { "none": "Жок", "low": "Төмөн", "medium": "Орточо", "high": "Жогорку" }
+      "priority": { "none": "Жок", "low": "Төмөн", "medium": "Орточо", "high": "Жогорку" },
+      "canceledBadge": "жокко чыгарылган"
     },
     "detail": {
       "emptyTitle": "Тапшырма тандалган жок",
@@ -3434,6 +3435,7 @@
       "createdAt": "Түзүлдү: {date}",
       "delete": "Өчүрүү",
       "cancelAuto": "Жокко чыгаруу",
+      "canceledLabel": "Жокко чыгарылган",
       "deleteDialogTitle": "Бул тапшырманы өчүрөсүзбү?",
       "deleteDialogDescription": "Бул тапшырма биротоло өчүрүлөт. Бул аракетти артка кайтарууга болбойт.",
       "cancel": "Жокко чыгаруу",

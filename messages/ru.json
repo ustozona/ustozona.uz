@@ -3416,7 +3416,8 @@
       "priorityLabel": "Приоритет",
       "classLabel": "Класс",
       "noClass": "Без класса",
-      "priority": { "none": "Нет", "low": "Низкий", "medium": "Средний", "high": "Высокий" }
+      "priority": { "none": "Нет", "low": "Низкий", "medium": "Средний", "high": "Высокий" },
+      "canceledBadge": "отменено"
     },
     "detail": {
       "emptyTitle": "Задача не выбрана",
@@ -3434,6 +3435,7 @@
       "createdAt": "Создано: {date}",
       "delete": "Удалить",
       "cancelAuto": "Отменить",
+      "canceledLabel": "Отменено",
       "deleteDialogTitle": "Удалить эту задачу?",
       "deleteDialogDescription": "Задача будет удалена навсегда. Это действие нельзя отменить.",
       "cancel": "Отмена",

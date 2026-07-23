@@ -1,8 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { CalendarClock, Flag, GraduationCap, Pencil, Sparkles, Trash2, X } from "lucide-react";
+import {
+  BookOpen,
+  CalendarClock,
+  ClipboardCheck,
+  Flag,
+  GraduationCap,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react";
 import { Panel, PanelHeader, PanelBody, PanelFooter } from "@/components/ui/panel";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -23,7 +33,13 @@ import { cn } from "@/lib/utils";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { PRIORITY_META, PRIORITY_ORDER, type Task, type TaskPriority } from "@/lib/tasks-data";
+import { formatDateGroupLabel, PRIORITY_META, PRIORITY_ORDER, type Task, type TaskPriority } from "@/lib/tasks-data";
+
+function fmtDueMin(min: number): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
 
 export function TaskDetail({
   task,
@@ -34,6 +50,7 @@ export function TaskDetail({
   onSetNote,
   onSetTitle,
   onDelete,
+  onCancel,
 }: {
   task: Task | null;
   onToggleStatus: () => void;
@@ -43,6 +60,7 @@ export function TaskDetail({
   onSetNote: (note: string) => void;
   onSetTitle: (title: string) => void;
   onDelete: () => void;
+  onCancel: () => void;
 }) {
   const t = useTranslations("TasksPage.detail");
   const liveClasses = useLiveClasses();
@@ -76,6 +94,12 @@ export function TaskDetail({
   const classHex = classInfo ? CLASS_COLOR_HEX[classColor(classInfo)] : undefined;
   const isManual = task.source.kind === "manual";
   const prio = PRIORITY_META[task.priority];
+  const sourceHref =
+    task.source.kind === "lesson"
+      ? `/dashboard/lessons?classId=${encodeURIComponent(task.source.classId)}`
+      : task.source.kind === "grading"
+        ? `/dashboard/grades?classId=${encodeURIComponent(task.source.classId)}`
+        : null;
 
   return (
     <Panel>
@@ -105,50 +129,72 @@ export function TaskDetail({
           {/* Meta qatorlari */}
           <div className="flex flex-col gap-1">
             <MetaRow icon={<CalendarClock className="size-4" />} label={t("dueLabel")}>
-              <DateKeyPicker
-                value={task.dueDate ?? ""}
-                onChange={(key) => onSetDueDate(key)}
-                className="h-8 border-0 px-2 shadow-none hover:bg-muted"
-              />
-              {task.dueDate && (
-                <button
-                  type="button"
-                  onClick={() => onSetDueDate(null)}
-                  className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  aria-label={t("clearDue")}
-                >
-                  <X className="size-3.5" />
-                </button>
+              {isManual ? (
+                <>
+                  <DateKeyPicker
+                    value={task.dueDate ?? ""}
+                    onChange={(key) => onSetDueDate(key)}
+                    className="h-8 border-0 px-2 shadow-none hover:bg-muted"
+                  />
+                  {task.dueDate && (
+                    <button
+                      type="button"
+                      onClick={() => onSetDueDate(null)}
+                      className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label={t("clearDue")}
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  )}
+                </>
+              ) : (
+                <TypographyMuted className="px-2">
+                  {task.dueDate ? formatDateGroupLabel(task.dueDate) : "—"}
+                  {task.dueMin != null ? `, ${fmtDueMin(task.dueMin)}` : ""}
+                </TypographyMuted>
               )}
             </MetaRow>
 
             <MetaRow icon={<GraduationCap className="size-4" />} label={t("classLabel")}>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex h-8 min-w-0 items-center gap-1.5 rounded px-2 text-sm hover:bg-muted"
-                  >
-                    {classInfo && classHex ? (
-                      <>
-                        <ClassSwatch hex={classHex} />
-                        <span className="truncate">{classInfo.name}</span>
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">{t("noClass")}</span>
-                    )}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => onSetClassId(null)}>{t("noClass")}</DropdownMenuItem>
-                  {liveClasses.map((cls) => (
-                    <DropdownMenuItem key={cls.id} onClick={() => onSetClassId(cls.id)} className="gap-2">
-                      <ClassSwatch hex={CLASS_COLOR_HEX[classColor(cls)]} />
-                      {cls.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {isManual ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex h-8 min-w-0 items-center gap-1.5 rounded px-2 text-sm hover:bg-muted"
+                    >
+                      {classInfo && classHex ? (
+                        <>
+                          <ClassSwatch hex={classHex} />
+                          <span className="truncate">{classInfo.name}</span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">{t("noClass")}</span>
+                      )}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => onSetClassId(null)}>{t("noClass")}</DropdownMenuItem>
+                    {liveClasses.map((cls) => (
+                      <DropdownMenuItem key={cls.id} onClick={() => onSetClassId(cls.id)} className="gap-2">
+                        <ClassSwatch hex={CLASS_COLOR_HEX[classColor(cls)]} />
+                        {cls.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <div className="flex min-w-0 items-center gap-1.5 px-2">
+                  {classInfo && classHex ? (
+                    <>
+                      <ClassSwatch hex={classHex} />
+                      <span className="truncate text-sm">{classInfo.name}</span>
+                    </>
+                  ) : (
+                    <TypographyMuted>{t("noClass")}</TypographyMuted>
+                  )}
+                </div>
+              )}
             </MetaRow>
 
             <MetaRow icon={<Flag className="size-4" />} label={t("priorityLabel")}>
@@ -173,10 +219,17 @@ export function TaskDetail({
               </DropdownMenu>
             </MetaRow>
 
-            <MetaRow icon={<Sparkles className="size-4" />} label={t("sourceLabel")}>
-              <TypographyMuted className="px-2">
-                {t(`source.${task.source.kind}`)}
-              </TypographyMuted>
+            <MetaRow icon={<SourceIcon kind={task.source.kind} className="size-4" />} label={t("sourceLabel")}>
+              {sourceHref ? (
+                <Link
+                  href={sourceHref}
+                  className="px-2 text-sm text-primary underline-offset-2 hover:underline"
+                >
+                  {t(`source.${task.source.kind}`)}
+                </Link>
+              ) : (
+                <TypographyMuted className="px-2">{t(`source.${task.source.kind}`)}</TypographyMuted>
+              )}
             </MetaRow>
           </div>
 
@@ -206,8 +259,15 @@ export function TaskDetail({
           >
             <Trash2 className="size-4" /> {t("delete")}
           </Button>
+        ) : task.status === "canceled" ? (
+          <TypographyMuted>{t("canceledLabel")}</TypographyMuted>
         ) : (
-          <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            className="gap-1.5 text-muted-foreground hover:text-destructive"
+          >
             <Pencil className="size-4" /> {t("cancelAuto")}
           </Button>
         )}
@@ -235,6 +295,12 @@ export function TaskDetail({
       </AlertDialog>
     </Panel>
   );
+}
+
+function SourceIcon({ kind, className }: { kind: Task["source"]["kind"]; className?: string }) {
+  if (kind === "lesson") return <BookOpen className={className} />;
+  if (kind === "grading") return <ClipboardCheck className={className} />;
+  return <Pencil className={className} />;
 }
 
 function MetaRow({

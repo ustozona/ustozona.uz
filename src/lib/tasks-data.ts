@@ -132,7 +132,7 @@ function isActive(t: Task): boolean {
 
 /** Vazifa berilgan aqlli roʻyxatga tegishlimi. `today` oʻtgan muddatlarni ham qamraydi. */
 export function matchesSmartList(t: Task, list: SmartListKey, todayKey: string): boolean {
-  if (list === "done") return t.status === "done";
+  if (list === "done") return t.status === "done" || t.status === "canceled";
   if (!isActive(t)) return false;
 
   if (list === "nodate") return t.dueDate == null;
