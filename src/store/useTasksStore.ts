@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { manualTaskId, newManualTask, type Task, type TaskPriority, type TaskStatus } from "@/lib/tasks-data";
+import { manualTaskId, newManualTask, type FocusEntry, type Task, type TaskPriority, type TaskStatus } from "@/lib/tasks-data";
 import { nextDate, type Recurrence } from "@/lib/recurrence";
+import { todayKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
    VAZIFALAR — server-backed store (grades/behavior/student-notes qolipi).
@@ -34,6 +35,9 @@ interface TasksState {
   setTags: (id: string, tags: string[]) => void;
   /** Faqat manual vazifalar uchun. */
   setRepeat: (id: string, repeat: Task["repeat"]) => void;
+  setEstPomos: (id: string, estPomos: number) => void;
+  /** Yakunlangan pomodoro yozuvi — kun boʻyicha yigʻiladi (FocusTimerPill). */
+  addFocusEntry: (id: string, minutes: number) => void;
   /** Faqat manual vazifalar uchun — avto-vazifalar "Bekor qilish"ga ega. */
   deleteTask: (id: string) => void;
   /** Avto-vazifani bekor qilish (tombstone — reconciler qayta tug'dirmaydi). */
@@ -111,6 +115,22 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
 
   setRepeat: (id, repeat) =>
     set((s) => ({ items: s.items.map((t) => (t.id === id ? { ...t, repeat } : t)) })),
+
+  setEstPomos: (id, estPomos) =>
+    set((s) => ({ items: s.items.map((t) => (t.id === id ? { ...t, estPomos } : t)) })),
+
+  addFocusEntry: (id, minutes) =>
+    set((s) => ({
+      items: s.items.map((t) => {
+        if (t.id !== id) return t;
+        const date = todayKey();
+        const focus: FocusEntry[] = t.focus ? [...t.focus] : [];
+        const idx = focus.findIndex((f) => f.date === date);
+        if (idx >= 0) focus[idx] = { date, minutes: focus[idx].minutes + minutes };
+        else focus.push({ date, minutes });
+        return { ...t, focus };
+      }),
+    })),
 
   deleteTask: (id) => set((s) => ({ items: s.items.filter((t) => t.id !== id) })),
 

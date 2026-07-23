@@ -3418,7 +3418,12 @@
       "classLabel": "Class",
       "noClass": "No class",
       "priority": { "none": "None", "low": "Low", "medium": "Medium", "high": "High" },
-      "canceledBadge": "cancelled"
+      "canceledBadge": "cancelled",
+      "metricEstimated": "Estimated time",
+      "metricToDo": "To be done",
+      "metricSpentToday": "Spent today",
+      "metricDone": "Completed",
+      "startFocusAria": "Start focus"
     },
     "detail": {
       "emptyTitle": "No task selected",
@@ -3448,8 +3453,20 @@
       "repeatClear": "Remove",
       "tagsLabel": "Tags",
       "addTagPlaceholder": "Add tag...",
-      "removeTagAria": "Remove tag {tag}"
+      "removeTagAria": "Remove tag {tag}",
+      "focusMetaLabel": "Focus",
+      "estPomosDecrease": "Decrease",
+      "estPomosIncrease": "Increase",
+      "focusTotal": "Total: {value}",
+      "startFocus": "Start"
     }
+  },
+  "FocusTimer": {
+    "workDoneToast": "Focus session done! Time for a break.",
+    "breakDoneToast": "Break's over — time to get back to work.",
+    "focusLabel": "Focus",
+    "breakLabel": "Break",
+    "stopAria": "Stop"
   },
   "TasksSection": {
     "title": "Tasks",
@@ -3459,6 +3476,11 @@
     "leadLabel": "Remind",
     "leadSameDay": "Same day",
     "lead1Day": "1 day before",
-    "lead3Days": "3 days before"
+    "lead3Days": "3 days before",
+    "pomodoroTitle": "Pomodoro",
+    "pomoLengthLabel": "Pomodoro length (minutes)",
+    "shortBreakLabel": "Short break (minutes)",
+    "longBreakLabel": "Long break (minutes)",
+    "longBreakEveryLabel": "Long break after how many pomodoros"
   }
 }

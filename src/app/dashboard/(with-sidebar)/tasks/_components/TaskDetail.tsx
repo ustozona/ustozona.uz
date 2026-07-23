@@ -10,8 +10,12 @@ import {
   ClipboardCheck,
   Flag,
   GraduationCap,
+  Minus,
   Pencil,
+  Play,
+  Plus,
   Repeat,
+  Timer,
   Trash2,
   X,
 } from "lucide-react";
@@ -40,9 +44,11 @@ import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { buildRule, recurrenceLabel } from "@/lib/recurrence";
 import {
   formatDateGroupLabel,
+  formatMinutes,
   PRIORITY_META,
   PRIORITY_ORDER,
   TAG_PILL_CLASS,
+  totalFocusMinutes,
   type Task,
   type TaskPriority,
 } from "@/lib/tasks-data";
@@ -63,6 +69,8 @@ export function TaskDetail({
   onSetTitle,
   onSetTags,
   onSetRepeat,
+  onSetEstPomos,
+  onStartFocus,
   onDelete,
   onCancel,
 }: {
@@ -75,6 +83,8 @@ export function TaskDetail({
   onSetTitle: (title: string) => void;
   onSetTags: (tags: string[]) => void;
   onSetRepeat: (repeat: Task["repeat"]) => void;
+  onSetEstPomos: (n: number) => void;
+  onStartFocus: () => void;
   onDelete: () => void;
   onCancel: () => void;
 }) {
@@ -262,6 +272,36 @@ export function TaskDetail({
                 />
               </MetaRow>
             )}
+
+            <MetaRow icon={<Timer className="size-4" />} label={t("focusMetaLabel")}>
+              <div className="flex flex-1 flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1 rounded-md border border-border">
+                  <button
+                    type="button"
+                    onClick={() => onSetEstPomos(Math.max(0, (task.estPomos ?? 0) - 1))}
+                    className="flex size-7 items-center justify-center text-muted-foreground hover:bg-muted"
+                    aria-label={t("estPomosDecrease")}
+                  >
+                    <Minus className="size-3.5" />
+                  </button>
+                  <span className="w-6 text-center text-sm font-medium tabular-nums">{task.estPomos ?? 0}</span>
+                  <button
+                    type="button"
+                    onClick={() => onSetEstPomos((task.estPomos ?? 0) + 1)}
+                    className="flex size-7 items-center justify-center text-muted-foreground hover:bg-muted"
+                    aria-label={t("estPomosIncrease")}
+                  >
+                    <Plus className="size-3.5" />
+                  </button>
+                </div>
+                <TypographyMuted>{t("focusTotal", { value: formatMinutes(totalFocusMinutes(task)) })}</TypographyMuted>
+                {!done && task.status !== "canceled" && (
+                  <Button variant="ghost" size="sm" onClick={onStartFocus} className="gap-1.5 text-primary hover:bg-primary/10 hover:text-primary">
+                    <Play className="size-3.5 fill-current" /> {t("startFocus")}
+                  </Button>
+                )}
+              </div>
+            </MetaRow>
           </div>
 
           {/* Teglar */}

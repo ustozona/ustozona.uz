@@ -3418,7 +3418,12 @@
       "classLabel": "Сынып",
       "noClass": "Сыныпсыз",
       "priority": { "none": "Жоқ", "low": "Төмен", "medium": "Орташа", "high": "Жоғары" },
-      "canceledBadge": "болдырылды"
+      "canceledBadge": "болдырылды",
+      "metricEstimated": "Болжамды уақыт",
+      "metricToDo": "Орындалуы керек",
+      "metricSpentToday": "Бүгін жұмсалды",
+      "metricDone": "Орындалды",
+      "startFocusAria": "Фокусты бастау"
     },
     "detail": {
       "emptyTitle": "Тапсырма таңдалмаған",
@@ -3448,8 +3453,20 @@
       "repeatClear": "Алып тастау",
       "tagsLabel": "Тегтер",
       "addTagPlaceholder": "Тег қосу...",
-      "removeTagAria": "{tag} тегін алып тастау"
+      "removeTagAria": "{tag} тегін алып тастау",
+      "focusMetaLabel": "Фокус",
+      "estPomosDecrease": "Азайту",
+      "estPomosIncrease": "Көбейту",
+      "focusTotal": "Барлығы: {value}",
+      "startFocus": "Бастау"
     }
+  },
+  "FocusTimer": {
+    "workDoneToast": "Фокус аяқталды! Үзіліс уақыты.",
+    "breakDoneToast": "Үзіліс аяқталды — жұмысқа қайту уақыты.",
+    "focusLabel": "Фокус",
+    "breakLabel": "Үзіліс",
+    "stopAria": "Тоқтату"
   },
   "TasksSection": {
     "title": "Тапсырмалар",
@@ -3459,6 +3476,11 @@
     "leadLabel": "Қашан еске салынсын",
     "leadSameDay": "Сол күні",
     "lead1Day": "1 күн бұрын",
-    "lead3Days": "3 күн бұрын"
+    "lead3Days": "3 күн бұрын",
+    "pomodoroTitle": "Помодоро",
+    "pomoLengthLabel": "Помодоро ұзақтығы (минут)",
+    "shortBreakLabel": "Қысқа үзіліс (минут)",
+    "longBreakLabel": "Ұзақ үзіліс (минут)",
+    "longBreakEveryLabel": "Неше помодородан кейін ұзақ үзіліс"
   }
 }

@@ -6,6 +6,8 @@ import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useTasksStore } from "@/store/useTasksStore";
+import { useFocusStore } from "@/store/useFocusStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { todayKey } from "@/lib/date-keys";
@@ -57,8 +59,11 @@ export default function TasksPage() {
   const setTaskClassId = useTasksStore((s) => s.setClassId);
   const setTags = useTasksStore((s) => s.setTags);
   const setRepeat = useTasksStore((s) => s.setRepeat);
+  const setEstPomos = useTasksStore((s) => s.setEstPomos);
   const deleteTask = useTasksStore((s) => s.deleteTask);
   const cancelTask = useTasksStore((s) => s.cancelTask);
+  const startFocus = useFocusStore((s) => s.startWork);
+  const pomoMinutes = useSettingsStore((s) => s.tasksSettings.pomoMinutes);
 
   const liveClasses = useLiveClasses();
   const classesById = useMemo(() => {
@@ -173,8 +178,10 @@ export default function TasksPage() {
               });
               setSelectedTaskId(id);
             }}
+            onStartFocus={(id) => startFocus(id, pomoMinutes)}
             classesById={classesById}
             liveClasses={liveClassesWithHex}
+            pomoMinutes={pomoMinutes}
           />
         </DashboardColumn>
 
@@ -190,6 +197,8 @@ export default function TasksPage() {
               onSetTitle={(title) => updateTask(selectedTask.id, (t) => ({ ...t, title }))}
               onSetTags={(tags) => setTags(selectedTask.id, tags)}
               onSetRepeat={(repeat) => setRepeat(selectedTask.id, repeat)}
+              onSetEstPomos={(n) => setEstPomos(selectedTask.id, n)}
+              onStartFocus={() => startFocus(selectedTask.id, pomoMinutes)}
               onDelete={() => {
                 deleteTask(selectedTask.id);
                 setSelectedTaskId(null);

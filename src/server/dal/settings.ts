@@ -73,7 +73,16 @@ type TeacherPrefs = {
   completedTours?: string[];
   birthdayTasks?: boolean;
   birthdayLead?: number;
+  pomoMinutes?: number;
+  shortBreakMinutes?: number;
+  longBreakMinutes?: number;
+  longBreakEvery?: number;
 };
+
+function clampMinutes(v: unknown, fallback: number, max = 180): number {
+  const n = typeof v === "number" ? v : NaN;
+  return Number.isFinite(n) && n >= 1 && n <= max ? n : fallback;
+}
 
 export async function getSettings(): Promise<SettingsPayload> {
   const teacher = await requireTeacher();
@@ -117,6 +126,12 @@ export async function getSettings(): Promise<SettingsPayload> {
     tasksSettings: {
       birthdayTasks: prefs.birthdayTasks === true,
       birthdayLead: prefs.birthdayLead === 1 || prefs.birthdayLead === 3 ? prefs.birthdayLead : 0,
+      pomoMinutes: clampMinutes(prefs.pomoMinutes, 25),
+      shortBreakMinutes: clampMinutes(prefs.shortBreakMinutes, 5, 60),
+      longBreakMinutes: clampMinutes(prefs.longBreakMinutes, 15, 60),
+      longBreakEvery: Number.isFinite(prefs.longBreakEvery) && (prefs.longBreakEvery ?? 0) >= 2 && (prefs.longBreakEvery ?? 0) <= 12
+        ? (prefs.longBreakEvery as number)
+        : 4,
     },
   };
 }
@@ -133,6 +148,10 @@ export async function updateSettings(input: SettingsUpdate): Promise<void> {
     completedTours: input.completedTours,
     birthdayTasks: input.tasksSettings.birthdayTasks,
     birthdayLead: input.tasksSettings.birthdayLead,
+    pomoMinutes: input.tasksSettings.pomoMinutes,
+    shortBreakMinutes: input.tasksSettings.shortBreakMinutes,
+    longBreakMinutes: input.tasksSettings.longBreakMinutes,
+    longBreakEvery: input.tasksSettings.longBreakEvery,
   } satisfies TeacherPrefs);
   await db
     .update(teachers)

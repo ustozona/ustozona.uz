@@ -3418,7 +3418,12 @@
       "classLabel": "Klass",
       "noClass": "Klasssız",
       "priority": { "none": "Joq", "low": "Tómen", "medium": "Ortasha", "high": "Joqarı" },
-      "canceledBadge": "biykar qılınǵan"
+      "canceledBadge": "biykar qılınǵan",
+      "metricEstimated": "Shama waqıt",
+      "metricToDo": "Orınlanıwı kerek",
+      "metricSpentToday": "Búgin sarplandı",
+      "metricDone": "Orınlanǵan",
+      "startFocusAria": "Fokustı baslaw"
     },
     "detail": {
       "emptyTitle": "Wazıypa tańlanbaǵan",
@@ -3448,8 +3453,20 @@
       "repeatClear": "Alıp taslaw",
       "tagsLabel": "Teglar",
       "addTagPlaceholder": "Teg qosıw...",
-      "removeTagAria": "{tag} tegin alıp taslaw"
+      "removeTagAria": "{tag} tegin alıp taslaw",
+      "focusMetaLabel": "Fokus",
+      "estPomosDecrease": "Kemeytiw",
+      "estPomosIncrease": "Kópeytiw",
+      "focusTotal": "Jámi: {value}",
+      "startFocus": "Baslaw"
     }
+  },
+  "FocusTimer": {
+    "workDoneToast": "Fokus tamamlandı! Tanaffus waqtı.",
+    "breakDoneToast": "Tanaffus tamamlandı — jumısqa qaytıw waqtı.",
+    "focusLabel": "Fokus",
+    "breakLabel": "Tanaffus",
+    "stopAria": "Toqtatıw"
   },
   "TasksSection": {
     "title": "Wazıypalar",
@@ -3459,6 +3476,11 @@
     "leadLabel": "Qashan eske salınsın",
     "leadSameDay": "Sol kúni",
     "lead1Day": "1 kún aldın",
-    "lead3Days": "3 kún aldın"
+    "lead3Days": "3 kún aldın",
+    "pomodoroTitle": "Pomodoro",
+    "pomoLengthLabel": "Pomodoro uzınlıǵı (minut)",
+    "shortBreakLabel": "Qısqa tanaffus (minut)",
+    "longBreakLabel": "Uzın tanaffus (minut)",
+    "longBreakEveryLabel": "Neshe pomodorodan keyin uzın tanaffus"
   }
 }

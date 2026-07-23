@@ -127,6 +127,21 @@ export function collectTags(tasks: Task[]): string[] {
   return [...set].sort();
 }
 
+/* ── Fokus (pomodoro) ─────────────────────────────────────────────── */
+
+/** Daqiqani "1s 30d" / "45d" koʻrinishida qisqa formatlash. */
+export function formatMinutes(total: number): string {
+  if (total <= 0) return "0d";
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return h > 0 ? `${h}s ${m}d` : `${m}d`;
+}
+
+/** Vazifaning barcha kunlar boʻyicha jamlangan fokus vaqti (daqiqa). */
+export function totalFocusMinutes(task: Task): number {
+  return (task.focus ?? []).reduce((sum, f) => sum + f.minutes, 0);
+}
+
 /* ── Aqlli roʻyxatlar (chap panel) ────────────────────────────────── */
 
 export type SmartListKey = "today" | "tomorrow" | "week" | "planned" | "nodate" | "done";

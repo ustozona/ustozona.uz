@@ -42,6 +42,10 @@ const saveSchema = z.object({
   tasksSettings: z.object({
     birthdayTasks: z.boolean(),
     birthdayLead: z.union([z.literal(0), z.literal(1), z.literal(3)]),
+    pomoMinutes: z.number().min(1).max(180),
+    shortBreakMinutes: z.number().min(1).max(60),
+    longBreakMinutes: z.number().min(1).max(60),
+    longBreakEvery: z.number().min(2).max(12),
   }),
 });
 

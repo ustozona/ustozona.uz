@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown, GraduationCap, Plus } from "lucide-react";
+import { ChevronDown, GraduationCap, Play, Plus } from "lucide-react";
 import { Panel, PanelHeader, PanelBody } from "@/components/ui/panel";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -18,6 +18,7 @@ import { addDaysKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
 import {
   formatDateGroupLabel,
+  formatMinutes,
   groupTasksByDate,
   PRIORITY_META,
   PRIORITY_ORDER,
@@ -40,8 +41,10 @@ export function TasksList({
   onSelectTask,
   onToggleStatus,
   onQuickAdd,
+  onStartFocus,
   classesById,
   liveClasses,
+  pomoMinutes,
 }: {
   title: string;
   count: number;
@@ -54,11 +57,20 @@ export function TasksList({
   onSelectTask: (id: string) => void;
   onToggleStatus: (id: string) => void;
   onQuickAdd: (input: { title: string; dueDate: string | null; classId: string | null; priority: TaskPriority }) => void;
+  onStartFocus: (id: string) => void;
   classesById: Map<string, ClassMeta>;
   liveClasses: { id: string; name: string; hex: string }[];
+  pomoMinutes: number;
 }) {
   const t = useTranslations("TasksPage.list");
   const tomorrowKey = addDaysKey(todayKey, 1);
+
+  const estimatedMinutes = activeTasks.reduce((sum, x) => sum + (x.estPomos ?? 0) * pomoMinutes, 0);
+  const spentTodayMinutes = [...activeTasks, ...doneTasks].reduce((sum, x) => {
+    const today = (x.focus ?? []).find((f) => f.date === todayKey);
+    return sum + (today?.minutes ?? 0);
+  }, 0);
+  const doneCount = doneTasks.filter((x) => x.status === "done").length;
 
   const groupLabel = (key: string) => {
     if (key === "nodate") return t("noDateGroup");
@@ -73,6 +85,21 @@ export function TasksList({
   return (
     <Panel>
       <PanelHeader title={title} count={count > 0 ? count : undefined} />
+      {!isDoneView && hydrated && (
+        <div className="grid shrink-0 grid-cols-4 divide-x divide-border border-b border-border">
+          {[
+            { label: t("metricEstimated"), value: formatMinutes(estimatedMinutes) },
+            { label: t("metricToDo"), value: String(activeTasks.length) },
+            { label: t("metricSpentToday"), value: formatMinutes(spentTodayMinutes) },
+            { label: t("metricDone"), value: String(doneCount) },
+          ].map((m) => (
+            <div key={m.label} className="flex flex-col items-center gap-0.5 px-2 py-2.5">
+              <span className="text-sm font-semibold tabular-nums text-foreground">{m.value}</span>
+              <span className="truncate text-[10px] text-muted-foreground">{m.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <PanelBody>
         <div className="flex flex-col">
           {!hydrated ? (
@@ -108,6 +135,7 @@ export function TasksList({
                       selectedTaskId={selectedTaskId}
                       onSelectTask={onSelectTask}
                       onToggleStatus={onToggleStatus}
+                      onStartFocus={onStartFocus}
                       classesById={classesById}
                     />
                   ))
@@ -119,6 +147,7 @@ export function TasksList({
                       selectedTaskId={selectedTaskId}
                       onSelectTask={onSelectTask}
                       onToggleStatus={onToggleStatus}
+                      onStartFocus={onStartFocus}
                       classesById={classesById}
                     />
                   ))}
@@ -139,6 +168,7 @@ export function TasksList({
                           selectedTaskId={selectedTaskId}
                           onSelectTask={onSelectTask}
                           onToggleStatus={onToggleStatus}
+                          onStartFocus={onStartFocus}
                           classesById={classesById}
                         />
                       ))}
@@ -162,6 +192,7 @@ function TaskGroup({
   selectedTaskId,
   onSelectTask,
   onToggleStatus,
+  onStartFocus,
   classesById,
 }: {
   label: string;
@@ -169,6 +200,7 @@ function TaskGroup({
   selectedTaskId: string | null;
   onSelectTask: (id: string) => void;
   onToggleStatus: (id: string) => void;
+  onStartFocus: (id: string) => void;
   classesById: Map<string, ClassMeta>;
 }) {
   const t = useTranslations("TasksPage.list");
@@ -198,7 +230,7 @@ function TaskGroup({
               }
             }}
             data-active={selectedTaskId === task.id || undefined}
-            className="list-row w-full cursor-pointer"
+            className="list-row group w-full cursor-pointer"
           >
             <Checkbox
               checked={done}
@@ -215,6 +247,19 @@ function TaskGroup({
               {task.title}
               {canceled && <span className="ml-1.5 text-xs">· {t("canceledBadge")}</span>}
             </span>
+            {!done && !canceled && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStartFocus(task.id);
+                }}
+                aria-label={t("startFocusAria")}
+                className="hidden shrink-0 rounded-full p-1.5 text-primary opacity-0 transition-opacity hover:bg-primary/10 group-hover:opacity-100 sm:flex"
+              >
+                <Play className="size-3.5 fill-current" />
+              </button>
+            )}
             {(task.tags ?? []).length > 0 && (
               <span className="hidden shrink-0 items-center gap-1 sm:flex">
                 {(task.tags ?? []).slice(0, 2).map((tag) => (

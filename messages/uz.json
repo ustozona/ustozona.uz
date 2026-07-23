@@ -3255,7 +3255,12 @@
       "classLabel": "Sinf",
       "noClass": "Sinfsiz",
       "priority": { "none": "Yoʻq", "low": "Past", "medium": "Oʻrta", "high": "Yuqori" },
-      "canceledBadge": "bekor qilingan"
+      "canceledBadge": "bekor qilingan",
+      "metricEstimated": "Taxminiy vaqt",
+      "metricToDo": "Bajarilishi kerak",
+      "metricSpentToday": "Bugun sarflandi",
+      "metricDone": "Bajarildi",
+      "startFocusAria": "Fokusni boshlash"
     },
     "detail": {
       "emptyTitle": "Vazifa tanlanmagan",
@@ -3285,8 +3290,20 @@
       "repeatClear": "Olib tashlash",
       "tagsLabel": "Teglar",
       "addTagPlaceholder": "Teg qoʻshish...",
-      "removeTagAria": "{tag} tegini olib tashlash"
+      "removeTagAria": "{tag} tegini olib tashlash",
+      "focusMetaLabel": "Fokus",
+      "estPomosDecrease": "Kamaytirish",
+      "estPomosIncrease": "Koʻpaytirish",
+      "focusTotal": "Jami: {value}",
+      "startFocus": "Boshlash"
     }
+  },
+  "FocusTimer": {
+    "workDoneToast": "Fokus tugadi! Tanaffus vaqti.",
+    "breakDoneToast": "Tanaffus tugadi — ishga qaytish vaqti.",
+    "focusLabel": "Fokus",
+    "breakLabel": "Tanaffus",
+    "stopAria": "Toʻxtatish"
   },
   "TasksSection": {
     "title": "Vazifalar",
@@ -3296,6 +3313,11 @@
     "leadLabel": "Qachon eslatilsin",
     "leadSameDay": "Oʻsha kuni",
     "lead1Day": "1 kun oldin",
-    "lead3Days": "3 kun oldin"
+    "lead3Days": "3 kun oldin",
+    "pomodoroTitle": "Pomodoro",
+    "pomoLengthLabel": "Pomodoro uzunligi (daqiqa)",
+    "shortBreakLabel": "Qisqa tanaffus (daqiqa)",
+    "longBreakLabel": "Uzun tanaffus (daqiqa)",
+    "longBreakEveryLabel": "Nechta pomodorodan keyin uzun tanaffus"
   }
 }

@@ -3418,7 +3418,12 @@
       "classLabel": "Класс",
       "noClass": "Без класса",
       "priority": { "none": "Нет", "low": "Низкий", "medium": "Средний", "high": "Высокий" },
-      "canceledBadge": "отменено"
+      "canceledBadge": "отменено",
+      "metricEstimated": "Ожидаемое время",
+      "metricToDo": "Нужно сделать",
+      "metricSpentToday": "Потрачено сегодня",
+      "metricDone": "Выполнено",
+      "startFocusAria": "Начать фокус"
     },
     "detail": {
       "emptyTitle": "Задача не выбрана",
@@ -3448,8 +3453,20 @@
       "repeatClear": "Убрать",
       "tagsLabel": "Теги",
       "addTagPlaceholder": "Добавить тег...",
-      "removeTagAria": "Удалить тег {tag}"
+      "removeTagAria": "Удалить тег {tag}",
+      "focusMetaLabel": "Фокус",
+      "estPomosDecrease": "Уменьшить",
+      "estPomosIncrease": "Увеличить",
+      "focusTotal": "Всего: {value}",
+      "startFocus": "Начать"
     }
+  },
+  "FocusTimer": {
+    "workDoneToast": "Фокус завершён! Время перерыва.",
+    "breakDoneToast": "Перерыв окончен — пора вернуться к работе.",
+    "focusLabel": "Фокус",
+    "breakLabel": "Перерыв",
+    "stopAria": "Остановить"
   },
   "TasksSection": {
     "title": "Задачи",
@@ -3459,6 +3476,11 @@
     "leadLabel": "Напомнить",
     "leadSameDay": "В тот же день",
     "lead1Day": "За 1 день",
-    "lead3Days": "За 3 дня"
+    "lead3Days": "За 3 дня",
+    "pomodoroTitle": "Помодоро",
+    "pomoLengthLabel": "Длительность помодоро (мин)",
+    "shortBreakLabel": "Короткий перерыв (мин)",
+    "longBreakLabel": "Длинный перерыв (мин)",
+    "longBreakEveryLabel": "Длинный перерыв через сколько помодоро"
   }
 }

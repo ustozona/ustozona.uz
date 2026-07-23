@@ -51,10 +51,25 @@ export function normalizeBackgroundScale(v: unknown): number {
 }
 export type AppLanguage = "uz" | "kaa" | "ru" | "en" | "ky" | "kk";
 
-/** Vazifalar sahifasi — tugʻilgan kun avto-vazifasi sozlamalari.
-    `birthdayLead` — bildirishnoma necha kun oldin (0 = oʻsha kuni). */
-export type TasksSettings = { birthdayTasks: boolean; birthdayLead: 0 | 1 | 3 };
-export const DEFAULT_TASKS_SETTINGS: TasksSettings = { birthdayTasks: false, birthdayLead: 0 };
+/** Vazifalar sahifasi — tugʻilgan kun avto-vazifasi + pomodoro uzunliklari.
+    `birthdayLead` — bildirishnoma necha kun oldin (0 = oʻsha kuni).
+    `longBreakEvery` — nechta pomodorodan keyin uzun tanaffus. */
+export type TasksSettings = {
+  birthdayTasks: boolean;
+  birthdayLead: 0 | 1 | 3;
+  pomoMinutes: number;
+  shortBreakMinutes: number;
+  longBreakMinutes: number;
+  longBreakEvery: number;
+};
+export const DEFAULT_TASKS_SETTINGS: TasksSettings = {
+  birthdayTasks: false,
+  birthdayLead: 0,
+  pomoMinutes: 25,
+  shortBreakMinutes: 5,
+  longBreakMinutes: 15,
+  longBreakEvery: 4,
+};
 export type AuthProvider = "google" | "email";
 
 export type TeacherProfile = {
