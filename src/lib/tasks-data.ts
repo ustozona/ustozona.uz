@@ -131,12 +131,13 @@ export function collectTags(tasks: Task[]): string[] {
 
 /* ── Fokus (pomodoro) ─────────────────────────────────────────────── */
 
-/** Daqiqani "1s 30d" / "45d" koʻrinishida qisqa formatlash. */
+/** Daqiqani "1s 30 daq." / "45 daq." koʻrinishida qisqa formatlash. */
 export function formatMinutes(total: number): string {
-  if (total <= 0) return "0d";
+  if (total <= 0) return "0 daq.";
   const h = Math.floor(total / 60);
   const m = total % 60;
-  return h > 0 ? `${h}s ${m}d` : `${m}d`;
+  if (h <= 0) return `${m} daq.`;
+  return m > 0 ? `${h}s ${m} daq.` : `${h}s`;
 }
 
 /** Vazifaning barcha kunlar boʻyicha jamlangan fokus vaqti (daqiqa). */

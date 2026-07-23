@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown, Flag, GraduationCap, Play, Plus, Repeat } from "lucide-react";
+import { Ban, CalendarOff, ChevronDown, Copy, Flag, GraduationCap, Play, Plus, Repeat, Sun, Sunrise, Trash2 } from "lucide-react";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
 import { Panel, PanelHeader, PanelBody } from "@/components/ui/panel";
+import { Badge } from "@/components/ui/badge";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
@@ -15,6 +16,20 @@ import { ClassSwatch } from "@/components/ClassSwatch";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { addDaysKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
@@ -45,6 +60,12 @@ export function TasksList({
   onToggleStatus,
   onQuickAdd,
   onStartFocus,
+  onSetPriority,
+  onSetDueDate,
+  onSetClassId,
+  onDelete,
+  onCancel,
+  onDuplicate,
   classesById,
   liveClasses,
   pomoMinutes,
@@ -65,6 +86,13 @@ export function TasksList({
   /** Tez-qoʻshishda oldindan tanlangan sana (joriy roʻyxat konteksti). */
   defaultDueDate?: string;
   onStartFocus: (id: string) => void;
+  /** Qator ustida oʻng-klik menyusi uchun (Focus To-Do uslubi). */
+  onSetPriority: (id: string, priority: TaskPriority) => void;
+  onSetDueDate: (id: string, key: string | null) => void;
+  onSetClassId: (id: string, classId: string | null) => void;
+  onDelete: (id: string) => void;
+  onCancel: (id: string) => void;
+  onDuplicate: (id: string) => void;
   classesById: Map<string, ClassMeta>;
   liveClasses: { id: string; name: string; hex: string }[];
   pomoMinutes: number;
@@ -84,7 +112,17 @@ export function TasksList({
 
   return (
     <Panel>
-      <PanelHeader icon={icon} title={title} count={count > 0 ? count : undefined} />
+      <PanelHeader
+        icon={icon}
+        title={title}
+        count={
+          count > 0 ? (
+            <Badge variant="secondary" className="size-6 rounded-full bg-muted p-0 text-xs tabular-nums text-muted-foreground">
+              {count}
+            </Badge>
+          ) : undefined
+        }
+      />
       <PanelBody>
         <div className="flex flex-col">
           {!hydrated ? (
@@ -129,7 +167,14 @@ export function TasksList({
                       onSelectTask={onSelectTask}
                       onToggleStatus={onToggleStatus}
                       onStartFocus={onStartFocus}
+                      onSetPriority={onSetPriority}
+                      onSetDueDate={onSetDueDate}
+                      onSetClassId={onSetClassId}
+                      onDelete={onDelete}
+                      onCancel={onCancel}
+                      onDuplicate={onDuplicate}
                       classesById={classesById}
+                      liveClasses={liveClasses}
                       pomoMinutes={pomoMinutes}
                       todayKey={todayKey}
                     />
@@ -144,7 +189,14 @@ export function TasksList({
                       onSelectTask={onSelectTask}
                       onToggleStatus={onToggleStatus}
                       onStartFocus={onStartFocus}
+                      onSetPriority={onSetPriority}
+                      onSetDueDate={onSetDueDate}
+                      onSetClassId={onSetClassId}
+                      onDelete={onDelete}
+                      onCancel={onCancel}
+                      onDuplicate={onDuplicate}
                       classesById={classesById}
+                      liveClasses={liveClasses}
                       pomoMinutes={pomoMinutes}
                       todayKey={todayKey}
                     />
@@ -167,7 +219,14 @@ export function TasksList({
                           onSelectTask={onSelectTask}
                           onToggleStatus={onToggleStatus}
                           onStartFocus={onStartFocus}
+                          onSetPriority={onSetPriority}
+                          onSetDueDate={onSetDueDate}
+                          onSetClassId={onSetClassId}
+                          onDelete={onDelete}
+                          onCancel={onCancel}
+                          onDuplicate={onDuplicate}
                           classesById={classesById}
+                          liveClasses={liveClasses}
                           pomoMinutes={pomoMinutes}
                           todayKey={todayKey}
                         />
@@ -194,7 +253,14 @@ function TaskGroup({
   onSelectTask,
   onToggleStatus,
   onStartFocus,
+  onSetPriority,
+  onSetDueDate,
+  onSetClassId,
+  onDelete,
+  onCancel,
+  onDuplicate,
   classesById,
+  liveClasses,
   pomoMinutes,
   todayKey,
 }: {
@@ -205,11 +271,19 @@ function TaskGroup({
   onSelectTask: (id: string) => void;
   onToggleStatus: (id: string) => void;
   onStartFocus: (id: string) => void;
+  onSetPriority: (id: string, priority: TaskPriority) => void;
+  onSetDueDate: (id: string, key: string | null) => void;
+  onCancel: (id: string) => void;
+  onDuplicate: (id: string) => void;
+  onSetClassId: (id: string, classId: string | null) => void;
+  onDelete: (id: string) => void;
   classesById: Map<string, ClassMeta>;
+  liveClasses: { id: string; name: string; hex: string }[];
   pomoMinutes: number;
   todayKey: string;
 }) {
   const t = useTranslations("TasksPage.list");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const tomorrowKey = addDaysKey(todayKey, 1);
   // Focus To-Do uslubi: qator oxirida qisqa muddat yorligʻi.
   const dueLabel = (due: string | null) => {
@@ -246,8 +320,9 @@ function TaskGroup({
         const canceled = task.status === "canceled";
         const prio = PRIORITY_META[task.priority];
         return (
+        <ContextMenu key={task.id}>
+        <ContextMenuTrigger asChild>
           <div
-            key={task.id}
             role="button"
             tabIndex={0}
             onClick={() => onSelectTask(task.id)}
@@ -272,7 +347,12 @@ function TaskGroup({
               checked={done}
               onCheckedChange={() => onToggleStatus(task.id)}
               onClick={(e) => e.stopPropagation()}
-              className={cn("size-4 shrink-0 rounded-full", !done && prio.checkbox)}
+              className={cn(
+                "size-4 shrink-0 rounded-full",
+                done
+                  ? "border-success bg-success data-[state=checked]:border-success data-[state=checked]:bg-success"
+                  : prio.checkbox
+              )}
             />
             {/* Focus To-Do uslubi: ▶ checkbox yonida, doim koʻrinadi. */}
             {!done && !canceled && (
@@ -323,8 +403,106 @@ function TaskGroup({
               );
             })()}
           </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-48">
+          <ContextMenuItem onClick={() => onSetDueDate(task.id, todayKey)}>
+            <Sun />
+            {t("todayGroup")}
+          </ContextMenuItem>
+          <ContextMenuItem onClick={() => onSetDueDate(task.id, tomorrowKey)}>
+            <Sunrise />
+            {t("tomorrowGroup")}
+          </ContextMenuItem>
+          {task.dueDate && (
+            <ContextMenuItem onClick={() => onSetDueDate(task.id, null)}>
+              <CalendarOff />
+              {t("contextNoDate")}
+            </ContextMenuItem>
+          )}
+          <ContextMenuSeparator />
+          <div className="flex items-center justify-between gap-1 px-2 py-1.5">
+            {PRIORITY_ORDER.slice().reverse().map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onSetPriority(task.id, p)}
+                aria-label={t(`priority.${p}`)}
+                className={cn(
+                  "flex size-7 items-center justify-center rounded-md transition-colors hover:bg-accent",
+                  task.priority === p && "bg-accent"
+                )}
+              >
+                <Flag
+                  className={cn("size-3.5 shrink-0", p === "none" ? "text-muted-foreground/40" : PRIORITY_META[p].text)}
+                  fill={p === "none" ? "none" : "currentColor"}
+                />
+              </button>
+            ))}
+          </div>
+          {liveClasses.length > 0 && (
+            <>
+              <ContextMenuSeparator />
+              <ContextMenuSub>
+                <ContextMenuSubTrigger>
+                  <GraduationCap />
+                  {t("contextMoveToClass")}
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem onClick={() => onSetClassId(task.id, null)}>
+                    {t("noClass")}
+                  </ContextMenuItem>
+                  {liveClasses.map((cls) => (
+                    <ContextMenuItem key={cls.id} onClick={() => onSetClassId(task.id, cls.id)} className="gap-2">
+                      <ClassSwatch hex={cls.hex} />
+                      {cls.name}
+                    </ContextMenuItem>
+                  ))}
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+            </>
+          )}
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={() => onDuplicate(task.id)}>
+            <Copy />
+            {t("contextDuplicate")}
+          </ContextMenuItem>
+          {task.source.kind !== "manual" ? (
+            task.status !== "canceled" && (
+              <ContextMenuItem onClick={() => onCancel(task.id)}>
+                <Ban />
+                {t("contextWontDo")}
+              </ContextMenuItem>
+            )
+          ) : (
+            <ContextMenuItem variant="destructive" onClick={() => setDeleteId(task.id)}>
+              <Trash2 />
+              {t("contextDelete")}
+            </ContextMenuItem>
+          )}
+        </ContextMenuContent>
+        </ContextMenu>
         );
       })}
+
+      <AlertDialog open={deleteId != null} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("contextDeleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("contextDeleteDescription")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("contextDeleteCancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteId) onDelete(deleteId);
+                setDeleteId(null);
+              }}
+            >
+              {t("contextDeleteConfirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

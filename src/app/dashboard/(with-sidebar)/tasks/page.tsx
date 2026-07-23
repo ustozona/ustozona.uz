@@ -63,8 +63,11 @@ export default function TasksPage() {
   const setEstPomos = useTasksStore((s) => s.setEstPomos);
   const deleteTask = useTasksStore((s) => s.deleteTask);
   const cancelTask = useTasksStore((s) => s.cancelTask);
+  const duplicateTask = useTasksStore((s) => s.duplicateTask);
   const startFocus = useFocusStore((s) => s.startWork);
-  const pomoMinutes = useSettingsStore((s) => s.tasksSettings.pomoMinutes);
+  const tasksSettings = useSettingsStore((s) => s.tasksSettings);
+  const setTasksSettings = useSettingsStore((s) => s.setTasksSettings);
+  const pomoMinutes = tasksSettings.pomoMinutes;
 
   const liveClasses = useLiveClasses();
   const classesById = useMemo(() => {
@@ -186,6 +189,15 @@ export default function TasksPage() {
               setSelectedTaskId(id);
             }}
             onStartFocus={(id) => startFocus(id, pomoMinutes)}
+            onSetPriority={(id, p) => setPriority(id, p)}
+            onSetDueDate={(id, key) => setDueDate(id, key)}
+            onSetClassId={(id, cid) => setTaskClassId(id, cid)}
+            onDelete={(id) => {
+              deleteTask(id);
+              setSelectedTaskId((prev) => (prev === id ? null : prev));
+            }}
+            onCancel={(id) => cancelTask(id)}
+            onDuplicate={(id) => duplicateTask(id)}
             classesById={classesById}
             liveClasses={liveClassesWithHex}
             pomoMinutes={pomoMinutes}
@@ -206,6 +218,7 @@ export default function TasksPage() {
               onSetTags={(tags) => setTags(selectedTask.id, tags)}
               onSetRepeat={(repeat) => setRepeat(selectedTask.id, repeat)}
               onSetEstPomos={(n) => setEstPomos(selectedTask.id, n)}
+              onSetPomoMinutes={(n) => setTasksSettings({ ...tasksSettings, pomoMinutes: n })}
               onStartFocus={() => startFocus(selectedTask.id, pomoMinutes)}
               onDelete={() => {
                 deleteTask(selectedTask.id);

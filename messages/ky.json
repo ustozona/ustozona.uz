@@ -1952,6 +1952,10 @@
       "changelog": "Жаңылануулар"
     },
     "entries": {
+      "tasks-context-menu": {
+        "title": "Тапшырмаларга оң клик менюсу кошулду",
+        "body": "Тапшырма үстүнөн оң клик кылып мөөнөттү, артыкчылыкты же классты тез өзгөртүү, дубликат жасоо же жокко чыгаруу мүмкүн. Помидор убактысын тандоо дөңгөлөк-тандагыч менен жаңырды."
+      },
       "tasks-ui-refresh": {
         "title": "Тапшырмалар барагы ыңгайлуу болду",
         "body": "Тез кошуу тилкеси ыкчам болду, артыкчылык желекче менен көрсөтүлөт, мөөнөтү өткөн тапшырмалар кызыл түстө көрүнөт. Каптал панель жана толук маалымат терезеси да жаңырды."
@@ -3428,7 +3432,16 @@
       },
       "canceledBadge": "жокко чыгарылган",
       "startFocusAria": "Фокусту баштоо",
-      "estPomosLabel": "Болжолдуу помодоро"
+      "estPomosLabel": "Болжолдуу помодоро",
+      "contextNoDate": "Күндү алып салуу",
+      "contextMoveToClass": "Класска жылдыруу",
+      "contextDelete": "Өчүрүү",
+      "contextDeleteTitle": "Тапшырманы өчүрөсүзбү?",
+      "contextDeleteDescription": "Бул тапшырма толугу менен өчүрүлөт. Бул аракетти артка кайтарууга болбойт.",
+      "contextDeleteCancel": "Жокко чыгаруу",
+      "contextDeleteConfirm": "Өчүрүү",
+      "contextDuplicate": "Дубликат жасоо",
+      "contextWontDo": "Жокко чыгаруу"
     },
     "detail": {
       "emptyTitle": "Тапшырма тандалган жок",
@@ -3474,11 +3487,16 @@
       "addTagPlaceholder": "Тег кошуу...",
       "removeTagAria": "{tag} тегин алып салуу",
       "focusMetaLabel": "Фокус",
+      "estPomosLabel": "Помидорлор саны",
+      "estPomosTitle": "Помидор жөндөөлөрү",
+      "pomoLengthLabel": "Узактыгы (мүн)",
       "estPomosDecrease": "Азайтуу",
       "estPomosIncrease": "Көбөйтүү",
+      "confirmOk": "Сактоо",
       "focusTotal": "Баары: {value}",
       "startFocus": "Баштоо",
-      "closeAria": "Панелди жабуу"
+      "closeAria": "Панелди жабуу",
+      "estPomosFormula": "{count} × {length} = {total}"
     }
   },
   "FocusTimer": {

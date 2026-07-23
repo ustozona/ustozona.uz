@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tasks-context-menu",
+    date: "2026-07-23",
+    type: "yaxshilandi",
+    title: "Vazifalarda oʻng-klik menyu qoʻshildi",
+    body: "Vazifa ustida oʻng-klik qilib muddatni, ustuvorlikni yoki sinfni tezda oʻzgartirish, nusxa yaratish yoki bekor qilish mumkin. Pomodoro vaqtini belgilash gʻildirak-tanlagich bilan yangilandi.",
+    href: "/dashboard/tasks",
+  },
+  {
     id: "tasks-ui-refresh",
     date: "2026-07-23",
     type: "yaxshilandi",

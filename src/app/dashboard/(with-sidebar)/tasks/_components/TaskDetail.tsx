@@ -10,10 +10,8 @@ import {
   ClipboardCheck,
   Flag,
   GraduationCap,
-  Minus,
   Pencil,
   Play,
-  Plus,
   Repeat,
   Tag,
   Timer,
@@ -29,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
+import { WheelPicker, WheelPickerWrapper } from "@/components/wheel-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
@@ -61,6 +60,16 @@ function fmtDueMin(min: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+/** Gʻildirak-tanlagich variantlari: taxminiy pomodoro 0–50, uzunlik 5–60 daqiqa. */
+const EST_POMO_OPTIONS = Array.from({ length: 51 }, (_, i) => ({
+  label: String(i),
+  value: String(i),
+}));
+const POMO_LEN_OPTIONS = Array.from({ length: 56 }, (_, i) => ({
+  label: String(i + 5),
+  value: String(i + 5),
+}));
+
 export function TaskDetail({
   task,
   onToggleStatus,
@@ -72,6 +81,7 @@ export function TaskDetail({
   onSetTags,
   onSetRepeat,
   onSetEstPomos,
+  onSetPomoMinutes,
   onStartFocus,
   onDelete,
   onCancel,
@@ -88,6 +98,7 @@ export function TaskDetail({
   onSetTags: (tags: string[]) => void;
   onSetRepeat: (repeat: Task["repeat"]) => void;
   onSetEstPomos: (n: number) => void;
+  onSetPomoMinutes: (n: number) => void;
   onStartFocus: () => void;
   onDelete: () => void;
   onCancel: () => void;
@@ -100,6 +111,9 @@ export function TaskDetail({
   const [note, setNote] = useState(task?.note ?? "");
   const [title, setTitle] = useState(task?.title ?? "");
   const [tagInput, setTagInput] = useState("");
+  const [pomoOpen, setPomoOpen] = useState(false);
+  const [pendingEstPomos, setPendingEstPomos] = useState(task?.estPomos ?? 0);
+  const [pendingPomoMin, setPendingPomoMin] = useState(pomoMinutes);
 
   useEffect(() => {
     setNote(task?.note ?? "");
@@ -148,7 +162,12 @@ export function TaskDetail({
           <Checkbox
             checked={done}
             onCheckedChange={onToggleStatus}
-            className={cn("size-5 shrink-0 rounded-full", !done && prio.checkbox)}
+            className={cn(
+              "size-5 shrink-0 rounded-full",
+              done
+                ? "border-success bg-success data-[state=checked]:border-success data-[state=checked]:bg-success"
+                : prio.checkbox
+            )}
           />
           {!done && task.status !== "canceled" && (
             <button
@@ -234,32 +253,109 @@ export function TaskDetail({
             />
           </MetaRow>
 
-          {/* Pomodoro — bajarilgan/taxminiy + interval (Focus To-Do PomodoroItem) */}
+          {/* Pomodoro — bajarilgan/taxminiy (ikki qatorli, bosilganda popover'da tahrirlanadi) */}
           <MetaRow icon={<Timer className="size-4" />} label={t("focusMetaLabel")}>
-            <span className="text-sm tabular-nums text-muted-foreground">
-              {Math.floor(totalFocusMinutes(task) / Math.max(1, pomoMinutes))}
-              <span className="mx-0.5 text-muted-foreground/50">/</span>
-            </span>
-            <div className="flex items-center gap-1 rounded-md border border-border">
-              <button
-                type="button"
-                onClick={() => onSetEstPomos(Math.max(0, (task.estPomos ?? 0) - 1))}
-                className="flex size-7 items-center justify-center text-muted-foreground hover:bg-muted"
-                aria-label={t("estPomosDecrease")}
-              >
-                <Minus className="size-3.5" />
-              </button>
-              <span className="w-6 text-center text-sm font-medium tabular-nums">{task.estPomos ?? 0}</span>
-              <button
-                type="button"
-                onClick={() => onSetEstPomos((task.estPomos ?? 0) + 1)}
-                className="flex size-7 items-center justify-center text-muted-foreground hover:bg-muted"
-                aria-label={t("estPomosIncrease")}
-              >
-                <Plus className="size-3.5" />
-              </button>
-            </div>
-            <TypographyMuted className="tabular-nums">= {formatMinutes(pomoMinutes)}</TypographyMuted>
+            <Popover
+              open={pomoOpen}
+              onOpenChange={(open) => {
+                setPomoOpen(open);
+                if (open) {
+                  setPendingEstPomos(task.estPomos ?? 0);
+                  setPendingPomoMin(pomoMinutes);
+                }
+              }}
+            >
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex flex-col items-end gap-0.5 rounded-md px-1.5 py-1 text-right transition-colors hover:bg-muted"
+                >
+                  <span className="flex items-center gap-1 text-sm font-medium tabular-nums">
+                    <span className="flex items-center gap-1">
+                      <span className="size-1.5 shrink-0 rounded-full bg-primary" />
+                      {Math.floor(totalFocusMinutes(task) / Math.max(1, pomoMinutes))}
+                    </span>
+                    <span className="text-muted-foreground/50">/</span>
+                    <span className="flex items-center gap-1">
+                      <span className="size-1.5 shrink-0 rounded-full border border-primary" />
+                      {task.estPomos ?? 0}
+                    </span>
+                  </span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    = {formatMinutes(pomoMinutes)}
+                  </span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-4">
+                <div className="flex flex-col gap-3">
+                  <div className="text-center">
+                    <p className="text-sm font-semibold">{t("estPomosTitle")}</p>
+                    <TypographyMuted className="tabular-nums">
+                      {t("estPomosFormula", {
+                        count: pendingEstPomos,
+                        length: formatMinutes(pendingPomoMin),
+                        total: formatMinutes(pendingEstPomos * pendingPomoMin),
+                      })}
+                    </TypographyMuted>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col items-center gap-2">
+                      <WheelPickerWrapper className="rounded-xl bg-muted/50 px-5 py-1">
+                        <WheelPicker
+                          options={EST_POMO_OPTIONS}
+                          value={String(pendingEstPomos)}
+                          onValueChange={(v) => setPendingEstPomos(Number(v))}
+                          visibleCount={12}
+                          optionItemHeight={34}
+                          infinite
+                        />
+                      </WheelPickerWrapper>
+                      <TypographyLabel className="text-center leading-tight">
+                        {t("estPomosLabel")}
+                      </TypographyLabel>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <WheelPickerWrapper className="rounded-xl bg-muted/50 px-5 py-1">
+                        <WheelPicker
+                          options={POMO_LEN_OPTIONS}
+                          value={String(pendingPomoMin)}
+                          onValueChange={(v) => setPendingPomoMin(Number(v))}
+                          visibleCount={12}
+                          optionItemHeight={34}
+                          infinite
+                        />
+                      </WheelPickerWrapper>
+                      <TypographyLabel className="text-center leading-tight">
+                        {t("pomoLengthLabel")}
+                      </TypographyLabel>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setPomoOpen(false)}
+                    >
+                      {t("cancel")}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        onSetEstPomos(pendingEstPomos);
+                        if (pendingPomoMin !== pomoMinutes) onSetPomoMinutes(pendingPomoMin);
+                        setPomoOpen(false);
+                      }}
+                    >
+                      {t("confirmOk")}
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </MetaRow>
 
           <MetaRow icon={<CalendarClock className="size-4" />} label={t("dueLabel")}>

@@ -43,6 +43,8 @@ interface TasksState {
   deleteTask: (id: string) => void;
   /** Avto-vazifani bekor qilish (tombstone — reconciler qayta tug'dirmaydi). */
   cancelTask: (id: string) => void;
+  /** Nusxasi har doim mustaqil manual vazifa sifatida yaratiladi (manba avto boʻlsa ham). */
+  duplicateTask: (id: string) => string | null;
   /** Reconciler yozuvi — bitta immutable yangilanishda upsert + delete. */
   applyAutoReconcile: (upserts: Task[], deleteIds: string[]) => void;
 }
@@ -141,6 +143,25 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
         t.id === id ? { ...t, status: "canceled" as const, completedAt: null } : t
       ),
     })),
+
+  duplicateTask: (id) => {
+    const source = get().items.find((t) => t.id === id);
+    if (!source) return null;
+    const sortOrder = get().items.length;
+    const task = newManualTask({
+      title: source.title,
+      dueDate: source.dueDate,
+      dueMin: source.dueMin,
+      classId: source.classId,
+      priority: source.priority,
+      estPomos: source.estPomos,
+      sortOrder,
+    });
+    task.note = source.note;
+    task.tags = source.tags ? [...source.tags] : [];
+    set((s) => ({ items: [...s.items, task] }));
+    return task.id;
+  },
 
   applyAutoReconcile: (upserts, deleteIds) => {
     if (upserts.length === 0 && deleteIds.length === 0) return;

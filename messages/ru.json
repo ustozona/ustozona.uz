@@ -1952,6 +1952,10 @@
       "changelog": "Обновления"
     },
     "entries": {
+      "tasks-context-menu": {
+        "title": "В задачах добавлено контекстное меню",
+        "body": "Правый клик по задаче позволяет быстро изменить срок, приоритет или класс, создать копию или отменить. Выбор времени помидора обновлён с колесом прокрутки."
+      },
       "tasks-ui-refresh": {
         "title": "Страница Задачи стала удобнее",
         "body": "Строка быстрого добавления стала компактнее, приоритет теперь показывается флажком, просроченные задачи выделены красным. Боковая панель и окно деталей тоже обновлены."
@@ -3428,7 +3432,16 @@
       },
       "canceledBadge": "отменено",
       "startFocusAria": "Начать фокус",
-      "estPomosLabel": "Плановые помодоро"
+      "estPomosLabel": "Плановые помодоро",
+      "contextNoDate": "Убрать дату",
+      "contextMoveToClass": "Переместить в класс",
+      "contextDelete": "Удалить",
+      "contextDeleteTitle": "Удалить задачу?",
+      "contextDeleteDescription": "Задача будет удалена навсегда. Это действие нельзя отменить.",
+      "contextDeleteCancel": "Отмена",
+      "contextDeleteConfirm": "Удалить",
+      "contextDuplicate": "Дублировать",
+      "contextWontDo": "Отменить"
     },
     "detail": {
       "emptyTitle": "Задача не выбрана",
@@ -3474,11 +3487,16 @@
       "addTagPlaceholder": "Добавить тег...",
       "removeTagAria": "Удалить тег {tag}",
       "focusMetaLabel": "Фокус",
+      "estPomosLabel": "Количество помидоров",
+      "estPomosTitle": "Настройки помидора",
+      "pomoLengthLabel": "Длительность (мин)",
       "estPomosDecrease": "Уменьшить",
       "estPomosIncrease": "Увеличить",
+      "confirmOk": "Сохранить",
       "focusTotal": "Всего: {value}",
       "startFocus": "Начать",
-      "closeAria": "Закрыть панель"
+      "closeAria": "Закрыть панель",
+      "estPomosFormula": "{count} × {length} = {total}"
     }
   },
   "FocusTimer": {

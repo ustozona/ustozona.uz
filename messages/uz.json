@@ -1952,6 +1952,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "tasks-context-menu": {
+        "title": "Vazifalarda oʻng-klik menyu qoʻshildi",
+        "body": "Vazifa ustida oʻng-klik qilib muddatni, ustuvorlikni yoki sinfni tezda oʻzgartirish, nusxa yaratish yoki bekor qilish mumkin. Pomodoro vaqtini belgilash gʻildirak-tanlagich bilan yangilandi."
+      },
       "tasks-ui-refresh": {
         "title": "Vazifalar sahifasi qulayroq boʻldi",
         "body": "Tezkor qoʻshish qatori ixchamlashtirildi, ustuvorlik bayroq bilan koʻrsatiladi, muddati oʻtgan vazifalar qizil rangda ajralib turadi. Chap panel va tafsilot oynasi ham yangi koʻrinishga ega."
@@ -3265,7 +3269,16 @@
       },
       "canceledBadge": "bekor qilingan",
       "startFocusAria": "Fokusni boshlash",
-      "estPomosLabel": "Taxminiy pomodoro"
+      "estPomosLabel": "Taxminiy pomodoro",
+      "contextNoDate": "Sanani olib tashlash",
+      "contextMoveToClass": "Sinfga koʻchirish",
+      "contextDelete": "Oʻchirish",
+      "contextDeleteTitle": "Vazifani oʻchirasizmi?",
+      "contextDeleteDescription": "Bu vazifa butunlay oʻchiriladi. Bu amalni orqaga qaytarib boʻlmaydi.",
+      "contextDeleteCancel": "Bekor qilish",
+      "contextDeleteConfirm": "Oʻchirish",
+      "contextDuplicate": "Nusxa yaratish",
+      "contextWontDo": "Bekor qilish"
     },
     "detail": {
       "emptyTitle": "Vazifa tanlanmagan",
@@ -3311,11 +3324,16 @@
       "addTagPlaceholder": "Teg qoʻshish...",
       "removeTagAria": "{tag} tegini olib tashlash",
       "focusMetaLabel": "Fokus",
+      "estPomosLabel": "Pomodorolar soni",
+      "estPomosTitle": "Pomodoro sozlamalari",
+      "pomoLengthLabel": "Davomiyligi (daq)",
       "estPomosDecrease": "Kamaytirish",
       "estPomosIncrease": "Koʻpaytirish",
+      "confirmOk": "Saqlash",
       "focusTotal": "Jami: {value}",
       "startFocus": "Boshlash",
-      "closeAria": "Panelni yopish"
+      "closeAria": "Panelni yopish",
+      "estPomosFormula": "{count} ta × {length} = {total}"
     }
   },
   "FocusTimer": {

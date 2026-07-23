@@ -1952,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "tasks-context-menu": {
+        "title": "Added right-click menu for tasks",
+        "body": "Right-click a task to quickly change its due date, priority, or class, duplicate it, or mark it as won't do. Pomodoro time selection now uses a wheel picker."
+      },
       "tasks-ui-refresh": {
         "title": "The Tasks page got easier to use",
         "body": "The quick-add row is more compact, priority now shows as a flag, and overdue tasks stand out in red. The side panel and detail view also got a refresh."
@@ -3428,7 +3432,16 @@
       },
       "canceledBadge": "cancelled",
       "startFocusAria": "Start focus",
-      "estPomosLabel": "Estimated pomodoros"
+      "estPomosLabel": "Estimated pomodoros",
+      "contextNoDate": "Remove date",
+      "contextMoveToClass": "Move to class",
+      "contextDelete": "Delete",
+      "contextDeleteTitle": "Delete this task?",
+      "contextDeleteDescription": "This task will be permanently deleted. This action cannot be undone.",
+      "contextDeleteCancel": "Cancel",
+      "contextDeleteConfirm": "Delete",
+      "contextDuplicate": "Duplicate",
+      "contextWontDo": "Cancel"
     },
     "detail": {
       "emptyTitle": "No task selected",
@@ -3474,11 +3487,16 @@
       "addTagPlaceholder": "Add tag...",
       "removeTagAria": "Remove tag {tag}",
       "focusMetaLabel": "Focus",
+      "estPomosLabel": "Number of pomodoros",
+      "estPomosTitle": "Pomodoro settings",
+      "pomoLengthLabel": "Duration (min)",
       "estPomosDecrease": "Decrease",
       "estPomosIncrease": "Increase",
+      "confirmOk": "Save",
       "focusTotal": "Total: {value}",
       "startFocus": "Start",
-      "closeAria": "Close panel"
+      "closeAria": "Close panel",
+      "estPomosFormula": "{count} × {length} = {total}"
     }
   },
   "FocusTimer": {

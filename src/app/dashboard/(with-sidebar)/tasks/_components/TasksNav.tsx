@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { Panel, PanelHeader, PanelBody } from "@/components/ui/panel";
+import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { cn } from "@/lib/utils";
@@ -135,14 +136,17 @@ export function TasksNav({
                   {t(key)}
                 </span>
                 {count > 0 && (
-                  <span
+                  <Badge
+                    variant={active ? "outline" : "secondary"}
                     className={cn(
-                      "shrink-0 text-xs tabular-nums",
-                      active ? "text-primary-foreground/70" : "text-muted-foreground/70"
+                      "size-6 rounded-full p-0 text-xs tabular-nums",
+                      active
+                        ? "border-transparent bg-primary-foreground/15 text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
                     )}
                   >
                     {count}
-                  </span>
+                  </Badge>
                 )}
               </button>
             );

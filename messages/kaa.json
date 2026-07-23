@@ -1952,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "tasks-context-menu": {
+        "title": "Wazıypalarǵa oʻń-klik menyu qosıldı",
+        "body": "Wazıypa üstinde oʻń-klik etip mudetti, aktualliktı yamasa klasstı tez oʻzgertiw, nusqa jaratıw yamasa biykar etiw múmkin. Pomodoro waqtın belgilew doʻńgelek-tańlaǵısh penen jańalandı."
+      },
       "tasks-ui-refresh": {
         "title": "Wazıypalar beti qolaylı boldı",
         "body": "Tez qosıw qatarı ıqshamlastırıldı, dárejesi bayraqsha menen kórsetiledi, muddeti ótken wazıypalar qızıl reńde ajıralıp turadı. Shep panel hám tastıyıqlaw terezesi de jańalandı."
@@ -3428,7 +3432,16 @@
       },
       "canceledBadge": "biykar qılınǵan",
       "startFocusAria": "Fokustı baslaw",
-      "estPomosLabel": "Boljamlı pomodoro"
+      "estPomosLabel": "Boljamlı pomodoro",
+      "contextNoDate": "Sananı alıp taslaw",
+      "contextMoveToClass": "Klassqa koshiriw",
+      "contextDelete": "Oʻshiriw",
+      "contextDeleteTitle": "Wazıypanı oʻshiresizbe?",
+      "contextDeleteDescription": "Bul wazıypa pütkilley oʻshiriledi. Bul ámeldi qaytarıp bolmaydı.",
+      "contextDeleteCancel": "Biykar qılıw",
+      "contextDeleteConfirm": "Oʻshiriw",
+      "contextDuplicate": "Nusqa jaratıw",
+      "contextWontDo": "Biykar qılıw"
     },
     "detail": {
       "emptyTitle": "Wazıypa tańlanbaǵan",
@@ -3474,11 +3487,16 @@
       "addTagPlaceholder": "Teg qosıw...",
       "removeTagAria": "{tag} tegin alıp taslaw",
       "focusMetaLabel": "Fokus",
+      "estPomosLabel": "Pomodorolar sanı",
+      "estPomosTitle": "Pomodoro sazlawları",
+      "pomoLengthLabel": "Dawamlılıǵı (min)",
       "estPomosDecrease": "Kemeytiw",
       "estPomosIncrease": "Kópeytiw",
+      "confirmOk": "Saqlaw",
       "focusTotal": "Jámi: {value}",
       "startFocus": "Baslaw",
-      "closeAria": "Paneldi jabıw"
+      "closeAria": "Paneldi jabıw",
+      "estPomosFormula": "{count} ta × {length} = {total}"
     }
   },
   "FocusTimer": {
