@@ -2041,6 +2041,10 @@
       "statistics-risk-view": {
         "title": "Statistika: „Eʼtibor kerak“ boʻlimi oʻquvchi-markazli qilib qayta qurildi",
         "body": "Endi xavfdagi oʻquvchilar bitta roʻyxatda, risk darajasi boʻyicha saralangan holda koʻrinadi — bir oʻquvchi bir necha kartada takrorlanmaydi. Davomat KPI'siga oldingi davr bilan solishtirma trend qoʻshildi."
+      },
+      "tasks-stats-panel": {
+        "title": "Vazifalar — oʻng panelda statistika qoʻshildi",
+        "body": "Hech qanday vazifa tanlanmaganda oʻng panel endi boʻsh turmaydi: rejadagi vaqt, rejadagi vazifalar, sarflangan vaqt va bajarilganlar foizi bir qarashda koʻrinadi. Toʻliq statistikaga oʻtish tugmasi ham shu yerda."
       }
     }
   },
@@ -3256,7 +3260,7 @@
       "emptyTitle": "Vazifalar yoʻq",
       "emptyDescription": "Bu roʻyxatda hozircha hech narsa yoʻq — pastdan yangi vazifa qoʻshing.",
       "doneSection": "Bajarilgan ({count})",
-      "quickAddPlaceholder": "Vazifa qoʻshish — saqlash uchun 「Enter」",
+      "quickAddPlaceholder": "Yangi vazifa qoʻshish... (Enter)",
       "addAction": "Qoʻshish",
       "priorityLabel": "Ustuvorlik",
       "classLabel": "Sinf",
@@ -3277,6 +3281,7 @@
       "contextDeleteDescription": "Bu vazifa butunlay oʻchiriladi. Bu amalni orqaga qaytarib boʻlmaydi.",
       "contextDeleteCancel": "Bekor qilish",
       "contextDeleteConfirm": "Oʻchirish",
+      "contextStartFocus": "Fokusni boshlash",
       "contextDuplicate": "Nusxa yaratish",
       "contextWontDo": "Bekor qilish"
     },
@@ -3303,7 +3308,8 @@
       },
       "noteLabel": "Izoh",
       "notePlaceholder": "Izoh yozing...",
-      "createdAt": "Yaratildi: {date}",
+      "createdAt": "{date}da qoʻshildi",
+      "createdToday": "Bugun qoʻshildi",
       "delete": "Oʻchirish",
       "cancelAuto": "Bekor qilish",
       "canceledLabel": "Bekor qilingan",
@@ -3323,7 +3329,7 @@
       "tagsLabel": "Teglar",
       "addTagPlaceholder": "Teg qoʻshish...",
       "removeTagAria": "{tag} tegini olib tashlash",
-      "focusMetaLabel": "Fokus",
+      "focusMetaLabel": "Fokus vaqti",
       "estPomosLabel": "Pomodorolar soni",
       "estPomosTitle": "Pomodoro sozlamalari",
       "pomoLengthLabel": "Davomiyligi (daq)",
@@ -3334,6 +3340,19 @@
       "startFocus": "Boshlash",
       "closeAria": "Panelni yopish",
       "estPomosFormula": "{count} ta × {length} = {total}"
+    },
+    "stats": {
+      "title": "Statistika",
+      "estimatedTime": "Rejadagi vaqt",
+      "toBeCompleted": "Rejadagi vazifalar",
+      "elapsedTime": "Sarflangan vaqt",
+      "completedTasks": "Bajarilganlar",
+      "fullStats": "To'liq statistika",
+      "overdueSub": "{count} tasi muddati oʻtgan",
+      "pomoSub": "≈{count} pomodoro",
+      "noOverdueSub": "Muddati oʻtgan yoʻq",
+      "minutesUnit": "daq.",
+      "countUnit": "ta"
     }
   },
   "FocusTimer": {

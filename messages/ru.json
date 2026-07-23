@@ -2204,6 +2204,10 @@
       "initial-release": {
         "title": "Ustozona запущена",
         "body": "Первая версия: классы, посещаемость и расписание уроков. Всё для того, чтобы облегчить повседневную работу учителя."
+      },
+      "tasks-stats-panel": {
+        "title": "Задачи — панель статистики справа",
+        "body": "Когда задача не выбрана, правая панель теперь показывает запланированное время, задачи, потраченное время и процент выполнения. Рядом — переход к полной статистике."
       }
     }
   },
@@ -3440,6 +3444,7 @@
       "contextDeleteDescription": "Задача будет удалена навсегда. Это действие нельзя отменить.",
       "contextDeleteCancel": "Отмена",
       "contextDeleteConfirm": "Удалить",
+      "contextStartFocus": "Начать фокус",
       "contextDuplicate": "Дублировать",
       "contextWontDo": "Отменить"
     },
@@ -3467,6 +3472,7 @@
       "noteLabel": "Заметка",
       "notePlaceholder": "Напишите заметку...",
       "createdAt": "Создано: {date}",
+      "createdToday": "Создано сегодня",
       "delete": "Удалить",
       "cancelAuto": "Отменить",
       "canceledLabel": "Отменено",
@@ -3497,6 +3503,19 @@
       "startFocus": "Начать",
       "closeAria": "Закрыть панель",
       "estPomosFormula": "{count} × {length} = {total}"
+    },
+    "stats": {
+      "title": "Статистика",
+      "estimatedTime": "Ожидаемое время",
+      "toBeCompleted": "Осталось выполнить",
+      "elapsedTime": "Прошло времени",
+      "completedTasks": "Выполнено",
+      "fullStats": "Полная статистика",
+      "overdueSub": "{count} просрочено",
+      "pomoSub": "≈{count} помодоро",
+      "noOverdueSub": "Просроченных нет",
+      "minutesUnit": "мин",
+      "countUnit": ""
     }
   },
   "FocusTimer": {

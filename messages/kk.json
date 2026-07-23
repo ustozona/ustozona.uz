@@ -2204,6 +2204,10 @@
       "initial-release": {
         "title": "Ustozona жолға шықты",
         "body": "Бірінші нұсқа: сыныптар, қатысу және сабақ кестесі. Барлығы мұғалімнің күнделікті жұмысын жеңілдету үшін."
+      },
+      "tasks-stats-panel": {
+        "title": "Тапсырмалар — оң панельге статистика қосылды",
+        "body": "Ешқандай тапсырма таңдалмағанда оң панель енді бос тұрмайды: жоспарланған уақыт, жоспарланған тапсырмалар, жұмсалған уақыт және орындалғандар пайызы бір қарағанда көрінеді."
       }
     }
   },
@@ -3440,6 +3444,7 @@
       "contextDeleteDescription": "Бұл тапсырма толығымен жойылады. Бұл әрекетті болдырмау мүмкін емес.",
       "contextDeleteCancel": "Бас тарту",
       "contextDeleteConfirm": "Жою",
+      "contextStartFocus": "Фокусты бастау",
       "contextDuplicate": "Көшірме жасау",
       "contextWontDo": "Бас тарту"
     },
@@ -3467,6 +3472,7 @@
       "noteLabel": "Ескертпе",
       "notePlaceholder": "Ескертпе жазыңыз...",
       "createdAt": "Жасалды: {date}",
+      "createdToday": "Бүгін жасалды",
       "delete": "Жою",
       "cancelAuto": "Болдырмау",
       "canceledLabel": "Болдырылды",
@@ -3497,6 +3503,19 @@
       "startFocus": "Бастау",
       "closeAria": "Панельді жабу",
       "estPomosFormula": "{count} × {length} = {total}"
+    },
+    "stats": {
+      "title": "Статистика",
+      "estimatedTime": "Болжамды уақыт",
+      "toBeCompleted": "Орындалуы керек",
+      "elapsedTime": "Өткен уақыт",
+      "completedTasks": "Орындалды",
+      "fullStats": "Толық статистика",
+      "overdueSub": "{count} мерзімі өткен",
+      "pomoSub": "≈{count} помодоро",
+      "noOverdueSub": "Мерзімі өткені жоқ",
+      "minutesUnit": "мин",
+      "countUnit": ""
     }
   },
   "FocusTimer": {

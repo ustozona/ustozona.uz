@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tasks-stats-panel",
+    date: "2026-07-24",
+    type: "yangi",
+    title: "Vazifalar — oʻng panelda statistika qoʻshildi",
+    body: "Hech qanday vazifa tanlanmaganda oʻng panel endi boʻsh turmaydi: rejadagi vaqt, rejadagi vazifalar, sarflangan vaqt va bajarilganlar foizi bir qarashda koʻrinadi. Toʻliq statistikaga oʻtish tugmasi ham shu yerda.",
+    href: "/dashboard/tasks",
+  },
+  {
     id: "tasks-context-menu",
     date: "2026-07-23",
     type: "yaxshilandi",

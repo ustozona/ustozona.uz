@@ -22,6 +22,7 @@ import {
 import { TasksNav, SMART_LIST_ICONS } from "./_components/TasksNav";
 import { TasksList } from "./_components/TasksList";
 import { TaskDetail } from "./_components/TaskDetail";
+import { TasksStatsPanel } from "./_components/TasksStatsPanel";
 
 /** `?list=` — chap paneldagi aqlli roʻyxat tanlovi (sinf tanlansa boʻshatiladi). */
 function useListParam(): [SmartListKey | null, (v: SmartListKey | null) => void] {
@@ -137,15 +138,11 @@ export default function TasksPage() {
 
   const selectedTask = items.find((t) => t.id === selectedTaskId) ?? null;
 
-  const xlTemplate = selectedTask
-    ? "minmax(0,25fr) minmax(0,50fr) minmax(0,25fr)"
-    : "minmax(0,25fr) minmax(0,75fr)";
-
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
       <DashboardColumns
         template="minmax(0,25fr) minmax(0,75fr)"
-        xlTemplate={xlTemplate}
+        xlTemplate="minmax(0,25fr) minmax(0,50fr) minmax(0,25fr)"
         className="h-full overflow-hidden p-4 md:p-6"
       >
         <DashboardColumn hideBelow="lg">
@@ -205,8 +202,8 @@ export default function TasksPage() {
           />
         </DashboardColumn>
 
-        {selectedTask && (
-          <DashboardColumn hideBelow="xl">
+        <DashboardColumn hideBelow="xl">
+          {selectedTask ? (
             <TaskDetail
               task={selectedTask}
               onToggleStatus={() => setStatus(selectedTask.id, selectedTask.status === "done" ? "todo" : "done")}
@@ -228,8 +225,14 @@ export default function TasksPage() {
               onClose={() => setSelectedTaskId(null)}
               pomoMinutes={pomoMinutes}
             />
-          </DashboardColumn>
-        )}
+          ) : (
+            <TasksStatsPanel
+              activeTasks={activeTasks}
+              doneTasks={doneTasks}
+              pomoMinutes={pomoMinutes}
+            />
+          )}
+        </DashboardColumn>
       </DashboardColumns>
     </div>
   );

@@ -2204,6 +2204,10 @@
       "initial-release": {
         "title": "Ustozona жолго чыкты",
         "body": "Биринчи версия: класстар, катышуу жана сабак расписаниеси. Баары мугалимдин күнүмдүк ишин жеңилдетүү үчүн."
+      },
+      "tasks-stats-panel": {
+        "title": "Тапшырмалар — оң панелге статистика кошулду",
+        "body": "Эч кандай тапшырма тандалбаганда оң панель эми бош турбайт: пландалган убакыт, пландалган тапшырмалар, короо убакыт жана аткарылгандар пайызы бир караганда көрүнөт."
       }
     }
   },
@@ -3440,6 +3444,7 @@
       "contextDeleteDescription": "Бул тапшырма толугу менен өчүрүлөт. Бул аракетти артка кайтарууга болбойт.",
       "contextDeleteCancel": "Жокко чыгаруу",
       "contextDeleteConfirm": "Өчүрүү",
+      "contextStartFocus": "Фокусту баштоо",
       "contextDuplicate": "Дубликат жасоо",
       "contextWontDo": "Жокко чыгаруу"
     },
@@ -3467,6 +3472,7 @@
       "noteLabel": "Эскертүү",
       "notePlaceholder": "Эскертүү жазыңыз...",
       "createdAt": "Түзүлдү: {date}",
+      "createdToday": "Бүгүн түзүлдү",
       "delete": "Өчүрүү",
       "cancelAuto": "Жокко чыгаруу",
       "canceledLabel": "Жокко чыгарылган",
@@ -3497,6 +3503,19 @@
       "startFocus": "Баштоо",
       "closeAria": "Панелди жабуу",
       "estPomosFormula": "{count} × {length} = {total}"
+    },
+    "stats": {
+      "title": "Статистика",
+      "estimatedTime": "Болжолдуу убакыт",
+      "toBeCompleted": "Аткарылышы керек",
+      "elapsedTime": "Өткөн убакыт",
+      "completedTasks": "Аткарылды",
+      "fullStats": "Толук статистика",
+      "overdueSub": "{count} мөөнөтү өткөн",
+      "pomoSub": "≈{count} помодоро",
+      "noOverdueSub": "Мөөнөтү өткөн жок",
+      "minutesUnit": "мүн",
+      "countUnit": ""
     }
   },
   "FocusTimer": {

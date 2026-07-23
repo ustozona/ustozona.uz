@@ -7,6 +7,7 @@ import {
   BookOpen,
   Cake,
   CalendarClock,
+  ChevronRight,
   ClipboardCheck,
   Flag,
   GraduationCap,
@@ -29,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { WheelPicker, WheelPickerWrapper } from "@/components/wheel-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import {
@@ -44,11 +46,13 @@ import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { buildRule, recurrenceLabel } from "@/lib/recurrence";
 import {
+  dateToKey,
   formatDateGroupLabel,
   formatMinutes,
   PRIORITY_META,
   PRIORITY_ORDER,
   TAG_PILL_CLASS,
+  todayKey as todayKeyOf,
   totalFocusMinutes,
   type Task,
   type TaskPriority,
@@ -174,9 +178,9 @@ export function TaskDetail({
               type="button"
               onClick={onStartFocus}
               aria-label={t("startFocus")}
-              className="flex shrink-0 items-center rounded-full p-1 text-primary transition-colors duration-fast hover:bg-primary/10"
+              className="flex shrink-0 items-center justify-center rounded-full bg-primary/10 p-1.5 text-primary transition-colors duration-fast hover:bg-primary/20"
             >
-              <Play className="size-4 fill-current" />
+              <Play className="size-3.5 fill-current" />
             </button>
           )}
           <input
@@ -463,41 +467,62 @@ export function TaskDetail({
           </div>
         </div>
       </PanelBody>
-      {/* Focus To-Do BottomBar: [yopish] [yaratilgan sana] [oʻchirish/bekor] */}
-      <PanelFooter className="justify-between gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          aria-label={t("closeAria")}
-          className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
-        >
-          <X className="size-4" />
-        </Button>
+      {/* Focus To-Do BottomBar: [yopish] [yaratilgan sana — markazda] [oʻchirish/bekor] */}
+      <PanelFooter className="items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              aria-label={t("closeAria")}
+              className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t("closeAria")}</TooltipContent>
+        </Tooltip>
         <TypographyMuted className="min-w-0 flex-1 truncate text-center">
-          {t("createdAt", { date: new Date(task.createdAt).toLocaleDateString() })}
+          {(() => {
+            const createdKey = dateToKey(new Date(task.createdAt));
+            return createdKey === todayKeyOf()
+              ? t("createdToday")
+              : t("createdAt", { date: formatDateGroupLabel(createdKey) });
+          })()}
         </TypographyMuted>
         {isManual ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDeleteOpen(true)}
-            aria-label={t("delete")}
-            className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDeleteOpen(true)}
+                aria-label={t("delete")}
+                className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t("delete")}</TooltipContent>
+          </Tooltip>
         ) : task.status === "canceled" ? (
           <TypographyMuted className="shrink-0">{t("canceledLabel")}</TypographyMuted>
         ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            className="shrink-0 gap-1.5 text-muted-foreground hover:text-destructive"
-          >
-            <Pencil className="size-4" /> {t("cancelAuto")}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onCancel}
+                aria-label={t("cancelAuto")}
+                className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t("cancelAuto")}</TooltipContent>
+          </Tooltip>
         )}
       </PanelFooter>
 

@@ -2204,6 +2204,10 @@
       "initial-release": {
         "title": "Ustozona launched",
         "body": "First version: classes, attendance, and timetable — all built to make a teacher's daily work easier."
+      },
+      "tasks-stats-panel": {
+        "title": "Tasks — stats panel added on the right",
+        "body": "When no task is selected, the right panel now shows planned time, planned tasks, time spent, and completion rate at a glance, plus a shortcut to full statistics."
       }
     }
   },
@@ -3440,6 +3444,7 @@
       "contextDeleteDescription": "This task will be permanently deleted. This action cannot be undone.",
       "contextDeleteCancel": "Cancel",
       "contextDeleteConfirm": "Delete",
+      "contextStartFocus": "Start focus",
       "contextDuplicate": "Duplicate",
       "contextWontDo": "Cancel"
     },
@@ -3467,6 +3472,7 @@
       "noteLabel": "Note",
       "notePlaceholder": "Write a note...",
       "createdAt": "Created: {date}",
+      "createdToday": "Created today",
       "delete": "Delete",
       "cancelAuto": "Cancel",
       "canceledLabel": "Cancelled",
@@ -3497,6 +3503,19 @@
       "startFocus": "Start",
       "closeAria": "Close panel",
       "estPomosFormula": "{count} × {length} = {total}"
+    },
+    "stats": {
+      "title": "Statistics",
+      "estimatedTime": "Estimated time",
+      "toBeCompleted": "To be completed",
+      "elapsedTime": "Elapsed time",
+      "completedTasks": "Completed",
+      "fullStats": "Full statistics",
+      "overdueSub": "{count} overdue",
+      "pomoSub": "≈{count} pomodoros",
+      "noOverdueSub": "None overdue",
+      "minutesUnit": "min",
+      "countUnit": ""
     }
   },
   "FocusTimer": {

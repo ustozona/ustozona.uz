@@ -126,9 +126,9 @@ export function TasksList({
       <PanelBody>
         <div className="flex flex-col">
           {!hydrated ? (
-            <div className="flex flex-col gap-2 px-5 py-4">
+            <div className="flex flex-col gap-2 px-4 py-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-11 w-full rounded-lg" />
+                <Skeleton key={i} className="h-10 w-full rounded-lg" />
               ))}
             </div>
           ) : (
@@ -156,7 +156,7 @@ export function TasksList({
               </EmptyHeader>
             </Empty>
           ) : (
-            <div className="flex flex-col gap-4 px-5 py-5">
+            <div className="flex flex-col gap-3 px-4 py-4">
               {isDoneView
                 ? doneGroups.map((group) => (
                     <TaskGroup
@@ -336,7 +336,7 @@ function TaskGroup({
             className={cn(
               // Focus To-Do qator tili: default — nozik pastki chiziq; hover — yumshoq
               // yumaloq fon (chiziq yashirinadi); tanlangan — turgʻun muted fon.
-              "group relative flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 text-left outline-none transition-colors duration-fast",
+              "group relative flex min-h-10 w-full cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2 text-left outline-none transition-colors duration-fast",
               "border-b border-border/40 last:border-b-0",
               "hover:border-transparent hover:bg-muted/60",
               "focus-visible:ring-2 focus-visible:ring-ring",
@@ -348,29 +348,15 @@ function TaskGroup({
               onCheckedChange={() => onToggleStatus(task.id)}
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                "size-4 shrink-0 rounded-full",
+                "mt-0.5 size-4 shrink-0 rounded-full",
                 done
                   ? "border-success bg-success data-[state=checked]:border-success data-[state=checked]:bg-success"
                   : prio.checkbox
               )}
             />
-            {/* Focus To-Do uslubi: ▶ checkbox yonida, doim koʻrinadi. */}
-            {!done && !canceled && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStartFocus(task.id);
-                }}
-                aria-label={t("startFocusAria")}
-                className="hidden shrink-0 rounded-full p-1 text-primary transition-colors duration-fast hover:bg-primary/10 sm:flex"
-              >
-                <Play className="size-3.5 fill-current" />
-              </button>
-            )}
             <span
               className={cn(
-                "min-w-0 flex-1 truncate text-left text-sm transition-colors duration-base",
+                "min-w-0 flex-1 text-left text-sm break-words whitespace-normal transition-colors duration-base",
                 done ? "text-muted-foreground line-through" : canceled ? "text-muted-foreground/70" : "text-foreground"
               )}
             >
@@ -378,10 +364,10 @@ function TaskGroup({
               {canceled && <span className="ml-1.5 text-xs">· {t("canceledBadge")}</span>}
             </span>
             {task.repeat && (
-              <Repeat className="hidden size-3 shrink-0 text-muted-foreground/70 sm:flex" />
+              <Repeat className="mt-0.5 hidden size-3 shrink-0 text-muted-foreground/70 sm:flex" />
             )}
             {(task.tags ?? []).length > 0 && (
-              <span className="hidden shrink-0 items-center gap-1 sm:flex">
+              <span className="mt-0.5 hidden shrink-0 items-center gap-1 sm:flex">
                 {(task.tags ?? []).slice(0, 2).map((tag) => (
                   <span
                     key={tag}
@@ -396,7 +382,7 @@ function TaskGroup({
               const dl = dueLabel(task.dueDate);
               if (!dl && task.dueMin == null) return null;
               return (
-                <span className={cn("hidden shrink-0 text-xs tabular-nums sm:flex", dl?.cls ?? "text-muted-foreground/70")}>
+                <span className={cn("mt-0.5 hidden shrink-0 text-xs tabular-nums sm:flex", dl?.cls ?? "text-muted-foreground/70")}>
                   {dl?.text}
                   {task.dueMin != null && (dl ? ` ${minToHHMM(task.dueMin)}` : minToHHMM(task.dueMin))}
                 </span>
@@ -405,6 +391,15 @@ function TaskGroup({
           </div>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-48">
+          {!done && !canceled && (
+            <>
+              <ContextMenuItem onClick={() => onStartFocus(task.id)}>
+                <Play />
+                {t("contextStartFocus")}
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+            </>
+          )}
           <ContextMenuItem onClick={() => onSetDueDate(task.id, todayKey)}>
             <Sun />
             {t("todayGroup")}
@@ -545,7 +540,7 @@ function QuickAddRow({
   /* Focus To-Do uslubi: bitta qator — [+] [matn] | [bayroq] [sana] [sinf].
      Saqlash faqat Enter bilan (alohida tugma yoʻq). */
   return (
-    <div className="mx-5 mb-1 mt-4 flex h-11 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 transition-colors focus-within:border-primary/40 focus-within:bg-background">
+    <div className="mx-4 mb-0.5 mt-3 flex h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 transition-colors focus-within:border-primary/40 focus-within:bg-background">
       <Plus className="size-4 shrink-0 text-muted-foreground/60" />
       <input
         value={title}

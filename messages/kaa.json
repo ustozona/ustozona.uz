@@ -2204,6 +2204,10 @@
       "initial-release": {
         "title": "Ustozona jolǵa shıqtı",
         "body": "Birinshi versiya: klaslar, dawamat hám sabaq kestesi. Hámmesi oqıtıwshınıń kúndelikli isin jeńillestiriw ushın."
+      },
+      "tasks-stats-panel": {
+        "title": "Tapsırmalar — oń panelge statistika qosıldı",
+        "body": "Hesh qanday tapsırma tańlanbaǵanda oń panel endi bos turmaydı: jobalanǵan waqıt, jobalanǵan tapsırmalar, ısletilgen waqıt hám orınlanǵanlar procenti kórinedi. Tolıq statistikaǵa ótiw túymesi de sol jerde."
       }
     }
   },
@@ -3440,6 +3444,7 @@
       "contextDeleteDescription": "Bul wazıypa pütkilley oʻshiriledi. Bul ámeldi qaytarıp bolmaydı.",
       "contextDeleteCancel": "Biykar qılıw",
       "contextDeleteConfirm": "Oʻshiriw",
+      "contextStartFocus": "Fokustı baslaw",
       "contextDuplicate": "Nusqa jaratıw",
       "contextWontDo": "Biykar qılıw"
     },
@@ -3467,6 +3472,7 @@
       "noteLabel": "Eskertpe",
       "notePlaceholder": "Eskertpe jazıń...",
       "createdAt": "Jaratıldı: {date}",
+      "createdToday": "Bүgin jaratıldı",
       "delete": "Óshiriw",
       "cancelAuto": "Biykar qılıw",
       "canceledLabel": "Biykar qılınǵan",
@@ -3497,6 +3503,19 @@
       "startFocus": "Baslaw",
       "closeAria": "Paneldi jabıw",
       "estPomosFormula": "{count} ta × {length} = {total}"
+    },
+    "stats": {
+      "title": "Statistika",
+      "estimatedTime": "Boljanǵan waqıt",
+      "toBeCompleted": "Orınlanıwı kerek",
+      "elapsedTime": "Ótken waqıt",
+      "completedTasks": "Orınlandı",
+      "fullStats": "Tolıq statistika",
+      "overdueSub": "{count} mudde ótken",
+      "pomoSub": "≈{count} pomodoro",
+      "noOverdueSub": "Mudde ótkeni joq",
+      "minutesUnit": "min",
+      "countUnit": "ta"
     }
   },
   "FocusTimer": {

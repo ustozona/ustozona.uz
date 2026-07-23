@@ -29,6 +29,11 @@ export function StatCard({
   progress,
   sparkline,
   onClick,
+  className,
+  valueClassName,
+  subClassName,
+  subInline,
+  iconClassName,
 }: {
   icon?: React.ComponentType<{ className?: string }>;
   label: string;
@@ -45,6 +50,19 @@ export function StatCard({
   sparkline?: number[];
   /** Berilsa, karta bosiluvchi boʻladi (hover'da strelka chiqadi). */
   onClick?: () => void;
+  /** Tashqi konteynerga qoʻshimcha klasslar (masalan `flex-1`/kichraytirilgan padding). */
+  className?: string;
+  /** Qiymat shriftini responsiv qilish uchun (default `text-[28px]`ni almashtiradi). */
+  valueClassName?: string;
+  /** `sub` matniga qoʻshimcha klasslar (masalan ogohlantirish uchun `text-destructive`). */
+  subClassName?: string;
+  /** `true` — `sub` pastki alohida qatorda emas, qiymat bilan bir qatorda
+      (Notion/Linear "compact stat" naqshi: "50 daq. ≈2 pomodoro"). */
+  subInline?: boolean;
+  /** Ikonka doirasiga qoʻshimcha klasslar — bir nechta karta yonma-yon
+      turganda toifaviy rang bilan tezkor tanishni osonlashtirish uchun
+      (masalan `bg-info/10 text-info`). Default — neytral `bg-muted`. */
+  iconClassName?: string;
 }) {
   const toneColorClass =
     tone === "destructive" ? "text-destructive" : tone === "success" ? "text-success" : undefined;
@@ -79,13 +97,14 @@ export function StatCard({
       }
       className={cn(
         "group/stat w-full rounded-xl border border-border/60 bg-card p-5 flex flex-col gap-4 text-left transition-all",
-        onClick && "hover:border-border hover:shadow-md cursor-pointer focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+        onClick && "hover:border-border hover:shadow-md cursor-pointer focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
+        className
       )}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">
           {Icon && (
-            <SectionIcon className="rounded-full">
+            <SectionIcon className={cn("rounded-full", iconClassName)}>
               <Icon />
             </SectionIcon>
           )}
@@ -115,10 +134,13 @@ export function StatCard({
 
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-baseline gap-1.5">
-          <div className={cn("text-[28px] font-bold tabular-nums leading-none tracking-tight", toneColorClass)}>
+          <div className={cn("text-[28px] font-bold tabular-nums leading-none tracking-tight", toneColorClass, valueClassName)}>
             {value}
           </div>
           {unit && <span className="text-sm font-normal text-muted-foreground">{unit}</span>}
+          {subInline && sub && (
+            <TypographyMuted className={cn("truncate text-xs", subClassName)}>{sub}</TypographyMuted>
+          )}
         </div>
         {sparkline && sparkline.length > 1 && (
           <ChartContainer config={SPARKLINE_CONFIG} className="h-8 w-16 shrink-0 aspect-auto">
@@ -151,7 +173,7 @@ export function StatCard({
         />
       )}
 
-      {sub && <TypographyMuted className="truncate text-xs">{sub}</TypographyMuted>}
+      {sub && !subInline && <TypographyMuted className={cn("truncate text-xs", subClassName)}>{sub}</TypographyMuted>}
     </div>
   );
 }
