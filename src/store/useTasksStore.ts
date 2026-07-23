@@ -25,6 +25,7 @@ interface TasksState {
     dueMin?: number | null;
     classId?: string | null;
     priority?: TaskPriority;
+    estPomos?: number;
   }) => string;
   updateTask: (id: string, updater: (t: Task) => Task) => void;
   setStatus: (id: string, status: TaskStatus) => void;

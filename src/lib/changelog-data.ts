@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tasks-ui-refresh",
+    date: "2026-07-23",
+    type: "yaxshilandi",
+    title: "Vazifalar sahifasi qulayroq boʻldi",
+    body: "Tezkor qoʻshish qatori ixchamlashtirildi, ustuvorlik bayroq bilan koʻrsatiladi, muddati oʻtgan vazifalar qizil rangda ajralib turadi. Chap panel va tafsilot oynasi ham yangi koʻrinishga ega.",
+    href: "/dashboard/tasks",
+  },
+  {
     id: "tasks-hub-launch",
     date: "2026-07-23",
     type: "yangi",

@@ -835,7 +835,6 @@
     "chat": "Chat",
     "behaviorLabel": "Qılıq",
     "statsLabel": "Kórsetkishler",
-    "contactLabel": "Baylanıs",
     "viewCardAria": "Kartochka koʻrinisi",
     "viewTableAria": "Kesте koʻrinisi",
     "tableColName": "Толық аты",
@@ -1953,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "tasks-ui-refresh": {
+        "title": "Wazıypalar beti qolaylı boldı",
+        "body": "Tez qosıw qatarı ıqshamlastırıldı, dárejesi bayraqsha menen kórsetiledi, muddeti ótken wazıypalar qızıl reńde ajıralıp turadı. Shep panel hám tastıyıqlaw terezesi de jańalandı."
+      },
       "tasks-hub-launch": {
         "title": "Wazıypalar — avtomatik wazıypalar orayı qosıldı",
         "body": "Sabaqlar hám tapsırmalar endi óz-ózinen wazıypaǵa aylanadı, oqıwshılardıń tuwılǵan kúnin eske salıp turadı. Áhmiyet, teglar, qaytalanıw hám pomodoro taymeri — hámmesi bir orında."
@@ -1996,8 +1999,8 @@
         "body": "Apta/Ay/Shárek/Jıl tańlawı hám dáwir mánisi endi bir izlenetuǵın menyuda. Klaslar kestesinde oqıwshılar sanı endi san penen kórsetiledi, shatasqan «Signal» bagany alıp taslandı."
       },
       "statistics-overview-redesign": {
-        "title": "Statistika: Ulıwma bólimi qayta islep shıǵıldı",
-        "body": "Sabaqlar hám Tapsırmalar KPI kartaları, Ózin-ózi tutıw hám Tapsırmalar orınlanıwı donut-kartaları qosıldı. Kartalar ornalasıwı tártipke salındı, Baha bólistiriliwi hám Qatnasıw trendi grafikleri jaqsılandı."
+        "title": "Statistika: Ulıwma bólim qayta dúzildi",
+        "body": "KPI kartaları mántiqiy tártipke keltirildi: Klaslar → Oqıwshılar → Qatnasıw → Itibar. Oqıwshılar dıramı kartası ortasında jámi san menen jańalandı, paydasız „Jınıs kesiminde ortashalar“ kartası alıp taslandı."
       },
       "bulk-action-floating-bar": {
         "title": "Top areketler endi qalqıp turıwshı panelde",
@@ -2026,10 +2029,6 @@
       "statistics-class-risk-ranking": {
         "title": "Statistika: eń kóp itibar talap etetuǵın klaslar reytingi qosıldı",
         "body": "Ulıwma bólimde endi signal sanı boyınsha eń máseleli 3 klas kórinedi — basılsa sol klaska ótiledi. Jınıs diagramması kartasına ul/qız kesiminde ortasha baha hám qatnasıw qosıldı."
-      },
-      "statistics-overview-redesign": {
-        "title": "Statistika: Ulıwma bólim qayta dúzildi",
-        "body": "KPI kartaları mántiqiy tártipke keltirildi: Klaslar → Oqıwshılar → Qatnasıw → Itibar. Oqıwshılar dıramı kartası ortasında jámi san menen jańalandı, paydasız „Jınıs kesiminde ortashalar“ kartası alıp taslandı."
       },
       "statistics-domain-aggregates": {
         "title": "Statistika: Bahalar/Qatnasıw/Qılıq-hárekat taplarına mektep boyınsha grafikler qosıldı",
@@ -3416,18 +3415,20 @@
       "emptyTitle": "Wazıypalar joq",
       "emptyDescription": "Bul dizimde házirshe hesh nárse joq — tómennen jańa wazıypa qosıń.",
       "doneSection": "Orınlanǵan ({count})",
-      "quickAddPlaceholder": "Jańa wazıypa...",
+      "quickAddPlaceholder": "Wazıypa qosıw — saqlaw ushın 「Enter」",
       "addAction": "Qosıw",
       "priorityLabel": "Áhmiyet",
       "classLabel": "Klass",
       "noClass": "Klasssız",
-      "priority": { "none": "Joq", "low": "Tómen", "medium": "Ortasha", "high": "Joqarı" },
+      "priority": {
+        "none": "Joq",
+        "low": "Tómen",
+        "medium": "Ortasha",
+        "high": "Joqarı"
+      },
       "canceledBadge": "biykar qılınǵan",
-      "metricEstimated": "Shama waqıt",
-      "metricToDo": "Orınlanıwı kerek",
-      "metricSpentToday": "Búgin sarplandı",
-      "metricDone": "Orınlanǵan",
-      "startFocusAria": "Fokustı baslaw"
+      "startFocusAria": "Fokustı baslaw",
+      "estPomosLabel": "Boljamlı pomodoro"
     },
     "detail": {
       "emptyTitle": "Wazıypa tańlanbaǵan",
@@ -3437,9 +3438,19 @@
       "classLabel": "Klass",
       "noClass": "Klasssız",
       "priorityLabel": "Áhmiyet",
-      "priority": { "none": "Joq", "low": "Tómen", "medium": "Ortasha", "high": "Joqarı" },
+      "priority": {
+        "none": "Joq",
+        "low": "Tómen",
+        "medium": "Ortasha",
+        "high": "Joqarı"
+      },
       "sourceLabel": "Dárek",
-      "source": { "manual": "Qolman", "lesson": "Sabaq", "grading": "Bahalaw", "birthday": "Tuwılǵan kún" },
+      "source": {
+        "manual": "Qolman",
+        "lesson": "Sabaq",
+        "grading": "Bahalaw",
+        "birthday": "Tuwılǵan kún"
+      },
       "noteLabel": "Eskertpe",
       "notePlaceholder": "Eskertpe jazıń...",
       "createdAt": "Jaratıldı: {date}",
@@ -3453,7 +3464,11 @@
       "repeatLabel": "Qaytalanıw",
       "repeatNone": "Joq",
       "repeatEvery": "Hár",
-      "repeatUnit": { "day": "kún", "week": "hápte", "month": "ay" },
+      "repeatUnit": {
+        "day": "kún",
+        "week": "hápte",
+        "month": "ay"
+      },
       "repeatClear": "Alıp taslaw",
       "tagsLabel": "Teglar",
       "addTagPlaceholder": "Teg qosıw...",
@@ -3462,7 +3477,8 @@
       "estPomosDecrease": "Kemeytiw",
       "estPomosIncrease": "Kópeytiw",
       "focusTotal": "Jámi: {value}",
-      "startFocus": "Baslaw"
+      "startFocus": "Baslaw",
+      "closeAria": "Paneldi jabıw"
     }
   },
   "FocusTimer": {

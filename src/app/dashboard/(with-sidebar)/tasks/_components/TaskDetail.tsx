@@ -15,6 +15,7 @@ import {
   Play,
   Plus,
   Repeat,
+  Tag,
   Timer,
   Trash2,
   X,
@@ -74,6 +75,8 @@ export function TaskDetail({
   onStartFocus,
   onDelete,
   onCancel,
+  onClose,
+  pomoMinutes,
 }: {
   task: Task | null;
   onToggleStatus: () => void;
@@ -88,6 +91,8 @@ export function TaskDetail({
   onStartFocus: () => void;
   onDelete: () => void;
   onCancel: () => void;
+  onClose: () => void;
+  pomoMinutes: number;
 }) {
   const t = useTranslations("TasksPage.detail");
   const liveClasses = useLiveClasses();
@@ -137,32 +142,127 @@ export function TaskDetail({
 
   return (
     <Panel>
-      <PanelHeader
-        divider
-        title={
-          <div className="flex min-w-0 items-center gap-2.5">
-            <Checkbox
-              checked={done}
-              onCheckedChange={onToggleStatus}
-              className="size-5 shrink-0 rounded-full"
-            />
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={() => title.trim() && title !== task.title && onSetTitle(title.trim())}
-              className={cn(
-                "min-w-0 flex-1 truncate bg-transparent text-base font-semibold outline-none",
-                done && "text-muted-foreground line-through"
-              )}
-            />
-          </div>
-        }
-      />
+      {/* Focus To-Do sarlavha qatori: [ustuvorlik-rangli checkbox] [▶] [sarlavha] [bayroq] */}
+      <PanelHeader divider>
+        <div className="col-span-3 flex min-w-0 items-center gap-2.5">
+          <Checkbox
+            checked={done}
+            onCheckedChange={onToggleStatus}
+            className={cn("size-5 shrink-0 rounded-full", !done && prio.checkbox)}
+          />
+          {!done && task.status !== "canceled" && (
+            <button
+              type="button"
+              onClick={onStartFocus}
+              aria-label={t("startFocus")}
+              className="flex shrink-0 items-center rounded-full p-1 text-primary transition-colors duration-fast hover:bg-primary/10"
+            >
+              <Play className="size-4 fill-current" />
+            </button>
+          )}
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => title.trim() && title !== task.title && onSetTitle(title.trim())}
+            className={cn(
+              "min-w-0 flex-1 truncate bg-transparent text-base font-semibold outline-none",
+              done && "text-muted-foreground line-through"
+            )}
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-muted"
+                aria-label={t("priorityLabel")}
+              >
+                <Flag
+                  className={cn("size-4", task.priority === "none" ? "text-muted-foreground/40" : prio.text)}
+                  fill={task.priority === "none" ? "none" : "currentColor"}
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {PRIORITY_ORDER.map((p) => (
+                <DropdownMenuItem key={p} onClick={() => onSetPriority(p)} className="gap-2">
+                  <Flag
+                    className={cn("size-3.5 shrink-0", p === "none" ? "text-muted-foreground/40" : PRIORITY_META[p].text)}
+                    fill={p === "none" ? "none" : "currentColor"}
+                  />
+                  {t(`priority.${p}`)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </PanelHeader>
       <PanelBody inset>
-        <div className="flex flex-col gap-5">
-          {/* Meta qatorlari */}
-          <div className="flex flex-col gap-1">
-            <MetaRow icon={<CalendarClock className="size-4" />} label={t("dueLabel")}>
+        <div className="flex flex-col divide-y divide-border/40">
+          {/* Teglar — sarlavha ostidagi birinchi qator (Focus To-Do TagAdd) */}
+          <MetaRow icon={<Tag className="size-4" />} label={t("tagsLabel")}>
+            {(task.tags ?? []).map((tag) => (
+              <span
+                key={tag}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium",
+                  TAG_PILL_CLASS
+                )}
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => onSetTags((task.tags ?? []).filter((x) => x !== tag))}
+                  aria-label={t("removeTagAria", { tag })}
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))}
+            <Input
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                const v = tagInput.trim();
+                if (!v || (task.tags ?? []).includes(v)) return setTagInput("");
+                onSetTags([...(task.tags ?? []), v]);
+                setTagInput("");
+              }}
+              placeholder={t("addTagPlaceholder")}
+              className="h-7 w-28 border-0 bg-transparent px-1.5 text-right text-xs shadow-none focus-visible:ring-0"
+            />
+          </MetaRow>
+
+          {/* Pomodoro — bajarilgan/taxminiy + interval (Focus To-Do PomodoroItem) */}
+          <MetaRow icon={<Timer className="size-4" />} label={t("focusMetaLabel")}>
+            <span className="text-sm tabular-nums text-muted-foreground">
+              {Math.floor(totalFocusMinutes(task) / Math.max(1, pomoMinutes))}
+              <span className="mx-0.5 text-muted-foreground/50">/</span>
+            </span>
+            <div className="flex items-center gap-1 rounded-md border border-border">
+              <button
+                type="button"
+                onClick={() => onSetEstPomos(Math.max(0, (task.estPomos ?? 0) - 1))}
+                className="flex size-7 items-center justify-center text-muted-foreground hover:bg-muted"
+                aria-label={t("estPomosDecrease")}
+              >
+                <Minus className="size-3.5" />
+              </button>
+              <span className="w-6 text-center text-sm font-medium tabular-nums">{task.estPomos ?? 0}</span>
+              <button
+                type="button"
+                onClick={() => onSetEstPomos((task.estPomos ?? 0) + 1)}
+                className="flex size-7 items-center justify-center text-muted-foreground hover:bg-muted"
+                aria-label={t("estPomosIncrease")}
+              >
+                <Plus className="size-3.5" />
+              </button>
+            </div>
+            <TypographyMuted className="tabular-nums">= {formatMinutes(pomoMinutes)}</TypographyMuted>
+          </MetaRow>
+
+          <MetaRow icon={<CalendarClock className="size-4" />} label={t("dueLabel")}>
               {isManual ? (
                 <>
                   <DateKeyPicker
@@ -231,28 +331,6 @@ export function TaskDetail({
               )}
             </MetaRow>
 
-            <MetaRow icon={<Flag className="size-4" />} label={t("priorityLabel")}>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex h-8 items-center gap-1.5 rounded px-2 text-sm hover:bg-muted"
-                  >
-                    <span className={cn("size-2 shrink-0 rounded-full", prio.dot)} />
-                    <span className={prio.text}>{t(`priority.${task.priority}`)}</span>
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {PRIORITY_ORDER.map((p) => (
-                    <DropdownMenuItem key={p} onClick={() => onSetPriority(p)} className="gap-2">
-                      <span className={cn("size-2 shrink-0 rounded-full", PRIORITY_META[p].dot)} />
-                      {t(`priority.${p}`)}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </MetaRow>
-
             <MetaRow icon={<SourceIcon kind={task.source.kind} className="size-4" />} label={t("sourceLabel")}>
               {sourceHref ? (
                 <Link
@@ -277,110 +355,50 @@ export function TaskDetail({
               </MetaRow>
             )}
 
-            <MetaRow icon={<Timer className="size-4" />} label={t("focusMetaLabel")}>
-              <div className="flex flex-1 flex-wrap items-center gap-3">
-                <div className="flex items-center gap-1 rounded-md border border-border">
-                  <button
-                    type="button"
-                    onClick={() => onSetEstPomos(Math.max(0, (task.estPomos ?? 0) - 1))}
-                    className="flex size-7 items-center justify-center text-muted-foreground hover:bg-muted"
-                    aria-label={t("estPomosDecrease")}
-                  >
-                    <Minus className="size-3.5" />
-                  </button>
-                  <span className="w-6 text-center text-sm font-medium tabular-nums">{task.estPomos ?? 0}</span>
-                  <button
-                    type="button"
-                    onClick={() => onSetEstPomos((task.estPomos ?? 0) + 1)}
-                    className="flex size-7 items-center justify-center text-muted-foreground hover:bg-muted"
-                    aria-label={t("estPomosIncrease")}
-                  >
-                    <Plus className="size-3.5" />
-                  </button>
-                </div>
-                <TypographyMuted>{t("focusTotal", { value: formatMinutes(totalFocusMinutes(task)) })}</TypographyMuted>
-                {!done && task.status !== "canceled" && (
-                  <Button variant="ghost" size="sm" onClick={onStartFocus} className="gap-1.5 text-primary hover:bg-primary/10 hover:text-primary">
-                    <Play className="size-3.5 fill-current" /> {t("startFocus")}
-                  </Button>
-                )}
-              </div>
-            </MetaRow>
-          </div>
-
-          {/* Teglar */}
-          <div className="flex flex-col gap-1.5">
-            <TypographyLabel>{t("tagsLabel")}</TypographyLabel>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {(task.tags ?? []).map((tag) => (
-                <span
-                  key={tag}
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium",
-                    TAG_PILL_CLASS
-                  )}
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => onSetTags((task.tags ?? []).filter((x) => x !== tag))}
-                    aria-label={t("removeTagAria", { tag })}
-                  >
-                    <X className="size-3" />
-                  </button>
-                </span>
-              ))}
-              <Input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key !== "Enter") return;
-                  e.preventDefault();
-                  const v = tagInput.trim();
-                  if (!v || (task.tags ?? []).includes(v)) return setTagInput("");
-                  onSetTags([...(task.tags ?? []), v]);
-                  setTagInput("");
-                }}
-                placeholder={t("addTagPlaceholder")}
-                className="h-7 w-32 border-0 bg-transparent px-1.5 text-xs shadow-none focus-visible:ring-0"
-              />
-            </div>
-          </div>
-
-          {/* Izoh */}
-          <div className="flex flex-col gap-1.5">
-            <TypographyLabel>{t("noteLabel")}</TypographyLabel>
+          {/* Izoh — panel tagidagi erkin matn (Focus To-Do RemarkItem) */}
+          <div className="pt-3">
             <Textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               onBlur={() => note !== (task.note ?? "") && onSetNote(note)}
               placeholder={t("notePlaceholder")}
-              className="min-h-24 resize-none shadow-none"
+              className="min-h-24 resize-none border-0 px-0 shadow-none focus-visible:ring-0"
             />
           </div>
         </div>
       </PanelBody>
-      <PanelFooter className="justify-between">
-        <TypographyMuted>
+      {/* Focus To-Do BottomBar: [yopish] [yaratilgan sana] [oʻchirish/bekor] */}
+      <PanelFooter className="justify-between gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          aria-label={t("closeAria")}
+          className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+        >
+          <X className="size-4" />
+        </Button>
+        <TypographyMuted className="min-w-0 flex-1 truncate text-center">
           {t("createdAt", { date: new Date(task.createdAt).toLocaleDateString() })}
         </TypographyMuted>
         {isManual ? (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => setDeleteOpen(true)}
-            className="gap-1.5 text-muted-foreground hover:text-destructive"
+            aria-label={t("delete")}
+            className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
           >
-            <Trash2 className="size-4" /> {t("delete")}
+            <Trash2 className="size-4" />
           </Button>
         ) : task.status === "canceled" ? (
-          <TypographyMuted>{t("canceledLabel")}</TypographyMuted>
+          <TypographyMuted className="shrink-0">{t("canceledLabel")}</TypographyMuted>
         ) : (
           <Button
             variant="ghost"
             size="sm"
             onClick={onCancel}
-            className="gap-1.5 text-muted-foreground hover:text-destructive"
+            className="shrink-0 gap-1.5 text-muted-foreground hover:text-destructive"
           >
             <Pencil className="size-4" /> {t("cancelAuto")}
           </Button>
@@ -512,6 +530,7 @@ function SourceIcon({ kind, className }: { kind: Task["source"]["kind"]; classNa
   return <Pencil className={className} />;
 }
 
+/* Focus To-Do uslubi: ikon + yorliq chapda, qiymat oʻng chetda. */
 function MetaRow({
   icon,
   label,
@@ -522,12 +541,12 @@ function MetaRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[6.5rem_1fr] items-center gap-2">
-      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="flex min-h-11 items-center justify-between gap-3 py-1">
+      <span className="flex shrink-0 items-center gap-2.5 text-sm text-muted-foreground">
         {icon}
         {label}
       </span>
-      <div className="flex min-w-0 items-center gap-1">{children}</div>
+      <div className="flex min-w-0 flex-wrap items-center justify-end gap-1">{children}</div>
     </div>
   );
 }

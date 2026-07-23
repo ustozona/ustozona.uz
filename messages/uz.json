@@ -835,7 +835,6 @@
     "chat": "Chat",
     "behaviorLabel": "Xulq",
     "statsLabel": "Koʻrsatkichlar",
-    "contactLabel": "Aloqa",
     "viewCardAria": "Karta koʻrinishi",
     "viewTableAria": "Jadval koʻrinishi",
     "tableColName": "Ism sharifi",
@@ -1953,6 +1952,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "tasks-ui-refresh": {
+        "title": "Vazifalar sahifasi qulayroq boʻldi",
+        "body": "Tezkor qoʻshish qatori ixchamlashtirildi, ustuvorlik bayroq bilan koʻrsatiladi, muddati oʻtgan vazifalar qizil rangda ajralib turadi. Chap panel va tafsilot oynasi ham yangi koʻrinishga ega."
+      },
       "tasks-hub-launch": {
         "title": "Vazifalar — avtomatik vazifalar markazi qoʻshildi",
         "body": "Darslar va topshiriqlar endi oʻz-oʻzidan vazifaga aylanadi, oʻquvchilar tugʻilgan kunini eslatib turadi. Ustuvorlik, teglar, takrorlanish va pomodoro taymeri bilan — barchasi bitta joyda."
@@ -1996,8 +1999,8 @@
         "body": "Hafta/Oy/Chorak/Yil tanlovi va davr qiymati endi bitta qidiriladigan menyuda. Sinflar jadvalida oʻquvchilar soni endi son bilan koʻrsatiladi, chalkash \"Signal\" ustuni olib tashlandi."
       },
       "statistics-overview-redesign": {
-        "title": "Statistika: Umumiy boʻlim qayta ishlab chiqildi",
-        "body": "Darslar va Topshiriqlar KPI kartalari, Xulq-atvor va Topshiriqlar bajarilishi donut-kartalari qoʻshildi. Kartalar joylashuvi tartibga solindi, Baholar taqsimoti va Davomat trendi grafiklari yaxshilandi."
+        "title": "Statistika: Umumiy boʻlim qayta tuzildi",
+        "body": "KPI kartalar mantiqiy tartibga keltirildi: Sinflar → Oʻquvchilar → Davomat → Eʼtibor. Oʻquvchilar nisbati kartasi markazida jami son bilan yangilandi, foydasiz „Jins kesimida oʻrtachalar“ kartasi olib tashlandi."
       },
       "bulk-action-floating-bar": {
         "title": "Guruhaviy amallar endi suzuvchi panelda",
@@ -2026,10 +2029,6 @@
       "statistics-class-risk-ranking": {
         "title": "Statistika: eng koʻp eʼtibor talab qiladigan sinflar reytingi qoʻshildi",
         "body": "Umumiy boʻlimda endi signal soni boʻyicha eng muammoli 3 ta sinf koʻrinadi — bosilsa oʻsha sinfga oʻtiladi. Jins taqsimoti kartasiga oʻgʻil/qiz kesimida oʻrtacha baho va davomat qoʻshildi."
-      },
-      "statistics-overview-redesign": {
-        "title": "Statistika: Umumiy boʻlim qayta tuzildi",
-        "body": "KPI kartalar mantiqiy tartibga keltirildi: Sinflar → Oʻquvchilar → Davomat → Eʼtibor. Oʻquvchilar nisbati kartasi markazida jami son bilan yangilandi, foydasiz „Jins kesimida oʻrtachalar“ kartasi olib tashlandi."
       },
       "statistics-domain-aggregates": {
         "title": "Statistika: Baholar/Davomat/Xulq tablariga maktab boʻyicha grafiklar qoʻshildi",
@@ -3253,18 +3252,20 @@
       "emptyTitle": "Vazifalar yoʻq",
       "emptyDescription": "Bu roʻyxatda hozircha hech narsa yoʻq — pastdan yangi vazifa qoʻshing.",
       "doneSection": "Bajarilgan ({count})",
-      "quickAddPlaceholder": "Yangi vazifa...",
+      "quickAddPlaceholder": "Vazifa qoʻshish — saqlash uchun 「Enter」",
       "addAction": "Qoʻshish",
       "priorityLabel": "Ustuvorlik",
       "classLabel": "Sinf",
       "noClass": "Sinfsiz",
-      "priority": { "none": "Yoʻq", "low": "Past", "medium": "Oʻrta", "high": "Yuqori" },
+      "priority": {
+        "none": "Yoʻq",
+        "low": "Past",
+        "medium": "Oʻrta",
+        "high": "Yuqori"
+      },
       "canceledBadge": "bekor qilingan",
-      "metricEstimated": "Taxminiy vaqt",
-      "metricToDo": "Bajarilishi kerak",
-      "metricSpentToday": "Bugun sarflandi",
-      "metricDone": "Bajarildi",
-      "startFocusAria": "Fokusni boshlash"
+      "startFocusAria": "Fokusni boshlash",
+      "estPomosLabel": "Taxminiy pomodoro"
     },
     "detail": {
       "emptyTitle": "Vazifa tanlanmagan",
@@ -3274,9 +3275,19 @@
       "classLabel": "Sinf",
       "noClass": "Sinfsiz",
       "priorityLabel": "Ustuvorlik",
-      "priority": { "none": "Yoʻq", "low": "Past", "medium": "Oʻrta", "high": "Yuqori" },
+      "priority": {
+        "none": "Yoʻq",
+        "low": "Past",
+        "medium": "Oʻrta",
+        "high": "Yuqori"
+      },
       "sourceLabel": "Manba",
-      "source": { "manual": "Qoʻlda", "lesson": "Dars", "grading": "Baholash", "birthday": "Tugʻilgan kun" },
+      "source": {
+        "manual": "Qoʻlda",
+        "lesson": "Dars",
+        "grading": "Baholash",
+        "birthday": "Tugʻilgan kun"
+      },
       "noteLabel": "Izoh",
       "notePlaceholder": "Izoh yozing...",
       "createdAt": "Yaratildi: {date}",
@@ -3290,7 +3301,11 @@
       "repeatLabel": "Takrorlanish",
       "repeatNone": "Yoʻq",
       "repeatEvery": "Har",
-      "repeatUnit": { "day": "kun", "week": "hafta", "month": "oy" },
+      "repeatUnit": {
+        "day": "kun",
+        "week": "hafta",
+        "month": "oy"
+      },
       "repeatClear": "Olib tashlash",
       "tagsLabel": "Teglar",
       "addTagPlaceholder": "Teg qoʻshish...",
@@ -3299,7 +3314,8 @@
       "estPomosDecrease": "Kamaytirish",
       "estPomosIncrease": "Koʻpaytirish",
       "focusTotal": "Jami: {value}",
-      "startFocus": "Boshlash"
+      "startFocus": "Boshlash",
+      "closeAria": "Panelni yopish"
     }
   },
   "FocusTimer": {

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { GraduationCap } from "lucide-react";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
@@ -10,7 +11,7 @@ import { useFocusStore } from "@/store/useFocusStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { todayKey } from "@/lib/date-keys";
+import { addDaysKey, todayKey } from "@/lib/date-keys";
 import {
   collectTags,
   matchesSmartList,
@@ -18,7 +19,7 @@ import {
   type SmartListKey,
   type TaskPriority,
 } from "@/lib/tasks-data";
-import { TasksNav } from "./_components/TasksNav";
+import { TasksNav, SMART_LIST_ICONS } from "./_components/TasksNav";
 import { TasksList } from "./_components/TasksList";
 import { TaskDetail } from "./_components/TaskDetail";
 
@@ -125,6 +126,11 @@ export default function TasksPage() {
   const title = classId
     ? (classesById.get(classId)?.name ?? "")
     : tNav(effectiveList ?? "today");
+  const ListIcon = classId ? GraduationCap : SMART_LIST_ICONS[effectiveList ?? "today"];
+
+  // Tez-qoʻshish sanasi roʻyxat kontekstidan: Bugun → bugun, Ertaga → ertaga.
+  const quickAddDefaultDue =
+    effectiveList === "today" ? today : effectiveList === "tomorrow" ? addDaysKey(today, 1) : "";
 
   const selectedTask = items.find((t) => t.id === selectedTaskId) ?? null;
 
@@ -157,6 +163,7 @@ export default function TasksPage() {
         <DashboardColumn>
           <TasksList
             title={title}
+            icon={<ListIcon />}
             count={isDoneView ? doneTasks.length : activeTasks.length}
             activeTasks={activeTasks}
             doneTasks={doneTasks}
@@ -182,6 +189,7 @@ export default function TasksPage() {
             classesById={classesById}
             liveClasses={liveClassesWithHex}
             pomoMinutes={pomoMinutes}
+            defaultDueDate={quickAddDefaultDue}
           />
         </DashboardColumn>
 
@@ -204,6 +212,8 @@ export default function TasksPage() {
                 setSelectedTaskId(null);
               }}
               onCancel={() => cancelTask(selectedTask.id)}
+              onClose={() => setSelectedTaskId(null)}
+              pomoMinutes={pomoMinutes}
             />
           </DashboardColumn>
         )}

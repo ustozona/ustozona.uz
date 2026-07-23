@@ -780,6 +780,49 @@
   z-index: 10;
 }
 
+/* ─────────────────────────────────────────────
+   QATOR TILI — IXCHAM (list-row-compact) — AppSidebar
+   (`SidebarMenuButton`) bilan bir xil geometriya: 36px
+   balandlik, 8px padding/gap. Active = toʻliq fon (rail
+   yoʻq) — sidebar navigatsiyasi bilan bitta til uchun.
+   ───────────────────────────────────────────── */
+.list-row-compact {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* 8px */
+  padding: 0.5rem; /* 8px */
+  height: 2.25rem; /* 36px */
+  border-radius: var(--radius-md);
+  text-align: left;
+  cursor: pointer;
+  background-color: transparent;
+  transition: background-color var(--transition-duration-fast) var(--ease-standard);
+  overflow: hidden;
+}
+.list-row-compact:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+}
+.list-row-compact:hover:not([data-active="true"]) {
+  background-color: var(--muted);
+}
+.list-row-compact:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+/* Rangli (sinf) qatorlar uchun — solid fon oʻrniga tint + rail koʻrsatkichi. */
+.list-row-compact[data-active="true"][data-tint="true"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--card-accent, var(--primary));
+  z-index: 10;
+}
+
 /* ════════════════════════════════════════════════════════════════════
    DARS MUHARRIRI (lesson editor) — Tiptap/ProseMirror + A4 varaq + print
    ════════════════════════════════════════════════════════════════════ */

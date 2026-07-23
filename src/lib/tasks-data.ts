@@ -78,6 +78,7 @@ export function newManualTask(input: {
   dueMin?: number | null;
   classId?: string | null;
   priority?: TaskPriority;
+  estPomos?: number;
   sortOrder: number;
 }): Task {
   return {
@@ -91,6 +92,7 @@ export function newManualTask(input: {
     tags: [],
     repeat: null,
     source: { kind: "manual" },
+    estPomos: input.estPomos || undefined,
     sortOrder: input.sortOrder,
     createdAt: new Date().toISOString(),
     completedAt: null,
@@ -105,12 +107,12 @@ export const PRIORITY_ORDER: TaskPriority[] = ["high", "medium", "low", "none"];
 
 export const PRIORITY_META: Record<
   TaskPriority,
-  { ring: string; text: string; dot: string }
+  { ring: string; text: string; dot: string; checkbox: string }
 > = {
-  high: { ring: "ring-destructive/40", text: "text-destructive", dot: "bg-destructive" },
-  medium: { ring: "ring-warning/40", text: "text-warning", dot: "bg-warning" },
-  low: { ring: "ring-info/40", text: "text-info", dot: "bg-info" },
-  none: { ring: "ring-border", text: "text-muted-foreground", dot: "bg-muted-foreground/40" },
+  high: { ring: "ring-destructive/40", text: "text-destructive", dot: "bg-destructive", checkbox: "border-destructive" },
+  medium: { ring: "ring-warning/40", text: "text-warning", dot: "bg-warning", checkbox: "border-warning" },
+  low: { ring: "ring-info/40", text: "text-info", dot: "bg-info", checkbox: "border-info" },
+  none: { ring: "ring-border", text: "text-muted-foreground", dot: "bg-muted-foreground/40", checkbox: "" },
 };
 
 /* ── Teglar (erkin) ───────────────────────────────────────────────────

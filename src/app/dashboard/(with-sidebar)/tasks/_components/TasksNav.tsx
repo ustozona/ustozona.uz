@@ -1,23 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
+  ListTodo,
   Sun,
   Sunrise,
   CalendarDays,
   CalendarClock,
   Inbox,
   CheckCircle2,
+  ChevronRight,
   Search,
   GraduationCap,
   X,
 } from "lucide-react";
 import { Panel, PanelHeader, PanelBody } from "@/components/ui/panel";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { cn } from "@/lib/utils";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
 import type { SmartListKey } from "@/lib/tasks-data";
 
 function TagPill({
@@ -43,7 +47,7 @@ function TagPill({
   );
 }
 
-const SMART_LIST_ICONS: Record<SmartListKey, React.ComponentType<{ className?: string }>> = {
+export const SMART_LIST_ICONS: Record<SmartListKey, React.ComponentType<{ className?: string }>> = {
   today: Sun,
   tomorrow: Sunrise,
   week: CalendarDays,
@@ -77,12 +81,13 @@ export function TasksNav({
 }) {
   const t = useTranslations("TasksPage.nav");
   const liveClasses = useLiveClasses();
+  const [classesOpen, setClassesOpen] = useState(true);
 
   return (
     <Panel>
-      <PanelHeader title={t("title")} />
+      <PanelHeader icon={<ListTodo />} title={t("title")} />
       <PanelBody>
-        <div className="flex flex-col gap-4 px-3 py-4">
+        <div className="flex flex-col gap-4 px-5 py-4">
         <div className="flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3">
           <Search className="size-4 shrink-0 text-muted-foreground" />
           <input
@@ -103,7 +108,7 @@ export function TasksNav({
           )}
         </div>
 
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-1">
           {(Object.keys(SMART_LIST_ICONS) as SmartListKey[]).map((key) => {
             const Icon = SMART_LIST_ICONS[key];
             const active = listKey === key;
@@ -113,20 +118,31 @@ export function TasksNav({
                 key={key}
                 type="button"
                 onClick={() => onSelectList(key)}
-                className="list-row w-full"
+                style={active ? { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" } : undefined}
+                className={cn(
+                  "list-row-compact w-full disabled:pointer-events-none disabled:opacity-50",
+                  !active && "hover:bg-muted"
+                )}
                 data-active={active || undefined}
               >
-                <Icon className="size-4 shrink-0 text-muted-foreground" />
+                <Icon className={cn("size-4 shrink-0 transition-colors", active ? "text-primary-foreground" : "text-muted-foreground")} />
                 <span
                   className={cn(
                     "flex-1 truncate text-left text-sm transition-colors",
-                    active ? "font-semibold text-foreground" : "text-foreground/70"
+                    active ? "font-semibold text-primary-foreground" : "text-foreground/70"
                   )}
                 >
                   {t(key)}
                 </span>
                 {count > 0 && (
-                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground/70">{count}</span>
+                  <span
+                    className={cn(
+                      "shrink-0 text-xs tabular-nums",
+                      active ? "text-primary-foreground/70" : "text-muted-foreground/70"
+                    )}
+                  >
+                    {count}
+                  </span>
                 )}
               </button>
             );
@@ -134,48 +150,53 @@ export function TasksNav({
         </div>
 
         {liveClasses.length > 0 && (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2 px-3 pt-1">
-              <GraduationCap className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          <Collapsible open={classesOpen} onOpenChange={setClassesOpen} className="flex flex-col gap-1">
+            <CollapsibleTrigger className="group/classes list-row-compact w-full hover:bg-muted">
+              <GraduationCap className="size-4 shrink-0 text-muted-foreground" />
+              <span className="flex-1 truncate text-left text-sm text-foreground/70">
                 {t("classesLabel")}
               </span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              {liveClasses.map((cls) => {
-                const hex = CLASS_COLOR_HEX[classColor(cls)];
-                const active = classId === cls.id;
-                return (
-                  <button
-                    key={cls.id}
-                    type="button"
-                    onClick={() => onSelectClass(cls.id)}
-                    style={active ? { ["--card-accent" as string]: hex } : undefined}
-                    className="list-row w-full"
-                    data-active={active || undefined}
-                  >
-                    <ClassSwatch hex={hex} />
-                    <span
-                      className={cn(
-                        "flex-1 truncate text-left text-sm transition-colors",
-                        active ? "font-semibold text-foreground" : "text-foreground/70"
-                      )}
+              <ChevronRight className="size-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]/classes:rotate-90" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+              <div className="flex flex-col gap-1">
+                {liveClasses.map((cls) => {
+                  const hex = CLASS_COLOR_HEX[classColor(cls)];
+                  const active = classId === cls.id;
+                  const tints = classTints(classColor(cls));
+                  return (
+                    <button
+                      key={cls.id}
+                      type="button"
+                      onClick={() => onSelectClass(cls.id)}
+                      style={active ? { ["--card-accent" as string]: hex, ...tints.tint } : undefined}
+                      className="list-row-compact w-full disabled:pointer-events-none disabled:opacity-50"
+                      data-active={active || undefined}
+                      data-tint={active || undefined}
                     >
-                      {cls.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                      <ClassSwatch hex={hex} />
+                      <span
+                        className={cn(
+                          "flex-1 truncate text-left text-sm transition-colors",
+                          active ? "font-semibold text-foreground" : "text-foreground/70"
+                        )}
+                      >
+                        {cls.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
         {allTags.length > 0 && (
           <div className="flex flex-col gap-2">
-            <div className="px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               {t("tagsLabel")}
             </div>
-            <div className="flex flex-wrap items-center gap-1.5 px-3">
+            <div className="flex flex-wrap items-center gap-1.5">
               {allTags.map((tag) => (
                 <TagPill
                   key={tag}

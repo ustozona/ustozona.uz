@@ -835,7 +835,6 @@
     "chat": "Chat",
     "behaviorLabel": "Behavior",
     "statsLabel": "Metrics",
-    "contactLabel": "Contact",
     "viewCardAria": "Card view",
     "viewTableAria": "Table view",
     "tableColName": "Full name",
@@ -1953,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "tasks-ui-refresh": {
+        "title": "The Tasks page got easier to use",
+        "body": "The quick-add row is more compact, priority now shows as a flag, and overdue tasks stand out in red. The side panel and detail view also got a refresh."
+      },
       "tasks-hub-launch": {
         "title": "Tasks — a new automatic task hub",
         "body": "Lessons and assignments now turn into tasks on their own, and you'll get a reminder for each student's birthday. Priority, tags, repeat, and a pomodoro timer — all in one place."
@@ -1996,8 +1999,8 @@
         "body": "The Week/Month/Quarter/Year toggle and the period value now live in a single searchable menu. The class table shows student count as a plain number, and the confusing \"Signal\" column was removed."
       },
       "statistics-overview-redesign": {
-        "title": "Statistics: Overview section redesigned",
-        "body": "Added Lessons and Assignments KPI cards, plus Behavior and Assignment-completion donut cards. Card layout was reorganized, and the grade-distribution and attendance-trend charts were improved."
+        "title": "Statistics: Overview tab redesigned",
+        "body": "KPI cards are now in a more logical order: Classes → Students → Attendance → Attention. The student ratio card was updated to show the total in the center; the unhelpful \"Averages by gender\" card was removed."
       },
       "bulk-action-floating-bar": {
         "title": "Bulk actions now appear in a floating bar",
@@ -2026,10 +2029,6 @@
       "statistics-class-risk-ranking": {
         "title": "Statistics: added a ranking of classes needing the most attention",
         "body": "The Overview tab now shows the 3 classes with the most attention signals — tap one to jump to that class. The gender chart now also shows average grade and attendance by gender."
-      },
-      "statistics-overview-redesign": {
-        "title": "Statistics: Overview tab redesigned",
-        "body": "KPI cards are now in a more logical order: Classes → Students → Attendance → Attention. The student ratio card was updated to show the total in the center; the unhelpful \"Averages by gender\" card was removed."
       },
       "statistics-domain-aggregates": {
         "title": "Statistics: school-wide charts added to the Grades/Attendance/Behavior tabs",
@@ -3416,18 +3415,20 @@
       "emptyTitle": "No tasks",
       "emptyDescription": "Nothing here yet — add a new task below.",
       "doneSection": "Completed ({count})",
-      "quickAddPlaceholder": "New task...",
+      "quickAddPlaceholder": "Add a task, press 「Enter」 to save",
       "addAction": "Add",
       "priorityLabel": "Priority",
       "classLabel": "Class",
       "noClass": "No class",
-      "priority": { "none": "None", "low": "Low", "medium": "Medium", "high": "High" },
+      "priority": {
+        "none": "None",
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
       "canceledBadge": "cancelled",
-      "metricEstimated": "Estimated time",
-      "metricToDo": "To be done",
-      "metricSpentToday": "Spent today",
-      "metricDone": "Completed",
-      "startFocusAria": "Start focus"
+      "startFocusAria": "Start focus",
+      "estPomosLabel": "Estimated pomodoros"
     },
     "detail": {
       "emptyTitle": "No task selected",
@@ -3437,9 +3438,19 @@
       "classLabel": "Class",
       "noClass": "No class",
       "priorityLabel": "Priority",
-      "priority": { "none": "None", "low": "Low", "medium": "Medium", "high": "High" },
+      "priority": {
+        "none": "None",
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
       "sourceLabel": "Source",
-      "source": { "manual": "Manual", "lesson": "Lesson", "grading": "Grading", "birthday": "Birthday" },
+      "source": {
+        "manual": "Manual",
+        "lesson": "Lesson",
+        "grading": "Grading",
+        "birthday": "Birthday"
+      },
       "noteLabel": "Note",
       "notePlaceholder": "Write a note...",
       "createdAt": "Created: {date}",
@@ -3453,7 +3464,11 @@
       "repeatLabel": "Repeat",
       "repeatNone": "None",
       "repeatEvery": "Every",
-      "repeatUnit": { "day": "day", "week": "week", "month": "month" },
+      "repeatUnit": {
+        "day": "day",
+        "week": "week",
+        "month": "month"
+      },
       "repeatClear": "Remove",
       "tagsLabel": "Tags",
       "addTagPlaceholder": "Add tag...",
@@ -3462,7 +3477,8 @@
       "estPomosDecrease": "Decrease",
       "estPomosIncrease": "Increase",
       "focusTotal": "Total: {value}",
-      "startFocus": "Start"
+      "startFocus": "Start",
+      "closeAria": "Close panel"
     }
   },
   "FocusTimer": {
