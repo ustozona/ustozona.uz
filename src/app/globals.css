@@ -144,7 +144,13 @@
   50% {
     background-position: 100% 100%;}
   to {
-    background-position: 0% 0%;}}}
+    background-position: 0% 0%;}}
+  --animate-blink-cursor: blink-cursor 0.8s step-end infinite;
+  @keyframes blink-cursor {
+  0%, 100% {
+    opacity: 1;}
+  50% {
+    opacity: 0;}}}
 
 /* ─────────────────────────────────────────────
    Light mode (default) — OKLCH

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Ban, CalendarOff, ChevronDown, Copy, Flag, GraduationCap, Play, Plus, Repeat, Sun, Sunrise, Trash2 } from "lucide-react";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
@@ -11,7 +11,9 @@ import { Illustration } from "@/components/ui/illustration";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DateKeyPicker } from "@/components/ui/date-key-picker";
+import { DateKeyPicker, fmtKey } from "@/components/ui/date-key-picker";
+import { Button } from "@/components/ui/button";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import {
@@ -544,13 +546,31 @@ function QuickAddRow({
   tight?: boolean;
 }) {
   const t = useTranslations("TasksPage.list");
+  const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState<string>(defaultDueDate);
   const [classId, setClassId] = useState<string | null>(null);
   const [priority, setPriority] = useState<TaskPriority>("none");
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Roʻyxat almashsa (Bugun → Ertaga) sana konteksti ham yangilanadi.
   useEffect(() => setDueDate(defaultDueDate), [defaultDueDate]);
+
+  // Boshqa joyga bosilsa (boʻsh holatda) qatorni yigʻish — dropdown/popover
+  // kontenti portal orqali DOM tashqarisida render boʻlgani uchun ularni
+  // data-slot orqali istisno qilamiz (aks holda sana/bayroq tanlashda yopilib qolardi).
+  useEffect(() => {
+    if (!expanded) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (containerRef.current?.contains(target)) return;
+      if (target.closest('[data-slot="dropdown-menu-content"]')) return;
+      if (target.closest('[data-slot="popover-content"]')) return;
+      if (!title.trim()) setExpanded(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [expanded, title]);
 
   const submit = () => {
     const trimmed = title.trim();
@@ -565,94 +585,139 @@ function QuickAddRow({
   const selectedClass = classId ? liveClasses.find((c) => c.id === classId) : undefined;
   const prio = PRIORITY_META[priority];
   const isToday = dueDate === todayKey;
+  const dateLabel = (key: string) => {
+    if (!key) return fmtKey(key);
+    if (key === todayKey) return t("todayGroup");
+    if (key === addDaysKey(todayKey, 1)) return t("tomorrowGroup");
+    if (key === addDaysKey(todayKey, 2)) return t("dayAfterTomorrowGroup");
+    if (key === addDaysKey(todayKey, -1)) return t("yesterdayGroup");
+    return fmtKey(key);
+  };
 
-  /* Focus To-Do uslubi: bitta qator — [+] [matn] | [bayroq] [sana] [sinf].
-     Saqlash faqat Enter bilan (alohida tugma yoʻq). */
+  /* Yigʻilgan holat — "+ Vazifa qoʻshish" chizma tugma, bosilsa toʻliq
+     muharrirga ochiladi (Todoist uslubi). */
+  if (!expanded) {
+    return (
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className={cn(
+          "mx-4 mb-0.5 flex h-10 items-center gap-2 rounded-lg border border-dashed border-border px-3 text-left text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted/40 hover:text-foreground",
+          tight ? "mt-2" : "mt-3"
+        )}
+      >
+        <Plus className="size-4 shrink-0" />
+        {t("quickAddPlaceholder")}
+      </button>
+    );
+  }
+
+  /* Ochiq holat — tepada matn maydoni, pastda amallar qatori + "Qoʻshish"
+     tugmasi. Dropdown/popover kontenti portal orqali DOM tashqarisida
+     render boʻlgani uchun blur-asosli avtomatik yigʻish ISHLATILMAYDI —
+     matn boʻsh boʻlsa ham pastdagi tugmalar (sana/bayroq/sinf) ishlayveradi;
+     boshqa joyga bosilsa (matn boʻsh boʻlsa) mousedown-listener yigʻadi;
+     yopish yana Escape orqali ham mumkin. */
   return (
     <div
+      ref={containerRef}
       className={cn(
-        "mx-4 mb-0.5 flex h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 transition-colors focus-within:border-primary/40 focus-within:bg-background",
+        "relative mx-4 mb-0.5 flex flex-col gap-2 rounded-lg border border-border bg-background px-3 py-2.5 shadow-sm transition-colors",
         tight ? "mt-2" : "mt-3"
       )}
     >
-      <Plus className="size-4 shrink-0 text-muted-foreground/60" />
+      <BorderBeam duration={6} size={80} colorFrom="#FBC02D" colorTo="var(--primary)" />
       <input
+        autoFocus
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && submit()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") submit();
+          if (e.key === "Escape") {
+            setTitle("");
+            setExpanded(false);
+          }
+        }}
         placeholder={t("quickAddPlaceholder")}
-        className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
       />
 
-      <div className="h-4 w-px shrink-0 bg-border" />
+      <div className="flex items-center gap-1">
+        <DateKeyPicker
+          value={dueDate}
+          onChange={setDueDate}
+          formatLabel={dateLabel}
+          className={cn(
+            "h-7 shrink-0 gap-1.5 border-0 bg-muted/50 px-2 text-xs font-medium shadow-none hover:bg-muted",
+            isToday ? "text-primary" : !dueDate && "text-muted-foreground"
+          )}
+        />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className="flex size-7 shrink-0 items-center justify-center rounded-md hover:bg-muted"
-            aria-label={t("priorityLabel")}
-          >
-            <Flag
-              className={cn("size-3.5 shrink-0", priority === "none" ? "text-muted-foreground/40" : prio.text)}
-              fill={priority === "none" ? "none" : "currentColor"}
-            />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {PRIORITY_ORDER.map((p) => (
-            <DropdownMenuItem key={p} onClick={() => setPriority(p)} className="gap-2">
-              <Flag
-                className={cn("size-3.5 shrink-0", p === "none" ? "text-muted-foreground/40" : PRIORITY_META[p].text)}
-                fill={p === "none" ? "none" : "currentColor"}
-              />
-              {t(`priority.${p}`)}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <DateKeyPicker
-        value={dueDate}
-        onChange={setDueDate}
-        className={cn(
-          "h-7 shrink-0 gap-1 border-0 px-1.5 text-xs shadow-none hover:bg-muted",
-          isToday ? "text-primary" : !dueDate && "text-muted-foreground/70"
-        )}
-      />
-
-      {liveClasses.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex h-7 max-w-32 shrink-0 items-center gap-1.5 rounded-md px-1.5 text-xs hover:bg-muted"
-              aria-label={t("classLabel")}
+              className="flex size-7 shrink-0 items-center justify-center rounded-md hover:bg-muted"
+              aria-label={t("priorityLabel")}
             >
-              {selectedClass ? (
-                <>
-                  <ClassSwatch hex={selectedClass.hex} />
-                  <span className="truncate text-foreground">{selectedClass.name}</span>
-                </>
-              ) : (
-                <>
-                  <GraduationCap className="size-3.5 shrink-0 text-muted-foreground/70" />
-                  <span className="truncate text-muted-foreground/70">{t("classLabel")}</span>
-                </>
-              )}
+              <Flag
+                className={cn("size-3.5 shrink-0", priority === "none" ? "text-muted-foreground/40" : prio.text)}
+                fill={priority === "none" ? "none" : "currentColor"}
+              />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setClassId(null)}>{t("noClass")}</DropdownMenuItem>
-            {liveClasses.map((cls) => (
-              <DropdownMenuItem key={cls.id} onClick={() => setClassId(cls.id)} className="gap-2">
-                <ClassSwatch hex={cls.hex} />
-                {cls.name}
+          <DropdownMenuContent align="start">
+            {PRIORITY_ORDER.map((p) => (
+              <DropdownMenuItem key={p} onClick={() => setPriority(p)} className="gap-2">
+                <Flag
+                  className={cn("size-3.5 shrink-0", p === "none" ? "text-muted-foreground/40" : PRIORITY_META[p].text)}
+                  fill={p === "none" ? "none" : "currentColor"}
+                />
+                {t(`priority.${p}`)}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      )}
+
+        {liveClasses.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex h-7 max-w-32 shrink-0 items-center gap-1.5 rounded-md px-1.5 text-xs hover:bg-muted"
+                aria-label={t("classLabel")}
+              >
+                {selectedClass ? (
+                  <>
+                    <ClassSwatch hex={selectedClass.hex} />
+                    <span className="truncate text-foreground">{selectedClass.name}</span>
+                  </>
+                ) : (
+                  <>
+                    <GraduationCap className="size-3.5 shrink-0 text-muted-foreground/70" />
+                    <span className="truncate text-muted-foreground/70">{t("classLabel")}</span>
+                  </>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => setClassId(null)}>{t("noClass")}</DropdownMenuItem>
+              {liveClasses.map((cls) => (
+                <DropdownMenuItem key={cls.id} onClick={() => setClassId(cls.id)} className="gap-2">
+                  <ClassSwatch hex={cls.hex} />
+                  {cls.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
+        <div className="flex-1" />
+
+        <Button size="sm" onClick={submit} disabled={!title.trim()} className="h-7 px-4">
+          {t("addAction")}
+        </Button>
+      </div>
     </div>
   );
 }

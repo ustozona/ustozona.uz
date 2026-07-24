@@ -102,7 +102,7 @@ export function WeekStrip({
               {lesson && (
                 <span
                   className={cn(
-                    "absolute -bottom-px -right-px size-1 rounded-full ring-1",
+                    "absolute -bottom-px -right-px size-[3px] rounded-full ring-1",
                     isSelected
                       ? "bg-primary-foreground ring-primary"
                       : isToday

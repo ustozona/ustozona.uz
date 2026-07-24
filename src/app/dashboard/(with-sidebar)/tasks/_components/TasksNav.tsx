@@ -8,6 +8,7 @@ import {
   Sunrise,
   CalendarDays,
   CalendarClock,
+  CalendarX2,
   Inbox,
   CheckCircle2,
   ChevronRight,
@@ -55,6 +56,7 @@ export const SMART_LIST_ICONS: Record<SmartListKey, React.ComponentType<{ classN
   planned: CalendarClock,
   nodate: Inbox,
   done: CheckCircle2,
+  overdue: CalendarX2,
 };
 
 export function TasksNav({

@@ -173,16 +173,6 @@ export function TaskDetail({
                 : prio.checkbox
             )}
           />
-          {!done && task.status !== "canceled" && (
-            <button
-              type="button"
-              onClick={onStartFocus}
-              aria-label={t("startFocus")}
-              className="flex shrink-0 items-center justify-center rounded-full bg-primary/10 p-1.5 text-primary transition-colors duration-fast hover:bg-primary/20"
-            >
-              <Play className="size-3.5 fill-current" />
-            </button>
-          )}
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -454,6 +444,21 @@ export function TaskDetail({
                 />
               </MetaRow>
             )}
+
+          {/* Fokusni boshlash — izoh ustida, alohida qator (Focus To-Do dan pastga koʻchirildi).
+              Bajarilgan/bekor qilingan vazifada tugma yashirilmaydi — disabled holatda koʻrsatiladi. */}
+          <div className="py-3">
+            <Button
+              type="button"
+              variant="default"
+              onClick={onStartFocus}
+              disabled={done || task.status === "canceled"}
+              className="w-full justify-center gap-2 disabled:bg-muted disabled:text-muted-foreground"
+            >
+              <Play className="size-3.5 fill-current" />
+              {t("startFocus")}
+            </Button>
+          </div>
 
           {/* Izoh — panel tagidagi erkin matn (Focus To-Do RemarkItem) */}
           <div className="pt-3">

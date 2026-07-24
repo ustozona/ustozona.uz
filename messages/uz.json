@@ -1952,6 +1952,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "tasks-quick-add-calendar": {
+        "title": "Vazifalar — mini-kalendar va yangi vazifa qoʻshish qulayroq boʻldi",
+        "body": "\"Bugun\"/\"Ertaga\" roʻyxatlarida haftalik mini-kalendar orqali istalgan kunni tez tanlash mumkin. Yangi vazifa qoʻshish kartasi kengaytirilgan koʻrinishga ega boʻldi (sana/bayroq/sinf bitta qatorda). \"Bugun\" endi faqat aynan bugungi vazifalarni koʻrsatadi — muddati oʻtganlar alohida \"Muddati oʻtgan\" boʻlimida."
+      },
       "tasks-context-menu": {
         "title": "Vazifalarda oʻng-klik menyu qoʻshildi",
         "body": "Vazifa ustida oʻng-klik qilib muddatni, ustuvorlikni yoki sinfni tezda oʻzgartirish, nusxa yaratish yoki bekor qilish mumkin. Pomodoro vaqtini belgilash gʻildirak-tanlagich bilan yangilandi."
@@ -3250,6 +3254,7 @@
       "planned": "Rejalashtirilgan",
       "nodate": "Sanasiz",
       "done": "Bajarilgan",
+      "overdue": "Muddati oʻtgan",
       "classesLabel": "Sinflar",
       "tagsLabel": "Teglar"
     },
@@ -3339,7 +3344,7 @@
       "estPomosIncrease": "Koʻpaytirish",
       "confirmOk": "Saqlash",
       "focusTotal": "Jami: {value}",
-      "startFocus": "Boshlash",
+      "startFocus": "Fokusni boshlash",
       "closeAria": "Panelni yopish",
       "estPomosFormula": "{count} ta × {length} = {total}"
     },

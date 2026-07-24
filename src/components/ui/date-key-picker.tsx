@@ -19,7 +19,7 @@ import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
    ════════════════════════════════════════════════════════════════════ */
 
 /** "2025-09-16" → "16.09.2025". Boʻsh boʻlsa placeholder. */
-function fmtKey(key: string): string {
+export function fmtKey(key: string): string {
   if (!key) return "Sana tanlang";
   const [y, m, d] = key.split("-");
   return `${d}.${m}.${y}`;
@@ -30,11 +30,14 @@ export function DateKeyPicker({
   onChange,
   className,
   ariaLabel,
+  formatLabel,
 }: {
   value: string;
   onChange: (key: string) => void;
   className?: string;
   ariaLabel?: string;
+  /** Standart "kun.oy.yil" oʻrniga tugmada koʻrsatiladigan matnni moslashtirish (mas. "Bugun"/"Ertaga"). */
+  formatLabel?: (key: string) => string;
 }) {
   const [open, setOpen] = React.useState(false);
   const selected = value ? dateKeyToDate(value) : undefined;
@@ -53,7 +56,7 @@ export function DateKeyPicker({
           )}
         >
           <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
-          {fmtKey(value)}
+          {formatLabel ? formatLabel(value) : fmtKey(value)}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">

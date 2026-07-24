@@ -1952,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "tasks-quick-add-calendar": {
+        "title": "Tasks — mini-calendar and easier quick-add",
+        "body": "In the \"Today\"/\"Tomorrow\" lists, a weekly mini-calendar lets you jump to any day. The quick-add card now expands with date/flag/class controls in one row. \"Today\" now shows only tasks due today — overdue ones live in a separate \"Overdue\" section."
+      },
       "tasks-context-menu": {
         "title": "Added right-click menu for tasks",
         "body": "Right-click a task to quickly change its due date, priority, or class, duplicate it, or mark it as won't do. Pomodoro time selection now uses a wheel picker."
@@ -3413,6 +3417,7 @@
       "planned": "Planned",
       "nodate": "No date",
       "done": "Completed",
+      "overdue": "Overdue",
       "classesLabel": "Classes",
       "tagsLabel": "Tags"
     },
@@ -3502,7 +3507,7 @@
       "estPomosIncrease": "Increase",
       "confirmOk": "Save",
       "focusTotal": "Total: {value}",
-      "startFocus": "Start",
+      "startFocus": "Start focus",
       "closeAria": "Close panel",
       "estPomosFormula": "{count} × {length} = {total}"
     },

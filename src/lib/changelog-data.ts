@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tasks-quick-add-calendar",
+    date: "2026-07-24",
+    type: "yaxshilandi",
+    title: "Vazifalar — mini-kalendar va yangi vazifa qoʻshish qulayroq boʻldi",
+    body: "\"Bugun\"/\"Ertaga\" roʻyxatlarida haftalik mini-kalendar orqali istalgan kunni tez tanlash mumkin. Yangi vazifa qoʻshish kartasi kengaytirilgan koʻrinishga ega boʻldi (sana/bayroq/sinf bitta qatorda). \"Bugun\" endi faqat aynan bugungi vazifalarni koʻrsatadi — muddati oʻtganlar alohida \"Muddati oʻtgan\" boʻlimida.",
+    href: "/dashboard/tasks",
+  },
+  {
     id: "tasks-stats-panel",
     date: "2026-07-24",
     type: "yangi",

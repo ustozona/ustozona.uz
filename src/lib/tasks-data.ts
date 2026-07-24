@@ -147,7 +147,14 @@ export function totalFocusMinutes(task: Task): number {
 
 /* ── Aqlli roʻyxatlar (chap panel) ────────────────────────────────── */
 
-export type SmartListKey = "today" | "tomorrow" | "week" | "planned" | "nodate" | "done";
+export type SmartListKey =
+  | "today"
+  | "tomorrow"
+  | "week"
+  | "planned"
+  | "nodate"
+  | "done"
+  | "overdue";
 
 export const SMART_LIST_KEYS: SmartListKey[] = [
   "today",
@@ -156,21 +163,23 @@ export const SMART_LIST_KEYS: SmartListKey[] = [
   "planned",
   "nodate",
   "done",
+  "overdue",
 ];
 
 function isActive(t: Task): boolean {
   return t.status !== "done" && t.status !== "canceled";
 }
 
-/** Vazifa berilgan aqlli roʻyxatga tegishlimi. `today` oʻtgan muddatlarni ham qamraydi. */
+/** Vazifa berilgan aqlli roʻyxatga tegishlimi. `today` faqat aynan bugun muddatli vazifalar — oʻtganlar `overdue`da. */
 export function matchesSmartList(t: Task, list: SmartListKey, todayKey: string): boolean {
   if (list === "done") return t.status === "done" || t.status === "canceled";
   if (!isActive(t)) return false;
 
   if (list === "nodate") return t.dueDate == null;
+  if (list === "overdue") return t.dueDate != null && t.dueDate < todayKey;
   if (t.dueDate == null) return false;
 
-  if (list === "today") return t.dueDate <= todayKey;
+  if (list === "today") return t.dueDate === todayKey;
   if (list === "tomorrow") return t.dueDate === addDaysKey(todayKey, 1);
   if (list === "week") {
     const tomorrow = addDaysKey(todayKey, 1);
@@ -183,7 +192,7 @@ export function matchesSmartList(t: Task, list: SmartListKey, todayKey: string):
 
 /** Chap paneldagi son hisoblagichlari. */
 export function smartListCounts(tasks: Task[], todayKey: string): Record<SmartListKey, number> {
-  const counts = { today: 0, tomorrow: 0, week: 0, planned: 0, nodate: 0, done: 0 } as Record<SmartListKey, number>;
+  const counts = Object.fromEntries(SMART_LIST_KEYS.map((k) => [k, 0])) as Record<SmartListKey, number>;
   for (const list of SMART_LIST_KEYS) {
     counts[list] = tasks.filter((t) => matchesSmartList(t, list, todayKey)).length;
   }

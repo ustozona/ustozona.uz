@@ -1952,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "tasks-quick-add-calendar": {
+        "title": "Wazıypalar — mini-kalendar hám qolaylı qosıw",
+        "body": "\"Búgin\"/\"Erte\" dizimlerinde haptalıq mini-kalendar arqalı qálegen kúndi tez tańlaw múmkin. Wazıypa qosıw kartası endi bir qatarda kún/aktuallik/klass penen keńeyedi. \"Búgin\" endi tek búgingi wazıypalardı kórsetedi — múddeti ótkenler bólek bólimde."
+      },
       "tasks-context-menu": {
         "title": "Wazıypalarǵa oʻń-klik menyu qosıldı",
         "body": "Wazıypa üstinde oʻń-klik etip mudetti, aktualliktı yamasa klasstı tez oʻzgertiw, nusqa jaratıw yamasa biykar etiw múmkin. Pomodoro waqtın belgilew doʻńgelek-tańlaǵısh penen jańalandı."
@@ -3413,6 +3417,7 @@
       "planned": "Josparlanǵan",
       "nodate": "Sanasız",
       "done": "Orınlanǵan",
+      "overdue": "Múddeti ótken",
       "classesLabel": "Klasslar",
       "tagsLabel": "Teglar"
     },
@@ -3502,7 +3507,7 @@
       "estPomosIncrease": "Kópeytiw",
       "confirmOk": "Saqlaw",
       "focusTotal": "Jámi: {value}",
-      "startFocus": "Baslaw",
+      "startFocus": "Fokustı baslaw",
       "closeAria": "Paneldi jabıw",
       "estPomosFormula": "{count} ta × {length} = {total}"
     },

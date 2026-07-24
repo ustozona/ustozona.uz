@@ -130,7 +130,7 @@ export default function TasksPage() {
   }, [searchFiltered, classId, activeTag]);
 
   const counts = useMemo(() => {
-    const c = { today: 0, tomorrow: 0, week: 0, planned: 0, nodate: 0, done: 0 } as Record<SmartListKey, number>;
+    const c = Object.fromEntries(SMART_LIST_KEYS.map((k) => [k, 0])) as Record<SmartListKey, number>;
     for (const list of SMART_LIST_KEYS) c[list] = searchFiltered.filter((t) => matchesSmartList(t, list, today)).length;
     return c;
   }, [searchFiltered, today]);
