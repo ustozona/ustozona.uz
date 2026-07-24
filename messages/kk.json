@@ -3419,6 +3419,8 @@
     "list": {
       "todayGroup": "Бүгін",
       "tomorrowGroup": "Ертең",
+      "dayAfterTomorrowGroup": "Арғы күні",
+      "yesterdayGroup": "Кеше",
       "noDateGroup": "Күнсіз",
       "emptyTitle": "Тапсырмалар жоқ",
       "emptyDescription": "Бұл тізімде әзірше ештеңе жоқ — төменнен жаңа тапсырма қосыңыз.",

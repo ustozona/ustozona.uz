@@ -10,8 +10,7 @@ import { cn } from "@/lib/utils";
 // Tarixiy import yoʻli saqlansin (TodayRail va b.) — yagona manba calendar-core.
 export { addDays, startOfWeekMon };
 
-/** Yakshanba doim dam olish kuni — tasmada koʻrsatilmaydi. */
-const WEEKDAYS_UZ = ["Du", "Se", "Ch", "Pa", "Ju", "Sh"] as const;
+const WEEKDAYS_UZ = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"] as const;
 
 /**
  * Interaktiv haftalik kun tasmasi (Dushanba—Shanba) — oy-grid taqvim
@@ -45,19 +44,19 @@ export function WeekStrip({
     : setInternalWeekStart;
 
   const days = useMemo(
-    () => Array.from({ length: 6 }, (_, i) => addDays(weekStart, i)),
+    () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     [weekStart]
   );
 
   const selectedKey = dateToKey(selected);
 
   return (
-    <div className="grid grid-cols-8 gap-0.5">
+    <div className="grid grid-cols-9 gap-0.5">
       <button
         type="button"
         aria-label={t("prevWeek")}
         onClick={() => setWeekStart((w) => addDays(w, -7))}
-        className="flex items-center justify-center self-stretch rounded-md bg-muted text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground"
+        className="flex w-full flex-col items-center justify-center gap-0.5 self-stretch rounded-md bg-muted text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground"
       >
         <ChevronLeft className="size-4" />
       </button>
@@ -121,7 +120,7 @@ export function WeekStrip({
         type="button"
         aria-label={t("nextWeek")}
         onClick={() => setWeekStart((w) => addDays(w, 7))}
-        className="flex items-center justify-center self-stretch rounded-md bg-muted text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground"
+        className="flex w-full flex-col items-center justify-center gap-0.5 self-stretch rounded-md bg-muted text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground"
       >
         <ChevronRight className="size-4" />
       </button>

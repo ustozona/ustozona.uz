@@ -3419,6 +3419,8 @@
     "list": {
       "todayGroup": "Сегодня",
       "tomorrowGroup": "Завтра",
+      "dayAfterTomorrowGroup": "Послезавтра",
+      "yesterdayGroup": "Вчера",
       "noDateGroup": "Без даты",
       "emptyTitle": "Нет задач",
       "emptyDescription": "Здесь пока пусто — добавьте новую задачу ниже.",

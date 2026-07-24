@@ -3419,6 +3419,8 @@
     "list": {
       "todayGroup": "Búgin",
       "tomorrowGroup": "Erte",
+      "dayAfterTomorrowGroup": "Erten-birsi kúni",
+      "yesterdayGroup": "Keshe",
       "noDateGroup": "Sanasız",
       "emptyTitle": "Wazıypalar joq",
       "emptyDescription": "Bul dizimde házirshe hesh nárse joq — tómennen jańa wazıypa qosıń.",

@@ -3256,6 +3256,8 @@
     "list": {
       "todayGroup": "Bugun",
       "tomorrowGroup": "Ertaga",
+      "dayAfterTomorrowGroup": "Indinga",
+      "yesterdayGroup": "Kecha",
       "noDateGroup": "Sanasiz",
       "emptyTitle": "Vazifalar yoʻq",
       "emptyDescription": "Bu roʻyxatda hozircha hech narsa yoʻq — pastdan yangi vazifa qoʻshing.",

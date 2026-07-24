@@ -12,6 +12,7 @@ import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
+import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -31,7 +32,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { addDaysKey } from "@/lib/date-keys";
+import { addDaysKey, dateKeyToDate } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
 import {
   formatDateGroupLabel,
@@ -70,6 +71,11 @@ export function TasksList({
   liveClasses,
   pomoMinutes,
   defaultDueDate,
+  weekSelectedDate,
+  dateFilter,
+  taskDayKeys,
+  onSelectDate,
+  showWeekStrip,
 }: {
   title: string;
   icon?: React.ReactNode;
@@ -96,6 +102,13 @@ export function TasksList({
   classesById: Map<string, ClassMeta>;
   liveClasses: { id: string; name: string; hex: string }[];
   pomoMinutes: number;
+  /** Mini-kalendar (WeekStrip) tanlovi — bosh sahifadagi "Bugungi darslar" uslubi. */
+  weekSelectedDate: Date;
+  dateFilter: string | null;
+  taskDayKeys: Set<string>;
+  onSelectDate: (d: Date) => void;
+  /** Faqat kun-koʻrinishlarida (Bugun/Ertaga) koʻrsatiladi. */
+  showWeekStrip: boolean;
 }) {
   const t = useTranslations("TasksPage.list");
   const tomorrowKey = addDaysKey(todayKey, 1);
@@ -115,6 +128,7 @@ export function TasksList({
       <PanelHeader
         icon={icon}
         title={title}
+        divider={!showWeekStrip}
         count={
           count > 0 ? (
             <Badge variant="secondary" className="size-6 rounded-full bg-muted p-0 text-xs tabular-nums text-muted-foreground">
@@ -123,6 +137,17 @@ export function TasksList({
           ) : undefined
         }
       />
+      {showWeekStrip && (
+        <div className="mx-4 mb-1 mt-1 shrink-0 rounded-lg border border-border bg-muted/20 p-2">
+          <WeekStrip
+            selected={dateFilter ? dateKeyToDate(dateFilter) : weekSelectedDate}
+            onSelect={onSelectDate}
+            todayKey={todayKey}
+            hasLesson={(key) => taskDayKeys.has(key)}
+            isBlocked={(date) => date.getDay() === 0}
+          />
+        </div>
+      )}
       <PanelBody>
         <div className="flex flex-col">
           {!hydrated ? (
@@ -139,6 +164,7 @@ export function TasksList({
               liveClasses={liveClasses}
               todayKey={todayKey}
               defaultDueDate={defaultDueDate ?? ""}
+              tight={showWeekStrip}
             />
           )}
 
@@ -507,12 +533,15 @@ function QuickAddRow({
   liveClasses,
   todayKey,
   defaultDueDate,
+  tight,
 }: {
   onSubmit: (input: { title: string; dueDate: string | null; classId: string | null; priority: TaskPriority }) => void;
   liveClasses: { id: string; name: string; hex: string }[];
   todayKey: string;
   /** Joriy roʻyxat konteksti (Bugun/Ertaga) boʻyicha oldindan tanlangan sana. */
   defaultDueDate: string;
+  /** Ustida WeekStrip bor boʻlsa (kichikroq boʻshliq kifoya). */
+  tight?: boolean;
 }) {
   const t = useTranslations("TasksPage.list");
   const [title, setTitle] = useState("");
@@ -540,7 +569,12 @@ function QuickAddRow({
   /* Focus To-Do uslubi: bitta qator — [+] [matn] | [bayroq] [sana] [sinf].
      Saqlash faqat Enter bilan (alohida tugma yoʻq). */
   return (
-    <div className="mx-4 mb-0.5 mt-3 flex h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 transition-colors focus-within:border-primary/40 focus-within:bg-background">
+    <div
+      className={cn(
+        "mx-4 mb-0.5 flex h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 transition-colors focus-within:border-primary/40 focus-within:bg-background",
+        tight ? "mt-2" : "mt-3"
+      )}
+    >
       <Plus className="size-4 shrink-0 text-muted-foreground/60" />
       <input
         value={title}

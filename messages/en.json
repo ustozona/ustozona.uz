@@ -3419,6 +3419,8 @@
     "list": {
       "todayGroup": "Today",
       "tomorrowGroup": "Tomorrow",
+      "dayAfterTomorrowGroup": "Day after tomorrow",
+      "yesterdayGroup": "Yesterday",
       "noDateGroup": "No date",
       "emptyTitle": "No tasks",
       "emptyDescription": "Nothing here yet — add a new task below.",

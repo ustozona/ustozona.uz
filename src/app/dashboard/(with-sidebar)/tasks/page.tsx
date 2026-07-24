@@ -11,9 +11,10 @@ import { useFocusStore } from "@/store/useFocusStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { addDaysKey, todayKey } from "@/lib/date-keys";
+import { addDaysKey, dateToKey, todayKey } from "@/lib/date-keys";
 import {
   collectTags,
+  formatDateGroupLabel,
   matchesSmartList,
   SMART_LIST_KEYS,
   type SmartListKey,
@@ -43,12 +44,15 @@ function useListParam(): [SmartListKey | null, (v: SmartListKey | null) => void]
 
 export default function TasksPage() {
   const tNav = useTranslations("TasksPage.nav");
+  const tList = useTranslations("TasksPage.list");
 
   const [urlList, setUrlList] = useListParam();
   const [classId, setClassId] = useClassIdParam();
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [weekSelectedDate, setWeekSelectedDate] = useState(() => new Date());
+  const [dateFilter, setDateFilter] = useState<string | null>(null);
 
   const items = useTasksStore((s) => s.items);
   const hydrated = useTasksStore((s) => s._hasHydrated);
@@ -90,11 +94,26 @@ export default function TasksPage() {
   const handleSelectList = (list: SmartListKey) => {
     setUrlList(list);
     setClassId(null);
+    setDateFilter(null);
   };
   const handleSelectClass = (id: string) => {
     setClassId(id);
     setUrlList(null);
+    setDateFilter(null);
   };
+  const handleSelectDate = (d: Date) => {
+    setWeekSelectedDate(d);
+    const key = dateToKey(d);
+    setDateFilter((prev) => (prev === key ? null : key));
+  };
+
+  const taskDayKeys = useMemo(() => {
+    const set = new Set<string>();
+    for (const t of items) {
+      if (t.dueDate && t.status !== "done" && t.status !== "canceled") set.add(t.dueDate);
+    }
+    return set;
+  }, [items]);
 
   const searchFiltered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -119,9 +138,10 @@ export default function TasksPage() {
   const isDoneView = effectiveList === "done";
   const activeTasks = useMemo(() => {
     if (isDoneView) return [];
+    if (dateFilter) return scoped.filter((t) => t.status !== "done" && t.status !== "canceled" && t.dueDate === dateFilter);
     if (classId) return scoped.filter((t) => t.status !== "done" && t.status !== "canceled");
     return scoped.filter((t) => matchesSmartList(t, effectiveList!, today));
-  }, [scoped, classId, effectiveList, isDoneView, today]);
+  }, [scoped, classId, effectiveList, isDoneView, today, dateFilter]);
   const doneTasks = useMemo(
     () => scoped.filter((t) => t.status === "done" || t.status === "canceled"),
     [scoped]
@@ -129,8 +149,21 @@ export default function TasksPage() {
 
   const title = classId
     ? (classesById.get(classId)?.name ?? "")
-    : tNav(effectiveList ?? "today");
+    : dateFilter
+      ? dateFilter === today
+        ? tList("todayGroup")
+        : dateFilter === addDaysKey(today, 1)
+          ? tList("tomorrowGroup")
+          : dateFilter === addDaysKey(today, 2)
+            ? tList("dayAfterTomorrowGroup")
+            : dateFilter === addDaysKey(today, -1)
+              ? tList("yesterdayGroup")
+              : formatDateGroupLabel(dateFilter)
+      : tNav(effectiveList ?? "today");
   const ListIcon = classId ? GraduationCap : SMART_LIST_ICONS[effectiveList ?? "today"];
+  // Mini-kalendar faqat kun-koʻrinishlarida mantiqiy (Bugun/Ertaga) — "Shu hafta"/
+  // "Sanasiz"/"Bajarilgan"/sinf kabi bitta kunga bogʻliq boʻlmagan roʻyxatlarda yashiriladi.
+  const showWeekStrip = !classId && (effectiveList === "today" || effectiveList === "tomorrow");
 
   // Tez-qoʻshish sanasi roʻyxat kontekstidan: Bugun → bugun, Ertaga → ertaga.
   const quickAddDefaultDue =
@@ -199,6 +232,11 @@ export default function TasksPage() {
             liveClasses={liveClassesWithHex}
             pomoMinutes={pomoMinutes}
             defaultDueDate={quickAddDefaultDue}
+            weekSelectedDate={weekSelectedDate}
+            dateFilter={dateFilter}
+            taskDayKeys={taskDayKeys}
+            onSelectDate={handleSelectDate}
+            showWeekStrip={showWeekStrip}
           />
         </DashboardColumn>
 
