@@ -9,6 +9,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
+import { Mathematics } from "@tiptap/extension-mathematics";
+import "katex/dist/katex.min.css";
 import {
   FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
   SlidersHorizontal, FolderOpen, Target, BookOpen, Sparkles,
@@ -78,6 +80,9 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       Image.configure({ inline: false, allowBase64: true }),
       Callout,
       CalloutTitle,
+      // AI yordamchisi qoʻshgan $..$ / $$..$$ formulalar KaTeX bilan renderlanadi
+      // (chat panelidagi koʻrinish bilan bir xil).
+      Mathematics.configure({ katexOptions: { throwOnError: false } }),
       TableKit.configure({ table: { resizable: true } }),
       TaskList,
       TaskItem.configure({ nested: true }),

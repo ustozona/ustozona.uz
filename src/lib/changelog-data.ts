@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "lesson-math-formulas",
+    date: "2026-07-25",
+    type: "yaxshilandi",
+    title: "Dars muharriri — matematik formulalar toʻgʻri koʻrinadi",
+    body: "AI yordamchi bergan matematik formulalar endi darsda ham xuddi suhbatdagidek chiroyli chiqadi: kasr, ildiz, daraja va quyi indekslar oʻz oʻrnida turadi. Avval ular darsga qoʻshilganda chalkash matnga aylanib qolardi.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "lesson-ai-assistant-launch",
     date: "2026-07-24",
     type: "yangi",

@@ -1952,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "lesson-math-formulas": {
+        "title": "Lesson editor — maths formulas now display correctly",
+        "body": "Maths formulas from the AI assistant now look the same in the lesson as they do in the chat: fractions, roots, powers and subscripts all stay in place. Previously they turned into jumbled text once added to the lesson."
+      },
       "lesson-ai-assistant-launch": {
         "title": "Lesson editor — AI assistant is live",
         "body": "The AI assistant in the lesson editor now works: it suggests lesson plans, exercises and quiz questions, takes the current lesson text into account, and its answers can be added to the lesson with one click. Optionally, it can tailor suggestions using anonymous class statistics (average grade, attendance, behavior), or you can upload a textbook/PDF and get answers based only on that document. Each teacher has a daily message limit."

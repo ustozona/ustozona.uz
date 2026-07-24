@@ -1952,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "lesson-math-formulas": {
+        "title": "Sabaq redaktorı — matematikalıq formulalar durıs kórinedi",
+        "body": "AI járdemshi bergen matematikalıq formulalar endi sabaqta da sáwbettegidey shıraylı shıǵadı: bólshekler, tamırlar, dárejeler hám tómengi indeksler óz ornında turadı. Burın olar sabaqqa qosılǵanda shatasqan tekstke aylanıp qalatuǵın edi."
+      },
       "lesson-ai-assistant-launch": {
         "title": "Sabaq redaktorı — AI járdemshi iske tústi",
         "body": "Sabaq redaktorındaǵı AI járdemshi endi isleydi: sabaq jobaların, shınıǵıwlar hám test sorawların usınadı, házirgi sabaq tekstin esapqa aladı, al juwaptı bir basıw menen sabaqqa qosıwǵa boladı. Qálesengiz, klasstıń anonim statistikası (ortasha baha, sabaqqa qatnasıw, minez-qulıq) tiykarında maslastırılǵan usınıslar aladı yamasa sabaqlıq/PDF júklep, tek usı hújjet tiykarında juwap sorawǵa boladı. Hár bir muǵallimge kúnlik xabar limiti bar."

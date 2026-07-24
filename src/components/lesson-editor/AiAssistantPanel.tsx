@@ -4,14 +4,122 @@ import { useTranslations } from "next-intl";
 import { useRef, useState, useEffect } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import { Bot, X, RotateCcw, SendHorizontal, Square, Plus, Copy, Check, ChartColumn, Paperclip, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 marked.setOptions({ breaks: true, gfm: true });
+
+/* Matematik formulalar ($..$/$$..$$) markdown ishlashidan oldin KaTeX HTML'iga
+   almashtiriladi va vaqtinchalik belgi bilan yashiriladi — aks holda markdown
+   pastki chiziqni (_) kursiv deb talqin qilib, LaTeX ifodalarni buzadi. */
+const katexHtml = (expr: string, displayMode: boolean) => {
+  try {
+    return katex.renderToString(expr, { throwOnError: false, displayMode, output: "html" });
+  } catch {
+    return expr;
+  }
+};
+
 /* XSS himoyasi: AI chiqishi ishonchsiz (hujjat/dars matni orqali prompt-injection
    boʻlishi mumkin) — render va darsga qoʻshishdan oldin DOMPurify bilan tozalanadi. */
-const md = (text: string) => DOMPurify.sanitize(marked.parse(text) as string);
+const md = (text: string) => {
+  const parts: string[] = [];
+  const masked = text
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) => `@@MATH${parts.push(katexHtml(expr, true)) - 1}@@`)
+    .replace(/\$([^$\n]+?)\$/g, (_, expr: string) => `@@MATH${parts.push(katexHtml(expr, false)) - 1}@@`);
+  let html = marked.parse(masked) as string;
+  html = html.replace(/@@MATH(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
+  return DOMPurify.sanitize(html);
+};
+
+/* Nusxalash uchun LaTeX oddiy Unicode matnga aylantiriladi (`x^2`→`x²`), chunki
+   clipboardga formatlanmagan matn tushadi. Darsga qoʻshishda esa bu ishlatilmaydi —
+   u yerda Tiptap'ning Mathematics tugunlari yaratiladi (`mdEditor`). */
+const SUPERSCRIPT: Record<string, string> = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "+": "⁺", "-": "⁻", n: "ⁿ", i: "ⁱ" };
+const SUBSCRIPT: Record<string, string> = { "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄", "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉", "+": "₊", "-": "₋" };
+const toScript = (s: string, map: Record<string, string>) => [...s].map((c) => map[c] ?? c).join("");
+
+function extractBalanced(str: string, openIdx: number): [string, number] {
+  let depth = 0;
+  for (let i = openIdx; i < str.length; i++) {
+    if (str[i] === "{") depth++;
+    else if (str[i] === "}") { depth--; if (depth === 0) return [str.slice(openIdx + 1, i), i + 1]; }
+  }
+  return [str.slice(openIdx + 1), str.length];
+}
+
+function replaceCommand(expr: string, cmd: string, argCount: 1 | 2, fmt: (...args: string[]) => string): string {
+  let out = "";
+  let i = 0;
+  while (i < expr.length) {
+    if (expr.startsWith(cmd, i) && expr[i + cmd.length] === "{") {
+      const [a, next1] = extractBalanced(expr, i + cmd.length);
+      if (argCount === 1) { out += fmt(convertLatexExpr(a)); i = next1; continue; }
+      if (expr[next1] === "{") {
+        const [b, next2] = extractBalanced(expr, next1);
+        out += fmt(convertLatexExpr(a), convertLatexExpr(b));
+        i = next2;
+        continue;
+      }
+    }
+    out += expr[i]; i++;
+  }
+  return out;
+}
+
+const LATEX_SYMBOLS: [RegExp, string][] = [
+  [/\\pm/g, "±"], [/\\mp/g, "∓"], [/\\times/g, "×"], [/\\cdot/g, "·"], [/\\div/g, "÷"],
+  [/\\leq/g, "≤"], [/\\geq/g, "≥"], [/\\neq/g, "≠"], [/\\approx/g, "≈"], [/\\infty/g, "∞"],
+  [/\\alpha/g, "α"], [/\\beta/g, "β"], [/\\gamma/g, "γ"], [/\\pi/g, "π"], [/\\theta/g, "θ"],
+  [/\\Delta/g, "Δ"], [/\\sum/g, "∑"], [/\\int/g, "∫"],
+  [/\\Longrightarrow/g, "⟹"], [/\\implies/g, "⟹"], [/\\Rightarrow/g, "⇒"],
+  [/\\Leftrightarrow/g, "⇔"], [/\\iff/g, "⇔"], [/\\rightarrow/g, "→"], [/\\leftarrow/g, "←"], [/\\to/g, "→"],
+  [/\\forall/g, "∀"], [/\\exists/g, "∃"], [/\\in/g, "∈"], [/\\notin/g, "∉"],
+  [/\\subseteq/g, "⊆"], [/\\subset/g, "⊂"], [/\\cup/g, "∪"], [/\\cap/g, "∩"],
+  [/\\emptyset/g, "∅"], [/\\neg/g, "¬"], [/\\land/g, "∧"], [/\\lor/g, "∨"],
+  [/\\sin/g, "sin"], [/\\cos/g, "cos"], [/\\tan/g, "tan"], [/\\log/g, "log"], [/\\ln/g, "ln"],
+  [/\\quad/g, " "], [/\\,/g, " "], [/\\left/g, ""], [/\\right/g, ""],
+  [/\\ge/g, "≥"], [/\\le/g, "≤"], [/\\ne/g, "≠"],
+];
+
+function convertLatexExpr(expr: string): string {
+  let out = expr;
+  out = replaceCommand(out, "\\dfrac", 2, (a, b) => `(${a})/(${b})`);
+  out = replaceCommand(out, "\\frac", 2, (a, b) => `(${a})/(${b})`);
+  out = replaceCommand(out, "\\sqrt", 1, (a) => `√(${a})`);
+  for (const [re, rep] of LATEX_SYMBOLS) out = out.replace(re, rep);
+  out = out.replace(/\^\{([^{}]+)\}/g, (_, g: string) => (/^[0-9+\-ni]+$/.test(g) ? toScript(g, SUPERSCRIPT) : `^(${g})`));
+  out = out.replace(/\^([0-9A-Za-z])/g, (_, g: string) => SUPERSCRIPT[g] ?? `^${g}`);
+  out = out.replace(/_\{([^{}]+)\}/g, (_, g: string) => (/^[0-9,+-]+$/.test(g) ? toScript(g, SUBSCRIPT) : `_(${g})`));
+  out = out.replace(/_([0-9A-Za-z])/g, (_, g: string) => SUBSCRIPT[g] ?? `_${g}`);
+  out = out.replace(/[{}]/g, "");
+  out = out.replace(/\\([a-zA-Z]+)/g, "$1");
+  return out.replace(/\s+/g, " ").trim();
+}
+
+const latexToPlain = (text: string) => text
+  .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) => convertLatexExpr(expr))
+  .replace(/\$([^$\n]+?)\$/g, (_, expr: string) => convertLatexExpr(expr));
+
+const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+/* Darsga qoʻshish uchun: formulalar Tiptap Mathematics tugunlariga aylantiriladi,
+   shunda muharrirda ham chatdagidek KaTeX bilan renderlanadi (va tahrirlanadi). */
+const mdEditor = (text: string) => {
+  const parts: string[] = [];
+  const mask = (html: string) => `@@MATH${parts.push(html) - 1}@@`;
+  const masked = text
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) =>
+      mask(`<div data-type="block-math" data-latex="${escapeAttr(expr.trim())}"></div>`))
+    .replace(/\$([^$\n]+?)\$/g, (_, expr: string) =>
+      mask(`<span data-type="inline-math" data-latex="${escapeAttr(expr.trim())}"></span>`));
+  let html = marked.parse(masked) as string;
+  html = html.replace(/@@MATH(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
+  return DOMPurify.sanitize(html);
+};
 
 type Msg = { role: "user" | "assistant"; content: string };
 type AttachedDoc = { uri: string; mimeType: string; name: string };
@@ -141,8 +249,8 @@ export default function AiAssistantPanel({
 
   const stop = () => abortRef.current?.abort();
   const reset = () => { stop(); setMessages([]); persist([]); };
-  const copy = (i: number, text: string) => { navigator.clipboard.writeText(text); setCopiedIdx(i); toast.success(t("toast.copied")); setTimeout(() => setCopiedIdx(null), 1500); };
-  const addToLesson = (text: string) => { onInsert(md(text)); toast.success(t("toast.added")); };
+  const copy = (i: number, text: string) => { navigator.clipboard.writeText(latexToPlain(text)); setCopiedIdx(i); toast.success(t("toast.copied")); setTimeout(() => setCopiedIdx(null), 1500); };
+  const addToLesson = (text: string) => { onInsert(mdEditor(text)); toast.success(t("toast.added")); };
 
   return (
     <div className="h-full flex flex-col">

@@ -1952,6 +1952,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "lesson-math-formulas": {
+        "title": "Dars muharriri — matematik formulalar toʻgʻri koʻrinadi",
+        "body": "AI yordamchi bergan matematik formulalar endi darsda ham xuddi suhbatdagidek chiroyli chiqadi: kasr, ildiz, daraja va quyi indekslar oʻz oʻrnida turadi. Avval ular darsga qoʻshilganda chalkash matnga aylanib qolardi."
+      },
       "lesson-ai-assistant-launch": {
         "title": "Dars muharriri — AI yordamchi ishga tushdi",
         "body": "Dars muharririda AI yordamchi endi ishlaydi: dars rejasi, mashqlar va test savollarini taklif qiladi, joriy dars matnini hisobga oladi va javobni bir bosishda darsga qoʻshish mumkin. Xohlasangiz, sinfning anonim statistikasi (oʻrtacha baho, davomat, xulq) asosida moslashtirilgan takliflar oladi yoki darslik/PDF yuklab, faqat shu hujjat asosida javob soʻrash mumkin. Har bir oʻqituvchi uchun kunlik xabar limiti bor."
