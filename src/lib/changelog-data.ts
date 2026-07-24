@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "tasks-lesson-duration",
+    date: "2026-07-24",
+    type: "yaxshilandi",
+    title: "Vazifalar — dars vaqti va fokus hisobi aniqlashtirildi",
+    body: "Dars-vazifalarida endi boshlanish va tugash vaqti birga koʻrsatiladi (masalan 08:00–08:45). Fokus vaqti shu dars davomiyligidan avtomatik hisoblanadi — Rejadagi vaqt statistikasi ham shu asosda toʻgʻri koʻrsatiladi.",
+    href: "/dashboard/tasks",
+  },
+  {
     id: "tasks-quick-add-calendar",
     date: "2026-07-24",
     type: "yaxshilandi",

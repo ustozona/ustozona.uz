@@ -1952,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "tasks-lesson-duration": {
+        "title": "Wazıypalar — sabaq waqtı hám fokus esabı anıqlandı",
+        "body": "Sabaq-wazıypalarında endi baslanıw hám tamamlanıw waqtı birge kórsetiledi (mısalı 08:00–08:45). Fokus waqtı endi sabaqtıń háqiyqıy dawamlılıǵınan avtomat esaplanadı — \"Jospardaǵı waqıt\" statistikası da sonı kórsetedi."
+      },
       "tasks-quick-add-calendar": {
         "title": "Wazıypalar — mini-kalendar hám qolaylı qosıw",
         "body": "\"Búgin\"/\"Erte\" dizimlerinde haptalıq mini-kalendar arqalı qálegen kúndi tez tańlaw múmkin. Wazıypa qosıw kartası endi bir qatarda kún/aktuallik/klass penen keńeyedi. \"Búgin\" endi tek búgingi wazıypalardı kórsetedi — múddeti ótkenler bólek bólimde."

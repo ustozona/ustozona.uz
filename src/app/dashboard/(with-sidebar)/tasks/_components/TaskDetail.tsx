@@ -52,6 +52,7 @@ import {
   PRIORITY_META,
   PRIORITY_ORDER,
   TAG_PILL_CLASS,
+  taskPomoLengthMin,
   todayKey as todayKeyOf,
   totalFocusMinutes,
   type Task,
@@ -62,6 +63,13 @@ function fmtDueMin(min: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+/** Muddat qatoridagi vaqt — dars-manbali vazifada oraliq (10:35–11:20). */
+function fmtDueRange(task: Task): string {
+  const start = fmtDueMin(task.dueMin!);
+  if (task.dueEndMin == null) return start;
+  return `${start}–${fmtDueMin(task.dueEndMin)}`;
 }
 
 /** Gʻildirak-tanlagich variantlari: taxminiy pomodoro 0–50, uzunlik 5–60 daqiqa. */
@@ -148,6 +156,8 @@ export function TaskDetail({
   const classInfo = task.classId ? liveClasses.find((c) => c.id === task.classId) : undefined;
   const classHex = classInfo ? CLASS_COLOR_HEX[classColor(classInfo)] : undefined;
   const isManual = task.source.kind === "manual";
+  const isLessonTask = task.source.kind === "lesson";
+  const effectivePomoMin = taskPomoLengthMin(task, pomoMinutes);
   const prio = PRIORITY_META[task.priority];
   const sourceHref =
     task.source.kind === "lesson"
@@ -255,7 +265,7 @@ export function TaskDetail({
                 setPomoOpen(open);
                 if (open) {
                   setPendingEstPomos(task.estPomos ?? 0);
-                  setPendingPomoMin(pomoMinutes);
+                  setPendingPomoMin(effectivePomoMin);
                 }
               }}
             >
@@ -267,7 +277,7 @@ export function TaskDetail({
                   <span className="flex items-center gap-1 text-sm font-medium tabular-nums">
                     <span className="flex items-center gap-1">
                       <span className="size-1.5 shrink-0 rounded-full bg-primary" />
-                      {Math.floor(totalFocusMinutes(task) / Math.max(1, pomoMinutes))}
+                      {Math.floor(totalFocusMinutes(task) / Math.max(1, effectivePomoMin))}
                     </span>
                     <span className="text-muted-foreground/50">/</span>
                     <span className="flex items-center gap-1">
@@ -276,7 +286,7 @@ export function TaskDetail({
                     </span>
                   </span>
                   <span className="text-xs tabular-nums text-muted-foreground">
-                    = {formatMinutes(pomoMinutes)}
+                    = {formatMinutes(effectivePomoMin)}
                   </span>
                 </button>
               </PopoverTrigger>
@@ -340,7 +350,7 @@ export function TaskDetail({
                       className="flex-1"
                       onClick={() => {
                         onSetEstPomos(pendingEstPomos);
-                        if (pendingPomoMin !== pomoMinutes) onSetPomoMinutes(pendingPomoMin);
+                        if (!isLessonTask && pendingPomoMin !== pomoMinutes) onSetPomoMinutes(pendingPomoMin);
                         setPomoOpen(false);
                       }}
                     >
@@ -374,7 +384,7 @@ export function TaskDetail({
               ) : (
                 <TypographyMuted className="px-2">
                   {task.dueDate ? formatDateGroupLabel(task.dueDate) : "—"}
-                  {task.dueMin != null ? `, ${fmtDueMin(task.dueMin)}` : ""}
+                  {task.dueMin != null ? `, ${fmtDueRange(task)}` : ""}
                 </TypographyMuted>
               )}
             </MetaRow>

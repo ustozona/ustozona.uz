@@ -29,8 +29,10 @@ export type Task = {
   status: TaskStatus;
   priority: TaskPriority;
   dueDate: string | null;
-  /** 00:00 dan daqiqalar — ixtiyoriy aniq vaqt. */
+  /** 00:00 dan daqiqalar — ixtiyoriy aniq vaqt (dars vazifalarida — boshlanish). */
   dueMin?: number | null;
+  /** Tugash vaqti (00:00 dan daqiqalar) — faqat dars-manbali vazifalarda toʻldiriladi. */
+  dueEndMin?: number | null;
   classId?: string | null;
   tags?: string[];
   /** Faqat manual vazifalarda ishlatiladi. */
@@ -143,6 +145,15 @@ export function formatMinutes(total: number): string {
 /** Vazifaning barcha kunlar boʻyicha jamlangan fokus vaqti (daqiqa). */
 export function totalFocusMinutes(task: Task): number {
   return (task.focus ?? []).reduce((sum, f) => sum + f.minutes, 0);
+}
+
+/** Bitta pomodoroning shu vazifa uchun amaldagi uzunligi — dars-manbali
+    vazifada dars davomiyligi (dueEndMin − dueMin), aks holda umumiy sozlama. */
+export function taskPomoLengthMin(task: Task, pomoMinutes: number): number {
+  if (task.source.kind === "lesson" && task.dueMin != null && task.dueEndMin != null) {
+    return Math.max(1, task.dueEndMin - task.dueMin);
+  }
+  return pomoMinutes;
 }
 
 /* ── Aqlli roʻyxatlar (chap panel) ────────────────────────────────── */

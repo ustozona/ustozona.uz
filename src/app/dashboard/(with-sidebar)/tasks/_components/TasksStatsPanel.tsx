@@ -9,7 +9,7 @@ import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AttendanceRing } from "../../statistics/_components/AttendanceRing";
-import { totalFocusMinutes, type Task } from "@/lib/tasks-data";
+import { taskPomoLengthMin, totalFocusMinutes, type Task } from "@/lib/tasks-data";
 
 /** `formatMinutes` "daq."ni qiymat matniga qotirib qoʻygan (bir xil qalin
     shrift); statistika sahifasidagi kabi kichik/xira `unit` sifatida
@@ -41,12 +41,15 @@ export function TasksStatsPanel({
 }) {
   const t = useTranslations("TasksPage.stats");
 
-  const estimatedMinutes = activeTasks.reduce((sum, task) => sum + (task.estPomos ?? 0) * pomoMinutes, 0);
+  const estimatedMinutes = activeTasks.reduce(
+    (sum, task) => sum + (task.estPomos ?? 0) * taskPomoLengthMin(task, pomoMinutes),
+    0
+  );
   const elapsedMinutes = [...activeTasks, ...doneTasks].reduce((sum, task) => sum + totalFocusMinutes(task), 0);
   const completedCount = doneTasks.filter((task) => task.status === "done").length;
   const totalCount = activeTasks.length + completedCount;
   const completedPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : null;
-  const estPomoCount = Math.round(estimatedMinutes / Math.max(1, pomoMinutes));
+  const estPomoCount = activeTasks.reduce((sum, task) => sum + (task.estPomos ?? 0), 0);
   const estimated = splitMinutes(estimatedMinutes, t);
   const elapsed = splitMinutes(elapsedMinutes, t);
   const countUnit = t("countUnit") || undefined;

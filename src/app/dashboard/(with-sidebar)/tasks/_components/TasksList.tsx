@@ -43,9 +43,17 @@ import {
   PRIORITY_META,
   PRIORITY_ORDER,
   TAG_PILL_CLASS,
+  taskPomoLengthMin,
   type Task,
   type TaskPriority,
 } from "@/lib/tasks-data";
+
+/** Vazifa qatorida vaqt koʻrsatiladi — dars-manbali boʻlsa oraliq (10:35–11:20). */
+function fmtTaskTime(task: Task): string {
+  const start = minToHHMM(task.dueMin!);
+  if (task.dueEndMin == null) return start;
+  return `${start}–${minToHHMM(task.dueEndMin)}`;
+}
 
 type ClassMeta = { name: string; hex: string };
 
@@ -325,7 +333,7 @@ function TaskGroup({
   // Focus To-Do uslubi: guruh sarlavhasida faol vazifalarning taxminiy vaqti.
   const estimatedMin = tasks
     .filter((x) => x.status !== "done" && x.status !== "canceled")
-    .reduce((sum, x) => sum + (x.estPomos ?? 0) * pomoMinutes, 0);
+    .reduce((sum, x) => sum + (x.estPomos ?? 0) * taskPomoLengthMin(x, pomoMinutes), 0);
   return (
     <div className="flex flex-col">
       {label && (
@@ -412,7 +420,7 @@ function TaskGroup({
               return (
                 <span className={cn("mt-0.5 hidden shrink-0 text-xs tabular-nums sm:flex", dl?.cls ?? "text-muted-foreground/70")}>
                   {dl?.text}
-                  {task.dueMin != null && (dl ? ` ${minToHHMM(task.dueMin)}` : minToHHMM(task.dueMin))}
+                  {task.dueMin != null && (dl ? ` ${fmtTaskTime(task)}` : fmtTaskTime(task))}
                 </span>
               );
             })()}

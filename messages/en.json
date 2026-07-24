@@ -1952,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "tasks-lesson-duration": {
+        "title": "Tasks — clearer lesson time and focus estimate",
+        "body": "Lesson-based tasks now show both start and end time (e.g. 08:00–08:45). Focus time is now automatically derived from the lesson's actual length — the Planned Time stat reflects it too."
+      },
       "tasks-quick-add-calendar": {
         "title": "Tasks — mini-calendar and easier quick-add",
         "body": "In the \"Today\"/\"Tomorrow\" lists, a weekly mini-calendar lets you jump to any day. The quick-add card now expands with date/flag/class controls in one row. \"Today\" now shows only tasks due today — overdue ones live in a separate \"Overdue\" section."
