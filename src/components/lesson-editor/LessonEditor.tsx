@@ -275,6 +275,8 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                 unit: units.find((u) => u.id === lesson.unitId)?.title,
                 content: editor?.getHTML(),
               }}
+              classIds={lessonClassIds(lesson)}
+              lessonId={lesson.id}
               onClose={() => setAiOpen(false)}
               onInsert={(html) => editor?.chain().focus().insertContent(html).run()}
             />

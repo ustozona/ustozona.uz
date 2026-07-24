@@ -16,4 +16,5 @@ export * from "./behavior";
 export * from "./student-notes";
 export * from "./tasks";
 export * from "./admin";
+export * from "./ai-usage";
 export * from "./schools";

@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "lesson-ai-assistant-launch",
+    date: "2026-07-24",
+    type: "yangi",
+    title: "Dars muharriri — AI yordamchi ishga tushdi",
+    body: "Dars muharririda AI yordamchi endi ishlaydi: dars rejasi, mashqlar va test savollarini taklif qiladi, joriy dars matnini hisobga oladi va javobni bir bosishda darsga qoʻshish mumkin. Xohlasangiz, sinfning anonim statistikasi (oʻrtacha baho, davomat, xulq) asosida moslashtirilgan takliflar oladi yoki darslik/PDF yuklab, faqat shu hujjat asosida javob soʻrash mumkin. Har bir oʻqituvchi uchun kunlik xabar limiti bor.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "tasks-lesson-duration",
     date: "2026-07-24",
     type: "yaxshilandi",

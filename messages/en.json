@@ -1952,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "lesson-ai-assistant-launch": {
+        "title": "Lesson editor — AI assistant is live",
+        "body": "The AI assistant in the lesson editor now works: it suggests lesson plans, exercises and quiz questions, takes the current lesson text into account, and its answers can be added to the lesson with one click. Optionally, it can tailor suggestions using anonymous class statistics (average grade, attendance, behavior), or you can upload a textbook/PDF and get answers based only on that document. Each teacher has a daily message limit."
+      },
       "tasks-lesson-duration": {
         "title": "Tasks — clearer lesson time and focus estimate",
         "body": "Lesson-based tasks now show both start and end time (e.g. 08:00–08:45). Focus time is now automatically derived from the lesson's actual length — the Planned Time stat reflects it too."
@@ -2892,11 +2896,19 @@
     "insertCallout": "Insert callout"
   },
   "LessonAiAssistantPanel": {
+    "attachDocument": "Textbook/file",
+    "docHint": "Upload a PDF or text file (max 15 MB) — the AI will answer based only on this document.",
+    "uploadingDoc": "Uploading…",
+    "removeDocument": "Remove document",
+    "docError": "Could not upload the file.",
+    "classDataToggle": "Class data",
+    "classDataHint": "When on, anonymous class statistics (average grade, attendance, behavior) are shared with the AI. Student names are never sent.",
     "aiError": "AI error",
     "connectionError": "Connection error.",
     "toast": {
       "copied": "Copied",
-      "added": "Added to lesson"
+      "added": "Added to lesson",
+      "docAttached": "Document attached"
     },
     "title": "Ustozona AI",
     "clearConversation": "Clear conversation",

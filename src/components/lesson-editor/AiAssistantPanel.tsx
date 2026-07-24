@@ -3,25 +3,37 @@
 import { useTranslations } from "next-intl";
 import { useRef, useState, useEffect } from "react";
 import { marked } from "marked";
-import { Bot, X, RotateCcw, SendHorizontal, Square, Plus, Copy, Check } from "lucide-react";
+import DOMPurify from "dompurify";
+import { Bot, X, RotateCcw, SendHorizontal, Square, Plus, Copy, Check, ChartColumn, Paperclip, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 marked.setOptions({ breaks: true, gfm: true });
-const md = (text: string) => marked.parse(text) as string;
+/* XSS himoyasi: AI chiqishi ishonchsiz (hujjat/dars matni orqali prompt-injection
+   boʻlishi mumkin) — render va darsga qoʻshishdan oldin DOMPurify bilan tozalanadi. */
+const md = (text: string) => DOMPurify.sanitize(marked.parse(text) as string);
 
 type Msg = { role: "user" | "assistant"; content: string };
+type AttachedDoc = { uri: string; mimeType: string; name: string };
 
 export default function AiAssistantPanel({
-  lessonContext, onClose, onInsert,
+  lessonContext, classIds = [], lessonId, onClose, onInsert,
 }: {
   lessonContext: { title?: string; classes?: string; unit?: string; content?: string };
+  /** Dars biriktirilgan sinf id'lari — anonim sinf-statistika konteksti uchun. */
+  classIds?: string[];
+  /** Chat tarixini serverda saqlash uchun (yoʻq boʻlsa tarix saqlanmaydi). */
+  lessonId?: string;
   onClose: () => void;
   onInsert: (html: string) => void;
 }) {
   const t = useTranslations("LessonAiAssistantPanel");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  const [useClassData, setUseClassData] = useState(false);
+  const [doc, setDoc] = useState<AttachedDoc | null>(null);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [streaming, setStreaming] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -30,6 +42,32 @@ export default function AiAssistantPanel({
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  // Chat tarixi: ochilganda serverdan yuklash (dars boʻyicha)
+  const loadedRef = useRef(false);
+  useEffect(() => {
+    if (!lessonId || loadedRef.current) return;
+    loadedRef.current = true;
+    let on = true;
+    fetch(`/api/murabbiyona-ai/chat?lessonId=${encodeURIComponent(lessonId)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { messages?: Msg[] } | null) => {
+        if (on && d?.messages?.length) {
+          setMessages((cur) => (cur.length ? cur : d.messages!));
+        }
+      })
+      .catch(() => {});
+    return () => { on = false; };
+  }, [lessonId]);
+
+  const persist = (msgs: Msg[]) => {
+    if (!lessonId) return;
+    fetch("/api/murabbiyona-ai/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lessonId, messages: msgs }),
+    }).catch(() => {});
+  };
 
   const send = async () => {
     const text = input.trim();
@@ -47,6 +85,9 @@ export default function AiAssistantPanel({
         body: JSON.stringify({
           messages: next.filter((m) => m.content.trim()).map((m) => ({ role: m.role, content: m.content })),
           lesson: lessonContext,
+          useClassData: useClassData && classIds.length > 0,
+          classIds,
+          doc: doc ?? undefined,
         }),
         signal: ctrl.signal,
       });
@@ -64,6 +105,9 @@ export default function AiAssistantPanel({
         acc += dec.decode(value, { stream: true });
         setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: acc }; return c; });
       }
+      if (acc.trim()) {
+        persist([...next.slice(0, -1), { role: "assistant", content: acc }]);
+      }
     } catch (e) {
       if ((e as Error).name !== "AbortError") {
         setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: `_${t("connectionError")}_` }; return c; });
@@ -74,8 +118,29 @@ export default function AiAssistantPanel({
     }
   };
 
+  const uploadDoc = async (file: File) => {
+    setUploadingDoc(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/murabbiyona-ai/doc", { method: "POST", body: fd });
+      if (!res.ok) {
+        toast.error(await res.text().catch(() => t("docError")));
+        return;
+      }
+      const info = (await res.json()) as AttachedDoc;
+      setDoc({ ...info, name: file.name });
+      toast.success(t("toast.docAttached"));
+    } catch {
+      toast.error(t("docError"));
+    } finally {
+      setUploadingDoc(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   const stop = () => abortRef.current?.abort();
-  const reset = () => { stop(); setMessages([]); };
+  const reset = () => { stop(); setMessages([]); persist([]); };
   const copy = (i: number, text: string) => { navigator.clipboard.writeText(text); setCopiedIdx(i); toast.success(t("toast.copied")); setTimeout(() => setCopiedIdx(null), 1500); };
   const addToLesson = (text: string) => { onInsert(md(text)); toast.success(t("toast.added")); };
 
@@ -157,6 +222,50 @@ export default function AiAssistantPanel({
 
       {/* Composer — input kontent bilan oʻsadi; tugma ichida (pastki-oʻngda) */}
       <div className="shrink-0 border-t border-border p-3">
+        <div className="mb-2 flex flex-wrap items-center gap-1.5">
+          {classIds.length > 0 && (
+            <button
+              onClick={() => setUseClassData((v) => !v)}
+              title={t("classDataHint")}
+              className={cn(
+                "inline-flex items-center gap-1.5 text-xs font-medium border rounded-full px-2.5 py-1 transition-colors",
+                useClassData
+                  ? "border-ring bg-primary/10 text-foreground"
+                  : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+            >
+              <ChartColumn className="size-3.5" />
+              {t("classDataToggle")}
+              {useClassData && <Check className="size-3.5" />}
+            </button>
+          )}
+          {doc ? (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium border border-ring bg-primary/10 text-foreground rounded-full px-2.5 py-1 max-w-[220px]">
+              <FileText className="size-3.5 shrink-0" />
+              <span className="truncate">{doc.name}</span>
+              <button onClick={() => setDoc(null)} title={t("removeDocument")} className="shrink-0 text-muted-foreground hover:text-foreground">
+                <X className="size-3.5" />
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={uploadingDoc}
+              title={t("docHint")}
+              className="inline-flex items-center gap-1.5 text-xs font-medium border border-border rounded-full px-2.5 py-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+            >
+              {uploadingDoc ? <Loader2 className="size-3.5 animate-spin" /> : <Paperclip className="size-3.5" />}
+              {uploadingDoc ? t("uploadingDoc") : t("attachDocument")}
+            </button>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadDoc(f); }}
+          />
+        </div>
         <div className="relative rounded-2xl border border-border bg-card transition-shadow focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/40">
           <textarea
             value={input}

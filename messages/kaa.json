@@ -1952,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "lesson-ai-assistant-launch": {
+        "title": "Sabaq redaktorı — AI járdemshi iske tústi",
+        "body": "Sabaq redaktorındaǵı AI járdemshi endi isleydi: sabaq jobaların, shınıǵıwlar hám test sorawların usınadı, házirgi sabaq tekstin esapqa aladı, al juwaptı bir basıw menen sabaqqa qosıwǵa boladı. Qálesengiz, klasstıń anonim statistikası (ortasha baha, sabaqqa qatnasıw, minez-qulıq) tiykarında maslastırılǵan usınıslar aladı yamasa sabaqlıq/PDF júklep, tek usı hújjet tiykarında juwap sorawǵa boladı. Hár bir muǵallimge kúnlik xabar limiti bar."
+      },
       "tasks-lesson-duration": {
         "title": "Wazıypalar — sabaq waqtı hám fokus esabı anıqlandı",
         "body": "Sabaq-wazıypalarında endi baslanıw hám tamamlanıw waqtı birge kórsetiledi (mısalı 08:00–08:45). Fokus waqtı endi sabaqtıń háqiyqıy dawamlılıǵınan avtomat esaplanadı — \"Jospardaǵı waqıt\" statistikası da sonı kórsetedi."
@@ -2892,11 +2896,19 @@
     "insertCallout": "Callout qosıw"
   },
   "LessonAiAssistantPanel": {
+    "attachDocument": "Sabaqlıq/fayl",
+    "docHint": "PDF yamasa tekst faylın júkleń (maks. 15 MB) — AI tek usı hújjet tiykarında juwap beredi.",
+    "uploadingDoc": "Júklenbekte…",
+    "removeDocument": "Hújjetti alıp taslaw",
+    "docError": "Fayldı júklep bolmadı.",
+    "classDataToggle": "Klass maǵlıwmatları",
+    "classDataHint": "Qosılsa, AI-ǵa klasstıń anonim statistikası (ortasha baha, sabaqqa qatnasıw, minez-qulıq) beriledi. Oqıwshılardıń atları jiberilmeydi.",
     "aiError": "AI qátesi",
     "connectionError": "Bailanısta qátelik.",
     "toast": {
       "copied": "Nusqalandı",
-      "added": "Sabaqqa qosıldı"
+      "added": "Sabaqqa qosıldı",
+      "docAttached": "Hújjet biriktirildi"
     },
     "title": "Ustozona AI",
     "clearConversation": "Sáwbetti tazalaw",

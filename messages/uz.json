@@ -1952,6 +1952,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "lesson-ai-assistant-launch": {
+        "title": "Dars muharriri — AI yordamchi ishga tushdi",
+        "body": "Dars muharririda AI yordamchi endi ishlaydi: dars rejasi, mashqlar va test savollarini taklif qiladi, joriy dars matnini hisobga oladi va javobni bir bosishda darsga qoʻshish mumkin. Xohlasangiz, sinfning anonim statistikasi (oʻrtacha baho, davomat, xulq) asosida moslashtirilgan takliflar oladi yoki darslik/PDF yuklab, faqat shu hujjat asosida javob soʻrash mumkin. Har bir oʻqituvchi uchun kunlik xabar limiti bor."
+      },
       "tasks-lesson-duration": {
         "title": "Vazifalar — dars vaqti va fokus hisobi aniqlashtirildi",
         "body": "Dars-vazifalarida endi boshlanish va tugash vaqti birga koʻrsatiladi (masalan 08:00–08:45). Fokus vaqti shu dars davomiyligidan avtomatik hisoblanadi — Rejadagi vaqt statistikasi ham shu asosda toʻgʻri koʻrsatiladi."
@@ -2729,11 +2733,19 @@
     "insertCallout": "Callout qoʻshish"
   },
   "LessonAiAssistantPanel": {
+    "attachDocument": "Darslik/fayl",
+    "docHint": "PDF yoki matn fayl yuklang (maks 15 MB) — AI faqat shu hujjat asosida javob beradi.",
+    "uploadingDoc": "Yuklanmoqda…",
+    "removeDocument": "Hujjatni olib tashlash",
+    "docError": "Faylni yuklab boʻlmadi.",
+    "classDataToggle": "Sinf maʼlumotlari",
+    "classDataHint": "Yoqilsa, sinfning anonim statistikasi (oʻrtacha baho, davomat, xulq) AI'ga beriladi. Oʻquvchi ismlari yuborilmaydi.",
     "aiError": "AI xatosi",
     "connectionError": "Ulanishda xatolik.",
     "toast": {
       "copied": "Nusxalandi",
-      "added": "Darsga qoʻshildi"
+      "added": "Darsga qoʻshildi",
+      "docAttached": "Hujjat biriktirildi"
     },
     "title": "Ustozona AI",
     "clearConversation": "Suhbatni tozalash",
