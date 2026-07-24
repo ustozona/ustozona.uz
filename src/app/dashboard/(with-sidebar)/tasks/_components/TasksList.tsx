@@ -11,7 +11,8 @@ import { Illustration } from "@/components/ui/illustration";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DateKeyPicker, fmtKey } from "@/components/ui/date-key-picker";
+import { fmtKey } from "@/components/ui/date-key-picker";
+import { TaskTimeCard } from "./TaskTimeCard";
 import { Button } from "@/components/ui/button";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { WeekStrip } from "@/components/dashboard/WeekStrip";
@@ -98,7 +99,14 @@ export function TasksList({
   selectedTaskId: string | null;
   onSelectTask: (id: string) => void;
   onToggleStatus: (id: string) => void;
-  onQuickAdd: (input: { title: string; dueDate: string | null; classId: string | null; priority: TaskPriority }) => void;
+  onQuickAdd: (input: {
+    title: string;
+    dueDate: string | null;
+    dueMin?: number | null;
+    dueEndMin?: number | null;
+    classId: string | null;
+    priority: TaskPriority;
+  }) => void;
   /** Tez-qoʻshishda oldindan tanlangan sana (joriy roʻyxat konteksti). */
   defaultDueDate?: string;
   onStartFocus: (id: string) => void;
@@ -545,7 +553,14 @@ function QuickAddRow({
   defaultDueDate,
   tight,
 }: {
-  onSubmit: (input: { title: string; dueDate: string | null; classId: string | null; priority: TaskPriority }) => void;
+  onSubmit: (input: {
+    title: string;
+    dueDate: string | null;
+    dueMin?: number | null;
+    dueEndMin?: number | null;
+    classId: string | null;
+    priority: TaskPriority;
+  }) => void;
   liveClasses: { id: string; name: string; hex: string }[];
   todayKey: string;
   /** Joriy roʻyxat konteksti (Bugun/Ertaga) boʻyicha oldindan tanlangan sana. */
@@ -557,6 +572,8 @@ function QuickAddRow({
   const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState<string>(defaultDueDate);
+  const [dueMin, setDueMin] = useState<number | null>(null);
+  const [dueEndMin, setDueEndMin] = useState<number | null>(null);
   const [classId, setClassId] = useState<string | null>(null);
   const [priority, setPriority] = useState<TaskPriority>("none");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -583,9 +600,11 @@ function QuickAddRow({
   const submit = () => {
     const trimmed = title.trim();
     if (!trimmed) return;
-    onSubmit({ title: trimmed, dueDate: dueDate || null, classId, priority });
+    onSubmit({ title: trimmed, dueDate: dueDate || null, dueMin, dueEndMin, classId, priority });
     setTitle("");
     setDueDate(defaultDueDate);
+    setDueMin(null);
+    setDueEndMin(null);
     setClassId(null);
     setPriority("none");
   };
@@ -651,14 +670,31 @@ function QuickAddRow({
       />
 
       <div className="flex items-center gap-1">
-        <DateKeyPicker
-          value={dueDate}
-          onChange={setDueDate}
-          formatLabel={dateLabel}
-          className={cn(
-            "h-7 shrink-0 gap-1.5 border-0 bg-muted/50 px-2 text-xs font-medium shadow-none hover:bg-muted",
-            isToday ? "text-primary" : !dueDate && "text-muted-foreground"
-          )}
+        <TaskTimeCard
+          value={{ dueDate: dueDate || null, dueMin, dueEndMin }}
+          onChange={(patch) => {
+            setDueDate(patch.dueDate ?? "");
+            setDueMin(patch.dueMin ?? null);
+            setDueEndMin(patch.dueEndMin ?? null);
+          }}
+          trigger={
+            <button
+              type="button"
+              className={cn(
+                "flex h-7 shrink-0 items-center gap-1.5 rounded-md border-0 bg-muted/50 px-2 text-xs font-medium shadow-none hover:bg-muted",
+                isToday ? "text-primary" : !dueDate && "text-muted-foreground"
+              )}
+            >
+              {dateLabel(dueDate)}
+              {dueMin != null && (
+                <span className="tabular-nums">
+                  {" "}
+                  {minToHHMM(dueMin)}
+                  {dueEndMin != null ? `–${minToHHMM(dueEndMin)}` : ""}
+                </span>
+              )}
+            </button>
+          }
         />
 
         <DropdownMenu>

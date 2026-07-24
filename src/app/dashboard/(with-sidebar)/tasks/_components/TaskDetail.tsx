@@ -8,6 +8,7 @@ import {
   Cake,
   CalendarClock,
   ChevronRight,
+  Clock,
   ClipboardCheck,
   Flag,
   GraduationCap,
@@ -28,11 +29,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
+import { TaskTimeCard } from "./TaskTimeCard";
 import { WheelPicker, WheelPickerWrapper } from "@/components/wheel-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ClassSwatch } from "@/components/ClassSwatch";
-import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -72,14 +74,14 @@ function fmtDueRange(task: Task): string {
   return `${start}–${fmtDueMin(task.dueEndMin)}`;
 }
 
-/** Gʻildirak-tanlagich variantlari: taxminiy pomodoro 0–50, uzunlik 5–60 daqiqa. */
-const EST_POMO_OPTIONS = Array.from({ length: 51 }, (_, i) => ({
-  label: String(i),
-  value: String(i),
+/** Gʻildirak-tanlagich variantlari: taxminiy pomodoro 1–50, uzunlik 1–60 daqiqa. */
+const EST_POMO_OPTIONS = Array.from({ length: 50 }, (_, i) => ({
+  label: String(i + 1),
+  value: String(i + 1),
 }));
-const POMO_LEN_OPTIONS = Array.from({ length: 56 }, (_, i) => ({
-  label: String(i + 5),
-  value: String(i + 5),
+const POMO_LEN_OPTIONS = Array.from({ length: 60 }, (_, i) => ({
+  label: String(i + 1),
+  value: String(i + 1),
 }));
 
 export function TaskDetail({
@@ -87,6 +89,7 @@ export function TaskDetail({
   onToggleStatus,
   onSetPriority,
   onSetDueDate,
+  onSetDueRange,
   onSetClassId,
   onSetNote,
   onSetTitle,
@@ -104,6 +107,7 @@ export function TaskDetail({
   onToggleStatus: () => void;
   onSetPriority: (p: TaskPriority) => void;
   onSetDueDate: (key: string | null) => void;
+  onSetDueRange: (patch: { dueDate: string | null; dueMin?: number | null; dueEndMin?: number | null }) => void;
   onSetClassId: (id: string | null) => void;
   onSetNote: (note: string) => void;
   onSetTitle: (title: string) => void;
@@ -124,7 +128,7 @@ export function TaskDetail({
   const [title, setTitle] = useState(task?.title ?? "");
   const [tagInput, setTagInput] = useState("");
   const [pomoOpen, setPomoOpen] = useState(false);
-  const [pendingEstPomos, setPendingEstPomos] = useState(task?.estPomos ?? 0);
+  const [pendingEstPomos, setPendingEstPomos] = useState(Math.max(1, task?.estPomos ?? 1));
   const [pendingPomoMin, setPendingPomoMin] = useState(pomoMinutes);
 
   useEffect(() => {
@@ -257,43 +261,44 @@ export function TaskDetail({
             />
           </MetaRow>
 
-          {/* Pomodoro — bajarilgan/taxminiy (ikki qatorli, bosilganda popover'da tahrirlanadi) */}
+          {/* Pomodoro — bajarilgan/taxminiy. Dars-manbali vazifada uzunlik VA soni
+              qatʼiy (darsning oʻzidan kelib chiqadi — 1 dars = 1 seans, uzunligi
+              dars vaqti), shuning uchun read-only. Baholash/tugʻilgan kun/qoʻlda
+              vazifalarida oʻqituvchi ikkalasini ham erkin belgilaydi. */}
           <MetaRow icon={<Timer className="size-4" />} label={t("focusMetaLabel")}>
+            {isLessonTask ? (
+              <PomoDisplay
+                completed={Math.floor(totalFocusMinutes(task) / Math.max(1, effectivePomoMin))}
+                estimated={task.estPomos ?? 0}
+                lengthLabel={formatMinutes(effectivePomoMin)}
+                className="cursor-default px-1.5 py-1 opacity-80"
+              />
+            ) : (
             <Popover
               open={pomoOpen}
               onOpenChange={(open) => {
                 setPomoOpen(open);
                 if (open) {
-                  setPendingEstPomos(task.estPomos ?? 0);
+                  // Eski vazifalarda estPomos 0 boʻlishi mumkin — roʻyxat 1 dan boshlanadi.
+                  setPendingEstPomos(Math.max(1, task.estPomos ?? 1));
                   setPendingPomoMin(effectivePomoMin);
                 }
               }}
             >
               <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="flex flex-col items-end gap-0.5 rounded-md px-1.5 py-1 text-right transition-colors hover:bg-muted"
-                >
-                  <span className="flex items-center gap-1 text-sm font-medium tabular-nums">
-                    <span className="flex items-center gap-1">
-                      <span className="size-1.5 shrink-0 rounded-full bg-primary" />
-                      {Math.floor(totalFocusMinutes(task) / Math.max(1, effectivePomoMin))}
-                    </span>
-                    <span className="text-muted-foreground/50">/</span>
-                    <span className="flex items-center gap-1">
-                      <span className="size-1.5 shrink-0 rounded-full border border-primary" />
-                      {task.estPomos ?? 0}
-                    </span>
-                  </span>
-                  <span className="text-xs tabular-nums text-muted-foreground">
-                    = {formatMinutes(effectivePomoMin)}
-                  </span>
+                <button type="button" className="rounded-md transition-colors hover:bg-muted">
+                  <PomoDisplay
+                    completed={Math.floor(totalFocusMinutes(task) / Math.max(1, effectivePomoMin))}
+                    estimated={task.estPomos ?? 0}
+                    lengthLabel={formatMinutes(effectivePomoMin)}
+                    className="px-1.5 py-1"
+                  />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-72 p-4">
-                <div className="flex flex-col gap-3">
-                  <div className="text-center">
-                    <p className="text-sm font-semibold">{t("estPomosTitle")}</p>
+              <PopoverContent align="end" className="w-60 p-4">
+                <div className="flex flex-col gap-4">
+                  <div className="space-y-0.5 text-center">
+                    <p className="heading-small">{t("estPomosTitle")}</p>
                     <TypographyMuted className="tabular-nums">
                       {t("estPomosFormula", {
                         count: pendingEstPomos,
@@ -302,38 +307,51 @@ export function TaskDetail({
                       })}
                     </TypographyMuted>
                   </div>
+
+                  {/* Ikki alohida gʻildirak-quti (Focus To-Do qolipi) — yozuvlar
+                      qutilardan tashqarida, max-w bilan ataylab 2 qatorga
+                      oʻtkaziladi (eni tejaladi).
+
+                      DIQQAT — visibleCount: kutubxona konteyner balandligini halqa
+                      radiusidan hisoblaydi (radius = itemHeight / (2·tan(π/N))),
+                      shuning uchun N kichik boʻlsa quti siqilib qoladi (N=5 → ~65px).
+                      N=16, h=28 → ~148px. N 4 ga karrali boʻlishi ham shart.
+
+                      `infinite` faqat davomiylik gʻildiragida: 60→1 aylanishi
+                      qulay deb topildi; soni (1–50) esa chegaralangan kattalik —
+                      aylantirilsa 50 dan keyin 0 choki gʻalati koʻrinardi. */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col items-center gap-2">
-                      <WheelPickerWrapper className="rounded-xl bg-muted/50 px-5 py-1">
+                      <WheelPickerWrapper className="rounded-lg bg-muted/50 px-2">
                         <WheelPicker
                           options={EST_POMO_OPTIONS}
                           value={String(pendingEstPomos)}
                           onValueChange={(v) => setPendingEstPomos(Number(v))}
-                          visibleCount={12}
-                          optionItemHeight={34}
-                          infinite
+                          visibleCount={16}
+                          optionItemHeight={28}
                         />
                       </WheelPickerWrapper>
-                      <TypographyLabel className="text-center leading-tight">
+                      <span className="max-w-20 text-center text-xs leading-tight text-muted-foreground">
                         {t("estPomosLabel")}
-                      </TypographyLabel>
+                      </span>
                     </div>
                     <div className="flex flex-col items-center gap-2">
-                      <WheelPickerWrapper className="rounded-xl bg-muted/50 px-5 py-1">
+                      <WheelPickerWrapper className="rounded-lg bg-muted/50 px-2">
                         <WheelPicker
                           options={POMO_LEN_OPTIONS}
                           value={String(pendingPomoMin)}
                           onValueChange={(v) => setPendingPomoMin(Number(v))}
-                          visibleCount={12}
-                          optionItemHeight={34}
+                          visibleCount={16}
+                          optionItemHeight={28}
                           infinite
                         />
                       </WheelPickerWrapper>
-                      <TypographyLabel className="text-center leading-tight">
+                      <span className="max-w-20 text-center text-xs leading-tight text-muted-foreground">
                         {t("pomoLengthLabel")}
-                      </TypographyLabel>
+                      </span>
                     </div>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <Button
                       type="button"
@@ -360,15 +378,31 @@ export function TaskDetail({
                 </div>
               </PopoverContent>
             </Popover>
+            )}
           </MetaRow>
 
+          {/* Sana va vaqt ikki alohida qatorga ajratilgan — bitta uzun satr
+              (25-iyul, 14:15–15:00) tor panelda (sidebar ochiq) ikki qatorga
+              buzilib, MetaRow'ning min-h-11 balandligiga sigʻmay kesilib
+              qolardi. Ikkala qator ham xuddi shu TaskTimeCard popoverini
+              ochadi — modelda alohida maydon yoʻq. */}
           <MetaRow icon={<CalendarClock className="size-4" />} label={t("dueLabel")}>
               {isManual ? (
                 <>
-                  <DateKeyPicker
-                    value={task.dueDate ?? ""}
-                    onChange={(key) => onSetDueDate(key)}
-                    className="h-8 border-0 px-2 shadow-none hover:bg-muted"
+                  <TaskTimeCard
+                    value={{ dueDate: task.dueDate, dueMin: task.dueMin, dueEndMin: task.dueEndMin }}
+                    onChange={onSetDueRange}
+                    trigger={
+                      <button
+                        type="button"
+                        className={cn(
+                          "flex h-8 min-w-0 items-center truncate rounded px-2 text-sm hover:bg-muted",
+                          !task.dueDate && "text-muted-foreground"
+                        )}
+                      >
+                        {task.dueDate ? formatDateGroupLabel(task.dueDate) : "—"}
+                      </button>
+                    }
                   />
                   {task.dueDate && (
                     <button
@@ -382,12 +416,49 @@ export function TaskDetail({
                   )}
                 </>
               ) : (
-                <TypographyMuted className="px-2">
+                <TypographyMuted className="truncate px-2">
                   {task.dueDate ? formatDateGroupLabel(task.dueDate) : "—"}
-                  {task.dueMin != null ? `, ${fmtDueRange(task)}` : ""}
                 </TypographyMuted>
               )}
             </MetaRow>
+
+            {(isManual ? task.dueDate : task.dueMin != null) && (
+              <MetaRow icon={<Clock className="size-4" />} label={t("timeRowLabel")}>
+                {isManual ? (
+                  <>
+                    <TaskTimeCard
+                      value={{ dueDate: task.dueDate, dueMin: task.dueMin, dueEndMin: task.dueEndMin }}
+                      onChange={onSetDueRange}
+                      trigger={
+                        <button
+                          type="button"
+                          className={cn(
+                            "flex h-8 min-w-0 items-center truncate rounded px-2 text-sm hover:bg-muted",
+                            task.dueMin == null && "text-muted-foreground"
+                          )}
+                        >
+                          {task.dueMin != null ? fmtDueRange(task) : "—"}
+                        </button>
+                      }
+                    />
+                    {task.dueMin != null && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onSetDueRange({ dueDate: task.dueDate, dueMin: null, dueEndMin: null })
+                        }
+                        className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label={t("clearDue")}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <TypographyMuted className="truncate px-2">{fmtDueRange(task)}</TypographyMuted>
+                )}
+              </MetaRow>
+            )}
 
             <MetaRow icon={<GraduationCap className="size-4" />} label={t("classLabel")}>
               {isManual ? (
@@ -656,6 +727,53 @@ function RepeatPicker({
         )}
       </PopoverContent>
     </Popover>
+  );
+}
+
+/** Focus To-Do qolipi: har bir rejalashtirilgan pomodoro — bitta doiracha,
+    bajarilgani toʻliq primary, qolgani border rangida. 5 tadan koʻpiga qator
+    sigʻmaydi — u holda PomoDisplay faqat raqamli koʻrinishga tushadi. */
+const POMO_DOTS_MAX = 5;
+
+function PomoDots({ completed, estimated }: { completed: number; estimated: number }) {
+  return (
+    <span className="flex items-center gap-1">
+      {Array.from({ length: estimated }, (_, i) => (
+        <span
+          key={i}
+          className={cn(
+            "size-2 shrink-0 rounded-full",
+            i < completed ? "bg-primary" : "bg-border"
+          )}
+        />
+      ))}
+    </span>
+  );
+}
+
+function PomoDisplay({
+  completed,
+  estimated,
+  lengthLabel,
+  className,
+}: {
+  completed: number;
+  estimated: number;
+  lengthLabel: string;
+  className?: string;
+}) {
+  return (
+    <span className={cn("flex items-center gap-1.5", className)}>
+      {estimated > 0 && estimated <= POMO_DOTS_MAX ? (
+        <PomoDots completed={completed} estimated={estimated} />
+      ) : null}
+      <span className="text-sm font-semibold tabular-nums">
+        {completed}
+        <span className="text-muted-foreground/50">/</span>
+        {estimated}
+      </span>
+      <span className="text-xs text-muted-foreground">· {lengthLabel}</span>
+    </span>
   );
 }
 

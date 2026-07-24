@@ -3462,7 +3462,8 @@
     "detail": {
       "emptyTitle": "Задача не выбрана",
       "emptyDescription": "Выберите задачу из списка, чтобы увидеть детали.",
-      "dueLabel": "Срок",
+      "dueLabel": "Дата",
+      "timeRowLabel": "Время",
       "clearDue": "Очистить срок",
       "classLabel": "Класс",
       "noClass": "Без класса",
@@ -3506,14 +3507,29 @@
       "focusMetaLabel": "Фокус",
       "estPomosLabel": "Количество помидоров",
       "estPomosTitle": "Настройки помидора",
-      "pomoLengthLabel": "Длительность (мин)",
+      "pomoLengthLabel": "Длительность (минуты)",
       "estPomosDecrease": "Уменьшить",
       "estPomosIncrease": "Увеличить",
       "confirmOk": "Сохранить",
       "focusTotal": "Всего: {value}",
       "startFocus": "Начать фокус",
       "closeAria": "Закрыть панель",
-      "estPomosFormula": "{count} × {length} = {total}"
+      "estPomosFormula": "{count} × {length} = {total}",
+      "timeCard": {
+        "dateTab": "Дата",
+        "durationTab": "Длительность",
+        "quickToday": "Сегодня",
+        "quickTomorrow": "Завтра",
+        "quickNextWeek": "Следующая неделя",
+        "quickEvening": "Вечер",
+        "timeLabel": "Время",
+        "noTime": "Без времени",
+        "startLabel": "Начало",
+        "endLabel": "Конец",
+        "allDay": "Весь день",
+        "clear": "Очистить",
+        "ok": "ОК"
+      }
     },
     "stats": {
       "title": "Статистика",

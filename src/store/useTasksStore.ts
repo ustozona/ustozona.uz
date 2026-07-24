@@ -23,6 +23,7 @@ interface TasksState {
     title: string;
     dueDate?: string | null;
     dueMin?: number | null;
+    dueEndMin?: number | null;
     classId?: string | null;
     priority?: TaskPriority;
     estPomos?: number;
@@ -32,6 +33,8 @@ interface TasksState {
   setPriority: (id: string, priority: TaskPriority) => void;
   setNote: (id: string, note: string) => void;
   setDueDate: (id: string, dueDate: string | null, dueMin?: number | null) => void;
+  /** Toʻliq muddat qoliplarni (sana/vaqt/oraliq) bitta zarbda yozadi — TaskTimeCard uchun. */
+  setDueRange: (id: string, patch: { dueDate: string | null; dueMin?: number | null; dueEndMin?: number | null }) => void;
   setClassId: (id: string, classId: string | null) => void;
   setTags: (id: string, tags: string[]) => void;
   /** Faqat manual vazifalar uchun. */
@@ -108,6 +111,20 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
   setDueDate: (id, dueDate, dueMin) =>
     set((s) => ({
       items: s.items.map((t) => (t.id === id ? { ...t, dueDate, dueMin: dueMin ?? null } : t)),
+    })),
+
+  setDueRange: (id, patch) =>
+    set((s) => ({
+      items: s.items.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              dueDate: patch.dueDate,
+              dueMin: patch.dueDate ? (patch.dueMin ?? null) : null,
+              dueEndMin: patch.dueDate ? (patch.dueEndMin ?? null) : null,
+            }
+          : t
+      ),
     })),
 
   setClassId: (id, classId) =>

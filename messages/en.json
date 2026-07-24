@@ -3462,7 +3462,8 @@
     "detail": {
       "emptyTitle": "No task selected",
       "emptyDescription": "Select a task from the list to see its details.",
-      "dueLabel": "Due",
+      "dueLabel": "Date",
+      "timeRowLabel": "Time",
       "clearDue": "Clear due date",
       "classLabel": "Class",
       "noClass": "No class",
@@ -3506,14 +3507,29 @@
       "focusMetaLabel": "Focus",
       "estPomosLabel": "Number of pomodoros",
       "estPomosTitle": "Pomodoro settings",
-      "pomoLengthLabel": "Duration (min)",
+      "pomoLengthLabel": "Duration (minutes)",
       "estPomosDecrease": "Decrease",
       "estPomosIncrease": "Increase",
       "confirmOk": "Save",
       "focusTotal": "Total: {value}",
       "startFocus": "Start focus",
       "closeAria": "Close panel",
-      "estPomosFormula": "{count} × {length} = {total}"
+      "estPomosFormula": "{count} × {length} = {total}",
+      "timeCard": {
+        "dateTab": "Date",
+        "durationTab": "Duration",
+        "quickToday": "Today",
+        "quickTomorrow": "Tomorrow",
+        "quickNextWeek": "Next week",
+        "quickEvening": "Evening",
+        "timeLabel": "Time",
+        "noTime": "No time",
+        "startLabel": "Start",
+        "endLabel": "End",
+        "allDay": "All day",
+        "clear": "Clear",
+        "ok": "OK"
+      }
     },
     "stats": {
       "title": "Statistics",

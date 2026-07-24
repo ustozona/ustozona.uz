@@ -3462,7 +3462,8 @@
     "detail": {
       "emptyTitle": "Wazıypa tańlanbaǵan",
       "emptyDescription": "Tolıq maǵlıwmat ushın dizimnen wazıypa tańlań.",
-      "dueLabel": "Múddet",
+      "dueLabel": "Kún",
+      "timeRowLabel": "Waqıt",
       "clearDue": "Múddetti tazalaw",
       "classLabel": "Klass",
       "noClass": "Klasssız",
@@ -3506,14 +3507,29 @@
       "focusMetaLabel": "Fokus",
       "estPomosLabel": "Pomodorolar sanı",
       "estPomosTitle": "Pomodoro sazlawları",
-      "pomoLengthLabel": "Dawamlılıǵı (min)",
+      "pomoLengthLabel": "Dawamlılıǵı (minut)",
       "estPomosDecrease": "Kemeytiw",
       "estPomosIncrease": "Kópeytiw",
       "confirmOk": "Saqlaw",
       "focusTotal": "Jámi: {value}",
       "startFocus": "Fokustı baslaw",
       "closeAria": "Paneldi jabıw",
-      "estPomosFormula": "{count} ta × {length} = {total}"
+      "estPomosFormula": "{count} ta × {length} = {total}",
+      "timeCard": {
+        "dateTab": "Kún",
+        "durationTab": "Dawamlılığı",
+        "quickToday": "Bүgin",
+        "quickTomorrow": "Erten",
+        "quickNextWeek": "Kelesi apta",
+        "quickEvening": "Keshki",
+        "timeLabel": "Waqıt",
+        "noTime": "Waqıtsız",
+        "startLabel": "Baslanıwı",
+        "endLabel": "Tamamlanıwı",
+        "allDay": "Kún boyı",
+        "clear": "Tazalaw",
+        "ok": "OK"
+      }
     },
     "stats": {
       "title": "Statistika",

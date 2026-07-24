@@ -39,7 +39,9 @@ function WheelPicker<T extends WheelPickerValue = string>({
           classNames?.optionItem
         ),
         highlightWrapper: cn(
-          "rounded-none border-y border-border bg-transparent font-normal text-foreground",
+          // Fon shaffof boʻlsa, orqadagi 3D halqaning xira nusxasi highlight
+          // ostidan "sharpa" boʻlib koʻrinadi — shu sabab opaque bg-popover.
+          "rounded-none border-y border-border bg-popover font-normal text-foreground",
           classNames?.highlightWrapper
         ),
         highlightItem: cn(

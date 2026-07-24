@@ -62,6 +62,7 @@ export default function TasksPage() {
   const setPriority = useTasksStore((s) => s.setPriority);
   const setNote = useTasksStore((s) => s.setNote);
   const setDueDate = useTasksStore((s) => s.setDueDate);
+  const setDueRange = useTasksStore((s) => s.setDueRange);
   const setTaskClassId = useTasksStore((s) => s.setClassId);
   const setTags = useTasksStore((s) => s.setTags);
   const setRepeat = useTasksStore((s) => s.setRepeat);
@@ -213,6 +214,8 @@ export default function TasksPage() {
               const id = addManualTask({
                 title: input.title,
                 dueDate: input.dueDate,
+                dueMin: input.dueMin,
+                dueEndMin: input.dueEndMin,
                 classId: input.classId ?? classId ?? null,
                 priority: input.priority,
               });
@@ -247,6 +250,7 @@ export default function TasksPage() {
               onToggleStatus={() => setStatus(selectedTask.id, selectedTask.status === "done" ? "todo" : "done")}
               onSetPriority={(p: TaskPriority) => setPriority(selectedTask.id, p)}
               onSetDueDate={(key) => setDueDate(selectedTask.id, key)}
+              onSetDueRange={(patch) => setDueRange(selectedTask.id, patch)}
               onSetClassId={(id) => setTaskClassId(selectedTask.id, id)}
               onSetNote={(note) => setNote(selectedTask.id, note)}
               onSetTitle={(title) => updateTask(selectedTask.id, (t) => ({ ...t, title }))}

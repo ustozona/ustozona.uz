@@ -3299,7 +3299,8 @@
     "detail": {
       "emptyTitle": "Vazifa tanlanmagan",
       "emptyDescription": "Tafsilotlarni koʻrish uchun roʻyxatdan vazifa tanlang.",
-      "dueLabel": "Muddat",
+      "dueLabel": "Sana",
+      "timeRowLabel": "Vaqt",
       "clearDue": "Muddatni tozalash",
       "classLabel": "Sinf",
       "noClass": "Sinfsiz",
@@ -3343,14 +3344,29 @@
       "focusMetaLabel": "Fokus vaqti",
       "estPomosLabel": "Pomodorolar soni",
       "estPomosTitle": "Pomodoro sozlamalari",
-      "pomoLengthLabel": "Davomiyligi (daq)",
+      "pomoLengthLabel": "Davomiyligi (daqiqa)",
       "estPomosDecrease": "Kamaytirish",
       "estPomosIncrease": "Koʻpaytirish",
       "confirmOk": "Saqlash",
       "focusTotal": "Jami: {value}",
       "startFocus": "Fokusni boshlash",
       "closeAria": "Panelni yopish",
-      "estPomosFormula": "{count} ta × {length} = {total}"
+      "estPomosFormula": "{count} ta × {length} = {total}",
+      "timeCard": {
+        "dateTab": "Sana",
+        "durationTab": "Davomiylik",
+        "quickToday": "Bugun",
+        "quickTomorrow": "Ertaga",
+        "quickNextWeek": "Keyingi hafta",
+        "quickEvening": "Kechqurun",
+        "timeLabel": "Vaqt",
+        "noTime": "Vaqtsiz",
+        "startLabel": "Boshlanishi",
+        "endLabel": "Tugashi",
+        "allDay": "Kun boʻyi",
+        "clear": "Tozalash",
+        "ok": "OK"
+      }
     },
     "stats": {
       "title": "Statistika",

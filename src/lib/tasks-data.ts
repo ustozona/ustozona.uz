@@ -78,6 +78,7 @@ export function newManualTask(input: {
   title: string;
   dueDate?: string | null;
   dueMin?: number | null;
+  dueEndMin?: number | null;
   classId?: string | null;
   priority?: TaskPriority;
   estPomos?: number;
@@ -90,6 +91,7 @@ export function newManualTask(input: {
     priority: input.priority ?? "none",
     dueDate: input.dueDate ?? null,
     dueMin: input.dueMin ?? null,
+    dueEndMin: input.dueEndMin ?? null,
     classId: input.classId ?? null,
     tags: [],
     repeat: null,

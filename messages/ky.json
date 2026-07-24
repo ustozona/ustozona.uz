@@ -3462,7 +3462,8 @@
     "detail": {
       "emptyTitle": "Тапшырма тандалган жок",
       "emptyDescription": "Толук маалымат үчүн тизмеден тапшырма тандаңыз.",
-      "dueLabel": "Мөөнөт",
+      "dueLabel": "Күнү",
+      "timeRowLabel": "Убакыт",
       "clearDue": "Мөөнөттү тазалоо",
       "classLabel": "Класс",
       "noClass": "Класссыз",
@@ -3506,14 +3507,29 @@
       "focusMetaLabel": "Фокус",
       "estPomosLabel": "Помидорлор саны",
       "estPomosTitle": "Помидор жөндөөлөрү",
-      "pomoLengthLabel": "Узактыгы (мүн)",
+      "pomoLengthLabel": "Узактыгы (мүнөт)",
       "estPomosDecrease": "Азайтуу",
       "estPomosIncrease": "Көбөйтүү",
       "confirmOk": "Сактоо",
       "focusTotal": "Баары: {value}",
       "startFocus": "Фокусту баштоо",
       "closeAria": "Панелди жабуу",
-      "estPomosFormula": "{count} × {length} = {total}"
+      "estPomosFormula": "{count} × {length} = {total}",
+      "timeCard": {
+        "dateTab": "Күнү",
+        "durationTab": "Узактыгы",
+        "quickToday": "Бүгүн",
+        "quickTomorrow": "Эртең",
+        "quickNextWeek": "Кийинки жума",
+        "quickEvening": "Кеч",
+        "timeLabel": "Убакыт",
+        "noTime": "Убактысыз",
+        "startLabel": "Башталышы",
+        "endLabel": "Аякташы",
+        "allDay": "Күн бою",
+        "clear": "Тазалоо",
+        "ok": "ОК"
+      }
     },
     "stats": {
       "title": "Статистика",
