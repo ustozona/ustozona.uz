@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TypographyMuted } from "@/components/ui/typography";
 import { Spinner } from "@/components/ui/spinner";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FeedbackViewTabs } from "./_components/FeedbackViewTabs";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
@@ -23,14 +23,17 @@ import {
   DropdownMenuSeparator, DropdownMenuItem, DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  Search, ArrowUpDown, ListFilter, MessageSquare, Clock, CheckCircle2,
+  Search, ArrowUpDown, ListFilter,
 } from "lucide-react";
 import {
   useFeedbackStore, initialsOf, upvoteCount,
   type FeedbackCategory, type FeedbackStatus, type ReplyQuote,
 } from "@/store/useFeedbackStore";
+import {
+  editFeedbackAction, deleteFeedbackAction, toggleFeedbackReactionAction,
+  toggleFeedbackReplyReactionAction, addFeedbackReplyAction,
+} from "@/server/actions/feedback";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useNotificationsStore } from "@/store/useNotificationsStore";
 import {
   useCategoryMeta, CATEGORY_ORDER, useStatusMeta, STATUS_ORDER,
 } from "./_components/feedback-meta";
@@ -68,7 +71,6 @@ export default function FeedbackPage() {
   const editFeedback = useFeedbackStore((s) => s.editFeedback);
   const deleteFeedback = useFeedbackStore((s) => s.deleteFeedback);
 
-  const notify = useNotificationsStore((s) => s.notify);
   const searchParams = useSearchParams();
 
   const profile = useSettingsStore((s) => s.profile);
@@ -191,48 +193,50 @@ export default function FeedbackPage() {
     setTab("all");
   };
 
-  /** Javob: asTeam — rasmiy (Ustozona jamoasi) yoki oddiy foydalanuvchi nomidan. */
+  /** Javob — har doim joriy oʻqituvchi nomidan (rasmiy javob faqat admin panelidan). */
   const handleReply = (
     id: string,
     body: string,
-    asTeam: boolean,
     quote?: ReplyQuote,
     parentId?: string,
   ) => {
-    const item = items.find((it) => it.id === id);
-    const teamAuthorName = t("teamAuthorName");
     addReply(id, {
       body,
-      author: asTeam ? teamAuthorName : userName,
-      isOfficial: asTeam,
+      author: userName,
+      authorAvatarUrl: userAvatarUrl,
+      isOfficial: false,
       quote,
       parentId,
     });
-    if (asTeam) {
-      // Fikr egasiga bildirishnoma (header qoʻngʻiroqda koʻrinadi).
-      notify({
-        kind: "reply",
-        title: t("notify.title"),
-        body: t("notify.body", { excerpt: body.length > 90 ? `${body.slice(0, 90)}…` : body }),
-        href: `/dashboard/feedback?item=${id}`,
-      });
-      toast.success(t("toast.replySent"), {
-        description: item ? t("toast.replySentDesc", { author: item.author }) : undefined,
-      });
-    } else {
-      toast.success(t("toast.replySent"));
-    }
+    toast.success(t("toast.replySent"));
+    addFeedbackReplyAction({ id, body, quote, parentId }).catch(() => {
+      toast.error(t("toast.syncError"));
+    });
   };
 
   /** Oʻchirish — FeedbackCard'dagi AlertDialog tasdigʻidan keyin chaqiriladi. */
   const handleDelete = (id: string) => {
     deleteFeedback(id);
     toast.success(t("toast.deleted"));
+    deleteFeedbackAction(id).catch(() => toast.error(t("toast.syncError")));
   };
 
   const handleEdit = (id: string, body: string) => {
     editFeedback(id, body);
     toast.success(t("toast.edited"));
+    editFeedbackAction({ id, body }).catch(() => toast.error(t("toast.syncError")));
+  };
+
+  const handleToggleReaction = (id: string, emoji: string) => {
+    toggleReaction(id, emoji);
+    toggleFeedbackReactionAction({ id, emoji }).catch(() => toast.error(t("toast.syncError")));
+  };
+
+  const handleToggleReplyReaction = (id: string, replyId: string, emoji: string) => {
+    toggleReplyReaction(id, replyId, emoji);
+    toggleFeedbackReplyReactionAction({ id, replyId, emoji }).catch(() =>
+      toast.error(t("toast.syncError"))
+    );
   };
 
   const renderCard = (it: (typeof items)[number], i: number) => (
@@ -242,10 +246,9 @@ export default function FeedbackPage() {
       index={i}
       flashOnMount={flashItemId === it.id}
       userInitials={userInitials}
-      userAvatarUrl={userAvatarUrl}
-      onToggleReaction={(emoji) => toggleReaction(it.id, emoji)}
-      onToggleReplyReaction={(replyId, emoji) => toggleReplyReaction(it.id, replyId, emoji)}
-      onAddReply={(body, asTeam, quote, parentId) => handleReply(it.id, body, asTeam, quote, parentId)}
+      onToggleReaction={(emoji) => handleToggleReaction(it.id, emoji)}
+      onToggleReplyReaction={(replyId, emoji) => handleToggleReplyReaction(it.id, replyId, emoji)}
+      onAddReply={(body, quote, parentId) => handleReply(it.id, body, quote, parentId)}
       onEdit={(body) => handleEdit(it.id, body)}
       onDelete={() => handleDelete(it.id)}
       tourTarget={i === 0 && tab === "all"}
@@ -279,31 +282,11 @@ export default function FeedbackPage() {
             className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2.5 md:px-4"
             data-tour="feedback-toolbar"
           >
-          <Tabs value={tab} onValueChange={(v) => setTab(v as ViewTab)}>
-            <TabsList variant="line">
-              <TabsTrigger value="all" className="gap-1.5">
-                <MessageSquare className="size-3.5" />
-                {t("tabs.all")}
-                <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
-                  {items.length}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="process" className="gap-1.5">
-                <Clock className="size-3.5" />
-                {t("tabs.process")}
-                <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
-                  {tabCounts.process}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="done" className="gap-1.5">
-                <CheckCircle2 className="size-3.5" />
-                {t("tabs.done")}
-                <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-semibold tabular-nums">
-                  {tabCounts.done}
-                </span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <FeedbackViewTabs
+            value={tab}
+            onChange={setTab}
+            counts={{ all: items.length, process: tabCounts.process, done: tabCounts.done }}
+          />
 
           <div className="ml-auto flex items-center gap-1.5">
             {/* Qidirish — icon-only, popover ichida (barcha ekranlarda bir xil) */}

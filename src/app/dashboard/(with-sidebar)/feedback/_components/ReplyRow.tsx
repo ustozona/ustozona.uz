@@ -18,22 +18,19 @@ type Props = {
   reply: FeedbackReply;
   /** Iqtibos-jump'da yoritiladigan xabar id'si (`msg-<id>`). */
   flashId: string | null;
-  /** Joriy foydalanuvchining profil rasmi — rasmiy (Ustozona jamoasi)
-      javoblarga qoʻllanilmaydi, faqat oʻz javoblariga. */
-  userAvatarUrl?: string;
   onToggleReaction: (emoji: string) => void;
   onReply: () => void;
   onJump: (targetId?: string) => void;
 };
 
-export default function ReplyRow({ reply: r, flashId, userAvatarUrl, onToggleReaction, onReply, onJump }: Props) {
+export default function ReplyRow({ reply: r, flashId, onToggleReaction, onReply, onJump }: Props) {
   const t = useTranslations("FeedbackReplyRow");
   const monthsShort = useMonthsShort();
   const relativeT = useRelativeT();
   return (
     <div className="group/reply flex items-start gap-3">
       <Avatar size="default" className="mt-0.5 shrink-0">
-        {!r.isOfficial && userAvatarUrl && <AvatarImage src={userAvatarUrl} alt={r.author} />}
+        {!r.isOfficial && r.authorAvatarUrl && <AvatarImage src={r.authorAvatarUrl} alt={r.author} />}
         <AvatarFallback
           className={cn(
             "text-xs font-semibold",

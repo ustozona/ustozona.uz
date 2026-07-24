@@ -6,12 +6,13 @@ import { create } from "zustand";
    Ustozlar Ustozona ilovasining OʻZI haqida fikr yuboradi: taklif, xato,
    savol, maqtov. Ovoz berish (upvote), turkum/holat, va rasmiy javoblar bor.
 
-   Server-backed (8-bosqich): `FeedbackServerSync` mount'da serverdan
-   {items}ni yuklaydi, oʻzgarishlar diff bilan saqlanadi (rasmlar base64
-   data JSONB ichida). Boshlangʻich holat BOʻSH (9-bosqich): SEED_FEEDBACK
-   endi faqat scripts/seed.ts'da (demo oʻqituvchi) ishlatiladi. v1'da har
-   oʻqituvchi oʻz doskasini koʻradi; umumiy jamoaviy doska — keyingi
-   bosqich.
+   UMUMIY DOSKA (2-bosqich): BARCHA oʻqituvchilarning fikri hammaga
+   koʻrinadi (Canny uslubi). `FeedbackServerSync` mount'da serverdan
+   {items}ni yuklaydi; har amal (qoʻshish/tahrirlash/oʻchirish/reaksiya/
+   javob) oʻzining targetli server action'i orqali darhol serverga
+   boradi — bu yerdagi reducer'lar faqat mahalliy optimistik koʻrinish
+   uchun (`src/server/dal/feedback.ts`ga qarang). Mock/seed maʼlumot
+   yoʻq — boshlangʻich holat har doim BOʻSH.
    ════════════════════════════════════════════════════════════════════ */
 
 export type FeedbackCategory = "taklif" | "xato" | "savol" | "maqtov" | "boshqa";
@@ -30,6 +31,10 @@ export type ReplyQuote = {
 export type FeedbackReply = {
   id: string;
   author: string;
+  /** Javob egasining profil rasmi (umumiy doskada — HAR BIR yozuvchi
+      boshqacha, shu sabab bitta "joriy foydalanuvchi" rasmiga
+      tayanib boʻlmaydi). Rasmiy javobda ishlatilmaydi (ShieldCheck). */
+  authorAvatarUrl?: string;
   /** Ega (Ustozona jamoasi) javobi — ajratib koʻrsatiladi. */
   isOfficial: boolean;
   body: string;
@@ -62,6 +67,10 @@ export type FeedbackItem = {
   images?: string[];
   author: string;
   authorInitials: string;
+  /** Muallifning profil rasmi — umumiy doskada har bir yozuv boshqa
+      egaga tegishli, shu sabab joriy foydalanuvchi rasmiga tayanib
+      boʻlmaydi (yaratilgan paytda denormallanadi). */
+  authorAvatarUrl?: string;
   /** Joriy foydalanuvchi yozgan fikr — «Faqat meniki» filtri uchun
       (ism satriga bogʻlanmaydi: Sozlamalarda ism oʻzgarsa ham buzilmaydi). */
   isMine?: boolean;
@@ -105,6 +114,7 @@ export type NewFeedbackInput = {
   images?: string[];
   author: string;
   authorInitials: string;
+  authorAvatarUrl?: string;
 };
 
 /** Barqaror-emas, lekin lokal uchun yetarli ID. */
@@ -135,7 +145,7 @@ interface FeedbackState {
   toggleReaction: (id: string, emoji: string) => void;
   /** Javobga emoji reaksiyani qoʻshadi/olib tashlaydi. */
   toggleReplyReaction: (id: string, replyId: string, emoji: string) => void;
-  addReply: (id: string, reply: { body: string; author: string; isOfficial: boolean; quote?: ReplyQuote; parentId?: string }) => void;
+  addReply: (id: string, reply: { body: string; author: string; authorAvatarUrl?: string; isOfficial: boolean; quote?: ReplyQuote; parentId?: string }) => void;
   /** Fikr matnini tahrirlaydi — `editedAt` belgilanadi. */
   editFeedback: (id: string, body: string) => void;
   setStatus: (id: string, status: FeedbackStatus) => void;
@@ -160,6 +170,7 @@ export const useFeedbackStore = create<FeedbackState>()(
           status: "yangi",
           author: input.author,
           authorInitials: input.authorInitials,
+          authorAvatarUrl: input.authorAvatarUrl,
           isMine: true,
           createdAt: new Date().toISOString(),
           reactions: [],
@@ -201,6 +212,7 @@ export const useFeedbackStore = create<FeedbackState>()(
                     {
                       id: uid(),
                       author: reply.author,
+                      authorAvatarUrl: reply.authorAvatarUrl,
                       isOfficial: reply.isOfficial,
                       body: reply.body.trim(),
                       createdAt: new Date().toISOString(),

@@ -2557,7 +2557,8 @@
       "replySent": "Juwap jiberildi",
       "replySentDesc": "{author}ǵa xabarnama jiberildi.",
       "deleted": "Pikir óshirildi",
-      "edited": "Pikir ózgertildi"
+      "edited": "Pikir ózgertildi",
+      "syncError": "Serverge saqlanbadı"
     },
     "notify": {
       "title": "Pikirińizge juwap keldi",
@@ -2600,6 +2601,7 @@
     "submitDefault": "Jiberiw",
     "toastSuccess": "Pikirińiz jiberildi. Raxmet! 🎉",
     "toastSuccessDesc": "Doskaǵa qosıldı — basqa muǵallimler de dawıs bere aladı.",
+    "toastSyncError": "Serverge saqlanbadı",
     "toastViewAction": "Kóriw",
     "helpHintPrefix": "Tez juwap kerek bolsa,",
     "helpLink": "Járdem beti",
@@ -3562,7 +3564,8 @@
     "breakDoneToast": "Tanaffus tamamlandı — jumısqa qaytıw waqtı.",
     "focusLabel": "Fokus",
     "breakLabel": "Tanaffus",
-    "stopAria": "Toqtatıw"
+    "stopAria": "Toqtatıw",
+    "openAria": "Fokus taymerin ashıw"
   },
   "TasksSection": {
     "title": "Wazıypalar",

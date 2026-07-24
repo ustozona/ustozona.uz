@@ -17,6 +17,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCategoryMeta, CATEGORY_ORDER } from "./feedback-meta";
 import { useImageAttachments, AttachmentPreviewList } from "./attachments";
 import type { NewFeedbackFormValue } from "./types";
+import { createFeedbackAction } from "@/server/actions/feedback";
 
 /** Sodda soʻz-ustma-ust hisoblash — toʻliq matn qidiruv dvigateli emas,
     faqat "shunga oʻxshash fikr bormi?" taklifi uchun yetarli. */
@@ -49,7 +50,14 @@ export function useFeedbackSubmit() {
       ...value,
       author: userName,
       authorInitials: initialsOf(userName),
+      authorAvatarUrl: settingsHydrated ? profile.avatarUrl || undefined : undefined,
     });
+    const item = useFeedbackStore.getState().items.find((it) => it.id === id);
+    if (item) {
+      createFeedbackAction(item).catch(() => {
+        toast.error(t("toastSyncError"));
+      });
+    }
     toast.success(t("toastSuccess"), {
       description: t("toastSuccessDesc"),
       action: {

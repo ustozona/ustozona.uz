@@ -2557,7 +2557,8 @@
       "replySent": "Жооп жөнөтүлдү",
       "replySentDesc": "{author} үчүн билдирме жөнөтүлдү.",
       "deleted": "Пикир өчүрүлдү",
-      "edited": "Пикир түзөтүлдү"
+      "edited": "Пикир түзөтүлдү",
+      "syncError": "Серверге сакталган жок"
     },
     "notify": {
       "title": "Пикириңизге жооп келди",
@@ -2600,6 +2601,7 @@
     "submitDefault": "Жөнөтүү",
     "toastSuccess": "Пикириңиз жөнөтүлдү. Рахмат! 🎉",
     "toastSuccessDesc": "Тактага кошулду — башка мугалимдер да добуш бере алышат.",
+    "toastSyncError": "Серверге сакталган жок",
     "toastViewAction": "Көрүү",
     "helpHintPrefix": "Тез жооп керек болсо,",
     "helpLink": "Жардам барагы",
@@ -3562,7 +3564,8 @@
     "breakDoneToast": "Тыныгуу бүттү — жумушка кайтуу убактысы.",
     "focusLabel": "Фокус",
     "breakLabel": "Тыныгуу",
-    "stopAria": "Токтотуу"
+    "stopAria": "Токтотуу",
+    "openAria": "Фокус таймерин ачуу"
   },
   "TasksSection": {
     "title": "Тапшырмалар",

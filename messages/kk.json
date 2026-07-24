@@ -2557,7 +2557,8 @@
       "replySent": "Жауап жіберілді",
       "replySentDesc": "{author} үшін хабарландыру жіберілді.",
       "deleted": "Пікір жойылды",
-      "edited": "Пікір өңделді"
+      "edited": "Пікір өңделді",
+      "syncError": "Серверге сақталмады"
     },
     "notify": {
       "title": "Пікіріңізге жауап келді",
@@ -2600,6 +2601,7 @@
     "submitDefault": "Жіберу",
     "toastSuccess": "Пікіріңіз жіберілді. Рақмет! 🎉",
     "toastSuccessDesc": "Тақтаға қосылды — басқа ұстаздар да дауыс бере алады.",
+    "toastSyncError": "Серверге сақталмады",
     "toastViewAction": "Көру",
     "helpHintPrefix": "Жылдам жауап керек болса,",
     "helpLink": "Көмек парақшасы",
@@ -3562,7 +3564,8 @@
     "breakDoneToast": "Үзіліс аяқталды — жұмысқа қайту уақыты.",
     "focusLabel": "Фокус",
     "breakLabel": "Үзіліс",
-    "stopAria": "Тоқтату"
+    "stopAria": "Тоқтату",
+    "openAria": "Фокус таймерін ашу"
   },
   "TasksSection": {
     "title": "Тапсырмалар",

@@ -53,7 +53,7 @@ export const requireTeacher = cache(async (): Promise<TeacherRow> => {
 
   const [created] = await db
     .insert(teachers)
-    .values({ id: user.id, name: user.name, email: user.email })
+    .values({ id: user.id, name: user.name, email: user.email, avatarUrl: user.image ?? null })
     .onConflictDoNothing()
     .returning();
   if (created) return created;

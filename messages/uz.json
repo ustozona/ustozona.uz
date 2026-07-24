@@ -2394,7 +2394,8 @@
       "replySent": "Javob yuborildi",
       "replySentDesc": "{author}ga bildirishnoma yuborildi.",
       "deleted": "Fikr oʻchirildi",
-      "edited": "Fikr tahrirlandi"
+      "edited": "Fikr tahrirlandi",
+      "syncError": "Serverga saqlanmadi"
     },
     "notify": {
       "title": "Fikringizga javob keldi",
@@ -2437,6 +2438,7 @@
     "submitDefault": "Yuborish",
     "toastSuccess": "Fikringiz yuborildi. Rahmat! 🎉",
     "toastSuccessDesc": "Doskaga qoʻshildi — boshqa ustozlar ham ovoz bera oladi.",
+    "toastSyncError": "Serverga saqlanmadi",
     "toastViewAction": "Koʻrish",
     "helpHintPrefix": "Tezkor javob kerak boʻlsa,",
     "helpLink": "Yordam sahifasi",
@@ -3399,7 +3401,8 @@
     "breakDoneToast": "Tanaffus tugadi — ishga qaytish vaqti.",
     "focusLabel": "Fokus",
     "breakLabel": "Tanaffus",
-    "stopAria": "Toʻxtatish"
+    "stopAria": "Toʻxtatish",
+    "openAria": "Fokus taymerini ochish"
   },
   "TasksSection": {
     "title": "Vazifalar",

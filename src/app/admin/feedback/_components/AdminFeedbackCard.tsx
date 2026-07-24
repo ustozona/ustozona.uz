@@ -11,6 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible, CollapsibleTrigger, CollapsibleContent,
 } from "@/components/ui/collapsible";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -155,13 +156,31 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
           {item.images && item.images.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {item.images.map((src, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={i}
-                  src={src}
-                  alt={`Biriktirilgan rasm ${i + 1}`}
-                  className="h-20 w-auto max-w-32 rounded-lg border border-border object-cover"
-                />
+                <Dialog key={i}>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={`Rasmni kattalashtirish ${i + 1}`}
+                      className="overflow-hidden rounded-lg border border-border transition-opacity hover:opacity-85"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={src}
+                        alt={`Biriktirilgan rasm ${i + 1}`}
+                        className="h-20 w-auto max-w-32 object-cover"
+                      />
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl p-2">
+                    <DialogTitle className="sr-only">Biriktirilgan rasm</DialogTitle>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt={`Biriktirilgan rasm ${i + 1}`}
+                      className="max-h-[80vh] w-full rounded-md object-contain"
+                    />
+                  </DialogContent>
+                </Dialog>
               ))}
             </div>
           )}

@@ -58,12 +58,10 @@ type Props = {
   flashOnMount?: boolean;
   /** Javob kompozeridagi avatar uchun (oddiy foydalanuvchi rejimi). */
   userInitials: string;
-  /** Joriy foydalanuvchining profil rasmi (Sozlamalar > Profil). */
-  userAvatarUrl?: string;
   onToggleReaction: (emoji: string) => void;
   onToggleReplyReaction: (replyId: string, emoji: string) => void;
-  /** asTeam — rasmiy (jamoa) javob; parentId — top-level ajdod ipi. */
-  onAddReply: (body: string, asTeam: boolean, quote?: ReplyQuote, parentId?: string) => void;
+  /** parentId — top-level ajdod ipi. */
+  onAddReply: (body: string, quote?: ReplyQuote, parentId?: string) => void;
   /** Fikr matnini tahrirlash — `editedAt` yangilanadi. */
   onEdit: (body: string) => void;
   onDelete: () => void;
@@ -72,7 +70,7 @@ type Props = {
 };
 
 export default function FeedbackCard({
-  item, index = 0, flashOnMount = false, userInitials, userAvatarUrl,
+  item, index = 0, flashOnMount = false, userInitials,
   onToggleReaction, onToggleReplyReaction, onAddReply, onEdit, onDelete, tourTarget = false,
 }: Props) {
   const t = useTranslations("FeedbackCard");
@@ -83,6 +81,7 @@ export default function FeedbackCard({
   const status = statusMeta[item.status];
   const CatIcon = cat.icon;
   const images = item.images ?? [];
+  const isMine = item.isMine ?? false;
   const replyCount = item.replies.length;
 
   // Ikki qatlam (YouTube): top-level javoblar + har biriga ichki javoblar.
@@ -102,8 +101,6 @@ export default function FeedbackCard({
   const [open, setOpen] = useState(replyCount > 0);
   // Yozilayotgan javob: parentId (top-level ajdod ipi) + belgilangan xabar.
   const [draft, setDraft] = useState("");
-  // Javob rejimi: jamoa (rasmiy, default — asoschi rejimi) yoki oddiy user.
-  const [asTeam, setAsTeam] = useState(true);
   const [replyingTo, setReplyingTo] = useState<{ parentId?: string; quote?: ReplyQuote } | null>(null);
   // Yigʻilgan ichki iplar (default yopiq — YouTube uslubi).
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
@@ -205,7 +202,7 @@ export default function FeedbackCard({
   const submitReply = () => {
     const body = draft.trim();
     if (!body) return;
-    onAddReply(body, asTeam, replyingTo?.quote, replyingTo?.parentId);
+    onAddReply(body, replyingTo?.quote, replyingTo?.parentId);
     if (replyingTo?.parentId) expandThread(replyingTo.parentId);
     setDraft("");
     setReplyingTo(null);
@@ -215,11 +212,9 @@ export default function FeedbackCard({
     <ReplyComposer
       quote={replyingTo?.quote}
       draft={draft}
-      asTeam={asTeam}
       userInitials={userInitials}
       textareaRef={textareaRef}
       onDraftChange={setDraft}
-      onAsTeamChange={setAsTeam}
       onClearTarget={() => setReplyingTo(null)}
       onSubmit={submitReply}
       onJump={jumpTo}
@@ -257,7 +252,7 @@ export default function FeedbackCard({
             {/* ── Sarlavha: avatar + ism/turkum/sana | holat + kebab (B: holat oʻngda) ── */}
             <div className="flex items-center gap-3">
               <Avatar size="lg" className="shrink-0">
-                {userAvatarUrl && <AvatarImage src={userAvatarUrl} alt={item.author} />}
+                {item.authorAvatarUrl && <AvatarImage src={item.authorAvatarUrl} alt={item.author} />}
                 <AvatarFallback className="bg-muted text-sm font-semibold text-muted-foreground">
                   {item.authorInitials}
                 </AvatarFallback>
@@ -292,29 +287,31 @@ export default function FeedbackCard({
                     <span className={cn("size-1.5 shrink-0 rounded-full", status.dot)} />
                     {status.label}
                   </span>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={t("actionsAria")}
-                        className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
-                      >
-                        <MoreHorizontal className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-52">
-                      <DropdownMenuItem onSelect={startEdit}>
-                        <Pencil className="size-4" /> {t("edit")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onSelect={() => setDeleteConfirmOpen(true)}
-                      >
-                        <Trash2 className="size-4" /> {t("delete")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {isMine && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t("actionsAria")}
+                          className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
+                        <DropdownMenuItem onSelect={startEdit}>
+                          <Pencil className="size-4" /> {t("edit")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onSelect={() => setDeleteConfirmOpen(true)}
+                        >
+                          <Trash2 className="size-4" /> {t("delete")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </div>
             </div>
@@ -428,7 +425,6 @@ export default function FeedbackCard({
                         <ReplyRow
                           reply={tr}
                           flashId={flashId}
-                          userAvatarUrl={userAvatarUrl}
                           onToggleReaction={(emoji) => onToggleReplyReaction(tr.id, emoji)}
                           onReply={() => replyToReply(tr)}
                           onJump={jumpTo}
@@ -453,7 +449,6 @@ export default function FeedbackCard({
                                   key={r.id}
                                   reply={r}
                                   flashId={flashId}
-                                  userAvatarUrl={userAvatarUrl}
                                   onToggleReaction={(emoji) => onToggleReplyReaction(r.id, emoji)}
                                   onReply={() => replyToReply(r)}
                                   onJump={jumpTo}
@@ -479,13 +474,17 @@ export default function FeedbackCard({
         <ContextMenuItem onSelect={() => openComposer(undefined)}>
           <CornerUpLeft className="size-4" /> {t("contextReply")}
         </ContextMenuItem>
-        <ContextMenuItem onSelect={startEdit}>
-          <Pencil className="size-4" /> {t("edit")}
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem variant="destructive" onSelect={() => setDeleteConfirmOpen(true)}>
-          <Trash2 className="size-4" /> {t("delete")}
-        </ContextMenuItem>
+        {isMine && (
+          <>
+            <ContextMenuItem onSelect={startEdit}>
+              <Pencil className="size-4" /> {t("edit")}
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem variant="destructive" onSelect={() => setDeleteConfirmOpen(true)}>
+              <Trash2 className="size-4" /> {t("delete")}
+            </ContextMenuItem>
+          </>
+        )}
       </ContextMenuContent>
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>

@@ -16,7 +16,6 @@ import { DEFAULT_CALENDAR_2025_2026 } from "@/lib/academic-calendar";
 import { defaultBellConfig } from "@/lib/bell-schedule";
 import { STANDARDS_DATA } from "@/lib/standards-data";
 import { SEED_NOTIFICATIONS } from "@/store/useNotificationsStore";
-import { SEED_FEEDBACK } from "@/store/feedback-seed";
 
 /* ════════════════════════════════════════════════════════════════════
    SEED — demo oʻqituvchi + mavjud frontend seed modullaridan baza.
@@ -401,17 +400,10 @@ async function main() {
     db.insert(schema.notifications).values(b)
   );
 
-  const feedbackRows = SEED_FEEDBACK.map((f, i) => ({
-    id: f.id,
-    teacherId: userId,
-    status: f.status,
-    category: f.category,
-    sortOrder: i,
-    data: f as unknown as Record<string, unknown>,
-  }));
-  await insertChunked("feedback", feedbackRows, (b) =>
-    db.insert(schema.feedback).values(b)
-  );
+  /* Fikr-mulohaza endi UMUMIY doska (barcha oʻqituvchilarga koʻrinadi) —
+     demo hisobga soxta SEED_FEEDBACK yozish endi notoʻgʻri (haqiqiy
+     foydalanuvchilar buni "boshqalarning fikri" deb koʻradi). Shu sabab
+     bu yerda feedback seed qilinmaydi. */
 
   /* ── 5. Qarindoshlik juftlari ────────────────────────────────────── */
   const relationRows = resolveDefaultLinks().map(([a, b]) => ({

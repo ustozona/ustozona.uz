@@ -1,34 +1,16 @@
 "use client";
 
-import * as React from "react";
-import { useFeedbackStore } from "@/store/useFeedbackStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
-import { createServerSync } from "@/lib/sync/create-server-sync";
-import { diffFeedback, type FeedbackSnapshot } from "@/lib/sync/feedback-sync";
-import { fetchFeedbackAction, syncFeedbackAction } from "@/server/actions/feedback";
+import { useFeedbackStore } from "@/store/useFeedbackStore";
+import { fetchFeedbackAction } from "@/server/actions/feedback";
 
-/* Feedback store ↔ server koʻprigi (renderi yoʻq). */
-
-type FeedbackState = ReturnType<typeof useFeedbackStore.getState>;
-
-function selectSnapshot(s: FeedbackState): FeedbackSnapshot {
-  return { items: s.items };
-}
+/* Feedback store ← server (renderi yoʻq). Umumiy doska (2-bosqich):
+   har amal oʻzining targetli server action'i orqali serverga boradi
+   (bu komponent faqat mount'da toʻliq roʻyxatni yuklaydi — whole-store
+   diff+push endi yoʻq, chunki u boshqa oʻqituvchining postini
+   "egallab olishi" mumkin edi). */
 
 export default function FeedbackServerSync() {
-  const hydrated = useHydrateStore(useFeedbackStore, fetchFeedbackAction);
-
-  React.useEffect(() => {
-    if (!hydrated) return;
-    const sync = createServerSync({
-      store: useFeedbackStore,
-      select: selectSnapshot,
-      diff: diffFeedback,
-      push: syncFeedbackAction,
-      errorMessage: "Fikr-mulohaza serverga saqlanmadi",
-    });
-    return sync.stop;
-  }, [hydrated]);
-
+  useHydrateStore(useFeedbackStore, fetchFeedbackAction);
   return null;
 }
