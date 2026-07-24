@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { EmojiText } from "@/components/ui/emoji-text";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible, CollapsibleTrigger, CollapsibleContent,
@@ -150,7 +151,7 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
         {/* ── Tana + reaksiya (o'qish-uchun) + suhbat ── */}
         <div className={cn("mt-2", CONTENT_INDENT)}>
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-            {item.body}
+            <EmojiText text={item.body} />
           </p>
 
           {item.images && item.images.length > 0 && (
@@ -248,7 +249,7 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
                       </Tooltip>
                     </div>
                     <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-                      {r.body}
+                      <EmojiText text={r.body} />
                     </p>
                   </div>
                 </div>

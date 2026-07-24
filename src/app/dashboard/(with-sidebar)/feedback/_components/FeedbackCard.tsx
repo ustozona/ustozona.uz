@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { EmojiText } from "@/components/ui/emoji-text";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible, CollapsibleTrigger, CollapsibleContent,
@@ -354,7 +355,7 @@ export default function FeedbackCard({
                   </div>
                 ) : (
                   <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 selection:bg-primary/25">
-                    {item.body}
+                    <EmojiText text={item.body} />
                   </p>
                 )}
               </div>

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { EmojiText } from "@/components/ui/emoji-text";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -241,7 +242,7 @@ export default function NotesTab({
               className="flex flex-col rounded-xl border border-border bg-muted/30 p-4"
             >
               {n.title && <p className="mb-1 text-sm font-semibold text-foreground">{n.title}</p>}
-              <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-foreground">{n.text}</p>
+              <p className="min-w-0 flex-1 whitespace-pre-wrap text-sm text-foreground"><EmojiText text={n.text} /></p>
               {n.tags.length > 0 && (
                 <div className="mt-2 flex flex-wrap items-center gap-1">
                   {n.tags.map((tag) => (
