@@ -2945,17 +2945,17 @@
     "send": "Жөнөтүү"
   },
   "ClassSchedulePicker": {
-    "fromClassSchedule": "Класс жадвалонунан",
-    "noSchedule": "(жадвал жок)",
-    "pickDayHint": "Күн тандаңыз — жадвалдагы сабактар чыгат.",
-    "noLessonThisDay": "Бул күнү жадвалда сабак жок. Башка күн тандаңыз же белгини алып, кол менен киргизиңиз.",
+    "pickDayHint": "Күн тандаңыз.",
+    "daySelected": "Күн тандалды: {date}",
+    "scheduleSuggestion": "{class} жадвалы",
+    "useThisTime": "Ушул убакытты алуу",
+    "orEnterTime": "же башка убакыт киргизиңиз",
     "class": "Класс",
     "start": "Башталуу",
     "end": "Аяктоо",
     "select": "Тандоо",
     "back": "Артка",
     "cancel": "Жокко чыгаруу",
-    "availableTimes": "Жеткиликтүү убакыт",
     "done": "Даяр",
     "add": "Кошуу"
   },

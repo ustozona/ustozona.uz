@@ -2782,17 +2782,17 @@
     "send": "Yuborish"
   },
   "ClassSchedulePicker": {
-    "fromClassSchedule": "Sinf jadvalidan",
-    "noSchedule": "(jadval yoʻq)",
-    "pickDayHint": "Kun tanlang — jadvaldagi darslar chiqadi.",
-    "noLessonThisDay": "Bu kuni jadvalda dars yoʻq. Boshqa kun tanlang yoki belgini olib qoʻlda kiriting.",
+    "pickDayHint": "Kun tanlang.",
+    "daySelected": "Kun tanlandi: {date}",
+    "scheduleSuggestion": "{class} jadvali",
+    "useThisTime": "Shu vaqtni olish",
+    "orEnterTime": "yoki boshqa vaqt kiriting",
     "class": "Sinf",
     "start": "Boshlanish",
     "end": "Tugash",
     "select": "Tanlang",
     "back": "Orqaga",
     "cancel": "Bekor qilish",
-    "availableTimes": "Mavjud vaqtlar",
     "done": "Tayyor",
     "add": "Qoʻshish"
   },

@@ -2945,17 +2945,17 @@
     "send": "Jiberiw"
   },
   "ClassSchedulePicker": {
-    "fromClassSchedule": "Klass kestesinen",
-    "noSchedule": "(keste joq)",
-    "pickDayHint": "Kún tańlań — kestedaǵı sabaqlar shıǵadı.",
-    "noLessonThisDay": "Bul kúni kestede sabaq joq. Basqa kún tańlań yamasa belgini alıp qolda kiritiń.",
+    "pickDayHint": "Kún tańlań.",
+    "daySelected": "Kún tańlandı: {date}",
+    "scheduleSuggestion": "{class} kestesi",
+    "useThisTime": "Usı waqıttı alıw",
+    "orEnterTime": "yamasa basqa waqıt kiritiń",
     "class": "Klass",
     "start": "Baslanıw",
     "end": "Tawısılıw",
     "select": "Tańlań",
     "back": "Keri",
     "cancel": "Biykar etiw",
-    "availableTimes": "Qoljetimli waqıt",
     "done": "Tayar",
     "add": "Qosıw"
   },

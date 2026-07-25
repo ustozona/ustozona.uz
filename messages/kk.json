@@ -2945,17 +2945,17 @@
     "send": "Жіберу"
   },
   "ClassSchedulePicker": {
-    "fromClassSchedule": "Сынып кестесінен",
-    "noSchedule": "(кесте жоқ)",
-    "pickDayHint": "Күн таңдаңыз — кестедегі сабақтар шығады.",
-    "noLessonThisDay": "Бұл күні кестеде сабақ жоқ. Басқа күн таңдаңыз немесе белгіні алып тастап, қолмен енгізіңіз.",
+    "pickDayHint": "Күн таңдаңыз.",
+    "daySelected": "Күн таңдалды: {date}",
+    "scheduleSuggestion": "{class} кестесі",
+    "useThisTime": "Осы уақытты алу",
+    "orEnterTime": "немесе басқа уақыт енгізіңіз",
     "class": "Сынып",
     "start": "Басталу",
     "end": "Аяқталу",
     "select": "Таңдау",
     "back": "Артқа",
     "cancel": "Болдырмау",
-    "availableTimes": "Қолжетімді уақыт",
     "done": "Дайын",
     "add": "Қосу"
   },

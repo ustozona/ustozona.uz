@@ -2945,17 +2945,17 @@
     "send": "Отправить"
   },
   "ClassSchedulePicker": {
-    "fromClassSchedule": "Из расписания класса",
-    "noSchedule": "(расписания нет)",
-    "pickDayHint": "Выберите день — появятся уроки из расписания.",
-    "noLessonThisDay": "В этот день по расписанию нет урока. Выберите другой день или снимите отметку для ручного ввода.",
+    "pickDayHint": "Выберите день.",
+    "daySelected": "Выбран день: {date}",
+    "scheduleSuggestion": "Расписание {class}",
+    "useThisTime": "Использовать это время",
+    "orEnterTime": "или введите другое время",
     "class": "Класс",
     "start": "Начало",
     "end": "Конец",
     "select": "Выберите",
     "back": "Назад",
     "cancel": "Отмена",
-    "availableTimes": "Доступное время",
     "done": "Готово",
     "add": "Добавить"
   },

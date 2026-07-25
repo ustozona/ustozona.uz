@@ -2945,17 +2945,17 @@
     "send": "Send"
   },
   "ClassSchedulePicker": {
-    "fromClassSchedule": "From class schedule",
-    "noSchedule": "(no schedule)",
-    "pickDayHint": "Select a day — lessons from the schedule will appear.",
-    "noLessonThisDay": "No lesson scheduled on this day. Pick another day or uncheck to enter manually.",
+    "pickDayHint": "Select a day.",
+    "daySelected": "Day selected: {date}",
+    "scheduleSuggestion": "{class} schedule",
+    "useThisTime": "Use this time",
+    "orEnterTime": "or enter a different time",
     "class": "Class",
     "start": "Start",
     "end": "End",
     "select": "Select",
     "back": "Back",
     "cancel": "Cancel",
-    "availableTimes": "Available times",
     "done": "Done",
     "add": "Add"
   },
