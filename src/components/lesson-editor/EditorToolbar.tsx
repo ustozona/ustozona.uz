@@ -136,40 +136,12 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
 
   return (
     <div className="flex items-center gap-0.5 flex-wrap">
+      {/* Tarix */}
       <Btn title={t("undo")} onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="size-4" /></Btn>
       <Btn title={t("redo")} onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="size-4" /></Btn>
       <Div />
-      <Btn title={t("bold")} active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="size-4" /></Btn>
-      <Btn title={t("italic")} active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="size-4" /></Btn>
-      <Btn title={t("underline")} active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="size-4" /></Btn>
-      <Btn title={t("strikethrough")} active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="size-4" /></Btn>
-      <Btn title={t("highlight")} active={editor.isActive("highlight")} onClick={() => editor.chain().focus().toggleHighlight().run()}><Highlighter className="size-4" /></Btn>
-      <Btn title={t("superscript")} active={editor.isActive("superscript")} onClick={() => editor.chain().focus().toggleSuperscript().run()}><SuperscriptIcon className="size-4" /></Btn>
-      <Btn title={t("subscript")} active={editor.isActive("subscript")} onClick={() => editor.chain().focus().toggleSubscript().run()}><SubscriptIcon className="size-4" /></Btn>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <span>
-            <Btn title={t("textColor")} active={!!editor.getAttributes("textStyle").color} onClick={() => {}}>
-              <Palette className="size-4" style={editor.getAttributes("textStyle").color ? { color: editor.getAttributes("textStyle").color } : undefined} />
-            </Btn>
-          </span>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-auto p-2">
-          <div className="flex items-center gap-1.5">
-            <button type="button" title={t("clearColor")} onClick={() => editor.chain().focus().unsetColor().run()}
-              className="size-6 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
-              <Ban className="size-3.5" />
-            </button>
-            {TEXT_COLORS.map((c) => (
-              <button key={c} type="button" title={c} onClick={() => editor.chain().focus().setColor(c).run()}
-                className="size-6 rounded-full shrink-0 ring-offset-2 ring-offset-popover transition-shadow"
-                style={{ backgroundColor: c, boxShadow: editor.getAttributes("textStyle").color === c ? `0 0 0 2px ${c}` : undefined }}
-              />
-            ))}
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <Div />
+
+      {/* Struktura: sarlavha, roʻyxat, blok elementlari */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" title={t("heading1")}
@@ -214,26 +186,6 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      <Div />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button type="button" title={t("alignLeft")}
-            className="h-8 px-1.5 rounded-md flex items-center gap-0.5 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors data-[state=open]:bg-muted data-[state=open]:text-foreground">
-            <AlignTrigger className="size-4" />
-            <ChevronDown className="size-3 opacity-60" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-40">
-          {ALIGN_TYPES.map(({ value, label, icon: Icon }) => (
-            <DropdownMenuItem key={value} onSelect={() => editor.chain().focus().setTextAlign(value).run()} className="gap-2.5">
-              <Icon className="size-4 text-muted-foreground" />
-              <span className="flex-1">{t(label)}</span>
-              {editor.isActive({ textAlign: value }) && <Check className="size-4 shrink-0" />}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <Div />
       <Btn title={t("blockquote")} active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="size-4" /></Btn>
       <Btn title={t("codeBlock")} active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code className="size-4" /></Btn>
       <Btn title={t("horizontalRule")} onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="size-4" /></Btn>
@@ -262,6 +214,63 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       ) : (
         <Btn title={t("insertTable")} onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table className="size-4" /></Btn>
       )}
+      <Div />
+
+      {/* Formatlash: matn belgilari */}
+      <Btn title={t("bold")} active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="size-4" /></Btn>
+      <Btn title={t("italic")} active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="size-4" /></Btn>
+      <Btn title={t("underline")} active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="size-4" /></Btn>
+      <Btn title={t("strikethrough")} active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="size-4" /></Btn>
+      <Btn title={t("highlight")} active={editor.isActive("highlight")} onClick={() => editor.chain().focus().toggleHighlight().run()}><Highlighter className="size-4" /></Btn>
+      <Btn title={t("superscript")} active={editor.isActive("superscript")} onClick={() => editor.chain().focus().toggleSuperscript().run()}><SuperscriptIcon className="size-4" /></Btn>
+      <Btn title={t("subscript")} active={editor.isActive("subscript")} onClick={() => editor.chain().focus().toggleSubscript().run()}><SubscriptIcon className="size-4" /></Btn>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <span>
+            <Btn title={t("textColor")} active={!!editor.getAttributes("textStyle").color} onClick={() => {}}>
+              <Palette className="size-4" style={editor.getAttributes("textStyle").color ? { color: editor.getAttributes("textStyle").color } : undefined} />
+            </Btn>
+          </span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-auto p-2">
+          <div className="flex items-center gap-1.5">
+            <button type="button" title={t("clearColor")} onClick={() => editor.chain().focus().unsetColor().run()}
+              className="size-6 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
+              <Ban className="size-3.5" />
+            </button>
+            {TEXT_COLORS.map((c) => (
+              <button key={c} type="button" title={c} onClick={() => editor.chain().focus().setColor(c).run()}
+                className="size-6 rounded-full shrink-0 ring-offset-2 ring-offset-popover transition-shadow"
+                style={{ backgroundColor: c, boxShadow: editor.getAttributes("textStyle").color === c ? `0 0 0 2px ${c}` : undefined }}
+              />
+            ))}
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Div />
+
+      {/* Tekislash */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" title={t("alignLeft")}
+            className="h-8 px-1.5 rounded-md flex items-center gap-0.5 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors data-[state=open]:bg-muted data-[state=open]:text-foreground">
+            <AlignTrigger className="size-4" />
+            <ChevronDown className="size-3 opacity-60" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-40">
+          {ALIGN_TYPES.map(({ value, label, icon: Icon }) => (
+            <DropdownMenuItem key={value} onSelect={() => editor.chain().focus().setTextAlign(value).run()} className="gap-2.5">
+              <Icon className="size-4 text-muted-foreground" />
+              <span className="flex-1">{t(label)}</span>
+              {editor.isActive({ textAlign: value }) && <Check className="size-4 shrink-0" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Div />
+
+      {/* Qoʻshish: havola, rasm, callout */}
       <Popover open={linkOpen} onOpenChange={setLinkOpen}>
         <PopoverTrigger asChild>
           <span><Btn title={t("link")} active={editor.isActive("link")} onClick={openLinkPopover}><Link2 className="size-4" /></Btn></span>
@@ -282,7 +291,6 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       </Popover>
       <Btn title={t("insertImage")} onClick={() => fileRef.current?.click()}><ImageIcon className="size-4" /></Btn>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
-      <Div />
       {/* "+" — callout qoʻshish menyusi (Obsidian uslubi, lucide ikonlar) */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
