@@ -65,6 +65,12 @@ const LIST_TYPES = [
   { name: "taskList", icon: ListTodo, toggle: (e: Editor) => e.chain().focus().toggleTaskList().run() },
 ] as const;
 
+const ALIGN_TYPES = [
+  { value: "left", label: "alignLeft", icon: AlignLeft },
+  { value: "center", label: "alignCenter", icon: AlignCenter },
+  { value: "right", label: "alignRight", icon: AlignRight },
+] as const;
+
 export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const t = useTranslations("LessonEditorToolbar");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -125,6 +131,8 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const HeadingTrigger = activeHeading ? HEADING_ICONS[activeHeading] : Pilcrow;
   const activeList = LIST_TYPES.find((l) => editor.isActive(l.name));
   const ListTrigger = activeList?.icon ?? List;
+  const activeAlign = ALIGN_TYPES.find((a) => editor.isActive({ textAlign: a.value })) ?? ALIGN_TYPES[0];
+  const AlignTrigger = activeAlign.icon;
 
   return (
     <div className="flex items-center gap-0.5 flex-wrap">
@@ -207,9 +215,24 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
         </DropdownMenuContent>
       </DropdownMenu>
       <Div />
-      <Btn title={t("alignLeft")} active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="size-4" /></Btn>
-      <Btn title={t("alignCenter")} active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="size-4" /></Btn>
-      <Btn title={t("alignRight")} active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="size-4" /></Btn>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" title={t("alignLeft")}
+            className="h-8 px-1.5 rounded-md flex items-center gap-0.5 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors data-[state=open]:bg-muted data-[state=open]:text-foreground">
+            <AlignTrigger className="size-4" />
+            <ChevronDown className="size-3 opacity-60" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-40">
+          {ALIGN_TYPES.map(({ value, label, icon: Icon }) => (
+            <DropdownMenuItem key={value} onSelect={() => editor.chain().focus().setTextAlign(value).run()} className="gap-2.5">
+              <Icon className="size-4 text-muted-foreground" />
+              <span className="flex-1">{t(label)}</span>
+              {editor.isActive({ textAlign: value }) && <Check className="size-4 shrink-0" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Div />
       <Btn title={t("blockquote")} active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="size-4" /></Btn>
       <Btn title={t("codeBlock")} active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code className="size-4" /></Btn>
