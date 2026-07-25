@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEditor, EditorContent } from "@tiptap/react";
-import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
+import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
@@ -47,7 +47,6 @@ import { TaskList, TaskItem } from "@tiptap/extension-list";
 import { Callout, CalloutTitle } from "./callout-extension";
 import { PageBreak } from "./page-break-extension";
 import BubbleToolbar from "./BubbleToolbar";
-import FloatingToolbar from "./FloatingToolbar";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { formatFeedbackAgo, useRelativeT } from "@/app/dashboard/(with-sidebar)/feedback/_components/feedback-meta";
 
@@ -312,14 +311,9 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                 className="w-full bg-transparent border-0 outline-none text-4xl font-bold text-foreground placeholder:text-muted-foreground/40 mb-5"
               />
               {editor && (
-                <>
-                  <BubbleMenu editor={editor} className="no-print">
-                    <BubbleToolbar editor={editor} />
-                  </BubbleMenu>
-                  <FloatingMenu editor={editor} className="no-print">
-                    <FloatingToolbar editor={editor} />
-                  </FloatingMenu>
-                </>
+                <BubbleMenu editor={editor} className="no-print">
+                  <BubbleToolbar editor={editor} />
+                </BubbleMenu>
               )}
               <EditorContent editor={editor} />
             </div>
