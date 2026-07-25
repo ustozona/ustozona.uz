@@ -13,7 +13,7 @@ import { classColor } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import {
-  slotsOnDate, dateToKey, dateKeyToDate, fmtClock,
+  weeklySlotsForClass, slotsOnDate, dateToKey, dateKeyToDate, fmtClock,
 } from "@/lib/lesson-schedule";
 
 const WEEKDAYS = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"];
@@ -28,10 +28,10 @@ const MANUAL_TIMES = (() => {
 type Session = { classId: string; startMin: number; endMin: number };
 
 /** Sana-tanlash paneli — chapda kalendar, oʻngda vaqt-panel (EMStudio
-    ikki-ustunli qolipi). Kun tanlangach, sinfning haftalik jadvalidagi
-    vaqt(lar) taklif sifatida koʻrsatiladi ("Shu vaqtni olish" bosilsa
-    pastdagi Boshlanish/Tugash maydonlari toʻldiriladi); qoʻlda kiritish
-    maydonlari har doim ochiq — rejim almashtirish shart emas. */
+    ikki-ustunli qolipi). Agar biriktirilgan sinf(lar)da haftalik jadval
+    boʻlsa — kalendarda FAQAT shu jadvalga mos kunlar tanlanadi (boshqa
+    kunlar oʻchiq), vaqt avtomatik jadvaldan olinadi. Hech bir sinfda
+    jadval boʻlmasagina qoʻlda sana/vaqt kiritishga ruxsat beriladi. */
 export default function ClassSchedulePicker({
   classIds, onAdd, onDone,
 }: {
@@ -52,6 +52,13 @@ export default function ClassSchedulePicker({
   };
   const nameOf = (id: string) => classes.find((x) => x.id === id)?.name ?? "";
 
+  // Biriktirilgan sinflardan hech boʻlmasa bittasida haftalik jadval bormi?
+  // Bor boʻlsa — kalendar shu jadvalga "qulflanadi" (faqat mos kunlar tanlanadi).
+  const hasTimetable = useMemo(
+    () => classIds.some((id) => weeklySlotsForClass(id).length > 0),
+    [classIds],
+  );
+
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   // Tasdiq/qoʻlda-kiritish holati — Start/End tanlanadigan sessiya.
@@ -59,7 +66,7 @@ export default function ClassSchedulePicker({
 
   const selectedDate = selectedKey ? dateKeyToDate(selectedKey) : undefined;
 
-  // Barcha biriktirilgan sinflarning shu kundagi jadval taklifi (vaqt boʻyicha tartiblangan).
+  // Barcha biriktirilgan sinflarning shu kundagi jadval slotlari (vaqt boʻyicha tartiblangan).
   const daySlots = useMemo<Session[]>(() => {
     if (!selectedDate) return [];
     const out: Session[] = [];
@@ -78,7 +85,17 @@ export default function ClassSchedulePicker({
 
   const pickDay = (d: Date) => {
     setSelectedKey(dateToKey(d));
-    setDraft(null);
+    if (hasTimetable) {
+      // Jadval bor — vaqt(lar) avtomatik olinadi. Bitta boʻlsa toʻgʻridan-toʻgʻri
+      // tanlanadi, bir nechta boʻlsa (masalan koʻp sinf) roʻyxatdan tanlash kerak.
+      const slots: Session[] = [];
+      classIds.forEach((id) => {
+        slotsOnDate(id, d).forEach((s) => slots.push({ classId: id, startMin: s.startMin, endMin: s.endMin }));
+      });
+      setDraft(slots.length === 1 ? slots[0] : null);
+    } else {
+      setDraft(null);
+    }
   };
 
   const canConfirm = !!draft && !!draft.classId && draft.endMin > draft.startMin;
@@ -99,6 +116,7 @@ export default function ClassSchedulePicker({
           onMonthChange={setViewMonth}
           selected={selectedDate}
           onSelect={(d) => d && pickDay(d)}
+          disabled={hasTimetable ? (date: Date) => classesOnDate(date).length === 0 : undefined}
           formatters={{
             formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
             formatWeekdayName: (date) => WEEKDAYS[date.getDay()],
@@ -135,90 +153,93 @@ export default function ClassSchedulePicker({
       {/* Oʻng — sozlamalar paneli */}
       <div className="w-[240px] shrink-0 border-l border-border p-4 flex flex-col gap-4">
         {!selectedDate ? (
-          <p className="text-xs text-muted-foreground">{t("pickDayHint")}</p>
+          <p className="text-xs text-muted-foreground">{hasTimetable ? t("pickScheduledDayHint") : t("pickDayHint")}</p>
         ) : (
           <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto">
             <span className="text-sm font-semibold text-foreground">
               {t("daySelected", { date: `${selectedDate.getDate()}-${MONTHS_UZ_SHORT[selectedDate.getMonth()]}` })}
             </span>
 
-            {/* Jadval taklifi — bosilsa pastdagi vaqt maydonlari toʻldiriladi */}
-            {daySlots.length > 0 && (
-              <div className="space-y-1.5">
-                {daySlots.map((s) => {
-                  const hex = hexOf(s.classId);
-                  const active = draft?.classId === s.classId && draft.startMin === s.startMin && draft.endMin === s.endMin;
-                  return (
-                    <div key={`${s.classId}-${s.startMin}`}
-                      className="rounded-lg border px-3 py-2"
-                      style={active ? { borderColor: hex, backgroundColor: `color-mix(in srgb, ${hex} 8%, transparent)` } : { borderColor: "var(--border)" }}
-                    >
-                      <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-                        <ClassSwatch hex={hex} className="size-2.5 shrink-0" /> {t("scheduleSuggestion", { class: nameOf(s.classId) })}
-                      </span>
-                      <div className="flex items-center justify-between gap-2 mt-1">
-                        <span className="text-xs text-muted-foreground">{fmtClock(s.startMin)} – {fmtClock(s.endMin)}</span>
-                        <button type="button" onClick={() => setDraft(s)}
-                          className="shrink-0 text-xs font-medium underline underline-offset-2 hover:opacity-70 transition-opacity"
-                          style={{ color: hex }}
-                        >
-                          {t("useThisTime")}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Qoʻlda kiritish — doim mavjud */}
-            <div className="space-y-2.5">
-              <span className="text-xs text-muted-foreground">
-                {daySlots.length > 0 ? t("orEnterTime") : null}
-              </span>
-
-              {classIds.length > 1 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {classIds.map((id) => {
-                    const hex = hexOf(id);
-                    const on = (draft?.classId ?? classIds[0]) === id;
+            {hasTimetable ? (
+              draft ? (
+                /* Jadvaldan avtomatik olingan/tanlangan vaqt — faqat koʻrsatiladi.
+                   Shu kuni bir nechta variant boʻlsa, bosib roʻyxatga qaytish mumkin. */
+                <button type="button"
+                  disabled={daySlots.length <= 1}
+                  onClick={() => setDraft(null)}
+                  className="w-full rounded-lg border-2 px-3 py-2 text-left transition-colors disabled:cursor-default"
+                  style={{ borderColor: hexOf(draft.classId), backgroundColor: `color-mix(in srgb, ${hexOf(draft.classId)} 8%, transparent)` }}
+                >
+                  <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: hexOf(draft.classId) }}>
+                    <ClassSwatch hex={hexOf(draft.classId)} className="size-2.5 shrink-0" /> {nameOf(draft.classId)}
+                  </span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">{fmtClock(draft.startMin)} – {fmtClock(draft.endMin)}</span>
+                </button>
+              ) : daySlots.length > 1 ? (
+                /* Shu kuni bir nechta dars (koʻp sinf) — birini tanlash kerak. */
+                <div className="space-y-1.5">
+                  <span className="text-xs text-muted-foreground">{t("chooseLesson")}</span>
+                  {daySlots.map((s) => {
+                    const hex = hexOf(s.classId);
                     return (
-                      <button key={id} type="button"
-                        onClick={() => setDraft((prev) => ({ classId: id, startMin: prev?.startMin ?? 0, endMin: prev?.endMin ?? 0 }))}
-                        className="inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-medium transition-colors"
-                        style={on
-                          ? { borderColor: hex, backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`, color: hex }
-                          : { borderColor: "var(--border)" }}
+                      <button key={`${s.classId}-${s.startMin}`} type="button" onClick={() => setDraft(s)}
+                        className="w-full rounded-lg border border-border px-3 py-2 text-left hover:bg-muted transition-colors"
                       >
-                        <ClassSwatch hex={hex} className="size-2 shrink-0" /> {nameOf(id)}
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                          <ClassSwatch hex={hex} className="size-2.5 shrink-0" /> {nameOf(s.classId)}
+                        </span>
+                        <span className="block text-xs text-muted-foreground mt-0.5">{fmtClock(s.startMin)} – {fmtClock(s.endMin)}</span>
                       </button>
                     );
                   })}
                 </div>
-              )}
+              ) : null
+            ) : (
+              /* Hech bir sinfda jadval yoʻq — sana va vaqt qoʻlda kiritiladi. */
+              <div className="space-y-2.5">
+                {classIds.length > 1 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {classIds.map((id) => {
+                      const hex = hexOf(id);
+                      const on = (draft?.classId ?? classIds[0]) === id;
+                      return (
+                        <button key={id} type="button"
+                          onClick={() => setDraft((prev) => ({ classId: id, startMin: prev?.startMin ?? 0, endMin: prev?.endMin ?? 0 }))}
+                          className="inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-medium transition-colors"
+                          style={on
+                            ? { borderColor: hex, backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`, color: hex }
+                            : { borderColor: "var(--border)" }}
+                        >
+                          <ClassSwatch hex={hex} className="size-2 shrink-0" /> {nameOf(id)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
-              <div className="flex items-center gap-2">
-                <Select
-                  value={draft?.startMin ? String(draft.startMin) : undefined}
-                  onValueChange={(v) => setDraft((prev) => ({ classId: prev?.classId ?? classIds[0], startMin: Number(v), endMin: prev?.endMin ?? 0 }))}
-                >
-                  <SelectTrigger className="w-full"><SelectValue placeholder={t("start")} /></SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    {MANUAL_TIMES.map((m) => <SelectItem key={m} value={String(m)}>{fmtClock(m)}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <span className="text-muted-foreground shrink-0">–</span>
-                <Select
-                  value={draft?.endMin ? String(draft.endMin) : undefined}
-                  onValueChange={(v) => setDraft((prev) => ({ classId: prev?.classId ?? classIds[0], startMin: prev?.startMin ?? 0, endMin: Number(v) }))}
-                >
-                  <SelectTrigger className="w-full"><SelectValue placeholder={t("end")} /></SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    {MANUAL_TIMES.map((m) => <SelectItem key={m} value={String(m)}>{fmtClock(m)}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={draft?.startMin ? String(draft.startMin) : undefined}
+                    onValueChange={(v) => setDraft((prev) => ({ classId: prev?.classId ?? classIds[0], startMin: Number(v), endMin: prev?.endMin ?? 0 }))}
+                  >
+                    <SelectTrigger className="w-full"><SelectValue placeholder={t("start")} /></SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      {MANUAL_TIMES.map((m) => <SelectItem key={m} value={String(m)}>{fmtClock(m)}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <span className="text-muted-foreground shrink-0">–</span>
+                  <Select
+                    value={draft?.endMin ? String(draft.endMin) : undefined}
+                    onValueChange={(v) => setDraft((prev) => ({ classId: prev?.classId ?? classIds[0], startMin: prev?.startMin ?? 0, endMin: Number(v) }))}
+                  >
+                    <SelectTrigger className="w-full"><SelectValue placeholder={t("end")} /></SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      {MANUAL_TIMES.map((m) => <SelectItem key={m} value={String(m)}>{fmtClock(m)}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

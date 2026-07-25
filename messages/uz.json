@@ -2783,10 +2783,9 @@
   },
   "ClassSchedulePicker": {
     "pickDayHint": "Kun tanlang.",
+    "pickScheduledDayHint": "Jadvalda dars bor kunni tanlang.",
     "daySelected": "Kun tanlandi: {date}",
-    "scheduleSuggestion": "{class} jadvali",
-    "useThisTime": "Shu vaqtni olish",
-    "orEnterTime": "yoki boshqa vaqt kiriting",
+    "chooseLesson": "Bu kuni bir nechta dars bor — birini tanlang.",
     "class": "Sinf",
     "start": "Boshlanish",
     "end": "Tugash",
