@@ -2811,6 +2811,7 @@
   "LessonEditor": {
     "contentPlaceholder": "Сабақ мәтінін жазуды бастаңыз…",
     "characterCount": "{count} белгі",
+    "pageBoundary": "{page}-бет",
     "notFoundTitle": "Сабақ табылмады",
     "notFoundDescription": "Бұл сабақ жоқ немесе өшірілген.",
     "backToLessons": "Сабақтар тізіміне қайту",

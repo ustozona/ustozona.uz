@@ -46,12 +46,29 @@ import { TableKit } from "@tiptap/extension-table";
 import { TaskList, TaskItem } from "@tiptap/extension-list";
 import { Callout, CalloutTitle } from "./callout-extension";
 import { PageBreak } from "./page-break-extension";
+import { PageBreakMarkers } from "./PageBreakMarkers";
+import { AppleEmojiDisplay } from "./apple-emoji-extension";
 import BubbleToolbar from "./BubbleToolbar";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { formatFeedbackAgo, useRelativeT } from "@/app/dashboard/(with-sidebar)/feedback/_components/feedback-meta";
 
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
+
+/** Yon panel razmeri — doim viewport kengligining `vwPct` ulushi (noutbuk va
+ *  katta desktopda bir xil proporsiya), faqat juda tor oynada `min`gacha
+ *  qisqarishi cheklanadi. Framer Motion width animatsiyasi son talab qilgani
+ *  uchun CSS clamp() emas, JS hisoblaydi. */
+function useResponsivePanelWidth(min: number, vwPct: number) {
+  const [width, setWidth] = useState(min);
+  useEffect(() => {
+    const calc = () => setWidth(Math.max(min, window.innerWidth * vwPct));
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, [min, vwPct]);
+  return width;
+}
 
 const STATUS_CLS = {
   Completed: "bg-success/10 text-success",
@@ -82,6 +99,10 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [titleDraft, setTitleDraft] = useState<string | null>(null);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const [sheetEl, setSheetEl] = useState<HTMLDivElement | null>(null);
+  const aiPanelWidth = useResponsivePanelWidth(280, 0.25);
+  const detailsPanelWidth = useResponsivePanelWidth(260, 0.25);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -110,6 +131,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       Typography,
       CharacterCount,
       PageBreak,
+      AppleEmojiDisplay,
     ],
     content: lesson?.content ?? "",
     editorProps: { attributes: { class: "lesson-prose focus:outline-none" } },
@@ -212,6 +234,16 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
 
   const updatedLabel = lesson?.updatedAt ? formatFeedbackAgo(lesson.updatedAt, relativeT) : null;
 
+  // Sarlavha maydoni bir qatorli <input> boʻlsa uzun matn kesilib qolardi
+  // (Google Docs/Notion uslubida sarlavha koʻp qatorga oʻralishi kerak) —
+  // shuning uchun avto-balandlik <textarea> ishlatiladi.
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [titleDraft, lesson?.title]);
+
   return (
     <div className="h-dvh w-full flex flex-col bg-muted overflow-hidden">
       {/* ── Top bar ── */}
@@ -220,9 +252,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           <div className="size-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
             <FileText className="size-5 text-foreground" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-base font-bold text-foreground truncate max-w-[40vw]">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <h1
+                className="text-base font-bold text-foreground truncate min-w-0"
+                title={(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
+              >
                 {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               </h1>
               <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold", st.cls)}>
@@ -303,12 +338,21 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           </div>
           {/* Scrollable canvas with A4 sheet */}
           <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="a4-print a4-sheet bg-card mx-auto my-8 rounded-sm card-elevation px-16 py-14">
-              <input
+            <div ref={setSheetEl} className="a4-print a4-sheet relative bg-card mx-auto my-8 rounded-sm card-elevation p-[16mm]">
+              <PageBreakMarkers measureEl={sheetEl} label={(page) => t("pageBoundary", { page })} />
+              <textarea
+                ref={titleRef}
                 value={titleDraft ?? lesson?.title ?? ""}
                 onChange={(e) => handleTitleChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    editor?.chain().focus("start").run();
+                  }
+                }}
                 placeholder={t("untitled")}
-                className="w-full bg-transparent border-0 outline-none text-4xl font-bold text-foreground placeholder:text-muted-foreground/40 mb-5"
+                rows={1}
+                className="w-full bg-transparent border-0 outline-none resize-none overflow-hidden text-4xl font-bold text-foreground placeholder:text-muted-foreground/40 mb-5 leading-tight"
               />
               {editor && (
                 <BubbleMenu editor={editor} className="no-print">
@@ -325,12 +369,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             <motion.aside
               key="ai-panel"
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 440, opacity: 1 }}
+              animate={{ width: aiPanelWidth, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
               className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
             >
-              <div className="w-[440px] h-full">
+              <div className="h-full" style={{ width: aiPanelWidth }}>
                 <AiAssistantPanel
                   lessonContext={{
                     title: lesson.title,
@@ -351,12 +395,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             <motion.aside
               key="details-panel"
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 340, opacity: 1 }}
+              animate={{ width: detailsPanelWidth, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
               className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
             >
-              <div className="w-[340px] h-full">
+              <div className="h-full" style={{ width: detailsPanelWidth }}>
                 <DetailsPanel
                   lesson={lesson}
                   units={units}

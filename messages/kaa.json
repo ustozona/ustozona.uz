@@ -2811,6 +2811,7 @@
   "LessonEditor": {
     "contentPlaceholder": "Sabaq tekstin jazıwdı baslań…",
     "characterCount": "{count} belgi",
+    "pageBoundary": "{page}-bet",
     "notFoundTitle": "Sabaq tabılmadı",
     "notFoundDescription": "Bul sabaq joq yamasa óshirilgen.",
     "backToLessons": "Sabaqlar dizimine qayıtw",

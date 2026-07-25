@@ -847,6 +847,22 @@
 .lesson-prose h2 { font-size: 1.4rem; font-weight: 700; line-height: 1.25; margin: 1.2rem 0 0.5rem; letter-spacing: -0.015em; }
 .lesson-prose h3 { font-size: 1.15rem; font-weight: 600; line-height: 1.3; margin: 1rem 0 0.4rem; }
 .lesson-prose p { font-size: 1rem; line-height: 1.7; margin: 0.5rem 0; }
+/* Apple emoji decoration — haqiqiy unicode belgi koʻrinmas qilinadi, oʻrniga
+   apple-emoji-extension.ts widget sifatida qoʻygan PNG rasm koʻrinadi. */
+.lesson-prose .apple-emoji-src { font-size: 0; line-height: 0; letter-spacing: 0; }
+/* Inline emoji andozasi (GitHub/Slack/Notion bilan bir xil): oʻlcham atrofdagi
+   matnga nisbatan `em`da — shuning uchun sarlavhada avtomatik kattalashadi;
+   bazis chizigʻiga kichik manfiy siljish; blok-rasm margin/radius YOʻQ. */
+.lesson-prose .apple-emoji-img {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  margin: 0;
+  border-radius: 0;
+  vertical-align: -0.2em;
+  object-fit: contain;
+  user-select: none;
+}
 .lesson-prose ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
 .lesson-prose ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
 .lesson-prose li { margin: 0.2rem 0; line-height: 1.6; }
@@ -857,7 +873,9 @@
 .lesson-prose pre { background: oklch(0.21 0.006 285.9); color: oklch(0.96 0 0); font-family: var(--font-mono), monospace; padding: 1rem 1.1rem; border-radius: 0.6rem; overflow-x: auto; margin: 0.8rem 0; font-size: 0.875rem; line-height: 1.5; }
 .lesson-prose pre code { background: none; padding: 0; color: inherit; }
 .lesson-prose mark { background: oklch(0.93 0.13 100); border-radius: 0.2rem; padding: 0.05em 0.15em; }
-.lesson-prose img { max-width: 100%; height: auto; border-radius: 0.6rem; margin: 0.8rem 0; }
+/* Hujjatga qoʻyilgan rasmlar (blok surat) — emoji sprite'lar bundan mustasno,
+   ular matn ichidagi inline belgi, blok-rasm boʻshliqlarini olmasligi kerak. */
+.lesson-prose img:not(.apple-emoji-img) { max-width: 100%; height: auto; border-radius: 0.6rem; margin: 0.8rem 0; }
 .lesson-prose hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
 
 /* Sahifa chegarasi (PageBreak) — kesik chiziq; chop etishda haqiqiy varaq boʻlinishi. */
@@ -1074,6 +1092,11 @@
     padding: 0 !important;
   }
   .no-print { display: none !important; }
+  /* Sarlavha/jadval/callout betlar orasida yolgʻiz qolib boʻlinib ketmasin. */
+  .lesson-prose h1, .lesson-prose h2, .lesson-prose h3,
+  .lesson-prose table, .lesson-prose blockquote, .lesson-prose .callout {
+    break-inside: avoid;
+  }
 }
 
 /* ── magicui RainbowButton ──

@@ -2811,6 +2811,7 @@
   "LessonEditor": {
     "contentPlaceholder": "Start writing your lesson content…",
     "characterCount": "{count} characters",
+    "pageBoundary": "Page {page}",
     "notFoundTitle": "Lesson not found",
     "notFoundDescription": "This lesson doesn't exist or has been deleted.",
     "backToLessons": "Back to lessons list",
