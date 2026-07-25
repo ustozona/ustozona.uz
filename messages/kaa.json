@@ -2870,12 +2870,14 @@
     "removeSchedule": "Alıp taslaw",
     "addMoreDate": "Jáne sáne qosıw",
     "addDate": "Sáne qosıw",
-    "grades": "Bahalar",
-    "attachClassForGrading": "Bahalaw ushın klass biriktiriw",
     "standards": "Standartlar",
     "addStandard": "Standart qosıw",
-    "soon": "Tez arada",
-    "soonHint": "Bul bólim házirshe islep shıǵılmaqta"
+    "removeStandard": "Alıp taslaw",
+    "taught": "Ótilgen",
+    "selectClassFirst": "Áwwel klass tańlań",
+    "searchStandard": "Standart izlew…",
+    "noStandardsForClass": "Bul klass ushın standart tabılmadı",
+    "allStandardsAttached": "Barlıq standartlar biriktirildi"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Silkeltpe mánzili (URL):",

@@ -409,6 +409,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   onSetUnitForClass={(classId, unitId) => setUnitForClass(lessonId, classId, unitId)}
                   onAddScheduleForClass={(classId, date, s, e) => addScheduleForClass(lessonId, classId, date, s, e)}
                   onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
+                  onSetStandards={(standards) => updateLesson(lessonId, { standards })}
                 />
               </div>
             </motion.aside>

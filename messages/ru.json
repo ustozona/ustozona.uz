@@ -2870,12 +2870,14 @@
     "removeSchedule": "Убрать",
     "addMoreDate": "Добавить ещё дату",
     "addDate": "Добавить дату",
-    "grades": "Оценки",
-    "attachClassForGrading": "Прикрепить класс для оценивания",
     "standards": "Стандарты",
     "addStandard": "Добавить стандарт",
-    "soon": "Скоро",
-    "soonHint": "Этот раздел ещё в разработке"
+    "removeStandard": "Удалить",
+    "taught": "Пройдено",
+    "selectClassFirst": "Сначала выберите класс",
+    "searchStandard": "Поиск стандарта…",
+    "noStandardsForClass": "Для этого класса стандарты не найдены",
+    "allStandardsAttached": "Все стандарты прикреплены"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Адрес ссылки (URL):",

@@ -2707,12 +2707,14 @@
     "removeSchedule": "Olib tashlash",
     "addMoreDate": "Yana sana qoʻshish",
     "addDate": "Sana qoʻshish",
-    "grades": "Baholar",
-    "attachClassForGrading": "Baholash uchun sinf biriktirish",
     "standards": "Standartlar",
     "addStandard": "Standart qoʻshish",
-    "soon": "Tez orada",
-    "soonHint": "Bu boʻlim hali ishlab chiqilmoqda"
+    "removeStandard": "O'chirish",
+    "taught": "O'tilgan",
+    "selectClassFirst": "Avval sinf tanlang",
+    "searchStandard": "Standart qidirish…",
+    "noStandardsForClass": "Bu sinf(lar) uchun standart topilmadi",
+    "allStandardsAttached": "Barcha standartlar biriktirilgan"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Havola manzili (URL):",

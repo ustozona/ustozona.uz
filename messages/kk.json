@@ -2870,12 +2870,14 @@
     "removeSchedule": "Алып тастау",
     "addMoreDate": "Тағы күн қосу",
     "addDate": "Күн қосу",
-    "grades": "Бағалар",
-    "attachClassForGrading": "Бағалау үшін сыныпты тіркеу",
     "standards": "Стандарттар",
     "addStandard": "Стандарт қосу",
-    "soon": "Жуырда",
-    "soonHint": "Бұл бөлім әлі әзірленуде"
+    "removeStandard": "Алып тастау",
+    "taught": "Өтілген",
+    "selectClassFirst": "Алдымен сыныпты таңдаңыз",
+    "searchStandard": "Стандартты іздеу…",
+    "noStandardsForClass": "Бұл сынып үшін стандарт табылмады",
+    "allStandardsAttached": "Барлық стандарттар тіркелді"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Сілтеме мекенжайы (URL):",

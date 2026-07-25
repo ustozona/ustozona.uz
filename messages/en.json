@@ -2870,12 +2870,14 @@
     "removeSchedule": "Remove",
     "addMoreDate": "Add another date",
     "addDate": "Add date",
-    "grades": "Grades",
-    "attachClassForGrading": "Attach a class for grading",
     "standards": "Standards",
     "addStandard": "Add standard",
-    "soon": "Coming soon",
-    "soonHint": "This section is still being built"
+    "removeStandard": "Remove",
+    "taught": "Taught",
+    "selectClassFirst": "Select a class first",
+    "searchStandard": "Search standards…",
+    "noStandardsForClass": "No standards found for this class",
+    "allStandardsAttached": "All standards attached"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Link URL:",

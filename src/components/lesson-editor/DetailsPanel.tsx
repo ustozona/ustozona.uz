@@ -1,13 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, ClipboardList, Plus, Check, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, Target, Plus, Check, X } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { classColor } from "@/lib/grades-data";
@@ -16,6 +18,9 @@ import { CLASS_COLOR_HEX, classGradient } from "@/lib/class-colors";
 import { lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
 import { fmtClock, dateKeyToDate } from "@/lib/lesson-schedule";
 import { MONTHS_UZ_SHORT, DAYS_UZ_SUN } from "@/lib/localization";
+import { useStandardsStore } from "@/store/useStandardsStore";
+import { BLOOM_LEVELS } from "@/lib/standards-data";
+import { cn } from "@/lib/utils";
 import ClassSchedulePicker from "./ClassSchedulePicker";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { EditorSidePanelHeader } from "./EditorSidePanel";
@@ -28,7 +33,7 @@ const dot = (hex: string) => <ClassSwatch hex={hex} className="size-2.5" />;
 
 export default function DetailsPanel({
   lesson, units, onClose,
-  onSetClasses, onSetUnitForClass, onAddScheduleForClass, onRemoveScheduleForClass,
+  onSetClasses, onSetUnitForClass, onAddScheduleForClass, onRemoveScheduleForClass, onSetStandards,
 }: {
   lesson: Lesson;
   units: Unit[];
@@ -37,12 +42,32 @@ export default function DetailsPanel({
   onSetUnitForClass: (classId: string, unitId: string | null) => void;
   onAddScheduleForClass: (classId: string, date: string, startMin: number, endMin: number) => void;
   onRemoveScheduleForClass: (classId: string, index: number) => void;
+  onSetStandards: (standards: string[]) => void;
 }) {
   const t = useTranslations("LessonDetailsPanel");
   const liveClasses = useLiveClasses();
   const selectedIds = lessonClassIds(lesson);
   const selectedClasses = liveClasses.filter((c) => selectedIds.includes(c.id));
   const [schedOpen, setSchedOpen] = useState(false);
+  const [stdOpen, setStdOpen] = useState(false);
+
+  const standardSets = useStandardsStore((s) => s.sets);
+  const availableStandards = useMemo(
+    () =>
+      standardSets
+        .filter((set) => set.classIds.some((id) => selectedIds.includes(id)))
+        .flatMap((set) => set.standards.map((std) => ({ ...std, setName: set.name }))),
+    [standardSets, selectedIds],
+  );
+  const attachedCodes = lesson.standards ?? [];
+  const attachedStandards = attachedCodes
+    .map((code) => availableStandards.find((s) => s.id === code))
+    .filter((s): s is (typeof availableStandards)[number] => !!s);
+  const pickableStandards = availableStandards.filter((s) => !attachedCodes.includes(s.id));
+
+  const toggleStandard = (code: string) => {
+    onSetStandards(attachedCodes.includes(code) ? attachedCodes.filter((c) => c !== code) : [...attachedCodes, code]);
+  };
 
   const toggleClass = (id: string) => {
     onSetClasses(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
@@ -269,38 +294,108 @@ export default function DetailsPanel({
           );
         })()}
 
-        {/* ASSIGNMENTS (keyin) */}
+        {/* STANDARDS */}
         <div>
-          <h3 className="text-label mb-2.5 flex items-center gap-2">
-            {t("grades")}
-            <Badge variant="outline" className="text-[10px] font-normal normal-case tracking-normal">{t("soon")}</Badge>
-          </h3>
-          <Button
-            variant="outline"
-            disabled
-            disabledReason={t("soonHint")}
-            className="w-full justify-center gap-2 h-auto py-3 text-muted-foreground font-normal border-dashed cursor-not-allowed"
-          >
-            <ClipboardList className="size-4" />
-            {t("attachClassForGrading")}
-          </Button>
-        </div>
+          <SectionLabel>{t("standards")}</SectionLabel>
 
-        {/* STANDARDS (keyin) */}
-        <div>
-          <h3 className="text-label mb-2.5 flex items-center gap-2">
-            {t("standards")}
-            <Badge variant="outline" className="text-[10px] font-normal normal-case tracking-normal">{t("soon")}</Badge>
-          </h3>
-          <Button
-            variant="outline"
-            disabled
-            disabledReason={t("soonHint")}
-            className="w-full justify-center gap-2 h-auto py-3 text-muted-foreground font-normal border-dashed cursor-not-allowed"
-          >
-            <Plus className="size-4" />
-            {t("addStandard")}
-          </Button>
+          {attachedStandards.length > 0 && (
+            <div className="flex flex-col gap-2 mb-2.5">
+              {attachedStandards.map((std) => (
+                <HoverCard key={std.id} openDelay={150}>
+                  <HoverCardTrigger asChild>
+                    <div className="group flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-2.5 hover:bg-accent/40 transition-colors">
+                      <span className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                        <Target className="size-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold text-foreground truncate">{std.id}</div>
+                        <div className="text-caption text-muted-foreground truncate">{std.setName}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleStandard(std.id)}
+                        aria-label={t("removeStandard")}
+                        className="size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent side="left" align="center" sideOffset={12} className="w-72">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                        <Target className="size-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-foreground truncate">{std.id}</div>
+                        <div className="text-caption text-muted-foreground truncate">{std.setName}</div>
+                      </div>
+                    </div>
+                    {(() => {
+                      const bl = BLOOM_LEVELS.find((b) => b.id === std.bloom);
+                      return bl ? (
+                        <Badge variant="secondary" className={cn("shadow-none mb-2", bl.color)}>{bl.label}</Badge>
+                      ) : null;
+                    })()}
+                    <p className="text-sm text-foreground/90 leading-relaxed">{std.desc}</p>
+                    {std.covered && (
+                      <div className="mt-3 pt-3 border-t border-border text-caption text-muted-foreground">
+                        {t("taught")}
+                      </div>
+                    )}
+                  </HoverCardContent>
+                </HoverCard>
+              ))}
+            </div>
+          )}
+
+          {selectedIds.length === 0 ? (
+            <p className="text-caption text-muted-foreground rounded-lg border border-dashed border-border py-3 px-3.5">
+              {t("selectClassFirst")}
+            </p>
+          ) : (
+            <Popover open={stdOpen} onOpenChange={setStdOpen}>
+              <PopoverTrigger asChild>
+                <button type="button"
+                  className="w-full flex items-center justify-center gap-2 rounded-full border border-dashed border-border py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
+                  <Plus className="size-4" />
+                  {t("addStandard")}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent side="left" align="start" sideOffset={12} className="p-0 w-80">
+                <Command>
+                  <CommandInput placeholder={t("searchStandard")} />
+                  <CommandList>
+                    {availableStandards.length === 0 ? (
+                      <CommandEmpty>{t("noStandardsForClass")}</CommandEmpty>
+                    ) : pickableStandards.length === 0 ? (
+                      <CommandEmpty>{t("allStandardsAttached")}</CommandEmpty>
+                    ) : (
+                      <CommandGroup>
+                        {pickableStandards.map((std) => (
+                          <CommandItem
+                            key={std.id}
+                            value={`${std.id} ${std.desc}`}
+                            onSelect={() => toggleStandard(std.id)}
+                            className="items-start gap-2.5"
+                          >
+                            <Target className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-xs font-semibold text-foreground/70">{std.id}</span>
+                                <span className="text-caption text-muted-foreground truncate">{std.setName}</span>
+                              </div>
+                              <p className="text-sm text-foreground/90 leading-snug">{std.desc}</p>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
       </div>
     </div>

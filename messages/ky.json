@@ -2870,12 +2870,14 @@
     "removeSchedule": "Алып салуу",
     "addMoreDate": "Дагы дата кошуу",
     "addDate": "Дата кошуу",
-    "grades": "Баалар",
-    "attachClassForGrading": "Баалоо үчүн класс тиркөө",
     "standards": "Стандарттар",
     "addStandard": "Стандарт кошуу",
-    "soon": "Жакында",
-    "soonHint": "Бул бөлүм азырынча иштелип жатат"
+    "removeStandard": "Алып салуу",
+    "taught": "Өтүлгөн",
+    "selectClassFirst": "Алдын ала класс тандаңыз",
+    "searchStandard": "Стандартты издөө…",
+    "noStandardsForClass": "Бул класс үчүн стандарт табылган жок",
+    "allStandardsAttached": "Бардык стандарттар тиркелди"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Шилтеме дареги (URL):",
