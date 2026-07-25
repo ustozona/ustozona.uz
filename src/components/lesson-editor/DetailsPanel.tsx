@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, ClipboardList, Plus, Check, Clock, X } from "lucide-react";
+import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, ClipboardList, Plus, Check, X } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
@@ -230,9 +230,10 @@ export default function DetailsPanel({
                             return (
                               <div key={`${it.classId}-${it.idx}`} className="group/time flex items-center gap-1.5 text-xs">
                                 {dot(it.hex)}
-                                {selectedClasses.length > 1 && <span className="font-semibold text-foreground shrink-0">{cls?.name}</span>}
-                                <Clock className="size-3 shrink-0 text-muted-foreground" />
-                                <span className="flex-1 truncate font-medium text-foreground">{fmtClock(it.startMin)} – {fmtClock(it.endMin)}</span>
+                                <span className="flex-1 truncate font-medium text-foreground">
+                                  {selectedClasses.length > 1 && <span className="font-semibold">{cls?.name} </span>}
+                                  ({fmtClock(it.startMin)} — {fmtClock(it.endMin)})
+                                </span>
                                 <button onClick={() => onRemoveScheduleForClass(it.classId, it.idx)} title={t("removeSchedule")}
                                   className="shrink-0 text-muted-foreground/40 hover:text-destructive focus-visible:text-destructive focus-visible:opacity-100 transition-colors opacity-60 group-hover/time:opacity-100">
                                   <X className="size-3.5" />
