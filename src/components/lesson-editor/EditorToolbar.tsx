@@ -9,6 +9,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, Code, Link2, ImageIcon, Plus,
   ListTodo, Quote, Minus, Table, ChevronDown,
   ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Trash2, PanelTop,
+  SubscriptIcon, SuperscriptIcon, Palette, ScissorsLineDashed, Ban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -21,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { compressImageFile } from "@/lib/image-compress";
 import { CALLOUT_TYPES } from "./callout-extension";
 
-function Btn({
+export function Btn({
   onClick, active, disabled, title, children,
 }: {
   onClick: () => void; active?: boolean; disabled?: boolean; title: string; children: React.ReactNode;
@@ -44,7 +45,15 @@ function Btn({
   );
 }
 
-const Div = () => <Separator orientation="vertical" className="h-5 mx-1" />;
+export const Div = () => <Separator orientation="vertical" className="h-5 mx-1" />;
+
+/* Matn rangi — belgilangan palitra + tozalash; rasmga bogʻliq boʻlmagan
+   ranglar (OKLCH) ishlatiladi, dizayn tokenlariga mos. */
+export const TEXT_COLORS = [
+  "oklch(0.55 0.22 25)", "oklch(0.6 0.2 45)", "oklch(0.65 0.16 95)",
+  "oklch(0.6 0.15 145)", "oklch(0.55 0.15 220)", "oklch(0.5 0.2 280)",
+  "oklch(0.35 0 0)",
+];
 
 export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const t = useTranslations("LessonEditorToolbar");
@@ -112,6 +121,31 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       <Btn title={t("underline")} active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="size-4" /></Btn>
       <Btn title={t("strikethrough")} active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="size-4" /></Btn>
       <Btn title={t("highlight")} active={editor.isActive("highlight")} onClick={() => editor.chain().focus().toggleHighlight().run()}><Highlighter className="size-4" /></Btn>
+      <Btn title={t("superscript")} active={editor.isActive("superscript")} onClick={() => editor.chain().focus().toggleSuperscript().run()}><SuperscriptIcon className="size-4" /></Btn>
+      <Btn title={t("subscript")} active={editor.isActive("subscript")} onClick={() => editor.chain().focus().toggleSubscript().run()}><SubscriptIcon className="size-4" /></Btn>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <span>
+            <Btn title={t("textColor")} active={!!editor.getAttributes("textStyle").color} onClick={() => {}}>
+              <Palette className="size-4" style={editor.getAttributes("textStyle").color ? { color: editor.getAttributes("textStyle").color } : undefined} />
+            </Btn>
+          </span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-auto p-2">
+          <div className="flex items-center gap-1.5">
+            <button type="button" title={t("clearColor")} onClick={() => editor.chain().focus().unsetColor().run()}
+              className="size-6 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
+              <Ban className="size-3.5" />
+            </button>
+            {TEXT_COLORS.map((c) => (
+              <button key={c} type="button" title={c} onClick={() => editor.chain().focus().setColor(c).run()}
+                className="size-6 rounded-full shrink-0 ring-offset-2 ring-offset-popover transition-shadow"
+                style={{ backgroundColor: c, boxShadow: editor.getAttributes("textStyle").color === c ? `0 0 0 2px ${c}` : undefined }}
+              />
+            ))}
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Div />
       <Btn title={t("heading1")} active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="size-4" /></Btn>
       <Btn title={t("heading2")} active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="size-4" /></Btn>
@@ -128,6 +162,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       <Btn title={t("blockquote")} active={editor.isActive("blockquote")} onClick={() => editor.chain().focus().toggleBlockquote().run()}><Quote className="size-4" /></Btn>
       <Btn title={t("codeBlock")} active={editor.isActive("codeBlock")} onClick={() => editor.chain().focus().toggleCodeBlock().run()}><Code className="size-4" /></Btn>
       <Btn title={t("horizontalRule")} onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="size-4" /></Btn>
+      <Btn title={t("pageBreak")} onClick={() => editor.chain().focus().insertContent({ type: "pageBreak" }).run()}><ScissorsLineDashed className="size-4" /></Btn>
       {editor.isActive("table") ? (
         /* Jadval ichida — amallar menyusi (qator/ustun qoʻshish/oʻchirish) */
         <DropdownMenu>

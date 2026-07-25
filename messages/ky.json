@@ -2810,6 +2810,7 @@
   },
   "LessonEditor": {
     "contentPlaceholder": "Сабактын текстин жазууну баштаңыз…",
+    "characterCount": "{count} белги",
     "notFoundTitle": "Сабак табылган жок",
     "notFoundDescription": "Бул сабак жок же өчүрүлгөн.",
     "backToLessons": "Сабактар тизмесине кайтуу",
@@ -2884,6 +2885,10 @@
     "underline": "Асты сызылган",
     "strikethrough": "Сызылган",
     "highlight": "Белгилөө (highlight)",
+    "superscript": "Жогорку индекс",
+    "subscript": "Төмөнкү индекс",
+    "textColor": "Текст түсү",
+    "clearColor": "Түстү тазалоо",
     "heading1": "Баш тема 1",
     "heading2": "Баш тема 2",
     "heading3": "Баш тема 3",
@@ -2896,6 +2901,7 @@
     "blockquote": "Цитата",
     "codeBlock": "Код блогу",
     "horizontalRule": "Сызык",
+    "pageBreak": "Бет чек арасы",
     "tableActions": "Таблица аракеттери",
     "table": {
       "rowAbove": "Жогоруга сап",

@@ -5,12 +5,19 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { BubbleMenu, FloatingMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
 import { Mathematics } from "@tiptap/extension-mathematics";
+import { Subscript } from "@tiptap/extension-subscript";
+import { Superscript } from "@tiptap/extension-superscript";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import { Typography } from "@tiptap/extension-typography";
+import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
   FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
@@ -38,6 +45,9 @@ import AiAssistantPanel from "./AiAssistantPanel";
 import { TableKit } from "@tiptap/extension-table";
 import { TaskList, TaskItem } from "@tiptap/extension-list";
 import { Callout, CalloutTitle } from "./callout-extension";
+import { PageBreak } from "./page-break-extension";
+import BubbleToolbar from "./BubbleToolbar";
+import FloatingToolbar from "./FloatingToolbar";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { formatFeedbackAgo, useRelativeT } from "@/app/dashboard/(with-sidebar)/feedback/_components/feedback-meta";
 
@@ -93,6 +103,14 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       TableKit.configure({ table: { resizable: true } }),
       TaskList,
       TaskItem.configure({ nested: true }),
+      TextStyle,
+      Color,
+      Subscript,
+      Superscript,
+      // Aqlli tinish belgilari: "--" -> "—", to'g'ri tirnoqlar va h.k.
+      Typography,
+      CharacterCount,
+      PageBreak,
     ],
     content: lesson?.content ?? "",
     editorProps: { attributes: { class: "lesson-prose focus:outline-none" } },
@@ -274,8 +292,15 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
         {/* Editor pane */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Sticky toolbar */}
-          <div className="no-print shrink-0 bg-card/80 backdrop-blur border-b border-border px-3 py-1.5 overflow-x-auto">
-            <EditorToolbar editor={editor} />
+          <div className="no-print shrink-0 bg-card/80 backdrop-blur border-b border-border px-3 py-1.5 flex items-center gap-3">
+            <div className="flex-1 min-w-0 overflow-x-auto">
+              <EditorToolbar editor={editor} />
+            </div>
+            {editor && (
+              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                {t("characterCount", { count: editor.storage.characterCount?.characters() ?? 0 })}
+              </span>
+            )}
           </div>
           {/* Scrollable canvas with A4 sheet */}
           <div className="flex-1 min-h-0 overflow-y-auto">
@@ -286,6 +311,16 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                 placeholder={t("untitled")}
                 className="w-full bg-transparent border-0 outline-none text-4xl font-bold text-foreground placeholder:text-muted-foreground/40 mb-5"
               />
+              {editor && (
+                <>
+                  <BubbleMenu editor={editor} className="no-print">
+                    <BubbleToolbar editor={editor} />
+                  </BubbleMenu>
+                  <FloatingMenu editor={editor} className="no-print">
+                    <FloatingToolbar editor={editor} />
+                  </FloatingMenu>
+                </>
+              )}
               <EditorContent editor={editor} />
             </div>
           </div>

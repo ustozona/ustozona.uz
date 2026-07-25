@@ -2647,6 +2647,7 @@
   },
   "LessonEditor": {
     "contentPlaceholder": "Dars matnini yozishni boshlang…",
+    "characterCount": "{count} belgi",
     "notFoundTitle": "Dars topilmadi",
     "notFoundDescription": "Bu dars mavjud emas yoki oʻchirilgan.",
     "backToLessons": "Darslar roʻyxatiga qaytish",
@@ -2721,6 +2722,10 @@
     "underline": "Tagchiziq",
     "strikethrough": "Oʻchirilgan",
     "highlight": "Ajratish (highlight)",
+    "superscript": "Yuqori indeks",
+    "subscript": "Quyi indeks",
+    "textColor": "Matn rangi",
+    "clearColor": "Rangni tozalash",
     "heading1": "Sarlavha 1",
     "heading2": "Sarlavha 2",
     "heading3": "Sarlavha 3",
@@ -2733,6 +2738,7 @@
     "blockquote": "Iqtibos",
     "codeBlock": "Kod bloki",
     "horizontalRule": "Chiziq",
+    "pageBreak": "Sahifa chegarasi",
     "tableActions": "Jadval amallari",
     "table": {
       "rowAbove": "Yuqoriga qator",

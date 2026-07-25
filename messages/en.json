@@ -2810,6 +2810,7 @@
   },
   "LessonEditor": {
     "contentPlaceholder": "Start writing your lesson content…",
+    "characterCount": "{count} characters",
     "notFoundTitle": "Lesson not found",
     "notFoundDescription": "This lesson doesn't exist or has been deleted.",
     "backToLessons": "Back to lessons list",
@@ -2884,6 +2885,10 @@
     "underline": "Underline",
     "strikethrough": "Strikethrough",
     "highlight": "Highlight",
+    "superscript": "Superscript",
+    "subscript": "Subscript",
+    "textColor": "Text color",
+    "clearColor": "Clear color",
     "heading1": "Heading 1",
     "heading2": "Heading 2",
     "heading3": "Heading 3",
@@ -2896,6 +2901,7 @@
     "blockquote": "Quote",
     "codeBlock": "Code block",
     "horizontalRule": "Divider",
+    "pageBreak": "Page break",
     "tableActions": "Table actions",
     "table": {
       "rowAbove": "Row above",

@@ -2810,6 +2810,7 @@
   },
   "LessonEditor": {
     "contentPlaceholder": "Sabaq tekstin jazıwdı baslań…",
+    "characterCount": "{count} belgi",
     "notFoundTitle": "Sabaq tabılmadı",
     "notFoundDescription": "Bul sabaq joq yamasa óshirilgen.",
     "backToLessons": "Sabaqlar dizimine qayıtw",
@@ -2884,6 +2885,10 @@
     "underline": "Astı sızılǵan",
     "strikethrough": "Óshirilgen",
     "highlight": "Ajıratıw (highlight)",
+    "superscript": "Joqarı indeks",
+    "subscript": "Tómen indeks",
+    "textColor": "Tekst rangi",
+    "clearColor": "Rangdi tazalaw",
     "heading1": "Sarlawha 1",
     "heading2": "Sarlawha 2",
     "heading3": "Sarlawha 3",
@@ -2896,6 +2901,7 @@
     "blockquote": "Citat",
     "codeBlock": "Kod blogı",
     "horizontalRule": "Sızıq",
+    "pageBreak": "Bet shegarası",
     "tableActions": "Keste ámelleri",
     "table": {
       "rowAbove": "Joqarıǵa qatar",

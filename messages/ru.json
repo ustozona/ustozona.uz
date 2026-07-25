@@ -2810,6 +2810,7 @@
   },
   "LessonEditor": {
     "contentPlaceholder": "Начните писать текст урока…",
+    "characterCount": "{count} симв.",
     "notFoundTitle": "Урок не найден",
     "notFoundDescription": "Этот урок не существует или был удалён.",
     "backToLessons": "Вернуться к списку уроков",
@@ -2884,6 +2885,10 @@
     "underline": "Подчёркнутый",
     "strikethrough": "Зачёркнутый",
     "highlight": "Выделение",
+    "superscript": "Верхний индекс",
+    "subscript": "Нижний индекс",
+    "textColor": "Цвет текста",
+    "clearColor": "Убрать цвет",
     "heading1": "Заголовок 1",
     "heading2": "Заголовок 2",
     "heading3": "Заголовок 3",
@@ -2896,6 +2901,7 @@
     "blockquote": "Цитата",
     "codeBlock": "Блок кода",
     "horizontalRule": "Линия",
+    "pageBreak": "Разрыв страницы",
     "tableActions": "Действия с таблицей",
     "table": {
       "rowAbove": "Строка выше",
