@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "lesson-schedule-flow",
+    date: "2026-07-25",
+    type: "yaxshilandi",
+    title: "Dars muharriri — sana biriktirish qulayroq boʻldi",
+    body: "Bir nechta sinfga dars biriktirilganda \"Jadval\" boʻlimi endi bitta umumiy roʻyxat — barcha sinflarning darslari bir sana ostida birga koʻrinadi. Sana tanlashda kalendar sinf jadvalidagi kunlarni rangi bilan koʻrsatadi, vaqtni esa bittalab, tez ketma-ket qoʻshish mumkin.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "lesson-editor-redesign",
     date: "2026-07-25",
     type: "yaxshilandi",

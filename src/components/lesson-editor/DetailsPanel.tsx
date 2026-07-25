@@ -6,7 +6,7 @@ import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, ClipboardLis
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +42,7 @@ export default function DetailsPanel({
   const liveClasses = useLiveClasses();
   const selectedIds = lessonClassIds(lesson);
   const selectedClasses = liveClasses.filter((c) => selectedIds.includes(c.id));
-  const [schedOpen, setSchedOpen] = useState<string | null>(null);
+  const [schedOpen, setSchedOpen] = useState(false);
 
   const toggleClass = (id: string) => {
     onSetClasses(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
@@ -148,7 +148,7 @@ export default function DetailsPanel({
                     <DropdownMenuTrigger asChild>
                       <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 hover:bg-accent/40 transition-colors text-left">
                         <span className="flex items-center gap-3 min-w-0">
-                          <span className="size-9 rounded-full flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
+                          <span className="size-9 rounded-xl flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
                             <Layers className="size-4" />
                           </span>
                           <span className="flex flex-col min-w-0">
@@ -187,69 +187,86 @@ export default function DetailsPanel({
           </div>
         )}
 
-        {/* SCHEDULE (har sinf uchun alohida) */}
-        {selectedClasses.length > 0 && (
-          <div>
-            <SectionLabel>{t("schedule")}</SectionLabel>
-            <div className="space-y-2.5">
-              {selectedClasses.map((c) => {
-                const hex = CLASS_COLOR_HEX[classColor(c)];
-                const sessions = lesson.scheduleByClass?.[c.id]
-                  ?? (c.id === selectedIds[0] && lesson.scheduledDate
-                    ? [{ date: lesson.scheduledDate, startMin: lesson.startMin ?? 0, endMin: lesson.endMin ?? 0 }]
-                    : []);
-                // Sessiyalarni sana boʻyicha guruhlash (asl indeksni saqlab — oʻchirish uchun).
-                const groups: { date: string; items: { startMin: number; endMin: number; idx: number }[] }[] = [];
-                sessions.forEach((sess, idx) => {
-                  let g = groups.find((x) => x.date === sess.date);
-                  if (!g) { g = { date: sess.date, items: [] }; groups.push(g); }
-                  g.items.push({ startMin: sess.startMin, endMin: sess.endMin, idx });
-                });
-                return (
-                  <div key={c.id} className="space-y-1.5">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">{dot(hex)}{c.name}</div>
+        {/* SCHEDULE — bitta umumiy roʻyxat, barcha biriktirilgan sinflar bir sana-karta ostida yigʻiladi */}
+        {selectedClasses.length > 0 && (() => {
+          type Item = { classId: string; hex: string; date: string; startMin: number; endMin: number; idx: number };
+          const allItems: Item[] = [];
+          selectedClasses.forEach((c) => {
+            const hex = CLASS_COLOR_HEX[classColor(c)];
+            const sessions = lesson.scheduleByClass?.[c.id]
+              ?? (c.id === selectedIds[0] && lesson.scheduledDate
+                ? [{ date: lesson.scheduledDate, startMin: lesson.startMin ?? 0, endMin: lesson.endMin ?? 0 }]
+                : []);
+            sessions.forEach((sess, idx) => allItems.push({ classId: c.id, hex, date: sess.date, startMin: sess.startMin, endMin: sess.endMin, idx }));
+          });
+          // Sessiyalarni sana boʻyicha guruhlash (sinflar aralash, vaqt boʻyicha tartiblangan).
+          const groups: { date: string; items: Item[] }[] = [];
+          allItems.forEach((it) => {
+            let g = groups.find((x) => x.date === it.date);
+            if (!g) { g = { date: it.date, items: [] }; groups.push(g); }
+            g.items.push(it);
+          });
+          groups.sort((a, b) => a.date.localeCompare(b.date));
+          groups.forEach((g) => g.items.sort((a, b) => a.startMin - b.startMin));
 
-                    {/* Sana kartalari — bir karta = bir sana, ichida bir nechta vaqt */}
-                    {groups.map((g) => {
-                      const d = dateKeyToDate(g.date);
-                      return (
-                        <div key={g.date} className="flex items-stretch gap-3 rounded-lg border border-border bg-card overflow-hidden">
-                          <div className="flex flex-col items-center justify-center px-3 py-2 shrink-0"
-                            style={{ backgroundColor: `color-mix(in srgb, ${hex} 10%, transparent)` }}>
-                            <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: hex }}>{MONTHS_UZ_SHORT[d.getMonth()]}</span>
-                            <span className="text-lg font-bold leading-none text-foreground">{d.getDate()}</span>
-                          </div>
-                          <div className="flex-1 min-w-0 py-2 pr-2">
-                            <span className="block text-sm font-semibold text-foreground truncate">{DAYS_UZ_SUN[d.getDay()]}</span>
-                            <div className="mt-1 space-y-0.5">
-                              {g.items.map((it) => (
-                                <div key={it.idx} className="group/time flex items-center gap-1.5 text-xs text-muted-foreground">
-                                  <Clock className="size-3 shrink-0" />
-                                  <span className="flex-1 truncate">{fmtClock(it.startMin)} – {fmtClock(it.endMin)}</span>
-                                  <button onClick={() => onRemoveScheduleForClass(c.id, it.idx)} title={t("removeSchedule")}
-                                    className="shrink-0 text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover/time:opacity-100">
-                                    <X className="size-3.5" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+          return (
+            <div>
+              <SectionLabel>{t("schedule")}</SectionLabel>
+              <div className="space-y-1.5">
+                {/* Sana kartalari — bir karta = bir sana, ichida sinflar aralash vaqtlar */}
+                {groups.map((g) => {
+                  const d = dateKeyToDate(g.date);
+                  return (
+                    <div key={g.date} className="flex items-stretch gap-3 rounded-lg border border-border bg-card overflow-hidden">
+                      <div className="flex flex-col items-center justify-center px-3 py-2 shrink-0 bg-muted/50">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{MONTHS_UZ_SHORT[d.getMonth()]}</span>
+                        <span className="text-lg font-bold leading-none text-foreground">{d.getDate()}</span>
+                      </div>
+                      <div className="flex-1 min-w-0 py-2 pr-2">
+                        <span className="block text-sm font-semibold text-foreground truncate">{DAYS_UZ_SUN[d.getDay()]}</span>
+                        <div className="mt-1 space-y-0.5">
+                          {g.items.map((it) => {
+                            const cls = selectedClasses.find((c) => c.id === it.classId);
+                            return (
+                              <div key={`${it.classId}-${it.idx}`} className="group/time flex items-center gap-1.5 text-xs text-muted-foreground">
+                                {dot(it.hex)}
+                                {selectedClasses.length > 1 && <span className="font-medium text-foreground shrink-0">{cls?.name}</span>}
+                                <Clock className="size-3 shrink-0" />
+                                <span className="flex-1 truncate">{fmtClock(it.startMin)} – {fmtClock(it.endMin)}</span>
+                                <button onClick={() => onRemoveScheduleForClass(it.classId, it.idx)} title={t("removeSchedule")}
+                                  className="shrink-0 text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover/time:opacity-100">
+                                  <X className="size-3.5" />
+                                </button>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </div>
+                    </div>
+                  );
+                })}
 
-                    {/* Sana qoʻshish — markazlashgan modalni ochadi (panelga sigʻmasligi uchun) */}
-                    <button type="button" onClick={() => setSchedOpen(c.id)}
+                {/* Sana qoʻshish — shu tugmaga langarli popover (EMStudio uslubi) */}
+                <Popover open={schedOpen} onOpenChange={setSchedOpen}>
+                  <PopoverTrigger asChild>
+                    <button type="button"
                       className="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
                       <CalendarDays className="size-4" />
-                      {sessions.length ? t("addMoreDate") : t("addDate")}
+                      {allItems.length ? t("addMoreDate") : t("addDate")}
                     </button>
-                  </div>
-                );
-              })}
+                  </PopoverTrigger>
+                  <PopoverContent side="left" align="start" sideOffset={12} className="p-0 w-auto">
+                    <ClassSchedulePicker
+                      classIds={selectedIds}
+                      onAdd={(date, sess) => onAddScheduleForClass(sess.classId, date, sess.startMin, sess.endMin)}
+                      onDone={() => setSchedOpen(false)}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ASSIGNMENTS (keyin) */}
         <div>
@@ -285,23 +302,6 @@ export default function DetailsPanel({
           </Button>
         </div>
       </div>
-
-      {/* Sana tanlash modali — markazlashgan, panelga bogʻliq emas (sakramaydi) */}
-      <Dialog open={!!schedOpen} onOpenChange={(o) => !o && setSchedOpen(null)}>
-        <DialogContent className="p-0 w-auto max-w-fit gap-0 overflow-hidden">
-          <DialogTitle className="sr-only">{t("addDate")}</DialogTitle>
-          {schedOpen && (
-            <ClassSchedulePicker
-              classId={schedOpen}
-              onCancel={() => setSchedOpen(null)}
-              onSubmit={(date, sess) => {
-                sess.forEach((x) => onAddScheduleForClass(schedOpen, date, x.startMin, x.endMin));
-                setSchedOpen(null);
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

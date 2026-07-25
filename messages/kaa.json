@@ -1952,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "lesson-schedule-flow": {
+        "title": "Sabaq redaktorı — kún biriktiriw qolaylıraq boldı",
+        "body": "Sabaq bir neshe klasqa biriktirilgende \"Keste\" bólimi endi bir ulıwma dizim — barlıq klasslardıń sabaqları bir kún astında birge kórinedi. Kún tańlağanda kalendar hár klastıń kestesindegi kúnlerdi ózi reńi menen kórsetedi, waqıttı bolsa birden, tez izbe-iz qosıw múmkin."
+      },
       "lesson-editor-redesign": {
         "title": "Sabaq redaktorı — jańalanǵan kórinis hám bir qatar dúzetiwler",
         "body": "«Tolıq maǵlıwmatlar» hám «AI» panelleri endi basqa betler menen birdey kórinedi; silkeltpe qosıw qolaylıraq, súwret biriktiriw tezirek boldı, sarlawha redaktorlaniwi da tezirek saqlanadı. Sarlawha astında aqırǵı redaktorlanǵan waqıt kórinedi."
@@ -2944,12 +2948,15 @@
     "fromClassSchedule": "Klass kestesinen",
     "noSchedule": "(keste joq)",
     "pickDayHint": "Kún tańlań — kestedaǵı sabaqlar shıǵadı.",
-    "noLessonThisDay": "Bul kúni bul klassta sabaq joq. Basqa kún tańlań yamasa belgini alıp qolda kiritiń.",
+    "noLessonThisDay": "Bul kúni kestede sabaq joq. Basqa kún tańlań yamasa belgini alıp qolda kiritiń.",
+    "class": "Klass",
     "start": "Baslanıw",
     "end": "Tawısılıw",
     "select": "Tańlań",
-    "cancel": "Biykar",
-    "addCount": "Qosıw ({count})",
+    "back": "Keri",
+    "cancel": "Biykar etiw",
+    "availableTimes": "Qoljetimli waqıt",
+    "done": "Tayar",
     "add": "Qosıw"
   },
   "BellScheduleDialog": {

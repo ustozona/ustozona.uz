@@ -1952,6 +1952,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "lesson-schedule-flow": {
+        "title": "Dars muharriri — sana biriktirish qulayroq boʻldi",
+        "body": "Bir nechta sinfga dars biriktirilganda \"Jadval\" boʻlimi endi bitta umumiy roʻyxat — barcha sinflarning darslari bir sana ostida birga koʻrinadi. Sana tanlashda kalendar sinf jadvalidagi kunlarni rangi bilan koʻrsatadi, vaqtni esa bittalab, tez ketma-ket qoʻshish mumkin."
+      },
       "lesson-editor-redesign": {
         "title": "Dars muharriri — koʻrinishi va bir qator kamchiliklari tuzatildi",
         "body": "Tafsilotlar va AI panellari endi boshqa sahifalar bilan bir xil koʻrinishda; havola qoʻshish qulayroq, rasm biriktirish tezroq boʻldi, sarlavha tahriri esa endi tezroq saqlanadi. Sarlavha ostida oxirgi tahrir vaqti koʻrinadi."
@@ -2781,12 +2785,15 @@
     "fromClassSchedule": "Sinf jadvalidan",
     "noSchedule": "(jadval yoʻq)",
     "pickDayHint": "Kun tanlang — jadvaldagi darslar chiqadi.",
-    "noLessonThisDay": "Bu kuni bu sinfda dars yoʻq. Boshqa kun tanlang yoki belgini olib qoʻlda kiriting.",
+    "noLessonThisDay": "Bu kuni jadvalda dars yoʻq. Boshqa kun tanlang yoki belgini olib qoʻlda kiriting.",
+    "class": "Sinf",
     "start": "Boshlanish",
     "end": "Tugash",
     "select": "Tanlang",
-    "cancel": "Bekor",
-    "addCount": "Qoʻshish ({count})",
+    "back": "Orqaga",
+    "cancel": "Bekor qilish",
+    "availableTimes": "Mavjud vaqtlar",
+    "done": "Tayyor",
     "add": "Qoʻshish"
   },
   "BellScheduleDialog": {

@@ -1952,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "lesson-schedule-flow": {
+        "title": "Lesson editor — scheduling a lesson is easier",
+        "body": "When a lesson is assigned to several classes, the Schedule section is now one shared list — every class's sessions appear together under a single date. When picking a date, the calendar highlights days from each class's timetable by color, and you can add times one at a time in quick succession."
+      },
       "lesson-editor-redesign": {
         "title": "Lesson editor — refreshed look and several fixes",
         "body": "The Details and AI panels now match the rest of the app's look; adding a link is easier, images attach faster, and title edits now save sooner. The last-edited time now shows under the title."
@@ -2944,12 +2948,15 @@
     "fromClassSchedule": "From class schedule",
     "noSchedule": "(no schedule)",
     "pickDayHint": "Select a day — lessons from the schedule will appear.",
-    "noLessonThisDay": "No lesson for this class on this day. Pick another day or uncheck to enter manually.",
+    "noLessonThisDay": "No lesson scheduled on this day. Pick another day or uncheck to enter manually.",
+    "class": "Class",
     "start": "Start",
     "end": "End",
     "select": "Select",
+    "back": "Back",
     "cancel": "Cancel",
-    "addCount": "Add ({count})",
+    "availableTimes": "Available times",
+    "done": "Done",
     "add": "Add"
   },
   "BellScheduleDialog": {
