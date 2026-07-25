@@ -46,7 +46,7 @@ export function Btn({
   );
 }
 
-export const Div = () => <Separator orientation="vertical" className="h-5 mx-1" />;
+export const Div = () => <Separator orientation="vertical" className="h-5" />;
 
 /* Matn rangi — belgilangan palitra + tozalash; rasmga bogʻliq boʻlmagan
    ranglar (OKLCH) ishlatiladi, dizayn tokenlariga mos. */
@@ -135,13 +135,16 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const AlignTrigger = activeAlign.icon;
 
   return (
-    <div className="flex items-center gap-0.5 flex-wrap">
+    <div className="flex items-center gap-3 flex-wrap">
       {/* Tarix */}
-      <Btn title={t("undo")} onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="size-4" /></Btn>
-      <Btn title={t("redo")} onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="size-4" /></Btn>
+      <div className="flex items-center gap-0.5">
+        <Btn title={t("undo")} onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="size-4" /></Btn>
+        <Btn title={t("redo")} onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 className="size-4" /></Btn>
+      </div>
       <Div />
 
       {/* Struktura: sarlavha, roʻyxat, blok elementlari */}
+      <div className="flex items-center gap-0.5">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button type="button" title={t("heading1")}
@@ -214,9 +217,11 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       ) : (
         <Btn title={t("insertTable")} onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table className="size-4" /></Btn>
       )}
+      </div>
       <Div />
 
       {/* Formatlash: matn belgilari */}
+      <div className="flex items-center gap-0.5">
       <Btn title={t("bold")} active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()}><Bold className="size-4" /></Btn>
       <Btn title={t("italic")} active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="size-4" /></Btn>
       <Btn title={t("underline")} active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="size-4" /></Btn>
@@ -247,6 +252,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
       <Div />
 
       {/* Tekislash */}
@@ -271,6 +277,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       <Div />
 
       {/* Qoʻshish: havola, rasm, callout */}
+      <div className="flex items-center gap-0.5">
       <Popover open={linkOpen} onOpenChange={setLinkOpen}>
         <PopoverTrigger asChild>
           <span><Btn title={t("link")} active={editor.isActive("link")} onClick={openLinkPopover}><Link2 className="size-4" /></Btn></span>
@@ -315,6 +322,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </div>
   );
 }
