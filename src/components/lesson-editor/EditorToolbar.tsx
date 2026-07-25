@@ -10,6 +10,7 @@ import {
   ListTodo, Quote, Minus, Table, ChevronDown,
   ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Trash2, PanelTop,
   SubscriptIcon, SuperscriptIcon, Palette, ScissorsLineDashed, Ban,
+  Check, Pilcrow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -54,6 +55,15 @@ export const TEXT_COLORS = [
   "oklch(0.6 0.15 145)", "oklch(0.55 0.15 220)", "oklch(0.5 0.2 280)",
   "oklch(0.35 0 0)",
 ];
+
+const HEADING_LEVELS = [1, 2, 3] as const;
+const HEADING_ICONS = { 1: Heading1, 2: Heading2, 3: Heading3 } as const;
+
+const LIST_TYPES = [
+  { name: "bulletList", icon: List, toggle: (e: Editor) => e.chain().focus().toggleBulletList().run() },
+  { name: "orderedList", icon: ListOrdered, toggle: (e: Editor) => e.chain().focus().toggleOrderedList().run() },
+  { name: "taskList", icon: ListTodo, toggle: (e: Editor) => e.chain().focus().toggleTaskList().run() },
+] as const;
 
 export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const t = useTranslations("LessonEditorToolbar");
@@ -111,6 +121,11 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
     editor.chain().focus().setImage({ src }).run();
   };
 
+  const activeHeading = HEADING_LEVELS.find((lvl) => editor.isActive("heading", { level: lvl }));
+  const HeadingTrigger = activeHeading ? HEADING_ICONS[activeHeading] : Pilcrow;
+  const activeList = LIST_TYPES.find((l) => editor.isActive(l.name));
+  const ListTrigger = activeList?.icon ?? List;
+
   return (
     <div className="flex items-center gap-0.5 flex-wrap">
       <Btn title={t("undo")} onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo2 className="size-4" /></Btn>
@@ -147,13 +162,50 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
         </DropdownMenuContent>
       </DropdownMenu>
       <Div />
-      <Btn title={t("heading1")} active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="size-4" /></Btn>
-      <Btn title={t("heading2")} active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="size-4" /></Btn>
-      <Btn title={t("heading3")} active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="size-4" /></Btn>
-      <Div />
-      <Btn title={t("bulletList")} active={editor.isActive("bulletList")} onClick={() => editor.chain().focus().toggleBulletList().run()}><List className="size-4" /></Btn>
-      <Btn title={t("orderedList")} active={editor.isActive("orderedList")} onClick={() => editor.chain().focus().toggleOrderedList().run()}><ListOrdered className="size-4" /></Btn>
-      <Btn title={t("taskList")} active={editor.isActive("taskList")} onClick={() => editor.chain().focus().toggleTaskList().run()}><ListTodo className="size-4" /></Btn>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" title={t("heading1")}
+            className="h-8 px-1.5 rounded-md flex items-center gap-0.5 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors data-[state=open]:bg-muted data-[state=open]:text-foreground">
+            <HeadingTrigger className="size-4" />
+            <ChevronDown className="size-3 opacity-60" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-40">
+          <DropdownMenuItem onSelect={() => editor.chain().focus().setParagraph().run()} className="gap-2.5">
+            <Pilcrow className="size-4 text-muted-foreground" />
+            <span className="flex-1">{t("paragraph")}</span>
+            {!activeHeading && <Check className="size-4 shrink-0" />}
+          </DropdownMenuItem>
+          {HEADING_LEVELS.map((lvl) => {
+            const Icon = HEADING_ICONS[lvl];
+            return (
+              <DropdownMenuItem key={lvl} onSelect={() => editor.chain().focus().toggleHeading({ level: lvl }).run()} className="gap-2.5">
+                <Icon className="size-4 text-muted-foreground" />
+                <span className="flex-1">{t(`heading${lvl}` as "heading1" | "heading2" | "heading3")}</span>
+                {activeHeading === lvl && <Check className="size-4 shrink-0" />}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" title={t("bulletList")}
+            className="h-8 px-1.5 rounded-md flex items-center gap-0.5 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors data-[state=open]:bg-muted data-[state=open]:text-foreground">
+            <ListTrigger className="size-4" />
+            <ChevronDown className="size-3 opacity-60" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-44">
+          {LIST_TYPES.map(({ name, icon: Icon, toggle }) => (
+            <DropdownMenuItem key={name} onSelect={() => toggle(editor)} className="gap-2.5">
+              <Icon className="size-4 text-muted-foreground" />
+              <span className="flex-1">{t(name)}</span>
+              {editor.isActive(name) && <Check className="size-4 shrink-0" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Div />
       <Btn title={t("alignLeft")} active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="size-4" /></Btn>
       <Btn title={t("alignCenter")} active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="size-4" /></Btn>
