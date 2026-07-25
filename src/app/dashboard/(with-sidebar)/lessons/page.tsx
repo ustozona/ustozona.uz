@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,32 @@ const STATUS_STYLES: Record<Lesson["status"], string> = {
 const pad = (n: number) => String(n).padStart(2, "0");
 const NONE = "__none__";
 
+/* Boʻlim/"Boʻlimsiz" kartalarini @dnd-kit droppable-zonasiga aylantiradi —
+   mavzuni sudrab tashlash uchun umumiy wrapper (loyihaning DnD standarti). */
+function UnitDropZone({ id, children }: { id: string; children: (isOver: boolean) => ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return <div ref={setNodeRef}>{children(isOver)}</div>;
+}
+
+/* Mavzu kartasini sudrab boʻlim-zonalarga tashlash uchun draggable wrapper. */
+function DraggableLesson({ id, className, style, onClick, children }: {
+  id: string; className?: string; style?: React.CSSProperties; onClick: () => void; children: ReactNode;
+}) {
+  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      onClick={onClick}
+      style={style}
+      className={cn(className, isDragging && "opacity-40")}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function LessonsPage() {
   const t = useTranslations("LessonsPage");
   const STATUS_LABELS: Record<Lesson["status"], string> = {
@@ -81,6 +108,7 @@ export default function LessonsPage() {
   const deleteUnit = useLessonStore((s) => s.deleteUnit);
   const restoreUnit = useLessonStore((s) => s.restoreUnit);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
+  const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
@@ -181,6 +209,18 @@ export default function LessonsPage() {
   const [classModalOpen, setClassModalOpen] = useState(false);
   const [unitModalOpen, setUnitModalOpen] = useState(false);
 
+  // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
+  const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const handleLessonDragEnd = (e: DragEndEvent) => {
+    const lessonId = e.active.id as string;
+    const overId = e.over?.id as string | undefined;
+    if (!overId || !effectiveClassId) return;
+    const targetUnitId = overId === "unit-none" ? null : overId.replace(/^unit-/, "");
+    const lesson = lessonsSource.find((l) => l.id === lessonId);
+    if (!lesson || unitIdForClass(lesson, effectiveClassId) === targetUnitId) return;
+    setUnitForClass(lessonId, effectiveClassId, targetUnitId);
+  };
+
   const handleCreateUnit = () => {
     if (!selectedClassId) return;
     setUnitModalOpen(true);
@@ -258,13 +298,16 @@ export default function LessonsPage() {
   );
 
   // Keng ustun (boʻlim tanlanmagan): toʻliq karta — nom + tavsif + dars soni + progress
-  const renderUnitWide = (unit: Unit) => {
+  const renderUnitWide = (unit: Unit, isOver = false) => {
     const { total, pct } = unitProgress(unit.id);
     return withUnitMenu(unit,
       <button
         onClick={() => setSelectedUnitId(unit.id)}
-        className="list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer"
-        style={{ ["--card-accent" as string]: selectedClassHex }}
+        className={cn(
+          "list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer",
+          isOver && "ring-2"
+        )}
+        style={{ ["--card-accent" as string]: selectedClassHex, ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
         <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
           <Layers className="size-5" />
@@ -290,14 +333,17 @@ export default function LessonsPage() {
   };
 
   // Tor ustun, tanlangan: katta karta + count badge + spring-bounce
-  const renderUnitSelected = (unit: Unit) => {
+  const renderUnitSelected = (unit: Unit, isOver = false) => {
     const { total } = unitProgress(unit.id);
     return withUnitMenu(unit,
       <button
         onClick={() => setSelectedUnitId(null)}
-        className="list-card w-full flex items-center text-left gap-3 p-4 cursor-pointer"
+        className={cn(
+          "list-card w-full flex items-center text-left gap-3 p-4 cursor-pointer",
+          isOver && "ring-2"
+        )}
         data-active="true"
-        style={{ ["--card-accent" as string]: selectedClassHex, ...selectedClassTints.tint }}
+        style={{ ["--card-accent" as string]: selectedClassHex, ...selectedClassTints.tint, ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
         <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
           <Layers className="size-5" />
@@ -314,12 +360,13 @@ export default function LessonsPage() {
   };
 
   // Tor ustun, tanlanmagan: kompakt nuqtali qator
-  const renderUnitCompact = (unit: Unit) => {
+  const renderUnitCompact = (unit: Unit, isOver = false) => {
     const { total } = unitProgress(unit.id);
     return withUnitMenu(unit,
       <button
         onClick={() => setSelectedUnitId(unit.id)}
-        className="list-row group w-full"
+        className={cn("list-row group w-full", isOver && "ring-2 rounded-lg")}
+        style={isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : undefined}
       >
         <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: selectedClassHex }} />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
@@ -331,12 +378,15 @@ export default function LessonsPage() {
   };
 
   // "Boʻlimsiz" — keng ustun
-  const renderNoUnitWide = () => {
+  const renderNoUnitWide = (isOver = false) => {
     const { total, pct } = unitProgress(null);
     return (
       <button
         onClick={() => setSelectedUnitId(NONE)}
-        className="list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer"
+        className={cn(
+          "list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer",
+          isOver && "ring-2 ring-muted-foreground/50"
+        )}
         style={{ ["--card-accent" as string]: "var(--muted-foreground)" }}
       >
         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center bg-muted">
@@ -361,12 +411,15 @@ export default function LessonsPage() {
   };
 
   // "Boʻlimsiz" — tor ustun (tanlangan / kompakt)
-  const renderNoUnitNarrow = () => {
+  const renderNoUnitNarrow = (isOver = false) => {
     if (effectiveUnitId === NONE) {
       return (
         <button
           onClick={() => setSelectedUnitId(null)}
-          className="list-card w-full flex items-center text-left gap-3 p-4 cursor-pointer"
+          className={cn(
+            "list-card w-full flex items-center text-left gap-3 p-4 cursor-pointer",
+            isOver && "ring-2 ring-muted-foreground/50"
+          )}
           data-active="true"
           style={{ ["--card-accent" as string]: "var(--muted-foreground)", backgroundColor: "var(--muted)" }}
         >
@@ -383,7 +436,7 @@ export default function LessonsPage() {
     return (
       <button
         onClick={() => setSelectedUnitId(NONE)}
-        className="list-row group w-full"
+        className={cn("list-row group w-full", isOver && "ring-2 ring-muted-foreground/50 rounded-lg")}
       >
         <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
@@ -396,6 +449,7 @@ export default function LessonsPage() {
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
+      <DndContext sensors={dndSensors} onDragEnd={handleLessonDragEnd}>
       <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" data-tour="lessons-classes">
@@ -446,17 +500,23 @@ export default function LessonsPage() {
                 {detailMode ? (
                   /* Tor rejim — tanlangan katta, qolganlari kompakt */
                   <>
-                    {unitsForClass.map((unit) =>
-                      unit.id === effectiveUnitId ? renderUnitSelected(unit) : renderUnitCompact(unit)
-                    )}
-                    {renderNoUnitNarrow()}
+                    {unitsForClass.map((unit) => (
+                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
+                        {(isOver) => (unit.id === effectiveUnitId ? renderUnitSelected(unit, isOver) : renderUnitCompact(unit, isOver))}
+                      </UnitDropZone>
+                    ))}
+                    <UnitDropZone id="unit-none">{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
                   </>
                 ) : (
                   /* Keng rejim — toʻliq kartalar + doimo "Boʻlimsiz" karta.
                      Haqiqiy boʻlim boʻlmasa, qoʻshimcha markaziy yoʻriqnoma. */
                   <>
-                    {unitsForClass.map(renderUnitWide)}
-                    {renderNoUnitWide()}
+                    {unitsForClass.map((unit) => (
+                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
+                        {(isOver) => renderUnitWide(unit, isOver)}
+                      </UnitDropZone>
+                    ))}
+                    <UnitDropZone id="unit-none">{(isOver) => renderNoUnitWide(isOver)}</UnitDropZone>
                     {unitsForClass.length === 0 && (
                       <Empty className="py-12">
                         <EmptyHeader>
@@ -637,10 +697,11 @@ export default function LessonsPage() {
                   lessonsForUnit.map((lesson) => {
                     const lessonUnit = unitsSource.find((u) => u.id === lesson.unitId);
                     return (
-                      <div
+                      <DraggableLesson
                         key={lesson.id}
+                        id={lesson.id}
                         onClick={() => openLesson(lesson.id)}
-                        className="list-card group flex items-center gap-3 p-4 cursor-pointer"
+                        className="list-card group flex items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
                         style={{ ["--card-accent" as string]: selectedClassHex }}
                       >
                         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
@@ -713,7 +774,7 @@ export default function LessonsPage() {
                             </AlertDialogContent>
                           </AlertDialog>
                         </div>
-                      </div>
+                      </DraggableLesson>
                     );
                   })
                 )}
@@ -739,6 +800,7 @@ export default function LessonsPage() {
           />
         )}
       </DashboardColumns>
+      </DndContext>
     </div>
   );
 }

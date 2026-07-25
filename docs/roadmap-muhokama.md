@@ -139,6 +139,7 @@ Qarorlar (nima qachon qilinadi) — 4-boʻlimda. Bu yerda hamma kandidat bir joy
 | Mobil moslashuv (maqsadli) | Qaror 14-iyul: hamma sahifani emas — **skanerlash oqimi va telefonda mantiqan kerak joylar** birinchi (asosiy ish kompyuterda qulayroq). | ⭐⭐⭐ | 💥 | 💰💰 | Oʻrtacha–Koʻp |
 | Toʻliq offline rejim | Internet yoʻq joyda ham ishlash, ulanish kelganda oʻzi sinxronlanadi. Internet sifati past hududlar uchun muhim (qaror 14-iyul: qilsak yaxshi). | ⭐⭐⭐ | 💥 | 💰💰 | Juda koʻp |
 | LMS integratsiya | Google Classroom/Moodle bilan bogʻlanish. Oʻzbekistonda kam tarqalgan — past ustuvorlik. | ⭐ | – | 💰 | Koʻp |
+| Planner DnD → @dnd-kit migratsiyasi | Darslar sahifasidagi mavzu↔boʻlim drag-and-drop `@dnd-kit`ga koʻchirildi (2026-07-25), bu endi loyiha standarti. Planner (`/dashboard/planner`) hali eski native HTML5 DnD'da (`startDrag`/`dropOnDay`) — `TimeGrid` geometriya komponenti + oy/hafta/kun koʻrinishida oʻzgaruvchan ustun soni tufayli migratsiya xato qilsa kundalik ishlatiladigan taqvimni buzishi mumkin, shuning uchun alohida, brauzerda sinaladigan bosqich sifatida qoldirilgan. | ⭐ | – | 💰 | Oz |
 
 ---
 

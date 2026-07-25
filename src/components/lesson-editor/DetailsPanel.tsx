@@ -2,11 +2,12 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, ClipboardList, Plus, Check, GraduationCap, Clock, X } from "lucide-react";
+import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, ClipboardList, Plus, Check, Clock, X } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { classColor } from "@/lib/grades-data";
@@ -76,15 +77,27 @@ export default function DetailsPanel({
                       <span className="flex items-center gap-2.5 text-muted-foreground">
                         <Ban className="size-4 shrink-0" /> {t("noClassSelected")}
                       </span>
-                    ) : selectedClasses.length >= 3 ? (
-                      /* Yigʻiq koʻrinish — sinf soni + birinchi ikkitasi nom sifatida */
-                      <span className="flex items-center gap-2 min-w-0">
-                        <GraduationCap className="size-4 shrink-0 text-muted-foreground" />
-                        <span className="font-semibold text-foreground">{t("classCount", { count: selectedClasses.length })}</span>
-                        <span className="truncate text-xs text-muted-foreground">
-                          ({selectedClasses.slice(0, 2).map((c) => c.name).join(", ")}…)
-                        </span>
-                      </span>
+                    ) : selectedClasses.length > 4 ? (
+                      /* Yigʻiq koʻrinish — ustma-ust ClassSwatch stack + soni */
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="flex items-center gap-2.5 min-w-0">
+                            <span className="flex items-center -space-x-1.5 shrink-0">
+                              {selectedClasses.slice(0, 4).map((c) => (
+                                <ClassSwatch
+                                  key={c.id}
+                                  hex={CLASS_COLOR_HEX[classColor(c)]}
+                                  className="size-5 ring-2 ring-card"
+                                />
+                              ))}
+                            </span>
+                            <span className="font-semibold text-foreground">{t("classCount", { count: selectedClasses.length })}</span>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {selectedClasses.map((c) => c.name).join(", ")}
+                        </TooltipContent>
+                      </Tooltip>
                     ) : (
                       selectedClasses.map((c) => {
                         const hex = CLASS_COLOR_HEX[classColor(c)];

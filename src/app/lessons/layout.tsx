@@ -1,7 +1,11 @@
 import LessonsServerSync from "@/components/sync/LessonsServerSync";
+import GradesServerSync from "@/components/sync/GradesServerSync";
 
-/* Dars muharriri /dashboard tashqarisida — sync koʻprigi shu yerda ham
-   turishi shart, aks holda muharrirdagi oʻzgarishlar serverga yetmaydi. */
+/* Dars muharriri /dashboard tashqarisida — sync koʻpriklari shu yerda ham
+   turishi shart: LessonsServerSync boʻlmasa muharrirdagi oʻzgarishlar
+   serverga yetmaydi; GradesServerSync boʻlmasa useLiveClasses (sinf
+   biriktirish) boʻsh qoladi — classDataMap hech qachon hidratsiya
+   qilinmagani uchun. */
 export default function LessonsLayout({
   children,
 }: {
@@ -10,6 +14,7 @@ export default function LessonsLayout({
   return (
     <>
       <LessonsServerSync />
+      <GradesServerSync />
       {children}
     </>
   );
