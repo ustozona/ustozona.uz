@@ -92,7 +92,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       }),
       Placeholder.configure({ placeholder: t("contentPlaceholder") }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Highlight,
+      Highlight.configure({ multicolor: true }),
       Image.configure({ inline: false, allowBase64: true }),
       Callout,
       CalloutTitle,

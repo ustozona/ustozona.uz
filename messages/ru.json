@@ -2888,6 +2888,7 @@
     "superscript": "Верхний индекс",
     "subscript": "Нижний индекс",
     "textColor": "Цвет текста",
+    "highlightColor": "Цвет выделения",
     "clearColor": "Убрать цвет",
     "paragraph": "Обычный текст",
     "heading1": "Заголовок 1",

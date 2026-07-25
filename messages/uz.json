@@ -2725,6 +2725,7 @@
     "superscript": "Yuqori indeks",
     "subscript": "Quyi indeks",
     "textColor": "Matn rangi",
+    "highlightColor": "Ajratish rangi",
     "clearColor": "Rangni tozalash",
     "paragraph": "Oddiy matn",
     "heading1": "Sarlavha 1",

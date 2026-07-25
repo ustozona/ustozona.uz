@@ -5,11 +5,11 @@ import { type Editor } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import {
   Undo2, Redo2, Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  Highlighter, Heading1, Heading2, Heading3, List, ListOrdered,
+  Heading1, Heading2, Heading3, List, ListOrdered,
   AlignLeft, AlignCenter, AlignRight, Code, Link2, ImageIcon, Plus,
   ListTodo, Quote, Minus, Table, ChevronDown,
   ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Trash2, PanelTop,
-  SubscriptIcon, SuperscriptIcon, Palette, ScissorsLineDashed, Ban,
+  SubscriptIcon, SuperscriptIcon, ScissorsLineDashed, Ban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -53,6 +53,12 @@ export const TEXT_COLORS = [
   "oklch(0.55 0.22 25)", "oklch(0.6 0.2 45)", "oklch(0.65 0.16 95)",
   "oklch(0.6 0.15 145)", "oklch(0.55 0.15 220)", "oklch(0.5 0.2 280)",
   "oklch(0.35 0 0)",
+];
+
+/* Ajratish (highlight) fon ranglari — pastel tinlar, "A" harfsiz, toʻliq boʻyalgan doira. */
+export const HIGHLIGHT_COLORS = [
+  "oklch(0.93 0.13 100)", "oklch(0.92 0.09 150)", "oklch(0.92 0.08 220)",
+  "oklch(0.92 0.09 280)", "oklch(0.93 0.1 340)", "oklch(0.92 0.1 25)",
 ];
 
 export default function EditorToolbar({ editor }: { editor: Editor | null }) {
@@ -137,29 +143,54 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       <Btn title={t("italic")} active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic className="size-4" /></Btn>
       <Btn title={t("underline")} active={editor.isActive("underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}><UnderlineIcon className="size-4" /></Btn>
       <Btn title={t("strikethrough")} active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="size-4" /></Btn>
-      <Btn title={t("highlight")} active={editor.isActive("highlight")} onClick={() => editor.chain().focus().toggleHighlight().run()}><Highlighter className="size-4" /></Btn>
       <Btn title={t("superscript")} active={editor.isActive("superscript")} onClick={() => editor.chain().focus().toggleSuperscript().run()}><SuperscriptIcon className="size-4" /></Btn>
       <Btn title={t("subscript")} active={editor.isActive("subscript")} onClick={() => editor.chain().focus().toggleSubscript().run()}><SubscriptIcon className="size-4" /></Btn>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <span>
-            <Btn title={t("textColor")} active={!!editor.getAttributes("textStyle").color} onClick={() => {}}>
-              <Palette className="size-4" style={editor.getAttributes("textStyle").color ? { color: editor.getAttributes("textStyle").color } : undefined} />
-            </Btn>
-          </span>
+          <button type="button" title={t("textColor")}
+            className="h-8 px-1.5 rounded-md flex items-center gap-0.5 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors data-[state=open]:bg-muted data-[state=open]:text-foreground">
+            <span className="size-4 flex items-center justify-center text-sm font-bold leading-none"
+              style={editor.getAttributes("textStyle").color ? { color: editor.getAttributes("textStyle").color } : undefined}>A</span>
+            <ChevronDown className="size-3 opacity-60" />
+          </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-auto p-2">
-          <div className="flex items-center gap-1.5">
-            <button type="button" title={t("clearColor")} onClick={() => editor.chain().focus().unsetColor().run()}
-              className="size-6 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
-              <Ban className="size-3.5" />
-            </button>
-            {TEXT_COLORS.map((c) => (
-              <button key={c} type="button" title={c} onClick={() => editor.chain().focus().setColor(c).run()}
-                className="size-6 rounded-full shrink-0 ring-offset-2 ring-offset-popover transition-shadow"
-                style={{ backgroundColor: c, boxShadow: editor.getAttributes("textStyle").color === c ? `0 0 0 2px ${c}` : undefined }}
-              />
-            ))}
+        <DropdownMenuContent align="start" className="w-56 p-3 space-y-3">
+          <div>
+            <p className="text-overline text-muted-foreground mb-1.5">{t("textColor")}</p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button type="button" title={t("clearColor")} onClick={() => editor.chain().focus().unsetColor().run()}
+                className={cn(
+                  "size-7 rounded-full border flex items-center justify-center text-sm font-bold text-foreground shrink-0 transition-shadow",
+                  !editor.getAttributes("textStyle").color ? "border-foreground ring-1 ring-foreground" : "border-border hover:border-foreground/40"
+                )}>
+                A
+              </button>
+              {TEXT_COLORS.map((c) => (
+                <button key={c} type="button" title={c} onClick={() => editor.chain().focus().setColor(c).run()}
+                  className="size-7 rounded-full border flex items-center justify-center text-sm font-bold shrink-0 transition-shadow"
+                  style={{ color: c, borderColor: editor.getAttributes("textStyle").color === c ? c : "var(--border)" }}>
+                  A
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-overline text-muted-foreground mb-1.5">{t("highlightColor")}</p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button type="button" title={t("clearColor")} onClick={() => editor.chain().focus().unsetHighlight().run()}
+                className={cn(
+                  "size-7 rounded-full border flex items-center justify-center shrink-0 transition-shadow",
+                  !editor.isActive("highlight") ? "border-foreground ring-1 ring-foreground" : "border-border hover:border-foreground/40"
+                )}>
+                <Ban className="size-3.5 text-muted-foreground" />
+              </button>
+              {HIGHLIGHT_COLORS.map((c) => (
+                <button key={c} type="button" title={c} onClick={() => editor.chain().focus().toggleHighlight({ color: c }).run()}
+                  className="size-7 rounded-full shrink-0 ring-offset-2 ring-offset-popover transition-shadow"
+                  style={{ backgroundColor: c, boxShadow: editor.isActive("highlight", { color: c }) ? `0 0 0 2px ${c}` : undefined }}
+                />
+              ))}
+            </div>
           </div>
         </DropdownMenuContent>
       </DropdownMenu>

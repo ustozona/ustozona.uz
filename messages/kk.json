@@ -2888,6 +2888,7 @@
     "superscript": "Жоғарғы индекс",
     "subscript": "Төменгі индекс",
     "textColor": "Мәтін түсі",
+    "highlightColor": "Белгілеу түсі",
     "clearColor": "Түсті тазалау",
     "paragraph": "Қарапайым мәтін",
     "heading1": "Бас тақырып 1",

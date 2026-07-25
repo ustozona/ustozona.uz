@@ -2888,6 +2888,7 @@
     "superscript": "Superscript",
     "subscript": "Subscript",
     "textColor": "Text color",
+    "highlightColor": "Highlight color",
     "clearColor": "Clear color",
     "paragraph": "Normal text",
     "heading1": "Heading 1",
