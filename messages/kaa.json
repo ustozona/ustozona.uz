@@ -2945,10 +2945,8 @@
     "send": "Jiberiw"
   },
   "ClassSchedulePicker": {
-    "pickDayHint": "Kún tańlań.",
-    "pickScheduledDayHint": "Kestede sabaq bar kúndi tańlań.",
     "daySelected": "Kún tańlandı: {date}",
-    "chooseLesson": "Bul kúni bir neshe sabaq bar — birewin tańlań.",
+    "availableTimes": "Qoljetimli waqıt",
     "class": "Klass",
     "start": "Baslanıw",
     "end": "Tawısılıw",

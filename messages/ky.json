@@ -2945,10 +2945,8 @@
     "send": "Жөнөтүү"
   },
   "ClassSchedulePicker": {
-    "pickDayHint": "Күн тандаңыз.",
-    "pickScheduledDayHint": "Жадвалда сабак бар күндү тандаңыз.",
     "daySelected": "Күн тандалды: {date}",
-    "chooseLesson": "Бул күнү бир нече сабак бар — бирин тандаңыз.",
+    "availableTimes": "Жеткиликтүү убакыт",
     "class": "Класс",
     "start": "Башталуу",
     "end": "Аяктоо",

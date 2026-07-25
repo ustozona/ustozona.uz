@@ -2945,10 +2945,8 @@
     "send": "Send"
   },
   "ClassSchedulePicker": {
-    "pickDayHint": "Select a day.",
-    "pickScheduledDayHint": "Select a day with a scheduled lesson.",
     "daySelected": "Day selected: {date}",
-    "chooseLesson": "There are several lessons this day — pick one.",
+    "availableTimes": "Available Times",
     "class": "Class",
     "start": "Start",
     "end": "End",

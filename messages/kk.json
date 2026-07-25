@@ -2945,10 +2945,8 @@
     "send": "Жіберу"
   },
   "ClassSchedulePicker": {
-    "pickDayHint": "Күн таңдаңыз.",
-    "pickScheduledDayHint": "Кестеде сабақ бар күнді таңдаңыз.",
     "daySelected": "Күн таңдалды: {date}",
-    "chooseLesson": "Бұл күні бірнеше сабақ бар — біреуін таңдаңыз.",
+    "availableTimes": "Қолжетімді уақыт",
     "class": "Сынып",
     "start": "Басталу",
     "end": "Аяқталу",

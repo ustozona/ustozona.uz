@@ -2945,10 +2945,8 @@
     "send": "Отправить"
   },
   "ClassSchedulePicker": {
-    "pickDayHint": "Выберите день.",
-    "pickScheduledDayHint": "Выберите день, когда есть урок по расписанию.",
     "daySelected": "Выбран день: {date}",
-    "chooseLesson": "В этот день несколько уроков — выберите один.",
+    "availableTimes": "Доступное время",
     "class": "Класс",
     "start": "Начало",
     "end": "Конец",

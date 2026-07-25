@@ -2782,10 +2782,8 @@
     "send": "Yuborish"
   },
   "ClassSchedulePicker": {
-    "pickDayHint": "Kun tanlang.",
-    "pickScheduledDayHint": "Jadvalda dars bor kunni tanlang.",
     "daySelected": "Kun tanlandi: {date}",
-    "chooseLesson": "Bu kuni bir nechta dars bor — birini tanlang.",
+    "availableTimes": "Mavjud vaqtlar",
     "class": "Sinf",
     "start": "Boshlanish",
     "end": "Tugash",
