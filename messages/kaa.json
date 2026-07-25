@@ -1952,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "lesson-editor-redesign": {
+        "title": "Sabaq redaktorı — jańalanǵan kórinis hám bir qatar dúzetiwler",
+        "body": "«Tolıq maǵlıwmatlar» hám «AI» panelleri endi basqa betler menen birdey kórinedi; silkeltpe qosıw qolaylıraq, súwret biriktiriw tezirek boldı, sarlawha redaktorlaniwi da tezirek saqlanadı. Sarlawha astında aqırǵı redaktorlanǵan waqıt kórinedi."
+      },
       "lesson-math-formulas": {
         "title": "Sabaq redaktorı — matematikalıq formulalar durıs kórinedi",
         "body": "AI járdemshi bergen matematikalıq formulalar endi sabaqta da sáwbettegidey shıraylı shıǵadı: bólshekler, tamırlar, dárejeler hám tómengi indeksler óz ornında turadı. Burın olar sabaqqa qosılǵanda shatasqan tekstke aylanıp qalatuǵın edi."
@@ -2816,7 +2820,8 @@
       "materials": "Materiallar",
       "goals": "Maqsetler",
       "resources": "Resurslar",
-      "ai": "Ustozona AI"
+      "ai": "Ustozona AI",
+      "soon": "Tez arada"
     },
     "toast": {
       "saved": "Saqlandı",
@@ -2862,7 +2867,9 @@
     "grades": "Bahalar",
     "attachClassForGrading": "Bahalaw ushın klass biriktiriw",
     "standards": "Standartlar",
-    "addStandard": "Standart qosıw"
+    "addStandard": "Standart qosıw",
+    "soon": "Tez arada",
+    "soonHint": "Bul bólim házirshe islep shıǵılmaqta"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Silkeltpe mánzili (URL):",
@@ -2898,6 +2905,7 @@
     },
     "insertTable": "Keste qosıw",
     "link": "Silkeltpe",
+    "linkApply": "Qosıw",
     "insertImage": "Súwret qosıw",
     "insertCallout": "Callout qosıw"
   },

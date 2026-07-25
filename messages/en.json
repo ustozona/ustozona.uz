@@ -1952,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "lesson-editor-redesign": {
+        "title": "Lesson editor — refreshed look and several fixes",
+        "body": "The Details and AI panels now match the rest of the app's look; adding a link is easier, images attach faster, and title edits now save sooner. The last-edited time now shows under the title."
+      },
       "lesson-math-formulas": {
         "title": "Lesson editor — maths formulas now display correctly",
         "body": "Maths formulas from the AI assistant now look the same in the lesson as they do in the chat: fractions, roots, powers and subscripts all stay in place. Previously they turned into jumbled text once added to the lesson."
@@ -2816,7 +2820,8 @@
       "materials": "Materials",
       "goals": "Goals",
       "resources": "Resources",
-      "ai": "Ustozona AI"
+      "ai": "Ustozona AI",
+      "soon": "Coming soon"
     },
     "toast": {
       "saved": "Saved",
@@ -2862,7 +2867,9 @@
     "grades": "Grades",
     "attachClassForGrading": "Attach a class for grading",
     "standards": "Standards",
-    "addStandard": "Add standard"
+    "addStandard": "Add standard",
+    "soon": "Coming soon",
+    "soonHint": "This section is still being built"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Link URL:",
@@ -2898,6 +2905,7 @@
     },
     "insertTable": "Insert table",
     "link": "Link",
+    "linkApply": "Add",
     "insertImage": "Insert image",
     "insertCallout": "Insert callout"
   },

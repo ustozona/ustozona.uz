@@ -6,9 +6,11 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 import katex from "katex";
 import "katex/dist/katex.min.css";
-import { Bot, X, RotateCcw, SendHorizontal, Square, Plus, Copy, Check, ChartColumn, Paperclip, Loader2, FileText } from "lucide-react";
+import { Bot, RotateCcw, SendHorizontal, Square, Plus, Copy, Check, ChartColumn, Paperclip, Loader2, FileText, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { EditorSidePanelHeader } from "./EditorSidePanel";
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -254,21 +256,17 @@ export default function AiAssistantPanel({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="px-5 h-[60px] flex items-center justify-between shrink-0 border-b border-border">
-        <div className="flex items-center gap-2.5">
-          <span className="size-8 rounded-lg bg-muted flex items-center justify-center"><Bot className="size-5 text-foreground" /></span>
-          <span className="text-lg font-bold text-foreground">{t("title")}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <button onClick={reset} title={t("clearConversation")} className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+      <EditorSidePanelHeader
+        icon={<Bot className="size-[18px]" />}
+        title={t("title")}
+        onClose={onClose}
+        closeLabel={t("close")}
+        actions={
+          <Button variant="ghost" size="icon-sm" onClick={reset} aria-label={t("clearConversation")}>
             <RotateCcw className="size-4" />
-          </button>
-          <button onClick={onClose} title={t("close")} className="size-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-            <X className="size-4.5" />
-          </button>
-        </div>
-      </div>
+          </Button>
+        }
+      />
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-5">

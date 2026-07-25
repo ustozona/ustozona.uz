@@ -139,7 +139,9 @@ export const useLessonStore = create<LessonState>()(
         set((s) => ({ lessons: [...s.lessons, { id, classId, unitId, number: nextNumber, title, status }] }));
         return id;
       },
-      updateLesson: (id, patch) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, ...patch } : l)) })),
+      updateLesson: (id, patch) => set((s) => ({
+        lessons: s.lessons.map((l) => (l.id === id ? { ...l, ...patch, updatedAt: new Date().toISOString() } : l)),
+      })),
       deleteLesson: (id) => set((s) => ({ lessons: s.lessons.filter((l) => l.id !== id) })),
 
       scheduleLesson: (id, dateKey, startMin, endMin) => set((s) => ({

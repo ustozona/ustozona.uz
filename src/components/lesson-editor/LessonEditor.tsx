@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -30,7 +31,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { lessonClassIds } from "@/lib/lessons-data";
+import { lessonClassIds, type Lesson } from "@/lib/lessons-data";
 import EditorToolbar from "./EditorToolbar";
 import DetailsPanel from "./DetailsPanel";
 import AiAssistantPanel from "./AiAssistantPanel";
@@ -38,6 +39,10 @@ import { TableKit } from "@tiptap/extension-table";
 import { TaskList, TaskItem } from "@tiptap/extension-list";
 import { Callout, CalloutTitle } from "./callout-extension";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
+import { formatFeedbackAgo, useRelativeT } from "@/app/dashboard/(with-sidebar)/feedback/_components/feedback-meta";
+
+const PANEL_EASE = [0.2, 0, 0, 1] as const;
+const PANEL_DURATION = 0.2;
 
 const STATUS_CLS = {
   Completed: "bg-success/10 text-success",
@@ -61,11 +66,13 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const removeScheduleForClass = useLessonStore((s) => s.removeScheduleForClass);
 
-  const [detailsOpen, setDetailsOpen] = useState(true);
-  const [aiOpen, setAiOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<"details" | "ai" | null>("details");
   const [saving, setSaving] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const relativeT = useRelativeT();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [titleDraft, setTitleDraft] = useState<string | null>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -110,6 +117,15 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor, hydrated]);
 
+  // Boshqa darsga oʻtilganda mahalliy sarlavha qoralamasi tozalanadi.
+  useEffect(() => { setTitleDraft(null); }, [lessonId]);
+
+  const handleTitleChange = (value: string) => {
+    setTitleDraft(value);
+    if (titleTimer.current) clearTimeout(titleTimer.current);
+    titleTimer.current = setTimeout(() => updateLesson(lessonId, { title: value }), 600);
+  };
+
   if (hydrated && !lesson) {
     return (
       <Empty className="h-dvh">
@@ -135,18 +151,25 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   } as const;
   const st = lesson ? STATUS[lesson.status] : STATUS.Draft;
 
+  const togglePanel = (panel: "details" | "ai") =>
+    setActivePanel((cur) => (cur === panel ? null : panel));
+
   const railItems = [
-    { icon: SlidersHorizontal, title: t("rail.details"), active: detailsOpen && !aiOpen, onClick: () => { setAiOpen(false); setDetailsOpen((o) => !o); } },
-    { icon: FolderOpen, title: t("rail.materials") },
-    { icon: Target, title: t("rail.goals") },
-    { icon: BookOpen, title: t("rail.resources") },
-    { icon: Sparkles, title: t("rail.ai"), active: aiOpen, onClick: () => setAiOpen((o) => !o) },
+    { icon: SlidersHorizontal, title: t("rail.details"), active: activePanel === "details", onClick: () => togglePanel("details") },
+    { icon: FolderOpen, title: t("rail.materials"), soon: true },
+    { icon: Target, title: t("rail.goals"), soon: true },
+    { icon: BookOpen, title: t("rail.resources"), soon: true },
+    { icon: Sparkles, title: t("rail.ai"), active: activePanel === "ai", onClick: () => togglePanel("ai") },
   ];
 
   /* ── "..." menyu amallari ── */
   const handleSaveNow = async () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    if (editor) updateLesson(lessonId, { content: editor.getHTML() });
+    if (titleTimer.current) clearTimeout(titleTimer.current);
+    const patch: Partial<Lesson> = {};
+    if (editor) patch.content = editor.getHTML();
+    if (titleDraft !== null) { patch.title = titleDraft; setTitleDraft(null); }
+    if (Object.keys(patch).length) updateLesson(lessonId, patch);
     await flushLessonsNow();
     setSaving(false);
     toast.success(t("toast.saved"));
@@ -170,8 +193,10 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     router.push("/dashboard/lessons");
   };
 
+  const updatedLabel = lesson?.updatedAt ? formatFeedbackAgo(lesson.updatedAt, relativeT) : null;
+
   return (
-    <div className="h-dvh w-full flex flex-col bg-[oklch(0.97_0_0)] overflow-hidden">
+    <div className="h-dvh w-full flex flex-col bg-muted overflow-hidden">
       {/* ── Top bar ── */}
       <header className="no-print h-14 shrink-0 flex items-center justify-between gap-4 px-4 bg-card border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
@@ -181,7 +206,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">
               <h1 className="text-base font-bold text-foreground truncate max-w-[40vw]">
-                {lesson?.title?.trim() || t("untitled")}
+                {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               </h1>
               <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold", st.cls)}>
                 {st.label}
@@ -191,16 +216,16 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                 {saving ? t("saving") : t("saved")}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">{t("justEdited")}</p>
+            {updatedLabel && <p className="text-xs text-muted-foreground mt-0.5">{updatedLabel}</p>}
           </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button title={t("more")} className="size-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <Button variant="ghost" size="icon" aria-label={t("more")}>
                 <MoreHorizontal className="size-5" />
-              </button>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
               <DropdownMenuItem onClick={handleSaveNow} className="gap-2">
@@ -238,13 +263,9 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <button
-            onClick={() => router.push("/dashboard/lessons")}
-            title={t("close")}
-            className="size-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
+          <Button variant="ghost" size="icon" aria-label={t("close")} onClick={() => router.push("/dashboard/lessons")}>
             <X className="size-5" />
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -258,10 +279,10 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           </div>
           {/* Scrollable canvas with A4 sheet */}
           <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="a4-print a4-sheet bg-card mx-auto my-8 rounded-sm shadow-[0_2px_16px_-2px_rgb(0_0_0/0.12)] px-16 py-14">
+            <div className="a4-print a4-sheet bg-card mx-auto my-8 rounded-sm card-elevation px-16 py-14">
               <input
-                value={lesson?.title ?? ""}
-                onChange={(e) => updateLesson(lessonId, { title: e.target.value })}
+                value={titleDraft ?? lesson?.title ?? ""}
+                onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder={t("untitled")}
                 className="w-full bg-transparent border-0 outline-none text-4xl font-bold text-foreground placeholder:text-muted-foreground/40 mb-5"
               />
@@ -270,53 +291,75 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           </div>
         </div>
 
-        {/* Murabbiyona AI panel (Tafsilotlar ustidan ustun) */}
-        {aiOpen && lesson && (
-          <aside className="no-print w-[440px] shrink-0 bg-card border-l border-border">
-            <AiAssistantPanel
-              lessonContext={{
-                title: lesson.title,
-                classes: lessonClassIds(lesson).map((id) => liveClasses.find((c) => c.id === id)?.name ?? id).join(", "),
-                unit: units.find((u) => u.id === lesson.unitId)?.title,
-                content: editor?.getHTML(),
-              }}
-              classIds={lessonClassIds(lesson)}
-              lessonId={lesson.id}
-              onClose={() => setAiOpen(false)}
-              onInsert={(html) => editor?.chain().focus().insertContent(html).run()}
-            />
-          </aside>
-        )}
+        <AnimatePresence initial={false}>
+          {activePanel === "ai" && lesson && (
+            <motion.aside
+              key="ai-panel"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 440, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
+              className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
+            >
+              <div className="w-[440px] h-full">
+                <AiAssistantPanel
+                  lessonContext={{
+                    title: lesson.title,
+                    classes: lessonClassIds(lesson).map((id) => liveClasses.find((c) => c.id === id)?.name ?? id).join(", "),
+                    unit: units.find((u) => u.id === lesson.unitId)?.title,
+                    content: editor?.getHTML(),
+                  }}
+                  classIds={lessonClassIds(lesson)}
+                  lessonId={lesson.id}
+                  onClose={() => setActivePanel(null)}
+                  onInsert={(html) => editor?.chain().focus().insertContent(html).run()}
+                />
+              </div>
+            </motion.aside>
+          )}
 
-        {/* Details panel */}
-        {detailsOpen && !aiOpen && lesson && (
-          <aside className="no-print w-[340px] shrink-0 bg-card border-l border-border">
-            <DetailsPanel
-              lesson={lesson}
-              units={units}
-              onClose={() => setDetailsOpen(false)}
-              onSetClasses={(classIds) => setLessonClasses(lessonId, classIds)}
-              onSetUnitForClass={(classId, unitId) => setUnitForClass(lessonId, classId, unitId)}
-              onAddScheduleForClass={(classId, date, s, e) => addScheduleForClass(lessonId, classId, date, s, e)}
-              onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
-            />
-          </aside>
-        )}
+          {activePanel === "details" && lesson && (
+            <motion.aside
+              key="details-panel"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 340, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
+              className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
+            >
+              <div className="w-[340px] h-full">
+                <DetailsPanel
+                  lesson={lesson}
+                  units={units}
+                  onClose={() => setActivePanel(null)}
+                  onSetClasses={(classIds) => setLessonClasses(lessonId, classIds)}
+                  onSetUnitForClass={(classId, unitId) => setUnitForClass(lessonId, classId, unitId)}
+                  onAddScheduleForClass={(classId, date, s, e) => addScheduleForClass(lessonId, classId, date, s, e)}
+                  onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
+                />
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
 
         {/* Icon rail */}
         <nav className="no-print w-14 shrink-0 bg-card border-l border-border flex flex-col items-center gap-1.5 py-4">
-          {railItems.map(({ icon: Icon, title, active, onClick }) => (
-            <button
+          {railItems.map(({ icon: Icon, title, active, soon, onClick }) => (
+            <Button
               key={title}
-              title={title}
+              variant="ghost"
+              size="icon-lg"
+              aria-label={title}
+              disabled={soon}
+              disabledReason={soon ? t("rail.soon") : undefined}
               onClick={onClick}
               className={cn(
-                "size-10 rounded-xl flex items-center justify-center transition-colors",
-                active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                "rounded-xl",
+                active && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
               )}
             >
               <Icon className="size-5" />
-            </button>
+            </Button>
           ))}
         </nav>
       </div>

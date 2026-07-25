@@ -42,6 +42,8 @@ export type Lesson = {
   unitByClass?: Record<string, string | null>;
   /** Har bir sinf uchun alohida rejalashtirish: classId → sessiyalar massivi (koʻp sana). */
   scheduleByClass?: Record<string, LessonSession[]>;
+  /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
+  updatedAt?: string;
 };
 
 /** Dars sessiyasi — bitta sana + vaqt oraligʻi. */

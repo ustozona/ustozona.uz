@@ -15,6 +15,10 @@ import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { compressImageFile } from "@/lib/image-compress";
 import { CALLOUT_TYPES } from "./callout-extension";
 
 function Btn({
@@ -45,6 +49,8 @@ const Div = () => <Separator orientation="vertical" className="h-5 mx-1" />;
 export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const t = useTranslations("LessonEditorToolbar");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [linkValue, setLinkValue] = useState("");
   // Tiptap v3 useEditor har tranzaksiyada qayta render qilmaydi — toolbar
   // active/disabled holatlari va jadval menyusi yangilanishi uchun obuna.
   const [, force] = useState(0);
@@ -77,21 +83,23 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
     editor.chain().focus().insertContent(content).run();
   };
 
-  const addLink = () => {
-    const prev = editor.getAttributes("link").href as string | undefined;
-    const url = window.prompt(t("linkPrompt"), prev ?? "https://");
-    if (url === null) return;
-    if (url === "") { editor.chain().focus().extendMarkRange("link").unsetLink().run(); return; }
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  const openLinkPopover = () => {
+    setLinkValue((editor.getAttributes("link").href as string | undefined) ?? "");
+    setLinkOpen(true);
+  };
+  const applyLink = () => {
+    const url = linkValue.trim();
+    if (!url) { editor.chain().focus().extendMarkRange("link").unsetLink().run(); }
+    else { editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run(); }
+    setLinkOpen(false);
   };
 
-  const onPickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => editor.chain().focus().setImage({ src: reader.result as string }).run();
-    reader.readAsDataURL(file);
     e.target.value = "";
+    if (!file) return;
+    const src = await compressImageFile(file);
+    editor.chain().focus().setImage({ src }).run();
   };
 
   return (
@@ -144,7 +152,24 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       ) : (
         <Btn title={t("insertTable")} onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table className="size-4" /></Btn>
       )}
-      <Btn title={t("link")} active={editor.isActive("link")} onClick={addLink}><Link2 className="size-4" /></Btn>
+      <Popover open={linkOpen} onOpenChange={setLinkOpen}>
+        <PopoverTrigger asChild>
+          <span><Btn title={t("link")} active={editor.isActive("link")} onClick={openLinkPopover}><Link2 className="size-4" /></Btn></span>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-72 p-3">
+          <div className="flex items-center gap-2">
+            <Input
+              autoFocus
+              value={linkValue}
+              onChange={(e) => setLinkValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyLink(); } }}
+              placeholder="https://"
+              className="h-8"
+            />
+            <Button size="sm" onClick={applyLink}>{t("linkApply")}</Button>
+          </div>
+        </PopoverContent>
+      </Popover>
       <Btn title={t("insertImage")} onClick={() => fileRef.current?.click()}><ImageIcon className="size-4" /></Btn>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
       <Div />

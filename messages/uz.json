@@ -1952,6 +1952,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "lesson-editor-redesign": {
+        "title": "Dars muharriri — koʻrinishi va bir qator kamchiliklari tuzatildi",
+        "body": "Tafsilotlar va AI panellari endi boshqa sahifalar bilan bir xil koʻrinishda; havola qoʻshish qulayroq, rasm biriktirish tezroq boʻldi, sarlavha tahriri esa endi tezroq saqlanadi. Sarlavha ostida oxirgi tahrir vaqti koʻrinadi."
+      },
       "lesson-math-formulas": {
         "title": "Dars muharriri — matematik formulalar toʻgʻri koʻrinadi",
         "body": "AI yordamchi bergan matematik formulalar endi darsda ham xuddi suhbatdagidek chiroyli chiqadi: kasr, ildiz, daraja va quyi indekslar oʻz oʻrnida turadi. Avval ular darsga qoʻshilganda chalkash matnga aylanib qolardi."
@@ -2653,7 +2657,8 @@
       "materials": "Materiallar",
       "goals": "Maqsadlar",
       "resources": "Resurslar",
-      "ai": "Ustozona AI"
+      "ai": "Ustozona AI",
+      "soon": "Tez orada"
     },
     "toast": {
       "saved": "Saqlandi",
@@ -2699,7 +2704,9 @@
     "grades": "Baholar",
     "attachClassForGrading": "Baholash uchun sinf biriktirish",
     "standards": "Standartlar",
-    "addStandard": "Standart qoʻshish"
+    "addStandard": "Standart qoʻshish",
+    "soon": "Tez orada",
+    "soonHint": "Bu boʻlim hali ishlab chiqilmoqda"
   },
   "LessonEditorToolbar": {
     "linkPrompt": "Havola manzili (URL):",
@@ -2735,6 +2742,7 @@
     },
     "insertTable": "Jadval qoʻshish",
     "link": "Havola",
+    "linkApply": "Qoʻshish",
     "insertImage": "Rasm qoʻshish",
     "insertCallout": "Callout qoʻshish"
   },

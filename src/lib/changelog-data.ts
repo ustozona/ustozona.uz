@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "lesson-editor-redesign",
+    date: "2026-07-25",
+    type: "yaxshilandi",
+    title: "Dars muharriri — koʻrinishi va bir qator kamchiliklari tuzatildi",
+    body: "Tafsilotlar va AI panellari endi boshqa sahifalar bilan bir xil koʻrinishda; havola qoʻshish qulayroq, rasm biriktirish tezroq boʻldi, sarlavha tahriri esa endi tezroq saqlanadi. Sarlavha ostida oxirgi tahrir vaqti koʻrinadi.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "lesson-math-formulas",
     date: "2026-07-25",
     type: "yaxshilandi",
