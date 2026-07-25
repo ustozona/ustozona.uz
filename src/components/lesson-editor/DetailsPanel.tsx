@@ -2,10 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, ClipboardList, Plus, Check, Clock, X, RotateCcw } from "lucide-react";
+import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, ClipboardList, Plus, Check, Clock, X } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -13,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, classGradient } from "@/lib/class-colors";
 import { lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
 import { fmtClock, dateKeyToDate } from "@/lib/lesson-schedule";
 import { MONTHS_UZ_SHORT, DAYS_UZ_SUN } from "@/lib/localization";
@@ -49,43 +48,11 @@ export default function DetailsPanel({
     onSetClasses(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
   };
 
-  // Har bir tanlangan sinf uchun hozirgi boʻlim (raqami orqali sinflar aro solishtiriladi,
-  // chunki har sinfning oʻz Unit yozuvi bor — id boshqa, lekin "number" mos keladi).
-  const classUnit = (c: (typeof selectedClasses)[number]) => {
-    const curUnitId = lesson.unitByClass?.[c.id] ?? (c.id === selectedIds[0] ? lesson.unitId ?? null : null);
-    return units.find((u) => u.id === curUnitId) ?? null;
-  };
-  const unitsForClass = (classId: string) => units.filter((u) => u.classId === classId).sort((a, b) => a.number - b.number);
-
-  // Eng koʻp sinfda turgan boʻlim raqami — "umumiy" qiymat. Teng boʻlsa birinchi sinfniki.
-  const numberCounts = new Map<number | null, number>();
-  selectedClasses.forEach((c) => {
-    const n = classUnit(c)?.number ?? null;
-    numberCounts.set(n, (numberCounts.get(n) ?? 0) + 1);
-  });
-  let commonNumber: number | null = selectedClasses.length ? classUnit(selectedClasses[0])?.number ?? null : null;
-  let commonCount = -1;
-  numberCounts.forEach((count, n) => {
-    if (count > commonCount) { commonCount = count; commonNumber = n; }
-  });
-  const commonTitle = selectedClasses.map((c) => classUnit(c)).find((u) => u?.number === commonNumber)?.title ?? null;
-
-  const exceptionClasses = selectedClasses.filter((c) => (classUnit(c)?.number ?? null) !== commonNumber);
-  const baseClasses = selectedClasses.filter((c) => (classUnit(c)?.number ?? null) === commonNumber);
-
-  // Union of barcha boʻlim raqamlari — umumiy tanlov roʻyxati uchun.
-  const allNumbers = Array.from(new Set(units.filter((u) => selectedIds.includes(u.classId)).map((u) => u.number))).sort((a, b) => a - b);
-
-  const setCommonNumber = (number: number | null) => {
-    baseClasses.forEach((c) => {
-      const u = number === null ? null : unitsForClass(c.id).find((x) => x.number === number);
-      onSetUnitForClass(c.id, u ? u.id : null);
-    });
-  };
-  const resetException = (c: (typeof selectedClasses)[number]) => {
-    const u = commonNumber === null ? null : unitsForClass(c.id).find((x) => x.number === commonNumber);
-    onSetUnitForClass(c.id, u ? u.id : null);
-  };
+  const FieldButton = ({ children }: { children: React.ReactNode }) => (
+    <span className="flex items-center justify-between gap-2 w-full rounded-lg border border-border bg-card px-3.5 py-3 text-sm hover:bg-accent/50 transition-colors text-left">
+      {children}
+    </span>
+  );
 
   return (
     <div className="h-full flex flex-col">
@@ -104,7 +71,7 @@ export default function DetailsPanel({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button type="button" className="w-full">
-                <span className="flex items-center justify-between gap-2 w-full rounded-lg border border-border bg-card px-3.5 py-3 text-sm hover:bg-accent/50 transition-colors text-left">
+                <FieldButton>
                   <span className="flex items-center gap-1.5 flex-wrap min-w-0">
                     {selectedClasses.length === 0 ? (
                       <span className="flex items-center gap-2.5 text-muted-foreground">
@@ -144,7 +111,7 @@ export default function DetailsPanel({
                     )}
                   </span>
                   <ChevronDown className="size-4 opacity-50 shrink-0" />
-                </span>
+                </FieldButton>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[280px] overflow-y-auto">
@@ -166,135 +133,57 @@ export default function DetailsPanel({
           </DropdownMenu>
         </div>
 
-        {/* UNIT (umumiy boʻlim + kerak boʻlsa sinf boʻyicha istisno) */}
+        {/* UNITS (har sinf uchun alohida) */}
         {selectedClasses.length > 0 && (
           <div>
-            <SectionLabel>{t("unit")}</SectionLabel>
-
-            {/* Umumiy boʻlim — barcha "istisno"siz sinflarga bir yoʻla qoʻllanadi */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 hover:bg-accent/40 transition-colors text-left">
-                  <span className="flex items-center gap-3 min-w-0">
-                    <span className="size-9 rounded-xl flex items-center justify-center shrink-0 text-white bg-foreground/80">
-                      <Layers className="size-4" />
-                    </span>
-                    <span className="flex flex-col min-w-0">
-                      <span className="text-xs text-muted-foreground leading-tight">
-                        {baseClasses.length === selectedClasses.length ? t("classCount", { count: selectedClasses.length }) : t("classCount", { count: baseClasses.length })}
-                      </span>
-                      <span className="text-sm font-semibold text-foreground truncate leading-tight">
-                        {commonNumber !== null && commonTitle ? `${String(commonNumber).padStart(2, "0")}. ${commonTitle}` : t("noUnitSelected")}
-                      </span>
-                    </span>
-                  </span>
-                  <ChevronDown className="size-4 opacity-50 shrink-0" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[260px] overflow-y-auto p-1.5">
-                <DropdownMenuItem onSelect={() => setCommonNumber(null)} className="gap-2.5 py-2 rounded-lg">
-                  <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
-                  <span className="flex-1 truncate text-muted-foreground">{t("noUnit")}</span>
-                  {commonNumber === null && <Check className="size-4 shrink-0" />}
-                </DropdownMenuItem>
-                {allNumbers.length === 0 ? (
-                  <div className="px-2 py-2 text-xs text-muted-foreground">{t("noUnitsInClass")}</div>
-                ) : allNumbers.map((n) => {
-                  const title = units.find((u) => selectedIds.includes(u.classId) && u.number === n)?.title ?? "";
-                  const on = n === commonNumber;
-                  return (
-                    <DropdownMenuItem key={n} onSelect={() => setCommonNumber(n)} className="gap-2.5 py-2 rounded-lg">
-                      <span className="flex-1 truncate">{String(n).padStart(2, "0")}. {title}</span>
-                      {on && <Check className="size-4 shrink-0" />}
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Istisnolar — faqat umumiy boʻlimdan farq qiladigan sinflar koʻrinadi */}
-            {exceptionClasses.length > 0 && (
-              <div className="mt-2.5 space-y-1.5">
-                <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70 pl-0.5">{t("exceptions")}</span>
-                {exceptionClasses.map((c) => {
-                  const hex = CLASS_COLOR_HEX[classColor(c)];
-                  const unit = classUnit(c);
-                  return (
-                    <div key={c.id} className="group/exc flex items-center gap-1.5">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button type="button" className="flex-1 min-w-0 flex items-center gap-2.5 rounded-lg border border-dashed border-border bg-card px-3 py-2 hover:bg-accent/40 transition-colors text-left">
-                            {dot(hex)}
-                            <span className="text-xs font-medium text-foreground shrink-0">{c.name}</span>
-                            <span className="text-xs text-muted-foreground truncate flex-1">
+            <SectionLabel>{t("units")}</SectionLabel>
+            <div className="space-y-2.5">
+              {selectedClasses.map((c) => {
+                const hex = CLASS_COLOR_HEX[classColor(c)];
+                const unitsForClass = units.filter((u) => u.classId === c.id).sort((a, b) => a.number - b.number);
+                const curUnitId = lesson.unitByClass?.[c.id] ?? (c.id === selectedIds[0] ? lesson.unitId ?? null : null);
+                const unit = units.find((u) => u.id === curUnitId);
+                return (
+                  <DropdownMenu key={c.id}>
+                    <DropdownMenuTrigger asChild>
+                      <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 hover:bg-accent/40 transition-colors text-left">
+                        <span className="flex items-center gap-3 min-w-0">
+                          <span className="size-9 rounded-xl flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
+                            <Layers className="size-4" />
+                          </span>
+                          <span className="flex flex-col min-w-0">
+                            <span className="text-xs text-muted-foreground leading-tight">{c.name}</span>
+                            <span className="text-sm font-semibold text-foreground truncate leading-tight">
                               {unit ? `${String(unit.number).padStart(2, "0")}. ${unit.title}` : t("noUnitSelected")}
                             </span>
-                            <ChevronDown className="size-3.5 opacity-50 shrink-0" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[240px] overflow-y-auto p-1.5">
-                          <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-2.5 py-2 rounded-lg">
-                            <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
-                            <span className="flex-1 truncate text-muted-foreground">{t("noUnit")}</span>
-                            {!unit && <Check className="size-4 shrink-0" />}
-                          </DropdownMenuItem>
-                          {unitsForClass(c.id).map((u) => (
-                            <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-2.5 py-2 rounded-lg">
-                              {dot(hex)}
-                              <span className="flex-1 truncate">{String(u.number).padStart(2, "0")}. {u.title}</span>
-                              {u.id === unit?.id && <Check className="size-4 shrink-0" />}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <button
-                        type="button"
-                        onClick={() => resetException(c)}
-                        title={t("resetToCommon")}
-                        className="shrink-0 size-8 flex items-center justify-center rounded-lg text-muted-foreground/40 opacity-0 group-hover/exc:opacity-100 hover:text-foreground hover:bg-accent transition-colors"
-                      >
-                        <RotateCcw className="size-3.5" />
+                          </span>
+                        </span>
+                        <ChevronDown className="size-4 opacity-50 shrink-0" />
                       </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Istisno qoʻshish — hozir umumiy qatorda turgan sinflardan birini alohida sozlash */}
-            {baseClasses.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button type="button" className="mt-2.5 w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
-                    <Plus className="size-3.5" />
-                    {t("addException")}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 p-1.5">
-                  {baseClasses.map((c) => {
-                    const hex = CLASS_COLOR_HEX[classColor(c)];
-                    return (
-                      <DropdownMenuSub key={c.id}>
-                        <DropdownMenuSubTrigger className="gap-2.5 py-2 rounded-lg">
-                          {dot(hex)}
-                          <span className="truncate">{c.name}</span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent className="max-h-[240px] overflow-y-auto p-1.5">
-                          {unitsForClass(c.id).length === 0 ? (
-                            <div className="px-2 py-2 text-xs text-muted-foreground">{t("noUnitsInClass")}</div>
-                          ) : unitsForClass(c.id).map((u) => (
-                            <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-2.5 py-2 rounded-lg">
-                              {dot(hex)}
-                              <span className="flex-1 truncate">{String(u.number).padStart(2, "0")}. {u.title}</span>
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuSubContent>
-                      </DropdownMenuSub>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[260px] overflow-y-auto p-1.5">
+                      <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-2.5 py-2 rounded-lg">
+                        <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
+                        <span className="flex-1 truncate text-muted-foreground">{t("noUnit")}</span>
+                        {!unit && <Check className="size-4 shrink-0" />}
+                      </DropdownMenuItem>
+                      {unitsForClass.length === 0 ? (
+                        <div className="px-2 py-2 text-xs text-muted-foreground">{t("noUnitsInClass")}</div>
+                      ) : unitsForClass.map((u) => {
+                        const on = u.id === curUnitId;
+                        return (
+                          <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-2.5 py-2 rounded-lg">
+                            {dot(hex)}
+                            <span className="flex-1 truncate">{String(u.number).padStart(2, "0")}. {u.title}</span>
+                            {on && <Check className="size-4 shrink-0" />}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              })}
+            </div>
           </div>
         )}
 
