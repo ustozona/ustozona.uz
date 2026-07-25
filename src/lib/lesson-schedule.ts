@@ -37,12 +37,9 @@ export function slotsOnDate(gradesClassId: string, date: Date, slots?: Timetable
   return wk.filter((e) => e.day === day);
 }
 
-/** Daqiqa → "9:00 AM" koʻrinishi. */
+/** Daqiqa → "09:00" koʻrinishi (24 soatlik). */
 export function fmtClock(min: number): string {
-  let h = Math.floor(min / 60);
+  const h = Math.floor(min / 60);
   const mm = min % 60;
-  const ap = h >= 12 ? "PM" : "AM";
-  h = h % 12;
-  if (h === 0) h = 12;
-  return `${h}:${String(mm).padStart(2, "0")} ${ap}`;
+  return `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }

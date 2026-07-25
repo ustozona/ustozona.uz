@@ -222,20 +222,20 @@ export default function DetailsPanel({
                         <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{MONTHS_UZ_SHORT[d.getMonth()]}</span>
                         <span className="text-lg font-bold leading-none text-foreground">{d.getDate()}</span>
                       </div>
-                      <div className="flex-1 min-w-0 py-2 pr-2">
-                        <span className="block text-[11px] font-medium text-muted-foreground truncate">{DAYS_UZ_SUN[d.getDay()]}</span>
-                        <div className="mt-1 space-y-0.5">
+                      <div className="flex-1 min-w-0 py-2.5 pr-2">
+                        <span className="block text-xs font-medium text-muted-foreground truncate">{DAYS_UZ_SUN[d.getDay()]}</span>
+                        <div className="mt-1.5 space-y-1.5">
                           {g.items.map((it) => {
                             const cls = selectedClasses.find((c) => c.id === it.classId);
                             return (
-                              <div key={`${it.classId}-${it.idx}`} className="group/time flex items-center gap-1.5 text-sm">
+                              <div key={`${it.classId}-${it.idx}`} className="group/time flex items-center gap-2 text-[15px]">
                                 {dot(it.hex)}
                                 {selectedClasses.length > 1 && <span className="font-semibold text-foreground shrink-0">{cls?.name}</span>}
-                                <Clock className="size-3 shrink-0 text-muted-foreground" />
+                                <Clock className="size-3.5 shrink-0 text-muted-foreground" />
                                 <span className="flex-1 truncate font-medium text-foreground">{fmtClock(it.startMin)} – {fmtClock(it.endMin)}</span>
                                 <button onClick={() => onRemoveScheduleForClass(it.classId, it.idx)} title={t("removeSchedule")}
                                   className="shrink-0 text-muted-foreground/40 hover:text-destructive focus-visible:text-destructive focus-visible:opacity-100 transition-colors opacity-60 group-hover/time:opacity-100">
-                                  <X className="size-3.5" />
+                                  <X className="size-4" />
                                 </button>
                               </div>
                             );
