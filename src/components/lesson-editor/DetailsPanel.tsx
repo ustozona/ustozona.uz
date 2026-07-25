@@ -224,11 +224,11 @@ export default function DetailsPanel({
                       </div>
                       <div className="flex-1 min-w-0 py-2 pr-2">
                         <span className="block text-[11px] font-medium text-muted-foreground truncate">{DAYS_UZ_SUN[d.getDay()]}</span>
-                        <div className="mt-1 space-y-1">
+                        <div className="mt-1.5 space-y-1.5">
                           {g.items.map((it) => {
                             const cls = selectedClasses.find((c) => c.id === it.classId);
                             return (
-                              <div key={`${it.classId}-${it.idx}`} className="group/time flex items-center gap-1.5 text-xs">
+                              <div key={`${it.classId}-${it.idx}`} className="group/time flex items-center gap-2 text-sm">
                                 {dot(it.hex)}
                                 <span className="flex-1 truncate font-medium text-foreground">
                                   {selectedClasses.length > 1 && <span className="font-semibold">{cls?.name} </span>}
@@ -236,7 +236,7 @@ export default function DetailsPanel({
                                 </span>
                                 <button onClick={() => onRemoveScheduleForClass(it.classId, it.idx)} title={t("removeSchedule")}
                                   className="shrink-0 text-muted-foreground/40 hover:text-destructive focus-visible:text-destructive focus-visible:opacity-100 transition-colors opacity-60 group-hover/time:opacity-100">
-                                  <X className="size-3.5" />
+                                  <X className="size-4" />
                                 </button>
                               </div>
                             );
