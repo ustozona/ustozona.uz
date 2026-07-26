@@ -86,13 +86,13 @@ export default function CreateUnitModal({
                       return (
                         <span
                           key={c.id}
-                          className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+                          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
                           style={{
                             backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`,
                             color: `color-mix(in srgb, ${hex} 55%, var(--foreground))`,
                           }}
                         >
-                          <ClassSwatch hex={hex} className="size-1.5 rounded-[3px]" />
+                          <ClassSwatch hex={hex} className="size-2" />
                           {c.name}
                         </span>
                       );

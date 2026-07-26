@@ -1,13 +1,12 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Sinf rangi indikatori — YAGONA standart shakl: **radiusli kvadrat**
- * (`rounded-[4px]`), dumaloq emas. Sinf roʻyxati yoki tanlovchi qayerda
- * boʻlsa shu ishlatiladi — shakl butun loyiha boʻylab bir xil.
+ * Sinf rangi indikatori — YAGONA standart shakl: **doira** (`rounded-full`).
+ * Sinf roʻyxati yoki tanlovchi qayerda boʻlsa shu ishlatiladi — shakl
+ * butun loyiha boʻylab bir xil.
  *
- * Kanonik manba: `ClassListPanel` kompakt nav-row swatch'i
- * (`size-3 rounded-[4px]` + sinf rangi). Oʻlcham `className` orqali
- * kontekstga moslanadi (default `size-3`); shakl oʻzgarmaydi.
+ * Oʻlcham `className` orqali kontekstga moslanadi (default `size-3`);
+ * shakl oʻzgarmaydi.
  */
 export function ClassSwatch({
   hex,
@@ -20,7 +19,7 @@ export function ClassSwatch({
 }) {
   return (
     <span
-      className={cn("size-3 shrink-0 rounded-[4px]", className)}
+      className={cn("size-3 shrink-0 rounded-full", className)}
       style={{ backgroundColor: hex, ...style }}
     />
   );

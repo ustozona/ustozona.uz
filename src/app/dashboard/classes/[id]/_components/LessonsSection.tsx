@@ -46,7 +46,7 @@ import type { ClassIdentity } from "@/lib/class-id";
 const STATUS_STYLES: Record<Lesson["status"], string> = {
   Completed: "bg-success/10 text-success",
   Scheduled: "bg-info/10 text-info",
-  Unscheduled: "bg-warning/10 text-warning-foreground",
+  Unscheduled: "bg-warning/10 text-warning",
   Draft: "bg-muted text-muted-foreground",
 };
 function statusLabels(t: (key: string) => string): Record<Lesson["status"], string> {

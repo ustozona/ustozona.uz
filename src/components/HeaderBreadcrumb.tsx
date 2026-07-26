@@ -120,7 +120,7 @@ function SwitcherCrumb({
   label: string;
   isLast: boolean;
   placeholder: string;
-  /** Sinf rangi — kanonik ClassSwatch (rounded-[4px]) label oldida. */
+  /** Sinf rangi — kanonik ClassSwatch (rounded-full) label oldida. */
   swatchHex?: string;
   children: (close: () => void) => React.ReactNode;
 }) {

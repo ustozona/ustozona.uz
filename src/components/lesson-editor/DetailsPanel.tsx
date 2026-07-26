@@ -127,7 +127,7 @@ export default function DetailsPanel({
                       selectedClasses.map((c) => {
                         const hex = CLASS_COLOR_HEX[classColor(c)];
                         return (
-                          <span key={c.id} className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+                          <span key={c.id} className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
                             style={{ backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`, color: `color-mix(in srgb, ${hex} 55%, var(--foreground))` }}>
                             {dot(hex)}{c.name}
                           </span>
@@ -173,7 +173,7 @@ export default function DetailsPanel({
                     <DropdownMenuTrigger asChild>
                       <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 hover:bg-accent/40 transition-colors text-left">
                         <span className="flex items-center gap-3 min-w-0">
-                          <span className="size-9 rounded-xl flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
+                          <span className="size-9 rounded-full flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
                             <Layers className="size-4" />
                           </span>
                           <span className="flex flex-col min-w-0">
@@ -253,14 +253,19 @@ export default function DetailsPanel({
                           {g.items.map((it) => {
                             const cls = selectedClasses.find((c) => c.id === it.classId);
                             return (
-                              <div key={`${it.classId}-${it.idx}`} className="group/time flex items-center gap-2 text-sm">
-                                {dot(it.hex)}
-                                <span className="flex-1 truncate font-medium text-foreground">
-                                  {selectedClasses.length > 1 && <span className="font-semibold">{cls?.name} </span>}
-                                  ({fmtClock(it.startMin)} — {fmtClock(it.endMin)})
+                              <div key={`${it.classId}-${it.idx}`} className="group/time flex items-center gap-2 text-sm min-w-0">
+                                <span className="shrink-0 truncate font-medium text-foreground">
+                                  {fmtClock(it.startMin)} — {fmtClock(it.endMin)}
                                 </span>
+                                {selectedClasses.length > 1 && (
+                                  <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium truncate"
+                                    style={{ backgroundColor: `color-mix(in srgb, ${it.hex} 12%, transparent)`, color: `color-mix(in srgb, ${it.hex} 55%, var(--foreground))` }}>
+                                    {dot(it.hex)}
+                                    <span className="truncate">{cls?.name}</span>
+                                  </span>
+                                )}
                                 <button onClick={() => onRemoveScheduleForClass(it.classId, it.idx)} title={t("removeSchedule")}
-                                  className="shrink-0 text-muted-foreground/40 hover:text-destructive focus-visible:text-destructive focus-visible:opacity-100 transition-colors opacity-60 group-hover/time:opacity-100">
+                                  className="ml-auto shrink-0 text-muted-foreground/40 hover:text-destructive focus-visible:text-destructive focus-visible:opacity-100 transition-colors opacity-60 group-hover/time:opacity-100">
                                   <X className="size-4" />
                                 </button>
                               </div>

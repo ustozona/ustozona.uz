@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -21,7 +21,7 @@ import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
   FileText, X, MoreHorizontal, Check, CheckCircle2, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
-  SlidersHorizontal, Sparkles, Plus, Minus,
+  SlidersHorizontal, Sparkles, Plus, Minus, CalendarClock, CircleAlert, PenLine, ChevronDown,
 } from "lucide-react";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { toast } from "sonner";
@@ -79,9 +79,46 @@ function useResponsivePanelWidth(min: number, vwPct: number) {
 const STATUS_CLS = {
   Completed: "bg-success/10 text-success",
   Scheduled: "bg-info/10 text-info",
-  Unscheduled: "bg-warning/10 text-warning-foreground",
+  Unscheduled: "bg-warning/10 text-warning",
   Draft: "bg-muted text-muted-foreground",
 } as const;
+
+const STATUS_ICON = {
+  Completed: CheckCircle2,
+  Scheduled: CalendarClock,
+  Unscheduled: CircleAlert,
+  Draft: PenLine,
+} as const;
+
+const STATUS_ITEM_CLS = {
+  Completed: "text-success focus:bg-success/10 focus:text-success",
+  Scheduled: "text-info focus:bg-info/10 focus:text-info",
+  Unscheduled: "text-warning focus:bg-warning/10 focus:text-warning",
+  Draft: "text-muted-foreground focus:bg-muted focus:text-muted-foreground",
+} as const;
+
+/* dropdown-menu.tsx ichki qoidasi ("text-" sinfi yoʻq svg'larni majburan
+   text-muted-foreground qiladi) sabab ikonka rangini alohida berish shart. */
+const STATUS_ICON_CLS = {
+  Completed: "text-success",
+  Scheduled: "text-info",
+  Unscheduled: "text-warning",
+  Draft: "text-muted-foreground",
+} as const;
+
+/* Joriy status qatori — hover kutmasdan ham darhol koʻzga tashlanishi uchun
+   doimiy yengil fon (nafaqat oʻng chetdagi check belgisi). */
+const STATUS_ITEM_ACTIVE_CLS = {
+  Completed: "bg-success/10",
+  Scheduled: "bg-info/10",
+  Unscheduled: "bg-warning/10",
+  Draft: "bg-muted",
+} as const;
+
+/* Menyu tartibi — dars hayot-siklini aks ettiradi (Draft → Unscheduled →
+   Scheduled → Completed). "Qoralama"ga qaytarish orqaga qadam boʻlgani
+   uchun alohida, separator bilan pastda koʻrsatiladi. */
+const STATUS_ORDER = ["Unscheduled", "Scheduled", "Completed", "Draft"] as const;
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const t = useTranslations("LessonEditor");
@@ -225,12 +262,13 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   }
 
   const STATUS = {
-    Completed: { label: t("status.completed"), cls: STATUS_CLS.Completed },
-    Scheduled: { label: t("status.scheduled"), cls: STATUS_CLS.Scheduled },
-    Unscheduled: { label: t("status.unscheduled"), cls: STATUS_CLS.Unscheduled },
-    Draft: { label: t("status.draft"), cls: STATUS_CLS.Draft },
+    Completed: { label: t("status.completed"), cls: STATUS_CLS.Completed, icon: STATUS_ICON.Completed, itemCls: STATUS_ITEM_CLS.Completed },
+    Scheduled: { label: t("status.scheduled"), cls: STATUS_CLS.Scheduled, icon: STATUS_ICON.Scheduled, itemCls: STATUS_ITEM_CLS.Scheduled },
+    Unscheduled: { label: t("status.unscheduled"), cls: STATUS_CLS.Unscheduled, icon: STATUS_ICON.Unscheduled, itemCls: STATUS_ITEM_CLS.Unscheduled },
+    Draft: { label: t("status.draft"), cls: STATUS_CLS.Draft, icon: STATUS_ICON.Draft, itemCls: STATUS_ITEM_CLS.Draft },
   } as const;
   const st = lesson ? STATUS[lesson.status] : STATUS.Draft;
+  const StatusIcon = st.icon;
 
   const togglePanel = (panel: "details" | "ai") =>
     setActivePanel((cur) => (cur === panel ? null : panel));
@@ -318,9 +356,41 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               >
                 {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               </h1>
-              <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold", st.cls)}>
-                {st.label}
-              </span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "shrink-0 inline-flex items-center gap-1 rounded-full pl-2 pr-1.5 py-0.5 text-xs font-semibold transition-colors hover:brightness-95 dark:hover:brightness-125",
+                      st.cls
+                    )}
+                  >
+                    <StatusIcon className="size-3.5" />
+                    {st.label}
+                    <ChevronDown className="size-3 opacity-60 transition-transform data-[state=open]:rotate-180" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-44">
+                  {STATUS_ORDER.map((key) => {
+                    const opt = STATUS[key];
+                    const OptIcon = opt.icon;
+                    const active = lesson?.status === key;
+                    return (
+                      <Fragment key={key}>
+                        {key === "Draft" && <DropdownMenuSeparator />}
+                        <DropdownMenuItem
+                          className={cn("gap-2 font-medium", opt.itemCls, active && STATUS_ITEM_ACTIVE_CLS[key])}
+                          onSelect={() => setStatus(lessonId, key)}
+                        >
+                          <OptIcon className={cn("size-4", STATUS_ICON_CLS[key])} />
+                          <span className="flex-1">{opt.label}</span>
+                          {active && <Check className="size-4" />}
+                        </DropdownMenuItem>
+                      </Fragment>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

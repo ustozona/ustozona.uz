@@ -52,7 +52,7 @@ import {
 const STATUS_STYLES: Record<Lesson["status"], string> = {
   Completed: "bg-success/10 text-success",
   Scheduled: "bg-info/10 text-info",
-  Unscheduled: "bg-warning/10 text-warning-foreground",
+  Unscheduled: "bg-warning/10 text-warning",
   Draft: "bg-muted text-muted-foreground",
 };
 
