@@ -26,6 +26,7 @@
     "@shadcnblocks": "https://shadcnblocks.com/r/{name}.json",
     "@ss-blocks": "https://shadcnstudio.com/r/blocks/new-york-v4/{name}.json",
     "@diceui": "https://diceui.com/r/{style}/{name}.json",
-    "@ncdai": "https://chanhdai.com/r/{name}.json"
+    "@ncdai": "https://chanhdai.com/r/{name}.json",
+    "@kibo-ui": "https://www.kibo-ui.com/r/{name}.json"
   }
 }

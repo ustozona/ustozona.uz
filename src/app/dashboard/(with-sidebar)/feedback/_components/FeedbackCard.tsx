@@ -12,9 +12,7 @@ import {
 import {
   Tooltip, TooltipTrigger, TooltipContent,
 } from "@/components/ui/tooltip";
-import {
-  Dialog, DialogTrigger, DialogContent, DialogTitle,
-} from "@/components/ui/dialog";
+import { ImageZoom } from "@/components/kibo-ui/image-zoom";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
@@ -363,23 +361,15 @@ export default function FeedbackCard({
               {images.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {images.map((src, i) => (
-                    <Dialog key={i}>
-                      <DialogTrigger asChild>
-                        <button
-                          type="button"
-                          aria-label={t("imageZoomAria", { index: i + 1 })}
-                          className="overflow-hidden rounded-lg border border-border transition-opacity hover:opacity-85"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={src} alt={t("imageAlt", { index: i + 1 })} className="h-24 w-auto max-w-40 object-cover" />
-                        </button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-3xl p-2">
-                        <DialogTitle className="sr-only">{t("imageDialogTitle")}</DialogTitle>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={src} alt={t("imageAlt", { index: i + 1 })} className="max-h-[80vh] w-full rounded-md object-contain" />
-                      </DialogContent>
-                    </Dialog>
+                    <ImageZoom key={i} className="overflow-hidden rounded-lg border border-border transition-opacity hover:opacity-85">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={src}
+                        alt={t("imageAlt", { index: i + 1 })}
+                        aria-label={t("imageZoomAria", { index: i + 1 })}
+                        className="h-24 w-auto max-w-40 object-cover"
+                      />
+                    </ImageZoom>
                   ))}
                 </div>
               )}

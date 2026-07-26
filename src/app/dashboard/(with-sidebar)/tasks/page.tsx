@@ -17,6 +17,7 @@ import {
   formatDateGroupLabel,
   matchesSmartList,
   SMART_LIST_KEYS,
+  taskPomoLengthMin,
   type SmartListKey,
   type TaskPriority,
 } from "@/lib/tasks-data";
@@ -221,7 +222,10 @@ export default function TasksPage() {
               });
               setSelectedTaskId(id);
             }}
-            onStartFocus={(id) => startFocus(id, pomoMinutes)}
+            onStartFocus={(id) => {
+              const task = items.find((x) => x.id === id);
+              startFocus(id, task ? taskPomoLengthMin(task, pomoMinutes) : pomoMinutes);
+            }}
             onSetPriority={(id, p) => setPriority(id, p)}
             onSetDueDate={(id, key) => setDueDate(id, key)}
             onSetClassId={(id, cid) => setTaskClassId(id, cid)}
@@ -258,7 +262,7 @@ export default function TasksPage() {
               onSetRepeat={(repeat) => setRepeat(selectedTask.id, repeat)}
               onSetEstPomos={(n) => setEstPomos(selectedTask.id, n)}
               onSetPomoMinutes={(n) => setTasksSettings({ ...tasksSettings, pomoMinutes: n })}
-              onStartFocus={() => startFocus(selectedTask.id, pomoMinutes)}
+              onStartFocus={() => startFocus(selectedTask.id, taskPomoLengthMin(selectedTask, pomoMinutes))}
               onDelete={() => {
                 deleteTask(selectedTask.id);
                 setSelectedTaskId(null);

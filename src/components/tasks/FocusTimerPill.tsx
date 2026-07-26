@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 import { X } from "lucide-react";
 import { useFocusStore } from "@/store/useFocusStore";
 import { useTasksStore } from "@/store/useTasksStore";
-import { useSettingsStore } from "@/store/useSettingsStore";
-import { useNotificationsStore } from "@/store/useNotificationsStore";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-ticker-03";
 import { cn } from "@/lib/utils";
 
 /* ════════════════════════════════════════════════════════════════════
-   SUZUVCHI POMODORO TAYMERI — dashboard layoutda doim mavjud, `idle`
-   holatda yashirin. 1s tik-tak; bosqich tugaganda avto oʻtish
-   (ish→tanaffus→boʻsh), toast + bildirishnoma, fokus yozuvi tasks
-   store'ga yoziladi. localStorage'dan oʻqigani uchun mount-gate shart.
+   HEADER FOKUS TAYMERI — headerning oʻrtasida, primary tugma uslubidagi
+   chip, `idle` holatda yashirin. Bosilsa popover ochiladi (vazifa nomi,
+   progress-bar, toʻxtatish). SOF KOʻRSATISH komponenti — bosqich
+   tugashi/toast/yozuv mantiqi `FocusEngine`da (layout ildizida, Header
+   koʻrinishidan mustaqil). Bu yerda faqat 1s render-tik-tak bor.
+   localStorage'dan oʻqigani uchun mount-gate shart.
    ════════════════════════════════════════════════════════════════════ */
 
 export default function FocusTimerPill() {
@@ -25,7 +27,7 @@ export default function FocusTimerPill() {
   const phase = useFocusStore((s) => s.phase);
   const activeTaskId = useFocusStore((s) => s.activeTaskId);
   const endsAt = useFocusStore((s) => s.endsAt);
-  const tasksSettings = useSettingsStore((s) => s.tasksSettings);
+  const startedAt = useFocusStore((s) => s.startedAt);
   const activeTask = useTasksStore((s) =>
     activeTaskId ? s.items.find((x) => x.id === activeTaskId) : undefined
   );
@@ -38,64 +40,78 @@ export default function FocusTimerPill() {
     return () => clearInterval(interval);
   }, [phase]);
 
-  useEffect(() => {
-    if (phase === "idle" || endsAt == null || now < endsAt) return;
-    if (phase === "work") {
-      const taskId = useFocusStore.getState().activeTaskId;
-      const title = taskId ? useTasksStore.getState().items.find((x) => x.id === taskId)?.title : undefined;
-      if (taskId) useTasksStore.getState().addFocusEntry(taskId, tasksSettings.pomoMinutes);
-      toast.success(t("workDoneToast"));
-      useNotificationsStore.getState().notify({
-        kind: "system",
-        title: t("workDoneToast"),
-        body: title,
-        href: "/dashboard/tasks",
-      });
-      useFocusStore
-        .getState()
-        .completeWorkAndStartBreak(
-          tasksSettings.longBreakEvery,
-          tasksSettings.shortBreakMinutes,
-          tasksSettings.longBreakMinutes
-        );
-    } else {
-      toast.info(t("breakDoneToast"));
-      useFocusStore.getState().completeBreak();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [now, phase, endsAt, tasksSettings]);
-
   if (!mounted || phase === "idle") return null;
 
   const remainingMs = Math.max(0, (endsAt ?? now) - now);
+  const totalMs = startedAt != null && endsAt != null ? Math.max(1, endsAt - startedAt) : remainingMs || 1;
   const totalSec = Math.ceil(remainingMs / 1000);
-  const mm = Math.floor(totalSec / 60);
-  const ss = totalSec % 60;
+  const progress = Math.min(1, Math.max(0, 1 - remainingMs / totalMs));
+  const isLastMinute = phase === "work" && remainingMs <= 60_000;
+
+  const RING_R = 10;
+  const RING_C = 2 * Math.PI * RING_R;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2.5 shadow-lg">
-      <span
-        className={cn(
-          "size-2 shrink-0 animate-pulse rounded-full",
-          phase === "work" ? "bg-destructive" : "bg-success"
-        )}
-      />
-      <div className="flex min-w-0 flex-col leading-tight">
-        <span className="max-w-40 truncate text-xs font-medium text-muted-foreground">
-          {phase === "work" ? (activeTask?.title ?? t("focusLabel")) : t("breakLabel")}
-        </span>
-        <span className="text-lg font-bold tabular-nums text-foreground">
-          {String(mm).padStart(2, "0")}:{String(ss).padStart(2, "0")}
-        </span>
-      </div>
-      <button
-        type="button"
-        onClick={() => useFocusStore.getState().stop()}
-        aria-label={t("stopAria")}
-        className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-      >
-        <X className="size-4" />
-      </button>
-    </div>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="default"
+          size="sm"
+          aria-label={t("openAria")}
+          className={cn(
+            "min-w-[78px] justify-center gap-1.5 rounded-full px-3 tabular-nums",
+            isLastMinute && "animate-pulse bg-warning text-warning-foreground hover:bg-warning/90"
+          )}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" className="shrink-0 -ml-0.5">
+            <circle cx="12" cy="12" r={RING_R} fill="none" stroke="currentColor" strokeOpacity="0.35" strokeWidth="2.5" />
+            <circle
+              cx="12"
+              cy="12"
+              r={RING_R}
+              fill="none"
+              stroke={phase === "break" ? "var(--success)" : "currentColor"}
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeDasharray={RING_C}
+              strokeDashoffset={RING_C * (1 - progress)}
+              transform="rotate(-90 12 12)"
+              className="transition-[stroke-dashoffset] duration-1000 ease-linear"
+            />
+          </svg>
+          <NumberTicker seconds={totalSec} showHours={false} className="text-xs font-medium tracking-tight" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="center" className="w-64 p-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="min-w-0 truncate text-sm font-medium text-foreground">
+            {phase === "work" ? (activeTask?.title ?? t("focusLabel")) : t("breakLabel")}
+          </span>
+          <button
+            type="button"
+            onClick={() => useFocusStore.getState().stop()}
+            aria-label={t("stopAria")}
+            className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <NumberTicker
+          seconds={totalSec}
+          showHours={false}
+          className="mt-2 text-2xl font-bold text-foreground"
+        />
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
+          <div
+            className={cn(
+              "h-full rounded-full transition-[width] duration-1000 ease-linear",
+              isLastMinute ? "bg-warning" : phase === "work" ? "bg-primary" : "bg-success"
+            )}
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
