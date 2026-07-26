@@ -63,6 +63,9 @@ export const metadata: Metadata = {
     title,
     description,
   },
+  verification: {
+    yandex: "68a7b34ec38b727a",
+  },
   robots: {
     index: true,
     follow: true,
