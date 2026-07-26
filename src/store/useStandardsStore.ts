@@ -74,8 +74,6 @@ interface StandardsState {
   addStandards: (setId: string, items: StandardItem[]) => void;
   /** Standartni papkadan oʻchirish. */
   removeStandard: (setId: string, code: string) => void;
-  /** Oʻtildi/oʻtilmagan holatini almashtirish. */
-  toggleCovered: (setId: string, code: string) => void;
 
   /* ── Custom kutubxona (Mening standartlarim) ── */
   addCustomSet: (input: { name: string; subject: string; grade?: string; standards?: StandardItem[] }) => string;
@@ -125,20 +123,6 @@ export const useStandardsStore = create<StandardsState>()(
         set((state) => ({
           sets: state.sets.map((s) =>
             s.id === setId ? { ...s, standards: s.standards.filter((x) => x.id !== code) } : s,
-          ),
-        })),
-
-      toggleCovered: (setId, code) =>
-        set((state) => ({
-          sets: state.sets.map((s) =>
-            s.id === setId
-              ? {
-                  ...s,
-                  standards: s.standards.map((x) =>
-                    x.id === code ? { ...x, covered: !x.covered } : x,
-                  ),
-                }
-              : s,
           ),
         })),
 

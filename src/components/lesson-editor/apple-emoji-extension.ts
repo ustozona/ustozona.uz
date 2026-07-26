@@ -12,6 +12,17 @@ function toUnified(char: string): string {
   return [...char].map((c) => c.codePointAt(0)!.toString(16)).join("-");
 }
 
+/* Ayrim emoji (mas. ⭐ 2b50) sprite fayli VS16'siz, boshqalari (mas. ☀️
+   2600-fe0f) VS16 bilan nomlangan — matnda yozilgan holat har doim toʻgʻri
+   fayl nomiga mos kelmaydi. Shu sabab 404'da qarama-qarshi variant bilan
+   bir marta qayta urinib koʻriladi (pastda onerror). */
+function toggleFe0f(unified: string): string {
+  const parts = unified.split("-");
+  const idx = parts.indexOf("fe0f");
+  if (idx !== -1) return parts.filter((_, i) => i !== idx).join("-");
+  return [parts[0], "fe0f", ...parts.slice(1)].join("-");
+}
+
 /**
  * Dars muharririda yozilgan har qanday unicode emoji — OS shrifti oʻrniga
  * Apple sprite (PNG) bilan koʻrsatiladi (barcha platformada bir xil koʻrinish
@@ -44,11 +55,17 @@ export const AppleEmojiDisplay = Extension.create({
                     to,
                     () => {
                       const img = document.createElement("img");
-                      img.src = `${EMOJI_CDN}${toUnified(emoji)}.png`;
+                      const unified = toUnified(emoji);
+                      img.src = `${EMOJI_CDN}${unified}.png`;
                       img.alt = emoji;
                       img.draggable = false;
                       img.loading = "lazy";
                       img.className = "apple-emoji-img";
+                      img.onerror = () => {
+                        if (img.dataset.retried) { img.remove(); return; }
+                        img.dataset.retried = "1";
+                        img.src = `${EMOJI_CDN}${toggleFe0f(unified)}.png`;
+                      };
                       return img;
                     },
                     { side: 1, ignoreSelection: true }

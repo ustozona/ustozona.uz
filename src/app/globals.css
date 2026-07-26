@@ -843,10 +843,25 @@
 /* ProseMirror tahrirlash maydoni */
 .lesson-prose:focus { outline: none; }
 .lesson-prose .ProseMirror { outline: none; min-height: 60vh; }
-.lesson-prose h1 { font-size: 1.875rem; font-weight: 700; line-height: 1.2; margin: 1.4rem 0 0.6rem; letter-spacing: -0.02em; }
-.lesson-prose h2 { font-size: 1.4rem; font-weight: 700; line-height: 1.25; margin: 1.2rem 0 0.5rem; letter-spacing: -0.015em; }
-.lesson-prose h3 { font-size: 1.15rem; font-weight: 600; line-height: 1.3; margin: 1rem 0 0.4rem; }
-.lesson-prose p { font-size: 1rem; line-height: 1.7; margin: 0.5rem 0; }
+/* Baza matn oʻlchami 16px → 14px (mutanosib): container'ga font-size
+   berilgan — h1/h2/h3/p bundan mustasno (`rem` ROOT'ga bogʻliq, containerga
+   emas, shuning uchun ular pastda ALOHIDA qayta hisoblangan), lekin li/
+   blockquote/mark kabi oʻz font-size'ini belgilamagan elementlar shu
+   qiymatni avtomatik meros qiladi — ikkinchi joyda takror yozish shart emas. */
+.lesson-prose {
+  font-size: 0.875rem;
+  /* Qalinlik YAGONA MANBASI — foydalanuvchi Bold tugmasi (<strong>) va
+     callout sarlavhalari SHU BITTA qiymatdan oziqlanadi. Ilgari callout
+     sarlavhalarida `font-weight: 700` qattiq yozilgan, `<strong>` esa
+     brauzer standartiga (`bold` kalit soʻzi) tayangan edi — ikkalasi
+     hozircha son jihatdan bir xil boʻlsa-da, ular ikki mustaqil manba edi. */
+  --lesson-bold-weight: 700;
+}
+.lesson-prose strong, .lesson-prose b { font-weight: var(--lesson-bold-weight); }
+.lesson-prose h1 { font-size: 1.625rem; font-weight: 700; line-height: 1.2; margin: 1.2rem 0 0.5rem; letter-spacing: -0.02em; }
+.lesson-prose h2 { font-size: 1.25rem; font-weight: 700; line-height: 1.25; margin: 1rem 0 0.4rem; letter-spacing: -0.015em; }
+.lesson-prose h3 { font-size: 1rem; font-weight: 600; line-height: 1.3; margin: 0.875rem 0 0.35rem; }
+.lesson-prose p { font-size: 0.875rem; line-height: 1.7; margin: 0.4rem 0; }
 /* Apple emoji decoration — haqiqiy unicode belgi koʻrinmas qilinadi, oʻrniga
    apple-emoji-extension.ts widget sifatida qoʻygan PNG rasm koʻrinadi. */
 .lesson-prose .apple-emoji-src { font-size: 0; line-height: 0; letter-spacing: 0; }
@@ -870,7 +885,7 @@
 .lesson-prose blockquote { border-left: 3px solid var(--border); padding-left: 1rem; color: var(--muted-foreground); margin: 0.8rem 0; }
 .lesson-prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .lesson-prose code { font-family: var(--font-mono), monospace; font-size: 0.875em; background: var(--muted); padding: 0.1em 0.35em; border-radius: 0.3rem; }
-.lesson-prose pre { background: oklch(0.21 0.006 285.9); color: oklch(0.96 0 0); font-family: var(--font-mono), monospace; padding: 1rem 1.1rem; border-radius: 0.6rem; overflow-x: auto; margin: 0.8rem 0; font-size: 0.875rem; line-height: 1.5; }
+.lesson-prose pre { background: oklch(0.21 0.006 285.9); color: oklch(0.96 0 0); font-family: var(--font-mono), monospace; padding: 1rem 1.1rem; border-radius: 0.6rem; overflow-x: auto; margin: 0.8rem 0; font-size: 0.875em; line-height: 1.5; }
 .lesson-prose pre code { background: none; padding: 0; color: inherit; }
 .lesson-prose mark { background: oklch(0.93 0.13 100); border-radius: 0.2rem; padding: 0.05em 0.15em; }
 /* Hujjatga qoʻyilgan rasmlar (blok surat) — emoji sprite'lar bundan mustasno,
@@ -893,7 +908,7 @@
   transform: translate(-50%, -50%);
   background: var(--card);
   color: var(--muted-foreground);
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   line-height: 1;
   padding: 0.2rem 0.5rem;
   border-radius: 999px;
@@ -905,14 +920,25 @@
 }
 
 /* ── Callout bloklar (Obsidian uslubi — lucide ikonlar, OKLCH ranglar) ──
-   Har tur o'z aksent rangini `--cl` orqali beradi; karta foni/hoshiyasi
-   shu rangdan color-mix bilan hisoblanadi. Semantik tokenlar bor joyda
-   ular ishlatiladi (info/success/warning/destructive), qolganlari OKLCH. */
+   Rang YAGONA MANBASI endi callout-extension.ts (CALLOUT_TYPES.color) —
+   CalloutView uni `--cl` inline style sifatida DOM'ga uzatadi. Bu yerda
+   FAQAT fallback bor; tur boʻyicha 11 qatorlik qayta yozish OʻCHIRILDI —
+   ikki joyda saqlangan qiymat ertami-kechmi ajralib ketishi muqarrar edi
+   (haqiqatda bir marta ajralib ham ketgan edi: "bug" rangi ikki joyda ikki
+   xil qolib ketgan). */
 .lesson-prose .callout {
-  --cl: var(--info);
+  --cl: var(--info); /* fallback, odatda inline style bilan qayta yoziladi */
+  --callout-title-lh: 1.5rem;
   position: relative;
+  display: grid;
+  /* Ikon ustuni — Emojili blokdagi bilan bir xil naqsh: qatʼiy px balandlik,
+     "sehrli" absolyut koordinatalar YOʻQ (avval `top: 0.92rem` koʻz bilan
+     tanlangan edi — shrift/padding oʻzgarsa ikon joyidan siljirdi). */
+  grid-template-columns: 1.5rem 1fr;
+  column-gap: 0.65rem;
+  align-items: start;
   background: color-mix(in srgb, var(--cl) 5%, var(--card));
-  padding: 0.75rem 1.1rem 0.8rem 1.35rem;
+  padding: 0.75rem 1.1rem 0.8rem 1.1rem;
   margin: 0.9rem 0;
 }
 .lesson-prose .callout::before {
@@ -923,39 +949,241 @@
   width: 0.28rem;
   background: var(--cl);
 }
-/* Ikon — sarlavha qatorining boshida (absolyut), matn ikon yonidan boshlanadi */
+/* Ikon — grid'ning birinchi ustuni, sarlavha qatori bilan bir xil balandlikda
+   markazlashadi (konstruksiya boʻyicha tekis, taxminiy emas). Endi <button>:
+   bosilganda 11 turdan istalganini tanlash mumkin (ilgari turini
+   oʻzgartirish uchun butun blokni oʻchirib qayta yaratish kerak edi). */
 .lesson-prose .callout-icon {
-  position: absolute;
-  left: 1.3rem;
-  top: 0.92rem;
-  width: 1.05rem;
-  height: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: var(--callout-title-lh);
   color: var(--cl);
-  pointer-events: none;
 }
-.lesson-prose .callout-icon svg { width: 100%; height: 100%; }
+.lesson-prose .callout-icon svg { width: 1.05rem; height: 1.05rem; }
+.lesson-prose .callout-icon-btn {
+  /* Button reset — brauzer standart border/fon/shrift bekor qilinadi */
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: opacity 120ms var(--ease-standard, ease);
+}
+.lesson-prose .callout-icon-btn:hover { opacity: 0.7; }
+.lesson-prose .callout-icon-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+/* Sarlavha — TANADAN KICHIK BOʻLMASIN: ilgari 0.92rem (tanadan kichik) edi,
+   bu ierarxiyani teskari qilardi — qalin boʻlsa ham "kichik" koʻrinardi.
+   QALINLIK BU YERDA MAJBURIY EMAS: ilgari `font-weight` shu qoidada qattiq
+   yozilgan edi, shuning uchun toolbar'dagi haqiqiy Bold (B) tugmasi
+   sarlavha matnida hech narsani oʻzgartirmasdi (CSS ustidan majburan
+   qalin turaverar edi). Endi qalinlik FAQAT `<strong>` belgisi (Bold
+   markasi) orqali — insertCallout uni boshlangʻich matnga qoʻyadi
+   (EditorToolbar.tsx), foydalanuvchi esa B tugmasi bilan yoqib/oʻchira
+   oladi, xuddi oddiy matndagidek. */
 .lesson-prose .callout-title {
-  font-weight: 700;
-  font-size: 0.92rem;
-  line-height: 1.45;
+  font-size: 0.9375rem;
+  line-height: var(--callout-title-lh);
   color: var(--foreground);
-  padding-left: 1.6rem;
 }
 .lesson-prose .callout-inner > :nth-child(2) { margin-top: 0.35rem; }
 .lesson-prose .callout-inner > :last-child { margin-bottom: 0; }
 
-/* Tur ranglari — rasmdagi spektr (ko'k → moviy → yashil → sariq → qizil → siyohrang → kulrang) */
-.lesson-prose .callout[data-callout-type="note"]     { --cl: var(--info); }
-.lesson-prose .callout[data-callout-type="abstract"] { --cl: oklch(0.62 0.17 230); }
-.lesson-prose .callout[data-callout-type="info"]     { --cl: oklch(0.65 0.13 215); }
-.lesson-prose .callout[data-callout-type="tip"]      { --cl: oklch(0.66 0.13 185); }
-.lesson-prose .callout[data-callout-type="success"]  { --cl: var(--success); }
-.lesson-prose .callout[data-callout-type="question"] { --cl: oklch(0.68 0.16 135); }
-.lesson-prose .callout[data-callout-type="warning"]  { --cl: var(--warning); }
-.lesson-prose .callout[data-callout-type="failure"]  { --cl: var(--destructive); }
-.lesson-prose .callout[data-callout-type="danger"]   { --cl: oklch(0.58 0.23 13); }
-.lesson-prose .callout[data-callout-type="bug"]      { --cl: oklch(0.6 0.24 0); }
-.lesson-prose .callout[data-callout-type="example"]  { --cl: oklch(0.55 0.22 295); }
+/* Chop etishda fon/hoshiya ranglari brauzer tomonidan standart tashlab
+   yuboriladi (siyoh tejash) — A4 PDF asosiy mahsulot boʻlgani uchun bu
+   MUHIM tuzatish: aks holda ekranda rangli, chopda "oq varaq + ikonka". */
+@media print {
+  .lesson-prose .callout {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* ── Notion uslubidagi erkin callout ──────────────────────────────────────
+   Obsidian callout'dan ATAYLAB boshqa vizual til: u — radiussiz, chap
+   aksent chizigʻi bilan "rasmiy" blok; bu — yumaloq, toʻliq hoshiyali,
+   yumshoq yuzali "erkin qayd". Ikkovi bir sahifada aralashib ketmaydi.
+   Fon/hoshiya rangi inline style'dan keladi (class-colors yagona manba). */
+.lesson-prose .notion-callout {
+  /* ── Qator qutisi YAGONA MANBASI ──────────────────────────────────────
+     Emoji ham, kontent ham SHU ikki qiymatdan oziqlanadi. Ilgari ular
+     ikki joyda alohida yozilgani uchun bittasi oʻzgarsa tekislik jimgina
+     buzilardi. Endi ular tuzilmaviy jihatdan ajrala olmaydi. */
+  --callout-fs: 0.875rem;
+  /* QATʼIY px qator qutisi (birliksiz koeffitsient EMAS). Notion/Linear
+     yondashuvi: ikon qutisi va birinchi matn qatori bir xil px balandlikda
+     boʻlsa, markazlar konstruksiya boʻyicha mos tushadi — shrift metrikasi,
+     ascender/descender va half-leading ahamiyatsiz boʻlib qoladi. */
+  --callout-lh: 1.5rem;
+  /* Optik tuzatish: geometrik markaz matnning KOʻZGA koʻrinadigan markazidan
+     biroz past turadi (pastki bo'shliq descender uchun band). ~1px yuqoriga
+     surish matnni optik jihatdan tekis koʻrsatadi — tipografikadagi
+     standart amaliyot. */
+  --callout-icon-nudge: -1px;
+
+  position: relative;
+  display: grid;
+  /* Ikon uchun qatʼiy gutter — bir necha callout ustma-ust turganda
+     matn chap qirrasi bir tekisda qoladi (vertikal ritm buzilmaydi). */
+  grid-template-columns: 1.5rem 1fr;
+  column-gap: 0.75rem;
+  align-items: start;
+  padding: 0.875rem 1rem;
+  margin: 1rem 0;
+  border: 1px solid transparent; /* rang inline style'dan */
+  border-radius: 0.5rem;
+}
+/* Emoji qutisi — Notion andozasi: balandligi birinchi matn qatorining
+   qutisiga (--callout-lh) PIKSELMA-PIKSEL teng, glif ichida markazlashadi.
+   Grid'ning `align-items: start`i ikkalasini ustun tepasidan boshlaydi →
+   markazlar konstruksiya boʻyicha mos tushadi. Bu yerda `vertical-align`ga
+   ham, shrift metrikasiga ham TAYANILMAYDI — ular brauzer/shriftga qarab
+   suzadi va tekislikni jimgina buzadi.
+   SHAKL YOʻQ: fon/radius berilmaydi — kvadrat emojilar (mas. 🟦, 🔲)
+   yumaloq yuza ichida kesilib koʻrinmasin. Hover faqat shaffoflik bilan. */
+.lesson-prose .notion-callout-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: var(--callout-lh);
+  /* line-height ham tenglashtiriladi: ichkarida matn fallback chiqsa
+     (sprite yuklanmasa) quti balandligi oʻzgarib ketmasin. */
+  font-size: var(--callout-fs);
+  line-height: var(--callout-lh);
+  transform: translateY(var(--callout-icon-nudge));
+  background: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: opacity 120ms var(--ease-standard, ease);
+}
+.lesson-prose .notion-callout-emoji:hover { opacity: 0.65; }
+.lesson-prose .notion-callout-emoji:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+/* Sprite — 24px qutiga sigʻadigan 20px glif. `vertical-align` ATAYLAB
+   `initial`ga qaytariladi: umumiy `.apple-emoji-img` qoidasidagi -0.2em
+   bazis siljishi bu yerda ZARARLI (flex markazlashni buzadi) — u qoida
+   matn ICHIDAGI inline emoji uchun moʻljallangan. */
+.lesson-prose .notion-callout-emoji .apple-emoji-img {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  vertical-align: initial;
+  flex: none;
+}
+/* ── Kontent tipografikasi ──
+   Oʻlcham tana matni bilan bir xil (kichraytirilmaydi — callout "izoh" emas,
+   toʻlaqonli mazmun). Ammo interlinyaj tanadan zich (24px < 1.7em ≈ 27px): yopiq
+   quti ichida zichroq matn "bir butun blok" boʻlib oʻqiladi — bu Notion,
+   GitHub Alerts va Docusaurus admonition'larida ham shunday. */
+.lesson-prose .notion-callout-content { min-width: 0; }
+.lesson-prose .notion-callout-content p {
+  font-size: var(--callout-fs);
+  line-height: var(--callout-lh);
+  margin: 0;
+  /* Oxirgi qatorda yolgʻiz soʻz qolmasin (daraxtsimon oʻng qirra) */
+  text-wrap: pretty;
+}
+/* Bloklar orasi — qator oraligʻidan kichik, lekin sezilarli (ritm zinasi) */
+.lesson-prose .notion-callout-content > * + * { margin-top: 0.4rem; }
+.lesson-prose .notion-callout-content > :first-child { margin-top: 0; }
+.lesson-prose .notion-callout-content > :last-child { margin-bottom: 0; }
+/* Sarlavha → tana oraligʻi — Obsidian callout'dagi (.callout-inner
+   > :nth-child(2), 0.35rem) dan ATAYLAB ochiqroq: Notion uslubidagi bu
+   blok "erkin qayd" boʻlgani uchun sarlavha alohida-alohida ajralib
+   turishi kerak, Obsidian esa qatʼiy/zich "rasmiy" blok. */
+.lesson-prose .notion-callout-title + * { margin-top: 0.65rem; }
+/* Ichki roʻyxatlar — quti chetiga yopishmasin, ortiqcha ham chekinmasin */
+.lesson-prose .notion-callout-content ul,
+.lesson-prose .notion-callout-content ol { margin: 0.4rem 0; padding-left: 1.25rem; }
+/* Ichki sarlavha — foydalanuvchi "sarlavhali" callout yasamoqchi boʻlsa,
+   H3 quti oʻlchamiga moslanadi (ulkan boʻlib ketmaydi) */
+.lesson-prose .notion-callout-content h1,
+.lesson-prose .notion-callout-content h2,
+.lesson-prose .notion-callout-content h3 {
+  font-size: 0.9375rem;
+  font-weight: 650;
+  line-height: var(--callout-lh);
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+/* Sarlavha (notionCalloutTitle) — Callout'ning .callout-title bilan bir xil
+   oʻlcham, izchillik uchun; ustun oqimidagi oddiy birinchi child (yuqoridagi
+   "> :first-child"/"* + *" qoidalari joy/marginni avtomatik hal qiladi).
+   QALINLIK BU YERDA MAJBURIY EMAS — Callout'dagi bilan bir xil sabab:
+   faqat haqiqiy Bold (<strong>) markasi orqali, B tugmasi bilan
+   boshqariladi (insertNotionCallout boshlangʻich matnga qoʻyadi). */
+.lesson-prose .notion-callout-title {
+  font-size: 0.9375rem;
+  line-height: var(--callout-lh);
+  color: var(--foreground);
+}
+/* Sarlavha placeholder'i — Callout'dagi bilan bir xil naqsh
+   (.callout-title.is-empty::before). */
+.lesson-prose .notion-callout-title.is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Rang tanlagich — progressive disclosure: oddiy holatda koʻrinmaydi,
+   hover/fokusda chiqadi. Kontent oqimidan tashqarida (absolute), shuning
+   uchun matn kengligini yemaydi. */
+.lesson-prose .notion-callout-controls {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  opacity: 0;
+  transition: opacity 120ms var(--ease-standard, ease);
+}
+.lesson-prose .notion-callout:hover .notion-callout-controls,
+.lesson-prose .notion-callout:focus-within .notion-callout-controls {
+  opacity: 1;
+}
+.lesson-prose .notion-callout-color-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  transition: background-color 120ms var(--ease-standard, ease);
+}
+.lesson-prose .notion-callout-color-trigger:hover,
+.lesson-prose .notion-callout-color-trigger[data-open] {
+  background: color-mix(in srgb, var(--foreground) 10%, var(--card));
+}
+.lesson-prose .notion-callout-color-trigger:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+/* Blok tanlanganda (node selection) koʻrinadigan holat */
+.lesson-prose .notion-callout.ProseMirror-selectednode {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+/* Chop etishda boshqaruvlar chiqmasin, fon rangi esa saqlansin — brauzer
+   standart holda fon ranglarini chop etishda tashlab yuboradi (siyoh
+   tejash), Obsidian callout'da ham xuddi shu tuzatish qilingan. */
+@media print {
+  .lesson-prose .notion-callout-controls { display: none; }
+  .lesson-prose .notion-callout {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
 
 /* ── Muharrir: jadval ── */
 .lesson-prose table {
@@ -1043,7 +1271,7 @@
   text-decoration: line-through;
 }
 
-/* ── Murabbiyona AI chat — markdown ko'rinishi ── */
+/* ── Ustozona AI chat — markdown ko'rinishi ── */
 .ai-prose > :first-child { margin-top: 0; }
 .ai-prose > :last-child { margin-bottom: 0; }
 .ai-prose h1, .ai-prose h2, .ai-prose h3 { font-weight: 700; line-height: 1.3; margin: 1rem 0 0.4rem; color: var(--foreground); }
@@ -1065,7 +1293,7 @@
 .ai-prose table { border-collapse: collapse; width: 100%; margin: 0.6rem 0; font-size: 0.85em; }
 .ai-prose th, .ai-prose td { border: 1px solid var(--border); padding: 0.35rem 0.5rem; text-align: left; }
 
-/* Placeholder (bo'sh paragraf) */
+/* Placeholder (bo'sh paragraf) — butun hujjat boʻsh boʻlgandagi holat. */
 .lesson-prose .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
@@ -1073,6 +1301,23 @@
   opacity: 0.55;
   pointer-events: none;
   height: 0;
+}
+/* Callout sarlavhasi placeholder'i (turga mos nom, mas. "Maqsad") — faqat
+   kursor shu sarlavhada turganda va boʻsh boʻlsa koʻrinadi (Tiptap
+   Placeholder `includeChildren: true`, LessonEditor.tsx). `::before` uni
+   ota elementdan (font-weight: 700) meros qilib oladi. */
+.lesson-prose .callout-title.is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  opacity: 0.55;
+  pointer-events: none;
+}
+/* Chop etishda placeholder matni koʻrinmasin — bu tahrirlash uchun UI
+   ishorasi, yakuniy hujjat qismi emas. Odatda unfocus'da decoration
+   umuman yoʻq boʻladi, lekin chop paytida fokus tasodifan qolib ketsa ham
+   xavfsizlik uchun ataylab yashirilgan. */
+@media print {
+  .lesson-prose [data-placeholder]::before { display: none !important; }
 }
 
 /* ── PDF / Print: faqat A4 varaqni chiqaramiz ── */
@@ -1090,11 +1335,15 @@
     border: none !important;
     margin: 0 !important;
     padding: 0 !important;
+    /* Ekrandagi zoom (LessonEditor.tsx, faqat koʻrinish uchun CSS `zoom`)
+       chop etishga TAʼSIR QILMASIN — PDF doim 100% oʻlchamda chiqadi. */
+    zoom: 100% !important;
   }
   .no-print { display: none !important; }
   /* Sarlavha/jadval/callout betlar orasida yolgʻiz qolib boʻlinib ketmasin. */
   .lesson-prose h1, .lesson-prose h2, .lesson-prose h3,
-  .lesson-prose table, .lesson-prose blockquote, .lesson-prose .callout {
+  .lesson-prose table, .lesson-prose blockquote, .lesson-prose .callout,
+  .lesson-prose .notion-callout {
     break-inside: avoid;
   }
 }

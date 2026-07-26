@@ -8,6 +8,7 @@ import { studentStats } from '@/lib/attendance-data';
 import { classBalance } from '@/lib/behavior-data';
 import { classSummativeAverage } from '@/lib/grades-stats';
 import { useStandardsStore } from '@/store/useStandardsStore';
+import { lessonCoverage } from '@/lib/standards-coverage';
 
 export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "behavior" | "statistics";
 
@@ -107,7 +108,8 @@ export function useClassPanelStats(page: Page, classId: string): {
         // Tanlangan sinfga tegishli toʻplamlar (useStandardsStore) — sahifa bilan bitta manba.
         const classSets = standardSets.filter((s) => s.classIds.includes(classId));
         const allStandards = classSets.flatMap((s) => s.standards);
-        const covered = allStandards.filter((s) => s.covered).length;
+        // Qamrov FAQAT dars-standart bogʻlanishidan (qoʻlda belgilash yoʻq).
+        const covered = allStandards.filter((s) => lessonCoverage(lessonsAll, classId, s.id).taught).length;
         const coveragePercent = allStandards.length
           ? Math.round((covered / allStandards.length) * 100)
           : 0;

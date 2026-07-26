@@ -6,8 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   Undo2, Redo2, Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3, List, ListOrdered,
-  AlignLeft, AlignCenter, AlignRight, Code, Link2, ImageIcon,
-  ListTodo, Quote, Minus, Table, ChevronDown,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify, Code, Link2, ImageIcon,
+  ListTodo, Quote, Minus, Table, ChevronDown, Check,
   ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Trash2, PanelTop,
   SubscriptIcon, SuperscriptIcon, ScissorsLineDashed, Ban, Highlighter, Baseline,
   MessageSquarePlus,
@@ -59,6 +59,18 @@ export const HIGHLIGHT_COLORS = CLASS_COLORS.map(
   (c) => `color-mix(in oklch, ${CLASS_COLOR_BASE[c]} 35%, white)`
 );
 
+/* Tekislash — H1/H2/H3 va roʻyxat bilan bir xil "compact dropdown" uslubi:
+   3 alohida tugma toolbar'ni siqib qoʻygani uchun (rasmda koʻrsatilgan
+   muammo) bitta dropdown'ga jamlandi. `justify` (toʻliq tekislash) TextAlign
+   kengaytmasida standart holda allaqachon yoqilgan edi — faqat tugma
+   yetishmasdi. */
+const ALIGN_TYPES = [
+  { value: "left", label: "alignLeft", icon: AlignLeft },
+  { value: "center", label: "alignCenter", icon: AlignCenter },
+  { value: "right", label: "alignRight", icon: AlignRight },
+  { value: "justify", label: "alignJustify", icon: AlignJustify },
+] as const;
+
 export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const t = useTranslations("LessonEditorToolbar");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -75,25 +87,76 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   }, [editor]);
   if (!editor) return null;
 
-  /** Callout qoʻshish — ANDOZA: sarlavha boshlangʻich yorliq bilan, foydalanuvchi
-   *  oʻzgartiradi. Kursor callout ichida boʻlsa, ichma-ich emas, undan keyin. */
-  const insertCallout = (type: string, label: string) => {
+  const activeAlign = ALIGN_TYPES.find((a) => editor.isActive({ textAlign: a.value })) ?? ALIGN_TYPES[0];
+  const AlignTrigger = activeAlign.icon;
+
+  /** Callout qoʻshish — sarlavha turga mos nom bilan (haqiqiy, tahrirlanadigan
+   *  matn sifatida) boshlanadi, foydalanuvchi keyin oʻzi almashtiradi. Kursor
+   *  callout YOKI notionCallout ICHIDA boʻlsa, ichma-ich emas, undan keyin
+   *  qoʻshiladi — ikkala tur bir-birining ichiga ham kirmasligi kerak
+   *  (faqat oʻz-oʻziga nesting oldini olish yetarli emas edi: Obsidian
+   *  callout Emojili blok ichiga, yoki aksincha, kirib qolishi mumkin edi).
+   *  Qoʻshgandan keyin butun sarlavha matni TANLANGAN holatda qoladi — yozishni
+   *  boshlasangiz darrov almashadi, aks holda ("Eslatma" kabi) turgan qolaveradi.
+   *  (Sarlavha boʻsh + placeholder yondashuvi RAD ETILDI: foydalanuvchi buni
+   *  haqiqiy yozilgan matn koʻrishni afzal koʻrdi.)
+   *  Qalinlik CSS'da MAJBURIY EMAS — matn haqiqiy Bold (`bold`) markasi
+   *  bilan qoʻyiladi, shuning uchun toolbar'dagi B tugmasi bilan yoqib/
+   *  oʻchirish mumkin (ilgari `.callout-title { font-weight: 700 }` CSS
+   *  ustidan majburlar edi, B tugmasi hech narsani oʻzgartirmasdi). */
+  const insertCallout = (type: string) => {
     const { $to } = editor.state.selection;
+    let insertPos = $to.pos;
+    for (let d = $to.depth; d > 0; d--) {
+      const nodeName = $to.node(d).type.name;
+      if (nodeName === "callout" || nodeName === "notionCallout") {
+        insertPos = $to.after(d);
+        break;
+      }
+    }
+    const label = t(`calloutTypes.${type}`);
     const content = {
       type: "callout",
       attrs: { type },
       content: [
-        { type: "calloutTitle", content: [{ type: "text", text: label }] },
+        { type: "calloutTitle", content: [{ type: "text", text: label, marks: [{ type: "bold" }] }] },
         { type: "paragraph" },
       ],
     };
+    editor.chain().focus().insertContentAt(insertPos, content).run();
+    // calloutTitle matni insertPos+2 dan boshlanadi (+1 callout ichiga,
+    // +1 calloutTitle ichiga); butun matnni tanlab qoʻyamiz.
+    editor.chain().setTextSelection({ from: insertPos + 2, to: insertPos + 2 + label.length }).run();
+  };
+
+  /** Notion uslubidagi erkin callout — qatʼiy tur yoʻq, standart emoji+rang
+   *  bilan qoʻshiladi, foydalanuvchi keyin oʻzi almashtiradi (NotionCalloutView).
+   *  Sarlavha Callout'dagi kabi haqiqiy matn bilan boshlanadi (placeholder
+   *  emas — foydalanuvchi buni afzal koʻrdi). Kursor allaqachon notionCallout
+   *  YOKI callout ICHIDA boʻlsa, ICHMA-ICH qoʻshilmaydi — undan KEYIN
+   *  qoʻshiladi (ikkala tur bir-birining ichiga ham kirmasligi kerak). */
+  const insertNotionCallout = () => {
+    const { $to } = editor.state.selection;
+    let insertPos = $to.pos;
     for (let d = $to.depth; d > 0; d--) {
-      if ($to.node(d).type.name === "callout") {
-        editor.chain().focus().insertContentAt($to.after(d), content).run();
-        return;
+      const nodeName = $to.node(d).type.name;
+      if (nodeName === "notionCallout" || nodeName === "callout") {
+        insertPos = $to.after(d);
+        break;
       }
     }
-    editor.chain().focus().insertContent(content).run();
+    const label = t("notionCalloutTitlePlaceholder");
+    const content = {
+      type: "notionCallout",
+      attrs: { emoji: "💡", color: "gray" },
+      content: [
+        { type: "notionCalloutTitle", content: [{ type: "text", text: label, marks: [{ type: "bold" }] }] },
+        { type: "paragraph" },
+      ],
+    };
+    editor.chain().focus().insertContentAt(insertPos, content).run();
+    // notionCalloutTitle matni insertPos+2 dan boshlanadi; butun matnni tanlab qoʻyamiz.
+    editor.chain().setTextSelection({ from: insertPos + 2, to: insertPos + 2 + label.length }).run();
   };
 
   const openLinkPopover = () => {
@@ -219,11 +282,27 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       </div>
       <Div />
 
-      {/* Tekislash */}
+      {/* Tekislash — compact dropdown (3 alohida tugma toolbar'ni siqib
+          qoʻygani uchun bitta menyuga jamlandi, H1/H2/H3 uslubi bilan bir xil). */}
       <div className="flex items-center gap-0.5">
-      <Btn title={t("alignLeft")} active={editor.isActive({ textAlign: "left" })} onClick={() => editor.chain().focus().setTextAlign("left").run()}><AlignLeft className="size-4" /></Btn>
-      <Btn title={t("alignCenter")} active={editor.isActive({ textAlign: "center" })} onClick={() => editor.chain().focus().setTextAlign("center").run()}><AlignCenter className="size-4" /></Btn>
-      <Btn title={t("alignRight")} active={editor.isActive({ textAlign: "right" })} onClick={() => editor.chain().focus().setTextAlign("right").run()}><AlignRight className="size-4" /></Btn>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" title={t(activeAlign.label)}
+            className="h-8 px-1.5 rounded-md flex items-center gap-0.5 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors data-[state=open]:bg-muted data-[state=open]:text-foreground">
+            <AlignTrigger className="size-4" />
+            <ChevronDown className="size-3 opacity-60" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-40">
+          {ALIGN_TYPES.map(({ value, label, icon: Icon }) => (
+            <DropdownMenuItem key={value} onSelect={() => editor.chain().focus().setTextAlign(value).run()} className="gap-2.5">
+              <Icon className="size-4 text-muted-foreground" />
+              <span className="flex-1">{t(label)}</span>
+              {editor.isActive({ textAlign: value }) && <Check className="size-4 shrink-0" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
       </div>
       <Div />
 
@@ -289,14 +368,22 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-52 max-h-[320px] overflow-y-auto">
-          {CALLOUT_TYPES.map(({ type, label, icon: Icon, color }) => (
+          {/* Emojili blok — eng koʻp ishlatiladigan, erkin variant. Ataylab
+              BIRINCHI va chiziqcha bilan ajratilgan: quyidagilar qatʼiy
+              pedagogik turlar, bu esa boshqa toifadagi blok. */}
+          <DropdownMenuItem onSelect={insertNotionCallout} className="gap-2.5">
+            <span className="size-4 shrink-0 flex items-center justify-center text-sm leading-none">💡</span>
+            {t("insertNotionCallout")}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {CALLOUT_TYPES.map(({ type, icon: Icon, color }) => (
             <DropdownMenuItem
               key={type}
-              onSelect={() => insertCallout(type, label)}
+              onSelect={() => insertCallout(type)}
               className="gap-2.5"
             >
               <Icon className="size-4 shrink-0" style={{ color }} />
-              {label}
+              {t(`calloutTypes.${type}`)}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

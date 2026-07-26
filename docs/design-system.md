@@ -1,6 +1,6 @@
 # Dizayn tizimi (shadcn asosida)
 
-Murabbiyona EMS dizayn tizimi. shadcn/ui (`new-york`, `neutral`) + Tailwind v4
+Ustozona EMS dizayn tizimi. shadcn/ui (`new-york`, `neutral`) + Tailwind v4
 (CSS-variables) asosida. **Yagona manba — `src/app/globals.css`.** Hech qaerda
 xom rang yoki ixtiyoriy oʻlcham ishlatmang; quyidagi tokenlardan foydalaning.
 

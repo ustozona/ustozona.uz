@@ -11,6 +11,7 @@ import QuickFeedback from "@/components/QuickFeedback";
 import HeaderBreadcrumb from "@/components/HeaderBreadcrumb";
 import GlobalCommandPalette from "@/components/GlobalCommandPalette";
 import NotificationsBell from "@/components/NotificationsBell";
+import FocusTimerPill from "@/components/tasks/FocusTimerPill";
 import GuideHub from "@/components/onboarding/GuideHub";
 import HeaderAccountMenu from "@/components/HeaderAccountMenu";
 import { Maximize, Minimize } from "lucide-react";
@@ -41,7 +42,7 @@ export default function Header() {
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
 
   return (
-    <header className="flex items-center gap-1 border-b border-border bg-card shrink-0 z-20 h-[var(--top-header-height)] px-3">
+    <header className="relative flex items-center gap-1 border-b border-border bg-card shrink-0 z-20 h-[var(--top-header-height)] px-3">
       {/* Sidebar toggle */}
       <Tooltip>
         <TooltipTrigger asChild>
@@ -76,6 +77,13 @@ export default function Header() {
 
       {/* Spacer — pushes actions to the right */}
       <div className="flex-1 min-w-2" />
+
+      {/* Fokus taymeri — headerning aynan oʻrtasida, tomonlar kengligidan mustaqil */}
+      <div className="pointer-events-none absolute inset-y-0 left-1/2 flex -translate-x-1/2 items-center">
+        <span className="pointer-events-auto">
+          <FocusTimerPill />
+        </span>
+      </div>
 
       {/* Right actions — mantiqiy guruhlar whitespace bilan ajratilgan */}
       <div className="flex items-center gap-3">

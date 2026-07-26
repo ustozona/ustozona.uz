@@ -32,6 +32,22 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "lesson-editor-emoji-callout-zoom",
+    date: "2026-07-26",
+    type: "yangi",
+    title: "Dars muharriri — Emojili blok va sahifa kattalashtirish qoʻshildi",
+    body: "Endi darsga erkin \"Emojili blok\" (istalgan emoji + rang, oʻz sarlavhasi bilan) qoʻshish mumkin — qatʼiy tur tanlash shart emas. AI yordamchi ham mos joyda shunday blok taklif qiladi. Sahifa burchagida yangi kattalashtirish tugmalari (+/−) paydo boʻldi.",
+    href: "/dashboard/lessons",
+  },
+  {
+    id: "lesson-editor-callout-fixes",
+    date: "2026-07-26",
+    type: "tuzatildi",
+    title: "Dars muharriri — callout bloklaridagi bir qator kamchilik tuzatildi",
+    body: "Callout va Emojili bloklarni Backspace/Delete bilan oʻchirishda ular bir-birining ichiga kirib qolish holati tuzatildi. Blok sarlavhasini endi oddiy Bold (B) tugmasi bilan qalin/oddiy qilish mumkin. Matn oʻlchami ixchamlashtirildi, chop etishda rang endi saqlanadi.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "lesson-schedule-flow",
     date: "2026-07-25",
     type: "yaxshilandi",

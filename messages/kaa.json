@@ -1952,6 +1952,14 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "lesson-editor-emoji-callout-zoom": {
+        "title": "Sabaq redaktorı — erkin emoji-blok hám bet masshtabı qosıldı",
+        "body": "Endi sabaqqa erkin \"emoji-blok\" (qálegen emoji + reń, óz atamasi menen) qosıw múmkin — qatań túr tańlaw shárt emes. AI járdemshi de sáykes jerde sonday blok usınadı. Bettiń múyeshinde jańa masshtab túymeleri (+/−) payda boldı."
+      },
+      "lesson-editor-callout-fixes": {
+        "title": "Sabaq redaktorı — callout bloklarındağı bir qatar kemshilik dúzetildi",
+        "body": "Callout hám emoji bloklarındı Backspace/Delete penen óshirgende olardıń bir-birine kirip qalıw jағdayı dúzetildi. Bloktıń atamasın endi ápiwayı Bold (B) túymesi menen qalıń/ápiwayı etiw múmkin. Tekst ólshemi ıqshamlastırıldı, basıp shığarıwda reń endi saqlanadı."
+      },
       "lesson-schedule-flow": {
         "title": "Sabaq redaktorı — kún biriktiriw qolaylıraq boldı",
         "body": "Sabaq bir neshe klasqa biriktirilgende \"Keste\" bólimi endi bir ulıwma dizim — barlıq klasslardıń sabaqları bir kún astında birge kórinedi. Kún tańlağanda kalendar hár klastıń kestesindegi kúnlerdi ózi reńi menen kórsetedi, waqıttı bolsa birden, tez izbe-iz qosıw múmkin."
@@ -2810,6 +2818,9 @@
   },
   "LessonEditor": {
     "contentPlaceholder": "Sabaq tekstin jazıwdı baslań…",
+    "zoom": "Ülkeytiw",
+    "zoomIn": "Ülkeytiw",
+    "zoomOut": "Kishireytiw",
     "characterCount": "{count} belgi",
     "pageBoundary": "{page}-bet",
     "notFoundTitle": "Sabaq tabılmadı",
@@ -2833,7 +2844,9 @@
       "saved": "Saqlandı",
       "duplicated": "Sabaq nusqalandı",
       "deleted": "Sabaq óshirildi",
-      "templateSoon": "Shablon sıpatında saqlaw — tez arada"
+      "templateSoon": "Shablon sıpatında saqlaw — tez arada",
+      "markedTaught": "Sabaq ótilgen dep belgilendi",
+      "unmarkedTaught": "Belgi alıp taslandı"
     },
     "untitled": "Atsız",
     "copySuffix": "nusqa",
@@ -2843,6 +2856,8 @@
       "downloadPdf": "Júklep alıw (PDF)",
       "duplicate": "Nusqalaw",
       "saveAsTemplate": "Shablon sıpatında saqlaw",
+      "markTaught": "Ótilgen dep belgilew",
+      "unmarkTaught": "Belgini alıp taslaw",
       "deleteLesson": "Sabaqtı óshiriw"
     },
     "deleteDialog": {
@@ -2854,6 +2869,7 @@
     "close": "Jabıw",
     "saving": "Saqlanmaqta…",
     "saved": "Saqlandı",
+    "savedAtTooltip": "Saqlandı — {time}",
     "justEdited": "Házir ǵana redaktorlandı"
   },
   "LessonDetailsPanel": {
@@ -2903,6 +2919,7 @@
     "alignLeft": "Shepke",
     "alignCenter": "Orayǵa",
     "alignRight": "Ońǵa",
+    "alignJustify": "Tolıq tegisleu",
     "blockquote": "Citat",
     "codeBlock": "Kod blogı",
     "horizontalRule": "Sızıq",
@@ -2922,7 +2939,23 @@
     "link": "Silkeltpe",
     "linkApply": "Qosıw",
     "insertImage": "Súwret qosıw",
-    "insertCallout": "Callout qosıw"
+    "insertCallout": "Callout qosıw",
+    "changeCalloutType": "Túrin ózgertiw",
+    "insertNotionCallout": "Emojili blok",
+    "notionCalloutTitlePlaceholder": "Sarlawha",
+    "calloutTypes": {
+      "note": "Eskertpe",
+      "tip": "Maslahat",
+      "info": "Anıqlama",
+      "abstract": "Maqset",
+      "example": "Mısal",
+      "question": "Sorau",
+      "success": "Orınlandı",
+      "warning": "Dıqqat",
+      "danger": "Qawipsizlik qağıydası",
+      "failure": "Qátelik",
+      "bug": "Úy jumısı"
+    }
   },
   "LessonAiAssistantPanel": {
     "attachDocument": "Sabaqlıq/fayl",
@@ -2947,7 +2980,12 @@
     "suggestion": {
       "lessonPlan": "Bul tema ushın 45 minutlıq sabaq jobasın dúz",
       "exercises": "Tema boyınsha 5 shınıǵıw hám juwapların ber",
-      "quizQuestions": "Oqıwshılar ushın 3 baqlaw sorawın jaz"
+      "quizQuestions": "Oqıwshılar ushın 3 baqlaw sorawın jaz",
+      "standardsPlan": "Biriktirilgen standartlar tiykarında sabaq rejesin dúzıw",
+      "backwardDesign": "Backward Design (keri jobalastırıw) boyınsha sabaq rejesin dúzıw",
+      "backwardDesignWithStandards": "Biriktirilgen standartlardan kelip shıǵıp, Backward Design boyınsha sabaq rejesin dúzıw",
+      "fiveE": "5E modeli (Engage-Explore-Explain-Elaborate-Evaluate) boyınsha sabaq rejesin dúzıw",
+      "smart": "SMART maqsetli sabaq rejesin dúzıw"
     },
     "addToLesson": "Sabaqqa qosıw",
     "copy": "Nusqalaw",

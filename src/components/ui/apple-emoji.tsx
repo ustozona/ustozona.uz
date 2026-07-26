@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -43,6 +43,17 @@ function toUnified(char: string): string {
   return [...char].map((c) => c.codePointAt(0)!.toString(16)).join("-");
 }
 
+/* Ayrim emoji (mas. ⭐ 2b50) sprite fayli VS16'siz, boshqalari (mas. ☀️
+   2600-fe0f) VS16 bilan nomlangan — matnda yozilgan holat har doim toʻgʻri
+   fayl nomiga mos kelmaydi. Shu sabab 404'da qarama-qarshi variant bilan
+   bir marta qayta urinib koʻriladi. */
+function toggleFe0f(unified: string): string {
+  const parts = unified.split("-");
+  const idx = parts.indexOf("fe0f");
+  if (idx !== -1) return parts.filter((_, i) => i !== idx).join("-");
+  return [parts[0], "fe0f", ...parts.slice(1)].join("-");
+}
+
 /**
  * Haqiqiy unicode belgidan (mas. "🔥") Apple sprite chizadi. Sprite
  * topilmasa (juda yangi/kam tarqalgan emoji) hujayra boʻsh qoladi —
@@ -55,16 +66,32 @@ export function AppleEmojiSprite({
   emoji: string;
   className?: string;
 }) {
+  const unified = toUnified(emoji);
+  /* `retried`/`failed` — FAQAT joriy emoji uchun amal qiladigan holat. `emoji`
+     propi oʻzgarganda ular tozalanishi SHART: aks holda eski sprite ekranda
+     qolib ketadi va faqat komponent qayta yaratilganda (sahifadan chiqib-kirish)
+     yangilanadi — bu klassik "props'dan olingan state eskirib qolishi" xatosi. */
+  const [retried, setRetried] = useState(false);
   const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setRetried(false);
+    setFailed(false);
+  }, [unified]);
+
   if (failed) return null;
   return (
     <img
-      src={`${EMOJI_CDN}${toUnified(emoji)}.png`}
+      // `key` — emoji almashganda brauzer eski rasmni koʻrsatib turmasin
+      key={unified}
+      src={`${EMOJI_CDN}${retried ? toggleFe0f(unified) : unified}.png`}
       alt={emoji}
       draggable={false}
       loading="lazy"
       className={cn("inline-block object-contain", className)}
-      onError={() => setFailed(true)}
+      onError={() => {
+        if (retried) { setFailed(true); return; }
+        setRetried(true);
+      }}
     />
   );
 }

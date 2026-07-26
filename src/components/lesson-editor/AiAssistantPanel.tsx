@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EditorSidePanelHeader } from "./EditorSidePanel";
+import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType } from "./callout-types";
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -108,18 +109,65 @@ const latexToPlain = (text: string) => text
 
 const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
-/* Darsga qoʻshish uchun: formulalar Tiptap Mathematics tugunlariga aylantiriladi,
-   shunda muharrirda ham chatdagidek KaTeX bilan renderlanadi (va tahrirlanadi). */
+/* AI javobidagi Obsidian uslubidagi callout ("> [!tip] Sarlavha\n> matn") —
+   callout-types.ts dagi YAGONA MANBAdan hosil qilinadi. Ilgari bu regex
+   qoʻlda takrorlangan matn edi — yangi tur qoʻshilib bu yerda unutilsa,
+   AI shu turni yozar edi-yu, u jimgina oddiy matn boʻlib qolardi (xato
+   chiqmasdan). Callout tagidan keyingi "> " bilan boshlangan qatorlar
+   tanaga kiradi (blok tugaguncha).
+
+   "> [!free:EMOJI] Sarlavha" — Emojili blok (notionCallout) uchun ALOHIDA
+   sintaksis: qatʼiy tur yoʻq, faqat erkin emoji. Route.ts SYSTEM promptida
+   tushuntirilgan. */
+const CALLOUT_TYPES_RE = new RegExp(`^(${CALLOUT_KEYS_RE_SOURCE})$`);
+const FREE_CALLOUT_RE = /^>\s*\[!free:(\S+)\]\s*(.*)$/;
+
+function extractCallouts(text: string, mask: (html: string) => string): string {
+  const lines = text.split("\n");
+  const out: string[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const freeMatch = FREE_CALLOUT_RE.exec(lines[i]);
+    const m = freeMatch ? null : /^>\s*\[!(\w+)\]\s*(.*)$/.exec(lines[i]);
+    const type = m?.[1].toLowerCase();
+    if (freeMatch || (m && type && CALLOUT_TYPES_RE.test(type))) {
+      const title = (freeMatch ? freeMatch[2] : m![2]).trim();
+      const bodyLines: string[] = [];
+      i++;
+      while (i < lines.length && /^>/.test(lines[i])) {
+        bodyLines.push(lines[i].replace(/^>\s?/, ""));
+        i++;
+      }
+      const bodyHtml = bodyLines.join("\n").trim() ? (marked.parse(bodyLines.join("\n")) as string) : "<p></p>";
+      // Sarlavha `<strong>` bilan — qalinlik endi CSS orqali majburiy emas,
+      // faqat haqiqiy Bold markasi orqali (EditorToolbar.tsx'dagi
+      // insertCallout/insertNotionCallout bilan bir xil andoza).
+      const html = freeMatch
+        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="gray"><div data-notion-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`
+        : `<div data-callout-type="${normalizeCalloutType(type)}"><div data-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`;
+      out.push(mask(html));
+      continue;
+    }
+    out.push(lines[i]);
+    i++;
+  }
+  return out.join("\n");
+}
+
+/* Darsga qoʻshish uchun: formulalar Tiptap Mathematics tugunlariga, callout'lar
+   esa Tiptap Callout tugunlariga aylantiriladi — shunda muharrirda haqiqiy
+   interaktiv elementlar (KaTeX, rangli ikonli karta) sifatida qoʻshiladi. */
 const mdEditor = (text: string) => {
   const parts: string[] = [];
-  const mask = (html: string) => `@@MATH${parts.push(html) - 1}@@`;
-  const masked = text
+  const mask = (html: string) => `@@TOK${parts.push(html) - 1}@@`;
+  let masked = text
     .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) =>
       mask(`<div data-type="block-math" data-latex="${escapeAttr(expr.trim())}"></div>`))
     .replace(/\$([^$\n]+?)\$/g, (_, expr: string) =>
       mask(`<span data-type="inline-math" data-latex="${escapeAttr(expr.trim())}"></span>`));
+  masked = extractCallouts(masked, mask);
   let html = marked.parse(masked) as string;
-  html = html.replace(/@@MATH(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
+  html = html.replace(/@@TOK(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
   return DOMPurify.sanitize(html);
 };
 
@@ -129,7 +177,7 @@ type AttachedDoc = { uri: string; mimeType: string; name: string };
 export default function AiAssistantPanel({
   lessonContext, classIds = [], lessonId, onClose, onInsert,
 }: {
-  lessonContext: { title?: string; classes?: string; unit?: string; content?: string };
+  lessonContext: { title?: string; classes?: string; unit?: string; content?: string; standards?: { id: string; desc: string }[]; durationMin?: number };
   /** Dars biriktirilgan sinf id'lari — anonim sinf-statistika konteksti uchun. */
   classIds?: string[];
   /** Chat tarixini serverda saqlash uchun (yoʻq boʻlsa tarix saqlanmaydi). */
@@ -159,7 +207,7 @@ export default function AiAssistantPanel({
     if (!lessonId || loadedRef.current) return;
     loadedRef.current = true;
     let on = true;
-    fetch(`/api/murabbiyona-ai/chat?lessonId=${encodeURIComponent(lessonId)}`)
+    fetch(`/api/ustozona-ai/chat?lessonId=${encodeURIComponent(lessonId)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d: { messages?: Msg[] } | null) => {
         if (on && d?.messages?.length) {
@@ -172,7 +220,7 @@ export default function AiAssistantPanel({
 
   const persist = (msgs: Msg[]) => {
     if (!lessonId) return;
-    fetch("/api/murabbiyona-ai/chat", {
+    fetch("/api/ustozona-ai/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ lessonId, messages: msgs }),
@@ -189,7 +237,7 @@ export default function AiAssistantPanel({
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     try {
-      const res = await fetch("/api/murabbiyona-ai", {
+      const res = await fetch("/api/ustozona-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -233,7 +281,7 @@ export default function AiAssistantPanel({
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/murabbiyona-ai/doc", { method: "POST", body: fd });
+      const res = await fetch("/api/ustozona-ai/doc", { method: "POST", body: fd });
       if (!res.ok) {
         toast.error(await res.text().catch(() => t("docError")));
         return;
@@ -279,9 +327,9 @@ export default function AiAssistantPanel({
             </p>
             <div className="mt-5 flex flex-col gap-2 w-full max-w-[300px]">
               {[
-                t("suggestion.lessonPlan"),
-                t("suggestion.exercises"),
-                t("suggestion.quizQuestions"),
+                t("suggestion.backwardDesign"),
+                t("suggestion.fiveE"),
+                t("suggestion.smart"),
               ].map((s) => (
                 <button key={s} onClick={() => setInput(s)}
                   className="text-left text-xs text-muted-foreground border border-border rounded-lg px-3 py-2 hover:bg-muted hover:text-foreground transition-colors">

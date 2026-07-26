@@ -1952,6 +1952,14 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "lesson-editor-emoji-callout-zoom": {
+        "title": "Dars muharriri — Emojili blok va sahifa kattalashtirish qoʻshildi",
+        "body": "Endi darsga erkin \"Emojili blok\" (istalgan emoji + rang, oʻz sarlavhasi bilan) qoʻshish mumkin — qatʼiy tur tanlash shart emas. AI yordamchi ham mos joyda shunday blok taklif qiladi. Sahifa burchagida yangi kattalashtirish tugmalari (+/−) paydo boʻldi."
+      },
+      "lesson-editor-callout-fixes": {
+        "title": "Dars muharriri — callout bloklaridagi bir qator kamchilik tuzatildi",
+        "body": "Callout va Emojili bloklarni Backspace/Delete bilan oʻchirishda ular bir-birining ichiga kirib qolish holati tuzatildi. Blok sarlavhasini endi oddiy Bold (B) tugmasi bilan qalin/oddiy qilish mumkin. Matn oʻlchami ixchamlashtirildi, chop etishda rang endi saqlanadi."
+      },
       "lesson-schedule-flow": {
         "title": "Dars muharriri — sana biriktirish qulayroq boʻldi",
         "body": "Bir nechta sinfga dars biriktirilganda \"Jadval\" boʻlimi endi bitta umumiy roʻyxat — barcha sinflarning darslari bir sana ostida birga koʻrinadi. Sana tanlashda kalendar sinf jadvalidagi kunlarni rangi bilan koʻrsatadi, vaqtni esa bittalab, tez ketma-ket qoʻshish mumkin."
@@ -2647,6 +2655,9 @@
   },
   "LessonEditor": {
     "contentPlaceholder": "Dars matnini yozishni boshlang…",
+    "zoom": "Kattalashtirish",
+    "zoomIn": "Kattalashtirish",
+    "zoomOut": "Kichraytirish",
     "characterCount": "{count} belgi",
     "pageBoundary": "{page}-bet",
     "notFoundTitle": "Dars topilmadi",
@@ -2670,7 +2681,9 @@
       "saved": "Saqlandi",
       "duplicated": "Dars nusxalandi",
       "deleted": "Dars oʻchirildi",
-      "templateSoon": "Shablon sifatida saqlash — tez orada"
+      "templateSoon": "Shablon sifatida saqlash — tez orada",
+      "markedTaught": "Dars oʻtilgan deb belgilandi",
+      "unmarkedTaught": "Belgi olib tashlandi"
     },
     "untitled": "Nomsiz",
     "copySuffix": "nusxa",
@@ -2680,6 +2693,8 @@
       "downloadPdf": "Yuklab olish (PDF)",
       "duplicate": "Nusxalash",
       "saveAsTemplate": "Shablon sifatida saqlash",
+      "markTaught": "Oʻtilgan deb belgilash",
+      "unmarkTaught": "Oʻtilgan belgisini olib tashlash",
       "deleteLesson": "Darsni oʻchirish"
     },
     "deleteDialog": {
@@ -2691,6 +2706,7 @@
     "close": "Yopish",
     "saving": "Saqlanmoqda…",
     "saved": "Saqlandi",
+    "savedAtTooltip": "Saqlandi — {time}",
     "justEdited": "Hozirgina tahrirlandi"
   },
   "LessonDetailsPanel": {
@@ -2740,6 +2756,7 @@
     "alignLeft": "Chapga",
     "alignCenter": "Markazga",
     "alignRight": "Oʻngga",
+    "alignJustify": "Toʻliq tekislash",
     "blockquote": "Iqtibos",
     "codeBlock": "Kod bloki",
     "horizontalRule": "Chiziq",
@@ -2759,7 +2776,23 @@
     "link": "Havola",
     "linkApply": "Qoʻshish",
     "insertImage": "Rasm qoʻshish",
-    "insertCallout": "Callout qoʻshish"
+    "insertCallout": "Callout qoʻshish",
+    "changeCalloutType": "Turini oʻzgartirish",
+    "insertNotionCallout": "Emojili blok",
+    "notionCalloutTitlePlaceholder": "Sarlavha",
+    "calloutTypes": {
+      "note": "Eslatma",
+      "tip": "Maslahat",
+      "info": "Taʼrif",
+      "abstract": "Maqsad",
+      "example": "Misol",
+      "question": "Savol",
+      "success": "Bajarildi",
+      "warning": "Diqqat",
+      "danger": "Xavfsizlik qoidasi",
+      "failure": "Xato",
+      "bug": "Uyga vazifa"
+    }
   },
   "LessonAiAssistantPanel": {
     "attachDocument": "Darslik/fayl",
@@ -2784,7 +2817,12 @@
     "suggestion": {
       "lessonPlan": "Shu mavzu uchun 45 daqiqalik dars rejasi tuz",
       "exercises": "Mavzu boʻyicha 5 ta mashq va javoblar ber",
-      "quizQuestions": "Oʻquvchilar uchun 3 ta nazorat savoli yoz"
+      "quizQuestions": "Oʻquvchilar uchun 3 ta nazorat savoli yoz",
+      "standardsPlan": "Biriktirilgan standartlar asosida dars rejasi tuz",
+      "backwardDesign": "Backward Design (teskari loyihalash) boʻyicha dars rejasi tuz",
+      "backwardDesignWithStandards": "Biriktirilgan standartlardan kelib chiqib, Backward Design boʻyicha dars rejasi tuz",
+      "fiveE": "5E modeli (Engage-Explore-Explain-Elaborate-Evaluate) boʻyicha dars rejasi tuz",
+      "smart": "SMART maqsadli dars rejasi tuz"
     },
     "addToLesson": "Darsga qoʻshish",
     "copy": "Nusxalash",

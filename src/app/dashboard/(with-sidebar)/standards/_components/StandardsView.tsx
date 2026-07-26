@@ -58,7 +58,6 @@ export default function StandardsView({
   const removeSet = useStandardsStore((s) => s.removeSet);
   const addStandards = useStandardsStore((s) => s.addStandards);
   const removeStandard = useStandardsStore((s) => s.removeStandard);
-  const toggleCovered = useStandardsStore((s) => s.toggleCovered);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -180,7 +179,6 @@ export default function StandardsView({
                   classId={classId}
                   onAddStandard={() => setAddToSetId(set.id)}
                   onRemoveSet={() => removeSet(set.id)}
-                  onToggle={(code) => toggleCovered(set.id, code)}
                   onRemove={(code) => removeStandard(set.id, code)}
                 />
               ))}
@@ -211,7 +209,6 @@ function SetCard({
   classId,
   onAddStandard,
   onRemoveSet,
-  onToggle,
   onRemove,
 }: {
   set: StandardSet;
@@ -219,14 +216,14 @@ function SetCard({
   classId: string;
   onAddStandard: () => void;
   onRemoveSet: () => void;
-  onToggle: (code: string) => void;
   onRemove: (code: string) => void;
 }) {
   const t = useTranslations("StandardsView");
   const classNames = useClassNameMap();
-  // Qamrov = qoʻlda (std.covered) YOKI darsdan avtomatik (v3 §9 Q4).
+  // Qamrov = FAQAT darsga biriktirilib, dars tugallangandan keyin (v3 §9 Q4).
+  // Qoʻlda belgilash olib tashlandi — yagona manba dars-standart bogʻlanishi.
   const lessons = useLessonStore((s) => s.lessons);
-  const isCovered = (s: StandardItem) => s.covered || lessonCoverage(lessons, classId, s.id).taught;
+  const isCovered = (s: StandardItem) => lessonCoverage(lessons, classId, s.id).taught;
 
   const total = set.standards.length;
   const covered = set.standards.filter(isCovered).length;
@@ -354,7 +351,7 @@ function SetCard({
         ) : (
           <ul className="divide-y divide-border border-t border-border">
             {items.map((std) => (
-              <StandardRow key={std.id} std={std} classId={classId} onToggle={onToggle} onRemove={onRemove} />
+              <StandardRow key={std.id} std={std} classId={classId} onRemove={onRemove} />
             ))}
           </ul>
         )}
@@ -366,12 +363,10 @@ function SetCard({
 function StandardRow({
   std,
   classId,
-  onToggle,
   onRemove,
 }: {
   std: StandardItem;
   classId: string;
-  onToggle: (code: string) => void;
   onRemove: (code: string) => void;
 }) {
   const t = useTranslations("StandardsView");
@@ -380,16 +375,17 @@ function StandardRow({
   const m = useMemo(() => classStandardMastery(classId, std.id), [classId, std.id]);
   // Keng tarqalgan tushunmovchiliklar (misconception diagnostikasi).
   const misconceptions = useMemo(() => classStandardMisconceptions(classId, std.id), [classId, std.id]);
-  // Qamrov darsdan avtomatik (v3 §9 Q4): tugallangan dars standartni bogʻlasa → oʻqitildi.
+  // Qamrov FAQAT darsdan (v3 §9 Q4): tugallangan dars standartni bogʻlasa → oʻqitildi.
+  // Qoʻlda belgilash yoʻq — yagona manba dars-standart bogʻlanishi.
   const lessons = useLessonStore((s) => s.lessons);
   const lessonCov = useMemo(() => lessonCoverage(lessons, classId, std.id), [lessons, classId, std.id]);
-  const covered = std.covered || lessonCov.taught;
+  const covered = lessonCov.taught;
   const [cjOpen, setCjOpen] = useState(false);
 
   return (
     <li className="group/row flex items-start gap-3 p-4">
-      {/* Coverage (oʻqitildi) — darsdan avtomatik (read-only) yoki qoʻlda toggle. */}
-      {lessonCov.taught ? (
+      {/* Coverage (oʻqitildi) — faqat darsdan avtomatik, read-only. */}
+      {covered ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="shrink-0 mt-0.5 size-7 rounded-full bg-success/10 flex items-center justify-center cursor-default">
@@ -401,23 +397,14 @@ function StandardRow({
           </TooltipContent>
         </Tooltip>
       ) : (
-        <button
-          type="button"
-          onClick={() => onToggle(std.id)}
-          aria-label={std.covered ? t("markNotCoveredAria") : t("markCoveredAria")}
-          className="shrink-0 mt-0.5 rounded-full transition-transform hover:scale-110 cursor-pointer"
-          title={std.covered ? t("coveredManualTitle") : t("notCoveredTitle")}
-        >
-          {std.covered ? (
-            <span className="size-7 rounded-full bg-success/10 flex items-center justify-center">
-              <CheckCircle2 className="size-4 text-success" aria-hidden />
-            </span>
-          ) : (
-            <span className="size-7 rounded-full flex items-center justify-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="shrink-0 mt-0.5 size-7 rounded-full flex items-center justify-center cursor-default">
               <Circle className="size-4 text-muted-foreground/40" aria-hidden />
             </span>
-          )}
-        </button>
+          </TooltipTrigger>
+          <TooltipContent>{t("notCoveredTitle")}</TooltipContent>
+        </Tooltip>
       )}
 
       <div className="flex-1 min-w-0 space-y-1">
@@ -441,8 +428,8 @@ function StandardRow({
         <div className="flex items-center gap-2 flex-wrap pt-0.5">
           {covered ? (
             <Badge variant="outline" className="shadow-none border-success/30 text-success gap-1">
-              {lessonCov.taught ? <BookOpen className="size-3" aria-hidden /> : <CheckCircle2 className="size-3" aria-hidden />}
-              {lessonCov.taught ? t("taughtFromLesson") : t("taught")}
+              <BookOpen className="size-3" aria-hidden />
+              {t("taughtFromLesson")}
             </Badge>
           ) : (
             <Badge variant="outline" className="shadow-none text-muted-foreground">{t("notCovered")}</Badge>

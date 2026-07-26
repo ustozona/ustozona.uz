@@ -26,7 +26,9 @@ Maqsad: mavjud sahifalarni buzmasdan yangi diagnostik qatlamni qoʻshish.
 - [x] **Dars xulosa (hero)** — `dashboard/(with-sidebar)/xulosa/page.tsx`: misconception kartalari +
       retrieval signallari + alohida eʼtibor. Nav'ga qoʻshildi (Sidebar BAHOLASH). Preview'da tasdiqlandi.
 - [x] Brend: "Murabbiyona" → "Ustozona" (Header, layout metadata, lesson-editor "Ustozona AI",
-      api/route display strings). API yoʻli `/api/murabbiyona-ai` ichki — oʻzgartirilmadi.
+      api/route display strings). API yoʻli ham `/api/ustozona-ai` ga koʻchirildi.
+      localStorage kalitlari (`murabbiyona-*`) ATAYLAB eski nomda qoldi — ular
+      foydalanuvchi brauzeridagi jonli maʼlumot, nomini oʻzgartirish = maʼlumot yoʻqolishi.
 - [x] **Standart-mastery jadvali** — `dashboard/(with-sidebar)/ozlashtirish/page.tsx`: oʻquvchi×standart
       jadval, decay-rang (yangi/soʻnmoqda/takrorlash/oʻzlashtirmadi/tekshirilmagan), A–F yoʻq, legend.
       Nav'ga qoʻshildi. Preview'da tasdiqlandi. (Eslatma: hozir Jurnal yonida; keyin uni almashtirishi mumkin.)

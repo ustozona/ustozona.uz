@@ -4,6 +4,19 @@ import { db } from "@/server/db/client";
 import { aiUsage, aiDocs, classes } from "@/server/db/schema";
 import { streamChat, configuredProviders, type AiChatMessage, type StreamChatArgs, type ProviderId } from "@/server/ai/providers";
 import { buildClassContext, buildClassContexts } from "@/server/ai/class-context";
+import uzMessages from "../../../../messages/uz.json";
+
+/* Callout turkodlari + yorliqlar — YAGONA MANBADAN (messages/uz.json,
+   LessonEditorToolbar.calloutTypes) hosil qilinadi. Ilgari bu yerda qoʻlda
+   takrorlangan edi: muharrir tomonidagi yorliq oʻzgarsa, AI eski nom bilan
+   callout yasashda davom etardi. Prompt har doim oʻzbekcha boʻlgani uchun
+   uz.json'dan toʻgʻridan-toʻgʻri olinadi (callout-extension.ts "use client"
+   va lucide-react ni ortiqcha ilova qilib yuboradi, bu yerga kerak emas). */
+const CALLOUT_TYPE_LIST = Object.entries(
+  uzMessages.LessonEditorToolbar.calloutTypes as Record<string, string>
+)
+  .map(([code, label]) => `${code} (${label})`)
+  .join(", ");
 
 /**
  * Ustozona AI — dars muharriridagi AI yordamchi uchun streaming endpoint.
@@ -23,9 +36,30 @@ mavjud darsni yaxshilash, savollar va baholash mezonlarini taklif qilish.
 Qoidalar:
 - Faqat oʻzbek tilida (lotin), tabiiy va aniq yoz.
 - Apostrof oʻrniga toʻgʻri belgilardan foydalan: Oʻ/Gʻ uchun ʻ (U+02BB), tutuq belgisi uchun ʼ (U+02BC).
-- Javobni Markdown formatida yoz: sarlavhalar (##), roʻyxatlar, qalin matn.
+- Javobni Markdown formatida yoz va dars muharririning HAMMA formatlash imkoniyatlaridan maksimal foydalan (bular darsga "Darsga qoʻshish" bilan toʻgʻridan-toʻgʻri, tayyor koʻrinishda tushadi):
+  - Sarlavhalar (##, ###) — bosqich/boʻlim nomlari uchun.
+  - Roʻyxatlar (- yoki 1.) va vazifa roʻyxati (- [ ]) — qadamlar, topshiriqlar uchun.
+  - **Qalin** — asosiy atama/koʻrsatma; jadval (| ... | ... |, GFM) — mezon/rubrika, taqqoslash, vaqt jadvali kabi tuzilmalar uchun.
+  - Formulalar — $...$ (qator ichi) yoki $$...$$ (alohida qator), LaTeX sintaksisi.
+  - Callout (rangli, ikonli maʼlumot bloki) — ikki turi bor, HAR safar mos joyda ishlatilsin (masalan maqsad/eslatma/misol/diqqatli oʻrin uchun):
+    1) Qatʼiy pedagogik tur (Obsidian uslubi) — "> [!turkod] Sarlavha" qatoridan keyin har qatorda "> " bilan davom etadigan matn. Mumkin boʻlgan turkodlar (aynan shu inglizcha soʻz, boshqasi ishlamaydi):
+       ${CALLOUT_TYPE_LIST}.
+       Masalan:
+       > [!abstract] Dars maqsadi
+       > Oʻquvchi ... qila oladi.
+    2) Erkin "Emojili blok" — qatʼiy tur mos kelmaydigan, ochiq/norasmiy eslatma uchun (masalan qiziqarli fakt, motivatsion soʻz, umumiy maslahat). Format: "> [!free:EMOJI] Sarlavha" — EMOJI oʻrniga MAVZUGA MOS bitta emoji (mas. 💡, 🎯, ⭐, 🔥), keyin xuddi yuqoridagidek "> " bilan davom etadigan matn. Turkodlardan birortasi ham mos kelmasa, shuni ishlat — "note" bilan "free"ni bir-biriga aralashtirma.
+       Masalan:
+       > [!free:🔥] Qiziqarli fakt
+       > Bilasizmi, ...
 - Aniq, amaliy va oʻqituvchi darhol ishlatadigan koʻrinishda ber. Ortiqcha muqaddimasiz.
-- Oʻquvchilarning ism-familiyasi kabi shaxsiy maʼlumotlarini soʻrama va javobda ishlatma.`;
+- Oʻquvchilarning ism-familiyasi kabi shaxsiy maʼlumotlarini soʻrama va javobda ishlatma.
+- Dars rejasi soʻralganda (foydalanuvchi aynan qanday soʻz bilan soʻrashidan qatʼi nazar) quyidagi ikkita maʼlumot HAR DOIM, SOʻRALMASDAN hisobga olinadi:
+  - "Dars davomiyligi" berilgan boʻlsa, reja ANIQ shu vaqtga (bosqichlarga ajratilgan daqiqalar yigʻindisi mos kelishi kerak) moʻljallansin.
+  - "Biriktirilgan standartlar" berilgan boʻlsa, reja va topshiriqlar ANIQ shu standartlarga (har bir standart kodiga alohida ishora qilib) asoslansin — ular berilmagan yoki mavzuga aloqasiz standart oʻylab topma. Bular berilmagan boʻlsa, standartlarsiz oddiy reja tuz.
+- Oʻqituvchi quyidagi dars-rejalashtirish metodikalaridan birini nomlab soʻrasa, aynan shu bosqichlar/tuzilma boʻyicha javob ber:
+  - "Backward Design" (Wiggins & McTighe, teskari loyihalash): 1) Kutilgan natijalar (standart/maqsad), 2) Baholash dalili (qanday bilamiz oʻrganilganini), 3) Oʻqitish rejasi/faoliyati — shu tartibda, har bosqichni sarlavha qilib.
+  - "5E modeli": Engage (Jalb qilish) → Explore (Tadqiq qilish) → Explain (Tushuntirish) → Elaborate (Chuqurlashtirish) → Evaluate (Baholash) — har biri alohida bosqich, taxminiy vaqt bilan.
+  - "SMART maqsad": har bir maqsadni Specific/Measurable/Achievable/Relevant/Time-bound (Aniq/Oʻlchanadigan/Erishish mumkin/Dolzarb/Muddatli) mezonlariga mos, bitta-ikkita gapda yoz.`;
 
 /** Asia/Tashkent (UTC+5) boʻyicha YYYY-MM-DD. */
 function todayTashkent(): string {
@@ -69,11 +103,11 @@ export async function POST(req: Request) {
 
   let body: {
     messages?: AiChatMessage[];
-    lesson?: { title?: string; classes?: string; unit?: string; content?: string };
+    lesson?: { title?: string; classes?: string; unit?: string; content?: string; standards?: { id?: string; desc?: string }[]; durationMin?: number };
     /** Sinf statistikasi (anonim) kontekstga qoʻshilsinmi — panel toggle. */
     useClassData?: boolean;
     classIds?: string[];
-    /** Hujjat rejimi — /api/murabbiyona-ai/doc dan qaytgan fayl. */
+    /** Hujjat rejimi — /api/ustozona-ai/doc dan qaytgan fayl. */
     doc?: { uri?: string; mimeType?: string; name?: string };
   };
   try {
@@ -91,8 +125,15 @@ export async function POST(req: Request) {
 
   // Dars konteksti — "Ask about your lesson" uchun
   const L = body.lesson;
-  const lessonCtx = L && (L.title || L.content || L.classes || L.unit)
-    ? `\n\n— Joriy dars konteksti —\nSarlavha: ${L.title || "(nomsiz)"}\nSinf(lar): ${L.classes || "—"}\nBoʻlim: ${L.unit || "—"}\nMatn (HTML): ${(L.content || "").slice(0, 6000) || "(boʻsh)"}`
+  const standardsList = (L?.standards ?? []).filter(
+    (s): s is { id: string; desc: string } => !!s?.id && !!s?.desc
+  );
+  const standardsCtx = standardsList.length
+    ? `\nBiriktirilgan standartlar:\n${standardsList.map((s) => `- ${s.id}: ${s.desc}`).join("\n")}`
+    : "";
+  const durationCtx = L?.durationMin ? `\nDars davomiyligi: ${L.durationMin} daqiqa` : "";
+  const lessonCtx = L && (L.title || L.content || L.classes || L.unit || standardsList.length || L.durationMin)
+    ? `\n\n— Joriy dars konteksti —\nSarlavha: ${L.title || "(nomsiz)"}\nSinf(lar): ${L.classes || "—"}\nBoʻlim: ${L.unit || "—"}${durationCtx}${standardsCtx}\nMatn (HTML): ${(L.content || "").slice(0, 6000) || "(boʻsh)"}`
     : "";
 
   // Sinf statistikasi (anonim agregat) — faqat toggle yoqilganda.

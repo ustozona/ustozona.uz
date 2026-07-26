@@ -20,7 +20,7 @@ import BehaviorServerSync from "@/components/sync/BehaviorServerSync";
 import StudentNotesServerSync from "@/components/sync/StudentNotesServerSync";
 import TasksServerSync from "@/components/sync/TasksServerSync";
 import TasksAutoReconciler from "@/components/tasks/TasksAutoReconciler";
-import FocusTimerPill from "@/components/tasks/FocusTimerPill";
+import FocusEngine from "@/components/tasks/FocusEngine";
 import BehaviorAutoReconciler from "@/components/behavior/BehaviorAutoReconciler";
 import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
 import OnboardingGate from "@/components/onboarding/OnboardingGate";
@@ -52,6 +52,7 @@ export default function DashboardLayout({
       <StudentNotesServerSync />
       <TasksServerSync />
       <TasksAutoReconciler />
+      <FocusEngine />
       <BehaviorAutoReconciler />
       <LegacyStorageCleanup />
       <OnboardingGate />
@@ -65,7 +66,6 @@ export default function DashboardLayout({
           <DashboardShellWrapper>{children}</DashboardShellWrapper>
         </div>
       </SidebarInset>
-      <FocusTimerPill />
     </SidebarProvider>
   );
 }

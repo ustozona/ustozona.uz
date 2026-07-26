@@ -93,7 +93,7 @@ export type TeacherProfile = {
 
 export const DEFAULT_PROFILE: TeacherProfile = {
   name: "Otabek Abdusattorov",
-  email: "murabbiyona@gmail.com",
+  email: "ustozona@gmail.com",
   joinedAt: "2026-03",
   avatarUrl: "",
   avatarColor: "orange",

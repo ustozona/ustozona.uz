@@ -54,7 +54,7 @@ src/lib/sync/create-server-sync.ts # store→server sync helper
 src/hooks/useHydrateStore.ts       # server→store hydration hook
 ```
 
-- **Mutatsiyalar** = server actions; **route handlers** faqat: auth catch-all, mavjud AI stream (`src/app/api/murabbiyona-ai/route.ts` — sessiya talab qilinadigan boʻladi), `/api/health`, kelajak viktorina SSE.
+- **Mutatsiyalar** = server actions; **route handlers** faqat: auth catch-all, mavjud AI stream (`src/app/api/ustozona-ai/route.ts` — sessiya talab qilinadigan boʻladi), `/api/health`, kelajak viktorina SSE.
 - **Multi-tenant**: `teacherId` HECH QACHON clientdan olinmaydi — DAL ichida sessiyadan (`requireTeacher()`). Proxy faqat UX redirect; haqiqiy himoya DAL'da (Next 16 docs tavsiyasi).
 - **Sentyabr tayyorgarligi**: `students.user_id` nullable FK → auth `user` jadvali — hozirdan qoʻyiladi.
 

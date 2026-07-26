@@ -1,4 +1,4 @@
-# Murabbiyona EMS — Mantiq va ma'lumot modeli
+# Ustozona EMS — Mantiq va ma'lumot modeli
 
 > Bu hujjat loyihaning **mantig'ini va ma'lumot modelini** (entities + bog'lanishlar) jamlaydi.
 > Backend hozir yozilmaydi — butun loyiha frontendда tugagandan keyin yoziladi.

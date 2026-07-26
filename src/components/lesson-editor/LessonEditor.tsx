@@ -20,9 +20,10 @@ import { Typography } from "@tiptap/extension-typography";
 import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
-  FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
-  SlidersHorizontal, FolderOpen, Target, BookOpen, Sparkles,
+  FileText, X, MoreHorizontal, Check, CheckCircle2, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
+  SlidersHorizontal, Sparkles, Plus, Minus,
 } from "lucide-react";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
@@ -38,19 +39,24 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { lessonClassIds, type Lesson } from "@/lib/lessons-data";
+import { lessonClassIds, lessonSessions, type Lesson } from "@/lib/lessons-data";
 import EditorToolbar from "./EditorToolbar";
 import DetailsPanel from "./DetailsPanel";
 import AiAssistantPanel from "./AiAssistantPanel";
 import { TableKit } from "@tiptap/extension-table";
 import { TaskList, TaskItem } from "@tiptap/extension-list";
 import { Callout, CalloutTitle } from "./callout-extension";
+import { normalizeCalloutType } from "./callout-types";
+import { NotionCallout, NotionCalloutTitle } from "./notion-callout-extension";
+import { LeadingParagraph } from "./leading-paragraph-extension";
 import { PageBreak } from "./page-break-extension";
 import { PageBreakMarkers } from "./PageBreakMarkers";
 import { AppleEmojiDisplay } from "./apple-emoji-extension";
 import BubbleToolbar from "./BubbleToolbar";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
-import { formatFeedbackAgo, useRelativeT } from "@/app/dashboard/(with-sidebar)/feedback/_components/feedback-meta";
+import { useStandardsStore } from "@/store/useStandardsStore";
+import { formatFeedbackAgo, formatFeedbackFull, useRelativeT } from "@/app/dashboard/(with-sidebar)/feedback/_components/feedback-meta";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
@@ -79,6 +85,7 @@ const STATUS_CLS = {
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const t = useTranslations("LessonEditor");
+  const tToolbar = useTranslations("LessonEditorToolbar");
   const router = useRouter();
   const liveClasses = useLiveClasses();
   const hydrated = useLessonStore((s) => s._hasHydrated);
@@ -91,10 +98,19 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const removeScheduleForClass = useLessonStore((s) => s.removeScheduleForClass);
+  const setStatus = useLessonStore((s) => s.setStatus);
+  const standardSets = useStandardsStore((s) => s.sets);
 
   const [activePanel, setActivePanel] = useState<"details" | "ai" | null>("details");
   const [saving, setSaving] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  /* A4 sahifa zoom'i — faqat KOʻRINISH uchun (CSS transform), saqlangan
+     kontentga taʼsir qilmaydi. Chop etishda @media print orqali bekor
+     qilinadi (globals.css) — chop doim 100% oʻlchamda chiqadi. */
+  const [zoom, setZoom] = useState(100);
+  const ZOOM_MIN = 50;
+  const ZOOM_MAX = 150;
+  const ZOOM_STEP = 10;
   const relativeT = useRelativeT();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -111,12 +127,38 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
         heading: { levels: [1, 2, 3] },
         link: { openOnClick: false, autolink: true, HTMLAttributes: { rel: "noopener noreferrer" } },
       }),
-      Placeholder.configure({ placeholder: t("contentPlaceholder") }),
+      Placeholder.configure({
+        /* Callout sarlavhasi uchun ham xira namuna: ilgari blok qoʻyilganda
+           sarlavhaga literal "Maqsad" kabi soʻz YOZILARDI — oʻqituvchi oʻz
+           sarlavhasini yozish uchun avval uni oʻchirishi kerak edi. Endi
+           sarlavha boʻsh boshlanadi, turga mos nom faqat placeholder
+           sifatida koʻrinadi (yozmasa ham blok "Maqsad" boʻlib turadi).
+           `includeChildren: true` SHART: standart holda Placeholder faqat
+           hujjatning 1-darajali tugunlarini (paragraf/sarlavha) tekshiradi;
+           calloutTitle esa callout ichida ikkinchi darajada — shu bayroqsiz
+           quyidagi funksiya calloutTitle uchun HECH QACHON chaqirilmaydi. */
+        includeChildren: true,
+        placeholder: ({ editor, node, pos }) => {
+          if (node.type.name === "calloutTitle") {
+            const parentType = editor.state.doc.resolve(pos).parent.attrs.type as string | undefined;
+            return tToolbar(`calloutTypes.${normalizeCalloutType(parentType)}`);
+          }
+          // Emojili blok sarlavhasi — Callout'dan farqli, bu yerda "tur"
+          // konsepti yoʻq (erkin blok), shuning uchun bitta umumiy nom.
+          if (node.type.name === "notionCalloutTitle") {
+            return tToolbar("notionCalloutTitlePlaceholder");
+          }
+          return t("contentPlaceholder");
+        },
+      }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight.configure({ multicolor: true }),
       Image.configure({ inline: false, allowBase64: true }),
       Callout,
       CalloutTitle,
+      NotionCallout,
+      NotionCalloutTitle,
+      LeadingParagraph,
       // AI yordamchisi qoʻshgan $..$ / $$..$$ formulalar KaTeX bilan renderlanadi
       // (chat panelidagi koʻrinish bilan bir xil).
       Mathematics.configure({ katexOptions: { throwOnError: false } }),
@@ -195,9 +237,6 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
 
   const railItems = [
     { icon: SlidersHorizontal, title: t("rail.details"), active: activePanel === "details", onClick: () => togglePanel("details") },
-    { icon: FolderOpen, title: t("rail.materials"), soon: true },
-    { icon: Target, title: t("rail.goals"), soon: true },
-    { icon: BookOpen, title: t("rail.resources"), soon: true },
     { icon: Sparkles, title: t("rail.ai"), active: activePanel === "ai", onClick: () => togglePanel("ai") },
   ];
 
@@ -231,8 +270,27 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     toast.success(t("toast.deleted"));
     router.push("/dashboard/lessons");
   };
+  const handleToggleTaught = () => {
+    if (!lesson) return;
+    const next = lesson.status === "Completed" ? "Scheduled" : "Completed";
+    setStatus(lessonId, next);
+    toast.success(next === "Completed" ? t("toast.markedTaught") : t("toast.unmarkedTaught"));
+  };
 
   const updatedLabel = lesson?.updatedAt ? formatFeedbackAgo(lesson.updatedAt, relativeT) : null;
+
+  // AI'ga uzatiladigan biriktirilgan standartlar — kod + tavsif (barcha
+  // toʻplamlardan, klass bilan cheklanmaydi, chunki lesson.standards allaqachon
+  // Tafsilotlar panelida shu darsning sinfiga mos ravishda tanlangan).
+  const attachedStandards = (lesson?.standards ?? [])
+    .map((code) => standardSets.flatMap((s) => s.standards).find((s) => s.id === code))
+    .filter((s): s is NonNullable<typeof s> => !!s)
+    .map((s) => ({ id: s.id, desc: s.desc }));
+
+  // AI'ga uzatiladigan dars davomiyligi — eng yaqin/birinchi jadval sessiyasidan
+  // (barcha sinflar boʻyicha), daqiqada. Jadval yoʻq boʻlsa berilmaydi.
+  const firstSession = lesson ? lessonSessions(lesson).sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin)[0] : undefined;
+  const durationMin = firstSession ? firstSession.endMin - firstSession.startMin : undefined;
 
   // Sarlavha maydoni bir qatorli <input> boʻlsa uzun matn kesilib qolardi
   // (Google Docs/Notion uslubida sarlavha koʻp qatorga oʻralishi kerak) —
@@ -263,16 +321,30 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold", st.cls)}>
                 {st.label}
               </span>
-              <span className="shrink-0 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5 text-success" />}
-                {saving ? t("saving") : t("saved")}
-              </span>
             </div>
-            {updatedLabel && <p className="text-xs text-muted-foreground mt-0.5">{updatedLabel}</p>}
           </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
+          {saving ? (
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              {t("saving")}
+            </span>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground cursor-default">
+                  <Check className="size-3.5 text-success" />
+                  {updatedLabel ?? t("saved")}
+                </span>
+              </TooltipTrigger>
+              {lesson?.updatedAt && (
+                <TooltipContent>{t("savedAtTooltip", { time: formatFeedbackFull(lesson.updatedAt) })}</TooltipContent>
+              )}
+            </Tooltip>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" aria-label={t("more")}>
@@ -291,6 +363,10 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast(t("toast.templateSoon"))} className="gap-2">
                 <BookmarkPlus className="size-4" /> {t("menu.saveAsTemplate")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleToggleTaught} className="gap-2">
+                <CheckCircle2 className="size-4" />
+                {lesson?.status === "Completed" ? t("menu.unmarkTaught") : t("menu.markTaught")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setConfirmDeleteOpen(true)} className="gap-2 text-destructive focus:text-destructive">
@@ -337,8 +413,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             )}
           </div>
           {/* Scrollable canvas with A4 sheet */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            <div ref={setSheetEl} className="a4-print a4-sheet relative bg-card mx-auto my-8 rounded-sm card-elevation p-[16mm]">
+          <div className="relative flex-1 min-h-0 overflow-y-auto">
+            <div
+              ref={setSheetEl}
+              className="a4-print a4-sheet relative bg-card mx-auto my-8 rounded-sm card-elevation p-[16mm]"
+              style={{ zoom: `${zoom}%` }}
+            >
               <PageBreakMarkers measureEl={sheetEl} label={(page) => t("pageBoundary", { page })} />
               <textarea
                 ref={titleRef}
@@ -361,6 +441,36 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               )}
               <EditorContent editor={editor} />
             </div>
+            {/* Zoom boshqaruvi — faqat A4 sahifaning KOʻRINISHINI kattalashtiradi/
+                kichraytiradi (CSS `zoom`, chop etishga taʼsir qilmaydi).
+                `absolute` (`fixed` EMAS) — ota konteyner faqat muharrir
+                qismi (`relative flex-1 ... overflow-y-auto`), shuning
+                uchun yon panel ochilganda ustiga tushib qolmaydi, doim
+                panelning CHAP tarafida qoladi. */}
+            <ButtonGroup
+              orientation="vertical"
+              aria-label={t("zoom")}
+              className="no-print absolute bottom-6 right-6 h-fit shadow-md"
+            >
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t("zoomIn")}
+                disabled={zoom >= ZOOM_MAX}
+                onClick={() => setZoom((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
+              >
+                <Plus />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t("zoomOut")}
+                disabled={zoom <= ZOOM_MIN}
+                onClick={() => setZoom((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
+              >
+                <Minus />
+              </Button>
+            </ButtonGroup>
           </div>
         </div>
 
@@ -381,6 +491,8 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                     classes: lessonClassIds(lesson).map((id) => liveClasses.find((c) => c.id === id)?.name ?? id).join(", "),
                     unit: units.find((u) => u.id === lesson.unitId)?.title,
                     content: editor?.getHTML(),
+                    standards: attachedStandards,
+                    durationMin,
                   }}
                   classIds={lessonClassIds(lesson)}
                   lessonId={lesson.id}
@@ -418,14 +530,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
 
         {/* Icon rail */}
         <nav className="no-print w-14 shrink-0 bg-card border-l border-border flex flex-col items-center gap-1.5 py-4">
-          {railItems.map(({ icon: Icon, title, active, soon, onClick }) => (
+          {railItems.map(({ icon: Icon, title, active, onClick }) => (
             <Button
               key={title}
               variant="ghost"
               size="icon-lg"
               aria-label={title}
-              disabled={soon}
-              disabledReason={soon ? t("rail.soon") : undefined}
               onClick={onClick}
               className={cn(
                 "rounded-xl",

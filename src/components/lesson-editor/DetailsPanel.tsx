@@ -338,7 +338,7 @@ export default function DetailsPanel({
                       ) : null;
                     })()}
                     <p className="text-sm text-foreground/90 leading-relaxed">{std.desc}</p>
-                    {std.covered && (
+                    {lesson.status === "Completed" && (
                       <div className="mt-3 pt-3 border-t border-border text-caption text-muted-foreground">
                         {t("taught")}
                       </div>
