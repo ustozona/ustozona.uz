@@ -2821,6 +2821,7 @@
     "zoom": "Ülkeytiw",
     "zoomIn": "Ülkeytiw",
     "zoomOut": "Kishireytiw",
+    "zoomReset": "100% oʻlshemge qaytiw",
     "characterCount": "{count} belgi",
     "pageBoundary": "{page}-bet",
     "notFoundTitle": "Sabaq tabılmadı",
@@ -2845,8 +2846,8 @@
       "duplicated": "Sabaq nusqalandı",
       "deleted": "Sabaq óshirildi",
       "templateSoon": "Shablon sıpatında saqlaw — tez arada",
-      "markedTaught": "Sabaq ótilgen dep belgilendi",
-      "unmarkedTaught": "Belgi alıp taslandı"
+      "statusChanged": "Halınıń ózgertildi: {status}",
+      "undo": "Biykarlaw"
     },
     "untitled": "Atsız",
     "copySuffix": "nusqa",
@@ -2856,8 +2857,6 @@
       "downloadPdf": "Júklep alıw (PDF)",
       "duplicate": "Nusqalaw",
       "saveAsTemplate": "Shablon sıpatında saqlaw",
-      "markTaught": "Ótilgen dep belgilew",
-      "unmarkTaught": "Belgini alıp taslaw",
       "deleteLesson": "Sabaqtı óshiriw"
     },
     "deleteDialog": {

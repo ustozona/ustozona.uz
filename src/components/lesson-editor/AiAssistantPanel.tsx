@@ -10,6 +10,9 @@ import { Bot, RotateCcw, SendHorizontal, Square, Plus, Copy, Check, ChartColumn,
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  MessageScrollerProvider, MessageScroller, MessageScrollerViewport, MessageScrollerContent, MessageScrollerItem, MessageScrollerButton,
+} from "@/components/ui/message-scroller";
 import { EditorSidePanelHeader } from "./EditorSidePanel";
 import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType } from "./callout-types";
 
@@ -195,11 +198,6 @@ export default function AiAssistantPanel({
   const [streaming, setStreaming] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
 
   // Chat tarixi: ochilganda serverdan yuklash (dars boʻyicha)
   const loadedRef = useRef(false);
@@ -317,62 +315,73 @@ export default function AiAssistantPanel({
       />
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-5">
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center px-4">
-            <span className="size-14 rounded-2xl bg-muted flex items-center justify-center mb-4"><Bot className="size-7 text-muted-foreground" /></span>
-            <p className="text-base font-bold text-foreground">{t("emptyTitle")}</p>
-            <p className="text-sm text-muted-foreground mt-1.5 max-w-[280px] leading-relaxed">
-              {t("emptyDescription")}
-            </p>
-            <div className="mt-5 flex flex-col gap-2 w-full max-w-[300px]">
-              {[
-                t("suggestion.backwardDesign"),
-                t("suggestion.fiveE"),
-                t("suggestion.smart"),
-              ].map((s) => (
-                <button key={s} onClick={() => setInput(s)}
-                  className="text-left text-xs text-muted-foreground border border-border rounded-lg px-3 py-2 hover:bg-muted hover:text-foreground transition-colors">
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          messages.map((m, i) => (
-            <div key={i} className={cn("flex gap-3", m.role === "user" ? "justify-end" : "justify-start")}>
-              {m.role === "assistant" && (
-                <span className="size-7 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5"><Bot className="size-4 text-foreground" /></span>
-              )}
-              <div className={cn("min-w-0 max-w-[85%]", m.role === "user" && "order-1")}>
-                {m.role === "user" ? (
-                  <div className="rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-3.5 py-2 text-sm whitespace-pre-wrap break-words">{m.content}</div>
-                ) : (
-                  <>
-                    {m.content ? (
-                      <div className="ai-prose text-sm text-foreground" dangerouslySetInnerHTML={{ __html: md(m.content) }} />
+      <MessageScrollerProvider defaultScrollPosition="end">
+      <MessageScroller className="flex-1 min-h-0">
+        <MessageScrollerViewport className="px-5 py-5">
+          <MessageScrollerContent className="gap-5">
+            {messages.length === 0 ? (
+              <MessageScrollerItem className="h-full flex flex-col items-center justify-center text-center px-4">
+                <span className="size-14 rounded-2xl bg-muted flex items-center justify-center mb-4"><Bot className="size-7 text-muted-foreground" /></span>
+                <p className="text-base font-bold text-foreground">{t("emptyTitle")}</p>
+                <p className="text-sm text-muted-foreground mt-1.5 max-w-[280px] leading-relaxed">
+                  {t("emptyDescription")}
+                </p>
+                <div className="mt-5 flex flex-col gap-2 w-full max-w-[300px]">
+                  {[
+                    t("suggestion.backwardDesign"),
+                    t("suggestion.fiveE"),
+                    t("suggestion.smart"),
+                  ].map((s) => (
+                    <button key={s} onClick={() => setInput(s)}
+                      className="text-left text-xs text-muted-foreground border border-border rounded-lg px-3 py-2 hover:bg-muted hover:text-foreground transition-colors">
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </MessageScrollerItem>
+            ) : (
+              messages.map((m, i) => (
+                <MessageScrollerItem
+                  key={i}
+                  scrollAnchor={m.role === "user" && i === messages.length - 2}
+                  className={cn("flex gap-3", m.role === "user" ? "justify-end" : "justify-start")}
+                >
+                  {m.role === "assistant" && (
+                    <span className="size-7 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5"><Bot className="size-4 text-foreground" /></span>
+                  )}
+                  <div className={cn("min-w-0 max-w-[85%]", m.role === "user" && "order-1")}>
+                    {m.role === "user" ? (
+                      <div className="rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-3.5 py-2 text-sm whitespace-pre-wrap break-words">{m.content}</div>
                     ) : (
-                      <div className="flex items-center gap-1 py-2">
-                        {[0, 1, 2].map((d) => <span key={d} className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: `${d * 0.15}s` }} />)}
-                      </div>
+                      <>
+                        {m.content ? (
+                          <div className="ai-prose text-sm text-foreground" dangerouslySetInnerHTML={{ __html: md(m.content) }} />
+                        ) : (
+                          <div className="flex items-center gap-1 py-2">
+                            {[0, 1, 2].map((d) => <span key={d} className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: `${d * 0.15}s` }} />)}
+                          </div>
+                        )}
+                        {m.content && !(streaming && i === messages.length - 1) && (
+                          <div className="flex items-center gap-1.5 mt-2">
+                            <button onClick={() => addToLesson(m.content)} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1 transition-colors">
+                              <Plus className="size-3.5" /> {t("addToLesson")}
+                            </button>
+                            <button onClick={() => copy(i, m.content)} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1 transition-colors">
+                              {copiedIdx === i ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />} {t("copy")}
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
-                    {m.content && !(streaming && i === messages.length - 1) && (
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <button onClick={() => addToLesson(m.content)} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1 transition-colors">
-                          <Plus className="size-3.5" /> {t("addToLesson")}
-                        </button>
-                        <button onClick={() => copy(i, m.content)} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-md px-2 py-1 transition-colors">
-                          {copiedIdx === i ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />} {t("copy")}
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+                  </div>
+                </MessageScrollerItem>
+              ))
+            )}
+          </MessageScrollerContent>
+        </MessageScrollerViewport>
+        <MessageScrollerButton />
+      </MessageScroller>
+      </MessageScrollerProvider>
 
       {/* Composer — input kontent bilan oʻsadi; tugma ichida (pastki-oʻngda) */}
       <div className="shrink-0 border-t border-border p-3">

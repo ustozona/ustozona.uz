@@ -31,6 +31,24 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 
 const dot = (hex: string) => <ClassSwatch hex={hex} className="size-2.5" />;
 
+/** Sinf nomi + rangli fon badge — bir xil coʻlmaz'da ikki marta takrorlangan
+ *  color-mix uslubi shu yerga yigʻildi (dropdown chip va jadval chip). */
+const ClassBadge = ({ hex, name }: { hex: string; name: string }) => (
+  <span
+    className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium truncate"
+    style={{ backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`, color: `color-mix(in srgb, ${hex} 55%, var(--foreground))` }}
+  >
+    {dot(hex)}
+    <span className="truncate">{name}</span>
+  </span>
+);
+
+const FieldButton = ({ children }: { children: React.ReactNode }) => (
+  <span className="flex items-center justify-between gap-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm hover:bg-accent/50 transition-colors text-left">
+    {children}
+  </span>
+);
+
 export default function DetailsPanel({
   lesson, units, onClose,
   onSetClasses, onSetUnitForClass, onAddScheduleForClass, onRemoveScheduleForClass, onSetStandards,
@@ -73,12 +91,6 @@ export default function DetailsPanel({
     onSetClasses(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
   };
 
-  const FieldButton = ({ children }: { children: React.ReactNode }) => (
-    <span className="flex items-center justify-between gap-2 w-full rounded-lg border border-border bg-card px-3.5 py-3 text-sm hover:bg-accent/50 transition-colors text-left">
-      {children}
-    </span>
-  );
-
   return (
     <div className="h-full flex flex-col">
       <EditorSidePanelHeader
@@ -89,7 +101,7 @@ export default function DetailsPanel({
       />
 
       {/* Body */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-6 space-y-7">
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-7">
         {/* CLASSES (koʻp tanlov) */}
         <div>
           <SectionLabel>{t("classes")}</SectionLabel>
@@ -124,15 +136,9 @@ export default function DetailsPanel({
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      selectedClasses.map((c) => {
-                        const hex = CLASS_COLOR_HEX[classColor(c)];
-                        return (
-                          <span key={c.id} className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-                            style={{ backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`, color: `color-mix(in srgb, ${hex} 55%, var(--foreground))` }}>
-                            {dot(hex)}{c.name}
-                          </span>
-                        );
-                      })
+                      selectedClasses.map((c) => (
+                        <ClassBadge key={c.id} hex={CLASS_COLOR_HEX[classColor(c)]} name={c.name} />
+                      ))
                     )}
                   </span>
                   <ChevronDown className="size-4 opacity-50 shrink-0" />
@@ -159,9 +165,13 @@ export default function DetailsPanel({
         </div>
 
         {/* UNITS (har sinf uchun alohida) */}
-        {selectedClasses.length > 0 && (
-          <div>
-            <SectionLabel>{t("units")}</SectionLabel>
+        <div>
+          <SectionLabel>{t("units")}</SectionLabel>
+          {selectedClasses.length === 0 ? (
+            <p className="text-caption text-muted-foreground rounded-xl border border-dashed border-border py-3 px-4">
+              {t("selectClassFirst")}
+            </p>
+          ) : (
             <div className="space-y-2.5">
               {selectedClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
@@ -171,7 +181,7 @@ export default function DetailsPanel({
                 return (
                   <DropdownMenu key={c.id}>
                     <DropdownMenuTrigger asChild>
-                      <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2.5 hover:bg-accent/40 transition-colors text-left">
+                      <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 hover:bg-accent/40 transition-colors text-left">
                         <span className="flex items-center gap-3 min-w-0">
                           <span className="size-9 rounded-full flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
                             <Layers className="size-4" />
@@ -188,7 +198,7 @@ export default function DetailsPanel({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[260px] overflow-y-auto p-1.5">
                       <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-2.5 py-2 rounded-lg">
-                        <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
+                        <span className="size-2.5 rounded-full shrink-0 bg-muted-foreground/25" />
                         <span className="flex-1 truncate text-muted-foreground">{t("noUnit")}</span>
                         {!unit && <Check className="size-4 shrink-0" />}
                       </DropdownMenuItem>
@@ -209,11 +219,17 @@ export default function DetailsPanel({
                 );
               })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* SCHEDULE — bitta umumiy roʻyxat, barcha biriktirilgan sinflar bir sana-karta ostida yigʻiladi */}
-        {selectedClasses.length > 0 && (() => {
+        <div>
+          <SectionLabel>{t("schedule")}</SectionLabel>
+          {selectedClasses.length === 0 ? (
+            <p className="text-caption text-muted-foreground rounded-xl border border-dashed border-border py-3 px-4">
+              {t("selectClassFirst")}
+            </p>
+          ) : (() => {
           type Item = { classId: string; hex: string; date: string; startMin: number; endMin: number; idx: number };
           const allItems: Item[] = [];
           selectedClasses.forEach((c) => {
@@ -235,15 +251,13 @@ export default function DetailsPanel({
           groups.forEach((g) => g.items.sort((a, b) => a.startMin - b.startMin));
 
           return (
-            <div>
-              <SectionLabel>{t("schedule")}</SectionLabel>
               <div className="space-y-1.5">
                 {/* Sana kartalari — bir karta = bir sana, ichida sinflar aralash vaqtlar */}
                 {groups.map((g) => {
                   const d = dateKeyToDate(g.date);
                   return (
-                    <div key={g.date} className="flex items-stretch gap-3 rounded-lg border border-border bg-card overflow-hidden">
-                      <div className="flex flex-col items-center justify-center px-3 py-2 shrink-0 bg-muted/50">
+                    <div key={g.date} className="flex items-stretch gap-3 rounded-xl border border-border bg-card overflow-hidden">
+                      <div className="flex flex-col items-center justify-center px-3 py-2 shrink-0 bg-muted/50" title={d.toLocaleDateString()}>
                         <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{MONTHS_UZ_SHORT[d.getMonth()]}</span>
                         <span className="text-lg font-bold leading-none text-foreground">{d.getDate()}</span>
                       </div>
@@ -257,14 +271,10 @@ export default function DetailsPanel({
                                 <span className="shrink-0 truncate font-medium text-foreground">
                                   {fmtClock(it.startMin)} — {fmtClock(it.endMin)}
                                 </span>
-                                {selectedClasses.length > 1 && (
-                                  <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium truncate"
-                                    style={{ backgroundColor: `color-mix(in srgb, ${it.hex} 12%, transparent)`, color: `color-mix(in srgb, ${it.hex} 55%, var(--foreground))` }}>
-                                    {dot(it.hex)}
-                                    <span className="truncate">{cls?.name}</span>
-                                  </span>
+                                {selectedClasses.length > 1 && cls && (
+                                  <ClassBadge hex={it.hex} name={cls.name} />
                                 )}
-                                <button onClick={() => onRemoveScheduleForClass(it.classId, it.idx)} title={t("removeSchedule")}
+                                <button onClick={() => onRemoveScheduleForClass(it.classId, it.idx)} title={t("removeSchedule")} aria-label={t("removeSchedule")}
                                   className="ml-auto shrink-0 text-muted-foreground/40 hover:text-destructive focus-visible:text-destructive focus-visible:opacity-100 transition-colors opacity-60 group-hover/time:opacity-100">
                                   <X className="size-4" />
                                 </button>
@@ -295,9 +305,9 @@ export default function DetailsPanel({
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
           );
         })()}
+        </div>
 
         {/* STANDARDS */}
         <div>
@@ -308,8 +318,8 @@ export default function DetailsPanel({
               {attachedStandards.map((std) => (
                 <HoverCard key={std.id} openDelay={150}>
                   <HoverCardTrigger asChild>
-                    <div className="group flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-2.5 hover:bg-accent/40 transition-colors">
-                      <span className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                    <div className="group flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 hover:bg-accent/40 transition-colors">
+                      <span className="size-9 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
                         <Target className="size-4" />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -320,7 +330,7 @@ export default function DetailsPanel({
                         type="button"
                         onClick={() => toggleStandard(std.id)}
                         aria-label={t("removeStandard")}
-                        className="size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="size-6 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-accent shrink-0 opacity-60 group-hover:opacity-100 transition-colors"
                       >
                         <X className="size-3.5" />
                       </button>
@@ -328,7 +338,7 @@ export default function DetailsPanel({
                   </HoverCardTrigger>
                   <HoverCardContent side="left" align="center" sideOffset={12} className="w-72">
                     <div className="flex items-center gap-2.5 mb-3">
-                      <span className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                      <span className="size-9 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
                         <Target className="size-4" />
                       </span>
                       <div className="min-w-0">
@@ -355,7 +365,7 @@ export default function DetailsPanel({
           )}
 
           {selectedIds.length === 0 ? (
-            <p className="text-caption text-muted-foreground rounded-lg border border-dashed border-border py-3 px-3.5">
+            <p className="text-caption text-muted-foreground rounded-xl border border-dashed border-border py-3 px-4">
               {t("selectClassFirst")}
             </p>
           ) : (

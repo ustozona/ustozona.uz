@@ -2821,6 +2821,7 @@
     "zoom": "Үлкейту",
     "zoomIn": "Үлкейту",
     "zoomOut": "Кішірейту",
+    "zoomReset": "100% мөлшерге қайтару",
     "characterCount": "{count} белгі",
     "pageBoundary": "{page}-бет",
     "notFoundTitle": "Сабақ табылмады",
@@ -2845,8 +2846,8 @@
       "duplicated": "Сабақ көшірілді",
       "deleted": "Сабақ өшірілді",
       "templateSoon": "Шаблон ретінде сақтау — жуырда",
-      "markedTaught": "Сабақ өтілді деп белгіленді",
-      "unmarkedTaught": "Белгі алынып тасталды"
+      "statusChanged": "Мәртебе өзгертілді: {status}",
+      "undo": "Болдырмау"
     },
     "untitled": "Аты жоқ",
     "copySuffix": "көшірме",
@@ -2856,8 +2857,6 @@
       "downloadPdf": "Жүктеп алу (PDF)",
       "duplicate": "Көшірмесін алу",
       "saveAsTemplate": "Шаблон ретінде сақтау",
-      "markTaught": "Өтілді деп белгілеу",
-      "unmarkTaught": "Белгіні алып тастау",
       "deleteLesson": "Сабақты өшіру"
     },
     "deleteDialog": {

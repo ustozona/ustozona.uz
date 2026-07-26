@@ -23,7 +23,6 @@ import {
   FileText, X, MoreHorizontal, Check, CheckCircle2, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
   SlidersHorizontal, Sparkles, Plus, Minus, CalendarClock, CircleAlert, PenLine, ChevronDown,
 } from "lucide-react";
-import { ButtonGroup } from "@/components/ui/button-group";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
@@ -57,6 +56,9 @@ import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useStandardsStore } from "@/store/useStandardsStore";
 import { formatFeedbackAgo, formatFeedbackFull, useRelativeT } from "@/app/dashboard/(with-sidebar)/feedback/_components/feedback-meta";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { SectionIcon } from "@/components/ui/section-icon";
 
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
@@ -76,44 +78,49 @@ function useResponsivePanelWidth(min: number, vwPct: number) {
   return width;
 }
 
-const STATUS_CLS = {
-  Completed: "bg-success/10 text-success",
-  Scheduled: "bg-info/10 text-info",
-  Unscheduled: "bg-warning/10 text-warning",
-  Draft: "bg-muted text-muted-foreground",
+/* Status haqidagi HAMMA vizual maʼlumot (rang, ikonka) — YAGONA joyda.
+   Yangi status qoʻshilsa faqat shu obyektni yangilash yetarli. `tone`dan
+   trigger/dropdown-item/active-fon sinflari hosil qilinadi (pastda). */
+const STATUS_META = {
+  Completed: { icon: CheckCircle2, tone: "success" },
+  Scheduled: { icon: CalendarClock, tone: "info" },
+  Unscheduled: { icon: CircleAlert, tone: "warning" },
+  Draft: { icon: PenLine, tone: "muted" },
 } as const;
 
-const STATUS_ICON = {
-  Completed: CheckCircle2,
-  Scheduled: CalendarClock,
-  Unscheduled: CircleAlert,
-  Draft: PenLine,
-} as const;
+type StatusTone = (typeof STATUS_META)[keyof typeof STATUS_META]["tone"];
 
-const STATUS_ITEM_CLS = {
-  Completed: "text-success focus:bg-success/10 focus:text-success",
-  Scheduled: "text-info focus:bg-info/10 focus:text-info",
-  Unscheduled: "text-warning focus:bg-warning/10 focus:text-warning",
-  Draft: "text-muted-foreground focus:bg-muted focus:text-muted-foreground",
-} as const;
+const TONE_BADGE_CLS: Record<StatusTone, string> = {
+  success: "bg-success/10 text-success",
+  info: "bg-info/10 text-info",
+  warning: "bg-warning/10 text-warning",
+  muted: "bg-muted text-muted-foreground",
+};
 
 /* dropdown-menu.tsx ichki qoidasi ("text-" sinfi yoʻq svg'larni majburan
    text-muted-foreground qiladi) sabab ikonka rangini alohida berish shart. */
-const STATUS_ICON_CLS = {
-  Completed: "text-success",
-  Scheduled: "text-info",
-  Unscheduled: "text-warning",
-  Draft: "text-muted-foreground",
-} as const;
+const TONE_ICON_CLS: Record<StatusTone, string> = {
+  success: "text-success",
+  info: "text-info",
+  warning: "text-warning",
+  muted: "text-muted-foreground",
+};
+
+const TONE_ITEM_CLS: Record<StatusTone, string> = {
+  success: "text-success focus:bg-success/10 focus:text-success",
+  info: "text-info focus:bg-info/10 focus:text-info",
+  warning: "text-warning focus:bg-warning/10 focus:text-warning",
+  muted: "text-muted-foreground focus:bg-muted focus:text-muted-foreground",
+};
 
 /* Joriy status qatori — hover kutmasdan ham darhol koʻzga tashlanishi uchun
    doimiy yengil fon (nafaqat oʻng chetdagi check belgisi). */
-const STATUS_ITEM_ACTIVE_CLS = {
-  Completed: "bg-success/10",
-  Scheduled: "bg-info/10",
-  Unscheduled: "bg-warning/10",
-  Draft: "bg-muted",
-} as const;
+const TONE_ACTIVE_CLS: Record<StatusTone, string> = {
+  success: "bg-success/10",
+  info: "bg-info/10",
+  warning: "bg-warning/10",
+  muted: "bg-muted",
+};
 
 /* Menyu tartibi — dars hayot-siklini aks ettiradi (Draft → Unscheduled →
    Scheduled → Completed). "Qoralama"ga qaytarish orqaga qadam boʻlgani
@@ -125,6 +132,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const tToolbar = useTranslations("LessonEditorToolbar");
   const router = useRouter();
   const liveClasses = useLiveClasses();
+  const isMobile = useIsMobile();
   const hydrated = useLessonStore((s) => s._hasHydrated);
   const lesson = useLessonStore((s) => s.lessons.find((l) => l.id === lessonId));
   const units = useLessonStore((s) => s.units);
@@ -152,6 +160,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const titleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [titleDraft, setTitleDraft] = useState<string | null>(null);
+  const titleDraftRef = useRef<string | null>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const [sheetEl, setSheetEl] = useState<HTMLDivElement | null>(null);
   const aiPanelWidth = useResponsivePanelWidth(280, 0.25);
@@ -236,13 +245,69 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   }, [editor, hydrated]);
 
   // Boshqa darsga oʻtilganda mahalliy sarlavha qoralamasi tozalanadi.
-  useEffect(() => { setTitleDraft(null); }, [lessonId]);
+  useEffect(() => { setTitleDraft(null); titleDraftRef.current = null; }, [lessonId]);
+
+  // Sahifa yopilayotganda (tab yopish/refresh) hali debounce navbatida
+  // turgan oʻzgarish bor boʻlsa brauzer oʻzining "chiqasizmi?" ogohlantirishini
+  // koʻrsatadi — SPA ichidagi navigatsiyaga taʼsir qilmaydi (unmount-flush
+  // buni allaqachon boshqaradi).
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (saving) { e.preventDefault(); }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [saving]);
+
+  // Sahifadan chiqishda (X, orqaga, darsni almashtirish) hali debounce
+  // kutayotgan oʻzgarishlar (matn/sarlavha) yoʻqolib ketmasligi uchun
+  // taymerlarni bekor qilib, oxirgi qiymatni darhol saqlaymiz.
+  useEffect(() => {
+    return () => {
+      const patch: Partial<Lesson> = {};
+      if (saveTimer.current) { clearTimeout(saveTimer.current); if (editor && !editor.isDestroyed) patch.content = editor.getHTML(); }
+      if (titleTimer.current) { clearTimeout(titleTimer.current); if (titleDraftRef.current !== null) patch.title = titleDraftRef.current; }
+      if (Object.keys(patch).length) updateLesson(lessonId, patch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lessonId]);
 
   const handleTitleChange = (value: string) => {
     setTitleDraft(value);
+    titleDraftRef.current = value;
     if (titleTimer.current) clearTimeout(titleTimer.current);
-    titleTimer.current = setTimeout(() => updateLesson(lessonId, { title: value }), 600);
+    titleTimer.current = setTimeout(() => {
+      updateLesson(lessonId, { title: value });
+      titleTimer.current = null;
+    }, 600);
   };
+
+  const handleSaveNow = async () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    if (titleTimer.current) clearTimeout(titleTimer.current);
+    const patch: Partial<Lesson> = {};
+    if (editor) patch.content = editor.getHTML();
+    if (titleDraft !== null) { patch.title = titleDraft; setTitleDraft(null); titleDraftRef.current = null; }
+    if (Object.keys(patch).length) updateLesson(lessonId, patch);
+    await flushLessonsNow();
+    setSaving(false);
+    toast.success(t("toast.saved"));
+  };
+  const handleSaveNowRef = useRef(handleSaveNow);
+  handleSaveNowRef.current = handleSaveNow;
+
+  // Cmd/Ctrl+S — hujjat muharrirlarida kutilgan refleks; brauzerning oʻz
+  // "Sahifani saqlash" dialogini bosib, darhol serverga yuboradi.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        handleSaveNowRef.current();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   if (hydrated && !lesson) {
     return (
@@ -261,14 +326,32 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     );
   }
 
-  const STATUS = {
-    Completed: { label: t("status.completed"), cls: STATUS_CLS.Completed, icon: STATUS_ICON.Completed, itemCls: STATUS_ITEM_CLS.Completed },
-    Scheduled: { label: t("status.scheduled"), cls: STATUS_CLS.Scheduled, icon: STATUS_ICON.Scheduled, itemCls: STATUS_ITEM_CLS.Scheduled },
-    Unscheduled: { label: t("status.unscheduled"), cls: STATUS_CLS.Unscheduled, icon: STATUS_ICON.Unscheduled, itemCls: STATUS_ITEM_CLS.Unscheduled },
-    Draft: { label: t("status.draft"), cls: STATUS_CLS.Draft, icon: STATUS_ICON.Draft, itemCls: STATUS_ITEM_CLS.Draft },
-  } as const;
+  const STATUS = (Object.keys(STATUS_META) as (keyof typeof STATUS_META)[]).reduce(
+    (acc, key) => {
+      const meta = STATUS_META[key];
+      acc[key] = {
+        label: t(`status.${key.toLowerCase()}`),
+        icon: meta.icon,
+        cls: TONE_BADGE_CLS[meta.tone],
+        itemCls: TONE_ITEM_CLS[meta.tone],
+        iconCls: TONE_ICON_CLS[meta.tone],
+        activeCls: TONE_ACTIVE_CLS[meta.tone],
+      };
+      return acc;
+    },
+    {} as Record<keyof typeof STATUS_META, { label: string; icon: typeof CheckCircle2; cls: string; itemCls: string; iconCls: string; activeCls: string }>,
+  );
   const st = lesson ? STATUS[lesson.status] : STATUS.Draft;
   const StatusIcon = st.icon;
+
+  const changeStatus = (key: keyof typeof STATUS_META) => {
+    if (!lesson || lesson.status === key) return;
+    const prev = lesson.status;
+    setStatus(lessonId, key);
+    toast.success(t("toast.statusChanged", { status: STATUS[key].label }), {
+      action: { label: t("toast.undo"), onClick: () => setStatus(lessonId, prev) },
+    });
+  };
 
   const togglePanel = (panel: "details" | "ai") =>
     setActivePanel((cur) => (cur === panel ? null : panel));
@@ -279,17 +362,6 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   ];
 
   /* ── "..." menyu amallari ── */
-  const handleSaveNow = async () => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    if (titleTimer.current) clearTimeout(titleTimer.current);
-    const patch: Partial<Lesson> = {};
-    if (editor) patch.content = editor.getHTML();
-    if (titleDraft !== null) { patch.title = titleDraft; setTitleDraft(null); }
-    if (Object.keys(patch).length) updateLesson(lessonId, patch);
-    await flushLessonsNow();
-    setSaving(false);
-    toast.success(t("toast.saved"));
-  };
   const handleDuplicate = () => {
     if (!lesson) return;
     const newId = addLesson({ classId: lesson.classId, unitId: lesson.unitId, title: `${lesson.title || t("untitled")} (${t("copySuffix")})`, status: "Draft" });
@@ -308,13 +380,6 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     toast.success(t("toast.deleted"));
     router.push("/dashboard/lessons");
   };
-  const handleToggleTaught = () => {
-    if (!lesson) return;
-    const next = lesson.status === "Completed" ? "Scheduled" : "Completed";
-    setStatus(lessonId, next);
-    toast.success(next === "Completed" ? t("toast.markedTaught") : t("toast.unmarkedTaught"));
-  };
-
   const updatedLabel = lesson?.updatedAt ? formatFeedbackAgo(lesson.updatedAt, relativeT) : null;
 
   // AI'ga uzatiladigan biriktirilgan standartlar — kod + tavsif (barcha
@@ -345,13 +410,13 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       {/* ── Top bar ── */}
       <header className="no-print h-14 shrink-0 flex items-center justify-between gap-4 px-4 bg-card border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="size-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+          <SectionIcon>
             <FileText className="size-5 text-foreground" />
-          </div>
+          </SectionIcon>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2.5 min-w-0">
               <h1
-                className="text-base font-bold text-foreground truncate min-w-0"
+                className="text-base font-semibold text-foreground truncate min-w-0"
                 title={(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               >
                 {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
@@ -361,13 +426,13 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   <button
                     type="button"
                     className={cn(
-                      "shrink-0 inline-flex items-center gap-1 rounded-full pl-2 pr-1.5 py-0.5 text-xs font-semibold transition-colors hover:brightness-95 dark:hover:brightness-125",
+                      "group shrink-0 inline-flex items-center gap-1 rounded-full pl-2 pr-1.5 py-0.5 text-xs font-semibold transition-colors hover:brightness-95 dark:hover:brightness-125",
                       st.cls
                     )}
                   >
                     <StatusIcon className="size-3.5" />
                     {st.label}
-                    <ChevronDown className="size-3 opacity-60 transition-transform data-[state=open]:rotate-180" />
+                    <ChevronDown className="size-3 opacity-60 transition-transform group-data-[state=open]:rotate-180" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-44">
@@ -379,10 +444,10 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                       <Fragment key={key}>
                         {key === "Draft" && <DropdownMenuSeparator />}
                         <DropdownMenuItem
-                          className={cn("gap-2 font-medium", opt.itemCls, active && STATUS_ITEM_ACTIVE_CLS[key])}
-                          onSelect={() => setStatus(lessonId, key)}
+                          className={cn("gap-2 font-medium", opt.itemCls, active && opt.activeCls)}
+                          onSelect={() => changeStatus(key)}
                         >
-                          <OptIcon className={cn("size-4", STATUS_ICON_CLS[key])} />
+                          <OptIcon className={cn("size-4", opt.iconCls)} />
                           <span className="flex-1">{opt.label}</span>
                           {active && <Check className="size-4" />}
                         </DropdownMenuItem>
@@ -434,10 +499,6 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               <DropdownMenuItem onClick={() => toast(t("toast.templateSoon"))} className="gap-2">
                 <BookmarkPlus className="size-4" /> {t("menu.saveAsTemplate")}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleToggleTaught} className="gap-2">
-                <CheckCircle2 className="size-4" />
-                {lesson?.status === "Completed" ? t("menu.unmarkTaught") : t("menu.markTaught")}
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setConfirmDeleteOpen(true)} className="gap-2 text-destructive focus:text-destructive">
                 <Trash2 className="size-4" /> {t("menu.deleteLesson")}
@@ -470,7 +531,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       {/* ── Body ── */}
       <div className="flex-1 min-h-0 flex print:h-auto print:block print:overflow-visible">
         {/* Editor pane */}
-        <div className="flex-1 min-w-0 flex flex-col print:h-auto print:block print:overflow-visible">
+        <div className="relative flex-1 min-w-0 flex flex-col print:h-auto print:block print:overflow-visible">
           {/* Sticky toolbar */}
           <div className="no-print shrink-0 bg-card/80 backdrop-blur border-b border-border px-3 py-1.5 flex items-center gap-3">
             <div className="flex-1 min-w-0 overflow-x-auto">
@@ -483,7 +544,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             )}
           </div>
           {/* Scrollable canvas with A4 sheet */}
-          <div className="relative flex-1 min-h-0 overflow-y-auto print:h-auto print:overflow-visible">
+          <div className="flex-1 min-h-0 overflow-y-auto print:h-auto print:overflow-visible">
             <div
               ref={setSheetEl}
               className="a4-print a4-sheet relative bg-card mx-auto my-8 rounded-sm card-elevation p-[16mm]"
@@ -511,50 +572,120 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               )}
               <EditorContent editor={editor} />
             </div>
-            {/* Zoom boshqaruvi — faqat A4 sahifaning KOʻRINISHINI kattalashtiradi/
-                kichraytiradi (CSS `zoom`, chop etishga taʼsir qilmaydi).
-                `absolute` (`fixed` EMAS) — ota konteyner faqat muharrir
-                qismi (`relative flex-1 ... overflow-y-auto`), shuning
-                uchun yon panel ochilganda ustiga tushib qolmaydi, doim
-                panelning CHAP tarafida qoladi. */}
-            <ButtonGroup
-              orientation="vertical"
-              aria-label={t("zoom")}
-              className="no-print absolute bottom-6 right-6 h-fit shadow-md"
+          </div>
+          {/* Zoom boshqaruvi — faqat A4 sahifaning KOʻRINISHINI kattalashtiradi/
+              kichraytiradi (CSS `zoom`, chop etishga taʼsir qilmaydi). Ota
+              konteyner endi butun muharrir panasi (skroll qiluvchi div EMAS)
+              — shu sabab sahifa aylantirilganda oʻrnidan qoʻzgʻalmaydi, doim
+              oʻng-pastki burchakda qotib turadi. Bir qatorli pill (Figma/
+              Google Docs uslubi): foiz markazda, bosilsa 100%'ga qaytaradi. */}
+          <div
+            role="group"
+            aria-label={t("zoom")}
+            className="no-print absolute bottom-6 right-6 flex items-center gap-0.5 rounded-full card-elevation bg-card p-1"
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              aria-label={t("zoomOut")}
+              disabled={zoom <= ZOOM_MIN}
+              onClick={() => setZoom((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
             >
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label={t("zoomIn")}
-                disabled={zoom >= ZOOM_MAX}
-                onClick={() => setZoom((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
-              >
-                <Plus />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label={t("zoomOut")}
-                disabled={zoom <= ZOOM_MIN}
-                onClick={() => setZoom((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
-              >
-                <Minus />
-              </Button>
-            </ButtonGroup>
+              <Minus />
+            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={t("zoomReset")}
+                  disabled={zoom === 100}
+                  onClick={() => setZoom(100)}
+                  className="h-9 rounded-full px-2.5 text-xs font-semibold tabular-nums"
+                >
+                  {zoom}%
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">{t("zoomReset")}</TooltipContent>
+            </Tooltip>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              aria-label={t("zoomIn")}
+              disabled={zoom >= ZOOM_MAX}
+              onClick={() => setZoom((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
+            >
+              <Plus />
+            </Button>
           </div>
         </div>
 
-        <AnimatePresence initial={false}>
-          {activePanel === "ai" && lesson && (
-            <motion.aside
-              key="ai-panel"
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: aiPanelWidth, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
-              className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
-            >
-              <div className="h-full" style={{ width: aiPanelWidth }}>
+        {/* Desktop: yon panel doim DOM'da, kenglik animatsiya bilan ochiladi.
+            Mobil (<768px)'da bu yondashuv A4 varaqni ezib qoʻyadi — shuning
+            uchun pastda `Sheet` (toʻliq ekranli drawer) ishlatiladi. */}
+        {!isMobile && (
+          <AnimatePresence initial={false}>
+            {activePanel === "ai" && lesson && (
+              <motion.aside
+                key="ai-panel"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: aiPanelWidth, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
+                className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
+              >
+                <div className="h-full" style={{ width: aiPanelWidth }}>
+                  <AiAssistantPanel
+                    lessonContext={{
+                      title: lesson.title,
+                      classes: lessonClassIds(lesson).map((id) => liveClasses.find((c) => c.id === id)?.name ?? id).join(", "),
+                      unit: units.find((u) => u.id === lesson.unitId)?.title,
+                      content: editor?.getHTML(),
+                      standards: attachedStandards,
+                      durationMin,
+                    }}
+                    classIds={lessonClassIds(lesson)}
+                    lessonId={lesson.id}
+                    onClose={() => setActivePanel(null)}
+                    onInsert={(html) => editor?.chain().focus().insertContent(html).run()}
+                  />
+                </div>
+              </motion.aside>
+            )}
+
+            {activePanel === "details" && lesson && (
+              <motion.aside
+                key="details-panel"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: detailsPanelWidth, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
+                className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
+              >
+                <div className="h-full" style={{ width: detailsPanelWidth }}>
+                  <DetailsPanel
+                    lesson={lesson}
+                    units={units}
+                    onClose={() => setActivePanel(null)}
+                    onSetClasses={(classIds) => setLessonClasses(lessonId, classIds)}
+                    onSetUnitForClass={(classId, unitId) => setUnitForClass(lessonId, classId, unitId)}
+                    onAddScheduleForClass={(classId, date, s, e) => addScheduleForClass(lessonId, classId, date, s, e)}
+                    onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
+                    onSetStandards={(standards) => updateLesson(lessonId, { standards })}
+                  />
+                </div>
+              </motion.aside>
+            )}
+          </AnimatePresence>
+        )}
+
+        {isMobile && lesson && (
+          <>
+            <Sheet open={activePanel === "ai"} onOpenChange={(open) => !open && setActivePanel(null)}>
+              <SheetContent side="right" showCloseButton={false} className="no-print w-full sm:max-w-full p-0 gap-0">
+                <SheetTitle className="sr-only">{t("rail.ai")}</SheetTitle>
                 <AiAssistantPanel
                   lessonContext={{
                     title: lesson.title,
@@ -569,20 +700,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   onClose={() => setActivePanel(null)}
                   onInsert={(html) => editor?.chain().focus().insertContent(html).run()}
                 />
-              </div>
-            </motion.aside>
-          )}
+              </SheetContent>
+            </Sheet>
 
-          {activePanel === "details" && lesson && (
-            <motion.aside
-              key="details-panel"
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: detailsPanelWidth, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
-              className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
-            >
-              <div className="h-full" style={{ width: detailsPanelWidth }}>
+            <Sheet open={activePanel === "details"} onOpenChange={(open) => !open && setActivePanel(null)}>
+              <SheetContent side="right" showCloseButton={false} className="no-print w-full sm:max-w-full p-0 gap-0">
+                <SheetTitle className="sr-only">{t("rail.details")}</SheetTitle>
                 <DetailsPanel
                   lesson={lesson}
                   units={units}
@@ -593,10 +716,10 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
                   onSetStandards={(standards) => updateLesson(lessonId, { standards })}
                 />
-              </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
+              </SheetContent>
+            </Sheet>
+          </>
+        )}
 
         {/* Icon rail */}
         <nav className="no-print w-14 shrink-0 bg-card border-l border-border flex flex-col items-center gap-1.5 py-4">
@@ -608,7 +731,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               aria-label={title}
               onClick={onClick}
               className={cn(
-                "rounded-xl",
+                "rounded-full",
                 active && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
               )}
             >

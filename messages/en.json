@@ -2821,6 +2821,7 @@
     "zoom": "Zoom",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
+    "zoomReset": "Reset to 100%",
     "characterCount": "{count} characters",
     "pageBoundary": "Page {page}",
     "notFoundTitle": "Lesson not found",
@@ -2845,8 +2846,8 @@
       "duplicated": "Lesson duplicated",
       "deleted": "Lesson deleted",
       "templateSoon": "Save as template — coming soon",
-      "markedTaught": "Lesson marked as taught",
-      "unmarkedTaught": "Mark removed"
+      "statusChanged": "Status changed: {status}",
+      "undo": "Undo"
     },
     "untitled": "Untitled",
     "copySuffix": "copy",
@@ -2856,8 +2857,6 @@
       "downloadPdf": "Download (PDF)",
       "duplicate": "Duplicate",
       "saveAsTemplate": "Save as template",
-      "markTaught": "Mark as taught",
-      "unmarkTaught": "Unmark as taught",
       "deleteLesson": "Delete lesson"
     },
     "deleteDialog": {

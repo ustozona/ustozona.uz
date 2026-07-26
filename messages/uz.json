@@ -2658,6 +2658,7 @@
     "zoom": "Kattalashtirish",
     "zoomIn": "Kattalashtirish",
     "zoomOut": "Kichraytirish",
+    "zoomReset": "100% oʻlchamga qaytarish",
     "characterCount": "{count} belgi",
     "pageBoundary": "{page}-bet",
     "notFoundTitle": "Dars topilmadi",
@@ -2682,8 +2683,8 @@
       "duplicated": "Dars nusxalandi",
       "deleted": "Dars oʻchirildi",
       "templateSoon": "Shablon sifatida saqlash — tez orada",
-      "markedTaught": "Dars oʻtilgan deb belgilandi",
-      "unmarkedTaught": "Belgi olib tashlandi"
+      "statusChanged": "Holat oʻzgartirildi: {status}",
+      "undo": "Bekor qilish"
     },
     "untitled": "Nomsiz",
     "copySuffix": "nusxa",
@@ -2693,8 +2694,6 @@
       "downloadPdf": "Yuklab olish (PDF)",
       "duplicate": "Nusxalash",
       "saveAsTemplate": "Shablon sifatida saqlash",
-      "markTaught": "Oʻtilgan deb belgilash",
-      "unmarkTaught": "Oʻtilgan belgisini olib tashlash",
       "deleteLesson": "Darsni oʻchirish"
     },
     "deleteDialog": {

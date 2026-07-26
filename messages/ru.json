@@ -2821,6 +2821,7 @@
     "zoom": "Масштаб",
     "zoomIn": "Увеличить",
     "zoomOut": "Уменьшить",
+    "zoomReset": "Сбросить до 100%",
     "characterCount": "{count} симв.",
     "pageBoundary": "Стр. {page}",
     "notFoundTitle": "Урок не найден",
@@ -2845,8 +2846,8 @@
       "duplicated": "Урок продублирован",
       "deleted": "Урок удалён",
       "templateSoon": "Сохранение как шаблон — скоро",
-      "markedTaught": "Урок отмечен как проведённый",
-      "unmarkedTaught": "Отметка снята"
+      "statusChanged": "Статус изменён: {status}",
+      "undo": "Отменить"
     },
     "untitled": "Без названия",
     "copySuffix": "копия",
@@ -2856,8 +2857,6 @@
       "downloadPdf": "Скачать (PDF)",
       "duplicate": "Дублировать",
       "saveAsTemplate": "Сохранить как шаблон",
-      "markTaught": "Отметить как проведённый",
-      "unmarkTaught": "Снять отметку",
       "deleteLesson": "Удалить урок"
     },
     "deleteDialog": {

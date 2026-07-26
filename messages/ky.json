@@ -2821,6 +2821,7 @@
     "zoom": "Чоңойтуу",
     "zoomIn": "Чоңойтуу",
     "zoomOut": "Кичирейтүү",
+    "zoomReset": "100% чоңойтууга кайтаруу",
     "characterCount": "{count} белги",
     "pageBoundary": "{page}-бет",
     "notFoundTitle": "Сабак табылган жок",
@@ -2845,8 +2846,8 @@
       "duplicated": "Сабак көчүрүлдү",
       "deleted": "Сабак өчүрүлдү",
       "templateSoon": "Шаблон катары сактоо — жакында",
-      "markedTaught": "Сабак өтүлдү деп белгиленди",
-      "unmarkedTaught": "Белги алынып салынды"
+      "statusChanged": "Статус өзгөртүлдү: {status}",
+      "undo": "Жокко чыгаруу"
     },
     "untitled": "Атсыз",
     "copySuffix": "көчүрмө",
@@ -2856,8 +2857,6 @@
       "downloadPdf": "Жүктөп алуу (PDF)",
       "duplicate": "Көчүрмөсүн алуу",
       "saveAsTemplate": "Шаблон катары сактоо",
-      "markTaught": "Өтүлдү деп белгилөө",
-      "unmarkTaught": "Белгини алып салуу",
       "deleteLesson": "Сабакты өчүрүү"
     },
     "deleteDialog": {

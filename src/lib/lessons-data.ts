@@ -51,7 +51,12 @@ export type LessonSession = { date: string; startMin: number; endMin: number };
 
 /** Darsning aʼzo sinflari — yangi `classIds` yoki legacy `classId`dan. */
 export function lessonClassIds(l: Lesson): string[] {
-  if (l.classIds && l.classIds.length) return l.classIds;
+  // `classIds` MAVJUD boʻlsa (boʻsh massiv boʻlsa ham) — shu ishonchli manba.
+  // Faqat `classIds` umuman aniqlanmagan (eski, hali koʻp-sinfga oʻtmagan
+  // darslar) boʻlsa legacy `classId`ga qaytiladi. Avval `.length` tekshirilgani
+  // uchun oxirgi sinfni oʻchirib boʻlmas edi — massiv boʻshab qolgach yana
+  // legacy classId'dan "tiklanardi".
+  if (l.classIds !== undefined) return l.classIds;
   return l.classId ? [l.classId] : [];
 }
 
