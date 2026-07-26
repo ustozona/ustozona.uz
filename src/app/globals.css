@@ -574,6 +574,9 @@
   opacity: 0;
   animation: fade-slide-up var(--transition-duration-base) var(--ease-standard) both;
 }
+/* Birinchi bola (odatda LCP nomzodi) darhol koʻrinadi — animatsiya
+   uni kutish sahifa yuklanishini sekinlashtirib koʻrsatadi. */
+.stagger-children > *:first-child { opacity: 1; animation: none; }
 .stagger-children > *:nth-child(2) { animation-delay: 50ms; }
 .stagger-children > *:nth-child(3) { animation-delay: 100ms; }
 .stagger-children > *:nth-child(n + 4) { animation-delay: 150ms; }
