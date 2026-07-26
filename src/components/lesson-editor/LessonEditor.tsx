@@ -303,7 +303,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   }, [titleDraft, lesson?.title]);
 
   return (
-    <div className="h-dvh w-full flex flex-col bg-muted overflow-hidden">
+    <div className="h-dvh w-full flex flex-col bg-muted overflow-hidden print:h-auto print:overflow-visible">
       {/* ── Top bar ── */}
       <header className="no-print h-14 shrink-0 flex items-center justify-between gap-4 px-4 bg-card border-b border-border">
         <div className="flex items-center gap-3 min-w-0">
@@ -398,9 +398,9 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       </header>
 
       {/* ── Body ── */}
-      <div className="flex-1 min-h-0 flex">
+      <div className="flex-1 min-h-0 flex print:h-auto print:block print:overflow-visible">
         {/* Editor pane */}
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div className="flex-1 min-w-0 flex flex-col print:h-auto print:block print:overflow-visible">
           {/* Sticky toolbar */}
           <div className="no-print shrink-0 bg-card/80 backdrop-blur border-b border-border px-3 py-1.5 flex items-center gap-3">
             <div className="flex-1 min-w-0 overflow-x-auto">
@@ -413,7 +413,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             )}
           </div>
           {/* Scrollable canvas with A4 sheet */}
-          <div className="relative flex-1 min-h-0 overflow-y-auto">
+          <div className="relative flex-1 min-h-0 overflow-y-auto print:h-auto print:overflow-visible">
             <div
               ref={setSheetEl}
               className="a4-print a4-sheet relative bg-card mx-auto my-8 rounded-sm card-elevation p-[16mm]"
