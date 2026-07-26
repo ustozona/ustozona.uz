@@ -5,6 +5,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
+import { VersionWatcher } from "@/components/version-watcher";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
@@ -100,6 +101,7 @@ export default async function RootLayout({
               <TooltipProvider>{children}</TooltipProvider>
             </MotionProvider>
             <Toaster richColors position="bottom-center" />
+            <VersionWatcher />
           </ThemeProvider>
         </NextIntlClientProvider>
         <Analytics />
