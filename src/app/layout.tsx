@@ -24,10 +24,53 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl = "https://www.ustozona.uz";
+const title = "Ustozona — Oʻqituvchi boshqaruv tizimi";
+const description =
+  "Ustozona — oʻqituvchilar uchun toʻliq boshqaruv tizimi. Sinflar, oʻquvchilar, darslar, baholar va davomatni bir joyda boshqaring.";
+
 export const metadata: Metadata = {
-  title: "Ustozona EMS — Oʻqituvchi boshqaruv tizimi",
-  description:
-    "Ustozona EMS — oʻqituvchilar uchun toʻliq boshqaruv tizimi. Sinflar, oʻquvchilar, darslar, baholar va davomatni bir joyda boshqaring.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: title,
+    template: "%s — Ustozona",
+  },
+  description,
+  keywords: [
+    "Ustozona",
+    "oʻqituvchi boshqaruv tizimi",
+    "elektron jurnal",
+    "davomat tizimi",
+    "baholash tizimi",
+    "maktab boshqaruv tizimi",
+    "sinf jurnali",
+  ],
+  applicationName: "Ustozona",
+  authors: [{ name: "Ustozona" }],
+  alternates: {
+    canonical: siteUrl,
+  },
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: "Ustozona",
+    title,
+    description,
+    locale: "uz_UZ",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
 };
 
 export default async function RootLayout({
