@@ -1952,6 +1952,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "calendar-event-card-redesign": {
+        "title": "Kalendar — dárs bloklari jańa dizaynda",
+        "body": "Bas bet, Rejalastırıwshı hám Kestedegi dárs kartaları bir qıylı, jańa kórinske ótti: dárs baylanıstırılǵan orın toyınǵan reńde, bos orın bolsa xıraraq — ekewi bir qarawda ayırılıp turadı."
+      },
       "today-rail-hide-sunday": {
         "title": "Bas bet — ekshembini háptelik lentadan jasırıwǵa boladı"
       },

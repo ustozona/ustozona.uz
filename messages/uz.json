@@ -1952,6 +1952,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "calendar-event-card-redesign": {
+        "title": "Kalendar — dars bloklari yangi dizaynda",
+        "body": "Bosh sahifa, Rejalashtiruvchi va Jadvaldagi dars kartalari bir xil, yangi koʻrinishga oʻtdi: dars ulangan joy toʻyingan rangda, boʻsh joy esa xiraroq — ikkisi bir qarashda farqlanadi."
+      },
       "today-rail-hide-sunday": {
         "title": "Bosh sahifa — yakshanbani haftalik tasmadan yashirish mumkin"
       },

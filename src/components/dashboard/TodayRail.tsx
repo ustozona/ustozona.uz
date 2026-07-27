@@ -436,10 +436,10 @@ function DayGridView({
             key={ev.id}
             color={meta.color}
             title={meta.name}
-            corner={false}
+            density="compact"
             temporal={temporal === "none" ? undefined : temporal}
             titleRowClassName="pr-14"
-            badges={
+            trailing={
               control ? (
                 <Badge
                   variant="outline"
@@ -449,12 +449,13 @@ function DayGridView({
                 </Badge>
               ) : undefined
             }
-            className="group absolute isolate rounded-lg p-2"
+            actions={<EventActions classId={ev.classId} solidBg />}
+            className="absolute isolate"
             style={{ top, height, left: 48, right: 0 }}
           >
             {!compact && (
               <p
-                style={lesson ? { ...tints.textStrong } : undefined}
+                style={lesson ? tints.textOnSolid : undefined}
                 className={cn(
                   "mt-0.5 truncate text-xs leading-snug",
                   lesson ? "opacity-80" : "font-medium text-warning"
@@ -464,14 +465,11 @@ function DayGridView({
               </p>
             )}
             {!compact && (
-              <p style={tints.textStrong} className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums opacity-75">
+              <p style={tints.textOnSolid} className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums opacity-75">
                 <Clock className="size-3 shrink-0" />
                 {fmtMin(ev.startMin)} – {fmtMin(ev.endMin)}
               </p>
             )}
-            <div className="absolute right-1.5 top-1.5 z-10">
-              <EventActions classId={ev.classId} solidBg />
-            </div>
           </EventCard>
         );
       })}
@@ -486,7 +484,7 @@ function EventActions({ classId, solidBg }: { classId: string; solidBg?: boolean
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity duration-fast group-hover:opacity-100 focus-within:opacity-100",
+        "flex shrink-0 items-center gap-0.5",
         solidBg && "rounded-md bg-background/85 shadow-sm backdrop-blur-sm"
       )}
     >

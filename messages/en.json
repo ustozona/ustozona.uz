@@ -1952,6 +1952,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "calendar-event-card-redesign": {
+        "title": "Calendar — lesson blocks got a new design",
+        "body": "Lesson cards on the Home page, Planner, and Timetable now share one consistent look: a slot with a lesson linked is shown in a saturated color, an empty slot is dimmer — the two are distinguishable at a glance."
+      },
       "today-rail-hide-sunday": {
         "title": "Home — Sunday can be hidden from the week strip"
       },

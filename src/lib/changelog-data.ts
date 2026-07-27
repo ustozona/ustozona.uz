@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "calendar-event-card-redesign",
+    date: "2026-07-27",
+    type: "yaxshilandi",
+    title: "Kalendar — dars bloklari yangi dizaynda",
+    body: "Bosh sahifa, Rejalashtiruvchi va Jadvaldagi dars kartalari bir xil, yangi koʻrinishga oʻtdi: dars ulangan joy toʻyingan rangda, boʻsh joy esa xiraroq — ikkisi bir qarashda farqlanadi.",
+    href: "/dashboard/planner",
+  },
+  {
     id: "today-rail-hide-sunday",
     date: "2026-07-27",
     type: "yaxshilandi",

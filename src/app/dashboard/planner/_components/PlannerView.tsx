@@ -59,8 +59,7 @@ import {
   FileText, Check, Trash2, Undo2, CalendarOff, ArrowUpRight, Eye, EyeOff,
   SlidersHorizontal, Pencil, Search, Ban, Clock, CalendarPlus,
 } from "lucide-react";
-import { CardStripes } from "@/components/CardStripes";
-import { CardCorner } from "@/components/CardCorner";
+import { EventCard } from "@/components/calendar/EventCard";
 import { LessonStatusBadge } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makePlannerTourDemo } from "@/components/tour/planner-tour-demo";
@@ -703,75 +702,81 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           // Darsli slot toʻyingan yuzada, boʻshi xira — rejalashtirilmagan joylar bir qarashda koʻrinadi
                           const hasLesson = blockLessons.length > 0;
                           return (
-                            <div key={ev.id}
+                            <EventCard
+                              key={ev.id}
                               data-tour={hasLesson ? "planner-lesson-block" : "planner-empty-slot"}
-                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32), ...(hasLesson ? { ...tints.surfaceStrong } : { ...tints.tint }) }}
-                              className={cn("group/ev absolute inset-x-1 z-10 flex flex-col overflow-hidden rounded-xl border border-border px-3 pb-2.5 pt-3.5 transition-all", !hasLesson && "border-dashed")}>
-                              {hasLesson && <CardStripes color={clsColor} variant="cover" />}
-                              {hasLesson && <CardCorner color={clsColor} className="-right-5 -top-5 size-16" />}
-                              {/* ↗ sinfni ochish — faqat umumiy /planner'da (sinf-detali ichida
-                                  allaqachon shu sinfdamiz, shuning uchun yashiriladi). */}
-                              {!classId && (
-                                <Link
-                                  href={`/dashboard/classes/${ev.classId}`}
-                                  title={t("openClass")}
-                                  className="absolute right-1.5 top-1.5 z-20 hidden size-6 items-center justify-center rounded-md bg-background/70 text-foreground/70 shadow-sm transition hover:bg-background hover:text-foreground group-hover/ev:flex"
-                                >
-                                  <ArrowUpRight className="size-3.5" />
-                                </Link>
-                              )}
-                              <span className="flex items-center gap-1.5 pr-6">
-                                <span style={{ backgroundColor: tints.solid }} className={cn("h-3.5 w-0.5 shrink-0 rounded-full", !hasLesson && "opacity-40")} aria-hidden />
-                                <span style={hasLesson ? tints.textStrong : undefined} className={cn("truncate text-[15px] leading-tight", hasLesson ? "font-bold" : "font-semibold text-muted-foreground")}>{cls.name}</span>
-                              </span>
-                              <span style={hasLesson ? tints.textStrong : undefined} className={cn("mt-1.5 flex items-center gap-1.5 truncate text-[13px] leading-snug", hasLesson ? "opacity-80" : "text-muted-foreground/70")}>
-                                <Clock className="size-3 shrink-0" />
-                                {fmtMin(ev.startMin)} – {fmtMin(ev.endMin)}
-                              </span>
-                              {hasLesson ? (
-                                <div className="mt-2 flex flex-col gap-1.5">
+                              color={clsColor}
+                              title={cls.name}
+                              subtitle={
+                                <>
+                                  <Clock className="size-3 shrink-0" />
+                                  {fmtMin(ev.startMin)} – {fmtMin(ev.endMin)}
+                                </>
+                              }
+                              state={hasLesson ? "filled" : "empty"}
+                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32) }}
+                              className="absolute inset-x-1 z-10"
+                              actions={
+                                /* ↗ sinfni ochish — faqat umumiy /planner'da (sinf-detali ichida
+                                    allaqachon shu sinfdamiz, shuning uchun yashiriladi). */
+                                !classId ? (
+                                  <Link
+                                    href={`/dashboard/classes/${ev.classId}`}
+                                    title={t("openClass")}
+                                    className="flex size-6 items-center justify-center rounded-md bg-foreground/8 text-foreground/70 transition hover:bg-foreground/15 hover:text-foreground"
+                                  >
+                                    <ArrowUpRight className="size-3.5" />
+                                  </Link>
+                                ) : undefined
+                              }
+                              footer={
+                                !hasLesson ? (
+                                  <div className="flex justify-end">
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <button
+                                          type="button"
+                                          aria-label={t("addLessonAria")}
+                                          className="flex items-center gap-1 rounded-lg bg-background/85 px-2 py-1 text-xs font-semibold text-foreground shadow-sm ring-1 ring-inset ring-border/50 transition hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] data-[state=open]:bg-background"
+                                        >
+                                          <PlusIcon className="size-3.5" strokeWidth={2.5} />
+                                          {t("lessonWord")}
+                                        </button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-40">
+                                        <DropdownMenuItem onClick={() => openCreateModal(date, ev)}>
+                                          <PlusIcon />
+                                          {t("create")}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => openLinkModal(date, ev)}>
+                                          <LinkIcon />
+                                          {t("link")}
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                ) : undefined
+                              }
+                            >
+                              {hasLesson && (
+                                <div className="mt-1.5 flex flex-col gap-1.5">
                                   {blockLessons.map((p) => (
                                     <button key={p.lesson.id} type="button"
                                       draggable
                                       onDragStart={(e) => startDrag(e, p, dateKey)}
                                       onClick={() => openEdit(p, dateKey)}
-                                      className="flex items-center gap-2 overflow-hidden rounded-lg bg-background/95 px-2 py-1.5 text-left shadow-sm transition hover:bg-background cursor-grab active:cursor-grabbing">
+                                      className="flex items-center gap-2 overflow-hidden rounded-lg border border-border bg-card px-2 py-1.5 text-left transition hover:bg-muted/40 cursor-grab active:cursor-grabbing">
                                       <span style={tints.iconBg} className="flex size-6 shrink-0 items-center justify-center rounded-md">
                                         {p.lesson.status === "Completed"
                                           ? <Check style={tints.iconText} className="size-3.5" strokeWidth={3} />
                                           : <FileText style={tints.iconText} className="size-3.5" />}
                                       </span>
-                                      <span className="truncate text-[13px] font-bold text-foreground">{p.lesson.title}</span>
+                                      <span className="truncate text-xs font-semibold text-foreground">{p.lesson.title}</span>
                                     </button>
                                   ))}
                                 </div>
-                              ) : (
-                                <div className="mt-auto flex justify-end pt-1.5">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <button
-                                        type="button"
-                                        aria-label={t("addLessonAria")}
-                                        className="flex items-center gap-1 rounded-lg bg-background/85 px-2 py-1 text-xs font-semibold text-foreground shadow-sm ring-1 ring-inset ring-border/50 transition hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] data-[state=open]:bg-background"
-                                      >
-                                        <PlusIcon className="size-3.5" strokeWidth={2.5} />
-                                        {t("lessonWord")}
-                                      </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-40">
-                                      <DropdownMenuItem onClick={() => openCreateModal(date, ev)}>
-                                        <PlusIcon />
-                                        {t("create")}
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => openLinkModal(date, ev)}>
-                                        <LinkIcon />
-                                        {t("link")}
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
                               )}
-                            </div>
+                            </EventCard>
                           );
                         })}
 
@@ -787,27 +792,24 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           const { name, color, tints } = lessonDisplay(l);
                           const done = l.status === "Completed";
                           return (
-                            <button key={`${l.id}-${p.classId}-${start}`}
-                              type="button"
+                            <EventCard key={`${l.id}-${p.classId}-${start}`}
+                              as="button"
+                              color={color}
+                              title={name}
+                              subtitle={l.title}
+                              leading={done ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} /> : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
                               draggable
                               onDragStart={(e) => startDrag(e, p, dateKey)}
                               onClick={() => openEdit(p, dateKey)}
-                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 30), ...tints.surfaceStrong }}
-                              className={cn("absolute inset-x-1 z-[11] overflow-hidden rounded-xl border border-border px-3 pb-2.5 pt-3.5 text-left transition-all hover:brightness-95 cursor-grab active:cursor-grabbing", done && "opacity-75")}>
-                              <CardStripes color={color} variant="cover" />
-                              <CardCorner color={color} className="-right-5 -top-5 size-16" />
-                              <LessonStatusBadge status={l.status} className="absolute right-1.5 top-1.5" />
-                              <span className="flex items-center gap-1.5 truncate pr-20 text-[15px] font-bold leading-tight">
-                                <span style={{ backgroundColor: tints.solid }} className="h-3.5 w-0.5 shrink-0 rounded-full" aria-hidden />
-                                {done ? <Check style={tints.textStrong} className="size-3.5 shrink-0" strokeWidth={3} /> : <FileText style={tints.textStrong} className="size-3.5 shrink-0" />}
-                                <span style={tints.textStrong} className="truncate">{name}</span>
-                              </span>
-                              <span style={tints.textStrong} className="mt-1 block truncate text-[13px] leading-snug">{l.title}</span>
-                              <span style={tints.textStrong} className="mt-1 flex items-center gap-1.5 truncate text-[12px] leading-snug opacity-75">
+                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 30) }}
+                              className={cn("absolute inset-x-1 z-[11] transition-all hover:brightness-95 cursor-grab active:cursor-grabbing", done && "opacity-75")}
+                              actions={<LessonStatusBadge status={l.status} />}
+                            >
+                              <span style={tints.textOnSolid} className="mt-0.5 flex items-center gap-1.5 truncate text-[10px] opacity-70">
                                 <Clock className="size-3 shrink-0" />
                                 {minToHHMM(start)} – {minToHHMM(end)}
                               </span>
-                            </button>
+                            </EventCard>
                           );
                         })}
                     </>

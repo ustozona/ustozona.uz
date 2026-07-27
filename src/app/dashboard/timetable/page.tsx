@@ -34,8 +34,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { TypographyLabel } from "@/components/ui/typography";
-import { CardStripes } from "@/components/CardStripes";
-import { CardCorner } from "@/components/CardCorner";
+import { EventCard } from "@/components/calendar/EventCard";
 import { type TimetableEvent } from "@/lib/timetable";
 import { type BellConfig, defaultBellConfig, computePeriods, remapEventsForBellChange } from "@/lib/bell-schedule";
 import PeriodGrid, { type TimetableClass } from "@/components/timetable/PeriodGrid";
@@ -884,7 +883,6 @@ export default function TimetablePage() {
                   <>
                       {dayEvents.map(ev => {
                         const cls = isDemoMode ? getClassDisplay(ev.classId) : getClass(ev.classId);
-                        const tints = classTints(cls.color);
                         const top = ((ev.startMin - DAY_START_MIN) / 60) * HOUR_H;
                         const height = Math.max(((ev.endMin - ev.startMin) / 60) * HOUR_H, 22);
                         if (top + height < 0 || top > HOURS.length * HOUR_H) return null;
@@ -894,10 +892,7 @@ export default function TimetablePage() {
                             name={cls.name}
                             startMin={ev.startMin}
                             endMin={ev.endMin}
-                            stripeColor={cls.color}
-                            surface={tints.surfaceStrong}
-                            softBorder={tints.borderMedium}
-                            textStrong={tints.textStrong}
+                            color={cls.color}
                             top={top}
                             height={height}
                             readOnly={readOnly || isDemoMode}
@@ -1025,14 +1020,11 @@ export default function TimetablePage() {
 }
 
 /* ─── Dars bloki (grid ichida) ─── */
-function EventBlock({ name, startMin, endMin, stripeColor, surface, softBorder, textStrong, top, height, resizable, readOnly = false, onResize, onDragStart, onDragEnd, onClick, onRemove }: {
+function EventBlock({ name, startMin, endMin, color, top, height, resizable, readOnly = false, onResize, onDragStart, onDragEnd, onClick, onRemove }: {
   name: string;
   startMin: number;
   endMin: number;
-  stripeColor: ClassColor;
-  surface: React.CSSProperties;
-  softBorder: React.CSSProperties;
-  textStrong: React.CSSProperties;
+  color: ClassColor;
   top: number;
   height: number;
   resizable: boolean;
@@ -1071,58 +1063,56 @@ function EventBlock({ name, startMin, endMin, stripeColor, surface, softBorder, 
   const compact = height < 58; // juda past bloklarda davomiylik qatorini yashiramiz
 
   return (
-    <div
+    <EventCard
+      color={color}
+      title={name}
+      subtitle={
+        <>
+          <Clock2Icon className="size-2.5 shrink-0" />
+          <span className="tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>
+          {!compact && (
+            <>
+              <Hourglass className="ml-1.5 size-2.5 shrink-0" />
+              <span className="tabular-nums">{fmtDuration(endMin - startMin)}</span>
+            </>
+          )}
+        </>
+      }
       draggable={!readOnly && !resizing}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onClick={onClick}
-      className={cn("group/event isolate absolute left-1 right-1 overflow-hidden rounded-xl border border-border focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]", readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing", CLASS_CARD_INTERACTION)}
-      style={{ top: top + 1, height: height - 2, ...surface }}
+      interactive
+      className={cn("isolate left-1 right-1 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]", readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing", CLASS_CARD_INTERACTION)}
+      style={{ top: top + 1, height: height - 2 }}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
+      actions={
+        !readOnly ? (
+          <button
+            type="button"
+            aria-label={t("delete")}
+            onClick={(e) => { e.stopPropagation(); onRemove(); }}
+            className="flex size-5 cursor-pointer items-center justify-center rounded-sm bg-foreground/8 hover:bg-foreground/15"
+          >
+            <XIcon className="size-3.5" />
+          </button>
+        ) : undefined
+      }
     >
-      <CardStripes color={stripeColor} variant="cover" />
-      <CardCorner color={stripeColor} className="-right-5 -top-5 size-16" />
-      {!readOnly && (
-        <button
-          type="button"
-          aria-label={t("delete")}
-          onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          className="absolute top-0.5 right-0.5 z-20 flex size-5 cursor-pointer items-center justify-center rounded-sm opacity-100 transition-opacity hover:bg-foreground/10 md:opacity-0 md:group-hover/event:opacity-100"
-        >
-          <XIcon className="size-3.5" />
-        </button>
-      )}
-      <div className="flex flex-col gap-1.5 pb-2 pt-3 pl-2.5 pr-5">
-        <span className="flex items-center gap-1.5">
-          <span style={{ backgroundColor: CLASS_COLOR_HEX[stripeColor] }} className="h-3 w-0.5 shrink-0 rounded-full" aria-hidden />
-          <span className="truncate text-[13px] font-semibold leading-tight text-foreground">{name}</span>
-        </span>
-        <span style={textStrong} className="flex items-center gap-1 truncate text-[11px] leading-tight opacity-90">
-          <Clock2Icon className="size-2.5 shrink-0" />
-          <span className="tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>
-        </span>
-        {!compact && (
-          <span style={textStrong} className="flex items-center gap-1 truncate text-[11px] leading-tight opacity-75">
-            <Hourglass className="size-2.5 shrink-0" />
-            <span className="tabular-nums">{fmtDuration(endMin - startMin)}</span>
-          </span>
-        )}
-      </div>
-
       {/* Oʻlcham (davomiylik) tutqichlari — faqat erkin rejimda */}
       {resizable && (
         <>
           <div draggable={false} onPointerDown={startResize("start")} className="absolute inset-x-0 top-0 z-10 h-2 cursor-ns-resize">
-            <span className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted-foreground opacity-0 transition-opacity group-hover/event:opacity-40" aria-hidden />
+            <span className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted-foreground opacity-0 transition-opacity group-hover/ev:opacity-40" aria-hidden />
           </div>
           <div draggable={false} onPointerDown={startResize("end")} className="absolute inset-x-0 bottom-0 z-10 h-2 cursor-ns-resize">
-            <span className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted-foreground opacity-0 transition-opacity group-hover/event:opacity-40" aria-hidden />
+            <span className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted-foreground opacity-0 transition-opacity group-hover/ev:opacity-40" aria-hidden />
           </div>
         </>
       )}
-    </div>
+    </EventCard>
   );
 }
 

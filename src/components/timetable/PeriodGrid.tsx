@@ -11,6 +11,7 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { XIcon, Plus, Check } from "lucide-react";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
 import { useCalendarFormat } from "@/components/calendar/format";
+import { EventCard } from "@/components/calendar/EventCard";
 
 /** Jadval 6 ish kuni (Du..Sha) — ISO kun raqamlari. */
 const WORK_DAYS = [1, 2, 3, 4, 5, 6];
@@ -110,28 +111,29 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
             >
               {clubs.map((ev) => {
                 const cls = getClass(ev.classId);
-                const tints = classTints(cls.color);
                 return (
-                  <div
+                  <EventCard
                     key={ev.id}
+                    color={cls.color}
+                    title={cls.name}
+                    subtitle={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`}
+                    density="micro"
+                    interactive={!readOnly}
                     onClick={() => { if (!readOnly) onEditEvent(ev); }}
-                    className={cn("group/club relative overflow-hidden rounded-md border pl-2 pr-1 py-1", readOnly ? "cursor-default" : "cursor-pointer", CLASS_CARD_INTERACTION)}
-                    style={{ ...tints.surfaceStrong, ...tints.borderMedium }}
-                  >
-                    <span className="absolute left-0 top-0 bottom-0 w-0.5" style={{ backgroundColor: tints.solid }} aria-hidden />
-                    <span className="block truncate text-[11px] font-semibold leading-tight text-foreground">{cls.name}</span>
-                    <span style={tints.textStrong} className="block truncate text-[10px] tabular-nums leading-tight opacity-80">{minToHHMM(ev.startMin)} — {minToHHMM(ev.endMin)}</span>
-                    {!readOnly && (
-                      <button
-                        type="button"
-                        aria-label={fmt.t("remove")}
-                        onClick={(e) => { e.stopPropagation(); onRemove(ev.id); }}
-                        className="absolute top-0.5 right-0.5 flex size-4 items-center justify-center rounded-sm opacity-0 transition-opacity hover:bg-foreground/10 group-hover/club:opacity-100"
-                      >
-                        <XIcon className="size-3" />
-                      </button>
-                    )}
-                  </div>
+                    className={CLASS_CARD_INTERACTION}
+                    actions={
+                      !readOnly ? (
+                        <button
+                          type="button"
+                          aria-label={fmt.t("remove")}
+                          onClick={(e) => { e.stopPropagation(); onRemove(ev.id); }}
+                          className="flex size-4 items-center justify-center rounded-sm bg-foreground/8 hover:bg-foreground/15"
+                        >
+                          <XIcon className="size-3" />
+                        </button>
+                      ) : undefined
+                    }
+                  />
                 );
               })}
               {!readOnly && <ClubAddButton classes={classes} onAdd={(cid) => onAddClub(day, cid, base, base + 45)} />}
@@ -186,23 +188,29 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
 
   if (event) {
     const cls = getClass(event.classId);
-    const tints = classTints(cls.color);
     const cellCard = (
-      <div role={readOnly ? undefined : "button"} tabIndex={readOnly ? undefined : 0} className={cn("group/cell relative h-full w-full overflow-hidden rounded-md border pl-2 pr-1 py-1", readOnly ? "cursor-default" : "cursor-pointer", CLASS_CARD_INTERACTION)} style={{ ...tints.surfaceStrong, ...tints.borderMedium }}>
-        <span className="absolute left-0 top-0 bottom-0 w-0.5" style={{ backgroundColor: tints.solid }} aria-hidden />
-        <span className="block truncate text-xs font-semibold leading-tight text-foreground">{cls.name}</span>
-        {cls.subject && <span style={tints.textStrong} className="block truncate text-[10px] leading-tight opacity-80">{cls.subject}</span>}
-        {!readOnly && (
-          <button
-            type="button"
-            aria-label={fmt.t("remove")}
-            onClick={(e) => { e.stopPropagation(); onRemove(event.id); }}
-            className="absolute top-0.5 right-0.5 z-10 flex size-4 items-center justify-center rounded-sm opacity-0 transition-opacity hover:bg-foreground/10 group-hover/cell:opacity-100"
-          >
-            <XIcon className="size-3" />
-          </button>
-        )}
-      </div>
+      <EventCard
+        color={cls.color}
+        title={cls.name}
+        subtitle={cls.subject}
+        density="micro"
+        interactive={!readOnly}
+        role={readOnly ? undefined : "button"}
+        tabIndex={readOnly ? undefined : 0}
+        className={cn("h-full w-full", CLASS_CARD_INTERACTION)}
+        actions={
+          !readOnly ? (
+            <button
+              type="button"
+              aria-label={fmt.t("remove")}
+              onClick={(e) => { e.stopPropagation(); onRemove(event.id); }}
+              className="flex size-4 items-center justify-center rounded-sm bg-foreground/8 hover:bg-foreground/15"
+            >
+              <XIcon className="size-3" />
+            </button>
+          ) : undefined
+        }
+      />
     );
 
     if (readOnly) return <div className={wrap}>{cellCard}</div>;

@@ -274,6 +274,11 @@ export function makeColorTints(c: string) {
     iconBg: { backgroundColor: mix(20) } as CSSProperties,
     /** Ikona rangi */
     iconText: { color: c } as CSSProperties,
+    /** Toʻyingan yuza — "ulangan" event bloki foni (kalendar EventCard) */
+    solidSurface: { backgroundColor: c } as CSSProperties,
+    /** solidSurface ustidagi matn — solidSurface ikkala temada ham bir xil yorugʻ
+        rang boʻlgani uchun bu ham temaga bogʻliq emas, doim deyarli qora qotiriladi. */
+    textOnSolid: { color: `color-mix(in oklch, ${c} 12%, black)` } as CSSProperties,
   } as const;
 }
 
