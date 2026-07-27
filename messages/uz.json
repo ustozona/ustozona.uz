@@ -1481,7 +1481,12 @@
     "markCompleted": "Oʻtildi",
     "returnedToBankToast": "Mavzu bankka qaytarildi",
     "returnToBank": "Bankka qaytarish",
-    "delete": "Oʻchirish"
+    "delete": "Oʻchirish",
+    "shiftBackwardAria": "Oldingi boʻsh slotga",
+    "shiftForwardAria": "Keyingi boʻsh slotga",
+    "lessonActionsAria": "Dars amallari",
+    "editAction": "Tahrirlash",
+    "noFreeSlotToast": "Yaqin ikki hafta ichida boʻsh slot topilmadi"
   },
   "TaskStatus": {
     "todo": "Kutilmoqda",

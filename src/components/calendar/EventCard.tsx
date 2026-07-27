@@ -37,7 +37,9 @@ type EventCardOwnProps = {
   footer?: ReactNode;
   /** dizayn grammatikasi: ulangan (filled) vs boʻsh (empty) slot */
   state?: "filled" | "empty";
-  density?: "cozy" | "compact" | "micro";
+  /** "auto" — `style.height` (px) dan hisoblanadi; balandlik-boshqaruvli
+      yuzalar (planner, jadval erkin rejimi) shuni ishlatsin. */
+  density?: "cozy" | "compact" | "micro" | "auto";
   temporal?: EventCardTemporal;
   interactive?: boolean;
   titleRowClassName?: string;
@@ -85,19 +87,29 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
           ? { boxShadow: `0 0 0 1px color-mix(in oklch, ${tints.solid} 35%, transparent)` }
           : {};
 
+    // Zichlik: past blokda vaqt sarlavha bilan bir qatorga tushadi, juda pastida
+    // umuman koʻrsatilmaydi (Google Calendar / Outlook naqshi).
+    const h = typeof style?.height === "number" ? style.height : undefined;
+    const resolvedDensity: "cozy" | "compact" | "micro" =
+      density !== "auto" ? density : h == null || h >= 64 ? "cozy" : h >= 38 ? "compact" : "micro";
+
     const Comp = as as "div";
     return (
       <Comp
         {...(rest as HTMLAttributes<HTMLDivElement>)}
         ref={ref as never}
         style={{
-          ...(filled ? tints.solidSurface : tints.tint),
+          ...(filled ? tints.solidSurface : { ...tints.tint, ...tints.borderMedium }),
           ...ringStyle,
           ...style,
         }}
         className={cn(
-          "group/ev relative flex flex-col overflow-hidden rounded-lg p-2 text-left",
-          density === "micro" ? "gap-0" : "gap-0.5",
+          // rounded-xl + p-2 → ichki elementlar rounded-sm (14−8=6px) boʻlishi kerak
+        // [[design-system]] konsentriklik qoidasi
+        "group/ev relative flex flex-col overflow-hidden rounded-xl p-2 text-left",
+          // Boʻsh slot yuzasi juda xira — chegara boʻlmasa fon bilan qoʻshilib ketadi
+          !filled && "border border-dashed",
+          resolvedDensity === "micro" ? "gap-0" : "gap-0.5",
           temporal === "past" && "grayscale-[0.4] opacity-70",
           interactive && "cursor-pointer transition hover:brightness-[0.97]",
           as === "button" && "w-full",
@@ -105,32 +117,32 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
         )}
       >
         <span aria-hidden className="pointer-events-none absolute inset-0" style={filled ? FILLED_TEXTURE : EMPTY_TEXTURE} />
-        <span className={cn("relative flex min-w-0 items-center gap-1.5", density === "compact" && "items-baseline", titleRowClassName)}>
+        <span className={cn("relative flex min-w-0 items-center gap-1.5", resolvedDensity === "compact" && "items-baseline", titleRowClassName)}>
           {leading}
           <span
-            style={filled ? tints.textOnSolid : undefined}
+            title={title}
+            style={filled ? tints.textOnSolid : tints.textOnTint}
             className={cn(
               "min-w-0 truncate font-bold leading-tight",
-              filled ? undefined : "text-muted-foreground",
-              density === "micro" ? "text-[11px]" : "text-xs",
+              resolvedDensity === "micro" ? "text-xs" : "text-sm",
             )}
           >
             {title}
           </span>
           {trailing}
-          {density === "compact" && subtitle != null && (
+          {resolvedDensity === "compact" && subtitle != null && (
             <span
-              style={filled ? tints.textOnSolid : undefined}
-              className={cn("shrink-0 truncate text-[10px] opacity-70", filled ? undefined : "text-muted-foreground")}
+              style={filled ? tints.textOnSolidMuted : tints.textOnTintMuted}
+              className="shrink-0 truncate text-xs"
             >
               {subtitle}
             </span>
           )}
         </span>
-        {density === "cozy" && subtitle != null && (
+        {resolvedDensity === "cozy" && subtitle != null && (
           <span
-            style={filled ? tints.textOnSolid : undefined}
-            className={cn("relative flex min-w-0 items-center gap-1.5 truncate text-[10px] opacity-70", filled ? undefined : "text-muted-foreground")}
+            style={filled ? tints.textOnSolidMuted : tints.textOnTintMuted}
+            className="relative flex min-w-0 items-center gap-1.5 truncate text-xs"
           >
             {subtitle}
           </span>

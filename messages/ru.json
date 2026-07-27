@@ -1481,7 +1481,12 @@
     "markCompleted": "Пройдено",
     "returnedToBankToast": "Тема возвращена в банк",
     "returnToBank": "Вернуть в банк",
-    "delete": "Удалить"
+    "delete": "Удалить",
+    "shiftBackwardAria": "В предыдущий свободный слот",
+    "shiftForwardAria": "В следующий свободный слот",
+    "lessonActionsAria": "Действия с уроком",
+    "editAction": "Редактировать",
+    "noFreeSlotToast": "Свободный слот в ближайшие две недели не найден"
   },
   "TaskStatus": {
     "todo": "Ожидает",

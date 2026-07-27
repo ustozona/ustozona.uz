@@ -465,7 +465,7 @@ function DayGridView({
               </p>
             )}
             {!compact && (
-              <p style={tints.textOnSolid} className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums opacity-75">
+              <p style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums">
                 <Clock className="size-3 shrink-0" />
                 {fmtMin(ev.startMin)} – {fmtMin(ev.endMin)}
               </p>

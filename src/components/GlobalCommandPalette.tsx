@@ -54,7 +54,8 @@ export default function GlobalCommandPalette() {
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+      // e.key baʼzi hodisalarda (avto-toʻldirish, IME) undefined boʻlishi mumkin
+      if (e.key?.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((v) => !v);
       }

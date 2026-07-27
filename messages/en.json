@@ -1481,7 +1481,12 @@
     "markCompleted": "Mark completed",
     "returnedToBankToast": "Lesson returned to the bank",
     "returnToBank": "Return to bank",
-    "delete": "Delete"
+    "delete": "Delete",
+    "shiftBackwardAria": "To previous free slot",
+    "shiftForwardAria": "To next free slot",
+    "lessonActionsAria": "Lesson actions",
+    "editAction": "Edit",
+    "noFreeSlotToast": "No free slot found within two weeks"
   },
   "TaskStatus": {
     "todo": "To do",

@@ -1481,7 +1481,12 @@
     "markCompleted": "Өтүлдү",
     "returnedToBankToast": "Тема банкка кайтарылды",
     "returnToBank": "Банкка кайтаруу",
-    "delete": "Өчүрүү"
+    "delete": "Өчүрүү",
+    "shiftBackwardAria": "Мурунку бош слотко",
+    "shiftForwardAria": "Кийинки бош слотко",
+    "lessonActionsAria": "Сабак аракеттери",
+    "editAction": "Түзөтүү",
+    "noFreeSlotToast": "Жакынкы эки жумада бош слот табылган жок"
   },
   "TaskStatus": {
     "todo": "Күтүлүүдө",

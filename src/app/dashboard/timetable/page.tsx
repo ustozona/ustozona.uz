@@ -1078,6 +1078,7 @@ function EventBlock({ name, startMin, endMin, color, top, height, resizable, rea
           )}
         </>
       }
+      density="auto"
       draggable={!readOnly && !resizing}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}

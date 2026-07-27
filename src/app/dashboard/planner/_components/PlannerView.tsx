@@ -57,7 +57,7 @@ import { Illustration } from "@/components/ui/illustration";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, PlusIcon, LinkIcon,
   FileText, Check, Trash2, Undo2, CalendarOff, ArrowUpRight, Eye, EyeOff,
-  SlidersHorizontal, Pencil, Search, Ban, Clock, CalendarPlus,
+  SlidersHorizontal, Pencil, Search, Ban, Clock, CalendarPlus, MoreVertical,
 } from "lucide-react";
 import { EventCard } from "@/components/calendar/EventCard";
 import { LessonStatusBadge } from "@/components/LessonStatusBadge";
@@ -427,6 +427,43 @@ export default function PlannerView({ classId }: { classId?: string }) {
     });
   }
 
+  /** Shu sinfning (dateKey, startMin) dan keyingi/oldingi BOʻSH sloti.
+      Ikki hafta ichida qidiriladi; band slotlar oʻtkazib yuboriladi. */
+  function findAdjacentSlot(p: Placement, dateKey: string, dir: 1 | -1): { date: string; ev: TimetableEvent } | null {
+    const base = new Date(`${dateKey}T00:00:00`);
+    for (let i = 0; i <= 14; i++) {
+      const d = new Date(base);
+      d.setDate(base.getDate() + dir * i);
+      const key = toDateKey(d);
+      const evs = eventsForDate(d)
+        .filter((e) => e.classId === p.classId)
+        .sort((a, b) => dir * (a.startMin - b.startMin));
+      for (const ev of evs) {
+        // Shu kunda joriy slotdan oldingilarni (yoʻnalishga qarab) tashlab ket
+        if (i === 0 && (dir === 1 ? ev.startMin <= p.startMin : ev.startMin >= p.startMin)) continue;
+        const occupied = (placedByDate.get(key) ?? []).some(
+          (q) => q.lesson.id !== p.lesson.id && placementInEvent(q, ev),
+        );
+        if (occupied) continue;
+        return { date: key, ev };
+      }
+    }
+    return null;
+  }
+  function shiftPlacement(p: Placement, dateKey: string, dir: 1 | -1) {
+    const target = findAdjacentSlot(p, dateKey, dir);
+    if (!target) {
+      toast.error(t("noFreeSlotToast"));
+      return;
+    }
+    moveSession(p.lesson.id, p.classId, dateKey, p.startMin, target.date, target.ev.startMin, target.ev.endMin);
+    toast.success(t("lessonMovedToast"), { description: p.lesson.title });
+  }
+  function unlinkPlacement(p: Placement, dateKey: string) {
+    unscheduleSession(p.lesson.id, p.classId, dateKey, p.startMin);
+    toast.success(t("returnedToBankToast"), { description: p.lesson.title });
+  }
+
   // ── Drag: darsni boshqa kunga (aynan shu vaqtda) koʻchirish ──
   function startDrag(e: React.DragEvent, p: Placement, dateKey: string) {
     const payload: DragPayload = { lessonId: p.lesson.id, classId: p.classId, date: dateKey, startMin: p.startMin, endMin: p.endMin };
@@ -701,6 +738,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           const blockLessons = placed.filter((p) => placementInEvent(p, ev));
                           // Darsli slot toʻyingan yuzada, boʻshi xira — rejalashtirilmagan joylar bir qarashda koʻrinadi
                           const hasLesson = blockLessons.length > 0;
+                          const blockPx = Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32);
+                          // Baland blokda tugmalar ustma-ust, past blokda yonma-yon sigʻadi
+                          const stackActions = blockPx >= 118;
                           return (
                             <EventCard
                               key={ev.id}
@@ -714,7 +754,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 </>
                               }
                               state={hasLesson ? "filled" : "empty"}
-                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32) }}
+                              density="auto"
+                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: blockPx }}
                               className="absolute inset-x-1 z-10"
                               actions={
                                 /* ↗ sinfni ochish — faqat umumiy /planner'da (sinf-detali ichida
@@ -729,50 +770,77 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                   </Link>
                                 ) : undefined
                               }
-                              footer={
-                                !hasLesson ? (
-                                  <div className="flex justify-end">
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <button
-                                          type="button"
-                                          aria-label={t("addLessonAria")}
-                                          className="flex items-center gap-1 rounded-lg bg-background/85 px-2 py-1 text-xs font-semibold text-foreground shadow-sm ring-1 ring-inset ring-border/50 transition hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] data-[state=open]:bg-background"
-                                        >
-                                          <PlusIcon className="size-3.5" strokeWidth={2.5} />
-                                          {t("lessonWord")}
-                                        </button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end" className="w-40">
-                                        <DropdownMenuItem onClick={() => openCreateModal(date, ev)}>
-                                          <PlusIcon />
-                                          {t("create")}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => openLinkModal(date, ev)}>
-                                          <LinkIcon />
-                                          {t("link")}
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </div>
-                                ) : undefined
-                              }
                             >
+                              {/* Boʻsh slot: ikki tez-amal tugmasi boʻsh joyni toʻldiradi —
+                                  dropdown ochish qadami yoʻq */}
+                              {!hasLesson && (
+                                <div className={cn(
+                                  "relative mt-1.5 flex min-h-0 flex-1 gap-1.5 opacity-0 transition-opacity duration-fast",
+                                  "pointer-events-none group-hover/ev:pointer-events-auto group-hover/ev:opacity-100",
+                                  "focus-within:pointer-events-auto focus-within:opacity-100",
+                                  "[@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100",
+                                  stackActions ? "flex-col" : "flex-row",
+                                )}>
+                                  <button type="button" onClick={() => openCreateModal(date, ev)}
+                                    className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm bg-foreground/6 px-2 text-xs font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
+                                    <PlusIcon className="size-3.5 shrink-0" strokeWidth={2.5} />
+                                    <span className="truncate">{t("create")}</span>
+                                  </button>
+                                  <button type="button" onClick={() => openLinkModal(date, ev)}
+                                    className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm bg-foreground/6 px-2 text-xs font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
+                                    <LinkIcon className="size-3.5 shrink-0" />
+                                    <span className="truncate">{t("link")}</span>
+                                  </button>
+                                </div>
+                              )}
                               {hasLesson && (
-                                <div className="mt-1.5 flex flex-col gap-1.5">
+                                /* relative — nuqta teksturasi mavzu kartasi ustidan tushmasin */
+                                <div className="relative mt-1.5 flex flex-col gap-1.5">
                                   {blockLessons.map((p) => (
-                                    <button key={p.lesson.id} type="button"
-                                      draggable
-                                      onDragStart={(e) => startDrag(e, p, dateKey)}
-                                      onClick={() => openEdit(p, dateKey)}
-                                      className="flex items-center gap-2 overflow-hidden rounded-lg border border-border bg-card px-2 py-1.5 text-left transition hover:bg-muted/40 cursor-grab active:cursor-grabbing">
-                                      <span style={tints.iconBg} className="flex size-6 shrink-0 items-center justify-center rounded-md">
-                                        {p.lesson.status === "Completed"
-                                          ? <Check style={tints.iconText} className="size-3.5" strokeWidth={3} />
-                                          : <FileText style={tints.iconText} className="size-3.5" />}
-                                      </span>
-                                      <span className="truncate text-xs font-semibold text-foreground">{p.lesson.title}</span>
-                                    </button>
+                                    <div key={p.lesson.id} className="group/chip relative">
+                                      <button type="button"
+                                        draggable
+                                        onDragStart={(e) => startDrag(e, p, dateKey)}
+                                        onClick={() => openEdit(p, dateKey)}
+                                        className="flex w-full items-center gap-2 overflow-hidden rounded-sm border border-border bg-card p-1.5 pr-2.5 text-left shadow-xs transition-[box-shadow,border-color,padding] duration-fast hover:border-foreground/20 hover:shadow-md group-hover/chip:pr-8 cursor-grab active:cursor-grabbing">
+                                        <span style={tints.iconBg} className="flex size-6 shrink-0 items-center justify-center rounded-full">
+                                          {p.lesson.status === "Completed"
+                                            ? <Check style={tints.iconText} className="size-3.5" strokeWidth={3} />
+                                            : <FileText style={tints.iconText} className="size-3.5" />}
+                                        </span>
+                                        <span className="truncate text-xs font-semibold text-foreground">{p.lesson.title}</span>
+                                      </button>
+                                      {/* Tez amallar — hoverda; qolgani ⋮ menyusida */}
+                                      <div className="pointer-events-none absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity duration-fast group-hover/chip:pointer-events-auto group-hover/chip:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <button type="button" aria-label={t("lessonActionsAria")}
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="flex size-6 cursor-pointer items-center justify-center rounded-sm text-muted-foreground transition-colors duration-fast hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground">
+                                              <MoreVertical className="size-3.5" />
+                                            </button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="w-44" onClick={(e) => e.stopPropagation()}>
+                                            <DropdownMenuItem onClick={() => openEdit(p, dateKey)}>
+                                              <Pencil />
+                                              {t("editAction")}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => shiftPlacement(p, dateKey, -1)}>
+                                              <ChevronLeft />
+                                              {t("shiftBackwardAria")}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => shiftPlacement(p, dateKey, 1)}>
+                                              <ChevronRight />
+                                              {t("shiftForwardAria")}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => unlinkPlacement(p, dateKey)}>
+                                              <Undo2 />
+                                              {t("returnToBank")}
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                      </div>
+                                    </div>
                                   ))}
                                 </div>
                               )}
@@ -805,7 +873,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               className={cn("absolute inset-x-1 z-[11] transition-all hover:brightness-95 cursor-grab active:cursor-grabbing", done && "opacity-75")}
                               actions={<LessonStatusBadge status={l.status} />}
                             >
-                              <span style={tints.textOnSolid} className="mt-0.5 flex items-center gap-1.5 truncate text-[10px] opacity-70">
+                              <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-[11px]">
                                 <Clock className="size-3 shrink-0" />
                                 {minToHHMM(start)} – {minToHHMM(end)}
                               </span>

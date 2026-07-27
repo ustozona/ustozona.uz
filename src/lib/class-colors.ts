@@ -235,6 +235,17 @@ export function classGradient(color: ClassColor | string): React.CSSProperties {
  * shuni ishlatadi, yagona manba). Hammasi `color-mix` orqali tema tokenlariga
  * aralashadi — dark mode avtomatik.
  */
+/**
+ * Toʻyingan yuza ustidagi matn "siyohi": yuza yetarlicha yorugʻ boʻlsa qora,
+ * aks holda oq. OKLCH L kanali idrok etilgan yorqinlikka toʻgʻridan-toʻgʻri
+ * mos keladi, shuning uchun WCAG luminance hisobisiz shu yetadi.
+ * Chegara 0.62 — bundan pastda qora matn AA dan oʻtmay qoladi.
+ */
+function onSolidInk(oklch: string): "black" | "white" {
+  const m = oklch.match(/oklch\(\s*([\d.]+)/i);
+  return m && parseFloat(m[1]) < 0.62 ? "white" : "black";
+}
+
 export function makeColorTints(c: string) {
   const mix = (pct: number, into = "var(--background)") =>
     `color-mix(in oklch, ${c} ${pct}%, ${into})`;
@@ -276,9 +287,20 @@ export function makeColorTints(c: string) {
     iconText: { color: c } as CSSProperties,
     /** Toʻyingan yuza — "ulangan" event bloki foni (kalendar EventCard) */
     solidSurface: { backgroundColor: c } as CSSProperties,
-    /** solidSurface ustidagi matn — solidSurface ikkala temada ham bir xil yorugʻ
-        rang boʻlgani uchun bu ham temaga bogʻliq emas, doim deyarli qora qotiriladi. */
-    textOnSolid: { color: `color-mix(in oklch, ${c} 12%, black)` } as CSSProperties,
+    /** solidSurface ustidagi ASOSIY matn. Rang yuzaning OKLCH yorqinligidan
+        hisoblanadi (yorugʻ fon → qora, toʻq fon → oq), shuning uchun palitraga
+        toʻq rang qoʻshilsa ham kontrast buzilmaydi. solidSurface temaga bogʻliq
+        emas — bu ham qora/oqqa qotiriladi, `var(--foreground)`ga emas. */
+    textOnSolid: { color: `color-mix(in oklch, ${c} 12%, ${onSolidInk(c)})` } as CSSProperties,
+    /** solidSurface ustidagi IKKILAMCHI matn (vaqt, izoh). `opacity` emas —
+        aralashtirilgan qattiq rang: fon teksturasi matndan oʻtib ketmaydi va
+        kontrast bashoratli boʻladi. */
+    textOnSolidMuted: { color: `color-mix(in oklch, ${c} 36%, ${onSolidInk(c)})` } as CSSProperties,
+    /** `tint` (7% xira) yuzasidagi matn — textOnSolid bilan AYNAN bir xil
+        retsept, faqat siyoh oʻrnida tema tokeni: toʻla va boʻsh event bir xil
+        koʻrinadi, dark mode ham toʻgʻri chiqadi. */
+    textOnTint: { color: `color-mix(in oklch, ${c} 12%, var(--foreground))` } as CSSProperties,
+    textOnTintMuted: { color: `color-mix(in oklch, ${c} 36%, var(--foreground))` } as CSSProperties,
   } as const;
 }
 

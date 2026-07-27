@@ -1481,7 +1481,12 @@
     "markCompleted": "Ótildi",
     "returnedToBankToast": "Tema bankke qaytarıldı",
     "returnToBank": "Bankke qaytarıw",
-    "delete": "Óshiriw"
+    "delete": "Óshiriw",
+    "shiftBackwardAria": "Aldıńǵı bos slotqa",
+    "shiftForwardAria": "Keyingi bos slotqa",
+    "lessonActionsAria": "Sabaq ámelleri",
+    "editAction": "Ózgertiw",
+    "noFreeSlotToast": "Eki hápte ishinde bos slot tabılmadı"
   },
   "TaskStatus": {
     "todo": "Kútilmekte",
