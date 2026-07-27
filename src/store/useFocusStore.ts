@@ -37,10 +37,16 @@ interface FocusState {
   pomosInCycle: number;
   /** `pomosInCycle` qaysi kun uchun hisoblanganini belgilaydi — kun almashsa 0'dan boshlanadi. */
   cycleDate: string | null;
+  /** Pauza boshlangan vaqt — bosqich hali tugamagan, faqat tik-tak muzlatilgan. `null` = pauzada emas. */
+  pausedAt: number | null;
 
   /** Fokusni boshlaydi. Boshqa vazifada ish bosqichi aktiv boʻlsa, uning
    *  qisman (tugallanmagan) daqiqasini avval haqiqiy vazifasiga yozib qoʻyadi. */
   startWork: (taskId: string, minutes: number) => void;
+  /** Joriy bosqichni muzlatadi — `endsAt` oʻzgarmaydi, faqat tik-tak toʻxtaydi. */
+  pause: () => void;
+  /** Pauzadan chiqadi — muzlagan vaqt hisobiga `endsAt`ni siljitadi, qolgan vaqt saqlanadi. */
+  resume: () => void;
   /** Ish tugadi — keyingi tanaffusni boshlaydi (uzun/qisqa hisoblab) va toʻliq
    *  pomodoro daqiqasini vazifaga yozadi. `phase !== "work"` boʻlsa no-op (CAS). */
   completeWorkAndStartBreak: (longBreakEvery: number, shortMinutes: number, longMinutes: number) => boolean;
@@ -72,6 +78,7 @@ export const useFocusStore = create<FocusState>()(
       sessionId: null,
       pomosInCycle: 0,
       cycleDate: null,
+      pausedAt: null,
 
       startWork: (taskId, minutes) => {
         const s = get();
@@ -87,7 +94,21 @@ export const useFocusStore = create<FocusState>()(
           sessionId: crypto.randomUUID(),
           pomosInCycle: nextCycleCount(s.pomosInCycle, s.cycleDate),
           cycleDate: todayKey(),
+          pausedAt: null,
         });
+      },
+
+      pause: () => {
+        const s = get();
+        if (s.phase === "idle" || s.pausedAt != null) return;
+        set({ pausedAt: Date.now() });
+      },
+
+      resume: () => {
+        const s = get();
+        if (s.phase === "idle" || s.pausedAt == null || s.endsAt == null) return;
+        const frozenMs = Date.now() - s.pausedAt;
+        set({ endsAt: s.endsAt + frozenMs, pausedAt: null });
       },
 
       completeWorkAndStartBreak: (longBreakEvery, shortMinutes, longMinutes) => {
@@ -107,6 +128,7 @@ export const useFocusStore = create<FocusState>()(
           sessionId: crypto.randomUUID(),
           pomosInCycle: isLong ? 0 : count,
           cycleDate: todayKey(),
+          pausedAt: null,
         });
         return true;
       },
@@ -114,7 +136,7 @@ export const useFocusStore = create<FocusState>()(
       completeBreak: () => {
         const s = get();
         if (s.phase !== "break") return false;
-        set({ phase: "idle", endsAt: null, startedAt: null, activeTaskId: null, sessionId: null });
+        set({ phase: "idle", endsAt: null, startedAt: null, activeTaskId: null, sessionId: null, pausedAt: null });
         return true;
       },
 
@@ -122,7 +144,7 @@ export const useFocusStore = create<FocusState>()(
         const s = get();
         if (s.phase === "idle") return;
         if (s.phase === "work") creditPartialWork(s.activeTaskId, s.startedAt, Date.now());
-        set({ phase: "idle", endsAt: null, startedAt: null, activeTaskId: null, sessionId: null });
+        set({ phase: "idle", endsAt: null, startedAt: null, activeTaskId: null, sessionId: null, pausedAt: null });
       },
     }),
     {
@@ -138,6 +160,7 @@ export const useFocusStore = create<FocusState>()(
           sessionId: p.sessionId ?? null,
           pomosInCycle: p.pomosInCycle ?? 0,
           cycleDate: p.cycleDate ?? null,
+          pausedAt: p.pausedAt ?? null,
         } as FocusState;
       },
     }

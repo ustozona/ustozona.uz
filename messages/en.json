@@ -3591,6 +3591,11 @@
       "confirmOk": "Save",
       "focusTotal": "Total: {value}",
       "startFocus": "Start focus",
+      "pauseFocus": "Pause",
+      "resumeFocus": "Resume",
+      "stopFocus": "Stop",
+      "switchFocus": "Switch to this task",
+      "switchFocusWarning": "Focus is running on another task. Switching keeps its partial time.",
       "closeAria": "Close panel",
       "estPomosFormula": "{count} × {length} = {total}",
       "timeCard": {
@@ -3629,7 +3634,14 @@
     "focusLabel": "Focus",
     "breakLabel": "Break",
     "stopAria": "Stop",
-    "openAria": "Open focus timer"
+    "openAria": "Open focus timer",
+    "pauseAria": "Pause",
+    "resumeAria": "Resume",
+    "stopSession": "Stop session",
+    "skipBreak": "Skip",
+    "pausedLabel": "Paused",
+    "switchTask": "Switch to this task",
+    "timerAria": "Focus, {time} remaining"
   },
   "TasksSection": {
     "title": "Tasks",

@@ -3591,6 +3591,11 @@
       "confirmOk": "Сохранить",
       "focusTotal": "Всего: {value}",
       "startFocus": "Начать фокус",
+      "pauseFocus": "Пауза",
+      "resumeFocus": "Продолжить",
+      "stopFocus": "Остановить",
+      "switchFocus": "Переключиться на эту задачу",
+      "switchFocusWarning": "Фокус идёт по другой задаче. При переключении её частичное время сохранится.",
       "closeAria": "Закрыть панель",
       "estPomosFormula": "{count} × {length} = {total}",
       "timeCard": {
@@ -3629,7 +3634,14 @@
     "focusLabel": "Фокус",
     "breakLabel": "Перерыв",
     "stopAria": "Остановить",
-    "openAria": "Открыть таймер фокуса"
+    "openAria": "Открыть таймер фокуса",
+    "pauseAria": "Пауза",
+    "resumeAria": "Продолжить",
+    "stopSession": "Остановить сессию",
+    "skipBreak": "Пропустить",
+    "pausedLabel": "На паузе",
+    "switchTask": "Переключиться на эту задачу",
+    "timerAria": "Фокус, осталось {time}"
   },
   "TasksSection": {
     "title": "Задачи",

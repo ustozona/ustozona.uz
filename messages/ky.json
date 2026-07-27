@@ -3591,6 +3591,11 @@
       "confirmOk": "Сактоо",
       "focusTotal": "Баары: {value}",
       "startFocus": "Фокусту баштоо",
+      "pauseFocus": "Тыныгуу",
+      "resumeFocus": "Улантуу",
+      "stopFocus": "Токтотуу",
+      "switchFocus": "Бул тапшырмага өтүү",
+      "switchFocusWarning": "Фокус башка тапшырма боюнча жүрүп жатат. Өтсөңүз, анын жарым-жартылай убактысы сакталат.",
       "closeAria": "Панелди жабуу",
       "estPomosFormula": "{count} × {length} = {total}",
       "timeCard": {
@@ -3629,7 +3634,14 @@
     "focusLabel": "Фокус",
     "breakLabel": "Тыныгуу",
     "stopAria": "Токтотуу",
-    "openAria": "Фокус таймерин ачуу"
+    "openAria": "Фокус таймерин ачуу",
+    "pauseAria": "Тыныгуу",
+    "resumeAria": "Улантуу",
+    "stopSession": "Сессияны токтотуу",
+    "skipBreak": "Өткөрүп жиберүү",
+    "pausedLabel": "Тыныгууда",
+    "switchTask": "Бул тапшырмага өтүү",
+    "timerAria": "Фокус, {time} калды"
   },
   "TasksSection": {
     "title": "Тапшырмалар",

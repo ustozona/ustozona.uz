@@ -12,6 +12,7 @@ import {
   ClipboardCheck,
   Flag,
   GraduationCap,
+  Pause,
   Pencil,
   Play,
   Repeat,
@@ -43,6 +44,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { useFocusStore } from "@/store/useFocusStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
@@ -131,6 +133,10 @@ export function TaskDetail({
   const [pendingEstPomos, setPendingEstPomos] = useState(Math.max(1, task?.estPomos ?? 1));
   const [pendingPomoMin, setPendingPomoMin] = useState(pomoMinutes);
 
+  const focusPhase = useFocusStore((s) => s.phase);
+  const focusActiveTaskId = useFocusStore((s) => s.activeTaskId);
+  const focusPaused = useFocusStore((s) => s.pausedAt != null);
+
   useEffect(() => {
     setNote(task?.note ?? "");
     setTitle(task?.title ?? "");
@@ -157,6 +163,8 @@ export function TaskDetail({
   }
 
   const done = task.status === "done";
+  const isThisTaskFocused = focusPhase === "work" && focusActiveTaskId === task.id;
+  const isOtherTaskFocused = focusPhase === "work" && focusActiveTaskId != null && focusActiveTaskId !== task.id;
   const classInfo = task.classId ? liveClasses.find((c) => c.id === task.classId) : undefined;
   const classHex = classInfo ? CLASS_COLOR_HEX[classColor(classInfo)] : undefined;
   const isManual = task.source.kind === "manual";
@@ -527,18 +535,56 @@ export function TaskDetail({
             )}
 
           {/* Fokusni boshlash — izoh ustida, alohida qator (Focus To-Do dan pastga koʻchirildi).
-              Bajarilgan/bekor qilingan vazifada tugma yashirilmaydi — disabled holatda koʻrsatiladi. */}
+              Bajarilgan/bekor qilingan vazifada tugma yashirilmaydi — disabled holatda koʻrsatiladi.
+              Holatga qarab shakl oʻzgaradi: boshlash / shu vazifada pauza-davom / boshqa
+              vazifada — "bu vazifaga oʻtish" (headerdagi taymer bilan bir manba, useFocusStore). */}
           <div className="py-3">
-            <Button
-              type="button"
-              variant="default"
-              onClick={onStartFocus}
-              disabled={done || task.status === "canceled"}
-              className="w-full justify-center gap-2 disabled:bg-muted disabled:text-muted-foreground"
-            >
-              <Play className="size-3.5 fill-current" />
-              {t("startFocus")}
-            </Button>
+            {isThisTaskFocused ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    focusPaused ? useFocusStore.getState().resume() : useFocusStore.getState().pause()
+                  }
+                  className="flex-1 justify-center gap-2"
+                >
+                  {focusPaused ? (
+                    <Play className="size-3.5 fill-current" />
+                  ) : (
+                    <Pause className="size-3.5" />
+                  )}
+                  {focusPaused ? t("resumeFocus") : t("pauseFocus")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => useFocusStore.getState().stop()}
+                  className="flex-1 justify-center gap-2 text-muted-foreground hover:text-destructive"
+                >
+                  <X className="size-3.5" />
+                  {t("stopFocus")}
+                </Button>
+              </div>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={onStartFocus}
+                    disabled={done || task.status === "canceled"}
+                    className="w-full justify-center gap-2 disabled:bg-muted disabled:text-muted-foreground"
+                  >
+                    <Play className="size-3.5 fill-current" />
+                    {isOtherTaskFocused ? t("switchFocus") : t("startFocus")}
+                  </Button>
+                </TooltipTrigger>
+                {isOtherTaskFocused && (
+                  <TooltipContent>{t("switchFocusWarning")}</TooltipContent>
+                )}
+              </Tooltip>
+            )}
           </div>
 
           {/* Izoh — panel tagidagi erkin matn (Focus To-Do RemarkItem) */}

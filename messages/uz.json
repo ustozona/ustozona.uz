@@ -3428,6 +3428,11 @@
       "confirmOk": "Saqlash",
       "focusTotal": "Jami: {value}",
       "startFocus": "Fokusni boshlash",
+      "pauseFocus": "Pauza",
+      "resumeFocus": "Davom ettirish",
+      "stopFocus": "Toʻxtatish",
+      "switchFocus": "Bu vazifaga oʻtish",
+      "switchFocusWarning": "Boshqa vazifa ustida fokus davom etyapti. Oʻtsangiz, uning qisman vaqti saqlanadi.",
       "closeAria": "Panelni yopish",
       "estPomosFormula": "{count} ta × {length} = {total}",
       "timeCard": {
@@ -3466,7 +3471,14 @@
     "focusLabel": "Fokus",
     "breakLabel": "Tanaffus",
     "stopAria": "Toʻxtatish",
-    "openAria": "Fokus taymerini ochish"
+    "openAria": "Fokus taymerini ochish",
+    "pauseAria": "Pauza",
+    "resumeAria": "Davom ettirish",
+    "stopSession": "Sessiyani toʻxtatish",
+    "skipBreak": "Oʻtkazib yuborish",
+    "pausedLabel": "Pauzada",
+    "switchTask": "Bu vazifaga oʻtish",
+    "timerAria": "Fokus, {time} qoldi"
   },
   "TasksSection": {
     "title": "Vazifalar",

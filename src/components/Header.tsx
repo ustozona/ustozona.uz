@@ -78,8 +78,17 @@ export default function Header() {
       {/* Spacer — pushes actions to the right */}
       <div className="flex-1 min-w-2" />
 
-      {/* Fokus taymeri — headerning aynan oʻrtasida, tomonlar kengligidan mustaqil */}
-      <div className="pointer-events-none absolute inset-y-0 left-1/2 flex -translate-x-1/2 items-center">
+      {/* Fokus taymeri — headerning aynan oʻrtasida, tomonlar kengligidan mustaqil.
+          DIQQAT: markazlash ATAYLAB inline `style` orqali, Tailwind klass bilan
+          emas. Bu build'da `md:left-1/2` kabi variant+kasr inset klassi
+          generatsiya qilinmaydi; natijada `absolute` qolib `left` yoʻqoladi va
+          flex-konteynerning absolyut bolasi oʻzining "static position"iga —
+          yaʼni headerning CHAP burchagiga — tushib, breadcrumb ustiga chiqadi.
+          Shu bois `left`/`transform` faqat inline style'da. */}
+      <div
+        className="pointer-events-none absolute inset-y-0 flex items-center"
+        style={{ left: "50%", transform: "translateX(-50%)" }}
+      >
         <span className="pointer-events-auto">
           <FocusTimerPill />
         </span>

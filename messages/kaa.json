@@ -3591,6 +3591,11 @@
       "confirmOk": "Saqlaw",
       "focusTotal": "Jámi: {value}",
       "startFocus": "Fokustı baslaw",
+      "pauseFocus": "Pauza",
+      "resumeFocus": "Dawam ettiriw",
+      "stopFocus": "Toqtatıw",
+      "switchFocus": "Bul tapsırmaǵa ótiw",
+      "switchFocusWarning": "Basqa tapsırma boyınsha fokus dawam etip atır. Ótseńiz, onıń jarım-jartı waqtı saqlanadı.",
       "closeAria": "Paneldi jabıw",
       "estPomosFormula": "{count} ta × {length} = {total}",
       "timeCard": {
@@ -3629,7 +3634,14 @@
     "focusLabel": "Fokus",
     "breakLabel": "Tanaffus",
     "stopAria": "Toqtatıw",
-    "openAria": "Fokus taymerin ashıw"
+    "openAria": "Fokus taymerin ashıw",
+    "pauseAria": "Pauza",
+    "resumeAria": "Dawam ettiriw",
+    "stopSession": "Sessiyanı toqtatıw",
+    "skipBreak": "Ótkerip jiberiw",
+    "pausedLabel": "Pauzada",
+    "switchTask": "Bul tapsırmaǵa ótiw",
+    "timerAria": "Fokus, {time} qaldı"
   },
   "TasksSection": {
     "title": "Wazıypalar",
