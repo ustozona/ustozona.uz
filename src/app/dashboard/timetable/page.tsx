@@ -1083,7 +1083,7 @@ function EventBlock({ name, startMin, endMin, color, top, height, resizable, rea
       onDragEnd={onDragEnd}
       onClick={onClick}
       interactive
-      className={cn("isolate left-1 right-1 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]", readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing", CLASS_CARD_INTERACTION)}
+      className={cn("absolute isolate left-1 right-1 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]", readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing", CLASS_CARD_INTERACTION)}
       style={{ top: top + 1, height: height - 2 }}
       role="button"
       tabIndex={0}
