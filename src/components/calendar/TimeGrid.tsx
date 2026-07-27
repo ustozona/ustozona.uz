@@ -73,27 +73,36 @@ export function TimeGrid({
     nowMin == null ? null : (nowMin / 60 - startHour) * pxPerHour;
   const nowVisible = nowTop != null && nowTop >= 0 && nowTop <= hourCount * pxPerHour;
 
-  return (
-    <div ref={scrollRef} {...rest} className={cn("h-full overflow-y-auto scrollbar-thin", className)}>
-      <div
-        className="grid"
-        style={{ gridTemplateColumns: `${gutterWidth}px repeat(${columns.length}, minmax(0,1fr))` }}
-      >
-        {/* Sticky sarlavha (opaque) */}
-        <div className="sticky top-0 z-30 border-b border-border bg-muted">{gutterHeader}</div>
-        {columns.map((c) => (
-          <div
-            key={c.key}
-            {...c.headerProps}
-            className={cn(
-              "sticky top-0 z-30 border-l border-b border-border bg-muted",
-              c.headerProps?.className,
-            )}
-          >
-            {c.header}
-          </div>
-        ))}
+  const templateColumns = `${gutterWidth}px repeat(${columns.length}, minmax(0,1fr))`;
 
+  return (
+    <div {...rest} className={cn("relative flex h-full flex-col overflow-hidden", className)}>
+      {/* Sarlavha — scroll konteynerNING ICHIDA, lekin soat/kun toʻridan TASHQARI
+          alohida `sticky` blok. Shu sabab uning containing block'i butun scroll
+          balandligi boʻladi (grid QATORI emas — eski bug aynan shundan edi:
+          CSS Grid'da sticky oʻz grid-maydoni, yaʼni faqat sarlavha balandligi,
+          bilan chegaralanardi). Shaffof-xira fon (backdrop-blur) — scroll
+          boʻlganda ostidagi kontent xira koʻrinib turadi (frosted glass). */}
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 overflow-y-auto scrollbar-thin [scrollbar-gutter:stable]"
+      >
+        <div
+          className="sticky top-0 z-20 grid border-b border-border/60 bg-background/70 backdrop-blur-md"
+          style={{ gridTemplateColumns: templateColumns }}
+        >
+          <div>{gutterHeader}</div>
+          {columns.map((c) => (
+            <div
+              key={c.key}
+              {...c.headerProps}
+              className={cn("border-l border-border", c.headerProps?.className)}
+            >
+              {c.header}
+            </div>
+          ))}
+        </div>
+        <div className="grid" style={{ gridTemplateColumns: templateColumns }}>
         {/* Vaqt oʻqi */}
         <div className={cn(gutterVariant === "axis" ? "border-r border-border/40" : "border-r border-border")}>
           {hourIdx.map((h) =>
@@ -163,6 +172,7 @@ export function TimeGrid({
             {renderColumn(col)}
           </div>
         ))}
+        </div>
       </div>
     </div>
   );

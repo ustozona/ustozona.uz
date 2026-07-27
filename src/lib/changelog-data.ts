@@ -32,11 +32,34 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "planner-full-day-zoom",
+    date: "2026-07-27",
+    type: "yaxshilandi",
+    title: "Rejalashtiruvchi — toʻliq sutka va masshtab",
+    body: "Hafta koʻrinishi endi butun sutkani qamraydi va 08:00 dan ochiladi, shuning uchun erta ertalabki va kechki darslar ham joylashadi. Pastdagi masshtab tugmasi bilan kunni zichroq yoki kengroq koʻrsatasiz.",
+    href: "/dashboard/planner",
+  },
+  {
+    id: "planner-direct-lesson-editor",
+    date: "2026-07-27",
+    type: "yaxshilandi",
+    title: "Rejalashtiruvchi — dars muharriri bir bosishda",
+    body: "Boʻsh joydagi Yaratish va dars menyusidagi Tahrirlash endi oraliq oynasiz, toʻgʻridan-toʻgʻri dars muharririga olib oʻtadi.",
+    href: "/dashboard/planner",
+  },
+  {
     id: "calendar-event-card-redesign",
     date: "2026-07-27",
     type: "yaxshilandi",
     title: "Kalendar — dars bloklari yangi dizaynda",
     body: "Bosh sahifa, Rejalashtiruvchi va Jadvaldagi dars kartalari bir xil, yangi koʻrinishga oʻtdi: dars ulangan joy toʻyingan rangda, boʻsh joy esa xiraroq — ikkisi bir qarashda farqlanadi.",
+    href: "/dashboard/planner",
+  },
+  {
+    id: "planner-sticky-day-header",
+    date: "2026-07-27",
+    type: "tuzatildi",
+    title: "Rejalashtiruvchi — kun sarlavhasi endi joyida turadi",
     href: "/dashboard/planner",
   },
   {

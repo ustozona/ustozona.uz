@@ -36,15 +36,22 @@ export function MonthGrid({
   const cells = useMemo(() => getMonthGrid(year, month), [year, month]);
 
   return (
-    <div {...rest} className={cn("flex h-full flex-col overflow-y-auto scrollbar-thin", className)}>
-      <div className="grid shrink-0 border-b border-border bg-muted" style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}>
+    /* Kun nomlari qatori scroll konteyneridan TASHQARIDA — u qimirlamaydi,
+       faqat kataklar toʻri scroll boʻladi. `scrollbar-gutter` ikkalasida ham
+       bir xil joy qoldiradi, shunda ustunlar tekis turadi. */
+    <div {...rest} className={cn("flex h-full flex-col overflow-hidden", className)}>
+      <div
+        className="grid shrink-0 overflow-hidden border-b border-border bg-muted scrollbar-thin [scrollbar-gutter:stable]"
+        style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}
+      >
         {[1, 2, 3, 4, 5, 6, 7].map((isoDay) => (
           <div key={isoDay} className="border-l border-border/40 py-3 text-center first:border-l-0">
             <TypographyLabel>{fmt.dayShort(isoDay)}</TypographyLabel>
           </div>
         ))}
       </div>
-      <div className="grid flex-1" style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}>
+      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin [scrollbar-gutter:stable]">
+      <div className="grid min-h-full" style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}>
         {cells.map((date, idx) => {
           if (!date)
             return <div key={idx} className="min-h-[96px] border-l border-t border-border/40 bg-muted/10 first:border-l-0" />;
@@ -63,6 +70,7 @@ export function MonthGrid({
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );

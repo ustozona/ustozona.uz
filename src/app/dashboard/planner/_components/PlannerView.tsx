@@ -58,6 +58,7 @@ import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, PlusIcon, LinkIcon,
   FileText, Check, Trash2, Undo2, CalendarOff, ArrowUpRight, Eye, EyeOff,
   SlidersHorizontal, Pencil, Search, Ban, Clock, CalendarPlus, MoreVertical,
+  Minus,
 } from "lucide-react";
 import { EventCard } from "@/components/calendar/EventCard";
 import { LessonStatusBadge } from "@/components/LessonStatusBadge";
@@ -78,7 +79,6 @@ import { makePlannerTourDemo } from "@/components/tour/planner-tour-demo";
    ════════════════════════════════════════════════════════════════════ */
 
 const BLOCKED_KEY = "murabbiyona-blocked-days";
-const NO_UNIT = "__none__";
 
 type BlockedDay = { date: string; label: string };
 type SlotModal = { date: Date; classId: string; startMin: number; endMin: number };
@@ -89,9 +89,15 @@ type EditTarget = { lessonId: string; classId: string; date: string; startMin: n
 type DragPayload = { lessonId: string; classId: string; date: string; startMin: number; endMin: number };
 
 const SLOT_HEIGHT = 180;
-const START_HOUR = 7;
-const END_HOUR = 22;
+/** Toʻliq sutka koʻrsatiladi (00:00–24:00); ochilganda 08:00'ga scroll qilinadi. */
+const START_HOUR = 0;
+const END_HOUR = 24;
 const VISIBLE_HOURS = END_HOUR - START_HOUR;
+
+const ZOOM_KEY = "ustozona-planner-zoom";
+const ZOOM_MIN = 60;
+const ZOOM_MAX = 150;
+const ZOOM_STEP = 10;
 
 /** Kun kaliti — calendar-core konvensiyasi. */
 function dateToTimetableDay(d: Date): number {
@@ -115,6 +121,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const [nowMin, setNowMin] = useState(0);
   const [showOffDays, setShowOffDays] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(100);
+  const slotHeight = Math.round((SLOT_HEIGHT * zoom) / 100);
 
   // ── Jadval versiyalari + oʻquv yili kalendari (yagona manbalar) ──
   const versions = useTimetableStore((s) => s.versions);
@@ -135,12 +143,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const [blockModal, setBlockModal] = useState<{ date: Date } | null>(null);
   const [blockLabel, setBlockLabel] = useState("");
 
-  const [createModal, setCreateModal] = useState<SlotModal | null>(null);
-  const [cmTitle, setCmTitle] = useState("");
-  const [cmUnitId, setCmUnitId] = useState<string>(NO_UNIT);
-  const [cmStartStr, setCmStartStr] = useState("08:00");
-  const [cmEndStr, setCmEndStr] = useState("08:45");
-
   const [linkModal, setLinkModal] = useState<SlotModal | null>(null);
   const [lmLessonId, setLmLessonId] = useState<string>("");
   const [lmSearch, setLmSearch] = useState("");
@@ -159,9 +161,23 @@ export default function PlannerView({ classId }: { classId?: string }) {
     try {
       const rawB = localStorage.getItem(BLOCKED_KEY);
       if (rawB) setBlocked(JSON.parse(rawB));
+      const rawZ = localStorage.getItem(ZOOM_KEY);
+      if (rawZ) {
+        const z = Number(rawZ);
+        if (Number.isFinite(z) && z >= ZOOM_MIN && z <= ZOOM_MAX) setZoom(z);
+      }
     } catch {}
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try { localStorage.setItem(ZOOM_KEY, String(zoom)); } catch {}
+  }, [zoom, hydrated]);
+
+  function zoomBy(delta: number) {
+    setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + delta)));
+  }
 
   useEffect(() => {
     if (!hydrated) return;
@@ -208,13 +224,13 @@ export default function PlannerView({ classId }: { classId?: string }) {
   /** Jadvalda umuman event bormi — boʻsh holat (onboarding) uchun. */
   const hasAnyTimetable = useMemo(() => versions.some((v) => v.events.length > 0) || isDemoMode, [versions, isDemoMode]);
 
-  // Sahifa (yoki grid) ochilganda 07:00 emas 08:00'dan boshlab koʻrinsin —
+  // Toʻr toʻliq sutkani (00:00–24:00) qamraydi, lekin ochilganda 08:00 koʻrinsin.
   // `hasAnyTimetable` grid mount boʻlgandan keyin oʻzgarsa ham (masalan
   // tur demo rejimi kechroq yoqilsa) qayta ishlaydi.
   useEffect(() => {
     if (!hydrated || !scrollerRef.current || view !== "week" || !hasAnyTimetable) return;
-    scrollerRef.current.scrollTop = (8 - START_HOUR) * SLOT_HEIGHT;
-  }, [hydrated, view, hasAnyTimetable]);
+    scrollerRef.current.scrollTop = (8 - START_HOUR) * slotHeight;
+  }, [hydrated, view, hasAnyTimetable, slotHeight]);
 
   /** Sanada amalda boʻlgan versiya jadvalidan shu kunning darslari.
       Oʻquv yilidan tashqari yoki taʼtil kuni — boʻsh. */
@@ -322,37 +338,17 @@ export default function PlannerView({ classId }: { classId?: string }) {
     toast.success(t("blockRemovedToast"));
   }
 
-  // ── Yaratish (nom + Boʻlim + vaqt) ──
-  function openCreateModal(date: Date, ev: TimetableEvent) {
-    setCreateModal({ date, classId: ev.classId, startMin: ev.startMin, endMin: ev.endMin });
-    setCmTitle("");
-    setCmUnitId(NO_UNIT);
-    setCmStartStr(minToHHMM(ev.startMin));
-    setCmEndStr(minToHHMM(ev.endMin));
-  }
-  function saveCreate() {
-    if (!createModal || !cmTitle.trim()) return;
-    const startMin = HHMMToMin(cmStartStr);
-    const endMin = HHMMToMin(cmEndStr);
-    if (endMin <= startMin) {
-      toast.error(t("endBeforeStartError"));
-      return;
-    }
-    const title = cmTitle.trim();
+  // ── Yaratish — toʻgʻridan-toʻgʻri dars muharrirga oʻtadi (modalsiz) ──
+  function createLessonInSlot(date: Date, ev: TimetableEvent) {
     const id = addLesson({
-      classId: createModal.classId,
-      unitId: cmUnitId === NO_UNIT ? null : cmUnitId,
-      title,
-      status: "Scheduled",
+      classId: ev.classId,
+      unitId: null,
+      title: "",
+      status: "Draft",
     });
-    addScheduleForClass(id, createModal.classId, toDateKey(createModal.date), startMin, endMin);
-    setCreateModal(null);
-    toast.success(t("lessonCreatedToast"), { description: title });
+    addScheduleForClass(id, ev.classId, toDateKey(date), ev.startMin, ev.endMin);
+    router.push(`/lessons/${id}`);
   }
-  const createUnits = useMemo(
-    () => (createModal ? units.filter((u) => u.classId === createModal.classId) : []),
-    [units, createModal]
-  );
 
   // ── Ulash (bitta mavzu; slot vaqti) ──
   function openLinkModal(date: Date, ev: TimetableEvent) {
@@ -578,12 +574,39 @@ export default function PlannerView({ classId }: { classId?: string }) {
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 min-h-0 flex flex-col p-0">
-          <div className="flex-1 min-h-0 overflow-hidden">
+        <CardContent className="relative flex-1 min-h-0 flex flex-col p-0">
+          {view === "week" && hasAnyTimetable && (
+            <div className="pointer-events-none absolute bottom-4 right-4 z-30">
+              <div className="pointer-events-auto flex items-center gap-0.5 rounded-full border border-border bg-background/90 p-0.5 shadow-md backdrop-blur-sm">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-full hover:bg-primary hover:text-primary-foreground"
+                  onClick={() => zoomBy(-ZOOM_STEP)}
+                  disabled={zoom <= ZOOM_MIN}
+                  aria-label={t("zoomOutAria")}
+                >
+                  <Minus className="size-3.5" />
+                </Button>
+                <span className="w-10 text-center text-xs font-semibold tabular-nums text-muted-foreground">{zoom}%</span>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-full hover:bg-primary hover:text-primary-foreground"
+                  onClick={() => zoomBy(ZOOM_STEP)}
+                  disabled={zoom >= ZOOM_MAX}
+                  aria-label={t("zoomInAria")}
+                >
+                  <PlusIcon className="size-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
 
             {/* ── Boʻsh holat (jadval hali tuzilmagan) ── */}
             {hydrated && !hasAnyTimetable ? (
-              <Empty className="h-full">
+              <Empty className="h-auto flex-1">
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
                   <EmptyTitle>{t("noScheduleTitle")}</EmptyTitle>
@@ -605,12 +628,17 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <TimeGrid
                 scrollRef={scrollerRef}
                 data-tour="planner-grid"
-                className={cn(isDemoMode && "pointer-events-none")}
+                className={cn("h-auto flex-1", isDemoMode && "pointer-events-none")}
                 startHour={START_HOUR}
                 endHour={END_HOUR}
-                pxPerHour={SLOT_HEIGHT}
+                pxPerHour={slotHeight}
                 nowMin={nowMin}
                 lines="half"
+                gutterHeader={
+                  <div className="flex h-full items-center justify-center">
+                    <Clock className="size-4 text-muted-foreground" />
+                  </div>
+                }
                 columns={weekDates.map((d, i): TimeGridColumn => {
                   const isToday = isSameDay(d, today);
                   const key = toDateKey(d);
@@ -621,20 +649,25 @@ export default function PlannerView({ classId }: { classId?: string }) {
                   const vNow = resolveVersionForDate(versions, key);
                   const versionChanged =
                     versions.length > 1 && vNow != null && vNow.id !== resolveVersionForDate(versions, toDateKey(prevDate))?.id;
-                  const full = fmt.dayName(dateToTimetableDay(d));
+                  const short = fmt.dayShort(dateToTimetableDay(d));
                   return {
                     key,
                     isToday,
                     headerProps: {
                       "data-tour": i === 0 ? "planner-day-cell" : undefined,
-                      className: "group/day relative px-2 py-3 text-center",
+                      className: cn(
+                        "group/day relative px-2 py-3 text-center",
+                        isBlocked && "bg-destructive/10",
+                      ),
                     },
                     columnProps: {
                       onDragOver: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverKey !== key) setDragOverKey(key); },
                       onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === key ? null : k)); },
                       onDrop: (e) => dropOnDay(e, d),
                       className: cn(
-                        isToday && "bg-muted/50",
+                        // "Bugun" — juda yengil neytral tint; asosiy signal baribir
+                        // sarlavhada (toʻldirilgan doira + toʻq yorliq) va "hozir" chizigʻida.
+                        isToday && "bg-muted/20",
                         isBlocked && "bg-destructive/5",
                         !isBlocked && holiday && "bg-muted/40",
                         dragOverKey === key && "outline outline-2 -outline-offset-2 outline-[var(--ring)] bg-primary/5"
@@ -642,13 +675,52 @@ export default function PlannerView({ classId }: { classId?: string }) {
                     },
                     header: (
                       <>
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="truncate max-w-full text-label">{full}</span>
-                          {isToday ? (
-                            <span className="flex size-7 items-center justify-center rounded-full bg-foreground text-sm font-bold text-background">{d.getDate()}</span>
-                          ) : (
-                            <span className="text-sm font-bold text-foreground">{d.getDate()}</span>
-                          )}
+                        {/* Uch teng ustunga boʻlingan — hafta nomi / sana / sozlama tugmasi
+                            har biri OʻZ boʻlagida markazlashadi (umumiy hujayraga nisbatan emas). */}
+                        <div className="grid grid-cols-3 items-center">
+                          {/* Bugun — yorliq toʻq va qalinroq (.text-label layersiz eʼlon
+                              qilingani uchun rang inline style bilan bekor qilinadi). */}
+                          <span
+                            className={cn("justify-self-center whitespace-nowrap text-label", isToday && "font-bold")}
+                            style={isToday ? { color: "var(--foreground)" } : undefined}
+                          >
+                            {short}
+                          </span>
+                          <span className="justify-self-center">
+                            {isToday ? (
+                              <span className="flex size-6 items-center justify-center rounded-full bg-foreground text-xs font-bold text-background">{d.getDate()}</span>
+                            ) : (
+                              <span className="text-sm font-bold text-foreground">{d.getDate()}</span>
+                            )}
+                          </span>
+                          <span className="justify-self-center">
+                            {/* Hover sozlama menyusi — tur shu tugmani nishonga olsa majburan koʻrinadi */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  data-tour="planner-day-settings"
+                                  aria-label={t("daySettingsAria")}
+                                  className={cn(
+                                    "flex size-7 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-primary hover:text-primary-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-primary data-[state=open]:text-primary-foreground",
+                                    forceShowDaySettings && "opacity-100 bg-foreground/10 text-foreground"
+                                  )}
+                                >
+                                  <SlidersHorizontal className="size-4" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuItem onClick={() => router.push("/dashboard/timetable")}>
+                                  <Pencil />
+                                  {t("editSchedule")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openBlockModal(d)} variant={isBlocked ? "default" : "destructive"}>
+                                  {isBlocked ? <CalendarOff /> : <Ban />}
+                                  {isBlocked ? t("unblockDay") : t("blockDay")}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </span>
                         </div>
                         {isBlocked && (
                           <div className="mt-1 flex justify-center">
@@ -671,32 +743,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
                             </span>
                           </div>
                         )}
-                        {/* Hover sozlama menyusi — tur shu tugmani nishonga olsa majburan koʻrinadi */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              data-tour="planner-day-settings"
-                              aria-label={t("daySettingsAria")}
-                              className={cn(
-                                "absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-foreground/10 hover:text-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-foreground/10 data-[state=open]:text-foreground",
-                                forceShowDaySettings && "opacity-100 bg-foreground/10 text-foreground"
-                              )}
-                            >
-                              <SlidersHorizontal className="size-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuItem onClick={() => router.push("/dashboard/timetable")}>
-                              <Pencil />
-                              {t("editSchedule")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openBlockModal(d)} variant={isBlocked ? "default" : "destructive"}>
-                              {isBlocked ? <CalendarOff /> : <Ban />}
-                              {isBlocked ? t("unblockDay") : t("blockDay")}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </>
                     ),
                   };
@@ -738,7 +784,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           const blockLessons = placed.filter((p) => placementInEvent(p, ev));
                           // Darsli slot toʻyingan yuzada, boʻshi xira — rejalashtirilmagan joylar bir qarashda koʻrinadi
                           const hasLesson = blockLessons.length > 0;
-                          const blockPx = Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 32);
+                          const blockPx = Math.max((durH + Math.min(topH, 0)) * slotHeight - 4, 32);
                           // Baland blokda tugmalar ustma-ust, past blokda yonma-yon sigʻadi
                           const stackActions = blockPx >= 118;
                           return (
@@ -755,7 +801,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               }
                               state={hasLesson ? "filled" : "empty"}
                               density="auto"
-                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: blockPx }}
+                              style={{ top: Math.max(topH, 0) * slotHeight + 2, height: blockPx }}
                               className="absolute inset-x-1 z-10"
                               actions={
                                 /* ↗ sinfni ochish — faqat umumiy /planner'da (sinf-detali ichida
@@ -781,7 +827,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                   "[@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100",
                                   stackActions ? "flex-col" : "flex-row",
                                 )}>
-                                  <button type="button" onClick={() => openCreateModal(date, ev)}
+                                  <button type="button" onClick={() => createLessonInSlot(date, ev)}
                                     className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-sm bg-foreground/6 px-2 text-xs font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
                                     <PlusIcon className="size-3.5 shrink-0" strokeWidth={2.5} />
                                     <span className="truncate">{t("create")}</span>
@@ -821,7 +867,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                             </button>
                                           </DropdownMenuTrigger>
                                           <DropdownMenuContent align="end" className="w-44" onClick={(e) => e.stopPropagation()}>
-                                            <DropdownMenuItem onClick={() => openEdit(p, dateKey)}>
+                                            <DropdownMenuItem onClick={() => router.push(`/lessons/${p.lesson.id}`)}>
                                               <Pencil />
                                               {t("editAction")}
                                             </DropdownMenuItem>
@@ -869,7 +915,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               draggable
                               onDragStart={(e) => startDrag(e, p, dateKey)}
                               onClick={() => openEdit(p, dateKey)}
-                              style={{ top: Math.max(topH, 0) * SLOT_HEIGHT + 2, height: Math.max((durH + Math.min(topH, 0)) * SLOT_HEIGHT - 4, 30) }}
+                              style={{ top: Math.max(topH, 0) * slotHeight + 2, height: Math.max((durH + Math.min(topH, 0)) * slotHeight - 4, 30) }}
                               className={cn("absolute inset-x-1 z-[11] transition-all hover:brightness-95 cursor-grab active:cursor-grabbing", done && "opacity-75")}
                               actions={<LessonStatusBadge status={l.status} />}
                             >
@@ -891,9 +937,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <MonthGrid
                 year={anchor.getFullYear()}
                 month={anchor.getMonth()}
-                className={cn(isDemoMode && "pointer-events-none")}
+                className={cn("h-auto flex-1", isDemoMode && "pointer-events-none")}
                 getCellProps={(date, key) => {
-                  const isToday = isSameDay(date, today);
                   const isCurrentMonth = date.getMonth() === anchor.getMonth();
                   const isBlocked = blockedSet.has(key);
                   const holiday = getHolidayForDate(calendar, key);
@@ -902,10 +947,10 @@ export default function PlannerView({ classId }: { classId?: string }) {
                     onDragLeave: (e: React.DragEvent<HTMLDivElement>) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === key ? null : k)); },
                     onDrop: (e: React.DragEvent<HTMLDivElement>) => dropOnDay(e, date),
                     className: cn(
+                      // "Bugun" — katak foni ATAYLAB neytral; signal sana doirasida (renderCell).
                       !isCurrentMonth && "bg-muted/10",
-                      isBlocked && "bg-destructive/5",
+                      isBlocked && "bg-destructive/10",
                       !isBlocked && holiday && "bg-muted/40",
-                      isToday && !isBlocked && "bg-muted/50",
                       dragOverKey === key && "outline outline-2 -outline-offset-2 outline-[var(--ring)]"
                     ),
                   };
@@ -1017,58 +1062,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <Button variant="outline" onClick={() => setBlockModal(null)}>{t("cancelShort")}</Button>
               <Button onClick={saveBlock}>{t("save")}</Button>
             </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Yaratish modali ── */}
-      <Dialog open={!!createModal} onOpenChange={(o) => !o && setCreateModal(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t("createLessonDialogTitle")}</DialogTitle>
-            <DialogDescription>
-              {createModal && `${createModal.date.getDate()} ${fmt.monthName(createModal.date.getMonth())} ${createModal.date.getFullYear()}`}
-              {slotClass(createModal) ? ` · ${slotClass(createModal)!.name}` : ""}
-            </DialogDescription>
-          </DialogHeader>
-          {createModal && (
-            <div className="flex flex-col gap-3 py-1">
-              <div>
-                <Label htmlFor="cm-title" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("lessonWord")}</Label>
-                <Input id="cm-title" autoFocus type="text" value={cmTitle}
-                  onChange={(e) => setCmTitle(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && saveCreate()}
-                  placeholder={t("lessonNamePlaceholder")} />
-              </div>
-              <div>
-                <Label className="mb-1 block text-xs font-semibold text-muted-foreground">{t("unit")}</Label>
-                <Select value={cmUnitId} onValueChange={setCmUnitId}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("selectUnit")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NO_UNIT}>{t("noUnit")}</SelectItem>
-                    {createUnits.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>{u.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <Label htmlFor="cm-start" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("startTime")}</Label>
-                  <Input id="cm-start" type="time" value={cmStartStr} onChange={(e) => setCmStartStr(e.target.value)} />
-                </div>
-                <div className="flex-1">
-                  <Label htmlFor="cm-end" className="mb-1 block text-xs font-semibold text-muted-foreground">{t("endTime")}</Label>
-                  <Input id="cm-end" type="time" value={cmEndStr} onChange={(e) => setCmEndStr(e.target.value)} />
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateModal(null)}>{t("cancelShort")}</Button>
-            <Button onClick={saveCreate} disabled={!cmTitle.trim()}>{t("save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

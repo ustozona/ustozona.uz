@@ -232,6 +232,8 @@ export default function ChangelogPage() {
       "/dashboard/classes": t("routes.classes"),
       "/dashboard/students": t("routes.students"),
       "/dashboard/timetable": t("routes.timetable"),
+      "/dashboard/planner": t("routes.planner"),
+      "/dashboard/tasks": t("routes.tasks"),
       "/dashboard/attendance": t("routes.attendance"),
       "/dashboard/behavior": t("routes.behavior"),
       "/dashboard/standards": t("routes.standards"),

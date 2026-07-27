@@ -1430,6 +1430,8 @@
     "hideOffDays": "Dam kunlarini yashirish",
     "showOffDays": "Dam kunlarini koʻrsatish",
     "offDaysAria": "Dam kunlari",
+    "zoomOutAria": "Kichiklashtirish",
+    "zoomInAria": "Kattalashtirish",
     "previousAria": "Oldingi",
     "today": "Bugun",
     "nextAria": "Keyingi",
@@ -1942,6 +1944,7 @@
       "tuzatildi": "Tuzatildi"
     },
     "routes": {
+      "planner": "Rejalashtiruvchi",
       "dashboard": "Bosh sahifa",
       "classes": "Sinflar",
       "students": "Oʻquvchilar",
@@ -1957,6 +1960,17 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "planner-full-day-zoom": {
+        "title": "Rejalashtiruvchi — toʻliq sutka va masshtab",
+        "body": "Hafta koʻrinishi endi butun sutkani qamraydi va 08:00 dan ochiladi, shuning uchun erta ertalabki va kechki darslar ham joylashadi. Pastdagi masshtab tugmasi bilan kunni zichroq yoki kengroq koʻrsatasiz."
+      },
+      "planner-direct-lesson-editor": {
+        "title": "Rejalashtiruvchi — dars muharriri bir bosishda",
+        "body": "Boʻsh joydagi Yaratish va dars menyusidagi Tahrirlash endi oraliq oynasiz, toʻgʻridan-toʻgʻri dars muharririga olib oʻtadi."
+      },
+      "planner-sticky-day-header": {
+        "title": "Rejalashtiruvchi — kun sarlavhasi endi joyida turadi"
+      },
       "calendar-event-card-redesign": {
         "title": "Kalendar — dars bloklari yangi dizaynda",
         "body": "Bosh sahifa, Rejalashtiruvchi va Jadvaldagi dars kartalari bir xil, yangi koʻrinishga oʻtdi: dars ulangan joy toʻyingan rangda, boʻsh joy esa xiraroq — ikkisi bir qarashda farqlanadi."

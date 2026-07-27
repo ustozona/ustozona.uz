@@ -1430,6 +1430,8 @@
     "hideOffDays": "Demalıs kúnlerin jasıń",
     "showOffDays": "Demalıs kúnlerin kórsetiw",
     "offDaysAria": "Demalıs kúnleri",
+    "zoomOutAria": "Kishireytiw",
+    "zoomInAria": "Úlkeytiw",
     "previousAria": "Aldınǵı",
     "today": "Búgin",
     "nextAria": "Keyingi",
@@ -1942,6 +1944,7 @@
       "tuzatildi": "Tuwırlandı"
     },
     "routes": {
+      "planner": "Jobalawshı",
       "dashboard": "Bas bet",
       "classes": "Klaslar",
       "students": "Oqıwshılar",
@@ -1957,6 +1960,17 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "planner-full-day-zoom": {
+        "title": "Jobalawshı — tolıq tewlik hám masshtab",
+        "body": "Háptelik kórinis endi tolıq tewlikti qamtıydı hám 08:00 den ashıladı, sonlıqtan erte azanǵı hám keshki sabaqlar da sıyadı. Tómendegi masshtab tuymesi kúndi tıǵızıraq yamasa keńirek kórsetedi."
+      },
+      "planner-direct-lesson-editor": {
+        "title": "Jobalawshı — sabaq redaktorı bir basıwda",
+        "body": "Bos orındaǵı Jaratıw hám sabaq menyusındaǵı Ózgertiw endi aralıq áynesiz, tuwrıdan-tuwrı sabaq redaktorın ashadı."
+      },
+      "planner-sticky-day-header": {
+        "title": "Jobalawshı — kún atamasi endi ornında turadı"
+      },
       "calendar-event-card-redesign": {
         "title": "Kalendar — dárs bloklari jańa dizaynda",
         "body": "Bas bet, Rejalastırıwshı hám Kestedegi dárs kartaları bir qıylı, jańa kórinske ótti: dárs baylanıstırılǵan orın toyınǵan reńde, bos orın bolsa xıraraq — ekewi bir qarawda ayırılıp turadı."

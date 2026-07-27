@@ -1430,6 +1430,8 @@
     "hideOffDays": "Hide off days",
     "showOffDays": "Show off days",
     "offDaysAria": "Off days",
+    "zoomOutAria": "Zoom out",
+    "zoomInAria": "Zoom in",
     "previousAria": "Previous",
     "today": "Today",
     "nextAria": "Next",
@@ -1942,6 +1944,7 @@
       "tuzatildi": "Fixed"
     },
     "routes": {
+      "planner": "Planner",
       "dashboard": "Home",
       "classes": "Classes",
       "students": "Students",
@@ -1957,6 +1960,17 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "planner-full-day-zoom": {
+        "title": "Planner — full day and zoom",
+        "body": "The week view now covers the whole day and opens at 08:00, so early morning and evening lessons fit too. The zoom control at the bottom makes the day denser or roomier."
+      },
+      "planner-direct-lesson-editor": {
+        "title": "Planner — the lesson editor in one click",
+        "body": "Create on an empty slot and Edit in a lesson menu now open the lesson editor directly, with no dialog in between."
+      },
+      "planner-sticky-day-header": {
+        "title": "Planner — the day header now stays in place"
+      },
       "calendar-event-card-redesign": {
         "title": "Calendar — lesson blocks got a new design",
         "body": "Lesson cards on the Home page, Planner, and Timetable now share one consistent look: a slot with a lesson linked is shown in a saturated color, an empty slot is dimmer — the two are distinguishable at a glance."
