@@ -26,6 +26,7 @@ export function WeekStrip({
   isBlocked,
   weekStart: weekStartProp,
   onWeekStartChange,
+  showSunday = true,
 }: {
   selected: Date;
   onSelect: (d: Date) => void;
@@ -35,6 +36,8 @@ export function WeekStrip({
   /** Boshqariladigan hafta boshi — berilmasa ichki holat ishlatiladi. */
   weekStart?: Date;
   onWeekStartChange?: (d: Date) => void;
+  /** Yakshanba katakchasi koʻrsatilsinmi (odatda dars yoʻq kun). */
+  showSunday?: boolean;
 }) {
   const t = useTranslations("WeekStrip");
   const [internalWeekStart, setInternalWeekStart] = useState(() => startOfWeekMon(selected));
@@ -44,14 +47,14 @@ export function WeekStrip({
     : setInternalWeekStart;
 
   const days = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
-    [weekStart]
+    () => Array.from({ length: showSunday ? 7 : 6 }, (_, i) => addDays(weekStart, i)),
+    [weekStart, showSunday]
   );
 
   const selectedKey = dateToKey(selected);
 
   return (
-    <div className="grid grid-cols-9 gap-0.5">
+    <div className={cn("grid gap-0.5", showSunday ? "grid-cols-9" : "grid-cols-8")}>
       <button
         type="button"
         aria-label={t("prevWeek")}

@@ -8,6 +8,8 @@ import {
   CalendarDays,
   Check,
   Clock,
+  Eye,
+  EyeOff,
   Quote as QuoteIcon,
   Trash2,
   UserCheck,
@@ -69,11 +71,27 @@ type RailEvent = { id: string; classId: string; startMin: number; endMin: number
 
 type LessonInfo = { title: string; status: LessonStatus };
 
+const SUNDAY_PREF_KEY = "today-rail-show-sunday";
+
 export function TodayRail({ now }: { now: Date }) {
   const t = useTranslations("TodayRail");
   const [selectedDate, setSelectedDate] = useState(() => new Date(now));
   const [weekStart, setWeekStart] = useState(() => startOfWeekMon(selectedDate));
   const [quotesOpen, setQuotesOpen] = useState(false);
+  // Yakshanba katakchasi — koʻz tugmasi bilan yashiriladi (pref localStorage'da).
+  // TodayRail faqat mount'dan keyin render qilinadi, shuning uchun lazy oʻqish xavfsiz.
+  const [showSunday, setShowSunday] = useState(
+    () => typeof window === "undefined" || localStorage.getItem(SUNDAY_PREF_KEY) !== "0"
+  );
+  const toggleSunday = () => {
+    setShowSunday((v) => {
+      const next = !v;
+      localStorage.setItem(SUNDAY_PREF_KEY, next ? "1" : "0");
+      // Yakshanba tanlangan holda yashirilsa — tanlov bugungi kunga qaytadi.
+      if (!next) setSelectedDate((d) => (d.getDay() === 0 ? new Date(now) : d));
+      return next;
+    });
+  };
 
   const versions = useTimetableStore((s) => s.versions);
   const calendar = useCalendarStore((s) => s.calendar);
@@ -205,6 +223,21 @@ export function TodayRail({ now }: { now: Date }) {
           </SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={showSunday ? t("hideSunday") : t("showSunday")}
+              aria-pressed={!showSunday}
+              className="ml-auto shrink-0 text-muted-foreground hover:text-foreground"
+              onClick={toggleSunday}
+            >
+              {showSunday ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{showSunday ? t("hideSunday") : t("showSunday")}</TooltipContent>
+        </Tooltip>
       </CardHeader>
 
       <div data-tour="home-week" className="shrink-0 px-4 pb-3">
@@ -216,6 +249,7 @@ export function TodayRail({ now }: { now: Date }) {
           isBlocked={(date) => date.getDay() === 0 || !!getHolidayForDate(calendar, dateToKey(date))}
           weekStart={weekStart}
           onWeekStartChange={setWeekStart}
+          showSunday={showSunday}
         />
       </div>
 

@@ -1952,6 +1952,9 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "today-rail-hide-sunday": {
+        "title": "Bosh sahifa — yakshanbani haftalik tasmadan yashirish mumkin"
+      },
       "lesson-editor-emoji-callout-zoom": {
         "title": "Dars muharriri — Emojili blok va sahifa kattalashtirish qoʻshildi",
         "body": "Endi darsga erkin \"Emojili blok\" (istalgan emoji + rang, oʻz sarlavhasi bilan) qoʻshish mumkin — qatʼiy tur tanlash shart emas. AI yordamchi ham mos joyda shunday blok taklif qiladi. Sahifa burchagida yangi kattalashtirish tugmalari (+/−) paydo boʻldi."
@@ -2298,6 +2301,8 @@
     "tomorrowInfo": "Ertaga: {count} ta dars, {time}dan boshlanadi",
     "tomorrowFree": "Ertaga dars yoʻq — bemalol dam oling!",
     "quotesManage": "Iqtiboslarni boshqarish",
+    "showSunday": "Yakshanbani koʻrsatish",
+    "hideSunday": "Yakshanbani yashirish",
     "quotesTitle": "Iqtiboslar",
     "quotesDescription": "Kun yakunida koʻrsatiladigan iqtiboslar roʻyxatini oʻzingiz boshqarasiz.",
     "quotesEmpty": "Roʻyxat boʻsh — birinchi iqtibosni qoʻshing.",

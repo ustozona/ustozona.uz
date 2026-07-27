@@ -32,6 +32,13 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "today-rail-hide-sunday",
+    date: "2026-07-27",
+    type: "yaxshilandi",
+    title: "Bosh sahifa — yakshanbani haftalik tasmadan yashirish mumkin",
+    href: "/dashboard",
+  },
+  {
     id: "lesson-editor-emoji-callout-zoom",
     date: "2026-07-26",
     type: "yangi",

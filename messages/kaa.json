@@ -1952,6 +1952,9 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "today-rail-hide-sunday": {
+        "title": "Bas bet — ekshembini háptelik lentadan jasırıwǵa boladı"
+      },
       "lesson-editor-emoji-callout-zoom": {
         "title": "Sabaq redaktorı — erkin emoji-blok hám bet masshtabı qosıldı",
         "body": "Endi sabaqqa erkin \"emoji-blok\" (qálegen emoji + reń, óz atamasi menen) qosıw múmkin — qatań túr tańlaw shárt emes. AI járdemshi de sáykes jerde sonday blok usınadı. Bettiń múyeshinde jańa masshtab túymeleri (+/−) payda boldı."
@@ -2438,6 +2441,8 @@
     "tomorrowInfo": "Erteń: {count} sabaq, {time} den baslanadı",
     "tomorrowFree": "Erteń sabaq joq — tınısh dem alıń!",
     "quotesManage": "Sitatalardı basqarıw",
+    "showSunday": "Ekshembini kórsetiw",
+    "hideSunday": "Ekshembini jasırıw",
     "quotesTitle": "Sitatalar",
     "quotesDescription": "Kún aqırında kórsetiletuǵın sitatalar dizimin ózińiz basqarasız.",
     "quotesEmpty": "Dizim bos — birinshi sitatanı qosıń.",

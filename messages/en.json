@@ -1952,6 +1952,9 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "today-rail-hide-sunday": {
+        "title": "Home — Sunday can be hidden from the week strip"
+      },
       "lesson-editor-emoji-callout-zoom": {
         "title": "Lesson editor — added a free-form emoji block and page zoom",
         "body": "You can now add a free \"emoji block\" to a lesson (any emoji + color, with its own title) — no need to pick a fixed type. The AI assistant can suggest one where it fits too. New zoom buttons (+/−) appeared in the corner of the page."
@@ -2438,6 +2441,8 @@
     "tomorrowInfo": "Tomorrow: {count} lessons, starting at {time}",
     "tomorrowFree": "No lessons tomorrow — enjoy the rest!",
     "quotesManage": "Manage quotes",
+    "showSunday": "Show Sunday",
+    "hideSunday": "Hide Sunday",
     "quotesTitle": "Quotes",
     "quotesDescription": "Curate the quotes shown at the end of the day.",
     "quotesEmpty": "The list is empty — add your first quote.",
