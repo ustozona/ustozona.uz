@@ -1,8 +1,9 @@
 import "server-only";
-import { and, desc, eq, min, type SQL } from "drizzle-orm";
+import { and, desc, eq, type SQL } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { feedback, notifications, teachers } from "@/server/db/schema";
+import { feedback, teachers } from "@/server/db/schema";
 import { requireAdmin } from "@/server/session";
+import { notifyTeacher } from "../notify";
 import { writeAuditLog } from "./audit";
 import type {
   FeedbackItem,
@@ -79,30 +80,6 @@ export async function listAllFeedback(params: {
   };
 }
 
-/** Oʻqituvchiga qoʻngʻiroqcha bildirishnomasi (roʻyxat boshiga). */
-async function notifyTeacher(
-  teacherId: string,
-  entry: { kind: string; title: string; body?: string; feedbackId: string; badgeLabel?: string; badgeClassName?: string },
-): Promise<void> {
-  const [{ lowest }] = await db
-    .select({ lowest: min(notifications.sortOrder) })
-    .from(notifications)
-    .where(eq(notifications.teacherId, teacherId));
-  await db.insert(notifications).values({
-    id: crypto.randomUUID(),
-    teacherId,
-    kind: entry.kind,
-    title: entry.title,
-    body: entry.body ?? null,
-    href: `/dashboard/feedback?item=${entry.feedbackId}`,
-    badgeLabel: entry.badgeLabel ?? null,
-    badgeClassName: entry.badgeClassName ?? null,
-    read: false,
-    createdAt: new Date().toISOString(),
-    sortOrder: (lowest ?? 0) - 1,
-  });
-}
-
 export async function replyToFeedbackAsTeam(
   feedbackId: string,
   body: string,
@@ -134,7 +111,7 @@ export async function replyToFeedbackAsTeam(
     kind: "reply",
     title: "Fikringizga Ustozona jamoasi javob berdi",
     body: body.length > 120 ? `${body.slice(0, 117)}…` : body,
-    feedbackId,
+    href: `/dashboard/feedback?item=${feedbackId}`,
   });
 
   await writeAuditLog(actor, {
@@ -191,7 +168,7 @@ export async function setFeedbackStatus(
     kind: "status",
     title: STATUS_NOTIFY_TITLES[status] ?? "Fikringiz holati yangilandi",
     body: item.body.length > 120 ? `${item.body.slice(0, 117)}…` : item.body,
-    feedbackId,
+    href: `/dashboard/feedback?item=${feedbackId}`,
     badgeLabel: STATUS_BADGE[status]?.label,
     badgeClassName: STATUS_BADGE[status]?.className,
   });

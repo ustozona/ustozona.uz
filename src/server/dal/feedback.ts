@@ -3,6 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { feedback } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { notifyAdmins } from "./notify";
 import {
   type EmojiReaction,
   type FeedbackItem,
@@ -26,6 +27,12 @@ import {
    ════════════════════════════════════════════════════════════════════ */
 
 export type FeedbackPayload = { items: FeedbackItem[] };
+
+/** Bildirishnoma tanasi uchun qisqartma. */
+function excerpt(text: string): string {
+  const t = text.trim();
+  return t.length > 120 ? `${t.slice(0, 117)}…` : t;
+}
 
 type StoredReaction = { emoji: string; count: number; reactorIds: string[] };
 type StoredReply = Omit<FeedbackReply, "reactions"> & { reactions?: StoredReaction[] };
@@ -96,6 +103,16 @@ export async function createFeedbackItem(item: FeedbackItem): Promise<void> {
     sortOrder: 0,
     data: data as unknown as Record<string, unknown>,
   });
+
+  await notifyAdmins(
+    {
+      kind: "feedback",
+      title: `${teacher.name} yangi fikr yozdi`,
+      body: excerpt(item.body),
+      href: "/admin/feedback",
+    },
+    teacher.id,
+  );
 }
 
 /** Fikr matnini tahrirlash — faqat egasi. */
@@ -184,4 +201,14 @@ export async function addFeedbackReply(id: string, input: NewFeedbackReplyInput)
     .update(feedback)
     .set({ data: next as unknown as Record<string, unknown>, updatedAt: new Date() })
     .where(eq(feedback.id, id));
+
+  await notifyAdmins(
+    {
+      kind: "reply",
+      title: `${teacher.name} fikrga javob yozdi`,
+      body: excerpt(reply.body),
+      href: "/admin/feedback",
+    },
+    teacher.id,
+  );
 }

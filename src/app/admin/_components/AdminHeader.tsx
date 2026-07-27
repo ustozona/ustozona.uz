@@ -7,10 +7,12 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Badge } from "@/components/ui/badge";
 import HeaderBreadcrumb from "@/components/HeaderBreadcrumb";
 import HeaderAccountMenu from "@/components/HeaderAccountMenu";
+import NotificationsBell from "@/components/NotificationsBell";
 import { ShieldCheck } from "lucide-react";
 
-/* Header'ning yengil kloni: oʻqituvchi store'lariga bogʻliq Bell/GuideHub/
-   QuickFeedback yoʻq — admin qobiq ServerSync'larni mount qilmaydi. */
+/* Header'ning yengil kloni: GuideHub/QuickFeedback yoʻq (oʻqituvchi
+   store'lariga bogʻliq). Bell esa BOR — admin layout NotificationsServerSync'ni
+   mount qiladi, yangi fikr/javob xabari shu yerda koʻrinadi. */
 
 export default function AdminHeader() {
   return (
@@ -38,6 +40,7 @@ export default function AdminHeader() {
           <ShieldCheck className="size-3.5" />
           Admin
         </Badge>
+        <NotificationsBell />
         <HeaderAccountMenu />
       </div>
     </header>
