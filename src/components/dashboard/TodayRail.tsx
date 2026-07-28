@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   BookOpenCheck,
@@ -45,7 +45,6 @@ import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeHomeTourDemo, DEMO_CLASS_NAMES } from "@/components/tour/home-tour-demo";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
-import { computePeriods, type PeriodRow } from "@/lib/bell-schedule";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
 import { classColor } from "@/lib/grades-data";
@@ -73,8 +72,14 @@ type LessonInfo = { title: string; status: LessonStatus };
 
 const SUNDAY_PREF_KEY = "today-rail-show-sunday";
 
+/** Planner kunlik paneli bilan bir xil masshtab: 180px/soat = 3px/daqiqa. */
+const PX_PER_MIN = 3;
+/** Birinchi darsdan qancha oldin scroll qilib koʻrsatish (daqiqa). */
+const SCROLL_LEAD_MIN = 15;
+
 export function TodayRail({ now }: { now: Date }) {
   const t = useTranslations("TodayRail");
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date(now));
   const [weekStart, setWeekStart] = useState(() => startOfWeekMon(selectedDate));
   const [quotesOpen, setQuotesOpen] = useState(false);
@@ -173,12 +178,6 @@ export function TodayRail({ now }: { now: Date }) {
     return set;
   }, [classDataMap, selectedKey]);
 
-  // ── Qoʻngʻiroq periodlari — vaqt oʻqi qatorlari va oraliq chiplari ──
-  const periods = useMemo(
-    () => (version ? computePeriods(version.bellConfig) : []),
-    [version]
-  );
-
   // ── Temporal holat (faqat bugun) ──
   const nextEvent = isToday ? events.find((e) => e.startMin > nowMin) : undefined;
   const temporalOf = (ev: RailEvent): "past" | "current" | "next" | "none" => {
@@ -191,6 +190,15 @@ export function TodayRail({ now }: { now: Date }) {
 
   const lastEnd = events.length ? events[events.length - 1].endMin : 0;
   const dayClosed = isToday && events.length > 0 && nowMin >= lastEnd;
+
+  // ── Toʻliq sutkalik toʻr endi scroll boʻladi — birinchi darsdan ~15 daqiqa
+  //    oldin koʻrinadigan qilib avtomatik pastga aylantiramiz. ──
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || events.length === 0) return;
+    const targetMin = Math.max(events[0].startMin - SCROLL_LEAD_MIN, 0);
+    el.scrollTop = targetMin * PX_PER_MIN;
+  }, [selectedKey, events]);
 
   // ── WeekStrip modifikatorlari ──
   const lessonDayKeys = useMemo(() => {
@@ -255,7 +263,7 @@ export function TodayRail({ now }: { now: Date }) {
 
       <div data-tour="home-schedule" className="relative flex min-h-0 flex-1 flex-col">
         <ScrollFade position="top" />
-        <div className={panelCardContentClass}>
+        <div ref={scrollRef} className={panelCardContentClass}>
           <div className="px-4 py-4">
             {events.length === 0 ? (
               <Empty className="border-0 p-4 gap-4">
@@ -287,7 +295,6 @@ export function TodayRail({ now }: { now: Date }) {
             ) : (
               <DayGridView
                 events={events}
-                periods={periods}
                 nowMin={nowMin}
                 isToday={isToday}
                 metaFor={metaFor}
@@ -349,16 +356,16 @@ export function TodayRail({ now }: { now: Date }) {
    mutanosib balandlikda joylashadi (bir oʻqituvchining darslari kesishmaydi —
    koʻp-ustunli overlap logikasi kerak emas). Bugungi kun uchun "hozir" chizigʻi. */
 
-const PX_PER_MIN = 1;
-
 function hourLabel(min: number): string {
   const h = Math.floor(min / 60) % 24;
   return `${String(h).padStart(2, "0")}:00`;
 }
 
+const DAY_START_MIN = 0;
+const DAY_END_MIN = 24 * 60;
+
 function DayGridView({
   events,
-  periods,
   nowMin,
   isToday,
   metaFor,
@@ -367,7 +374,6 @@ function DayGridView({
   temporalOf,
 }: {
   events: RailEvent[];
-  periods: PeriodRow[];
   nowMin: number;
   isToday: boolean;
   metaFor: (classId: string) => { name: string; color: ClassColor };
@@ -377,14 +383,9 @@ function DayGridView({
 }) {
   const t = useTranslations("TodayRail");
 
-  // Diapazon — qoʻngʻiroq jadvali (boʻsh vaqt ham koʻrinadi), zaxiraga darslar
-  // chegarasi; har ikkalasi ham yoʻq boʻlsa render qilinmaydi (yuqorida Empty).
-  const rangeStart = Math.floor(
-    (periods.length ? Math.min(...periods.map((p) => p.startMin)) : events[0].startMin) / 60
-  ) * 60;
-  const rangeEnd = Math.ceil(
-    (periods.length ? Math.max(...periods.map((p) => p.endMin)) : events[events.length - 1].endMin) / 60
-  ) * 60;
+  // Toʻliq sutka — kunlik panel (planner) bilan bir xil, scroll orqali koʻriladi.
+  const rangeStart = DAY_START_MIN;
+  const rangeEnd = DAY_END_MIN;
   const hours = useMemo(() => {
     const list: number[] = [];
     for (let m = rangeStart; m <= rangeEnd; m += 60) list.push(m);
@@ -426,19 +427,27 @@ function DayGridView({
         const meta = metaFor(ev.classId);
         const tints = classTints(meta.color);
         const lesson = lessonFor(ev);
+        const hasLesson = !!lesson;
         const temporal = temporalOf(ev);
         const control = controlClassIds.has(ev.classId);
         const top = (ev.startMin - rangeStart) * PX_PER_MIN;
         const height = Math.max((ev.endMin - ev.startMin) * PX_PER_MIN, 32);
-        const compact = height < 44;
+        const compact = height < 60;
         return (
           <EventCard
             key={ev.id}
             color={meta.color}
+            state={hasLesson ? "filled" : "empty"}
             title={meta.name}
-            density="compact"
+            density="cozy"
             temporal={temporal === "none" ? undefined : temporal}
             titleRowClassName="pr-14"
+            subtitle={
+              <>
+                <Clock className="size-3 shrink-0" />
+                {fmtMin(ev.startMin)}–{fmtMin(ev.endMin)}
+              </>
+            }
             trailing={
               control ? (
                 <Badge
@@ -453,21 +462,25 @@ function DayGridView({
             className="absolute isolate"
             style={{ top, height, left: 48, right: 0 }}
           >
-            {!compact && (
-              <p
-                style={lesson ? tints.textOnSolid : undefined}
-                className={cn(
-                  "mt-0.5 truncate text-xs leading-snug",
-                  lesson ? "opacity-80" : "font-medium text-warning"
-                )}
-              >
-                {lesson ? lesson.title || t("untitledTopic") : t("noPlan")}
-              </p>
+            {!compact && hasLesson && (
+              /* Haftalik/kunlik panel bilan bir xil naqsh — mavzu tashqi (sinf)
+                 karta ICHIDA alohida oq chip sifatida chiqadi. */
+              <div className="relative mt-1 flex items-center gap-2 overflow-hidden rounded-sm border border-border bg-card p-1.5 pr-2.5 text-left shadow-xs">
+                <span style={tints.iconBg} className="flex size-6 shrink-0 items-center justify-center rounded-full">
+                  {lesson.status === "Completed" ? (
+                    <Check style={tints.iconText} className="size-3.5" strokeWidth={3} />
+                  ) : (
+                    <BookOpenCheck style={tints.iconText} className="size-3.5" />
+                  )}
+                </span>
+                <span className="truncate text-xs font-semibold text-foreground">
+                  {lesson.title || t("untitledTopic")}
+                </span>
+              </div>
             )}
-            {!compact && (
-              <p style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1 text-[11px] tabular-nums">
-                <Clock className="size-3 shrink-0" />
-                {fmtMin(ev.startMin)} – {fmtMin(ev.endMin)}
+            {!compact && !hasLesson && (
+              <p style={tints.textOnTint} className="mt-0.5 truncate text-xs font-medium leading-snug">
+                {t("noPlan")}
               </p>
             )}
           </EventCard>
