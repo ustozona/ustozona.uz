@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -43,7 +44,9 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { panelCardClass, panelCardHeaderClass } from "@/components/DashboardPage";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { panelCardClass, panelCardHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
   Empty,
@@ -56,10 +59,14 @@ import {
 import { Illustration } from "@/components/ui/illustration";
 import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, PlusIcon, LinkIcon,
-  FileText, Check, Trash2, Undo2, CalendarOff, ArrowUpRight, Eye, EyeOff,
+  FileText, Check, Trash2, Undo2, CalendarOff, ArrowUpRight, Eye, EyeOff, X,
   SlidersHorizontal, Pencil, Search, Ban, Clock, CalendarPlus, MoreVertical,
-  Minus,
+  Minus, ListFilter,
 } from "lucide-react";
+import {
+  DndContext, PointerSensor, KeyboardSensor, useDraggable, useDroppable,
+  useSensor, useSensors, closestCenter, type DragEndEvent,
+} from "@dnd-kit/core";
 import { EventCard } from "@/components/calendar/EventCard";
 import { LessonStatusBadge } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
@@ -99,6 +106,20 @@ const ZOOM_MIN = 60;
 const ZOOM_MAX = 150;
 const ZOOM_STEP = 10;
 
+/* ── Kunlik panel (oy koʻrinishi) vaqt-toʻri ──────────────────────────────
+   Haftalik koʻrinish bilan BIR XIL qadam (SLOT_HEIGHT, 100% zoom) — panel tor
+   boʻlsa ham, soatlar tiqilib qolmasligi uchun. Toʻr TOʻLIQ sutkani qamraydi
+   (00:00–24:00), lekin ochilganda qatʼiy 08:00 ga emas, SHU KUNNING birinchi
+   eventiga scroll qilinadi. */
+const DAY_PX_PER_HOUR = SLOT_HEIGHT;
+const DAY_START_HOUR = 0;
+const DAY_END_HOUR = 24;
+
+/* Motion tokenlarga mos (globals.css @theme, [[motion-system]]):
+   duration-base = 250ms, ease-standard = Material 3 standard. */
+const PANEL_EASE_STANDARD = [0.2, 0, 0, 1] as const;
+const PANEL_DURATION_BASE = 0.25;
+
 /** Kun kaliti — calendar-core konvensiyasi. */
 function dateToTimetableDay(d: Date): number {
   return jsDayToIsoDay(d.getDay());
@@ -107,6 +128,78 @@ function dateToTimetableDay(d: Date): number {
     ("start-in-slot": sinf mos VA boshlanish event oraligʻida). */
 function placementInEvent(p: Placement, ev: TimetableEvent): boolean {
   return sessionMatchesSlot(ev, p, "start-in-slot");
+}
+
+/* ── @dnd-kit identifikatorlari ───────────────────────────────────────────
+   Bitta DndContext ichida ikki xil drop-zona bor, shuning uchun id'lar
+   prefiksli va tahlil qilinadigan. Ajratgich `|` — dateKey (YYYY-MM-DD) va
+   uuid'da uchramaydi, shuning uchun split xavfsiz.
+     L| lessonId | classId | dateKey | startMin | endMin   → sudraladigan dars
+     D| dateKey                                            → oy katagi (kun)
+     S| dateKey | classId | startMin | endMin              → paneldagi boʻsh slot */
+const dndLessonId = (p: Placement, dateKey: string) =>
+  `L|${p.lesson.id}|${p.classId}|${dateKey}|${p.startMin}|${p.endMin}`;
+const dndDayId = (dateKey: string) => `D|${dateKey}`;
+const dndSlotId = (dateKey: string, ev: TimetableEvent) =>
+  `S|${dateKey}|${ev.classId}|${ev.startMin}|${ev.endMin}`;
+
+/** Oy katagining drop-zonasi. Katak div'i MonthGrid ichida — unga ref bera
+    olmaymiz (hook'ni `getCellProps` callback'idan chaqirib boʻlmaydi), shuning
+    uchun katakni toʻldiruvchi koʻrinmas qatlam registratsiya qilinadi.
+    `pointer-events-none` xalaqit bermaydi: @dnd-kit toʻqnashuvni pointer emas,
+    oʻlchangan REKT boʻyicha aniqlaydi. */
+function MonthDayDropZone({ dateKey }: { dateKey: string }) {
+  const { setNodeRef, isOver } = useDroppable({ id: dndDayId(dateKey) });
+  return (
+    <div
+      ref={setNodeRef}
+      aria-hidden
+      className={cn(
+        "pointer-events-none absolute inset-0 rounded-sm transition-colors",
+        isOver && "bg-primary/8 inset-ring-2 inset-ring-[var(--ring)]",
+      )}
+    />
+  );
+}
+
+/** Paneldagi boʻsh slot drop-zonasi — darsni aynan shu vaqtga tushirish.
+    Geometriya (top/height) AYNAN shu oʻramda boʻlishi shart: @dnd-kit
+    toʻqnashuvni shu tugunning rekti boʻyicha oʻlchaydi. */
+function SlotDropZone({ id, style, children }: {
+  id: string;
+  style: React.CSSProperties;
+  children: (isOver: boolean) => ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} style={style} className="absolute inset-x-1">
+      {children(isOver)}
+    </div>
+  );
+}
+
+/** Sudraladigan joylangan dars (panel vaqt-toʻrida). Klaviatura bilan ham
+    ishlaydi — @dnd-kit KeyboardSensor `attributes` orqali fokus/ARIA beradi. */
+function DraggablePlacement({ id, style, className, onClick, children }: {
+  id: string;
+  style?: React.CSSProperties;
+  className?: string;
+  onClick?: () => void;
+  children: ReactNode;
+}) {
+  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      onClick={onClick}
+      style={style}
+      className={cn(className, isDragging && "opacity-40")}
+    >
+      {children}
+    </div>
+  );
 }
 
 export default function PlannerView({ classId }: { classId?: string }) {
@@ -120,6 +213,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const [hydrated, setHydrated] = useState(false);
   const [nowMin, setNowMin] = useState(0);
   const [showOffDays, setShowOffDays] = useState(false);
+  // Oy koʻrinishida tanlangan kun — chapdagi kunlik panel shu kalitga bogʻlangan.
+  // `null` boʻlsa panel umuman render qilinmaydi (kalendar 100% joyni oladi).
+  const [selectedDayKey, setSelectedDayKey] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
   const slotHeight = Math.round((SLOT_HEIGHT * zoom) / 100);
@@ -212,14 +308,80 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const classInfoById = (id: string): ClassInfo | undefined =>
     plannerDemo?.classInfoById.get(id) ?? classDataMap[id]?.info;
   const liveClassColor = (info: ClassInfo): ClassColor => classColor(info);
-  /** Joylangan mavzuning rangi/nomi — blok bilan mos (jonli sinfdan) */
-  const lessonDisplay = (l: Lesson): { name: string; color: ClassColor; tints: ReturnType<typeof classTints> } => {
-    const info = classInfoById(l.classId);
+  /** Joylangan mavzuning rangi/nomi — blok bilan mos (jonli sinfdan).
+      `classIdOverride` — mavzu bir NECHA sinfga aloqador boʻlishi mumkin
+      (lessonSessions), shu sabab rang doim SHU JOYLASHTIRISHNING (session)
+      sinfidan olinishi kerak, mavzuning "asosiy" `classId`sidan emas —
+      aks holda koʻp-sinfli mavzular notoʻgʻri (boshqa sinf) rangda chiqadi. */
+  const lessonDisplay = (l: Lesson, classIdOverride?: string): { name: string; color: ClassColor; tints: ReturnType<typeof classTints> } => {
+    const info = classInfoById(classIdOverride ?? l.classId);
     const c: ClassColor = info ? liveClassColor(info) : "gray";
     return { name: info?.name ?? t("unknownClass"), color: c, tints: classTints(c) };
   };
   const blockedSet = useMemo(() => new Set(blocked.map((b) => b.date)), [blocked]);
   const blockedMap = useMemo(() => new Map(blocked.map((b) => [b.date, b.label])), [blocked]);
+
+  /** Bloklangan kunlar roʻyxati (popover uchun) — sana boʻyicha tartiblangan. */
+  const blockedList = useMemo(
+    () => [...blocked].sort((a, b) => a.date.localeCompare(b.date)),
+    [blocked],
+  );
+  /** Oʻquv yili bayramlari (popover uchun, faqat oʻqish uchun) — boshlanish
+      sanasi boʻyicha tartiblangan. */
+  const holidayList = useMemo(
+    () => [...calendar.holidays].sort((a, b) => a.range.start.localeCompare(b.range.start)),
+    [calendar.holidays],
+  );
+  /** "kk-monthname" (kichik harf) — kun panelidagi sarlavha bilan bir xil format. */
+  const shortDate = (key: string) => {
+    const [, m, d] = key.split("-").map(Number);
+    return `${d}-${fmt.monthName((m || 1) - 1).toLowerCase()}`;
+  };
+
+  /** Sinflar boʻyicha filtr — `null` = hammasi koʻrinadi. Faqat umumiy
+      (sinf-detalisiz) plannerda maʼnoli, shu sabab `classId` berilganda
+      ishlatilmaydi. */
+  const [classFilter, setClassFilter] = useState<Set<string> | null>(null);
+  // Arxivlangan sinflar pickerlardan yashirin — filtr roʻyxatida ham koʻrinmaydi.
+  const allClassInfos = useMemo(
+    () =>
+      Object.values(classDataMap)
+        .map((c) => c.info)
+        .filter((info) => !info.archivedAt)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [classDataMap],
+  );
+  const toggleClassFilter = (id: string) => {
+    setClassFilter((prev) => {
+      const all = allClassInfos.map((c) => c.id);
+      const base = prev ?? new Set(all);
+      const next = new Set(base);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      // Hammasi belgilangan boʻlsa — filtr "yoʻq" holatiga qaytadi.
+      return next.size === all.length ? null : next;
+    });
+  };
+  /** Nomga bosish = "faqat shuni koʻrsat" (Gmail label / Linear filtri naqshi) —
+      checkbox esa multi-toggle uchun. */
+  const soloClassFilter = (id: string) => setClassFilter(new Set([id]));
+  /** Master qator — uch-holatli: hammasi tanlangan boʻlsa hech birini
+      qoldirmaydi, aks holda hammasini tanlaydi. */
+  const toggleAllClassFilter = () => setClassFilter((prev) => (prev === null ? new Set() : null));
+  /** Daraja boʻyicha guruhlangan (5, 6, 7...), toʻgarak/darajasizlar oxirida. */
+  const classFilterGroups = useMemo(() => {
+    const byGrade = new Map<number | null, ClassInfo[]>();
+    for (const info of allClassInfos) {
+      const g = info.grade ?? null;
+      const arr = byGrade.get(g) ?? [];
+      arr.push(info);
+      byGrade.set(g, arr);
+    }
+    const graded = [...byGrade.entries()]
+      .filter((e): e is [number, ClassInfo[]] => e[0] !== null)
+      .sort((a, b) => a[0] - b[0]);
+    const ungraded = byGrade.get(null);
+    return ungraded ? [...graded, [null, ungraded] as const] : graded;
+  }, [allClassInfos]);
 
   /** Jadvalda umuman event bormi — boʻsh holat (onboarding) uchun. */
   const hasAnyTimetable = useMemo(() => versions.some((v) => v.events.length > 0) || isDemoMode, [versions, isDemoMode]);
@@ -241,7 +403,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
     if (!inRange(key, calendar.range)) return [];
     if (getHolidayForDate(calendar, key)) return [];
     const evs = (resolveVersionForDate(versions, key)?.events ?? []).filter((e) => e.day === tDay);
-    return classId ? evs.filter((e) => e.classId === classId) : evs;
+    if (classId) return evs.filter((e) => e.classId === classId);
+    return classFilter ? evs.filter((e) => classFilter.has(e.classId)) : evs;
   };
 
   // Sinf-detali: shu sinfda AZO boʻlgan (asosiy boʻlmasa ham) barcha darslar.
@@ -260,6 +423,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
     for (const l of visLessons) {
       for (const s of lessonSessions(l)) {
         if (classId && s.classId !== classId) continue; // sinf-detali filtri
+        if (!classId && classFilter && !classFilter.has(s.classId)) continue; // sinflar filtri
         const arr = map.get(s.date) ?? [];
         arr.push({ lesson: l, classId: s.classId, startMin: s.startMin, endMin: s.endMin });
         map.set(s.date, arr);
@@ -275,7 +439,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
       }
     }
     return map;
-  }, [visLessons, classId, plannerDemo, allWeekDates, monthGrid]);
+  }, [visLessons, classId, classFilter, plannerDemo, allWeekDates, monthGrid]);
 
   const hasLessonsOn = (d: Date) => (placedByDate.get(toDateKey(d))?.length ?? 0) > 0;
   const isOffDay = (d: Date) => dateToTimetableDay(d) === 7 || blockedSet.has(toDateKey(d));
@@ -285,6 +449,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [allWeekDates, showOffDays, blockedSet, placedByDate]
   );
+
+  // Oy/koʻrinish almashsa tanlangan kun yopiladi — boshqa oyning kuni panelda
+  // osilib qolmasin.
+  useEffect(() => {
+    setSelectedDayKey(null);
+  }, [view, anchor]);
 
   function prevPeriod() {
     const d = new Date(anchor);
@@ -481,6 +651,44 @@ export default function PlannerView({ classId }: { classId?: string }) {
     });
   }
 
+  /* ── @dnd-kit: klaviatura bilan ham koʻchirish (kunlik panel + oy toʻri) ──
+     Haftalik koʻrinish hozircha native HTML5 drag'da qoladi — u ishlayapti va
+     bitta ishda ikkalasini almashtirish keraksiz regressiya xavfi. */
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  function handleDndEnd(e: DragEndEvent) {
+    const a = String(e.active.id).split("|");
+    if (a[0] !== "L" || !e.over) return;
+    const [, lessonId, classId, fromDate, fromStartS, fromEndS] = a;
+    const fromStart = Number(fromStartS);
+    const fromEnd = Number(fromEndS);
+    const o = String(e.over.id).split("|");
+
+    if (o[0] === "D") {
+      // Kunga tashlash — vaqt oʻzgarmaydi, faqat sana.
+      const toDate = o[1];
+      if (toDate === fromDate) return;
+      moveSession(lessonId, classId, fromDate, fromStart, toDate, fromStart, fromEnd);
+    } else if (o[0] === "S") {
+      // Aniq slotga tashlash — sana ham, vaqt ham slotdan olinadi.
+      const [, toDate, slotClassId, toStartS, toEndS] = o;
+      // Boshqa sinfning slotiga koʻchirish maʼnosiz (dars shu sinfga bogʻlangan).
+      if (slotClassId !== classId) return;
+      const toStart = Number(toStartS);
+      const toEnd = Number(toEndS);
+      if (toDate === fromDate && toStart === fromStart) return;
+      moveSession(lessonId, classId, fromDate, fromStart, toDate, toStart, toEnd);
+    } else {
+      return;
+    }
+
+    const moved = lessons.find((l) => l.id === lessonId);
+    toast.success(t("lessonMovedToast"), { description: moved?.title ?? t("lessonFallback") });
+  }
+
   const slotClass = (m: SlotModal | null) => (m ? classInfoById(m.classId) : undefined);
   const slotTints = (m: SlotModal | null) => { const c = slotClass(m); return c ? classTints(liveClassColor(c)) : null; };
 
@@ -493,10 +701,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
   // Joylangan mavzu pili (oy koʻrinishi) — MAVZU nomini koʻrsatadi (sinf emas).
   function PlacedPill({ p, dateKey }: { p: Placement; dateKey: string }) {
-    const { color, tints } = lessonDisplay(p.lesson);
+    const { color, tints } = lessonDisplay(p.lesson, p.classId);
     return (
       <CalendarEventPill
         color={color}
+        variant="fill"
         label={p.lesson.title}
         onClick={() => openEdit(p, dateKey)}
         trailing={
@@ -510,8 +719,327 @@ export default function PlannerView({ classId }: { classId?: string }) {
     );
   }
 
+  /* ── Kunlik panel (oy koʻrinishi, chapda 25%) ──────────────────────────
+     Faqat katak bosilganda ochiladi. Oy toʻrida katak juda tor — bu yerda
+     shu kunning TOʻLIQ jadvali vaqti bilan koʻrinadi. */
+  const selectedDate = selectedDayKey
+    ? monthGrid.find((d): d is Date => d !== null && toDateKey(d) === selectedDayKey) ?? null
+    : null;
+
+  // Panel toʻliq 00:00–24:00 qamraydi, lekin ochilganda shu kunning BIRINCHI
+  // eventiga scroll qilinadi (hech narsa boʻlmasa — 08:00 ga, haftalik
+  // koʻrinishdagi defolt bilan bir xil).
+  const dayScrollerRef = useRef<HTMLDivElement>(null);
+  const dayFirstEventMin = useMemo(() => {
+    if (!selectedDate) return null;
+    const key = toDateKey(selectedDate);
+    const placed = placedByDate.get(key) ?? [];
+    const isBlocked = blockedSet.has(key);
+    const evs = isBlocked ? [] : eventsForDate(selectedDate);
+    const starts = [...placed.map((p) => p.startMin), ...evs.map((e) => e.startMin)];
+    return starts.length > 0 ? Math.min(...starts) : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, placedByDate, blockedSet]);
+
+  useEffect(() => {
+    if (!dayScrollerRef.current || !selectedDate) return;
+    // Birinchi event darhol yuqori chetga tirilib qolmasin — 15 daqiqalik
+    // "nafas joyi" qoldirib scroll qilinadi.
+    const targetMin = (dayFirstEventMin ?? 8 * 60) - 15;
+    dayScrollerRef.current.scrollTop = Math.max(targetMin / 60 - DAY_START_HOUR, 0) * DAY_PX_PER_HOUR;
+  }, [selectedDate, dayFirstEventMin]);
+
+  /* KOMPONENT EMAS, oddiy render-funksiya: render tanasi ichida eʼlon qilingan
+     komponent har renderda yangi identifikatsiyaga ega boʻlib, React uni qayta
+     MOUNT qiladi — bu yerda bu scroll holatini nolga qaytarardi va @dnd-kit
+     tugunlarini uzluksiz qayta roʻyxatdan oʻtkazardi. Funksiya chaqiruvi esa
+     elementlarni ota daraxtga inline qoʻyadi. */
+  function renderDayPanel(date: Date) {
+    const key = toDateKey(date);
+    const isBlocked = blockedSet.has(key);
+    const blockLbl = blockedMap.get(key);
+    const holiday = getHolidayForDate(calendar, key);
+    const placed = placedByDate.get(key) ?? [];
+    const dayEvents = isBlocked ? [] : eventsForDate(date);
+    /* Haftalik koʻrinish bilan BIR XIL tuzilma: tashqi karta = jadval SLOTI
+       (sinf rangi/nomi/vaqti), mavzu esa uning ICHIDA alohida chip. Slotga
+       tushmagan (yoki blok/taʼtil kunidagi) mavzular alohida "orphan" karta —
+       koʻchirilishi kerakligi koʻrinib tursin. */
+    const orphans = placed.filter(
+      (p) => isBlocked || holiday || !dayEvents.some((ev) => placementInEvent(p, ev)),
+    );
+    type DayItem = { t: "slot"; ev: TimetableEvent; s: number } | { t: "orphan"; p: Placement; s: number };
+    const items: DayItem[] = [
+      ...dayEvents.map((ev): DayItem => ({ t: "slot", ev, s: ev.startMin })),
+      ...orphans.map((p): DayItem => ({ t: "orphan", p, s: p.startMin })),
+    ].sort((a, b) => a.s - b.s);
+
+    return (
+      <Card className={cn("h-full", panelCardClass)}>
+        <CardHeader className={cn(panelCardHeaderClass, "gap-2.5 pt-4! pb-4!")}>
+          <SectionIcon>
+            <CalendarIcon />
+          </SectionIcon>
+          <div className="flex min-w-0 flex-col">
+            <CardTitle className="truncate">
+              {date.getDate()}-{fmt.monthName(date.getMonth()).toLowerCase()}
+            </CardTitle>
+            <TypographyMuted className="truncate text-xs">
+              {fmt.dayName(dateToTimetableDay(date))}
+            </TypographyMuted>
+          </div>
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="icon-sm" aria-label={t("dayPanelCloseAria")}
+              title={t("dayPanelCloseAria")}
+              onClick={() => setSelectedDayKey(null)}>
+              <X className="size-4" />
+            </Button>
+          </div>
+        </CardHeader>
+
+        {/* @container — panel tor (25%), shuning uchun ichki oʻlchamlar EKRAN
+            emas, PANEL kengligiga qarab moslashadi (loyihada mavjud naqsh). */}
+        <CardContent className={cn(panelCardContentClass, "@container flex flex-col p-0")}>
+          {(isBlocked || holiday) && (
+            <div className={cn(
+              "flex shrink-0 items-center gap-2 border-b border-border px-4 py-2 text-xs font-semibold",
+              isBlocked ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground",
+            )}>
+              {isBlocked ? <CalendarOff className="size-3.5 shrink-0" /> : <CalendarIcon className="size-3.5 shrink-0" />}
+              <span className="truncate">{isBlocked ? (blockLbl || t("blockedDay")) : holiday!.name}</span>
+            </div>
+          )}
+
+          {items.length === 0 ? (
+            <TypographyMuted className="px-4 py-8 text-center text-sm">{t("dayPanelEmpty")}</TypographyMuted>
+          ) : (
+            <TimeGrid
+              className="min-h-0 flex-1"
+              scrollRef={dayScrollerRef}
+              columns={[{ key, header: null, isToday: isSameDay(date, today) }]}
+              startHour={DAY_START_HOUR}
+              endHour={DAY_END_HOUR}
+              pxPerHour={DAY_PX_PER_HOUR}
+              gutterWidth={46}
+              gutterVariant="centered"
+              lines="quarter"
+              nowMin={isSameDay(date, today) ? nowMin : null}
+              renderColumn={() => (
+                <>
+                  {items.map((it, k) => {
+                    const top = (it.s / 60 - DAY_START_HOUR) * DAY_PX_PER_HOUR;
+
+                    /* ── Jadval sloti: tashqi karta (sinf), mavzu ichida chip ── */
+                    if (it.t === "slot") {
+                      const ev = it.ev;
+                      const cls = classInfoById(ev.classId);
+                      if (!cls) return null;
+                      const clsColor = liveClassColor(cls);
+                      const tints = classTints(clsColor);
+                      const slotLessons = placed.filter((p) => placementInEvent(p, ev));
+                      const hasLesson = slotLessons.length > 0;
+                      const h = Math.max(((ev.endMin - ev.startMin) / 60) * DAY_PX_PER_HOUR - 4, 30);
+                      return (
+                        <SlotDropZone key={`ds-${ev.id}-${k}`} id={dndSlotId(key, ev)}
+                          style={{ top: top + 2, height: h }}>
+                          {(isOver) => (
+                            <EventCard
+                              color={clsColor}
+                              state={hasLesson ? "filled" : "empty"}
+                              title={cls.name}
+                              density="auto"
+                              style={{ height: h }}
+                              className={cn("h-full", isOver && "inset-ring-2 inset-ring-[var(--ring)]")}
+                              subtitle={
+                                <>
+                                  <Clock className="size-3 shrink-0" />
+                                  {minToHHMM(ev.startMin)}–{minToHHMM(ev.endMin)}
+                                </>
+                              }
+                              footer={!hasLesson ? (
+                                /* @[200px] — panel juda torayganda tugmalar ustma-ust
+                                   tushadi, aks holda yonma-yon. */
+                                <div className="flex flex-col gap-1 @[200px]:flex-row">
+                                  <button type="button" onClick={() => createLessonInSlot(date, ev)}
+                                    className="flex h-6 flex-1 cursor-pointer items-center justify-center gap-1 rounded-sm bg-foreground/6 px-1.5 text-xs font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
+                                    <PlusIcon className="size-3 shrink-0" strokeWidth={2.5} />
+                                    <span className="truncate">{t("create")}</span>
+                                  </button>
+                                  <button type="button" onClick={() => openLinkModal(date, ev)}
+                                    className="flex h-6 flex-1 cursor-pointer items-center justify-center gap-1 rounded-sm bg-foreground/6 px-1.5 text-xs font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]">
+                                    <LinkIcon className="size-3 shrink-0" />
+                                    <span className="truncate">{t("link")}</span>
+                                  </button>
+                                </div>
+                              ) : undefined}
+                            >
+                              {hasLesson && (
+                                /* relative — nuqta teksturasi mavzu chipi ustidan tushmasin */
+                                <div className="relative mt-1.5 flex flex-col gap-1.5">
+                                  {slotLessons.map((p) => (
+                                    <DraggablePlacement
+                                      key={`${p.lesson.id}-${p.classId}-${p.startMin}`}
+                                      id={dndLessonId(p, key)}
+                                      onClick={() => openEdit(p, key)}
+                                      className="group/chip relative cursor-grab active:cursor-grabbing"
+                                    >
+                                      <div className="flex w-full items-center gap-2 overflow-hidden rounded-sm border border-border bg-card p-1.5 pr-2.5 text-left shadow-xs transition-[box-shadow,border-color,padding] duration-fast hover:border-foreground/20 hover:shadow-md group-hover/chip:pr-8">
+                                        <span style={tints.iconBg} className="flex size-6 shrink-0 items-center justify-center rounded-full">
+                                          {p.lesson.status === "Completed"
+                                            ? <Check style={tints.iconText} className="size-3.5" strokeWidth={3} />
+                                            : <FileText style={tints.iconText} className="size-3.5" />}
+                                        </span>
+                                        <span className="truncate text-xs font-semibold text-foreground">{p.lesson.title}</span>
+                                      </div>
+                                      {/* Tez amallar — hoverda; qolgani ⋮ menyusida */}
+                                      <div className="pointer-events-none absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity duration-fast group-hover/chip:pointer-events-auto group-hover/chip:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <button type="button" aria-label={t("lessonActionsAria")}
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="flex size-6 cursor-pointer items-center justify-center rounded-sm text-muted-foreground transition-colors duration-fast hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground">
+                                              <MoreVertical className="size-3.5" />
+                                            </button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent align="end" className="w-44" onClick={(e) => e.stopPropagation()}>
+                                            <DropdownMenuItem onClick={() => router.push(`/lessons/${p.lesson.id}`)}>
+                                              <Pencil />
+                                              {t("editAction")}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => shiftPlacement(p, key, -1)}>
+                                              <ChevronLeft />
+                                              {t("shiftBackwardAria")}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => shiftPlacement(p, key, 1)}>
+                                              <ChevronRight />
+                                              {t("shiftForwardAria")}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => unlinkPlacement(p, key)}>
+                                              <Undo2 />
+                                              {t("returnToBank")}
+                                            </DropdownMenuItem>
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                      </div>
+                                    </DraggablePlacement>
+                                  ))}
+                                </div>
+                              )}
+                            </EventCard>
+                          )}
+                        </SlotDropZone>
+                      );
+                    }
+
+                    /* ── Slotsiz (orphan) mavzu — koʻchirilishi kerak ── */
+                    const { name, color, tints } = lessonDisplay(it.p.lesson, it.p.classId);
+                    const done = it.p.lesson.status === "Completed";
+                    const h = Math.max(((it.p.endMin - it.p.startMin) / 60) * DAY_PX_PER_HOUR - 4, 30);
+                    return (
+                      <DraggablePlacement
+                        key={`dl-${it.p.lesson.id}-${it.p.classId}-${it.p.startMin}`}
+                        id={dndLessonId(it.p, key)}
+                        onClick={() => openEdit(it.p, key)}
+                        style={{ top: top + 2, height: h }}
+                        className="absolute inset-x-1 z-[11] cursor-grab active:cursor-grabbing"
+                      >
+                        <EventCard
+                          color={color}
+                          title={it.p.lesson.title}
+                          density="auto"
+                          style={{ height: h }}
+                          className="h-full transition hover:brightness-[0.97]"
+                          leading={done
+                            ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} />
+                            : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
+                          subtitle={
+                            <span style={tints.textOnSolidMuted} className="flex min-w-0 items-center gap-1 truncate">
+                              <Clock className="size-3 shrink-0" />
+                              {minToHHMM(it.p.startMin)}–{minToHHMM(it.p.endMin)}
+                              <span className="truncate">· {name}</span>
+                            </span>
+                          }
+                        />
+                      </DraggablePlacement>
+                    );
+                  })}
+                </>
+              )}
+            />
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Kunlik panel FAQAT oy koʻrinishida va kun tanlanganda chiqadi.
+  const dayPanelOpen = view === "month" && selectedDate !== null;
+
+  /* MotionProvider'dagi `reducedMotion="user"` FAQAT transform/layout
+     animatsiyalarini oʻchiradi — `width` kabi oddiy CSS xossalari baribir
+     animatsiyalanadi. Shu sabab panel kengligini qoʻlda oʻchiramiz. */
+  const prefersReducedMotion = useReducedMotion();
+  const panelTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: PANEL_DURATION_BASE, ease: PANEL_EASE_STANDARD };
+
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <>
+    {/* Bitta DndContext — kunlik panel va oy toʻri bir DnD maydonida: darsni
+        paneldan boshqa kunga (yoki shu kunning boshqa slotiga) klaviatura
+        bilan ham koʻchirish mumkin. */}
+    <DndContext
+      sensors={dndSensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDndEnd}
+      accessibility={{
+        screenReaderInstructions: { draggable: t("dndInstructions") },
+        announcements: {
+          onDragStart: () => t("dndStart"),
+          onDragOver: () => undefined,
+          onDragEnd: ({ over }) => (over ? t("dndDropped") : t("dndCancelled")),
+          onDragCancel: () => t("dndCancelled"),
+        },
+      }}
+    >
+    <div className="flex h-full min-h-0">
+      {/* Grid track-soni oʻzgarishi (1↔2 ustun) CSS'da interpolyatsiyalanmaydi —
+          shu sabab flexbox: panel kengligi 0%→25% animatsiyalanadi, sherik
+          ustun `flex-1 min-w-0` boʻlgani uchun HECH QANDAY qoʻshimcha
+          animatsiyasiz tabiiy silliq torayadi/kengayadi (VSCode/Linear/Notion
+          yon-panel naqshi).
+
+          Ustunlar orasidagi masofa konteynerning `gap`i EMAS, panelning oʻz
+          oʻng padding'i — va u kenglik bilan BIRGA animatsiyalanadi. Statik
+          `pr-6` ishlamaydi: `box-sizing: border-box` padding'ni qisqartirmaydi,
+          shu sabab `width` 24px dan pastga tushganda element 24px boʻlib qotib
+          qolardi va unmount paytida shuncha sakrardi. */}
+      <AnimatePresence>
+        {dayPanelOpen && (
+          <motion.div
+            key="day-panel"
+            initial={{ width: "0%", paddingRight: 0, opacity: 0 }}
+            animate={{ width: "25%", paddingRight: 24, opacity: 1 }}
+            exit={{ width: "0%", paddingRight: 0, opacity: 0 }}
+            transition={panelTransition}
+            className="hidden h-full shrink-0 overflow-hidden lg:block"
+          >
+            {/* Ichki qatlam gorizontal sirpanadi: kenglik animatsiyasi kontentni
+                har kadrda qayta oqizadi ("ezilish" effekti), transform esa GPU'da
+                ketadi va koʻz buni "chapdan kirib kelish" deb oʻqiydi. */}
+            <motion.div
+              initial={{ x: -16 }}
+              animate={{ x: 0 }}
+              exit={{ x: -16 }}
+              transition={panelTransition}
+              className="h-full w-full"
+            >
+              {renderDayPanel(selectedDate)}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col">
       <Card className={cn("flex-1", panelCardClass)}>
 
         {/* ── Toolbar ── */}
@@ -551,6 +1079,122 @@ export default function PlannerView({ classId }: { classId?: string }) {
           </ToggleGroup>
 
           <div className="flex items-center justify-end gap-1">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={blockedList.length + holidayList.length > 0 ? "secondary" : "ghost"}
+                  size="icon-sm"
+                  title={t("blockedHolidaysAria")}
+                  aria-label={t("blockedHolidaysAria")}
+                >
+                  <CalendarOff className="size-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 p-0">
+                <div className="border-b border-border px-3 py-2 text-xs font-semibold text-muted-foreground">
+                  {t("blockedHolidaysTitle")}
+                </div>
+                <div className="flex max-h-72 flex-col gap-0.5 overflow-y-auto p-1.5">
+                  {blockedList.length === 0 && holidayList.length === 0 ? (
+                    <TypographyMuted className="px-2 py-4 text-center text-xs">
+                      {t("blockedHolidaysEmpty")}
+                    </TypographyMuted>
+                  ) : (
+                    <>
+                      {holidayList.map((h) => (
+                        <div key={h.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm">
+                          <CalendarIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                          <span className="min-w-0 flex-1 truncate">{h.name}</span>
+                          <span className="shrink-0 text-xs text-muted-foreground">{shortDate(h.range.start)}</span>
+                        </div>
+                      ))}
+                      {blockedList.map((b) => (
+                        <div key={b.date} className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted">
+                          <Ban className="size-3.5 shrink-0 text-muted-foreground" />
+                          <span className="min-w-0 flex-1 truncate">{b.label || t("blockedDay")}</span>
+                          <span className="shrink-0 text-xs text-muted-foreground">{shortDate(b.date)}</span>
+                          <button
+                            type="button"
+                            onClick={() => setBlocked((p) => p.filter((x) => x.date !== b.date))}
+                            className="shrink-0 rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                            aria-label={t("removeBlock")}
+                          >
+                            <X className="size-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {!classId && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={classFilter ? "secondary" : "ghost"}
+                    size="icon-sm"
+                    title={t("classFilterAria")}
+                    aria-label={t("classFilterAria")}
+                    className="relative"
+                  >
+                    <ListFilter className="size-4" />
+                    {classFilter && (
+                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold tabular-nums text-primary-foreground">
+                        {classFilter.size}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64 p-0">
+                  <Command>
+                    <CommandInput placeholder={t("classFilterSearchPlaceholder")} />
+                    <CommandList className="max-h-80">
+                      <CommandEmpty>{t("classFilterNotFound")}</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem value={t("allClasses")} onSelect={toggleAllClassFilter}>
+                          <span className={cn(
+                            "flex size-4 shrink-0 items-center justify-center rounded-sm border",
+                            classFilter === null ? "border-primary bg-primary text-primary-foreground" : "border-input",
+                          )}>
+                            {classFilter === null && <Check className="size-3" strokeWidth={3} />}
+                          </span>
+                          <span className="font-medium">{t("allClasses")}</span>
+                        </CommandItem>
+                      </CommandGroup>
+                      {classFilterGroups.map(([grade, infos]) => (
+                        <CommandGroup key={grade ?? "other"} heading={grade !== null ? t("gradeGroup", { grade }) : t("otherClassesGroup")}>
+                          {infos.map((info) => {
+                            const checked = !classFilter || classFilter.has(info.id);
+                            const tints = classTints(liveClassColor(info));
+                            return (
+                              <CommandItem key={info.id} value={info.name} onSelect={() => soloClassFilter(info.id)}>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); toggleClassFilter(info.id); }}
+                                  aria-label={info.name}
+                                  style={checked ? tints.dot : undefined}
+                                  className={cn(
+                                    "flex size-4 shrink-0 items-center justify-center rounded-sm border",
+                                    !checked && "border-input",
+                                  )}
+                                >
+                                  {checked && <Check className="size-3 text-white" strokeWidth={3} />}
+                                </button>
+                                <span className="size-2 shrink-0 rounded-full" style={tints.dot} />
+                                <span className="truncate">{info.name}</span>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      ))}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+
             {view === "week" && (
               <Button
                 variant={showOffDays ? "ghost" : "secondary"}
@@ -903,7 +1547,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           const topH = start / 60 - START_HOUR;
                           const durH = (end - start) / 60;
                           if (topH + durH < 0 || topH > VISIBLE_HOURS) return null;
-                          const { name, color, tints } = lessonDisplay(l);
+                          const { name, color, tints } = lessonDisplay(l, p.classId);
                           const done = l.status === "Completed";
                           return (
                             <EventCard key={`${l.id}-${p.classId}-${start}`}
@@ -946,11 +1590,20 @@ export default function PlannerView({ classId }: { classId?: string }) {
                     onDragOver: (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverKey !== key) setDragOverKey(key); },
                     onDragLeave: (e: React.DragEvent<HTMLDivElement>) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === key ? null : k)); },
                     onDrop: (e: React.DragEvent<HTMLDivElement>) => dropOnDay(e, date),
+                    // Katakni bosish → chapdagi kunlik panel. Katak ichidagi oʻz
+                    // tugmalari (sana menyusi, chiplar, "+N ta") oʻz ishini qiladi,
+                    // shuning uchun ular ustidagi bosish bu yerda eʼtiborsiz qoldiriladi.
+                    onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+                      if ((e.target as HTMLElement).closest("button, a")) return;
+                      setSelectedDayKey((k) => (k === key ? null : key));
+                    },
                     className: cn(
+                      "cursor-pointer",
                       // "Bugun" — katak foni ATAYLAB neytral; signal sana doirasida (renderCell).
                       !isCurrentMonth && "bg-muted/10",
                       isBlocked && "bg-destructive/10",
                       !isBlocked && holiday && "bg-muted/40",
+                      selectedDayKey === key && "bg-muted/30 inset-ring-2 inset-ring-foreground/25",
                       dragOverKey === key && "outline outline-2 -outline-offset-2 outline-[var(--ring)]"
                     ),
                   };
@@ -977,7 +1630,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
                     const isCurrentMonth = date.getMonth() === anchor.getMonth();
                     return (
                       <>
-                        <div className="mb-0.5 flex items-center justify-between gap-1">
+                        <MonthDayDropZone dateKey={key} />
+                        <div className="relative mb-0.5 flex items-center justify-between gap-1">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button type="button" aria-label={t("dayActionsAria", { day: date.getDate() })}
@@ -1033,6 +1687,9 @@ export default function PlannerView({ classId }: { classId?: string }) {
           </div>
         </CardContent>
       </Card>
+      </div>
+    </div>
+    </DndContext>
 
       {/* ── Bayram modali ── */}
       <Dialog open={!!blockModal} onOpenChange={(o) => !o && setBlockModal(null)}>
@@ -1117,7 +1774,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                 <ScrollArea className="max-h-[240px] pr-1">
                   <div className="flex flex-col gap-1.5">
                     {linkCandidates.map((l) => {
-                      const { tints } = lessonDisplay(l);
+                      const { tints } = lessonDisplay(l, linkModal?.classId);
                       const sel = lmLessonId === l.id;
                       const uid2 = linkModal ? unitIdForClass(l, linkModal.classId) : null;
                       const unitTitle = uid2 ? linkUnits.find((u) => u.id === uid2)?.title : null;
@@ -1160,7 +1817,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
           <DialogHeader>
             <DialogTitle>{t("editLessonDialogTitle")}</DialogTitle>
             <DialogDescription>
-              {editLesson && lessonDisplay(editLesson).name}
+              {editLesson && lessonDisplay(editLesson, editTarget?.classId).name}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-1">
@@ -1222,6 +1879,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

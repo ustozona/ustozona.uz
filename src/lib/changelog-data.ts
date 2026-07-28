@@ -32,6 +32,22 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "planner-class-holiday-filters",
+    date: "2026-07-28",
+    type: "yangi",
+    title: "Rejalashtiruvchi — sinf va bayram filtri qoʻshildi",
+    body: "Endi kalendarda faqat kerakli sinflarni koʻrsatish (qidiruv bilan tanlash) va bloklangan kunlar/bayramlar roʻyxatini bir joyda koʻrish mumkin.",
+    href: "/dashboard/planner",
+  },
+  {
+    id: "planner-day-detail-panel",
+    date: "2026-07-28",
+    type: "yangi",
+    title: "Rejalashtiruvchi — kunni bosib kunlik panel",
+    body: "Oy koʻrinishida istalgan kunga bossangiz, chap tomonda oʻsha kunning toʻliq jadvali ochiladi. Darslarni shu yerdan sudrab boshqa vaqtga koʻchirish ham mumkin — klaviatura bilan ham.",
+    href: "/dashboard/planner",
+  },
+  {
     id: "planner-full-day-zoom",
     date: "2026-07-27",
     type: "yaxshilandi",

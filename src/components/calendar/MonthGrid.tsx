@@ -1,6 +1,6 @@
 "use client";
 
-import type { HTMLAttributes, ReactNode } from "react";
+import type { HTMLAttributes, ReactNode, Ref } from "react";
 import { useMemo } from "react";
 import { dateToKey, getMonthGrid } from "@/lib/calendar-core/date-math";
 import { useCalendarFormat } from "@/components/calendar/format";
@@ -16,6 +16,11 @@ import { cn } from "@/lib/utils";
    MonthMorePopover shu fayldan eksport qilinadi.
    ════════════════════════════════════════════════════════════════════ */
 
+const ISO_DAYS = [1, 2, 3, 4, 5, 6, 7];
+
+/** Katak konteyneri atributlari — `ref` bilan (drop-zona uchun). */
+export type MonthCellProps = HTMLAttributes<HTMLDivElement> & { ref?: Ref<HTMLDivElement> };
+
 export function MonthGrid({
   year,
   month,
@@ -29,49 +34,51 @@ export function MonthGrid({
   month: number;
   /** Sana katagining TOʻLIQ mazmuni (kun raqami, pill'lar, badge'lar…). */
   renderCell: (date: Date, dateKey: string, idx: number) => ReactNode;
-  /** Katak konteyneriga atributlar (onDrop, holat klasslari…). */
-  getCellProps?: (date: Date, dateKey: string) => HTMLAttributes<HTMLDivElement>;
+  /** Katak konteyneriga atributlar (onDrop, holat klasslari…). `ref` ham
+      uzatilishi mumkin — @dnd-kit `setNodeRef` katakni drop-zonaga aylantiradi
+      (React 19'da `ref` oddiy prop). */
+  getCellProps?: (date: Date, dateKey: string) => MonthCellProps;
 } & HTMLAttributes<HTMLDivElement>) {
   const fmt = useCalendarFormat();
   const cells = useMemo(() => getMonthGrid(year, month), [year, month]);
+  const weekCount = cells.length / 7;
 
   return (
-    /* Kun nomlari qatori scroll konteyneridan TASHQARIDA — u qimirlamaydi,
-       faqat kataklar toʻri scroll boʻladi. `scrollbar-gutter` ikkalasida ham
-       bir xil joy qoldiradi, shunda ustunlar tekis turadi. */
-    <div {...rest} className={cn("flex h-full flex-col overflow-hidden", className)}>
-      <div
-        className="grid shrink-0 overflow-hidden border-b border-border bg-muted scrollbar-thin [scrollbar-gutter:stable]"
-        style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}
-      >
-        {[1, 2, 3, 4, 5, 6, 7].map((isoDay) => (
-          <div key={isoDay} className="border-l border-border/40 py-3 text-center first:border-l-0">
-            <TypographyLabel>{fmt.dayShort(isoDay)}</TypographyLabel>
+    /* Jahon amaliyoti (Google/Outlook/Apple Calendar): oy toʻri HECH QACHON
+       scroll boʻlmaydi — konteyner balandligi fiksirlanadi, hafta qatorlari
+       `1fr` bilan bor joyni teng boʻlib oladi; ortiqcha kontent katak ichida
+       "+N koʻproq" (MonthMorePopover) orqali yigʻiladi, tashqi scroll yoʻq. */
+    <div
+      {...rest}
+      className={cn("grid h-full overflow-hidden", className)}
+      style={{
+        gridTemplateColumns: "repeat(7, minmax(0,1fr))",
+        gridTemplateRows: `auto repeat(${weekCount}, 1fr)`,
+      }}
+    >
+      {ISO_DAYS.map((isoDay) => (
+        <div key={isoDay} className="border-b border-l border-border px-2 py-3 text-center first:border-l-0">
+          <TypographyLabel>{fmt.dayName(isoDay)}</TypographyLabel>
+        </div>
+      ))}
+      {cells.map((date, idx) => {
+        if (!date)
+          return <div key={idx} className="border-l border-t border-border/40 bg-muted/10 first:border-l-0" />;
+        const key = dateToKey(date);
+        const cellProps = getCellProps?.(date, key);
+        return (
+          <div
+            key={idx}
+            {...cellProps}
+            className={cn(
+              "group/cell relative flex min-h-0 flex-col gap-0.5 overflow-hidden border-l border-t border-border/40 p-1.5 text-left transition-colors first:border-l-0",
+              cellProps?.className,
+            )}
+          >
+            {renderCell(date, key, idx)}
           </div>
-        ))}
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin [scrollbar-gutter:stable]">
-      <div className="grid min-h-full" style={{ gridTemplateColumns: "repeat(7, minmax(0,1fr))" }}>
-        {cells.map((date, idx) => {
-          if (!date)
-            return <div key={idx} className="min-h-[96px] border-l border-t border-border/40 bg-muted/10 first:border-l-0" />;
-          const key = dateToKey(date);
-          const cellProps = getCellProps?.(date, key);
-          return (
-            <div
-              key={idx}
-              {...cellProps}
-              className={cn(
-                "group/cell relative flex min-h-[104px] flex-col gap-1 border-l border-t border-border/40 p-2 text-left transition-colors first:border-l-0",
-                cellProps?.className,
-              )}
-            >
-              {renderCell(date, key, idx)}
-            </div>
-          );
-        })}
-      </div>
-      </div>
+        );
+      })}
     </div>
   );
 }
@@ -94,7 +101,7 @@ export function MonthMorePopover({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="self-start rounded px-1.5 py-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
+          className="flex h-5 items-center self-start rounded px-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
         >
           {fmt.t("more", { count })}
         </button>

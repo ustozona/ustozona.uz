@@ -1488,7 +1488,23 @@
     "shiftForwardAria": "Keyingi bos slotqa",
     "lessonActionsAria": "Sabaq ámelleri",
     "editAction": "Ózgertiw",
-    "noFreeSlotToast": "Eki hápte ishinde bos slot tabılmadı"
+    "noFreeSlotToast": "Eki hápte ishinde bos slot tabılmadı",
+    "dayPanelEmpty": "Bul kúni sabaq joq",
+    "dayPanelCloseAria": "Kún panelin jabıw",
+    "dayPanelOpenWeek": "Háptede kóriw",
+    "dndInstructions": "Sabaqtı alıw ushın bos orın klavishasın basıń. Súyrew waqtında baǵdar klavishaların paydalanıń. Jańa orınǵa qoyıw ushın bos orındı qayta, biykar etiw ushın Escape basıń.",
+    "dndStart": "Sabaq alındı",
+    "dndDropped": "Sabaq jańa orınǵa qoyıldı",
+    "dndCancelled": "Kóshiriw biykar etildi",
+    "blockedHolidaysAria": "Bloklanǵan kúnler hám bayramlar",
+    "blockedHolidaysTitle": "Bloklanǵan kúnler hám bayramlar",
+    "blockedHolidaysEmpty": "Bul jerde bloklanǵan kún yamasa bayram joq",
+    "classFilterAria": "Klass boyınsha filtr",
+    "allClasses": "Barlıq klasslar",
+    "classFilterSearchPlaceholder": "Klass izlew...",
+    "classFilterNotFound": "Klass tabılmadı",
+    "gradeGroup": "{grade}-klasslar",
+    "otherClassesGroup": "Toǵarek / basqa"
   },
   "TaskStatus": {
     "todo": "Kútilmekte",
@@ -1960,6 +1976,14 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "planner-class-holiday-filters": {
+        "title": "Rejeleshtiriwshi — klass hám bayram filtri qosıldı",
+        "body": "Endi tek kerekli klasslardı kórsetiw (izlew menen tańlaw) hám bloklanǵan kúnler menen bayramlardı bir jerden kóriw múmkin."
+      },
+      "planner-day-detail-panel": {
+        "title": "Rejeleshtiriwshi — kúndi basıp, kúnlik paneldi ashıń",
+        "body": "Ay kóriniste qálegen kúnge basqanda, sol kúnniń toliq kestesi shep tárepte ashıladı. Sabaqlardı sol jerden jańa waqıtqa súyrep kóshiriw de múmkin — klaviatura menen de isleydi."
+      },
       "planner-full-day-zoom": {
         "title": "Jobalawshı — tolıq tewlik hám masshtab",
         "body": "Háptelik kórinis endi tolıq tewlikti qamtıydı hám 08:00 den ashıladı, sonlıqtan erte azanǵı hám keshki sabaqlar da sıyadı. Tómendegi masshtab tuymesi kúndi tıǵızıraq yamasa keńirek kórsetedi."

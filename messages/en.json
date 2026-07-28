@@ -1488,7 +1488,23 @@
     "shiftForwardAria": "To next free slot",
     "lessonActionsAria": "Lesson actions",
     "editAction": "Edit",
-    "noFreeSlotToast": "No free slot found within two weeks"
+    "noFreeSlotToast": "No free slot found within two weeks",
+    "dayPanelEmpty": "No lessons on this day",
+    "dayPanelCloseAria": "Close day panel",
+    "dayPanelOpenWeek": "View in week",
+    "dndInstructions": "To pick up a lesson, press the space bar. While dragging, use the arrow keys to move it. Press space again to drop it in its new position, or press escape to cancel.",
+    "dndStart": "Lesson picked up",
+    "dndDropped": "Lesson dropped in its new position",
+    "dndCancelled": "Move cancelled",
+    "blockedHolidaysAria": "Blocked days & holidays",
+    "blockedHolidaysTitle": "Blocked days & holidays",
+    "blockedHolidaysEmpty": "No blocked days or holidays here",
+    "classFilterAria": "Filter by class",
+    "allClasses": "All classes",
+    "classFilterSearchPlaceholder": "Search classes...",
+    "classFilterNotFound": "No classes found",
+    "gradeGroup": "Grade {grade}",
+    "otherClassesGroup": "Clubs / other"
   },
   "TaskStatus": {
     "todo": "To do",
@@ -1960,6 +1976,14 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "planner-class-holiday-filters": {
+        "title": "Planner — class and holiday filters added",
+        "body": "You can now show only the classes you need (searchable picker) and see all blocked days and holidays in one place."
+      },
+      "planner-day-detail-panel": {
+        "title": "Planner — click a day for its detail panel",
+        "body": "In month view, clicking any day opens its full daily schedule on the left. You can drag lessons to a new time right there — keyboard dragging works too."
+      },
       "planner-full-day-zoom": {
         "title": "Planner — full day and zoom",
         "body": "The week view now covers the whole day and opens at 08:00, so early morning and evening lessons fit too. The zoom control at the bottom makes the day denser or roomier."

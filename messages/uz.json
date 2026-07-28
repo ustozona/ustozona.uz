@@ -1488,7 +1488,23 @@
     "shiftForwardAria": "Keyingi boʻsh slotga",
     "lessonActionsAria": "Dars amallari",
     "editAction": "Tahrirlash",
-    "noFreeSlotToast": "Yaqin ikki hafta ichida boʻsh slot topilmadi"
+    "noFreeSlotToast": "Yaqin ikki hafta ichida boʻsh slot topilmadi",
+    "dayPanelEmpty": "Bu kunda dars yoʻq",
+    "dayPanelCloseAria": "Kun panelini yopish",
+    "dayPanelOpenWeek": "Haftada koʻrish",
+    "dndInstructions": "Darsni olish uchun boʻsh joy tugmasini bosing. Sudrash paytida yoʻnalish tugmalari bilan harakatlantiring. Yangi joyga qoʻyish uchun yana boʻsh joy tugmasini, bekor qilish uchun Escape tugmasini bosing.",
+    "dndStart": "Dars olindi",
+    "dndDropped": "Dars yangi joyga qoʻyildi",
+    "dndCancelled": "Koʻchirish bekor qilindi",
+    "blockedHolidaysAria": "Bloklangan kunlar va bayramlar",
+    "blockedHolidaysTitle": "Bloklangan kunlar va bayramlar",
+    "blockedHolidaysEmpty": "Bu yerda bloklangan kun yoki bayram yoʻq",
+    "classFilterAria": "Sinflar boʻyicha filtr",
+    "allClasses": "Barcha sinflar",
+    "classFilterSearchPlaceholder": "Sinf qidirish...",
+    "classFilterNotFound": "Sinf topilmadi",
+    "gradeGroup": "{grade}-sinflar",
+    "otherClassesGroup": "Toʻgarak / boshqa"
   },
   "TaskStatus": {
     "todo": "Kutilmoqda",
@@ -1960,6 +1976,14 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "planner-class-holiday-filters": {
+        "title": "Rejalashtiruvchi — sinf va bayram filtri qoʻshildi",
+        "body": "Endi kalendarda faqat kerakli sinflarni koʻrsatish (qidiruv bilan tanlash) va bloklangan kunlar/bayramlar roʻyxatini bir joyda koʻrish mumkin."
+      },
+      "planner-day-detail-panel": {
+        "title": "Rejalashtiruvchi — kunni bosib kunlik panel",
+        "body": "Oy koʻrinishida istalgan kunga bossangiz, chap tomonda oʻsha kunning toʻliq jadvali ochiladi. Darslarni shu yerdan sudrab boshqa vaqtga koʻchirish ham mumkin — klaviatura bilan ham."
+      },
       "planner-full-day-zoom": {
         "title": "Rejalashtiruvchi — toʻliq sutka va masshtab",
         "body": "Hafta koʻrinishi endi butun sutkani qamraydi va 08:00 dan ochiladi, shuning uchun erta ertalabki va kechki darslar ham joylashadi. Pastdagi masshtab tugmasi bilan kunni zichroq yoki kengroq koʻrsatasiz."
