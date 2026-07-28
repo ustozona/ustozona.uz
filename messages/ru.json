@@ -2462,6 +2462,7 @@
     "groupLater": "Позже",
     "markDone": "Отметить выполненной",
     "checkStatus": "На проверке",
+    "viewAll": "Ещё {count}",
     "controlBadge": "Контроль",
     "enteredOf": "Внесено {entered}/{total}",
     "noDue": "Без срока",

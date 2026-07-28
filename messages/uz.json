@@ -2322,6 +2322,7 @@
     "groupLater": "Keyinroq",
     "markDone": "Bajarildi deb belgilash",
     "checkStatus": "Tekshirishda",
+    "viewAll": "Yana {count} taʼni koʻrish",
     "controlBadge": "Nazorat",
     "enteredOf": "{entered}/{total} kiritildi",
     "noDue": "Muddatsiz",

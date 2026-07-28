@@ -2462,6 +2462,7 @@
     "groupLater": "Кийинчерээк",
     "markDone": "Аткарылды деп белгилөө",
     "checkStatus": "Текшерүүдө",
+    "viewAll": "Дагы {count}",
     "controlBadge": "Көзөмөл",
     "enteredOf": "{entered}/{total} киргизилди",
     "noDue": "Мөөнөтсүз",

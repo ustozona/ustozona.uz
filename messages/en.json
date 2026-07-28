@@ -2462,6 +2462,7 @@
     "groupLater": "Later",
     "markDone": "Mark as done",
     "checkStatus": "Grading",
+    "viewAll": "View {count} more",
     "controlBadge": "Assessment",
     "enteredOf": "{entered}/{total} entered",
     "noDue": "No due date",

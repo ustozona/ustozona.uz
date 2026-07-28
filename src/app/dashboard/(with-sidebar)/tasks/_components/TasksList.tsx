@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState, type HTMLAttributes, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Ban, CalendarOff, ChevronDown, Copy, Flag, GraduationCap, Play, Plus, Repeat, Sun, Sunrise, Trash2 } from "lucide-react";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
@@ -57,6 +57,98 @@ function fmtTaskTime(task: Task): string {
 }
 
 type ClassMeta = { name: string; hex: string };
+
+/**
+ * VAZIFA QATORI — kanonik qator retsepti. Tasks sahifasi (ContextMenu bilan
+ * oʻrab) va bosh sahifa QueueSection (oddiy div bilan) shu bir komponentdan
+ * foydalanadi — vidjet toʻliq roʻyxatning proyeksiyasi, parallel model emas.
+ *
+ * Maket EKRANGA emas, QATOR KENGLIGIGA moslashadi (`@container`): keng ustunda
+ * sarlavha va meta bir qatorda, tor ustunda (masalan bosh sahifadagi 25% panel)
+ * meta sarlavha ostiga tushadi. Media query ishlatilmaydi — ekran keng boʻlsa
+ * ham ustun tor boʻlishi mumkin, oʻshanda sarlavha nolgacha ezilib, har harf
+ * alohida qatorga tushib ketardi. [[dashboard-columns-primitive]]
+ */
+export const TaskRow = forwardRef<
+  HTMLDivElement,
+  {
+    task: Task;
+    active?: boolean;
+    /** Oldindan hisoblangan muddat yorligʻi (matn+rang). */
+    due: { text: string; cls: string } | null;
+    onToggleStatus: () => void;
+    /** Qoʻshimcha belgi (masalan sinf chipi) — due'dan oldin, doim koʻrinadi. */
+    trailing?: ReactNode;
+  } & HTMLAttributes<HTMLDivElement>
+>(function TaskRow({ task, active, due, onToggleStatus, trailing, className, ...rest }, ref) {
+  const t = useTranslations("TasksPage.list");
+  const done = task.status === "done";
+  const canceled = task.status === "canceled";
+  const prio = PRIORITY_META[task.priority];
+  return (
+    <div
+      ref={ref}
+      role="button"
+      tabIndex={0}
+      data-active={active || undefined}
+      className={cn(
+        // Focus To-Do qator tili: default — nozik pastki chiziq; hover — yumshoq
+        // yumaloq fon (chiziq yashirinadi); tanlangan — turgʻun muted fon.
+        "@container group relative flex min-h-10 w-full cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2 text-left outline-none transition-colors duration-fast",
+        "border-b border-border/40 last:border-b-0",
+        "hover:border-transparent hover:bg-muted/60",
+        "focus-visible:ring-2 focus-visible:ring-ring",
+        "data-[active=true]:border-transparent data-[active=true]:bg-muted",
+        className
+      )}
+      {...rest}
+    >
+      <Checkbox
+        checked={done}
+        onCheckedChange={onToggleStatus}
+        onClick={(e) => e.stopPropagation()}
+        className={cn(
+          "mt-0.5 size-4 shrink-0 rounded-full",
+          done
+            ? "border-success bg-success data-[state=checked]:border-success data-[state=checked]:bg-success"
+            : prio.checkbox
+        )}
+      />
+      {/* Tor qatorda ustun (sarlavha → meta), keng qatorda yonma-yon. */}
+      <div className="flex min-w-0 flex-1 flex-col gap-1 @[26rem]:flex-row @[26rem]:items-start @[26rem]:gap-2.5">
+        <span
+          className={cn(
+            "min-w-0 flex-1 text-left text-sm break-words whitespace-normal transition-colors duration-base",
+            done ? "text-muted-foreground line-through" : canceled ? "text-muted-foreground/70" : "text-foreground"
+          )}
+        >
+          {task.title}
+          {canceled && <span className="ml-1.5 text-xs">· {t("canceledBadge")}</span>}
+        </span>
+        {(task.repeat || (task.tags ?? []).length > 0 || trailing || due || task.dueMin != null) && (
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 @[26rem]:mt-0.5 @[26rem]:shrink-0 @[26rem]:flex-nowrap">
+            {task.repeat && <Repeat className="size-3 shrink-0 text-muted-foreground/70" />}
+            {(task.tags ?? []).slice(0, 2).map((tag) => (
+              <span
+                key={tag}
+                className={cn("shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium", TAG_PILL_CLASS)}
+              >
+                {tag}
+              </span>
+            ))}
+            {trailing}
+            {(due || task.dueMin != null) && (
+              <span className={cn("shrink-0 text-xs tabular-nums", due?.cls ?? "text-muted-foreground/70")}>
+                {due?.text}
+                {task.dueMin != null && (due ? ` ${fmtTaskTime(task)}` : fmtTaskTime(task))}
+              </span>
+            )}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+});
 
 export function TasksList({
   title,
@@ -362,13 +454,14 @@ function TaskGroup({
       {tasks.map((task) => {
         const done = task.status === "done";
         const canceled = task.status === "canceled";
-        const prio = PRIORITY_META[task.priority];
         return (
         <ContextMenu key={task.id}>
         <ContextMenuTrigger asChild>
-          <div
-            role="button"
-            tabIndex={0}
+          <TaskRow
+            task={task}
+            active={selectedTaskId === task.id}
+            due={dueLabel(task.dueDate)}
+            onToggleStatus={() => onToggleStatus(task.id)}
             onClick={() => onSelectTask(task.id)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -376,63 +469,7 @@ function TaskGroup({
                 onSelectTask(task.id);
               }
             }}
-            data-active={selectedTaskId === task.id || undefined}
-            className={cn(
-              // Focus To-Do qator tili: default — nozik pastki chiziq; hover — yumshoq
-              // yumaloq fon (chiziq yashirinadi); tanlangan — turgʻun muted fon.
-              "group relative flex min-h-10 w-full cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2 text-left outline-none transition-colors duration-fast",
-              "border-b border-border/40 last:border-b-0",
-              "hover:border-transparent hover:bg-muted/60",
-              "focus-visible:ring-2 focus-visible:ring-ring",
-              "data-[active=true]:border-transparent data-[active=true]:bg-muted"
-            )}
-          >
-            <Checkbox
-              checked={done}
-              onCheckedChange={() => onToggleStatus(task.id)}
-              onClick={(e) => e.stopPropagation()}
-              className={cn(
-                "mt-0.5 size-4 shrink-0 rounded-full",
-                done
-                  ? "border-success bg-success data-[state=checked]:border-success data-[state=checked]:bg-success"
-                  : prio.checkbox
-              )}
-            />
-            <span
-              className={cn(
-                "min-w-0 flex-1 text-left text-sm break-words whitespace-normal transition-colors duration-base",
-                done ? "text-muted-foreground line-through" : canceled ? "text-muted-foreground/70" : "text-foreground"
-              )}
-            >
-              {task.title}
-              {canceled && <span className="ml-1.5 text-xs">· {t("canceledBadge")}</span>}
-            </span>
-            {task.repeat && (
-              <Repeat className="mt-0.5 hidden size-3 shrink-0 text-muted-foreground/70 sm:flex" />
-            )}
-            {(task.tags ?? []).length > 0 && (
-              <span className="mt-0.5 hidden shrink-0 items-center gap-1 sm:flex">
-                {(task.tags ?? []).slice(0, 2).map((tag) => (
-                  <span
-                    key={tag}
-                    className={cn("rounded-full border px-2 py-0.5 text-[11px] font-medium", TAG_PILL_CLASS)}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </span>
-            )}
-            {(() => {
-              const dl = dueLabel(task.dueDate);
-              if (!dl && task.dueMin == null) return null;
-              return (
-                <span className={cn("mt-0.5 hidden shrink-0 text-xs tabular-nums sm:flex", dl?.cls ?? "text-muted-foreground/70")}>
-                  {dl?.text}
-                  {task.dueMin != null && (dl ? ` ${fmtTaskTime(task)}` : fmtTaskTime(task))}
-                </span>
-              );
-            })()}
-          </div>
+          />
         </ContextMenuTrigger>
         <ContextMenuContent className="w-48">
           {!done && !canceled && (

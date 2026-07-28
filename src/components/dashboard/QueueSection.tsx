@@ -1,130 +1,130 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { ListTodo } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { ClassSwatch } from "@/components/ClassSwatch";
+import { TaskRow } from "@/app/dashboard/(with-sidebar)/tasks/_components/TasksList";
 import {
   panelCardClass,
   panelCardContentClass,
   panelCardHeaderClass,
 } from "@/components/DashboardPage";
+import { useTasksStore } from "@/store/useTasksStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import {
-  pendingCheckRows,
-  upcomingSummativeDeadlines,
-  type CheckRow,
-  type DeadlineRow,
-} from "@/lib/home-metrics";
-import { dateToKey } from "@/lib/date-keys";
-import { MONTHS_UZ } from "@/lib/localization";
+import { addDaysKey, dateToKey } from "@/lib/date-keys";
+import { formatDateGroupLabel, sortTasks, type Task } from "@/lib/tasks-data";
 import { cn } from "@/lib/utils";
 
 /* ════════════════════════════════════════════════════════════════════
    ISHLAR NAVBATI — bosh sahifa chap ustuni.
 
-   Ikki manba: tekshirish qatorlari (ball kiritilishi chala assignmentlar)
-   + kelgusi summativ muddatlar (useGradesStore). Guruhlar: Muddati oʻtgan /
-   Bugun / Keyinroq (Keyinroq ufqi qattiq — 7 kun).
+   Vidjet — tasks store'ning proyeksiyasi (parallel model emas): faqat
+   "grading" (baholash) manbali, hali toʻliq belgilanmagan vazifalar,
+   7 kunlik ufq bilan filtrlanadi. Qatorlar Vazifalar sahifasi bilan bir
+   xil `TaskRow` komponentidan foydalanadi — checkbox shu yerda ham
+   ishlaydi va ikkala joyda ham sinxron. [[stat-tile-canonical]]
    ════════════════════════════════════════════════════════════════════ */
 
-type QueueRow =
-  | { kind: "check"; key: string; row: CheckRow }
-  | { kind: "deadline"; key: string; row: DeadlineRow };
-
-const KIND_RANK: Record<QueueRow["kind"], number> = { check: 0, deadline: 1 };
-
-function rowDue(r: QueueRow): string | null {
-  return r.row.due;
-}
-
-function addDaysKey(base: Date, n: number): string {
-  const d = new Date(base);
-  d.setDate(d.getDate() + n);
-  return dateToKey(d);
-}
+const MAX_ROWS = 7;
 
 export function QueueSection({ now }: { now: Date }) {
   const t = useTranslations("QueueSection");
+  const router = useRouter();
 
+  const items = useTasksStore((s) => s.items);
+  const setStatus = useTasksStore((s) => s.setStatus);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const liveClasses = useLiveClasses();
 
   const todayKey = dateToKey(now);
-  const tomorrowKey = addDaysKey(now, 1);
-  const weekKey = addDaysKey(now, 7);
+  const tomorrowKey = addDaysKey(todayKey, 1);
+  const weekKey = addDaysKey(todayKey, 7);
 
   const classMeta = useMemo(
     () => new Map(liveClasses.map((c) => [c.id, { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] }])),
     [liveClasses]
   );
 
-  const checkRows = useMemo(() => pendingCheckRows(classDataMap, todayKey), [classDataMap, todayKey]);
-  const deadlineRows = useMemo(
-    () => upcomingSummativeDeadlines(classDataMap, todayKey),
-    [classDataMap, todayKey]
+  // ── Baholash navbati: faqat "grading" manbali, hali bajarilmagan,
+  //    7 kunlik ufq ichidagi vazifalar (Vazifalar sahifasidagi "todo" bilan bir xil). ──
+  const queueTasks = useMemo(
+    () =>
+      items.filter(
+        (task) =>
+          task.source.kind === "grading" &&
+          task.status !== "done" &&
+          task.status !== "canceled" &&
+          task.dueDate != null &&
+          task.dueDate <= weekKey
+      ),
+    [items, weekKey]
   );
 
-  // ── Guruhlash: Muddati oʻtgan / Bugun / Keyinroq (scope ufqi) ──
   const groups = useMemo(() => {
-    const overdue: QueueRow[] = [];
-    const today: QueueRow[] = [];
-    const later: QueueRow[] = [];
-
-    for (const row of checkRows) {
-      const item: QueueRow = { kind: "check", key: `c-${row.classId}-${row.assignmentId}`, row };
-      (row.due < todayKey ? overdue : today).push(item);
+    const overdue: Task[] = [];
+    const today: Task[] = [];
+    const later: Task[] = [];
+    for (const task of sortTasks(queueTasks)) {
+      if (task.dueDate! < todayKey) overdue.push(task);
+      else if (task.dueDate === todayKey) today.push(task);
+      else later.push(task);
     }
-    for (const row of deadlineRows) {
-      if (row.due > weekKey) continue;
-      later.push({ kind: "deadline", key: `d-${row.classId}-${row.assignmentId}`, row });
-    }
-
-    const byDue = (a: QueueRow, b: QueueRow) => {
-      const da = rowDue(a);
-      const db = rowDue(b);
-      if (da !== db) {
-        if (da == null) return 1;
-        if (db == null) return -1;
-        return da.localeCompare(db);
-      }
-      return KIND_RANK[a.kind] - KIND_RANK[b.kind];
-    };
-    overdue.sort(byDue);
-    today.sort(byDue);
-    later.sort(byDue);
     return { overdue, today, later };
-  }, [checkRows, deadlineRows, todayKey, weekKey]);
+  }, [queueTasks, todayKey]);
 
-  const isEmpty = groups.overdue.length + groups.today.length + groups.later.length === 0;
+  const total = groups.overdue.length + groups.today.length + groups.later.length;
+  const isEmpty = total === 0;
+  const shown = { overdue: 0, today: 0, later: 0 };
+  let budget = MAX_ROWS;
+  for (const key of ["overdue", "today", "later"] as const) {
+    const take = Math.min(groups[key].length, budget);
+    shown[key] = take;
+    budget -= take;
+  }
+  const hiddenCount = total - (shown.overdue + shown.today + shown.later);
 
-  // ── Muddat matni + jiddiylik rangi ──
-  const dueLabel = (due: string | null): { text: string; cls: string } => {
-    if (!due) return { text: t("noDue"), cls: "text-muted-foreground" };
-    if (due < todayKey) {
-      const [, m, d] = due.split("-").map(Number);
-      return { text: `${d}-${MONTHS_UZ[m - 1].toLowerCase()}`, cls: "text-destructive" };
-    }
-    if (due === todayKey) return { text: t("dueToday"), cls: "text-warning" };
-    if (due === tomorrowKey) return { text: t("dueTomorrow"), cls: "text-warning" };
-    const [, m, d] = due.split("-").map(Number);
-    return { text: `${d}-${MONTHS_UZ[m - 1].toLowerCase()}`, cls: "text-muted-foreground" };
+  // ── Kiritilish progress matni ("13/15 kiritildi") — faqat KOʻRSATISH
+  //    uchun, navbat aʼzoligi endi Task.status ("todo") orqali belgilanadi. ──
+  const enteredOf = (task: Task): string | null => {
+    if (task.source.kind !== "grading") return null;
+    const { classId, assignmentId } = task.source;
+    const cd = classDataMap[classId];
+    if (!cd) return null;
+    const activeStudents = cd.students.filter((s) => s.status !== "archived");
+    if (activeStudents.length === 0) return null;
+    const scored = new Set(
+      cd.grades
+        .filter((g) => g.assignmentId === assignmentId && (g.score != null || g.missing || g.isMissing))
+        .map((g) => g.studentId)
+    );
+    const entered = activeStudents.filter((s) => scored.has(s.id)).length;
+    return t("enteredOf", { entered, total: activeStudents.length });
   };
 
-  const renderGroup = (label: string, rows: QueueRow[], accent?: "destructive") => {
-    if (rows.length === 0) return null;
+  // ── Muddat matni + jiddiylik rangi ──
+  const dueLabel = (due: string): { text: string; cls: string } => {
+    if (due < todayKey) return { text: formatDateGroupLabel(due), cls: "text-destructive" };
+    if (due === todayKey) return { text: t("dueToday"), cls: "text-warning" };
+    if (due === tomorrowKey) return { text: t("dueTomorrow"), cls: "text-warning" };
+    return { text: formatDateGroupLabel(due), cls: "text-muted-foreground" };
+  };
+
+  const renderGroup = (label: string, tasks: Task[], accent?: "destructive") => {
+    if (tasks.length === 0) return null;
     return (
-      <div>
+      <div key={label}>
         <div className="mb-1 flex items-center gap-2 px-1">
           <span
             className={cn(
@@ -134,72 +134,37 @@ export function QueueSection({ now }: { now: Date }) {
           >
             {label}
           </span>
-          <span className="text-xs tabular-nums text-muted-foreground/60">{rows.length}</span>
+          <span className="text-xs tabular-nums text-muted-foreground/60">{tasks.length}</span>
         </div>
-        <div className="flex flex-col divide-y divide-dashed divide-border/70">
-          {rows.map((row) => {
-            if (row.kind === "check") {
-              const meta = classMeta.get(row.row.classId);
-              const due = dueLabel(row.row.due);
-              return (
-                <Link
-                  key={row.key}
-                  href={`/dashboard/grades?classId=${encodeURIComponent(row.row.classId)}`}
-                  className="group flex items-center gap-3 py-2.5"
-                >
-                  <ProgressRing entered={row.row.entered} total={row.row.total} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground transition-colors duration-fast group-hover:text-primary">
-                      {row.row.title}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {t("enteredOf", { entered: row.row.entered, total: row.row.total })}
-                    </p>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 rounded-full border-warning/40 bg-warning/10 px-2 py-0.5 text-[10px] font-semibold text-warning"
-                  >
-                    {t("checkStatus")}
-                  </Badge>
-                  {meta && <ClassChip name={meta.name} hex={meta.hex} />}
-                  <span className={cn("shrink-0 text-xs font-medium tabular-nums", due.cls)}>
-                    {due.text}
-                  </span>
-                </Link>
-              );
-            }
-            const meta = classMeta.get(row.row.classId);
-            const due = dueLabel(row.row.due);
-            const [, m, d] = row.row.due.split("-").map(Number);
+        <div className="flex flex-col">
+          {tasks.map((task) => {
+            const meta = task.classId ? classMeta.get(task.classId) : undefined;
+            const progress = enteredOf(task);
             return (
-              <Link
-                key={row.key}
-                href={`/dashboard/grades?classId=${encodeURIComponent(row.row.classId)}`}
-                className="group flex items-center gap-3 py-2.5"
-              >
-                <div className="flex size-9 shrink-0 flex-col items-center justify-center rounded-lg border border-border bg-card">
-                  <span className="text-sm font-bold leading-none tabular-nums text-foreground">{d}</span>
-                  <span className="mt-0.5 text-[9px] font-medium uppercase leading-none text-muted-foreground">
-                    {MONTHS_UZ[m - 1].slice(0, 3)}
-                  </span>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground transition-colors duration-fast group-hover:text-primary">
-                    {row.row.title}
-                  </p>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="shrink-0 rounded-full border-warning/40 bg-warning/10 px-2 py-0.5 text-[10px] font-semibold text-warning"
-                >
-                  {t("controlBadge")}
-                </Badge>
-                {meta && <ClassChip name={meta.name} hex={meta.hex} />}
-                <span className={cn("shrink-0 text-xs font-medium tabular-nums", due.cls)}>
-                  {due.text}
-                </span>
-              </Link>
+              <TaskRow
+                key={task.id}
+                task={task}
+                due={dueLabel(task.dueDate!)}
+                onToggleStatus={() => setStatus(task.id, task.status === "done" ? "todo" : "done")}
+                onClick={() => {
+                  if (task.classId) router.push(`/dashboard/grades?classId=${encodeURIComponent(task.classId)}`);
+                }}
+                trailing={
+                  progress || meta ? (
+                    <>
+                      {progress && (
+                        <span className="shrink-0 text-xs text-muted-foreground">{progress}</span>
+                      )}
+                      {meta && (
+                        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-foreground">
+                          <ClassSwatch hex={meta.hex} className="size-2.5" />
+                          {meta.name}
+                        </span>
+                      )}
+                    </>
+                  ) : undefined
+                }
+              />
             );
           })}
         </div>
@@ -235,51 +200,19 @@ export function QueueSection({ now }: { now: Date }) {
               </Empty>
             ) : (
               <div className="flex flex-col gap-4">
-                {renderGroup(t("groupOverdue"), groups.overdue, "destructive")}
-                {renderGroup(t("groupToday"), groups.today)}
-                {renderGroup(t("groupLater"), groups.later)}
+                {renderGroup(t("groupOverdue"), groups.overdue.slice(0, shown.overdue), "destructive")}
+                {renderGroup(t("groupToday"), groups.today.slice(0, shown.today))}
+                {renderGroup(t("groupLater"), groups.later.slice(0, shown.later))}
+                {hiddenCount > 0 && (
+                  <Button asChild variant="ghost" size="sm" className="mx-auto text-xs text-muted-foreground">
+                    <Link href="/dashboard/tasks">{t("viewAll", { count: hiddenCount })}</Link>
+                  </Button>
+                )}
               </div>
             )}
           </div>
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-/** Sinf chipi — ClassSwatch + nom (kvadrat indikator standarti). */
-function ClassChip({ name, hex }: { name: string; hex: string }) {
-  return (
-    <span className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-foreground md:inline-flex">
-      <ClassSwatch hex={hex} className="size-2.5" />
-      {name}
-    </span>
-  );
-}
-
-/** Kiritilish progress-halqasi — "15/30" kasr bilan. */
-function ProgressRing({ entered, total }: { entered: number; total: number }) {
-  const pct = total > 0 ? entered / total : 0;
-  const r = 15;
-  const c = 2 * Math.PI * r;
-  return (
-    <div className="relative size-9 shrink-0">
-      <svg viewBox="0 0 36 36" className="size-9 -rotate-90">
-        <circle cx="18" cy="18" r={r} fill="none" strokeWidth="3" className="stroke-border" />
-        <circle
-          cx="18"
-          cy="18"
-          r={r}
-          fill="none"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray={`${c * pct} ${c}`}
-          className="stroke-warning"
-        />
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-[8px] font-semibold tabular-nums text-foreground">
-        {entered}/{total}
-      </span>
-    </div>
   );
 }

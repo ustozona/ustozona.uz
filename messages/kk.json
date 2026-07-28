@@ -2462,6 +2462,7 @@
     "groupLater": "Кейінірек",
     "markDone": "Орындалды деп белгілеу",
     "checkStatus": "Тексерілуде",
+    "viewAll": "Тағы {count}",
     "controlBadge": "Бақылау",
     "enteredOf": "{entered}/{total} енгізілді",
     "noDue": "Мерзімсіз",
