@@ -1976,6 +1976,18 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "today-rail-create-link": {
+        "title": "Bügingi sabaqlar — jobasız slotqa jaratıw/baylanıstırıw",
+        "body": "Kartaǵa kursor keltirilgende \"Joba joq\" jazıwı ornına eki tez ámel shıǵadı: jańa tema jaratıw yamasa bar temanı usı sabaqqa baylanıstırıw — rejeleştiriwshidegidey."
+      },
+      "next-lessons-status-icons": {
+        "title": "Kelesi sabaqlar — jaǵday belgileri",
+        "body": "Hár bir sabaq qatarındaǵı jaǵday belgisi endi noqat ornına ańsat túsinikli ikonka menen kórsetiledi (orınlandı, rejelestirilgen, jobasız, qorajoba)."
+      },
+      "home-hero-quotes": {
+        "title": "Bas bet — kúnlik sitata",
+        "body": "Basqa bettten qaytıp kelgeningizde sálemlesiw ornına tosınnan sitata kórinedi. Dizim keńeytirildi; ózińizdikin qossańız tekstti qalıń, kursiv, astı sızılǵan yamasa reńli etip belgilew múmkin."
+      },
       "planner-class-holiday-filters": {
         "title": "Rejeleshtiriwshi — klass hám bayram filtri qosıldı",
         "body": "Endi tek kerekli klasslardı kórsetiw (izlew menen tańlaw) hám bloklanǵan kúnler menen bayramlardı bir jerden kóriw múmkin."
@@ -2488,16 +2500,8 @@
     "dayDone": "Búgingi sabaqlar juwmaqlandı",
     "tomorrowInfo": "Erteń: {count} sabaq, {time} den baslanadı",
     "tomorrowFree": "Erteń sabaq joq — tınısh dem alıń!",
-    "quotesManage": "Sitatalardı basqarıw",
     "showSunday": "Ekshembini kórsetiw",
     "hideSunday": "Ekshembini jasırıw",
-    "quotesTitle": "Sitatalar",
-    "quotesDescription": "Kún aqırında kórsetiletuǵın sitatalar dizimin ózińiz basqarasız.",
-    "quotesEmpty": "Dizim bos — birinshi sitatanı qosıń.",
-    "quotesDelete": "Óshiriw",
-    "quotesAddPlaceholder": "Jańa sitata teksti…",
-    "quotesAuthorPlaceholder": "Avtor (miynetli emes)",
-    "quotesAdd": "Qosıw",
     "attendanceAction": "Qatnasıw",
     "gradesAction": "Jurnal"
   },
@@ -2539,6 +2543,7 @@
     "unknownClass": "Belgisiz klass",
     "untitledTopic": "(ataqsız tema)",
     "tomorrow": "Erteń",
+    "durationSuffix": "{count} min",
     "emptyTitle": "Aldag'ı sabaq joq",
     "emptyDescription": "Ăli jobalanbagan — sabaq kestesin tekseriń."
   },
@@ -3710,5 +3715,19 @@
     "shortBreakLabel": "Qısqa tanaffus (minut)",
     "longBreakLabel": "Uzın tanaffus (minut)",
     "longBreakEveryLabel": "Neshe pomodorodan keyin uzın tanaffus"
+  },
+  "Quotes": {
+    "manage": "Sitatalardı basqarıw",
+    "title": "Sitatalar",
+    "description": "Bas bettegi sitatalar dizimi.",
+    "empty": "Dizim bos — birinshi sitatanı qosıń.",
+    "delete": "Óshiriw",
+    "addPlaceholder": "Jańa sitata teksti…",
+    "authorPlaceholder": "Avtor (miynetli emes)",
+    "add": "Qosıw",
+    "bold": "Qalıń",
+    "italic": "Kursiv",
+    "underline": "Astı sızılǵan",
+    "highlight": "Reńli belgilew"
   }
 }

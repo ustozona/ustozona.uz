@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -10,23 +11,14 @@ import {
   Clock,
   Eye,
   EyeOff,
-  Quote as QuoteIcon,
-  Trash2,
+  Link as LinkIcon,
+  Plus,
   UserCheck,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -35,12 +27,12 @@ import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { addDays, startOfWeekMon } from "@/lib/calendar-core/date-math";
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
 import { EventCard } from "@/components/calendar/EventCard";
+import { LinkLessonDialog, type LinkLessonSlot } from "@/components/LinkLessonDialog";
 import { panelCardClass, panelCardHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useGradesStore } from "@/store/useGradesStore";
-import { useQuotesStore } from "@/store/useQuotesStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeHomeTourDemo, DEMO_CLASS_NAMES } from "@/components/tour/home-tour-demo";
@@ -50,7 +42,6 @@ import { dateToKey } from "@/lib/date-keys";
 import { classColor } from "@/lib/grades-data";
 import { classTints, autoClassColor, type ClassColor } from "@/lib/class-colors";
 import { lessonSessions, type LessonStatus } from "@/lib/lessons-data";
-import { dailyQuote } from "@/lib/quotes";
 import { fmtMin } from "@/lib/timetable";
 import { cn } from "@/lib/utils";
 
@@ -79,10 +70,13 @@ const SCROLL_LEAD_MIN = 15;
 
 export function TodayRail({ now }: { now: Date }) {
   const t = useTranslations("TodayRail");
+  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const addLesson = useLessonStore((s) => s.addLesson);
+  const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
+  const [linkSlot, setLinkSlot] = useState<LinkLessonSlot | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date(now));
   const [weekStart, setWeekStart] = useState(() => startOfWeekMon(selectedDate));
-  const [quotesOpen, setQuotesOpen] = useState(false);
   // Yakshanba katakchasi — koʻz tugmasi bilan yashiriladi (pref localStorage'da).
   // TodayRail faqat mount'dan keyin render qilinadi, shuning uchun lazy oʻqish xavfsiz.
   const [showSunday, setShowSunday] = useState(
@@ -102,7 +96,6 @@ export function TodayRail({ now }: { now: Date }) {
   const calendar = useCalendarStore((s) => s.calendar);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const allLessons = useLessonStore((s) => s.lessons);
-  const quotes = useQuotesStore((s) => s.quotes);
   const liveClasses = useLiveClasses();
 
   const todayKey = dateToKey(now);
@@ -219,7 +212,12 @@ export function TodayRail({ now }: { now: Date }) {
     return { count: evs.length, firstMin: Math.min(...evs.map((e) => e.startMin)) };
   }, [now, calendar, versions]);
 
-  const quote = useMemo(() => dailyQuote(quotes, todayKey), [quotes, todayKey]);
+  // ── Yaratish — toʻgʻridan-toʻgʻri dars muharrirga oʻtadi (planner bilan bir xil). ──
+  const createLessonInSlot = (ev: RailEvent) => {
+    const id = addLesson({ classId: ev.classId, unitId: null, title: "", status: "Draft" });
+    addScheduleForClass(id, ev.classId, selectedKey, ev.startMin, ev.endMin);
+    router.push(`/lessons/${id}`);
+  };
 
   return (
     <Card className={panelCardClass}>
@@ -301,6 +299,15 @@ export function TodayRail({ now }: { now: Date }) {
                 lessonFor={lessonFor}
                 controlClassIds={controlClassIds}
                 temporalOf={temporalOf}
+                onCreate={createLessonInSlot}
+                onLink={(ev) =>
+                  setLinkSlot({
+                    dateKey: selectedKey,
+                    classId: ev.classId,
+                    startMin: ev.startMin,
+                    endMin: ev.endMin,
+                  })
+                }
               />
             )}
 
@@ -311,30 +318,9 @@ export function TodayRail({ now }: { now: Date }) {
                     <Check className="size-3.5" strokeWidth={3} />
                   </span>
                   <span className="flex-1 text-sm font-semibold text-foreground">{t("dayDone")}</span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-muted-foreground/70 hover:text-foreground"
-                        onClick={() => setQuotesOpen(true)}
-                      >
-                        <QuoteIcon className="size-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{t("quotesManage")}</TooltipContent>
-                  </Tooltip>
                 </div>
-                {quote && (
-                  <blockquote className="mt-2.5 text-sm italic leading-relaxed text-foreground/80">
-                    «{quote.text}»
-                    {quote.author && (
-                      <footer className="mt-1 text-xs not-italic text-muted-foreground">
-                        — {quote.author}
-                      </footer>
-                    )}
-                  </blockquote>
-                )}
+                {/* Iqtibos ataylab bu yerda emas — u bosh sahifa hero'sida
+                    koʻrsatiladi (bir kunda ikki joyda takrorlanmasligi uchun). */}
                 <p className="mt-2.5 text-xs text-muted-foreground">
                   {tomorrow.count > 0 && tomorrow.firstMin != null
                     ? t("tomorrowInfo", { count: tomorrow.count, time: fmtMin(tomorrow.firstMin) })
@@ -346,7 +332,7 @@ export function TodayRail({ now }: { now: Date }) {
         </div>
       </div>
 
-      <QuotesDialog open={quotesOpen} onOpenChange={setQuotesOpen} />
+      <LinkLessonDialog slot={linkSlot} onOpenChange={(open) => !open && setLinkSlot(null)} />
     </Card>
   );
 }
@@ -372,6 +358,8 @@ function DayGridView({
   lessonFor,
   controlClassIds,
   temporalOf,
+  onCreate,
+  onLink,
 }: {
   events: RailEvent[];
   nowMin: number;
@@ -380,8 +368,12 @@ function DayGridView({
   lessonFor: (ev: RailEvent) => LessonInfo | undefined;
   controlClassIds: Set<string>;
   temporalOf: (ev: RailEvent) => "past" | "current" | "next" | "none";
+  /** Boʻsh slotga mavzu yaratish / mavjudini ulash — planner bilan bir xil. */
+  onCreate: (ev: RailEvent) => void;
+  onLink: (ev: RailEvent) => void;
 }) {
   const t = useTranslations("TodayRail");
+  const tp = useTranslations("PlannerView");
 
   // Toʻliq sutka — kunlik panel (planner) bilan bir xil, scroll orqali koʻriladi.
   const rangeStart = DAY_START_MIN;
@@ -433,6 +425,9 @@ function DayGridView({
         const top = (ev.startMin - rangeStart) * PX_PER_MIN;
         const height = Math.max((ev.endMin - ev.startMin) * PX_PER_MIN, 32);
         const compact = height < 60;
+        // Qisqa darslarda ikki tugma ustma-ust (har biri ~36px + boʻshliq)
+        // sigʻmaydi — shunday holatda faqat ikonka koʻrsatiladi (yonma-yon).
+        const roomy = height >= 120;
         return (
           <EventCard
             key={ev.id}
@@ -479,9 +474,77 @@ function DayGridView({
               </div>
             )}
             {!compact && !hasLesson && (
-              <p style={tints.textOnTint} className="mt-0.5 truncate text-xs font-medium leading-snug">
-                {t("noPlan")}
-              </p>
+              /* Tinch holatda "Reja yoʻq" yorligʻi; kartaga hover qilinganda
+                 (group/ev — EventCard'ning oʻzida) planner'dagi bilan bir xil
+                 ikki tez-amal tugmasi (Yaratish / Ulash) ustidan chiqadi. */
+              <div className={cn("relative mt-0.5", roomy ? "min-h-[78px]" : "min-h-[22px]")}>
+                <p
+                  style={tints.textOnTint}
+                  className="absolute inset-0 truncate text-xs font-medium leading-snug opacity-100 transition-opacity duration-fast group-hover/ev:opacity-0"
+                >
+                  {t("noPlan")}
+                </p>
+                <div
+                  className={cn(
+                    "absolute inset-0 flex gap-1.5 opacity-0 transition-opacity duration-fast",
+                    roomy ? "flex-col" : "justify-center",
+                    "pointer-events-none group-hover/ev:pointer-events-auto group-hover/ev:opacity-100",
+                    "focus-within:pointer-events-auto focus-within:opacity-100",
+                    "[@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100"
+                  )}
+                >
+                  {roomy ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onCreate(ev)}
+                        className="flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-foreground/6 px-3 text-sm font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
+                      >
+                        <Plus className="size-4 shrink-0" strokeWidth={2.5} />
+                        <span className="truncate">{tp("create")}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onLink(ev)}
+                        className="flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-foreground/6 px-3 text-sm font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
+                      >
+                        <LinkIcon className="size-4 shrink-0" />
+                        <span className="truncate">{tp("link")}</span>
+                      </button>
+                    </>
+                  ) : (
+                    /* Tor karta — faqat ikonka, tooltip orqali izohlangan. */
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label={tp("create")}
+                            onClick={() => onCreate(ev)}
+                            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm bg-foreground/6 text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
+                          >
+                            <Plus className="size-3.5" strokeWidth={2.5} />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>{tp("create")}</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label={tp("link")}
+                            onClick={() => onLink(ev)}
+                            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm bg-foreground/6 text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
+                          >
+                            <LinkIcon className="size-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>{tp("link")}</TooltipContent>
+                      </Tooltip>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
           </EventCard>
         );
@@ -522,84 +585,5 @@ function EventActions({ classId, solidBg }: { classId: string; solidBg?: boolean
         <TooltipContent>{t("gradesAction")}</TooltipContent>
       </Tooltip>
     </div>
-  );
-}
-
-/* ─────────────── Iqtiboslar boshqaruv dialogi ─────────────── */
-
-function QuotesDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
-  const t = useTranslations("TodayRail");
-  const quotes = useQuotesStore((s) => s.quotes);
-  const addQuote = useQuotesStore((s) => s.addQuote);
-  const removeQuote = useQuotesStore((s) => s.removeQuote);
-  const [text, setText] = useState("");
-  const [author, setAuthor] = useState("");
-
-  const submit = () => {
-    if (!text.trim()) return;
-    addQuote(text, author);
-    setText("");
-    setAuthor("");
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("quotesTitle")}</DialogTitle>
-          <DialogDescription>{t("quotesDescription")}</DialogDescription>
-        </DialogHeader>
-        <div className="flex max-h-56 flex-col gap-1 overflow-y-auto scrollbar-thin pr-1">
-          {quotes.length === 0 && (
-            <p className="py-4 text-center text-sm text-muted-foreground">{t("quotesEmpty")}</p>
-          )}
-          {quotes.map((q) => (
-            <div
-              key={q.id}
-              className="group flex items-start gap-2 rounded-lg px-2.5 py-2 transition-colors hover:bg-muted/60"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="text-sm leading-snug text-foreground">{q.text}</p>
-                {q.author && <p className="mt-0.5 text-xs text-muted-foreground">— {q.author}</p>}
-              </div>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t("quotesDelete")}
-                className="shrink-0 text-muted-foreground/50 opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
-                onClick={() => removeQuote(q.id)}
-              >
-                <Trash2 className="size-3.5" />
-              </Button>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-col gap-2 border-t border-border pt-3">
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={t("quotesAddPlaceholder")}
-            className="min-h-16 resize-none text-sm"
-          />
-          <div className="flex items-center gap-2">
-            <Input
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder={t("quotesAuthorPlaceholder")}
-              className="h-9 flex-1 text-sm"
-            />
-            <Button size="sm" onClick={submit} disabled={!text.trim()}>
-              {t("quotesAdd")}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }

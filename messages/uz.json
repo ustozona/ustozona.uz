@@ -1976,6 +1976,18 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "today-rail-create-link": {
+        "title": "Bugungi darslar — rejasiz slotga yaratish/ulash",
+        "body": "Kartaga hover qilganda \"Reja yoʻq\" yozuvi oʻrniga ikkita tez amal chiqadi: yangi mavzu yaratish yoki mavjud mavzuni shu darsga ulash — rejalashtiruvchidagi bilan bir xil."
+      },
+      "next-lessons-status-icons": {
+        "title": "Kelgusi darslar — holat belgilari",
+        "body": "Har bir dars qatoridagi holat belgisi endi nuqta oʻrniga tushunarli ikonka bilan koʻrsatiladi (bajarildi, rejalashtirilgan, rejasiz, qoralama)."
+      },
+      "home-hero-quotes": {
+        "title": "Bosh sahifa — kunlik iqtibos",
+        "body": "Boshqa sahifaga oʻtib qaytganingizda salom oʻrniga tasodifiy iqtibos koʻrinadi. Roʻyxat kengaytirildi; oʻzingiznikini qoʻshsangiz matnni qalin, kursiv, tagi chizilgan yoki rangli qilib belgilash mumkin."
+      },
       "planner-class-holiday-filters": {
         "title": "Rejalashtiruvchi — sinf va bayram filtri qoʻshildi",
         "body": "Endi kalendarda faqat kerakli sinflarni koʻrsatish (qidiruv bilan tanlash) va bloklangan kunlar/bayramlar roʻyxatini bir joyda koʻrish mumkin."
@@ -2308,6 +2320,7 @@
     "unknownClass": "Nomaʼlum sinf",
     "untitledTopic": "(nomsiz mavzu)",
     "tomorrow": "Ertaga",
+    "durationSuffix": "{count} daq.",
     "emptyTitle": "Kelgusi darslar yoʻq",
     "emptyDescription": "Hali reja tuzilmagan — dars jadvalini tekshiring."
   },
@@ -2348,16 +2361,8 @@
     "dayDone": "Bugungi darslar yakunlandi",
     "tomorrowInfo": "Ertaga: {count} ta dars, {time}dan boshlanadi",
     "tomorrowFree": "Ertaga dars yoʻq — bemalol dam oling!",
-    "quotesManage": "Iqtiboslarni boshqarish",
     "showSunday": "Yakshanbani koʻrsatish",
     "hideSunday": "Yakshanbani yashirish",
-    "quotesTitle": "Iqtiboslar",
-    "quotesDescription": "Kun yakunida koʻrsatiladigan iqtiboslar roʻyxatini oʻzingiz boshqarasiz.",
-    "quotesEmpty": "Roʻyxat boʻsh — birinchi iqtibosni qoʻshing.",
-    "quotesDelete": "Oʻchirish",
-    "quotesAddPlaceholder": "Yangi iqtibos matni…",
-    "quotesAuthorPlaceholder": "Muallif (ixtiyoriy)",
-    "quotesAdd": "Qoʻshish",
     "attendanceAction": "Davomat",
     "gradesAction": "Jurnal"
   },
@@ -3547,5 +3552,19 @@
     "shortBreakLabel": "Qisqa tanaffus (daqiqa)",
     "longBreakLabel": "Uzun tanaffus (daqiqa)",
     "longBreakEveryLabel": "Nechta pomodorodan keyin uzun tanaffus"
+  },
+  "Quotes": {
+    "manage": "Iqtiboslarni boshqarish",
+    "title": "Iqtiboslar",
+    "description": "Bosh sahifadagi iqtiboslar roʻyxati.",
+    "empty": "Roʻyxat boʻsh — birinchi iqtibosni qoʻshing.",
+    "delete": "Oʻchirish",
+    "addPlaceholder": "Yangi iqtibos matni…",
+    "authorPlaceholder": "Muallif (ixtiyoriy)",
+    "add": "Qoʻshish",
+    "bold": "Qalin",
+    "italic": "Kursiv",
+    "underline": "Tagi chizilgan",
+    "highlight": "Rangli belgilash"
   }
 }

@@ -1976,6 +1976,18 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "today-rail-create-link": {
+        "title": "Today's lessons — create/link for unplanned slots",
+        "body": "Hovering over a card now shows two quick actions instead of \"No plan\": create a new topic or link an existing one to this lesson — same as in the planner."
+      },
+      "next-lessons-status-icons": {
+        "title": "Upcoming lessons — status icons",
+        "body": "Each lesson row's status badge now shows a clear icon instead of a dot (completed, scheduled, unplanned, draft)."
+      },
+      "home-hero-quotes": {
+        "title": "Home — quote of the day",
+        "body": "When you come back from another page, a random quote appears instead of the greeting. The list was expanded; when you add your own you can make the text bold, italic, underlined or highlighted."
+      },
       "planner-class-holiday-filters": {
         "title": "Planner — class and holiday filters added",
         "body": "You can now show only the classes you need (searchable picker) and see all blocked days and holidays in one place."
@@ -2488,16 +2500,8 @@
     "dayDone": "Today's lessons are done",
     "tomorrowInfo": "Tomorrow: {count} lessons, starting at {time}",
     "tomorrowFree": "No lessons tomorrow — enjoy the rest!",
-    "quotesManage": "Manage quotes",
     "showSunday": "Show Sunday",
     "hideSunday": "Hide Sunday",
-    "quotesTitle": "Quotes",
-    "quotesDescription": "Curate the quotes shown at the end of the day.",
-    "quotesEmpty": "The list is empty — add your first quote.",
-    "quotesDelete": "Delete",
-    "quotesAddPlaceholder": "New quote text…",
-    "quotesAuthorPlaceholder": "Author (optional)",
-    "quotesAdd": "Add",
     "attendanceAction": "Attendance",
     "gradesAction": "Gradebook"
   },
@@ -2539,6 +2543,7 @@
     "unknownClass": "Unknown class",
     "untitledTopic": "(untitled topic)",
     "tomorrow": "Tomorrow",
+    "durationSuffix": "{count} min",
     "emptyTitle": "No upcoming lessons",
     "emptyDescription": "Nothing planned yet — check the timetable."
   },
@@ -3710,5 +3715,19 @@
     "shortBreakLabel": "Short break (minutes)",
     "longBreakLabel": "Long break (minutes)",
     "longBreakEveryLabel": "Long break after how many pomodoros"
+  },
+  "Quotes": {
+    "manage": "Manage quotes",
+    "title": "Quotes",
+    "description": "Quotes shown on the home page.",
+    "empty": "The list is empty — add your first quote.",
+    "delete": "Delete",
+    "addPlaceholder": "New quote text…",
+    "authorPlaceholder": "Author (optional)",
+    "add": "Add",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "highlight": "Highlight"
   }
 }

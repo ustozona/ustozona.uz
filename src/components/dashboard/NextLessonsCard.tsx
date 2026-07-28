@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, FileText, CircleCheck, CalendarCheck, CalendarX, PencilLine } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -18,8 +19,8 @@ import {
 import { useLessonStore } from "@/store/useLessonStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { lessonSessions } from "@/lib/lessons-data";
+import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
+import { lessonSessions, type Lesson } from "@/lib/lessons-data";
 import { dateToKey, addDaysKey } from "@/lib/date-keys";
 import { MONTHS_UZ } from "@/lib/localization";
 import { fmtMin } from "@/lib/timetable";
@@ -31,7 +32,23 @@ import { cn } from "@/lib/utils";
    qoʻllab-quvvatlanadi), sanaga koʻra tartiblangan, birinchi bir nechtasi.
    ════════════════════════════════════════════════════════════════════ */
 
-const LIMIT = 8;
+const LIMIT = 40;
+
+/** Status badge ranglari — Vazifalar sahifasidagi bilan bir xil semantik tokenlar. */
+const STATUS_STYLES: Record<Lesson["status"], string> = {
+  Completed: "bg-success/10 text-success",
+  Scheduled: "bg-info/10 text-info",
+  Unscheduled: "bg-warning/10 text-warning",
+  Draft: "bg-muted text-muted-foreground",
+};
+
+/** Status belgisi — nuqta oʻrniga holatga mos ikonka. */
+const STATUS_ICONS: Record<Lesson["status"], typeof CircleCheck> = {
+  Completed: CircleCheck,
+  Scheduled: CalendarCheck,
+  Unscheduled: CalendarX,
+  Draft: PencilLine,
+};
 
 type Row = {
   key: string;
@@ -39,19 +56,36 @@ type Row = {
   title: string;
   className: string;
   classHex: string;
+  gradientTile: CSSProperties;
   date: string;
   startMin: number;
+  endMin: number;
+  status: Lesson["status"];
 };
+
 
 export function NextLessonsCard({ now }: { now: Date }) {
   const t = useTranslations("NextLessonsCard");
+  const tLessons = useTranslations("LessonsPage");
+  const STATUS_LABELS: Record<Lesson["status"], string> = {
+    Completed: tLessons("statusCompleted"),
+    Scheduled: tLessons("statusScheduled"),
+    Unscheduled: tLessons("statusUnscheduled"),
+    Draft: tLessons("statusDraft"),
+  };
   const todayKey = dateToKey(now);
   const tomorrowKey = addDaysKey(todayKey, 1);
 
   const allLessons = useLessonStore((s) => s.lessons);
   const liveClasses = useLiveClasses();
   const classMeta = useMemo(
-    () => new Map(liveClasses.map((c) => [c.id, { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] }])),
+    () =>
+      new Map(
+        liveClasses.map((c) => [
+          c.id,
+          { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)], tints: classTints(classColor(c)) },
+        ])
+      ),
     [liveClasses]
   );
 
@@ -67,8 +101,11 @@ export function NextLessonsCard({ now }: { now: Date }) {
           title: l.title,
           className: meta?.name ?? t("unknownClass"),
           classHex: meta?.hex ?? "#94a3b8",
+          gradientTile: meta?.tints.gradientTile ?? { backgroundColor: "#94a3b8" },
           date: s.date,
           startMin: s.startMin,
+          endMin: s.endMin,
+          status: l.status,
         });
       }
     }
@@ -81,6 +118,16 @@ export function NextLessonsCard({ now }: { now: Date }) {
     const [, m, d] = dateKey.split("-").map(Number);
     return `${d}-${MONTHS_UZ[m - 1].toLowerCase()}`;
   };
+
+  const groups = useMemo(() => {
+    const out: { date: string; rows: Row[] }[] = [];
+    for (const r of rows) {
+      const last = out[out.length - 1];
+      if (last && last.date === r.date) last.rows.push(r);
+      else out.push({ date: r.date, rows: [r] });
+    }
+    return out;
+  }, [rows]);
 
   return (
     <Card className={panelCardClass}>
@@ -109,28 +156,56 @@ export function NextLessonsCard({ now }: { now: Date }) {
               </Empty>
             </div>
           ) : (
-            <div className="flex flex-col divide-y divide-border/60 px-5 py-1">
-              {rows.map((r) => (
-                <Link
-                  key={r.key}
-                  href={`/lessons/${r.lessonId}`}
-                  className="group flex items-center gap-2.5 py-2.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground transition-colors duration-fast group-hover:text-primary">
-                      {r.title || t("untitledTopic")}
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <ClassSwatch hex={r.classHex} className="size-2" />
-                      {r.className}
-                      <span className="size-0.5 rounded-full bg-muted-foreground/60" />
-                      {fmtMin(r.startMin)}
-                    </p>
+            <div className="flex flex-col gap-4 px-4 pt-3 pb-4">
+              {groups.map((g) => (
+                <div key={g.date}>
+                  <div className="mb-1.5 flex items-center gap-2 px-1">
+                    <span className="text-xs font-semibold text-muted-foreground">{whenLabel(g.date)}</span>
+                    <span className="text-xs tabular-nums text-muted-foreground/60">{g.rows.length}</span>
                   </div>
-                  <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
-                    {whenLabel(r.date)}
-                  </span>
-                </Link>
+                  <div className="flex flex-col gap-2">
+                    {g.rows.map((r) => {
+                      const StatusIcon = STATUS_ICONS[r.status];
+                      return (
+                      <Link
+                        key={r.key}
+                        href={`/lessons/${r.lessonId}`}
+                        className="list-card group flex items-center gap-3 p-4"
+                        style={{ ["--card-accent" as string]: r.classHex }}
+                      >
+                        <div style={r.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
+                          <FileText className="size-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="truncate text-sm font-semibold text-foreground leading-tight transition-colors duration-fast group-hover:text-primary">
+                            {r.title || t("untitledTopic")}
+                          </h4>
+                          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-foreground">
+                              <ClassSwatch hex={r.classHex} className="size-2.5" />
+                              {r.className}
+                            </span>
+                            <span className="size-0.5 shrink-0 rounded-full bg-muted-foreground/60" />
+                            <span className="shrink-0 tabular-nums">
+                              {fmtMin(r.startMin)} — {fmtMin(r.endMin)} ({t("durationSuffix", { count: r.endMin - r.startMin })})
+                            </span>
+                          </p>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className={cn(
+                            "shrink-0 gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border-transparent",
+                            STATUS_STYLES[r.status]
+                          )}
+                        >
+                          <StatusIcon className="size-3" />
+                          {STATUS_LABELS[r.status]}
+                        </Badge>
+                      </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               ))}
             </div>
           )}

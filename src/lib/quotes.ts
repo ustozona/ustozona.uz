@@ -1,28 +1,28 @@
 /* ════════════════════════════════════════════════════════════════════
-   IQTIBOSLAR — "kun yopildi" kartasi uchun kuratsiya qilingan seed.
+   IQTIBOSLAR — bosh sahifa hero'si uchun kuratsiya qilingan seed.
 
    Foydalanuvchi useQuotesStore orqali oʻzinikini qoʻshadi/oʻchiradi;
-   bu roʻyxat faqat boshlangʻich toʻplam. Koʻrsatish — kunlik-random:
-   sana-hash bilan tanlov (kun ichida barqaror, har kuni yangi).
+   bu roʻyxat faqat boshlangʻich toʻplam.
+
+   Koʻrsatish — MOUNT-random: seed hero mount'ida bir marta olinadi,
+   shuning uchun boshqa sahifaga oʻtib qaytganda (yoki sahifa qayta
+   yuklanganda) yangi iqtibos chiqadi, render davomida esa barqaror.
    ════════════════════════════════════════════════════════════════════ */
 
 export type Quote = {
   id: string;
+  /** Formatsiz matn — a11y, qidiruv va `html` boʻlmaganda render manbai. */
   text: string;
+  /**
+   * Foydalanuvchi formatlagan variant (bold/italic/underline/highlight).
+   * Faqat qoʻlda qoʻshilgan iqtiboslarda boʻladi; seed'da yoʻq.
+   * Render'dan OLDIN sanitizeQuoteHtml() bilan tozalanadi.
+   */
+  html?: string;
   author?: string;
 };
 
 export const QUOTES_SEED: Quote[] = [
-  {
-    id: "seed-navoiy",
-    text: "Bilmaganni soʻrab oʻrgangan — olim, orlanib soʻramagan — oʻziga zolim.",
-    author: "Alisher Navoiy",
-  },
-  {
-    id: "seed-maqol-daryo",
-    text: "Oz-oz oʻrganib dono boʻlur, qatra-qatra yigʻilib daryo boʻlur.",
-    author: "Xalq maqoli",
-  },
   {
     id: "seed-mandela",
     text: "Taʼlim — dunyoni oʻzgartirish uchun qoʻllash mumkin boʻlgan eng kuchli qurol.",
@@ -63,12 +63,104 @@ export const QUOTES_SEED: Quote[] = [
     text: "Bilganingni bilsang va bilmaganingni tan olsang — bu chinakam bilimdir.",
     author: "Konfutsiy",
   },
+
+  // ── Stiven Kovi, „Muvaffaqiyatli insonlarning 7 koʻnikmasi“ ──
+  {
+    id: "seed-kovi-muvaffaqiyat",
+    text: "Muvaffaqiyatni oʻzingiz bilan olib yurmasangiz, boshqalar bilan hech qachon muvaffaqiyatga erisha olmaysiz.",
+    author: "Stiven Kovi",
+  },
+  {
+    id: "seed-kovi-tartibsizlik",
+    text: "Oʻqituvchi sifatida shunday xulosaga keldim: yaxshi darslarning aksariyati tartibsizlik chegarasida turadi.",
+    author: "Stiven Kovi",
+  },
+
+  // ── Jeyms Klir, „Atom odatlar“ ──
+  {
+    id: "seed-klir-tizim",
+    text: "Siz maqsadlaringiz darajasigacha koʻtarilmaysiz, balki tizimingiz darajasiga tushasiz.",
+    author: "Jeyms Klir",
+  },
+  {
+    id: "seed-klir-nimauchun",
+    text: "„Nima uchun?“ savoliga javobimiz boʻlsa, „qanday qilib?“ degan istalgan muammoni hal qila olamiz.",
+    author: "Jeyms Klir",
+  },
+
+  // ── Hadis / salaf soʻzlari ──
+  {
+    id: "seed-ibn-abbos",
+    text: "Insonlarga yaxshilikni oʻrgatuvchi muallim haqqiga barcha narsalar, hatto dengizdagi baliqlar ham istigʻfor aytadi.",
+    author: "Abdulloh ibn Abbos",
+  },
+
+  // ── Wikiquote „Teachers“ toʻplamidan tarjimalar ──
+  {
+    id: "seed-dana",
+    text: "Oʻrgatishga jurʼat etgan odam oʻrganishni hech qachon toʻxtatmasligi kerak.",
+    author: "Jon Kotton Dana",
+  },
+  {
+    id: "seed-konroy",
+    text: "Yomon oʻqituvchilar menga tegmaydi; buyuklari esa hech qachon meni tark etmaydi.",
+    author: "Pat Konroy",
+  },
+  {
+    id: "seed-trenfor",
+    text: "Eng yaxshi oʻqituvchilar qayerga qarashni koʻrsatadi, lekin nimani koʻrishni aytmaydi.",
+    author: "Aleksandra Trenfor",
+  },
+  {
+    id: "seed-sallivan",
+    text: "Oʻrgatish — qalbga tegib, uni harakatga undashdir.",
+    author: "Luis Sallivan",
+  },
+  {
+    id: "seed-nill",
+    text: "Yaxshi oʻqituvchi tortib olmaydi — beradi; bergani esa mehrdir.",
+    author: "Aleksandr Nill",
+  },
+  {
+    id: "seed-fraud",
+    text: "Xatolarning oʻzi koʻpincha eng yaxshi oʻqituvchidir.",
+    author: "Jeyms Entoni Fraud",
+  },
+  {
+    id: "seed-opi",
+    text: "Oʻqituvchilik menga bergan eng katta narsa — u meni yaxshi tinglovchi boʻlishga oʻrgatdi.",
+    author: "Ketrin Opi",
+  },
+  {
+    id: "seed-erazm",
+    text: "Muallim boʻlish — podshoh boʻlishdan keyingi oʻrinda turadi.",
+    author: "Rotterdamlik Erazm",
+  },
+  {
+    id: "seed-frans",
+    text: "Oʻqitish sanʼati — butunlay yosh ongdagi tabiiy qiziquvchanlikni uygʻotish sanʼatidir.",
+    author: "Anatol Frans",
+  },
+  {
+    id: "seed-diesterweg",
+    text: "Yomon oʻqituvchi haqiqatni oʻrgatadi, yaxshi oʻqituvchi esa haqiqatni topishni oʻrgatadi.",
+    author: "Adolf Disterveg",
+  },
 ];
 
-/** Kunlik iqtibos — sana-hash bilan deterministik tanlov (boʻsh roʻyxatda null). */
-export function dailyQuote(quotes: readonly Quote[], dateKey: string): Quote | null {
+/** Yangi seed — hero mount'ida bir marta olinadi. */
+export function newQuoteSeed(): number {
+  return Math.floor(Math.random() * 0x7fffffff);
+}
+
+/**
+ * Seed boʻyicha iqtibos tanlash (boʻsh roʻyxatda null).
+ *
+ * Modul qoldigʻi ishlatilgani uchun roʻyxat uzunligi oʻzgarsa ham (foydalanuvchi
+ * iqtibos qoʻshdi/oʻchirdi) tanlov haqiqiy indeksda qoladi — seed'ni yangilash
+ * shart emas, demak dialog yopilganda karta sakramaydi.
+ */
+export function pickQuote(quotes: readonly Quote[], seed: number): Quote | null {
   if (quotes.length === 0) return null;
-  let h = 0;
-  for (let i = 0; i < dateKey.length; i++) h = (h * 31 + dateKey.charCodeAt(i)) >>> 0;
-  return quotes[h % quotes.length];
+  return quotes[seed % quotes.length];
 }

@@ -20,7 +20,11 @@ function uid(): string {
 
 interface QuotesState {
   quotes: Quote[];
-  addQuote: (text: string, author?: string) => void;
+  /**
+   * `text` — formatsiz matn (majburiy, a11y/fallback uchun).
+   * `html` — formatlangan variant; faqat formatlash mavjud boʻlsa beriladi.
+   */
+  addQuote: (text: string, author?: string, html?: string) => void;
   removeQuote: (id: string) => void;
 }
 
@@ -28,11 +32,14 @@ export const useQuotesStore = create<QuotesState>()(
   persist(
     (set) => ({
       quotes: QUOTES_SEED,
-      addQuote: (text, author) => {
+      addQuote: (text, author, html) => {
         const trimmed = text.trim();
         if (!trimmed) return;
         set((s) => ({
-          quotes: [...s.quotes, { id: uid(), text: trimmed, author: author?.trim() || undefined }],
+          quotes: [
+            ...s.quotes,
+            { id: uid(), text: trimmed, html: html || undefined, author: author?.trim() || undefined },
+          ],
         }));
       },
       removeQuote: (id) => set((s) => ({ quotes: s.quotes.filter((q) => q.id !== id) })),

@@ -32,6 +32,30 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "today-rail-create-link",
+    date: "2026-07-28",
+    type: "yangi",
+    title: "Bugungi darslar — rejasiz slotga yaratish/ulash",
+    body: "Kartaga hover qilganda \"Reja yoʻq\" yozuvi oʻrniga ikkita tez amal chiqadi: yangi mavzu yaratish yoki mavjud mavzuni shu darsga ulash — rejalashtiruvchidagi bilan bir xil.",
+    href: "/dashboard",
+  },
+  {
+    id: "next-lessons-status-icons",
+    date: "2026-07-28",
+    type: "yaxshilandi",
+    title: "Kelgusi darslar — holat belgilari",
+    body: "Har bir dars qatoridagi holat belgisi endi nuqta oʻrniga tushunarli ikonka bilan koʻrsatiladi (bajarildi, rejalashtirilgan, rejasiz, qoralama).",
+    href: "/dashboard",
+  },
+  {
+    id: "home-hero-quotes",
+    date: "2026-07-28",
+    type: "yangi",
+    title: "Bosh sahifa — kunlik iqtibos",
+    body: "Boshqa sahifaga oʻtib qaytganingizda salom oʻrniga tasodifiy iqtibos koʻrinadi. Roʻyxat kengaytirildi; oʻzingiznikini qoʻshsangiz matnni qalin, kursiv, tagi chizilgan yoki rangli qilib belgilash mumkin.",
+    href: "/dashboard",
+  },
+  {
     id: "planner-class-holiday-filters",
     date: "2026-07-28",
     type: "yangi",
