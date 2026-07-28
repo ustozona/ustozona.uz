@@ -16,7 +16,6 @@ const SECTIONS: NavItem[] = [
   { title: "Asosiy", href: "#top" },
   { title: "Imkoniyatlar", href: "#features" },
   { title: "Narxlar", href: "#pricing" },
-  { title: "Blog", href: "/blog" },
   { title: "FAQ", href: "#faq" },
 ];
 

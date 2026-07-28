@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Target, Plus, Search, ChevronRight, CheckCircle2, Circle, FileText, Trash2, BookOpen, Star, Scale, History, AlertTriangle } from "lucide-react";
+import { Target, Plus, Search, ChevronRight, CheckCircle2, Circle, Trash2, BookOpen, Star } from "lucide-react";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TypographyMuted } from "@/components/ui/typography";
 import AddStandardModal from "./AddStandardModal";
-import CJModal from "./CJModal";
 import AddStandardsModal from "./AddStandardsModal";
 import { useStandardsStore, type StandardSet } from "@/store/useStandardsStore";
 import { useLessonStore } from "@/store/useLessonStore";
@@ -33,7 +32,6 @@ import { lessonCoverage } from "@/lib/standards-coverage";
 import { panelHeaderClass } from "@/components/DashboardPage";
 import { cn } from "@/lib/utils";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
-import { classStandardMastery, classStandardMisconceptions, setMasterySummary, type ClassStandardMastery } from "@/lib/standards-mastery";
 import type { StandardItem } from "@/lib/standards-data";
 
 /** Jonli sinf nomi xaritasi (id → nom). */
@@ -234,12 +232,6 @@ function SetCard({
   const weightCovered = set.standards.reduce((a, s) => a + (isCovered(s) ? weight(s) : 0), 0);
   const coveragePct = weightSum ? Math.round((weightCovered / weightSum) * 100) : 0;
 
-  // Toʻplam darajasidagi oʻzlashtirish xulosasi (dalildan).
-  const summary = useMemo(
-    () => setMasterySummary(classId, set.standards.map((s) => s.id)),
-    [classId, set.standards],
-  );
-
   return (
     <Collapsible defaultOpen className="rounded-xl border border-border overflow-hidden">
       <div className="flex items-center gap-2 p-4 hover:bg-muted/50 transition-colors">
@@ -283,19 +275,6 @@ function SetCard({
             {t("coverageTooltip", { covered, total })}
           </TooltipContent>
         </Tooltip>
-        {summary.tested && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="outline" className={cn("shadow-none shrink-0 tabular-nums gap-1", masteryChipClass(summary.avgSecurePct))}>
-                <Target className="size-3" aria-hidden />
-                {summary.avgSecurePct}%
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              {t("masteryTooltip", { tested: summary.testedStandards })}
-            </TooltipContent>
-          </Tooltip>
-        )}
         <Button
           variant="outline"
           size="sm"
@@ -370,17 +349,11 @@ function StandardRow({
   onRemove: (code: string) => void;
 }) {
   const t = useTranslations("StandardsView");
-  const subjective = std.assessType === "subjective";
-  // Oʻzlashtirish (Mastery) — dalil-engine'dan, sinf darajasida (v3 §9 Q3).
-  const m = useMemo(() => classStandardMastery(classId, std.id), [classId, std.id]);
-  // Keng tarqalgan tushunmovchiliklar (misconception diagnostikasi).
-  const misconceptions = useMemo(() => classStandardMisconceptions(classId, std.id), [classId, std.id]);
-  // Qamrov FAQAT darsdan (v3 §9 Q4): tugallangan dars standartni bogʻlasa → oʻqitildi.
-  // Qoʻlda belgilash yoʻq — yagona manba dars-standart bogʻlanishi.
+  // Standart darsga FAQAT dars muharririda biriktiriladi (`lesson.standards`).
+  // Bu yerda qoʻlda belgilash yoʻq — biriktirilgan mavzu koʻrsatiladi, xolos.
   const lessons = useLessonStore((s) => s.lessons);
   const lessonCov = useMemo(() => lessonCoverage(lessons, classId, std.id), [lessons, classId, std.id]);
   const covered = lessonCov.taught;
-  const [cjOpen, setCjOpen] = useState(false);
 
   return (
     <li className="group/row flex items-start gap-3 p-4">
@@ -393,7 +366,9 @@ function StandardRow({
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            {t("autoTaughtTooltip", { lessons: lessonCov.lessons.map((l) => l.title).join(", ") })}
+            {t("autoTaughtTooltip", {
+              lessons: lessonCov.lessons.filter((l) => l.completed).map((l) => l.title).join(", "),
+            })}
           </TooltipContent>
         </Tooltip>
       ) : (
@@ -424,112 +399,29 @@ function StandardRow({
         </div>
         <p className="text-body text-foreground/90 leading-relaxed">{std.desc}</p>
 
-        {/* Coverage ⇄ Mastery yonma-yon (v3 §9 Q3). */}
+        {/* Biriktirilgan mavzu — yagona manba: dars muharriri. */}
         <div className="flex items-center gap-2 flex-wrap pt-0.5">
-          {covered ? (
-            <Badge variant="outline" className="shadow-none border-success/30 text-success gap-1">
-              <BookOpen className="size-3" aria-hidden />
-              {t("taughtFromLesson")}
+          {lessonCov.lessons.length > 0 ? (
+            lessonCov.lessons.map((l) => (
+              <Badge
+                key={l.id}
+                variant="outline"
+                className={cn(
+                  "shadow-none gap-1",
+                  l.completed ? "border-success/30 text-success" : "text-muted-foreground",
+                )}
+              >
+                <BookOpen className="size-3" aria-hidden />
+                {l.title}
+              </Badge>
+            ))
+          ) : (
+            <Badge variant="outline" className="shadow-none text-muted-foreground">
+              {t("notLinked")}
             </Badge>
-          ) : (
-            <Badge variant="outline" className="shadow-none text-muted-foreground">{t("notCovered")}</Badge>
-          )}
-
-          {subjective ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => setCjOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-0.5 text-caption font-medium text-muted-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer"
-                >
-                  <Scale className="size-3" aria-hidden />
-                  {t("subjectiveCJ")}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{t("subjectiveTooltip")}</TooltipContent>
-            </Tooltip>
-          ) : m.tested ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-1.5">
-                  <Badge variant="outline" className={cn("shadow-none tabular-nums gap-1", masteryChipClass(m.masteredPct))}>
-                    <Target className="size-3" aria-hidden />
-                    {t("masteryPct", { pct: m.masteredPct })}
-                  </Badge>
-                  <MasteryBar m={m} />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent className="space-y-1">
-                <p className="font-medium">{t("masteryTooltipStudents", { total: m.total })}</p>
-                <p><span className="text-success">●</span> {t("secureLabel", { count: m.secure })}</p>
-                <p><span className="text-warning-foreground">●</span> {t("developingLabel", { count: m.developing })}</p>
-                <p><span className="text-destructive">●</span> {t("beginningLabel", { count: m.beginning })}</p>
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="shadow-none text-muted-foreground gap-1">
-                  <Target className="size-3" aria-hidden />
-                  {t("notAssessed")}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>{t("notAssessedTooltip")}</TooltipContent>
-            </Tooltip>
-          )}
-
-          {/* Retrieval/decay signali (v3 §9 Q5) — faqat dalil bor standartlarda. */}
-          {!subjective && m.tested && m.retrievalDue && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="shadow-none gap-1 border-warning/30 text-warning-foreground">
-                  <History className="size-3" aria-hidden />
-                  {t("retrievalNeeded")}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                {t("retrievalTooltip", { days: m.daysSinceAssessed ?? 0 })}
-              </TooltipContent>
-            </Tooltip>
           )}
         </div>
-
-        {/* Misconception diagnostikasi — keng tarqalgan tushunmovchiliklar (dalildan). */}
-        {!subjective && misconceptions.length > 0 && (
-          <div className="mt-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 space-y-1.5">
-            <div className="flex items-center gap-1.5">
-              <AlertTriangle className="size-3.5 text-warning-foreground shrink-0" aria-hidden />
-              <span className="text-caption font-medium text-warning-foreground">{t("misconceptionsTitle")}</span>
-            </div>
-            <ul className="space-y-1">
-              {misconceptions.map((mc) => (
-                <li key={mc.misconception.id} className="flex items-start gap-2 text-caption text-foreground/80">
-                  <Badge variant="outline" className="shadow-none shrink-0 tabular-nums border-warning/30 text-warning-foreground">
-                    {t("studentsCount", { count: mc.count })}
-                  </Badge>
-                  <span className="leading-relaxed">
-                    {mc.misconception.label}
-                    {mc.misconception.remediationRef && (
-                      <span className="text-muted-foreground"> · {mc.misconception.remediationRef}</span>
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
-
-      {std.file && (
-        <div
-          className="shrink-0 self-center hidden sm:flex items-center gap-1.5 max-w-[180px] rounded-md border border-border bg-card px-2.5 py-1.5"
-          title={std.file}
-        >
-          <FileText className="size-3.5 text-muted-foreground shrink-0" aria-hidden />
-          <span className="text-caption text-muted-foreground truncate">{std.file}</span>
-        </div>
-      )}
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
@@ -558,35 +450,11 @@ function StandardRow({
         </AlertDialogContent>
       </AlertDialog>
 
-      {subjective && (
-        <CJModal open={cjOpen} onOpenChange={setCjOpen} standardId={std.id} standardDesc={std.desc} />
-      )}
     </li>
-  );
-}
-
-/** Oʻzlashtirish taqsimoti — 3 segmentli mini-bar (mustahkam/shakllanmoqda/boshlangʻich). */
-function MasteryBar({ m }: { m: ClassStandardMastery }) {
-  if (m.total === 0) return null;
-  const seg = (n: number, cls: string) =>
-    n > 0 ? <span className={cls} style={{ flexGrow: n }} aria-hidden /> : null;
-  return (
-    <span className="hidden sm:flex h-1.5 w-16 overflow-hidden rounded-full bg-muted">
-      {seg(m.secure, "bg-success")}
-      {seg(m.developing, "bg-warning")}
-      {seg(m.beginning, "bg-destructive")}
-    </span>
   );
 }
 
 /** Qamrov foiziga qarab pill rangi (reference: amber; toʻliq → success). */
 function coveragePillClass(pct: number): string {
   return pct >= 100 ? "border-success/30 text-success" : "border-warning/30 text-warning-foreground";
-}
-
-/** Oʻzlashtirish % chip rangi. */
-function masteryChipClass(pct: number): string {
-  if (pct >= 80) return "border-success/30 text-success";
-  if (pct >= 50) return "border-warning/30 text-warning-foreground";
-  return "border-destructive/30 text-destructive";
 }

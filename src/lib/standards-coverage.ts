@@ -1,26 +1,36 @@
-// Qamrov (Coverage = oʻqitildi) ⇄ Lessons koʻprigi (v3 §9 Q4).
-// Dars "Completed" boʻlsa va u standartni bogʻlagan boʻlsa → standart avtomatik "oʻqitildi".
-// Bu INPUT/reja signali (prediktiv EMAS) — Mastery'dan (standards-mastery.ts) qatʼiy ajratiladi.
+// Standart ⇄ dars bogʻlanishi.
+//
+// Standart darsga FAQAT dars muharririda biriktiriladi (LessonEditor →
+// `lesson.standards`). Standartlar sahifasida qoʻlda belgilash YOʻQ — bu fayl
+// shu bogʻlanishni teskari yoʻnalishda oʻqiydi: "bu standart qaysi darsga
+// biriktirilgan va u dars tugallanganmi".
 
 import { type Lesson, lessonClassIds } from "@/lib/lessons-data";
 
+export interface LinkedLesson {
+  id: string;
+  title: string;
+  /** Dars tugallanganmi (status === "Completed"). */
+  completed: boolean;
+}
+
 export interface LessonCoverage {
-  /** Tugallangan dars orqali oʻqitilganmi? */
+  /** Biriktirilgan darslardan kamida bittasi tugallanganmi → "oʻqitildi". */
   taught: boolean;
-  /** Standartni bogʻlagan tugallangan darslar (eng yangi tartibda emas — kiritilgan tartibda). */
-  lessons: { id: string; title: string }[];
+  /** Standartni biriktirgan darslar — holatidan qatʼi nazar. */
+  lessons: LinkedLesson[];
 }
 
 const EMPTY: LessonCoverage = { taught: false, lessons: [] };
 
-/** Berilgan sinfda standartni bogʻlagan TUGALLANGAN darslarni topadi. */
+/** Berilgan sinfda standartni biriktirgan darslarni topadi. */
 export function lessonCoverage(lessons: Lesson[], classId: string, standardId: string): LessonCoverage {
   const hits = lessons.filter(
-    (l) =>
-      l.status === "Completed" &&
-      lessonClassIds(l).includes(classId) &&
-      (l.standards?.includes(standardId) ?? false),
+    (l) => lessonClassIds(l).includes(classId) && (l.standards?.includes(standardId) ?? false),
   );
   if (hits.length === 0) return EMPTY;
-  return { taught: true, lessons: hits.map((l) => ({ id: l.id, title: l.title })) };
+  return {
+    taught: hits.some((l) => l.status === "Completed"),
+    lessons: hits.map((l) => ({ id: l.id, title: l.title, completed: l.status === "Completed" })),
+  };
 }
