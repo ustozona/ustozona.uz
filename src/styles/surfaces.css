@@ -1,0 +1,71 @@
+/* ════════════════════════════════════════════════════════════════════
+   SIRTLAR — dizayn tizimining 1-oʻqi (oʻlcham va zichlik).
+
+   Hujjat: docs/ost-loyihalar-arxitektura.md, C boʻlim.
+
+   NEGA TOKEN, NEGA FORK EMAS:
+   Tailwind v4 da `h-9` → `height: calc(var(--spacing) * 9)` va
+   `.text-body` → `font-size: var(--typo-body, …)`. Yaʼni ajdodda shu
+   oʻzgaruvchilarni qayta belgilash butun daraxtni qayta oʻlchaydi.
+   Bitta `<Button>` panelda 36px, projektorda 56px boʻladi — komponent
+   NUSXALANMAYDI.
+
+   MUHIM CHEKLOV: `@theme` ni selektor ichiga joylashtirib boʻlmaydi
+   (Tailwind v4). Shuning uchun bu bloklar oddiy CSS custom-property
+   override. Mahsulot YANGI utility ixtiro qila olmaydi — yangi utility
+   umumiy `@theme` ga nomlangan holda qoʻshiladi.
+
+   `desk` — standart, globals.css dagi qiymatlarda qoladi (14px / 36px):
+   ataylab bu yerda yozilmagan, chunki fallback aynan oʻsha.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── handheld — telefon, barmoq bilan; Shogird, kviz oʻynash ──
+   Boshqaruv elementi 48px (barmoq uchun minimal qulay oʻlcham),
+   asosiy matn 17px. --spacing: 48px / 9 = 5.333px */
+html[data-surface="handheld"] {
+  --spacing: 0.3333rem;
+
+  --typo-page: 1.625rem; /* 26px */
+  --typo-section: 1.25rem; /* 20px */
+  --typo-small: 1.0625rem; /* 17px */
+  --typo-body: 1.0625rem; /* 17px */
+  --typo-caption: 0.875rem; /* 14px */
+  --typo-label: 0.75rem; /* 12px */
+
+  --radius: 0.75rem;
+}
+
+/* ── stage — projektor / katta ekran, ~5 metrdan; Doska, kviz ekrani ──
+   Boshqaruv elementi 56px, asosiy matn 24px. --spacing: 56px / 9 = 6.222px
+   Ingichka chegara uzoqdan koʻrinmaydi → chegara qalinroq. */
+html[data-surface="stage"] {
+  --spacing: 0.3889rem;
+
+  --typo-page: 2.75rem; /* 44px */
+  --typo-section: 2rem; /* 32px */
+  --typo-small: 1.625rem; /* 26px */
+  --typo-body: 1.5rem; /* 24px */
+  --typo-caption: 1.1875rem; /* 19px */
+  --typo-label: 1rem; /* 16px */
+
+  --radius: 1rem;
+}
+
+/* ── Oʻqish yordami — dizayn tizimining 3-oʻqi (inklyuzivlik) ──
+   Pear Deck / Wayground'dagi Immersive Reader'ning CSS qismi. Ovozli
+   oʻqish alohida (Web Speech API), bu yerda faqat koʻrish qulayligi.
+   Sirt oʻqidan MUSTAQIL: istalgan sirt ustiga qoʻyiladi. */
+html[data-reading="support"] {
+  /* Ildiz font-size = `rem` asosi. Tokenlar ham, Tailwind spacing'i ham
+     rem'da, shuning uchun bitta qator butun sirtni mutanosib
+     kattalashtiradi — sirt oʻqi bilan urishmaydi, ustiga qoʻshiladi. */
+  font-size: 115%;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+  word-spacing: 0.08em;
+}
+
+html[data-reading="support"] p,
+html[data-reading="support"] li {
+  max-width: 66ch; /* uzun qator koʻzni charchatadi */
+}

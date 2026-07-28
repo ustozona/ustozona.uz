@@ -1,34 +1,70 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
+import {
+  PRODUCT_HEADER,
+  SURFACE_HEADER,
+  productFor,
+  surfaceFor,
+} from "@/lib/product-scope";
 
 /* ════════════════════════════════════════════════════════════════════
-   PROXY (Next 16 — middleware EMAS) — faqat optimistik UX redirect.
+   PROXY (Next 16 — middleware EMAS) — IKKI mustaqil vazifa.
 
-   Cookie borligini tekshiradi, DB'ga TEGMAYDI (har route'da, jumladan
-   prefetch'larda ishlaydi). Haqiqiy himoya — DAL ichida
-   `requireTeacher()` (src/server/session.ts).
+   1) TEGLASH: har soʻrovga mahsulot/sirt sarlavhasini qoʻyadi. Root
+      layout shundan `<html data-surface data-product>` chiqaradi
+      (docs/ost-loyihalar-arxitektura.md, C boʻlim). Portalga chiqadigan
+      Radix modallari `<html>` dan meros olishi uchun shu shart.
+
+   2) HIMOYA: cookie borligini tekshiradi, DB'ga TEGMAYDI. Bu faqat
+      optimistik UX redirect — haqiqiy himoya DAL ichida
+      `requireTeacher()` (src/server/session.ts).
+
+   DIQQAT: himoya endi ANIQ ROʻYXAT (`PROTECTED_PREFIXES`), avvalgidek
+   "matcher'dagi hamma narsa" emas. Sabab: `/play` (anonim kviz
+   ishtirokchisi) va `/shogird` (Telegram WebView — cookie ishonchsiz)
+   hech qachon `/login` ga uloqtirilmasligi kerak.
    ════════════════════════════════════════════════════════════════════ */
 
 const AUTH_PAGES = ["/login", "/register"];
 
+/** Cookie'siz kirilsa `/login` ga yuboriladigan boʻlimlar. */
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/lessons",
+  "/admin",
+  "/boshqaruv",
+  "/doska",
+];
+
+function isUnder(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // 1) Teglash — redirect boʻlmagan har bir javobda oʻtadi.
+  const headers = new Headers(request.headers);
+  headers.set(SURFACE_HEADER, surfaceFor(pathname));
+  headers.set(PRODUCT_HEADER, productFor(pathname));
+  const forward = () => NextResponse.next({ request: { headers } });
+
   const hasSessionCookie = !!getSessionCookie(request);
 
-  const isAuthPage = AUTH_PAGES.includes(pathname);
-  if (isAuthPage) {
+  // 2) Himoya
+  if (AUTH_PAGES.includes(pathname)) {
     // Kirgan foydalanuvchi login/register'ga kelsa — dashboardga.
     if (hasSessionCookie) {
       return NextResponse.redirect(new URL("/dashboard", request.nextUrl));
     }
-    return NextResponse.next();
+    return forward();
   }
 
-  // Himoyalangan boʻlimlar (matcher bilan sinxron): kirmagan → login.
-  if (!hasSessionCookie) {
+  if (!hasSessionCookie && PROTECTED_PREFIXES.some((p) => isUnder(pathname, p))) {
     return NextResponse.redirect(new URL("/login", request.nextUrl));
   }
-  return NextResponse.next();
+
+  return forward();
 }
 
 export const config = {
@@ -38,5 +74,11 @@ export const config = {
     "/admin/:path*",
     "/login",
     "/register",
+    // Ost-loyihalar — hozircha faqat teglash uchun (marshrutlar hali yoʻq).
+    // `/play` va `/shogird` ATAYLAB PROTECTED_PREFIXES'da emas.
+    "/play/:path*",
+    "/shogird/:path*",
+    "/doska/:path*",
+    "/boshqaruv/:path*",
   ],
 };

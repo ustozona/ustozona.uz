@@ -1,0 +1,97 @@
+/* ════════════════════════════════════════════════════════════════════
+   MAHSULOTLAR — dizayn tizimining 2-oʻqi (FAQAT palitra/brend).
+
+   Hujjat: docs/ost-loyihalar-arxitektura.md, C boʻlim.
+
+   Bu bloklar OʻLCHAMGA TEGMAYDI — oʻlcham sirt oʻqida (surfaces.css).
+   Sabab: bitta mahsulot bir necha sirtda yashaydi (Baholash noutbukda
+   yoziladi, telefonda oʻynaladi, projektorda koʻrsatiladi), shuning
+   uchun palitra va shkala mustaqil oʻzgarishi kerak.
+
+   Semantik nomlar (--primary, --accent) QATʼIY LUGʻAT — faqat
+   qiymatlar oʻzgaradi. `@theme inline` ularni utility'larga bogʻlab
+   turgani uchun butun daraxt avtomatik qayta ranglanadi.
+
+   `ustozona` (oʻqituvchi paneli) — globals.css :root da, bu yerda
+   ataylab takrorlanmaydi.
+
+   Eslatma: `.theme-landing-mono` (globals.css) oʻz holicha qoladi —
+   landing alohida qatlam (docs/landing-design.md).
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Baholash — ishonchli koʻk (diqqat, oʻlchov) ── */
+html[data-product="baholash"] {
+  --primary: oklch(0.52 0.19 264);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.95 0.02 264);
+  --accent-foreground: oklch(0.32 0.12 264);
+  --ring: oklch(0.52 0.19 264);
+}
+html.dark[data-product="baholash"] {
+  --primary: oklch(0.72 0.16 264);
+  --primary-foreground: oklch(0.18 0.04 264);
+  --accent: oklch(0.3 0.06 264);
+  --accent-foreground: oklch(0.95 0.02 264);
+  --ring: oklch(0.72 0.16 264);
+}
+
+/* ── Doska — sinf ekrani, yashil-firuza (sokin, charchatmaydigan) ── */
+html[data-product="doska"] {
+  --primary: oklch(0.55 0.13 186);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.95 0.03 186);
+  --accent-foreground: oklch(0.34 0.08 186);
+  --ring: oklch(0.55 0.13 186);
+}
+/* Projektorda "dark mode" tushunchasi yoʻq — xona yorugʻligi qaror
+   qiladi, foydalanuvchi tugmasi emas. Shuning uchun Doska'da dark
+   qiymatlar light bilan AYNAN bir xil: tema almashuvi shu sirtda
+   hech narsani oʻzgartirmaydi (JS bilan majburlash shart emas). */
+html.dark[data-product="doska"] {
+  --primary: oklch(0.55 0.13 186);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.95 0.03 186);
+  --accent-foreground: oklch(0.34 0.08 186);
+  --ring: oklch(0.55 0.13 186);
+}
+
+/* ── Shogird — oʻquvchi/ota-ona, iliq binafsha ──
+   Telegram mini-ilova `themeParams` beradi: mavjud boʻlsa Telegram
+   qiymati ustun, boʻlmasa (brauzerda ochilsa) quyidagi zaxira. */
+html[data-product="shogird"] {
+  --primary: var(--tg-theme-button-color, oklch(0.55 0.19 300));
+  --primary-foreground: var(--tg-theme-button-text-color, oklch(0.99 0 0));
+  --background: var(--tg-theme-bg-color, oklch(1 0 0));
+  --foreground: var(--tg-theme-text-color, oklch(0.145 0 0));
+  --muted-foreground: var(--tg-theme-hint-color, oklch(0.556 0 0));
+  --accent: oklch(0.95 0.03 300);
+  --accent-foreground: oklch(0.34 0.12 300);
+  --ring: oklch(0.55 0.19 300);
+}
+html.dark[data-product="shogird"] {
+  --primary: var(--tg-theme-button-color, oklch(0.72 0.16 300));
+  --primary-foreground: var(--tg-theme-button-text-color, oklch(0.18 0.04 300));
+  --background: var(--tg-theme-bg-color, oklch(0.145 0 0));
+  --foreground: var(--tg-theme-text-color, oklch(0.985 0 0));
+  --muted-foreground: var(--tg-theme-hint-color, oklch(0.708 0 0));
+  --accent: oklch(0.3 0.08 300);
+  --accent-foreground: oklch(0.95 0.03 300);
+  --ring: oklch(0.72 0.16 300);
+}
+
+/* ── Boshqaruv — maktab maʼmuriyati, vazmin koʻk-kulrang ──
+   Shkala oʻzgarmaydi (desk): bu ham noutbukdagi jadval-panel ekrani. */
+html[data-product="boshqaruv"] {
+  --primary: oklch(0.42 0.06 250);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.94 0.01 250);
+  --accent-foreground: oklch(0.32 0.05 250);
+  --ring: oklch(0.42 0.06 250);
+}
+html.dark[data-product="boshqaruv"] {
+  --primary: oklch(0.72 0.06 250);
+  --primary-foreground: oklch(0.18 0.02 250);
+  --accent: oklch(0.28 0.03 250);
+  --accent-foreground: oklch(0.94 0.01 250);
+  --ring: oklch(0.72 0.06 250);
+}

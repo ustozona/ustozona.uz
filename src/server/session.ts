@@ -3,7 +3,7 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { auth, type AuthSession } from "./auth";
-import { isSuperAdmin, isSchoolAdmin } from "@/lib/auth-roles";
+import { isSuperAdmin, isSchoolAdmin, isTeacher } from "@/lib/auth-roles";
 import { db } from "./db/client";
 import { teachers, type TeacherRow } from "./db/schema";
 
@@ -39,10 +39,17 @@ export const getSession = cache(async (): Promise<AuthSession | null> => {
   return auth.api.getSession({ headers: await headers() });
 });
 
-/** Sessiya + teachers qatori. Birinchi kirishda teachers qatorini yaratadi. */
+/** Sessiya + teachers qatori. Birinchi kirishda teachers qatorini yaratadi.
+
+    ROL DARVOZASI (majburiy): faqat `teacher` rolli akkaunt uchun qator
+    yaratiladi. Busiz Shogird (student/guardian) akkauntlari oʻqituvchi
+    marshrutiga tegib ketganda soxta ijara egasini yaratib yuborardi.
+    `rolesOf` boʻsh rolni "teacher" deb qaytargani uchun mavjud akkauntlar
+    taʼsirlanmaydi. */
 export const requireTeacher = cache(async (): Promise<TeacherRow> => {
   const session = await getSession();
   if (!session) throw new UnauthorizedError();
+  if (!isTeacher(session.user)) throw new ForbiddenError();
 
   const { user } = session;
   const [existing] = await db

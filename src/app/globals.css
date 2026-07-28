@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Ost-loyihalar dizayn qatlamlari — qatlamsiz (unlayered) va
+   selektor xosligi yuqori (html[data-*]), shuning uchun :root va
+   @layer base qiymatlarini yengadi. Hujjat:
+   docs/ost-loyihalar-arxitektura.md, C boʻlim. */
+@import "../styles/surfaces.css";
+@import "../styles/products.css";
+
 @custom-variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────────
@@ -371,7 +378,7 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-    font-size: 14px;
+    font-size: var(--typo-body, 0.875rem);
     font-weight: 400;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -420,7 +427,7 @@
 
 /* Sahifa sarlavhasi — 24px / 700 */
 .heading-page {
-  font-size: 1.5rem;
+  font-size: var(--typo-page, 1.5rem);
   line-height: 1.2;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -429,7 +436,7 @@
 
 /* Boʻlim / panel sarlavhasi — 18px / 600 (CardTitle bilan bir xil) */
 .heading-section {
-  font-size: 1.125rem;
+  font-size: var(--typo-section, 1.125rem);
   line-height: 1.3;
   font-weight: 600;
   letter-spacing: -0.015em;
@@ -438,7 +445,7 @@
 
 /* Kichik sarlavha (karta ichidagi ism va h.k.) — 15px / 600 */
 .heading-small {
-  font-size: 0.9375rem;
+  font-size: var(--typo-small, 0.9375rem);
   line-height: 1.3;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -447,7 +454,7 @@
 
 /* Asosiy matn — 14px / 400 */
 .text-body {
-  font-size: 0.875rem;
+  font-size: var(--typo-body, 0.875rem);
   line-height: 1.5;
   font-weight: 400;
   color: var(--foreground);
@@ -455,7 +462,7 @@
 
 /* Kichik izoh / muted — 12px / 400 */
 .text-caption {
-  font-size: 0.75rem;
+  font-size: var(--typo-caption, 0.75rem);
   line-height: 1.4;
   font-weight: 400;
   color: var(--muted-foreground);
@@ -463,7 +470,7 @@
 
 /* Yorliq (UPPERCASE) — 11px / 500 */
 .text-label {
-  font-size: 0.6875rem;
+  font-size: var(--typo-label, 0.6875rem);
   line-height: 1.4;
   font-weight: 500;
   letter-spacing: 0.05em;

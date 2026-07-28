@@ -17,6 +17,12 @@ import { defaultStatements, adminAc } from "better-auth/plugins/admin/access";
    - super_admin  — toʻliq boshqaruv. `adminAc` shablonida
                     `impersonate-admins` YOʻQ — super_admin boshqa
                     super_admin sifatida kira olmaydi (ataylab).
+   - student      — Shogird (oʻquvchi) — oʻz maʼlumotini read-only koʻradi
+   - guardian     — Shogird (ota-ona) — bogʻlangan farzand(lar)ini koʻradi
+
+   student/guardian oʻqituvchi darvozalaridan OʻTMAYDI: `requireTeacher()`
+   `isTeacher()` ni tekshiradi, yaʼni bu rollar `teachers` qatorini
+   yaratib yubormaydi (src/server/session.ts).
    ════════════════════════════════════════════════════════════════════ */
 
 export const ac = createAccessControl(defaultStatements);
@@ -25,6 +31,8 @@ export const roles = {
   teacher: ac.newRole({ user: [], session: [] }),
   school_admin: ac.newRole({ user: [], session: [] }),
   super_admin: ac.newRole({ ...adminAc.statements }),
+  student: ac.newRole({ user: [], session: [] }),
+  guardian: ac.newRole({ user: [], session: [] }),
 } as const;
 
 export const ADMIN_ROLES = ["super_admin"] as const;
@@ -45,4 +53,17 @@ export function isSuperAdmin(user: { role?: string | null } | null | undefined):
 
 export function isSchoolAdmin(user: { role?: string | null } | null | undefined): boolean {
   return rolesOf(user).includes("school_admin");
+}
+
+/** Oʻqituvchi darvozasi. `rolesOf` boʻsh rolni "teacher" deb qaytargani uchun
+    mavjud (roli yozilmagan) akkauntlar avvalgidek ishlayveradi — faqat aniq
+    `student`/`guardian` deb belgilanganlar chetlanadi. */
+export function isTeacher(user: { role?: string | null } | null | undefined): boolean {
+  return rolesOf(user).includes("teacher");
+}
+
+/** Shogird tomoni: oʻquvchi yoki ota-ona. */
+export function isStudentViewer(user: { role?: string | null } | null | undefined): boolean {
+  const list = rolesOf(user);
+  return list.includes("student") || list.includes("guardian");
 }
