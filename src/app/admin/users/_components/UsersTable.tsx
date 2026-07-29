@@ -71,6 +71,8 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  EyeOff,
+  Eye,
 } from "lucide-react";
 import { rolesOf } from "@/lib/auth-roles";
 import type { AdminUsersPage, AdminUserListItem } from "@/server/dal/admin/users";
@@ -81,6 +83,7 @@ import {
   removeUserAction,
   resetPasswordAction,
   impersonateUserAction,
+  setExcludeFromMetricsAction,
 } from "@/server/actions/admin/users";
 
 /* ── Yordamchilar ── */
@@ -235,11 +238,12 @@ export default function UsersTable({
               <TableRow>
                 <TableHead className="pl-5">Foydalanuvchi</TableHead>
                 <TableHead>Rollar</TableHead>
+                <TableHead>Holat</TableHead>
                 <TableHead>Tarif</TableHead>
                 <TableHead className="text-right">Sinflar</TableHead>
                 <TableHead className="text-right">Oʻquvchilar</TableHead>
                 <TableHead>Roʻyxatdan oʻtgan</TableHead>
-                <TableHead>Oxirgi faollik</TableHead>
+                <TableHead>Oxirgi ish</TableHead>
                 <TableHead className="w-12 pr-5" />
               </TableRow>
             </TableHeader>
@@ -264,6 +268,12 @@ export default function UsersTable({
                             {u.banned && (
                               <Badge variant="destructive" className="text-[10px]">Bloklangan</Badge>
                             )}
+                            {u.excludeFromMetrics && (
+                              <Badge variant="outline" className="text-[10px] gap-1">
+                                <EyeOff className="size-2.5" />
+                                Test hisob
+                              </Badge>
+                            )}
                           </div>
                           <div className="truncate text-xs text-muted-foreground">{u.email}</div>
                         </div>
@@ -283,6 +293,14 @@ export default function UsersTable({
                       </div>
                     </TableCell>
                     <TableCell>
+                      <Badge
+                        variant={u.activationStatus === "activated" ? "default" : "destructive"}
+                        className="text-[10px]"
+                      >
+                        {u.activationStatus === "activated" ? "Faol" : "Eʼtibor kerak"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       <Badge variant="outline" className="text-[10px] capitalize">
                         {u.plan ?? "—"}
                       </Badge>
@@ -293,7 +311,7 @@ export default function UsersTable({
                       {fmtDate(u.createdAt)}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {fmtDate(u.lastSeen)}
+                      {fmtDate(u.lastActiveAt)}
                     </TableCell>
                     <TableCell className="pr-5 text-right">
                       <DropdownMenu>
@@ -329,6 +347,25 @@ export default function UsersTable({
                           >
                             <KeyRound />
                             Parolni tiklash xati
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onSelect={() =>
+                              run(
+                                () =>
+                                  setExcludeFromMetricsAction({
+                                    userId: u.id,
+                                    excluded: !u.excludeFromMetrics,
+                                  }),
+                                u.excludeFromMetrics
+                                  ? "Statistikaga qaytarildi"
+                                  : "Statistikadan istisno qilindi",
+                              )
+                            }
+                          >
+                            {u.excludeFromMetrics ? <Eye /> : <EyeOff />}
+                            {u.excludeFromMetrics
+                              ? "Statistikaga qaytarish"
+                              : "Statistikadan istisno qilish"}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {u.banned ? (

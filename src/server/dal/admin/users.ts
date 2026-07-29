@@ -12,7 +12,15 @@ import {
   type SQL,
 } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { user, session, teachers, classes, students } from "@/server/db/schema";
+import {
+  user,
+  session,
+  teachers,
+  classes,
+  students,
+  attendanceRecords,
+  grades,
+} from "@/server/db/schema";
 import { requireAdmin } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -37,7 +45,16 @@ export type AdminUserListItem = {
   school: string | null;
   classCount: number;
   studentCount: number;
+  /** Oxirgi kirish (session) — login, ish qilgani emas. */
   lastSeen: Date | null;
+  /** Oxirgi real ish (davomat/baho yozuvi) — faollik shu bilan oʻlchanadi. */
+  lastActiveAt: Date | null;
+  attendanceCount: number;
+  gradeCount: number;
+  /** "activated" = davomat/baho bor va oxirgi 14 kun ichida ishlagan; qolgani "at_risk". */
+  activationStatus: "activated" | "at_risk";
+  /** true = admin/test hisob — voronka/"eʼtibor talab qiladi" statistikasidan chiqarilgan. */
+  excludeFromMetrics: boolean;
 };
 
 export type AdminUsersPage = {
@@ -98,6 +115,7 @@ export async function listUsersForAdmin(
       createdAt: user.createdAt,
       plan: teachers.plan,
       school: teachers.school,
+      excludeFromMetrics: teachers.excludeFromMetrics,
     })
     .from(user)
     .leftJoin(teachers, eq(teachers.id, user.id));
@@ -116,7 +134,7 @@ export async function listUsersForAdmin(
   ]);
 
   const ids = rows.map((r) => r.id);
-  const [classCounts, studentCounts, lastSeens] = ids.length
+  const [classCounts, studentCounts, lastSeens, attendanceStats, gradeStats] = ids.length
     ? await Promise.all([
         db
           .select({ teacherId: classes.teacherId, n: count() })
@@ -133,20 +151,61 @@ export async function listUsersForAdmin(
           .from(session)
           .where(inArray(session.userId, ids))
           .groupBy(session.userId),
+        db
+          .select({
+            teacherId: attendanceRecords.teacherId,
+            n: count(),
+            last: max(attendanceRecords.updatedAt),
+          })
+          .from(attendanceRecords)
+          .where(inArray(attendanceRecords.teacherId, ids))
+          .groupBy(attendanceRecords.teacherId),
+        db
+          .select({ teacherId: grades.teacherId, n: count(), last: max(grades.updatedAt) })
+          .from(grades)
+          .where(inArray(grades.teacherId, ids))
+          .groupBy(grades.teacherId),
       ])
-    : [[], [], []];
+    : [[], [], [], [], []];
 
   const classMap = new Map(classCounts.map((c) => [c.teacherId, c.n]));
   const studentMap = new Map(studentCounts.map((c) => [c.teacherId, c.n]));
   const seenMap = new Map(lastSeens.map((s) => [s.userId, s.last]));
+  const attendanceMap = new Map(attendanceStats.map((a) => [a.teacherId, a]));
+  const gradeMap = new Map(gradeStats.map((g) => [g.teacherId, g]));
+
+  const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
 
   return {
-    items: rows.map((r) => ({
-      ...r,
-      classCount: classMap.get(r.id) ?? 0,
-      studentCount: studentMap.get(r.id) ?? 0,
-      lastSeen: seenMap.get(r.id) ?? null,
-    })),
+    items: rows.map((r) => {
+      const attendance = attendanceMap.get(r.id);
+      const grade = gradeMap.get(r.id);
+      const attendanceCount = attendance?.n ?? 0;
+      const gradeCount = grade?.n ?? 0;
+      const lastActiveAt =
+        [attendance?.last, grade?.last]
+          .filter((d): d is Date => !!d)
+          .sort((a, b) => b.getTime() - a.getTime())[0] ?? null;
+
+      const activationStatus: AdminUserListItem["activationStatus"] =
+        attendanceCount === 0 && gradeCount === 0
+          ? "at_risk"
+          : lastActiveAt && lastActiveAt.getTime() >= twoWeeksAgo
+            ? "activated"
+            : "at_risk";
+
+      return {
+        ...r,
+        classCount: classMap.get(r.id) ?? 0,
+        studentCount: studentMap.get(r.id) ?? 0,
+        lastActiveAt,
+        attendanceCount,
+        gradeCount,
+        activationStatus,
+        lastSeen: seenMap.get(r.id) ?? null,
+        excludeFromMetrics: r.excludeFromMetrics ?? false,
+      };
+    }),
     total,
     page,
     pageSize,
@@ -181,13 +240,14 @@ export async function getUserDetailForAdmin(
       school: teachers.school,
       subject: teachers.subject,
       academicYear: teachers.academicYear,
+      excludeFromMetrics: teachers.excludeFromMetrics,
     })
     .from(user)
     .leftJoin(teachers, eq(teachers.id, user.id))
     .where(eq(user.id, userId));
   if (!row) return null;
 
-  const [classCount, studentCount, sessions] = await Promise.all([
+  const [classCount, studentCount, sessions, attendanceStat, gradeStat] = await Promise.all([
     db.$count(classes, eq(classes.teacherId, userId)),
     db.$count(students, eq(students.teacherId, userId)),
     db
@@ -201,13 +261,37 @@ export async function getUserDetailForAdmin(
       .where(eq(session.userId, userId))
       .orderBy(desc(session.updatedAt))
       .limit(10),
+    db
+      .select({ n: count(), last: max(attendanceRecords.updatedAt) })
+      .from(attendanceRecords)
+      .where(eq(attendanceRecords.teacherId, userId)),
+    db.select({ n: count(), last: max(grades.updatedAt) }).from(grades).where(eq(grades.teacherId, userId)),
   ]);
+
+  const attendanceCount = attendanceStat[0]?.n ?? 0;
+  const gradeCount = gradeStat[0]?.n ?? 0;
+  const lastActiveAt =
+    [attendanceStat[0]?.last, gradeStat[0]?.last]
+      .filter((d): d is Date => !!d)
+      .sort((a, b) => b.getTime() - a.getTime())[0] ?? null;
+  const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const activationStatus: AdminUserListItem["activationStatus"] =
+    attendanceCount === 0 && gradeCount === 0
+      ? "at_risk"
+      : lastActiveAt && lastActiveAt.getTime() >= twoWeeksAgo
+        ? "activated"
+        : "at_risk";
 
   return {
     ...row,
     classCount,
     studentCount,
     lastSeen: sessions[0]?.updatedAt ?? null,
+    lastActiveAt,
+    attendanceCount,
+    gradeCount,
+    activationStatus,
+    excludeFromMetrics: row.excludeFromMetrics ?? false,
     sessions,
   };
 }

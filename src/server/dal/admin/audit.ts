@@ -16,6 +16,8 @@ export type AdminAuditAction =
   | "user.delete"
   | "user.impersonate"
   | "user.reset_password"
+  | "user.exclude_from_metrics"
+  | "user.include_in_metrics"
   | "feedback.reply"
   | "feedback.status"
   | "school.create"

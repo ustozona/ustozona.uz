@@ -1,0 +1,1 @@
+ALTER TABLE "teachers" ADD COLUMN "exclude_from_metrics" boolean DEFAULT false NOT NULL;

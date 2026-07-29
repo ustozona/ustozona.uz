@@ -1,10 +1,13 @@
 "use server";
 
 import { headers } from "next/headers";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/server/auth";
 import { requireAdmin } from "@/server/session";
 import { writeAuditLog } from "@/server/dal/admin/audit";
+import { db } from "@/server/db/client";
+import { teachers } from "@/server/db/schema";
 
 /* ════════════════════════════════════════════════════════════════════
    ADMIN → FOYDALANUVCHI MUTATSIYALARI.
@@ -132,6 +135,25 @@ export async function impersonateUserAction(
   await auth.api.impersonateUser({
     body: { userId },
     headers: await headers(),
+  });
+  return { ok: true as const };
+}
+
+const excludeFromMetricsSchema = z.object({
+  userId: z.string().min(1),
+  excluded: z.boolean(),
+});
+
+export async function setExcludeFromMetricsAction(
+  input: z.infer<typeof excludeFromMetricsSchema>,
+) {
+  const { actor } = await requireAdmin();
+  const { userId, excluded } = excludeFromMetricsSchema.parse(input);
+  await db.update(teachers).set({ excludeFromMetrics: excluded }).where(eq(teachers.id, userId));
+  await writeAuditLog(actor, {
+    action: excluded ? "user.exclude_from_metrics" : "user.include_in_metrics",
+    targetType: "user",
+    targetId: userId,
   });
   return { ok: true as const };
 }

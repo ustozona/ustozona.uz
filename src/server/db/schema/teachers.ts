@@ -1,4 +1,4 @@
-import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { schools } from "./schools";
 
@@ -26,6 +26,9 @@ export const teachers = pgTable("teachers", {
   language: text("language").notNull().default("uz"),
   academicYear: text("academic_year"),
   plan: text("plan").notNull().default("free"),
+  /** true = admin/test/demo hisob — faollashuv voronkasi va "eʼtibor
+      talab qiladi" roʻyxatida hisoblanmaydi (real koʻrsatkichni buzmasin). */
+  excludeFromMetrics: boolean("exclude_from_metrics").notNull().default(false),
   /** UI afzalliklari (workspaceBackground, journalScale kabi) — hujjat sifatida. */
   prefs: jsonb("prefs").$type<Record<string, unknown>>().notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
