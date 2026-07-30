@@ -179,6 +179,23 @@ export type ScaleBoundary = { min: number; label: string };
  * (`ten`, `percent`, `french20`) va `pass_fail` uchun `null` — bular uchun
  * bitta qisqa izoh (SCALE_HINTS) yetarli.
  */
+/**
+ * Tier indeksidan saqlanadigan foiz — tier oraligʻining oʻrtasi.
+ * `select` rejimida "Yaxshi" kabi yorliq tanlanganda, `grades.score`ga
+ * shu foiz (maxScore'ga nisbatan) yoziladi — ikkilik (100/0) emas.
+ *
+ * ⚠️ `pass_fail` ISTISNO: 100/0 da qoladi (2 aniq tier, oʻrtacha kerak emas,
+ * mavjud maʼlumot bilan mos). Faqat koʻp-tierli shkalalar oʻrta nuqta oladi.
+ */
+export function tierMidpoint(kind: GradingScale, index: number): number {
+  if (kind === "pass_fail") return index === 0 ? 100 : 0;
+  const boundaries = getScaleBoundaries(kind);
+  const tier = boundaries?.[index];
+  if (!tier) return 50;
+  const max = index === 0 ? 100 : (boundaries![index - 1]?.min ?? 100);
+  return (tier.min + max) / 2;
+}
+
 export function getScaleBoundaries(kind: GradingScale, labelStyle: LabelStyle = "number"): ScaleBoundary[] | null {
   switch (kind) {
     case "five":

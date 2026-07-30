@@ -21,7 +21,6 @@ import type {
   Grade,
   GradeMissing,
   GradingScale,
-  InputMode,
   Student,
   Topic,
   TopicColor,
@@ -93,10 +92,7 @@ function rowToTopic(t: TopicRow): Topic {
     color: t.color as TopicColor,
     purpose: t.purpose as TopicPurpose,
     weightPercent: t.weightPercent,
-    inputMode: t.inputMode as InputMode,
     ...(t.scaleKind ? { scaleKind: t.scaleKind as GradingScale } : {}),
-    passLabel: t.passLabel,
-    failLabel: t.failLabel,
   };
 }
 
@@ -108,6 +104,8 @@ function rowToAssignment(a: AssignmentRow): Assignment {
     topicId: a.topicId,
     ...(a.date ? { date: a.date } : {}),
     ...(a.dueDate ? { dueDate: a.dueDate } : {}),
+    ...(a.kind ? { kind: a.kind as Assignment["kind"] } : {}),
+    ...(a.instructions ? { instructions: a.instructions } : {}),
   };
 }
 
@@ -261,10 +259,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           color: t.color,
           purpose: t.purpose,
           weightPercent: t.weightPercent,
-          inputMode: t.inputMode,
           scaleKind: t.scaleKind ?? null,
-          passLabel: t.passLabel,
-          failLabel: t.failLabel,
           sortOrder: t.sortOrder,
         }))
       )
@@ -277,10 +272,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           color: sql`excluded.color`,
           purpose: sql`excluded.purpose`,
           weightPercent: sql`excluded.weight_percent`,
-          inputMode: sql`excluded.input_mode`,
           scaleKind: sql`excluded.scale_kind`,
-          passLabel: sql`excluded.pass_label`,
-          failLabel: sql`excluded.fail_label`,
           sortOrder: sql`excluded.sort_order`,
           updatedAt: now,
         },
@@ -291,7 +283,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   /* 3. Topshiriqlar — toifa ham oʻzimizniki boʻlsin. */
   const ownTopics = await ownedIds(topics, tid);
   const assignmentUpserts = batch.assignmentsUpsert.filter(
-    (a) => ownClasses.has(a.classId) && ownTopics.has(a.topicId)
+    (a) => ownClasses.has(a.classId) && (a.topicId === null || ownTopics.has(a.topicId))
   );
   for (const part of chunks(assignmentUpserts)) {
     await db
@@ -306,6 +298,8 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           maxScore: a.maxScore,
           date: a.date ?? null,
           dueDate: a.dueDate ?? null,
+          kind: a.kind ?? "manual",
+          instructions: a.instructions ?? null,
           sortOrder: a.sortOrder,
         }))
       )
@@ -318,6 +312,8 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           maxScore: sql`excluded.max_score`,
           date: sql`excluded.date`,
           dueDate: sql`excluded.due_date`,
+          kind: sql`excluded.kind`,
+          instructions: sql`excluded.instructions`,
           sortOrder: sql`excluded.sort_order`,
           updatedAt: now,
         },

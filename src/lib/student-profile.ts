@@ -55,7 +55,7 @@ export type TopicBreakdown = {
 
 export type AssignmentRow = {
   assignment: Assignment;
-  topic: Topic;
+  topic: Topic | undefined;
   score: number | null;
   pct: number | null;
   status: "graded" | "missing" | "ungraded";
@@ -218,7 +218,7 @@ function buildAssignments(data: ClassData, studentId: string): AssignmentRow[] {
     const g = data.grades.find(
       (gr) => gr.studentId === studentId && gr.assignmentId === assignment.id
     );
-    const topic = topicMap.get(assignment.topicId)!;
+    const topic = topicMap.get(assignment.topicId ?? "");
     const score = g?.score ?? null;
     const pct = score === null ? null : Math.round((score / assignment.maxScore) * 100);
     const status: AssignmentRow["status"] =

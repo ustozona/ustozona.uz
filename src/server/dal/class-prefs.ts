@@ -17,6 +17,8 @@ import type { JournalScale } from "@/lib/grade-scale";
 export type ClassPrefs = {
   selectedClassId: string;
   journalScale: JournalScale;
+  /** Sinf darajasidagi bekor qilish (C3) — yoʻq boʻlsa `journalScale` ishlatiladi. */
+  journalScaleByClass?: Record<string, JournalScale>;
 };
 
 type PrefsDoc = { classPrefs?: Partial<ClassPrefs> };
@@ -30,6 +32,7 @@ export async function getClassPrefs(): Promise<ClassPrefs | null> {
   return {
     selectedClassId: stored.selectedClassId,
     journalScale: stored.journalScale as JournalScale,
+    journalScaleByClass: (stored.journalScaleByClass as Record<string, JournalScale>) ?? {},
   };
 }
 

@@ -10,7 +10,7 @@ import { classSummativeAverage } from '@/lib/grades-stats';
 import { useStandardsStore } from '@/store/useStandardsStore';
 import { lessonCoverage } from '@/lib/standards-coverage';
 
-export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "behavior" | "statistics";
+export type Page = "lessons" | "students" | "grades" | "attendance" | "standards" | "behavior" | "statistics" | "assignments";
 
 export function useClassPanelStats(page: Page, classId: string): {
   items: { value: number | string; label: string }[];
@@ -141,6 +141,18 @@ export function useClassPanelStats(page: Page, classId: string): {
             { value: events.length - positive, label: "Salbiy" },
           ],
           progress: { value: positivePct, label: "Ijobiy ulushi" },
+        };
+      }
+      case 'assignments': {
+        const classData = classDataMap[classId];
+        if (!classData) return undefined;
+        const testCount = classData.assignments.filter((a) => a.kind === "test").length;
+        const deckCount = classData.assignments.filter((a) => a.kind === "deck").length;
+        return {
+          items: [
+            { value: testCount, label: "Test" },
+            { value: deckCount, label: "Taqdimot" },
+          ],
         };
       }
       case 'statistics':

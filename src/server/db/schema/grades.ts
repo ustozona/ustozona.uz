@@ -15,7 +15,7 @@ import { classes, students } from "./classes";
    JURNAL — toifalar (topics), topshiriqlar (assignments), baholar.
 
    Model docs/grades-v1-spec.md ga mos: baho foizga normallanadi,
-   vazn faqat toifa (kategoriya) darajasida. Shkala/inputMode toifada,
+   vazn faqat toifa (kategoriya) darajasida. Shkala toifada,
    maxScore topshiriqda (xom maxraj). Grades PK (student, assignment) —
    idempotent batch upsert shu kalit bilan ishlaydi.
    ════════════════════════════════════════════════════════════════════ */
@@ -36,10 +36,7 @@ export const topics = pgTable(
     color: text("color").notNull(), // TopicColor
     purpose: text("purpose").notNull(), // formative | summative
     weightPercent: integer("weight_percent").notNull().default(0),
-    inputMode: text("input_mode").notNull(), // score | select
     scaleKind: text("scale_kind"), // GradingScale preset
-    passLabel: text("pass_label").notNull().default("Bajardi"),
-    failLabel: text("fail_label").notNull().default("Bajarmadi"),
     /** Frontend massiv tartibi — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -61,15 +58,23 @@ export const assignments = pgTable(
     classId: text("class_id")
       .notNull()
       .references(() => classes.id, { onDelete: "cascade" }),
-    topicId: text("topic_id")
-      .notNull()
-      .references(() => topics.id, { onDelete: "cascade" }),
+    /** null = "Toifasiz" (virtual guruh, UI'da hisoblanadi) — toifa oʻchsa
+        topshiriq oʻchmaydi, shu holatga tushadi (`onDelete: set null`). */
+    topicId: text("topic_id").references(() => topics.id, { onDelete: "set null" }),
     title: text("title").notNull(),
     /** Xom maxraj — baho foizga shu orqali normallanadi. */
     maxScore: integer("max_score").notNull(),
     date: text("date"), // "YYYY-MM-DD"
     /** Topshirish muddati — metadata (hisobga kirmaydi), xulq avto-ball oʻqiydi. */
     dueDate: text("due_date"), // "YYYY-MM-DD"
+    /** Topshiriq turi: manual (qoʻlda) | test | deck (taqdimot). Test/deck
+        hozircha muharrirsiz — kelgusi bosqichda ulanadi. */
+    kind: text("kind").notNull().default("manual"),
+    /** Yoʻriqnoma — oddiy matn (v1; Tiptap boy matn keyingi bosqichda). */
+    instructions: text("instructions"),
+    /** Baholash sessiyasidan nashr qilingan boʻlsa — izlanuvchanlik uchun
+        manba sessiya id'si (docs/ost-loyihalar-arxitektura.md, publish.ts). */
+    sourceSessionId: text("source_session_id"),
     /** Jurnal ustunlari tartibi — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

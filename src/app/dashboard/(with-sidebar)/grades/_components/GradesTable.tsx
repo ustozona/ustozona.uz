@@ -19,11 +19,6 @@ import {
   Lightbulb,
   Info,
   Keyboard,
-  Check,
-  X,
-  UserX,
-  FileX,
-  Eraser,
   ChevronRight,
   ArrowRight,
 } from "lucide-react";
@@ -38,24 +33,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
 import { cn } from "@/lib/utils";
 import {
   TOPIC_COLOR_HEX,
   classColor,
   type ClassData,
   type Grade,
+  type GradingScale,
 } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { scoreBarColor } from "@/lib/score-colors";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassStore, journalScaleFor } from "@/store/useClassStore";
 import { formatByScaleKind, formatScore } from "@/lib/grade-scale";
 import GradesSettingsModal from "./GradesSettingsModal";
 import {
@@ -108,18 +96,21 @@ import {
 
 function LetterAvg({
   percent,
-  binary,
+  classId,
+  scale,
 }: {
   percent: number;
-  /** Ikkilik (Bajardi/Bajarmadi) toifa — berilsa yorliq bilan koʻrsatiladi (shkala emas). */
-  binary?: { passLabel?: string; failLabel?: string };
+  /** Jami/Holat — sinfning oʻz shkalasi (`journalScaleFor`), `scale` bermaganda ishlatiladi. */
+  classId?: string;
+  /** Toifa oʻzining shkalasida koʻrsatiladi (ustun oʻrtachasi) — Jami/Holat esa sinf shkalasida. */
+  scale?: { kind: GradingScale; passLabel?: string; failLabel?: string };
 }) {
-  const journalScale = useClassStore((s) => s.journalScale);
+  const journalScale = useClassStore((s) => (classId ? journalScaleFor(s, classId) : s.journalScale));
   let primary: string;
   let secondary: string | undefined;
-  if (binary) {
-    // Ikkilik toifa — yagona shkaladan mustasno (tabiiy yorliq).
-    primary = formatByScaleKind(percent, "pass_fail", binary);
+  if (scale) {
+    // Toifa shkalasi — yagona jurnal shkalasidan mustasno.
+    primary = formatByScaleKind(percent, scale.kind, scale);
     secondary = `${percent.toFixed(1)}%`;
   } else {
     // Holat / umumiy / ustun-oʻrtacha — YAGONA jurnal shkalasi: "4 (78%)".
@@ -146,36 +137,19 @@ function LetterAvg({
   );
 }
 /**
- * "Holat" ustunining ikkilamchi signali (burchakda).
- * showFormative=false → Trend ↗/↘, faqat |Δ| ±3pp deadband'dan oshganda
- *   (v1 SEM-proksisi: o‘lchash shovqinini neytral qoldiramiz).
- * showFormative=true → formativ signal foizi (diagnostik).
+ * "Holat" ustunining burchagidagi Trend ↗/↘ belgisi — faqat |Δ| ±3pp
+ * deadband'dan oshganda koʻrsatiladi (v1 SEM-proksisi: oʻlchash shovqinini
+ * neytral qoldiramiz). `showTrend=false` boʻlsa butunlay yashiriladi.
  */
 function StatusBadge({
-  showFormative,
+  showTrend,
   trend,
-  formative,
-  formativeCount,
 }: {
-  showFormative: boolean;
+  showTrend: boolean;
   trend: number | null;
-  formative: number;
-  formativeCount: number;
 }) {
   const t = useTranslations("GradesTable");
-  if (showFormative) {
-    if (formativeCount === 0) return null;
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="absolute bottom-0.5 right-1 text-[9px] font-semibold text-muted-foreground tabular-nums leading-none">
-            {Math.round(formative)}%
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>{t("formativeSignalTooltip", { value: formative.toFixed(1) })}</TooltipContent>
-      </Tooltip>
-    );
-  }
+  if (!showTrend) return null;
   if (trend === null) return null;
   const up = trend > 3;
   const down = trend < -3;
@@ -511,8 +485,8 @@ export default function GradesTable({
   const classHex = CLASS_COLOR_HEX[classColor(classData.info)];
   const [createOpen, setCreateOpen] = useState(false);
   const [showWeights, setShowWeights] = useState(false);
-  // Holat ustunining ikkilamchi qatori: false = Trend (default), true = Formativ signal.
-  const [showFormative, setShowFormative] = useState(false);
+  // Holat ustunining burchagidagi Trend belgisi koʻrsatilsinmi.
+  const [showTrend, setShowTrend] = useState(true);
   const [editingCell, setEditingCell] = useState<{ s: string; a: string } | null>(null);
   const [sortField, setSortField] = useState<SortField>("firstName");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -568,11 +542,11 @@ export default function GradesTable({
       .filter((a) =>
         colFilter === "all"
           ? true
-          : (topicMap.get(a.topicId)?.purpose ?? "summative") === colFilter
+          : (topicMap.get(a.topicId ?? "")?.purpose ?? "summative") === colFilter
       )
       .slice()
       .sort((a, b) => {
-        const ti = (topicIdx.get(a.topicId) ?? 99) - (topicIdx.get(b.topicId) ?? 99);
+        const ti = (topicIdx.get(a.topicId ?? "") ?? 99) - (topicIdx.get(b.topicId ?? "") ?? 99);
         if (ti !== 0) return ti;
         return (a.date ?? a.id).localeCompare(b.date ?? b.id);
       });
@@ -788,10 +762,12 @@ export default function GradesTable({
             </DropdownMenu>
 
           <GradesSettingsModal
+            classId={classData.info.id}
+            classDisplayName={classData.info.name}
             showWeights={showWeights}
             onShowWeightsChange={setShowWeights}
-            showFormative={showFormative}
-            onShowFormativeChange={setShowFormative}
+            showTrend={showTrend}
+            onShowTrendChange={setShowTrend}
           />
         </div>
       </CardHeader>
@@ -813,7 +789,7 @@ export default function GradesTable({
               />
               <ColHeader label={t("statusColumn")} stickyLeft />
               {orderedAssignments.map((a) => {
-                const topic = topicMap.get(a.topicId);
+                const topic = topicMap.get(a.topicId ?? "");
                 const hex = topic ? TOPIC_COLOR_HEX[topic.color] : null;
                 return (
                   <TableHead
@@ -955,18 +931,13 @@ export default function GradesTable({
                   grades={grades}
                 >
                   <div className="relative h-full w-full cursor-default">
-                    <LetterAvg percent={classAverage} />
-                    <StatusBadge
-                      showFormative={showFormative}
-                      trend={classTrend}
-                      formative={classFormative ?? 0}
-                      formativeCount={classFormative !== null ? 1 : 0}
-                    />
+                    <LetterAvg percent={classAverage} classId={classData.info.id} />
+                    <StatusBadge showTrend={showTrend} trend={classTrend} />
                   </div>
                 </HolatHover>
               </TableCell>
               {assignmentAverages.map((aa) => {
-                const topic = topicMap.get(aa.assignment.topicId);
+                const topic = topicMap.get(aa.assignment.topicId ?? "");
                 return (
                   <TableCell
                     key={aa.assignment.id}
@@ -974,9 +945,9 @@ export default function GradesTable({
                   >
                     <LetterAvg
                       percent={aa.percent}
-                      binary={
-                        topic?.inputMode === "select"
-                          ? { passLabel: topic.passLabel, failLabel: topic.failLabel }
+                      scale={
+                        topic
+                          ? { kind: (topic.scaleKind ?? "pass_fail") as GradingScale }
                           : undefined
                       }
                     />
@@ -1039,13 +1010,8 @@ export default function GradesTable({
                       grades={grades}
                     >
                       <div className="relative h-full w-full cursor-default">
-                        <LetterAvg percent={total.percent} />
-                        <StatusBadge
-                          showFormative={showFormative}
-                          trend={trend}
-                          formative={total.summary.formative}
-                          formativeCount={total.summary.formativeCount}
-                        />
+                        <LetterAvg percent={total.percent} classId={classData.info.id} />
+                        <StatusBadge showTrend={showTrend} trend={trend} />
                         {total.summary.summativeCount > 0 && total.summary.summativeCount < 3 && (
                           <span className="absolute top-0.5 right-0.5 flex size-3.5 items-center justify-center rounded-full bg-warning/15 text-[9px] font-bold text-warning">
                             !
@@ -1057,28 +1023,16 @@ export default function GradesTable({
 
                   {orderedAssignments.map((a) => {
                     const g = gradeMap.get(`${s.id}:${a.id}`);
-                    const topic = topicMap.get(a.topicId);
-                    const isSelect = topic?.inputMode === "select";
                     const isEditing = editingCell?.s === s.id && editingCell?.a === a.id;
                     const hasScore = g?.score !== null && g?.score !== undefined;
 
                     return (
                       <TableCell
                         key={a.id}
-                        onClick={isSelect ? undefined : () => setEditingCell({ s: s.id, a: a.id })}
+                        onClick={() => setEditingCell({ s: s.id, a: a.id })}
                         className="border-b border-r border-border p-0 w-16 min-w-16 h-16 text-center cursor-pointer group/cell hover:ring-1 hover:ring-inset hover:ring-foreground/30 hover:bg-muted/40 transition-colors"
                       >
-                        {isSelect ? (
-                          <BinaryCell
-                            grade={g}
-                            maxScore={a.maxScore}
-                            topic={topic}
-                            weight={contributionsByStudent?.get(s.id)?.get(a.id) ?? null}
-                            onSet={(pass) => onCellEdit(s.id, a.id, pass ? a.maxScore : 0)}
-                            onMark={(mark) => onCellMark(s.id, a.id, mark)}
-                            onClear={() => onCellEdit(s.id, a.id, null)}
-                          />
-                        ) : isEditing ? (
+                        {isEditing ? (
                           <CellEditor
                             initial={hasScore ? g!.score! : null}
                             maxScore={a.maxScore}
@@ -1099,7 +1053,6 @@ export default function GradesTable({
                           <GradeCell
                             grade={g}
                             maxScore={a.maxScore}
-                            topic={topic}
                             weight={contributionsByStudent?.get(s.id)?.get(a.id) ?? null}
                           />
                         )}
@@ -1201,12 +1154,10 @@ function ColHeader({ label, stickyLeft = false }: { label: string; stickyLeft?: 
 function GradeCell({
   grade,
   maxScore,
-  topic,
   weight,
 }: {
   grade: Grade | undefined;
   maxScore: number;
-  topic?: ClassData["topics"][number];
   /** Vaznli foiz rejimi yoqilgan bo‘lsa — bahoning "Jami"ga hissasi (foiz punkt). */
   weight?: number | null;
 }) {
@@ -1230,13 +1181,6 @@ function GradeCell({
     return <div className="w-full h-full min-h-[52px]" />;
   }
   const percent = maxScore > 0 ? (grade.score / maxScore) * 100 : 0;
-  // Tanlash (select) toifa — ball oʻrniga toifa yorligʻini koʻrsatamiz.
-  const isSelect = topic?.inputMode === "select";
-  const selectLabel = isSelect
-    ? percent >= 50
-      ? topic?.passLabel ?? t("passed")
-      : topic?.failLabel ?? t("failed")
-    : null;
   return (
     <div
       className="relative w-full h-full flex flex-col items-center justify-center py-3 px-2 group-hover/cell:ring-1 group-hover/cell:ring-inset group-hover/cell:ring-foreground/30 transition-shadow"
@@ -1245,37 +1189,20 @@ function GradeCell({
       {grade.isDraft && (
         <span className="absolute top-1 right-1 size-1.5 rounded-full bg-muted-foreground" />
       )}
-      {isSelect ? (
+      <span className="text-base font-bold tabular-nums leading-none text-foreground">
+        {grade.score}
+      </span>
+      <span className="absolute bottom-1 right-1.5 text-[10px] text-muted-foreground tabular-nums leading-none">
+        /{maxScore}
+      </span>
+      {weight != null && (
         <span
-          className="flex size-6 items-center justify-center rounded-full"
-          style={{ backgroundColor: `color-mix(in srgb, ${scoreBarColor(percent)} 16%, transparent)` }}
-          title={selectLabel ?? undefined}
-          aria-label={selectLabel ?? undefined}
+          className="absolute top-1 left-1.5 text-[10px] font-semibold tabular-nums leading-none"
+          style={{ color: scoreBarColor(percent) }}
+          title={t("contributionToFinal")}
         >
-          {percent >= 50 ? (
-            <Check className="size-4" strokeWidth={3} style={{ color: scoreBarColor(percent) }} />
-          ) : (
-            <X className="size-4" strokeWidth={3} style={{ color: scoreBarColor(percent) }} />
-          )}
+          {weight.toFixed(1)}%
         </span>
-      ) : (
-        <>
-          <span className="text-base font-bold tabular-nums leading-none text-foreground">
-            {grade.score}
-          </span>
-          <span className="absolute bottom-1 right-1.5 text-[10px] text-muted-foreground tabular-nums leading-none">
-            /{maxScore}
-          </span>
-          {weight != null && (
-            <span
-              className="absolute top-1 left-1.5 text-[10px] font-semibold tabular-nums leading-none"
-              style={{ color: scoreBarColor(percent) }}
-              title={t("contributionToFinal")}
-            >
-              {weight.toFixed(1)}%
-            </span>
-          )}
-        </>
       )}
     </div>
   );
@@ -1374,103 +1301,3 @@ function CellEditor({
   );
 }
 
-/**
- * Ikkilik (Bajardi/Bajarmadi) toifa katagi — tahrir popup'i YOʻQ.
- * Chap-klik holatni aylantiradi: boʻsh → Bajardi (100%) → Bajarmadi (0%) → boʻsh.
- * Oʻng-klik → toʻliq menyu (Bajardi/Bajarmadi/Qatnashmadi/Topshirmadi/Tozalash).
- */
-function BinaryCell({
-  grade,
-  maxScore,
-  topic,
-  weight,
-  onSet,
-  onMark,
-  onClear,
-}: {
-  grade: Grade | undefined;
-  maxScore: number;
-  topic?: ClassData["topics"][number];
-  weight?: number | null;
-  onSet: (pass: boolean) => void;
-  onMark: (mark: "absent" | "unsubmitted") => void;
-  onClear: () => void;
-}) {
-  const t = useTranslations("GradesTable");
-  const passLabel = topic?.passLabel ?? t("passed");
-  const failLabel = topic?.failLabel ?? t("failed");
-  const hasScore = grade?.score !== null && grade?.score !== undefined;
-  const pass = hasScore && maxScore > 0 ? (grade!.score! / maxScore) * 100 >= 50 : null;
-
-  function cycle() {
-    if (pass === true) onSet(false); // Bajardi → Bajarmadi
-    else if (pass === false) onClear(); // Bajarmadi → boʻsh
-    else onSet(true); // boʻsh / Q / T → Bajardi
-  }
-
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            cycle();
-          }}
-          className="h-full w-full"
-        >
-          <GradeCell grade={grade} maxScore={maxScore} topic={topic} weight={weight} />
-        </div>
-      </ContextMenuTrigger>
-      <ContextMenuContent
-        className="w-48"
-        onKeyDown={(e) => {
-          // Tezkor klavishlar: menyu ochiqligida bitta harf bosib amalni bajarish.
-          const k = e.key.toLowerCase();
-          const actions: Record<string, () => void> = {
-            b: () => onSet(true),
-            x: () => onSet(false),
-            q: () => onMark("absent"),
-            t: () => onMark("unsubmitted"),
-            ...(hasScore ? { z: onClear } : {}),
-          };
-          if (actions[k]) {
-            e.preventDefault();
-            actions[k]();
-          }
-        }}
-      >
-        <ContextMenuItem onClick={() => onSet(true)}>
-          <Check className="text-success" />
-          {passLabel}
-          <ContextMenuShortcut>B</ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={() => onSet(false)}>
-          <X className="text-destructive" />
-          {failLabel}
-          <ContextMenuShortcut>X</ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem onClick={() => onMark("absent")}>
-          <UserX className="text-muted-foreground" />
-          {t("absent")}
-          <ContextMenuShortcut>Q</ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={() => onMark("unsubmitted")}>
-          <FileX className="text-muted-foreground" />
-          {t("unsubmitted")}
-          <ContextMenuShortcut>T</ContextMenuShortcut>
-        </ContextMenuItem>
-        {hasScore && (
-          <>
-            <ContextMenuSeparator />
-            <ContextMenuItem onClick={onClear}>
-              <Eraser className="text-muted-foreground" />
-              {t("clear")}
-              <ContextMenuShortcut>Z</ContextMenuShortcut>
-            </ContextMenuItem>
-          </>
-        )}
-      </ContextMenuContent>
-    </ContextMenu>
-  );
-}

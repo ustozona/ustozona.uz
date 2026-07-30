@@ -3,12 +3,21 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "@/components/ui/navigation-menu";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuContent,
+} from "@/components/ui/navigation-menu";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Menu, X, Globe, Send, Mail, Phone } from 'lucide-react';
 import Logo from "@/assets/logo/logo";
 import { Button } from "@/components/ui/button";
 import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
+import { PRODUCTS } from "@/lib/landing-nav";
 
 export type NavigationSection = {
   title: string;
@@ -135,6 +144,41 @@ const Header = ({ navigationData, className }: HeaderProps) => {
             <NavigationMenuList className="flex gap-0">
               {navigationData.map((navItem) => {
                 const isActive = navItem.href === activeHref;
+
+                // "Mahsulotlar" — oddiy havola oʻrniga mega-menyu: hech biri
+                // tayyor boʻlmasa ham, 4 mahsulot bir bosishda koʻrinadi.
+                if (navItem.title === "Mahsulotlar") {
+                  return (
+                    <NavigationMenuItem key={navItem.title}>
+                      <NavigationMenuTrigger
+                        className={cn(
+                          "h-auto bg-transparent px-2 lg:px-4 py-2 text-sm font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-background data-[state=open]:bg-background data-[state=open]:text-foreground",
+                          isActive ? "bg-background text-foreground shadow-xs" : "",
+                        )}
+                      >
+                        {navItem.title}
+                      </NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <ul className="grid w-[320px] gap-1 p-1">
+                          {PRODUCTS.map((p) => (
+                            <li key={p.slug}>
+                              <NavigationMenuLink href={`/${p.slug}`} className="flex-row items-center justify-between gap-3">
+                                <span className="flex flex-col gap-0.5">
+                                  <span className="font-medium text-foreground">{p.name}</span>
+                                  <span className="text-xs text-muted-foreground">{p.tagline}</span>
+                                </span>
+                                <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
+                                  {p.statusLabel}
+                                </Badge>
+                              </NavigationMenuLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </NavigationMenuContent>
+                    </NavigationMenuItem>
+                  );
+                }
+
                 return (
                   <NavigationMenuItem key={navItem.title}>
                     <NavigationMenuLink

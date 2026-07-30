@@ -1,0 +1,1 @@
+ALTER TABLE "assignments" ADD COLUMN "source_session_id" text;

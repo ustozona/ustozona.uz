@@ -10,10 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ColorPickerButton } from "@/components/ui/color-picker-button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TypographyMuted } from "@/components/ui/typography";
-import { PlusIcon, XIcon, PaletteIcon, ChevronDownIcon, Clock2Icon, GraduationCap } from "lucide-react";
+import { PlusIcon, XIcon, ChevronDownIcon, Clock2Icon, GraduationCap } from "lucide-react";
 
 export type ClassSlot = { day: string; start: string; end: string };
 export type ClassFormValues = { name: string; grade: number | null; subject: string; color: ClassColor; icon: ClassIconKey; description: string; slots: ClassSlot[] };
@@ -37,8 +38,7 @@ export function ClassFormModal({
   onClose: () => void;
 }) {
   const t = useTranslations("ClassFormModal");
-  const colorEntries = (Object.entries(CLASS_COLOR_HEX) as [ClassColor, string][]).filter(([n]) => n !== "gray");
-  const presetHexes = colorEntries.map(([, hex]) => hex);
+  const classColorOrder = (Object.keys(CLASS_COLOR_HEX) as ClassColor[]).filter((n) => n !== "gray");
 
   const [name, setName] = useState(initial?.name ?? "");
   const [grade, setGrade] = useState<number | null>(initial?.grade ?? null);
@@ -47,7 +47,6 @@ export function ClassFormModal({
   const [selectedIcon, setSelectedIcon] = useState<ClassIconKey>(initial?.icon ?? DEFAULT_CLASS_ICON);
   const [description, setDescription] = useState(initial?.description ?? "");
   const selectedHex = CLASS_COLOR_HEX[selectedColor];
-  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
   const SelectedIcon = CLASS_ICONS[selectedIcon];
 
@@ -125,28 +124,13 @@ export function ClassFormModal({
                 </Popover>
 
                 {/* Rang tanlash */}
-                <Popover open={isColorPickerOpen} onOpenChange={setIsColorPickerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" aria-label={t("pickColor")} className="shrink-0 border-0 shadow-sm hover:opacity-90" style={{ background: `conic-gradient(${presetHexes.join(", ")}, ${presetHexes[0]})` }}>
-                      <PaletteIcon className="size-4 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-auto p-3">
-                    <div className="grid grid-cols-5 gap-2 justify-items-center">
-                      {colorEntries.map(([colorName, hex]) => (
-                        <Button
-                          key={colorName}
-                          variant="ghost"
-                          size="icon-xs"
-                          aria-label={colorName}
-                          onClick={() => { setSelectedColor(colorName); setIsColorPickerOpen(false); }}
-                          className="size-7 rounded-full ring-2 ring-transparent hover:ring-border ring-offset-2 ring-offset-card shadow-sm p-0 min-w-0 min-h-0"
-                          style={{ backgroundColor: hex, outline: colorName === selectedColor ? `3px solid ${hex}` : undefined, outlineOffset: "2px" }}
-                        />
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <ColorPickerButton
+                  value={selectedColor}
+                  onChange={setSelectedColor}
+                  colors={classColorOrder}
+                  hexOf={(c) => CLASS_COLOR_HEX[c]}
+                  ariaLabel={t("pickColor")}
+                />
               </div>
             </div>
 

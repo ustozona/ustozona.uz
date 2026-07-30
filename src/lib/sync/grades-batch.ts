@@ -47,21 +47,20 @@ export const topicUpsertSchema = z.object({
   color: z.string().max(30),
   purpose: z.enum(["formative", "summative"]),
   weightPercent: z.number().int().min(0).max(1000),
-  inputMode: z.enum(["score", "select"]),
   scaleKind: z.string().max(30).optional(),
-  passLabel: z.string().max(100),
-  failLabel: z.string().max(100),
   sortOrder: z.number().int().min(0),
 });
 
 export const assignmentUpsertSchema = z.object({
   id,
   classId: id,
-  topicId: id,
+  topicId: id.nullable(),
   title: z.string().min(1).max(300),
   maxScore: z.number().int().min(1).max(100000),
   date: z.string().max(20).optional(),
   dueDate: z.string().max(20).optional(),
+  kind: z.enum(["manual", "test", "deck"]).optional(),
+  instructions: z.string().max(20000).optional(),
   sortOrder: z.number().int().min(0),
 });
 

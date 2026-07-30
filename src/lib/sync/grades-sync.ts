@@ -73,10 +73,7 @@ function toTopicUpsert(classId: string, t: Topic, sortOrder: number): TopicUpser
     color: t.color,
     purpose: t.purpose,
     weightPercent: t.weightPercent,
-    inputMode: t.inputMode,
     ...(t.scaleKind ? { scaleKind: t.scaleKind } : {}),
-    passLabel: t.passLabel,
-    failLabel: t.failLabel,
     sortOrder,
   };
 }
@@ -94,6 +91,8 @@ function toAssignmentUpsert(
     maxScore: a.maxScore,
     ...(a.date ? { date: a.date } : {}),
     ...(a.dueDate ? { dueDate: a.dueDate } : {}),
+    ...(a.kind ? { kind: a.kind } : {}),
+    ...(a.instructions ? { instructions: a.instructions } : {}),
     sortOrder,
   };
 }

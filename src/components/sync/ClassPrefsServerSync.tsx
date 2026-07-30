@@ -16,7 +16,11 @@ import {
 type ClassState = ReturnType<typeof useClassStore.getState>;
 
 function selectSnapshot(s: ClassState) {
-  return { selectedClassId: s.selectedClassId, journalScale: s.journalScale };
+  return {
+    selectedClassId: s.selectedClassId,
+    journalScale: s.journalScale,
+    journalScaleByClass: s.journalScaleByClass,
+  };
 }
 
 export default function ClassPrefsServerSync() {

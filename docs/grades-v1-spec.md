@@ -18,7 +18,7 @@ Tizim shunchaki "ball yigʻish asbobi" emas, **valid inferensiya** (oʻquvchi bi
 |---|---|---|
 | Baholash toifasi | tugma: **"Toifa"**, modal: **"Baholash toifasi"** | Topshiriqlar guruhi (Uy vazifasi, Nazorat, Imtihonlar…). Oʻqituvchi yaratadi. Ichki/hujjat atamasi: "domen". |
 | Topshiriq | "Topshiriq" | Bitta baholash tadbiri (bitta ustun). |
-| Baholash turi | "Baholash turi" | Summativ / Formativ. **Toifa darajasida** belgilanadi (topshiriqda emas). "Maqsad" emas. |
+| Baholash turi | Toifa modalida savol: **"Yakuniy bahoga: Kiradi / Kirmaydi"** | Summativ / Formativ. **Toifa darajasida** belgilanadi (topshiriqda emas). "Maqsad" emas. Modalda pedagogika atamasi (Summativ/Formativ) soʻralmaydi — natija tilida soʻraladi; atama faqat **roʻyxat badge'ida** koʻrinadi, oʻqituvchi uni natijani koʻrib oʻrganadi. |
 | Toifa % | "Vazn" | Toifaning yakuniy bahodagi ulushi (faqat Summativ toifalarda). |
 | Baholash shkalasi | "Shkala" | Foiz qaysi yorliqda koʻrsatiladi (5-ballik, A+…F, Pass/Fail…). **Toifa darajasida**, presetdan. |
 
@@ -86,7 +86,8 @@ Eski **Summativ** va **Trend** ustunlari bitta **"Holat"** ustuniga birlashtiril
 - **Faqat preset** roʻyxatdan tanlanadi; **chegara (cut-score) raqamlari qulflangan** — oʻqituvchi qoʻlda surmaydi (Daisy: standartlar izchilligi).
 - **"Custom" (qoʻlda chegara) v1 da YOʻQ.**
 - **Pass/Fail (va sifat) toifalarda yorliq matni tahrirlanadi** (Oʻtdi/Oʻtmadi, Bajardi/Bajarmadi, Ha/Yoʻq), lekin chegara (50%) emas.
-- **Yakuniy kurs bahosi** bitta **kanonik shkalada** koʻrsatiladi (toifalar har xil boʻlgani uchun) — bu jadval toolbar'idagi global shkala dropdown'i. (Summativ jami ustun + sinf oʻrtachasi shu shkalada.)
+- ❌ **"Tanlash" (yorliq belgilash) kiritish usuli OLIB TASHLANDI (2026-07-30).** Ball — yagona kiritish usuli. Sabab (Daisy Christodoulou tahlili asosida): yorliq belgilash (masalan "Faol qatnashdi") aslida mavhum, subyektiv rubrika — akademik jurnalning ishonchliligini pasaytiradi. «Uy vazifasi topshirildimi» kabi *compliance* (tartibga boʻysunish) signallari endi **Xulq-atvor tizimi**da (`behavior_*` jadvallari) kuzatiladi — akademik jurnaldan mustaqil, chorak bahoga taʼsir qilmaydi. `topics.inputMode`/`passLabel`/`failLabel` ustunlari va `SelectCell` UI'i sxemadan chiqarildi (`drizzle/0024_same_photon.sql`).
+- **Yakuniy kurs bahosi shkalasi — sinf darajasida** (`journalScaleByClass[classId]`), oʻqituvchi darajasidagi `journalScale` esa **fallback** (yangi sinf/eski hisob avtomatik ishlaydi). Sinflar aro jamlanma koʻrinishlar (Statistika umumiy sahifasi) **teacher default**da qoladi — bitta sinfning shkalasi hammasiga tatbiq etilmaydi. Jadvaldagi `Jami` ustuni va sinf oʻrtachasi shu (sinf) shkalada koʻrsatiladi.
 
 **Maktab shkala kutubxonasi (preset):**
 - 🇺🇿 Oʻzbekiston (yuqorida, default): **5-ballik** (default), **10-ballik**, **100-ballik/Foiz**, **Pass/Fail** (yorliq tahrirlanadi), **Sifat yorliqlari** (Aʼlo/Yaxshi/Qoniqarli/Qoniqarsiz).
@@ -105,22 +106,22 @@ Eski **Summativ** va **Trend** ustunlari bitta **"Holat"** ustuniga birlashtiril
 
 - **Hammasi ochiq, Collapsible YOʻQ.** Toʻrt maydon:
   1. Sarlavha (`Input`, majburiy)
-  2. Toifa (`Select`, majburiy) — **Summativ/Formativ va shkala toifadan meros olinadi**
+  2. Toifa (dropdown, **ixtiyoriy** — 2026-07-30: `topicId` NULL boʻlishi mumkin, boʻsh boʻlsa jadvalda **"Toifasiz"** virtual guruhga tushadi: DB qatori emas, tahrirlanmaydi/oʻchmaydi, vazn olmaydi) — **Summativ/Formativ va shkala toifadan meros olinadi**
   3. Sana (`Popover`+`Calendar`, default bugun)
   4. Maksimal ball (`Input number`, default 100)
 - **"Baholash turi" (Summativ/Formativ) topshiriqda YOʻQ** — toifadan keladi.
 - Eski "Vazn (Yengil/Oddiy/Ogʻir/Imtihon)" maydoni **olib tashlanadi**.
-- **v2:** topshiriq → toʻliq hujjat (yoʻriqnoma, ilova, oʻquvchi topshiriqlari, Assign/Return — Google Classroom uslubi).
+- **Sxemaga qoʻshildi (2026-07-30):** `assignments.kind` (`manual` | `test` | `deck` — qoʻlda / test / taqdimot, default `manual`) va `assignments.instructions` (oddiy matn). Hozircha faqat `manual` uchun muharrir bor; `test`/`deck` **tanlanadi va saqlanadi**, lekin "tez orada" holatida — hech qachon vaʼda qilinmagan funksiya sifatida koʻrsatilmaydi.
+- **v2:** topshiriq → toʻliq hujjat (yoʻriqnoma, ilova, oʻquvchi topshiriqlari, Assign/Return — Google Classroom uslubi; toʻliq ekran overlay muharriri — bu C ishning keyingi bosqichiga qoldirildi).
 
 ## 7. Modal: "Baholash toifasi"
 
-- Maydonlar: nom + rang, qaysi sinflarga, **Baholash turi (Summativ/Formativ)**, Kiritish usuli (Ball/Tanlash), **Toifa % (Vazn)**, **Baholash shkalasi (preset)**.
-- **Baholash turi bitta tanlovga "Vaznli/Vaznsiz"ni yutadi:**
-  - **Summativ** → Toifa % (Vazn) koʻrinadi, yakuniyga kiradi.
-  - **Formativ** → Vazn yashirin, faqat signal.
+- Maydonlar: nom + rang, qaysi sinflarga, **Vazn** (dropdown: Vaznli/Vaznsiz + `%` — Vaznli tanlansa Toifa % koʻrinadi), **Baholash shkalasi (preset)**. Kiritish usuli maydoni **YOʻQ** — Ball yagona usul (2026-07-30, "Tanlash" olib tashlandi, §4 ga qarang).
+  - **Vaznli** → `purpose: summative`, kiritilgan vazn.
+  - **Vaznsiz** → `purpose: formative`, `weightPercent: 0`.
 - **Toifa % editori:** oddiy `Input` + jonli `Progress` (normallashgan ulush). Yigʻindi **kam ham, koʻp ham** boʻlsa `Alert` bilan ogohlantirish.
-- **Cut-score spreadsheet jadvali OLIB TASHLANADI** — shkala endi preset dropdown (`Select`).
-- Roʻyxat kartalari — `.list-card`, `topicHex` accent.
+- **Cut-score spreadsheet jadvali OLIB TASHLANADI** — shkala endi preset dropdown (`Select`). `Custom` preset ham YOʻQ.
+- Roʻyxat kartalari — `.list-card`, `topicHex` accent; roʻyxat **grid/list/table** koʻrinish tabi bilan almashtiriladi (classes sahifasidagi naqsh).
 
 ## 8. Modal: "Qayta ishlatish"
 
@@ -137,10 +138,9 @@ Eski **Summativ** va **Trend** ustunlari bitta **"Holat"** ustuniga birlashtiril
 | Yuza | Komponentlar |
 |---|---|
 | Yangi topshiriq modali | `Dialog`, `Form`/`FormField`, `Input`, `Select`, `Popover`+`Calendar` |
-| Baholash toifasi modali | `Dialog`, `ToggleGroup` (Baholash turi, Kiritish usuli), `Select` (shkala), `Input`+`Progress` (Toifa %), `Alert` (status), `.list-card` |
+| Baholash toifasi modali | `Dialog`, `Select` (Vazn, shkala), `Input`+`Progress` (Toifa %), `Alert` (status), `.list-card` |
 | Jadval | mavjud custom `Table` (TanStack'ga oʻtmaydi) + `Tooltip` (ishonchlilik) |
 | Nashr tasdigʻi | `AlertDialog` |
-| Baholash turi / Kiritish usuli tanlovi | `ToggleGroup` (segmented), qoʻlbola `TogglePill` oʻrniga |
 
 Tokenlar: `text-label`, `.text-caption`, `scoreBarColor`, `topicHex`, `classTints`. Xom Tailwind/hex yoʻq.
 Yangi oʻrnatish: majburiy emas (ixtiyoriy `Kbd`).
@@ -148,7 +148,8 @@ Yangi oʻrnatish: majburiy emas (ixtiyoriy `Kbd`).
 ## 11. Tuzatilishi shart boʻlgan mavjud defektlar
 
 1. **Cut-score editing olib tashlanishi** ilgari topilgan "shkala `rows` saqlanmaydi" defektini **yopadi** — endi shkala preset, qoʻlda tahrir yoʻq.
-2. **Sinflar aro vazn jimgina tekislanadi:** tahrirda `Math.max(...weights)` olinib, saqlasa hammasiga bir xil yoziladi. Per-sinf farq yoʻqoladi — yo saqlanishi, yo ataylab "barchasiga tenglashtirish" deb soʻralishi kerak.
+2. **Sinflar aro vazn jimgina tekislanadi:** tahrirda `Math.max(...weights)` olinib, saqlasa hammasiga bir xil yoziladi. Per-sinf farq yoʻqoladi — yo saqlanishi, yo ataylab "barchasiga tenglashtirish" deb soʻralishi kerak. ⚠️ Hali ochiq — C ishda tegilmadi.
+3. ⚠️ **ESKIRGAN (2026-07-30, tarixiy):** `select` rejimi + sifat shkalasi mos kelmasligi `tierMidpoint()` bilan tuzatilgan edi, lekin shu kunning oxirida `select` kiritish usulining oʻzi butunlay olib tashlandi (§4) — bu yozuv endi amal qilmaydi, faqat tarix uchun saqlanadi.
 
 ## 12. v1 doirasidan tashqari (v2+)
 

@@ -606,12 +606,12 @@ export function upcomingDeadlines(
   const topicMap = new Map(classData.topics.map((t) => [t.id, t]));
   return classData.assignments
     .filter((a) => a.dueDate && a.dueDate >= todayKey && a.dueDate <= horizon)
-    .filter((a) => (topicMap.get(a.topicId)?.purpose ?? "summative") === "summative")
+    .filter((a) => (topicMap.get(a.topicId ?? "")?.purpose ?? "summative") === "summative")
     .map((a) => ({
       assignmentId: a.id,
       title: a.title,
       dueDate: a.dueDate!,
-      topicName: topicMap.get(a.topicId)?.name ?? "",
+      topicName: topicMap.get(a.topicId ?? "")?.name ?? "",
     }))
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 }
@@ -675,7 +675,7 @@ export function assignmentQuality(classData: ClassData, range: DateRange, isYear
     rows.push({
       assignmentId: a.id,
       title: a.title,
-      topicName: topicMap.get(a.topicId)?.name ?? "",
+      topicName: topicMap.get(a.topicId ?? "")?.name ?? "",
       p,
       d,
       n: pcts.length,

@@ -38,11 +38,15 @@ import { Badge } from "@/components/ui/badge";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { TOPIC_COLOR_HEX, type Topic, type Assignment } from "@/lib/grades-data";
 
+/** Select'da boʻsh qiymat ishlamaydi — "Toifasiz" shu sentinel bilan belgilanadi. */
+export const NO_TOPIC_VALUE = "__no_topic__";
+
 function buildFormSchema(t: (key: string) => string) {
   return z.object({
     title: z.string().min(1, t("titleRequired")),
     maxScore: z.number().min(1, t("maxScoreMin")).max(1000, t("maxScoreMax")),
-    topicId: z.string().min(1, t("topicRequired")),
+    /** "" / NO_TOPIC_VALUE = "Toifasiz" (topicId: null). */
+    topicId: z.string(),
     date: z.string().min(1, t("dateRequired")),
     /** Topshirish muddati — ixtiyoriy; xulq avto-ball qoidasi shu muddatga qaraydi. */
     dueDate: z.string().optional(),
@@ -55,7 +59,7 @@ type Props = {
   topics: Topic[];
   /** Mavjud topshiriqlar — maksimal ball takliflarini hisoblash uchun. */
   assignments?: Assignment[];
-  initial?: Partial<AssignmentFormValues>;
+  initial?: Partial<Omit<AssignmentFormValues, "topicId">> & { topicId?: string | null };
   mode?: "create" | "edit";
   onClose: () => void;
   onSubmit: (input: AssignmentFormValues) => void;
@@ -64,21 +68,16 @@ type Props = {
 /**
  * Maksimal ball takliflari: oʻqituvchi avval kiritgan qiymatlardan.
  * Saralash — (1) tanlangan toifada eng koʻp ishlatilgan, (2) global eng koʻp.
- * `select` toifalar (yorliqli) chiqarib tashlanadi — ularda maxScore maʼnosiz.
  */
 function buildScoreSuggestions(
   assignments: Assignment[],
-  topics: Topic[],
   selectedTopicId: string,
   limit = 3
 ): number[] {
-  const scoreTopicIds = new Set(
-    topics.filter((t) => (t.inputMode ?? "score") === "score").map((t) => t.id)
-  );
   const sameTopic = new Map<number, number>();
   const global = new Map<number, number>();
   for (const a of assignments) {
-    if (!scoreTopicIds.has(a.topicId)) continue;
+    if (!a.topicId) continue;
     if (!a.maxScore || a.maxScore <= 0) continue;
     global.set(a.maxScore, (global.get(a.maxScore) ?? 0) + 1);
     if (a.topicId === selectedTopicId) {
@@ -123,19 +122,19 @@ export default function NewAssignmentModal({
     defaultValues: {
       title: initial?.title ?? "",
       maxScore: initial?.maxScore ?? 100,
-      topicId: initial?.topicId ?? topics[0]?.id ?? "",
+      topicId:
+        initial && "topicId" in initial
+          ? (initial.topicId ?? NO_TOPIC_VALUE)
+          : (topics[0]?.id ?? NO_TOPIC_VALUE),
       date: initial?.date ?? today(),
       dueDate: initial?.dueDate ?? "",
     },
   });
 
   const watchTopicId = form.watch("topicId");
-  const selectedTopic = topics.find((t) => t.id === watchTopicId);
-  // Toifa "select" (yorliq) bilan baholansa — maksimal ball maʼnosiz; yashiramiz.
-  const isScoreTopic = (selectedTopic?.inputMode ?? "score") === "score";
 
   const suggestions = useMemo(
-    () => buildScoreSuggestions(assignments, topics, watchTopicId),
+    () => buildScoreSuggestions(assignments, watchTopicId),
     [assignments, topics, watchTopicId]
   );
 
@@ -209,6 +208,12 @@ export default function NewAssignmentModal({
                               </span>
                             </SelectItem>
                           ))}
+                          <SelectItem value={NO_TOPIC_VALUE}>
+                            <span className="flex items-center gap-2 text-muted-foreground">
+                              <span className="size-2.5 rounded-full shrink-0 border border-dashed border-muted-foreground/50" />
+                              {t("noTopic")}
+                            </span>
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       {selected && (
@@ -224,9 +229,6 @@ export default function NewAssignmentModal({
                             {selected.purpose === "formative"
                               ? t("formativeBadge")
                               : t("summativeBadge")}
-                          </Badge>
-                          <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground">
-                            {selected.inputMode === "select" ? t("labelModeBadge") : t("scoreModeBadge")}
                           </Badge>
                         </div>
                       )}
@@ -322,8 +324,7 @@ export default function NewAssignmentModal({
                 )}
               />
 
-              {isScoreTopic ? (
-                <FormField
+              <FormField
                   control={form.control}
                   name="maxScore"
                   render={({ field }) => (
@@ -387,21 +388,6 @@ export default function NewAssignmentModal({
                     </FormItem>
                   )}
                 />
-              ) : (
-                <div className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
-                  {t("labelModeNotice")}
-                  {selectedTopic && (
-                    <>
-                      {" ("}
-                      <span className="font-medium text-foreground">{selectedTopic.passLabel}</span>
-                      {" / "}
-                      <span className="font-medium text-foreground">{selectedTopic.failLabel}</span>
-                      {")"}
-                    </>
-                  )}
-                  {t("labelModeNoticeSuffix")}
-                </div>
-              )}
             </div>
 
             <DialogFooter className="px-6 py-4 border-t border-border bg-muted/20 shrink-0">

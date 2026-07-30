@@ -1,30 +1,27 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
-  Ban,
   X,
   Plus,
   Tag,
+  Ban,
   Info,
   Pencil,
   Trash2,
   ChevronDown,
   AlertTriangle,
   CheckCircle2,
-  ArrowRight,
 } from "lucide-react";
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -39,8 +36,8 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -50,29 +47,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CardTitle } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { TypographyMuted, TypographySmall } from "@/components/ui/typography";
+import { TypographyMuted } from "@/components/ui/typography";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
+import { ColorPickerButton } from "@/components/ui/color-picker-button";
 import { cn } from "@/lib/utils";
 import {
   TOPIC_COLOR_HEX,
   TOPIC_COLOR_ORDER,
+  GRADING_SCALE_PRESETS,
+  SCALE_SHORT_LABELS,
   classColor,
   topicTints,
   type GradingScale,
-  type InputMode,
   type TopicColor,
   type TopicPurpose,
   type ClassData,
 } from "@/lib/grades-data";
+import { getScaleBoundaries } from "@/lib/grade-scale";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 
 function buildFormSchema(t: (key: string) => string) {
@@ -81,11 +80,8 @@ function buildFormSchema(t: (key: string) => string) {
     name: z.string().min(1, t("nameRequired")),
     color: z.enum(TOPIC_COLOR_ORDER as unknown as [string, ...string[]]),
     purpose: z.enum(["summative", "formative"]),
-    inputMode: z.enum(["score", "select"]),
     weightPercent: z.number().min(0).max(100),
     scaleKind: z.string(),
-    passLabel: z.string().min(1),
-    failLabel: z.string().min(1),
   });
 }
 
@@ -98,11 +94,8 @@ export type TopicApplyPayload = {
   name: string;
   color: TopicColor;
   purpose: TopicPurpose;
-  inputMode: InputMode;
   scaleKind: GradingScale;
   weightPercent: number;
-  passLabel: string;
-  failLabel: string;
   isEdit: boolean;
 };
 
@@ -120,10 +113,7 @@ type TopicGroup = {
   name: string;
   color: TopicColor;
   purpose: TopicPurpose;
-  inputMode: InputMode;
   scaleKind: GradingScale;
-  passLabel: string;
-  failLabel: string;
   classIds: string[];
   weights: number[];
 };
@@ -134,11 +124,8 @@ const DEFAULTS: Omit<TopicFormValues, "classIds"> = {
   name: "",
   color: "orange",
   purpose: "summative",
-  inputMode: "score",
   weightPercent: 20,
   scaleKind: "five",
-  passLabel: "Bajardi",
-  failLabel: "Bajarmadi",
 };
 
 export default function NewTopicModal({
@@ -174,10 +161,7 @@ export default function NewTopicModal({
             name: t.name,
             color: t.color,
             purpose: t.purpose ?? "summative",
-            inputMode: t.inputMode,
-            scaleKind: t.scaleKind ?? (t.inputMode === "score" ? "five" : "pass_fail"),
-            passLabel: t.passLabel,
-            failLabel: t.failLabel,
+            scaleKind: t.scaleKind ?? "five",
             classIds: [cid],
             weights: [t.weightPercent],
           });
@@ -214,10 +198,9 @@ export default function NewTopicModal({
   });
 
   const watchPurpose = form.watch("purpose");
-  const watchInputMode = form.watch("inputMode");
   const watchClassIds = form.watch("classIds");
   const watchWeight = form.watch("weightPercent");
-  const isScore = watchInputMode === "score";
+  const watchScaleKind = form.watch("scaleKind") as GradingScale;
   const isSummative = watchPurpose === "summative";
 
   function openCreate() {
@@ -234,11 +217,8 @@ export default function NewTopicModal({
       name: g.name,
       color: g.color,
       purpose: g.purpose,
-      inputMode: g.inputMode,
       weightPercent: weight > 0 ? weight : 20,
       scaleKind: g.scaleKind,
-      passLabel: g.passLabel,
-      failLabel: g.failLabel,
     });
     setEditing({ mode: "edit", groupId: g.groupId });
   }
@@ -251,12 +231,9 @@ export default function NewTopicModal({
       name: values.name.trim(),
       color: values.color as TopicColor,
       purpose: values.purpose as TopicPurpose,
-      inputMode: values.inputMode as InputMode,
       scaleKind: values.scaleKind as GradingScale,
       // Formativ toifa vaznsiz (faqat signal).
       weightPercent: values.purpose === "summative" ? values.weightPercent : 0,
-      passLabel: values.passLabel.trim() || "Bajardi",
-      failLabel: values.failLabel.trim() || "Bajarmadi",
       isEdit: editing.mode === "edit",
     });
     setEditing(null);
@@ -277,71 +254,14 @@ export default function NewTopicModal({
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        width="920px"
+        width="640px"
         showCloseButton={false}
         className="p-0 gap-0 overflow-hidden bg-card"
         onInteractOutside={(e) => {
           if ((e.target as Element)?.closest?.("[data-sonner-toaster]")) e.preventDefault();
         }}
       >
-        <div className="flex h-[min(600px,88vh)]">
-          {/* Chap yoʻriqnoma */}
-          <aside className="hidden md:flex w-[300px] shrink-0 flex-col border-r border-border bg-muted/30">
-            <div className="px-7 pt-6 pb-5">
-              <DialogTitle className="heading-section text-foreground">{t("sidebarTitle")}</DialogTitle>
-              <DialogDescription className="text-caption mt-1">
-                {t("sidebarDescription")}
-              </DialogDescription>
-            </div>
-            <ScrollArea className="flex-1 min-h-0 px-7">
-              <div className="space-y-5 pb-4">
-                <HelpSection title={t("gradingTypeSection")}>
-                  <HelpItem
-                    title={t("summativeHelpTitle")}
-                    tag={<WeightDonut percent={20} />}
-                    text={t("summativeHelpText")}
-                  />
-                  <HelpItem
-                    title={t("formativeHelpTitle")}
-                    tag={<Ban className="size-4 text-muted-foreground" />}
-                    text={t("formativeHelpText")}
-                  />
-                </HelpSection>
-
-                <HelpSection title={t("inputModeSection")}>
-                  <HelpItem
-                    title={t("scoreHelpTitle")}
-                    text={t("scoreHelpText")}
-                  />
-                  <HelpItem
-                    title={t("selectHelpTitle")}
-                    tag={
-                      <span className="flex items-center gap-0.5 text-[9px] font-bold">
-                        <span className="text-success">{t("passShort")}</span>
-                        <span className="text-muted-foreground">/</span>
-                        <span className="text-destructive">{t("failShort")}</span>
-                      </span>
-                    }
-                    text={t("selectHelpText")}
-                  />
-                </HelpSection>
-
-                <Link
-                  href="/dashboard/grades/help"
-                  className="group flex items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-muted/50"
-                >
-                  <span className="flex flex-col">
-                    <span className="text-xs font-semibold text-foreground">{t("readMore")}</span>
-                    <span className="text-[11px] text-muted-foreground">
-                      {t("readMoreDesc")}
-                    </span>
-                  </span>
-                  <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
-                </Link>
-              </div>
-            </ScrollArea>
-          </aside>
-
+        <div className="flex h-[min(720px,88vh)]">
           {/* Oʻng panel */}
           <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
             {/* Header */}
@@ -350,9 +270,9 @@ export default function NewTopicModal({
                 <SectionIcon>
                   <Tag />
                 </SectionIcon>
-                <CardTitle>
+                <DialogTitle className="text-lg leading-none font-semibold tracking-tight">
                   {editing ? (editing.mode === "edit" ? t("editTopicTitle") : t("newTopicTitle")) : t("allTopicsTitle")}
-                </CardTitle>
+                </DialogTitle>
                 {!editing && (
                   <TypographyMuted className="text-sm">({visibleGroups.length})</TypographyMuted>
                 )}
@@ -363,9 +283,9 @@ export default function NewTopicModal({
               </DialogClose>
             </div>
 
-            {/* Toolbar: sinf boʻyicha filtr + yangi toifa */}
+            {/* Toolbar: sinf boʻyicha filtr + koʻrinish + yangi toifa */}
             {!editing && (
-              <div className="shrink-0 flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+              <div className="shrink-0 flex items-center gap-3 border-b border-border px-5 py-3">
                 <Select value={filterClassId} onValueChange={setFilterClassId}>
                   <SelectTrigger className="h-9 w-[200px] rounded-lg bg-card text-sm font-medium">
                     <span className="flex items-center gap-2 truncate">
@@ -396,7 +316,8 @@ export default function NewTopicModal({
                     ))}
                   </SelectContent>
                 </Select>
-                <Button size="sm" onClick={openCreate} className="gap-1.5 font-semibold">
+
+                <Button size="sm" onClick={openCreate} className="ml-auto gap-1.5 font-semibold">
                   <Plus className="size-4" />
                   {t("newTopicButton")}
                 </Button>
@@ -415,9 +336,9 @@ export default function NewTopicModal({
                     </EmptyHeader>
                   </Empty>
                 ) : (
-                  <div className="flex flex-col gap-2 py-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 py-4">
                     {visibleGroups.map((g) => (
-                      <GroupRow
+                      <GroupCard
                         key={g.groupId}
                         group={g}
                         totalClasses={totalClasses}
@@ -436,184 +357,156 @@ export default function NewTopicModal({
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="absolute inset-0 z-20 flex flex-col bg-card animate-in fade-in-0 slide-in-from-right-4 duration-fast"
                   >
-                    <ScrollArea className="flex-1 min-h-0">
-                      <div className="px-6 py-5 flex flex-col gap-5 max-w-[560px]">
-                        {/* Nom + rang */}
-                        <div className="flex items-center gap-2">
-                          <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem className="flex-1 space-y-0">
-                                <FormControl>
-                                  <Input
-                                    placeholder={t("namePlaceholder")}
-                                    maxLength={100}
-                                    autoFocus
-                                    className="h-9 rounded-lg bg-card text-sm"
-                                    {...field}
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                      <div className="grid h-full grid-cols-1 md:grid-cols-2">
+                        {/* Chap ustun: nom, sinflar, kiritish usuli, yakuniy bahoga */}
+                        <ScrollArea className="h-full md:border-r md:border-border">
+                          <div className="px-6 py-5 flex flex-col gap-5">
+                            {/* Nom + rang */}
+                            <div className="flex flex-col gap-1.5">
+                              <FieldLabel>{t("nameFieldLabel")}</FieldLabel>
+                              <div className="flex items-center gap-2">
+                                <FormField
+                                  control={form.control}
+                                  name="name"
+                                  render={({ field }) => (
+                                    <FormItem className="flex-1 space-y-0">
+                                      <FormControl>
+                                        <Input
+                                          placeholder={t("namePlaceholder")}
+                                          maxLength={100}
+                                          autoFocus
+                                          className="h-9 rounded-lg bg-card text-sm"
+                                          {...field}
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name="color"
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-0">
+                                      <FormControl>
+                                        <ColorPicker selected={field.value as TopicColor} onSelect={field.onChange} />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Sinflar */}
+                            <FormField
+                              control={form.control}
+                              name="classIds"
+                              render={() => (
+                                <FormItem className="space-y-1.5">
+                                  <FieldLabel hint={t("classesFieldHint")}>
+                                    {t("classesFieldLabel")}
+                                  </FieldLabel>
+                                  <ClassMultiSelect
+                                    classEntries={classEntries}
+                                    selected={watchClassIds}
+                                    totalClasses={totalClasses}
+                                    allHexes={allHexes}
+                                    onToggle={toggleClass}
+                                    onToggleAll={toggleAllClasses}
                                   />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="color"
-                            render={({ field }) => (
-                              <FormItem className="space-y-0">
-                                <FormControl>
-                                  <ColorPicker selected={field.value as TopicColor} onSelect={field.onChange} />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
-                        {/* Sinflar */}
-                        <FormField
-                          control={form.control}
-                          name="classIds"
-                          render={() => (
-                            <FormItem className="space-y-1.5">
-                              <FieldLabel hint={t("classesFieldHint")}>
-                                {t("classesFieldLabel")}
-                              </FieldLabel>
-                              <ClassMultiSelect
-                                classEntries={classEntries}
-                                selected={watchClassIds}
-                                totalClasses={totalClasses}
-                                allHexes={allHexes}
-                                onToggle={toggleClass}
-                                onToggleAll={toggleAllClasses}
-                              />
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Baholash turi */}
-                        <FormField
-                          control={form.control}
-                          name="purpose"
-                          render={({ field }) => (
+                            {/* Vazn */}
                             <FormItem className="space-y-1.5">
                               <FieldLabel hint={t("purposeFieldHint")}>
                                 {t("purposeFieldLabel")}
                               </FieldLabel>
-                              <ToggleGroup
-                                type="single"
-                                value={field.value}
-                                onValueChange={(v) => v && field.onChange(v)}
-                                className="grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1"
-                              >
-                                <PurposePill value="summative" label={t("summativeBadge")} hint={t("includedInTotal")} selected={field.value === "summative"} />
-                                <PurposePill value="formative" label={t("formativeBadge")} hint={t("excludedFromTotal")} selected={field.value === "formative"} />
-                              </ToggleGroup>
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Kiritish usuli */}
-                        <FormField
-                          control={form.control}
-                          name="inputMode"
-                          render={({ field }) => (
-                            <FormItem className="space-y-1.5">
-                              <FieldLabel hint={t("inputModeFieldHint")}>
-                                {t("inputModeFieldLabel")}
-                              </FieldLabel>
-                              <ToggleGroup
-                                type="single"
-                                value={field.value}
-                                onValueChange={(v) => v && field.onChange(v)}
-                                className="grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1"
-                              >
-                                <ToggleGroupItem value="score" className="rounded-md text-sm data-[state=on]:bg-card data-[state=on]:shadow-sm">{t("scoreOption")}</ToggleGroupItem>
-                                <ToggleGroupItem value="select" className="rounded-md text-sm data-[state=on]:bg-card data-[state=on]:shadow-sm">{t("selectOption")}</ToggleGroupItem>
-                              </ToggleGroup>
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Toifa % — faqat summativda */}
-                        {isSummative && (
-                          <FormField
-                            control={form.control}
-                            name="weightPercent"
-                            render={({ field }) => (
-                              <FormItem className="space-y-1.5">
-                                <FieldLabel hint={t("weightFieldHint")}>
-                                  {t("weightFieldLabel")}
-                                </FieldLabel>
-                                <div className="flex items-center gap-3">
-                                  <div className="relative w-24 shrink-0">
-                                    <Input
-                                      type="number"
-                                      min={0}
-                                      max={100}
-                                      className="h-9 w-full rounded-lg bg-card pr-7 text-right text-sm tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                      name={field.name}
-                                      ref={field.ref}
-                                      onBlur={field.onBlur}
-                                      value={field.value}
-                                      onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                    />
-                                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                                      %
-                                    </span>
-                                  </div>
-                                  <Progress value={Math.min(Math.max(watchWeight || 0, 0), 100)} className="h-2 flex-1" />
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                        )}
-
-                        {/* Ikkilik + summativ ogohlantirishi (soxta aniqlik) */}
-                        {!isScore && isSummative && (
-                          <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2.5">
-                            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
-                            <TypographyMuted className="text-xs leading-snug text-foreground">
-                              {t("binaryWarningPrefix")}{" "}
-                              <span className="font-semibold">{t("binaryWarningEmphasis")}</span>{t("binaryWarningMiddle")}
-                              <span className="font-semibold">{t("formativeBadge")}</span>{t("binaryWarningSuffix")}
-                            </TypographyMuted>
-                          </div>
-                        )}
-
-                        {/* Pass/Fail yorliqlari — faqat select rejimida */}
-                        {!isScore && (
-                          <div className="grid grid-cols-2 gap-3">
-                            <FormField
-                              control={form.control}
-                              name="passLabel"
-                              render={({ field }) => (
-                                <FormItem className="space-y-1.5">
-                                  <FieldLabel>{t("passLabelField")}</FieldLabel>
-                                  <FormControl>
-                                    <Input className="h-9 rounded-lg bg-card text-sm" {...field} />
-                                  </FormControl>
-                                </FormItem>
+                              <div className="flex items-center gap-3">
+                                <FormField
+                                  control={form.control}
+                                  name="purpose"
+                                  render={({ field }) => (
+                                    <Select value={field.value} onValueChange={field.onChange}>
+                                      <SelectTrigger className="h-9 flex-1 rounded-lg bg-card text-sm font-medium">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent position="popper">
+                                        <SelectItem value="summative">{t("countsInLabel")}</SelectItem>
+                                        <SelectItem value="formative">{t("countsOutLabel")}</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
+                                {isSummative && (
+                                  <FormField
+                                    control={form.control}
+                                    name="weightPercent"
+                                    render={({ field }) => (
+                                      <div className="relative w-24 shrink-0">
+                                        <Input
+                                          type="number"
+                                          min={0}
+                                          max={100}
+                                          className="h-9 w-full rounded-lg bg-card pr-7 text-right text-sm tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                          name={field.name}
+                                          ref={field.ref}
+                                          onBlur={field.onBlur}
+                                          value={field.value}
+                                          onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
+                                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                                          %
+                                        </span>
+                                      </div>
+                                    )}
+                                  />
+                                )}
+                              </div>
+                              {isSummative && (
+                                <Progress value={Math.min(Math.max(watchWeight || 0, 0), 100)} className="h-2" />
                               )}
-                            />
+                            </FormItem>
+
+                            {/* Baholash shkalasi */}
                             <FormField
                               control={form.control}
-                              name="failLabel"
+                              name="scaleKind"
                               render={({ field }) => (
                                 <FormItem className="space-y-1.5">
-                                  <FieldLabel>{t("failLabelField")}</FieldLabel>
-                                  <FormControl>
-                                    <Input className="h-9 rounded-lg bg-card text-sm" {...field} />
-                                  </FormControl>
+                                  <FieldLabel hint={t("scaleKindFieldHint")}>
+                                    {t("scaleKindFieldLabel")}
+                                  </FieldLabel>
+                                  <Select value={field.value} onValueChange={field.onChange}>
+                                    <SelectTrigger className="h-9 w-full rounded-lg bg-card text-sm">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper">
+                                      {GRADING_SCALE_PRESETS.map((p) => (
+                                        <SelectItem key={p.kind} value={p.kind}>
+                                          {p.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </FormItem>
                               )}
                             />
                           </div>
-                        )}
+                        </ScrollArea>
+
+                        {/* Oʻng ustun: shkala preview (faqat oʻqish) */}
+                        <ScrollArea className="h-full">
+                          <div className="px-6 py-5 flex flex-col gap-5">
+                            <FieldLabel>{t("scalePreviewLabel")}</FieldLabel>
+                            <ScaleBoundaryPreview kind={watchScaleKind} />
+                          </div>
+                        </ScrollArea>
                       </div>
-                    </ScrollArea>
+                    </div>
 
                     {/* Footer */}
                     <div className="shrink-0 flex items-center justify-between gap-3 border-t border-border bg-muted/30 px-6 py-4">
@@ -654,7 +547,9 @@ export default function NewTopicModal({
                 <TypographyMuted className="text-xs">
                   {t("topicCount", { count: visibleGroups.length })}
                 </TypographyMuted>
-                <WeightStatus overClasses={overClasses} underClasses={underClasses} />
+                {visibleGroups.length > 0 && (
+                  <WeightStatus overClasses={overClasses} underClasses={underClasses} />
+                )}
               </div>
             )}
           </div>
@@ -664,33 +559,8 @@ export default function NewTopicModal({
   );
 }
 
-function PurposePill({
-  value,
-  label,
-  hint,
-  selected,
-}: {
-  value: string;
-  label: string;
-  hint: string;
-  selected: boolean;
-}) {
-  return (
-    <ToggleGroupItem
-      value={value}
-      className={cn(
-        "h-auto flex-col items-start gap-0.5 rounded-md px-3 py-1.5 text-left",
-        "data-[state=on]:bg-card data-[state=on]:shadow-sm"
-      )}
-    >
-      <span className={cn("text-sm font-medium", selected ? "text-foreground" : "text-muted-foreground")}>{label}</span>
-      <span className="text-[11px] text-muted-foreground">{hint}</span>
-    </ToggleGroupItem>
-  );
-}
-
-/** Bitta toifa guruhi qatori — dedup qilingan, qaysi sinflar badge'i bilan. */
-function GroupRow({
+/** Toifa kartasi — grid koʻrinishi uchun (GroupRow bilan bir xil maʼlumot, tik joylashuv). */
+function GroupCard({
   group,
   totalClasses,
   classDataMap,
@@ -711,40 +581,16 @@ function GroupRow({
 
   return (
     <div
-      className="list-card group flex items-center gap-3 p-4"
+      className="list-card group flex flex-col gap-3 p-4"
       style={{ ["--card-accent" as string]: hex }}
     >
-      <div
-        className="list-card-icon size-11 shrink-0 flex items-center justify-center rounded-full text-white"
-        style={topicTints(group.color).gradientTile}
-      >
-        <Tag className="size-5" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <h4 className="heading-small truncate text-foreground">{group.name}</h4>
-          <ClassesBadge group={group} totalClasses={totalClasses} classDataMap={classDataMap} />
+      <div className="flex items-start justify-between gap-2">
+        <div
+          className="list-card-icon size-10 shrink-0 flex items-center justify-center rounded-full text-white"
+          style={topicTints(group.color).gradientTile}
+        >
+          <Tag className="size-4.5" />
         </div>
-        <TypographyMuted className="mt-0.5 text-xs">
-          {group.inputMode === "score" ? t("scoreEnteredNotice") : t("labelSelectedNotice")}
-        </TypographyMuted>
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        {isFormative ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Badge variant="outline" className="gap-1 border-dashed text-[10px] text-muted-foreground">
-                <Ban className="size-3" /> {t("formativeBadge")}
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>{t("unweightedTooltip")}</TooltipContent>
-          </Tooltip>
-        ) : (
-          <Badge variant="secondary" className="gap-1 tabular-nums text-[10px]">
-            {weightLabel}
-            {uniform && <WeightDonut percent={minW} compact />}
-          </Badge>
-        )}
         <button
           type="button"
           onClick={onEdit}
@@ -753,6 +599,27 @@ function GroupRow({
         >
           <Pencil className="size-4" />
         </button>
+      </div>
+      <div className="min-w-0">
+        <h4 className="heading-small truncate text-foreground">{group.name}</h4>
+        <TypographyMuted className="mt-0.5 text-xs">
+          {t("scoreEnteredNotice")}
+          {" · "}
+          {SCALE_SHORT_LABELS[group.scaleKind]}
+        </TypographyMuted>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <ClassesBadge group={group} totalClasses={totalClasses} classDataMap={classDataMap} />
+        {isFormative ? (
+          <Badge variant="outline" className="gap-1 border-dashed text-[10px] text-muted-foreground">
+            <Ban className="size-3" /> {t("formativeBadge")}
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="gap-1 tabular-nums text-[10px]">
+            {t("summativeBadge")} {weightLabel}
+            {uniform && <WeightDonut percent={minW} compact />}
+          </Badge>
+        )}
       </div>
     </div>
   );
@@ -787,6 +654,31 @@ function ClassesBadge({
       </TooltipTrigger>
       {n > 1 && <TooltipContent>{names.join(", ")}</TooltipContent>}
     </Tooltip>
+  );
+}
+
+function WeightDonut({ percent, compact }: { percent: number; compact?: boolean }) {
+  const r = 5;
+  const c = 2 * Math.PI * r;
+  return (
+    <span className="flex items-center gap-1">
+      <svg width="12" height="12" viewBox="0 0 12 12" className="shrink-0" aria-hidden>
+        <circle cx="6" cy="6" r={r} fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/20" />
+        <circle
+          cx="6"
+          cy="6"
+          r={r}
+          fill="none"
+          stroke="var(--info)"
+          strokeWidth="2"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - percent / 100)}
+          strokeLinecap="round"
+          transform="rotate(-90 6 6)"
+        />
+      </svg>
+      {!compact && <span className="text-[10px] font-bold tabular-nums text-foreground">{percent}%</span>}
+    </span>
   );
 }
 
@@ -912,79 +804,70 @@ function ClassMultiSelect({
 
 function ClassSwatch({ hex }: { hex: string }) {
   return (
-    <span className="size-3 shrink-0 rounded-[4px]" style={{ backgroundColor: hex }} aria-hidden />
+    <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: hex }} aria-hidden />
   );
 }
 
 function AllClassesSwatch({ hexes }: { hexes: string[] }) {
-  const cells = [...hexes];
-  while (cells.length < 4) cells.push("var(--muted-foreground)");
+  const cells = hexes.slice(0, 3);
+  while (cells.length < 3) cells.push("var(--muted-foreground)");
   return (
-    <span className="grid size-3 shrink-0 grid-cols-2 gap-px overflow-hidden rounded-[4px]" aria-hidden>
-      {cells.slice(0, 4).map((c, i) => (
-        <span key={i} style={{ backgroundColor: c }} />
+    <span className="flex shrink-0 items-center" aria-hidden>
+      {cells.map((c, i) => (
+        <span
+          key={i}
+          className="size-3 rounded-full ring-2 ring-card"
+          style={{ backgroundColor: c, marginLeft: i === 0 ? 0 : -5 }}
+        />
       ))}
     </span>
   );
 }
 
-function HelpSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-2.5">
-      <span className="text-label text-muted-foreground">{title}</span>
-      <div className="space-y-2.5">{children}</div>
-    </div>
-  );
-}
+/**
+ * Tanlangan shkalaning chegara jadvali — faqat koʻrsatish uchun (tahrirlanmaydi).
+ * Cut-score tahriri ataylab qulflangan (spec §11.1) — shkala qatorlari
+ * saqlanmaydi, shuning uchun bu yerda faqat oʻqish.
+ */
+function ScaleBoundaryPreview({ kind }: { kind: GradingScale }) {
+  const t = useTranslations("NewTopicModal");
+  const boundaries = getScaleBoundaries(kind);
 
-function HelpItem({
-  title,
-  tag,
-  text,
-}: {
-  title: string;
-  tag?: React.ReactNode;
-  text: string;
-}) {
-  return (
-    <div>
-      <div className="flex items-center justify-between gap-2">
-        <TypographySmall className="text-xs font-semibold text-foreground">{title}</TypographySmall>
-        {tag && <span className="shrink-0">{tag}</span>}
+  if (!boundaries) {
+    return (
+      <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5">
+        <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+        <TypographyMuted className="text-xs leading-snug">
+          {t("scalePreviewFormulaNotice")}
+        </TypographyMuted>
       </div>
-      <TypographyMuted className="mt-1.5 text-[11px] leading-snug">{text}</TypographyMuted>
-    </div>
-  );
-}
+    );
+  }
 
-function WeightDonut({ percent, compact }: { percent: number; compact?: boolean }) {
-  const r = 5;
-  const c = 2 * Math.PI * r;
   return (
-    <span className="flex items-center gap-1">
-      <svg width="12" height="12" viewBox="0 0 12 12" className="shrink-0" aria-hidden>
-        <circle cx="6" cy="6" r={r} fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/20" />
-        <circle
-          cx="6"
-          cy="6"
-          r={r}
-          fill="none"
-          stroke="var(--info)"
-          strokeWidth="2"
-          strokeDasharray={c}
-          strokeDashoffset={c * (1 - percent / 100)}
-          strokeLinecap="round"
-          transform="rotate(-90 6 6)"
-        />
-      </svg>
-      {!compact && <span className="text-[10px] font-bold tabular-nums text-foreground">{percent}%</span>}
-    </span>
+    <div className="overflow-hidden rounded-lg border border-border">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-border bg-muted/40 text-label text-muted-foreground">
+            <th className="px-3 py-2 text-left font-medium">{t("scaleColLabel")}</th>
+            <th className="px-3 py-2 text-right font-medium">{t("scaleColMin")}</th>
+            <th className="px-3 py-2 text-right font-medium">{t("scaleColMax")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {boundaries.map((tier, i) => {
+            const max = i === 0 ? 100 : boundaries[i - 1]!.min - 1;
+            return (
+              <tr key={tier.label + i} className="border-b border-border last:border-b-0">
+                <td className="px-3 py-2 font-semibold text-foreground">{tier.label}</td>
+                <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{tier.min}</td>
+                <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">{max}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -1015,35 +898,14 @@ function ColorPicker({
   onSelect: (c: TopicColor) => void;
 }) {
   const t = useTranslations("NewTopicModal");
-  const [open, setOpen] = useState(false);
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          className="size-10 rounded-lg cursor-pointer p-0 min-h-0"
-          style={{ backgroundColor: TOPIC_COLOR_HEX[selected] ?? TOPIC_COLOR_HEX.blue }}
-          aria-label={t("selectColor")}
-        />
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-auto p-2 grid grid-cols-4 gap-2 rounded-xl z-50">
-        {TOPIC_COLOR_ORDER.map((c) => (
-          <Button
-            variant="ghost"
-            key={c}
-            onClick={() => {
-              onSelect(c);
-              setOpen(false);
-            }}
-            className={cn(
-              "size-7 rounded-md cursor-pointer transition-transform hover:scale-110 p-0 min-h-0",
-              c === selected && "ring-2 ring-foreground ring-offset-2 ring-offset-card"
-            )}
-            style={{ backgroundColor: TOPIC_COLOR_HEX[c] }}
-            aria-label={c}
-          />
-        ))}
-      </PopoverContent>
-    </Popover>
+    <ColorPickerButton
+      value={selected}
+      onChange={onSelect}
+      colors={TOPIC_COLOR_ORDER}
+      hexOf={(c) => TOPIC_COLOR_HEX[c]}
+      ariaLabel={t("selectColor")}
+      columns={4}
+    />
   );
 }

@@ -1,4 +1,4 @@
-import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { teachers } from "./teachers";
 
@@ -41,6 +41,9 @@ export const classes = pgTable(
         pickerlardan yashiriladi (rollover: bitiruvchi guruhlar). Sinf UUID va
         tarixi (davomat/baho) saqlanadi — faqat roʻyxatdan yashirin. */
     archivedAt: text("archived_at"),
+    /** Shogird onboarding: yoqilsa, oʻquvchi sinfga qoʻshilganda ota-ona
+        telefon raqamini kiritishi talab qilinadi (guardian_phone). */
+    requireGuardianContact: boolean("require_guardian_contact").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

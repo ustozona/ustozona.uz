@@ -73,7 +73,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
   const topics = useMemo(() => {
     const map = new Map<string, { id: string; name: string; color: TopicColor }>();
     for (const r of profile.assignments) {
-      if (!map.has(r.topic.id)) map.set(r.topic.id, r.topic);
+      if (r.topic && !map.has(r.topic.id)) map.set(r.topic.id, r.topic);
     }
     return [...map.values()];
   }, [profile.assignments]);
@@ -82,7 +82,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
     let list = profile.assignments.map((r) => applyOverride(r, overrides));
     const q = search.trim().toLowerCase();
     if (q) list = list.filter((r) => r.assignment.title.toLowerCase().includes(q));
-    if (topicFilter !== "all") list = list.filter((r) => r.topic.id === topicFilter);
+    if (topicFilter !== "all") list = list.filter((r) => r.topic?.id === topicFilter);
     if (sortKey === "high") list.sort((a, b) => (b.pct ?? -1) - (a.pct ?? -1));
     else if (sortKey === "low") list.sort((a, b) => (a.pct ?? 101) - (b.pct ?? 101));
     else if (sortKey === "title")
@@ -248,7 +248,7 @@ function AssignmentItem({
 }) {
   const t = useTranslations("AssignmentsTab");
   const { assignment, topic, score, pct, status } = row;
-  const accent = topicHex(topic.color);
+  const accent = topic ? topicHex(topic.color) : "var(--muted-foreground)";
   const graded = status === "graded";
   return (
     <ContextMenu>
@@ -276,7 +276,7 @@ function AssignmentItem({
         >
           <div
             className="list-card-icon flex size-11 shrink-0 items-center justify-center rounded-full text-white"
-            style={topicTints(topic.color).gradientTile}
+            style={topic ? topicTints(topic.color).gradientTile : { backgroundColor: "var(--muted-foreground)" }}
           >
             <FileText className="size-5" />
           </div>
@@ -284,7 +284,7 @@ function AssignmentItem({
             <h4 className="heading-small truncate">{assignment.title}</h4>
             <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
               <span className="size-1.5 rounded-full" style={{ backgroundColor: accent }} />
-              {topic.name}
+              {topic ? topic.name : t("noTopic")}
             </div>
           </div>
           {graded ? (

@@ -32,18 +32,15 @@ const DEMO_STUDENTS: Student[] = [
 const DEMO_TOPICS: Topic[] = [
   {
     id: "demo-gr-t1", groupId: "demo-gr-t1", name: "Nazorat ishi", color: "blue",
-    purpose: "summative", weightPercent: 40, inputMode: "score", scaleKind: "percent",
-    passLabel: "Bajardi", failLabel: "Bajarmadi",
+    purpose: "summative", weightPercent: 40, scaleKind: "percent",
   },
   {
     id: "demo-gr-t2", groupId: "demo-gr-t2", name: "Amaliy ish", color: "green",
-    purpose: "summative", weightPercent: 35, inputMode: "score", scaleKind: "percent",
-    passLabel: "Bajardi", failLabel: "Bajarmadi",
+    purpose: "summative", weightPercent: 35, scaleKind: "percent",
   },
   {
     id: "demo-gr-t3", groupId: "demo-gr-t3", name: "Loyiha", color: "violet",
-    purpose: "summative", weightPercent: 25, inputMode: "score", scaleKind: "percent",
-    passLabel: "Bajardi", failLabel: "Bajarmadi",
+    purpose: "summative", weightPercent: 25, scaleKind: "percent",
   },
 ];
 

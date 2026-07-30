@@ -15,6 +15,7 @@ export type NavItem = {
 const SECTIONS: NavItem[] = [
   { title: "Asosiy", href: "#top" },
   { title: "Imkoniyatlar", href: "#features" },
+  { title: "Mahsulotlar", href: "#products" },
   { title: "Narxlar", href: "#pricing" },
   { title: "FAQ", href: "#faq" },
 ];
@@ -51,3 +52,50 @@ export const LEGAL_LINKS: NavItem[] = [
 
 export const TELEGRAM_URL = "https://t.me/ustozona_tms";
 export const TELEGRAM_HANDLE = "@ustozona_tms";
+
+/* ════════════════════════════════════════════════════════════════════
+   OST-LOYIHALAR — Ustozona ustiga quriladigan mahsulotlar
+   (docs/ost-loyihalar-arxitektura.md). Asosiy Ustozona bu roʻyxatga
+   KIRMAYDI — u "Mahsulotlar" boʻlimida birinchi, alohida karta.
+   ════════════════════════════════════════════════════════════════════ */
+
+export type ProductStatus = "live" | "soon";
+
+export type Product = {
+  slug: "baholash" | "doska" | "shogird" | "boshqaruv";
+  name: string;
+  tagline: string;
+  status: ProductStatus;
+  statusLabel: string;
+};
+
+export const PRODUCTS: Product[] = [
+  {
+    slug: "baholash",
+    name: "Ustozona Baholash",
+    tagline: "Bitta oʻlchov, besh xil yigʻish usuli — testdan qogʻoz OMR gacha.",
+    status: "soon",
+    statusLabel: "Tez orada",
+  },
+  {
+    slug: "doska",
+    name: "Ustozona Doska",
+    tagline: "Sinf ekrani: taymer, svetofor, tasodifiy ism, guruhlarga boʻlish.",
+    status: "soon",
+    statusLabel: "Tez orada",
+  },
+  {
+    slug: "shogird",
+    name: "Shogird",
+    tagline: "Ota-ona va oʻquvchi uchun Telegram ilovasi.",
+    status: "soon",
+    statusLabel: "Tez orada",
+  },
+  {
+    slug: "boshqaruv",
+    name: "Ustozona Boshqaruv",
+    tagline: "Maktab maʼmuriyati uchun panel.",
+    status: "soon",
+    statusLabel: "Tez orada",
+  },
+];

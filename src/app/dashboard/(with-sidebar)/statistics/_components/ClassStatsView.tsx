@@ -12,7 +12,7 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassStore, journalScaleFor } from "@/store/useClassStore";
 import type { AcademicYearCalendar } from "@/lib/academic-calendar";
 import { statusWeights, deriveLessonDays } from "@/lib/attendance-data";
 import { skillBreakdown, eventStats } from "@/lib/behavior-data";
@@ -58,7 +58,7 @@ export function ClassStatsView({
   const statuses = useAttendanceStore((s) => s.statuses);
   const eventsByClass = useBehaviorStore((s) => s.eventsByClass);
   const versions = useTimetableStore((s) => s.versions);
-  const journalScale = useClassStore((s) => s.journalScale);
+  const journalScale = useClassStore((s) => journalScaleFor(s, classId));
   const weights = useMemo(() => statusWeights(statuses), [statuses]);
   const records = useMemo(() => recordsByClass[classId] ?? [], [recordsByClass, classId]);
   const events = useMemo(() => eventsByClass[classId] ?? [], [eventsByClass, classId]);

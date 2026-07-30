@@ -93,7 +93,6 @@ type SlotModal = { date: Date; classId: string; startMin: number; endMin: number
 type Placement = { lesson: Lesson; classId: string; startMin: number; endMin: number };
 /** Tahrir/koʻchirish nishoni — QAYSI sessiya (dars + sinf + sana + vaqt). */
 type EditTarget = { lessonId: string; classId: string; date: string; startMin: number; endMin: number };
-type DragPayload = { lessonId: string; classId: string; date: string; startMin: number; endMin: number };
 
 const SLOT_HEIGHT = 180;
 /** Toʻliq sutka koʻrsatiladi (00:00–24:00); ochilganda 08:00'ga scroll qilinadi. */
@@ -216,7 +215,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
   // Oy koʻrinishida tanlangan kun — chapdagi kunlik panel shu kalitga bogʻlangan.
   // `null` boʻlsa panel umuman render qilinmaydi (kalendar 100% joyni oladi).
   const [selectedDayKey, setSelectedDayKey] = useState<string | null>(null);
-  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
   const slotHeight = Math.round((SLOT_HEIGHT * zoom) / 100);
 
@@ -630,30 +628,10 @@ export default function PlannerView({ classId }: { classId?: string }) {
     toast.success(t("returnedToBankToast"), { description: p.lesson.title });
   }
 
-  // ── Drag: darsni boshqa kunga (aynan shu vaqtda) koʻchirish ──
-  function startDrag(e: React.DragEvent, p: Placement, dateKey: string) {
-    const payload: DragPayload = { lessonId: p.lesson.id, classId: p.classId, date: dateKey, startMin: p.startMin, endMin: p.endMin };
-    e.dataTransfer.setData("text/plain", JSON.stringify(payload));
-    e.dataTransfer.effectAllowed = "move";
-  }
-  function dropOnDay(e: React.DragEvent, targetDate: Date) {
-    e.preventDefault();
-    setDragOverKey(null);
-    let payload: DragPayload;
-    try { payload = JSON.parse(e.dataTransfer.getData("text/plain")); } catch { return; }
-    if (!payload?.lessonId) return;
-    const targetKey = toDateKey(targetDate);
-    if (targetKey === payload.date) return; // oʻsha kunga tashlash — oʻzgarishsiz
-    moveSession(payload.lessonId, payload.classId, payload.date, payload.startMin, targetKey, payload.startMin, payload.endMin);
-    const moved = lessons.find((l) => l.id === payload.lessonId);
-    toast.success(t("lessonMovedToast"), {
-      description: `${moved?.title ?? t("lessonFallback")} · ${targetDate.getDate()} ${fmt.monthName(targetDate.getMonth())}`,
-    });
-  }
-
-  /* ── @dnd-kit: klaviatura bilan ham koʻchirish (kunlik panel + oy toʻri) ──
-     Haftalik koʻrinish hozircha native HTML5 drag'da qoladi — u ishlayapti va
-     bitta ishda ikkalasini almashtirish keraksiz regressiya xavfi. */
+  /* ── @dnd-kit: BARCHA yuzalar (haftalik toʻr, kunlik panel, oy toʻri) bitta
+     DnD tizimidan foydalanadi — mouse ham, klaviatura ham. Ilgari haftalik
+     koʻrinish alohida native HTML5 drag'da edi (ikki xil hulq, ikki xil
+     a11y); endi hammasi handleDndEnd orqali bir xil yoʻl bilan ishlaydi. */
   const dndSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
@@ -1305,16 +1283,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
                       ),
                     },
                     columnProps: {
-                      onDragOver: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverKey !== key) setDragOverKey(key); },
-                      onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === key ? null : k)); },
-                      onDrop: (e) => dropOnDay(e, d),
                       className: cn(
                         // "Bugun" — juda yengil neytral tint; asosiy signal baribir
                         // sarlavhada (toʻldirilgan doira + toʻq yorliq) va "hozir" chizigʻida.
                         isToday && "bg-muted/20",
                         isBlocked && "bg-destructive/5",
                         !isBlocked && holiday && "bg-muted/40",
-                        dragOverKey === key && "outline outline-2 -outline-offset-2 outline-[var(--ring)] bg-primary/5"
                       ),
                     },
                     header: (
@@ -1400,6 +1374,10 @@ export default function PlannerView({ classId }: { classId?: string }) {
                   const placed = placedByDate.get(dateKey) ?? [];
                   return (
                     <>
+                        {/* Kun-darajali drop-zona — @dnd-kit; darsni boshqa kunga
+                            (aynan shu vaqtda) koʻchirish uchun (handleDndEnd "D" holati). */}
+                        <MonthDayDropZone dateKey={dateKey} />
+
                         {isBlocked && (
                           <div className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center pt-3">
                             <span className="-rotate-45 select-none text-xs font-semibold text-destructive/40">
@@ -1487,19 +1465,20 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 /* relative — nuqta teksturasi mavzu kartasi ustidan tushmasin */
                                 <div className="relative mt-1.5 flex flex-col gap-1.5">
                                   {blockLessons.map((p) => (
-                                    <div key={p.lesson.id} className="group/chip relative">
-                                      <button type="button"
-                                        draggable
-                                        onDragStart={(e) => startDrag(e, p, dateKey)}
-                                        onClick={() => openEdit(p, dateKey)}
-                                        className="flex w-full items-center gap-2 overflow-hidden rounded-sm border border-border bg-card p-1.5 pr-2.5 text-left shadow-xs transition-[box-shadow,border-color,padding] duration-fast hover:border-foreground/20 hover:shadow-md group-hover/chip:pr-8 cursor-grab active:cursor-grabbing">
+                                    <DraggablePlacement
+                                      key={`${p.lesson.id}-${p.classId}-${p.startMin}`}
+                                      id={dndLessonId(p, dateKey)}
+                                      onClick={() => openEdit(p, dateKey)}
+                                      className="group/chip relative cursor-grab active:cursor-grabbing"
+                                    >
+                                      <div className="flex w-full items-center gap-2 overflow-hidden rounded-sm border border-border bg-card p-1.5 pr-2.5 text-left shadow-xs transition-[box-shadow,border-color,padding] duration-fast hover:border-foreground/20 hover:shadow-md group-hover/chip:pr-8">
                                         <span style={tints.iconBg} className="flex size-6 shrink-0 items-center justify-center rounded-full">
                                           {p.lesson.status === "Completed"
                                             ? <Check style={tints.iconText} className="size-3.5" strokeWidth={3} />
                                             : <FileText style={tints.iconText} className="size-3.5" />}
                                         </span>
                                         <span className="truncate text-xs font-semibold text-foreground">{p.lesson.title}</span>
-                                      </button>
+                                      </div>
                                       {/* Tez amallar — hoverda; qolgani ⋮ menyusida */}
                                       <div className="pointer-events-none absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity duration-fast group-hover/chip:pointer-events-auto group-hover/chip:opacity-100 focus-within:pointer-events-auto focus-within:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
                                         <DropdownMenu>
@@ -1530,7 +1509,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                           </DropdownMenuContent>
                                         </DropdownMenu>
                                       </div>
-                                    </div>
+                                    </DraggablePlacement>
                                   ))}
                                 </div>
                               )}
@@ -1549,25 +1528,30 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           if (topH + durH < 0 || topH > VISIBLE_HOURS) return null;
                           const { name, color, tints } = lessonDisplay(l, p.classId);
                           const done = l.status === "Completed";
+                          const h = Math.max((durH + Math.min(topH, 0)) * slotHeight - 4, 30);
                           return (
-                            <EventCard key={`${l.id}-${p.classId}-${start}`}
-                              as="button"
-                              color={color}
-                              title={name}
-                              subtitle={l.title}
-                              leading={done ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} /> : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
-                              draggable
-                              onDragStart={(e) => startDrag(e, p, dateKey)}
+                            <DraggablePlacement
+                              key={`${l.id}-${p.classId}-${start}`}
+                              id={dndLessonId(p, dateKey)}
                               onClick={() => openEdit(p, dateKey)}
-                              style={{ top: Math.max(topH, 0) * slotHeight + 2, height: Math.max((durH + Math.min(topH, 0)) * slotHeight - 4, 30) }}
-                              className={cn("absolute inset-x-1 z-[11] transition-all hover:brightness-95 cursor-grab active:cursor-grabbing", done && "opacity-75")}
-                              actions={<LessonStatusBadge status={l.status} />}
+                              style={{ top: Math.max(topH, 0) * slotHeight + 2, height: h }}
+                              className={cn("absolute inset-x-1 z-[11] cursor-grab active:cursor-grabbing", done && "opacity-75")}
                             >
-                              <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-[11px]">
-                                <Clock className="size-3 shrink-0" />
-                                {minToHHMM(start)} – {minToHHMM(end)}
-                              </span>
-                            </EventCard>
+                              <EventCard
+                                color={color}
+                                title={name}
+                                subtitle={l.title}
+                                leading={done ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} /> : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
+                                style={{ height: h }}
+                                className="h-full transition-all hover:brightness-95"
+                                actions={<LessonStatusBadge status={l.status} />}
+                              >
+                                <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-[11px]">
+                                  <Clock className="size-3 shrink-0" />
+                                  {minToHHMM(start)} – {minToHHMM(end)}
+                                </span>
+                              </EventCard>
+                            </DraggablePlacement>
                           );
                         })}
                     </>
@@ -1587,9 +1571,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
                   const isBlocked = blockedSet.has(key);
                   const holiday = getHolidayForDate(calendar, key);
                   return {
-                    onDragOver: (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverKey !== key) setDragOverKey(key); },
-                    onDragLeave: (e: React.DragEvent<HTMLDivElement>) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey((k) => (k === key ? null : k)); },
-                    onDrop: (e: React.DragEvent<HTMLDivElement>) => dropOnDay(e, date),
                     // Katakni bosish → chapdagi kunlik panel. Katak ichidagi oʻz
                     // tugmalari (sana menyusi, chiplar, "+N ta") oʻz ishini qiladi,
                     // shuning uchun ular ustidagi bosish bu yerda eʼtiborsiz qoldiriladi.
@@ -1604,7 +1585,6 @@ export default function PlannerView({ classId }: { classId?: string }) {
                       isBlocked && "bg-destructive/10",
                       !isBlocked && holiday && "bg-muted/40",
                       selectedDayKey === key && "bg-muted/30 inset-ring-2 inset-ring-foreground/25",
-                      dragOverKey === key && "outline outline-2 -outline-offset-2 outline-[var(--ring)]"
                     ),
                   };
                 }}

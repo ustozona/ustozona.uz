@@ -11,19 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { GRADING_SCALE_PRESETS } from "@/lib/grades-data";
-import { gradeBadgeClass } from "@/lib/score-colors";
 import {
   formatByScaleKind,
-  scoreLabel,
-  getScaleBoundaries,
   type JournalScale,
   type JournalScaleKind,
-  type LabelStyle,
 } from "@/lib/grade-scale";
 
 /** Har shkala uchun qisqa tushuntirish — tanlovdan keyin koʻrsatiladi. */
@@ -40,8 +33,6 @@ const SCALE_HINTS: Record<string, string> = {
   french20: "Fransiya mezoni: 0 dan 20 gacha.",
 };
 
-const segmentClass = "grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1";
-const segmentItem = "rounded-md text-sm data-[state=on]:bg-card data-[state=on]:shadow-sm";
 
 /** Ochiq roʻyxatdagi shkala bandi — nom + 78% namunasi. */
 function ScaleItem({ kind, label }: { kind: JournalScaleKind; label: string }) {
@@ -57,64 +48,6 @@ function ScaleItem({ kind, label }: { kind: JournalScaleKind; label: string }) {
   );
 }
 
-/** Toggle qatori — chapda nom+izoh, oʻngda toggle. */
-function SwitchRow({
-  title,
-  desc,
-  checked,
-  onChange,
-}: {
-  title: string;
-  desc: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center justify-between gap-3">
-      <span className="flex flex-col">
-        <span className="text-sm font-medium text-foreground">{title}</span>
-        <span className="text-caption leading-snug">{desc}</span>
-      </span>
-      <Switch checked={checked} onCheckedChange={onChange} />
-    </label>
-  );
-}
-
-/** Chegara jadvali — "nega 84% emas 85%" savoliga koʻrinadigan javob. */
-function BoundaryTable({ boundaries }: { boundaries: { min: number; label: string }[] }) {
-  return (
-    <div className="overflow-hidden rounded-lg border border-border">
-      <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/40 px-3 py-1.5">
-        <span className="text-label text-muted-foreground">Foiz oraligʻi</span>
-        <span className="text-label text-muted-foreground">Baho</span>
-      </div>
-      {boundaries.map((b, i) => {
-        const next = boundaries[i - 1];
-        const range = next ? `${b.min}–${next.min - 1}%` : `${b.min}–100%`;
-        return (
-          <div
-            key={b.min}
-            className={cn(
-              "flex items-center justify-between gap-3 bg-card px-3 py-1.5",
-              i !== 0 && "border-t border-border"
-            )}
-          >
-            <span className="text-caption tabular-nums text-muted-foreground">{range}</span>
-            <span
-              className={cn(
-                "inline-flex min-w-8 items-center justify-center rounded-md border px-1.5 py-0.5 text-xs font-medium tabular-nums",
-                gradeBadgeClass(b.min)
-              )}
-            >
-              {b.label}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 /**
  * Jurnal baholash shkalasi boshqaruvi (docs/grades-scale-model.md) — yagona
  * manba, Sozlamalar sahifasi (JournalSection) va Jurnal toolbar modali
@@ -125,9 +58,12 @@ function BoundaryTable({ boundaries }: { boundaries: { min: number; label: strin
 export default function ScaleControls({
   value,
   onChange,
+  scopeLabel = "Barcha sinflar uchun faol",
 }: {
   value: JournalScale;
   onChange: (patch: Partial<JournalScale>) => void;
+  /** Amal doirasi yorligʻi — sinf darajasida bekor qilinganda oʻzgaradi (C3). */
+  scopeLabel?: string;
 }) {
   const journalScale = value;
   const setJournalScale = onChange;
@@ -136,11 +72,6 @@ export default function ScaleControls({
   const intlPresets = GRADING_SCALE_PRESETS.filter((p) => p.group === "intl");
   const currentLabel = GRADING_SCALE_PRESETS.find((p) => p.kind === journalScale.kind)?.label ?? "";
   const currentHint = SCALE_HINTS[journalScale.kind];
-  const isFive = journalScale.kind === "five";
-  const boundaries = getScaleBoundaries(journalScale.kind, journalScale.labelStyle);
-
-  const lab = scoreLabel(78, journalScale);
-  const percentExample = lab === "78%" ? "78%" : `${lab} (78%)`;
 
   return (
     <div className="space-y-4">
@@ -172,38 +103,9 @@ export default function ScaleControls({
         )}
         <Badge variant="secondary" className="gap-1 font-normal text-muted-foreground">
           <Users className="size-3" />
-          Barcha sinflar uchun faol
+          {scopeLabel}
         </Badge>
       </div>
-
-      {/* Chegara jadvali — tier-asosli shkalalarda. */}
-      {boundaries && <BoundaryTable boundaries={boundaries} />}
-
-      {/* Yorliq uslubi — faqat 5-ballikda */}
-      {isFive && (
-        <div className="space-y-1.5">
-          <span className="text-sm font-medium text-foreground">Bahoning aks etish shakli</span>
-          <ToggleGroup
-            type="single"
-            value={journalScale.labelStyle}
-            onValueChange={(v) => v && setJournalScale({ labelStyle: v as LabelStyle })}
-            className={segmentClass}
-          >
-            <ToggleGroupItem value="number" className={segmentItem}>Raqamli (4)</ToggleGroupItem>
-            <ToggleGroupItem value="word" className={segmentItem}>Matnli (Yaxshi)</ToggleGroupItem>
-          </ToggleGroup>
-        </div>
-      )}
-
-      {/* Foizni koʻrsatish — foiz shkalasida maʼnosiz, yashiriladi */}
-      {journalScale.kind !== "percent" && (
-        <SwitchRow
-          title="Foizni ham aks ettirish"
-          desc={`Jurnalda baho yonida uning aniq foizi ham koʻrsatiladi, masalan: ${percentExample}`}
-          checked={journalScale.showPercent}
-          onChange={(c) => setJournalScale({ showPercent: c })}
-        />
-      )}
     </div>
   );
 }

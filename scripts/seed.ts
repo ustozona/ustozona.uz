@@ -177,10 +177,7 @@ async function main() {
         color: t.color,
         purpose: t.purpose,
         weightPercent: t.weightPercent,
-        inputMode: t.inputMode,
         scaleKind: t.scaleKind ?? null,
-        passLabel: t.passLabel,
-        failLabel: t.failLabel,
         sortOrder: i,
       });
     });

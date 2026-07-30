@@ -163,7 +163,7 @@ export function TodayRail({ now }: { now: Date }) {
       );
       if (
         cd.assignments.some(
-          (a) => (a.dueDate ?? a.date) === selectedKey && summative.has(a.topicId)
+          (a) => (a.dueDate ?? a.date) === selectedKey && !!a.topicId && summative.has(a.topicId)
         )
       )
         set.add(cid);

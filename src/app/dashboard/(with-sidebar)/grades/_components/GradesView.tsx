@@ -12,7 +12,7 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { inRange } from "@/lib/academic-calendar";
 import { todayKey } from "@/lib/date-keys";
 import { useMounted } from "@/lib/use-mounted";
-import NewAssignmentModal, { type AssignmentFormValues } from "./NewAssignmentModal";
+import NewAssignmentModal, { type AssignmentFormValues, NO_TOPIC_VALUE } from "./NewAssignmentModal";
 import GradesTable from "./GradesTable";
 import ReuseModal from "./ReuseModal";
 import NewTopicModal, { type TopicApplyPayload } from "./NewTopicModal";
@@ -237,7 +237,7 @@ export default function GradesView({
         id: `a-${Date.now()}`,
         title: input.title,
         maxScore: input.maxScore,
-        topicId: input.topicId,
+        topicId: input.topicId === NO_TOPIC_VALUE ? null : input.topicId,
         date: input.date,
         ...(input.dueDate ? { dueDate: input.dueDate } : {}),
       };
@@ -265,7 +265,7 @@ export default function GradesView({
                 ...rest,
                 title: input.title,
                 maxScore: input.maxScore,
-                topicId: input.topicId,
+                topicId: input.topicId === NO_TOPIC_VALUE ? null : input.topicId,
                 date: input.date,
                 ...(input.dueDate ? { dueDate: input.dueDate } : {}),
               };
@@ -310,11 +310,8 @@ export default function GradesView({
       name: payload.name,
       color: payload.color,
       purpose: payload.purpose,
-      inputMode: payload.inputMode,
       scaleKind: payload.scaleKind,
       weightPercent: payload.weightPercent,
-      passLabel: payload.passLabel,
-      failLabel: payload.failLabel,
     };
     // Bekor qilish uchun joriy holatni saqlaymiz (tahrir baho/topshiriqni oʻchirishi mumkin).
     const snapshot = classDataMap;

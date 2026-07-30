@@ -28,6 +28,7 @@ import {
   Calendar,
   BookOpen,
   FileText,
+  ClipboardList,
   Users,
   BarChart2,
   ClipboardCheck,
@@ -73,6 +74,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/students", labelKey: "students", icon: Users },
       { href: "/dashboard/planner", labelKey: "planner", icon: BookOpen },
       { href: "/dashboard/lessons", labelKey: "lessons", icon: FileText },
+      { href: "/dashboard/assignments", labelKey: "assignments", icon: ClipboardList },
     ],
   },
   {

@@ -27,13 +27,17 @@ import {
 
 const AUTH_PAGES = ["/login", "/register"];
 
-/** Cookie'siz kirilsa `/login` ga yuboriladigan boʻlimlar. */
+/** Cookie'siz kirilsa `/login` ga yuboriladigan boʻlimlar.
+
+    ⚠️ `/baholash`, `/doska`, `/shogird`, `/boshqaruv` ATAYLAB bu roʻyxatda
+    YOʻQ — ular ochiq marketing sahifalari (docs/ost-loyihalar-arxitektura.md,
+    "Marshrut qoidasi": root = marketing, ichkarisi = ilova). Ilova
+    marshrutlari kelajakda `/dashboard/doska`, `/doska/ekran` kabi ichki
+    yoʻllarda yashaydi va ular `/dashboard` orqali allaqachon himoyalangan. */
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/lessons",
   "/admin",
-  "/boshqaruv",
-  "/doska",
 ];
 
 function isUnder(pathname: string, prefix: string): boolean {

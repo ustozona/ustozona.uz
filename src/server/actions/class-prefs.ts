@@ -10,13 +10,16 @@ import {
 /* Class prefs server actions — yupqa qatlam: zod-parse → DAL.
    Bitta kichik hujjat (teachers.prefs.classPrefs) — snapshot saqlanadi. */
 
+const journalScaleSchema = z.object({
+  kind: z.string().min(1).max(30),
+  labelStyle: z.enum(["number", "word"]),
+  showPercent: z.boolean(),
+});
+
 const classPrefsSchema = z.object({
   selectedClassId: z.string().min(1).max(200),
-  journalScale: z.object({
-    kind: z.string().min(1).max(30),
-    labelStyle: z.enum(["number", "word"]),
-    showPercent: z.boolean(),
-  }),
+  journalScale: journalScaleSchema,
+  journalScaleByClass: z.record(z.string(), journalScaleSchema).optional(),
 });
 
 export async function fetchClassPrefsAction(): Promise<ClassPrefs | null> {

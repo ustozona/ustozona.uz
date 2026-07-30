@@ -4,27 +4,23 @@ import { useTranslations } from "next-intl";
 import { Info, Settings2, X } from "lucide-react";
 import {
   Dialog,
-  DialogTrigger,
   DialogClose,
   DialogContent,
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { IconButton } from "@/components/ui/icon-button";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import ScaleControls from "@/components/grade-scale/ScaleControls";
-import { useClassStore } from "@/store/useClassStore";
+import { useClassStore, journalScaleFor } from "@/store/useClassStore";
 import { SaveFooter, useDraft } from "@/app/dashboard/settings/_components/SettingsShared";
-
-const segmentClass = "grid w-full grid-cols-2 gap-1 rounded-lg bg-muted p-1";
-const segmentItem =
-  "rounded-md text-sm data-[state=on]:bg-card data-[state=on]:shadow-sm";
 
 /** Kichik ⓘ ikona + tooltip. */
 function InfoHint({ children }: { children: React.ReactNode }) {
@@ -63,22 +59,6 @@ function SectionTitle({
   );
 }
 
-/** Maydon yorligʻi (sarlavhadan past daraja). */
-function FieldLabel({
-  children,
-  hint,
-}: {
-  children: React.ReactNode;
-  hint?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-sm font-medium text-foreground">{children}</span>
-      {hint && <InfoHint>{hint}</InfoHint>}
-    </div>
-  );
-}
-
 /** Switch qatori — chapda nom+izoh, oʻngda toggle. */
 function SwitchRow({
   title,
@@ -108,21 +88,40 @@ function SwitchRow({
  * koʻrinishni oʻzgartiradi — bahoni emas.
  */
 export default function GradesSettingsModal({
+  classId,
+  classDisplayName,
   showWeights,
   onShowWeightsChange,
-  showFormative,
-  onShowFormativeChange,
+  showTrend,
+  onShowTrendChange,
 }: {
+  /** Joriy sinf — sinf darajasidagi shkala bekor qilish shu klass uchun. */
+  classId: string;
+  classDisplayName: string;
   showWeights: boolean;
   onShowWeightsChange: (v: boolean) => void;
-  showFormative: boolean;
-  onShowFormativeChange: (v: boolean) => void;
+  showTrend: boolean;
+  onShowTrendChange: (v: boolean) => void;
 }) {
   // Shkala — explicit Save (Sozlamalar > Jurnal bilan bir xil semantika);
   // jadval koʻrinishi togglelari view-pref sifatida darhol qoʻllanadi.
   const journalScale = useClassStore((s) => s.journalScale);
   const setJournalScale = useClassStore((s) => s.setJournalScale);
-  const { draft, setDraft, dirty, save, reset } = useDraft(journalScale, setJournalScale);
+  // Sinf darajasidagi bekor qilish (C3): shu sinf uchun standartdan boshqa
+  // shkala oʻrnatilganmi — `journalScaleByClass[classId]` mavjudligidan.
+  const overridden = useClassStore((s) => s.journalScaleByClass[classId] !== undefined);
+  const setJournalScaleForClass = useClassStore((s) => s.setJournalScaleForClass);
+  const clearJournalScaleForClass = useClassStore((s) => s.clearJournalScaleForClass);
+  const effectiveScale = useClassStore((s) => journalScaleFor(s, classId));
+
+  function commit(next: typeof journalScale) {
+    if (overridden) setJournalScaleForClass(classId, next);
+    else setJournalScale(next);
+  }
+  const { draft, setDraft, dirty, save, reset } = useDraft(
+    overridden ? effectiveScale : journalScale,
+    commit
+  );
   const t = useTranslations("GradesSettingsModal");
 
   return (
@@ -173,7 +172,31 @@ export default function GradesSettingsModal({
             <SectionTitle hint={t("scaleHint")}>
               {t("scaleSectionTitle")}
             </SectionTitle>
-            <ScaleControls value={draft} onChange={(p) => setDraft({ ...draft, ...p })} />
+
+            <SwitchRow
+              title={t("perClassScaleTitle", { className: classDisplayName })}
+              desc={t("perClassScaleDesc")}
+              checked={overridden}
+              onChange={(v) => {
+                if (v) setJournalScaleForClass(classId, journalScale);
+                else clearJournalScaleForClass(classId);
+              }}
+            />
+
+            <ScaleControls
+              value={draft}
+              onChange={(p) => setDraft({ ...draft, ...p })}
+              scopeLabel={overridden ? t("scopeThisClass", { className: classDisplayName }) : t("scopeAllClasses")}
+            />
+
+            {effectiveScale.kind !== "percent" && (
+              <SwitchRow
+                title={t("showPercentTitle")}
+                desc={t("showPercentDesc")}
+                checked={effectiveScale.showPercent}
+                onChange={(v) => commit({ ...effectiveScale, showPercent: v })}
+              />
+            )}
           </section>
 
           <Separator />
@@ -189,32 +212,28 @@ export default function GradesSettingsModal({
               onChange={onShowWeightsChange}
             />
 
-            <div className="space-y-1.5">
-              <FieldLabel
-                hint={
-                  <>
-                    <span className="font-medium text-foreground">{t("trendWord")}</span> — {t("trendHintPart")}{" "}
-                    <span className="font-medium text-foreground">{t("formativeSignalWord")}</span> — {t("formativeSignalHintPart")}
-                  </>
-                }
-              >
-                {t("statusColumnFieldLabel")}
-              </FieldLabel>
-              <ToggleGroup
-                type="single"
-                value={showFormative ? "formative" : "trend"}
-                onValueChange={(v) => v && onShowFormativeChange(v === "formative")}
-                className={segmentClass}
-              >
-                <ToggleGroupItem value="trend" className={segmentItem}>{t("trendOption")}</ToggleGroupItem>
-                <ToggleGroupItem value="formative" className={segmentItem}>{t("formativeSignalWord")}</ToggleGroupItem>
-              </ToggleGroup>
-            </div>
+            <SwitchRow
+              title={t("statusColumnFieldLabel")}
+              desc={t("trendHintPart")}
+              checked={showTrend}
+              onChange={onShowTrendChange}
+            />
           </section>
         </div>
 
         <DialogFooter className="flex-row items-center justify-between gap-3 border-t border-border bg-muted/20 px-6 py-3 sm:justify-between">
-          <SaveFooter dirty={dirty} onSave={save} onReset={reset} />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="shrink-0"
+            onClick={() => setJournalScale(draft)}
+          >
+            {t("applyToAllClasses")}
+          </Button>
+          <span className="flex shrink-0 items-center gap-2">
+            <SaveFooter dirty={dirty} onSave={save} onReset={reset} />
+          </span>
         </DialogFooter>
       </DialogContent>
     </Dialog>

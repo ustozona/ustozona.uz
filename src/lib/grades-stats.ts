@@ -71,7 +71,7 @@ function bucketByTopic(
       continue;
     }
     const pct = gradePercent(g, a);
-    if (pct === null) continue;
+    if (pct === null || !a.topicId) continue;
     const arr = byTopic.get(a.topicId) ?? [];
     arr.push({ id: a.id, pct });
     byTopic.set(a.topicId, arr);

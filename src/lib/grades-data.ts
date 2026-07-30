@@ -35,16 +35,22 @@ export type Student = {
 
 // Topic = baholash turi (Tests, Homework, Projects ...)
 export type TopicColor =
-  | "blue"
-  | "violet"
-  | "orange"
   | "red"
+  | "orange"
+  | "amber"
+  | "yellow"
+  | "lime"
   | "green"
+  | "emerald"
   | "teal"
+  | "cyan"
+  | "blue"
+  | "indigo"
+  | "violet"
+  | "purple"
+  | "fuchsia"
   | "pink"
-  | "amber";
-
-export type InputMode = "score" | "select";
+  | "rose";
 
 export type GradingScale =
   // 🇺🇿 Oʻzbekiston / umumiy maktab
@@ -67,10 +73,10 @@ export type GradingScale =
 
 /** Roʻyxat badge'i uchun qisqa yorliq (masalan "A+…F"). */
 export const SCALE_SHORT_LABELS: Record<GradingScale, string> = {
-  five: "5-ballik",
-  ten: "10-ballik",
+  five: "5 ballik",
+  ten: "10 ballik",
   percent: "Foiz",
-  pass_fail: "Bajardi/Bajarmadi",
+  pass_fail: "Oʻtdi/Oʻtmadi",
   qualitative: "Sifat",
   letter_plus: "A+…F",
   letter_basic: "A…F",
@@ -89,12 +95,12 @@ export const GRADING_SCALE_PRESETS: {
   label: string;
   group: "uz" | "intl";
 }[] = [
-  { kind: "five",        label: "5-ballik (5/4/3/2)",            group: "uz" },
-  { kind: "ten",         label: "10-ballik (1–10)",              group: "uz" },
-  { kind: "percent",     label: "100-ballik / Foiz",             group: "uz" },
-  { kind: "pass_fail",   label: "Bajardi / Bajarmadi",           group: "uz" },
-  { kind: "letter_plus", label: "Harf bahosi (A+ dan F gacha)",  group: "intl" },
-  { kind: "letter_basic",label: "Harf bahosi (A dan F gacha)",   group: "intl" },
+  { kind: "five",        label: "5 ballik",                      group: "uz" },
+  { kind: "ten",         label: "10 ballik (1–10)",              group: "uz" },
+  { kind: "percent",     label: "100 ballik / Foiz",             group: "uz" },
+  { kind: "pass_fail",   label: "Oʻtdi / Oʻtmadi",               group: "uz" },
+  { kind: "letter_plus", label: "AQSH (A+ dan F gacha)",         group: "intl" },
+  { kind: "letter_basic",label: "AQSH (A dan F gacha)",          group: "intl" },
   { kind: "ib7",         label: "IB (1–7)",                      group: "intl" },
   { kind: "gcse",        label: "Britaniya GCSE (9–1)",          group: "intl" },
   { kind: "german6",     label: "Germaniya (1–6)",               group: "intl" },
@@ -120,32 +126,40 @@ export type Topic = {
   /** Baholash turi. Summativ → vaznli, yakuniyga kiradi. Formativ → signal. */
   purpose: TopicPurpose;
   weightPercent: number; // faqat summativ toifada; yigʻindi avto-100% normallashadi
-  inputMode: InputMode;
   scaleKind?: GradingScale; // toifa darajasidagi baholash shkalasi (preset)
-  passLabel: string; // faqat select modeʼda: "Bajardi"
-  failLabel: string; // faqat select modeʼda: "Bajarmadi"
 };
 
 // Baho yo‘qligi turi: Q (Qatnashmadi/absent), T (Topshirmadi/unsubmitted).
 // Ikkalasi ham o‘rtachadan chiqariladi (dalil yo‘qligi ≠ bilim yo‘qligi).
 export type GradeMissing = "absent" | "unsubmitted";
 
+export type AssignmentKind = "manual" | "test" | "deck";
+
 export type Assignment = {
   id: string;
   title: string;
   maxScore: number;
-  topicId: string;             // Baholash turi va shkala shu toifadan meros olinadi
+  /** null = "Toifasiz" (virtual guruh) — toifa oʻchsa topshiriq shu holatga tushadi. */
+  topicId: string | null;      // Baholash turi va shkala shu toifadan meros olinadi
   date?: string;               // yyyy-mm-dd (real sana; keyin to‘ldiriladi)
   /** Topshirish muddati (yyyy-mm-dd). FAQAT metadata — grades v1 hisob
       modeliga aralashmaydi; xulq avto-ball qoidasi shu muddatga qaraydi. */
   dueDate?: string;
+  /** Topshiriq turi: manual (qoʻlda) | test | deck (taqdimot). Test/deck
+      hozircha muharrirsiz — kelgusi bosqichda ulanadi. */
+  kind?: AssignmentKind;
+  /** Yoʻriqnoma — oddiy matn (v1). */
+  instructions?: string;
 };
+
+/** "Toifasiz" — virtual chelak: DB qatori emas, UI'da hisoblanadi. */
+export const NO_TOPIC_ID = null;
+export const NO_TOPIC_LABEL = "Toifasiz";
 
 export type Grade = {
   studentId: string;
   assignmentId: string;
   score: number | null;
-  // select modeʼda score = 100 (pass) yoki 0 (fail). null = boʻsh.
   isDraft?: boolean;
   /** @deprecated `missing` ishlating; Q/T farqlanmagan eski belgi. */
   isMissing?: boolean;
@@ -193,14 +207,22 @@ export function classColor(cls: ClassInfo): ClassColor {
    HOSIL qilinadi — qotirilgan Tailwind klasslar yoʻq, dark mode avtomatik.
    ════════════════════════════════════════════════════════════════════ */
 export const TOPIC_COLOR_BASE: Record<TopicColor, string> = {
-  blue:   "oklch(0.746 0.16 232.661)",  // sky-400
-  violet: "oklch(0.702 0.183 293.541)", // violet-400
-  orange: "oklch(0.75 0.183 55.934)",   // orange-400
-  red:    "oklch(0.704 0.191 22.216)",  // red-400
-  green:  "oklch(0.792 0.209 151.711)", // green-400
-  teal:   "oklch(0.777 0.152 181.912)", // teal-400
-  pink:   "oklch(0.718 0.202 349.761)", // pink-400
-  amber:  "oklch(0.828 0.189 84.429)",  // amber-400
+  red:     "oklch(0.704 0.191 22.216)",  // red-400
+  orange:  "oklch(0.75 0.183 55.934)",   // orange-400
+  amber:   "oklch(0.828 0.189 84.429)",  // amber-400
+  yellow:  "oklch(0.852 0.199 91.936)",  // yellow-400
+  lime:    "oklch(0.841 0.238 128.85)",  // lime-400
+  green:   "oklch(0.792 0.209 151.711)", // green-400
+  emerald: "oklch(0.765 0.177 163.223)", // emerald-400
+  teal:    "oklch(0.777 0.152 181.912)", // teal-400
+  cyan:    "oklch(0.789 0.154 211.53)",  // cyan-400
+  blue:    "oklch(0.746 0.16 232.661)",  // sky-400 (legacy nom — oʻzgartirilmadi, mavjud maʼlumot buzilmasin)
+  indigo:  "oklch(0.673 0.182 276.935)", // indigo-400
+  violet:  "oklch(0.702 0.183 293.541)", // violet-400
+  purple:  "oklch(0.714 0.203 305.504)", // purple-400
+  fuchsia: "oklch(0.74 0.238 322.16)",   // fuchsia-400
+  pink:    "oklch(0.718 0.202 349.761)", // pink-400
+  rose:    "oklch(0.712 0.194 13.428)",  // rose-400
 };
 
 /** Topic solid rangi (hex) — TOPIC_COLOR_BASE dan HOSIL qilingan (qoʻlda emas). */
@@ -214,14 +236,22 @@ export function topicTints(color: TopicColor) {
 }
 
 export const TOPIC_COLOR_ORDER: TopicColor[] = [
-  "blue",
-  "violet",
-  "orange",
-  "green",
-  "pink",
-  "teal",
-  "amber",
   "red",
+  "orange",
+  "amber",
+  "yellow",
+  "lime",
+  "green",
+  "emerald",
+  "teal",
+  "cyan",
+  "blue",
+  "indigo",
+  "violet",
+  "purple",
+  "fuchsia",
+  "pink",
+  "rose",
 ];
 
 // Avto rang tanlash (mavjud topicʼlardagi ranglar boʻlmagan birinchi rang)
@@ -321,20 +351,11 @@ function seedScore(seed: number): number | null {
   return Math.floor(50 + r * 50);
 }
 
-function makeGrades(
-  students: Student[],
-  assignments: Assignment[],
-  topics: Topic[]
-): Grade[] {
-  const topicMap = new Map(topics.map((t) => [t.id, t]));
+function makeGrades(students: Student[], assignments: Assignment[]): Grade[] {
   const grades: Grade[] = [];
   students.forEach((s, si) => {
     assignments.forEach((a, ai) => {
-      const t = topicMap.get(a.topicId);
-      let score = seedScore(si * 31 + ai * 17 + 5);
-      if (t?.inputMode === "select" && score !== null) {
-        score = score >= 70 ? 100 : 0;
-      }
+      const score = seedScore(si * 31 + ai * 17 + 5);
       const isMissing = score === null && (si + ai) % 5 === 0;
       // Q (absent) / T (unsubmitted) ni almashtirib seed qilamiz.
       const missing: GradeMissing | undefined = isMissing
@@ -361,10 +382,10 @@ function makeTopics(prefix: string, weights: [number, number, number, number]): 
   // groupId — shablon turi (sinflar aro umumiy): "Test" hamma sinfda bitta guruh.
   // Quiz = formativ (signal), qolgani = summativ (yakuniyga kiradi).
   return [
-    { id: `t-${prefix}-hw`,   groupId: "hw",   name: "Uy vazifasi", color: "blue",   purpose: "summative", weightPercent: weights[0], inputMode: "select", scaleKind: "pass_fail",   passLabel: "Bajardi", failLabel: "Bajarmadi" },
-    { id: `t-${prefix}-quiz`, groupId: "quiz", name: "Quiz",        color: "violet", purpose: "formative", weightPercent: weights[1], inputMode: "score",  scaleKind: "letter_plus", passLabel: "Bajardi", failLabel: "Bajarmadi" },
-    { id: `t-${prefix}-test`, groupId: "test", name: "Test",        color: "orange", purpose: "summative", weightPercent: weights[2], inputMode: "score",  scaleKind: "letter_plus", passLabel: "Bajardi", failLabel: "Bajarmadi" },
-    { id: `t-${prefix}-exam`, groupId: "exam", name: "Imtihon",     color: "red",    purpose: "summative", weightPercent: weights[3], inputMode: "score",  scaleKind: "letter_plus", passLabel: "Bajardi", failLabel: "Bajarmadi" },
+    { id: `t-${prefix}-hw`,   groupId: "hw",   name: "Uy vazifasi", color: "blue",   purpose: "summative", weightPercent: weights[0], scaleKind: "pass_fail"   },
+    { id: `t-${prefix}-quiz`, groupId: "quiz", name: "Quiz",        color: "violet", purpose: "formative", weightPercent: weights[1], scaleKind: "letter_plus" },
+    { id: `t-${prefix}-test`, groupId: "test", name: "Test",        color: "orange", purpose: "summative", weightPercent: weights[2], scaleKind: "letter_plus" },
+    { id: `t-${prefix}-exam`, groupId: "exam", name: "Imtihon",     color: "red",    purpose: "summative", weightPercent: weights[3], scaleKind: "letter_plus" },
   ];
 }
 
@@ -566,7 +587,7 @@ function buildClass(id: string, names: string[], topics: Topic[], assignments: A
     students,
     topics,
     assignments,
-    grades: makeGrades(students, assignments, topics),
+    grades: makeGrades(students, assignments),
   };
 }
 

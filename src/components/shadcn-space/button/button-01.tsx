@@ -19,6 +19,9 @@ type ButtonWithIconProps = {
   size?: "sm" | "lg";
   variant?: "solid" | "outline";
   fullWidth?: boolean;
+  target?: string;
+  rel?: string;
+  onClick?: () => void;
 };
 
 const ButtonWithIcon = ({
@@ -28,6 +31,9 @@ const ButtonWithIcon = ({
   size = "lg",
   variant = "solid",
   fullWidth = false,
+  target,
+  rel,
+  onClick,
 }: ButtonWithIconProps) => {
   const isSm = size === "sm";
   const isOutline = variant === "outline";
@@ -66,7 +72,13 @@ const ButtonWithIcon = ({
         className,
       )}
     >
-      {href ? <a href={href}>{content}</a> : content}
+      {href ? (
+        <a href={href} target={target} rel={rel} onClick={onClick}>
+          {content}
+        </a>
+      ) : (
+        content
+      )}
     </Button>
   );
 };
