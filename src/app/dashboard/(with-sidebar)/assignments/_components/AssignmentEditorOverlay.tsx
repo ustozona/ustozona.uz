@@ -5,24 +5,23 @@ import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import {
   X, FileCheck2, Presentation, Check, GraduationCap, Tag, CalendarDays, Star, Users,
-  ChevronRight, Loader2, ClipboardCheck, Clapperboard, FileText, Zap,
+  ChevronRight, Loader2, ClipboardCheck, Clapperboard, FileText, Zap, Info,
 } from "lucide-react";
 import { useGradesStore } from "@/store/useGradesStore";
 import { getSetIdForSessionAction } from "@/server/actions/assess-sessions";
 import { TOPIC_COLOR_HEX, type Assignment, type ClassData, NO_TOPIC_ID } from "@/lib/grades-data";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TestWorkspaceOverlay from "./TestWorkspaceOverlay";
 
 const NO_TOPIC_VALUE = "__no_topic__";
-const MAX_SCORE_PRESETS = [10, 20, 50, 100];
 
 function blankDraft(): Assignment {
   return {
@@ -172,16 +171,6 @@ export default function AssignmentEditorOverlay({
                 onChange={(e) => patch({ title: e.target.value })}
                 placeholder={t("untitledDeck")}
                 className="h-auto rounded-xl bg-muted/40 px-4 py-3 text-base font-semibold shadow-none"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <span className="text-label text-muted-foreground">{t("instructionsLabel")}</span>
-              <Textarea
-                value={current.instructions ?? ""}
-                onChange={(e) => patch({ instructions: e.target.value })}
-                placeholder={t("instructionsPlaceholder")}
-                className="min-h-32 resize-none bg-card"
               />
             </div>
 
@@ -337,24 +326,26 @@ export default function AssignmentEditorOverlay({
                 <Star className="size-4" />
               </span>
               <div className="min-w-0 flex-1">
-                <span className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {t("maxScoreLabel")}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button type="button" className="inline-flex text-muted-foreground/70 hover:text-foreground">
+                        <Info className="size-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-56 normal-case tracking-normal">
+                      {t("maxScoreTooltip")}
+                    </TooltipContent>
+                  </Tooltip>
                 </span>
-                <Select
-                  value={String(current.maxScore)}
-                  onValueChange={(v) => patch({ maxScore: Number(v) })}
-                >
-                  <SelectTrigger className={triggerClass}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MAX_SCORE_PRESETS.map((s) => (
-                      <SelectItem key={s} value={String(s)}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  type="number"
+                  min={1}
+                  value={current.maxScore}
+                  onChange={(e) => patch({ maxScore: Number(e.target.value) || 0 })}
+                  className={triggerClass}
+                />
               </div>
             </div>
           </div>
