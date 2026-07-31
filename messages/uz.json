@@ -18,7 +18,8 @@
     "changelog": "Yangilanishlar",
     "feedback": "Fikr-mulohaza",
     "settings": "Sozlamalar",
-    "assignments": "Topshiriqlar"
+    "assignments": "Topshiriqlar",
+    "baholash": "Baholash"
   },
   "Header": {
     "sidebar": "Yon panel",
@@ -3533,10 +3534,19 @@
     "editorSoonDescription": "Savol/slayd mazmunini kiritish hozircha ishlab chiqilmoqda. Sarlavha, yoʻriqnoma va tafsilotlar allaqachon saqlanadi.",
     "detailsLabel": "Tafsilotlar",
     "classLabel": "Sinf",
+    "assignToLabel": "Kimlarga",
+    "assignToAll": "Barcha oʻquvchilar",
     "topicLabel": "Toifa",
     "noTopic": "Toifasiz",
     "dateLabel": "Sana",
     "maxScoreLabel": "Maks. ball",
+    "attachLabel": "Ilova",
+    "attachSoon": "Ilovalar tez orada",
+    "attachDrive": "Drive",
+    "attachYoutube": "YouTube",
+    "attachCreate": "Yaratish",
+    "attachUpload": "Yuklash",
+    "attachLink": "Havola",
     "otherGroup": "Toifasiz",
     "noClassTitle": "Sinf tanlanmagan",
     "noClassDescription": "Topshiriqlarni koʻrish uchun chapdan sinf tanlang.",
@@ -3548,6 +3558,15 @@
     "toastDeleted": "Oʻchirildi",
     "undo": "Bekor qilish",
     "copySuffix": "{title} (nusxa)",
-    "pickerDescriptionForClass": "{className} uchun turini tanlang."
+    "pickerDescriptionForClass": "{className} uchun turini tanlang.",
+    "titleLabel": "Sarlavha",
+    "chooseContentLabel": "Nima yaratmoqchisiz?",
+    "contentVideo": "Video",
+    "contentVideoDesc": "Video ichida asosiy nuqtalarda savollar.",
+    "contentPassage": "Matn",
+    "contentPassageDesc": "Oʻqish matni asosida savollar.",
+    "contentFlashcards": "Flashkartalar",
+    "contentFlashcardsDesc": "Old tomonda savol, orqada javob.",
+    "loadingLabel": "Yuklanmoqda…"
   }
 }

@@ -16,7 +16,9 @@ function Panel({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="panel"
       className={cn(
-        "flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground",
+        // Shakl 3-qatlam tokenlaridan keladi (src/styles/components.css):
+        // ost-loyiha panelni fork qilmasdan chegara/radiusni oʻzgartiradi.
+        "flex h-full min-h-0 flex-col overflow-hidden rounded-card border-card border-border bg-card text-card-foreground shadow-card",
         className
       )}
       {...props}

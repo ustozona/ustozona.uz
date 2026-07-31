@@ -18,7 +18,8 @@
     "changelog": "Обновления",
     "feedback": "Обратная связь",
     "settings": "Настройки",
-    "assignments": "Задания"
+    "assignments": "Задания",
+    "baholash": "Baholash"
   },
   "Header": {
     "sidebar": "Боковая панель",
@@ -3696,10 +3697,19 @@
     "editorSoonDescription": "Редактирование вопросов/слайдов ещё в разработке. Название, инструкция и детали уже сохраняются.",
     "detailsLabel": "Детали",
     "classLabel": "Класс",
+    "assignToLabel": "Кому",
+    "assignToAll": "Все учащиеся",
     "topicLabel": "Категория",
     "noTopic": "Без категории",
     "dateLabel": "Дата",
     "maxScoreLabel": "Макс. балл",
+    "attachLabel": "Вложение",
+    "attachSoon": "Вложения скоро",
+    "attachDrive": "Диск",
+    "attachYoutube": "YouTube",
+    "attachCreate": "Создать",
+    "attachUpload": "Загрузить",
+    "attachLink": "Ссылка",
     "otherGroup": "Без категории",
     "noClassTitle": "Класс не выбран",
     "noClassDescription": "Выберите класс слева, чтобы увидеть его задания.",
@@ -3711,6 +3721,15 @@
     "toastDeleted": "Удалено",
     "undo": "Отменить",
     "copySuffix": "{title} (копия)",
-    "pickerDescriptionForClass": "Выберите тип для «{className}»."
+    "pickerDescriptionForClass": "Выберите тип для «{className}».",
+    "titleLabel": "Название",
+    "chooseContentLabel": "Что вы хотите создать?",
+    "contentVideo": "Видео",
+    "contentVideoDesc": "Вопросы в ключевых точках видео.",
+    "contentPassage": "Текст",
+    "contentPassageDesc": "Вопросы по тексту для чтения.",
+    "contentFlashcards": "Карточки",
+    "contentFlashcardsDesc": "Вопрос спереди, ответ сзади.",
+    "loadingLabel": "Загрузка…"
   }
 }

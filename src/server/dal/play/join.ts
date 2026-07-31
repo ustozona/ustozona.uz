@@ -17,6 +17,21 @@ import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/serve
 
 export type JoinResult = { token: string; participantId: string; sessionId: string };
 
+/** Kod ishtirokchiga ekvivalent — sinf roʻyxatini (faqat id+ism) qaytaradi,
+    ishtirokchi ROʻYXATDAN ismini TANLAYDI (R43), yozmaydi. */
+export async function listRosterByCode(joinCode: string): Promise<{ id: string; name: string }[]> {
+  const [session] = await db
+    .select()
+    .from(quizSessions)
+    .where(eq(quizSessions.joinCode, joinCode.toUpperCase()));
+  if (!session) throw new UnauthorizedError("Yaroqsiz kod");
+
+  return db
+    .select({ id: students.id, name: students.name })
+    .from(students)
+    .where(eq(students.classId, session.classId));
+}
+
 export async function joinByCode(
   joinCode: string,
   studentId: string | null,

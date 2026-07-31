@@ -18,7 +18,8 @@
     "changelog": "Жаңылануулар",
     "feedback": "Кайтарым байланыш",
     "settings": "Жөндөөлөр",
-    "assignments": "Тапшырмалар"
+    "assignments": "Тапшырмалар",
+    "baholash": "Baholash"
   },
   "Header": {
     "sidebar": "Каптал панели",
@@ -3696,10 +3697,19 @@
     "editorSoonDescription": "Суроо/слайд мазмунун өңдөө әли даярдалууда. Аталышы, көрсөтмөсү жана чоо-жайы сакталат.",
     "detailsLabel": "Чоо-жай",
     "classLabel": "Класс",
+    "assignToLabel": "Кимге",
+    "assignToAll": "Бардык окуучулар",
     "topicLabel": "Категория",
     "noTopic": "Категориясыз",
     "dateLabel": "Күнү",
     "maxScoreLabel": "Макс. балл",
+    "attachLabel": "Тиркеме",
+    "attachSoon": "Тиркемелер жакында",
+    "attachDrive": "Drive",
+    "attachYoutube": "YouTube",
+    "attachCreate": "Түзүү",
+    "attachUpload": "Жүктөө",
+    "attachLink": "Шилтеме",
     "otherGroup": "Категориясыз",
     "noClassTitle": "Класс тандалган жок",
     "noClassDescription": "Тапшырмаларды көрүү үчүн солдон классты тандаңыз.",
@@ -3711,6 +3721,15 @@
     "toastDeleted": "Өчүрүлдү",
     "undo": "Артка кайтаруу",
     "copySuffix": "{title} (көчүрмө)",
-    "pickerDescriptionForClass": "{className} үчүн түрүн тандаңыз."
+    "pickerDescriptionForClass": "{className} үчүн түрүн тандаңыз.",
+    "titleLabel": "Аталышы",
+    "chooseContentLabel": "Эмне түзгүңүз келет?",
+    "contentVideo": "Видео",
+    "contentVideoDesc": "Видеонун негизги пункттарында суроолор.",
+    "contentPassage": "Текст",
+    "contentPassageDesc": "Окуу текстине негизделген суроолор.",
+    "contentFlashcards": "Карточкалар",
+    "contentFlashcardsDesc": "Алдында суроо, артында жооп.",
+    "loadingLabel": "Жүктөлүүдө…"
   }
 }

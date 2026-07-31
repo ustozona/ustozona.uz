@@ -8,6 +8,9 @@
    docs/ost-loyihalar-arxitektura.md, C boʻlim. */
 @import "../styles/surfaces.css";
 @import "../styles/products.css";
+@import "../styles/components.css";
+@import "../styles/push-button.css";
+@import "../styles/quiz-stage.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -88,6 +91,21 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Komponent tokenlari (3-qatlam) → Tailwind utility ──
+     Qiymatlar src/styles/components.css da; bu yerda faqat bogʻlanish.
+     `@theme inline` boʻlgani uchun utility var() ni oʻz joyida oʻqiydi —
+     shuning uchun html[data-product] override'i ishlaydi.
+     rounded-card / rounded-overlay / rounded-control / rounded-choice
+     shadow-card / shadow-overlay / shadow-choice */
+  --radius-card: var(--surface-card-radius);
+  --radius-overlay: var(--surface-overlay-radius);
+  --radius-control: var(--control-radius);
+  --radius-choice: var(--choice-radius);
+  --shadow-card: var(--surface-card-shadow);
+  --shadow-overlay: var(--surface-overlay-shadow);
+  --shadow-choice: var(--choice-shadow);
+
   --animate-marquee: marquee var(--duration) infinite linear;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
   @keyframes marquee {
@@ -158,6 +176,22 @@
     opacity: 1;}
   50% {
     opacity: 0;}}}
+
+/* ─────────────────────────────────────────────
+   Komponent tokenlari — chegara qalinligi utility'lari.
+   Tailwind v4 da `border-width` uchun theme namespace YOʻQ (radius va
+   shadow'dan farqli), shuning uchun qoʻlda `@utility`. Chegara RANGI
+   alohida qoladi (`border-border`) — bu faqat qalinlik.
+   ───────────────────────────────────────────── */
+@utility border-card {
+  border-width: var(--surface-card-border);
+}
+@utility border-control {
+  border-width: var(--control-border);
+}
+@utility border-choice {
+  border-width: var(--choice-border);
+}
 
 /* ─────────────────────────────────────────────
    Light mode (default) — OKLCH

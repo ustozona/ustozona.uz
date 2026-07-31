@@ -101,6 +101,26 @@ Sahifa ularni eʼlon qiladi: `<html data-surface="stage" data-product="doska">`.
 
 **Texnik jihatdan nega ishlaydi:** Tailwind v4 da `h-9` → `height: calc(var(--spacing) * 9)`, `text-sm` → `font-size: var(--text-sm)`. Yaʼni ajdodda `--spacing` va `--text-*` ni qayta belgilash butun daraxtni qayta oʻlchaydi. Bitta `<Button>` komponenti dashboard'da 36px, projektor ekranida 56px boʻladi — **komponent fork qilinmaydi**. `.theme-landing-mono` ([globals.css:347](../src/app/globals.css:347)) allaqachon shu prinsipni ranglar uchun isbotlagan; biz uni oʻlcham va zichlikka kengaytiramiz.
 
+### Komponent tokenlari — 3-qatlam (qoʻshildi 2026-07-31)
+
+Yuqoridagi ikki oʻq faqat **rang** va **oʻlcham**ni oʻzgartiradi. Ost-loyiha esa baʼzan boshqa **shakl tili** talab qiladi: oʻyin javob kartasi qalin chegarali va koʻtarilgan (Kahoot/Blooket), oʻqituvchi paneli esa tekis va ingichka chegarali. Buni token bilan bermasak, yagona chora — komponentni fork qilish.
+
+Jahon tajribasidagi standart yechim — **uch pogʻonali token** (Salesforce Lightning, Adobe Spectrum, IBM Carbon):
+
+| Qatlam | Misol | Kim oʻzgartiradi |
+|---|---|---|
+| 1. Global | `oklch(0.52 0.19 264)` | hech kim (xom qiymat) |
+| 2. Alias/semantik | `--primary`, `--radius`, `--spacing` | sirt va mahsulot oʻqlari |
+| 3. **Komponent** | `--surface-card-border`, `--choice-shadow` | ost-loyiha shakl tili |
+
+Fayl: [src/styles/components.css](../src/styles/components.css). Tailwind bogʻlanishi `globals.css` dagi `@theme inline` (`--radius-card`, `--shadow-choice`, …) va `@utility border-card/border-control/border-choice` (border-width uchun Tailwind v4 da theme namespace yoʻq).
+
+Lugʻat **ataylab kichik va yopiq**: `surface-card-*` (panel/karta), `surface-overlay-*` (modal/dropdown), `control-*` (tugma/input), `choice-*` (oʻyin/javob plitkasi). Yangi token faqat shu faylda eʼlon qilinadi, sahifada emas; nom semantik boʻladi (`--choice-shadow`, `--shadow-thick` EMAS) — aks holda 1-qatlamga qaytamiz.
+
+Standart qiymatlar bugungi koʻrinishga aynan teng, shuning uchun qatlamning qoʻshilishi hech nimani oʻzgartirmaydi. Hozircha ishlatilgan joylar: `ui/panel.tsx`, `ui/card.tsx`, test muharriridagi javob plitkasi.
+
+**Fork chegarasi (qatʼiy qoida):** primitivlar (`Button`, `Input`, `Panel`, `Card`) HECH QACHON fork qilinmaydi — ular token bilan sozlanadi. Domen komponentlari (javob plitkasi, podium, lobbi, taymer halqasi) esa har ost-loyihaning oʻz papkasida yashaydi va erkin yoziladi — ularni umumiylashtirish sof zarar (GitHub Primer / Atlassian ADS naqshi).
+
 ---
 
 ## Asosiy gʻoya: bitta oʻlchov dvigateli, besh xil yigʻish usuli

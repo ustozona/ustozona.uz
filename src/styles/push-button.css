@@ -1,0 +1,57 @@
+/* ════════════════════════════════════════════════════════════════════
+   BOSILADIGAN TUGMA — faqat oʻyin sirti (`/play`, jonli kviz).
+
+   Dashboard `<Button>` bilan ARALASHMAYDI: bu alohida klass, alohida
+   komponent (`play/_components/PushButton.tsx`) va faqat oʻsha yerda
+   ishlatiladi. Panel tugmasi 36px, tekis va tez — bu esa barmoq uchun
+   katta, "haqiqiy tugma" hissi beradigan boshqa til.
+   Qoida: primitiv fork qilinmaydi, domen komponenti erkin
+   (docs/ost-loyihalar-arxitektura.md, C boʻlim).
+
+   MEXANIKA: pastki qattiq (blur=0) box-shadow — 3D qirra. Bosilganda
+   tugma qirra balandligicha pastga tushadi va soya ~1px ga qisqaradi,
+   yaʼni umumiy balandlik oʻzgarmaydi → qoʻshni elementlar silkinmaydi.
+
+   QIRRA RANGI qora shaffof: `color-mix(var(...))` Turbopack'da buziladi
+   (memory: turbopack-css-gotchas), qora alfa esa istalgan fon ustida
+   toʻgʻri toʻqlashadi — rang uchun hisob-kitob kerak emas.
+   ════════════════════════════════════════════════════════════════════ */
+
+.push-btn {
+  border-radius: var(--choice-radius);
+  box-shadow: 0 var(--push-edge) 0 0 var(--push-edge-color);
+  transition:
+    transform 0.06s ease,
+    box-shadow 0.06s ease,
+    background-color 0.12s ease;
+  /* Tez ketma-ket bosishda matn belgilanib qolmasin. */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* `:active` — barmoq/sichqoncha ushlab turganda.
+   `[data-pressed="true"]` — tanlangan variant bosilganicha qoladi. */
+.push-btn:active:not(:disabled),
+.push-btn[data-pressed="true"]:not(:disabled) {
+  transform: translateY(var(--push-travel));
+  box-shadow: 0 1px 0 0 var(--push-edge-color);
+}
+
+.push-btn:disabled {
+  opacity: 0.5;
+  box-shadow: 0 var(--push-edge) 0 0 var(--push-edge-color);
+  transform: none;
+}
+
+/* Harakatni kamaytirish soʻralgan boʻlsa siljish yoʻq — lekin qirra
+   qoladi, chunki u qaysi element bosiladiganini bildiradi. */
+@media (prefers-reduced-motion: reduce) {
+  .push-btn {
+    transition: background-color 0.12s ease;
+  }
+  .push-btn:active:not(:disabled),
+  .push-btn[data-pressed="true"]:not(:disabled) {
+    transform: none;
+  }
+}

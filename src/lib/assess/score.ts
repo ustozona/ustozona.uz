@@ -15,9 +15,7 @@ export type ScoreResult = {
 
 type McqOption = { id: string; isCorrect: boolean };
 type McqContent = { options: McqOption[] };
-type PairsContent = { left: string; right: string };
 type CategoriesContent = { item: string; categoryId: string };
-type SequenceContent = { item: string };
 type ClozeContent = { answer: string };
 type WordlistContent = { word: string };
 type NumberContent = { answer: string; tolerance?: number };
@@ -35,6 +33,10 @@ export type ScoreInput = {
   content: Record<string, unknown>;
   /** activity_items.ordinal — sequence shaklida toʻgʻri pozitsiya. */
   ordinal: number;
+  /** activity_items.id — pairs shaklida "toʻgʻri juft" shu elementning
+      OʻZI (left+right bitta qatorda saqlanadi, R javobi shu id ga
+      moslashtirilsa toʻgʻri hisoblanadi). */
+  itemId: string;
   /** responses.answer — oʻquvchi javobi. */
   answer: Record<string, unknown>;
 };
@@ -51,7 +53,9 @@ export function scoreResponse(input: ScoreInput): ScoreResult {
     case "mcq":
       return scoreMcq(input.content as McqContent, input.answer);
     case "pairs":
-      return scoreExactId(input.content as PairsContent, "left", input.answer, "matchedId");
+      // left+right bitta itemda saqlanadi — toʻgʻri javob shu itemning
+      // OʻZINI tanlash (matn emas, id solishtiriladi).
+      return toBinary(normalize(input.answer.matchedId) === normalize(input.itemId));
     case "categories":
       return scoreExactId(
         input.content as CategoriesContent,

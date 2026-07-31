@@ -18,7 +18,8 @@
     "changelog": "Jańalanıwlar",
     "feedback": "Pikir-usınıs",
     "settings": "Sazlawlar",
-    "assignments": "Tapsırmalar"
+    "assignments": "Tapsırmalar",
+    "baholash": "Baholash"
   },
   "Header": {
     "sidebar": "Qaptal panel",
@@ -3696,10 +3697,19 @@
     "editorSoonDescription": "Soraw/slayd mazmunın redaktorlaw áli tayarlanıp atır. Ataması, nusqawları hám tárepleri saqlanadı.",
     "detailsLabel": "Tárepler",
     "classLabel": "Klass",
+    "assignToLabel": "Kimlerge",
+    "assignToAll": "Barlıq oqıwshılar",
     "topicLabel": "Kategoriya",
     "noTopic": "Kategoriyasız",
     "dateLabel": "Kúni",
     "maxScoreLabel": "Maks. ball",
+    "attachLabel": "Qosımsha",
+    "attachSoon": "Qosımshalar jaqında",
+    "attachDrive": "Drive",
+    "attachYoutube": "YouTube",
+    "attachCreate": "Jaratıw",
+    "attachUpload": "Júklew",
+    "attachLink": "Siltewe",
     "otherGroup": "Kategoriyasız",
     "noClassTitle": "Klass tańlanbaǵan",
     "noClassDescription": "Tapsırmalardı kóriw ushın sol tárepten klasstı tańlań.",
@@ -3711,6 +3721,15 @@
     "toastDeleted": "Óshirildi",
     "undo": "Biykar qılıw",
     "copySuffix": "{title} (nusqası)",
-    "pickerDescriptionForClass": "{className} ushın túrin tańlań."
+    "pickerDescriptionForClass": "{className} ushın túrin tańlań.",
+    "titleLabel": "Ataması",
+    "chooseContentLabel": "Nama jaratpaqshısız?",
+    "contentVideo": "Video",
+    "contentVideoDesc": "Video ishinde tiykarǵı noqatlarda sorawlar.",
+    "contentPassage": "Mátin",
+    "contentPassageDesc": "Oqıw mátini tiykarında sorawlar.",
+    "contentFlashcards": "Flesh-kartalar",
+    "contentFlashcardsDesc": "Aldında soraw, artında juwap.",
+    "loadingLabel": "Júklenip atır…"
   }
 }

@@ -12,9 +12,9 @@ import {
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
-import { VersionWatcher } from "@/components/version-watcher";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ProductScopeSync } from "@/components/product-scope-sync";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import "./globals.css";
 
@@ -118,8 +118,8 @@ export default async function RootLayout({
             <MotionProvider>
               <TooltipProvider>{children}</TooltipProvider>
             </MotionProvider>
+            <ProductScopeSync />
             <Toaster richColors position="bottom-center" />
-            <VersionWatcher />
           </ThemeProvider>
         </NextIntlClientProvider>
         <Analytics />

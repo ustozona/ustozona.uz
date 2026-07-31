@@ -25,11 +25,11 @@ export type SubmitResponseInput = {
 
 export async function submitResponse(input: SubmitResponseInput) {
   const { participant, session } = await requireParticipant(input.token);
-  if (session.state !== "running" && session.state !== "paused") {
-    throw new ForbiddenError("Sessiya javob qabul qilmayapti");
-  }
   if (session.state === "paused") {
     throw new ForbiddenError("Sessiya vaqtincha toʻxtatilgan");
+  }
+  if (session.state !== "running") {
+    throw new ForbiddenError("Sessiya javob qabul qilmayapti");
   }
 
   const [item] = await db
@@ -57,6 +57,7 @@ export async function submitResponse(input: SubmitResponseInput) {
     grading: activity.grading,
     content: item.content,
     ordinal: item.ordinal,
+    itemId: item.id,
     answer: input.answer,
   });
 

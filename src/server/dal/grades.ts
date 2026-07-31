@@ -106,6 +106,7 @@ function rowToAssignment(a: AssignmentRow): Assignment {
     ...(a.dueDate ? { dueDate: a.dueDate } : {}),
     ...(a.kind ? { kind: a.kind as Assignment["kind"] } : {}),
     ...(a.instructions ? { instructions: a.instructions } : {}),
+    ...(a.sourceSessionId ? { sourceSessionId: a.sourceSessionId } : {}),
   };
 }
 

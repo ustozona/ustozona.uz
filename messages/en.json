@@ -18,7 +18,8 @@
     "changelog": "Changelog",
     "feedback": "Feedback",
     "settings": "Settings",
-    "assignments": "Assignments"
+    "assignments": "Assignments",
+    "baholash": "Baholash"
   },
   "Header": {
     "sidebar": "Sidebar",
@@ -3696,10 +3697,19 @@
     "editorSoonDescription": "Question/slide content editing is still in progress. Title, instructions and details are already saved.",
     "detailsLabel": "Details",
     "classLabel": "Class",
+    "assignToLabel": "Assign to",
+    "assignToAll": "All students",
     "topicLabel": "Topic",
     "noTopic": "No topic",
     "dateLabel": "Date",
     "maxScoreLabel": "Max score",
+    "attachLabel": "Attach",
+    "attachSoon": "Attachments coming soon",
+    "attachDrive": "Drive",
+    "attachYoutube": "YouTube",
+    "attachCreate": "Create",
+    "attachUpload": "Upload",
+    "attachLink": "Link",
     "otherGroup": "Other",
     "noClassTitle": "No class selected",
     "noClassDescription": "Select a class on the left to see its assignments.",
@@ -3711,6 +3721,15 @@
     "toastDeleted": "Deleted",
     "undo": "Undo",
     "copySuffix": "{title} (copy)",
-    "pickerDescriptionForClass": "Choose the type for {className}."
+    "pickerDescriptionForClass": "Choose the type for {className}.",
+    "titleLabel": "Title",
+    "chooseContentLabel": "What do you want to create?",
+    "contentVideo": "Video",
+    "contentVideoDesc": "Questions at key points in a video.",
+    "contentPassage": "Passage",
+    "contentPassageDesc": "Questions based on a reading passage.",
+    "contentFlashcards": "Flashcards",
+    "contentFlashcardsDesc": "Question on front, answer on back.",
+    "loadingLabel": "Loading…"
   }
 }

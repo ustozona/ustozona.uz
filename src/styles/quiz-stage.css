@@ -1,0 +1,164 @@
+/* ════════════════════════════════════════════════════════════════════
+   KVIZ SAHNASI — 16:9 qatʼiy proporsiyali maydon.
+
+   NEGA QATʼIY PROPORSIYA: savol oxir-oqibat projektorda yoki oʻquvchi
+   ekranida koʻrsatiladi — u yer 16:9 (Full HD). Muharrir boshqa
+   nisbatda boʻlsa, oʻqituvchi yozgan narsa jonli sahnada boshqacha
+   joylashadi. Kahoot ham shuning uchun muharrirda aynan sahna
+   nisbatini koʻrsatadi (docs/ost-loyihalar-arxitektura.md).
+
+   OʻLCHASH MEXANIKASI — sof CSS, JS yoʻq:
+   ramka `container-type: size` eʼlon qiladi, sahna esa eni
+   `min(100cqw, 100cqh * 16/9)` bilan hisoblaydi. Yaʼni bo'sh joy keng
+   boʻlsa — balandlik chegaralaydi, past boʻlsa — enlik. Ikkalasida ham
+   nisbat 16:9 boʻlib qoladi va sahna hech qachon kesilmaydi.
+
+   MATN ham mutanosib: sahna oʻzi `container-type: inline-size`, ichkari
+   oʻlchamlar `cqw` da — sahna kichrayganda shrift ham kichrayadi,
+   yaʼni kompozitsiya buzilmaydi (breakpoint yozish shart emas).
+   ════════════════════════════════════════════════════════════════════ */
+
+.quiz-stage-frame {
+  container-type: size;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Sahna + uning ostidagi muharrir asboblari qatori (masalan "Vertikal
+   koʻrinish" almashtirgichi) — Wayground'dagi kabi kartalarga bevosita
+   yopishgan, ekranning burchagida "muallaq" emas. Ikkalasi bir xil
+   enda (`quiz-stage`ning oʻzi bilan bir xil kengaytma formulasi).
+
+   `- 2.25rem` — asboblar qatori (balandligi ~1.75rem) + boʻshliq
+   (0.5rem) uchun ZAXIRA: aks holda sahna balandligi butun konteyner
+   balandligiga (100cqh) qarab hisoblanadi, qator esa undan tashqariga
+   chiqib pastdan kesilib qoladi (`place-items: center` ortiqcha
+   balandlikni ikki tomondan teng kesadi). */
+.quiz-stage-column {
+  width: min(100cqw, calc((100cqh - 2.25rem) * 16 / 9));
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quiz-stage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  container-type: inline-size;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2cqw;
+  padding: 3cqw;
+  overflow: hidden;
+
+  border-radius: var(--surface-card-radius);
+  background: var(--stage-bg);
+}
+
+/* Savol matni — tepada, markazda; Kahoot'dagidek oq "lenta".
+   Maqsad: 24px/1.26. Koeffitsient (2.2cqw → 3.2cqw) koʻtarildi — odatiy
+   muharrir eni (~900–1300px)da matn chegaraga (1.5rem) YETIB
+   toʻxtashi kerak, aks holda oraliq `cqw` qiymati kichikroq (masalan
+   22px) qolib ketadi va Kahoot bilan mos kelmaydi. */
+.quiz-stage-stem {
+  font-size: clamp(0.875rem, 3.2cqw, 1.5rem);
+  line-height: 1.26;
+  padding: 2cqw 3cqw;
+  border-radius: calc(var(--surface-card-radius) * 0.9);
+}
+
+/* Javoblar — pastda, qatʼiy balandlikda (stage kengligiga nisbatan,
+   16:9 qatʼiy boʻlgani uchun `cqw` orqali balandlik ham bashorat
+   qilinadi). Butun qolgan joyni EGALLAMAYDI — savol qatorida rasm
+   uchun ham joy qoladi (Kahoot/Wayground/Blooket'da ham savol +
+   rasm + javoblar bitta sahnada yonma-yon sigʻadi). */
+.quiz-stage-answers {
+  margin-top: auto;
+  height: 30cqw;
+  display: grid;
+  gap: 1.2cqw;
+}
+
+.quiz-stage-answers.is-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+/* Vertikal roʻyxat — uzun matnli variantlar uchun toʻliq eni:
+   xuddi shu balandlik 2 karta oʻrniga 4 tor qatorga boʻlinadi. */
+.quiz-stage-answers.is-list {
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+}
+
+/* Javob matni — maqsad: 16px/1.25. Koeffitsient (1.3cqw → 2cqw) shu
+   sababdan koʻtarildi (yuqoridagi izohga qarang: chegaraga tezroq
+   yetishi kerak, aks holda kichikroq oraliq qiymatda qolib ketadi). */
+.quiz-stage-answer {
+  min-height: 0;
+  font-size: clamp(0.8125rem, 2.1cqw, 1.0625rem);
+  padding: 0.75cqw 1.25cqw;
+}
+
+.quiz-stage-answer textarea {
+  line-height: 1.25;
+}
+
+/* Toʻgʻri-javob toggle — "Lift" effekti: hover/focusda tugma koʻtariladi
+   va pastida soya paydo boʻladi (foydalanuvchi bergan .btn/.fx-9
+   spetsifikatsiyasi bilan bir xil egri chiziq va vaqt).
+
+   `color-mix()` emas, oklch'ning ichki alpha kanali (`/ 0.3`) ishlatiladi —
+   `.css` faylida `color-mix(var(...))` Lightning CSS tomonidan mangle
+   qilinadi (memory: turbopack-css-gotchas), alpha-suffiks esa xavfsiz. */
+.quiz-answer-toggle {
+  --lift-shadow: oklch(0.708 0 0 / 0.3);
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.quiz-answer-toggle[data-correct="true"] {
+  --lift-shadow: oklch(0.627 0.194 149.214 / 0.3);
+}
+
+.quiz-answer-toggle:hover,
+.quiz-answer-toggle:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 0 -2px var(--lift-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-answer-toggle {
+    transition-duration: 0.01ms;
+  }
+  .quiz-answer-toggle:hover,
+  .quiz-answer-toggle:focus-visible {
+    transform: none;
+  }
+}
+
+/* ── Mavzu kartasi (Mavzu paneli) ──
+   Kahoot kartasidagidek: koʻrinish butun kartani egallaydi, nom esa
+   ustidagi pastki lentada. Yengil "gorizont" naqsh — sodda ranglar
+   ham "sahna" boʻlib koʻrinishi uchun (rasm yuklamasdan). */
+.theme-card-preview {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-card-preview::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 70% at 25% 118%, oklch(1 0 0 / 0.16), transparent 60%),
+    radial-gradient(90% 60% at 80% 125%, oklch(0 0 0 / 0.12), transparent 60%);
+  pointer-events: none;
+}
+

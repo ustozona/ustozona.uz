@@ -24,6 +24,23 @@ function generateJoinCode(length = 6): string {
   return code;
 }
 
+export async function getSession(id: string): Promise<QuizSessionRow | null> {
+  const teacher = await requireTeacher();
+  const [row] = await db
+    .select()
+    .from(quizSessions)
+    .where(and(eq(quizSessions.id, id), eq(quizSessions.teacherId, teacher.id)));
+  return row ?? null;
+}
+
+export async function listSessionsBySet(setId: string): Promise<QuizSessionRow[]> {
+  const teacher = await requireTeacher();
+  return db
+    .select()
+    .from(quizSessions)
+    .where(and(eq(quizSessions.setId, setId), eq(quizSessions.teacherId, teacher.id)));
+}
+
 async function loadOwnedSession(id: string, teacherId: string): Promise<QuizSessionRow> {
   const [session] = await db
     .select()

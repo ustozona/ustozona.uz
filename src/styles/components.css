@@ -1,0 +1,95 @@
+/* ════════════════════════════════════════════════════════════════════
+   KOMPONENT TOKENLARI — dizayn tizimining 3-QATLAMI.
+
+   Hujjat: docs/ost-loyihalar-arxitektura.md, C boʻlim.
+
+   Uch qatlamli model (Salesforce Lightning / Adobe Spectrum naqshi):
+
+     1. Global   — xom qiymat:  oklch(0.52 0.19 264)
+     2. Alias    — maʼno:       --primary, --radius, --border
+     3. Komponent — SHU FAYL:   --surface-card-radius, --choice-shadow
+
+   NEGA KERAK: 1–2 qatlam faqat RANG va OʻLCHAMni oʻzgartira oladi.
+   Ost-loyiha esa baʼzan boshqa SHAKL TILI talab qiladi — Baholash oʻyin
+   kartalari qalin chegarali va "koʻtarilgan" (Blooket/Kahoot uslubi),
+   panel esa tekis va ingichka chegarali. Bu farqni token bilan berish
+   komponentni FORK QILISHDAN arzonroq: bitta `<Panel>` qoladi.
+
+   QATʼIY CHEKLOV — lugʻat kichik va yopiq:
+   - Yangi token FAQAT shu yerda eʼlon qilinadi, sahifada emas.
+   - Token semantik nomlanadi (`--choice-shadow`), qiymat boʻyicha emas
+     (`--shadow-thick` EMAS) — aks holda 1-qatlamga qaytamiz.
+   - Standart qiymatlar bugungi koʻrinishga AYNAN teng: bu fayl
+     qoʻshilishi bilan hech nima vizual oʻzgarmaydi.
+
+   Tailwind bogʻlanishi globals.css dagi `@theme inline` da
+   (`--radius-card`, `--shadow-card`, …) va `@utility border-card` da —
+   `@theme` selektor ichiga kira olmaydi, shuning uchun bu yerda faqat
+   sof CSS custom-property override.
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Yuza: panel va karta (statik konteyner) ── */
+  --surface-card-radius: var(--radius-xl);
+  --surface-card-border: 1px;
+  --surface-card-shadow: none;
+
+  /* ── Yuza: koʻtarilgan qatlam (modal, dropdown, popover) ──
+     Panel tili v1: soya FAQAT koʻtarilgan qatlamda. */
+  --surface-overlay-radius: var(--radius-xl);
+  --surface-overlay-shadow: 0 10px 30px -12px oklch(0 0 0 / 0.28);
+
+  /* ── Boshqaruv elementi (tugma, input) ──
+     Balandlik bu yerda EMAS — u sirt oʻqida (`--spacing`, surfaces.css). */
+  --control-radius: var(--radius-md);
+  --control-border: 1px;
+
+  /* ── Tanlov plitkasi — oʻyin/javob kartasi ──
+     Baholash javob varianti, kviz tugmasi, fleshkarta. Panel bilan bir
+     xil emas: u bosiladigan, katta va "koʻtarilgan" boʻlishi mumkin. */
+  --choice-radius: var(--radius-xl);
+  --choice-border: 1px;
+  --choice-shadow: none;
+
+  /* ── Bosiladigan tugma qirrasi (`.push-btn`, faqat oʻyin sirti) ──
+     `--push-travel` qirradan 1px kam: bosilganda 1px soya qoladi,
+     shuning uchun umumiy balandlik oʻzgarmaydi. */
+  --push-edge: 6px;
+  --push-travel: 5px;
+  --push-edge-color: oklch(0 0 0 / 0.3);
+
+  /* ── Kviz sahnasi (16:9) foni ──
+     Standart — neytral, chunki sahna oʻqituvchi panelida ham
+     koʻrsatiladi. Mavzu (theme) tanlansa shu token almashadi. */
+  --stage-bg: var(--muted);
+}
+
+/* ── Baholash — oʻyin sirtining oʻz shakl tili ──
+   Kartalar qalinroq chegarali va koʻtarilgan: oʻquvchi telefonda tez
+   bosadi, plitka "tugma" boʻlib koʻrinishi kerak. Panel/karta esa
+   oʻqituvchi tomonida oʻzgarmaydi — muharrir hujjat ekrani. */
+html[data-product="baholash"] {
+  --choice-radius: var(--radius-2xl);
+  --choice-border: 2px;
+  --choice-shadow: 0 4px 0 0 oklch(0 0 0 / 0.12);
+  /* Sahna foni — sokin binafsha gradient (Kahoot'da fon rasm; bizda
+     standart holat rasmssiz, oʻqituvchi keyin mavzu tanlashi mumkin). */
+  --stage-bg: linear-gradient(160deg, oklch(0.62 0.14 300), oklch(0.5 0.16 275));
+}
+
+/* ── Doska — projektor: ingichka chegara 5 metrdan koʻrinmaydi ── */
+html[data-product="doska"] {
+  --surface-card-border: 2px;
+  --choice-border: 2px;
+}
+
+/* ── stage sirti — mahsulotdan qatʼi nazar, uzoqdan koʻriladi ──
+   Sirt oʻqi shakl tiliga ham taʼsir qiladigan yagona joy: bu
+   estetika emas, oʻqilish talabi. */
+html[data-surface="stage"] {
+  --surface-card-border: 2px;
+  --control-border: 2px;
+  /* Projektorda hamma narsa kattaroq — qirra ham mutanosib oʻsadi. */
+  --push-edge: 10px;
+  --push-travel: 9px;
+}

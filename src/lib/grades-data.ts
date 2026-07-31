@@ -150,6 +150,9 @@ export type Assignment = {
   kind?: AssignmentKind;
   /** Yoʻriqnoma — oddiy matn (v1). */
   instructions?: string;
+  /** Baholash sessiyasidan nashr qilingan boʻlsa — manba sessiya id'si
+      (izlanuvchanlik; AssignmentEditorOverlay shu orqali toʻplamni ochadi). */
+  sourceSessionId?: string;
 };
 
 /** "Toifasiz" — virtual chelak: DB qatori emas, UI'da hisoblanadi. */

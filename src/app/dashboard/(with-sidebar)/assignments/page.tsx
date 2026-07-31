@@ -4,12 +4,12 @@ import { useMemo, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, ChevronUp } from "lucide-react";
+import { ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, ChevronUp, Tag } from "lucide-react";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn, panelHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
-import { type Assignment } from "@/lib/grades-data";
+import { TOPIC_COLOR_HEX, type Assignment, type TopicColor } from "@/lib/grades-data";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { TypographyMuted } from "@/components/ui/typography";
@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import AssignmentTypePicker from "./_components/AssignmentTypePicker";
 import AssignmentEditorOverlay from "./_components/AssignmentEditorOverlay";
 
 /** "Other" (Toifasiz) chelagi uchun sentinel — DB qatori emas, faqat guruhlash kaliti. */
@@ -43,8 +42,8 @@ export default function AssignmentsPage() {
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
   const [selectedClassId, handleSelectClass] = useClassIdParam();
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Assignment | null>(null);
+  const [draftClassId, setDraftClassId] = useState<string | null>(null);
 
   const classData = selectedClassId ? classDataMap[selectedClassId] : undefined;
 
@@ -59,9 +58,9 @@ export default function AssignmentsPage() {
     }
     const named = classData.topics
       .filter((topic) => byTopic.has(topic.id))
-      .map((topic) => ({ id: topic.id, name: topic.name, items: byTopic.get(topic.id)! }));
+      .map((topic) => ({ id: topic.id, name: topic.name, color: topic.color as TopicColor | null, items: byTopic.get(topic.id)! }));
     const other = byTopic.get(OTHER_GROUP);
-    return other ? [...named, { id: OTHER_GROUP, name: t("otherGroup"), items: other }] : named;
+    return other ? [...named, { id: OTHER_GROUP, name: t("otherGroup"), color: null, items: other }] : named;
   }, [classData, t]);
 
   const totalCount = groups.reduce((sum, g) => sum + g.items.length, 0);
@@ -77,25 +76,6 @@ export default function AssignmentsPage() {
     const qs = url.searchParams.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname);
   };
-
-  function handleCreate(input: { classId: string; kind: "test" | "deck" }) {
-    const id = crypto.randomUUID();
-    const newAssignment: Assignment = {
-      id,
-      title: input.kind === "test" ? t("untitledTest") : t("untitledDeck"),
-      maxScore: 100,
-      topicId: null,
-      date: new Date().toISOString().slice(0, 10),
-      kind: input.kind,
-      instructions: "",
-    };
-    updateClass(input.classId, (cd) => ({
-      ...cd,
-      assignments: [newAssignment, ...cd.assignments],
-    }));
-    setPickerOpen(false);
-    openEditor(id);
-  }
 
   function handleDuplicate(a: Assignment) {
     if (!selectedClassId) return;
@@ -163,7 +143,7 @@ export default function AssignmentsPage() {
                     ({totalCount})
                   </TypographyMuted>
                 </div>
-                <Button onClick={() => setPickerOpen(true)} className="gap-1.5 font-semibold">
+                <Button onClick={() => setDraftClassId(selectedClassId)} className="gap-1.5 font-semibold">
                   <Plus className="size-4" />
                   {t("createButton")}
                 </Button>
@@ -178,7 +158,7 @@ export default function AssignmentsPage() {
                       <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
-                      <Button onClick={() => setPickerOpen(true)} className="gap-2">
+                      <Button onClick={() => setDraftClassId(selectedClassId)} className="gap-2">
                         <Plus className="size-4" /> {t("createButton")}
                       </Button>
                     </EmptyContent>
@@ -189,6 +169,23 @@ export default function AssignmentsPage() {
                       {groups.map((group) => (
                         <div key={group.id} className="flex flex-col gap-2.5">
                           <div className="flex items-center gap-2">
+                            <div
+                              className={
+                                group.color
+                                  ? "flex size-7 shrink-0 items-center justify-center rounded-lg"
+                                  : "flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+                              }
+                              style={
+                                group.color
+                                  ? {
+                                      backgroundColor: `color-mix(in srgb, ${TOPIC_COLOR_HEX[group.color]} 15%, transparent)`,
+                                      color: TOPIC_COLOR_HEX[group.color],
+                                    }
+                                  : undefined
+                              }
+                            >
+                              <Tag className="size-3.5" />
+                            </div>
                             <h3 className="text-sm font-semibold text-foreground">{group.name}</h3>
                             <TypographyMuted className="text-xs">{group.items.length}</TypographyMuted>
                             <ChevronUp className="size-3.5 text-muted-foreground" />
@@ -248,21 +245,22 @@ export default function AssignmentsPage() {
         </div>
       </DashboardColumns>
 
-      {selectedClassId && classData && (
-        <AssignmentTypePicker
-          open={pickerOpen}
-          onOpenChange={setPickerOpen}
-          classId={selectedClassId}
-          className={classData.info.name}
-          onCreate={handleCreate}
-        />
-      )}
-
       {openAssignment && selectedClassId && (
         <AssignmentEditorOverlay
           classId={selectedClassId}
           assignment={openAssignment}
           onClose={closeEditor}
+        />
+      )}
+
+      {draftClassId && (
+        <AssignmentEditorOverlay
+          classId={draftClassId}
+          onClose={() => setDraftClassId(null)}
+          onCreated={(id) => {
+            setDraftClassId(null);
+            openEditor(id);
+          }}
         />
       )}
 
