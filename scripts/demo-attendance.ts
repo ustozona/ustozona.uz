@@ -1,11 +1,9 @@
 import { CLASS_DATA, type Student } from "@/lib/grades-data";
 import type { AttendanceRecord, LessonDay } from "@/lib/attendance-data";
-import {
-  DEFAULT_CALENDAR_2025_2026,
-  isSchoolDay,
-} from "@/lib/academic-calendar";
+import { isSchoolDay } from "@/lib/academic-calendar";
 import { addDaysKey, dateKeyToDate } from "@/lib/date-keys";
 import { buildSlots, DOUBLE_SHIFT_DEFAULTS, type TimetableEvent } from "@/lib/timetable";
+import { DEMO_CALENDAR, DEMO_CLASS_IDS, TODAY_KEY } from "./demo-calendar";
 
 /* ════════════════════════════════════════════════════════════════════
    DEMO JADVAL + DAVOMAT GENERATORI — faqat scripts/seed.ts uchun.
@@ -52,6 +50,7 @@ export const DEMO_TIMETABLE: Record<string, DemoSlot> = {
 export function demoTimetableEvents(): TimetableEvent[] {
   const events: TimetableEvent[] = [];
   for (const [classId, cfg] of Object.entries(DEMO_TIMETABLE)) {
+    if (!DEMO_CLASS_IDS.includes(classId)) continue;
     const shiftCfg = cfg.shift === 1 ? DOUBLE_SHIFT_DEFAULTS.shift1 : DOUBLE_SHIFT_DEFAULTS.shift2;
     const slot = buildSlots(shiftCfg)[cfg.slot];
     for (const day of cfg.days) {
@@ -68,13 +67,14 @@ export function demoTimetableEvents(): TimetableEvent[] {
 }
 
 /** Sinfning oʻquv yilidagi dars kunlari — kalendar (taʼtil/yakshanba) hisobga
-    olingan holda DEMO_TIMETABLE'dagi hafta kunlari boʻyicha. */
+    olingan holda DEMO_TIMETABLE'dagi hafta kunlari boʻyicha, FAQAT bugungacha
+    (kelajakdagi kunlar uchun hali "yozilmagan" davomat boʻlmasligi kerak). */
 function demoLessonDays(classId: string): LessonDay[] {
   const cfg = DEMO_TIMETABLE[classId];
   if (!cfg) return [];
-  const cal = DEFAULT_CALENDAR_2025_2026;
+  const cal = DEMO_CALENDAR;
   const days: LessonDay[] = [];
-  for (let key = cal.range.start; key <= cal.range.end; key = addDaysKey(key, 1)) {
+  for (let key = cal.range.start; key <= TODAY_KEY; key = addDaysKey(key, 1)) {
     if (!isSchoolDay(cal, key)) continue;
     const dow = dateKeyToDate(key).getDay();
     if (cfg.days.includes(dow)) days.push({ date: key, dayOfWeek: dow });

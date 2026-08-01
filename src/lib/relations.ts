@@ -99,6 +99,8 @@ const DEFAULT_SIBLING_NAMES: string[][] = [
   ["Diyorbek Karimov", "Oydin Karimova"],
   ["Ibrohim Tursunov", "Nodir Tursunov"],
   ["Feruza Yusupova", "Xurshid Yusupov"],
+  ["Abdulloh Xasanov", "Bobur Xasanov"],
+  ["Umid Karimov", "Raʼno Karimova"],
 ];
 
 /** Boshlangʻich bogʻlarni id juftliklariga aylantiradi (topilmaganlari

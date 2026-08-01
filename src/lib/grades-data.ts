@@ -1,5 +1,7 @@
 export type { ClassColor } from "@/lib/class-colors";
 import { type ClassColor, autoClassColor, makeColorTints, oklchToHex } from "@/lib/class-colors";
+import { currentAcademicStartYear } from "@/lib/academic-calendar";
+import { dateToKey } from "@/lib/date-keys";
 
 export type ClassInfo = {
   id: string;
@@ -504,11 +506,19 @@ const TOPICS_C2  = makeTopics("club2", [30, 35, 35,  0]);
 
 // ─── Topshiriqlar ─────────────────────────────────────────────────────────────
 
-// Seed sanalari: chorak boshidan (2025-09-08) har topshiriqqa ~10 kun oraliq.
-function seedDate(i: number): string {
-  const d = new Date(2025, 8, 8);
-  d.setDate(d.getDate() + i * 10);
-  return d.toISOString().slice(0, 10); // yyyy-mm-dd
+// Seed sanalari: demo oʻquv yili boshidan (1-iyun) BUGUNGACHA teng
+// taqsimlangan — shu bilan hech qanday topshiriq "kelajak"da qolmaydi
+// (baholar allaqachon qoʻyilgan boʻlishi kerak) va har safar seed qayta
+// ishga tushirilganda oraliq oʻzi yangilanadi.
+const SEED_YEAR_START = currentAcademicStartYear(new Date());
+const SEED_RANGE_START_MS = new Date(SEED_YEAR_START, 5, 1).getTime(); // 1-iyun
+const SEED_TODAY_MS = Date.now();
+const SEED_BUFFER_MS = 2 * 86_400_000; // oxirgi topshiriq bugundan ~2 kun oldin
+
+function seedDate(i: number, total: number): string {
+  const span = Math.max(SEED_TODAY_MS - SEED_RANGE_START_MS - SEED_BUFFER_MS, 86_400_000);
+  const t = total <= 1 ? span : Math.round((span * i) / (total - 1));
+  return dateToKey(new Date(SEED_RANGE_START_MS + Math.min(t, span)));
 }
 
 // Seed-only: eski "vazn" yorligʻi endi faqat qaysi toifaga tushishini belgilaydi.
@@ -517,7 +527,7 @@ type SeedBucket = "light" | "normal" | "heavy" | "exam";
 function mkA(prefix: string, list: [string, SeedBucket][]): Assignment[] {
   return list.map(([title, w], i) => {
     const tId = w === "light" ? "hw" : w === "normal" ? "quiz" : w === "heavy" ? "test" : "exam";
-    return { id: `${prefix}-a${i + 1}`, title, maxScore: 100, topicId: `t-${prefix}-${tId}`, date: seedDate(i) };
+    return { id: `${prefix}-a${i + 1}`, title, maxScore: 100, topicId: `t-${prefix}-${tId}`, date: seedDate(i, list.length) };
   });
 }
 

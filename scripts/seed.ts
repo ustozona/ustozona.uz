@@ -12,7 +12,7 @@ import { demoAttendanceRecords, demoTimetableEvents } from "./demo-attendance";
 import { demoBehaviorData } from "./demo-behavior";
 import { resolveDefaultLinks } from "@/lib/relations";
 import { UNITS, LESSONS } from "@/lib/lessons-data";
-import { DEFAULT_CALENDAR_2025_2026 } from "@/lib/academic-calendar";
+import { DEMO_CALENDAR, DEMO_CLASS_IDS } from "./demo-calendar";
 import { defaultBellConfig } from "@/lib/bell-schedule";
 import { STANDARDS_DATA } from "@/lib/standards-data";
 import { SEED_NOTIFICATIONS } from "@/store/useNotificationsStore";
@@ -141,7 +141,9 @@ async function main() {
   const assignmentRows: (typeof schema.assignments.$inferInsert)[] = [];
   const gradeRows: (typeof schema.grades.$inferInsert)[] = [];
 
-  Object.values(CLASS_DATA).forEach((data, classIdx) => {
+  Object.values(CLASS_DATA)
+    .filter((data) => DEMO_CLASS_IDS.includes(data.info.id))
+    .forEach((data, classIdx) => {
     const classId = data.info.id;
     classRows.push({
       id: classId,
@@ -231,7 +233,7 @@ async function main() {
   );
 
   const recordRows: (typeof schema.attendanceRecords.$inferInsert)[] = [];
-  for (const classId of Object.keys(CLASS_DATA)) {
+  for (const classId of DEMO_CLASS_IDS) {
     const records = demoAttendanceRecords(classId);
     for (const r of records) {
       recordRows.push({
@@ -315,7 +317,7 @@ async function main() {
   );
 
   /* ── 4.5. Rejalashtirish domeni: darslar banki, jadval, kalendar ── */
-  const unitRows = UNITS.map((u, i) => ({
+  const unitRows = UNITS.filter((u) => DEMO_CLASS_IDS.includes(u.classId)).map((u, i) => ({
     id: u.id,
     teacherId: userId,
     classId: u.classId,
@@ -326,7 +328,7 @@ async function main() {
   }));
   await insertChunked("units", unitRows, (b) => db.insert(schema.units).values(b));
 
-  const lessonRows = LESSONS.map((l, i) => ({
+  const lessonRows = LESSONS.filter((l) => DEMO_CLASS_IDS.includes(l.classId)).map((l, i) => ({
     id: l.id,
     teacherId: userId,
     classId: l.classId,
@@ -346,7 +348,7 @@ async function main() {
   await db.insert(schema.timetableVersions).values({
     id: "tt-seed-v1",
     teacherId: userId,
-    effectiveFrom: DEFAULT_CALENDAR_2025_2026.range.start,
+    effectiveFrom: DEMO_CALENDAR.range.start,
     note: "Dastlabki jadval",
     createdAt: new Date().toISOString(),
     bellConfig: defaultBellConfig() as unknown as Record<string, unknown>,
@@ -356,7 +358,7 @@ async function main() {
 
   await db.insert(schema.calendars).values({
     teacherId: userId,
-    data: DEFAULT_CALENDAR_2025_2026 as unknown as Record<string, unknown>,
+    data: DEMO_CALENDAR as unknown as Record<string, unknown>,
   });
   console.log("  + calendars: 1");
 
@@ -403,11 +405,17 @@ async function main() {
      bu yerda feedback seed qilinmaydi. */
 
   /* ── 5. Qarindoshlik juftlari ────────────────────────────────────── */
-  const relationRows = resolveDefaultLinks().map(([a, b]) => ({
-    teacherId: userId,
-    studentA: a < b ? a : b,
-    studentB: a < b ? b : a,
-  }));
+  // resolveDefaultLinks() butun CLASS_DATA'dan (5 ta sinfdan tashqarisi ham)
+  // oʻqiydi — faqat haqiqatan yozilgan oʻquvchilar juftligi qoldiriladi
+  // (aks holda studentA/B FK buziladi).
+  const insertedStudentIds = new Set(studentRows.map((s) => s.id));
+  const relationRows = resolveDefaultLinks()
+    .filter(([a, b]) => insertedStudentIds.has(a) && insertedStudentIds.has(b))
+    .map(([a, b]) => ({
+      teacherId: userId,
+      studentA: a < b ? a : b,
+      studentB: a < b ? b : a,
+    }));
   await insertChunked("student_relations", relationRows, (b) =>
     db.insert(schema.studentRelations).values(b)
   );

@@ -9,6 +9,7 @@ import {
   type BehaviorRedemption,
 } from "@/lib/behavior-data";
 import { DEMO_TIMETABLE, seeded } from "./demo-attendance";
+import { DEMO_CLASS_IDS } from "./demo-calendar";
 
 /* ════════════════════════════════════════════════════════════════════
    DEMO XULQ GENERATORI — faqat scripts/seed.ts uchun.
@@ -49,6 +50,7 @@ export function demoBehaviorData(teacherId: string): {
 
   Object.values(CLASS_DATA).forEach((data, classIdx) => {
     const classId = data.info.id;
+    if (!DEMO_CLASS_IDS.includes(classId)) return;
     const cfg = DEMO_TIMETABLE[classId];
     if (!cfg) return;
 
