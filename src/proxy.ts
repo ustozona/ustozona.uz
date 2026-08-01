@@ -38,6 +38,7 @@ const PROTECTED_PREFIXES = [
   "/dashboard",
   "/lessons",
   "/admin",
+  "/blog/studio",
 ];
 
 function isUnder(pathname: string, prefix: string): boolean {
@@ -84,5 +85,6 @@ export const config = {
     "/shogird/:path*",
     "/doska/:path*",
     "/boshqaruv/:path*",
+    "/blog/studio/:path*",
   ],
 };

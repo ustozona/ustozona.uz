@@ -887,6 +887,24 @@
 /* ProseMirror tahrirlash maydoni */
 .lesson-prose:focus { outline: none; }
 .lesson-prose .ProseMirror { outline: none; min-height: 60vh; }
+
+/* Blog — A4 sahifa emas, bepoyon oʻqish ustuni: bazaviy oʻlcham darsnikidan
+   (0.875rem) kattaroq, xuddi lesson-prose kabi h1/h2/h3/p alohida qayta
+   hisoblanadi (rem ROOT'ga bogʻliq, containerga emas). Qoʻsh sinf selektor
+   (`.lesson-prose.blog-prose p`) SHART — pastroqdagi `.lesson-prose p`
+   qoidasi bir xil oʻzillik (specificity) bilan keyin kelgani uchun uni
+   bosib ketardi. */
+.blog-prose { font-size: 1.25rem; }
+.lesson-prose.blog-prose p { font-size: 1.25rem; line-height: 1.75; margin: 0.85rem 0; }
+.lesson-prose.blog-prose h1 { font-size: 2.25rem; }
+.lesson-prose.blog-prose h2 { font-size: 1.5rem; }
+.lesson-prose.blog-prose h3 { font-size: 1.25rem; }
+.blog-prose .ProseMirror { min-height: 40vh; }
+
+/* Blog sarlavhasi — serif (src/app/blog/layout.tsx qamrovi), faqat
+   sarlavha va matn tanasi; badge/tugma/UI xromi DM Sans'da qoladi. */
+.blog-title,
+.blog-prose { font-family: var(--font-blog-serif), Georgia, serif; }
 /* Baza matn oʻlchami 16px → 14px (mutanosib): container'ga font-size
    berilgan — h1/h2/h3/p bundan mustasno (`rem` ROOT'ga bogʻliq, containerga
    emas, shuning uchun ular pastda ALOHIDA qayta hisoblangan), lekin li/

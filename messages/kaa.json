@@ -19,7 +19,8 @@
     "feedback": "Pikir-usınıs",
     "settings": "Sazlawlar",
     "assignments": "Tapsırmalar",
-    "baholash": "Baholash"
+    "baholash": "Baholash",
+    "blog": "Blog"
   },
   "Header": {
     "sidebar": "Qaptal panel",
@@ -42,6 +43,7 @@
     "tasks": "Wazıypalar",
     "changelog": "Jańalanıwlar",
     "feedback": "Pikir-usınıs",
+    "blog": "Blog",
     "settings": "Sazlawlar",
     "admin": "Basqarıw",
     "adminUsers": "Paydalanıwshılar",
@@ -1954,6 +1956,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "blog-launch": {
+        "title": "Jańa bolim: Blog",
+        "body": "Endi oʻz maqalalarıńızdı jazıp, jarıyalawıńız múmkin — barlıq oqıtıwshılardıń postları ustozona.uz/blog betinde birge koʻrinedi, oqırmanlar pikir de bildire aladı. Baslaw ushın \"Jazıw\" túymesin basıń."
+      },
       "today-rail-create-link": {
         "title": "Bügingi sabaqlar — jobasız slotqa jaratıw/baylanıstırıw",
         "body": "Kartaǵa kursor keltirilgende \"Joba joq\" jazıwı ornına eki tez ámel shıǵadı: jańa tema jaratıw yamasa bar temanı usı sabaqqa baylanıstırıw — rejeleştiriwshidegidey."

@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "blog-launch",
+    date: "2026-08-01",
+    type: "yangi",
+    title: "Yangi boʻlim: Blog",
+    body:
+      "Endi oʻz maqolalaringizni yozib, nashr qilishingiz mumkin — hamma oʻqituvchilarning postlari ustozona.uz/blog sahifasida birga koʻrinadi, kimdir fikr ham bildira oladi. Yozish uchun \"Yozish\" tugmasidan foydalaning.",
+    href: "/blog",
+  },
+  {
     id: "today-rail-create-link",
     date: "2026-07-28",
     type: "yangi",

@@ -35,6 +35,7 @@ import {
   Home,
   Target,
   BookMarked,
+  Newspaper,
   MessagesSquare,
   Megaphone,
   Settings,
@@ -90,8 +91,12 @@ const navGroups: NavGroup[] = [
 ];
 
 
+/* Blog — /dashboard ICHIDA EMAS (bu EMS funksiyasi emas, alohida mahsulot;
+   lesson-editor bilan bir xil sabab). Sidebar ochiq /blog'ga olib boradi;
+   yozish esa oʻsha yerdagi "Yozish" tugmasi orqali /blog/studio'ga. */
 const footerItems: NavItem[] = [
   { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
+  { href: "/blog", labelKey: "blog", icon: Newspaper },
   { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
 ];

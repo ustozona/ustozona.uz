@@ -19,7 +19,8 @@
     "feedback": "Feedback",
     "settings": "Settings",
     "assignments": "Assignments",
-    "baholash": "Baholash"
+    "baholash": "Baholash",
+    "blog": "Blog"
   },
   "Header": {
     "sidebar": "Sidebar",
@@ -42,6 +43,7 @@
     "tasks": "Tasks",
     "changelog": "Changelog",
     "feedback": "Feedback",
+    "blog": "Blog",
     "settings": "Settings",
     "admin": "Admin",
     "adminUsers": "Users",
@@ -1954,6 +1956,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "blog-launch": {
+        "title": "New section: Blog",
+        "body": "You can now write and publish your own articles — every teacher's posts appear together at ustozona.uz/blog, and readers can leave comments. Use the \"Write\" button to get started."
+      },
       "today-rail-create-link": {
         "title": "Today's lessons — create/link for unplanned slots",
         "body": "Hovering over a card now shows two quick actions instead of \"No plan\": create a new topic or link an existing one to this lesson — same as in the planner."

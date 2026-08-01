@@ -19,7 +19,8 @@
     "feedback": "Fikr-mulohaza",
     "settings": "Sozlamalar",
     "assignments": "Topshiriqlar",
-    "baholash": "Baholash"
+    "baholash": "Baholash",
+    "blog": "Blog"
   },
   "Header": {
     "sidebar": "Yon panel",
@@ -42,6 +43,7 @@
     "tasks": "Vazifalar",
     "changelog": "Yangilanishlar",
     "feedback": "Fikr-mulohaza",
+    "blog": "Blog",
     "settings": "Sozlamalar",
     "admin": "Boshqaruv",
     "adminUsers": "Foydalanuvchilar",
@@ -1954,6 +1956,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "blog-launch": {
+        "title": "Yangi boʻlim: Blog",
+        "body": "Endi oʻz maqolalaringizni yozib, nashr qilishingiz mumkin — hamma oʻqituvchilarning postlari ustozona.uz/blog sahifasida birga koʻrinadi, kimdir fikr ham bildira oladi. Yozish uchun \"Yozish\" tugmasidan foydalaning."
+      },
       "today-rail-create-link": {
         "title": "Bugungi darslar — rejasiz slotga yaratish/ulash",
         "body": "Kartaga hover qilganda \"Reja yoʻq\" yozuvi oʻrniga ikkita tez amal chiqadi: yangi mavzu yaratish yoki mavjud mavzuni shu darsga ulash — rejalashtiruvchidagi bilan bir xil."
