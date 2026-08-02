@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { GlowBadge } from "@/components/shadcn-space/badge/glow-badge";
 import { ArrowUpRight } from "lucide-react";
 import { PRODUCTS } from "@/lib/landing-nav";
 
@@ -39,9 +40,7 @@ export function ProductsSection() {
                 <h3 className="text-xl font-semibold text-foreground">
                   Ustozona
                 </h3>
-                <Badge className="gap-1.5 border-success/30 bg-success/10 text-success hover:bg-success/10">
-                  Ishlayapti
-                </Badge>
+                <GlowBadge tone="success">Ishlayapti</GlowBadge>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Oʻqituvchi paneli — jurnal, davomat, xulq, jadval, dars
@@ -63,9 +62,9 @@ export function ProductsSection() {
                   <h3 className="text-lg font-semibold text-foreground">
                     {p.name}
                   </h3>
-                  <Badge variant="outline" className="shrink-0 text-muted-foreground">
+                  <GlowBadge tone="pending" className="shrink-0">
                     {p.statusLabel}
-                  </Badge>
+                  </GlowBadge>
                 </div>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {p.tagline}
