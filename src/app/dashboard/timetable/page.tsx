@@ -39,6 +39,7 @@ import { EventCard } from "@/components/calendar/EventCard";
 import { type TimetableEvent } from "@/lib/timetable";
 import { type BellConfig, defaultBellConfig, computePeriods, remapEventsForBellChange } from "@/lib/bell-schedule";
 import PeriodGrid, { type TimetableClass } from "@/components/timetable/PeriodGrid";
+import { TimetablePrintSheet } from "@/components/timetable/TimetablePrintSheet";
 import BellScheduleDialog from "@/components/timetable/BellScheduleDialog";
 import EffectiveDateDialog, { type EffectiveChoice } from "@/components/timetable/EffectiveDateDialog";
 import VersionChip, { versionRangeLabel } from "@/components/timetable/VersionChip";
@@ -55,7 +56,7 @@ import { minToHHMM, hhmmToMin, snapMin, clamp } from "@/lib/calendar-core/date-m
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { SavedIndicator } from "@/app/dashboard/settings/_components/SettingsShared";
 import { toast } from "sonner";
-import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Download, PencilIcon as EditIcon, Hourglass, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
+import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Printer, PencilIcon as EditIcon, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
 
 /* ─── Types ─── */
 /* TimetableEvent — @/lib/timetable dan (takrorlanuvchi haftalik shablon).
@@ -85,14 +86,6 @@ const DAY_END_MIN = END_HOUR * 60;
 const INITIAL_SCROLL_HOUR = 8;
 
 function uid() { return Math.random().toString(36).slice(2, 9); }
-
-/** Dars davomiyligini oʻqiladigan matnga aylantirish: 45 → "45 daq", 90 → "1 soat 30 daq" */
-function fmtDuration(min: number) {
-  const h = Math.floor(min / 60), m = min % 60;
-  if (h && m) return `${h} soat ${m} daq`;
-  if (h) return `${h} soat`;
-  return `${m} daq`;
-}
 
 
 /** Qoʻngʻiroq jadvali nusxasi — draft va snapshot orasida shared reference qolmasin. */
@@ -376,27 +369,15 @@ export default function TimetablePage() {
     setDeleteConfirmOpen(false);
   }, [selectedVersion, versions, deleteVersion, today]);
 
-  // Jadvalni JSON sifatida eksport qilish
+  // Jadvalni PDF sifatida eksport qilish — brauzerning chop etish dialogi
+  // (A4 landshaft) orqali, TimetablePrintSheet komponenti pastda chop uchun render qilinadi.
   const exportSchedule = useCallback(() => {
     if (events.length === 0) {
       toast.error(t("exportEmptyError"));
       return;
     }
-    const rows = [...events]
-      .sort((a, b) => a.day - b.day || a.startMin - b.startMin)
-      .map(e => {
-        const cls = getClass(e.classId);
-        return { sinf: cls.name, kun: fmt.dayName(e.day), boshlanish: minToHHMM(e.startMin), tugash: minToHHMM(e.endMin) };
-      });
-    const blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "dars-jadvali.json";
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success(t("exportSuccessToast"));
-  }, [events, getClass, t]);
+    window.print();
+  }, [events, t]);
 
   // Birinchi foydalanishda drag maslahati (bir martalik, localStorage)
   useEffect(() => {
@@ -548,14 +529,17 @@ export default function TimetablePage() {
     return `${parts[0].text}, ${parts[1].text} +${parts.length - 2}`;
   }, [events, t]);
 
-  // Boshlanishida gridʼni maktab soatiga (yoki eng erta darsga) suradi
+  // Boshlanishida (va "Taqvim" rejimiga qaytganda — TimeGrid qayta mount boʻladi)
+  // gridʼni maktab soatiga (yoki eng erta darsga) suradi
   useEffect(() => {
-    if (!hydrated || !scrollRef.current) return;
-    const earliest = events.length ? Math.min(...events.map(e => e.startMin)) : INITIAL_SCROLL_HOUR * 60;
-    scrollRef.current.scrollTop = Math.max(0, (earliest / 60) * HOUR_H - HOUR_H * 0.5);
-    // faqat birinchi yuklanishda — events oʻzgarganda qayta surmaymiz
+    if (!hydrated || snapMode !== "free" || !scrollRef.current) return;
+    const hasEvents = events.length > 0;
+    const earliest = hasEvents ? Math.min(...events.map(e => e.startMin)) : INITIAL_SCROLL_HOUR * 60;
+    const offsetMin = hasEvents ? 15 : 30;
+    scrollRef.current.scrollTop = Math.max(0, (earliest / 60) * HOUR_H - (offsetMin / 60) * HOUR_H);
+    // faqat mount boʻlganda — events oʻzgarganda qayta surmaymiz
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated]);
+  }, [hydrated, snapMode]);
 
   if (!hydrated || !storeHydrated || !liveHydrated) return null;
 
@@ -759,7 +743,7 @@ export default function TimetablePage() {
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onSelect={exportSchedule}>
-                    <Download />
+                    <Printer />
                     {t("exportAction")}
                   </DropdownMenuItem>
                   {events.length > 0 && !readOnly && (
@@ -879,7 +863,7 @@ export default function TimetablePage() {
               gutterHeader={
                 <div className="py-2.5 text-center text-[13px] font-semibold text-foreground/70">{t("time")}</div>
               }
-              className="mx-6 my-2 h-auto min-h-0 flex-1 rounded-md border border-border [scrollbar-width:thin]"
+              className="mx-6 mb-6 mt-2 h-auto min-h-0 flex-1 rounded-md border border-border [scrollbar-width:thin]"
               columns={DAY_UZ.map((_, col): TimeGridColumn => {
                 const day = col + 1;
                 return {
@@ -1030,6 +1014,16 @@ export default function TimetablePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Chop etish/PDF uchun statik A4 (albom) jadval — faqat print'da koʻrinadi */}
+      <TimetablePrintSheet
+        periods={periods}
+        events={events}
+        getClass={getClass}
+        profile={bellConfig.profile}
+        title={t("scheduleTitle")}
+        subtitle={selectedRangeLabel || undefined}
+      />
     </DashboardPageLayout>
   );
 }
@@ -1075,8 +1069,6 @@ function EventBlock({ name, startMin, endMin, color, top, height, resizable, rea
     window.addEventListener("pointerup", onUp);
   };
 
-  const compact = height < 58; // juda past bloklarda davomiylik qatorini yashiramiz
-
   return (
     <EventCard
       color={color}
@@ -1084,13 +1076,7 @@ function EventBlock({ name, startMin, endMin, color, top, height, resizable, rea
       subtitle={
         <>
           <Clock2Icon className="size-2.5 shrink-0" />
-          <span className="tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>
-          {!compact && (
-            <>
-              <Hourglass className="ml-1.5 size-2.5 shrink-0" />
-              <span className="tabular-nums">{fmtDuration(endMin - startMin)}</span>
-            </>
-          )}
+          <span className="truncate tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>
         </>
       }
       density="auto"

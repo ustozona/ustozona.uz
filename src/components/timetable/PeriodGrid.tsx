@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
+import { classTints, classStripedSurface, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
 import type { TimetableEvent } from "@/lib/timetable";
 import type { PeriodRow } from "@/lib/bell-schedule";
@@ -55,20 +55,20 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
 
   const visiblePeriods = profile === "double" && shift !== "both" ? periods.filter((p) => p.shift === shift) : periods;
 
-  /* Qatorlar balandligi: `minmax(56px, 1fr)` — kam qator boʻlsa qatorlar
-     choʻzilib konteynerni toʻldiradi, koʻp boʻlsa 56px'da qolib scroll boʻladi.
+  /* Qatorlar balandligi: `minmax(64px, 1fr)` — kam qator boʻlsa qatorlar
+     choʻzilib konteynerni toʻldiradi, koʻp boʻlsa 64px'da qolib scroll boʻladi.
      Sarlavha, smena-ajratgich va qoʻshimcha darslar qatori choʻzilmaydi. */
   const rowTemplate = [
     "auto", // sarlavha
     ...visiblePeriods.flatMap((p, ri) => {
       const sep = shift === "both" && p.shift === 2 && (ri === 0 || visiblePeriods[ri - 1].shift !== 2);
-      return sep ? ["auto", "minmax(56px, 1fr)"] : ["minmax(56px, 1fr)"];
+      return sep ? ["auto", "minmax(64px, 1fr)"] : ["minmax(64px, 1fr)"];
     }),
-    "minmax(56px, auto)", // qoʻshimcha darslar
+    "minmax(64px, auto)", // qoʻshimcha darslar
   ].join(" ");
 
   return (
-    <div className="mx-6 my-2 min-h-0 flex-1 overflow-auto rounded-md border border-border [scrollbar-width:thin]">
+    <div className="mx-6 mb-6 mt-2 min-h-0 flex-1 overflow-auto rounded-md border border-border [scrollbar-width:thin]">
       <div className="grid min-h-full min-w-[680px]" style={{ gridTemplateColumns: "6.5rem repeat(6, minmax(0, 1fr))", gridTemplateRows: rowTemplate }}>
         {/* Sarlavha */}
         <div className="sticky top-0 z-20 border-b border-r border-border/60 bg-background/70 py-2.5 text-center text-[13px] font-semibold text-foreground/70 backdrop-blur-md">{fmt.t("hourHeader")}</div>
@@ -202,20 +202,17 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
     const cid = e.dataTransfer.getData("text/class-id");
     if (cid) onPlace(day, period.startMin, period.endMin, cid);
   };
-  const wrap = cn("relative min-h-[56px] border-b border-border p-1", borderLeft && "border-l");
+  const wrap = cn("relative min-h-[64px] border-b border-border p-1", borderLeft && "border-l");
 
   if (event) {
     const cls = getClass(event.classId);
     const cellCard = (
-      <EventCard
+      <PeriodBlock
         color={cls.color}
-        title={cls.name}
-        subtitle={cls.subject}
-        density="micro"
+        name={cls.name}
         interactive={!readOnly}
         role={readOnly ? undefined : "button"}
         tabIndex={readOnly ? undefined : 0}
-        className={cn("h-full w-full", CLASS_CARD_INTERACTION)}
         actions={
           !readOnly ? (
             <button
@@ -260,6 +257,40 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
         <ClassPicker classes={classes} onSelect={(cid) => { onPlace(day, period.startMin, period.endMin, cid); setOpen(false); }} />
       </PopoverContent>
     </Popover>
+  );
+}
+
+/* ─── Toʻyingan blok — jadval katagi (faqat sinf nomi, teksturasiz, tekis rang) ─── */
+function PeriodBlock({ color, name, interactive, actions, role, tabIndex, onClick }: {
+  color: ClassColor;
+  name: string;
+  interactive?: boolean;
+  actions?: React.ReactNode;
+  role?: string;
+  tabIndex?: number;
+  onClick?: () => void;
+}) {
+  const tints = classTints(color);
+  return (
+    <div
+      role={role}
+      tabIndex={tabIndex}
+      onClick={onClick}
+      style={classStripedSurface(color)}
+      className={cn(
+        "group/ev relative flex h-full min-h-[56px] w-full items-center justify-center overflow-hidden rounded-lg p-2 text-center",
+        interactive && cn("cursor-pointer", CLASS_CARD_INTERACTION),
+      )}
+    >
+      <span title={name} style={tints.textOnSolid} className="relative truncate text-[15px] font-medium leading-tight">
+        {name}
+      </span>
+      {actions != null && (
+        <div className="absolute right-1 top-1 z-10 opacity-0 transition-opacity focus-within:opacity-100 group-hover/ev:opacity-100 [@media(hover:none)]:opacity-100">
+          {actions}
+        </div>
+      )}
+    </div>
   );
 }
 

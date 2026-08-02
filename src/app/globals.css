@@ -1385,10 +1385,16 @@
 /* ── PDF / Print: faqat A4 varaqni chiqaramiz ── */
 @media print {
   @page { size: A4; margin: 16mm; }
+  /* Dars jadvali — nomlangan sahifa (`page:` xossasi), kenglashtirilgan
+     (landscape) A4: dars muharririning standart portret @page qoidasidan
+     mustaqil, shu bir xil global bargda ikkalasi ham toʻqnashmaydi. */
+  @page timetable-landscape { size: A4 landscape; margin: 10mm; }
   body { overflow: visible !important; }
   body * { visibility: hidden !important; }
-  .a4-print, .a4-print * { visibility: visible !important; }
-  .a4-print {
+  .a4-print, .a4-print *,
+  .timetable-print-sheet, .timetable-print-sheet * { visibility: visible !important; }
+  .a4-print,
+  .timetable-print-sheet {
     position: absolute !important;
     left: 0; top: 0;
     width: 100% !important;
@@ -1400,6 +1406,13 @@
     /* Ekrandagi zoom (LessonEditor.tsx, faqat koʻrinish uchun CSS `zoom`)
        chop etishga TAʼSIR QILMASIN — PDF doim 100% oʻlchamda chiqadi. */
     zoom: 100% !important;
+  }
+  .timetable-print-sheet { page: timetable-landscape; }
+  /* Sinf rangli katakchalar chop etishda ham toʻliq rangda chiqsin
+     (Chrome'ning "Background graphics" sozlamasiga qoʻshimcha kafolat). */
+  .timetable-print-sheet, .timetable-print-sheet * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   .no-print { display: none !important; }
   /* Sarlavha/jadval/callout betlar orasida yolgʻiz qolib boʻlinib ketmasin. */

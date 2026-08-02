@@ -209,6 +209,19 @@ export function classTints(color: ClassColor) {
   return makeColorTints(CLASS_COLOR_BASE[color]);
 }
 
+/**
+ * Toʻyingan "ulangan" (filled) yuza uchun diagonal chiziqli fon (Uiverse.io/
+ * AspenBranch, sinf rangiga moslab hosil qilingan) — EventCard va PeriodGrid
+ * bir xil retsept ishlatadi, shuning uchun bitta manba.
+ */
+export function classStripedSurface(color: ClassColor): CSSProperties {
+  const solid = CLASS_COLOR_BASE[color];
+  const light = `color-mix(in oklch, ${solid} 96%, white)`;
+  return {
+    backgroundImage: `repeating-linear-gradient(45deg, ${solid}, ${solid} 20px, ${light} 20px, ${light} 40px)`,
+  } as CSSProperties;
+}
+
 /** Sinf rangining TOʻQROQ hex varianti — toʻyingan yuzali tugmalarning hover
     holati uchun (ikonka oq qoladi, faqat fon qorayadi). `factor` < 1 → toʻqroq. */
 export function classColorHexDark(color: ClassColor, factor: number = 0.88): string {

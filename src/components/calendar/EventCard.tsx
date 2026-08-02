@@ -1,26 +1,13 @@
 "use client";
 
 import { forwardRef, type CSSProperties, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
-import { classTints, type ClassColor } from "@/lib/class-colors";
+import { classTints, classStripedSurface, type ClassColor } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
 
 /** Kunning oqimiga nisbatan holat (TodayRail semantikasi):
     past = oʻtib boʻlgan (xira), current = hozir ketyapti (rang halqa),
     next = navbatdagi (yumshoq halqa). */
 export type EventCardTemporal = "past" | "current" | "next";
-
-/** Ikki qatlamli tekstura — nuqta qatlami nur qatlamining ustida, shunda
-    yorugʻ burchakda ham nuqtalar yoʻqolmaydi. Qadam 8px, nur doim yuqori-chapda. */
-const FILLED_TEXTURE: CSSProperties = {
-  backgroundImage:
-    "radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.09) 1px, transparent 1.4px)," +
-    "radial-gradient(130% 90% at 25% 0%, rgb(255 255 255 / 0.42), transparent 62%)",
-  backgroundSize: "8px 8px, auto",
-};
-const EMPTY_TEXTURE: CSSProperties = {
-  backgroundImage: "radial-gradient(circle at 1px 1px, rgb(0 0 0 / 0.04) 1px, transparent 1.4px)",
-  backgroundSize: "8px 8px",
-};
 
 type EventCardOwnProps = {
   color: ClassColor;
@@ -99,7 +86,7 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
         {...(rest as HTMLAttributes<HTMLDivElement>)}
         ref={ref as never}
         style={{
-          ...(filled ? tints.solidSurface : { ...tints.tint, ...tints.borderMedium }),
+          ...(filled ? classStripedSurface(color) : { ...tints.tint, ...tints.borderMedium }),
           ...ringStyle,
           ...style,
         }}
@@ -116,7 +103,6 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
           className,
         )}
       >
-        <span aria-hidden className="pointer-events-none absolute inset-0" style={filled ? FILLED_TEXTURE : EMPTY_TEXTURE} />
         <span className={cn("relative flex min-w-0 items-center gap-1.5", resolvedDensity === "compact" && "items-baseline", titleRowClassName)}>
           {leading}
           <span
