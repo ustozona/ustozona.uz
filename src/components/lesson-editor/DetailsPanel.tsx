@@ -23,7 +23,7 @@ import { BLOOM_LEVELS } from "@/lib/standards-data";
 import { cn } from "@/lib/utils";
 import ClassSchedulePicker from "./ClassSchedulePicker";
 import { ClassSwatch } from "@/components/ClassSwatch";
-import { EditorSidePanelHeader } from "./EditorSidePanel";
+import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <h3 className="text-label mb-2.5">{children}</h3>

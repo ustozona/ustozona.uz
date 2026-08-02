@@ -154,9 +154,25 @@ export type Assignment = {
   /** null = "Toifasiz" (virtual guruh) — toifa oʻchsa topshiriq shu holatga tushadi. */
   topicId: string | null;      // Baholash turi va shkala shu toifadan meros olinadi
   date?: string;               // yyyy-mm-dd (real sana; keyin to‘ldiriladi)
-  /** Topshirish muddati (yyyy-mm-dd). FAQAT metadata — grades v1 hisob
-      modeliga aralashmaydi; xulq avto-ball qoidasi shu muddatga qaraydi. */
+  /**
+   * Topshirish muddati (yyyy-mm-dd) — ayni paytda SANA REJIMI belgisi ham.
+   *
+   *  • boʻsh  → "Oʻtkaziladi": topshiriq `date` kuni sinfda boʻlib oʻtadi
+   *             (nazorat, imtihon, soʻrov).
+   *  • toʻla  → "Muddat": oʻquvchi shu kungacha topshiradi (uy vazifasi,
+   *             loyiha). Bu holda `dueDate === date` — `date` jurnal uchun
+   *             kanonik boʻlib qolaveradi (yil filtri va ustun tartibi).
+   *
+   * Hisob modeliga aralashmaydi; xulq avto-ball qoidasi shu maydonga qaraydi
+   * va endi u faqat haqiqatan muddatli topshiriqlarda toʻladi.
+   */
   dueDate?: string;
+  /**
+   * Sinflar aro guruhlash kaliti — `Topic.groupId` bilan bir xil naqsh.
+   * Bitta topshiriq bir nechta sinfda alohida nusxa boʻladi (har birining oʻz
+   * baholari va oʻz SANASI bor), lekin sarlavha/toifa/ball/yoʻriqnoma umumiy.
+   */
+  groupId?: string;
   /** Topshiriq turi: manual (qoʻlda) | test | deck (taqdimot). Test/deck
       hozircha muharrirsiz — kelgusi bosqichda ulanadi. */
   kind?: AssignmentKind;
@@ -657,3 +673,22 @@ export function getCellBgColor(percent: number): string {
   return "bg-red-50 dark:bg-red-950/20";
 }
 
+/** Topshiriqning sinflar aro guruh kaliti (yolgʻiz topshiriqda — oʻz id'si). */
+export function assignmentGroupKey(a: Assignment): string {
+  return a.groupId ?? a.id;
+}
+
+/**
+ * Toifani boshqa sinfdagi ekvivalentiga moslash — `Topic.groupId` boʻyicha.
+ * Toifalar har sinfda alohida qator, shuning uchun topshiriq boshqa sinfga
+ * nusxalanganda `topicId`ni koʻchirib boʻlmaydi, qayta topish kerak.
+ * Mos toifa boʻlmasa `null` ("Toifasiz") qaytadi.
+ */
+export function mapTopicIdToClass(
+  sourceTopic: Topic | undefined,
+  target: ClassData
+): string | null {
+  if (!sourceTopic) return null;
+  const key = sourceTopic.groupId ?? sourceTopic.id;
+  return target.topics.find((t) => (t.groupId ?? t.id) === key)?.id ?? null;
+}

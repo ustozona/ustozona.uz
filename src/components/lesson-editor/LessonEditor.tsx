@@ -58,25 +58,11 @@ import { formatFeedbackAgo, formatFeedbackFull, useRelativeT } from "@/app/dashb
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
 import { SectionIcon } from "@/components/ui/section-icon";
 
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
-
-/** Yon panel razmeri — doim viewport kengligining `vwPct` ulushi (noutbuk va
- *  katta desktopda bir xil proporsiya), faqat juda tor oynada `min`gacha
- *  qisqarishi cheklanadi. Framer Motion width animatsiyasi son talab qilgani
- *  uchun CSS clamp() emas, JS hisoblaydi. */
-function useResponsivePanelWidth(min: number, vwPct: number) {
-  const [width, setWidth] = useState(min);
-  useEffect(() => {
-    const calc = () => setWidth(Math.max(min, window.innerWidth * vwPct));
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
-  }, [min, vwPct]);
-  return width;
-}
 
 /* Status haqidagi HAMMA vizual maʼlumot (rang, ikonka) — YAGONA joyda.
    Yangi status qoʻshilsa faqat shu obyektni yangilash yetarli. `tone`dan
@@ -309,6 +295,19 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  // Sarlavha maydoni bir qatorli <input> boʻlsa uzun matn kesilib qolardi
+  // (Google Docs/Notion uslubida sarlavha koʻp qatorga oʻralishi kerak) —
+  // shuning uchun avto-balandlik <textarea> ishlatiladi.
+  // DIQQAT: quyidagi "dars topilmadi" erta return'idan OLDIN turishi SHART —
+  // aks holda hook shartli chaqirilib, "Rendered fewer hooks than expected"
+  // xatosi chiqadi (dars oʻchirilgan/topilmagan holatga oʻtishda).
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [titleDraft, lesson?.title]);
+
   if (hydrated && !lesson) {
     return (
       <Empty className="h-dvh">
@@ -394,16 +393,6 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   // (barcha sinflar boʻyicha), daqiqada. Jadval yoʻq boʻlsa berilmaydi.
   const firstSession = lesson ? lessonSessions(lesson).sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin)[0] : undefined;
   const durationMin = firstSession ? firstSession.endMin - firstSession.startMin : undefined;
-
-  // Sarlavha maydoni bir qatorli <input> boʻlsa uzun matn kesilib qolardi
-  // (Google Docs/Notion uslubida sarlavha koʻp qatorga oʻralishi kerak) —
-  // shuning uchun avto-balandlik <textarea> ishlatiladi.
-  useEffect(() => {
-    const el = titleRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [titleDraft, lesson?.title]);
 
   return (
     <div className="h-dvh w-full flex flex-col bg-muted overflow-hidden print:h-auto print:overflow-visible">

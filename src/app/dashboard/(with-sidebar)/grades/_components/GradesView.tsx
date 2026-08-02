@@ -12,15 +12,17 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { inRange } from "@/lib/academic-calendar";
 import { todayKey } from "@/lib/date-keys";
 import { useMounted } from "@/lib/use-mounted";
-import NewAssignmentModal, { type AssignmentFormValues, NO_TOPIC_VALUE } from "./NewAssignmentModal";
 import GradesTable from "./GradesTable";
 import ReuseModal from "./ReuseModal";
 import NewTopicModal, { type TopicApplyPayload } from "./NewTopicModal";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { BookOpen } from "lucide-react";
+import {
+  useAssignmentEditorStore, makeDraftPayload,
+} from "@/store/useAssignmentEditorStore";
 
-type ModalType = "assignment" | "reuse" | "topic" | null;
+type ModalType = "reuse" | "topic" | null;
 
 /* ── Baholar jurnali — sinf boʻyicha parametrlangan umumiy koʻrinish.
    Standalone /grades sahifasi (ClassListPanel bilan) ham, sinf-detali
@@ -43,7 +45,11 @@ export default function GradesView({
   // Faol oʻquv yili oynasi — jurnal ustunlari shu oraliqqa filtrlanadi.
   const yearRange = useCalendarStore((s) => s.calendar.range);
   const [modal, setModal] = useState<ModalType>(null);
-  const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
+  // Topshiriq muharriri endi GLOBAL (AssignmentEditorHost) — bu sahifa faqat
+  // sessiyani ochadi, oʻzi chizmaydi. Shu sabab boshqa boʻlimga oʻtilsa ham
+  // qoralama yoʻqolmaydi.
+  const openDraft = useAssignmentEditorStore((s) => s.openDraft);
+  const openEdit = useAssignmentEditorStore((s) => s.openEdit);
 
   // Sozlamalardagi "Jurnal boʻlimida boshqarish" havolasi: ?topics=1 →
   // toifalar modalini ochib, paramni URL'dan tozalaymiz (router.replace
@@ -91,6 +97,14 @@ export default function GradesView({
     !demoClassData && yearRange.start && yearRange.end && !inRange(todayKey(), yearRange)
       ? t("archiveNotice")
       : null;
+
+  /* Jurnaldan yaratish — mazmun ixtiyoriy (`manualCreate`), natija baho ustuni.
+     Manba HAQIQIY store: tur/demo namunasida sinf yoʻq, muharrir ochilmaydi. */
+  function handleCreateAssignment() {
+    const real = classDataMap[classId];
+    if (!real) return;
+    openDraft(classId, true, makeDraftPayload(classId, real.topics[0]?.id ?? null));
+  }
 
   function handleCellEdit(
     studentId: string,
@@ -229,52 +243,6 @@ export default function GradesView({
       return { ...cd, grades: [...nextGrades, ...additions] };
     });
     toast.success(t("remainingMarkedUnsubmitted"));
-  }
-
-  function handleCreateAssignment(input: AssignmentFormValues) {
-    updateClass(classId, (cd) => {
-      const newAssignment: Assignment = {
-        id: `a-${Date.now()}`,
-        title: input.title,
-        maxScore: input.maxScore,
-        topicId: input.topicId === NO_TOPIC_VALUE ? null : input.topicId,
-        date: input.date,
-        ...(input.dueDate ? { dueDate: input.dueDate } : {}),
-      };
-      return {
-        ...cd,
-        assignments: [...cd.assignments, newAssignment],
-      };
-    });
-    setModal(null);
-    toast.success(t("assignmentCreated"), {
-      description: input.title,
-    });
-  }
-
-  function handleUpdateAssignment(input: AssignmentFormValues) {
-    if (!editingAssignment) return;
-    const id = editingAssignment.id;
-    updateClass(classId, (cd) => ({
-      ...cd,
-      assignments: cd.assignments.map((a) =>
-        a.id === id
-          ? (() => {
-              const { dueDate: _drop, ...rest } = a;
-              return {
-                ...rest,
-                title: input.title,
-                maxScore: input.maxScore,
-                topicId: input.topicId === NO_TOPIC_VALUE ? null : input.topicId,
-                date: input.date,
-                ...(input.dueDate ? { dueDate: input.dueDate } : {}),
-              };
-            })()
-          : a
-      ),
-    }));
-    setEditingAssignment(null);
-    toast.success(t("assignmentSaved"), { description: input.title });
   }
 
   function handleReuse(_sourceClassId: string, sourceAssignment: Assignment) {
@@ -448,16 +416,14 @@ export default function GradesView({
             classData={viewData ?? classData}
             onCellEdit={handleCellEdit}
             onReturnAll={handleReturnAll}
-            onCreateAssignmentClick={() => setModal("assignment")}
+            onCreateAssignmentClick={handleCreateAssignment}
             onReuseClick={() => setModal("reuse")}
             onTopicClick={() => setModal("topic")}
             onDeleteAssignment={handleDeleteAssignment}
             onPublishAssignment={handlePublishAssignment}
             onFillColumn={handleFillColumn}
             onMarkRemaining={handleMarkRemaining}
-            onEditAssignment={(id) =>
-              setEditingAssignment(classData.assignments.find((a) => a.id === id) ?? null)
-            }
+            onEditAssignment={(id) => openEdit(classId, id)}
             onCellMark={handleCellMark}
             onPasteColumn={handlePasteColumn}
             archiveNotice={archiveNotice}
@@ -465,29 +431,6 @@ export default function GradesView({
         )}
       </section>
 
-      {modal === "assignment" && classData && (
-        <NewAssignmentModal
-          topics={classData.topics}
-          assignments={classData.assignments}
-          onClose={() => setModal(null)}
-          onSubmit={handleCreateAssignment}
-        />
-      )}
-      {editingAssignment && classData && (
-        <NewAssignmentModal
-          mode="edit"
-          topics={classData.topics}
-          initial={{
-            title: editingAssignment.title,
-            maxScore: editingAssignment.maxScore,
-            topicId: editingAssignment.topicId,
-            date: editingAssignment.date ?? new Date().toISOString().slice(0, 10),
-            dueDate: editingAssignment.dueDate ?? "",
-          }}
-          onClose={() => setEditingAssignment(null)}
-          onSubmit={handleUpdateAssignment}
-        />
-      )}
       {modal === "reuse" && (
         <ReuseModal
           classDataMap={classDataMap}

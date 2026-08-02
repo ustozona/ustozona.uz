@@ -36,3 +36,18 @@ export const MONTHS_UZ_SHORT: readonly string[] = [
   "yan", "fev", "mar", "apr", "may", "iyun",
   "iyul", "avg", "sen", "okt", "noy", "dek",
 ];
+
+/**
+ * `yyyy-mm-dd` → "Dushanba, 14-sentabr" — hafta kuni bilan.
+ * Muddat/sana maydonlarida ishlatiladi: oʻqituvchi kunni sana emas, hafta
+ * kuni boʻyicha eslaydi ("dushanbagacha"), shuning uchun kun nomi oldinda.
+ * Boshqa yil boʻlsa yil ham qoʻshiladi.
+ */
+export function formatDayLabelUz(key: string): string {
+  const [y, m, d] = key.split("-").map(Number);
+  if (!y || !m || !d) return key;
+  const weekday = DAYS_UZ_SUN[new Date(y, m - 1, d).getDay()];
+  const month = MONTHS_UZ[(m - 1) % 12].toLowerCase();
+  const year = y === new Date().getFullYear() ? "" : `, ${y}`;
+  return `${weekday}, ${d}-${month}${year}`;
+}

@@ -367,6 +367,7 @@ function HolatHover({
 }
 
 import AssignmentTooltip from "./AssignmentTooltip";
+import AssignmentColumnMenu from "./AssignmentColumnMenu";
 
 /**
  * Oʻquvchi nomi katagidagi hover-preview — shaxsga yoʻnaltirilgan (Holat hover'idan farqli).
@@ -791,6 +792,11 @@ export default function GradesTable({
               {orderedAssignments.map((a) => {
                 const topic = topicMap.get(a.topicId ?? "");
                 const hex = topic ? TOPIC_COLOR_HEX[topic.color] : null;
+                const draftCount = grades.filter((g) => g.assignmentId === a.id && g.isDraft).length;
+                const ungradedCount = students.filter((s) => {
+                  const gg = gradeMap.get(`${s.id}:${a.id}`);
+                  return !gg || (gg.score === null && !gg.missing);
+                }).length;
                 return (
                   <TableHead
                     key={a.id}
@@ -801,6 +807,14 @@ export default function GradesTable({
                         : undefined
                     }
                   >
+                    <AssignmentColumnMenu
+                      maxScore={a.maxScore}
+                      draftCount={draftCount}
+                      ungradedCount={ungradedCount}
+                      onFillColumn={(score) => onFillColumn(a.id, score)}
+                      onMarkRemaining={() => onMarkRemaining(a.id)}
+                      onPublish={() => onPublishAssignment(a.id)}
+                    >
                     <HoverCard openDelay={150} closeDelay={100}>
                       <HoverCardTrigger asChild>
                         <Button
@@ -834,21 +848,14 @@ export default function GradesTable({
                           assignment={a}
                           topic={topic}
                           dueDate={formatDueDate(a)}
-                          draftCount={grades.filter((g) => g.assignmentId === a.id && g.isDraft).length}
-                          ungradedCount={students.filter((s) => {
-                            const gg = gradeMap.get(`${s.id}:${a.id}`);
-                            return !gg || (gg.score === null && !gg.missing);
-                          }).length}
                           onEdit={() => onEditAssignment(a.id)}
                           onDelete={() => {
                             onDeleteAssignment(a.id);
                           }}
-                          onPublish={() => onPublishAssignment(a.id)}
-                          onFillColumn={(score) => onFillColumn(a.id, score)}
-                          onMarkRemaining={() => onMarkRemaining(a.id)}
                         />
                       </HoverCardContent>
                     </HoverCard>
+                    </AssignmentColumnMenu>
                   </TableHead>
                 );
               })}

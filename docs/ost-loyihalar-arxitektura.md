@@ -819,7 +819,7 @@ Bu boʻlim "Ish tartibi" qoidasi boʻyicha toʻldiriladi: har referens koʻrikda
 
 **Rejalashtirilgan koʻriklar TUGADI.** Beshtadan toʻqqizta referensga koʻtarildi (Wayground · Kahoot · Blooket · classroomscreen · EMStudio) — 199 topilma. Pear Deck va Wordwall matnli taʼrifda qoladi: birinchisi B3 da toʻliq modellashtirilgan, ikkinchisi B2 da (shablonlar sxemani oʻzgartirmaydi, shuning uchun skrinshot qiymati past).
 
-**Keyingi qadam — kodlash**, "Ish tartibi" qoidasi shart bajarilgan hisoblanadi. Kelgusi referens koʻrilsa `R203` dan davom etadi.
+**Keyingi qadam — kodlash**, "Ish tartibi" qoidasi shart bajarilgan hisoblanadi. Kelgusi referens koʻrilsa `R213` dan davom etadi.
 
 ### Wayground (2026-07-29) — oʻqituvchi tomoni
 
@@ -2264,6 +2264,44 @@ Manba: 9 skrinshot (2026-07-30) — `Create` menyusi, `Classwork Topics` modali,
 **R202 — `TOPIC: No topic` — toifa boʻsh boʻlishi mumkin.** Bizda `assignments.topic_id` NOT NULL edi — C6 bilan nullable qilindi ("Toifasiz" virtual chelagi).
 
 **Natija:** Sxemaga taʼsiri 0 jadval, 0 ustun — `purpose`/`weightPercent`/`scaleKind` oʻz joyida qoladi. Eng qimmatlisi — ikki nuqson topilishi: `select` shkalani bilmasligi (R195/C2) va yakuniy shkalaning sinfga bogʻlanmaganligi (R196/C3, allaqachon tuzatilgan). ❌ Cut-score tahriri va `Custom` olinmadi (R197).
+
+### EMStudio — topshiriq muharriri, ikkinchi koʻrik (R203–R210)
+
+R200 maketni umumiy tasvirlagan edi; bu koʻrik `⋯` menyusi, `Student Work` varagʻi va `DUE DATE` chipining ichini ochdi. Bizdagi holat — `AssignmentEditorOverlay` (Jurnal "Yaratish" va Topshiriqlar sahifasi umumiy ishlatadi).
+
+**R203 — ⭐⭐⭐ `INSTRUCTIONS` maydoni bizda OʻLIK.** `Assignment.instructions` tipda bor, `instructionsLabel`/`instructionsPlaceholder` oltita `messages/*.json` da bor — lekin **hech qayerda chizilmaydi**. Referensda u sarlavhadan keyingi eng katta maydon. Roʻyxatdagi eng arzon yutuq: faqat UI, sxema ham, tarjima ham tayyor.
+
+**R204 — ⭐⭐⭐ `⋯` menyusi: Save · Reuse · Export · Duplicate · ─ · Delete.** Bizda bu amallar bor, lekin **uch joyga sochilgan**: Qayta ishlatish → Jurnal "Yaratish" dropdowni, Nusxa olish → Topshiriqlar sahifasi context-menyusi, Oʻchirish → jurnal hover-kartasi *va* context-menyu. Muharrir ichida bitta `⋯` — tabiiy uy. `Save` bizga kerak emas (avtosaqlash), `Export` hozircha yoʻq.
+
+**R205 — ⭐⭐ Yorliq kartaning USTIDA, ichida emas.** `CLASS`/`TOPIC`/`SCORE` — kichik uppercase yorliq alohida qatorda, karta esa faqat *ikonka + qiymat + chevron*. Bizda yorliq karta ichiga siqilgan (10px) — natijada qiymat kichik va bosish maydoni tor. Sof vizual oʻzgarish, backend talab qilmaydi; koʻzga eng koʻp tashlanadigan farq shu.
+
+**R206 — ⭐⭐ `DUE DATE` chipi: `SEP/14` bloki + hafta kuni + soat + `✕`, ostida punktir `Change due date`.** Muddat boʻlmasa faqat punktir `Add due date`. **Hafta kuni koʻrsatilishi qimmatli** — oʻqituvchi muddatni sana emas, "dushanba" deb oʻylaydi. ❌ Soat olinmaydi: bizda `dueDate` — `yyyy-mm-dd`, vaqt saqlanmaydi va xulq avto-ball qoidasi kun aniqligida ishlaydi.
+
+**R207 — ⭐⭐ `SCORE` — dropdown, erkin raqam emas.** R200 buni qayd etgan edi; endi amaliy sabab bor: Jurnaldagi yaratish `NewAssignmentModal`dan overlay'ga koʻchgach, **`buildScoreSuggestions()` (oʻqituvchining oldingi maks. ball qiymatlaridan taklif) yetim qoldi** — u faqat tahrir modalida ishlaydi. Taklif logikasi overlay'ning "Maks. ball" maydoniga koʻchirilsa, yoʻqolgan funksiya qaytadi.
+
+**R208 — ⭐ `ASSIGN TO: All 13 students` — son koʻrsatiladi.** Bizda "Barcha oʻquvchilar", sonsiz. Son bepul (roster qoʻlda). ❌ Qism-toʻplamga tayinlash olinmaydi — R201 (b) da bizning "doim hammasi" standartimiz ataylab tanlangan.
+
+**R209 — ⭐⭐ Oʻng chetdagi vertikal ikonka reyki: `Tafsilotlar` ⇄ `Student Work`.** Bu naqsh bizda **allaqachon bor** — `LessonEditor` oʻng reyki (Tafsilotlar/AI, `w-14`). Ikkinchi panel paydo boʻlsa aynan shu primitivni qayta ishlatamiz, yangisini oʻylab topmaymiz ([[reuse-design-system-first]]).
+
+**R210 — ⭐⭐⭐ `Student Work` varagʻi — bizda "Baholash" boʻlib qaytadi.** Ularniki: `Assigned/Turned in/Graded` varaqlari + `Return` split-tugma + saralash/filtr + qoralama boʻsh holati (*"This assignment is still a draft"*). ❌ Topshirish oqimi bizda yoʻq (Shogird — tez orada), shuning uchun uch varaq olinmaydi. ⭐ Lekin **`Return` bizda bor** — `onPublishAssignment` (qoralama baholarni nashr qilish), va jurnal ustunining vertikal kesimi (oʻquvchi roʻyxati + ball kiritish) shu panelning tabiiy mazmuni. Bugun context-menyuga koʻchirilgan ommaviy amallar (ustunni toʻldirish, qolganlarni "T", nashr qilish) ham shu yerda uy topadi. Bu koʻrikdagi eng katta gʻoya.
+
+**Bajarildi (`AssignmentEditorOverlay`):** R203 (Yoʻriqnoma maydoni), R205 (yorliq kartadan tashqarida — dars muharriridagi `FieldRow` tili qayta ishlatildi, doira ikonka), R206 (muddat hafta kuni bilan — `formatDayLabelUz`, ramkasiz `DateKeyPicker`, tozalash `✕`, boʻsh holatda "Muddat qoʻshish"), R207 (`buildScoreSuggestions` → `grades-data.ts`, "Tez tanlash" chiplari muharrirga koʻchdi), R204 (`⋯` → Nusxa olish · Oʻchirish; `Save`/`Export` olinmadi), R209 (oʻng ikonka reyi + yigʻiladigan panel — `EditorSidePanelHeader` va `useResponsivePanelWidth` dars muharriridan umumiy joyga koʻchirildi: `components/ui/editor-side-panel.tsx`, `hooks/useResponsivePanelWidth.ts`). ❌ R208 (oʻquvchi soni) va "Kimlarga" qatori olib tashlandi — bizda topshiriq tanlab berilmaydi, doim butun sinfga. **Qoldi: R210** — "Baholash" paneli, alohida bosqich (reyda ikkinchi ikonka boʻlib chiqadi).
+
+### Canvas · Google Classroom · PowerSchool — sana modeli (R211–R212)
+
+**R211 — ⭐⭐⭐ Sana + muddat ikkalasi birga = ortiqcha. Bitta sana, ikki REJIM.** Canvas va Google Classroom **bitta hukmron sana** ishlatadi: topshiriq jurnal davriga *muddat* boʻyicha joylashadi, muddat boʻlmasa nashr sanasiga qaytadi (Canvas'da esa "eng oxirgi davrga tushib qoladi" — mashhur chalkashlik). PowerSchool/Infinite Campus ikkita maydon (`Assignment Date` + `Due Date`) beradi, lekin jurnal tartibi baribir alohida `GB Sequence` bilan boshqariladi — ikkinchi sana **tartibga taʼsir qilmaydi**. ⚠️ Bizda ham xuddi shu ortiqchalik bor edi: `date` yuk koʻtaradi (yil filtri + ustun tartibi), `dueDate` esa faqat xulq avto-balliga boqadi — natijada "oʻtkaziladigan" imtihonga ham maʼnosiz muddat qoʻyish mumkin edi.
+
+**Qaror (sxema oʻzgarishisiz):** bitta sana maydoni + `Oʻtkaziladi ⇄ Muddat` tanlagichi. `dueDate` endi **rejim belgisi**: boʻsh → hodisa (`date` kuni sinfda oʻtadi), toʻla → muddat (`dueDate === date`). `date` har doim toʻla boʻlib qoladi, shuning uchun yil filtri va tartib tegilmaydi; xulq avto-ball qoidasi ham oʻzgarishsiz ishlaydi va endi faqat haqiqatan muddatli topshiriqda ishga tushadi. Migratsiya shart emas — mavjud maʼlumot oʻz-oʻzidan toʻgʻri talqin qilinadi. Standart rejim toifaning `purpose`idan: formativ → muddat, summativ → oʻtkaziladi (faqat taxmin, oʻqituvchi almashtira oladi).
+
+**R212 — ⭐⭐⭐ Bitta topshiriq — bir nechta sinf, lekin SANA sinfga xos.** Dars rejasi bir nechta sinfga biriktirilgani kabi topshiriq ham biriktiriladi. Amalga oshirish `Topic.groupId` naqshi bilan **bir xil**: har sinfda alohida nusxa (oʻz baholari bilan), umumiy `assignments.group_id`. Sarlavha/yoʻriqnoma/toifa/maks. ball umumiy — tahrir hamma nusxaga tegadi; **sana esa har sinfda oʻzi**, chunki bir nazorat ishi 5-A da dushanba, 5-B da chorshanba oʻtishi mumkin (dars muharriridagi `scheduleByClass` bilan bir mantiq). Toifa koʻchirilmaydi, `Topic.groupId` orqali har sinfda **qayta topiladi** (`mapTopicIdToClass`) — mos toifa boʻlmasa "Toifasiz". Ochilgan sinf guruhdan olib tashlanmaydi (invariant); oʻchirish butun guruhga tegadi.
+
+**Natija (R211–R212):** **1 ustun** — `assignments.group_id` (nullable). `due_date` semantikasi oʻzgardi, tipi emas.
+
+**Dars muharriridan koʻchirilgan (sxemasiz):** (a) sana kartalari — chapda oy/kun bloki, oʻngda hafta kuni + sinf chipi + `✕`, sanasi yoʻq sinfda punktir "Sana qoʻshish" (`JADVAL` bloki bilan bir xil til; sana endi boʻsh boʻlishi ham mumkin). (b) sarlavhadagi **holat chipi** — ⚠️ darsdan farqli, u yerda holat qoʻlda tanlanadi, topshiriqda esa **hisoblanadi**: `Qoralama → Sanasiz → Rejalashtirilgan → Baholanmoqda → Tugallandi` (sana + baholar toʻliqligidan). Qoʻlda tanlash maʼlumotga zid holat yaratardi ("Tugallandi", lekin yarim sinf baholanmagan). (c) `⋯` menyusi darsnikidan qisqaroq: `PDF`/`Shablon` topshiriqqa tegishli emas, `Hozir saqlash` — avtosaqlash bor.
+
+---
+
+**Natija:** Sxemaga taʼsiri — **1 ustun**: `assignments.updated_at` (sarlavha ostidagi "Oxirgi tahrir …" qatori uchun; `formatFeedbackAgo` + `useRelativeT` yordamchilari tayyor). ❌ Olinmaydi: `Assign` tugmasi va topshirish varaqlari (R210), `ATTACHMENTS` besh doirasi (fayl saqlash yoʻq — Blob/KV ataylab yoqilmagan), `Export`, sinfni almashtirish dropdowni (baholar sinf roʻyxatiga bogʻlangan), muddat soati (R206).
 
 ---
 

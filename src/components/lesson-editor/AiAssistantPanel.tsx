@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import {
   MessageScrollerProvider, MessageScroller, MessageScrollerViewport, MessageScrollerContent, MessageScrollerItem, MessageScrollerButton,
 } from "@/components/ui/message-scroller";
-import { EditorSidePanelHeader } from "./EditorSidePanel";
+import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
 import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType } from "./callout-types";
 
 marked.setOptions({ breaks: true, gfm: true });

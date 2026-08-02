@@ -32,6 +32,20 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "assignment-draft-persist",
+    date: "2026-08-02",
+    type: "yangi",
+    title: "Topshiriq qoralamasi endi yoʻqolmaydi",
+    href: "/dashboard/grades",
+  },
+  {
+    id: "assignment-date-mode-toggle",
+    date: "2026-08-02",
+    type: "yaxshilandi",
+    title: "Topshiriqda Sana va Soʻngmuddat tanlovi ravshanlashdi",
+    href: "/dashboard/grades",
+  },
+  {
     id: "blocked-days-calendar",
     date: "2026-08-01",
     type: "yangi",

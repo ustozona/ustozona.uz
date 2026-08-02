@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, ChevronUp, Tag } from "lucide-react";
@@ -27,15 +27,15 @@ import {
 } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import AssignmentEditorOverlay from "./_components/AssignmentEditorOverlay";
+import {
+  useAssignmentEditorStore, makeDraftPayload,
+} from "@/store/useAssignmentEditorStore";
 
 /** "Other" (Toifasiz) chelagi uchun sentinel — DB qatori emas, faqat guruhlash kaliti. */
 const OTHER_GROUP = "__other__";
 
 export default function AssignmentsPage() {
   const t = useTranslations("AssignmentsPage");
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const openId = searchParams.get("assignment");
 
@@ -43,7 +43,9 @@ export default function AssignmentsPage() {
   const updateClass = useGradesStore((s) => s.updateClass);
   const [selectedClassId, handleSelectClass] = useClassIdParam();
   const [deleteTarget, setDeleteTarget] = useState<Assignment | null>(null);
-  const [draftClassId, setDraftClassId] = useState<string | null>(null);
+  /* Muharrir GLOBAL (AssignmentEditorHost) — sahifa faqat sessiya ochadi. */
+  const openDraft = useAssignmentEditorStore((s) => s.openDraft);
+  const openEdit = useAssignmentEditorStore((s) => s.openEdit);
 
   const classData = selectedClassId ? classDataMap[selectedClassId] : undefined;
 
@@ -66,16 +68,32 @@ export default function AssignmentsPage() {
   const totalCount = groups.reduce((sum, g) => sum + g.items.length, 0);
 
   const openEditor = (id: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("assignment", id);
-    router.push(`${pathname}?${url.searchParams.toString()}`);
+    if (selectedClassId) openEdit(selectedClassId, id);
   };
-  const closeEditor = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("assignment");
-    const qs = url.searchParams.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
+
+  /* Topshiriqlar sahifasidan yaratish — mazmun MAJBURIY (test/taqdimot),
+     shu sabab `manualCreate: false`: "Yaratish" tugmasi chiqmaydi. */
+  const handleCreateClick = () => {
+    if (!selectedClassId || !classData) return;
+    openDraft(
+      selectedClassId,
+      false,
+      makeDraftPayload(selectedClassId, classData.topics[0]?.id ?? null)
+    );
   };
+
+  /* `?assignment=<id>` — tashqi havola uchun kirish nuqtasi. Sessiyaga
+     koʻchirib, paramni URL'dan tozalaymiz (GradesView'dagi `?topics=1`
+     naqshi): manba endi store, URL ikkinchi haqiqat boʻlib qolmasin. */
+  useEffect(() => {
+    if (!openId || !selectedClassId) return;
+    if (!classData?.assignments.some((a) => a.id === openId)) return;
+    openEdit(selectedClassId, openId);
+    const sp = new URLSearchParams(window.location.search);
+    sp.delete("assignment");
+    const qs = sp.toString();
+    window.history.replaceState(null, "", window.location.pathname + (qs ? `?${qs}` : ""));
+  }, [openId, selectedClassId, classData, openEdit]);
 
   function handleDuplicate(a: Assignment) {
     if (!selectedClassId) return;
@@ -93,7 +111,7 @@ export default function AssignmentsPage() {
       grades: cd.grades.filter((g) => g.assignmentId !== removed.id),
     }));
     setDeleteTarget(null);
-    if (openId === removed.id) closeEditor();
+    // Muharrir shu topshiriqni ochib turgan boʻlsa, Host oʻzi yopadi.
     toast.success(t("toastDeleted"), {
       description: removed.title,
       action: {
@@ -103,10 +121,6 @@ export default function AssignmentsPage() {
       },
     });
   }
-
-  const openAssignment = openId
-    ? classData?.assignments.find((a) => a.id === openId)
-    : undefined;
 
   const noClass = !selectedClassId;
   const columnsTemplate = "minmax(0,1fr) minmax(0,3fr)";
@@ -143,7 +157,7 @@ export default function AssignmentsPage() {
                     ({totalCount})
                   </TypographyMuted>
                 </div>
-                <Button onClick={() => setDraftClassId(selectedClassId)} className="gap-1.5 font-semibold">
+                <Button onClick={handleCreateClick} className="gap-1.5 font-semibold">
                   <Plus className="size-4" />
                   {t("createButton")}
                 </Button>
@@ -158,7 +172,7 @@ export default function AssignmentsPage() {
                       <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
-                      <Button onClick={() => setDraftClassId(selectedClassId)} className="gap-2">
+                      <Button onClick={handleCreateClick} className="gap-2">
                         <Plus className="size-4" /> {t("createButton")}
                       </Button>
                     </EmptyContent>
@@ -244,25 +258,6 @@ export default function AssignmentsPage() {
           )}
         </div>
       </DashboardColumns>
-
-      {openAssignment && selectedClassId && (
-        <AssignmentEditorOverlay
-          classId={selectedClassId}
-          assignment={openAssignment}
-          onClose={closeEditor}
-        />
-      )}
-
-      {draftClassId && (
-        <AssignmentEditorOverlay
-          classId={draftClassId}
-          onClose={() => setDraftClassId(null)}
-          onCreated={(id) => {
-            setDraftClassId(null);
-            openEditor(id);
-          }}
-        />
-      )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
         <AlertDialogContent>

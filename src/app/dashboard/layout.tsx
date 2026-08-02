@@ -25,6 +25,7 @@ import BehaviorAutoReconciler from "@/components/behavior/BehaviorAutoReconciler
 import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
 import OnboardingGate from "@/components/onboarding/OnboardingGate";
 import TourProvider from "@/components/tour/TourProvider";
+import AssignmentEditorHost from "@/components/assignments/AssignmentEditorHost";
 
 export default function DashboardLayout({
   children,
@@ -57,6 +58,7 @@ export default function DashboardLayout({
       <LegacyStorageCleanup />
       <OnboardingGate />
       <TourProvider />
+      <AssignmentEditorHost />
       <AppSidebar />
       <SidebarInset className="min-h-0 overflow-hidden">
         <ImpersonationBanner />

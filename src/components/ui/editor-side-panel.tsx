@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 
-/** Dars muharriri oʻng panellari (Tafsilotlar/AI) uchun umumiy header —
- *  loyihaning Panel tili (68px, SectionIcon, CardTitle) bilan mos, ikkala
- *  panelda takrorlangan qoʻlbola markup oʻrniga. */
+/** Toʻliq ekranli muharrirlarning oʻng panellari (Tafsilotlar/AI) uchun umumiy
+ *  header — loyihaning Panel tili (68px, SectionIcon, CardTitle) bilan mos.
+ *  Dars muharriri ham, topshiriq muharriri ham shuni ishlatadi. */
 export function EditorSidePanelHeader({
   icon,
   title,
