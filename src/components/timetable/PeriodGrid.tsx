@@ -44,25 +44,41 @@ export type PeriodGridProps = {
   onAddClub: (day: number, classId: string, startMin: number, endMin: number) => void;
   onRemove: (eventId: string) => void;
   onEditEvent: (ev: TimetableEvent) => void;
+  /** 2-smenali profilda koʻrsatiladigan smena — toggle sahifa headerida (PeriodGrid emas). */
+  shift?: 1 | 2 | "both";
 };
 
-export default function PeriodGrid({ periods, events, classes, getClass, profile, readOnly = false, onPlace, onAddClub, onRemove, onEditEvent }: PeriodGridProps) {
+export default function PeriodGrid({ periods, events, classes, getClass, profile, readOnly = false, onPlace, onAddClub, onRemove, onEditEvent, shift = 1 }: PeriodGridProps) {
   const fmt = useCalendarFormat();
   const isPeriodTime = (s: number) => periods.some((p) => p.startMin === s);
   const lastPeriodEnd = periods.length ? Math.max(...periods.map((p) => p.endMin)) : 15 * 60;
 
+  const visiblePeriods = profile === "double" && shift !== "both" ? periods.filter((p) => p.shift === shift) : periods;
+
+  /* Qatorlar balandligi: `minmax(56px, 1fr)` — kam qator boʻlsa qatorlar
+     choʻzilib konteynerni toʻldiradi, koʻp boʻlsa 56px'da qolib scroll boʻladi.
+     Sarlavha, smena-ajratgich va qoʻshimcha darslar qatori choʻzilmaydi. */
+  const rowTemplate = [
+    "auto", // sarlavha
+    ...visiblePeriods.flatMap((p, ri) => {
+      const sep = shift === "both" && p.shift === 2 && (ri === 0 || visiblePeriods[ri - 1].shift !== 2);
+      return sep ? ["auto", "minmax(56px, 1fr)"] : ["minmax(56px, 1fr)"];
+    }),
+    "minmax(56px, auto)", // qoʻshimcha darslar
+  ].join(" ");
+
   return (
     <div className="mx-6 my-2 min-h-0 flex-1 overflow-auto rounded-md border border-border [scrollbar-width:thin]">
-      <div className="grid min-w-[680px]" style={{ gridTemplateColumns: "6.5rem repeat(6, minmax(0, 1fr))" }}>
+      <div className="grid min-h-full min-w-[680px]" style={{ gridTemplateColumns: "6.5rem repeat(6, minmax(0, 1fr))", gridTemplateRows: rowTemplate }}>
         {/* Sarlavha */}
-        <div className="sticky top-0 z-20 border-b border-r border-border bg-muted py-2.5 text-center text-[13px] font-semibold text-foreground/70">{fmt.t("hourHeader")}</div>
+        <div className="sticky top-0 z-20 border-b border-r border-border/60 bg-background/70 py-2.5 text-center text-[13px] font-semibold text-foreground/70 backdrop-blur-md">{fmt.t("hourHeader")}</div>
         {WORK_DAYS.map((day, i) => (
-          <div key={day} className={cn("sticky top-0 z-20 truncate border-b border-border bg-muted py-2.5 text-center text-sm font-medium text-foreground/80", i > 0 && "border-l")}>{fmt.dayName(day)}</div>
+          <div key={day} className={cn("sticky top-0 z-20 truncate border-b border-border/60 bg-background/70 py-2.5 text-center text-sm font-medium text-foreground/80 backdrop-blur-md", i > 0 && "border-l")}>{fmt.dayName(day)}</div>
         ))}
 
         {/* Period qatorlari */}
-        {periods.map((p, ri) => {
-          const showShiftSep = profile === "double" && p.shift === 2 && (ri === 0 || periods[ri - 1].shift !== 2);
+        {visiblePeriods.map((p, ri) => {
+          const showShiftSep = shift === "both" && p.shift === 2 && (ri === 0 || visiblePeriods[ri - 1].shift !== 2);
           return (
             <Fragment key={`${p.shift}-${p.index}`}>
               {showShiftSep && (

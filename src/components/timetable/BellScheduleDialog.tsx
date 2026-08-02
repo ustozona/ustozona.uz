@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { remapEventsForBellChange, type BellConfig } from "@/lib/bell-schedule";
 import { buildSlots, defaultsForProfile, type ShiftConfig, type SchoolProfile, type TimetableEvent } from "@/lib/timetable";
 import {
@@ -13,16 +13,15 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SectionIcon } from "@/components/ui/section-icon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CardTitle } from "@/components/ui/card";
-import { BellRing, BookOpen, Check, Clock3, Info, RotateCcw, SaveIcon, Sunrise, Sunset, Timer, TriangleAlert, X } from "lucide-react";
+import { BellRing, Check, Info, RotateCcw, SaveIcon, Sunrise, Sunset, TriangleAlert, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const PROFILE_OPTIONS = [
@@ -66,6 +65,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
 }) {
   const t = useTranslations("BellScheduleDialog");
   const [draft, setDraft] = useState<BellConfig>(() => structuredClone(config));
+  const [activeShift, setActiveShift] = useState<"shift1" | "shift2">("shift1");
 
   const setShift = (key: "shift1" | "shift2", patch: Partial<ShiftConfig>) =>
     setDraft((d) => ({ ...d, [key]: { ...d[key], ...patch } }));
@@ -94,7 +94,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         showCloseButton={false}
-        className="sm:max-w-lg gap-0 overflow-hidden p-0 bg-card"
+        className="sm:max-w-md gap-0 overflow-hidden p-0 bg-card"
       >
         {/* Standart header — ikona + sarlavha + size-9 yopish tugmasi */}
         <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
@@ -106,7 +106,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
               <DialogTitle asChild>
                 <CardTitle>{t("title")}</CardTitle>
               </DialogTitle>
-              <DialogDescription className="text-caption">
+              <DialogDescription className="sr-only">
                 {t("description")}
               </DialogDescription>
             </div>
@@ -152,10 +152,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
                           className={cn("size-4 transition-colors", checked ? "text-success" : "text-muted-foreground")}
                         />
                       </div>
-                      <div className="grid w-full gap-1.5">
-                        <p className="font-medium leading-none">{t(`profile.${item.id}.title`)}</p>
-                        <p className="text-xs font-normal text-muted-foreground">{t(`profile.${item.id}.desc`)}</p>
-                      </div>
+                      <p className="w-full self-center font-medium leading-none">{t(`profile.${item.id}.title`)}</p>
                       <RadioGroupItem value={item.id} id={`profile-${item.id}`} className="sr-only" />
                       <span
                         className={cn(
@@ -173,6 +170,8 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
               </RadioGroup>
             </div>
 
+            <Separator />
+
             <AutoHeight>
               {draft.profile === "single" ? (
                 <ShiftFields
@@ -181,31 +180,36 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
                   onReset={() => setShift("shift1", { ...defaults.shift1 })}
                 />
               ) : (
-                <Tabs defaultValue="shift1">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="shift1">{t("shift1")}</TabsTrigger>
-                    <TabsTrigger value="shift2">{t("shift2")}</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="shift1">
+                (() => {
+                  const shiftSwitcher = (
+                    <ToggleGroup
+                      type="single"
+                      value={activeShift}
+                      onValueChange={(v) => v && setActiveShift(v as "shift1" | "shift2")}
+                      variant="outline"
+                      className="grid w-full grid-cols-2"
+                    >
+                      <ToggleGroupItem value="shift1">{t("shift1")}</ToggleGroupItem>
+                      <ToggleGroupItem value="shift2">{t("shift2")}</ToggleGroupItem>
+                    </ToggleGroup>
+                  );
+                  return activeShift === "shift1" ? (
                     <ShiftFields
                       cfg={draft.shift1}
                       onChange={(p) => setShift("shift1", p)}
                       onReset={() => setShift("shift1", { ...defaults.shift1 })}
+                      header={shiftSwitcher}
                     />
-                  </TabsContent>
-                  <TabsContent value="shift2">
+                  ) : (
                     <ShiftFields
                       cfg={draft.shift2}
                       onChange={(p) => setShift("shift2", p)}
                       onReset={() => setShift("shift2", { ...defaults.shift2 })}
+                      header={shiftSwitcher}
                     />
-                  </TabsContent>
-                </Tabs>
+                  );
+                })()
               )}
-
-              <p className="pt-5 text-xs leading-relaxed text-muted-foreground">
-                {t("effectiveDateHint")}
-              </p>
             </AutoHeight>
           </div>
         </div>
@@ -229,11 +233,21 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
 function AutoHeight({ children }: { children: React.ReactNode }) {
   const innerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>();
+  // Balandlik oʻzgarishi paytida qisqa vaqt "overflow-hidden" — sakrashning
+  // oldini olish uchun. Tinch holatda "visible"ga qaytadi, aks holda input
+  // fokus halqasi (box-shadow 3px) ResizeObserver oʻlchagan aniq chegarada kesilib qolardi.
+  const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
     const el = innerRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setHeight(entry.contentRect.height));
+    let prev: number | undefined;
+    const ro = new ResizeObserver(([entry]) => {
+      const next = entry.contentRect.height;
+      if (prev !== undefined && prev !== next) setAnimating(true);
+      prev = next;
+      setHeight(next);
+    });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -241,7 +255,8 @@ function AutoHeight({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={height !== undefined ? { height } : undefined}
-      className="overflow-hidden transition-[height] duration-fast ease-standard"
+      onTransitionEnd={() => setAnimating(false)}
+      className={cn("transition-[height] duration-fast ease-standard", animating && "overflow-hidden")}
     >
       <div ref={innerRef}>{children}</div>
     </div>
@@ -280,16 +295,18 @@ function BellWarnings({ cfg }: { cfg: BellConfig }) {
 
 /* ─── Smena maydonlari ─── */
 
-function ShiftFields({ cfg, onChange, onReset }: {
+function ShiftFields({ cfg, onChange, onReset, header }: {
   cfg: ShiftConfig;
   onChange: (patch: Partial<ShiftConfig>) => void;
   onReset: () => void;
+  /** Smena tanlovchi (2-smenali profilda) — shu kartaga tegishli boʻlgani uchun ichida koʻrsatiladi */
+  header?: ReactNode;
 }) {
   const t = useTranslations("BellScheduleDialog");
   const bigBreakTotal = cfg.breakMin + cfg.longBreakExtraMin;
 
   return (
-    <div className="space-y-3 rounded-lg border border-border p-3">
+    <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-foreground">{t("breaks")}</p>
         <Button
@@ -302,6 +319,7 @@ function ShiftFields({ cfg, onChange, onReset }: {
           {t("default")}
         </Button>
       </div>
+      {header}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label className="text-xs">{t("break")}</Label>
@@ -324,31 +342,7 @@ function ShiftFields({ cfg, onChange, onReset }: {
           />
         </div>
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        <InfoChip icon={Clock3} label={t("startsAt", { time: minToHHMM(cfg.startMin) })} tip={t("startsAtTip")} />
-        <InfoChip icon={BookOpen} label={t("lessonCount", { count: cfg.lessonCount })} tip={t("lessonCountTip")} />
-        <InfoChip icon={Timer} label={t("lessonDuration", { minutes: cfg.lessonMin })} tip={t("lessonDurationTip")} />
-      </div>
     </div>
-  );
-}
-
-/* ─── Oʻzgarmas smena parametri — secondary badge + tooltip ─── */
-function InfoChip({ icon: Icon, label, tip }: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  tip: string;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Badge variant="secondary" className="cursor-default font-normal text-muted-foreground">
-          <Icon data-icon="inline-start" />
-          {label}
-        </Badge>
-      </TooltipTrigger>
-      <TooltipContent>{tip}</TooltipContent>
-    </Tooltip>
   );
 }
 

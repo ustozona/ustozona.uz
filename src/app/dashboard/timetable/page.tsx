@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TypographyLabel } from "@/components/ui/typography";
 import { EventCard } from "@/components/calendar/EventCard";
 import { type TimetableEvent } from "@/lib/timetable";
@@ -54,7 +55,7 @@ import { minToHHMM, hhmmToMin, snapMin, clamp } from "@/lib/calendar-core/date-m
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { SavedIndicator } from "@/app/dashboard/settings/_components/SettingsShared";
 import { toast } from "sonner";
-import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, GripVertical, MoreVertical, Download, PencilIcon as EditIcon, MousePointer2, Magnet, Hourglass, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
+import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Download, PencilIcon as EditIcon, Hourglass, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
 
 /* ─── Types ─── */
 /* TimetableEvent — @/lib/timetable dan (takrorlanuvchi haftalik shablon).
@@ -133,6 +134,8 @@ export default function TimetablePage() {
   const [dragOverDay, setDragOverDay] = useState<number | null>(null);
   /** "free" — uzluksiz vaqt-grid (erkin); "lesson" — tayyor katak grid (dars soatlari) */
   const [snapMode, setSnapMode] = useState<"free" | "lesson">("free");
+  /** "lesson" + 2-smenali profilda koʻrsatiladigan smena — dropdown headerda */
+  const [periodShift, setPeriodShift] = useState<1 | 2 | "both">(1);
   /** Qoʻngʻiroq jadvali sozlamasi (smena + dars/tanaffus vaqtlari) */
   const [bellConfig, setBellConfig] = useState<BellConfig>(defaultBellConfig);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -717,11 +720,11 @@ export default function TimetablePage() {
               aria-label={t("viewModeAria")}
             >
               <ToggleGroupItem value="free" className="gap-1.5 text-xs" title={t("calendarModeTitle")}>
-                <MousePointer2 className="size-4" />
+                <CalendarDays className="size-4" />
                 <span className="hidden sm:inline">{t("calendarMode")}</span>
               </ToggleGroupItem>
               <ToggleGroupItem value="lesson" className="gap-1.5 text-xs" title={t("gridModeTitle")}>
-                <Magnet className="size-4" />
+                <Table className="size-4" />
                 <span className="hidden sm:inline">{t("gridMode")}</span>
               </ToggleGroupItem>
             </ToggleGroup>
@@ -729,10 +732,23 @@ export default function TimetablePage() {
             {/* Oʻng: avto-saqlash holati + koʻproq amallar */}
             <div className="flex flex-1 items-center justify-end gap-2">
               <SavedIndicator signal={savedSignal} />
+              {/* 2-smenali profilda: qaysi smena koʻrsatilishi (faqat "Jadval" rejimida) */}
+              {snapMode === "lesson" && bellConfig.profile === "double" && (
+                <Select value={String(periodShift)} onValueChange={(v) => setPeriodShift(v === "both" ? "both" : (Number(v) as 1 | 2))}>
+                  <SelectTrigger className="shrink-0 text-sm" aria-label={fmt.t("shiftFilterAria")}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectItem value="1">{fmt.t("firstShift")}</SelectItem>
+                    <SelectItem value="2">{fmt.t("secondShift")}</SelectItem>
+                    <SelectItem value="both">{fmt.t("bothShifts")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" aria-label={t("moreActionsAria")} className="shadow-none">
-                    <MoreVertical />
+                    <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -844,6 +860,7 @@ export default function TimetablePage() {
                 classes={classesDisplay}
                 getClass={isDemoMode ? getClassDisplay : getClass}
                 profile={bellConfig.profile}
+                shift={periodShift}
                 readOnly={readOnly || isDemoMode}
                 onPlace={placeInPeriod}
                 onAddClub={addClub}
