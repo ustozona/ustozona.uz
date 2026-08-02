@@ -5,7 +5,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { Input } from "@/components/ui/input";
 import { TypographyLabel } from "@/components/ui/typography";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { SaveFooter, SettingsCard, SwitchRow, useDraft, useRegisterDraft } from "./SettingsShared";
+import { SettingsCard, SwitchRow, useDraft, useRegisterDraft } from "./SettingsShared";
 
 export default function TasksSection() {
   const t = useTranslations("TasksSection");
@@ -37,7 +37,6 @@ export default function TasksSection() {
     <SettingsCard
       title={t("title")}
       description={t("description")}
-      footer={<SaveFooter dirty={dirty} onSave={save} onReset={reset} />}
     >
       <div className="flex flex-col gap-3">
         <SwitchRow

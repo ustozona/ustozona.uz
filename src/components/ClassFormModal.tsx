@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { CLASS_COLOR_HEX, nextAutoClassColor, type ClassColor } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, classColorHexDark, nextAutoClassColor, type ClassColor } from "@/lib/class-colors";
 import { CLASS_ICONS, CLASS_ICON_KEYS, DEFAULT_CLASS_ICON, type ClassIconKey } from "@/lib/class-icons";
 import { Dialog, DialogContent, DialogHeaderBar, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -13,18 +13,25 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ColorPickerButton } from "@/components/ui/color-picker-button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TypographyMuted } from "@/components/ui/typography";
-import { PlusIcon, XIcon, ChevronDownIcon, Clock2Icon, GraduationCap } from "lucide-react";
+import { ChevronDownIcon, GraduationCap } from "lucide-react";
+import { COMMON_SECTIONS, SECTION_MAX_LENGTH, displayClassName } from "@/lib/class-naming";
 
 export type ClassSlot = { day: string; start: string; end: string };
-export type ClassFormValues = { name: string; grade: number | null; subject: string; color: ClassColor; icon: ClassIconKey; description: string; slots: ClassSlot[] };
+/** `name` YOʻQ — nom `grade`+`section`+`label` dan hisoblanadi (class-naming.ts).
+    `slots` (haftalik jadval) modalda TAHRIRLANMAYDI — jadval "Dars jadvali"
+    sahifasida tuziladi; bu yerda faqat oʻzgarishsiz oʻtkaziladi. */
+export type ClassFormValues = { grade: number | null; section: string; label: string; subject: string; color: ClassColor; icon: ClassIconKey; slots: ClassSlot[] };
 
-const DAYS = ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
 const GRADES = Array.from({ length: 11 }, (_, i) => i + 1);
 
 /**
  * Sinf yaratish / tahrirlash uchun umumiy modal.
  * Timetable ("+", "Tahrirlash") va Classes ("Yangi sinf") sahifalari ishlatadi.
+ *
+ * Tuzilma — BIR USTUNLI (tadqiqotlar: bir ustunli forma koʻp ustunlidan tez
+ * toʻldiriladi, koʻz yagona vertikal yoʻldan yuradi). Eng tepada identifikator
+ * bloki: ikonka + hisoblangan nom + rang — Notion/Linear naqshi, ikonkaning
+ * OʻZI tanlagich. Pastida atigi 2–3 maydon.
  */
 export function ClassFormModal({
   mode,
@@ -40,184 +47,228 @@ export function ClassFormModal({
   const t = useTranslations("ClassFormModal");
   const classColorOrder = (Object.keys(CLASS_COLOR_HEX) as ClassColor[]).filter((n) => n !== "gray");
 
-  const [name, setName] = useState(initial?.name ?? "");
+  const [section, setSection] = useState(initial?.section ?? "");
+  const [label, setLabel] = useState(initial?.label ?? "");
   const [grade, setGrade] = useState<number | null>(initial?.grade ?? null);
   const [subject, setSubject] = useState(initial?.subject ?? "");
   const [selectedColor, setSelectedColor] = useState<ClassColor>(initial?.color ?? nextAutoClassColor);
   const [selectedIcon, setSelectedIcon] = useState<ClassIconKey>(initial?.icon ?? DEFAULT_CLASS_ICON);
-  const [description, setDescription] = useState(initial?.description ?? "");
   const selectedHex = CLASS_COLOR_HEX[selectedColor];
+  const selectedHexDark = classColorHexDark(selectedColor);
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
+  const [isSectionPickerOpen, setIsSectionPickerOpen] = useState(false);
   const SelectedIcon = CLASS_ICONS[selectedIcon];
 
-  type Slot = ClassSlot & { id: string };
-  const [timeSlots, setTimeSlots] = useState<Slot[]>(() =>
-    (initial?.slots ?? []).map((s) => ({ ...s, id: Math.random().toString(36).slice(2, 9) }))
-  );
+  // Daraja va erkin nom OʻZARO INKOR: daraja tanlansa nom "5-A" dan hosil
+  // boʻladi, shu bois erkin nom tozalanadi — aks holda u jimgina ustun turib,
+  // oʻqituvchi tanlagan darajani nomda koʻrmay qolardi.
+  const handleGradeChange = (val: string) => {
+    const next = val ? Number(val) : null;
+    setGrade(next);
+    if (next !== null) setLabel("");
+    else setSection("");
+  };
 
-  const addTimeSlot = () => setTimeSlots((prev) => [...prev, { id: Math.random().toString(36).slice(2, 9), day: DAYS[0], start: "09:00", end: "10:00" }]);
-  const removeTimeSlot = (id: string) => setTimeSlots((prev) => prev.filter((s) => s.id !== id));
-  const updateDay = (id: string, day: string) => setTimeSlots((prev) => prev.map((s) => (s.id === id ? { ...s, day } : s)));
-  const updateTime = (id: string, key: "start" | "end", val: string) => setTimeSlots((prev) => prev.map((s) => (s.id === id ? { ...s, [key]: val } : s)));
+  // Koʻrsatiladigan nom jonli hisoblanadi — oʻqituvchi natijani darhol koʻradi.
+  const previewName = displayClassName({ grade, section, label });
+  const canSubmit = previewName.length > 0;
+  // Tugma DISABLED qilinmaydi: sababsiz oʻlik CTA — anti-naqsh. Bosilganda
+  // yetishmayotgani aytiladi va xato aynan tegishli qatorda koʻrsatiladi.
+  const [attempted, setAttempted] = useState(false);
+  const showError = attempted && !canSubmit;
 
-  const canSubmit = name.trim().length > 0;
-  const submit = () => onSubmit({ name: name.trim(), grade, subject: subject.trim(), color: selectedColor, icon: selectedIcon, description, slots: timeSlots.map(({ day, start, end }) => ({ day, start, end })) });
+  const submit = () => {
+    if (!canSubmit) {
+      setAttempted(true);
+      return;
+    }
+    onSubmit({
+      grade,
+      section: section.trim().toUpperCase(),
+      label: label.trim(),
+      subject: subject.trim(),
+      color: selectedColor,
+      icon: selectedIcon,
+      // Jadval bu modalda tahrirlanmaydi — mavjud slotlar oʻzgarishsiz qaytadi.
+      slots: initial?.slots ?? [],
+    });
+  };
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent showCloseButton={false} className="max-w-[540px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+      <DialogContent showCloseButton={false} className="max-w-[440px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeaderBar
           icon={<GraduationCap className="size-[18px]" aria-hidden />}
-          title={mode === "create" ? t("createTitle") : t("editTitle", { name: initial?.name ? `: ${initial.name}` : "" })}
+          title={mode === "create" ? t("createTitle") : t("editTitle", { name: previewName ? `: ${previewName}` : "" })}
           description={mode === "create" ? t("createDescription") : t("editDescription")}
         />
 
         <ScrollArea className="flex-1">
-          <div className="p-6 pt-4 space-y-4">
-            {/* Nom + rang */}
-            <div className="space-y-2">
-              <Label htmlFor="cfm-name">{t("className")} <span className="text-destructive">*</span></Label>
-              <div className="flex gap-2">
-                <Input id="cfm-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("classNamePlaceholder")} className="flex-1" />
+          <div className="space-y-4 p-5 pt-4">
+            {/* IDENTIFIKATOR BLOKI — ikonka + hisoblangan nom + rang. Ikonkaning
+                OʻZI tanlagich tugmasi (Notion/Linear naqshi), shu bois alohida
+                "ikonka tanlash" tugmasi kerak emas. */}
+            <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3.5 py-3">
+              <Popover open={isIconPickerOpen} onOpenChange={setIsIconPickerOpen}>
+                <PopoverTrigger asChild>
+                  {/* hover: faqat fon toʻqroq boʻladi. Fon inline `style` emas, CSS
+                      oʻzgaruvchisi orqali — inline style hover klassidan ustun turadi. */}
+                  <button
+                    type="button"
+                    aria-label={t("pickIcon")}
+                    className="flex size-11 shrink-0 items-center justify-center rounded-lg text-white shadow-sm transition-colors bg-[var(--btn-bg)] hover:bg-[var(--btn-hover-bg)]"
+                    style={{
+                      ["--btn-bg" as string]: selectedHex,
+                      ["--btn-hover-bg" as string]: selectedHexDark,
+                    }}
+                  >
+                    <SelectedIcon className="size-5" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-[300px] p-2">
+                  <ScrollArea className="h-[244px]">
+                    <div
+                      className="grid grid-cols-6 gap-1.5 pr-3"
+                      // Popover dialog portalidan tashqarida — Dialog scroll-lock gʻildirakni
+                      // bloklaydi; shuning uchun viewport'ni qoʻlda skroll qilamiz.
+                      onWheel={(e) => {
+                        const vp = e.currentTarget.closest("[data-radix-scroll-area-viewport]");
+                        if (vp) vp.scrollTop += e.deltaY;
+                      }}
+                    >
+                      {CLASS_ICON_KEYS.map((key) => {
+                        const Icon = CLASS_ICONS[key];
+                        const active = key === selectedIcon;
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            aria-label={key}
+                            aria-pressed={active}
+                            onClick={() => { setSelectedIcon(key); setIsIconPickerOpen(false); }}
+                            className={cn(
+                              "flex items-center justify-center aspect-square rounded-md border transition-colors",
+                              active ? "border-transparent text-white" : "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                            )}
+                            style={active ? { backgroundColor: selectedHex } : undefined}
+                          >
+                            <Icon className="size-[18px]" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
 
-                {/* Ikonka tanlash */}
-                <Popover open={isIconPickerOpen} onOpenChange={setIsIconPickerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" aria-label={t("pickIcon")} className="shrink-0 border-0 shadow-sm text-white hover:opacity-90" style={{ backgroundColor: selectedHex }}>
-                      <SelectedIcon className="size-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-[300px] p-2">
-                    <ScrollArea className="h-[244px]">
-                      <div
-                        className="grid grid-cols-6 gap-1.5 pr-3"
-                        // Popover dialog portalidan tashqarida — Dialog scroll-lock gʻildirakni bloklaydi;
-                        // shuning uchun viewport'ni qoʻlda skroll qilamiz.
-                        onWheel={(e) => {
-                          const vp = e.currentTarget.closest("[data-radix-scroll-area-viewport]");
-                          if (vp) vp.scrollTop += e.deltaY;
-                        }}
-                      >
-                        {CLASS_ICON_KEYS.map((key) => {
-                          const Icon = CLASS_ICONS[key];
-                          const active = key === selectedIcon;
-                          return (
-                            <button
-                              key={key}
-                              type="button"
-                              aria-label={key}
-                              aria-pressed={active}
-                              onClick={() => { setSelectedIcon(key); setIsIconPickerOpen(false); }}
-                              className={cn(
-                                "flex items-center justify-center aspect-square rounded-md border transition-colors",
-                                active ? "border-transparent text-white" : "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                              )}
-                              style={active ? { backgroundColor: selectedHex } : undefined}
-                            >
-                              <Icon className="size-[18px]" />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </ScrollArea>
-                  </PopoverContent>
-                </Popover>
-
-                {/* Rang tanlash */}
-                <ColorPickerButton
-                  value={selectedColor}
-                  onChange={setSelectedColor}
-                  colors={classColorOrder}
-                  hexOf={(c) => CLASS_COLOR_HEX[c]}
-                  ariaLabel={t("pickColor")}
-                />
+              <div className="min-w-0 flex-1">
+                <p className={cn("truncate text-sm font-semibold", !previewName && "font-normal text-muted-foreground")}>
+                  {previewName || t("namePreviewExample", { example: "5-A" })}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {subject.trim() || t("previewNoSubject")}
+                </p>
               </div>
+
+              <ColorPickerButton
+                value={selectedColor}
+                onChange={setSelectedColor}
+                colors={classColorOrder}
+                hexOf={(c) => CLASS_COLOR_HEX[c]}
+                ariaLabel={t("pickColor")}
+              />
             </div>
 
-            {/* Sinf + Fan nomi */}
-            <div className="flex gap-3">
-              <div className="space-y-2 shrink-0">
-                <Label>{t("grade")}</Label>
+            {/* Sinf: daraja + parallel harfi. Ikkalasi BITTA maydonning boʻlaklari
+                (bitta yorliq ostida), shu bois bir qatorda — ikki ustunli forma emas. */}
+            <div className="space-y-2">
+              <Label>{t("classIdentity")}</Label>
+              <div className="flex gap-2">
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="flex items-center justify-between rounded-md border border-border px-3 h-9 text-sm w-[140px] bg-card hover:bg-accent/50 transition-colors">
-                    <span className={grade === null ? "text-muted-foreground" : ""}>{grade === null ? t("notSelected") : t("gradeValue", { grade })}</span>
-                    <ChevronDownIcon className="size-4 opacity-50" />
+                  <DropdownMenuTrigger className="flex min-w-0 flex-1 items-center justify-between gap-1 rounded-md border border-border px-3 h-9 text-sm bg-card hover:bg-accent/50 transition-colors">
+                    <span className={cn("truncate", grade === null && "text-muted-foreground")}>
+                      {grade === null ? t("noGrade") : t("gradeValue", { grade })}
+                    </span>
+                    <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[140px] max-h-[260px] overflow-y-auto">
-                    <DropdownMenuRadioGroup value={grade === null ? "" : String(grade)} onValueChange={(val) => setGrade(val ? Number(val) : null)}>
+                  <DropdownMenuContent className="w-[180px] max-h-[260px] overflow-y-auto">
+                    <DropdownMenuRadioGroup value={grade === null ? "" : String(grade)} onValueChange={handleGradeChange}>
+                      {/* "Darajasiz" — holat emas, TANLOV: toʻgarak kabi guruhlar. */}
+                      <DropdownMenuRadioItem value="">{t("noGrade")}</DropdownMenuRadioItem>
                       {GRADES.map((g) => <DropdownMenuRadioItem key={g} value={String(g)}>{t("gradeValue", { grade: g })}</DropdownMenuRadioItem>)}
                     </DropdownMenuRadioGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-              <div className="space-y-2 flex-1 min-w-0">
-                <Label htmlFor="cfm-subject">{t("subject")}</Label>
-                <Input id="cfm-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t("subjectPlaceholder")} />
-              </div>
-            </div>
 
-            {/* Tavsif */}
-            <div className="space-y-2">
-              <Label htmlFor="cfm-desc">{t("descriptionLabel")}</Label>
-              <Input id="cfm-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("descriptionPlaceholder")} />
-            </div>
-
-            {/* Haftalik jadval */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium select-none">{t("weeklySchedule")}</Label>
-                <Button variant="ghost" size="sm" onClick={addTimeSlot} className="gap-1.5">
-                  <PlusIcon className="size-4" />
-                  {t("addTime")}
-                </Button>
-              </div>
-
-              {timeSlots.length === 0 ? (
-                <TypographyMuted className="text-sm py-4 text-center border border-dashed rounded-lg">
-                  {t("noRegularSchedule")}
-                </TypographyMuted>
-              ) : (
-                <div className="space-y-3">
-                  {timeSlots.map((slot) => (
-                    <div key={slot.id} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center justify-between rounded-md border border-border px-3 h-9 text-sm w-[130px] shrink-0 bg-card">
-                          <span className="truncate">{slot.day}</span>
-                          <ChevronDownIcon className="size-4 opacity-50" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[130px]">
-                          <DropdownMenuRadioGroup value={slot.day} onValueChange={(val) => updateDay(slot.id, val)}>
-                            {DAYS.map((d) => <DropdownMenuRadioItem key={d} value={d}>{d}</DropdownMenuRadioItem>)}
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-
-                      <div className="flex items-center gap-2 flex-1">
-                        <div className="relative">
-                          <Input type="time" lang="en-GB" step="60" value={slot.start} onChange={(e) => updateTime(slot.id, "start", e.target.value)} className="h-9 w-[78px] pl-2 pr-6 shadow-none [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden" />
-                          <Clock2Icon className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                        </div>
-                        <span className="text-muted-foreground text-xs shrink-0">—</span>
-                        <div className="relative">
-                          <Input type="time" lang="en-GB" step="60" value={slot.end} onChange={(e) => updateTime(slot.id, "end", e.target.value)} className="h-9 w-[78px] pl-2 pr-6 shadow-none [&::-webkit-datetime-edit-ampm-field]:hidden [&::-webkit-calendar-picker-indicator]:hidden" />
-                          <Clock2Icon className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-                        </div>
+                {/* Harf FAQAT daraja tanlanganda — "Darajasiz + A" maʼnosiz. */}
+                {grade !== null && (
+                  <Popover open={isSectionPickerOpen} onOpenChange={setIsSectionPickerOpen}>
+                    <PopoverTrigger className="flex w-[104px] shrink-0 items-center justify-between rounded-md border border-border px-3 h-9 text-sm bg-card hover:bg-accent/50 transition-colors">
+                      <span className={cn("truncate", !section && "text-muted-foreground")}>
+                        {section || t("sectionShort")}
+                      </span>
+                      <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-[212px] space-y-2 p-2">
+                      <div className="grid grid-cols-5 gap-1">
+                        {COMMON_SECTIONS.map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            aria-pressed={section === s}
+                            onClick={() => { setSection(s); setIsSectionPickerOpen(false); }}
+                            className={cn(
+                              "flex h-8 items-center justify-center rounded-md border text-sm font-medium transition-colors",
+                              section === s
+                                ? "border-transparent bg-primary text-primary-foreground"
+                                : "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                            )}
+                          >
+                            {s}
+                          </button>
+                        ))}
                       </div>
+                      <Input
+                        value={section}
+                        onChange={(e) => setSection(e.target.value.toUpperCase())}
+                        maxLength={SECTION_MAX_LENGTH}
+                        placeholder={t("sectionCustomPlaceholder")}
+                        aria-label={t("sectionLabel")}
+                        className="h-8 text-center"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+              {showError && <p className="pl-1 text-xs text-destructive">{t("identityRequired")}</p>}
+            </div>
 
-                      <Button variant="ghost" size="icon-sm" onClick={() => removeTimeSlot(slot.id)} className="ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/10">
-                        <XIcon className="size-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+            {/* Erkin nom — FAQAT darajasiz guruh uchun (toʻgarak, kurs). Daraja
+                tanlansa nom darajadan hosil boʻladi va bu maydon yoʻqoladi. */}
+            {grade === null && (
+              <div className="space-y-2">
+                <Label htmlFor="cfm-label">{t("customLabel")}</Label>
+                <Input id="cfm-label" value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t("customLabelPlaceholder")} />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="cfm-subject">{t("subject")}</Label>
+              <Input id="cfm-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t("subjectPlaceholder")} />
             </div>
           </div>
         </ScrollArea>
 
-        <DialogFooter className="px-6 py-4 border-t bg-muted/20 shrink-0">
-          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
-          <Button onClick={submit} disabled={!canSubmit}>{mode === "create" ? t("create") : t("save")}</Button>
+        <DialogFooter className="shrink-0 gap-2 border-t bg-muted/20 px-5 py-4 sm:justify-between">
+          {/* Shart tugma yonida — foydalanuvchi bosishdan OLDIN nima yetishmayotganini
+              koʻradi; tugmaning oʻzi hech qachon sababsiz oʻlik boʻlmaydi. */}
+          <span className={cn("text-xs", showError ? "text-destructive" : "text-muted-foreground")}>
+            {canSubmit ? "" : t("identityRequired")}
+          </span>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
+            <Button onClick={submit}>{mode === "create" ? t("create") : t("save")}</Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -40,9 +40,11 @@ function toClassUpsert(info: ClassInfo, sortOrder: number): ClassUpsert {
     ...(info.color ? { color: info.color } : {}),
     ...(info.time ? { time: info.time } : {}),
     ...(info.grade != null ? { grade: info.grade } : {}),
+    ...(info.section ? { section: info.section } : {}),
+    ...(info.label ? { label: info.label } : {}),
+    ...(info.gradeByYear ? { gradeByYear: info.gradeByYear } : {}),
     ...(info.subject ? { subject: info.subject } : {}),
     ...(info.icon ? { icon: info.icon } : {}),
-    ...(info.description ? { description: info.description } : {}),
     ...(info.archivedAt ? { archivedAt: info.archivedAt } : {}),
     sortOrder,
   };

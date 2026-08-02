@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { classColor } from "@/lib/grades-data";
-import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm } from "@/hooks/useLiveClasses";
+import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm, classFormInitial } from "@/hooks/useLiveClasses";
 import { classTints } from "@/lib/class-colors";
 import { useGradesStore } from "@/store/useGradesStore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -287,12 +287,9 @@ export default function ClassListPanel({
         <ClassFormModal
           mode="edit"
           initial={{
-            name: editTarget.name,
-            grade: editTarget.grade ?? null,
-            subject: editTarget.subject ?? "",
+            ...classFormInitial(editTarget),
             color: classColor(editTarget),
             icon: editTarget.icon as ClassIconKey | undefined,
-            description: editTarget.description ?? "",
             slots: [],
           }}
           onSubmit={(v) => {

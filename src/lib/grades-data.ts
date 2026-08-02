@@ -5,15 +5,25 @@ import { dateToKey } from "@/lib/date-keys";
 
 export type ClassInfo = {
   id: string;
+  /** HISOBLANUVCHI koʻrsatiladigan nom ("5-A"). Qoʻlda yozilmaydi —
+      manba `grade`+`section`+`label`, hisoblovchi `displayClassName`
+      (class-naming.ts). Faol oʻquv yiliga proyeksiya qilingan. */
   name: string;
   color?: ClassColor;
   time?: string;
-  /** Sinf raqami (1–11); yoʻq boʻlsa — toʻgarak kabi darajasiz guruh. */
+  /** Sinf raqami (1–11); yoʻq boʻlsa — toʻgarak kabi darajasiz guruh.
+      FAOL yil uchun proyeksiya qilingan qiymat — tarix `gradeByYear`da. */
   grade?: number;
+  /** Parallel harfi ("A", "B", "D"…). Yildan yilga OʻZGARMAYDI. */
+  section?: string;
+  /** Ixtiyoriy erkin nom ("Ingliz toʻgaragi") — berilsa daraja+harfdan ustun. */
+  label?: string;
+  /** Oʻquv yili id → oʻsha yildagi daraja. Rollover shu yerga yozadi;
+      eski yil faollashtirilganda nom oʻsha yildagi darajadan tiklanadi. */
+  gradeByYear?: Record<string, number>;
   subject?: string;
   /** Avatar ikonkasi kaliti (class-icons.ts ClassIconKey). */
   icon?: string;
-  description?: string;
   /** Arxivlangan sana (ISO) yoki yoʻq. Boʻlsa — sinf pickerlardan yashirin
       (bitiruvchi/tugagan guruh); tarixi saqlanadi, id oʻzgarmaydi. */
   archivedAt?: string;

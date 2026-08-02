@@ -32,6 +32,33 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "blocked-days-calendar",
+    date: "2026-08-01",
+    type: "yangi",
+    title: "Taʼtil va bayram kunlarini taqvimdan belgilash",
+    body:
+      "Sozlamalar → Oʻquv yilidagi \"Taqvimdan belgilash\" tugmasi taqvimni ochadi: dars boʻlmaydigan kunlarni bosib belgilaysiz, ketma-ket kunlar oʻzi bitta davrga birlashadi. Har bir davrni taʼtil, bayram yoki boshqa deb belgilash mumkin.",
+    href: "/dashboard/settings",
+  },
+  {
+    id: "flexible-periods",
+    date: "2026-08-01",
+    type: "yaxshilandi",
+    title: "Oʻquv yili — choraklar endi majburiy emas",
+    body:
+      "Sozlamalar → Oʻquv yilida shablon tanlaysiz: 4 chorak, 2 semestr, 3 trimestr yoki umuman davrsiz. Har davrning nomi va sanasini oʻzingiz yozasiz, kerak boʻlsa qoʻshasiz yoki oʻchirasiz. Yil nomini ham qoʻlda oʻzgartirish mumkin — masalan \"Yozgi kurs 2026\".",
+    href: "/dashboard/settings",
+  },
+  {
+    id: "class-name-structured",
+    date: "2026-08-01",
+    type: "yaxshilandi",
+    title: "Sinf nomi — daraja va harf alohida tanlanadi",
+    body:
+      "Sinf yaratganda nomni qoʻlda yozish oʻrniga darajani (5, 6, 7…) va parallel harfini (A, B, D…) tanlaysiz, nom esa oʻzi hosil boʻladi. Toʻgarak kabi guruhlar uchun erkin nom maydoni qoldi. Shuning barakasida eski oʻquv yiliga qaytganingizda sinf oʻsha yildagi nomi bilan koʻrinadi — 5-A yana 5-A boʻladi.",
+    href: "/dashboard/classes",
+  },
+  {
     id: "blog-launch",
     date: "2026-08-01",
     type: "yangi",

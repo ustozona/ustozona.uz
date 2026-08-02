@@ -12,7 +12,7 @@ import {
 import { useAutoRuleTiles } from "@/components/behavior/AutoPointsEditor";
 import type { BehaviorReward, BehaviorSkill } from "@/lib/behavior-data";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
-import { SaveFooter, SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
+import { SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
 
 /* Sozlamalar > Xulq — avtomatik va qoʻlda beriladigan ballar BIR XIL
    karta-gridda (oʻqituvchi uchun ikkalasi ham "xulq balli"): avto-qoida
@@ -70,7 +70,6 @@ export default function BehaviorSection() {
       <SettingsCard
         title={t("title")}
         description={t("description")}
-        footer={<SaveFooter dirty={dirty} onSave={save} onReset={reset} />}
       >
         <Tabs defaultValue="positive">
           <TabsList className="grid w-full grid-cols-2">

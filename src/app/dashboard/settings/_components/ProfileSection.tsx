@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { MONTHS_UZ } from "@/lib/localization";
-import { SaveFooter, SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
+import { SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2MB
 
@@ -86,7 +86,6 @@ export default function ProfileSection() {
       <SettingsCard
         title={t("title")}
         description={t("description")}
-        footer={<SaveFooter dirty={dirty} disabled={nameError} onSave={save} onReset={reset} />}
       >
         <div className="flex flex-col gap-4 rounded-xl border border-border bg-muted/20 px-5 py-5 sm:flex-row sm:items-start">
           <button

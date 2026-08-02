@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { autoClassColor, CLASS_COLOR_HEX, classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { classColor } from "@/lib/grades-data";
-import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm } from "@/hooks/useLiveClasses";
+import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm, classFormInitial } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
 import { cn } from "@/lib/utils";
 import { DAYS_UZ } from "@/lib/localization";
@@ -199,9 +199,10 @@ export default function TimetablePage() {
       name: c.name,
       color: classColor(c),
       grade: c.grade ?? null,
+      section: c.section,
+      label: c.label,
       subject: c.subject,
       icon: c.icon as TimetableClass["icon"],
-      description: c.description,
     })),
     [liveClasses]
   );
@@ -937,12 +938,9 @@ export default function TimetablePage() {
         <ClassFormModal
           mode="edit"
           initial={{
-            name: editingClass.name,
-            grade: editingClass.grade ?? null,
-            subject: editingClass.subject ?? "",
+            ...classFormInitial(editingClass),
             color: editingClass.color,
             icon: editingClass.icon,
-            description: editingClass.description ?? "",
             slots: slotsForClass(editingClass.id),
           }}
           onSubmit={(v) => handleEditClass(editingClass.id, v)}

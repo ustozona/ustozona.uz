@@ -204,6 +204,13 @@
       "when": 1785578140452,
       "tag": "0028_public_hercules",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1785607689184,
+      "tag": "0029_nervous_pestilence",
+      "breakpoints": true
     }
   ]
 }

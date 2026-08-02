@@ -14,7 +14,14 @@ import { dateKeyToDate, addDaysKey } from "@/lib/date-keys";
 
 export type DateRange = { start: string; end: string }; // inklyuziv "YYYY-MM-DD"
 export type Quarter = { id: string; name: string; range: DateRange };
-export type Holiday = { id: string; name: string; range: DateRange };
+/** Bloklangan kun turi — faqat YORLIQ (rang/ikonka) uchun; hisob-kitobda
+    uchalasi bir xil: dars kuni emas. Ed-Fi School Calendar domenidagi
+    CalendarEvent turlari (Holiday / Teacher only day / Weather day) bilan
+    bir xil yondashuv. Yoʻq boʻlsa "vacation" deb qaraladi. */
+export type BlockedKind = "vacation" | "holiday" | "other";
+
+/** Bloklangan kunlar diapazoni (taʼtil, bayram, boshqa dars boʻlmaydigan kun). */
+export type Holiday = { id: string; name: string; range: DateRange; kind?: BlockedKind };
 
 export type AcademicYearCalendar = {
   yearLabel: string; // "2025–2026"
@@ -33,10 +40,45 @@ export const EMPTY_CALENDAR: AcademicYearCalendar = {
   holidays: [],
 };
 
-/** Kalendar sozlanganmi (yil chegarasi + kamida bitta chorak bor)?
-    Boʻsh boʻlsa header/planner "sozlash" holatini koʻrsatadi. */
+/** Kalendar sozlanganmi — FAQAT yil chegarasi talab qilinadi.
+    Baholash davrlari (chorak/semestr) IXTIYORIY: davrsiz ishlaydigan
+    oʻqituvchi ham (kurs, toʻgarak, repetitorlik) toʻliq funksiyani
+    oladi — jurnal butun yilni bitta davr deb hisoblaydi. */
 export function isCalendarConfigured(cal: AcademicYearCalendar): boolean {
-  return Boolean(cal.range.start && cal.range.end && cal.quarters.length > 0);
+  return Boolean(cal.range.start && cal.range.end);
+}
+
+/* ── Baholash davrlari (chorak / semestr / trimestr) ─────────────────── */
+
+/** Davr shabloni. "none" — davrsiz: jurnal butun oʻquv yilini bitta davr
+    sifatida koʻradi (Google Classroom'dagi "grading periods" ixtiyoriyligi
+    bilan bir xil yondashuv). */
+export type PeriodPreset = "quarters" | "semesters" | "trimesters" | "none";
+
+/** Har shablon uchun davrlar soni va oʻzbekcha nom shakli. */
+const PRESET_SPECS: Record<Exclude<PeriodPreset, "none">, { count: number; unit: string }> = {
+  quarters: { count: 4, unit: "chorak" },
+  semesters: { count: 2, unit: "semestr" },
+  trimesters: { count: 3, unit: "trimestr" },
+};
+
+/** Berilgan oraliqni shablon boʻyicha teng davrlarga boʻladi.
+    Sanalar taqvim kunlari boʻyicha teng taqsimlanadi — oʻqituvchi keyin
+    har chegarani qoʻlda aniqlashtiradi (taʼtillarga moslash uchun).
+    "none" → boʻsh roʻyxat. */
+export function makePeriodsForRange(range: DateRange, preset: PeriodPreset): Quarter[] {
+  if (preset === "none" || !range.start || !range.end) return [];
+  const { count, unit } = PRESET_SPECS[preset];
+  const total = daysInRange(range);
+  if (total < count) return [];
+  const per = Math.floor(total / count);
+  const out: Quarter[] = [];
+  for (let i = 0; i < count; i++) {
+    const start = addDaysKey(range.start, i * per);
+    const end = i === count - 1 ? range.end : addDaysKey(range.start, (i + 1) * per - 1);
+    out.push({ id: `p${i + 1}-${Date.now().toString(36)}`, name: `${i + 1}-${unit}`, range: { start, end } });
+  }
+  return out;
 }
 
 /** Bugungi sanadan joriy oʻquv yilining boshlanish yili: iyun (6) va undan
@@ -134,6 +176,82 @@ export function findAdjacentHoliday(
   }
   const dayAfter = addDaysKey(quarterRange.end, 1);
   return cal.holidays.find((h) => h.range.start === dayAfter) ?? null;
+}
+
+/* ── Bloklangan kunlar (taqvimdan belgilash) ─────────────────────────── */
+
+/** Barcha bloklangan kun kalitlari (diapazonlar yoyilgan holda), tartiblangan.
+    Taqvim koʻrinishida qaysi kun belgilanganini koʻrsatish uchun. */
+export function blockedDateKeys(cal: AcademicYearCalendar): string[] {
+  const out = new Set<string>();
+  for (const h of cal.holidays) {
+    if (!h.range.start || !h.range.end || h.range.end < h.range.start) continue;
+    for (let k = h.range.start; k <= h.range.end; k = addDaysKey(k, 1)) out.add(k);
+  }
+  return [...out].sort();
+}
+
+/** Ketma-ket sana kalitlarini diapazonlarga birlashtiradi. */
+function mergeKeysToRanges(keys: string[]): DateRange[] {
+  const sorted = [...new Set(keys)].sort();
+  const out: DateRange[] = [];
+  for (const k of sorted) {
+    const last = out[out.length - 1];
+    if (last && addDaysKey(last.end, 1) === k) last.end = k;
+    else out.push({ start: k, end: k });
+  }
+  return out;
+}
+
+/** Taqvimda belgilangan kunlar toʻplamini bloklangan diapazonlarga aylantiradi.
+
+    Mavjud NOMLANGAN diapazonlar saqlanadi: har biri ichidagi hali belgilangan
+    ketma-ket qismlarga qisqaradi (nom birinchi qismda qoladi), butunlay
+    belgilanmagani esa oʻchadi. Hech qaysi mavjud diapazonga tegishli
+    boʻlmagan yangi kunlar `defaultName` bilan yangi diapazonlarga birlashadi.
+
+    Shu bois oʻqituvchi "Qishki taʼtil"dan bir kunni yechsa ham nom yoʻqolmaydi. */
+export function applyBlockedDays(
+  cal: AcademicYearCalendar,
+  keys: string[],
+  defaultName: string
+): Holiday[] {
+  const set = new Set(keys);
+  const used = new Set<string>();
+  const out: Holiday[] = [];
+
+  for (const h of cal.holidays) {
+    if (!h.range.start || !h.range.end || h.range.end < h.range.start) continue;
+    const runs: DateRange[] = [];
+    let start: string | null = null;
+    let prev: string | null = null;
+    for (let k = h.range.start; k <= h.range.end; k = addDaysKey(k, 1)) {
+      if (set.has(k)) {
+        if (start === null) start = k;
+        prev = k;
+        used.add(k);
+      } else if (start !== null) {
+        runs.push({ start, end: prev! });
+        start = null;
+      }
+    }
+    if (start !== null) runs.push({ start, end: prev! });
+    runs.forEach((range, i) =>
+      out.push({
+        ...h,
+        id: i === 0 ? h.id : `${h.id}-${i + 1}`,
+        name: i === 0 ? h.name : `${h.name} (${i + 1})`,
+        range,
+      })
+    );
+  }
+
+  const stamp = Date.now().toString(36);
+  mergeKeysToRanges(keys.filter((k) => !used.has(k))).forEach((range, i) =>
+    out.push({ id: `b-${stamp}-${i}`, name: defaultName, range, kind: "other" })
+  );
+
+  return out.sort((a, b) => a.range.start.localeCompare(b.range.start));
 }
 
 /** Sana qaysi chorakka tushadi (taʼtil/oraliq boʻlsa null). */

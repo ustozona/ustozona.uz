@@ -14,6 +14,7 @@ import {
   type TopicRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { parseClassName } from "@/lib/class-naming";
 import type {
   Assignment,
   ClassData,
@@ -56,15 +57,22 @@ function chunks<T>(rows: T[]): T[][] {
 /* ── Oʻqish: DB qatorlari → frontend tiplari ─────────────────────────── */
 
 function rowToInfo(c: ClassRow): ClassInfo {
+  // Eski qatorlarda section/label yoʻq — nomdan ajratib olamiz (lazy migratsiya:
+  // sinf keyingi saqlanishida qiymatlar bazaga yoziladi). Idempotent.
+  const legacy = c.section == null && c.label == null ? parseClassName(c.name) : null;
+  const section = c.section ?? legacy?.section;
+  const label = c.label ?? legacy?.label;
   return {
     id: c.id,
     name: c.name,
     ...(c.color ? { color: c.color as ClassColor } : {}),
     ...(c.time ? { time: c.time } : {}),
-    ...(c.grade != null ? { grade: c.grade } : {}),
+    ...(c.grade != null ? { grade: c.grade } : legacy?.grade != null ? { grade: legacy.grade } : {}),
+    ...(section ? { section } : {}),
+    ...(label ? { label } : {}),
+    ...(c.gradeByYear ? { gradeByYear: c.gradeByYear } : {}),
     ...(c.subject ? { subject: c.subject } : {}),
     ...(c.icon ? { icon: c.icon } : {}),
-    ...(c.description ? { description: c.description } : {}),
     ...(c.archivedAt ? { archivedAt: c.archivedAt } : {}),
   };
 }
@@ -179,9 +187,11 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           color: c.color ?? null,
           time: c.time ?? null,
           grade: c.grade ?? null,
+          section: c.section ?? null,
+          label: c.label ?? null,
+          gradeByYear: c.gradeByYear ?? null,
           subject: c.subject ?? null,
           icon: c.icon ?? null,
-          description: c.description ?? null,
           sortOrder: c.sortOrder,
           archivedAt: c.archivedAt ?? null,
         }))
@@ -193,9 +203,11 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           color: sql`excluded.color`,
           time: sql`excluded.time`,
           grade: sql`excluded.grade`,
+          section: sql`excluded.section`,
+          label: sql`excluded.label`,
+          gradeByYear: sql`excluded.grade_by_year`,
           subject: sql`excluded.subject`,
           icon: sql`excluded.icon`,
-          description: sql`excluded.description`,
           sortOrder: sql`excluded.sort_order`,
           archivedAt: sql`excluded.archived_at`,
           updatedAt: now,

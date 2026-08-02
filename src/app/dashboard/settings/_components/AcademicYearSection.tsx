@@ -2,13 +2,22 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { TrashIcon, Plus, RotateCcw, TriangleAlert, CalendarPlus, CalendarCheck, History } from "lucide-react";
+import { TrashIcon, Plus, RotateCcw, TriangleAlert, CalendarCheck, History, LayoutTemplate, ChevronDown, CalendarOff, Check, Pencil, CalendarRange, Info } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { DateKeyPicker } from "@/components/ui/date-key-picker";
+import { Label } from "@/components/ui/label";
+import { SectionIcon } from "@/components/ui/section-icon";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { DateKeyRangePicker } from "@/components/ui/date-key-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeaderBar,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,20 +31,28 @@ import {
 import { useCalendarStore } from "@/store/useCalendarStore";
 import {
   validateCalendar,
-  schoolDaysInRange,
-  daysInRange,
   fmtDayMonthUz,
   diffDaysKeys,
   findAdjacentHoliday,
   inRange,
   isCalendarConfigured,
+  makePeriodsForRange,
+  type BlockedKind,
   type CalendarIssue,
   type DateRange,
+  type PeriodPreset,
 } from "@/lib/academic-calendar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { applyYearActivationSideEffects } from "@/lib/year-side-effects";
 import { todayKey, addDaysKey } from "@/lib/date-keys";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
-import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
+import { SettingsCard, SettingRow } from "./SettingsShared";
 import YearStrip from "./YearStrip";
 import CreateSemesterModal from "./CreateSemesterModal";
 import RolloverWizard from "./RolloverWizard";
@@ -48,28 +65,6 @@ import RolloverWizard from "./RolloverWizard";
    "Choraklik" davri shu kalendardan oʻqiydi. Validatsiya yumshoq —
    kesishish/diapazon buzilishi bloklamaydi, faqat ogohlantiradi.
    ════════════════════════════════════════════════════════════════════ */
-
-/** Ikki sana tanlagich (shadcn) — SettingRow oʻng sloti uchun. */
-function RangeInputs({ range, onChange }: { range: DateRange; onChange: (r: DateRange) => void }) {
-  const t = useTranslations("AcademicYearSection");
-  return (
-    <div className="flex items-center gap-1.5">
-      <DateKeyPicker
-        value={range.start}
-        onChange={(v) => onChange({ ...range, start: v })}
-        ariaLabel={t("rangeStartAria")}
-        className="w-[9.5rem]"
-      />
-      <span className="text-muted-foreground">—</span>
-      <DateKeyPicker
-        value={range.end}
-        onChange={(v) => onChange({ ...range, end: v })}
-        ariaLabel={t("rangeEndAria")}
-        className="w-[9.5rem]"
-      />
-    </div>
-  );
-}
 
 /** Rasmiy bayramlar — "Tezkor qoʻshish" chiplari uchun sana kalitini hisoblaydi
     (oʻquv yili boshlanish yiliga nisbatan: iyundan oldingi oylar keyingi kalendar yiliga tushadi). */
@@ -95,21 +90,163 @@ function periodLabel(range: DateRange, unsetLabel: string): string {
     : unsetLabel;
 }
 
-/** Yil almashtirgich — barcha oʻquv yillari roʻyxati (faol badge, faollashtirish,
-    oʻchirish). Bitta yil boʻlsa koʻrsatilmaydi (bitta-yilli foydalanuvchi farq
-    sezmasin). Faollashtirish davomat/planner oynasini oʻsha yilga koʻchiradi. */
-function YearSwitcher() {
+/** Davrdan avtomatik yorliq: "2026–2027" (yagona yil boʻlsa — "2026"). */
+function autoYearLabel(r: DateRange): string {
+  if (!r.start || !r.end) return "";
+  const y1 = r.start.slice(0, 4);
+  const y2 = r.end.slice(0, 4);
+  return y1 === y2 ? y1 : `${y1}–${y2}`;
+}
+
+/** Faol oʻquv yili nomi va davrini tahrirlash modali — Yil almashtirgichdagi
+    qalam tugmasi ochadi (faqat FAOL yil uchun, chunki setYearRange/setYearLabel
+    doim faol yozuvga yoziladi). */
+function EditYearDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const t = useTranslations("AcademicYearSection");
+  const calendar = useCalendarStore((s) => s.calendar);
+  const setYearRange = useCalendarStore((s) => s.setYearRange);
+  const setYearLabel = useCalendarStore((s) => s.setYearLabel);
+  const [range, setRange] = React.useState<DateRange>(calendar.range);
+  const [name, setName] = React.useState(calendar.yearLabel);
+
+  React.useEffect(() => {
+    if (open) {
+      setRange(calendar.range);
+      setName(calendar.yearLabel);
+    }
+  }, [open, calendar.range, calendar.yearLabel]);
+
+  const valid = Boolean(range.start && range.end && range.end > range.start);
+
+  const handleSave = () => {
+    if (!valid) return;
+    setYearRange(range);
+    setYearLabel(name || autoYearLabel(range));
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent showCloseButton={false} width="26rem" className="gap-0 p-0">
+        <DialogHeaderBar
+          icon={<Pencil className="size-[18px]" />}
+          title={t("editYearTitle")}
+        />
+        <div className="space-y-4 p-6">
+          <div className="space-y-2">
+            <Label htmlFor="edit-year-name" className="text-xs font-medium text-muted-foreground">
+              {t("yearLabelTitle")}
+            </Label>
+            <Input
+              id="edit-year-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t("yearLabelPlaceholder")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-muted-foreground">{t("yearDurationTitle")}</Label>
+            <DateKeyRangePicker range={range} onChange={setRange} className="w-full" />
+            {!valid && <p className="text-xs text-destructive">{t("periodInvalid")}</p>}
+          </div>
+        </div>
+        <DialogFooter className="gap-2 border-t border-border px-6 py-4">
+          <DialogClose asChild>
+            <Button variant="outline">{t("cancel")}</Button>
+          </DialogClose>
+          <Button onClick={handleSave} disabled={!valid}>
+            {t("saveButton")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Chorak/davr nomi va oralig'ini tahrirlash modali — kartadagi qalam
+    tugmasi ochadi. Toʻgʻridan-toʻgʻri kartada tahrirlanmaydi, ataylab
+    alohida modal orqali — tasodifiy sana bosilib ketishining oldini oladi. */
+function EditPeriodDialog({
+  open, onOpenChange, initialName, initialRange, onSave,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  initialName: string;
+  initialRange: DateRange;
+  onSave: (name: string, range: DateRange) => void;
+}) {
+  const t = useTranslations("AcademicYearSection");
+  const [name, setName] = React.useState(initialName);
+  const [range, setRange] = React.useState<DateRange>(initialRange);
+
+  React.useEffect(() => {
+    if (open) {
+      setName(initialName);
+      setRange(initialRange);
+    }
+  }, [open, initialName, initialRange]);
+
+  const valid = Boolean(range.start && range.end && range.end > range.start);
+
+  const handleSave = () => {
+    if (!valid) return;
+    onSave(name, range);
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent showCloseButton={false} width="26rem" className="gap-0 p-0">
+        <DialogHeaderBar icon={<Pencil className="size-[18px]" />} title={t("editPeriodTitle")} />
+        <div className="space-y-4 p-6">
+          <div className="space-y-2">
+            <Label htmlFor="edit-period-name" className="text-xs font-medium text-muted-foreground">
+              {t("periodNameLabel")}
+            </Label>
+            <Input
+              id="edit-period-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t("periodNamePlaceholder")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-muted-foreground">{t("periodRangeLabel")}</Label>
+            <DateKeyRangePicker range={range} onChange={setRange} className="w-full" />
+            {!valid && <p className="text-xs text-destructive">{t("periodInvalid")}</p>}
+          </div>
+        </div>
+        <DialogFooter className="gap-2 border-t border-border px-6 py-4">
+          <DialogClose asChild>
+            <Button variant="outline">{t("cancel")}</Button>
+          </DialogClose>
+          <Button onClick={handleSave} disabled={!valid}>
+            {t("saveButton")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Yil almashtirgich — combobox: tugma joriy oʻquv yilini koʻrsatadi, ochilganda
+    barcha yillar roʻyxati (belgi + davr), pastda "Yangi oʻquv yili" bandi.
+    Faollashtirish davomat/planner oynasini oʻsha yilga koʻchiradi. */
+function YearSwitcher({ onCreate }: { onCreate: () => void }) {
   const t = useTranslations("AcademicYearSection");
   const years = useCalendarStore((s) => s.years);
   const activateYear = useCalendarStore((s) => s.activateYear);
   const deleteYear = useCalendarStore((s) => s.deleteYear);
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
-
-  if (years.length <= 1) return null;
+  const [open, setOpen] = React.useState(false);
+  const [editOpen, setEditOpen] = React.useState(false);
+  const active = years.find((y) => y.isActive) ?? years[0];
 
   const handleActivate = (id: string) => {
     const target = years.find((y) => y.id === id);
     if (!target) return;
+    setOpen(false);
+    if (target.isActive) return;
     activateYear(id);
     applyYearActivationSideEffects(target.calendar);
     toast.success(t("toastYearActivated", { year: target.calendar.yearLabel || t("defaultYearName") }));
@@ -119,53 +256,78 @@ function YearSwitcher() {
 
   return (
     <>
-      <SettingsCard
-        title={t("yearsTitle")}
-        description={t("yearsDescription")}
-      >
-        <div className="space-y-2">
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="min-w-[10.5rem] justify-between gap-2 font-normal">
+            <span className="flex min-w-0 items-center gap-2">
+              <CalendarCheck className="size-4 shrink-0 text-muted-foreground" />
+              <span className="truncate">{active?.calendar.yearLabel || t("unnamedYear")}</span>
+            </span>
+            <ChevronDown className="size-3.5 shrink-0 opacity-50" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-64 p-1">
           {years.map((y) => (
             <div
               key={y.id}
-              className={cn(
-                "flex flex-wrap items-center gap-3 rounded-lg border px-4 py-3 transition-colors",
-                y.isActive ? "border-primary/40 bg-primary/5" : "border-border bg-card"
-              )}
+              role="menuitem"
+              tabIndex={-1}
+              onClick={() => handleActivate(y.id)}
+              className="group/item flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden hover:bg-accent hover:text-accent-foreground"
             >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-foreground">
-                    {y.calendar.yearLabel || t("unnamedYear")}
-                  </span>
-                  {y.isActive && (
-                    <Badge variant="secondary" className="gap-1 text-[10px]">
-                      <CalendarCheck className="size-3" />
-                      {t("activeBadge")}
-                    </Badge>
-                  )}
-                </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">{periodLabel(y.calendar.range, t("periodUnset"))}</p>
-              </div>
-              {!y.isActive && (
-                <div className="flex items-center gap-1.5">
-                  <Button variant="outline" size="sm" onClick={() => handleActivate(y.id)}>
-                    {t("activateButton")}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={t("deleteYearAria")}
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => setDeleteId(y.id)}
-                  >
-                    <TrashIcon className="size-4" />
-                  </Button>
-                </div>
+              <Check className={cn("size-3.5 shrink-0", y.isActive ? "opacity-100" : "opacity-0")} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium text-foreground">
+                  {y.calendar.yearLabel || t("unnamedYear")}
+                </span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {periodLabel(y.calendar.range, t("periodUnset"))}
+                </span>
+              </span>
+              {y.isActive ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t("editYearAria")}
+                  className="shrink-0 text-muted-foreground opacity-0 group-hover/item:opacity-100 focus-visible:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpen(false);
+                    setEditOpen(true);
+                  }}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+              ) : (
+                <button
+                  type="button"
+                  aria-label={t("deleteYearAria")}
+                  className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpen(false);
+                    setDeleteId(y.id);
+                  }}
+                >
+                  <TrashIcon className="size-3.5" />
+                </button>
               )}
             </div>
           ))}
-        </div>
-      </SettingsCard>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => {
+              setOpen(false);
+              onCreate();
+            }}
+            className="gap-2 font-medium"
+          >
+            <Plus className="size-4" />
+            {t("addYearButton")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <AlertDialog open={deleteId !== null} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
@@ -191,6 +353,8 @@ function YearSwitcher() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EditYearDialog open={editOpen} onOpenChange={setEditOpen} />
     </>
   );
 }
@@ -241,15 +405,18 @@ export default function AcademicYearSection() {
   const t = useTranslations("AcademicYearSection");
   const calendar = useCalendarStore((s) => s.calendar);
   const hydrated = useCalendarStore((s) => s._hasHydrated);
-  const setYearRange = useCalendarStore((s) => s.setYearRange);
-  const setYearLabel = useCalendarStore((s) => s.setYearLabel);
   const setQuarterRange = useCalendarStore((s) => s.setQuarterRange);
   const addHoliday = useCalendarStore((s) => s.addHoliday);
   const updateHoliday = useCalendarStore((s) => s.updateHoliday);
   const removeHoliday = useCalendarStore((s) => s.removeHoliday);
+  const setQuarterName = useCalendarStore((s) => s.setQuarterName);
+  const setQuarters = useCalendarStore((s) => s.setQuarters);
+  const addQuarter = useCalendarStore((s) => s.addQuarter);
+  const removeQuarter = useCalendarStore((s) => s.removeQuarter);
   const resetToOfficialTemplate = useCalendarStore((s) => s.resetToOfficialTemplate);
   const [resetOpen, setResetOpen] = React.useState(false);
   const [createOpen, setCreateOpen] = React.useState(false);
+  const [editQuarterId, setEditQuarterId] = React.useState<string | null>(null);
   const [rolloverOpen, setRolloverOpen] = React.useState(false);
   const activeClasses = useLiveClasses();
   const [highlighted, setHighlighted] = React.useState<string | null>(null);
@@ -317,14 +484,6 @@ export default function AcademicYearSection() {
       })
       .map((i) => i.message);
 
-  const totalSchoolDays = schoolDaysInRange(calendar, calendar.range);
-  const elapsedSchoolDays = schoolDaysInRange(calendar, {
-    start: calendar.range.start,
-    end: todayKey() < calendar.range.start ? calendar.range.start : todayKey() > calendar.range.end ? calendar.range.end : todayKey(),
-  });
-  const progressPct = totalSchoolDays > 0 ? Math.round((elapsedSchoolDays / totalSchoolDays) * 100) : 0;
-  const totalHolidayDays = calendar.holidays.reduce((sum, h) => sum + daysInRange(h.range), 0);
-
   const startYear = calendar.range.start
     ? Number(calendar.range.start.slice(0, 4)) - (Number(calendar.range.start.slice(5, 7)) >= 6 ? 0 : 1)
     : new Date().getFullYear();
@@ -335,52 +494,55 @@ export default function AcademicYearSection() {
     memory: t("holidayMemory"),
   }).filter((h) => !existingHolidayNames.has(h.name));
 
-  const handleYearRange = (r: DateRange) => {
-    setYearRange(r);
-    // Yorliq yil chegaralaridan avtomatik: "2025–2026"
-    const y1 = r.start.slice(0, 4);
-    const y2 = r.end.slice(0, 4);
-    setYearLabel(y1 === y2 ? y1 : `${y1}–${y2}`);
+  // Joriy davrlar soniga qarab qaysi shablon amalda ekanini taxmin qiladi
+  // (oʻqituvchi chegaralarni qoʻlda tuzatgan boʻlsa ham son mos kelsa yetarli).
+  const currentPreset: PeriodPreset =
+    calendar.quarters.length === 0
+      ? "none"
+      : calendar.quarters.length === 2
+        ? "semesters"
+        : calendar.quarters.length === 3
+          ? "trimesters"
+          : "quarters";
+
+  // Shablon qoʻllash — mavjud davrlar almashtiriladi (nomlar/sanalar qayta
+  // hosil boʻladi), keyin oʻqituvchi har chegarani qoʻlda aniqlashtiradi.
+  const applyPreset = (preset: PeriodPreset) => {
+    setQuarters(makePeriodsForRange(calendar.range, preset));
+    toast.success(preset === "none" ? t("toastPeriodsCleared") : t("toastPresetApplied"));
+  };
+
+  // Yangi davr — oxirgi davrdan keyingi kundan yil oxirigacha (davr boʻlmasa
+  // butun yil); oʻqituvchi sanalarni darhol tuzatishi mumkin.
+  const handleAddPeriod = () => {
+    const last = calendar.quarters[calendar.quarters.length - 1];
+    const start = last ? addDaysKey(last.range.end, 1) : calendar.range.start;
+    const end = calendar.range.end;
+    addQuarter(t("newPeriodName", { n: calendar.quarters.length + 1 }), {
+      start: start && start <= end ? start : end,
+      end,
+    });
   };
 
   return (
     <>
       <ArchiveYearBanner />
-      <YearSwitcher />
 
       <SettingsCard
-        title={t("yearSectionTitle", { year: calendar.yearLabel })}
-        description={t("yearSectionDescription")}
-        action={
-          <div className="flex items-center gap-2">
-            <SaveSignalPing signal={calendar} />
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
-              <CalendarPlus className="size-4" />
-              {t("addYearButton")}
-            </Button>
-          </div>
+        title={
+          <>
+            {t("yearSectionTitleShort")}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="size-3.5 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>{t("yearSectionDescription")}</TooltipContent>
+            </Tooltip>
+          </>
         }
+        action={<YearSwitcher onCreate={() => setCreateOpen(true)} />}
       >
         <YearStrip calendar={calendar} onSegmentClick={({ kind, id }) => scrollToRow(kind, id)} />
-
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">{t("statSchoolDays")}</p>
-            <p className="mt-0.5 text-base font-semibold text-foreground">≈ {totalSchoolDays}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">{t("statYearProgress")}</p>
-            <p className="mt-0.5 text-base font-semibold text-foreground">{progressPct}%</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">{t("statQuarters")}</p>
-            <p className="mt-0.5 text-base font-semibold text-foreground">{calendar.quarters.length}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">{t("statHolidayDays")}</p>
-            <p className="mt-0.5 text-base font-semibold text-foreground">{totalHolidayDays}</p>
-          </div>
-        </div>
 
         {issuesFor({ kind: "year" }).length > 0 && (
           <div className="space-y-1 rounded-lg border border-warning/40 bg-warning/10 px-3.5 py-2.5">
@@ -392,19 +554,47 @@ export default function AcademicYearSection() {
             ))}
           </div>
         )}
-        <SettingRow title={t("yearDurationTitle")} description={t("yearDurationDescription")}>
-          <RangeInputs range={calendar.range} onChange={handleYearRange} />
-        </SettingRow>
       </SettingsCard>
 
       <SettingsCard
-        title={t("quartersTitle")}
-        description={t("quartersDescription")}
+        title={
+          <>
+            {t("quartersTitle")}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="size-3.5 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent>{t("quartersDescription")}</TooltipContent>
+            </Tooltip>
+          </>
+        }
+        action={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <LayoutTemplate className="size-4" />
+                {t(`preset_${currentPreset}`)}
+                <ChevronDown className="size-3.5 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {(["quarters", "semesters", "trimesters", "none"] as PeriodPreset[]).map((p) => (
+                <DropdownMenuItem key={p} onClick={() => applyPreset(p)} className="gap-2">
+                  <Check className={cn("size-3.5 shrink-0", p === currentPreset ? "opacity-100" : "opacity-0")} />
+                  {t(`preset_${p}`)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
       >
+        {calendar.quarters.length === 0 && (
+          <p className="rounded-lg border border-dashed border-border px-4 py-5 text-center text-sm text-muted-foreground">
+            {t("noPeriods")}
+          </p>
+        )}
         {calendar.quarters.map((q) => {
           const qIssues = issuesFor({ kind: "quarter", id: q.id });
-          const days = daysInRange(q.range);
-          const schoolDays = schoolDaysInRange(calendar, q.range);
           const key = `quarter-${q.id}`;
           return (
             <div
@@ -418,12 +608,37 @@ export default function AcademicYearSection() {
                 highlighted === key && "ring-2 ring-primary ring-offset-2 ring-offset-background"
               )}
             >
-              <SettingRow
-                title={q.name}
-                description={days > 0 ? t("weeksAndDays", { weeks: Math.round(days / 7), days: schoolDays }) : undefined}
-              >
-                <RangeInputs range={q.range} onChange={(r) => handleQuarterRange(q.id, r)} />
-              </SettingRow>
+              <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
+                <SectionIcon size="default" className="rounded-full">
+                  <CalendarRange />
+                </SectionIcon>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">{q.name}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {periodLabel(q.range, t("periodUnset"))}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t("editPeriodAria")}
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => setEditQuarterId(q.id)}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t("deletePeriodAria")}
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => removeQuarter(q.id)}
+                  >
+                    <TrashIcon className="size-4" />
+                  </Button>
+                </div>
+              </div>
               {qIssues.map((w, i) => (
                 <p key={i} className="flex items-start gap-1.5 pl-1 text-xs text-warning">
                   <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
@@ -433,83 +648,25 @@ export default function AcademicYearSection() {
             </div>
           );
         })}
-      </SettingsCard>
-
-      <SettingsCard
-        title={t("holidaysTitle")}
-        description={t("holidaysDescription")}
-      >
-        {calendar.holidays.map((h) => {
-          const hIssues = issuesFor({ kind: "holiday", id: h.id });
-          const key = `holiday-${h.id}`;
-          return (
-            <div
-              key={h.id}
-              ref={(el) => {
-                if (el) rowRefs.current.set(key, el);
-                else rowRefs.current.delete(key);
-              }}
-              className={cn(
-                "space-y-1.5 rounded-lg transition-shadow",
-                highlighted === key && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-              )}
-            >
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
-                <Input
-                  value={h.name}
-                  onChange={(e) => updateHoliday(h.id, { name: e.target.value })}
-                  className="w-40 min-w-0 flex-1"
-                  placeholder={t("holidayNamePlaceholder")}
-                />
-                <RangeInputs range={h.range} onChange={(r) => updateHoliday(h.id, { range: r })} />
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t("deleteHolidayAria")}
-                  className="text-muted-foreground hover:text-destructive"
-                  onClick={() => removeHoliday(h.id)}
-                >
-                  <TrashIcon className="size-4" />
-                </Button>
-              </div>
-              {hIssues.map((w, i) => (
-                <p key={i} className="flex items-start gap-1.5 pl-1 text-xs text-warning">
-                  <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-                  {w}
-                </p>
-              ))}
-            </div>
-          );
-        })}
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => addHoliday(t("newHolidayName"), { start: todayKey(), end: todayKey() })}
-          >
+        <div>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleAddPeriod}>
             <Plus className="size-4" />
-            {t("addHolidayButton")}
+            {t("addPeriodButton")}
           </Button>
-          {suggestions.length > 0 && (
-            <>
-              <span className="text-xs text-muted-foreground">{t("quickAddLabel")}</span>
-              {suggestions.map((s) => (
-                <Button
-                  key={s.name}
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 rounded-full text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => addHoliday(s.name, { start: s.dateKey, end: s.dateKey })}
-                >
-                  <Plus className="size-3" />
-                  {s.name} ({fmtDayMonthUz(s.dateKey)})
-                </Button>
-              ))}
-            </>
-          )}
         </div>
       </SettingsCard>
+
+      <EditPeriodDialog
+        open={editQuarterId !== null}
+        onOpenChange={(o) => !o && setEditQuarterId(null)}
+        initialName={calendar.quarters.find((q) => q.id === editQuarterId)?.name ?? ""}
+        initialRange={calendar.quarters.find((q) => q.id === editQuarterId)?.range ?? { start: "", end: "" }}
+        onSave={(name, range) => {
+          if (!editQuarterId) return;
+          setQuarterName(editQuarterId, name);
+          handleQuarterRange(editQuarterId, range);
+        }}
+      />
 
       <div>
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setResetOpen(true)}>

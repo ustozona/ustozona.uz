@@ -209,6 +209,12 @@ export function classTints(color: ClassColor) {
   return makeColorTints(CLASS_COLOR_BASE[color]);
 }
 
+/** Sinf rangining TOʻQROQ hex varianti — toʻyingan yuzali tugmalarning hover
+    holati uchun (ikonka oq qoladi, faqat fon qorayadi). `factor` < 1 → toʻqroq. */
+export function classColorHexDark(color: ClassColor, factor: number = 0.88): string {
+  return oklchToHex(darkenOklch(CLASS_COLOR_BASE[color], factor));
+}
+
 function darkenOklch(oklch: string, factor: number = 0.8): string {
   const m = oklch.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/i);
   if (!m) return oklch;

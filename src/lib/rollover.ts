@@ -1,4 +1,5 @@
 import type { ClassInfo } from "@/lib/grades-data";
+import { displayClassName } from "@/lib/class-naming";
 
 /* ════════════════════════════════════════════════════════════════════
    YIL OʻTKAZISH (ROLLOVER) — sof helperlar (React/store'siz)
@@ -15,13 +16,33 @@ export type RolloverAction = "bump" | "keep" | "archive";
 /** Bitiruvchi (arxivlanadigan) eng yuqori sinf darajasi. */
 export const GRADUATING_GRADE = 11;
 
-/** Sinf nomidagi bosh sonni grade+1 ga oʻzgartiradi (5-A → 6-A). Nom sondan
-    boshlanmasa yoki bosh son grade bilan mos kelmasa — nomga tegilmaydi
-    (oʻqituvchi qoʻlda tuzatadi). */
-export function bumpClassName(name: string, grade: number): string {
-  const m = name.match(/^\s*(\d+)(.*)$/);
-  if (m && Number(m[1]) === grade) return `${grade + 1}${m[2]}`;
-  return name;
+/** Sinfni yangi oʻquv yiliga koʻchiradi: darajani bittaga oshiradi va yangi
+    darajani FAOL yil uchun yozadi, eski darajani esa tarixi hali yoʻq boʻlgan
+    barcha oldingi yillarga tarqatadi. Parallel harfi va id oʻzgarmaydi, nom
+    esa darajadan qayta hisoblanadi — shu bois amal QAYTARILUVCHAN: eski
+    yil faollashtirilganda 5-A yana 5-A boʻlib koʻrinadi.
+
+    `priorYearIds` — faol yildan boshqa barcha oʻquv yillari id'lari. */
+export function bumpClassToNextYear(
+  info: ClassInfo,
+  activeYearId: string | undefined,
+  priorYearIds: string[]
+): ClassInfo {
+  const oldGrade = info.grade;
+  if (oldGrade == null) return info;
+  const newGrade = Math.min(oldGrade + 1, GRADUATING_GRADE);
+
+  // Eski daraja — tarixi hali yoʻq oldingi yillarga (odatda bitta yil).
+  const history: Record<string, number> = { ...(info.gradeByYear ?? {}) };
+  for (const yid of priorYearIds) if (!(yid in history)) history[yid] = oldGrade;
+  if (activeYearId) history[activeYearId] = newGrade;
+
+  return {
+    ...info,
+    grade: newGrade,
+    gradeByYear: history,
+    name: displayClassName({ grade: newGrade, section: info.section, label: info.label }),
+  };
 }
 
 /** Sinf uchun standart rollover amali: darajali (1..10) → bump;

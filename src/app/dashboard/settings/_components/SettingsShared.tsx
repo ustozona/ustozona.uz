@@ -26,7 +26,7 @@ export function SettingsCard({
   destructive,
   className,
 }: {
-  title: string;
+  title: React.ReactNode;
   description?: React.ReactNode;
   /** Sarlavha oʻngida ixtiyoriy slot — masalan badge yoki indikator. */
   action?: React.ReactNode;
@@ -47,15 +47,15 @@ export function SettingsCard({
     >
       <div
         className={cn(
-          "flex items-start justify-between gap-3 border-b px-5 py-4",
+          "flex items-center justify-between gap-3 border-b px-5 py-4",
           destructive ? "border-destructive/30" : "border-border"
         )}
       >
         <div className="min-w-0 space-y-0.5">
-          <h3 className="heading-small text-foreground">{title}</h3>
+          <h3 className="flex items-center gap-1.5 heading-small text-foreground">{title}</h3>
           {description && <p className="text-caption">{description}</p>}
         </div>
-        {action && <div className="shrink-0 pt-0.5">{action}</div>}
+        {action && <div className="shrink-0">{action}</div>}
       </div>
       <div className="space-y-4 p-5">{children}</div>
       {footer && (
@@ -163,7 +163,11 @@ export function useRegisterDraft(
 
 /**
  * Explicit-save footer tarkibi: chapda holat matni, oʻngda Bekor + Saqlash.
- * Saqlangach qisqa "Saqlandi" indikatori koʻrsatiladi.
+ * Saqlangach qisqa "Saqlandi" indikatori koʻrsatiladi. FAQAT alohida modal
+ * asosidagi sozlamalar (GradesSettingsModal, AttendanceSettingsModal,
+ * BehaviorSettingsModal) uchun — asosiy Sozlamalar sahifasi kartalari
+ * bunday footer ishlatmaydi, ular headerdagi yagona Save/Cancel panelga
+ * (useDraftRegistry) ulanadi.
  */
 export function SaveFooter({
   dirty,
@@ -226,37 +230,10 @@ export function SaveFooter({
   );
 }
 
-/** Chapda label + tavsif, oʻngda ixtiyoriy control. */
-export function SettingRow({
-  title,
-  description,
-  children,
-  className,
-}: {
-  title: React.ReactNode;
-  description?: React.ReactNode;
-  children?: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3",
-        className
-      )}
-    >
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <span className="text-sm font-medium text-foreground">{title}</span>
-        {description && <span className="text-caption">{description}</span>}
-      </div>
-      {children && <div className="shrink-0">{children}</div>}
-    </div>
-  );
-}
-
 /**
- * Global "saqlandi" pulsi — boʻlimlardagi har bir SavedIndicator yonganida
- * +1 boʻladi; sozlamalar sahifasi headeridagi umumiy indikator shunga ulanadi.
+ * Global "saqlandi" pulsi — timetable sahifasi kabi joylar oʻzining
+ * SavedIndicator'iga signal beradi (bu Sozlamalar sahifasi headeriga
+ * ulanmagan, mustaqil ishlatiladi).
  */
 export const useSaveSignal = create<{ n: number; ping: () => void }>((set) => ({
   n: 0,
@@ -264,28 +241,9 @@ export const useSaveSignal = create<{ n: number; ping: () => void }>((set) => ({
 }));
 
 /**
- * Koʻrinmas pinger — `signal` oʻzgarganda (dastlabki mount tashqari) faqat
- * global pulsga uzatadi. Sozlamalar boʻlimlari lokal chip oʻrniga shuni
- * ishlatadi; koʻrsatish sahifa headeridagi yagona SavedIndicator'da.
- */
-export function SaveSignalPing({ signal }: { signal: unknown }) {
-  const first = React.useRef(true);
-  React.useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    useSaveSignal.getState().ping();
-  }, [signal]);
-  return null;
-}
-
-/**
  * Avtomatik saqlash indikatori. `signal` oʻzgarganda (dastlabki mount tashqari)
  * qisqa vaqt "Saqlandi" chipini koʻrsatadi. Har oʻzgarish darhol saqlanadigan
  * (store'ga yoziladigan) maydonlar uchun feedback beradi.
- * `bubble=false` — global pulsga uzatmaydi (headerdagi indikatorning oʻzi
- * pulsni tinglaydi, aks holda cheksiz halqa boʻlardi).
  */
 export function SavedIndicator({ signal, bubble = true }: { signal: unknown; bubble?: boolean }) {
   const t = useTranslations("SettingsShared");
@@ -314,6 +272,34 @@ export function SavedIndicator({ signal, bubble = true }: { signal: unknown; bub
       <Check className="size-3.5" strokeWidth={2.5} />
       {t("saved")}
     </span>
+  );
+}
+
+/** Chapda label + tavsif, oʻngda ixtiyoriy control. */
+export function SettingRow({
+  title,
+  description,
+  children,
+  className,
+}: {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  children?: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3",
+        className
+      )}
+    >
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-sm font-medium text-foreground">{title}</span>
+        {description && <span className="text-caption">{description}</span>}
+      </div>
+      {children && <div className="shrink-0">{children}</div>}
+    </div>
   );
 }
 

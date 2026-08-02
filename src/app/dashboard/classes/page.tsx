@@ -53,7 +53,7 @@ import { CLASS_COLOR_HEX, classTints, classColorValue, type ClassColor } from "@
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
 import { lessonClassIds } from "@/lib/lessons-data";
-import { classInfoFromForm, useCreateClass } from "@/hooks/useLiveClasses";
+import { classFormInitial, classInfoFromForm, useCreateClass } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { useTourRequest } from "@/components/tour/tour-request";
@@ -571,12 +571,9 @@ export default function ClassesPage() {
         <ClassFormModal
           mode="edit"
           initial={{
-            name: editTarget.info.name,
-            grade: editTarget.info.grade ?? null,
-            subject: editTarget.info.subject ?? "",
+            ...classFormInitial(editTarget.info),
             color: editTarget.color,
             icon: (editTarget.info.icon as ClassIconKey | undefined),
-            description: editTarget.info.description ?? "",
             slots: [],
           }}
           onSubmit={handleEditSubmit}

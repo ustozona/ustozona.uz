@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { teachers } from "./teachers";
 
@@ -23,7 +23,17 @@ export const classes = pgTable(
     teacherId: text("teacher_id")
       .notNull()
       .references(() => teachers.id, { onDelete: "cascade" }),
+    /** Koʻrsatiladigan nom ("5-A") — HISOBLANUVCHI: grade+section+label dan
+        hosil qilinadi (class-naming.ts). Denormalizatsiya ataylab: nom
+        ilova boʻylab ~100 joyda oʻqiladi va qidiruv/eksportda ishlatiladi. */
     name: text("name").notNull(),
+    /** Parallel harfi ("A", "B", "D"…) — yildan yilga oʻzgarmaydi. */
+    section: text("section"),
+    /** Ixtiyoriy erkin nom; berilsa daraja+harfdan ustun. */
+    label: text("label"),
+    /** {oʻquv yili id: daraja} — rollover tarixi. Eski yil faollashtirilganda
+        nom shu yerdagi darajadan tiklanadi (5-A → 6-A qaytariluvchan). */
+    gradeByYear: jsonb("grade_by_year").$type<Record<string, number>>(),
     /** ClassColor yorligʻi ("blue", "gray", ...); null = indeks boʻyicha avto. */
     color: text("color"),
     /** Koʻrsatma vaqti, mas. "17:10 — 17:55" (faqat koʻrinish uchun). */
@@ -34,6 +44,9 @@ export const classes = pgTable(
     subject: text("subject"),
     /** Avatar ikonkasi kaliti (ClassIconKey). */
     icon: text("icon"),
+    /** @deprecated Sinf tavsifi 2026-08-02 da ilovadan olib tashlandi (hech
+        qayerda koʻrsatilmasdi). Ustun ATAYLAB qoldirildi: DROP COLUMN
+        qaytarilmas. Kod bu maydonni oʻqimaydi ham, yozmaydi ham. */
     description: text("description"),
     /** Frontend massiv tartibi (sidebar/roʻyxat) — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),

@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SaveFooter, SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
+import { SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
 
 export default function AttendanceSection() {
   const t = useTranslations("AttendanceSection");
@@ -39,7 +39,6 @@ export default function AttendanceSection() {
       <SettingsCard
         title={t("statusesTitle")}
         description={t("statusesDescription")}
-        footer={<SaveFooter dirty={dirty} onSave={save} onReset={reset} />}
       >
         <AttendanceStatusesEditor value={draft} onChange={setDraft} />
       </SettingsCard>

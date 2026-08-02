@@ -84,3 +84,72 @@ export function DateKeyPicker({
     </Popover>
   );
 }
+
+/** Sana oralig'i tanlagich — bitta tugma ikkala chegarani ochadi, bitta
+    kalendarda ikki oy koʻrsatiladi (react-day-picker "range" rejimi).
+    "O'quv yili davomiyligi" kabi bitta jozibali diapazon uchun; alohida
+    boshlanish/tugash inputlari kerak boʻlgan joylarda (chorak, taʼtil
+    qatorlari) ikkita DateKeyPicker ishlatilaveradi. */
+export function DateKeyRangePicker({
+  range,
+  onChange,
+  className,
+  ariaLabel,
+}: {
+  range: { start: string; end: string };
+  onChange: (r: { start: string; end: string }) => void;
+  className?: string;
+  ariaLabel?: string;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const selected = {
+    from: range.start ? dateKeyToDate(range.start) : undefined,
+    to: range.end ? dateKeyToDate(range.end) : undefined,
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          aria-label={ariaLabel}
+          className={cn(
+            "justify-start gap-2 px-3 font-normal tabular-nums",
+            !range.start && "text-muted-foreground",
+            className
+          )}
+        >
+          <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
+          {range.start ? fmtKey(range.start) : "Sana tanlang"}
+          <span className="text-muted-foreground">—</span>
+          {range.end ? fmtKey(range.end) : "Sana tanlang"}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-0">
+        <Calendar
+          mode="range"
+          locale={uz}
+          formatters={{
+            formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
+            formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
+          }}
+          selected={selected}
+          onSelect={(r) => {
+            onChange({
+              start: r?.from ? dateToKey(r.from) : "",
+              end: r?.to ? dateToKey(r.to) : "",
+            });
+            if (r?.from && r?.to) setOpen(false);
+          }}
+          defaultMonth={selected.from}
+          numberOfMonths={2}
+          captionLayout="dropdown"
+          startMonth={new Date(2020, 0)}
+          endMonth={new Date(2035, 11)}
+          autoFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}

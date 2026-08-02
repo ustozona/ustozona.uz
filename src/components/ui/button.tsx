@@ -100,7 +100,7 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      whileTap={isDisabled ? undefined : { scale: 0.93 }}
+      whileTap={isDisabled ? undefined : { scale: isIconOnly ? 0.93 : 0.97 }}
       disabled={isDisabled}
       title={resolvedTitle}
       aria-label={ariaLabel}

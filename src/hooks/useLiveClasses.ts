@@ -5,6 +5,8 @@ import { useGradesStore } from "@/store/useGradesStore";
 import type { ClassData, ClassInfo } from "@/lib/grades-data";
 import type { ClassFormValues, ClassSlot } from "@/components/ClassFormModal";
 import { DAYS_UZ, DAYS_UZ_SHORT } from "@/lib/localization";
+import { useCalendarStore } from "@/store/useCalendarStore";
+import { displayClassName, withGradeForYear } from "@/lib/class-naming";
 
 /* ════════════════════════════════════════════════════════════════════
    JONLI SINF MANBAI — statik CLASSES / CLASS_DATA oʻrnini bosadi.
@@ -73,22 +75,41 @@ export function slotsToTime(slots: ClassSlot[]): string | undefined {
     .join(" · ");
 }
 
-/** Forma qiymatlari → ClassInfo. Slot kiritilmagan boʻlsa eski time saqlanadi. */
+/** Forma qiymatlari → ClassInfo. Slot kiritilmagan boʻlsa eski time saqlanadi.
+    `name` HISOBLANADI (class-naming.ts) — formada nom maydoni yoʻq.
+    Daraja FAOL oʻquv yili uchun yoziladi (`gradeByYear`), shu bois boshqa
+    yillardagi daraja tarixi buzilmaydi. */
 export function classInfoFromForm(
   id: string,
   v: ClassFormValues,
   prev?: ClassInfo
 ): ClassInfo {
   const time = slotsToTime(v.slots) ?? prev?.time;
-  return {
+  const activeYearId = useCalendarStore.getState().years.find((y) => y.isActive)?.id;
+  const base: ClassInfo = {
+    ...prev,
     id,
-    name: v.name,
+    name: displayClassName({ grade: v.grade, section: v.section, label: v.label }),
     color: v.color,
     ...(time ? { time } : {}),
-    ...(v.grade != null ? { grade: v.grade } : {}),
+    ...(v.grade != null ? { grade: v.grade } : { grade: undefined }),
+    ...(v.section ? { section: v.section } : { section: undefined }),
+    ...(v.label ? { label: v.label } : { label: undefined }),
     ...(v.subject ? { subject: v.subject } : {}),
     ...(v.icon ? { icon: v.icon } : {}),
-    ...(v.description ? { description: v.description } : {}),
+  };
+  return withGradeForYear(base, activeYearId, v.grade);
+}
+
+/** ClassInfo → forma boshlangʻich qiymatlari (nom maydoni yoʻq). */
+export function classFormInitial(
+  info: Pick<ClassInfo, "section" | "label" | "subject"> & { grade?: number | null }
+): Partial<ClassFormValues> {
+  return {
+    grade: info.grade ?? null,
+    section: info.section ?? "",
+    label: info.label ?? "",
+    subject: info.subject ?? "",
   };
 }
 

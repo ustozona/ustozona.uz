@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ChevronRight, Settings } from "lucide-react";
+import { ArrowLeft, ChevronRight, Settings, Check } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,10 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
-import { TypographyMuted } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { panelCardClass } from "@/components/DashboardPage";
-import { SavedIndicator, useDraftRegistry, useSaveSignal } from "./_components/SettingsShared";
+import { useDraftRegistry } from "./_components/SettingsShared";
 import { SECTION_GROUPS, SECTIONS } from "./sections";
 
 export default function SettingsPage() {
@@ -34,6 +33,7 @@ export default function SettingsPage() {
 
 function SettingsPageInner() {
   const t = useTranslations("SettingsPage");
+  const tShared = useTranslations("SettingsShared");
   const router = useRouter();
   const searchParams = useSearchParams();
   // ?section= — yagona manba. useSearchParams reaktiv boʻlgani uchun header
@@ -43,15 +43,27 @@ function SettingsPageInner() {
   const param = searchParams.get("section");
   const selected = param && SECTIONS.some((s) => s.id === param) ? param : null;
 
-  // Boʻlimlardagi SavedIndicator'lar yonganida keladigan global puls —
-  // headerdagi umumiy indikator shu signalga qaraydi.
-  const savedSignal = useSaveSignal((s) => s.n);
-
-  // Saqlanmagan draft'lar — Save/Cancel har kartaning oʻz footerida; bu
-  // registr faqat boʻlim tark etilishidan oldingi tasdiq uchun ishlatiladi.
+  // Saqlanmagan draft'lar — Save/Cancel ENDI kartada emas, sahifa headeridagi
+  // yagona panelda. Har karta oʻz save/reset'ini registrga eʼlon qiladi
+  // (useRegisterDraft), header ularni yigʻib bitta amal sifatida chaqiradi.
   const draftEntries = useDraftRegistry((s) => s.entries);
-  const hasDirty = Object.values(draftEntries).some((e) => e.dirty);
+  const dirtyEntries = Object.values(draftEntries).filter((e) => e.dirty);
+  const hasDirty = dirtyEntries.length > 0;
+  const canSave = hasDirty && dirtyEntries.every((e) => e.valid);
   const [pendingId, setPendingId] = React.useState<string | null | false>(false);
+  const [justSaved, setJustSaved] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!justSaved) return;
+    const timeout = setTimeout(() => setJustSaved(false), 1600);
+    return () => clearTimeout(timeout);
+  }, [justSaved]);
+
+  const saveAll = () => {
+    dirtyEntries.forEach((e) => e.save());
+    setJustSaved(true);
+  };
+  const resetAll = () => dirtyEntries.forEach((e) => e.reset());
 
   const navigate = (id: string | null) => {
     const url = new URLSearchParams(searchParams.toString());
@@ -86,13 +98,28 @@ function SettingsPageInner() {
             <SectionIcon>
               <Settings />
             </SectionIcon>
-            <div className="flex min-w-0 flex-col">
-              <h1 className="heading-page text-foreground">{t("title")}</h1>
-              <TypographyMuted>{t("subtitle")}</TypographyMuted>
-            </div>
+            <h1 className="heading-page text-foreground">{t("title")}</h1>
           </div>
-          <div className="flex shrink-0 items-center gap-3 pt-1">
-            <SavedIndicator signal={savedSignal} bubble={false} />
+          <div className="flex shrink-0 items-center gap-2 pt-1">
+            {justSaved && !hasDirty && (
+              <span
+                aria-live="polite"
+                className="inline-flex items-center gap-1 text-xs font-medium text-success"
+              >
+                <Check className="size-3.5" strokeWidth={2.5} />
+                {tShared("saved")}
+              </span>
+            )}
+            {hasDirty && (
+              <>
+                <Button variant="ghost" size="sm" onClick={resetAll}>
+                  {tShared("cancel")}
+                </Button>
+                <Button size="sm" disabled={!canSave} onClick={saveAll}>
+                  {tShared("save")}
+                </Button>
+              </>
+            )}
           </div>
         </div>
 

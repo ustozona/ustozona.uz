@@ -6,6 +6,7 @@ import {
   type AcademicYearCalendar,
   type DateRange,
   type Holiday,
+  type Quarter,
 } from "@/lib/academic-calendar";
 import type { AcademicYearEntry } from "@/lib/academic-years";
 
@@ -59,10 +60,21 @@ interface CalendarState {
   setYearLabel: (label: string) => void;
   setYearRange: (range: DateRange) => void;
   setQuarterRange: (id: string, range: DateRange) => void;
+  /** Davr nomini oʻzgartiradi ("1-chorak" → "1-blok"). */
+  setQuarterName: (id: string, name: string) => void;
+  /** Baholash davrlari roʻyxatini butunligicha almashtiradi (shablon
+      qoʻllash: 4 chorak / 2 semestr / 3 trimestr / davrsiz). */
+  setQuarters: (quarters: Quarter[]) => void;
+  /** Roʻyxat oxiriga bitta davr qoʻshadi va id'sini qaytaradi. */
+  addQuarter: (name: string, range: DateRange) => string;
+  removeQuarter: (id: string) => void;
   /** Yangi taʼtil qoʻshadi va id'sini qaytaradi. */
   addHoliday: (name: string, range: DateRange) => string;
   updateHoliday: (id: string, patch: Partial<Omit<Holiday, "id">>) => void;
   removeHoliday: (id: string) => void;
+  /** Bloklangan kunlar roʻyxatini butunligicha almashtiradi (taqvimdan
+      belgilash oqimi — `applyBlockedDays` natijasi). */
+  setHolidays: (holidays: Holiday[]) => void;
   /** Faol oʻquv yilini rasmiy shablon (4 chorak + 3 taʼtil) bilan qayta tiklaydi. */
   resetToOfficialTemplate: () => void;
 
@@ -104,6 +116,29 @@ export const useCalendarStore = create<CalendarState>()((set) => ({
       })
     ),
 
+  setQuarterName: (id, name) =>
+    set((s) =>
+      writeActive(s, {
+        ...s.calendar,
+        quarters: s.calendar.quarters.map((q) => (q.id === id ? { ...q, name } : q)),
+      })
+    ),
+
+  setQuarters: (quarters) => set((s) => writeActive(s, { ...s.calendar, quarters })),
+
+  addQuarter: (name, range) => {
+    const id = uid();
+    set((s) =>
+      writeActive(s, { ...s.calendar, quarters: [...s.calendar.quarters, { id, name, range }] })
+    );
+    return id;
+  },
+
+  removeQuarter: (id) =>
+    set((s) =>
+      writeActive(s, { ...s.calendar, quarters: s.calendar.quarters.filter((q) => q.id !== id) })
+    ),
+
   addHoliday: (name, range) => {
     const id = uid();
     set((s) =>
@@ -127,6 +162,8 @@ export const useCalendarStore = create<CalendarState>()((set) => ({
         holidays: s.calendar.holidays.filter((h) => h.id !== id),
       })
     ),
+
+  setHolidays: (holidays) => set((s) => writeActive(s, { ...s.calendar, holidays })),
 
   resetToOfficialTemplate: () =>
     set((s) => {

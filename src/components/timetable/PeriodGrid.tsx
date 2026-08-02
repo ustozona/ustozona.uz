@@ -23,9 +23,11 @@ export type TimetableClass = {
   name: string;
   color: ClassColor;
   grade?: number | null;
+  /** Parallel harfi va erkin nom — tahrirlash modaliga uzatiladi (class-naming.ts). */
+  section?: string;
+  label?: string;
   subject?: string;
   icon?: ClassIconKey;
-  description?: string;
 };
 
 export type PeriodGridProps = {

@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { SettingsCard, SettingRow, SaveSignalPing } from "./SettingsShared";
+import { SettingsCard, SettingRow } from "./SettingsShared";
 
 export default function AppearanceSection() {
   const t = useTranslations("AppearanceSection");
@@ -83,7 +83,6 @@ export default function AppearanceSection() {
       <SettingsCard
         title={t("themeTitle")}
         description={t("themeDescription")}
-        action={<SaveSignalPing signal={activeTheme} />}
       >
         <div role="radiogroup" aria-label={t("themeAriaLabel")} className="grid grid-cols-3 gap-2">
           {themes.map((th) => {
@@ -114,7 +113,6 @@ export default function AppearanceSection() {
       <SettingsCard
         title={t("backgroundTitle")}
         description={t("backgroundDescription")}
-        action={<SaveSignalPing signal={`${workspaceBackground}-${backgroundScale}`} />}
       >
         <div role="radiogroup" aria-label={t("backgroundAriaLabel")} className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {backgrounds.map((b) => {
@@ -207,7 +205,6 @@ export default function AppearanceSection() {
       <SettingsCard
         title={t("autoTourTitle")}
         description={t("autoTourDescription")}
-        action={<SaveSignalPing signal={`${autoToursEnabled}`} />}
       >
         <SettingRow
           title={t("autoTourRowTitle")}

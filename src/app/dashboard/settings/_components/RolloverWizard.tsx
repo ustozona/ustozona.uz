@@ -8,7 +8,6 @@ import {
   Dialog, DialogContent, DialogHeaderBar, DialogFooter, DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -16,11 +15,12 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import {
-  bumpClassName,
+  bumpClassToNextYear,
   defaultRolloverAction,
   GRADUATING_GRADE,
   type RolloverAction,
 } from "@/lib/rollover";
+import { displayClassName } from "@/lib/class-naming";
 
 /* ════════════════════════════════════════════════════════════════════
    YIL OʻTKAZISH SEHRGARI (ROLLOVER)
@@ -35,7 +35,7 @@ import {
    qamrovi, xulq langarlari) allaqachon yaratish paytida sozlangan.
    ════════════════════════════════════════════════════════════════════ */
 
-type RowState = { action: RolloverAction; newName: string };
+type RowState = { action: RolloverAction };
 
 export default function RolloverWizard({
   open,
@@ -48,6 +48,7 @@ export default function RolloverWizard({
   const activeClasses = useLiveClasses();
   const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
   const yearLabel = useCalendarStore((s) => s.calendar.yearLabel);
+  const years = useCalendarStore((s) => s.years);
 
   const [rows, setRows] = React.useState<Record<string, RowState>>({});
 
@@ -55,13 +56,7 @@ export default function RolloverWizard({
   React.useEffect(() => {
     if (!open) return;
     const init: Record<string, RowState> = {};
-    for (const c of activeClasses) {
-      const action = defaultRolloverAction(c);
-      init[c.id] = {
-        action,
-        newName: c.grade != null ? bumpClassName(c.name, c.grade) : c.name,
-      };
-    }
+    for (const c of activeClasses) init[c.id] = { action: defaultRolloverAction(c) };
     setRows(init);
     // activeClasses referensi ochilishда barqaror — faqat `open`ga bogʻlaymiz.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,8 +64,6 @@ export default function RolloverWizard({
 
   const setAction = (id: string, action: RolloverAction) =>
     setRows((r) => ({ ...r, [id]: { ...r[id], action } }));
-  const setName = (id: string, newName: string) =>
-    setRows((r) => ({ ...r, [id]: { ...r[id], newName } }));
 
   const counts = React.useMemo(() => {
     let bump = 0, archive = 0, keep = 0;
@@ -84,6 +77,8 @@ export default function RolloverWizard({
   }, [rows, activeClasses]);
 
   const apply = () => {
+    const activeYearId = years.find((y) => y.isActive)?.id;
+    const priorYearIds = years.filter((y) => !y.isActive).map((y) => y.id);
     setClassDataMap((prev) => {
       const next = { ...prev };
       for (const c of activeClasses) {
@@ -91,17 +86,7 @@ export default function RolloverWizard({
         const cd = prev[c.id];
         if (!st || !cd) continue;
         if (st.action === "bump") {
-          next[c.id] = {
-            ...cd,
-            info: {
-              ...cd.info,
-              name: st.newName.trim() || cd.info.name,
-              // Daraja bittaga oshadi, lekin bitiruvchi darajadan oshmaydi (grade maks = 11).
-              ...(cd.info.grade != null
-                ? { grade: Math.min(cd.info.grade + 1, GRADUATING_GRADE) }
-                : {}),
-            },
-          };
+          next[c.id] = { ...cd, info: bumpClassToNextYear(cd.info, activeYearId, priorYearIds) };
         } else if (st.action === "archive") {
           next[c.id] = { ...cd, info: { ...cd.info, archivedAt: new Date().toISOString() } };
         }
@@ -136,7 +121,16 @@ export default function RolloverWizard({
             </p>
           ) : (
             activeClasses.map((c) => {
-              const st = rows[c.id] ?? { action: "keep" as RolloverAction, newName: c.name };
+              const st = rows[c.id] ?? { action: "keep" as RolloverAction };
+              // Yangi nom hisoblanadi — daraja+1, parallel harfi oʻzgarmaydi.
+              const nextName =
+                c.grade != null
+                  ? displayClassName({
+                      grade: Math.min(c.grade + 1, GRADUATING_GRADE),
+                      section: c.section,
+                      label: c.label,
+                    })
+                  : c.name;
               const hex = CLASS_COLOR_HEX[classColor(c)];
               // Bitiruvchi (11) va darajasiz guruhlar koʻchirilmaydi — daraja 12 boʻlib qolmasin.
               const canBump = c.grade != null && c.grade < GRADUATING_GRADE;
@@ -156,12 +150,7 @@ export default function RolloverWizard({
                     {st.action === "bump" && (
                       <>
                         <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" />
-                        <Input
-                          value={st.newName}
-                          onChange={(e) => setName(c.id, e.target.value)}
-                          className="h-8 w-24"
-                          aria-label={t("newNameAria", { name: c.name })}
-                        />
+                        <span className="text-sm font-medium text-foreground">{nextName}</span>
                       </>
                     )}
                     {st.action === "archive" && (

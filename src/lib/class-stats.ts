@@ -35,9 +35,11 @@ export type StatPeriodKind = "week" | "month" | "quarter" | "year";
 export type StatPeriod = { kind: StatPeriodKind; id: string; label: string; range: DateRange };
 
 /** Tanlash uchun davrlar roʻyxati: har chorak + "Butun oʻquv yili".
-    Kalendar sozlanmagan boʻlsa boʻsh massiv qaytadi (chaqiruvchi selektorni yashiradi). */
+    Baholash davrlari IXTIYORIY — davr sozlanmagan boʻlsa faqat "Butun oʻquv
+    yili" qaytadi (jurnal davrsiz ham toʻliq ishlaydi). Yil chegarasi
+    boʻlmasagina boʻsh massiv (chaqiruvchi selektorni yashiradi). */
 export function statPeriods(cal: AcademicYearCalendar): StatPeriod[] {
-  if (!cal.range.start || !cal.range.end || cal.quarters.length === 0) return [];
+  if (!cal.range.start || !cal.range.end) return [];
   const quarters: StatPeriod[] = cal.quarters.map((q: Quarter) => ({
     kind: "quarter",
     id: q.id,
