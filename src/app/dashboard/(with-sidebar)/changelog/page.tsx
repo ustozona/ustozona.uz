@@ -230,6 +230,7 @@ export default function ChangelogPage() {
     () => ({
       "/dashboard": t("routes.dashboard"),
       "/dashboard/classes": t("routes.classes"),
+      "/dashboard/grades": t("routes.grades"),
       "/dashboard/students": t("routes.students"),
       "/dashboard/timetable": t("routes.timetable"),
       "/dashboard/planner": t("routes.planner"),

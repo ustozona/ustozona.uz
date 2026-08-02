@@ -95,6 +95,7 @@
     "save": "Saqlash",
     "clear": "Tozalash",
     "unmarked": "Belgilanmagan",
+    "futureLessonDay": "Hali boʻlib oʻtmagan — belgilab boʻlmaydi",
     "todayOutsideYearTitle": "Bugun tanlangan oʻquv yildan tashqarida",
     "todayOutsideYearDescription": "Bugungi sana ({date}) faol kalendar ({year}) diapazonidan tashqarida — shuning uchun ayrim oylarda dars kuni koʻrinmasligi mumkin.",
     "currentYearFallback": "joriy yil",
@@ -679,7 +680,7 @@
     "monthlyGradeDynamics": "Baho dinamikasi (oylik)",
     "pedagogicalSignal": "Pedagogik signal",
     "openProfile": "Profilni ochish",
-    "assignments": "Topshiriqlar",
+    "assignments": "Jurnal",
     "draftCount": "{count} qoralama",
     "searchStudentPlaceholder": "Oʻquvchi qidirish…",
     "search": "Qidirish",
@@ -1946,6 +1947,7 @@
       "planner": "Rejalashtiruvchi",
       "dashboard": "Bosh sahifa",
       "classes": "Sinflar",
+      "grades": "Jurnal",
       "students": "Oʻquvchilar",
       "timetable": "Dars jadvali",
       "attendance": "Davomat",
@@ -1965,10 +1967,6 @@
       },
       "assignment-date-mode-toggle": {
         "title": "Topshiriqda Sana va Soʻngmuddat tanlovi ravshanlashdi"
-      },
-      "blocked-days-calendar": {
-        "title": "Taʼtil va bayram kunlarini taqvimdan belgilash",
-        "body": "Sozlamalar → Oʻquv yilidagi \"Taqvimdan belgilash\" tugmasi taqvimni ochadi: dars boʻlmaydigan kunlarni bosib belgilaysiz, ketma-ket kunlar oʻzi bitta davrga birlashadi. Har bir davrni taʼtil, bayram yoki boshqa deb belgilash mumkin."
       },
       "flexible-periods": {
         "title": "Oʻquv yili — choraklar endi majburiy emas",

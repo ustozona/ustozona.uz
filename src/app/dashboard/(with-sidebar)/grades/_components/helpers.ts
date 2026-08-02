@@ -1,5 +1,5 @@
 import { TOPIC_COLOR_HEX, type Assignment, type Grade, type Student, type Topic, type TopicColor } from "@/lib/grades-data";
-import { assignmentAverage, studentSummary } from "@/lib/grades-stats";
+import { assignmentAverage, studentSummary, gradePercent } from "@/lib/grades-stats";
 
 /** @deprecated Yagona manba: TOPIC_COLOR_HEX (@/lib/grades-data) */
 export function topicHex(color: TopicColor): string {
@@ -31,6 +31,7 @@ export function calcAssignmentAverages(
   return assignments.map((a) => ({
     assignment: a,
     percent: assignmentAverage(a, grades),
+    count: grades.filter((g) => g.assignmentId === a.id && gradePercent(g, a) !== null).length,
   }));
 }
 

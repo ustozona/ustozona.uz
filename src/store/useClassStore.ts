@@ -21,13 +21,6 @@ export interface ClassState {
   journalScale: JournalScale;
   setJournalScale: (patch: Partial<JournalScale>) => void;
 
-  // Sinf darajasidagi bekor qilish (C3, docs/grades-v1-spec.md §4): har sinf
-  // o‘z shkalasini olishi mumkin (5-ballik va A–F bir hisobda birga yasha
-  // oladi). Yo‘q bo‘lsa `journalScale` (standart) ishlatiladi — `journalScaleFor`.
-  journalScaleByClass: Record<string, JournalScale>;
-  setJournalScaleForClass: (classId: string, patch: Partial<JournalScale>) => void;
-  clearJournalScaleForClass: (classId: string) => void;
-
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
 }
@@ -41,27 +34,12 @@ export const useClassStore = create<ClassState>()(
       setJournalScale: (patch) =>
         set((state) => ({ journalScale: { ...state.journalScale, ...patch } })),
 
-      journalScaleByClass: {},
-      setJournalScaleForClass: (classId, patch) =>
-        set((state) => ({
-          journalScaleByClass: {
-            ...state.journalScaleByClass,
-            [classId]: { ...(state.journalScaleByClass[classId] ?? state.journalScale), ...patch },
-          },
-        })),
-      clearJournalScaleForClass: (classId) =>
-        set((state) => {
-          const next = { ...state.journalScaleByClass };
-          delete next[classId];
-          return { journalScaleByClass: next };
-        }),
-
       _hasHydrated: false,
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     })
 );
 
-/** Sinfning haqiqiy jurnal shkalasi — bekor qilingan boʻlsa oʻshani, aks holda standartni. */
-export function journalScaleFor(state: ClassState, classId: string): JournalScale {
-  return state.journalScaleByClass[classId] ?? state.journalScale;
+/** Barcha sinflar uchun yagona jurnal shkalasi. */
+export function journalScaleFor(state: ClassState, _classId: string): JournalScale {
+  return state.journalScale;
 }

@@ -95,6 +95,7 @@
     "save": "Save",
     "clear": "Clear",
     "unmarked": "Unmarked",
+    "futureLessonDay": "Hasn't happened yet — can't be marked",
     "todayOutsideYearTitle": "Today is outside the selected academic year",
     "todayOutsideYearDescription": "Today's date ({date}) is outside the active calendar's ({year}) range — some months may show no lesson days as a result.",
     "currentYearFallback": "current year",
@@ -679,7 +680,7 @@
     "monthlyGradeDynamics": "Grade trend (monthly)",
     "pedagogicalSignal": "Teaching insight",
     "openProfile": "Open profile",
-    "assignments": "Assignments",
+    "assignments": "Gradebook",
     "draftCount": "{count} draft",
     "searchStudentPlaceholder": "Search student…",
     "search": "Search",
@@ -1946,6 +1947,7 @@
       "planner": "Planner",
       "dashboard": "Home",
       "classes": "Classes",
+      "grades": "Gradebook",
       "students": "Students",
       "timetable": "Timetable",
       "attendance": "Attendance",
@@ -1965,10 +1967,6 @@
       },
       "assignment-date-mode-toggle": {
         "title": "Clearer choice between Date and Deadline on assignments"
-      },
-      "blocked-days-calendar": {
-        "title": "Mark vacation and holiday days on the calendar",
-        "body": "The \"Mark on calendar\" button in Settings → School year opens a calendar: click the days with no lessons and consecutive days merge into one span automatically. Each span can be labelled vacation, holiday, or other."
       },
       "flexible-periods": {
         "title": "School year — grading periods are now optional",

@@ -19,7 +19,6 @@ function selectSnapshot(s: ClassState) {
   return {
     selectedClassId: s.selectedClassId,
     journalScale: s.journalScale,
-    journalScaleByClass: s.journalScaleByClass,
   };
 }
 

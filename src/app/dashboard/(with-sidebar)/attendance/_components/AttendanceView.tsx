@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { DAYS_UZ_SUN } from "@/lib/localization";
 import {
   type AttendanceStatus, type AttendanceStatusDef, type AttendanceRecord,
-  deriveLessonDays, getStatus, getNote,
+  deriveLessonDays,
   weightedRate, percentile, statusWeights,
   MONTH_NAMES,
 } from "@/lib/attendance-data";
@@ -208,12 +208,23 @@ function NoteModal({
 // ─── Ustun sarlavhasi (bulk set popover) ─────────────────────────────────────
 
 function ColHeader({
-  date, isToday, statuses, onBulk, cellRef,
-}: { date: string; isToday: boolean; statuses: AttendanceStatusDef[]; onBulk: (s: AttendanceStatus) => void; cellRef?: React.Ref<HTMLTableCellElement> }) {
+  date, isToday, statuses, onBulk, cellRef, future,
+}: { date: string; isToday: boolean; statuses: AttendanceStatusDef[]; onBulk: (s: AttendanceStatus) => void; cellRef?: React.Ref<HTMLTableCellElement>; future?: boolean }) {
   const t = useTranslations("AttendanceView");
   const [open, setOpen] = useState(false);
   const [, , dd] = date.split("-");
   const dayName = ["Yak", "Du", "Se", "Cho", "Pay", "Ju", "Sha"][new Date(date).getDay()];
+  // Kelasi dars kuni — hali belgilab boʻlmaydi, popover ochilmaydi.
+  if (future) {
+    return (
+      <th ref={cellRef} className={cn("border-b border-r border-border p-0 w-[44px] min-w-[44px] text-center relative")} style={{ width: 44, minWidth: 44, background: HEADER_BG }}>
+        <div className="flex flex-col items-center justify-center h-full w-full gap-0.5 py-2 opacity-40">
+          <span className="text-xs font-bold uppercase text-muted-foreground">{dayName}</span>
+          <span className="text-sm font-bold text-muted-foreground">{parseInt(dd, 10)}</span>
+        </div>
+      </th>
+    );
+  }
   return (
     <th ref={cellRef} className={cn("border-b border-r border-border p-0 w-[44px] min-w-[44px] text-center relative")} style={{ width: 44, minWidth: 44, background: HEADER_BG }}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -257,11 +268,28 @@ function ColHeader({
 // ─── Davomat katagi ──────────────────────────────────────────────────────────
 
 function AttCell({
-  def, note, onClick, onNote,
-}: { def: AttendanceStatusDef | null; note: string; onClick: () => void; onNote: () => void }) {
+  def, note, onClick, onNote, future,
+}: { def: AttendanceStatusDef | null; note: string; onClick: () => void; onNote: () => void; future?: boolean }) {
   const t = useTranslations("AttendanceView");
   const [hov, setHov] = useState(false);
   const v = def ? statusVisual(def) : null;
+  // Kelasi dars kuni — hali boʻlib oʻtmagan, belgilab boʻlmaydi (faqat "oldindan
+  // koʻrinish"): band emas, band boʻlmagan holatdan farqlanishi uchun xira chizilgan.
+  if (future) {
+    return (
+      <div className="flex justify-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              className={cn(CHIP_BTN, "size-9 cursor-default bg-transparent text-muted-foreground/20 border border-dashed border-muted-foreground/15")}
+              aria-hidden
+            />
+          </TooltipTrigger>
+          <TooltipContent>{t("futureLessonDay")}</TooltipContent>
+        </Tooltip>
+      </div>
+    );
+  }
   return (
     <div className="relative flex justify-center" onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
       <Tooltip>
@@ -272,7 +300,7 @@ function AttCell({
               CHIP_BTN, "size-9",
               v ? v.cellClass : "bg-muted/40 text-muted-foreground border border-dashed border-muted-foreground/30 hover:bg-muted/60",
             )}
-           
+
           >
             {v ? <v.Icon className="size-4" strokeWidth={2.5} /> : null}
           </button>
@@ -344,10 +372,13 @@ export default function AttendanceView({
   const today = todayKey();
 
   // Dars kunlari — oʻsha sanada amalda boʻlgan jadval versiyasi + kalendar.
+  // Butun oʻquv yili boʻyicha hisoblanadi (bugungacha kesilmaydi) — kelasi
+  // kunlar jadvalda "oldindan koʻrinish" sifatida xira chizilib koʻrsatiladi,
+  // toʻliq yoʻqolib ketmaydi (aks holda yil boshida "dars kuni yoʻq" degan
+  // notoʻgʻri taassurot qoldiradi).
   const realLessonDays = useMemo(() => {
-    const end = today < calendar.range.end ? today : calendar.range.end;
-    return deriveLessonDays(classId, { start: calendar.range.start, end }, calendar, versions);
-  }, [classId, calendar, versions, today]);
+    return deriveLessonDays(classId, calendar.range, calendar, versions);
+  }, [classId, calendar, versions]);
   // Demo rejimda kalendar/jadval store'lariga bogʻliq boʻlmaslik uchun — joriy
   // oyning ish kunlari (Dush–Juma) "dars kuni" sifatida ishlatiladi.
   const demoLessonDays = useMemo(
@@ -381,6 +412,14 @@ export default function AttendanceView({
   ) => (demoMode
     ? setDemoRecords((prev) => (typeof next === "function" ? next(prev ?? []) : next))
     : setRecordsRaw(classId, next));
+  // O(1) katak qidiruvi — jadval N ta oʻquvchi × M ta kun boʻyicha render
+  // qilinganda har katakning `records`ni boshdan skanerlashini oldini oladi
+  // (GradesTable'dagi gradeMap bilan bir xil naqsh).
+  const recordByKey = useMemo(() => {
+    const m = new Map<string, AttendanceRecord>();
+    for (const r of records) m.set(`${r.studentId}:${r.date}`, r);
+    return m;
+  }, [records]);
 
   useEffect(() => { setOnlyAttention(false); }, [classId]);
 
@@ -400,6 +439,12 @@ export default function AttendanceView({
       setRecordsRaw(classId, storedRecords.filter((r) => !orphan(r)));
     }
   }, [demoMode, mounted, calendar, realLessonDays, storedRecords, today, classId, setRecordsRaw]);
+
+  // Oʻquv yili choraklarga boʻlinmay qolsa (masalan davrsiz shablonga
+  // oʻtilsa) — "Chorak" rejimida qolib ketmaslik uchun "Oy"ga qaytariladi.
+  useEffect(() => {
+    if (period === "quarter" && calendar.quarters.length === 0) setPeriod("month");
+  }, [period, calendar.quarters.length]);
 
   // Bugungi ustunga avtoscroll — jadval ochilganda (yoki oy/sinf almashganda)
   // bugungi sana koʻrinishda boʻlsa, ustun markazga keltiriladi.
@@ -485,27 +530,36 @@ export default function AttendanceView({
     demoMode ? (demoClassInfo ?? { id: classId, name: classId }) : (gradesClass?.info ?? { id: classId, name: classId })
   )];
 
-  // "Xavfli" — gibrid: <75% (absolyut floor) YOKI sinfning eng past 25% (pertsentil)
+  // "Xavfli" — gibrid: <75% (absolyut floor) YOKI sinfning eng past 25% (pertsentil).
+  // "Xavfsiz poyabzal": 90%+ hech qachon faqat pertsentil sababli qizil boʻlmaydi —
+  // aks holda hamma aʼlo boʻlgan sinfda ham eng "pastroq" 25% sunʼiy qizil chiqadi.
+  const SAFE_FLOOR_PCT = 90;
   const periodPcts = baseStudents.map((s) => periodRateOf(s.id)?.pct).filter((p): p is number => p != null);
   const p25 = percentile(periodPcts, 25);
   const isChronic = (id: string) => (monthRateOf(id)?.absents ?? 0) >= 3; // oyiga ≥3 Kelmadi
   const isDanger = (id: string) => {
     const r = periodRateOf(id);
     if (!r) return false;
-    return r.pct < 75 || (p25 != null && r.pct <= p25);
+    if (r.pct < 75) return true;
+    if (r.pct >= SAFE_FLOOR_PCT) return false;
+    return p25 != null && r.pct < p25;
   };
   const needsAttention = (id: string) => isChronic(id) || isDanger(id);
   const attentionCount = baseStudents.filter((s) => needsAttention(s.id)).length;
 
   const students = onlyAttention ? baseStudents.filter((s) => needsAttention(s.id)) : baseStudents;
 
-  // Jonli xulosa — koʻrinayotgan oy × oʻquvchilar boʻyicha holat sonlari
-  const monthDateSet = new Set(monthDays.map((d) => d.date));
+  // Jonli xulosa — koʻrinayotgan oy × oʻquvchilar boʻyicha holat sonlari.
+  // Kelasi (hali boʻlib oʻtmagan) kunlar "Belgilanmagan"ga kirmaydi — ular
+  // haqiqatda belgilanishi mumkin emas, kiritilsa har oy oxirigacha soxta
+  // "necha kun belgilanmagan" raqami koʻrsatardi.
+  const pastMonthDays = monthDays.filter((d) => d.date <= today);
+  const monthDateSet = new Set(pastMonthDays.map((d) => d.date));
   const studentIdSet = new Set(students.map((s) => s.id));
   const scopeRecords = records.filter((r) => studentIdSet.has(r.studentId) && monthDateSet.has(r.date));
   const countByKey = (key: string) => scopeRecords.filter((r) => r.status === key).length;
   const noteCount = scopeRecords.filter((r) => r.note).length;
-  const totalCells = students.length * monthDays.length;
+  const totalCells = students.length * pastMonthDays.length;
   const markedCount = scopeRecords.filter((r) => r.status !== UNMARKED).length;
   const unmarkedCount = Math.max(0, totalCells - markedCount);
 
@@ -519,11 +573,21 @@ export default function AttendanceView({
     });
   };
 
+  // Kun ustidagi ommaviy belgilash — FAQAT hali belgilanmagan oʻquvchilarni
+  // toʻldiradi. Allaqachon belgilangan (va izohli) yozuvlar oʻzgarmaydi —
+  // aks holda "Hammasi Keldi" bosilganda ertalab yozilgan "Kelmadi + sababli
+  // izoh" yoʻqolib ketardi. "Tozalash" (UNMARKED) esa ataylab toʻliq kunni
+  // tozalaydigan aniq destruktiv amal — shu holicha qoladi.
   const handleBulk = (date: string, status: AttendanceStatus) => {
     setRecords((prev) => {
-      const without = prev.filter((r) => r.date !== date);
-      if (status === UNMARKED) return without;
-      return [...without, ...roster.map((s) => ({ studentId: s.id, date, status }))];
+      if (status === UNMARKED) return prev.filter((r) => r.date !== date);
+      const already = new Set(
+        prev.filter((r) => r.date === date && r.status !== UNMARKED).map((r) => r.studentId)
+      );
+      const additions = roster
+        .filter((s) => !already.has(s.id))
+        .map((s) => ({ studentId: s.id, date, status }));
+      return [...prev, ...additions];
     });
   };
 
@@ -625,9 +689,9 @@ export default function AttendanceView({
               </CardTitle>
             </div>
 
-            {/* Davr granularligi — Oy | Chorak (demo/turda yashirin) — markazda */}
+            {/* Davr granularligi — Oy | Chorak (demo/turda va choraksiz oʻquv yilida yashirin) — markazda */}
             <div className="flex flex-1 items-center justify-center">
-              {!demoMode && (
+              {!demoMode && calendar.quarters.length > 0 && (
                 <ToggleGroup
                   type="single"
                   value={period}
@@ -647,11 +711,7 @@ export default function AttendanceView({
                   size="default"
                 >
                   <ToggleGroupItem value="month" className="px-3 text-sm font-medium">{t("month")}</ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="quarter"
-                    disabled={calendar.quarters.length === 0}
-                    className="px-3 text-sm font-medium"
-                  >
+                  <ToggleGroupItem value="quarter" className="px-3 text-sm font-medium">
                     {t("quarter")}
                   </ToggleGroupItem>
                 </ToggleGroup>
@@ -764,7 +824,7 @@ export default function AttendanceView({
                     </TableHead>
 
                     {monthDays.map((d) => (
-                      <ColHeader key={d.date} date={d.date} isToday={d.date === today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} cellRef={d.date === today ? todayColRef : undefined} />
+                      <ColHeader key={d.date} date={d.date} isToday={d.date === today} future={d.date > today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} cellRef={d.date === today ? todayColRef : undefined} />
                     ))}
 
                     {/* Davomat % — akademik chorak boʻyicha */}
@@ -819,10 +879,11 @@ export default function AttendanceView({
                         {monthDays.map((d) => (
                           <TableCell key={d.date} className="border-b border-r border-border p-1 text-center min-w-[44px]">
                             <AttCell
-                              def={statusByKey(getStatus(records, student.id, d.date))}
-                              note={getNote(records, student.id, d.date)}
+                              def={statusByKey(recordByKey.get(`${student.id}:${d.date}`)?.status ?? UNMARKED)}
+                              note={recordByKey.get(`${student.id}:${d.date}`)?.note ?? ""}
                               onClick={() => handleCell(student.id, d.date)}
                               onNote={() => setNotePopup({ studentId: student.id, date: d.date })}
+                              future={d.date > today}
                             />
                           </TableCell>
                         ))}

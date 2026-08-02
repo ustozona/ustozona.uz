@@ -7,7 +7,6 @@ import {
   DialogClose,
   DialogContent,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -16,48 +15,9 @@ import { IconButton } from "@/components/ui/icon-button";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import ScaleControls from "@/components/grade-scale/ScaleControls";
-import { useClassStore, journalScaleFor } from "@/store/useClassStore";
+import { useClassStore } from "@/store/useClassStore";
 import { SaveFooter, useDraft } from "@/app/dashboard/settings/_components/SettingsShared";
-
-/** Kichik ⓘ ikona + tooltip. */
-function InfoHint({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("GradesSettingsModal");
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          aria-label={t("explain")}
-          className="text-muted-foreground/60 transition-colors hover:text-foreground"
-        >
-          <Info className="size-3.5" />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent className="max-w-[260px] text-pretty">{children}</TooltipContent>
-    </Tooltip>
-  );
-}
-
-/** Boʻlim sarlavhasi (BAHOLASH SHKALASI). */
-function SectionTitle({
-  children,
-  hint,
-}: {
-  children: React.ReactNode;
-  hint?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <h3 className="text-label font-semibold uppercase tracking-wide text-muted-foreground">
-        {children}
-      </h3>
-      {hint && <InfoHint>{hint}</InfoHint>}
-    </div>
-  );
-}
 
 /** Switch qatori — chapda nom+izoh, oʻngda toggle. */
 function SwitchRow({
@@ -73,9 +33,20 @@ function SwitchRow({
 }) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-3">
-      <span className="flex flex-col">
+      <span className="flex items-center gap-1.5">
         <span className="text-sm font-medium text-foreground">{title}</span>
-        <span className="text-caption leading-snug">{desc}</span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => e.preventDefault()}
+              className="text-muted-foreground/60 transition-colors hover:text-foreground"
+            >
+              <Info className="size-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-[240px] text-pretty">{desc}</TooltipContent>
+        </Tooltip>
       </span>
       <Switch checked={checked} onCheckedChange={onChange} />
     </label>
@@ -85,21 +56,12 @@ function SwitchRow({
 /**
  * Jurnal sozlamalari modali (docs/grades-scale-model.md).
  * Ikki boʻlim: (1) Baholash shkalasi, (2) Jadval koʻrinishi. Shkala faqat
- * koʻrinishni oʻzgartiradi — bahoni emas.
+ * koʻrinishni oʻzgartiradi — bahoni emas. Barcha sinflar uchun bitta shkala.
  */
 export default function GradesSettingsModal({
-  classId,
-  classDisplayName,
-  showWeights,
-  onShowWeightsChange,
   showTrend,
   onShowTrendChange,
 }: {
-  /** Joriy sinf — sinf darajasidagi shkala bekor qilish shu klass uchun. */
-  classId: string;
-  classDisplayName: string;
-  showWeights: boolean;
-  onShowWeightsChange: (v: boolean) => void;
   showTrend: boolean;
   onShowTrendChange: (v: boolean) => void;
 }) {
@@ -107,21 +69,8 @@ export default function GradesSettingsModal({
   // jadval koʻrinishi togglelari view-pref sifatida darhol qoʻllanadi.
   const journalScale = useClassStore((s) => s.journalScale);
   const setJournalScale = useClassStore((s) => s.setJournalScale);
-  // Sinf darajasidagi bekor qilish (C3): shu sinf uchun standartdan boshqa
-  // shkala oʻrnatilganmi — `journalScaleByClass[classId]` mavjudligidan.
-  const overridden = useClassStore((s) => s.journalScaleByClass[classId] !== undefined);
-  const setJournalScaleForClass = useClassStore((s) => s.setJournalScaleForClass);
-  const clearJournalScaleForClass = useClassStore((s) => s.clearJournalScaleForClass);
-  const effectiveScale = useClassStore((s) => journalScaleFor(s, classId));
 
-  function commit(next: typeof journalScale) {
-    if (overridden) setJournalScaleForClass(classId, next);
-    else setJournalScale(next);
-  }
-  const { draft, setDraft, dirty, save, reset } = useDraft(
-    overridden ? effectiveScale : journalScale,
-    commit
-  );
+  const { draft, setDraft, dirty, save, reset } = useDraft(journalScale, setJournalScale);
   const t = useTranslations("GradesSettingsModal");
 
   return (
@@ -143,7 +92,7 @@ export default function GradesSettingsModal({
 
       <DialogContent
         showCloseButton={false}
-        className="max-w-md gap-0 overflow-hidden p-0 bg-card"
+        className="max-w-sm gap-0 overflow-hidden p-0 bg-card"
       >
         {/* Standart header — ikona + sarlavha + size-9 yopish tugmasi */}
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
@@ -151,14 +100,9 @@ export default function GradesSettingsModal({
             <SectionIcon>
               <Settings2 />
             </SectionIcon>
-            <div className="flex flex-col">
-              <DialogTitle asChild>
-                <CardTitle>{t("title")}</CardTitle>
-              </DialogTitle>
-              <DialogDescription className="text-caption">
-                {t("description")}
-              </DialogDescription>
-            </div>
+            <DialogTitle asChild>
+              <CardTitle>{t("title")}</CardTitle>
+            </DialogTitle>
           </div>
           <DialogClose className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
             <X className="size-4" />
@@ -166,51 +110,21 @@ export default function GradesSettingsModal({
           </DialogClose>
         </div>
 
-        <div className="flex max-h-[70vh] flex-col gap-6 overflow-y-auto scrollbar-thin p-6">
-          {/* ── Baholash mezoni ───────────────────────────────── */}
-          <section className="space-y-4">
-            <SectionTitle hint={t("scaleHint")}>
-              {t("scaleSectionTitle")}
-            </SectionTitle>
+        <div className="flex max-h-[70vh] flex-col gap-5 overflow-y-auto scrollbar-thin p-6">
+          <ScaleControls
+            value={draft}
+            onChange={(p) => setDraft({ ...draft, ...p })}
+          />
 
-            <SwitchRow
-              title={t("perClassScaleTitle", { className: classDisplayName })}
-              desc={t("perClassScaleDesc")}
-              checked={overridden}
-              onChange={(v) => {
-                if (v) setJournalScaleForClass(classId, journalScale);
-                else clearJournalScaleForClass(classId);
-              }}
-            />
-
-            <ScaleControls
-              value={draft}
-              onChange={(p) => setDraft({ ...draft, ...p })}
-              scopeLabel={overridden ? t("scopeThisClass", { className: classDisplayName }) : t("scopeAllClasses")}
-            />
-
-            {effectiveScale.kind !== "percent" && (
+          <div className="flex flex-col gap-3.5">
+            {draft.kind !== "percent" && (
               <SwitchRow
                 title={t("showPercentTitle")}
                 desc={t("showPercentDesc")}
-                checked={effectiveScale.showPercent}
-                onChange={(v) => commit({ ...effectiveScale, showPercent: v })}
+                checked={draft.showPercent}
+                onChange={(v) => setDraft({ ...draft, showPercent: v })}
               />
             )}
-          </section>
-
-          <Separator />
-
-          {/* ── Jadval koʻrinishi ───────────────────────────────── */}
-          <section className="space-y-4">
-            <SectionTitle>{t("tableViewSectionTitle")}</SectionTitle>
-
-            <SwitchRow
-              title={t("showWeightsTitle")}
-              desc={t("showWeightsDesc")}
-              checked={showWeights}
-              onChange={onShowWeightsChange}
-            />
 
             <SwitchRow
               title={t("statusColumnFieldLabel")}
@@ -218,22 +132,11 @@ export default function GradesSettingsModal({
               checked={showTrend}
               onChange={onShowTrendChange}
             />
-          </section>
+          </div>
         </div>
 
-        <DialogFooter className="flex-row items-center justify-between gap-3 border-t border-border bg-muted/20 px-6 py-3 sm:justify-between">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="shrink-0"
-            onClick={() => setJournalScale(draft)}
-          >
-            {t("applyToAllClasses")}
-          </Button>
-          <span className="flex shrink-0 items-center gap-2">
-            <SaveFooter dirty={dirty} onSave={save} onReset={reset} />
-          </span>
+        <DialogFooter className="flex-row items-center justify-end gap-3 border-t border-border bg-muted/20 px-6 py-3">
+          <SaveFooter dirty={dirty} onSave={save} onReset={reset} />
         </DialogFooter>
       </DialogContent>
     </Dialog>

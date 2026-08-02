@@ -18,9 +18,9 @@ import {
   Minus,
   Lightbulb,
   Info,
-  Keyboard,
   ChevronRight,
   ArrowRight,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
@@ -51,11 +51,10 @@ import {
   calcStudentTotals,
 } from "./helpers";
 import { UZ_COLLATOR, splitName, formatDueDate, pedagogikSignal } from "./grades-table-helpers";
-import { classSummativeAverage, studentTrend, gradePercent, studentContributions } from "@/lib/grades-stats";
+import { classSummativeAverage, studentTrend, gradePercent } from "@/lib/grades-stats";
 import { aggregateTrend, type DatedScore } from "@/lib/student-profile";
 import { TrendChart } from "@/app/dashboard/(with-sidebar)/students/[id]/_components/charts";
 import { SectionIcon } from "@/components/ui/section-icon";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
@@ -70,7 +69,6 @@ import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
   AlertDialog,
@@ -98,14 +96,24 @@ function LetterAvg({
   percent,
   classId,
   scale,
+  hasData = true,
 }: {
   percent: number;
   /** Jami/Holat — sinfning oʻz shkalasi (`journalScaleFor`), `scale` bermaganda ishlatiladi. */
   classId?: string;
   /** Toifa oʻzining shkalasida koʻrsatiladi (ustun oʻrtachasi) — Jami/Holat esa sinf shkalasida. */
   scale?: { kind: GradingScale; passLabel?: string; failLabel?: string };
+  /** Hali baho yoʻq boʻlsa (count=0) — 0% real natija emas, shkala labelini koʻrsatmaymiz. */
+  hasData?: boolean;
 }) {
   const journalScale = useClassStore((s) => (classId ? journalScaleFor(s, classId) : s.journalScale));
+  if (!hasData) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <span className="text-base font-semibold text-muted-foreground/40">—</span>
+      </div>
+    );
+  }
   let primary: string;
   let secondary: string | undefined;
   if (scale) {
@@ -485,7 +493,6 @@ export default function GradesTable({
   const { students, assignments, grades, topics } = classData;
   const classHex = CLASS_COLOR_HEX[classColor(classData.info)];
   const [createOpen, setCreateOpen] = useState(false);
-  const [showWeights, setShowWeights] = useState(false);
   // Holat ustunining burchagidagi Trend belgisi koʻrsatilsinmi.
   const [showTrend, setShowTrend] = useState(true);
   const [editingCell, setEditingCell] = useState<{ s: string; a: string } | null>(null);
@@ -579,16 +586,6 @@ export default function GradesTable({
     [grades]
   );
 
-  // Vaznli foiz rejimi: har o‘quvchining baholarining "Jami"ga hissasi.
-  const contributionsByStudent = useMemo(() => {
-    if (!showWeights) return null;
-    const m = new Map<string, Map<string, number>>();
-    students.forEach((s) =>
-      m.set(s.id, studentContributions(s.id, assignments, grades, topics))
-    );
-    return m;
-  }, [showWeights, students, assignments, grades, topics]);
-
   // Baho kiritgandan keyin keyingi katakka o‘tish (klaviatura navigatsiyasi).
   function moveEditing(curS: string, curA: string, move: Move) {
     if (!move) {
@@ -669,7 +666,7 @@ export default function GradesTable({
           </IconButton>
           <DropdownMenu open={filterOpen} onOpenChange={setFilterOpen}>
             <DropdownMenuTrigger asChild>
-              <IconButton aria-label={t("filter")} className="size-9" inactiveVariant="outline" active={colFilter !== "all"}>
+              <IconButton aria-label={t("filter")} className="size-9" active={colFilter !== "all"}>
                 <ListFilter className="size-4 text-muted-foreground" />
               </IconButton>
             </DropdownMenuTrigger>
@@ -681,55 +678,15 @@ export default function GradesTable({
               ] as const).map(([val, label]) => (
                 <DropdownMenuItem
                   key={val}
-                  className="cursor-pointer rounded-md px-3 py-2 text-sm"
+                  className="cursor-pointer justify-between rounded-md px-3 py-2 text-sm"
                   onClick={() => setColFilter(val)}
                 >
                   <span className={cn(colFilter === val && "font-semibold")}>{label}</span>
+                  {colFilter === val && <Check className="size-4 text-primary" />}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Popover>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <PopoverTrigger asChild>
-                  <IconButton aria-label={t("shortcuts")} className="size-9">
-                    <Keyboard className="size-4 text-muted-foreground" />
-                  </IconButton>
-                </PopoverTrigger>
-              </TooltipTrigger>
-              <TooltipContent>{t("shortcuts")}</TooltipContent>
-            </Tooltip>
-            <PopoverContent align="end" className="w-72 p-0">
-              <div className="border-b border-border px-4 py-3">
-                <TypographySmall className="font-semibold text-foreground">
-                  {t("quickEntry")}
-                </TypographySmall>
-              </div>
-              <div className="flex flex-col gap-2.5 p-4 text-sm">
-                {([
-                  [t("shortcutEditCell"), `Enter / ${t("click")}`],
-                  [t("shortcutMoveNext"), "Enter / Tab"],
-                  [t("shortcutPrevCell"), "Shift + Tab"],
-                  [t("shortcutNeighborCell"), "← ↑ → ↓"],
-                  [t("shortcutMarkAbsent"), "q"],
-                  [t("shortcutMarkUnsubmitted"), "t"],
-                  [t("shortcutFillColumn"), "Ctrl + V"],
-                  [t("shortcutCancel"), "Esc"],
-                ] as const).map(([label, keys]) => (
-                  <div key={label} className="flex items-center justify-between gap-3">
-                    <TypographyMuted>{label}</TypographyMuted>
-                    <KbdGroup className="shrink-0">
-                      {keys.split(" + ").map((k, i) => (
-                        <Kbd key={i}>{k}</Kbd>
-                      ))}
-                    </KbdGroup>
-                  </div>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-
           <DropdownMenu open={createOpen} onOpenChange={setCreateOpen}>
               <DropdownMenuTrigger asChild>
                 <Button className="ml-1 gap-2 font-semibold">
@@ -763,10 +720,6 @@ export default function GradesTable({
             </DropdownMenu>
 
           <GradesSettingsModal
-            classId={classData.info.id}
-            classDisplayName={classData.info.name}
-            showWeights={showWeights}
-            onShowWeightsChange={setShowWeights}
             showTrend={showTrend}
             onShowTrendChange={setShowTrend}
           />
@@ -938,7 +891,11 @@ export default function GradesTable({
                   grades={grades}
                 >
                   <div className="relative h-full w-full cursor-default">
-                    <LetterAvg percent={classAverage} classId={classData.info.id} />
+                    <LetterAvg
+                      percent={classAverage}
+                      classId={classData.info.id}
+                      hasData={rawTotals.some((t) => t.summary.summativeCount > 0)}
+                    />
                     <StatusBadge showTrend={showTrend} trend={classTrend} />
                   </div>
                 </HolatHover>
@@ -957,6 +914,7 @@ export default function GradesTable({
                           ? { kind: (topic.scaleKind ?? "pass_fail") as GradingScale }
                           : undefined
                       }
+                      hasData={aa.count > 0}
                     />
                   </TableCell>
                 );
@@ -1017,7 +975,11 @@ export default function GradesTable({
                       grades={grades}
                     >
                       <div className="relative h-full w-full cursor-default">
-                        <LetterAvg percent={total.percent} classId={classData.info.id} />
+                        <LetterAvg
+                          percent={total.percent}
+                          classId={classData.info.id}
+                          hasData={total.summary.summativeCount > 0}
+                        />
                         <StatusBadge showTrend={showTrend} trend={trend} />
                         {total.summary.summativeCount > 0 && total.summary.summativeCount < 3 && (
                           <span className="absolute top-0.5 right-0.5 flex size-3.5 items-center justify-center rounded-full bg-warning/15 text-[9px] font-bold text-warning">
@@ -1060,7 +1022,6 @@ export default function GradesTable({
                           <GradeCell
                             grade={g}
                             maxScore={a.maxScore}
-                            weight={contributionsByStudent?.get(s.id)?.get(a.id) ?? null}
                           />
                         )}
                       </TableCell>
@@ -1161,12 +1122,9 @@ function ColHeader({ label, stickyLeft = false }: { label: string; stickyLeft?: 
 function GradeCell({
   grade,
   maxScore,
-  weight,
 }: {
   grade: Grade | undefined;
   maxScore: number;
-  /** Vaznli foiz rejimi yoqilgan bo‘lsa — bahoning "Jami"ga hissasi (foiz punkt). */
-  weight?: number | null;
 }) {
   const t = useTranslations("GradesTable");
   if (!grade || grade.score === null) {
@@ -1202,15 +1160,6 @@ function GradeCell({
       <span className="absolute bottom-1 right-1.5 text-[10px] text-muted-foreground tabular-nums leading-none">
         /{maxScore}
       </span>
-      {weight != null && (
-        <span
-          className="absolute top-1 left-1.5 text-[10px] font-semibold tabular-nums leading-none"
-          style={{ color: scoreBarColor(percent) }}
-          title={t("contributionToFinal")}
-        >
-          {weight.toFixed(1)}%
-        </span>
-      )}
     </div>
   );
 }

@@ -46,15 +46,6 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     href: "/dashboard/grades",
   },
   {
-    id: "blocked-days-calendar",
-    date: "2026-08-01",
-    type: "yangi",
-    title: "Taʼtil va bayram kunlarini taqvimdan belgilash",
-    body:
-      "Sozlamalar → Oʻquv yilidagi \"Taqvimdan belgilash\" tugmasi taqvimni ochadi: dars boʻlmaydigan kunlarni bosib belgilaysiz, ketma-ket kunlar oʻzi bitta davrga birlashadi. Har bir davrni taʼtil, bayram yoki boshqa deb belgilash mumkin.",
-    href: "/dashboard/settings",
-  },
-  {
     id: "flexible-periods",
     date: "2026-08-01",
     type: "yaxshilandi",
