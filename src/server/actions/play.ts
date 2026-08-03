@@ -4,6 +4,7 @@ import { z } from "zod";
 import { joinByCode, listRosterByCode, type JoinResult } from "@/server/dal/play/join";
 import { getSessionContent, type PlaySessionContent } from "@/server/dal/play/content";
 import { submitResponse, type SubmitResponseInput } from "@/server/dal/play/responses";
+import { gameShellUrl } from "@/server/lessonlab/baholash";
 
 /* Ishtirokchi (akkauntsiz) tomon — yupqa qatlam: zod-parse → DAL.
    `requireTeacher()` HECH QACHON bu faylda ishlatilmaydi. */
@@ -40,4 +41,25 @@ export async function submitResponseAction(
   const parsed = submitSchema.parse(input) as SubmitResponseInput;
   const row = await submitResponse(parsed);
   return { isCorrect: row?.isCorrect ?? null };
+}
+
+/** Oʻyin qobigʻining toʻliq havolasi — qobiq boshqa domenda turadi,
+    uning manzili faqat serverda (env) maʼlum.
+
+    `null` qaytsa — qobiq sozlanmagan yoki notoʻgʻri nom berilgan;
+    chaqiruvchi oddiy ekranda davom etadi. Sessiya baribir ishlaydi:
+    oʻyin — qobiq, majburiy emas. */
+export async function gameShellUrlAction(input: {
+  shellId: string;
+  token: string;
+  origin: string;
+}): Promise<string | null> {
+  const parsed = z
+    .object({
+      shellId: z.string().min(1).max(50),
+      token: z.string().min(1),
+      origin: z.string().url(),
+    })
+    .parse(input);
+  return gameShellUrl(parsed);
 }

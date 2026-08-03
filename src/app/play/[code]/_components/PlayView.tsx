@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import PushButton from "@/app/play/_components/PushButton";
 import {
   Select,
@@ -10,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  gameShellUrlAction,
   getSessionContentAction,
   joinSessionAction,
   listRosterByCodeAction,
@@ -29,6 +31,16 @@ function tokenKey(joinCode: string) {
 }
 
 export default function PlayView({ joinCode }: { joinCode: string }) {
+  /* `?game=<qobiq>` — oʻqituvchi «Jonli oʻyin» tanlagan boʻlsa havolada
+     keladi. Qobiq LessonLab domenida turadi, savolni esa BU YERDAN
+     (`/api/play/content`) oladi va javobni shu yerga yozadi. Shuning
+     uchun oʻyin ekrani bilan oddiy ekran orasida hech qanday maʼlumot
+     farqi yoʻq — faqat koʻrinish boshqa.
+
+     Qobiq ochilmasa (sozlanmagan, notoʻgʻri nom, tarmoq yoʻq) —
+     oʻquvchi oddiy ekranda davom etadi. Oʻyin hech qachon test
+     topshirishga TOʻSIQ boʻlmasligi kerak. */
+  const gameShell = (useSearchParams().get("game") ?? "").trim();
   const [phase, setPhase] = useState<Phase>("loading");
   const [roster, setRoster] = useState<Roster[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
@@ -47,6 +59,29 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
   const [matchedLeftIds, setMatchedLeftIds] = useState<Set<string>>(new Set());
   const [pickedLeftId, setPickedLeftId] = useState<string | null>(null);
 
+  /** Qobiqqa oʻtish. `true` qaytsa — sahifa almashdi, davom etmang.
+
+      `useCallback` — chunki uni `useEffect` ichida chaqiramiz va
+      har renderda yangi funksiya yaratilsa effekt qayta ishga tushardi. */
+  const redirectToShell = useCallback(
+    async (token: string): Promise<boolean> => {
+      if (!gameShell) return false;
+      try {
+        const url = await gameShellUrlAction({
+          shellId: gameShell,
+          token,
+          origin: window.location.origin,
+        });
+        if (!url) return false;
+        window.location.href = url;
+        return true;
+      } catch {
+        return false; // qobiq ochilmadi — oddiy ekranda davom etamiz
+      }
+    },
+    [gameShell]
+  );
+
   const loadRoster = useCallback(() => {
     listRosterByCodeAction(joinCode)
       .then((r) => {
@@ -60,7 +95,10 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     const existingToken = localStorage.getItem(tokenKey(joinCode));
     if (existingToken) {
       getSessionContentAction(existingToken)
-        .then((c) => {
+        .then(async (c) => {
+          // Qaytib kelgan oʻquvchi ham qobiqqa tushsin — aks holda
+          // sahifani yangilash oʻyindan oddiy ekranga tashlab yuborardi.
+          if (await redirectToShell(existingToken)) return;
           setContent(c);
           setPhase("playing");
         })
@@ -71,7 +109,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     } else {
       loadRoster();
     }
-  }, [joinCode, loadRoster]);
+  }, [joinCode, loadRoster, redirectToShell]);
 
   async function handleJoin() {
     const student = roster.find((r) => r.id === selectedStudentId);
@@ -87,6 +125,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
         displayName: student.name,
       });
       localStorage.setItem(tokenKey(joinCode), result.token);
+      if (await redirectToShell(result.token)) return;
       const c = await getSessionContentAction(result.token);
       setContent(c);
       setPhase("playing");
