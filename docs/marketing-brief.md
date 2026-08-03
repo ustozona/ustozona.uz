@@ -1,230 +1,420 @@
-# Ustozona — marketing brifi va imkoniyatlar matni
+# Ustozona — marketing va sotuv brifi
 
-> **Nima uchun:** landing page, reklama, Telegram postlari va Gemini kabi AI vositalari uchun
-> **yagona haqiqat manbai**. Har qanday marketing matni faqat shu hujjatdagi 1-boʻlimga tayanishi kerak.
-> **Manba:** [roadmap-muhokama.md](./roadmap-muhokama.md) (2026-07-14 qarorlari)
-> **Sana:** 2026-yil 14-iyul
+> **Kim uchun:** marketing va sotuv bilan shugʻullanadigan jamoadoshimiz uchun.
+> Bu hujjat **oʻzi yetarli** — kodni ochish, dasturchidan soʻrash shart emas.
+> **Nima uchun:** landing page, Telegram postlari, reklama matnlari, sotuv suhbatlari va
+> AI vositalari (Gemini, ChatGPT, Claude) uchun **yagona haqiqat manbai**.
+> **Sana:** 2026-yil 3-avgust · **Holat:** faktlar shu kundagi kod boʻyicha tekshirilgan.
+> **Manbalar:** [roadmap-muhokama.md](./roadmap-muhokama.md), [ost-loyihalar-arxitektura.md](./ost-loyihalar-arxitektura.md)
 
 ---
 
 ## 0. Oltin qoida: nimani vaʼda qilamiz
 
-Uch qat'iy daraja bor. **Marketingda faqat 1-darajani vaʼda sifatida ishlating.**
+Uch qatʼiy daraja bor. **Marketing va sotuvda faqat 1-darajani vaʼda sifatida ishlating.**
 
-| Daraja | Maʼnosi | Marketingda qanday ishlatiladi |
+| Daraja | Maʼnosi | Qanday ishlatiladi |
 |---|---|---|
 | ✅ **BOR** | Bugun ishlaydi, foydalanuvchi roʻyxatdan oʻtsa darhol koʻradi | Vaʼda, sarlavha, CTA — hammasi shundan |
-| 🔜 **YOʻLDA** | Qurilyapti, sanasi bor (15-avgust / sentabr) | Faqat "tez orada" yorligʻi bilan, hech qachon asosiy vaʼda emas |
+| 🔜 **YOʻLDA** | Qurilyapti | Faqat "tez orada" yorligʻi bilan, hech qachon asosiy vaʼda emas |
 | 💭 **REJADA** | Hali qaror ham qilinmagan | Marketingda **umuman ishlatilmaydi** |
 
-> ⚠️ Eng katta xato: OCR, AI dars rejasi, ota-ona ilovasi — bular hali yoʻq.
-> Ular bilan reklama qilish = ishonchni birinchi kundayoq yoʻqotish.
+> ⚠️ Eng katta xato — hali yoʻq narsani vaʼda qilish. Odam roʻyxatdan oʻtib topmasa,
+> u qaytib kelmaydi va boshqalarga ham aytadi. Bir marta yoʻqotilgan ishonch qaytmaydi.
+
+**Shubha boʻlsa qoida:** hujjatda yozilmagan narsani vaʼda qilmang. Avval soʻrang.
 
 ---
 
-## 1. ✅ BUGUN BOR — imkoniyatlar matni
+## 1. Mahsulot bir jumlada
 
-Har biri: *oʻqituvchi tilida nima* + *nega muhim*.
+**Ustozona — oʻqituvchi uchun veb-platforma:** elektron jurnal, davomat, xulq-atvor bali,
+dars jadvali, standartlar boʻyicha oʻzlashtirish, dars ishlanmasi muharriri va AI yordamchisi.
 
-### 1.1. Elektron jurnal va baholash
+**Asosiy gʻoya — bogʻlangan tizim:** oʻqituvchi maʼlumotni **bir marta** kiritadi, qolgan
+hamma joyda oʻzi yangilanadi. Davomatni belgilaysiz — xulq bali, statistika va hisobot ayni
+damda yangilanadi. Bir maʼlumotni uch daftarga koʻchirish davri tugadi.
+
+**Manzil:** [www.ustozona.uz](https://www.ustozona.uz) — jonli, ishlaydi, Google bilan kirish bor.
+
+---
+
+## 2. Mijoz portretlari — kimga sotamiz
+
+### 2.1. Asosiy: maktab oʻqituvchisi
+
+- 5–11-sinflarga dars beradi, har sinfda 30+ oʻquvchi
+- Dars atigi 45 daqiqa — **vaqt eng qimmat resurs**
+- Qogʻoz jurnal, Excel jadvallari va hisobotlar orasida ovora
+- Texnologiyaga usta emas; murakkab interfeys uni qoʻrqitadi
+- Asosiy ishni kompyuterda qiladi
+- Pul toʻlashga tayyorligi past — avval ishonch qozonilishi kerak
+
+**Eng katta ogʻrigʻi:** chorak va yil oxiridagi hisobot; baho hisoblash; qogʻozbozlik.
+
+### 2.2. Kuchli nishon: volontyor va yordamchi oʻqituvchilar (masalan Teach for Uzbekistan fellowlari)
+
+Bu segment alohida eʼtiborga loyiq, chunki ularda **ogʻriq eng oʻtkir**:
+
+- Maktabning rasmiy tizimiga **kirish huquqi yoʻq** — elektron jurnalga qoʻshilmaydi
+- Shu sababli oʻz oʻquvchilarini kuzatish uchun hech qanday rasmiy vositasi yoʻq
+- Dastur oxirida "men nima qildim" degan savolga javob berish kerak, lekin dalil toʻplanmagan
+
+**Ular uchun asosiy xabar:**
+> Maktab tizimiga rasmiy kirish huquqi boʻlmasa ham — oʻz sinfingizni toʻliq mustaqil
+> boshqarasiz: oʻquvchilarni qoʻshasiz, davomat olasiz, baho qoʻyasiz, xulq-atvor balini
+> alohida kuzatasiz, AI yordamida dars reja tuzasiz. Hammasi bitta joyda, hech kimdan
+> ruxsat soʻramasdan.
+
+**Qoʻshimcha kuchli argument:** yil davomida yigʻilgan maʼlumot ularning **portfeli** boʻladi —
+"shuncha oʻquvchi bilan ishladim, natija shunday" deb aniq raqam koʻrsata oladi.
+
+### 2.3. Ikkinchi darajali: repetitor va oʻquv markazi
+
+Ishlaydi, lekin mahsulot ular uchun maxsus sozlanmagan. Oʻzi kelsa — quvontiramiz,
+lekin kampaniyani ularga qaratmaymiz.
+
+### 2.4. Hozircha emas: maktab maʼmuriyati
+
+Maktabni butunlay tizimga koʻchirish (direktor paneli, koʻp oʻqituvchi birgalikda) —
+hali tayyor emas. **Direktorga "butun maktabingizni koʻchiramiz" deb sotmang.**
+
+---
+
+## 3. ✅ BUGUN BOR — imkoniyatlar matni
+
+Har biri: *oʻqituvchi tilida nima* + *nega muhim*. Bu boʻlimni matn yozishda toʻgʻridan-toʻgʻri
+manba sifatida ishlating.
+
+### 3.1. AI yordamchi — dars rejasi tuzadi ⭐ eng kuchli tomonimiz
+
+Dars muharririning ichida "Ustozona AI" bor. Undan dars rejasi, topshiriq, mashq, baholash
+mezonlari soʻraysiz — javob **darsga tayyor koʻrinishda** tushadi (sarlavha, roʻyxat, jadval,
+rangli eslatma bloklari, formulalar bilan).
+
+**Oddiy AI botlaridan farqi — uchta:**
+
+1. **Standartlarni biladi.** Darsga standart biriktirilgan boʻlsa, reja aynan shu
+   standartlarga asoslanadi, har bir standart kodiga alohida ishora qilib.
+2. **Dars davomiyligini biladi.** 45 daqiqa desangiz, bosqichlarga ajratilgan daqiqalar
+   yigʻindisi aynan shunga toʻgʻri keladi.
+3. **Metodikani biladi.** "Backward Design", "5E modeli", "SMART maqsad" deb soʻrasangiz —
+   aynan shu tuzilma boʻyicha javob beradi.
+
+Natijani bir bosishda darsga qoʻshasiz, keyin A4 formatda chop etasiz.
+
+**Nega muhim:** ChatGPTga quruq prompt yozganda umumiy, quruq reja chiqadi va uni qaytadan
+formatlash kerak. Bu yerda esa reja sizning sinfingiz, sizning standartlaringiz va sizning
+vaqtingizga moslangan holda, chop etishga tayyor chiqadi.
+
+> **Marketingda qanday koʻrsatish:** yonma-yon taqqoslash eng kuchli ishlaydi —
+> chapda oddiy AI javobi, oʻngda Ustozona AI javobi.
+
+**Cheklov (halol aytiladi):** kunlik chegara bor (standart holatda 30 ta soʻrov). Oʻquvchilarning
+ism-familiyasi AI ga yuborilmaydi.
+
+### 3.2. Elektron jurnal va baholash
 
 Baholarni kiritasiz — yakuniy baho oʻzi hisoblanadi. Kategoriya va vaznlarni bir marta
 sozlaysiz ("Uy vazifasi 20%, imtihon 50%"), tizim qolganini oʻzi qiladi. 5-ballik, 10-ballik,
-foizli, harfli — 10 dan ortiq baholash shkalasi bor, oʻzingizniki qaysi boʻlsa oʻshani
-tanlaysiz. Past ball qizil, yuqori yashil — kataklar oʻzi boʻyaladi, sinfning holati bir
-qarashda koʻrinadi.
+foizli, harfli — 10 dan ortiq baholash shkalasi bor. Past ball qizil, yuqori yashil —
+kataklar oʻzi boʻyaladi, sinfning holati bir qarashda koʻrinadi.
 
 **Nega muhim:** kalkulyator ham, Excel formulasi ham kerak emas. Chorak oxirida
 "oʻrtachasini hisoblab chiqish" degan tun boʻlmaydi.
 
-### 1.2. Davomat — bir bosishda
+### 3.3. Davomat — bir bosishda
 
-Keldi / Kelmadi / Kechikdi / Sababli — bitta bosish. Butun sinf kelgan boʻlsa, sana
-ustunini bosib "hammasi keldi" deb bir marta belgilaysiz. Har yozuvga izoh yozish mumkin.
+Keldi / Kelmadi / Kechikdi / Sababli — bitta bosish. Butun sinf kelgan boʻlsa, sana ustunini
+bosib "hammasi keldi" deb bir marta belgilaysiz. Har yozuvga izoh yozish mumkin.
 
 **Nega muhim:** davomat darsning birinchi daqiqalarida tugaydi, 45 daqiqadan hech nima yemaydi.
 
-### 1.3. Xulq-atvor bali — oʻzi hisoblanadi
+### 3.4. Xulq-atvor bali — oʻzi hisoblanadi
 
-Boshqa tizimlarda xulq balini oʻqituvchi qoʻlda qoʻyadi. Ustozonada esa davomat va
-jurnaldan **avtomatik** hisoblanib boradi: kechikish, dars qoldirish, topshiriq topshirmaslik —
-hammasi hisobga olinadi. Qoʻlda ham + / – qoʻyish mumkin, toʻliq tarixi bilan.
+Boshqa tizimlarda xulq balini oʻqituvchi qoʻlda qoʻyadi. Ustozonada esa davomat va jurnaldan
+**avtomatik** hisoblanib boradi: kechikish, dars qoldirish, topshiriq topshirmaslik — hammasi
+hisobga olinadi. Qoʻlda ham + / – qoʻyish mumkin, toʻliq tarixi bilan.
 
-**Nega muhim:** eng zerikarli ish oʻz-oʻzidan bajariladi. Bu raqobatchilarda yoʻq.
+**Eng muhimi — uchtasi ajratilgan:** baho (bilim), davomat (qatnashish), xulq-atvor (munosabat).
+Ular bir-biriga aralashmaydi.
 
-### 1.4. Dars jadvali va rejalashtirish
+**Nega muhim:** bugun koʻpchilikda motivatsiya faqat baho orqali beriladi — faol, lekin testda
+past ball olgan oʻquvchi jazolanadi, jim lekin bilimli oʻquvchi ham notoʻgʻri baholanadi.
+Ustozona bularni ajratadi. **Bu raqobatchilarda yoʻq.**
 
-Jadval versiyalari bilan: "3-noyabrdan jadval oʻzgardi" desangiz, eski oylarning tarixi
-buzilmaydi. Qoʻngʻiroq jadvali, darsni boshqa kun/soatga sudrab oʻtkazish, oʻquv yili
-chegaralari — hammasi bor.
+> **Marketingda qanday koʻrsatish:** avval savol bilan muammoni tan oldiring —
+> "Sinfda faol qatnashgan, lekin testda past ball olgan oʻquvchiga baho pasaytirasizmi?"
 
-**Nega muhim:** yil oʻrtasida jadval oʻzgarishi — normal hol. Tizim buni tushunadi.
+### 3.5. Standartlar va oʻzlashtirish
 
-### 1.5. Standartlar va oʻzlashtirish
+Har bir mavzuni **oʻlchanadigan koʻnikmalarga** boʻlasiz — "Oʻquvchi ... qila oladi"
+shaklida. Har koʻnikma:
 
-Darslarni davlat taʼlim standartlariga bogʻlaysiz, tizim har standart boʻyicha qamrovni
-kuzatadi. Baho emas, **oʻzlashtirish** kuzatiladi — vaqt oʻtishi bilan unutish ham hisobga
-olinadi.
+- **Bloom taksonomiyasi darajasiga** bogʻlanadi (bilish → tushunish → qoʻllash → tahlil →
+  baholash → yaratish) — yaʼni shunchaki "oʻtdi/oʻtmadi" emas, qanchalik chuqur oʻzlashtirilgani
+- **darsga bogʻlanadi**, tizim "qamrab olindi/qolib ketdi" holatini oʻzi kuzatadi
+- **poydevor** deb belgilanishi mumkin — bularsiz keyingi mavzu tushunarsiz boʻladi
+- baholash turi belgilanadi: test bilan oʻlchanadigan yoki insho/ogʻzaki nutq kabi
 
-**Nega muhim:** "qaysi mavzuni yopdik, qaysi biri ochiq qoldi" — bir qarashda ayon.
+**Nega muhim:** "Dastur boʻyicha oʻtildi" degan noaniq tuygʻu oʻrniga aniq roʻyxat: qaysi
+koʻnikma yopildi, qaysi biri ochiq qoldi, qaysi bazaviy koʻnikma zaif.
 
-### 1.6. Dars muharriri va PDF
+### 3.6. Dars muharriri va A4 PDF
 
-Toʻliq matn muharririda dars ishlanmasini yozasiz, bir bosishda A4 formatda chop etishga
-tayyor PDF olasiz.
+Toʻliq matn muharririda dars ishlanmasini yozasiz: sarlavhalar, jadvallar, rangli eslatma
+bloklari, matematik formulalar. Bir bosishda A4 formatda chop etishga tayyor PDF olasiz.
 
 **Nega muhim:** ishlanmani Wordda terib, formatini toʻgʻrilab oʻtirish kerak emas.
 
-### 1.7. Bogʻlangan tizim — bir marta kiritasiz
+### 3.7. Dars jadvali
 
-Jurnal, davomat, jadval va xulq bir-biriga bogʻlangan. Davomatni belgilaysiz — xulq bali,
-oʻzlashtirish va hisobot ayni damda yangilanadi.
+Jadval **versiyalari** bilan: "3-noyabrdan jadval oʻzgardi" desangiz, eski oylarning tarixi
+buzilmaydi. Qoʻngʻiroq jadvali, darsni boshqa kun/soatga sudrab oʻtkazish, taʼtil va bayram
+kunlarini taqvimdan belgilash, A4 formatda chop etish — hammasi bor.
 
-**Nega muhim:** bu butun mahsulotning asosiy gʻoyasi. Bir maʼlumotni uch daftarga
-koʻchirish davri tugadi.
+**Nega muhim:** yil oʻrtasida jadval oʻzgarishi — normal hol. Tizim buni tushunadi.
 
-### 1.8. Koʻp oʻquv yili
+### 3.8. Oʻquvchi profili va qaydlar
 
-Oʻtgan yillar arxivda saqlanadi, sinfni yangi oʻquv yiliga koʻchirish sehrgari bor.
+Har bir oʻquvchining alohida sahifasi: bilim, davomat, xulq koʻrsatkichlari alohida-alohida.
+Oʻquvchi haqida **qayd** yozib borish mumkin (teg va koʻrinuvchanlik sozlamasi bilan) —
+masalan "3-haftada sezilarli ilgarilash". Aka-uka-opa-singillarni bir-biriga bogʻlash ham bor.
 
-### 1.9. Bulutda, istalgan qurilmadan
+**Nega muhim:** ota-onalar yigʻilishida yoki dastur hisobotida bitta oʻquvchi haqida aniq,
+tarixga asoslangan gap aytasiz — xotiraga tayanmaysiz.
+
+### 3.9. Statistika
+
+Uchta boʻlim: umumiy koʻrinish, sinflar kesimi, oʻquvchilar kesimi. Davomat tendensiyasi,
+baho taqsimoti, mavzu boʻyicha oʻzlashtirish, xavf ostidagi oʻquvchilar, topshiriq sifati,
+muddatlar — hammasi diagrammalar bilan.
+
+**Nega muhim:** oʻquv yili oxirida hisobot soʻralganda maʼlumot allaqachon yigʻilgan boʻladi.
+
+### 3.10. Koʻp oʻquv yili
+
+Oʻtgan yillar arxivda saqlanadi, sinfni yangi oʻquv yiliga koʻchirish sehrgari bor. Choraklar
+majburiy emas — 4 chorak, 2 semestr, 3 trimestr yoki umuman davrsiz ishlash mumkin.
+
+### 3.11. Bulutda, istalgan kompyuterdan
 
 Hamma maʼlumot serverda. Uydagi kompyuterda boshlab, maktabda davom ettirasiz.
+Google hisobi bilan kirasiz — alohida parol oʻylab topish shart emas.
 
-### 1.10. Qoʻshimchalar
+### 3.12. Qoʻshimchalar
 
+- **Blog** — ilova ichida oʻqiladigan maqolalar boʻlimi
 - **Vazifalar roʻyxati** — shaxsiy ishlar, takrorlanuvchi vazifalar bilan
 - **Fikr-mulohaza doskasi** — taklif yozasiz, ovoz berasiz, jamoa javob beradi
+- **Yangilanishlar boʻlimi** — mahsulotga nima qoʻshilgani, oddiy tilda
 - **Interaktiv qoʻllanma** — ilova yangi oʻqituvchini oʻzi yetaklab oʻrgatadi
+- **Koʻp tillilik** — oʻzbek, rus, ingliz
+- **Qorongʻi rejim**
 - **Cheksiz sinf va oʻquvchi** — chegara yoʻq
-- **Hozircha bepul, bank kartasisiz**
 
 ---
 
-## 2. 🔜 YOʻLDA (faqat "tez orada" yorligʻi bilan)
+## 4. 🔜 YOʻLDA — faqat "tez orada" yorligʻi bilan
 
-| Imkoniyat | Qachon | Bir gapda |
+| Imkoniyat | Bir gapda | Holati |
 |---|---|---|
-| Sertifikatlash | 15-avgust | Davomat+baho+xulqdan avtomatik sertifikat, 2 bosishda print |
-| Ommaviy dars siljitish | 15-avgust | Bayram tufayli dars oʻtilmadi — qolgan rejalar bir tugmada suriladi |
-| OCR blanka tekshirish | MVP 15-avgust, sayqal sentabr | Qogʻoz testni telefon bilan skaner qilib avto-tekshirish |
-| Telefonga moslashuv (maqsadli) | Sentabr | Avval skanerlash oqimi va telefonda mantiqiy joylar |
-| Maktab admin-lite | Sentabr | Bir maktabdagi oʻqituvchilar birlashadi, bittasi admin |
-| Ota-ona/oʻquvchi mini-ilova | Sentabr | Telegram mini-ilova: davomat, baho, xulq, streak — faqat koʻrish |
+| **Ustozona Baholash** | Kahoot uslubidagi jonli test, qogʻoz testni skaner qilib avto-tekshirish (OMR), QR-kartali soʻrov | Dvigatel ulanmoqda, sahifasi bor, **toʻliq ishlamaydi** |
+| Sertifikatlash | Davomat+baho+xulqdan avtomatik sertifikat | Boshlanmagan |
+| Ommaviy dars siljitish | Bayram tufayli dars oʻtilmadi — qolgan rejalar bir tugmada suriladi | Boshlanmagan |
+| Telefonga moslashuv | Telefonda qulay ishlash | Qisman |
+| Maktab admin-lite | Bir maktabdagi oʻqituvchilar birlashadi, bittasi admin | Boshlanmagan |
+| Shogird — ota-ona/oʻquvchi mini-ilovasi | Telegram mini-ilova: davomat, baho, xulq — faqat koʻrish | Boshlanmagan |
+| Ustozona Doska | Sinf ekrani: taymer, tasodifiy ism, guruhlarga boʻlish | Boshlanmagan |
+| Ustozona Boshqaruv | Maktab maʼmuriyati paneli | Boshlanmagan |
 
-## 3. 💭 REJADA — marketingda ISHLATILMAYDI
-
-Jonli viktorina, QR-kartali soʻrov, AI dars rejasi, virtual doska, blog/forum,
-PDF tabel, offline rejim, boshqaruv paneli.
-
----
-
-## 4. Muhim ogohlantirishlar (marketing matni yozganda)
-
-1. **Telefon ilovasi yoʻq.** Ilova brauzerda ishlaydi, telefonga moslashuv hali toʻliq emas.
-   "Telefoningizdan boshqaring" deb vaʼda bermang — bu sentabr rejasi.
-2. **Foydalanuvchi statistikasi yoʻq.** Mahsulot yangi. "50,000 oʻqituvchi ishonadi" kabi
-   soxta raqamlar mutlaqo mumkin emas — ishonchni oʻldiradi.
-3. **Narx: hozircha bepul.** "Doimiy bepul" demang (kelajakda pullik tariflar boʻladi),
-   "hozircha bepul" ham demang (chalgʻitadi). Toʻgʻri shakl: **"Oʻqituvchilar uchun bepul.
-   Bank kartasi talab qilinmaydi."**
-4. **Kim uchun:** birinchi navbatda **maktab oʻqituvchisi** (5–11-sinf, 30+ oʻquvchi,
-   45 daqiqalik dars). Repetitor va oʻquv markazi — ikkinchi darajali.
-5. **Til:** tabiiy oʻzbekcha. "Taʼlimni boshqarishning zamonaviy usuli" kabi rasmiy-idoraviy
-   jumlalar emas — oʻqituvchi bunday gapirmaydi.
-6. **Apostrof:** faqat `ʻ` (Oʻ, Gʻ) va `ʼ` (tutuq belgisi). ASCII `'` ishlatilmaydi.
+> ⚠️ **Diqqat:** `/baholash`, `/doska`, `/shogird`, `/boshqaruv` sahifalari saytda bor,
+> lekin bu **mahsulot sahifalari**, ishlaydigan mahsulot emas. Ularga qarab
+> "bizda Kahoot bor" deb sotmang.
 
 ---
 
-## 5. Gemini uchun promt
+## 5. 💭 REJADA — marketingda ISHLATILMAYDI
 
-> Quyidagini toʻliq nusxalab Gemini'ga bering. 1–4-boʻlimlarni ham birga tashlang.
+Xato-tasavvur diagnostikasi, unutilish/takrorlash tahlili, virtual doska, forum,
+offline rejim, telefon ilovasi (App Store / Play Market).
+
+---
+
+## 6. Narx va sotuv
+
+### 6.1. Hozirgi holat — saytdagi tariflar
+
+Landing sahifada uchta tarif koʻrsatilgan:
+
+| Tarif | Narx | Holati |
+|---|---|---|
+| **Ustoz uchun** | **0 soʻm** | ✅ Ishlaydi — hamma bugun shundan foydalanadi |
+| Maktab uchun | Tez orada | 🔜 Hali yoʻq |
+| Pro + AI yordamchi | Tez orada | 🔜 Hali yoʻq |
+
+**Bugungi yagona toʻgʻri javob:** *"Oʻqituvchilar uchun bepul. Bank kartasi talab qilinmaydi."*
+
+- ❌ "Doimiy bepul" **demang** — kelajakda pullik tariflar boʻladi
+- ❌ "Hozircha bepul" ham **demang** — bu odamni "keyin pul soʻraladi" deb qoʻrqitadi
+- ❌ Aniq raqam **aytmang** — hali qaror qilinmagan
+
+### 6.2. Narx qachon va qanday belgilanadi
+
+**Hozir narx belgilanmaydi.** Sabab: mahsulot hali faol foydalanuvchi bazasini yigʻmagan.
+Narxni oʻylab topish emas, **bozordan olish** kerak.
+
+Tartib shunday:
+
+1. Avval 20–30 ta faol oʻqituvchi yigʻiladi (haqiqatan har hafta ishlatadiganlar)
+2. Ulardan soʻraladi: *"Agar bu ertaga yoʻqolib qolsa, sogʻinasizmi?"* — "ha" deganlar
+   40% dan koʻp boʻlsa, mahsulot pulga tayyor (bu — Sean Ellis testi, dunyoda keng qoʻllaniladi)
+3. Shundan keyin eng faol 5 kishidan soʻraladi: *"Bu pullik boʻlsa, oyiga qancha toʻlagan
+   boʻlardingiz?"* — narx shu javoblardan chiqadi
+
+**Kelajakdagi taxminiy yoʻnalish (qaror emas, muhokama uchun):**
+
+- **B2C** — alohida oʻqituvchiga oylik obuna. Tez boshlanadi, lekin konversiya past.
+- **B2B** — maktab/oʻquv markaziga, oʻqituvchi soniga qarab. Bitta sotuv = koʻp foydalanuvchi,
+  lekin sotuv sikli uzun (direktor bilan gaplashish kerak) va buning uchun **maktab admin-lite**
+  tayyor boʻlishi shart — u hali yoʻq.
+
+### 6.3. Sotuv jarayoni — birinchi 100 foydalanuvchi
+
+Hozirgi bosqichda maqsad **pul emas, faol foydalanuvchi va fikr**. Tartib:
+
+**1-qadam. Shaxsiy taklif (ommaviy eʼlon emas).**
+Har bir odamga alohida yoziladi. Namuna:
+
+> Salom! Oʻqituvchilar uchun jurnal va dars rejalashtirish tizimi qildim — Ustozona.
+> Sizga bepul ochib beraman, shart yagona: haftada 5 daqiqa fikringizni yozib turing. Qiziqasizmi?
+
+**2-qadam. Qoʻlda ishga tushirish.**
+Roziligini bergan har bir odam bilan 15 daqiqalik qoʻngʻiroq — sinfini va oʻquvchilarini
+birga kiritib beriladi.
+
+*Nega:* bu bosqichda avtomatik onboarding hali ishlamaydi. Odamni shaxsan olib oʻtish
+kerak — shunda u "ilinib qoladi". Bu vaqtinchalik usul, keyin oʻlchamaydi, lekin hozir
+eng samarali.
+
+**3-qadam. Haftada bitta savol.**
+Koʻp savol berilmaydi, faqat bittasi:
+1-hafta — "Nimasi qiyin boʻldi?"
+2-hafta — "Kunlik ishingizda nimani almashtirdi?"
+3-hafta — "Agar bu ertaga yoʻqolsa, sogʻinasizmi?"
+
+**4-qadam. Tavsiya soʻrash.**
+Fikri ijobiy boʻlganlardan: *"Yana kimga tavsiya qilar edingiz?"* — va ular yuboradigan
+matnni tayyor holda berib qoʻying (yozishga eringanlar koʻp).
+
+*Nega:* oʻqituvchilar bir-biriga eng koʻp ishonadi. Reklama emas, hamkasb tavsiyasi —
+bu sohada eng kuchli kanal.
+
+### 6.4. Kanallar
+
+| Kanal | Taktika | Izoh |
+|---|---|---|
+| **Telegram** | Oʻqituvchilar guruhi va kanallar | Oʻzbekistonda asosiy biznes platformasi — birinchi navbatda shu |
+| **Hamkasblar** | Shaxsiy yozishma, jonli koʻrsatish | Eng yuqori konversiya |
+| **Volontyor dasturlar** | Teach for Uzbekistan va shunga oʻxshash jamoalar | Ogʻriq eng oʻtkir segment |
+| **Blog** | Metodik maqolalar (mahsulot reklamasi emas) | Ishonch qurish, uzoq muddatli |
+| **Metodbirlashmalar** | Maktab ichidagi oʻqituvchilar yigʻini | Bitta maktabga chuqur kirish yoʻli |
+
+### 6.5. Eʼtirozlar va javoblar
+
+| Eʼtiroz | Javob |
+|---|---|
+| "Vaqtim yoʻq oʻrganishga" | Bitta sinf va bitta darsdan boshlaymiz — 15 daqiqa. Birga sozlaymiz, oʻzingiz hech narsa qidirmaysiz. |
+| "Bizda allaqachon elektron jurnal bor" | Ustozona uni almashtirmaydi — u sizning shaxsiy ish vositangiz: AI reja, standart kuzatuvi va xulq bali unda yoʻq. |
+| "Keyin pul soʻraysizlar" | Hozir oʻqituvchilar uchun bepul, bank kartasi soʻralmaydi. Pullik tarif chiqsa, oldindan aytamiz. |
+| "Maʼlumotlarim xavfsizmi?" | Maʼlumot serverda, faqat siz koʻrasiz. Oʻquvchilar ismi AI ga yuborilmaydi. |
+| "Telefonda ishlaydimi?" | Brauzerda ochiladi, lekin qulay ish uchun kompyuter tavsiya qilinadi. Telefonga moslashuv ustida ishlayapmiz. |
+| "Maktabimizni butunlay koʻchira olamizmi?" | Hozircha yoʻq — mahsulot bitta oʻqituvchi uchun. Maktab paneli rejada. |
+
+### 6.6. Nimani oʻlchaymiz
+
+Roʻyxatdan oʻtganlar soni emas — **faol foydalanuvchi** soni. Yaʼni: sinf yaratgan,
+oʻquvchi qoʻshgan va **kamida bir hafta davomida qaytib kelgan** oʻqituvchi.
+
+Hozirgi holat halol aytilsa: roʻyxatdan oʻtganlarning kichik qismigina faol. Shuning
+uchun ham hozir vazifa — reklama emas, har bir odamni qoʻlda faol holatga olib chiqish.
+
+---
+
+## 7. Qatʼiy taqiqlar (matn yozganda buzilmasin)
+
+1. **Soxta ijtimoiy dalil taqiqlanadi.** "50,000 oʻqituvchi ishonadi", oʻylab topilgan
+   sharhlar, yolgʻon reyting — mahsulot yangi, real statistika yoʻq. Buning oʻrniga:
+   ochiq yangilanishlar boʻlimi, jonli demo, "yangi mahsulot, birga quramiz" pozitsiyasi.
+2. **Telefon ilovasi YOʻQ.** App Store/Play Marketʼda yoʻq. "Telefoningizdan boshqaring"
+   deb vaʼda bermang.
+3. **Kahoot/oʻyin/OCR haqida vaʼda bermang** — hali toʻliq ishlamaydi.
+4. **Koʻp oʻqituvchi hamkorlikda ishlashi** — hali ishonchli emas, vaʼda qilinmaydi.
+5. **Narx raqami aytilmaydi.** Faqat: "Oʻqituvchilar uchun bepul. Bank kartasi talab qilinmaydi."
+6. **Til tabiiy oʻzbekcha boʻlsin.** "Taʼlimni boshqarishning zamonaviy usuli" kabi
+   rasmiy-idoraviy jumlalar taqiqlanadi — oʻqituvchi bunday gapirmaydi.
+7. **Apostrof:** faqat `ʻ` (Oʻ, Gʻ) va `ʼ` (tutuq belgisi). ASCII `'` ishlatilmaydi.
+8. **Har vaʼda aniq va oʻlchanadigan boʻlsin:** "sifat, qulaylik" kabi quruq sifatlar emas,
+   "davomat — bir bosishda" kabi aniq gaplar.
+
+---
+
+## 8. Har bir post uchun formula
+
+1. **Muammo** — bitta jumla, tanish ogʻriq ("Jurnalni Excelda yuritib charchadingizmi?")
+2. **Dalil** — 15–30 soniyalik ekran-yozuv yoki skrinshot (uzun video Telegramda koʻrilmaydi)
+3. **Bitta chaqiriq** — "Sinab koʻrmoqchi boʻlsangiz, menga yozing"
+
+Bitta postda bitta gʻoya. Koʻp imkoniyatni birdan sanab ketish — odamni chalkashtiradi
+va u "murakkab ekan" deb yopadi.
+
+**Post navbati (tavsiya):** AI dars rejasi → xulq-atvor bali → oʻquvchi profili va hisobot →
+statistika. Statistikani chorak/yil oxiriga yaqin chiqarish eng samarali — hisobot mavsumi.
+
+---
+
+## 9. AI vositasiga beriladigan promt
+
+> Quyidagini nusxalab AI ga bering va shu hujjatning **toʻliq matnini** ham birga tashlang.
 
 ```
 Sen tajribali marketing strategi va kopirayter siz — Oʻzbekiston bozori va oʻzbek tilida
-ishlaysan. Vazifang: "Ustozona" nomli ta'lim texnologiyalari mahsuloti uchun marketing
-strategiyasi va landing page kontent rejasini tayyorlash.
+ishlaysan. Vazifang: "Ustozona" nomli taʼlim texnologiyalari mahsuloti uchun marketing
+va sotuv materiallarini tayyorlash.
 
-## MAHSULOT
+MAHSULOT VA MIJOZ HAQIDA HAMMA MAʼLUMOT — biriktirilgan hujjatda. Undan tashqariga chiqma.
 
-Ustozona — maktab oʻqituvchisi uchun veb-platforma: elektron jurnal, davomat, xulq bali,
-dars jadvali, standartlar boʻyicha oʻzlashtirish, dars ishlanmasi muharriri. Asosiy gʻoya:
-hammasi bir-biriga bogʻlangan — oʻqituvchi maʼlumotni bir marta kiritadi, qolgan hamma
-joyda oʻzi yangilanadi.
+QATʼIY CHEGARALAR (buzilmasin):
+1. Faqat hujjatning 3-boʻlimidagi (✅ BOR) narsalarni vaʼda qil. 4-boʻlim (🔜 YOʻLDA) —
+   faqat "tez orada" yorligʻi bilan. 5-boʻlim (💭 REJADA) — umuman tilga olma.
+2. Hujjatning 7-boʻlimidagi taqiqlarga soʻzsiz amal qil.
+3. Til tabiiy oʻzbekcha boʻlsin, tarjima hidi kelmasin. Apostrof: ʻ va ʼ, ASCII ' emas.
+4. Har vaʼda aniq va oʻlchanadigan boʻlsin.
+5. Ishonching komil boʻlmagan joyda buni ochiq ayt — taxminni fakt sifatida koʻrsatma.
 
-Mahsulot hozir jonli va ishlaydi: www.ustozona.uz
+MENGA KERAK (kerakligini tanlab soʻrayman):
+A. Pozitsiyalash — bitta jumlada pozitsiya; 3 ta asosiy qiymat vaʼdasi varianti,
+   har birining kuchli/kuchsiz tomoni bilan; raqobatchilardan (Additio, iDoceo, qogʻoz
+   jurnal, Excel) eng kuchli 3 farq.
+B. Landing page kontenti — hero (3 variant sarlavha), muammo→yechim, asosiy 5 imkoniyat
+   (qaysi 5 tasini tanlading va nega), qanday ishlaydi (3 qadam), kimlar uchun, narx bloki,
+   FAQ (8 ta haqiqiy savol), yakuniy CTA. Har blok uchun ayt: qaysi eʼtirozni yopadi?
+C. Telegram kontent rejasi — birinchi oy uchun 10 ta post (mavzu + tayyor matn),
+   hujjatning 8-boʻlimidagi formulaga muvofiq.
+D. Sotuv materiallari — shaxsiy taklif xabari, qoʻngʻiroq skripti, eʼtirozlarga javoblar.
+E. Xavflar — marketing nuqtai nazaridan eng katta 3 xavf va ularni kamaytirish yoʻli.
 
-## MIJOZ PORTRETI
-
-Oʻzbekistondagi maktab oʻqituvchisi:
-- 5–11-sinflarga dars beradi, har sinfda 30+ oʻquvchi
-- Dars atigi 45 daqiqa — vaqt eng qimmat resurs
-- Qogʻoz jurnal, Excel jadvallari va hisobotlar orasida ovora
-- Texnologiyaga usta emas; murakkab interfeys uni qoʻrqitadi
-- Asosiy ishni kompyuterda qiladi, lekin telefonda ham koʻrishni xohlaydi
-- Pul toʻlashga tayyorligi past — ishonch qozonilishi kerak
-
-## MEN BERGAN HUJJAT
-
-Biriktirilgan hujjatda uch daraja bor:
-- ✅ BOR — bugun ishlaydi
-- 🔜 YOʻLDA — qurilyapti, sanasi bor
-- 💭 REJADA — hali qaror qilinmagan
-
-## QATʼIY CHEGARALAR (buzilmasin)
-
-1. Faqat ✅ BOR boʻlgan narsalarni vaʼda qil. 🔜 YOʻLDA — faqat "tez orada" yorligʻi bilan.
-   💭 REJADA boʻlganlarni umuman tilga olma.
-2. Soxta ijtimoiy dalil taqiqlanadi: "50,000 oʻqituvchi ishonadi", oʻylab topilgan
-   sharhlar, yolgʻon reytinglar — mahsulot yangi, real statistika yoʻq.
-3. Telefon ilovasi YOʻQ. "Telefoningizdan boshqaring" deb vaʼda berma.
-4. Narx: "Oʻqituvchilar uchun bepul. Bank kartasi talab qilinmaydi." — "doimiy bepul"
-   ham, "hozircha bepul" ham emas.
-5. Til tabiiy oʻzbekcha boʻlsin. Tarjima hidi kelmasin. "Taʼlimni boshqarishning zamonaviy
-   usuli" kabi rasmiy-idoraviy jumlalar taqiqlanadi — oʻqituvchi bunday gapirmaydi.
-   Apostrof: `ʻ` (Oʻ, Gʻ) va `ʼ` (tutuq belgisi), ASCII `'` emas.
-6. Har bir vaʼda aniq va oʻlchanadigan boʻlsin: "sifat, tezkorlik, qulaylik" kabi quruq
-   sifatlar emas, "davomat — bir bosishda" kabi aniq gaplar.
-
-## NIMA KERAK
-
-### A. Pozitsiyalash
-1. Bitta jumlada mahsulot pozitsiyasi (positioning statement).
-2. Asosiy qiymat vaʼdasi — oʻqituvchi uchun eng katta ogʻriq nima va biz uni qanday
-   yopamiz? 3 ta variant, har birining kuchli/kuchsiz tomoni bilan.
-3. Raqobatchilardan farqimiz (Additio, iDoceo, qogʻoz jurnal, Excel): eng kuchli 3 ta farq.
-
-### B. Landing page kontent rejasi
-Har bir blok uchun: maqsadi, aynan qanday maʼlumot boʻlishi, sarlavha va matn variantlari
-(oʻzbekcha, tayyor holda).
-1. Hero — sarlavha (3 variant), tavsif, CTA matni
-2. Ishonch bloki — real ijtimoiy dalil YOʻQ ekan, uning oʻrniga nima ishlatamiz?
-3. Muammo → yechim
-4. Asosiy imkoniyatlar — qaysi 5 tasini tanlaysan va nega aynan shularni?
-5. Qanday ishlaydi — 3 qadamli oqim
-6. Kimlar uchun
-7. Narxlar — qanday taqdim etamiz?
-8. FAQ — oʻqituvchi beradigan eng haqiqiy 8 ta savol va javobi
-9. Yakuniy CTA
-
-Har bir blok uchun ayt: bu blok foydalanuvchining qaysi eʼtirozini yopadi?
-
-### C. Marketing kampaniyasi
-1. Kanallar: Oʻzbekistonda oʻqituvchiga qanday yetib boramiz? (Telegram, Instagram,
-   maktab metodbirlashmalari, viloyat taʼlim boshqarmalari, ogʻizdan-ogʻiz...) — har
-   kanal uchun real taktika, budjetsiz boshlanadigan variantlari bilan.
-2. Birinchi 100 foydalanuvchini qanday topamiz? Aniq, bajariladigan reja.
-3. Kontent rejasi: birinchi oy uchun 10 ta post gʻoyasi (mavzu + qisqa matn).
-4. OCR skaner (qogʻoz testni telefon bilan tekshirish) sentabrda chiqadi — bu alohida
-   kampaniyaga asos. Uni qanday ishga tushiramiz? Ish rejasi.
-5. Muvaffaqiyat mezonlari: nimani oʻlchaymiz?
-
-### D. Xavflar
-Marketing nuqtai nazaridan eng katta 3 xavf va ularni qanday kamaytiramiz.
-
-## JAVOB SHAKLI
-
-Oʻzbek tilida yoz. Har bir taklifni asosla — "nega aynan shunday?" degan savolga javob
-bersin. Tayyor matnlarni koʻchirib ishlatsa boʻladigan holatda ber. Ishonching komil
-boʻlmagan joyda buni ochiq ayt, taxminni fakt sifatida koʻrsatma.
+JAVOB SHAKLI: oʻzbek tilida. Har taklifni asosla. Matnlarni koʻchirib ishlatsa
+boʻladigan tayyor holatda ber.
 ```
+
+---
+
+## 10. Hujjatni yangilab turish
+
+Mahsulot tez oʻzgaradi — bu hujjat eskirsa, marketing yolgʻon gapira boshlaydi.
+
+- **Har yangi imkoniyat chiqqanda** 3-boʻlimga qoʻshiladi, 4-boʻlimdan oʻchiriladi
+- **Tekshirishning eng oson yoʻli:** ilovadagi **Yangilanishlar** boʻlimi
+  (`/dashboard/changelog`) — nima yangi chiqqani oʻqituvchi tilida yozilgan
+- Shubha boʻlsa — vaʼda qilishdan oldin soʻrang
