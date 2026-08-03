@@ -133,6 +133,7 @@ oʻqituvchi testini oʻynaydi:
 |---|---|---|
 | Arqon tortish | oʻqituvchi testi | ha |
 | Poyga | oʻqituvchi testi | ha |
+
 | Krossvord | oʻz soʻz bazasi (`EG_WORDS`) | yoʻq |
 | Soʻz topish | oʻz soʻz bazasi | yoʻq |
 | Xotira | oʻz generatori | yoʻq |
@@ -151,9 +152,15 @@ Arqon va Poyga hamkor rejimida boshqacha ishlaydi:
 - **Savol taymeri oʻchadi (arqon).** Vaqt tugashi savolni javobsiz
   qoldirardi, yaʼni sekin oʻquvchi ball yoʻqotardi. «Tezlik hech qachon
   ballanmaydi» qoidasi shuni talab qiladi.
-- **Jamoaviy rejim oʻchadi (arqon).** Ikki jamoaning javobi bitta
-  oʻquvchi tokeni bilan yozilardi — jurnalga boshqa bolaning javobi
-  tushardi.
+- **Jamoaviy rejim oʻchadi.** Arqonda duo, poygada esa butun musobaqa
+  qatlami (jamoalar, olimpiada, QR-kartalar) chetlab oʻtiladi: ular
+  bitta ekranda oʻynaladigan sinf oʻyini uchun, baholanadigan sessiyada
+  esa har bola oʻz qurilmasida. Aks holda jamoaning javobi bitta
+  bolaning jurnaliga tushardi.
+- **Savollar takrorlanmaydi (poyga).** Mashq rejimida savollar qayta
+  aylanadi, baholanadigan ishda esa bir element ikki marta javob olsa
+  bazaga ikkita yozuv tushardi. Savollar soni ham testdan olinadi,
+  sozlamadan emas.
 - **Matematikaga tushib ketmaydi.** Savol yuklanmasa oʻyin boshlanmaydi;
   aks holda bola oʻqituvchi bermagan misollarni yechardi va natija hech
   qayerga yozilmasdi.
@@ -182,6 +189,8 @@ Bilish kerak boʻlgan uchta narsa:
 - **Javob varagʻi PDF endpointi** — hamkor uchun ochilmagan. OMR
   oʻqiy oladi, lekin varaqni hozircha LessonLab tomonida chop etish
   kerak.
-- **QR-kartalar** — telefonsiz sinf uchun; hali boshlanmagan.
+- ~~QR-kartalar~~ — tayyor: `GET /api/v1/answer-cards?class_id=…`
+  chop etishga tayyor PDF beradi. Oʻqish jonli, brauzerda
+  (`/scanner/`) — oʻqituvchi sinfni real vaqtda koʻrishi kerak.
 - **`pairs` uchun qobiq yoʻq.** Hamkor rejimida faqat `mcq` qadamlar
   uzatiladi; juftlash savollari oddiy ekranda oʻynaladi.

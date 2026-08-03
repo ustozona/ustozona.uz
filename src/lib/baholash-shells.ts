@@ -25,15 +25,15 @@ export type GameShell = {
 
 /* DIQQAT — bu roʻyxatga qobiq qoʻshishdan oldin tekshiring:
 
-   LessonLabdagi oʻyinlardan hozircha faqat BITTASI (`arqon`) har-oʻquvchi
+   LessonLabdagi oltita oʻyindan IKKITASI (`arqon`, `poyga`) har-oʻquvchi
    baholanadigan sessiyaga mos keladi.
 
-   • `krossvord`, `so-z-topish`, `xotira`, `qaysi-katta` — oʻz soʻz bazasi
-     yoki oʻz generatoridan ishlaydi, testni butunlay eʼtiborsiz qoldiradi.
-   • `poyga` — oʻqituvchi testini oʻynaydi, lekin u JAMOAVIY musobaqa
-     dvigateli (bitta ekran, jamoalar, QR-kartalar). Bitta oʻquvchi
-     tokeniga bogʻlab boʻlmaydi: jamoaning javobi bitta bolaning
-     jurnaliga tushardi. Unga har-oʻquvchi rejimi qoʻshilgach qaytariladi.
+   Qolgan toʻrttasi — `krossvord`, `so-z-topish`, `xotira`,
+   `qaysi-katta` — oʻz soʻz bazasi yoki oʻz generatoridan ishlaydi va
+   oʻqituvchi testini butunlay eʼtiborsiz qoldiradi. Ularni bu yerga
+   qoʻshish oʻqituvchini aldardi: u oʻz testi oʻynalyapti deb oʻylardi,
+   aslida bolalar boshqa soʻzlar bilan mashq qilardi va jurnalga hech
+   narsa tushmasdi.
 
    Ularni bu yerga qoʻshish oʻqituvchini aldardi: u «Xotira» ni tanlab,
    oʻz testi oʻynalyapti deb oʻylardi, aslida bolalar boshqa soʻzlar
@@ -52,6 +52,17 @@ export const GAME_SHELLS: GameShell[] = [
       "sessiyada savol taymeri oʻchiriladi — sekin javob jazolanmaydi.",
     shapes: ["mcq"],
     minQuestions: 6,
+  },
+  {
+    id: "poyga",
+    name: "Poyga",
+    file: "poyga.html",
+    description:
+      "Har toʻgʻri javob mashinani marra tomon suradi. Baholanadigan " +
+      "sessiyada jamoaviy musobaqa emas, yakka poyga: savollar testdan " +
+      "olinadi va takrorlanmaydi.",
+    shapes: ["mcq"],
+    minQuestions: 5,
   },
 ];
 
