@@ -124,17 +124,49 @@ nonce server tomonda rad etiladi.
 Oxirgi uchtasi oʻrnatilmagan boʻlsa integratsiya **oʻchiq** holatda
 qoladi: sahifa ochiq aytadi, soxta tugma koʻrsatmaydi.
 
-## 6. Hali qilinmagan
+## 6. Qaysi oʻyinlar bor — va nega faqat ikkitasi
 
-- **Oʻyin qobiqlarini moslash.** `quiz-loader.js` hamkor rejimini
-  qoʻllab-quvvatlaydi, lekin oltita qobiqning oʻzi hali javobni
-  mahalliy solishtiradi (`chosen === item.answer`). Har birida uni
-  `await LLQuiz.check(chosen)` ga oʻgirish kerak.
+LessonLabda oltita oʻyin bor, lekin ulardan **faqat ikkitasi**
+oʻqituvchi testini oʻynaydi:
+
+| Oʻyin | Savol manbai | Roʻyxatda |
+|---|---|---|
+| Arqon tortish | oʻqituvchi testi | ha |
+| Poyga | oʻqituvchi testi | ha |
+| Krossvord | oʻz soʻz bazasi (`EG_WORDS`) | yoʻq |
+| Soʻz topish | oʻz soʻz bazasi | yoʻq |
+| Xotira | oʻz generatori | yoʻq |
+| Qaysi katta | oʻz generatori | yoʻq |
+
+Qolgan toʻrttasini roʻyxatga qoʻshish oʻqituvchini aldardi: u oʻz testi
+oʻynalyapti deb oʻylardi, aslida bolalar boshqa soʻzlar bilan mashq
+qilardi va jurnalga hech narsa tushmasdi.
+
+### Baholanadigan sessiyada nima oʻzgaradi
+
+Arqon va Poyga hamkor rejimida boshqacha ishlaydi:
+
+- **Toʻgʻri javob koʻrsatilmaydi.** Mashq rejimida xato javobdan keyin
+  toʻgʻrisi yonardi — baholanadigan ishda bu testni buzadi.
+- **Savol taymeri oʻchadi (arqon).** Vaqt tugashi savolni javobsiz
+  qoldirardi, yaʼni sekin oʻquvchi ball yoʻqotardi. «Tezlik hech qachon
+  ballanmaydi» qoidasi shuni talab qiladi.
+- **Jamoaviy rejim oʻchadi (arqon).** Ikki jamoaning javobi bitta
+  oʻquvchi tokeni bilan yozilardi — jurnalga boshqa bolaning javobi
+  tushardi.
+- **Matematikaga tushib ketmaydi.** Savol yuklanmasa oʻyin boshlanmaydi;
+  aks holda bola oʻqituvchi bermagan misollarni yechardi va natija hech
+  qayerga yozilmasdi.
+- **Tarmoq uzilsa javob «notoʻgʻri» boʻlmaydi.** Server javob bermasa
+  oʻquvchiga eslatma chiqadi va u qayta bosa oladi.
+
+## 7. Hali qilinmagan
+
 - **OMR endpointi.** Skaner dvigateli LessonLab tomonida serverga
   koʻchirilmoqda (varaq geometriyasi va oʻqish mantigʻi tayyor va test
   bilan qoplangan). `POST /api/v1/scan/omr` chiqqach `scanOmrSheet()`
   ishlaydi.
 - **Javob varagʻi PDF endpointi** — hamkor uchun ochilmagan.
 - **QR-kartalar** — telefonsiz sinf uchun; hali boshlanmagan.
-- **`pairs` qobiqlari.** Hozircha hamkor rejimida faqat `mcq` qadamlar
-  uzatiladi.
+- **`pairs` uchun qobiq yoʻq.** Hamkor rejimida faqat `mcq` qadamlar
+  uzatiladi; juftlash savollari oddiy ekranda oʻynaladi.
