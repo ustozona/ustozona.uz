@@ -1,4 +1,10 @@
 import { ProductPage } from "@/components/landing/ProductPage";
+import { getSession } from "@/server/session";
+import { isTeacher } from "@/lib/auth-roles";
+import { listSets } from "@/server/dal/assess/sets";
+import { getGradesPayload } from "@/server/dal/grades";
+import { isConfigured } from "@/server/lessonlab/baholash";
+import BaholashWorkspace from "./_components/BaholashWorkspace";
 
 export const metadata = {
   title: "Ustozona Baholash — onlayn test tuzish, sinfda kviz",
@@ -6,7 +12,48 @@ export const metadata = {
     "Onlayn test tuzish, sinfda interaktiv kviz, qogʻoz test skaneri (OMR) va QR-kartalar — bittasi bahoga, hammasi jurnalga.",
 };
 
-export default function BaholashPage() {
+/* ════════════════════════════════════════════════════════════════════
+   /baholash — IKKI YUZLI SAHIFA
+
+   • Mehmon (kirmagan) uchun — mahsulot sahifasi, avvalgidek. Marketing
+     qoidasi buzilmaydi: hali tayyor boʻlmagan narsa tayyor deb
+     koʻrsatilmaydi.
+   • Oʻqituvchi (kirgan) uchun — HAQIQIY ish maydoni: test tanlanadi va
+     uchta yetkazish usulidan biri bilan sinfga beriladi.
+
+   Nega bitta manzil: oʻqituvchi «Ustozona Baholash» deb eshitgan narsani
+   izlaganda aynan shu yerga keladi. Ikkinchi manzil oʻrgatish — ortiqcha
+   yuk.
+   ════════════════════════════════════════════════════════════════════ */
+
+export default async function BaholashPage() {
+  const session = await getSession();
+
+  if (session && isTeacher(session.user)) {
+    const [sets, classMap] = await Promise.all([listSets(), getGradesPayload()]);
+    const classes = Object.values(classMap)
+      .filter((c) => !c.info.archivedAt)
+      .map((c) => ({ id: c.info.id, name: c.info.name }));
+
+    return (
+      <BaholashWorkspace
+        classes={classes}
+        sets={sets.map((s) => ({
+          id: s.id,
+          classId: s.classId,
+          title: s.title,
+          // Sxemada `purpose` — matn ustuni (CHECK bilan cheklangan).
+          // Ko'r-ko'rona cast qilmasdan aniq toraytiramiz: kutilmagan
+          // qiymat kelsa formativ deb qaraladi, ya'ni jurnalga
+          // avtomatik ko'chmaydi — xavfsiz tomon.
+          purpose: s.purpose === "summative" ? "summative" : "formative",
+          itemCount: s.items.length,
+        }))}
+        engineReady={isConfigured()}
+      />
+    );
+  }
+
   return (
     <ProductPage
       slug="baholash"
