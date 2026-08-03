@@ -26,7 +26,12 @@ export const metadata = {
    yuk.
    ════════════════════════════════════════════════════════════════════ */
 
-export default async function BaholashPage() {
+export default async function BaholashPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = searchParams ? await searchParams : undefined;
   const session = await getSession();
 
   if (session && isTeacher(session.user)) {
@@ -37,6 +42,12 @@ export default async function BaholashPage() {
 
     return (
       <BaholashWorkspace
+        importStatus={{
+          state: typeof params?.import === "string" ? params.import : null,
+          classes: Number(params?.classes ?? 0) || 0,
+          students: Number(params?.students ?? 0) || 0,
+          conflicts: Number(params?.conflicts ?? 0) || 0,
+        }}
         classes={classes}
         sets={sets.map((s) => ({
           id: s.id,
