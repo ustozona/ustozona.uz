@@ -160,13 +160,28 @@ Arqon va Poyga hamkor rejimida boshqacha ishlaydi:
 - **Tarmoq uzilsa javob «notoʻgʻri» boʻlmaydi.** Server javob bermasa
   oʻquvchiga eslatma chiqadi va u qayta bosa oladi.
 
-## 7. Hali qilinmagan
+## 7. Qogʻoz test (OMR) — endpoint tayyor
 
-- **OMR endpointi.** Skaner dvigateli LessonLab tomonida serverga
-  koʻchirilmoqda (varaq geometriyasi va oʻqish mantigʻi tayyor va test
-  bilan qoplangan). `POST /api/v1/scan/omr` chiqqach `scanOmrSheet()`
-  ishlaydi.
-- **Javob varagʻi PDF endpointi** — hamkor uchun ochilmagan.
+`POST /api/v1/scan/omr?test_id=…` ishlaydi. Rasm yuboriladi, javob
+HAR DOIM roʻyxat: bitta A4 sahifada 4 tagacha varaq boʻlishi mumkin.
+
+Bilish kerak boʻlgan uchta narsa:
+
+- **Varaq toʻliq kadrga sigʻishi shart.** Cheti kesilgan surat rad
+  etiladi — chala suratdan taxmin qilgandan koʻra qayta suratga
+  olishni soʻrash afzal.
+- **Ishonchsiz varaq javobga umuman kirmaydi.** Boʻsh roʻyxat — xato
+  emas. Taxminiy natijani oʻqituvchi haqiqiy deb qabul qilardi.
+- **`"X"` — ikki pufakcha belgilangan.** Baholashda XATO hisoblanadi,
+  boʻsh emas: oʻquvchi javob bergan, lekin noaniq.
+
+`scanOmrSheet()` javobni xom holda qaytaradi — ballash Ustozonaning
+`submitResponse()` zanjiridan oʻtadi, aynan onlayn javob kabi.
+
+## 8. Hali qilinmagan
+- **Javob varagʻi PDF endpointi** — hamkor uchun ochilmagan. OMR
+  oʻqiy oladi, lekin varaqni hozircha LessonLab tomonida chop etish
+  kerak.
 - **QR-kartalar** — telefonsiz sinf uchun; hali boshlanmagan.
 - **`pairs` uchun qobiq yoʻq.** Hamkor rejimida faqat `mcq` qadamlar
   uzatiladi; juftlash savollari oddiy ekranda oʻynaladi.
