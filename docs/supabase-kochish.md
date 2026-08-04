@@ -31,27 +31,65 @@ toʻxtaydi. Ilgari ular mustaqil edi.
 
 ## 1. Maʼlumotni koʻchirish (SIZ bajarasiz)
 
-Neon ulanish satri Vercel'dagi eski `DATABASE_URL` da. Supabase satri —
-Supabase → Connect → **Session pooler yoki Direct** (koʻchirish uchun
-6543 emas, 5432 maʼqul: `pg_dump` uzoq tranzaksiya ochadi).
+### Kerakli vosita
 
-```bash
-# 1) Neon'dan FAQAT maʼlumot (sxema allaqachon Supabase'da)
-pg_dump "$NEON_URL" \
-  --data-only --no-owner --no-privileges \
-  --disable-triggers \
-  -f ustozona-data.sql
+`pg_dump` / `psql` — **17-versiya yoki undan yuqori** (Neon ham,
+Supabase ham PG 17). Eski `pg_dump` yangi serverdan dump ololmaydi va
+«server version mismatch» beradi.
 
-# 2) Supabase'ga quyish
-psql "$SUPABASE_DIRECT_URL" -v ON_ERROR_STOP=1 -f ustozona-data.sql
+Windows: <https://www.postgresql.org/download/windows/> → EDB
+oʻrnatuvchisi → faqat *Command Line Tools* yetarli.
+
+```powershell
+pg_dump --version   # 17.x boʻlishi kerak
 ```
 
-`--disable-triggers` — FK tekshiruvi quyish tartibiga bogʻliq boʻlib
-qolmasin (`pg_dump` jadval tartibini alfavit boʻyicha yozadi, FK esa
-boshqa tartib talab qilishi mumkin).
+### Ulanish satrlari
 
-`ON_ERROR_STOP=1` — birinchi xatoda toʻxtaydi. Yarim koʻchgan
-maʼlumotdan koʻra toʻxtagani yaxshi.
+Neon satri lokal `.env.local` faylingizda. Uni ekranga chiqarmasdan
+oʻzgaruvchiga olamiz:
+
+```powershell
+$NEON = (Get-Content .env.local | Select-String '^DATABASE_URL=').Line.Substring(13)
+```
+
+Supabase satri: Supabase → Connect → **Direct connection** (5432).
+Koʻchirish uchun pooler (6543) MAʼQUL EMAS: `pg_dump`/`psql` uzoq
+tranzaksiya ochadi, transaction pooler esa buni uzib qoʻyadi.
+
+```powershell
+$SUPA = "postgresql://postgres:<parol>@db.lxppxnawxmcfebmzdgil.supabase.co:5432/postgres"
+```
+
+### Koʻchirish
+
+```powershell
+# 1) Neon'dan FAQAT maʼlumot (sxema allaqachon Supabase'da)
+pg_dump $NEON --data-only --no-owner --no-privileges -f ustozona-data.sql
+
+# 2) FK tekshiruvini vaqtincha oʻchirib, BITTA tranzaksiyada quyamiz
+"SET session_replication_role = replica;" | Set-Content -Encoding utf8 quyish.sql
+Get-Content ustozona-data.sql | Add-Content -Encoding utf8 quyish.sql
+"SET session_replication_role = origin;"  | Add-Content -Encoding utf8 quyish.sql
+
+psql $SUPA -v ON_ERROR_STOP=1 -1 -f quyish.sql
+```
+
+**Nega `--disable-triggers` EMAS.** `pg_dump --disable-triggers`
+`ALTER TABLE ... DISABLE TRIGGER ALL` chiqaradi, bu esa FK triggerlari
+uchun **superuser** talab qiladi. Supabase'ning `postgres` roli
+superuser EMAS — buyruq «permission denied» bilan yiqilardi.
+`session_replication_role = replica` esa oʻsha ishni qiladi va bu rol
+uchun ruxsat etilgan.
+
+**Nega `-1` (bitta tranzaksiya).** Ikki sababdan: `SET` butun quyish
+davomida kuchda qoladi, va xato chiqsa **hech narsa saqlanmaydi** —
+yarim koʻchgan baza qolmaydi. `ON_ERROR_STOP=1` esa birinchi xatoda
+toʻxtatadi.
+
+FK tartibi shu bilan hal boʻladi: `pg_dump` jadvallarni alfavit
+boʻyicha yozadi (`account` → `activities` → ...), FK esa boshqa tartib
+talab qilishi mumkin edi.
 
 ### Tekshirish
 
