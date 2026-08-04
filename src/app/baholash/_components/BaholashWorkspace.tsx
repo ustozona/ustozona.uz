@@ -35,14 +35,28 @@ export type SetOption = {
   itemCount: number;
 };
 
-type Props = {
-  classes: ClassOption[];
-  sets: SetOption[];
-  /** LessonLab dvigateli sozlanganmi (kalitlar oʻrnatilganmi). */
-  engineReady: boolean;
+export type ImportStatus = {
+  state: string | null;
+  classes: number;
+  students: number;
+  tests: number;
+  conflicts: number;
+  skipped: number;
 };
 
-export default function BaholashWorkspace({ classes, sets, engineReady }: Props) {
+type Props = {
+  importStatus?: ImportStatus;
+  classes: ClassOption[];
+  sets: SetOption[];
+  /** LessonLab dvigateli sozlanganmi (imzo kalitlari oʻrnatilganmi). */
+  engineReady: boolean;
+  /** Oʻyin qobiqlari serveri manzili berilganmi. */
+  gamesReady: boolean;
+};
+
+export default function BaholashWorkspace({
+  classes, sets, engineReady, gamesReady, importStatus,
+}: Props) {
   const [classId, setClassId] = useState<string>(classes[0]?.id ?? "");
   const [activeSet, setActiveSet] = useState<SetOption | null>(null);
   const [delivery, setDelivery] = useState<Delivery | null>(null);
@@ -89,6 +103,12 @@ export default function BaholashWorkspace({ classes, sets, engineReady }: Props)
           uchala usulda ham bitta jurnalga tushadi.
         </p>
       </header>
+
+      <ImportPanel
+        status={importStatus}
+        hasClasses={classes.length > 0}
+        classId={classId}
+      />
 
       {classes.length === 0 ? (
         <EmptyNote text="Avval sinf qoʻshing — testni kimga berishni shundan keyin tanlaysiz." />
@@ -167,6 +187,7 @@ export default function BaholashWorkspace({ classes, sets, engineReady }: Props)
           session={session}
           busy={busy}
           engineReady={engineReady}
+          gamesReady={gamesReady}
           onClose={() => {
             setActiveSet(null);
             setDelivery(null);
@@ -175,6 +196,68 @@ export default function BaholashWorkspace({ classes, sets, engineReady }: Props)
         />
       )}
     </main>
+  );
+}
+
+/* LessonLab'dan koʻchirish — bir martalik import.
+
+   Nega alohida blok: oʻqituvchi LessonLab botida yillar davomida sinf
+   va oʻquvchi yigʻgan boʻlishi mumkin. Ularni qoʻlda kiritish yuzlab
+   ism yozish degani va Ustozonaga oʻtishning eng katta toʻsigʻi. */
+function ImportPanel({ status, hasClasses, classId }:
+                     { status?: ImportStatus; hasClasses: boolean; classId: string }) {
+  const s = status?.state ?? null;
+
+  const message = (() => {
+    if (s === "ok") {
+      const parts: string[] = [];
+      if (status?.classes) parts.push(`${status.classes} sinf`);
+      if (status?.students) parts.push(`${status.students} oʻquvchi`);
+      if (status?.tests) parts.push(`${status.tests} test`);
+      // Hech narsa koʻchmasa buni ochiq aytamiz. «Koʻchirildi: » deb
+      // boʻsh roʻyxat koʻrsatish oʻqituvchini ishlagan deb adashtirardi.
+      if (parts.length === 0) {
+        return status?.conflicts
+          ? `Yangi narsa yoʻq — ${status.conflicts} ta nomi bir xil boʻlgani uchun tegilmadi.`
+          : "Koʻchirishga yangi narsa topilmadi.";
+      }
+      const tail = [
+        status?.conflicts ? `${status.conflicts} ta nomi bir xil boʻlgani uchun tegilmadi` : "",
+        status?.skipped ? `${status.skipped} ta oʻtkazib yuborildi` : "",
+      ].filter(Boolean);
+      return `Koʻchirildi: ${parts.join(", ")}${tail.length ? ` · ${tail.join(" · ")}` : ""}`;
+    }
+    if (s === "denied") return "Ruxsat berilmadi — koʻchirish bekor qilindi.";
+    if (s === "badstate") return "Havola eskirgan — qaytadan urinib koʻring.";
+    if (s === "notconfigured") return "LessonLab ulanishi hali sozlanmagan.";
+    if (s === "failed") return "Koʻchirib boʻlmadi — keyinroq qayta urinib koʻring.";
+    return null;
+  })();
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3.5">
+      <Info className="size-4 shrink-0 text-muted-foreground" />
+      <p className="flex-1 text-sm text-muted-foreground">
+        {message ?? (hasClasses
+          ? "LessonLab botida sinflaringiz bormi? Ularni bir marta koʻchirib olishingiz mumkin — mavjud sinflarga tegilmaydi."
+          : "LessonLab botida sinflaringiz bormi? Ularni qoʻlda kiritmang — bir marta koʻchirib oling.")}
+      </p>
+      <Button asChild size="sm" variant="outline">
+        <a href="/api/lessonlab/start">
+          {s === "ok" ? "Yana koʻchirish" : "Sinflarni koʻchirish"}
+        </a>
+      </Button>
+      {/* Test koʻchirish sinfga bogʻlangan — qaysi sinfga tushishini
+          bilmasdan chaqirib boʻlmaydi, shuning uchun sinf tanlanmagan
+          boʻlsa tugma umuman koʻrsatilmaydi. */}
+      {classId && (
+        <Button asChild size="sm" variant="outline">
+          <a href={`/api/lessonlab/start?class=${encodeURIComponent(classId)}`}>
+            Testlarni koʻchirish
+          </a>
+        </Button>
+      )}
+    </div>
   );
 }
 

@@ -3,7 +3,7 @@ import { getSession } from "@/server/session";
 import { isTeacher } from "@/lib/auth-roles";
 import { listSets } from "@/server/dal/assess/sets";
 import { getGradesPayload } from "@/server/dal/grades";
-import { isConfigured } from "@/server/lessonlab/baholash";
+import { isConfigured, isGamesConfigured } from "@/server/lessonlab/baholash";
 import BaholashWorkspace from "./_components/BaholashWorkspace";
 
 export const metadata = {
@@ -26,7 +26,12 @@ export const metadata = {
    yuk.
    ════════════════════════════════════════════════════════════════════ */
 
-export default async function BaholashPage() {
+export default async function BaholashPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = searchParams ? await searchParams : undefined;
   const session = await getSession();
 
   if (session && isTeacher(session.user)) {
@@ -37,6 +42,14 @@ export default async function BaholashPage() {
 
     return (
       <BaholashWorkspace
+        importStatus={{
+          state: typeof params?.import === "string" ? params.import : null,
+          classes: Number(params?.classes ?? 0) || 0,
+          students: Number(params?.students ?? 0) || 0,
+          tests: Number(params?.tests ?? 0) || 0,
+          conflicts: Number(params?.conflicts ?? 0) || 0,
+          skipped: Number(params?.skipped ?? 0) || 0,
+        }}
         classes={classes}
         sets={sets.map((s) => ({
           id: s.id,
@@ -50,6 +63,7 @@ export default async function BaholashPage() {
           itemCount: s.items.length,
         }))}
         engineReady={isConfigured()}
+        gamesReady={isGamesConfigured()}
       />
     );
   }
