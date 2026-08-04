@@ -3,7 +3,7 @@ import { getSession } from "@/server/session";
 import { isTeacher } from "@/lib/auth-roles";
 import { listSets } from "@/server/dal/assess/sets";
 import { getGradesPayload } from "@/server/dal/grades";
-import { isConfigured } from "@/server/lessonlab/baholash";
+import { isConfigured, isGamesConfigured } from "@/server/lessonlab/baholash";
 import BaholashWorkspace from "./_components/BaholashWorkspace";
 
 export const metadata = {
@@ -61,6 +61,7 @@ export default async function BaholashPage({
           itemCount: s.items.length,
         }))}
         engineReady={isConfigured()}
+        gamesReady={isGamesConfigured()}
       />
     );
   }

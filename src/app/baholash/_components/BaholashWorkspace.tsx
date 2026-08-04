@@ -46,12 +46,14 @@ type Props = {
   importStatus?: ImportStatus;
   classes: ClassOption[];
   sets: SetOption[];
-  /** LessonLab dvigateli sozlanganmi (kalitlar oʻrnatilganmi). */
+  /** LessonLab dvigateli sozlanganmi (imzo kalitlari oʻrnatilganmi). */
   engineReady: boolean;
+  /** Oʻyin qobiqlari serveri manzili berilganmi. */
+  gamesReady: boolean;
 };
 
 export default function BaholashWorkspace({
-  classes, sets, engineReady, importStatus,
+  classes, sets, engineReady, gamesReady, importStatus,
 }: Props) {
   const [classId, setClassId] = useState<string>(classes[0]?.id ?? "");
   const [activeSet, setActiveSet] = useState<SetOption | null>(null);
@@ -179,6 +181,7 @@ export default function BaholashWorkspace({
           session={session}
           busy={busy}
           engineReady={engineReady}
+          gamesReady={gamesReady}
           onClose={() => {
             setActiveSet(null);
             setDelivery(null);

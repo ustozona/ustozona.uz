@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, Info, X } from "lucide-react";
+import { Check, Copy, Info, Printer, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { QuizSessionRow } from "@/server/db/schema";
@@ -15,7 +15,10 @@ type Props = {
   delivery: Delivery;
   session: QuizSessionRow | null;
   busy: boolean;
+  /** Imzo kalitlari bor — PDF/OMR chaqiruvlari ishlaydi. */
   engineReady: boolean;
+  /** Oʻyin qobiqlari serveri manzili bor. */
+  gamesReady: boolean;
   onClose: () => void;
 };
 
@@ -23,8 +26,9 @@ type Props = {
    kerakligini bitta ekranda koʻrsatadi.
 
    Qoida: hech bir usul «tayyor» deb koʻrsatilmaydi, agar u haqiqatda
-   ishlamasa. Qogʻoz test dvigateli hali qurilmoqda — shuning uchun u
-   ochiq holat bloki bilan chiqadi, soxta tugma bilan emas. */
+   ishlamasa. Shuning uchun har blok oʻz sozlanish bayrogʻiga qaraydi
+   (`engineReady` — imzo kalitlari, `gamesReady` — qobiq manzili) va
+   sozlanmagan boʻlsa soxta tugma emas, sabab koʻrsatiladi. */
 
 export default function DeliveryPanel({
   set,
@@ -32,6 +36,7 @@ export default function DeliveryPanel({
   session,
   busy,
   engineReady,
+  gamesReady,
   onClose,
 }: Props) {
   const [shellId, setShellId] = useState(GAME_SHELLS[0]?.id ?? "");
@@ -95,7 +100,7 @@ export default function DeliveryPanel({
               );
             })}
           </div>
-          {!engineReady && (
+          {!gamesReady && (
             <Note>
               Oʻyin qobiqlari serveri hali ulanmagan (<code>LESSONLAB_GAMES_BASE</code>).
               Havola ishlaydi, lekin qobiq ochilmaydi.
@@ -112,19 +117,7 @@ export default function DeliveryPanel({
       )}
 
       {delivery === "paper" && (
-        <div className="flex flex-col gap-3">
-          <p className="text-sm text-muted-foreground">
-            Har oʻquvchi uchun QR-belgili javob varagʻi chop etiladi. Oʻquvchi
-            katakchani belgilaydi, oʻqituvchi telefon kamerasi bilan varaqni
-            suratga oladi — natija oʻz-oʻzidan jurnalga tushadi.
-          </p>
-          <Note>
-            <strong className="text-foreground">Bu qism hali tayyor emas.</strong>{" "}
-            Skaner dvigateli serverga koʻchirilmoqda: varaq geometriyasi va
-            oʻqish mantigʻi tayyor, qolgani — hamkor endpointi. Tayyor boʻlganda
-            shu yerda «Varaqlarni chop etish» tugmasi paydo boʻladi.
-          </Note>
-        </div>
+        <PaperPanel set={set} engineReady={engineReady} />
       )}
 
       {delivery !== "paper" && (
@@ -150,6 +143,102 @@ export default function DeliveryPanel({
         </div>
       )}
     </section>
+  );
+}
+
+/* Qogʻoz test — varaqlarni chop etish.
+
+   Ikki rejim ataylab ajratilgan:
+     • Sinf roʻyxati — har varaqda ism va QR bor, tekshirgich varaqni
+       oʻzi kimnikiligini biladi.
+     • Imtihon      — ismsiz bitta varaq, koʻpaytirib tarqatiladi.
+       QR faqat testni koʻrsatadi, ismni oʻquvchi qoʻlda yozadi.
+
+   Tugma bosilganda PDF serverdan keladi va shu yerda faylga aylanadi —
+   sahifa almashmaydi, oʻqituvchi tanlagan testini yoʻqotmaydi. */
+function PaperPanel({ set, engineReady }: { set: SetOption; engineReady: boolean }) {
+  const [busy, setBusy] = useState<"class" | "exam" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function print(mode: "class" | "exam") {
+    setBusy(mode);
+    setError(null);
+    try {
+      const res = await fetch("/api/baholash/answer-sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ setId: set.id, mode }),
+      });
+      if (!res.ok) {
+        const info = (await res.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(info?.message ?? `Varaq tayyorlanmadi (${res.status})`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      // Yangi oynada ochamiz: oʻqituvchi darhol chop etadi, fayl
+      // yuklamalar papkasida ortiqcha qolmaydi.
+      const opened = window.open(url, "_blank");
+      if (!opened) {
+        // Popup bloklandi — oddiy yuklab olishga tushamiz.
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "javob-varaqlari.pdf";
+        a.click();
+      }
+      // Blob URL'ni darhol boʻshatib boʻlmaydi — yangi oyna hali
+      // oʻqiyapti. Bir daqiqa yetarli, keyin xotira qaytariladi.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Varaq tayyorlanmadi");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-sm text-muted-foreground">
+        Har oʻquvchi uchun QR-belgili javob varagʻi chop etiladi. Oʻquvchi
+        katakchani belgilaydi, oʻqituvchi telefon kamerasi bilan varaqni
+        suratga oladi.
+      </p>
+
+      {engineReady ? (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" disabled={busy !== null} onClick={() => print("class")}>
+              <Printer className="size-3.5" />
+              {busy === "class" ? "Tayyorlanmoqda..." : "Sinf roʻyxati bilan"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busy !== null}
+              onClick={() => print("exam")}
+            >
+              {busy === "exam" ? "Tayyorlanmoqda..." : "Imtihon (ismsiz)"}
+            </Button>
+          </div>
+          {error && (
+            <p className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              {error}
+            </p>
+          )}
+          <Note>
+            Varaqdagi QR oʻquvchining sinf roʻyxatidagi TARTIB raqamini
+            tashiydi. Chop etgandan keyin sinfga oʻquvchi qoʻshsangiz yoki
+            oʻchirsangiz raqamlar suriladi — bunday holatda varaqlarni
+            qaytadan chop eting.
+          </Note>
+        </>
+      ) : (
+        <Note>
+          Skaner dvigateli hali ulanmagan (<code>LESSONLAB_PARTNER_KEY</code>).
+          Sozlangandan keyin shu yerda «Varaqlarni chop etish» tugmasi
+          ishlaydi.
+        </Note>
+      )}
+    </div>
   );
 }
 

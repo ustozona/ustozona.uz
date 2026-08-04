@@ -58,6 +58,11 @@ export type LessonLabRequest = {
   /** `/api/v1/...` — query bilan birga, chunki query ham imzolanadi. */
   path: string;
   body?: unknown;
+  /** Xom (matn boʻlmagan) tana — masalan OMR uchun JPEG baytlari.
+      `body` bilan birga berilmaydi. Imzo baytlarning sha256'sidan
+      olinadi, matnga aylantirilmasdan: UTF-8 ga oʻtkazish baytlarni
+      buzadi va imzo mos kelmay qoladi. */
+  binary?: { bytes: Uint8Array; contentType: string };
   /** Oʻqituvchi roziligi bilan olingan token (OAuth). Faqat oʻqituvchi
       maʼlumotiga tegadigan endpointlar uchun kerak. */
   accessToken?: string;
@@ -69,7 +74,13 @@ export type LessonLabRequest = {
 
 const DEFAULT_TIMEOUT_MS = 20_000;
 
-export async function lessonlab<T = unknown>(req: LessonLabRequest): Promise<T> {
+/** Imzolangan soʻrov — xom `Response` qaytaradi.
+
+    Nega alohida: dvigatel endpointlarining bir qismi JSON emas, PDF
+    yoki rasm qaytaradi. Ularni `response.text()` bilan oʻqish baytlarni
+    buzadi, shuning uchun javobni oʻqish chaqiruvchiga qoldiriladi.
+    Imzolash mantigʻi esa BITTA joyda qoladi. */
+export async function lessonlabRaw(req: LessonLabRequest): Promise<Response> {
   const cfg = config();
   if (!cfg) {
     throw new LessonLabError(
@@ -78,12 +89,17 @@ export async function lessonlab<T = unknown>(req: LessonLabRequest): Promise<T> 
       "LessonLab integratsiyasi sozlanmagan (LESSONLAB_API_BASE / _PARTNER_KEY / _PARTNER_SECRET)"
     );
   }
+  if (req.binary && req.body !== undefined) {
+    throw new LessonLabError(500, "invalid_request", "`body` va `binary` birga berilmaydi");
+  }
 
   const raw =
     req.body === undefined ? "" : typeof req.body === "string" ? req.body : JSON.stringify(req.body);
   const timestamp = String(Math.floor(Date.now() / 1000));
   const nonce = randomUUID().replace(/-/g, "");
-  const bodyHash = createHash("sha256").update(raw).digest("hex");
+  const bodyHash = createHash("sha256")
+    .update(req.binary ? req.binary.bytes : raw)
+    .digest("hex");
 
   const canonical = `${timestamp}.${nonce}.${req.method.toUpperCase()}.${req.path}.${bodyHash}`;
   const signature = createHmac("sha256", cfg.secret).update(canonical).digest("hex");
@@ -94,7 +110,8 @@ export async function lessonlab<T = unknown>(req: LessonLabRequest): Promise<T> 
     "X-LL-Nonce": nonce,
     "X-LL-Signature": signature,
   };
-  if (raw) headers["Content-Type"] = "application/json";
+  if (req.binary) headers["Content-Type"] = req.binary.contentType;
+  else if (raw) headers["Content-Type"] = "application/json";
   if (req.accessToken) headers.Authorization = `Bearer ${req.accessToken}`;
   if (req.idempotencyKey) headers["Idempotency-Key"] = req.idempotencyKey;
 
@@ -106,7 +123,7 @@ export async function lessonlab<T = unknown>(req: LessonLabRequest): Promise<T> 
     response = await fetch(cfg.base + req.path, {
       method: req.method,
       headers,
-      body: raw || undefined,
+      body: req.binary ? (req.binary.bytes as BodyInit) : raw || undefined,
       signal: controller.signal,
       cache: "no-store",
     });
@@ -121,23 +138,59 @@ export async function lessonlab<T = unknown>(req: LessonLabRequest): Promise<T> 
     clearTimeout(timer);
   }
 
-  const text = await response.text();
-  let parsed: unknown = null;
-  try {
-    parsed = text ? JSON.parse(text) : null;
-  } catch {
-    // JSON emas — pastda umumiy xato sifatida qaytadi
-  }
+  return response;
+}
 
-  if (!response.ok) {
-    const envelope = parsed as { error?: { code?: string; message?: string; details?: unknown } } | null;
+/** Muvaffaqiyatsiz javobni LessonLab xato oʻramiga qarab tashlaydi.
+
+    Tana bir marta oʻqiladi va matn sifatida talqin qilinadi — xato
+    oʻrami har doim JSON, hatto endpoint PDF qaytaradigan boʻlsa ham. */
+async function throwHttpError(response: Response): Promise<never> {
+  let envelope: { error?: { code?: string; message?: string; details?: unknown } } | null = null;
+  try {
+    const text = await response.text();
+    envelope = text ? JSON.parse(text) : null;
+  } catch {
+    // JSON emas — quyida umumiy xato sifatida qaytadi
+  }
+  throw new LessonLabError(
+    response.status,
+    envelope?.error?.code ?? "http_error",
+    envelope?.error?.message ?? `LessonLab ${response.status}`,
+    envelope?.error?.details
+  );
+}
+
+export async function lessonlab<T = unknown>(req: LessonLabRequest): Promise<T> {
+  const response = await lessonlabRaw(req);
+  if (!response.ok) await throwHttpError(response);
+
+  const text = await response.text();
+  try {
+    return (text ? JSON.parse(text) : null) as T;
+  } catch {
     throw new LessonLabError(
-      response.status,
-      envelope?.error?.code ?? "http_error",
-      envelope?.error?.message ?? `LessonLab ${response.status}`,
-      envelope?.error?.details
+      502,
+      "invalid_response",
+      "LessonLab JSON qaytarmadi"
     );
   }
+}
 
-  return parsed as T;
+/** Binar javob (PDF) — baytlar oʻzgartirilmasdan qaytadi. */
+export async function lessonlabBinary(
+  req: LessonLabRequest
+): Promise<{ bytes: Uint8Array; contentType: string; filename: string | null }> {
+  const response = await lessonlabRaw(req);
+  if (!response.ok) await throwHttpError(response);
+
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  // `attachment; filename="answer-sheets-12-class3.pdf"` → nomni ajratamiz.
+  const cd = response.headers.get("Content-Disposition") ?? "";
+  const match = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
+  return {
+    bytes,
+    contentType: response.headers.get("Content-Type") ?? "application/pdf",
+    filename: match ? decodeURIComponent(match[1]) : null,
+  };
 }
