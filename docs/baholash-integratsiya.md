@@ -124,6 +124,39 @@ nonce server tomonda rad etiladi.
 Oxirgi uchtasi oʻrnatilmagan boʻlsa integratsiya **oʻchiq** holatda
 qoladi: sahifa ochiq aytadi, soxta tugma koʻrsatmaydi.
 
+Ikki bayroq **alohida** tekshiriladi va bu ataylab:
+`isConfigured()` — imzo kalitlari (PDF/OMR), `isGamesConfigured()` —
+qobiq manzili. Bittasi sozlanib ikkinchisi sozlanmasligi mumkin;
+ilgari ikkalasi bitta bayroqqa bogʻlangani uchun panel notoʻgʻri
+sababni koʻrsatardi.
+
+### Prod qiymatlari (Vercel → Settings → Environment Variables)
+
+```
+LESSONLAB_API_BASE     = https://lessonlab.uz
+LESSONLAB_PARTNER_KEY  = pk_live_ustozona_a03b2cfbecd27232
+LESSONLAB_PARTNER_SECRET = (LessonLab tomonidan beriladi — pastga qarang)
+LESSONLAB_GAMES_BASE   = https://lessonlab.uz/edugames
+PLAY_ALLOWED_ORIGINS   = https://lessonlab.uz
+```
+
+`LESSONLAB_PARTNER_SECRET` hech qayerda saqlanmaydi — u LessonLab
+serverida master kalitdan hosil qilinadi:
+
+```
+secret = HMAC_SHA256(PARTNER_MASTER_SECRET, "ustozona:1")
+```
+
+Uni koʻrish uchun LessonLab VM'ida:
+
+```bash
+docker compose exec bot python scripts/partner_admin.py show ustozona
+```
+
+Buning ishlashi uchun LessonLab `.env` da `PARTNER_MASTER_SECRET`
+boʻlishi shart. Boʻlmasa hamkor API butunlay oʻchiq boʻladi va har
+soʻrov `503 server_misconfigured` qaytaradi.
+
 ## 6. Qaysi oʻyinlar bor — va nega faqat ikkitasi
 
 LessonLabda oltita oʻyin bor, lekin ulardan **faqat ikkitasi**
@@ -167,10 +200,48 @@ Arqon va Poyga hamkor rejimida boshqacha ishlaydi:
 - **Tarmoq uzilsa javob «notoʻgʻri» boʻlmaydi.** Server javob bermasa
   oʻquvchiga eslatma chiqadi va u qayta bosa oladi.
 
-## 7. Qogʻoz test (OMR) — endpoint tayyor
+## 7. Qogʻoz test (OMR) — ishlaydi
 
-`POST /api/v1/scan/omr?test_id=…` ishlaydi. Rasm yuboriladi, javob
-HAR DOIM roʻyxat: bitta A4 sahifada 4 tagacha varaq boʻlishi mumkin.
+Uchala chaqiruv ham `/api/v1/engine/*` orqali ketadi, `/api/v1/scan/*`
+orqali EMAS. Farqi hal qiluvchi:
+
+| | `/scan/*` | `/engine/*` |
+|---|---|---|
+| Oʻqituvchining LessonLab akkaunti | **kerak** (OAuth) | kerak emas |
+| Natija LessonLab jurnaliga yoziladi | ha | yoʻq |
+| Nima saqlanadi | test, natija | **hech narsa** |
+
+Ustozona oʻqituvchisida LessonLab akkaunti yoʻq va boʻlishi ham shart
+emas — «hech qanday toʻsiqsiz ishlasin» talabi shuni anglatadi. Yon
+foydasi: hech qanday maʼlumot koʻchmagani uchun dublikat ham, ustiga
+yozish ham printsipial ravishda mumkin emas.
+
+Ishlatiladigan uchtasi:
+
+- `POST /api/v1/engine/answer-sheets` → varaqlar PDF
+- `POST /api/v1/engine/answer-cards` → QR-kartalar PDF
+- `POST /api/v1/engine/scan-omr` → rasm (xom baytlar) → javoblar
+
+### QR ichida nima ketadi
+
+QR faqat **uchta butun son** tashiydi, Ustozona kalitlari esa UUID.
+Sigʻdirish uchun:
+
+- `test_ref` / `class_ref` — UUID'ning turgʻun 31-bitli xesh'i.
+  Bu **kalit emas, tekshiruv**: skanerlashda oʻqituvchi allaqachon
+  testni tanlagan boʻladi, xesh «bu varaq oʻshanikimi» degan savolga
+  javob beradi.
+- `student_ref` — sinf roʻyxatidagi **tartib** raqami (1..N).
+  `students.studentNumber` ishlatilmaydi: u butun bazada yagona
+  identity, qiymati 4821 boʻlishi mumkin, dvigatel esa `max(no)`
+  tagacha varaq chizadi — 4821 sahifalik PDF.
+
+⚠ Tartib raqamining narxi: varaq chop etilgandan keyin sinfga oʻquvchi
+qoʻshilsa yoki oʻchirilsa raqamlar suriladi va eski varaqlar notoʻgʻri
+odamga bogʻlanadi. Panel buni oʻqituvchiga ochiq aytadi.
+
+Javob HAR DOIM roʻyxat: bitta A4 sahifada 4 tagacha varaq boʻlishi
+mumkin.
 
 Bilish kerak boʻlgan uchta narsa:
 
@@ -238,10 +309,45 @@ LessonLab'dagi nusxa oʻz holicha qolaveradi va ular bir-birini
 quvmaydi.
 
 ## 9. Hali qilinmagan
-- ~~Javob varagʻi PDF endpointi~~ — tayyor:
-  `POST /api/v1/engine/answer-sheets` (oʻqituvchi tokeni kerak emas).
-- **Testlarni import qilish** — `importTests()` yozilgan, lekin UI'ga
-  ulanmagan: oʻqituvchi qaysi sinfga koʻchirishni tanlashi kerak.
-- **QR-kartalar** — telefonsiz sinf uchun; hali boshlanmagan.
+- ~~Javob varagʻi PDF endpointi~~ — tayyor va UI'ga ulangan:
+  `/baholash` → Qogʻoz test → «Sinf roʻyxati bilan» / «Imtihon».
+- ~~Testlarni import qilish~~ — tayyor: sinf tanlanganda «Testlarni
+  koʻchirish» tugmasi chiqadi (`/api/lessonlab/start?class=…`).
+- **Varaqni skanerlash UI'si** — server funksiyasi (`scanOmrSheet()`)
+  tayyor, lekin oʻqituvchi rasm yuklaydigan ekran hali yoʻq. Undan
+  keyingi qadam — natijani `submitResponse()` zanjiriga ulash.
+- **QR-kartalar** — `answerCardsPdf()` tayyor, UI hali yoʻq.
 - **`pairs` uchun qobiq yoʻq.** Hamkor rejimida faqat `mcq` qadamlar
   uzatiladi; juftlash savollari oddiy ekranda oʻynaladi.
+
+## 10. Oʻzgarish qanday prodga yetadi — DIQQAT
+
+Bu repo `roziyevbehroz-tech/ustozona.uz` — **fork**. Haqiqiy Vercel
+deploy esa `ustozona/ustozona.uz` (upstream) dan ketadi.
+
+Fork'ning oʻz `main` iga merge qilish prodga **HECH NARSA
+YETKAZMAYDI**. Ilgari shu sababli oltita PR fork ichida qolib ketgan
+va faqat ikkitasi (qoʻlda upstream'ga ochilgani) prodga chiqqan.
+
+Toʻgʻri tartib:
+
+1. Branch **`upstream/main`** dan ochiladi, fork'ning main'idan emas —
+   aks holda diff upstream'dagi yangi ishni orqaga qaytarib yuboradi:
+
+   ```bash
+   git remote add upstream https://github.com/ustozona/ustozona.uz
+   git fetch upstream main
+   git checkout -b behroz/<tavsif> upstream/main
+   ```
+
+2. `npm run build` lokal oʻtishi shart — Vercel bitta umumiy deploy,
+   bitta xato ikkala tomonga tegadi.
+
+3. Push fork'ga, PR esa **upstream'ga**:
+
+   ```
+   https://github.com/ustozona/ustozona.uz/compare/main...roziyevbehroz-tech:ustozona.uz:<branch>?expand=1
+   ```
+
+   Base `ustozona/ustozona.uz:main` ekanini koʻz bilan tekshiring —
+   GitHub fork ichida oʻz main'ini standart qilib qoʻyadi.
