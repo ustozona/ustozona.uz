@@ -312,7 +312,12 @@ quiz_sessions(id, teacher_id, set_id, class_id, title, mode, mode_boundary, stat
 
 session_teams(id, session_id, teacher_id, name, color)        ← GURUH rejimi (B5.1)
   → guruh sessiya BOSHIDA bir marta tuziladi (tasodifiy/avtomatik yoki qoʻlda)
-  → guruh bali = aʼzolar bali yigʻindisi — FAQAT reyting qatlami
+  → guruh bali = aʼzolar bali yigʻindisi + TENGLASHTIRUVCHI — FAQAT reyting qatlami
+       kam sonli guruhga oʻz oʻrtachasi bilan oʻynaydigan xayoliy aʼzo qoʻshiladi
+       (Wayground naqshi), aks holda katta guruh avtomatik yutardi:
+         bal = Σ(aʼzolar) + (eng_katta_guruh − shu_guruh) × shu_guruh_oʻrtachasi
+       Kahoot oʻrtacha ishlatadi, lekin u yerda guruhda BITTA qurilma — bizda
+       har bola oʻzida, shuning uchun yigʻindi koʻrinishi saqlanadi (2026-08-04).
 
 session_participants(id, session_id, student_id?, team_id?,
                      display_name, token_hash, device_label, device_kind,

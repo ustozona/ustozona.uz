@@ -385,10 +385,21 @@ taqsimlash» bosiladi, keyin karta sudrab tuzatiladi. Faqat guruh soni
 soʻraladi. Sessiya `running` boʻlgach guruh qulflanadi. Guruhsiz
 (`team_id = null`) bola oddiy oʻynaydi — xato holat emas.
 
-⚠️ **Ochiq savol:** guruh bali **yigʻindimi yoki oʻrtachami?**
-Yigʻindida katta guruh avtomatik yutadi; oʻrtachada bola «mening
-ballim qoʻshildi» hissini yoʻqotadi. `ost-loyihalar-arxitektura.md`
-(satr 315) yigʻindi deydi. (a) ni boshlashdan oldin hal qilinsin.
+**Guruh bali (2026-08-04, HAL QILINDI): yigʻindi + tenglashtiruvchi.**
+Yalangʻoch yigʻindida katta guruh avtomatik yutadi; oʻrtachada bola
+«mening ballim qoʻshildi» hissini yoʻqotadi. Wayground modeli ikkalasini
+ham hal qiladi — kam sonli guruhga oʻz oʻrtachasi bilan oʻynaydigan
+xayoliy aʼzo qoʻshiladi:
+
+```
+guruh_bali = Σ(aʼzolar bali)
+           + (eng_katta_guruh − shu_guruh) × shu_guruh_oʻrtachasi
+```
+
+Kahoot oʻrtacha ishlatadi, lekin u yerda guruhda BITTA qurilma — guruh
+allaqachon bitta birlik. Bizda har bola oʻz qurilmasida, shuning uchun
+yigʻindi koʻrinishi saqlanishi kerak. Toʻliq tahlil:
+[baholash-mantigi-tushuntirish.md](./baholash-mantigi-tushuntirish.md) §8.
 
 ### (b) Qobiq kontrakti — ✅ BAJARILDI
 
