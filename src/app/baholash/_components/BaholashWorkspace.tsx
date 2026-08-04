@@ -89,7 +89,6 @@ export default function BaholashWorkspace({
     return [...own, ...other];
   }, [sets, classId]);
 
-  const className = classes.find((c) => c.id === classId)?.name ?? "";
   const classNameById = useMemo(
     () => new Map(classes.map((c) => [c.id, c.name])),
     [classes]
