@@ -322,32 +322,38 @@ quvmaydi.
 
 ## 10. Oʻzgarish qanday prodga yetadi — DIQQAT
 
-Bu repo `roziyevbehroz-tech/ustozona.uz` — **fork**. Haqiqiy Vercel
-deploy esa `ustozona/ustozona.uz` (upstream) dan ketadi.
+Ish `roziyevbehroz-tech/ustozona.uz` da olib borilishi mumkin, lekin
+haqiqiy Vercel deploy `ustozona/ustozona.uz` dan ketadi.
 
-Fork'ning oʻz `main` iga merge qilish prodga **HECH NARSA
-YETKAZMAYDI**. Ilgari shu sababli oltita PR fork ichida qolib ketgan
-va faqat ikkitasi (qoʻlda upstream'ga ochilgani) prodga chiqqan.
+`roziyevbehroz-tech/ustozona.uz` GitHub maʼnosida **fork emas** —
+klon push qilib yaratilgan mustaqil repo. Shuning uchun cross-repo PR
+umuman ochilmaydi: `compare/main...roziyevbehroz-tech:<branch>`
+havolasi har doim «There isn't anything to compare» beradi.
 
-Toʻgʻri tartib:
+Ishlaydigan yagona tartib:
 
-1. Branch **`upstream/main`** dan ochiladi, fork'ning main'idan emas —
-   aks holda diff upstream'dagi yangi ishni orqaga qaytarib yuboradi:
+```bash
+git remote add upstream https://github.com/ustozona/ustozona.uz.git  # bir marta
+git fetch upstream main
 
-   ```bash
-   git remote add upstream https://github.com/ustozona/ustozona.uz
-   git fetch upstream main
-   git checkout -b behroz/<tavsif> upstream/main
-   ```
+# 1. Branch UPSTREAM main'dan ochiladi — boshqa main'dan emas, aks
+#    holda diff upstream'dagi yangi ishni orqaga qaytaradi.
+git checkout -b behroz/<tavsif> upstream/main
 
-2. `npm run build` lokal oʻtishi shart — Vercel bitta umumiy deploy,
-   bitta xato ikkala tomonga tegadi.
+# 2. npm run build lokal oʻtishi shart — Vercel bitta umumiy deploy.
+npm run build
 
-3. Push fork'ga, PR esa **upstream'ga**:
+# 3. Branch UPSTREAM'ga push qilinadi (main'ga emas, branch'ga).
+git push upstream behroz/<tavsif>
+```
 
-   ```
-   https://github.com/ustozona/ustozona.uz/compare/main...roziyevbehroz-tech:ustozona.uz:<branch>?expand=1
-   ```
+PR upstream ichida, oddiy same-repo PR sifatida ochiladi:
 
-   Base `ustozona/ustozona.uz:main` ekanini koʻz bilan tekshiring —
-   GitHub fork ichida oʻz main'ini standart qilib qoʻyadi.
+```
+https://github.com/ustozona/ustozona.uz/compare/main...behroz/<tavsif>?expand=1
+```
+
+Upstream'dagi mavjud PR'lar aynan shunday qilingan — merge
+xabarlaridagi `men/marketing-brifi` va
+`roziyevbehroz-tech/claude/baholash-integratsiya` fork emas, upstream
+ichidagi branch nomlari.

@@ -26,29 +26,43 @@ qilinsa Vercel deploy qilmay qoladi). Shuning uchun tartib qat'iy:
 
 ## ⚠️ 1- va 3-qoidada `main` — QAYSI main
 
-Bu repo fork bo'lishi mumkin (`roziyevbehroz-tech/ustozona.uz`).
-**Fork'ning `main` i prodga chiqmaydi** — haqiqiy Vercel deploy
-`ustozona/ustozona.uz` (upstream) dan ketadi.
+Ish `roziyevbehroz-tech/ustozona.uz` da olib borilishi mumkin, lekin
+**prodga u chiqmaydi** — haqiqiy Vercel deploy `ustozona/ustozona.uz`
+(upstream) dan ketadi.
 
-Fork'da ishlayotgan bo'lsang, 1- va 3-qoidadagi `main` — **upstream'niki**:
+Va u repo GitHub ma'nosida **fork EMAS** (`"fork": false`) — shunchaki
+klon push qilib yaratilgan mustaqil repo. Git tarixi umumiy, lekin
+fork tarmog'i yo'q. Buning amaliy oqibati:
+
+⛔ **Cross-repo PR ISHLAMAYDI.** `compare/main...roziyevbehroz-tech:...`
+   havolasi har doim «There isn't anything to compare» beradi.
+   GitHub bunday PR uchun fork tarmog'ini talab qiladi.
+
+✅ **Ishlaydigan yagona yo'l — branch'ni upstream'ga PUSH qilib,
+   o'sha yerda oddiy PR ochish.** Upstream'dagi mavjud PR'lar aynan
+   shunday qilingan (`men/marketing-brifi`,
+   `roziyevbehroz-tech/claude/baholash-integratsiya` — ikkalasi ham
+   upstream ichidagi branch nomlari).
 
 ```bash
-git remote add upstream https://github.com/ustozona/ustozona.uz   # bir marta
+git remote add upstream https://github.com/ustozona/ustozona.uz.git  # bir marta
 git fetch upstream main
-git checkout -b behroz/<tavsif> upstream/main     # 1-qoida
-git fetch upstream && git rebase upstream/main    # 3-qoida
+
+git checkout -b behroz/<tavsif> upstream/main   # 1-qoida: main = upstream/main
+# ... ish ...
+git fetch upstream && git rebase upstream/main  # 3-qoida
+npm run build                                   # 4-qoida
+git push upstream behroz/<tavsif>               # 2-qoida: main'ga EMAS, branch'ga
 ```
 
-PR ham **upstream'ga** ochiladi, fork'ning o'z main'iga emas:
+PR: `https://github.com/ustozona/ustozona.uz/compare/main...behroz/<tavsif>?expand=1`
 
-```
-https://github.com/ustozona/ustozona.uz/compare/main...roziyevbehroz-tech:ustozona.uz:<branch>?expand=1
-```
+2-qoida buzilmaydi: upstream'ga **branch** push qilinadi, `main` ga
+emas. Qo'shilish baribir PR orqali.
 
-Nega bu alohida yozilgan: 2026-08 da oltita PR fork'ning o'z main'iga
-ochilgan va prodga umuman chiqmagan — ish bor deb o'ylanib, aslida
-hech qayerga yetmagan. Fork main'dan branch ochish esa undan ham
-yomon: diff upstream'dagi hamkorning yangi ishini orqaga qaytaradi.
+Nega bu alohida yozilgan: 2026-08 da oltita PR `roziyevbehroz-tech`
+repo'sining o'z main'iga ochilgan va prodga umuman chiqmagan — ish bor
+deb o'ylanib, aslida hech qayerga yetmagan.
 
 # Build tekshiruvi
 
