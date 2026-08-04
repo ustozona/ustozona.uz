@@ -133,6 +133,7 @@ oʻqituvchi testini oʻynaydi:
 |---|---|---|
 | Arqon tortish | oʻqituvchi testi | ha |
 | Poyga | oʻqituvchi testi | ha |
+
 | Krossvord | oʻz soʻz bazasi (`EG_WORDS`) | yoʻq |
 | Soʻz topish | oʻz soʻz bazasi | yoʻq |
 | Xotira | oʻz generatori | yoʻq |
@@ -151,22 +152,96 @@ Arqon va Poyga hamkor rejimida boshqacha ishlaydi:
 - **Savol taymeri oʻchadi (arqon).** Vaqt tugashi savolni javobsiz
   qoldirardi, yaʼni sekin oʻquvchi ball yoʻqotardi. «Tezlik hech qachon
   ballanmaydi» qoidasi shuni talab qiladi.
-- **Jamoaviy rejim oʻchadi (arqon).** Ikki jamoaning javobi bitta
-  oʻquvchi tokeni bilan yozilardi — jurnalga boshqa bolaning javobi
-  tushardi.
+- **Jamoaviy rejim oʻchadi.** Arqonda duo, poygada esa butun musobaqa
+  qatlami (jamoalar, olimpiada, QR-kartalar) chetlab oʻtiladi: ular
+  bitta ekranda oʻynaladigan sinf oʻyini uchun, baholanadigan sessiyada
+  esa har bola oʻz qurilmasida. Aks holda jamoaning javobi bitta
+  bolaning jurnaliga tushardi.
+- **Savollar takrorlanmaydi (poyga).** Mashq rejimida savollar qayta
+  aylanadi, baholanadigan ishda esa bir element ikki marta javob olsa
+  bazaga ikkita yozuv tushardi. Savollar soni ham testdan olinadi,
+  sozlamadan emas.
 - **Matematikaga tushib ketmaydi.** Savol yuklanmasa oʻyin boshlanmaydi;
   aks holda bola oʻqituvchi bermagan misollarni yechardi va natija hech
   qayerga yozilmasdi.
 - **Tarmoq uzilsa javob «notoʻgʻri» boʻlmaydi.** Server javob bermasa
   oʻquvchiga eslatma chiqadi va u qayta bosa oladi.
 
-## 7. Hali qilinmagan
+## 7. Qogʻoz test (OMR) — endpoint tayyor
 
-- **OMR endpointi.** Skaner dvigateli LessonLab tomonida serverga
-  koʻchirilmoqda (varaq geometriyasi va oʻqish mantigʻi tayyor va test
-  bilan qoplangan). `POST /api/v1/scan/omr` chiqqach `scanOmrSheet()`
-  ishlaydi.
-- **Javob varagʻi PDF endpointi** — hamkor uchun ochilmagan.
+`POST /api/v1/scan/omr?test_id=…` ishlaydi. Rasm yuboriladi, javob
+HAR DOIM roʻyxat: bitta A4 sahifada 4 tagacha varaq boʻlishi mumkin.
+
+Bilish kerak boʻlgan uchta narsa:
+
+- **Varaq toʻliq kadrga sigʻishi shart.** Cheti kesilgan surat rad
+  etiladi — chala suratdan taxmin qilgandan koʻra qayta suratga
+  olishni soʻrash afzal.
+- **Ishonchsiz varaq javobga umuman kirmaydi.** Boʻsh roʻyxat — xato
+  emas. Taxminiy natijani oʻqituvchi haqiqiy deb qabul qilardi.
+- **`"X"` — ikki pufakcha belgilangan.** Baholashda XATO hisoblanadi,
+  boʻsh emas: oʻquvchi javob bergan, lekin noaniq.
+
+`scanOmrSheet()` javobni xom holda qaytaradi — ballash Ustozonaning
+`submitResponse()` zanjiridan oʻtadi, aynan onlayn javob kabi.
+
+## 8. Teskari yoʻnalish — LessonLab'dan koʻchirish
+
+Yuqoridagi hamma narsa bir yoʻnalish edi: Ustozona oʻqituvchisi
+LessonLab dvigatelidan foydalanadi. Teskari yoʻnalish boshqacha
+masala.
+
+### Nega u simmetrik EMAS
+
+LessonLab dvigateli — **sof funksiya**: rasm kiradi, belgilangan
+kataklar chiqadi. Unga kimlik kerak emas, shuning uchun
+`/engine/*` endpointlari oʻqituvchi tokenisiz ishlaydi.
+
+Ustozona jurnali esa — **oʻqituvchiga tegishli maʼlumot**. Kimningdir
+jurnaliga akkauntsiz yozib boʻlmaydi; bu texnik cheklov emas, mantiqiy.
+Shuning uchun teskari yoʻnalishda «toʻsiqsiz» degani boshqa narsani
+anglatadi.
+
+### Amaldagi yechim: import
+
+Oʻqituvchi LessonLab botida yillar davomida sinf va test yigʻgan
+boʻlishi mumkin. Ularni qoʻlda kiritish — yuzlab ism yozish degani va
+Ustozonaga oʻtishning eng katta toʻsigʻi.
+
+```
+/baholash → «LessonLab'dan koʻchirish»
+   → /api/lessonlab/start   (PKCE, code_verifier httpOnly cookie'da)
+   → LessonLab: oʻqituvchi Telegram orqali rozilik beradi
+   → /api/lessonlab/callback → token → sinf + oʻquvchilar koʻchadi
+```
+
+Muhimi: bu oqimni **Ustozona oʻqituvchisi** boshlaydi va u OʻZ
+LessonLab maʼlumotiga ruxsat beradi. Yangi kimlik tizimi qurish shart
+emas — LessonLab'dagi OAuth yetarli.
+
+### Qoidalar
+
+- **Hech narsa ustiga yozilmaydi.** Nomi bir xil sinf/test uchrasa —
+  oʻtkazib yuboriladi va hisobotda «nizo» deb koʻrsatiladi. Qaysi
+  birini qoldirishni oʻqituvchi hal qiladi.
+- **Takrorlash xavfsiz.** Ikkinchi marta hech narsa qoʻshilmaydi.
+- **Token saqlanmaydi.** Import tugagach unutiladi.
+- **Nom solishtirishda oʻzbek apostroflari normallashtiriladi** —
+  aks holda «Gʻafur» va «G'afur» ikki xil sinf boʻlib qolardi.
+
+### Nega «jonli sinxron» emas
+
+Doimiy ikki tomonlama oqim muqarrar nizoga olib keladi: bir joyda
+tuzatilgan ism ikkinchisida qaytadan yoziladi, oʻchirilgan oʻquvchi
+qayta paydo boʻladi. Koʻchirishdan keyin EGASI Ustozona boʻladi,
+LessonLab'dagi nusxa oʻz holicha qolaveradi va ular bir-birini
+quvmaydi.
+
+## 9. Hali qilinmagan
+- ~~Javob varagʻi PDF endpointi~~ — tayyor:
+  `POST /api/v1/engine/answer-sheets` (oʻqituvchi tokeni kerak emas).
+- **Testlarni import qilish** — `importTests()` yozilgan, lekin UI'ga
+  ulanmagan: oʻqituvchi qaysi sinfga koʻchirishni tanlashi kerak.
 - **QR-kartalar** — telefonsiz sinf uchun; hali boshlanmagan.
 - **`pairs` uchun qobiq yoʻq.** Hamkor rejimida faqat `mcq` qadamlar
   uzatiladi; juftlash savollari oddiy ekranda oʻynaladi.
