@@ -31,65 +31,43 @@ toʻxtaydi. Ilgari ular mustaqil edi.
 
 ## 1. Maʼlumotni koʻchirish (SIZ bajarasiz)
 
-### Kerakli vosita
+### Hech narsa oʻrnatish KERAK EMAS
 
-`pg_dump` / `psql` — **17-versiya yoki undan yuqori** (Neon ham,
-Supabase ham PG 17). Eski `pg_dump` yangi serverdan dump ololmaydi va
-«server version mismatch» beradi.
+`pg_dump` ishlatilmaydi. Sabab: u alohida oʻrnatishni talab qiladi va
+versiyasi serverdan past boʻlsa umuman ishlamaydi (PG 17 serverdan
+PG 16 `pg_dump` dump ololmaydi). Node va `tsx` esa loyihada allaqachon
+bor, shuning uchun koʻchirish oddiy skript bilan bajariladi:
+`scripts/kochir-supabase.ts`.
 
-Windows: <https://www.postgresql.org/download/windows/> → EDB
-oʻrnatuvchisi → faqat *Command Line Tools* yetarli.
-
-```powershell
-pg_dump --version   # 17.x boʻlishi kerak
-```
-
-### Ulanish satrlari
-
-Neon satri lokal `.env.local` faylingizda. Uni ekranga chiqarmasdan
-oʻzgaruvchiga olamiz:
+### Buyruqlar (PowerShell)
 
 ```powershell
-$NEON = (Get-Content .env.local | Select-String '^DATABASE_URL=').Line.Substring(13)
+# Neon satri — .env.local dan, ekranga chiqmaydi
+$env:SOURCE_DATABASE_URL = (Get-Content .env.local | Select-String '^DATABASE_URL=').Line.Substring(13)
+
+# Supabase → Connect → Direct connection (5432)
+$env:TARGET_DATABASE_URL = "postgresql://postgres:<parol>@db.lxppxnawxmcfebmzdgil.supabase.co:5432/postgres"
+
+# 1) QURUQ YURISH — hech narsa yozmaydi, faqat nima koʻchishini koʻrsatadi
+npm run db:kochir -- --quruq
+
+# 2) Haqiqiy koʻchirish
+npm run db:kochir
 ```
 
-Supabase satri: Supabase → Connect → **Direct connection** (5432).
-Koʻchirish uchun pooler (6543) MAʼQUL EMAS: `pg_dump`/`psql` uzoq
-tranzaksiya ochadi, transaction pooler esa buni uzib qoʻyadi.
+Skript nima qiladi:
 
-```powershell
-$SUPA = "postgresql://postgres:<parol>@db.lxppxnawxmcfebmzdgil.supabase.co:5432/postgres"
-```
-
-### Koʻchirish
-
-```powershell
-# 1) Neon'dan FAQAT maʼlumot (sxema allaqachon Supabase'da)
-pg_dump $NEON --data-only --no-owner --no-privileges -f ustozona-data.sql
-
-# 2) FK tekshiruvini vaqtincha oʻchirib, BITTA tranzaksiyada quyamiz
-"SET session_replication_role = replica;" | Set-Content -Encoding utf8 quyish.sql
-Get-Content ustozona-data.sql | Add-Content -Encoding utf8 quyish.sql
-"SET session_replication_role = origin;"  | Add-Content -Encoding utf8 quyish.sql
-
-psql $SUPA -v ON_ERROR_STOP=1 -1 -f quyish.sql
-```
-
-**Nega `--disable-triggers` EMAS.** `pg_dump --disable-triggers`
-`ALTER TABLE ... DISABLE TRIGGER ALL` chiqaradi, bu esa FK triggerlari
-uchun **superuser** talab qiladi. Supabase'ning `postgres` roli
-superuser EMAS — buyruq «permission denied» bilan yiqilardi.
-`session_replication_role = replica` esa oʻsha ishni qiladi va bu rol
-uchun ruxsat etilgan.
-
-**Nega `-1` (bitta tranzaksiya).** Ikki sababdan: `SET` butun quyish
-davomida kuchda qoladi, va xato chiqsa **hech narsa saqlanmaydi** —
-yarim koʻchgan baza qolmaydi. `ON_ERROR_STOP=1` esa birinchi xatoda
-toʻxtatadi.
-
-FK tartibi shu bilan hal boʻladi: `pg_dump` jadvallarni alfavit
-boʻyicha yozadi (`account` → `activities` → ...), FK esa boshqa tartib
-talab qilishi mumkin edi.
+- **Nishon boʻshligini tekshiradi.** Toʻla jadval koʻrsa toʻxtaydi —
+  ikki marta yugurtirib maʼlumotni ikkilantirib qoʻyish mumkin emas.
+- **Bitta tranzaksiya.** Xato chiqsa hech narsa saqlanmaydi.
+- **FK triggerlarini oʻchiradi** (`session_replication_role = replica`),
+  shuning uchun jadval tartibi ahamiyatsiz.
+- **`student_number` identity ni saqlaydi** — vaqtincha olib turib,
+  qaytarib qoʻyadi va hisoblagichni suradi. Aks holda Postgres oʻz
+  raqamini berardi va eski raqamlar yoʻqolardi.
+- **Oxirida sanoqni solishtiradi** — manba va nishon mos kelmasa
+  ochiq aytadi.
+- **Manbaga faqat OʻQISH uchun tegadi.** Neon tegilmasdan qoladi.
 
 ### Tekshirish
 
@@ -100,20 +78,6 @@ UNION ALL SELECT 'classes', count(*) FROM classes
 UNION ALL SELECT 'students', count(*) FROM students
 UNION ALL SELECT 'grades', count(*) FROM grades
 UNION ALL SELECT 'user', count(*) FROM "user";
-```
-
-### `student_number` ketma-ketligi
-
-`students.student_number` — `GENERATED ALWAYS AS IDENTITY`. Maʼlumot
-koʻchgandan keyin hisoblagichni oldinga surish SHART, aks holda yangi
-oʻquvchi qoʻshganda «duplicate key» chiqadi:
-
-```sql
-SELECT setval(
-  pg_get_serial_sequence('students', 'student_number'),
-  COALESCE((SELECT max(student_number) FROM students), 0) + 1,
-  false
-);
 ```
 
 ---
