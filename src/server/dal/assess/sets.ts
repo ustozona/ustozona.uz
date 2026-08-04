@@ -1,8 +1,14 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { activitySets, type ActivitySetRow } from "@/server/db/schema";
+import {
+  activities,
+  activityItems,
+  activitySets,
+  type ActivitySetRow,
+} from "@/server/db/schema";
+import type { SetContentSummary } from "@/lib/baholash-shells";
 import { requireTeacher } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -32,6 +38,79 @@ export async function listSets(classId?: string): Promise<ActivitySetRow[]> {
         ? and(eq(activitySets.teacherId, teacher.id), eq(activitySets.classId, classId))
         : eq(activitySets.teacherId, teacher.id)
     );
+}
+
+/**
+ * Toʻplamlarning qobiq uchun muhim kontent xulosasi.
+ *
+ * Nega alohida funksiya: `listSets()` faqat `activity_sets` qatorini
+ * qaytaradi, u yerda `items` — faqat `activityId` roʻyxati. Shakl ham,
+ * variant soni ham boshqa ikki jadvalda. Qobiq mosligini hisoblash
+ * uchun esa aynan shular kerak (`shellAvailability()`).
+ *
+ * Hamma toʻplam uchun UCHTA soʻrov bajariladi, har toʻplamga alohida
+ * emas — panel bir necha oʻnlab toʻplamni birdan koʻrsatadi.
+ */
+export async function summarizeSetContent(
+  sets: ActivitySetRow[]
+): Promise<Map<string, SetContentSummary>> {
+  const out = new Map<string, SetContentSummary>();
+  const empty = (): SetContentSummary => ({
+    countByShape: {},
+    minOptions: null,
+    maxOptions: null,
+  });
+
+  const allActivityIds = [...new Set(sets.flatMap((s) => s.items.map((i) => i.activityId)))];
+  if (allActivityIds.length === 0) {
+    sets.forEach((s) => out.set(s.id, empty()));
+    return out;
+  }
+
+  const teacher = await requireTeacher();
+
+  const activityRows = await db
+    .select({ id: activities.id, shape: activities.shape })
+    .from(activities)
+    .where(and(eq(activities.teacherId, teacher.id), inArray(activities.id, allActivityIds)));
+  const shapeById = new Map(activityRows.map((a) => [a.id, a.shape as string]));
+
+  const itemRows = await db
+    .select({ activityId: activityItems.activityId, content: activityItems.content })
+    .from(activityItems)
+    .where(inArray(activityItems.activityId, allActivityIds));
+
+  // Faoliyat → shu faoliyatdagi mcq variantlari soni. `mcq` da bitta
+  // element boʻladi (content.ts shu taxminda ishlaydi), lekin bir
+  // nechta kelsa ham eng kengini olamiz — qobiq eng ogʻir holatni
+  // chiza olishi kerak.
+  const optionsById = new Map<string, number[]>();
+  for (const row of itemRows) {
+    const options = (row.content as { options?: unknown[] } | null)?.options;
+    if (!Array.isArray(options)) continue;
+    const list = optionsById.get(row.activityId) ?? [];
+    list.push(options.length);
+    optionsById.set(row.activityId, list);
+  }
+
+  for (const set of sets) {
+    const summary = empty();
+    for (const { activityId } of set.items) {
+      const shape = shapeById.get(activityId);
+      if (!shape) continue; // oʻchirilgan yoki begona faoliyat — sanalmaydi
+      summary.countByShape[shape] = (summary.countByShape[shape] ?? 0) + 1;
+      if (shape !== "mcq") continue;
+      for (const count of optionsById.get(activityId) ?? []) {
+        summary.minOptions =
+          summary.minOptions === null ? count : Math.min(summary.minOptions, count);
+        summary.maxOptions =
+          summary.maxOptions === null ? count : Math.max(summary.maxOptions, count);
+      }
+    }
+    out.set(set.id, summary);
+  }
+
+  return out;
 }
 
 export async function getSet(id: string): Promise<ActivitySetRow | null> {

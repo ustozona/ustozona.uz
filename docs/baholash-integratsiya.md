@@ -166,7 +166,6 @@ oʻqituvchi testini oʻynaydi:
 |---|---|---|
 | Arqon tortish | oʻqituvchi testi | ha |
 | Poyga | oʻqituvchi testi | ha |
-
 | Krossvord | oʻz soʻz bazasi (`EG_WORDS`) | yoʻq |
 | Soʻz topish | oʻz soʻz bazasi | yoʻq |
 | Xotira | oʻz generatori | yoʻq |
@@ -357,3 +356,95 @@ Upstream'dagi mavjud PR'lar aynan shunday qilingan — merge
 xabarlaridagi `men/marketing-brifi` va
 `roziyevbehroz-tech/claude/baholash-integratsiya` fork emas, upstream
 ichidagi branch nomlari.
+
+## 11. Keyingi qadam — uchta yoʻl
+
+> Holat: **(b) TANLANDI va bajarildi** (2026-08-04). (a) va (c) ochiq
+> qolmoqda — quyida saqlanadi, chunki (a) endi (b) ustiga quriladi.
+
+### (a) Guruh qatlami (B5.1)
+
+`session_teams` jadvali va `session_participants.team_id` sxemada bor,
+lekin ularga murojaat qiladigan kod **umuman yoʻq** — oʻlik sxema.
+
+⚠️ Atama chalkashligiga eʼtibor bering. §6 dagi «jamoaviy rejim
+oʻchadi» — bu **qobiqning oʻz ichki** jamoa boʻlinishi (bitta ekran,
+javob egasi noaniq). B5.1 esa butunlay boshqa narsa va u **oʻchirilgan
+emas, hali qurilmagan**:
+
+- guruhni **Ustozona** tuzadi (`session_teams`), qobiq emas;
+- har oʻquvchi **oʻz qurilmasida**, oʻz `participant` qatori bilan
+  javob beradi — individual baho toʻliq saqlanadi;
+- qobiq faqat guruh ballarini koʻrsatadi, jurnalga taʼsiri yoʻq (R33).
+
+Kahoot team mode va Blooket shu modelda ishlaydi.
+
+**Qaror (2026-08-04):** guruhni oʻqituvchi tuzadi, **tasodifiy ham,
+qoʻlda ham** — alternativa emas, ketma-ket bosqich: avval «Tasodifiy
+taqsimlash» bosiladi, keyin karta sudrab tuzatiladi. Faqat guruh soni
+soʻraladi. Sessiya `running` boʻlgach guruh qulflanadi. Guruhsiz
+(`team_id = null`) bola oddiy oʻynaydi — xato holat emas.
+
+⚠️ **Ochiq savol:** guruh bali **yigʻindimi yoki oʻrtachami?**
+Yigʻindida katta guruh avtomatik yutadi; oʻrtachada bola «mening
+ballim qoʻshildi» hissini yoʻqotadi. `ost-loyihalar-arxitektura.md`
+(satr 315) yigʻindi deydi. (a) ni boshlashdan oldin hal qilinsin.
+
+### (b) Qobiq kontrakti — ✅ BAJARILDI
+
+`GameShell` endi oʻz talab va imkoniyatlarini eʼlon qiladi, moslik esa
+`shellAvailability()` sof funksiyasi bilan **hisoblanadi**
+(`src/lib/baholash-shells.ts`). Naqsh Wordwall'dan: u ham kontentga
+qarab mos shablonni oʻzi topadi va mos kelmasa **sababini** aytadi.
+
+```
+accepts:  { shapes, optionRange, minQuestions, maxQuestions? }
+supports: { teams, capture }        // capture: device | qrcard | teacher
+gradable: boolean
+```
+
+- **Chegara qurilmalar sonida emas, EGALIKDA.** Faqat
+  `capture: "teacher"` (ustoz butun sinf uchun bitta javob belgilaydi)
+  baholanmaydi.
+  ⚠️ **`qrcard` (Plickers) BAHOLANADI** — 30 oʻquvchi, bitta kamera,
+  lekin karta oʻzi roʻyxat bogʻlovchisi va har javob `student_id` ga
+  tushadi (`quiz_sessions.mode = "qrcards"`,
+  [ost-loyihalar-arxitektura.md:2438](./ost-loyihalar-arxitektura.md)).
+  Dastlab bu maydon `perDevice: boolean` edi va u «oʻz qurilmasi» bilan
+  «javob egasi aniq» ni bitta bayroqqa qoʻshib yuborgandi — QR-karta
+  rejimi notoʻgʻri bloklanardi.
+- **`optionRange` ataylab tor (2..4).** Qobiq nechta tugma chiza
+  olishini tashqaridan koʻrolmaymiz; tor kontrakt xato tomonga
+  xavfsiz.
+- **Mos kelmagan qobiq yashirilmaydi** — panelda sababi bilan turadi
+  («Kamida 6 savol kerak — hozir 3 ta»). Oʻchiq tugma «nega?» degan
+  savol qoldiradi.
+- Kontent xulosasi serverda hisoblanadi: `summarizeSetContent()`
+  (`server/dal/assess/sets.ts`), hamma toʻplamga uchta soʻrov.
+
+Qolgan ochiq ish: `supports.teams` hozir ikkala qobiqda ham `false` —
+u (a) bilan birga jonlanadi.
+
+<details>
+<summary>Dastlabki taklif (tarix uchun)</summary>
+
+Kichik, faqat bizning kod, LessonLabga bogʻliq emas. `GameShell` ga:
+
+- `optionRange: { min, max }` — qobiq nechta variantni chiza oladi.
+  Hozir `shapes: ["mcq"]` «har qanday mcq» degan maʼno beradi, bu
+  notoʻgʻri: `mcq` variantlari **2 tadan 8 tagacha** boʻlishi mumkin
+  (`actions/assess.ts` zod sxemasi), qobiq esa 4 tada qotib qolgan
+  boʻlishi mumkin. True/False = 2 variantli `mcq`, alohida shakl
+  kerak emas. Ikki qobiq (arqon 6, poyga 5) allaqachon har xil
+  `minQuestions` talab qiladi — oʻlchov oʻqi bitta emasligi koʻrindi.
+- `supportsTeams: boolean` — (a) tayyor boʻlgach kerak boʻladi.
+- `gradable: boolean` — krossvord/xotira kabi oʻyinlarni **mashq**
+  sifatida koʻrsatib, «jurnalga tushmaydi» deb ochiq yozish. Hozirgi
+  «roʻyxatdan yashiramiz» yechimi muammoni berkitadi.
+
+</details>
+
+### (c) Toʻxtash
+
+Nashr bugi tuzatildi (`publish.ts` xom ball yozadi, foiz emas). Shu
+holat barqaror — yangi ish boshlamasdan turish ham asosli tanlov.
