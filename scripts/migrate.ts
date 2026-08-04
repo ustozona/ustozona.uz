@@ -1,6 +1,6 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
-import { migrate } from "drizzle-orm/neon-http/migrator";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 
 /* ════════════════════════════════════════════════════════════════════
    MIGRATSIYALARNI QOʻLLASH (9-bosqich: push → generated migrations).
@@ -27,7 +27,7 @@ const MIGRATIONS_FOLDER = "./drizzle";
 async function baseline(url: string) {
   const { readMigrationFiles } = await import("drizzle-orm/migrator");
   const migrations = readMigrationFiles({ migrationsFolder: MIGRATIONS_FOLDER });
-  const sql = neon(url);
+  const sql = postgres(url, { prepare: false, max: 1 });
   await sql`CREATE SCHEMA IF NOT EXISTS "drizzle"`;
   await sql`CREATE TABLE IF NOT EXISTS "drizzle"."__drizzle_migrations" (
     id SERIAL PRIMARY KEY, hash text NOT NULL, created_at bigint
@@ -56,12 +56,16 @@ async function main() {
     return;
   }
 
-  const db = drizzle(neon(url));
+  const db = drizzle(postgres(url, { prepare: false, max: 1 }));
   await migrate(db, { migrationsFolder: MIGRATIONS_FOLDER });
   console.log("Migratsiyalar qoʻllandi.");
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+/* `process.exit(0)` — postgres-js hovuzi ochiq qolsa Node hodisa
+   sikli tugamaydi va skript qotib qoladi. neon-http stateless edi. */
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

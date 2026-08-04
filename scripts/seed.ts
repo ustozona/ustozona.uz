@@ -1,5 +1,5 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { count, eq } from "drizzle-orm";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -61,7 +61,7 @@ async function main() {
       "DATABASE_URL topilmadi. Ishga tushirish: npx tsx --env-file=.env.local scripts/seed.ts"
     );
   }
-  const db = drizzle({ client: neon(url), schema });
+  const db = drizzle(postgres(url, { prepare: false, max: 1 }), { schema });
 
   /* ── 1. Demo oʻqituvchi (Better Auth API — toʻgʻri parol hash) ───── */
   const auth = betterAuth({

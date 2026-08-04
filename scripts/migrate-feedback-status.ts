@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 
 /* ════════════════════════════════════════════════════════════════════
    FIKR HOLATLARINI SODDALASHTIRISH (bir martalik data-migratsiya).
@@ -23,7 +23,7 @@ const OLD_TO_NEW: Record<string, string> = {
 async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL topilmadi.");
-  const sql = neon(url);
+  const sql = postgres(url, { prepare: false, max: 1 });
 
   let totalRows = 0;
   let totalCols = 0;
@@ -44,7 +44,12 @@ async function main() {
   console.log(`Tugadi. status ustuni: ${totalCols}, data JSONB: ${totalRows} qator qayta ishlandi.`);
 }
 
-main().catch((err) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+/* `process.exit(0)` — postgres-js hovuzi ochiq qolsa Node hodisa
+   sikli tugamaydi va skript qotib qoladi. neon-http stateless edi,
+   shuning uchun ilgari bu kerak emasdi. */
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err instanceof Error ? err.message : err);
+    process.exit(1);
+  });

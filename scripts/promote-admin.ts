@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 
 /* ════════════════════════════════════════════════════════════════════
    SUPER-ADMIN TAYINLASH (bootstrap).
@@ -29,7 +29,7 @@ async function main() {
     throw new Error(`Notoʻgʻri rol "${role}". Ruxsat etilgan: ${VALID_ROLES.join(", ")}`);
   }
 
-  const sql = neon(url);
+  const sql = postgres(url, { prepare: false, max: 1 });
   const rows = await sql`SELECT id, role FROM "user" WHERE email = ${email}`;
   if (rows.length === 0) {
     throw new Error(`Foydalanuvchi topilmadi: ${email} (avval tizimga kirib roʻyxatdan oʻting)`);
@@ -49,7 +49,12 @@ async function main() {
   console.log(`${email} yangilandi: rollar endi "${next}".`);
 }
 
-main().catch((err) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+/* `process.exit(0)` — postgres-js hovuzi ochiq qolsa Node hodisa
+   sikli tugamaydi va skript qotib qoladi. neon-http stateless edi,
+   shuning uchun ilgari bu kerak emasdi. */
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err instanceof Error ? err.message : err);
+    process.exit(1);
+  });

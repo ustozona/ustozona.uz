@@ -91,7 +91,8 @@ export async function auditPublishedGrades(): Promise<GradesAudit> {
     WHERE a.source_session_id IS NOT NULL
   `);
 
-  const c = (counts.rows?.[0] ?? {}) as Record<string, number | null>;
+  // postgres-js: `execute()` massiv qaytaradi (`.rows` emas).
+  const c = ((counts as unknown as unknown[])[0] ?? {}) as Record<string, number | null>;
 
   const samples = await db.execute(sql`
     SELECT s.name                                    AS student_name,
@@ -114,7 +115,7 @@ export async function auditPublishedGrades(): Promise<GradesAudit> {
     broken: c.broken ?? 0,
     suspect: c.suspect ?? 0,
     affectedSessions: c.affected_sessions ?? 0,
-    samples: (samples.rows ?? []).map((r) => {
+    samples: ((samples as unknown as unknown[]) ?? []).map((r) => {
       const row = r as Record<string, unknown>;
       const score = Number(row.score);
       const maxScore = Number(row.max_score);
@@ -159,7 +160,7 @@ export async function repairPercentGrades(): Promise<RepairResult> {
     RETURNING g.student_id
   `);
 
-  const repaired = updated.rows?.length ?? 0;
+  const repaired = (updated as unknown as unknown[]).length ?? 0;
 
   // Tekshiruv: tuzatilgandan keyin bitta ham qolmasligi kerak.
   const left = await db.execute(sql`
@@ -168,7 +169,7 @@ export async function repairPercentGrades(): Promise<RepairResult> {
       JOIN assignments a ON a.id = g.assignment_id
      WHERE a.source_session_id IS NOT NULL AND g.score > a.max_score
   `);
-  const remaining = Number((left.rows?.[0] as { n?: number })?.n ?? 0);
+  const remaining = Number(((left as unknown as unknown[])[0] as { n?: number })?.n ?? 0);
 
   if (repaired > 0) {
     await writeAuditLog(actor, {

@@ -77,7 +77,10 @@ export async function getAdminStats(): Promise<AdminStats> {
       JOIN "user" u ON u.id = t.id
       WHERE t.exclude_from_metrics = false
   `);
-  const rawRows = result.rows as unknown as Array<{
+  /* postgres-js `db.execute()` natijani TOʻGʻRIDAN-TOʻGʻRI massiv
+     qilib qaytaradi. neon-http esa `{ rows: [...] }` qaytarardi —
+     Supabase'ga koʻchishda shu farq tuzatildi. */
+  const rawRows = result as unknown as Array<{
     id: string;
     name: string;
     email: string;

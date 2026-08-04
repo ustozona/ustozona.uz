@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 
 /* ════════════════════════════════════════════════════════════════════
    MAHSULOT METRIKASI — faollashuv voronkasi va qaytish.
@@ -33,7 +33,7 @@ async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL topilmadi (.env.local).");
 
-  const sql = neon(url);
+  const sql = postgres(url, { prepare: false, max: 1 });
 
   /* ── Har bir oʻqituvchi boʻyicha yagona qator: roʻyxat + faollik ──
      Faollik vaqtlari uch manbadan yigʻiladi, eng kechkisi olinadi. */
@@ -162,7 +162,12 @@ async function main() {
   console.log("");
 }
 
-main().catch((err) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+/* `process.exit(0)` — postgres-js hovuzi ochiq qolsa Node hodisa
+   sikli tugamaydi va skript qotib qoladi. neon-http stateless edi,
+   shuning uchun ilgari bu kerak emasdi. */
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err instanceof Error ? err.message : err);
+    process.exit(1);
+  });
