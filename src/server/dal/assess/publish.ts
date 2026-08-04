@@ -130,7 +130,12 @@ export async function publishSessionToGrades(
       if (r.score !== null) return sum + Number(r.score);
       return sum + (r.isCorrect ? 1 : 0);
     }, 0);
-    const percentScore = Math.round((earned / maxScore) * 100 * 100) / 100;
+    // XOM BALL yoziladi, foiz EMAS — `grades.score` maxraji aynan shu
+    // topshiriqning `maxScore` i (schema/grades.ts shartnomasi). Foizga
+    // normalizatsiyani jurnal tomonida `gradePercent()` bajaradi; bu
+    // yerda ham boʻlish — natijani ikki marta boʻlib yuborardi.
+    // Qisman ball (R26) kasr boʻlishi mumkin — `real` ustun, 2 xona yetarli.
+    const rawScore = Math.round(earned * 100) / 100;
 
     await db
       .insert(grades)
@@ -138,11 +143,11 @@ export async function publishSessionToGrades(
         teacherId: tid,
         studentId: participant.studentId,
         assignmentId,
-        score: percentScore,
+        score: rawScore,
       })
       .onConflictDoUpdate({
         target: [grades.studentId, grades.assignmentId],
-        set: { score: percentScore, updatedAt: new Date() },
+        set: { score: rawScore, updatedAt: new Date() },
         setWhere: eq(grades.teacherId, tid),
       });
     publishedCount += 1;
