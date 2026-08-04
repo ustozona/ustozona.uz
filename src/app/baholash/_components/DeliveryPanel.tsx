@@ -19,6 +19,8 @@ type Props = {
   engineReady: boolean;
   /** Oʻyin qobiqlari serveri manzili bor. */
   gamesReady: boolean;
+  /** Yetkazish QAYSI sinfga — `set.classId` emas, oʻqituvchi tanlagani. */
+  classId: string;
   onClose: () => void;
 };
 
@@ -37,6 +39,7 @@ export default function DeliveryPanel({
   busy,
   engineReady,
   gamesReady,
+  classId,
   onClose,
 }: Props) {
   // Qobiq mosligi kontentdan HISOBLANADI (`shellAvailability`), qoʻlda
@@ -151,7 +154,7 @@ export default function DeliveryPanel({
       )}
 
       {delivery === "paper" && (
-        <PaperPanel set={set} engineReady={engineReady} />
+        <PaperPanel set={set} classId={classId} engineReady={engineReady} />
       )}
 
       {delivery !== "paper" && (
@@ -190,7 +193,8 @@ export default function DeliveryPanel({
 
    Tugma bosilganda PDF serverdan keladi va shu yerda faylga aylanadi —
    sahifa almashmaydi, oʻqituvchi tanlagan testini yoʻqotmaydi. */
-function PaperPanel({ set, engineReady }: { set: SetOption; engineReady: boolean }) {
+function PaperPanel({ set, classId, engineReady }:
+                    { set: SetOption; classId: string; engineReady: boolean }) {
   const [busy, setBusy] = useState<"class" | "exam" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -201,7 +205,7 @@ function PaperPanel({ set, engineReady }: { set: SetOption; engineReady: boolean
       const res = await fetch("/api/baholash/answer-sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ setId: set.id, mode }),
+        body: JSON.stringify({ setId: set.id, classId, mode }),
       });
       if (!res.ok) {
         const info = (await res.json().catch(() => null)) as { message?: string } | null;

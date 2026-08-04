@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { setId?: unknown; mode?: unknown };
+  let body: { setId?: unknown; classId?: unknown; mode?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -41,15 +41,16 @@ export async function POST(request: Request) {
   }
 
   const setId = typeof body.setId === "string" ? body.setId : "";
-  if (!setId) {
-    return Response.json({ ok: false, error: "set_required" }, { status: 400 });
+  const classId = typeof body.classId === "string" ? body.classId : "";
+  if (!setId || !classId) {
+    return Response.json({ ok: false, error: "set_and_class_required" }, { status: 400 });
   }
   // Imtihon rejimi — ismsiz bitta varaq, oʻquvchi oʻzi toʻldiradi.
   // Sinf roʻyxati sir boʻlgan yoki oʻrindiqlar aralashgan holat uchun.
   const examMode = body.mode === "exam";
 
   try {
-    const plan = await buildSheetPlan(setId);
+    const plan = await buildSheetPlan(setId, classId);
     if (plan.questionCount < 1) {
       return Response.json(
         { ok: false, error: "empty_test", message: "Testda savol yoʻq" },
