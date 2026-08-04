@@ -176,9 +176,17 @@ export default function BaholashWorkspace({
               }
             />
           ) : (
-            <ul className="divide-y divide-border rounded-xl border border-border">
+            /* `key={classId}` — sinf almashganda React roʻyxatni QAYTA
+               yaratadi, shuning uchun kirish animatsiyasi har tanlovda
+               qaytadan oʻynaydi. Kalitsiz React eski elementlarni qayta
+               ishlatardi va animatsiya faqat birinchi marta koʻrinardi. */
+            <ul
+              key={classId}
+              className="animate-in fade-in slide-in-from-top-2 divide-y divide-border rounded-xl border border-border duration-300"
+            >
               {visibleSets.map((set) => (
-                <li key={set.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+                <li key={set.id} className="flex flex-col">
+                <div className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <Layers className="size-4 shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">{set.title}</span>
                   {/* Boshqa sinfda tuzilgan bo'lsa — qayerdan kelgani
@@ -209,6 +217,32 @@ export default function BaholashWorkspace({
                       <Printer className="size-3.5" /> Qogʻoz test
                     </Button>
                   </div>
+                </div>
+
+                {/* Panel AYNAN shu test tagida ochiladi.
+                    Ilgari u sahifaning eng pastida chiqardi va roʻyxat
+                    uzun boʻlganda oʻqituvchi qaysi testni tanlaganini
+                    koʻrmasdi — havola qaysi testniki ekani noaniq
+                    boʻlardi. Yaqinlik oʻzi bogʻlanishni koʻrsatadi,
+                    hech qanday izoh kerak emas. */}
+                {activeSet?.id === set.id && delivery && (
+                  <div className="animate-in fade-in slide-in-from-top-1 border-t border-border bg-muted/30 px-4 py-4 duration-200">
+                    <DeliveryPanel
+                      set={activeSet}
+                      delivery={delivery}
+                      session={session}
+                      busy={busy}
+                      engineReady={engineReady}
+                      gamesReady={gamesReady}
+                      classId={classId}
+                      onClose={() => {
+                        setActiveSet(null);
+                        setDelivery(null);
+                        setSession(null);
+                      }}
+                    />
+                  </div>
+                )}
                 </li>
               ))}
             </ul>
@@ -222,22 +256,6 @@ export default function BaholashWorkspace({
         </p>
       )}
 
-      {activeSet && delivery && (
-        <DeliveryPanel
-          set={activeSet}
-          delivery={delivery}
-          session={session}
-          busy={busy}
-          engineReady={engineReady}
-          gamesReady={gamesReady}
-          classId={classId}
-          onClose={() => {
-            setActiveSet(null);
-            setDelivery(null);
-            setSession(null);
-          }}
-        />
-      )}
     </main>
   );
 }
