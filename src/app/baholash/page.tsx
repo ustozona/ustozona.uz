@@ -1,7 +1,7 @@
 import { ProductPage } from "@/components/landing/ProductPage";
 import { getSession } from "@/server/session";
 import { isTeacher } from "@/lib/auth-roles";
-import { listSets } from "@/server/dal/assess/sets";
+import { listSets, summarizeSetContent } from "@/server/dal/assess/sets";
 import { getGradesPayload } from "@/server/dal/grades";
 import { isConfigured, isGamesConfigured } from "@/server/lessonlab/baholash";
 import BaholashWorkspace from "./_components/BaholashWorkspace";
@@ -36,6 +36,9 @@ export default async function BaholashPage({
 
   if (session && isTeacher(session.user)) {
     const [sets, classMap] = await Promise.all([listSets(), getGradesPayload()]);
+    // Qobiq mosligi kontentga bogʻliq (shakl + variant soni), shuning
+    // uchun xulosa shu yerda hisoblanib panelga tayyor holda beriladi.
+    const contentBySet = await summarizeSetContent(sets);
     const classes = Object.values(classMap)
       .filter((c) => !c.info.archivedAt)
       .map((c) => ({ id: c.info.id, name: c.info.name }));
@@ -61,6 +64,11 @@ export default async function BaholashPage({
           // avtomatik ko'chmaydi — xavfsiz tomon.
           purpose: s.purpose === "summative" ? "summative" : "formative",
           itemCount: s.items.length,
+          content: contentBySet.get(s.id) ?? {
+            countByShape: {},
+            minOptions: null,
+            maxOptions: null,
+          },
         }))}
         engineReady={isConfigured()}
         gamesReady={isGamesConfigured()}

@@ -1462,7 +1462,12 @@ Uchta narsa olinadi va bittasi ataylab **olinmaydi**:
 
 2. **`Questions: Synced Prompting, High Frequency`** — savol yetkazishning ikki oʻlchovi: hammaga bir vaqtda (`synced`) yoki har kim oʻz tezligida (`async`), va savol oʻyinni qanchalik tez-tez toʻxtatishi. Bu bizning `mode` (live/selfpaced) va shablon xususiyatining aniq ajratmasi.
 
-3. **`Players: Min/Ideal/Max` va `Ideal Time`** — oʻqituvchiga rejim **necha kishiga moʻljallanganini** oldindan aytadi. ⚠️ Bu bizda alohida ogohlantirish: `Ideal 8` — Oʻzbekiston sinfi esa 25–35. Yaʼni arkada rejimlarining koʻpi bizning sinfimizga **oʻlchov boʻyicha toʻgʻri kelmaydi**, va bu B5.1 dagi **jamoaviy rejimning** yana bir asosi (5 telefon × 6 bola = ideal 8 ga tushadi).
+3. **`Players: Min/Ideal/Max` va `Ideal Time`** — oʻqituvchiga rejim **necha kishiga moʻljallanganini** oldindan aytadi. ⚠️ Bu bizda alohida ogohlantirish: `Ideal 8` — Oʻzbekiston sinfi esa 25–35. Yaʼni arkada rejimlarining koʻpi bizning sinfimizga **oʻlchov boʻyicha toʻgʻri kelmaydi**, va bu B5.1 dagi **guruh rejimining** yana bir asosi (30 bola → 5 guruh, reyting jadvalida 8 ta emas, 5 ta qator).
+
+   ⚠️ Bu **qurilma ulashish DEGANI EMAS.** Har oʻquvchi oʻz qurilmasida, oʻz
+   `participant` qatori bilan qoladi (B5.1, `team_id` izohi) — guruh faqat
+   reyting qatlami. "5 telefon × 6 bola" oʻqishi 2026-07-29 da rad etilgan
+   "bitta qurilma, N bola" modeliga qaytadi va individual bahoni yoʻqotadi.
 
 4. ⚠️ **`60 Free Max / 300 Plus Max`** — realtime sigʻimi ularda **pullik oʻq**. Bu F boʻlim uchun xarajat signali: bir vaqtda ulangan ishtirokchi soni bepul emas.
 

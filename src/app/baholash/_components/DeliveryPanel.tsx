@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Check, Copy, Info, Printer, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { QuizSessionRow } from "@/server/db/schema";
 import type { SetOption } from "./BaholashWorkspace";
-import { GAME_SHELLS } from "@/lib/baholash-shells";
+import { GAME_SHELLS, shellAvailability } from "@/lib/baholash-shells";
 
 export type Delivery = "game" | "homework" | "paper";
 
@@ -39,13 +39,25 @@ export default function DeliveryPanel({
   gamesReady,
   onClose,
 }: Props) {
-  const [shellId, setShellId] = useState(GAME_SHELLS[0]?.id ?? "");
+  // Qobiq mosligi kontentdan HISOBLANADI (`shellAvailability`), qoʻlda
+  // shart yozilmaydi — qoida bitta joyda tursin.
+  const shells = useMemo(
+    () => GAME_SHELLS.map((shell) => ({ shell, state: shellAvailability(shell, set.content) })),
+    [set.content]
+  );
+  const usable = shells.filter((s) => s.state.ok);
+  const blocked = shells.filter((s) => !s.state.ok);
+
+  // Standart tanlov — birinchi ISHLAYDIGAN qobiq. Aks holda oʻqituvchi
+  // oʻchiq qobiq bilan sessiya ochib, havolani bekorga tarqatardi.
+  const [picked, setPicked] = useState<string | null>(null);
+  const shellId = picked ?? usable[0]?.shell.id ?? "";
   const [copied, setCopied] = useState(false);
 
   const joinCode = session?.joinCode ?? null;
   const origin = typeof window === "undefined" ? "" : window.location.origin;
   const playUrl = joinCode
-    ? delivery === "game"
+    ? delivery === "game" && shellId
       ? `${origin}/play/${joinCode}?game=${encodeURIComponent(shellId)}`
       : `${origin}/play/${joinCode}`
     : null;
@@ -79,27 +91,49 @@ export default function DeliveryPanel({
             Oʻyin faqat qobiq: savol va ball Ustozonada qoladi, jurnalga faqat
             toʻgʻri/notoʻgʻri kiradi. Tezlik hech qachon bahoga taʼsir qilmaydi.
           </p>
-          <div className="flex flex-wrap gap-2">
-            {GAME_SHELLS.map((shell) => {
-              const tooFew = set.itemCount < shell.minQuestions;
-              return (
+          {usable.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {usable.map(({ shell }) => (
                 <Button
                   key={shell.id}
                   size="sm"
                   variant={shell.id === shellId ? "default" : "outline"}
-                  disabled={tooFew}
-                  title={
-                    tooFew
-                      ? `Bu oʻyin uchun kamida ${shell.minQuestions} savol kerak`
-                      : shell.description
-                  }
-                  onClick={() => setShellId(shell.id)}
+                  title={shell.description}
+                  onClick={() => setPicked(shell.id)}
                 >
                   {shell.name}
                 </Button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {/* Mos kelmagan qobiq YASHIRILMAYDI — sababi bilan koʻrsatiladi.
+              Oʻchiq tugma «nega?» degan savol qoldiradi, sabab esa
+              oʻqituvchiga nima qilishni aytadi (savol qoʻshish, variant
+              kamaytirish). */}
+          {blocked.length > 0 && (
+            <ul className="flex flex-col gap-1.5">
+              {blocked.map(({ shell, state }) => (
+                <li key={shell.id} className="flex gap-2 text-sm text-muted-foreground">
+                  <span aria-hidden className="select-none">
+                    ✕
+                  </span>
+                  <span>
+                    <span className="font-medium text-foreground/70">{shell.name}</span>{" "}
+                    — {state.ok ? "" : state.reason}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {usable.length === 0 && (
+            <Note>
+              Bu testga mos oʻyin qobigʻi yoʻq. Test baribir ishlaydi —
+              oʻquvchilar oddiy ekranda topshiradi va natija jurnalga
+              odatdagidek tushadi.
+            </Note>
+          )}
           {!gamesReady && (
             <Note>
               Oʻyin qobiqlari serveri hali ulanmagan (<code>LESSONLAB_GAMES_BASE</code>).

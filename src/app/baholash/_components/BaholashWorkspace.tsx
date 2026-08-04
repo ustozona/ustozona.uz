@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { startSessionAction } from "@/server/actions/assess-sessions";
 import type { QuizSessionRow } from "@/server/db/schema";
+import type { SetContentSummary } from "@/lib/baholash-shells";
 import DeliveryPanel, { type Delivery } from "./DeliveryPanel";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -33,6 +34,8 @@ export type SetOption = {
   title: string;
   purpose: "formative" | "summative";
   itemCount: number;
+  /** Qobiq mosligini hisoblash uchun kontent xulosasi (serverdan). */
+  content: SetContentSummary;
 };
 
 export type ImportStatus = {
