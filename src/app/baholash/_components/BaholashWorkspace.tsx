@@ -39,7 +39,9 @@ export type ImportStatus = {
   state: string | null;
   classes: number;
   students: number;
+  tests: number;
   conflicts: number;
+  skipped: number;
 };
 
 type Props = {
@@ -102,7 +104,11 @@ export default function BaholashWorkspace({
         </p>
       </header>
 
-      <ImportPanel status={importStatus} hasClasses={classes.length > 0} />
+      <ImportPanel
+        status={importStatus}
+        hasClasses={classes.length > 0}
+        classId={classId}
+      />
 
       {classes.length === 0 ? (
         <EmptyNote text="Avval sinf qoʻshing — testni kimga berishni shundan keyin tanlaysiz." />
@@ -198,18 +204,28 @@ export default function BaholashWorkspace({
    Nega alohida blok: oʻqituvchi LessonLab botida yillar davomida sinf
    va oʻquvchi yigʻgan boʻlishi mumkin. Ularni qoʻlda kiritish yuzlab
    ism yozish degani va Ustozonaga oʻtishning eng katta toʻsigʻi. */
-function ImportPanel({ status, hasClasses }:
-                     { status?: ImportStatus; hasClasses: boolean }) {
+function ImportPanel({ status, hasClasses, classId }:
+                     { status?: ImportStatus; hasClasses: boolean; classId: string }) {
   const s = status?.state ?? null;
 
   const message = (() => {
     if (s === "ok") {
-      const parts = [`${status?.classes ?? 0} sinf`,
-                     `${status?.students ?? 0} oʻquvchi`];
-      const tail = status?.conflicts
-        ? ` · ${status.conflicts} ta nomi bir xil boʻlgani uchun tegilmadi`
-        : "";
-      return `Koʻchirildi: ${parts.join(", ")}${tail}`;
+      const parts: string[] = [];
+      if (status?.classes) parts.push(`${status.classes} sinf`);
+      if (status?.students) parts.push(`${status.students} oʻquvchi`);
+      if (status?.tests) parts.push(`${status.tests} test`);
+      // Hech narsa koʻchmasa buni ochiq aytamiz. «Koʻchirildi: » deb
+      // boʻsh roʻyxat koʻrsatish oʻqituvchini ishlagan deb adashtirardi.
+      if (parts.length === 0) {
+        return status?.conflicts
+          ? `Yangi narsa yoʻq — ${status.conflicts} ta nomi bir xil boʻlgani uchun tegilmadi.`
+          : "Koʻchirishga yangi narsa topilmadi.";
+      }
+      const tail = [
+        status?.conflicts ? `${status.conflicts} ta nomi bir xil boʻlgani uchun tegilmadi` : "",
+        status?.skipped ? `${status.skipped} ta oʻtkazib yuborildi` : "",
+      ].filter(Boolean);
+      return `Koʻchirildi: ${parts.join(", ")}${tail.length ? ` · ${tail.join(" · ")}` : ""}`;
     }
     if (s === "denied") return "Ruxsat berilmadi — koʻchirish bekor qilindi.";
     if (s === "badstate") return "Havola eskirgan — qaytadan urinib koʻring.";
@@ -228,9 +244,19 @@ function ImportPanel({ status, hasClasses }:
       </p>
       <Button asChild size="sm" variant="outline">
         <a href="/api/lessonlab/start">
-          {s === "ok" ? "Yana koʻchirish" : "LessonLab'dan koʻchirish"}
+          {s === "ok" ? "Yana koʻchirish" : "Sinflarni koʻchirish"}
         </a>
       </Button>
+      {/* Test koʻchirish sinfga bogʻlangan — qaysi sinfga tushishini
+          bilmasdan chaqirib boʻlmaydi, shuning uchun sinf tanlanmagan
+          boʻlsa tugma umuman koʻrsatilmaydi. */}
+      {classId && (
+        <Button asChild size="sm" variant="outline">
+          <a href={`/api/lessonlab/start?class=${encodeURIComponent(classId)}`}>
+            Testlarni koʻchirish
+          </a>
+        </Button>
+      )}
     </div>
   );
 }

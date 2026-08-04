@@ -29,6 +29,18 @@ export async function GET(request: Request) {
       new URL("/baholash?import=notconfigured", request.url), 302);
   }
 
+  /* `?class=<uuid>` boʻlsa — TEST koʻchirish, boʻlmasa sinf/oʻquvchi.
+
+     Nega maqsad aynan shu yerda tanlanadi: token callback tugagach
+     UNUTILADI (uni saqlash yana bitta oʻgʻirlanadigan sir yaratardi).
+     Demak «avval roʻyxat, keyin test» bitta token bilan boʻlmaydi —
+     har biri oʻz rozilik bosqichiga ega.
+
+     Sinf EGALIGI bu yerda tekshirilmaydi: `importTests()` uni
+     `requireTeacher()` bilan oʻzi tekshiradi va cookie'dagi qiymatga
+     ishonmaydi. */
+  const targetClass = new URL(request.url).searchParams.get("class") ?? "";
+
   const jar = await cookies();
   const opts = {
     httpOnly: true, sameSite: "lax" as const, secure: true,
@@ -36,5 +48,9 @@ export async function GET(request: Request) {
   };
   jar.set("ll_state", pending.state, opts);
   jar.set("ll_verifier", pending.verifier, opts);
+  // Eski qiymat qolib ketmasin: roʻyxat koʻchirishdan oldin test
+  // koʻchirilgan boʻlsa, cookie tirik qolib maqsadni buzardi.
+  if (targetClass) jar.set("ll_class", targetClass, opts);
+  else jar.delete("ll_class");
   return Response.redirect(url, 302);
 }

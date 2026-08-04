@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { exchangeCode } from "@/server/lessonlab/oauth";
-import { importRoster } from "@/server/dal/lessonlab-import";
+import { importRoster, importTests } from "@/server/dal/lessonlab-import";
 
 /* GET /api/lessonlab/callback?code=…&state=…
 
@@ -25,9 +25,13 @@ export async function GET(request: Request) {
 
   const stateCookie = jar.get("ll_state")?.value ?? "";
   const verifier = jar.get("ll_verifier")?.value ?? "";
+  // `/start` da tanlangan maqsad: boʻsh boʻlsa sinf/oʻquvchi
+  // koʻchiriladi, sinf ID boʻlsa — oʻsha sinfga testlar.
+  const targetClass = jar.get("ll_class")?.value ?? "";
   // Bir martalik qiymatlar — natijadan qatʼi nazar darhol oʻchiriladi
   jar.delete("ll_state");
   jar.delete("ll_verifier");
+  jar.delete("ll_class");
 
   const error = url.searchParams.get("error");
   if (error) return back(request, { import: "denied" });
@@ -43,12 +47,16 @@ export async function GET(request: Request) {
   try {
     const redirectUri = new URL("/api/lessonlab/callback", request.url).toString();
     const tokens = await exchangeCode(code, verifier, redirectUri);
-    const report = await importRoster(tokens.access_token);
+    const report = targetClass
+      ? await importTests(tokens.access_token, targetClass)
+      : await importRoster(tokens.access_token);
     return back(request, {
       import: "ok",
       classes: String(report.classesCreated),
       students: String(report.studentsCreated),
+      tests: String(report.testsCreated),
       conflicts: String(report.conflicts.length),
+      skipped: String(report.skipped.length),
     });
   } catch {
     // Batafsil xato URL'ga chiqmaydi — u foydalanuvchi koʻradigan joy
