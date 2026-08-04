@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { quizSessions, type QuizSessionRow } from "@/server/db/schema";
+import { activitySets, classes, quizSessions, type QuizSessionRow } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -60,6 +60,34 @@ export type CreateSessionInput = {
 
 export async function createSession(input: CreateSessionInput): Promise<QuizSessionRow> {
   const teacher = await requireTeacher();
+
+  /* EGALIK TEKSHIRUVI — `setId` va `classId` mijozdan keladi.
+
+     Ilgari ular to'g'ridan-to'g'ri INSERT ga tushardi: `teacherId` o'z
+     sessiyamizdan olingani uchun qator "bizniki" ko'rinardi, lekin
+     ichida BEGONA to'plam yoki BEGONA sinf bo'lishi mumkin edi. Tashqi
+     kalitlar buni ushlamaydi — ular qatorning MAVJUDLIGINI tekshiradi,
+     EGASINI emas.
+
+     Bu tekshiruv ayniqsa endi zarur: sinf oldin `set.classId` dan
+     olinardi (ya'ni bilvosita cheklangan edi), endi esa o'qituvchi uni
+     o'zi tanlaydi. Ruxsatni kengaytirganda tekshiruvni ham kuchaytirish
+     kerak, aks holda "xohlagan sinfga" degan qulaylik "xohlagan
+     ODAMNING sinfiga" ga aylanardi. */
+  const [own] = await db
+    .select({ id: activitySets.id })
+    .from(activitySets)
+    .where(and(eq(activitySets.id, input.setId), eq(activitySets.teacherId, teacher.id)))
+    .limit(1);
+  if (!own) throw new SessionStateError("Test topilmadi");
+
+  const [ownClass] = await db
+    .select({ id: classes.id })
+    .from(classes)
+    .where(and(eq(classes.id, input.classId), eq(classes.teacherId, teacher.id)))
+    .limit(1);
+  if (!ownClass) throw new SessionStateError("Sinf topilmadi");
+
   const [row] = await db
     .insert(quizSessions)
     .values({

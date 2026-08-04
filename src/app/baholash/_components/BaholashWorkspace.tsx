@@ -67,9 +67,32 @@ export default function BaholashWorkspace({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const classSets = useMemo(
-    () => sets.filter((s) => s.classId === classId),
-    [sets, classId]
+  /* Test sinfga BOGʻLANMAGAN — bu ataylab.
+
+     LessonLabda test oʻqituvchiniki, sinfniki emas: `bot_tests` da
+     class ustuni umuman yoʻq, sinf esa test ISHLATILAYOTGANDA
+     tanlanadi. Oʻqituvchi bir marta tuzgan «Irregular verbs» ni ham
+     6-A, ham 8-B da ishlatadi — bu eng koʻp soʻralgan qulaylik.
+
+     Ustozonada ham buni qilish mumkin, chunki ijro allaqachon SESSIYA
+     sinfiga tayanadi, toʻplam sinfiga emas:
+       • `play/join.ts`  — roʻyxat `session.classId` dan
+       • `publish.ts`    — baho `session.classId` ga
+     `activitySets.classId` faqat «qayerda tuzilgan» degan maʼlumot.
+     Shuning uchun sxema oʻzgartirilmadi, faqat roʻyxat filtri olindi.
+
+     Tartib: tanlangan sinfda tuzilganlari tepada — oʻqituvchi odatda
+     oʻshalarni qidiradi, qolganlari esa yoʻqolmaydi. */
+  const visibleSets = useMemo(() => {
+    const own = sets.filter((s) => s.classId === classId);
+    const other = sets.filter((s) => s.classId !== classId);
+    return [...own, ...other];
+  }, [sets, classId]);
+
+  const className = classes.find((c) => c.id === classId)?.name ?? "";
+  const classNameById = useMemo(
+    () => new Map(classes.map((c) => [c.id, c.name])),
+    [classes]
   );
 
   async function choose(set: SetOption, mode: Delivery) {
@@ -82,7 +105,9 @@ export default function BaholashWorkspace({
     if (mode === "paper") return;
     setBusy(true);
     try {
-      setSession(await startSessionAction({ setId: set.id, classId: set.classId, title: set.title }));
+      // TANLANGAN sinf — `set.classId` EMAS. Test qayerda tuzilganidan
+      // qatʼi nazar, sessiya oʻqituvchi hozir tanlagan sinfga ochiladi.
+      setSession(await startSessionAction({ setId: set.id, classId, title: set.title }));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Sessiya ochilmadi");
     } finally {
@@ -102,7 +127,8 @@ export default function BaholashWorkspace({
           <Link href="/dashboard/assignments" className="underline underline-offset-2">
             Topshiriqlar
           </Link>{" "}
-          boʻlimida tuziladi. Bu yerda uni qanday yetkazishni tanlaysiz — natija
+          boʻlimida tuziladi. Bu yerda uni QAYSI sinfga va QANDAY yetkazishni
+          tanlaysiz — har test istalgan sinfga berilishi mumkin, natija esa
           uchala usulda ham bitta jurnalga tushadi.
         </p>
       </header>
@@ -117,7 +143,12 @@ export default function BaholashWorkspace({
         <EmptyNote text="Avval sinf qoʻshing — testni kimga berishni shundan keyin tanlaysiz." />
       ) : (
         <>
-          <div className="flex flex-wrap gap-2">
+          {/* Sinf — YETKAZISH manzili, test filtri emas. Nomlash muhim:
+              ilgari bu roʻyxat testlarni ham filtrlardi va oʻqituvchi
+              «6-A ni tanlasam boshqa testlarim yoʻqoladi» deb oʻylardi. */}
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">Qaysi sinfga beriladi:</p>
+            <div className="flex flex-wrap gap-2">
             {classes.map((c) => (
               <Button
                 key={c.id}
@@ -133,11 +164,12 @@ export default function BaholashWorkspace({
                 {c.name}
               </Button>
             ))}
+            </div>
           </div>
 
-          {classSets.length === 0 ? (
+          {visibleSets.length === 0 ? (
             <EmptyNote
-              text="Bu sinfda hali test yoʻq."
+              text="Hali test yoʻq."
               action={
                 <Button asChild size="sm" variant="outline">
                   <Link href={`/dashboard/assignments?class=${classId}`}>Test tuzish</Link>
@@ -146,10 +178,18 @@ export default function BaholashWorkspace({
             />
           ) : (
             <ul className="divide-y divide-border rounded-xl border border-border">
-              {classSets.map((set) => (
+              {visibleSets.map((set) => (
                 <li key={set.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <Layers className="size-4 shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">{set.title}</span>
+                  {/* Boshqa sinfda tuzilgan bo'lsa — qayerdan kelgani
+                      ko'rsatiladi. Yashirmaslik kerak: o'qituvchi bir xil
+                      nomli ikki testni ajrata olishi shart. */}
+                  {set.classId !== classId && (
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                      {classNameById.get(set.classId) ?? "boshqa sinf"}dan
+                    </Badge>
+                  )}
                   <Badge variant="outline" className="text-[10px] text-muted-foreground">
                     {set.purpose === "summative" ? "Summativ" : "Formativ"}
                   </Badge>
@@ -191,6 +231,7 @@ export default function BaholashWorkspace({
           busy={busy}
           engineReady={engineReady}
           gamesReady={gamesReady}
+          classId={classId}
           onClose={() => {
             setActiveSet(null);
             setDelivery(null);

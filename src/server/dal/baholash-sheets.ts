@@ -66,7 +66,7 @@ export type SheetPlan = {
     shuning uchun test va sinf AYNAN shu oʻqituvchiniki ekani
     tekshiriladi. Aks holda begona sinf roʻyxatini chop etib olish
     mumkin boʻlardi. */
-export async function buildSheetPlan(setId: string): Promise<SheetPlan> {
+export async function buildSheetPlan(setId: string, classId: string): Promise<SheetPlan> {
   const teacher = await requireTeacher();
 
   const set = await getSet(setId);
@@ -74,10 +74,19 @@ export async function buildSheetPlan(setId: string): Promise<SheetPlan> {
     throw new Error("Test topilmadi");
   }
 
+  /* Sinf CHAQIRUVCHIDAN keladi, `set.classId` dan EMAS.
+
+     Test qaysi sinfda tuzilganidan qatʼi nazar oʻqituvchi uni istagan
+     sinfiga bera oladi — LessonLabdagi mantiq shunday va oʻqituvchilar
+     aynan shunga oʻrgangan. Varaqdagi ismlar va QR raqamlari
+     TANLANGAN sinf roʻyxatidan olinishi shart, aks holda 8-B ga
+     6-A ning ismlari chop etilardi.
+
+     Egalik shu yerda tekshiriladi: `classId` mijozdan kelgan qiymat. */
   const [cls] = await db
     .select({ id: classes.id, name: classes.name })
     .from(classes)
-    .where(and(eq(classes.id, set.classId), eq(classes.teacherId, teacher.id)))
+    .where(and(eq(classes.id, classId), eq(classes.teacherId, teacher.id)))
     .limit(1);
   if (!cls) throw new Error("Sinf topilmadi");
 
