@@ -183,10 +183,15 @@ export async function importTests(token: string, classId: string): Promise<Impor
       continue;
     }
 
-    const full = await lessonlab<{ test: { questions?: LlQuestion[] } }>({
+    // DIQQAT — `questions` YUQORI darajada, `test` ICHIDA EMAS.
+    // LessonLab javobi: { test: {...}, questions: [...], answers_included }
+    // Ilgari `full.test.questions` o'qilardi va u HAR DOIM undefined
+    // bo'lgani uchun barcha testlar «savollari yo'q» deb o'tkazib
+    // yuborilardi (2026-08: 25 testdan 25 tasi skipped).
+    const full = await lessonlab<{ questions?: LlQuestion[] }>({
       method: "GET", path: `/api/v1/tests/${test.id}`, accessToken: token,
     });
-    const questions = full?.test?.questions ?? [];
+    const questions = full?.questions ?? [];
     if (questions.length === 0) {
       report.skipped.push({ kind: "test", name: test.title, reason: "Savollari yoʻq" });
       continue;

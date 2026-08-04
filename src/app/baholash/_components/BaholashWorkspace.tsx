@@ -217,6 +217,15 @@ function ImportPanel({ status, hasClasses, classId }:
       // Hech narsa koʻchmasa buni ochiq aytamiz. «Koʻchirildi: » deb
       // boʻsh roʻyxat koʻrsatish oʻqituvchini ishlagan deb adashtirardi.
       if (parts.length === 0) {
+        // `skipped` ni JIM YUTMAYMIZ. Ilgari u ko'rsatilmasdi va
+        // «yangi narsa topilmadi» degan xabar chiqardi — holbuki 25 ta
+        // test kelib, hammasi o'tkazib yuborilgan edi (import xatosi).
+        // Foydalanuvchi hech narsa yo'q deb o'ylab, nosozlikni
+        // ko'rmasdi.
+        if (status?.skipped) {
+          return `Hech narsa koʻchmadi — ${status.skipped} ta yaroqsiz ` +
+                 "deb oʻtkazib yuborildi (savoli yoki toʻgʻri javobi yoʻq).";
+        }
         return status?.conflicts
           ? `Yangi narsa yoʻq — ${status.conflicts} ta nomi bir xil boʻlgani uchun tegilmadi.`
           : "Koʻchirishga yangi narsa topilmadi.";
