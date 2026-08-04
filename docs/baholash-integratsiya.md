@@ -337,19 +337,19 @@ git fetch upstream main
 
 # 1. Branch UPSTREAM main'dan ochiladi — boshqa main'dan emas, aks
 #    holda diff upstream'dagi yangi ishni orqaga qaytaradi.
-git checkout -b behroz/<tavsif> upstream/main
+git checkout -b <ism>/<tavsif> upstream/main
 
 # 2. npm run build lokal oʻtishi shart — Vercel bitta umumiy deploy.
 npm run build
 
 # 3. Branch UPSTREAM'ga push qilinadi (main'ga emas, branch'ga).
-git push upstream behroz/<tavsif>
+git push upstream <ism>/<tavsif>
 ```
 
 PR upstream ichida, oddiy same-repo PR sifatida ochiladi:
 
 ```
-https://github.com/ustozona/ustozona.uz/compare/main...behroz/<tavsif>?expand=1
+https://github.com/ustozona/ustozona.uz/compare/main...<ism>/<tavsif>?expand=1
 ```
 
 Upstream'dagi mavjud PR'lar aynan shunday qilingan — merge

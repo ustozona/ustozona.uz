@@ -14,7 +14,11 @@ Jamoa bitta umumiy GitHub akkauntidan push qiladi (2+ hisobdan push
 qilinsa Vercel deploy qilmay qoladi). Shuning uchun tartib qat'iy:
 
 1. **Har ish alohida branch'da.** `main` dan ochiladi:
-   `git checkout main && git pull` → `git checkout -b behroz/<qisqa-tavsif>`
+   `git checkout main && git pull` → `git checkout -b <ism>/<qisqa-tavsif>`
+
+   Branch nomi **oʻz ismingiz** bilan boshlanadi — hamma bitta GitHub
+   akkauntdan push qilgani uchun branch nomi kim ishlaganini koʻrsatuvchi
+   yagona belgi. Masalan `otabek/baholash-guruh`, `behroz/jurnal-filtr`.
 2. **`main` ga TO'G'RIDAN-TO'G'RI push YO'Q.** Faqat o'z branch'ingga,
    qo'shilishi esa Pull Request orqali.
 3. **Push oldidan main'ni tortib ol:** `git fetch origin && git rebase origin/main`
@@ -48,14 +52,14 @@ fork tarmog'i yo'q. Buning amaliy oqibati:
 git remote add upstream https://github.com/ustozona/ustozona.uz.git  # bir marta
 git fetch upstream main
 
-git checkout -b behroz/<tavsif> upstream/main   # 1-qoida: main = upstream/main
+git checkout -b <ism>/<tavsif> upstream/main    # 1-qoida: main = upstream/main
 # ... ish ...
 git fetch upstream && git rebase upstream/main  # 3-qoida
 npm run build                                   # 4-qoida
-git push upstream behroz/<tavsif>               # 2-qoida: main'ga EMAS, branch'ga
+git push upstream <ism>/<tavsif>                # 2-qoida: main'ga EMAS, branch'ga
 ```
 
-PR: `https://github.com/ustozona/ustozona.uz/compare/main...behroz/<tavsif>?expand=1`
+PR: `https://github.com/ustozona/ustozona.uz/compare/main...<ism>/<tavsif>?expand=1`
 
 2-qoida buzilmaydi: upstream'ga **branch** push qilinadi, `main` ga
 emas. Qo'shilish baribir PR orqali.
