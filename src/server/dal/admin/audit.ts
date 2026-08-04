@@ -23,7 +23,9 @@ export type AdminAuditAction =
   | "school.create"
   | "school.update"
   | "school.delete"
-  | "school.assign_teacher";
+  | "school.assign_teacher"
+  // Bir martalik tuzatish vositasi (grades-audit.ts) — «800%» xatosi.
+  | "grades.repair_percent";
 
 export async function writeAuditLog(
   actor: AdminActor,
