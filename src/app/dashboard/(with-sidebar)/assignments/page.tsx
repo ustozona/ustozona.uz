@@ -30,6 +30,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   useAssignmentEditorStore, makeDraftPayload,
 } from "@/store/useAssignmentEditorStore";
+import { listSetsWithPublishStateAction } from "@/server/actions/assess";
+import TestWorkspaceOverlay from "./_components/TestWorkspaceOverlay";
 
 /** "Other" (Toifasiz) chelagi uchun sentinel — DB qatori emas, faqat guruhlash kaliti. */
 const OTHER_GROUP = "__other__";
@@ -48,6 +50,61 @@ export default function AssignmentsPage() {
   const openEdit = useAssignmentEditorStore((s) => s.openEdit);
 
   const classData = selectedClassId ? classDataMap[selectedClassId] : undefined;
+
+  /* ── TUZILGAN, LEKIN HALI JURNALGA CHIQMAGAN TESTLAR ──────────────
+     Toʻplam (mazmun) va topshiriq (jurnaldagi baho ustuni) — ikki
+     boshqa narsa: toʻplam tuzilganda `assignments` ga hech narsa
+     yozilmaydi, ustun faqat nashr qilinganda tugʻiladi.
+
+     Chegara toʻgʻri, lekin oʻqituvchiga koʻrinmasdi: u shu sahifada
+     «Yaratish → Test» qilib test tuzardi va sahifa boʻsh qolaverardi
+     — ish yoʻqolgandek koʻrinardi. Endi bunday testlar alohida guruh
+     boʻlib turadi va bosilsa oʻz muharririda ochiladi.
+
+     Topshiriq YARATILMAYDI: publish `sourceSessionId` boʻyicha
+     izlagani uchun oldindan yaratilgan ustun nashrda IKKINCHI marta
+     qoʻshilardi — bitta test ikkita baho ustuni boʻlib chiqardi. */
+  const [pendingSets, setPendingSets] = useState<
+    { id: string; title: string; itemCount: number }[]
+  >([]);
+  const [testWorkspaceSetId, setTestWorkspaceSetId] = useState<string | null>(null);
+
+  /* Roʻyxat QACHON yangilanadi.
+
+     Sinf almashgani yetarli emas: aynan muammoli oqimda oʻqituvchi
+     testni SHU SAHIFADAGI muharrir ichida tuzadi. Muharrir yopilgach
+     (`session === null`) roʻyxat qayta soʻraladi — aks holda yangi
+     test faqat sahifani yangilagandan keyin koʻrinardi, yaʼni xato
+     yarim tuzatilgan boʻlardi.
+
+     Test ish maydoni yopilgani ham hisobga olinadi: u yerda test
+     tahrirlanishi, oʻchirilishi yoki nashr qilinishi mumkin. */
+  const editorSession = useAssignmentEditorStore((s) => s.session);
+
+  useEffect(() => {
+    if (!selectedClassId) {
+      setPendingSets([]);
+      return;
+    }
+    let alive = true;
+    listSetsWithPublishStateAction(selectedClassId)
+      .then((rows) => {
+        if (!alive) return;
+        setPendingSets(
+          rows
+            .filter((r) => r.assignmentId === null)
+            .map((r) => ({ id: r.set.id, title: r.set.title, itemCount: r.set.items.length }))
+        );
+      })
+      .catch(() => {
+        // Roʻyxat yordamchi maʼlumot — kelmasa sahifa oddiy holicha
+        // ishlayveradi, xato koʻrsatib chalgʻitmaymiz.
+        if (alive) setPendingSets([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [selectedClassId, editorSession, testWorkspaceSetId]);
 
   const groups = useMemo(() => {
     if (!classData) return [];
@@ -164,7 +221,7 @@ export default function AssignmentsPage() {
               </div>
 
               <div className={panelCardContentClass}>
-                {totalCount === 0 ? (
+                {totalCount === 0 && pendingSets.length === 0 ? (
                   <Empty className="h-full border-0">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
@@ -180,6 +237,54 @@ export default function AssignmentsPage() {
                 ) : (
                   <ScrollArea className="h-full w-full">
                     <div className="flex flex-col gap-6 p-5">
+                      {/* Tuzilgan, lekin hali jurnalga chiqmagan testlar —
+                          eng tepada, chunki oʻqituvchi aynan ularni
+                          qidirib keladi (endigina tuzgan). */}
+                      {pendingSets.length > 0 && (
+                        <div className="flex flex-col gap-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                              <FileCheck2 className="size-3.5" />
+                            </div>
+                            <h3 className="text-sm font-semibold text-foreground">
+                              Tayyorlangan testlar
+                            </h3>
+                            <TypographyMuted className="text-xs">
+                              {pendingSets.length}
+                            </TypographyMuted>
+                          </div>
+                          <TypographyMuted className="text-xs">
+                            Bular hali jurnalda emas. Sessiya oʻtkazib natijani
+                            koʻchirganingizdan keyin baho ustuni paydo boʻladi.
+                          </TypographyMuted>
+                          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+                            {pendingSets.map((set) => (
+                              <button
+                                key={set.id}
+                                type="button"
+                                onClick={() => setTestWorkspaceSetId(set.id)}
+                                className="list-card group flex items-center gap-3 p-3.5 text-left"
+                              >
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                  <FileCheck2 className="size-4" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="truncate text-sm font-medium text-foreground">
+                                    {set.title}
+                                  </h4>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className="shrink-0 text-[10px] text-muted-foreground"
+                                >
+                                  {set.itemCount} savol
+                                </Badge>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {groups.map((group) => (
                         <div key={group.id} className="flex flex-col gap-2.5">
                           <div className="flex items-center gap-2">
@@ -258,6 +363,17 @@ export default function AssignmentsPage() {
           )}
         </div>
       </DashboardColumns>
+
+      {/* Test bosilganda oʻz ish maydonida ochiladi — muharrir ham,
+          sessiya paneli ham oʻsha yerda (BaholashView). */}
+      {testWorkspaceSetId && selectedClassId && (
+        <TestWorkspaceOverlay
+          classId={selectedClassId}
+          className={classData?.info.name ?? ""}
+          autoOpenSetId={testWorkspaceSetId}
+          onClose={() => setTestWorkspaceSetId(null)}
+        />
+      )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
         <AlertDialogContent>

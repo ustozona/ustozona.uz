@@ -6,6 +6,8 @@ import {
   activities,
   activityItems,
   activitySets,
+  assignments,
+  quizSessions,
   type ActivitySetRow,
 } from "@/server/db/schema";
 import type { SetContentSummary } from "@/lib/baholash-shells";
@@ -38,6 +40,74 @@ export async function listSets(classId?: string): Promise<ActivitySetRow[]> {
         ? and(eq(activitySets.teacherId, teacher.id), eq(activitySets.classId, classId))
         : eq(activitySets.teacherId, teacher.id)
     );
+}
+
+/** Toʻplam + u jurnalga chiqqanmi.
+
+    ⚠️ TOʻPLAM ≠ TOPSHIRIQ. Toʻplam — MAZMUN (savollar), topshiriq esa
+    jurnaldagi BAHO USTUNI. Ular alohida jadval va alohida umr koʻradi:
+    toʻplam tuzilganda `assignments` ga hech narsa yozilmaydi, ustun
+    faqat `publishSessionToGrades()` da tugʻiladi.
+
+    Bu chegara toʻgʻri, lekin oʻqituvchiga koʻrinmasdi: u Topshiriqlar
+    boʻlimida test tuzib, oʻsha sahifada hech narsa koʻrmasdi va ishim
+    yoʻqoldi deb oʻylardi. Endi tuzilgan, ammo hali nashr qilinmagan
+    testlar shu roʻyxat orqali oʻsha sahifada koʻrsatiladi. */
+export type SetPublishState = {
+  set: ActivitySetRow;
+  /** Jurnalga koʻchirilgan boʻlsa — topshiriq id'si. */
+  assignmentId: string | null;
+};
+
+/** Sinf toʻplamlari, har biri jurnalga chiqqan-chiqmagani bilan.
+
+    Zanjir: `activity_sets` → `quiz_sessions` → `assignments`
+    (`assignments.sourceSessionId`). Uchta soʻrov — har toʻplamga
+    alohida emas. */
+export async function listSetsWithPublishState(classId: string): Promise<SetPublishState[]> {
+  const teacher = await requireTeacher();
+  const sets = await db
+    .select()
+    .from(activitySets)
+    .where(and(eq(activitySets.teacherId, teacher.id), eq(activitySets.classId, classId)));
+  if (sets.length === 0) return [];
+
+  const setIds = sets.map((s) => s.id);
+  const sessionRows = await db
+    .select({ id: quizSessions.id, setId: quizSessions.setId })
+    .from(quizSessions)
+    .where(and(eq(quizSessions.teacherId, teacher.id), inArray(quizSessions.setId, setIds)));
+  if (sessionRows.length === 0) {
+    return sets.map((set) => ({ set, assignmentId: null }));
+  }
+
+  const publishedRows = await db
+    .select({ id: assignments.id, sourceSessionId: assignments.sourceSessionId })
+    .from(assignments)
+    .where(
+      and(
+        eq(assignments.teacherId, teacher.id),
+        inArray(
+          assignments.sourceSessionId,
+          sessionRows.map((r) => r.id)
+        )
+      )
+    );
+
+  const assignmentBySession = new Map(
+    publishedRows
+      .filter((r) => r.sourceSessionId)
+      .map((r) => [r.sourceSessionId as string, r.id])
+  );
+  const assignmentBySet = new Map<string, string>();
+  for (const session of sessionRows) {
+    const assignmentId = assignmentBySession.get(session.id);
+    if (assignmentId && !assignmentBySet.has(session.setId)) {
+      assignmentBySet.set(session.setId, assignmentId);
+    }
+  }
+
+  return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null }));
 }
 
 /**
