@@ -113,12 +113,15 @@ export async function summarizeSetContent(
   return out;
 }
 
-export async function getSet(id: string): Promise<ActivitySetRow | null> {
-  const teacher = await requireTeacher();
+/** `actorId` — cookie sessiyasi boʻlmagan oqim uchun (telefondagi
+    skaner chiptasi, `server/baholash/scan-ticket.ts`). Berilmasa
+    odatdagidek kirgan oʻqituvchi olinadi. */
+export async function getSet(id: string, actorId?: string): Promise<ActivitySetRow | null> {
+  const teacherId = actorId ?? (await requireTeacher()).id;
   const [row] = await db
     .select()
     .from(activitySets)
-    .where(and(eq(activitySets.id, id), eq(activitySets.teacherId, teacher.id)));
+    .where(and(eq(activitySets.id, id), eq(activitySets.teacherId, teacherId)));
   return row ?? null;
 }
 

@@ -257,12 +257,16 @@ export async function previewOmrScan(input: {
   classId: string;
   image: Uint8Array;
   contentType: string;
+  /** Telefondagi chipta oqimi — cookie sessiyasi yoʻq, kimlik
+      imzolangan chiptadan keladi (imzo chaqiruvchida tekshiriladi). */
+  actorId?: string;
 }): Promise<ScanPreview> {
-  // Egalik shu yerda tekshiriladi (`requireTeacher` + set/class egasi).
-  const plan = await buildSheetPlan(input.setId, input.classId);
+  // Egalik shu yerda tekshiriladi (kirgan oʻqituvchi yoki chipta egasi
+  // + set/class egaligi).
+  const plan = await buildSheetPlan(input.setId, input.classId, input.actorId);
   if (plan.questionCount < 1) throw new Error("Testda savol yoʻq");
 
-  const { setItems } = await loadSetItems(input.setId);
+  const { setItems } = await loadSetItems(input.setId, input.actorId);
   const questions = await loadPaperQuestions(plan, setItems);
   const questionByNo = new Map(questions.map((q) => [q.no, q]));
 
@@ -272,8 +276,8 @@ export async function previewOmrScan(input: {
     questionCount: plan.questionCount,
   });
 
-  const teacher = await requireTeacher();
-  const session = await findPaperSession(teacher.id, input.setId, input.classId);
+  const teacherId = input.actorId ?? (await requireTeacher()).id;
+  const session = await findPaperSession(teacherId, input.setId, input.classId);
   const entered = session ? await enteredStudentIds(session.id) : new Set<string>();
 
   const sheets: ScanSheet[] = scan.sheets.map((sheet, i) => {
@@ -360,15 +364,17 @@ export async function applyOmrScan(input: {
   setId: string;
   classId: string;
   sheets: ApplySheet[];
+  /** Telefondagi chipta oqimi — `previewOmrScan` dagi kabi. */
+  actorId?: string;
 }): Promise<ApplyReport> {
-  const teacher = await requireTeacher();
-  const plan = await buildSheetPlan(input.setId, input.classId);
-  const { setItems } = await loadSetItems(input.setId);
+  const teacherId = input.actorId ?? (await requireTeacher()).id;
+  const plan = await buildSheetPlan(input.setId, input.classId, teacherId);
+  const { setItems } = await loadSetItems(input.setId, input.actorId);
   const questions = await loadPaperQuestions(plan, setItems);
   const byNo = new Map(questions.map((q) => [q.no, q]));
   const rosterById = new Map(plan.roster.map((r) => [r.id, r]));
 
-  const session = await ensurePaperSession(teacher.id, input);
+  const session = await ensurePaperSession(teacherId, input);
   const entered = await enteredStudentIds(session.id);
 
   const skipped: ApplyReport["skipped"] = [];
@@ -468,8 +474,9 @@ export async function applyOmrScan(input: {
     paytida oʻzi hal qiladi. */
 async function ensurePaperSession(
   teacherId: string,
-  input: { setId: string; classId: string }
+  input: { setId: string; classId: string; actorId?: string }
 ): Promise<QuizSessionRow> {
+  const actorId = input.actorId;
   const existing = await findPaperSession(teacherId, input.setId, input.classId);
   if (existing) {
     if (existing.state === "running") return existing;
@@ -486,7 +493,7 @@ async function ensurePaperSession(
     return row;
   }
 
-  const set = await loadSetItems(input.setId);
+  const set = await loadSetItems(input.setId, actorId);
   const [row] = await db
     .insert(quizSessions)
     .values({
@@ -507,8 +514,8 @@ async function ensurePaperSession(
 }
 
 /** Toʻplam qatori — egalik tekshiruvi bilan (`getSet` ichida). */
-async function loadSetItems(setId: string) {
-  const set = await getSet(setId);
+async function loadSetItems(setId: string, actorId?: string) {
+  const set = await getSet(setId, actorId);
   if (!set) throw new Error("Test topilmadi");
   return { title: set.title, setItems: set.items };
 }

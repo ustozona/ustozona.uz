@@ -336,6 +336,69 @@ oʻqituvchining koʻzi ushlaydi. Shuning uchun oʻquvchi roʻyxatdan
 qoʻlda ham tanlanadi (ismsiz imtihon varagʻi ham shu yoʻl bilan
 kiritiladi).
 
+### Noutbuk → telefon: QR, «havolani yuboring» EMAS
+
+Birinchi versiyada skaner faqat `/baholash` panelida edi va bu amalda
+ishlamadi: **oʻqituvchi Ustozonani noutbukda ochadi, kamera esa
+telefonda**. Oradagi «havolani telefonga yuboring» qadami — oqimning
+eng zaif joyi, hech kim oʻziga oʻzi havola yubormaydi.
+
+Endi noutbukda **QR** chiqadi, oʻqituvchi telefon kamerasini oʻz
+monitoriga tutadi:
+
+```
+noutbuk  «Telefonda skanerlash»
+         → createScanHandoffAction()  → imzolangan CHIPTA + QR (SVG)
+telefon  kamera QR ni oʻqiydi
+         → /baholash/skaner/<chipta>   ← kirish TALAB QILINMAYDI
+         → surat → tekshirish → kiritish
+```
+
+Chipta — `server/baholash/scan-ticket.ts`, HMAC bilan imzolangan
+`{teacherId, setId, classId, exp}`. Jadval yoʻq: migratsiya, tozalash
+vazifasi va yana bitta saqlash joyi qoʻshmaslik uchun server oʻzi
+bergan chiptani imzodan tanib oladi.
+
+⚠️ Narxi: chiptani **bekor qilib boʻlmaydi**. Shuning uchun umri 2
+soat va qamrovi tor — faqat bitta test + bitta sinfga varaq kiritish.
+Chiptani qoʻlga kiritgan odam jurnalni oʻqiy olmaydi, boshqa sinfga
+tegmaydi. Bu `/play` ishtirokchi tokeni bilan bir xil savdo (§4).
+
+Telefon sahifasi ataylab yalangʻoch: bitta test, bitta ish, menyu yoʻq
+— chipta boshqa hech narsaga ruxsat bermaydi. `robots: noindex`.
+
+## 8-ter. Telegram bot yoʻli — NEGA HALI YOʻQ
+
+«Bitta tugma bilan `@uzlessonlabbot` ga oʻtsin, botda hammasi tayyor»
+degan talab tabiiy, lekin ikkita toʻsiq bor.
+
+**1. Bot LessonLab jurnaliga yozadi.** Botdagi tayyor OMR funksiyasi
+`/api/v1/scan/*` yoʻlidan ketadi va natijani **LessonLab** jurnaliga
+yozadi (§7 dagi jadval). Ustozona jurnaliga tushishi uchun bot suratni
+bizga qaytarishi kerak — bu bot tomonida YANGI ishlov, mavjud
+funksiya emas.
+
+**2. Chipta Telegram havolasiga sigʻmaydi.** `t.me/<bot>?start=<payload>`
+da `payload` **64 belgi** va faqat `A-Za-z0-9_-`. Bizning chiptada
+uchta UUID + muddat + imzo bor — eng ixcham koʻrinishda ham 80+ belgi.
+
+Demak bot yoʻli uchun kerak boʻladi:
+
+| Tomon | Ish |
+|---|---|
+| Ustozona | qisqa kod jadvali (`scan_codes`: kod → chipta, TTL), kod beruvchi endpoint |
+| Ustozona | `POST /api/baholash/scan/relay` — bot suratni shu yerga yuboradi (kod + rasm) |
+| LessonLab bot | `/start <kod>` ishlovi: kodni eslab qoladi, keyingi suratni relay'ga yuboradi |
+| LessonLab bot | natijani foydalanuvchiga koʻrsatish (yoki «Ustozonada koʻring» deyish) |
+
+Tekshirish qadami (kim qaysi varaq) baribir kerak, u esa katta ekranda
+qulayroq — shuning uchun bot yoʻlida ham tasdiqlash noutbukda qolishi
+maʼqul, bot faqat KAMERA boʻladi.
+
+QR yechimi shu ishning hammasini talab qilmaydi va bugun ishlaydi,
+shuning uchun avval u qilindi. Bot yoʻli — yuqoridagi toʻrt qadam
+bajarilganda qoʻshiladi.
+
 ### Qaror qilingan mayda narsalar
 
 - **Bir varaq — bir marta.** Oʻquvchi kiritilgan boʻlsa ikkinchi varaq
@@ -364,6 +427,9 @@ kiritiladi).
   koʻchirish» tugmasi chiqadi (`/api/lessonlab/start?class=…`).
 - ~~Varaqni skanerlash UI'si~~ — tayyor: shu panelda «Varaqni suratga
   olish» (§8-bis).
+- ~~Noutbukdan telefonga oʻtish~~ — tayyor: «Telefonda skanerlash» → QR.
+- **Telegram bot yoʻli** — shartnoma §8-ter da yozilgan, ikki tomonlama
+  ish talab qiladi.
 - **QR-kartalar** — `answerCardsPdf()` tayyor, UI hali yoʻq.
 - **Skanerlangan sessiyani jurnalga koʻchirish** hali Topshiriqlar
   boʻlimidagi sessiya panelidan qilinadi. `/baholash` dan toʻgʻridan-
