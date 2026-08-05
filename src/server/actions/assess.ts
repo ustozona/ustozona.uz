@@ -10,7 +10,15 @@ import {
   updateActivity,
   type ActivityWithItems,
 } from "@/server/dal/assess/activities";
-import { createSet, deleteSet, getSet, listSets, updateSet } from "@/server/dal/assess/sets";
+import {
+  createSet,
+  deleteSet,
+  getSet,
+  listSets,
+  listSetsWithPublishState,
+  updateSet,
+  type SetPublishState,
+} from "@/server/dal/assess/sets";
 import type { ActivityBankRow, ActivityRow, ActivitySetRow } from "@/server/db/schema";
 
 /* MCQ savol muharriri — yupqa qatlam: zod-parse → DAL. */
@@ -140,6 +148,18 @@ export type CreateSetFormValues = z.infer<typeof createSetFormSchema>;
 
 export async function listSetsAction(classId?: string): Promise<ActivitySetRow[]> {
   return listSets(classId);
+}
+
+/** Sinf testlari + har biri jurnalga chiqqanmi.
+
+    Topshiriqlar sahifasi shu bilan «tuzilgan, lekin hali nashr
+    qilinmagan» testlarni koʻrsatadi — aks holda test tuzilgandan keyin
+    oʻsha sahifada hech narsa koʻrinmasdi (`listSetsWithPublishState`
+    izohiga qarang). */
+export async function listSetsWithPublishStateAction(
+  classId: string
+): Promise<SetPublishState[]> {
+  return listSetsWithPublishState(classId);
 }
 
 export async function createSetAction(input: CreateSetFormValues): Promise<ActivitySetRow> {
