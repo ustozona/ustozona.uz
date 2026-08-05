@@ -13,8 +13,7 @@
     "db:seed": "tsx --env-file=.env.local scripts/seed.ts",
     "admin:promote": "tsx --env-file=.env.local scripts/promote-admin.ts",
     "metrics": "tsx --env-file=.env.local scripts/metrics.ts",
-    "feedback:migrate-status": "tsx --env-file=.env.local scripts/migrate-feedback-status.ts",
-    "db:kochir": "tsx scripts/kochir-supabase.ts"
+    "feedback:migrate-status": "tsx --env-file=.env.local scripts/migrate-feedback-status.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.1",

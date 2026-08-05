@@ -1,11 +1,24 @@
-# Neon → Supabase koʻchish qoʻllanmasi
+# Neon → Supabase: bitta bazaga oʻtish
 
-Ustozona bazasi LessonLab bilan **bitta Supabase loyihasiga** koʻchadi
-(`lxppxnawxmcfebmzdgil`). Bu hujjat — bir martalik amaliyot tartibi.
+Ustozona bazasi LessonLab bilan **bitta Supabase loyihasiga** koʻchdi
+(`lxppxnawxmcfebmzdgil`).
 
-> Holat: sxema Supabase'ga **allaqachon qoʻyilgan** (55 jadval, 101 FK,
-> 68 indeks). Maʼlumot hali koʻchirilmagan. Kod `postgres-js` ga
-> oʻtkazilgan.
+> **Qaror (2026-08-05, Behruz + Otabek):** Neon'dagi maʼlumot
+> koʻchirilMAYDI. U sinov maʼlumoti edi — haqiqiy foydalanuvchi yoʻq,
+> testlar esa LessonLab bazasida saqlanadi va OAuth import orqali
+> qaytadan olinadi. Shuning uchun Supabase **toza sahifadan** boshlaydi.
+
+---
+
+## Holat
+
+| qism | holat |
+|---|---|
+| Sxema (55 jadval, 101 FK, 129 indeks) | ✅ Supabase'da |
+| RLS (55/55 jadval) | ✅ yoqilgan |
+| Kod (`postgres-js` drayveri) | ✅ tayyor |
+| Maʼlumot | — koʻchirilmaydi, toza boshlanadi |
+| Vercel `DATABASE_URL` | ⏳ almashtirilishi kerak |
 
 ---
 
@@ -16,86 +29,40 @@ birlashtirishga yoʻl ochiladi.
 
 ⛔ **Dublikat OʻZ-OʻZIDAN yoʻqolmaydi.** Bitta bazada `students` va
 `bot_students` baribir ikkita alohida jadval boʻlib qolaveradi. Botda
-oʻquvchi ismini oʻzgartirsangiz `students.name` oʻzgarmaydi — xuddi
-avvalgidek. Konflikt maʼlumot MODELIDA, server manzilida emas.
+oʻquvchi ismini oʻzgartirsangiz `students.name` oʻzgarmaydi. Konflikt
+maʼlumot MODELIDA, server manzilida emas.
 
-Toʻliq birlashtirish (bitta `students` jadvali, ikkala ilova ham
-oʻshani oʻqib-yozadi) — alohida, kattaroq loyiha: identifikatorlar
+Toʻliq birlashtirish — alohida, kattaroq loyiha: identifikatorlar
 turlicha (Telegram `user_id` bigint / better-auth `user.id` text),
 kalitlar butun/UUID, LessonLab'ning `db/` qatlami qayta yozilishi kerak.
+Koʻprik allaqachon bor: `user_telegram` jadvali.
 
 ⚠️ **Umumiy nosozlik doirasi.** Endi baza yiqilsa IKKALA mahsulot ham
 toʻxtaydi. Ilgari ular mustaqil edi.
 
 ---
 
-## 1. Maʼlumotni koʻchirish (SIZ bajarasiz)
+## 1. RLS — nega yoqilgan va nega siyosat yoʻq
 
-### Hech narsa oʻrnatish KERAK EMAS
+Supabase `public` sxemani PostgREST orqali **tashqariga ochadi**, anon
+kalit esa ochiq hisoblanadi (u brauzer kodida boʻladi). RLS yoqilmasa
+oʻsha kalit bilan hamma narsa oʻqilardi: oʻquvchi ismlari, ota-ona
+telefonlari, baholar, `account` dagi parol xeshlari.
 
-`pg_dump` ishlatilmaydi. Sabab: u alohida oʻrnatishni talab qiladi va
-versiyasi serverdan past boʻlsa umuman ishlamaydi (PG 17 serverdan
-PG 16 `pg_dump` dump ololmaydi). Node va `tsx` esa loyihada allaqachon
-bor, shuning uchun koʻchirish oddiy skript bilan bajariladi:
-`scripts/kochir-supabase.ts`.
+Shuning uchun 55 ta jadvalda RLS **yoqilgan**, siyosat esa **ataylab
+qoʻshilmagan**: siyosatsiz RLS = «hech kimga ruxsat yoʻq». Ustozona
+ilovasi bazaga JADVAL EGASI (`postgres`) sifatida ulanadi, egasi esa
+RLS dan chetlab oʻtadi — ilova ishlashda davom etadi.
 
-### Buyruqlar (PowerShell)
+⛔ **`FORCE ROW LEVEL SECURITY` qoʻshmang** — u egani ham cheklaydi va
+ilova butunlay ishlamay qoladi.
 
-```powershell
-# Neon satri — .env.local dan, ekranga chiqmaydi
-$env:SOURCE_DATABASE_URL = (Get-Content .env.local | Select-String '^DATABASE_URL=').Line.Substring(13)
-
-# Supabase → Connect → Direct connection (5432)
-$env:TARGET_DATABASE_URL = "postgresql://postgres:<parol>@db.lxppxnawxmcfebmzdgil.supabase.co:5432/postgres"
-
-# 1) QURUQ YURISH — hech narsa yozmaydi, faqat nima koʻchishini koʻrsatadi
-npm run db:kochir -- --quruq
-
-# 2) Haqiqiy koʻchirish
-npm run db:kochir
-```
-
-Skript nima qiladi:
-
-- **Nishon boʻshligini tekshiradi.** Toʻla jadval koʻrsa toʻxtaydi —
-  ikki marta yugurtirib maʼlumotni ikkilantirib qoʻyish mumkin emas.
-- **Bitta tranzaksiya.** Xato chiqsa hech narsa saqlanmaydi.
-- **FK triggerlarini oʻchiradi** (`session_replication_role = replica`),
-  shuning uchun jadval tartibi ahamiyatsiz.
-- **`student_number` identity ni saqlaydi** — vaqtincha olib turib,
-  qaytarib qoʻyadi va hisoblagichni suradi. Aks holda Postgres oʻz
-  raqamini berardi va eski raqamlar yoʻqolardi.
-- **Oxirida sanoqni solishtiradi** — manba va nishon mos kelmasa
-  ochiq aytadi.
-- **Manbaga faqat OʻQISH uchun tegadi.** Neon tegilmasdan qoladi.
-
-### Tekshirish
-
-```sql
--- Har ikkala tomonda bir xil chiqishi kerak
-SELECT 'teachers' t, count(*) FROM teachers
-UNION ALL SELECT 'classes', count(*) FROM classes
-UNION ALL SELECT 'students', count(*) FROM students
-UNION ALL SELECT 'grades', count(*) FROM grades
-UNION ALL SELECT 'user', count(*) FROM "user";
-```
+Aynan shu holat LessonLab jadvallarida ham (78 tasida RLS yoqilgan,
+siyosat yoʻq).
 
 ---
 
-## 2. Drizzle migratsiya tarixini baseline qilish
-
-Sxema **qoʻlda** (Supabase migratsiyasi bilan) qoʻyilgan, yaʼni
-`drizzle.__drizzle_migrations` jadvali boʻsh. Baseline qilmasangiz
-keyingi `db:migrate` 30 ta migratsiyani QAYTADAN bajarishga urinadi va
-«already exists» bilan yiqiladi:
-
-```bash
-npx tsx --env-file=.env.local scripts/migrate.ts --baseline
-```
-
----
-
-## 3. Vercel
+## 2. Vercel
 
 `DATABASE_URL` ni Supabase **transaction pooler** (6543) satriga
 almashtiring — Production va Preview uchun.
@@ -105,8 +72,8 @@ postgresql://postgres.lxppxnawxmcfebmzdgil:<parol>@aws-0-eu-central-1.pooler.sup
 ```
 
 ⚠️ **6543, 5432 EMAS.** Serverless toʻgʻridan-toʻgʻri ulanishda
-ulanish limitini tugatadi va bu bazani baham koʻrayotgan LessonLab
-botiga ham tegadi.
+Postgres ulanish limitini tez tugatadi va bu bazani baham koʻrayotgan
+LessonLab botiga ham tegadi.
 
 Kod tomonida `prepare: false` allaqachon qoʻyilgan
 (`src/server/db/client.ts`) — transaction pooler'da `PREPARE`
@@ -114,24 +81,61 @@ ishlamaydi. Uni olib tashlamang.
 
 ---
 
-## 4. Tekshirish roʻyxati
+## 3. Drizzle migratsiya tarixini baseline qilish
 
-- [ ] `/api/health` — 200
-- [ ] Kirish/chiqish ishlaydi (better-auth: `user`, `session`, `account`)
-- [ ] Jurnal ochiladi, baho koʻrinadi
-- [ ] Davomat yoziladi
-- [ ] `/baholash` — sinf va test roʻyxati keladi
-- [ ] Yangi oʻquvchi qoʻshiladi (`student_number` ketma-ketligi tekshiruvi)
-- [ ] Admin panel: `/admin/users`
+Sxema **qoʻlda** (Supabase migratsiyasi bilan) qoʻyilgan, yaʼni
+`drizzle.__drizzle_migrations` jadvali boʻsh. Baseline qilmasangiz
+keyingi `db:migrate` 30 ta migratsiyani QAYTADAN bajarishga urinadi va
+«already exists» bilan yiqiladi.
+
+`.env.local` da `DATABASE_URL` ni Supabase satriga qoʻying, keyin:
+
+```bash
+npx tsx --env-file=.env.local scripts/migrate.ts --baseline
+```
 
 ---
 
-## 5. Neon — DARHOL OʻCHIRILMAYDI
+## 4. Birinchi kirish — toza bazada
 
-Kamida **bir hafta** tegmasdan tursin. Orqaga qaytish yoʻli: Vercel'da
-`DATABASE_URL` ni eski Neon satriga qaytarish — boshqa hech narsa
-kerak emas, chunki kod ikkala tomonda ham bir xil (`postgres-js`
-Neon bilan ham ishlaydi, faqat pooler manzili boshqa).
+Baza boʻsh, yaʼni akkauntlar ham yoʻq. Tartib:
+
+1. `ustozona.uz` da **qaytadan roʻyxatdan oʻting** (Google OAuth).
+   Bu `user` + `teachers` qatorlarini yaratadi.
+2. Oʻzingizga super-admin roli bering:
+
+   ```bash
+   npx tsx --env-file=.env.local scripts/promote-admin.ts <email>
+   ```
+
+3. `/baholash` → **«Sinflarni koʻchirish»** — LessonLab'dan sinf va
+   oʻquvchilar OAuth orqali keladi.
+4. Sinf tanlab **«Testlarni koʻchirish»** — testlar keladi.
+
+Yaʼni sinf/oʻquvchi/test qaytadan yozilmaydi — LessonLab'dan olinadi.
+
+---
+
+## 5. Tekshirish roʻyxati
+
+- [ ] `/api/health` — 200
+- [ ] Roʻyxatdan oʻtish va kirish ishlaydi
+- [ ] `promote-admin` dan keyin `/admin/users` ochiladi
+- [ ] `/baholash` → «Sinflarni koʻchirish» ishlaydi
+- [ ] «Testlarni koʻchirish» ishlaydi
+- [ ] Jurnal ochiladi, baho qoʻyiladi
+- [ ] Davomat yoziladi
+- [ ] Yangi oʻquvchi qoʻshiladi (`student_number` ketma-ketligi)
+- [ ] Qogʻoz test → varaq PDF chiqadi
+
+---
+
+## 6. Neon — DARHOL OʻCHIRILMAYDI
+
+Kamida **bir hafta** tegmasdan tursin. Maʼlumot koʻchirilmagan boʻlsa
+ham, orqaga qaytish yoʻli ochiq qolsin: Vercel'da `DATABASE_URL` ni
+eski Neon satriga qaytarish kifoya (kod ikkala tomonda ham bir xil —
+`postgres-js` Neon bilan ham ishlaydi).
 
 Hammasi bir hafta silliq ishlagach Neon loyihasini oʻchirish mumkin.
 
@@ -147,6 +151,14 @@ Hammasi bir hafta silliq ishlagach Neon loyihasini oʻchirish mumkin.
 | `.env.local.example` | Supabase pooler namunasi |
 | `package.json` | `@neondatabase/serverless` olib tashlandi, `postgres` qoʻshildi |
 
-Skriptlarda `process.exit(0)` qoʻshilgani muhim: `postgres-js` hovuzi
-ochiq qolsa Node hodisa sikli tugamaydi va skript qotib qoladi.
-`neon-http` stateless edi, shuning uchun ilgari bu kerak emasdi.
+Uchta nozik joy bor edi:
+
+1. **`prepare: false`** — transaction pooler'da `PREPARE` ishlamaydi,
+   chunki har soʻrov boshqa backendga tushishi mumkin. Usiz
+   «prepared statement does not exist» chiqadi: doim emas, faqat
+   ulanish almashganda — yaʼni testda koʻrinmay prodda.
+2. **`db.execute()`** postgres-js'da massiv qaytaradi, neon-http'da
+   `{ rows: [...] }` edi.
+3. **Skriptlarda `process.exit(0)`** — postgres-js hovuzi ochiq qolsa
+   Node hodisa sikli tugamaydi va skript qotib qoladi. neon-http
+   stateless edi.
