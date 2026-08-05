@@ -1,6 +1,7 @@
 import { previewOmrScan } from "@/server/dal/baholash-scan";
 import { isConfigured, LessonLabError } from "@/server/lessonlab/baholash";
 import { UnauthorizedError } from "@/server/session";
+import { verifyScanTicket } from "@/server/baholash/scan-ticket";
 
 /* ════════════════════════════════════════════════════════════════════
    POST /api/baholash/scan   (multipart: image + setId + classId)
@@ -41,8 +42,24 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "invalid_form" }, { status: 400 });
   }
 
-  const setId = String(form.get("setId") ?? "");
-  const classId = String(form.get("classId") ?? "");
+  /* Kimlik ikki yoʻldan kelishi mumkin:
+
+       cookie sessiyasi  — noutbukdagi oʻqituvchi (odatdagi yoʻl)
+       chipta            — telefondagi sahifa, u yerda cookie YOʻQ
+
+     Chipta boʻlsa test/sinf ham OʻSHANDAN olinadi, formadan emas:
+     aks holda chiptasi bor odam boshqa testga javob yozardi. */
+  const rawTicket = String(form.get("ticket") ?? "");
+  const ticket = rawTicket ? verifyScanTicket(rawTicket) : null;
+  if (rawTicket && !ticket) {
+    return Response.json(
+      { ok: false, error: "bad_ticket", message: "Havola eskirgan — QR ni qaytadan oching" },
+      { status: 401 }
+    );
+  }
+
+  const setId = ticket?.setId ?? String(form.get("setId") ?? "");
+  const classId = ticket?.classId ?? String(form.get("classId") ?? "");
   const file = form.get("image");
   if (!setId || !classId) {
     return Response.json({ ok: false, error: "set_and_class_required" }, { status: 400 });
@@ -75,6 +92,7 @@ export async function POST(request: Request) {
       classId,
       image: new Uint8Array(await file.arrayBuffer()),
       contentType,
+      actorId: ticket?.teacherId,
     });
     return Response.json({ ok: true, preview }, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {

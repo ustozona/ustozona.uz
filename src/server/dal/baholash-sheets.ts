@@ -62,15 +62,24 @@ export type SheetPlan = {
 
 /** Varaq chizish uchun kerakli hamma narsani bitta soʻrovda yigʻadi.
 
-    `requireTeacher()` — himoya shu yerda: `setId` clientdan keladi,
-    shuning uchun test va sinf AYNAN shu oʻqituvchiniki ekani
-    tekshiriladi. Aks holda begona sinf roʻyxatini chop etib olish
-    mumkin boʻlardi. */
-export async function buildSheetPlan(setId: string, classId: string): Promise<SheetPlan> {
-  const teacher = await requireTeacher();
+    Egalik tekshiruvi shu yerda: `setId` clientdan keladi, shuning uchun
+    test va sinf AYNAN shu oʻqituvchiniki ekani tekshiriladi. Aks holda
+    begona sinf roʻyxatini chop etib olish mumkin boʻlardi.
 
-  const set = await getSet(setId);
-  if (!set || set.teacherId !== teacher.id) {
+    `actorId` — telefondan kelgan chipta oqimi uchun (`scan-ticket.ts`):
+    u yerda cookie sessiyasi YOʻQ, kimlik imzolangan chiptadan keladi.
+    Berilmasa odatdagidek `requireTeacher()` ishlaydi. Chipta imzosi
+    allaqachon tekshirilgan boʻlishi SHART — bu funksiya qiymatga
+    ishonadi. */
+export async function buildSheetPlan(
+  setId: string,
+  classId: string,
+  actorId?: string
+): Promise<SheetPlan> {
+  const teacherId = actorId ?? (await requireTeacher()).id;
+
+  const set = await getSet(setId, teacherId);
+  if (!set || set.teacherId !== teacherId) {
     throw new Error("Test topilmadi");
   }
 
@@ -86,14 +95,14 @@ export async function buildSheetPlan(setId: string, classId: string): Promise<Sh
   const [cls] = await db
     .select({ id: classes.id, name: classes.name })
     .from(classes)
-    .where(and(eq(classes.id, classId), eq(classes.teacherId, teacher.id)))
+    .where(and(eq(classes.id, classId), eq(classes.teacherId, teacherId)))
     .limit(1);
   if (!cls) throw new Error("Sinf topilmadi");
 
   const rows = await db
     .select({ id: students.id, name: students.name, status: students.status })
     .from(students)
-    .where(and(eq(students.classId, cls.id), eq(students.teacherId, teacher.id)))
+    .where(and(eq(students.classId, cls.id), eq(students.teacherId, teacherId)))
     .orderBy(asc(students.sortOrder), asc(students.createdAt));
 
   // `archived` — sinfdan chiqqan oʻquvchi, unga varaq chop etilmaydi.

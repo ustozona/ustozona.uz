@@ -2,24 +2,36 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { Camera, Check, Info, Loader2, Trash2, TriangleAlert } from "lucide-react";
+import { Camera, Check, Info, Loader2, Smartphone, Trash2, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { applyOmrScanAction } from "@/server/actions/baholash-scan";
+import { createScanHandoffAction, type ScanHandoff } from "@/server/actions/baholash-scan";
 import type { ScanPreview, ScanSheet } from "@/server/dal/baholash-scan";
 
 /* ════════════════════════════════════════════════════════════════════
    VARAQNI SKANERLASH — qogʻoz testning qaytish yoʻli
 
-   NEGA SHU YERDA, telefon botida emas: javob USTOZONA jurnaliga
-   tushadi, jurnal esa oʻqituvchining akkauntiga bogʻlangan. Varaqdagi
-   QR faqat TARTIB raqamini tashiydi (1..N) va uni oʻquvchiga qaytarish
-   uchun oʻsha oʻqituvchining sinf roʻyxati kerak. Yaʼni suratni kim
-   yuborayotgani muhim — begona surface (bot, boshqa ilova) buni ayta
-   olmaydi.
+   NEGA USTOZONADA, LessonLab jurnalida emas: javob USTOZONA jurnaliga
+   tushadi. Varaqdagi QR faqat TARTIB raqamini tashiydi (1..N) va uni
+   oʻquvchiga qaytarish uchun oʻsha oʻqituvchining sinf roʻyxati kerak.
 
-   Kamera esa alohida ilova talab qilmaydi: `capture="environment"`
-   telefon brauzerida orqa kamerani toʻgʻridan-toʻgʻri ochadi.
+   ── QURILMALAR MUAMMOSI ─────────────────────────────────────────────
+
+   Oʻqituvchi Ustozonani NOUTBUKDA ishlatadi, kamera esa TELEFONDA.
+   «Havolani telefonga yuboring» degan qadam oqimni buzadi — bu eng
+   koʻp shikoyat tugʻdirgan joy.
+
+   Shuning uchun noutbukda QR chiqadi va oʻqituvchi telefon kamerasini
+   OʻZ EKRANIGA tutadi. Sahifa telefonda ochiladi, kirish talab
+   qilinmaydi: kimlik imzolangan chiptada (`scan-ticket.ts`).
+
+   Ikki kirish yoʻli, ikkalasi ham SHU komponentga tushadi:
+     • noutbuk  — QR koʻrsatadi (yoki kompyuterdan fayl tanlaydi)
+     • telefon  — chipta bilan ochilgan sahifa, kamera darhol
+
+   Telegram boti UCHINCHI yoʻl boʻlishi mumkin edi, lekin `?start=`
+   parametri 64 belgi bilan cheklangan va chipta unga sigʻmaydi —
+   shartnoma docs/baholash-integratsiya.md §8-ter da.
 
    OQIM — IKKI QADAM, ATAYLAB:
      1. Surat → oʻqiladi va EKRANDA koʻrsatiladi (hech narsa yozilmaydi)
@@ -47,9 +59,12 @@ type PendingSheet = {
 type Props = {
   setId: string;
   classId: string;
+  /** Telefondagi sahifa uchun: cookie sessiyasi yoʻq, kimlik shu
+      chiptada. Boʻlmasa — noutbukdagi oqim (QR koʻrsatiladi). */
+  ticket?: string;
 };
 
-export default function ScanPanel({ setId, classId }: Props) {
+export default function ScanPanel({ setId, classId, ticket }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,8 +88,12 @@ export default function ScanPanel({ setId, classId }: Props) {
       for (const file of Array.from(files)) {
         const image = await downscale(file);
         const form = new FormData();
+        // Chipta boʻlsa test/sinf SERVERDA chiptadan olinadi — bu
+        // qiymatlar eʼtiborga olinmaydi, lekin bir xil forma ikkala
+        // yoʻlga xizmat qilsin.
         form.set("setId", setId);
         form.set("classId", classId);
+        if (ticket) form.set("ticket", ticket);
         form.set("image", image, "varaq.jpg");
 
         const res = await fetch("/api/baholash/scan", { method: "POST", body: form });
@@ -124,15 +143,32 @@ export default function ScanPanel({ setId, classId }: Props) {
     setSaving(true);
     setError(null);
     try {
-      const result = await applyOmrScanAction({
-        setId,
-        classId,
-        sheets: ready.map((s) => ({
-          studentId: s.studentId as string,
-          answers: Object.fromEntries(s.answers.map((a) => [String(a.no), a.letter])),
-        })),
+      /* Server action EMAS, route: bu bosqich telefondan ham
+         chaqiriladi va u yerda cookie sessiyasi yoʻq — kimlik
+         chiptadan keladi. */
+      const res = await fetch("/api/baholash/scan/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticket,
+          setId,
+          classId,
+          sheets: ready.map((s) => ({
+            studentId: s.studentId as string,
+            answers: Object.fromEntries(s.answers.map((a) => [String(a.no), a.letter])),
+          })),
+        }),
       });
-      setReport(result);
+      const data = (await res.json().catch(() => null)) as
+        | { ok: true; report: NonNullable<typeof report> }
+        | { ok: false; message?: string }
+        | null;
+      if (!res.ok || !data || !data.ok) {
+        throw new Error(
+          (data && "message" in data ? data.message : null) ?? `Kiritilmadi (${res.status})`
+        );
+      }
+      setReport(data.report);
       // Kiritilgan varaqlar roʻyxatdan chiqadi — ikkinchi marta
       // bosilsa dublikat boʻlmasin.
       setSheets((prev) => prev.filter((s) => !ready.includes(s)));
@@ -145,15 +181,27 @@ export default function ScanPanel({ setId, classId }: Props) {
 
   return (
     <div className="flex flex-col gap-3 border-t border-border pt-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" disabled={busy} onClick={() => fileRef.current?.click()}>
-          {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Camera className="size-3.5" />}
-          {busy ? "Oʻqilmoqda..." : "Varaqni suratga olish"}
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          Bitta suratda 4 tagacha varaq boʻlishi mumkin.
-        </p>
-      </div>
+      {/* Telefonda ochilgan sahifada QR keraksiz — kamera darhol
+          ochiladi. Noutbukda esa aksincha: asosiy yoʻl QR, fayl
+          tanlash ikkinchi darajali. */}
+      {ticket ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="lg" disabled={busy} onClick={() => fileRef.current?.click()}>
+            {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
+            {busy ? "Oʻqilmoqda..." : "Varaqni suratga olish"}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Bitta suratda 4 tagacha varaq boʻlishi mumkin.
+          </p>
+        </div>
+      ) : (
+        <HandoffBlock
+          setId={setId}
+          classId={classId}
+          onPickFile={() => fileRef.current?.click()}
+          busy={busy}
+        />
+      )}
 
       {/* `capture="environment"` — telefonda orqa kamerani ochadi;
           kompyuterda oddiy fayl tanlash boʻlib qoladi. */}
@@ -235,6 +283,100 @@ export default function ScanPanel({ setId, classId }: Props) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Noutbukdan telefonga oʻtish ──────────────────────────────────── */
+
+/** «Havolani telefonga yuboring» oʻrniga — ekrandagi QR.
+
+    Oʻqituvchi telefon kamerasini oʻz monitoriga tutadi va sahifa
+    telefonda ochiladi. Bitta harakat: yuborish yoʻq, kirish yoʻq,
+    ilova yoʻq. */
+function HandoffBlock({
+  setId,
+  classId,
+  onPickFile,
+  busy,
+}: {
+  setId: string;
+  classId: string;
+  onPickFile: () => void;
+  busy: boolean;
+}) {
+  const [handoff, setHandoff] = useState<ScanHandoff | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function open() {
+    setLoading(true);
+    setError(null);
+    try {
+      setHandoff(await createScanHandoffAction({ setId, classId }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Havola tayyorlanmadi");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!handoff) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" disabled={loading} onClick={open}>
+            {loading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Smartphone className="size-3.5" />
+            )}
+            Telefonda skanerlash
+          </Button>
+          <Button size="sm" variant="outline" disabled={busy} onClick={onPickFile}>
+            {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Camera className="size-3.5" />}
+            {busy ? "Oʻqilmoqda..." : "Kompyuterdan rasm tanlash"}
+          </Button>
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 rounded-lg border border-border bg-muted/30 p-4 sm:flex-row sm:items-center">
+      {/* QR — serverda chizilgan SVG. Tashqi xizmatga rasm
+          chizdirilmaydi: havolada chipta bor, u begona serverga
+          bermaydigan qiymat. */}
+      <div
+        className="size-40 shrink-0 rounded-lg bg-white p-2 [&>svg]:size-full"
+        dangerouslySetInnerHTML={{ __html: handoff.qrSvg }}
+      />
+      <div className="flex min-w-0 flex-col gap-2">
+        <p className="text-sm font-medium">Telefon kamerangizni shu QR ga tuting</p>
+        <p className="text-sm text-muted-foreground">
+          Sahifa telefonda ochiladi — tizimga kirish shart emas. Varaqni suratga
+          olasiz, natija shu testga tushadi. Havola 2 soat amal qiladi.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              navigator.clipboard.writeText(handoff.url);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            }}
+          >
+            {copied ? <Check className="size-3.5" /> : null}
+            {copied ? "Nusxalandi" : "Havolani nusxalash"}
+          </Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={onPickFile}>
+            Kompyuterdan rasm tanlash
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
