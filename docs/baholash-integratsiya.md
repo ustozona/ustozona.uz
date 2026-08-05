@@ -307,15 +307,67 @@ qayta paydo boʻladi. Koʻchirishdan keyin EGASI Ustozona boʻladi,
 LessonLab'dagi nusxa oʻz holicha qolaveradi va ular bir-birini
 quvmaydi.
 
+## 8-bis. Varaqni skanerlash — qaysi ekranda va NEGA aynan u
+
+Qogʻoz testning qaytish yoʻli `/baholash` → Qogʻoz test panelida, chop
+etish tugmalarining OʻZIDA (`ScanPanel.tsx`). Uchta muqobil koʻrib
+chiqilgan edi:
+
+| Joy | Nega yoʻq |
+|---|---|
+| LessonLab Telegram boti | Bot LessonLab kimligini biladi, Ustozona oʻqituvchisini emas. Natija Ustozona jurnaliga tushishi kerak, jurnal esa akkauntga bogʻlangan — bot uchun kimlik koʻprigi qurish kerak boʻlardi. Aynan shu koʻprik keraksiz deb `/engine/*` tanlangan edi (§7). |
+| Alohida mobil ilova | Telefon brauzeri kamerani `capture="environment"` bilan oʻzi ochadi. Ilova hech narsa qoʻshmaydi, lekin oʻrnatish toʻsigʻini qoʻshadi. |
+| Dashboard ichida alohida boʻlim | Oʻqituvchi uchun bu BITTA ish — «qogʻoz test». Chop etish bir joyda, kiritish boshqa joyda boʻlsa yoʻlning ikkinchi yarmi topilmay qolardi. |
+
+### Oqim ikki qadam — ataylab
+
+```
+surat → POST /api/baholash/scan → EKRANDA javoblar   (hech narsa yozilmaydi)
+        ↓ oʻqituvchi tekshiradi/tuzatadi
+        applyOmrScanAction() → participant + responses → sessiya (mode=paper)
+        ↓ oʻqituvchi Topshiriqlar boʻlimida
+        publishSessionToGrades() → jurnal
+```
+
+Oradagi koʻrib chiqish qadami **shart**, chunki QR tartib raqamini
+tashiydi: varaq chop etilgandan keyin sinfga bola qoʻshilsa raqamlar
+suriladi va varaq boshqa bolaga bogʻlanadi. Buni kod sezmaydi — faqat
+oʻqituvchining koʻzi ushlaydi. Shuning uchun oʻquvchi roʻyxatdan
+qoʻlda ham tanlanadi (ismsiz imtihon varagʻi ham shu yoʻl bilan
+kiritiladi).
+
+### Qaror qilingan mayda narsalar
+
+- **Bir varaq — bir marta.** Oʻquvchi kiritilgan boʻlsa ikkinchi varaq
+  oʻtkazib yuboriladi. `publishSessionToGrades()` ishtirokchining hamma
+  javobini qoʻshadi, demak takror kiritish ballni ikki barobar qilardi
+  — «800%» xatosi aynan shu turkumdan.
+- **Bitta sessiya.** Har surat yangi sessiya ochsa, jurnalda bitta test
+  uchun beshta topshiriq paydo boʻlardi. Shuning uchun test+sinf uchun
+  `mode = "paper"` sessiyasi qayta ishlatiladi.
+- **`submitResponse()` emas, toʻplam INSERT.** U bitta onlayn javob
+  uchun yozilgan (urinish sanash, sessiya holati) va 30 javobga 150
+  soʻrov qilardi. Ballash baribir bitta joyda qoladi — `scoreResponse()`.
+- **Boʻsh katak yozilmaydi**, `X` esa yoziladi va XATO boʻladi: bola
+  javob bergan, lekin noaniq.
+- **Past ishonchli katak** sariq belgi bilan koʻrsatiladi; oʻqituvchi
+  bosib tuzatadi.
+- **Variantli boʻlmagan savol** (juftlash) qogʻozdan oʻqilmaydi va buni
+  panel ochiq aytadi — jim tashlab ketmaydi.
+- **Surat brauzerda kichraytiriladi** (2000 px, JPEG): Vercel soʻrov
+  tanasi ~4.5 MB, telefon surati esa bemalol 8 MB boʻladi.
+
 ## 9. Hali qilinmagan
 - ~~Javob varagʻi PDF endpointi~~ — tayyor va UI'ga ulangan:
   `/baholash` → Qogʻoz test → «Sinf roʻyxati bilan» / «Imtihon».
 - ~~Testlarni import qilish~~ — tayyor: sinf tanlanganda «Testlarni
   koʻchirish» tugmasi chiqadi (`/api/lessonlab/start?class=…`).
-- **Varaqni skanerlash UI'si** — server funksiyasi (`scanOmrSheet()`)
-  tayyor, lekin oʻqituvchi rasm yuklaydigan ekran hali yoʻq. Undan
-  keyingi qadam — natijani `submitResponse()` zanjiriga ulash.
+- ~~Varaqni skanerlash UI'si~~ — tayyor: shu panelda «Varaqni suratga
+  olish» (§8-bis).
 - **QR-kartalar** — `answerCardsPdf()` tayyor, UI hali yoʻq.
+- **Skanerlangan sessiyani jurnalga koʻchirish** hali Topshiriqlar
+  boʻlimidagi sessiya panelidan qilinadi. `/baholash` dan toʻgʻridan-
+  toʻgʻri koʻchirish tugmasi — keyingi qadam.
 - **`pairs` uchun qobiq yoʻq.** Hamkor rejimida faqat `mcq` qadamlar
   uzatiladi; juftlash savollari oddiy ekranda oʻynaladi.
 

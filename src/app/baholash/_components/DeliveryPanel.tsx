@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { QuizSessionRow } from "@/server/db/schema";
 import type { SetOption } from "./BaholashWorkspace";
 import { GAME_SHELLS, shellAvailability } from "@/lib/baholash-shells";
+import ScanPanel from "./ScanPanel";
 
 export type Delivery = "game" | "homework" | "paper";
 
@@ -268,6 +269,13 @@ function PaperPanel({ set, classId, engineReady }:
             oʻchirsangiz raqamlar suriladi — bunday holatda varaqlarni
             qaytadan chop eting.
           </Note>
+
+          {/* Qaytish yoʻli — chop etish bilan BITTA panelda.
+
+              Oʻqituvchi uchun bu bitta ish: «qogʻoz test». Varaqni bir
+              joyda chop etib, natijani boshqa boʻlimda kiritish yoʻlni
+              ikkiga boʻlardi va ikkinchi yarmi topilmay qolardi. */}
+          <ScanPanel setId={set.id} classId={classId} />
         </>
       ) : (
         <Note>
