@@ -79,7 +79,40 @@ const BATCH = 200;
 function need(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`${name} berilmagan.`);
+
+  /* Namuna satrini oʻz holicha nusxalash — eng koʻp uchraydigan xato.
+     Hujjatdagi `<parol>` yoki `...` qoldirilsa Node quruq
+     «ENOTFOUND» beradi va sabab koʻrinmaydi. Shu yerda ochiq aytamiz. */
+  if (v.includes("...") || v.includes("<") || v.includes(">")) {
+    throw new Error(
+      `${name} da namuna qoldigʻi bor ("..." yoki "<parol>").\n` +
+      "Toʻliq haqiqiy satrni qoʻying:\n" +
+      "  Neon     → loyiha → Connect → Connection string → Copy\n" +
+      "  Supabase → Connect → Direct connection"
+    );
+  }
   return v;
+}
+
+/** Tarmoq/parol xatolarini odam tushunadigan tilga oʻgiradi. */
+function tushuntir(err: unknown): string {
+  const m = err instanceof Error ? err.message : String(err);
+  if (m.includes("ENOTFOUND")) {
+    return `${m}\n→ Bunday manzil yoʻq. Ulanish satri toʻliq nusxalanganmi? ` +
+           "Ichida \"...\" qolmaganmi?";
+  }
+  if (m.includes("password authentication failed")) {
+    return `${m}\n→ Parol notoʻgʻri. Parol ichida # @ / : ? % belgilaridan ` +
+           "biri boʻlsa URL buziladi — bazada parolni faqat harf-raqamga almashtiring.";
+  }
+  if (m.includes("ETIMEDOUT") || m.includes("ECONNREFUSED")) {
+    return `${m}\n→ Serverga yetib borilmadi. Port toʻgʻrimi? ` +
+           "Koʻchirish uchun Supabase'da 5432 (Direct), 6543 emas.";
+  }
+  if (m.includes("does not exist")) {
+    return `${m}\n→ Jadval yoki ustun topilmadi. Sxema Supabase'ga qoʻyilganmi?`;
+  }
+  return m;
 }
 
 async function main() {
@@ -204,7 +237,7 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch((err) => {
-    console.error("\nXATO:", err instanceof Error ? err.message : err);
-    console.error("Tranzaksiya qaytarildi — nishon bazada hech narsa oʻzgarmadi.");
+    console.error("\nXATO:", tushuntir(err));
+    console.error("\nTranzaksiya qaytarildi — nishon bazada hech narsa oʻzgarmadi.");
     process.exit(1);
   });
