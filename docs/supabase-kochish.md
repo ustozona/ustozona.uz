@@ -132,10 +132,23 @@ Yaʼni sinf/oʻquvchi/test qaytadan yozilmaydi — LessonLab'dan olinadi.
 
 ## 6. Neon — DARHOL OʻCHIRILMAYDI
 
-Kamida **bir hafta** tegmasdan tursin. Maʼlumot koʻchirilmagan boʻlsa
-ham, orqaga qaytish yoʻli ochiq qolsin: Vercel'da `DATABASE_URL` ni
-eski Neon satriga qaytarish kifoya (kod ikkala tomonda ham bir xil —
-`postgres-js` Neon bilan ham ishlaydi).
+Kamida **bir hafta** tegmasdan tursin.
+
+⚠️ **Orqaga qaytish BIR TUGMA bilan boʻlmaydi — buni oldindan bilib
+turing.** Vercel'dagi `DATABASE_URL` «Sensitive» qilib saqlangan, yaʼni
+uni QAYTA OʻQIB BOʻLMAYDI: na panelda koʻrinadi, na `vercel env pull`
+chiqaradi (2026-08-05 da tekshirildi — `"[SENSITIVE]"` qaytdi). Ustiga
+Supabase satrini yozganda eski Neon satri **butunlay yoʻqoladi**.
+
+Bu **maʼlumot yoʻqolishi degani emas**: Neon loyihasi va undagi baza
+oʻz joyida qoladi. Qaytish kerak boʻlsa Neon konsolidan parolni qayta
+tiklab yangi ulanish satri olinadi — yaʼni yoʻl bor, lekin u
+«nusxa-joylashtir» emas, bir necha qadamlik ish.
+
+Qaror shu asosda qabul qilingan: Neon'dagi maʼlumot sinov maʼlumoti,
+qaytish ehtimoli past. Kod tomoni esa haqiqatan ikkala bazada ham
+ishlaydi (`postgres-js` Neon bilan ham gaplashadi) — muammo faqat
+parolda.
 
 Hammasi bir hafta silliq ishlagach Neon loyihasini oʻchirish mumkin.
 
