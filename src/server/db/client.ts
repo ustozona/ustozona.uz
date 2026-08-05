@@ -1,6 +1,6 @@
 import "server-only";
 import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -33,21 +33,63 @@ import * as schema from "./schema";
    prodda chiqadi.
    ════════════════════════════════════════════════════════════════════ */
 
-const url = process.env.DATABASE_URL;
-if (!url) {
-  throw new Error(
-    "DATABASE_URL topilmadi — .env.local faylida Supabase connection string boʻlishi kerak."
-  );
+/* ⚠️ KLIENT DANGASA (lazy) — IMPORT PAYTIDA YARATILMAYDI
+
+   Ilgari `DATABASE_URL` tekshiruvi va `postgres(...)` chaqiruvi shu
+   yerda, modul sathida turardi. Natijada faylni IMPORT qilishning oʻzi
+   baza sirini talab qilardi va `next build` sirsiz muhitda yiqilardi:
+
+       Error: Failed to collect page data for /api/health
+
+   Next.js build paytida route modullarini import qiladi (config
+   eksportlarini oʻqish uchun) — ulanmaydi, lekin modul sathidagi kod
+   baribir ishlaydi. Yaʼni sir CI/build uchun ham majburiy boʻlib qolardi.
+
+   Endi klient BIRINCHI ISHLATILGANDA quriladi. Xato xabari yoʻqolmadi —
+   u endi build vaqtida emas, haqiqiy soʻrov paytida chiqadi, yaʼni
+   aynan tegishli joyda. */
+
+let _db: PostgresJsDatabase<typeof schema> | null = null;
+
+function realDb(): PostgresJsDatabase<typeof schema> {
+  if (_db) return _db;
+
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL topilmadi — .env.local faylida Supabase connection string boʻlishi kerak."
+    );
+  }
+
+  /* `max: 1` — serverless funksiya bir vaqtda bitta soʻrov bajaradi;
+     koʻproq ulanish ochish umumiy hovuzni bekorga band qiladi.
+     `idle_timeout` qisqa: funksiya toʻxtagach ulanish osilib qolmasin. */
+  const sql = postgres(url, {
+    prepare: false,
+    max: 1,
+    idle_timeout: 20,
+    connect_timeout: 10,
+  });
+
+  _db = drizzle(sql, { schema });
+  return _db;
 }
 
-/* `max: 1` — serverless funksiya bir vaqtda bitta soʻrov bajaradi;
-   koʻproq ulanish ochish umumiy hovuzni bekorga band qiladi.
-   `idle_timeout` qisqa: funksiya toʻxtagach ulanish osilib qolmasin. */
-const sql = postgres(url, {
-  prepare: false,
-  max: 1,
-  idle_timeout: 20,
-  connect_timeout: 10,
-});
+/* Proxy — chaqiruvchi kod uchun hech narsa oʻzgarmaydi: `db.select(...)`,
+   `db.query.users`, `db.execute(...)` avvalgidek ishlaydi. Faqat birinchi
+   murojaatda haqiqiy klient quriladi.
 
-export const db = drizzle(sql, { schema });
+   Metodlar `bind` qilinadi: drizzle metodlari `this` ga tayanadi, proxy
+   orqali olinganda esa `this` yoʻqolib qolardi.
+
+   ⚠️ `Reflect.get` ga `receiver` UZATILMAYDI (yaʼni target = haqiqiy
+   klient). Agar proxy receiver sifatida berilsa, `this` ga tayanadigan
+   getter'lar ichida `this` yana proxy boʻlib qolardi va har murojaat
+   oʻzini qayta chaqirib, cheksiz rekursiyaga tushardi. */
+export const db = new Proxy({} as PostgresJsDatabase<typeof schema>, {
+  get(_target, prop) {
+    const haqiqiy = realDb();
+    const qiymat = Reflect.get(haqiqiy, prop);
+    return typeof qiymat === "function" ? qiymat.bind(haqiqiy) : qiymat;
+  },
+});
