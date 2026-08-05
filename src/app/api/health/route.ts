@@ -1,21 +1,13 @@
-import { count } from "drizzle-orm";
-import { db } from "@/server/db/client";
-import { teachers } from "@/server/db/schema";
+import { checkDbHealth } from "@/server/dal/health";
 
-/* GET /api/health — baza ulanishini tekshiruvchi texnik endpoint. */
+/* GET /api/health — baza ulanishini tekshiruvchi texnik endpoint.
+
+   Mantiq `@/server/dal/health` da: DB klientini faqat DAL qatlami
+   import qila oladi. Bu yerda faqat HTTP kodi tanlanadi. */
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  try {
-    const [row] = await db.select({ teachers: count() }).from(teachers);
-    return Response.json({ ok: true, db: "connected", teachers: row?.teachers ?? 0 });
-  } catch (err) {
-    return Response.json(
-      {
-        ok: false,
-        db: "error",
-        message: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 }
-    );
-  }
+  const natija = await checkDbHealth();
+  return Response.json(natija, { status: natija.ok ? 200 : 500 });
 }
