@@ -182,6 +182,56 @@ export function adaptiveThreshold(
   return dst;
 }
 
+/** Otsu — tasvirni ikkiga ajratadigan ENG YAXSHI chegarani topadi.
+
+    `adaptiveThreshold` dan farqi muhim: u har pikselni ATROFI bilan
+    solishtiradi va katta bir tekis qora maydonning faqat CHEKKASINI
+    belgilaydi (ichkarisi «atrofidan farq qilmaydi»). Kichik, bir xil
+    yoritilgan yamoqda — masalan toʻgʻrilangan belgi — aynan toʻldirilgan
+    shakl kerak, shuning uchun u yerda global chegara ishlatiladi.
+
+    Chegara gistogrammadan hisoblanadi: sinflararo dispersiyani
+    maksimallashtiradigan qiymat tanlanadi. */
+export function otsu(img: CvImage): number {
+  const src = img.data;
+  const len = src.length;
+  const hist = new Int32Array(256);
+  for (let i = 0; i < len; i++) hist[src[i]]++;
+
+  let sum = 0;
+  for (let i = 0; i < 256; i++) sum += hist[i] * i;
+
+  let threshold = 0;
+  let sumB = 0;
+  let wB = 0;
+  let max = 0;
+  for (let i = 0; i < 256; i++) {
+    wB += hist[i];
+    if (wB === 0) continue;
+    const wF = len - wB;
+    if (wF === 0) break;
+    sumB += hist[i] * i;
+    const mu = sumB / wB - (sum - sumB) / wF;
+    const between = wB * wF * mu * mu;
+    if (between > max) {
+      max = between;
+      threshold = i;
+    }
+  }
+  return threshold;
+}
+
+/** Global chegaralash. Chegaradan past (qora) → 255, aks holda 0 —
+    `adaptiveThreshold` bilan bir xil qutblanish. */
+export function threshold(src: CvImage, dst: CvImage, level: number): CvImage {
+  const s = src.data;
+  const d = dst.data;
+  for (let i = 0; i < s.length; i++) d[i] = s[i] <= level ? 255 : 0;
+  dst.width = src.width;
+  dst.height = src.height;
+  return dst;
+}
+
 /* ── Perspektiv toʻgʻrilash ────────────────────────────────────────── */
 
 function square2quad(src: Point[]): number[] {

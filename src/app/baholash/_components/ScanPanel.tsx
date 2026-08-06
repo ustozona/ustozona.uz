@@ -3,13 +3,14 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import {
-  Camera, Check, Info, Loader2, ScanLine, Smartphone, Trash2, TriangleAlert,
+  Camera, Check, IdCard, Info, Loader2, ScanLine, Smartphone, Trash2, TriangleAlert,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createScanHandoffAction, type ScanHandoff } from "@/server/actions/baholash-scan";
 import type { ScanPreview, ScanSheet } from "@/server/dal/baholash-scan";
 import LiveScanner, { type LiveScanResult } from "./LiveScanner";
+import CardScanner, { type CardCapture } from "./CardScanner";
 
 /* ════════════════════════════════════════════════════════════════════
    VARAQNI SKANERLASH — qogʻoz testning qaytish yoʻli
@@ -94,6 +95,7 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
     { studentsAdded: number; answersSaved: number; skipped: { name: string; reason: string }[] } | null
   >(null);
   const [liveOpen, setLiveOpen] = useState(false);
+  const [cardsOpen, setCardsOpen] = useState(false);
 
   /* Jonli skaner roʻyxatga qoʻshadi, DARHOL YOZMAYDI — tekshirish
      qadami saqlanadi (docs §8-bis). Kamera yopilgach oʻqituvchi
@@ -127,6 +129,41 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
         })),
       },
     ]);
+  }
+
+  /** QR-kartalardan yigʻilgan javoblar ham OʻSHA roʻyxatga tushadi.
+
+      Karta va varaq — bir xil narsaning ikki koʻrinishi: ikkalasi ham
+      «kim, qaysi savolga, nima javob berdi» degan maʼlumot. Shuning
+      uchun tekshirish va kiritish yoʻli bitta. */
+  function addCardSheets(capture: CardCapture) {
+    if (!plan) return;
+    setRoster(plan.roster);
+    setSheets((prev) => {
+      const next = [...prev];
+      for (const [studentNo, answers] of capture.byStudent) {
+        const student = plan.roster.find((r) => r.no === studentNo);
+        next.push({
+          key: `card-${studentNo}-${Date.now()}`,
+          studentId: student?.id ?? null,
+          problems: student
+            ? []
+            : [`Roʻyxatda ${studentNo}-raqamli oʻquvchi yoʻq — qoʻlda tanlang.`],
+          blocked: false,
+          alreadyEntered: false,
+          answers: Array.from({ length: plan.questionCount }, (_, i) => ({
+            no: i + 1,
+            // Javob berilmagan savol boʻsh qoladi — bola oʻsha savolda
+            // kartani koʻtarmagan boʻlishi mumkin.
+            letter: answers.get(i + 1) ?? null,
+            confidence: 1,
+            gradable: true,
+            optionCount: 4,
+          })),
+        });
+      }
+      return next;
+    });
   }
 
   /** Shu seansda allaqachon oʻqilgan varaq raqamlari — takrorlanmasin. */
@@ -256,6 +293,12 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
                 Jonli skaner
               </Button>
             )}
+            {plan && (
+              <Button size="sm" variant="outline" onClick={() => setCardsOpen(true)}>
+                <IdCard className="size-3.5" />
+                QR-kartalar
+              </Button>
+            )}
             <Button
               size={plan ? "sm" : "lg"}
               variant={plan ? "outline" : "default"}
@@ -360,6 +403,18 @@ export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
             </p>
           )}
         </div>
+      )}
+
+      {cardsOpen && plan && (
+        <CardScanner
+          questionCount={plan.questionCount}
+          nameByRef={new Map(plan.roster.map((r) => [r.no, r.name]))}
+          onFinish={(capture) => {
+            addCardSheets(capture);
+            setCardsOpen(false);
+          }}
+          onClose={() => setCardsOpen(false)}
+        />
       )}
 
       {liveOpen && plan && (
