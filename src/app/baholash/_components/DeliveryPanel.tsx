@@ -196,21 +196,27 @@ export default function DeliveryPanel({
    sahifa almashmaydi, oʻqituvchi tanlagan testini yoʻqotmaydi. */
 function PaperPanel({ set, classId, engineReady }:
                     { set: SetOption; classId: string; engineReady: boolean }) {
-  const [busy, setBusy] = useState<"class" | "exam" | null>(null);
+  const [busy, setBusy] = useState<"class" | "exam" | "cards" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function print(mode: "class" | "exam") {
+  /** Chop etiladigan PDF — varaq yoki QR-karta. Ikkalasi ham bir xil
+      yoʻldan chiqadi, farqi faqat endpoint va fayl nomida. */
+  async function print(mode: "class" | "exam" | "cards") {
     setBusy(mode);
     setError(null);
     try {
-      const res = await fetch("/api/baholash/answer-sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ setId: set.id, classId, mode }),
-      });
+      const cards = mode === "cards";
+      const res = await fetch(
+        cards ? "/api/baholash/answer-cards" : "/api/baholash/answer-sheets",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cards ? { setId: set.id, classId } : { setId: set.id, classId, mode }),
+        }
+      );
       if (!res.ok) {
         const info = (await res.json().catch(() => null)) as { message?: string } | null;
-        throw new Error(info?.message ?? `Varaq tayyorlanmadi (${res.status})`);
+        throw new Error(info?.message ?? `Tayyorlanmadi (${res.status})`);
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -221,14 +227,14 @@ function PaperPanel({ set, classId, engineReady }:
         // Popup bloklandi — oddiy yuklab olishga tushamiz.
         const a = document.createElement("a");
         a.href = url;
-        a.download = "javob-varaqlari.pdf";
+        a.download = mode === "cards" ? "javob-kartalari.pdf" : "javob-varaqlari.pdf";
         a.click();
       }
       // Blob URL'ni darhol boʻshatib boʻlmaydi — yangi oyna hali
       // oʻqiyapti. Bir daqiqa yetarli, keyin xotira qaytariladi.
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Varaq tayyorlanmadi");
+      setError(e instanceof Error ? e.message : "Tayyorlanmadi");
     } finally {
       setBusy(null);
     }
@@ -269,6 +275,35 @@ function PaperPanel({ set, classId, engineReady }:
             oʻchirsangiz raqamlar suriladi — bunday holatda varaqlarni
             qaytadan chop eting.
           </Note>
+
+          {/* QR-kartalar — telefonsiz sinf uchun boshqa naqsh: har
+              bolaga bitta karta, u burab javob beradi, oʻqituvchi
+              butun sinfni bitta suratga oladi.
+
+              ⚠️ Hozircha faqat CHOP ETISH. Kartani oʻqiydigan skaner
+              yoʻq — buni yashirmasdan aytamiz, chunki «tayyor» deb
+              koʻrsatib keyin oʻqiy olmaslik eng yomon holat. */}
+          <div className="flex flex-col gap-2 border-t border-border pt-4">
+            <p className="text-sm text-muted-foreground">
+              Telefonsiz sinf uchun QR-kartalar: har oʻquvchiga bitta karta,
+              bir marta chop etiladi va yil boʻyi ishlatiladi.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy !== null}
+                onClick={() => print("cards")}
+              >
+                <Printer className="size-3.5" />
+                {busy === "cards" ? "Tayyorlanmoqda..." : "QR-kartalarni chop etish"}
+              </Button>
+            </div>
+            <Note>
+              Kartalarni hozircha faqat chop etish mumkin — ularni oʻqiydigan
+              skaner hali yoʻq. Baho uchun javob varagʻidan foydalaning.
+            </Note>
+          </div>
 
           {/* Qaytish yoʻli — chop etish bilan BITTA panelda.
 

@@ -2,11 +2,14 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { Camera, Check, Info, Loader2, Smartphone, Trash2, TriangleAlert } from "lucide-react";
+import {
+  Camera, Check, Info, Loader2, ScanLine, Smartphone, Trash2, TriangleAlert,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createScanHandoffAction, type ScanHandoff } from "@/server/actions/baholash-scan";
 import type { ScanPreview, ScanSheet } from "@/server/dal/baholash-scan";
+import LiveScanner, { type LiveScanResult } from "./LiveScanner";
 
 /* ════════════════════════════════════════════════════════════════════
    VARAQNI SKANERLASH — qogʻoz testning qaytish yoʻli
@@ -56,15 +59,30 @@ type PendingSheet = {
   answers: ScanSheet["answers"];
 };
 
+/** Jonli skaner uchun kerakli varaq maʼlumoti.
+
+    Telefon sahifasi buni SERVERDAN tayyor holda oladi
+    (`buildSheetPlan`), shuning uchun kamera ochilishidan oldin
+    qoʻshimcha soʻrov kerak emas — oʻqituvchi tugmani bosishi bilan
+    skanerlash boshlanadi. Toʻgʻri javoblar bu yerga KIRMAYDI. */
+export type LivePlan = {
+  /** Varaq QR'idagi test belgisi — begona varaqni ajratish uchun. */
+  testRef: number;
+  questionCount: number;
+  roster: { no: number; id: string; name: string }[];
+};
+
 type Props = {
   setId: string;
   classId: string;
   /** Telefondagi sahifa uchun: cookie sessiyasi yoʻq, kimlik shu
       chiptada. Boʻlmasa — noutbukdagi oqim (QR koʻrsatiladi). */
   ticket?: string;
+  /** Berilsa — «Jonli skaner» tugmasi chiqadi (faqat telefon sahifasi). */
+  plan?: LivePlan;
 };
 
-export default function ScanPanel({ setId, classId, ticket }: Props) {
+export default function ScanPanel({ setId, classId, ticket, plan }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +93,48 @@ export default function ScanPanel({ setId, classId, ticket }: Props) {
   const [report, setReport] = useState<
     { studentsAdded: number; answersSaved: number; skipped: { name: string; reason: string }[] } | null
   >(null);
+  const [liveOpen, setLiveOpen] = useState(false);
+
+  /* Jonli skaner roʻyxatga qoʻshadi, DARHOL YOZMAYDI — tekshirish
+     qadami saqlanadi (docs §8-bis). Kamera yopilgach oʻqituvchi
+     hammasini bir koʻzdan kechirib «Jurnalga kiritish» ni bosadi. */
+  function addLiveSheet(result: LiveScanResult) {
+    if (!plan) return;
+    const student = plan.roster.find((r) => r.no === result.studentRef);
+    setRoster(plan.roster);
+    setSheets((prev) => [
+      ...prev,
+      {
+        key: `live-${result.studentRef}-${Date.now()}`,
+        studentId: student?.id ?? null,
+        problems: result.examMode
+          ? ["Ismsiz imtihon varagʻi — oʻquvchini qoʻlda tanlang."]
+          : student
+            ? []
+            : [`Roʻyxatda ${result.studentRef}-raqamli oʻquvchi yoʻq — qoʻlda tanlang.`],
+        blocked: false,
+        alreadyEntered: false,
+        answers: Array.from({ length: plan.questionCount }, (_, i) => ({
+          no: i + 1,
+          letter: result.answers[i + 1] ?? null,
+          // Uch kadr kelishgan — shubha yoʻq, sariq belgi chiqmasin.
+          confidence: 1,
+          // Qogʻozda faqat A–D bor. Variantli boʻlmagan savolni server
+          // baribir tashlab yuboradi (`applyOmrScan`), shuning uchun
+          // bu yerda soddalashtirish xavfsiz.
+          gradable: true,
+          optionCount: 4,
+        })),
+      },
+    ]);
+  }
+
+  /** Shu seansda allaqachon oʻqilgan varaq raqamlari — takrorlanmasin. */
+  const scannedRefs = new Set(
+    sheets
+      .map((s) => plan?.roster.find((r) => r.id === s.studentId)?.no)
+      .filter((no): no is number => typeof no === "number")
+  );
 
   async function onFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -185,13 +245,31 @@ export default function ScanPanel({ setId, classId, ticket }: Props) {
           ochiladi. Noutbukda esa aksincha: asosiy yoʻl QR, fayl
           tanlash ikkinchi darajali. */}
       {ticket ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <Button size="lg" disabled={busy} onClick={() => fileRef.current?.click()}>
-            {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
-            {busy ? "Oʻqilmoqda..." : "Varaqni suratga olish"}
-          </Button>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Asosiy yoʻl — JONLI skaner: varaqni tutasiz, oʻzi
+                oʻqiydi. Surat tortish ikkinchi darajali boʻlib qoldi
+                (bitta varaqqa ~10 soniya vs ~1 soniya). */}
+            {plan && (
+              <Button size="lg" onClick={() => setLiveOpen(true)}>
+                <ScanLine className="size-4" />
+                Jonli skaner
+              </Button>
+            )}
+            <Button
+              size={plan ? "sm" : "lg"}
+              variant={plan ? "outline" : "default"}
+              disabled={busy}
+              onClick={() => fileRef.current?.click()}
+            >
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
+              {busy ? "Oʻqilmoqda..." : "Surat bilan"}
+            </Button>
+          </div>
           <p className="text-xs text-muted-foreground">
-            Bitta suratda 4 tagacha varaq boʻlishi mumkin.
+            {plan
+              ? "Jonli skanerda varaqni kameraga tutib turing — oʻzi topadi va keyingisiga oʻtaverasiz."
+              : "Bitta suratda 4 tagacha varaq boʻlishi mumkin."}
           </p>
         </div>
       ) : (
@@ -282,6 +360,17 @@ export default function ScanPanel({ setId, classId, ticket }: Props) {
             </p>
           )}
         </div>
+      )}
+
+      {liveOpen && plan && (
+        <LiveScanner
+          questionCount={plan.questionCount}
+          expectedTestRef={plan.testRef}
+          nameByRef={new Map(plan.roster.map((r) => [r.no, r.name]))}
+          scannedRefs={scannedRefs}
+          onScanned={addLiveSheet}
+          onClose={() => setLiveOpen(false)}
+        />
       )}
     </div>
   );

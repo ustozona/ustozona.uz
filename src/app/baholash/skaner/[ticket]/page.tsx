@@ -87,7 +87,19 @@ export default async function ScannerPage({
         </p>
       </div>
 
-      <ScanPanel setId={parsed.setId} classId={parsed.classId} ticket={ticket} />
+      {/* Jonli skaner uchun hamma narsa SERVERDAN tayyor keladi —
+          kamera ochilishidan oldin qoʻshimcha soʻrov boʻlmasin.
+          Toʻgʻri javoblar bu yerga kirmaydi: ball serverda. */}
+      <ScanPanel
+        setId={parsed.setId}
+        classId={parsed.classId}
+        ticket={ticket}
+        plan={{
+          testRef: plan.testRef,
+          questionCount: plan.questionCount,
+          roster: plan.roster,
+        }}
+      />
 
       <p className="text-xs text-muted-foreground">
         Kiritilgan natija kompyuterdagi{" "}
