@@ -78,7 +78,13 @@ export async function createScanHandoffAction(
     qrSvg: await QRCode.toString(url, {
       type: "svg",
       margin: 1,
-      errorCorrectionLevel: "M",
+      /* Xato tuzatish darajasi ATAYLAB eng past.
+
+         QR ekrandan oʻqiladi — kontrast mukammal, qogʻozdagidek
+         yirtilish yoki dogʻ yoʻq. Yuqori daraja bu yerda faqat
+         modullarni maydalashtiradi va eski/xira kamerali telefonga
+         zarar qiladi. `M` da 51, `L` da 47 modul. */
+      errorCorrectionLevel: "L",
     }),
     expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
   };

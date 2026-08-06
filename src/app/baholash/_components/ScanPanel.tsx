@@ -438,8 +438,15 @@ function HandoffBlock({
       {/* QR — serverda chizilgan SVG. Tashqi xizmatga rasm
           chizdirilmaydi: havolada chipta bor, u begona serverga
           bermaydigan qiymat. */}
+      {/* QR IMKON QADAR KATTA.
+
+          Eski yoki xira kamerali telefon mayda modulni ajrata olmaydi
+          — bu eng koʻp uchraydigan nosozlik sababi. Shuning uchun
+          kvadrat kichik ekranda ham 208 px, kengroq joyda 256 px va
+          atrofida oq zaxira bor (aniqlagich chegarani koʻrishi
+          kerak). */}
       <div
-        className="size-40 shrink-0 rounded-lg bg-white p-2 [&>svg]:size-full"
+        className="size-52 shrink-0 self-center rounded-xl bg-white p-3 sm:size-64 [&>svg]:size-full"
         dangerouslySetInnerHTML={{ __html: handoff.qrSvg }}
       />
       <div className="flex min-w-0 flex-col gap-2">
@@ -447,6 +454,8 @@ function HandoffBlock({
         <p className="text-sm text-muted-foreground">
           Sahifa telefonda ochiladi — tizimga kirish shart emas. Varaqni suratga
           olasiz, natija shu testga tushadi. Havola 2 soat amal qiladi.
+          Kamera oʻqiy olmasa — telefonni yaqinroq tuting yoki brauzerni
+          kattalashtiring (Ctrl/⌘ va +).
         </p>
         <div className="flex flex-wrap gap-2">
           <Button
