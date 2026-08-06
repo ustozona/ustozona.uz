@@ -60,6 +60,7 @@
     "drizzle-orm": "^0.45.2",
     "emoji-datasource-apple": "^16.0.0",
     "input-otp": "^1.4.2",
+    "jsqr": "^1.4.0",
     "katex": "^0.16.47",
     "lucide-react": "^1.21.0",
     "marked": "^18.0.5",

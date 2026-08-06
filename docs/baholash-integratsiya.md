@@ -399,6 +399,75 @@ QR yechimi shu ishning hammasini talab qilmaydi va bugun ishlaydi,
 shuning uchun avval u qilindi. Bot yoʻli — yuqoridagi toʻrt qadam
 bajarilganda qoʻshiladi.
 
+## 8-quater. Jonli skaner — kamerani tutasiz, oʻzi oʻqiydi
+
+Surat-yuklash oqimi ishladi, lekin sekin edi: har varaqqa kadr olish,
+3-8 MB yuklash, dvigatel javobini kutish — 30 ta varaq yarim soat.
+LessonLab botidagi mini-app esa varaqni **kameraga tutgan zahoti**
+oʻqirdi.
+
+Endi oʻsha dvigatel Ustozonada. Muhimi: **u serversiz ishlaydi.**
+LessonLab skanerining butun OMR mantigʻi brauzerda — server bilan u
+faqat maʼlumot olish/saqlash uchun gaplashardi, ularni esa bizda
+allaqachon bor narsalar almashtiradi.
+
+```
+kamera kadri
+  → jsQR          QR ni topadi (avval yuqori-chap 60%×55% — 4x tez)
+  → findSheetCorners()   QR oʻlchamidan masshtab, 3 ta qora burchak
+                         belgisi suratdan aniqlashtiriladi
+  → CV.warp()            varaq 600×600 kvadratga yoyiladi
+  → CV.adaptiveThreshold()
+  → readBubbles()        qator belgilari bilan Y tuzatiladi, katak
+                         qator ICHIDA solishtiriladi
+  → 3 kadr kelishuvi → qabul
+```
+
+### Uch kadr qoidasi
+
+Natija ketma-ket **uch kadr bir xil** oʻqilgandagina qabul qilinadi.
+Bu ayni paytda harakat tekshiruvi ham: telefon qimirlasa warp siljiydi,
+chegaradagi kataklar oʻzgaradi, oʻqishlar mos kelmaydi va sanoq nolga
+tushadi. Alohida «qimirlamang» detektori kerak emas.
+
+### Nima koʻchirildi, nima yoʻq
+
+| Narsa | Qaror |
+|---|---|
+| `cv.js` (950 satr) | FAQAT `Image`, `warp`, `adaptiveThreshold` koʻchirildi — skanerlash yoʻlida boshqasi chaqirilmaydi. MIT litsenziyasi saqlangan. |
+| `jsQR` | npm paketi (CDN emas — offline va CSP uchun) |
+| Supabase chaqiruvlari | Olib tashlandi. Roʻyxat `buildSheetPlan()` dan, yozish `applyOmrScan()` ga. |
+| Baholash mijozda | **Olib tashlandi.** LessonLab varianti toʻgʻri javoblarni brauzerga yuklab, ballni oʻsha yerda hisoblardi — bizda toʻgʻri javob mijozga umuman chiqmaydi (§7). Ekranda faqat «nechta javob oʻqildi». |
+| Telegram WebApp SDK | Kerak emas — oddiy sahifa. |
+
+### Geometriya shartnomasi
+
+`src/lib/omr/sheet-layout.ts` dagi raqamlar `answer_sheet_generator.py`
+dan koʻchirilgan va har biri manbasi bilan izohlangan. Chizuvchi va
+oʻquvchi bir xil oʻlchovga tayanishi SHART: bir tomon oʻzgarsa,
+ikkinchisi notoʻgʻri joyni oʻqiydi va buni sezmaydi — natija boʻsh
+emas, XATO boʻladi. Dvigatel yangilansa avval shu fayl solishtiriladi.
+
+### Tekshirish qadami saqlandi
+
+Jonli skaner varaqni roʻyxatga qoʻshadi, **darhol yozmaydi**. Sabab
+oʻzgarmadi (§8-bis): QR tartib raqamini tashiydi, roʻyxat surilgan
+boʻlsa varaq boshqa bolaga bogʻlanadi. Kamera yopilgach oʻqituvchi
+hammasini koʻrib chiqib «Jurnalga kiritish» ni bosadi.
+
+## 8-quinquies. QR-kartalar — faqat chop etish
+
+`answerCardsPdf()` UI'ga ulandi: Qogʻoz test panelida «QR-kartalarni
+chop etish». Plickers naqshi — har bolaga bitta karta, u burab javob
+beradi, oʻqituvchi butun sinfni bitta suratga oladi. Karta testga
+emas SINFGA bogʻlangan: bir marta chop etilib yil boʻyi ishlatiladi.
+
+⚠️ **Kartani oʻqiydigan skaner YOʻQ.** Kartaning qaysi burilishi qaysi
+javobni bildirishi LessonLab tomonidagi kelishuv va u bizga
+hujjatlashtirilgan holda berilmagan. Panelda buni ochiq yozdik —
+«tayyor» deb koʻrsatib keyin oʻqiy olmaslik eng yomon holat boʻlardi.
+Kerak boʻlsa: burilish → javob jadvali va karta geometriyasi.
+
 ### Qaror qilingan mayda narsalar
 
 - **Bir varaq — bir marta.** Oʻquvchi kiritilgan boʻlsa ikkinchi varaq
@@ -428,6 +497,9 @@ bajarilganda qoʻshiladi.
 - ~~Varaqni skanerlash UI'si~~ — tayyor: shu panelda «Varaqni suratga
   olish» (§8-bis).
 - ~~Noutbukdan telefonga oʻtish~~ — tayyor: «Telefonda skanerlash» → QR.
+- ~~Jonli kamera skaneri~~ — tayyor (§8-quater).
+- ~~QR-kartalar PDF~~ — tayyor (§8-quinquies), lekin faqat chop etish.
+- **QR-kartalarni oʻqish** — LessonLab'dan burilish→javob shartnomasi kerak.
 - **Telegram bot yoʻli** — shartnoma §8-ter da yozilgan, ikki tomonlama
   ish talab qiladi.
 - **QR-kartalar** — `answerCardsPdf()` tayyor, UI hali yoʻq.
