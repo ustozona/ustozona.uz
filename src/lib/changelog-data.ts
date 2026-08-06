@@ -32,6 +32,51 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "baholash-card-scanner",
+    date: "2026-08-06",
+    type: "yangi",
+    title: "Telefonsiz sinf uchun QR-kartalar",
+    body:
+      "Har oʻquvchiga bitta karta chop etiladi — javob berish uchun kartani burab koʻtaradi (A/B/C/D), qurilma kerak emas. Kamerani sinfga qaratsangiz, barcha javoblar bir zumda oʻqiladi.",
+    href: "/baholash",
+  },
+  {
+    id: "baholash-live-scanner",
+    date: "2026-08-06",
+    type: "yaxshilandi",
+    title: "Qogʻoz test — endi bitta-bitta surat kerak emas",
+    body:
+      "Javob varaqlarini telefon kamerasiga tutib turasiz — har varaq oʻzi topilib oʻqiladi, natija darhol ekranda koʻrinadi. Suratga olib yuklash yoʻli ham ishlayveradi.",
+    href: "/baholash",
+  },
+  {
+    id: "baholash-phone-handoff",
+    date: "2026-08-05",
+    type: "yangi",
+    title: "Qogʻoz test — telefonga havola yubormasdan oʻtish",
+    body:
+      "Kompyuterda \"Telefonda skanerlash\" tugmasini bossangiz, ekranda QR chiqadi. Telefon kamerasini shunga tutsangiz, tizimga kirmasdan skaner sahifasi ochiladi.",
+    href: "/baholash",
+  },
+  {
+    id: "baholash-paper-scan-launch",
+    date: "2026-08-05",
+    type: "yangi",
+    title: "Qogʻoz test — javob varaqlarini Ustozonaning oʻzida tekshirish",
+    body:
+      "Baholash boʻlimida endi javob varaqlarini chop etib, telefon kamerasi bilan tekshirish mumkin. Natija darhol sinf jurnaliga tayyor holda tushadi — qoʻlda kiritish shart emas.",
+    href: "/baholash",
+  },
+  {
+    id: "assignments-draft-tests-visible",
+    date: "2026-08-05",
+    type: "tuzatildi",
+    title: "Tuzilgan test endi Topshiriqlar sahifasida koʻrinadi",
+    body:
+      "Topshiriqlar boʻlimida yangi test yaratganingizdan keyin sahifa boʻsh koʻrinib, ish yoʻqolgandek tuyulardi. Endi tuzilgan testlar alohida roʻyxatda turadi va jurnalga hali chiqmaganini ochiq aytadi.",
+    href: "/dashboard/assignments",
+  },
+  {
     id: "assignment-draft-persist",
     date: "2026-08-02",
     type: "yangi",
