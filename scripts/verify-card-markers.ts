@@ -27,6 +27,8 @@ import {
   matchMarker,
 } from "../src/lib/cards/marker";
 import { buildAnswerCardsPdf } from "../src/lib/cards/card-pdf";
+import { detectCards, makeDetectBuffers } from "../src/lib/cards/detect";
+import { CvImage } from "../src/lib/omr/cv";
 
 /** Deterministik generator — natija har ishga tushishda bir xil. */
 function makeRandom(seed: number) {
@@ -177,4 +179,85 @@ async function checkPdf() {
   );
 }
 
+
+
+/* ── 6. ANIQLAGICH: sunʼiy «sinf surati» dan oʻqish ────────────────
+
+   Kamera bilan sinab boʻlmagani uchun kadr QOʻLDA quriladi: oq fonga
+   bir necha karta belgisi turli burilishda va turli oʻlchamda
+   chiziladi, keyin `detectCards()` oʻsha kadrdan oʻqiydi.
+
+   Bu haqiqiy suratning oʻrnini bosmaydi (yorugʻlik, qiyshiqlik,
+   fokus yoʻq), lekin quvurni uchidan uchigacha tekshiradi: kontur →
+   toʻrtburchak → warp → ramka → bitlar → lugʻat. Bu zanjirdagi xato
+   shu yerda ushlanadi. */
+function checkDetector() {
+  const W = 640;
+  const H = 480;
+  const gray = new CvImage(W, H, new Uint8Array(W * H).fill(255));
+
+  /** Belgini kadrga chizadi.
+
+      Burilgan bitlar `allRotations()` dan OLINADI — bu yerda qoʻlda
+      indeks aylantirish qilinmaydi. Birinchi urinishda aynan shu
+      xato boʻlgan edi: teskari yoʻnalishda aylantirilgani uchun toq
+      burilishlar (1 va 3) oʻrin almashib, aniqlagich ayibdor
+      koʻringandi. Bitta manbadan olish — sinov ham, kod ham bir xil
+      taʼrifga tayanadi. */
+  function paint(bits: number, x0: number, y0: number, size: number, rotation: number) {
+    const rotated = allRotations(bits)[rotation];
+    const cells = MARKER_QUALITY.grid + 2;
+    const cell = size / cells;
+    for (let r = 0; r < cells; r++) {
+      for (let c = 0; c < cells; c++) {
+        const border = r === 0 || c === 0 || r === cells - 1 || c === cells - 1;
+        const dark =
+          border ||
+          (rotated & (1 << ((r - 1) * MARKER_QUALITY.grid + (c - 1)))) !== 0;
+        if (!dark) continue;
+        const px0 = Math.round(x0 + c * cell);
+        const py0 = Math.round(y0 + r * cell);
+        const px1 = Math.round(x0 + (c + 1) * cell);
+        const py1 = Math.round(y0 + (r + 1) * cell);
+        for (let y = py0; y < py1; y++) {
+          for (let x = px0; x < px1; x++) {
+            if (x >= 0 && y >= 0 && x < W && y < H) gray.data[y * W + x] = 0;
+          }
+        }
+      }
+    }
+  }
+
+  const expected = [
+    { no: 1, rotation: 0, x: 20, y: 20, size: 120 },
+    { no: 7, rotation: 1, x: 200, y: 30, size: 100 },
+    { no: 23, rotation: 2, x: 380, y: 40, size: 90 },
+    { no: 42, rotation: 3, x: 60, y: 240, size: 140 },
+    { no: 63, rotation: 1, x: 300, y: 260, size: 110 },
+  ];
+  for (const e of expected) {
+    const bits = markerForStudent(e.no);
+    if (bits !== null) paint(bits, e.x, e.y, e.size, e.rotation);
+  }
+
+  const buffers = makeDetectBuffers(W, H);
+  const found = detectCards(gray, buffers, { minEdgePx: 40 });
+
+  const byNo = new Map(found.map((f) => [f.match.studentNo, f.match]));
+  const missing = expected.filter((e) => !byNo.has(e.no));
+  const wrongRotation = expected.filter(
+    (e) => byNo.has(e.no) && byNo.get(e.no)!.rotation !== e.rotation
+  );
+  const extra = found.filter((f) => !expected.some((e) => e.no === f.match.studentNo));
+
+  check(
+    "aniqlagich — sunʼiy kadr",
+    missing.length === 0 && wrongRotation.length === 0 && extra.length === 0,
+    `${found.length}/${expected.length} topildi · topilmagan: ${missing.map((m) => m.no).join(",") || "yoʻq"}` +
+      ` · burilish xato: ${wrongRotation.map((m) => m.no).join(",") || "yoʻq"}` +
+      ` · ortiqcha: ${extra.length}`
+  );
+}
+
+checkDetector();
 checkPdf().then(() => process.exit(failed ? 1 : 0));

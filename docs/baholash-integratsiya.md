@@ -520,6 +520,51 @@ qoʻshish oʻrniga ism WinAnsi ga oʻgiriladi (kirill ham), chunki
 **kartada ism shunchaki yorliq**: kimligini BELGI tashiydi, yaʼni
 `ʻ` → `'` hech qachon notoʻgʻri bahoga olib kelmaydi.
 
+## 8-septies. QR-kartalarni OʻQISH — butun sinf bitta kadrda
+
+Karta chizish bizniki boʻlgach, oʻqish ham hech kimga bogʻliq emas.
+
+```
+kadr → kulrang → lokal chegaralash → konturlar
+     → toʻrtburchakka soddalashtirish (Ramer-Douglas-Peucker)
+     → qavariqlik va oʻlcham filtri
+     → warp → Otsu → qora RAMKA tekshiruvi
+     → 5×5 katak → lugʻat (burilish = javob)
+     → ikki kadr kelishuvi → qabul
+```
+
+### Ikki chegaralash, ikki xil sabab
+
+Butun kadrga **lokal** (adaptiv) chegara: sinfda yorugʻlik notekis,
+deraza yonidagi bola yorugʻ, burchakdagisi soyada — global chegara
+ulardan birini yoʻqotardi.
+
+Toʻgʻrilangan yamoqqa esa **global** (Otsu). Bu qurishda topilgan
+tuzoq: lokal chegara pikselni atrofi bilan solishtiradi va katta bir
+tekis qora maydonning faqat CHEKKASINI belgilaydi — ramka ichi «boʻsh»
+boʻlib chiqib, tekshiruv har doim yiqilardi. Aniqlagich hech nima
+topmasligining sababi aynan shu edi.
+
+### Ikki kadr qoidasi
+
+Javob ketma-ket ikki kadr bir xil oʻqilgandagina qabul qilinadi.
+Bu bir vaqtning oʻzida ikki ishni bajaradi: bitta kadrdagi 0,016%
+notoʻgʻri oʻqish ehtimolini kvadratga koʻtaradi, va bola kartani
+burayotgan oraliq holatni chetlab oʻtadi.
+
+### Sinov
+
+Kamera bilan sinab boʻlmagani uchun `scripts/verify-card-markers.ts`
+sunʼiy «sinf surati» quradi: oq fonga bir necha belgi turli burilish
+va oʻlchamda chiziladi, keyin `detectCards()` oʻsha kadrdan oʻqiydi.
+Bu haqiqiy suratning oʻrnini bosmaydi (yorugʻlik, qiyshiqlik, fokus
+yoʻq), lekin quvurni uchidan uchigacha tekshiradi.
+
+⚠️ Sinovning oʻzida ham xato boʻlgandi: belgi teskari yoʻnalishda
+aylantirilib, toq burilishlar (1 va 3) oʻrin almashgandi va aniqlagich
+ayibdor koʻringandi. Endi sinov ham, kod ham bitta `allRotations()`
+taʼrifiga tayanadi.
+
 ## 8-quinquies. QR-kartalar — faqat chop etish
 
 `answerCardsPdf()` UI'ga ulandi: Qogʻoz test panelida «QR-kartalarni
@@ -564,7 +609,7 @@ Kerak boʻlsa: burilish → javob jadvali va karta geometriyasi.
 - ~~Noutbukdan telefonga oʻtish~~ — tayyor: «Telefonda skanerlash» → QR.
 - ~~Jonli kamera skaneri~~ — tayyor (§8-quater).
 - ~~QR-kartalar PDF~~ — tayyor (§8-quinquies), lekin faqat chop etish.
-- **QR-kartalarni oʻqish** — LessonLab'dan burilish→javob shartnomasi kerak.
+- ~~QR-kartalarni oʻqish~~ — tayyor (§8-septies), oʻz formatimizda.
 - **Telegram bot yoʻli** — shartnoma §8-ter da yozilgan, ikki tomonlama
   ish talab qiladi.
 - **QR-kartalar** — `answerCardsPdf()` tayyor, UI hali yoʻq.
