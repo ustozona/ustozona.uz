@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { QuizSessionRow } from "@/server/db/schema";
 import type { SetOption } from "./BaholashWorkspace";
 import { GAME_SHELLS, shellAvailability } from "@/lib/baholash-shells";
+import { MARKER_CAPACITY as CARD_CAPACITY } from "@/lib/cards/marker";
 import ScanPanel from "./ScanPanel";
 
 export type Delivery = "game" | "homework" | "paper";
@@ -198,6 +199,7 @@ function PaperPanel({ set, classId, engineReady }:
                     { set: SetOption; classId: string; engineReady: boolean }) {
   const [busy, setBusy] = useState<"class" | "exam" | "cards" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [skippedCards, setSkippedCards] = useState(0);
 
   /** Chop etiladigan PDF — varaq yoki QR-karta. Ikkalasi ham bir xil
       yoʻldan chiqadi, farqi faqat endpoint va fayl nomida. */
@@ -218,6 +220,10 @@ function PaperPanel({ set, classId, engineReady }:
         const info = (await res.json().catch(() => null)) as { message?: string } | null;
         throw new Error(info?.message ?? `Tayyorlanmadi (${res.status})`);
       }
+      /* Lugʻatga sigʻmagan oʻquvchilar sarlavhada keladi (tana — PDF).
+         Jimgina tashlab ketib boʻlmaydi: oʻsha bolaning kartasi umuman
+         chop etilmagan boʻladi. */
+      if (cards) setSkippedCards(Number(res.headers.get("X-Cards-Skipped") ?? 0) || 0);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       // Yangi oynada ochamiz: oʻqituvchi darhol chop etadi, fayl
@@ -299,9 +305,17 @@ function PaperPanel({ set, classId, engineReady }:
                 {busy === "cards" ? "Tayyorlanmoqda..." : "QR-kartalarni chop etish"}
               </Button>
             </div>
+            {skippedCards > 0 && (
+              <Note tone="warn">
+                {skippedCards} oʻquvchiga karta chiqmadi — belgilar lugʻati{" "}
+                {CARD_CAPACITY} tagacha yetadi. Ularga takroriy karta berilmadi:
+                ikki bolada bir xil karta boʻlsa baho notoʻgʻri odamga tushardi.
+              </Note>
+            )}
             <Note>
               Kartalarni hozircha faqat chop etish mumkin — ularni oʻqiydigan
-              skaner hali yoʻq. Baho uchun javob varagʻidan foydalaning.
+              kamera rejimi keyingi qadamda. Baho uchun javob varagʻidan
+              foydalaning.
             </Note>
           </div>
 
@@ -323,10 +337,16 @@ function PaperPanel({ set, classId, engineReady }:
   );
 }
 
-function Note({ children }: { children: React.ReactNode }) {
+function Note({ children, tone = "info" }: { children: React.ReactNode; tone?: "info" | "warn" }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
-      <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+    <div
+      className={`flex items-start gap-3 rounded-lg border px-4 py-3 ${
+        tone === "warn"
+          ? "border-amber-500/40 bg-amber-500/5"
+          : "border-border bg-muted/40"
+      }`}
+    >
+      <Info className={`mt-0.5 size-4 shrink-0 ${tone === "warn" ? "text-amber-600" : "text-muted-foreground"}`} />
       <p className="text-sm leading-relaxed text-muted-foreground">{children}</p>
     </div>
   );

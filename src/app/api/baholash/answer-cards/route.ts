@@ -1,5 +1,5 @@
 import { buildSheetPlan } from "@/server/dal/baholash-sheets";
-import { answerCardsPdf, isConfigured, LessonLabError } from "@/server/lessonlab/baholash";
+import { buildAnswerCardsPdf } from "@/lib/cards/card-pdf";
 import { UnauthorizedError } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -16,24 +16,21 @@ import { UnauthorizedError } from "@/server/session";
    Shuning uchun u testga emas, SINFGA bogʻlangan va `setId`
    soʻralmaydi.
 
-   ⚠️ HOZIRCHA FAQAT CHOP ETISH. Kartani OʻQIYDIGAN skaner yoʻq:
-   kartaning qaysi burilishi qaysi javobni bildirishi LessonLab
-   tomonidagi kelishuv va u bizga hujjatlashtirilgan holda berilmagan.
-   Shu sababli panelda ham buni ochiq yozamiz — «tayyor» deb
-   koʻrsatib, keyin oʻqiy olmaslik eng yomon holat boʻlardi.
+   KARTANI OʻZIMIZ CHIZAMIZ, dvigatelga bormaymiz. Sabab: kartani
+   OʻQISH uchun «qaysi burilish qaysi javob» va «belgi ichida nima»
+   degan kelishuv kerak. Begona chizuvchining kelishuvini bilmasdan
+   oʻqib boʻlmaydi, bilgan taqdirda ham u har yangilanishda oʻzgarib
+   ketishi mumkin. Karta bir marta chop etilib yillab ishlatiladi —
+   bunday narsa oʻz qoʻlimizda boʻlishi kerak.
+
+   Belgi dizayni: `src/lib/cards/marker.ts` (ArUco maktabi, QR emas —
+   sinf orqasidan QR oʻqilmaydi).
    ════════════════════════════════════════════════════════════════════ */
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  if (!isConfigured()) {
-    return Response.json(
-      { ok: false, error: "not_configured", message: "LessonLab dvigateli sozlanmagan" },
-      { status: 503 }
-    );
-  }
-
   let body: { classId?: unknown; setId?: unknown };
   try {
     body = await request.json();
@@ -57,7 +54,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const pdf = await answerCardsPdf({
+    const pdf = await buildAnswerCardsPdf({
       students: plan.roster.map(({ no, name }) => ({ no, name })),
       className: plan.className,
     });
@@ -69,17 +66,16 @@ export async function POST(request: Request) {
         "Content-Disposition": `attachment; filename="${pdf.filename}"`,
         // Kartalarda oʻquvchi ismlari bor — keshda qolmasin.
         "Cache-Control": "no-store",
+        /* Lugʻatga sigʻmagan oʻquvchilar — sarlavhada, chunki javob
+           tanasi PDF. Panel buni oʻqib oʻqituvchiga koʻrsatadi:
+           jimgina tashlab ketish mumkin emas, oʻsha bolaning kartasi
+           umuman chop etilmagan boʻladi. */
+        "X-Cards-Skipped": String(pdf.skipped.length),
       },
     });
   } catch (err) {
     if (err instanceof UnauthorizedError) {
       return Response.json({ ok: false, error: "unauthorized" }, { status: 401 });
-    }
-    if (err instanceof LessonLabError) {
-      return Response.json(
-        { ok: false, error: err.code, message: err.message },
-        { status: err.status >= 400 && err.status < 600 ? err.status : 502 }
-      );
     }
     const message = err instanceof Error ? err.message : "Kartalar tayyorlanmadi";
     return Response.json({ ok: false, error: "failed", message }, { status: 400 });
