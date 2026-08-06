@@ -455,6 +455,71 @@ oʻzgarmadi (§8-bis): QR tartib raqamini tashiydi, roʻyxat surilgan
 boʻlsa varaq boshqa bolaga bogʻlanadi. Kamera yopilgach oʻqituvchi
 hammasini koʻrib chiqib «Jurnalga kiritish» ni bosadi.
 
+## 8-sexies. Javob kartalari — OʻZIMIZ chizamiz
+
+Kartani LessonLab dvigateli chizardi. Endi oʻzimiz chizamiz. Sabab
+oddiy: kartani **oʻqish** uchun «belgi ichida nima» va «qaysi burilish
+qaysi javob» degan kelishuv kerak. Begona chizuvchining kelishuvini
+bilmasdan oʻqib boʻlmaydi, bilgan taqdirda ham u har yangilanishda
+oʻzgarishi mumkin. Karta bir marta chop etilib yillab ishlatiladi —
+bunday narsa oʻz qoʻlimizda turishi kerak.
+
+### Nega QR emas
+
+Oʻqituvchi butun sinfni bitta suratga oladi. Orqa qatordagi bola 5-6
+metrda, uning kartasi kadrda ~40×40 piksel. QR ning eng kichik
+varianti 21×21 modul — har modulga ikki pikseldan kam tushadi, yaʼni
+oʻqib boʻlmaydi. Plickers ham, ArUco ham shu sababdan yirik katakli
+belgidan foydalanadi. Bizniki: **5×5 maʼlumot katagi + qora ramka =
+7×7**, karta 94 mm boʻlganda katak ~10 mm.
+
+### Lugʻat — oʻlchangan kafolatlar
+
+`src/lib/cards/marker-dictionary.ts` — 63 ta belgi (Plickers ham 63
+ta karta bilan ishlaydi). Uch talab boʻyicha tanlangan:
+
+| Xossa | Qiymat | Nima beradi |
+|---|---|---|
+| Burilishlar masofasi | **10 bit** | 90° burilish aniq ajraladi → javob toʻgʻri |
+| Belgilar masofasi | **8 bit** | ikki oʻquvchi kartasi chalkashmaydi |
+| Tuzatiladigan xato | **1 bit** (nazariy 3) | pastda sabab |
+
+«Belgilar masofasi» BARCHA burilishlar boʻyicha hisoblangan: Aliyevning
+kartasi Valiyevning 90° burilgan kartasiga ham oʻxshamaydi.
+
+### Nega nazariy chegara ishlatilmadi
+
+Masofa 8 boʻlgani uchun 3 bitgacha tuzatsa boʻladi. Lekin oʻlchov
+(`scripts/verify-card-markers.ts`, 18 900 sinov, 4-8 bit ogʻir
+shikast) boshqa narsani koʻrsatdi:
+
+| Tuzatish | NOTOʻGʻRI oʻquvchi | Tasodifiy shovqinni karta deb qabul |
+|---|---|---|
+| 3 bit | 253 marta | 2,97% |
+| 2 bit | 28 marta | 0,33% |
+| **1 bit** | **3 marta (0,016%)** | **0,028%** |
+
+Nazariy chegarani toʻliq ishlatish xatoni **250 barobar** oshiradi.
+Rad etish esa deyarli bepul — karta jonli kameradan sekundiga oʻnlab
+marta oʻqiladi. Shuning uchun chegara 1 bit, va oʻquvchi tomoni
+ketma-ket **ikki kadr kelishuvini** talab qilishi kerak: shunda
+qolgan 0,016% ham kvadratga koʻtarilib yoʻqoladi.
+
+### Sinfda 63 tadan koʻp bola boʻlsa
+
+Ortiqcha oʻquvchilarga karta **chizilmaydi** va oʻqituvchiga ochiq
+aytiladi. Takroriy belgi berish mumkin emas: ikki bolada bir xil
+karta boʻlsa baho notoʻgʻri odamga tushardi va buni hech kim sezmasdi.
+
+### Ismdagi `ʻ` muammosi
+
+PDF standart shrifti (Helvetica) WinAnsi kodlashda ishlaydi va
+oʻzbekcha `ʻ` (U+02BB) ni chiza olmaydi — «Gʻulomov», «Toʻlqin»,
+«Saʼdulla» da dastur otib tushardi. Unicode shriftini (~500 KB)
+qoʻshish oʻrniga ism WinAnsi ga oʻgiriladi (kirill ham), chunki
+**kartada ism shunchaki yorliq**: kimligini BELGI tashiydi, yaʼni
+`ʻ` → `'` hech qachon notoʻgʻri bahoga olib kelmaydi.
+
 ## 8-quinquies. QR-kartalar — faqat chop etish
 
 `answerCardsPdf()` UI'ga ulandi: Qogʻoz test panelida «QR-kartalarni
