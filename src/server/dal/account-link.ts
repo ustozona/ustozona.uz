@@ -103,12 +103,66 @@ export async function getOrCreateLink(): Promise<LinkState> {
     keyingi import DUBLIKAT yaratardi — aynan tuzatilayotgan xato.
 
     Sinf, oʻquvchi va baho HECH QACHON oʻchmaydi. */
-export async function unlinkTelegram(): Promise<LinkState> {
+export async function unlinkTelegram(
+  opts: { confirmed?: boolean } = {}
+): Promise<LinkState | { blocked: true; impact: UnlinkImpactRow[] }> {
   const teacher = await requireTeacher();
+
+  // IKKI QADAM — nega darhol uzilmaydi.
+  // Bogʻlanish notoʻgʻri boʻlgan boʻlsa, u amal qilgan vaqt ichida
+  // natijalar YOZILGAN boʻlishi mumkin, yaʼni baholar boshqa odamning
+  // oʻquvchilariga tushgan boʻlishi mumkin. Oʻqituvchi buni koʻrmasdan
+  // tugmani bosmasligi kerak — `partner_merge.py` dagi
+  // `impact_if_deleted` bilan bir xil qoida.
+  if (!opts.confirmed) {
+    const impact = await getUnlinkImpact();
+    // Baho ham, javob ham boʻlmasa tasdiq SOʻRALMAYDI: keraksiz qadam
+    // foydalanuvchini charchatadi va u oʻqimasdan bosishga oʻrganadi.
+    if (impact.length > 0) return { blocked: true, impact };
+  }
+
   await db.delete(userTelegram).where(eq(userTelegram.userId, teacher.id));
   // Darhol yangi havola beramiz: uzish — oʻz-oʻzicha maqsad emas,
   // foydalanuvchi TOʻGʻRI akkauntga qayta bogʻlamoqchi.
   return getOrCreateLink();
+}
+
+export type UnlinkImpactRow = {
+  uzStudentId: string;
+  studentName: string;
+  className: string;
+  gradeCount: number;
+  responseCount: number;
+  lastActivity: string | null;
+};
+
+/** Biriktirishni oʻzgartirishdan oldin koʻrsatiladigan oqibat.
+
+    ⚠️ Taʼrif SQL funksiyasida (`account_unlink_impact`), bu yerda
+    EMAS — bot tomoni ham AYNAN oʻshani chaqiradi. Ikki kodbazada
+    alohida yozilsa ular ajralib ketardi va bir tomon «xavf yoʻq»,
+    ikkinchisi «5 ta baho bor» derdi. Bu turdagi jimgina ajralish
+    2026-08-08 da `norm_name` da allaqachon topilgan — takrorlanmasin.
+
+    Boʻsh roʻyxat = xavf yoʻq, darhol oʻzgartirish mumkin. */
+export async function getUnlinkImpact(): Promise<UnlinkImpactRow[]> {
+  const teacher = await requireTeacher();
+  const rows = await db.execute<{
+    uz_student_id: string; student_name: string; class_name: string;
+    grade_count: number | string; response_count: number | string;
+    last_activity: string | null;
+  }>(sql`SELECT * FROM account_unlink_impact(${teacher.id})`);
+
+  return Array.from(rows).map((r) => ({
+    uzStudentId: r.uz_student_id,
+    studentName: r.student_name,
+    className: r.class_name,
+    // postgres-js `count(*)` ni bigint sifatida qaytaradi va u JS'ga
+    // STRING boʻlib keladi — `Number()` siz «5» + 1 = «51» boʻlardi.
+    gradeCount: Number(r.grade_count),
+    responseCount: Number(r.response_count),
+    lastActivity: r.last_activity,
+  }));
 }
 
 export type RedeemResult =
