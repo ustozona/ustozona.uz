@@ -27,9 +27,16 @@ export function useLessonLabLink() {
     setBusy(true);
     try {
       setStatus(await getLessonLabLinkStatusAction());
-    } catch {
+    } catch (err) {
       // Fail-open: xato holatda "null" — chaqiruvchi buni "bilib
       // bo'lmadi" deb ko'rsatadi, hech kimni bloklamaydi.
+      //
+      // ⚠️ Lekin xatoni JIM YUTMAYMIZ. 2026-08-08 da aynan shu
+      // «Holatni tekshirib bo'lmadi» xabari sababni ko'rsatmagani
+      // uchun nosozlik bir soat auth va bazada izlandi — aslida
+      // Server Action CSRF origin mosligi edi (next.config.ts).
+      // Konsolga chiqarish keyingi safar sababni darhol beradi.
+      console.error("[LessonLab] bog'lanish holatini olib bo'lmadi:", err);
       setStatus(null);
     } finally {
       setBusy(false);
