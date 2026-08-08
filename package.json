@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/check-server-actions.mjs",
+    "check:actions": "node scripts/check-server-actions.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

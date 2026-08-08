@@ -2,9 +2,8 @@
 
 import { getSession } from "@/server/session";
 import { isTeacher } from "@/lib/auth-roles";
-import { failureOf, type FailureReason } from "@/server/dal/_failure-reason";
-
-export type { FailureReason };
+import { failureOf } from "@/server/dal/_failure-reason";
+import type { FailureReason } from "@/lib/link-types";
 
 /* ════════════════════════════════════════════════════════════════════
    SESSIYA SOG'LIGI — «nega hech narsa yuklanmadi?» degan savolga javob
@@ -17,6 +16,9 @@ export type { FailureReason };
    qaytarilmaydi — faqat uchta nomdan bittasi.
 
    ⚠️ FAQAT YIQILGAN HOLATDA CHAQIRILADI (qo'shimcha so'rov bo'lmasin).
+
+   ⛔ `export type { … }` YOZMANG — tiplar `@/lib/link-types` da.
+   Sabab: `actions/account-link.ts` dagi izoh.
    ════════════════════════════════════════════════════════════════════ */
 
 export async function getAuthHealthAction(): Promise<
@@ -29,7 +31,7 @@ export async function getAuthHealthAction(): Promise<
     return { ok: true };
   } catch (err) {
     // Bu yerga tushish sessiya o'qish MEXANIZMI buzilganini bildiradi
-    // (masalan baza yoki imzo kaliti) — logga yozilishi shart.
+    // (masalan baza yoki imzo kaliti) — `failureOf` uni logga yozadi.
     return { failed: failureOf(err, "auth-health").reason };
   }
 }

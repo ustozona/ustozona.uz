@@ -3,8 +3,9 @@
 import * as React from "react";
 import {
   getLessonLabLinkStatusAction, unlinkLessonLabAction,
-  type LinkState, type UnlinkImpactRow, type FailureReason,
 } from "@/server/actions/account-link";
+// ⛔ Tiplar AMALDAN emas, neytral moduldan — sabab `lib/link-types.ts`.
+import type { LinkState, UnlinkImpactRow, FailureReason } from "@/lib/link-types";
 
 /* LessonLab bog'lanishi — bitta joyda mantiq, ikki joyda ko'rinish.
 

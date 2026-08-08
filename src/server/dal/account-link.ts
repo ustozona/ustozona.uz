@@ -4,6 +4,14 @@ import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { accountLinkCodes, userTelegram } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import type {
+  LinkState, RedeemResult, UnlinkImpactRow,
+} from "@/lib/link-types";
+
+// ⛔ Tiplar `@/lib/link-types` da — bu yerda TA'RIFLANMAYDI va
+// QAYTA EKSPORT ham QILINMAYDI: chaqiruvchi to'g'ridan-to'g'ri
+// o'sha modulni import qilsin. Sabab — `lib/link-types.ts` izohi
+// (prodni buzgan `ReferenceError`).
 
 /* ════════════════════════════════════════════════════════════════════
    AKKAUNT BIRIKTIRISH — Ustozona ↔ Telegram
@@ -43,9 +51,6 @@ const TTL_MINUTES = 15;
 // kerak, deploy'ni qaytarmasdan. Standart — yoqilgan.
 const LINK_REQUIRED = (process.env.LESSONLAB_LINK_REQUIRED ?? "1") !== "0";
 
-export type LinkState =
-  | { linked: true; telegramId: string }
-  | { linked: false; deepLink: string; expiresInMinutes: number };
 
 /** Dashboard gate uchun: bog'lanish holati + majburiymi. */
 export async function getLinkStatus(): Promise<LinkState & { required: boolean }> {
@@ -175,14 +180,6 @@ export async function unlinkTelegram(
   return getOrCreateLink();
 }
 
-export type UnlinkImpactRow = {
-  uzStudentId: string;
-  studentName: string;
-  className: string;
-  gradeCount: number;
-  responseCount: number;
-  lastActivity: string | null;
-};
 
 /** Biriktirishni oʻzgartirishdan oldin koʻrsatiladigan oqibat.
 
@@ -213,9 +210,6 @@ export async function getUnlinkImpact(): Promise<UnlinkImpactRow[]> {
   }));
 }
 
-export type RedeemResult =
-  | { status: "ok" | "already" }
-  | { status: "invalid" | "expired" | "used" | "taken_uz" | "taken_tg" };
 
 /** Yo'nalish B: bot bergan kodni Ustozona tomonida ishlatish.
 
