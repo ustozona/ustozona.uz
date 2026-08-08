@@ -24,6 +24,7 @@ import FocusEngine from "@/components/tasks/FocusEngine";
 import BehaviorAutoReconciler from "@/components/behavior/BehaviorAutoReconciler";
 import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
 import OnboardingGate from "@/components/onboarding/OnboardingGate";
+import LessonLabLinkGate from "@/components/lessonlab/LessonLabLinkGate";
 import TourProvider from "@/components/tour/TourProvider";
 import AssignmentEditorHost from "@/components/assignments/AssignmentEditorHost";
 
@@ -57,6 +58,10 @@ export default function DashboardLayout({
       <BehaviorAutoReconciler />
       <LegacyStorageCleanup />
       <OnboardingGate />
+      {/* LessonLab bilan bog'lash — OnboardingGate bilan bir xil naqsh
+          (docs/CROSS_PLATFORM.md). Bitta qator, layout mantig'iga
+          tegilmadi. */}
+      <LessonLabLinkGate />
       <TourProvider />
       <AssignmentEditorHost />
       <AppSidebar />

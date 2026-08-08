@@ -10,6 +10,7 @@ import {
   CreditCard,
   ShieldCheck,
   ListTodo,
+  Link2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -116,6 +117,14 @@ export const SECTIONS: SectionDef[] = [
     subtitle: "Maxfiylik, eksport, DPA va hisobni oʻchirish",
     icon: ShieldCheck,
     Component: dynamic(() => import("./_components/DataSection")),
+  },
+  {
+    id: "lessonlab",
+    group: "hisob",
+    label: "LessonLab",
+    subtitle: "Telegram bilan bogʻlanish",
+    icon: Link2,
+    Component: dynamic(() => import("./_components/LessonLabSection")),
   },
 ];
 

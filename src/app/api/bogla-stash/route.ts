@@ -18,6 +18,20 @@ import { type NextRequest, NextResponse } from "next/server";
 
 const COOKIE = "ll_link_code";
 
+/* Ikkinchi cookie — SIR EMAS, faqat bayroq.
+
+   Nega ikkitaga boʻlindi: `ll_link_code` httpOnly (JavaScript oʻqiy
+   olmaydi — kod sir). Lekin `login-form.tsx` / `signup-form.tsx`
+   (mijoz komponentlari) kirish/roʻyxatdan oʻtishdan keyin QAYERGA
+   yoʻnaltirishni CLIENT tomonda hal qiladi, ya'ni ularga "kutilayotgan
+   bogʻlash bormi" degan MIJOZ TOMONIDAN oʻqiladigan signal kerak —
+   httpOnly buni bermaydi.
+
+   Shu bois maxfiy boʻlmagan bayroq: qiymatning oʻzi ahamiyatsiz, faqat
+   MAVJUDLIGI muhim. `PENDING_LINK_COOKIE` — `src/lib/pending-link.ts`
+   da yagona joyda taʼriflangan, shu yerda ham oʻsha ishlatiladi. */
+import { PENDING_LINK_COOKIE } from "@/lib/pending-link";
+
 export async function GET(request: NextRequest) {
   const code = (request.nextUrl.searchParams.get("c") || "").trim();
   // Kod bilan yoki bo'lmasa ham `/bogla` ga qaytamiz — sahifa oʻzi
@@ -26,6 +40,13 @@ export async function GET(request: NextRequest) {
   if (code) {
     res.cookies.set(COOKIE, code, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 15 * 60,
+      path: "/",
+    });
+    res.cookies.set(PENDING_LINK_COOKIE, "1", {
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 15 * 60,
