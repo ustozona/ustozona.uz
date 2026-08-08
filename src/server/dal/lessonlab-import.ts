@@ -2,7 +2,9 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { activities, activityItems, activitySets, classes, students } from "@/server/db/schema";
+import {
+  activities, activityItems, activitySets, classes, classLinks, rosterLinks, students,
+} from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import { lessonlab } from "@/server/lessonlab/client";
 
@@ -87,7 +89,37 @@ async function fetchAll<T>(path: string, token: string, key: string): Promise<T[
   return out;
 }
 
-/** Sinf va oʻquvchilarni koʻchirish. */
+/** Sinf va oʻquvchilarni Ustozona tomonida KOʻRINADIGAN qilish.
+
+    ⚠️ 2026-08-08 dan buyon bu funksiya nusxa qoldirmaydi — BOGʻLAYDI.
+
+    Ilgari u `classes`/`students` ga qator yozib, «bu qator AYNAN oʻsha
+    bot sinfi» degan faktni HECH QAYERGA yozmasdi. Natijasi oʻlchangan:
+    2026-08-05 da 8 sinf va 94 oʻquvchi bogʻlanmagan nusxa boʻlib qoldi,
+    oʻqituvchi ikkita bir xil «8 A GRADE» koʻrdi, va `partner_entity_map`
+    boʻsh edi — yaʼni dublikatni keyin avtomatik topib boʻlmasdi.
+
+    Endi har yaratilgan qator uchun `class_links` / `roster_links` ga
+    bogʻlanish yoziladi. Buning ikki natijasi bor:
+
+      1. IDEMPOTENTLIK ISHONCHLI. Ilgari takrorlanish nom bilan
+         tekshirilardi — oʻqituvchi sinfni Ustozonada qayta nomlasa
+         («8 A GRADE» → «8-A») ikkinchi import DUBLIKAT yaratardi.
+         Endi tekshiruv `ll_class_id` bogʻlanishi boʻyicha, ya'ni nom
+         oʻzgarishi ahamiyatsiz.
+
+      2. MAʼLUMOT BITTA MANBADAN oʻqiladi. Qator ikkita boʻlsa ham
+         (Postgres FK talabi — pastga qarang) nom va roʻyxat
+         `v_unified_*` orqali ASL tomondan keladi.
+
+    NEGA UMUMAN QATOR YARATILADI ("nusxa emasmi?")
+    ---------------------------------------------
+    Ustozonaning `grades`, `attendance_records`, `responses` jadvallari
+    `students.id` ga FK qoʻyadi. Botda tugʻilgan bolaga baho qoʻyish
+    uchun Ustozona tomonida qator BOʻLISHI SHART — bu Postgres talabi,
+    tanlov emas. Farqi: bu qator mustaqil nusxa emas, `linked_by:
+    "shadow"` bilan belgilangan KIMLIK qatori va uning haqiqati
+    bogʻlanish orqali ASL tomonda turadi. */
 export async function importRoster(token: string): Promise<ImportReport> {
   const teacher = await requireTeacher();
   const report: ImportReport = {
@@ -101,42 +133,76 @@ export async function importRoster(token: string): Promise<ImportReport> {
     .where(eq(classes.teacherId, teacher.id));
   const taken = new Set(existing.map((c) => normalizeName(c.name)));
 
+  // ASOSIY idempotentlik darvozasi: allaqachon bogʻlangan bot sinflari.
+  // Nom emas, BOGʻLANISH boʻyicha — nom oʻzgarsa ham dublikat boʻlmaydi.
+  const linked = new Set(
+    (await db.select({ llClassId: classLinks.llClassId }).from(classLinks))
+      .map((r) => r.llClassId)
+  );
+
   const llClasses = await fetchAll<LlClass>("/api/v1/classes?limit=100", token, "data");
 
   for (const cls of llClasses) {
+    if (linked.has(cls.id)) {
+      // Jim oʻtkazib yuborish TOʻGʻRI: bu sinf allaqachon koʻrinadi.
+      // «Nizo» deb koʻrsatish oʻqituvchini adashtirardi — muammo yoʻq.
+      continue;
+    }
+
     const key = normalizeName(cls.name);
     if (taken.has(key)) {
+      // Nomi bir xil, lekin bogʻlanmagan — bu HAQIQIY nizo: yo tarixiy
+      // nusxa, yo boshqa sinf. Avtomatik birlashtirmaymiz (o'chirish
+      // yoki ustiga yozish xavfi), oʻqituvchiga koʻrsatamiz.
+      // Bogʻlash uchun: scripts/backfill_cross_platform_links.sql
       report.conflicts.push({
         kind: "class", name: cls.name,
-        reason: "Shu nomli sinf allaqachon bor — tegilmadi",
+        reason: "Shu nomli sinf bor, lekin bogʻlanmagan — tegilmadi",
       });
       continue;
     }
 
     const classId = randomUUID();
-    await db.insert(classes).values({
-      id: classId,
-      teacherId: teacher.id,
-      name: cls.name,
-      subject: cls.subject ?? null,
-      sortOrder: existing.length + report.classesCreated,
-    });
-    taken.add(key);
-    report.classesCreated += 1;
-
     const roster = await fetchAll<LlStudent>(
       `/api/v1/classes/${cls.id}/students?limit=100`, token, "data");
-    if (roster.length === 0) continue;
 
-    await db.insert(students).values(
-      roster.map((s) => ({
+    // Sinf + roʻyxat + bogʻlanish BITTA tranzaksiyada.
+    // Aks holda tarmoq uzilsa bogʻlanmagan sinf qolib ketardi — ya'ni
+    // aynan tuzatayotgan xatoni qaytadan yaratardik.
+    await db.transaction(async (tx) => {
+      await tx.insert(classes).values({
+        id: classId,
+        teacherId: teacher.id,
+        name: cls.name,
+        subject: cls.subject ?? null,
+        sortOrder: existing.length + report.classesCreated,
+      });
+      await tx.insert(classLinks).values({
+        llClassId: cls.id, uzClassId: classId,
+        origin: "lessonlab", linkedBy: "shadow",
+      });
+
+      if (roster.length === 0) return;
+
+      const rows = roster.map((s) => ({
         id: randomUUID(),
         teacherId: teacher.id,
         classId,
         name: s.full_name,
         initials: initialsOf(s.full_name),
-      }))
-    );
+      }));
+      await tx.insert(students).values(rows);
+      await tx.insert(rosterLinks).values(
+        roster.map((s, i) => ({
+          llStudentId: s.id, uzStudentId: rows[i].id,
+          origin: "lessonlab" as const, linkedBy: "shadow" as const,
+        }))
+      );
+    });
+
+    taken.add(key);
+    linked.add(cls.id);
+    report.classesCreated += 1;
     report.studentsCreated += roster.length;
   }
 
