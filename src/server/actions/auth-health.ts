@@ -2,7 +2,7 @@
 
 import { getSession } from "@/server/session";
 import { isTeacher } from "@/lib/auth-roles";
-import type { FailureReason } from "@/server/dal/_failure-reason";
+import { failureOf, type FailureReason } from "@/server/dal/_failure-reason";
 
 export type { FailureReason };
 
@@ -30,7 +30,6 @@ export async function getAuthHealthAction(): Promise<
   } catch (err) {
     // Bu yerga tushish sessiya o'qish MEXANIZMI buzilganini bildiradi
     // (masalan baza yoki imzo kaliti) — logga yozilishi shart.
-    console.error("[auth-health] sessiyani o'qib bo'lmadi:", err);
-    return { failed: "server" };
+    return { failed: failureOf(err, "auth-health").reason };
   }
 }

@@ -4,7 +4,7 @@ import {
   getLinkStatus, redeemBotCode, unlinkTelegram, getUnlinkImpact,
   type LinkState, type RedeemResult, type UnlinkImpactRow,
 } from "@/server/dal/account-link";
-import { reasonOf, type FailureReason } from "@/server/dal/_failure-reason";
+import { failureOf, type FailureReason } from "@/server/dal/_failure-reason";
 
 /* LessonLab bog'lash — yupqa qatlam: mijoz komponentlari DAL'ni
    to'g'ridan chaqira olmaydi ("server-only"), shuning uchun shu yerda
@@ -15,7 +15,7 @@ export type { LinkState, RedeemResult, UnlinkImpactRow, FailureReason };
 
 export type LinkStatusResult =
   | (LinkState & { required: boolean })
-  | { failed: FailureReason };
+  | { failed: FailureReason; detail?: string };
 
 /** Bog'lanish holati — XATO ISTISNO BILAN QAYTMAYDI.
 
@@ -32,7 +32,8 @@ export async function getLessonLabLinkStatusAction(): Promise<LinkStatusResult> 
   try {
     return await getLinkStatus();
   } catch (err) {
-    return { failed: reasonOf(err, "account-link/status") };
+    const { reason, detail } = failureOf(err, "account-link/status");
+    return { failed: reason, detail };
   }
 }
 

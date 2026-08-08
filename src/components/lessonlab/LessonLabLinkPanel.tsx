@@ -81,7 +81,14 @@ export function LessonLabLinkPanel({
         action: null,
       },
       server: {
-        text: "Serverda xato. Birozdan keyin qayta urinib ko'ring.",
+        // Belgi (xato turi + Postgres kodi) — sir EMAS, lekin sababni
+        // darhol aytadi: `42703` ustun yo'q, `42P01` jadval yo'q,
+        // `53300` ulanish limiti, `ECONNREFUSED` baza yopiq. Busiz
+        // «Serverda xato» hech narsa demaydi va nosozlik taxmin bilan
+        // izlanadi (2026-08-08 da butun kun aynan shunday ketdi).
+        text: status.detail
+          ? `Serverda xato (${status.detail}). Birozdan keyin qayta urinib ko'ring.`
+          : "Serverda xato. Birozdan keyin qayta urinib ko'ring.",
         action: (
           <Button variant="ghost" size="sm" onClick={refresh}>Qayta urinish</Button>
         ),
