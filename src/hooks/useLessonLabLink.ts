@@ -3,7 +3,7 @@
 import * as React from "react";
 import {
   getLessonLabLinkStatusAction, unlinkLessonLabAction,
-  type LinkState, type UnlinkImpactRow,
+  type LinkState, type UnlinkImpactRow, type FailureReason,
 } from "@/server/actions/account-link";
 
 /* LessonLab bog'lanishi — bitta joyda mantiq, ikki joyda ko'rinish.
@@ -16,7 +16,16 @@ import {
    norm_name, create_tg_link_code, getOrCreateLink). */
 
 export type LessonLabLinkStatus =
-  (LinkState & { required: boolean }) | null | "checking";
+  | "checking"
+  | (LinkState & { required: boolean })
+  | { failed: FailureReason };
+
+/** Holat muvaffaqiyatlimi — `status.linked` ga murojaat qilishdan oldin. */
+export function isLinkState(
+  s: LessonLabLinkStatus
+): s is LinkState & { required: boolean } {
+  return s !== "checking" && !("failed" in s);
+}
 
 export function useLessonLabLink() {
   const [status, setStatus] = React.useState<LessonLabLinkStatus>("checking");
@@ -28,16 +37,15 @@ export function useLessonLabLink() {
     try {
       setStatus(await getLessonLabLinkStatusAction());
     } catch (err) {
-      // Fail-open: xato holatda "null" — chaqiruvchi buni "bilib
-      // bo'lmadi" deb ko'rsatadi, hech kimni bloklamaydi.
+      // Bu yerga faqat TARMOQ darajasidagi nosozlik tushadi: amalning
+      // o'z xatosi endi `{ failed }` bo'lib QAYTADI, otilmaydi
+      // (`actions/account-link.ts` izohiga qarang).
       //
-      // ⚠️ Lekin xatoni JIM YUTMAYMIZ. 2026-08-08 da aynan shu
-      // «Holatni tekshirib bo'lmadi» xabari sababni ko'rsatmagani
-      // uchun nosozlik bir soat auth va bazada izlandi — aslida
-      // Server Action CSRF origin mosligi edi (next.config.ts).
-      // Konsolga chiqarish keyingi safar sababni darhol beradi.
-      console.error("[LessonLab] bog'lanish holatini olib bo'lmadi:", err);
-      setStatus(null);
+      // ⚠️ Xatoni jim yutmaymiz. 2026-08-08 da «Holatni tekshirib
+      // bo'lmadi» xabari sababni ko'rsatmagani uchun nosozlik soatlab
+      // noto'g'ri qatlamlarda izlandi.
+      console.error("[LessonLab] amal umuman yetib bormadi:", err);
+      setStatus({ failed: "server" });
     } finally {
       setBusy(false);
     }
@@ -49,7 +57,7 @@ export function useLessonLabLink() {
 
   const preserveRequired = (next: LinkState) => ({
     ...next,
-    required: status && status !== "checking" ? status.required : true,
+    required: isLinkState(status) ? status.required : true,
   });
 
   /** Uzishga urinish. Oqibat bo'lsa `impact` to'ldiriladi va `true`
