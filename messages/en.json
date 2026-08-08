@@ -2711,7 +2711,8 @@
       "userNotFound": "No account found with these details.",
       "invalidEmail": "That email address doesn't look right.",
       "generic": "Something went wrong signing in. Please try again."
-    }
+    },
+    "continueWithTelegram": "Continue with Telegram"
   },
   "SignupForm": {
     "title": "Get started for free",
@@ -2737,7 +2738,9 @@
       "passwordTooLong": "Password is too long.",
       "invalidEmail": "That email address doesn't look right.",
       "generic": "Something went wrong signing up. Please try again."
-    }
+    },
+    "continueWithTelegram": "Continue with Telegram",
+    "telegramHint": "Fastest way — name and account linking are automatic"
   },
   "ForgotPasswordPage": {
     "title": "Forgot your password?",

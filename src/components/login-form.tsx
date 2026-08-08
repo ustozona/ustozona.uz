@@ -14,8 +14,13 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { GoogleIcon } from "@/components/google-icon";
+import { TelegramIcon } from "@/components/telegram-icon";
 
-export function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
+export function LoginForm({
+  className,
+  telegramSignupUrl,
+  ...props
+}: React.ComponentProps<"form"> & { telegramSignupUrl?: string }) {
   const t = useTranslations("LoginForm");
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -77,6 +82,25 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
             {t("continueWithGoogle")}
           </Button>
         </Field>
+
+        {/* Telegram — LessonLab boti orqali.
+
+            Kirish sahifasida ham turadi (nafaqat roʻyxatda): akkaunti
+            YOʻQ odam koʻpincha shu yerga tushadi, «Roʻyxatdan oʻtish»
+            havolasini izlab ketmasligi kerak. Bot allaqachon bogʻlangan
+            odamni tanib oladi va uni ortiqcha qadamga yubormaydi.
+
+            ⚠️ `<a>` — ataylab, `Link` emas: bu tashqi (t.me) havola. */}
+        {telegramSignupUrl && (
+          <Field>
+            <Button variant="outline" type="button" asChild>
+              <a href={telegramSignupUrl}>
+                <TelegramIcon className="h-4 w-4" />
+                {t("continueWithTelegram")}
+              </a>
+            </Button>
+          </Field>
+        )}
 
         <FieldSeparator>{t("orWithEmail")}</FieldSeparator>
 

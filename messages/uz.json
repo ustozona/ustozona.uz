@@ -2548,7 +2548,8 @@
       "userNotFound": "Bunday hisob topilmadi.",
       "invalidEmail": "Email manzili notoʻgʻri koʻrinishda.",
       "generic": "Kirishda xatolik yuz berdi. Qayta urinib koʻring."
-    }
+    },
+    "continueWithTelegram": "Telegram bilan davom etish"
   },
   "SignupForm": {
     "title": "Bepul boshlash",
@@ -2574,7 +2575,9 @@
       "passwordTooLong": "Parol juda uzun.",
       "invalidEmail": "Email manzili notoʻgʻri koʻrinishda.",
       "generic": "Roʻyxatdan oʻtishda xatolik yuz berdi. Qayta urinib koʻring."
-    }
+    },
+    "continueWithTelegram": "Telegram bilan davom etish",
+    "telegramHint": "Eng tez yoʻl — ism-familiya va bogʻlanish avtomatik"
   },
   "ForgotPasswordPage": {
     "title": "Parolni unutdingizmi?",

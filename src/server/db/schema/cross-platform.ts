@@ -105,6 +105,48 @@ export const accountLinkCodes = pgTable("account_link_codes", {
 export type AccountLinkCodeRow = typeof accountLinkCodes.$inferSelect;
 export type NewAccountLinkCodeRow = typeof accountLinkCodes.$inferInsert;
 
+/** Telegram orqali Ustozona akkauntini YARATISH uchun bir martalik chipta.
+
+    Yoʻnalish C — yuqoridagi ikkitasidan farqli: bu yerda Ustozona
+    akkaunti HALI YOʻQ. Foydalanuvchi Ustozonadagi «Telegram bilan
+    davom etish» tugmasini bosadi → botga tushadi → bot uni tanib
+    (telegram_id, ism — Telegram profilidan) shu jadvalga chipta yozadi
+    → Ustozona chiptani ishlatib akkauntni yaratadi va telegramni
+    DARHOL biriktiradi.
+
+    ⛔ NEGA `accountLinkCodes` GA QOʻSHILMADI — XAVFSIZLIK
+    -----------------------------------------------------
+    `redeemBotCode()` kodni «hozir kirgan oʻqituvchi»ga biriktiradi.
+    Chipta oʻsha jadvalda boʻlsa, tizimga kirgan BEGONA odam yangi
+    foydalanuvchining chiptasini ishlatib, oʻsha telegramni OʻZ
+    akkauntiga bogʻlab olardi — `taken_tg` tekshiruvi uni toʻxtatmaydi,
+    chunki telegram hali hech kimga bogʻlanmagan. Alohida jadval bu
+    yoʻlni butunlay yopadi.
+
+    ⚠️ `token` SIR: uni qoʻlga kiritgan odam boshqa odamning telegramiga
+    bogʻlangan akkaunt yaratib olardi. 24 bayt, 15 daqiqa, bir martalik.
+
+    Bazada `tg_signup_tickets_one_active` — telegram_id boʻyicha qismli
+    UNIQUE indeks (`used_at IS NULL` boʻlganlar uchun). Yaʼni bitta
+    telegramda bir vaqtda faqat BITTA faol chipta boʻladi; bu Drizzle
+    sxemasida ifodalanmaydi, shuning uchun shu yerda yozib qoʻyildi. */
+export const tgSignupTickets = pgTable("tg_signup_tickets", {
+  token: text("token").primaryKey(),
+  telegramId: text("telegram_id").notNull(),
+  /** Telegram profilidagi ism — formada oldindan toʻldiriladi (tahrirlanadi). */
+  fullName: text("full_name").notNull().default(""),
+  tgUsername: text("tg_username"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  /** Chipta natijasida yaratilgan akkaunt — audit izi. */
+  createdUserId: text("created_user_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
+});
+
+export type TgSignupTicketRow = typeof tgSignupTickets.$inferSelect;
+
 export type ClassLinkRow = typeof classLinks.$inferSelect;
 export type NewClassLinkRow = typeof classLinks.$inferInsert;
 export type RosterLinkRow = typeof rosterLinks.$inferSelect;

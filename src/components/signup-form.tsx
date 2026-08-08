@@ -13,8 +13,13 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { GoogleIcon } from "@/components/google-icon";
+import { TelegramIcon } from "@/components/telegram-icon";
 
-export function SignupForm({ className, ...props }: React.ComponentProps<"form">) {
+export function SignupForm({
+  className,
+  telegramSignupUrl,
+  ...props
+}: React.ComponentProps<"form"> & { telegramSignupUrl?: string }) {
   const t = useTranslations("SignupForm");
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -84,6 +89,33 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
             {t("continueWithGoogle")}
           </Button>
         </Field>
+
+        {/* Telegram — LessonLab boti orqali.
+
+            NEGA BU YERDA: LessonLab va Ustozona bitta bazada ishlaydi
+            va oʻqituvchi uchun bogʻlanish MAJBURIY. Ilgari u alohida,
+            keyingi qadam edi: odam bu formani toʻldirib `/dashboard` ga
+            tushardi, botga qaytishni unutardi va bogʻlanish hech qachon
+            yakunlanmasdi (2026-08-08 da real foydalanuvchida ushlangan).
+
+            Bu tugma zanjirni teskari qiladi: botda ism-familiya va
+            telegram kimligi oʻzi maʼlum, akkaunt esa bogʻlanish bilan
+            BIR PAYTDA ochiladi — «keyin qilinadigan qadam» qolmaydi.
+
+            ⚠️ `<a>` — ataylab, `Link` emas: bu tashqi (t.me) havola. */}
+        {telegramSignupUrl && (
+          <Field>
+            <Button variant="outline" type="button" asChild>
+              <a href={telegramSignupUrl}>
+                <TelegramIcon className="h-4 w-4" />
+                {t("continueWithTelegram")}
+              </a>
+            </Button>
+            <FieldDescription className="text-center">
+              {t("telegramHint")}
+            </FieldDescription>
+          </Field>
+        )}
 
         <FieldSeparator>{t("orWithEmail")}</FieldSeparator>
 
