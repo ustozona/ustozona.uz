@@ -18,7 +18,7 @@ import {
 export type LessonLabLinkStatus =
   | "checking"
   | (LinkState & { required: boolean })
-  | { failed: FailureReason };
+  | { failed: FailureReason; detail?: string };
 
 /** Holat muvaffaqiyatlimi — `status.linked` ga murojaat qilishdan oldin. */
 export function isLinkState(
