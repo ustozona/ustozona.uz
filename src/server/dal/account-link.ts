@@ -1,6 +1,6 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { accountLinkCodes, userTelegram } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
@@ -35,17 +35,43 @@ import { requireTeacher } from "@/server/session";
 const BOT_USERNAME = process.env.LESSONLAB_BOT_USERNAME || "uzlessonlabbot";
 const TTL_MINUTES = 15;
 
+// ⚙️ O'CHIRISH KALITI — LessonLab tomonidagi `USTOZONA_LINK_REQUIRED`
+// bilan bir xil sabab. Bu majburiylik BARCHA mavjud o'qituvchilarga
+// (hozir 4 ta) DARHOL ta'sir qiladi — ular keyingi kirishda darhol
+// bog'lash oynasini ko'radi. Kutilmagan muammo chiqsa, .env'da
+// `LESSONLAB_LINK_REQUIRED=0` qo'yib DARHOL o'chirish mumkin bo'lishi
+// kerak, deploy'ni qaytarmasdan. Standart — yoqilgan.
+const LINK_REQUIRED = (process.env.LESSONLAB_LINK_REQUIRED ?? "1") !== "0";
+
 export type LinkState =
   | { linked: true; telegramId: string }
   | { linked: false; deepLink: string; expiresInMinutes: number };
 
+/** Dashboard gate uchun: bog'lanish holati + majburiymi. */
+export async function getLinkStatus(): Promise<LinkState & { required: boolean }> {
+  const state = await getOrCreateLink();
+  return { ...state, required: LINK_REQUIRED };
+}
+
 /** Joriy o'qituvchining biriktirish holati + kerak bo'lsa yangi havola.
 
-    Har chaqiruvda YANGI kod berilmaydi-yu, lekin eski ishlatilmagan
-    kodlar bekor qilinadi: bir vaqtda bitta faol havola bo'lsin. Aks
-    holda foydalanuvchi sahifani bir necha marta ochsa, bir nechta
-    yaroqli havola tarqalib ketardi va ularning har biri bog'lanish
-    huquqini berardi. */
+    ⚠️ IDEMPOTENT — MAVJUD FAOL KOD BO'LSA O'SHANI QAYTARADI.
+
+    Bu funksiya bot tomonidagi `create_tg_link_code()` bilan bir xil
+    xato tarixiga ega edi (2026-08-08 da botda ushlangan, bu yerda
+    ham xuddi shu naqsh bor ekan): ilgari HAR chaqiruvda eski kodni
+    bekor qilib, yangisini yaratardi.
+
+    Bu funksiya endi dashboard'dagi GATE tomonidan QAYTA-QAYTA
+    chaqiriladi (har sahifa yuklanganda «bog'langanmi?» tekshiradi).
+    Eski, "har doim yangi kod" xatti-harakati bilan bu FALOKAT bo'lardi:
+    o'qituvchi Telegram'da havolani ochib ulgurmasdan, dashboard'ning
+    o'zi uni orqa fonda qayta-qayta bekor qilib turardi — havola
+    umuman ISHLAMAY qolardi.
+
+    Shuning uchun: mavjud, muddati o'tmagan, ishlatilmagan kod bo'lsa
+    O'SHA qaytariladi. Yangi kod faqat eskisi yo'q yoki muddati
+    o'tganda yaratiladi. */
 export async function getOrCreateLink(): Promise<LinkState> {
   const teacher = await requireTeacher();
 
@@ -56,12 +82,34 @@ export async function getOrCreateLink(): Promise<LinkState> {
 
   if (existing) return { linked: true, telegramId: existing.telegramId };
 
+  const [active] = await db
+    .select({ code: accountLinkCodes.code, expiresAt: accountLinkCodes.expiresAt })
+    .from(accountLinkCodes)
+    .where(and(
+      eq(accountLinkCodes.uzUserId, teacher.id),
+      isNull(accountLinkCodes.usedAt),
+      gt(accountLinkCodes.expiresAt, new Date()),
+    ))
+    .orderBy(desc(accountLinkCodes.createdAt))
+    .limit(1);
+
+  if (active) {
+    const remaining = Math.max(
+      1, Math.ceil((active.expiresAt.getTime() - Date.now()) / 60_000));
+    return {
+      linked: false,
+      deepLink: `https://t.me/${BOT_USERNAME}?start=uzl_${active.code}`,
+      expiresInMinutes: remaining,
+    };
+  }
+
   const code = randomBytes(24).toString("base64url");
 
   await db.transaction(async (tx) => {
-    // Eski faol kodlarni bekor qilish — «sarflangan» deb belgilanadi,
-    // o'chirilmaydi: audit izi qoladi va «nega havolam ishlamadi»
-    // savoliga javob topiladi.
+    // Eski, MUDDATI O'TGAN yoki ishlatilgan bo'lmagan qatorlarni ham
+    // "sarflangan" deb belgilaymiz — audit izi uchun, o'chirilmaydi.
+    // Faol (hali amal qiluvchi) kod bo'lsa bu yergacha yetib kelmaymiz
+    // (yuqoridagi `if (active)` uni ushlab qoladi).
     await tx
       .update(accountLinkCodes)
       .set({ usedAt: new Date() })

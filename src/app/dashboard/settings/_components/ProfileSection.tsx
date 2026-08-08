@@ -13,6 +13,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { MONTHS_UZ } from "@/lib/localization";
 import { SettingsCard, useDraft, useRegisterDraft } from "./SettingsShared";
+import { LessonLabLinkPanel, WhyLinkInfo } from "@/components/lessonlab/LessonLabLinkPanel";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2MB
 
@@ -191,6 +192,18 @@ export default function ProfileSection() {
             </Label>
             <BirthDatePicker value={draft.birthDate} onChange={(v) => setDraft({ ...draft, birthDate: v })} />
           </div>
+        </div>
+
+        {/* LessonLab (Telegram) — sinf/o'quvchi ma'lumotini ikkala
+            tizimda bir xil ko'rish uchun. To'liq boshqaruv (uzish,
+            oqibat tasdig'i): Sozlamalar > LessonLab. Bu yerda va u
+            yerda BIR XIL mantiq (`useLessonLabLink`). */}
+        <div className="space-y-1.5 border-t border-border pt-4">
+          <Label className="flex items-center gap-1.5">
+            Telegram (LessonLab)
+            <WhyLinkInfo />
+          </Label>
+          <LessonLabLinkPanel variant="compact" />
         </div>
       </SettingsCard>
     </>

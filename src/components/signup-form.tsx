@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { postAuthRedirect } from "@/lib/pending-link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field";
@@ -49,14 +50,17 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"form">
       setError(ERROR_MAP[err.code ?? ""] ?? t("errors.generic"));
       return;
     }
-    router.push("/dashboard");
+    // LessonLab botidan bog'lash kutilayotgan bo'lsa /bogla ga
+    // yo'naltiramiz — aks holda foydalanuvchi shu yerda qolib
+    // ketadi va bog'lash hech qachon yakunlanmaydi (2026-08-08).
+    router.push(postAuthRedirect("/dashboard"));
     router.refresh();
   };
 
   const handleGoogle = async () => {
     const { error: err } = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/dashboard",
+      callbackURL: postAuthRedirect("/dashboard"),
     });
     if (err) {
       toast.error(t("googleNotConfigured"));
