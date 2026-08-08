@@ -19,5 +19,6 @@ export * from "./admin";
 export * from "./ai-usage";
 export * from "./schools";
 export * from "./identity";
+export * from "./cross-platform";
 export * from "./assess";
 export * from "./blog";

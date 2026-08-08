@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { exchangeCode } from "@/server/lessonlab/oauth";
 import { importRoster, importTests } from "@/server/dal/lessonlab-import";
+import { bridgeTelegramIdentity } from "@/server/dal/cross-platform";
 
 /* GET /api/lessonlab/callback?code=…&state=…
 
@@ -47,6 +48,17 @@ export async function GET(request: Request) {
   try {
     const redirectUri = new URL("/api/lessonlab/callback", request.url).toString();
     const tokens = await exchangeCode(code, verifier, redirectUri);
+
+    // KIMLIK KOʻPRIGI — importdan OLDIN.
+    // Oʻqituvchi hozir Telegram orqali «bu men» deb tasdiqladi, ya'ni
+    // `teachers.id ↔ bot_users.id` faktini yozish uchun aynan shu payt
+    // eng ishonchli. Importdan keyin yozilsa, import yiqilganda koʻprik
+    // ham yozilmay qolardi — holbuki rozilik allaqachon berilgan.
+    //
+    // `importRoster` bogʻlanishni oʻzi yozadi, koʻprik esa TESKARI
+    // yoʻnalish uchun kerak: bot Ustozona sinflarini shu orqali topadi.
+    await bridgeTelegramIdentity(tokens.access_token);
+
     const report = targetClass
       ? await importTests(tokens.access_token, targetClass)
       : await importRoster(tokens.access_token);
