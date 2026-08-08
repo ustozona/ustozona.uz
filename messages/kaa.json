@@ -2715,7 +2715,8 @@
       "userNotFound": "Bunday esap tabılmadı.",
       "invalidEmail": "Email mánzili qáte kóriniste.",
       "generic": "Kiriwde qátelik júz berdi. Qaytadan urinıp kóriń."
-    }
+    },
+    "continueWithTelegram": "Telegram menen dawam etiw"
   },
   "SignupForm": {
     "title": "Tegin baslaw",
@@ -2741,7 +2742,9 @@
       "passwordTooLong": "Parol júdá uzın.",
       "invalidEmail": "Email mánzili qáte kóriniste.",
       "generic": "Dizimnen ótiwde qátelik júz berdi. Qaytadan urinıp kóriń."
-    }
+    },
+    "continueWithTelegram": "Telegram menen dawam etiw",
+    "telegramHint": "Eń tez jol — atı-familiyası hám baylanıs avtomatikalıq"
   },
   "ForgotPasswordPage": {
     "title": "Paroldi unıttıńız ba?",

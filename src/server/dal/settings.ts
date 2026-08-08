@@ -3,6 +3,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { account, teachers, user } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { displayEmail } from "@/lib/placeholder-email";
 import {
   normalizeBackgroundScale,
   type AppLanguage,
@@ -101,7 +102,12 @@ export async function getSettings(): Promise<SettingsPayload> {
   return {
     profile: {
       name: teacher.name,
-      email: teacher.email,
+      // Telegram orqali ochilgan va email KIRITILMAGAN akkauntda
+      // `email` — texnik oʻrinbosar (`tg123@telegram.invalid`). Uni
+      // koʻrsatish «tizim menga qandaydir email oʻylab topgan» degan
+      // taassurot berardi, shuning uchun boʻsh koʻrsatiladi.
+      // Sabab: `lib/placeholder-email.ts`.
+      email: displayEmail(teacher.email),
       joinedAt: teacher.createdAt.toISOString().slice(0, 7),
       // Foydalanuvchi hali oʻzi rasm yuklamagan boʻlsa, Google OAuth'dan
       // kelgan rasmni (Better Auth `user.image`) avtomatik ishlatamiz.
