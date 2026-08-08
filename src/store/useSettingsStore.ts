@@ -91,15 +91,35 @@ export type TeacherProfile = {
   birthDate: string;
 };
 
+/* ⛔ BU YERGA HAQIQIY ISM/EMAIL YOZMANG — NEYTRAL QOLSIN.
+
+   Ilgari bu yerda ishlab-chiqarish paytidan qolgan haqiqiy qiymatlar
+   turgan edi: `name: "Otabek Abdusattorov"`, `email: "ustozona@gmail.com"`,
+   `joinedAt: "2026-03"`, `subject: "Ingliz tili"`.
+
+   Oqibati 2026-08-08 da prodda ushlandi va juda chalg'ituvchi edi:
+   `HeaderAccountMenu` ism/email'ni SESSIYADAN emas, shu store'dan
+   oladi (`profile.email`, 105-qator). Server ma'lumoti yuklanmasa
+   store shu standart qiymatda qoladi — va `useHydrateStore` yiqilgan
+   holatda ham `_hasHydrated: true` qo'yadi, ya'ni UI ularni HAQIQIY
+   deb ko'rsatadi.
+
+   Natijada foydalanuvchi QAYSI akkaunt bilan kirsa ham menyuda
+   «Otabek Abdusattorov / ustozona@gmail.com» chiqardi. Buni «tizim
+   meni majburan boshqa akkauntga kiritdi» deb tushunish tabiiy edi —
+   holbuki sessiya to'g'ri ishlayotgan edi.
+
+   Bo'sh qiymat bilan xato holat DARHOL ko'rinadi («—»), begona
+   akkaunt esa hech kimga ko'rsatilmaydi. */
 export const DEFAULT_PROFILE: TeacherProfile = {
-  name: "Otabek Abdusattorov",
-  email: "ustozona@gmail.com",
-  joinedAt: "2026-03",
+  name: "",
+  email: "",
+  joinedAt: "",
   avatarUrl: "",
   avatarColor: "orange",
   school: "",
-  subject: "Ingliz tili",
-  provider: "google",
+  subject: "",
+  provider: "email",
   birthDate: "",
 };
 

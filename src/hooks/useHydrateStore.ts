@@ -38,14 +38,29 @@ export function useHydrateStore<S extends { _hasHydrated: boolean }>(
       return;
     }
     (async () => {
+      let ok = true;
       try {
         const payload = await fetchPayload();
         if (payload) store.setState(payload);
       } catch (err) {
+        ok = false;
         console.error("[hydrate] server payload olinmadi:", err);
       }
+      // `_hasHydrated` yiqilganda HAM yoqiladi — UI qotib qolmasligi
+      // uchun (mount-gate'lar shunga qaraydi).
       store.setState({ _hasHydrated: true } as Partial<S>);
-      setHydrated(true);
+      // ⛔ LEKIN QAYTARILADIGAN QIYMAT — FAQAT MUVAFFAQIYAT.
+      //
+      // Bu qiymat sync qatlamini ishga tushiradi. Ilgari u yiqilganda
+      // ham `true` bo'lardi va oqibati og'ir edi: hydration yiqilsa
+      // store STANDART qiymatda qoladi, sync esa o'sha standartlarni
+      // SERVERGA YOZADI — ya'ni o'qituvchining haqiqiy ismi, maktabi
+      // va fani standart qiymat bilan ustiga yozilib ketishi mumkin.
+      //
+      // Endi xato bo'lsa sync umuman boshlanmaydi: ekranda eski/bo'sh
+      // ma'lumot ko'rinadi, lekin serverdagi HAQIQIY ma'lumot
+      // buzilmaydi. Ma'lumotni yo'qotishdan ko'ra ko'rsatmaslik afzal.
+      setHydrated(ok);
     })();
     // store va action referenslari barqaror — qayta ishga tushirilmaydi.
     // eslint-disable-next-line react-hooks/exhaustive-deps
