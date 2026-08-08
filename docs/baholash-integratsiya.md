@@ -307,6 +307,25 @@ qayta paydo boʻladi. Koʻchirishdan keyin EGASI Ustozona boʻladi,
 LessonLab'dagi nusxa oʻz holicha qolaveradi va ular bir-birini
 quvmaydi.
 
+> ⚠️ **BU BOʻLIM ESKIRDI (2026-08-08).** Yuqoridagi tahlil toʻgʻri
+> edi, lekin xulosa notoʻgʻri chiqdi: muammo «sinxron»da emas,
+> **NUSXA**da. Baza bitta boʻlgani uchun nusxaning umuman hojati
+> yoʻq.
+>
+> Amalda nima boʻldi: bu import 8 sinf va 94 oʻquvchini koʻchirdi,
+> lekin bogʻlanishni **hech qayerga yozmadi** — oʻqituvchi ikkita bir
+> xil «8 A GRADE» koʻrdi va «bu qator aynan oʻsha bot sinfi» degan
+> fakt yoʻqoldi.
+>
+> Endi model boshqacha: **nusxa emas, BOGʻLASH**. Har tizim oʻz
+> qatorida qoladi, `class_links` / `roster_links` ularni bitta
+> mantiqiy sinf deb eʼlon qiladi (baza 1:1 majburlaydi), oʻqish esa
+> `v_unified_*` orqali **bitta manbadan** ketadi. Shu sababli
+> «bir joyda tuzatilgan ism» endi ikkinchisida ham koʻrinadi —
+> quvish yoʻq, chunki nusxa yoʻq.
+>
+> Toʻliq tavsif: LessonLab repo'sida `docs/CROSS_PLATFORM.md`.
+
 ## 8-bis. Varaqni skanerlash — qaysi ekranda va NEGA aynan u
 
 Qogʻoz testning qaytish yoʻli `/baholash` → Qogʻoz test panelida, chop

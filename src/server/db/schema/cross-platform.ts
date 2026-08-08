@@ -1,5 +1,6 @@
 import { index, integer, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 import { classes, students } from "./classes";
+import { user } from "./auth";
 
 /* ════════════════════════════════════════════════════════════════════
    BITTA TIZIM — Ustozona ↔ LessonLab bog'lash qatlami
@@ -81,6 +82,28 @@ export const rosterLinks = pgTable(
     index("roster_links_uz_idx").on(t.uzStudentId),
   ]
 );
+
+/** Ro'yxatdan o'tishda akkauntlarni biriktirish uchun bir martalik kod.
+
+    Ikki yo'nalish, bittasi yetarli emas (foydalanuvchi qaysi tomondan
+    kelishini tanlamaydi):
+      `uzUserId` to'ldirilgan → Ustozonada ro'yxatdan o'tdi, botga boradi
+      `telegramId` to'ldirilgan → botda /start berdi, Ustozonaga boradi
+
+    ⚠️ Kod SIR: uni qo'lga kiritgan odam o'z telegramini begona Ustozona
+    akkauntiga bog'lab olardi. Shuning uchun qisqa umr + bir martalik. */
+export const accountLinkCodes = pgTable("account_link_codes", {
+  code: text("code").primaryKey(),
+  uzUserId: text("uz_user_id").references(() => user.id, { onDelete: "cascade" }),
+  telegramId: text("telegram_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  /** Ishlatilgan kod qayta ishlamaydi. O'chirilmaydi — audit izi qoladi. */
+  usedAt: timestamp("used_at", { withTimezone: true }),
+});
+
+export type AccountLinkCodeRow = typeof accountLinkCodes.$inferSelect;
+export type NewAccountLinkCodeRow = typeof accountLinkCodes.$inferInsert;
 
 export type ClassLinkRow = typeof classLinks.$inferSelect;
 export type NewClassLinkRow = typeof classLinks.$inferInsert;
