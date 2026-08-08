@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { redeemBotCode } from "@/server/dal/account-link";
 import { getSession } from "@/server/session";
@@ -18,13 +19,29 @@ import { getSession } from "@/server/session";
 
    Shuning uchun kod URL'dan olinib httpOnly cookie'ga koʻchiriladi.
    Kirishdan keyin foydalanuvchi `/dashboard` ga tushsa ham kod
-   yoʻqolmaydi: u botdagi «✅ Bogʻladim, tekshir» tugmasini bossa yoki
-   shu sahifaga qaytsa, biriktirish cookie'dan bajariladi.
+   yoʻqolmaydi: shu havolani (yoki `/bogla` ni) qayta ochsa, biriktirish
+   cookie'dan bajariladi.
 
    ⚠️ KOD — SIR, shuning uchun `httpOnly`: JavaScript uni oʻqiy
    olmaydi, ya'ni sahifadagi begona skript (yoki XSS) uni oʻgʻirlab
    boshqa akkauntga bogʻlab yubora olmaydi. Umri kodning oʻz muddati
    bilan bir xil — 15 daqiqa.
+
+   ⛔ BU SAHIFA COOKIE YOZMAYDI, FAQAT O'QIYDI
+   --------------------------------------------
+   Next.js Server Component render paytida `cookies().set()` yoki
+   `.delete()` chaqirilsa ISHLAMAYDI — production'da "A server error
+   occurred" bilan yiqiladi (2026-08-08 da aynan shu holat sodir
+   bo'lgan: sahifa HECH NARSA render qilmasdan qulagan, hatto
+   «Roʻyxatdan oʻtish» tugmasi ham ko'rinmagan).
+
+   Yozish kerak bo'lgan yagona joy — `/api/bogla-stash` (Route
+   Handler, u yerda yozish RUXSAT ETILGAN). Bu sahifa faqat o'qiydi va
+   kerak bo'lganda o'sha yerga `redirect()` qiladi.
+
+   Kodni tozalash (`.delete()`) ham shu sabab olib tashlandi — cookie
+   15 daqiqada o'z-o'zidan tugaydi, qayta ishlatilsa `redeemBotCode()`
+   "used" holatini qaytaradi (zararsiz).
    ════════════════════════════════════════════════════════════════════ */
 
 export const dynamic = "force-dynamic";
@@ -64,10 +81,12 @@ export default async function BoglaPage(
   { searchParams }: { searchParams: Promise<{ c?: string }> }
 ) {
   const { c } = await searchParams;
-  const jar = await cookies();
+  const freshCode = (c || "").trim();
 
-  // URL'dagi kod ustun; boʻlmasa avval saqlanganini olamiz.
-  const code = (c || jar.get(COOKIE)?.value || "").trim();
+  const jar = await cookies();
+  const cookieCode = (jar.get(COOKIE)?.value || "").trim();
+
+  const code = freshCode || cookieCode;
 
   if (!code) {
     return (
@@ -87,14 +106,12 @@ export default async function BoglaPage(
 
   const session = await getSession();
   if (!session) {
-    // Kodni saqlab qoʻyamiz — kirishdan keyin yoʻqolmasin.
-    jar.set(COOKIE, code, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 15 * 60,
-      path: "/",
-    });
+    // URL'da YANGI kod bor — uni saqlab qoʻyish uchun Route Handler'ga
+    // oʻtamiz (bu yerda YOZIB boʻlmaydi). Cookie'da allaqachon bor
+    // boʻlsa (revisit) qayta saqlashning hojati yoʻq.
+    if (freshCode) {
+      redirect(`/api/bogla-stash?c=${encodeURIComponent(freshCode)}`);
+    }
     return (
       <Shell>
         <Card
@@ -102,9 +119,9 @@ export default async function BoglaPage(
           title="Avval Ustozonaga kiring"
           body={
             "Akkauntlarni biriktirish uchun Ustozona hisobingiz kerak.\n\n" +
-            "Kirgandan (yoki roʻyxatdan oʻtgandan) soʻng botdagi " +
-            "«✅ Bogʻladim, tekshir» tugmasini bosing — biriktirish " +
-            "avtomatik yakunlanadi."
+            "Kirgandan (yoki roʻyxatdan oʻtgandan) soʻng shu havolani " +
+            "(yoki ustozona.uz/bogla sahifasini) qayta oching — " +
+            "biriktirish avtomatik yakunlanadi."
           }
           action={
             <div className="flex gap-3">
@@ -125,9 +142,11 @@ export default async function BoglaPage(
 
   const result = await redeemBotCode(code);
 
-  // Kod sarflandi (yoki yaroqsiz) — cookie'ni har holatda tozalaymiz,
-  // aks holda keyingi tashrifda eski kod bilan qayta urinilardi.
-  jar.delete(COOKIE);
+  // ⛔ Cookie BU YERDA TOZALANMAYDI — Server Component render'da
+  // `.delete()` ham `.set()` bilan bir xil sabab bilan ishlamaydi.
+  // 15 daqiqada oʻz-oʻzidan tugaydi; qayta ishlatilsa `redeemBotCode`
+  // "used" holatini qaytaradi — zararsiz, foydalanuvchiga tushunarli
+  // xabar bilan koʻrsatiladi.
 
   const back = (
     <Link href="/dashboard"
