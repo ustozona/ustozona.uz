@@ -4,6 +4,10 @@ import { auth } from "@/server/auth";
 import { db } from "@/server/db/client";
 import { tgSignupTickets, userTelegram } from "@/server/db/schema";
 import { telegramPlaceholderEmail } from "@/lib/placeholder-email";
+import type { TicketInfo, CompleteResult } from "@/lib/link-types";
+
+// ⛔ Tiplar `@/lib/link-types` da — qayta eksport qilinmaydi.
+// Sabab: o'sha faylning boshidagi izoh.
 
 /* ════════════════════════════════════════════════════════════════════
    TELEGRAM ORQALI ROʻYXATDAN OʻTISH (yoʻnalish C)
@@ -39,9 +43,6 @@ import { telegramPlaceholderEmail } from "@/lib/placeholder-email";
    dan ALOHIDA jadvalda — sxema izohiga qarang.
    ════════════════════════════════════════════════════════════════════ */
 
-export type TicketInfo =
-  | { ok: true; fullName: string }
-  | { ok: false; reason: "invalid" | "expired" | "used" | "taken_tg" };
 
 /** Sahifa uchun chipta holati.
 
@@ -78,13 +79,6 @@ export async function readTicket(token: string): Promise<TicketInfo> {
   return { ok: true, fullName: row.fullName };
 }
 
-export type CompleteResult =
-  | { status: "ok" }
-  | {
-      status: "invalid" | "expired" | "used" | "taken_tg"
-        | "email_taken" | "weak_password" | "bad_name" | "failed";
-      message?: string;
-    };
 
 /** Akkauntni yaratish + telegramni biriktirish — bitta amalda.
 

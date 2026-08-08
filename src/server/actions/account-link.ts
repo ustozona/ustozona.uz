@@ -2,32 +2,33 @@
 
 import {
   getLinkStatus, redeemBotCode, unlinkTelegram, getUnlinkImpact,
-  type LinkState, type RedeemResult, type UnlinkImpactRow,
 } from "@/server/dal/account-link";
-import { failureOf, type FailureReason } from "@/server/dal/_failure-reason";
+import { failureOf } from "@/server/dal/_failure-reason";
+import type { RedeemResult, UnlinkImpactRow, LinkStatusResult } from "@/lib/link-types";
 
 /* LessonLab bog'lash — yupqa qatlam: mijoz komponentlari DAL'ni
    to'g'ridan chaqira olmaydi ("server-only"), shuning uchun shu yerda
    "use server" bilan qayta eksport qilinadi. Auth tekshiruvi DAL
-   ichida (`requireTeacher`). */
+   ichida (`requireTeacher`).
 
-export type { LinkState, RedeemResult, UnlinkImpactRow, FailureReason };
+   ⛔ BU FAYLDA `export type { … }` YOZMANG — 2026-08-08 DA PRODNI
+   BUZGAN XATO AYNAN SHU EDI.
 
-export type LinkStatusResult =
-  | (LinkState & { required: boolean })
-  | { failed: FailureReason; detail?: string };
+   Turbopack `"use server"` modulini qayta yozadi va tip-reeksportini
+   RUNTIME eksportga aylantiradi. Natijada modul yuklanish paytida
+   qulaydi:
 
-/** Bog'lanish holati — XATO ISTISNO BILAN QAYTMAYDI.
+       ReferenceError: LinkState is not defined
+           at module evaluation (.../src_server_actions_feedback_ts_….js)
 
-    ⛔ Ilgari bu funksiya `throw` qilardi va mijoz shunchaki «Holatni
-    tekshirib bo'lmadi» ko'rsatardi. Next.js production'da Server
-    Action xatosini mijozdan yashiradi, ya'ni sabab NA ekranda, NA
-    brauzer konsolida ko'rinmasdi — 2026-08-08 da nosozlik shu sababli
-    butun kun noto'g'ri qatlamlarda izlandi (auth, baza, CSRF).
+   Va bu bitta amalni emas, HAMMASINI o'ldiradi — Next barcha Server
+   Action'ni bitta chunkka yig'adi. Butun kun «Foydalanuvchi»,
+   «Holatni tekshirib bo'lmadi» va onboarding sehrgarining qayta-qayta
+   ochilishi shundan edi.
 
-    Endi sabab nomlanadi va UI unga javob beradi: sessiya tugagan
-    bo'lsa foydalanuvchi «qaytadan kiring» ko'radi, mazmunsiz «xato»
-    emas. Sabab: `dal/_failure-reason.ts`. */
+   Tiplar `@/lib/link-types` da (neytral modul) — mijoz ham, server ham
+   SHU YERDAN import qiladi. Batafsil: o'sha faylning boshidagi izoh. */
+
 export async function getLessonLabLinkStatusAction(): Promise<LinkStatusResult> {
   try {
     return await getLinkStatus();

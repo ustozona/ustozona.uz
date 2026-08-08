@@ -1,4 +1,5 @@
 import "server-only";
+import type { FailureReason } from "@/lib/link-types";
 
 /* ════════════════════════════════════════════════════════════════════
    SERVER ACTION XATOSI — NOMLANGAN SABAB
@@ -33,8 +34,6 @@ import "server-only";
    qat'i nazar bir xil bo'ladi. `session.ts` dagi nomlarni
    o'zgartirsangiz shu yerni ham yangilang (test bilan qulflangan).
    ════════════════════════════════════════════════════════════════════ */
-
-export type FailureReason = "unauthorized" | "forbidden" | "server";
 
 /** `server` sababida QO'SHIMCHA belgi — sirni oshkor qilmaydigan.
 

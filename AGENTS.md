@@ -68,6 +68,43 @@ Nega bu alohida yozilgan: 2026-08 da oltita PR `roziyevbehroz-tech`
 repo'sining o'z main'iga ochilgan va prodga umuman chiqmagan — ish bor
 deb o'ylanib, aslida hech qayerga yetmagan.
 
+# ⛔ `"use server"` faylda `export type { … }` YOZMANG
+
+Bu **prodni butunlay buzadi**, va alomatlari butunlay boshqa joyni
+ko'rsatadi. 2026-08-08 da shu xato bir kunni yedi.
+
+```ts
+// src/server/actions/account-link.ts
+"use server";
+export type { LinkState };   // ⛔ prodda ReferenceError
+```
+
+Turbopack `"use server"` modulini qayta yozadi va tip-reeksportini
+**runtime** eksportga aylantiradi:
+
+```
+ReferenceError: LinkState is not defined
+    at module evaluation (.next/server/chunks/ssr/src_server_actions_…js)
+```
+
+Va bu **bitta amalni emas, HAMMASINI** o'ldiradi — Next barcha Server
+Action'ni bitta chunkka yig'adi, chunk esa yuklanishda qulaydi. Kuzatilgan
+alomatlar: hech qanday sozlama yuklanmaydi, menyuda «Foydalanuvchi» va
+bo'sh email, onboarding sehrgari har yuklanishda qayta ochiladi, yangi
+hisobda `teachers` qatori yaratilmaydi. Sabab auth, Supabase va CSRF'da
+izlandi — hech biri aybdor emas edi.
+
+⚠️ **`npx tsc --noEmit` ham, `next build` ham buni ushlamaydi** — xato
+faqat runtime'da, modul yuklanganda chiqadi.
+
+**To'g'ri yo'l:** tipni neytral modulga qo'ying (`"use server"` ham,
+`server-only` ham yo'q — masalan `src/lib/link-types.ts`) va ikkala tomon
+ham **shu yerdan** import qilsin.
+
+Buni `npm run build` oldidan avtomatik tekshiradigan darvoza bor:
+`scripts/check-server-actions.mjs` (`prebuild` orqali ishlaydi, alohida
+`npm run check:actions` ham bor). **O'chirmang.**
+
 # Build tekshiruvi
 
 `npm run build` (to'liq production build) FAQAT push qilishdan oldin, yakuniy tekshiruv sifatida yuritiladi — har kichik iteratsiyadan keyin emas. Oddiy dev-tsikl davomida `npx tsc --noEmit` yetarli (tezroq). Sabab: ba'zi xatolar (masalan `useSearchParams()` Suspense'siz) faqat `next build` prerender bosqichida chiqadi, shuning uchun push oldidan `npm run build` baribir shart.
