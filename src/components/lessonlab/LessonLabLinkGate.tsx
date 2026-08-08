@@ -1,14 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { Link2, ExternalLink, RefreshCw } from "lucide-react";
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  getLessonLabLinkStatusAction, type LinkState,
-} from "@/server/actions/account-link";
+import { useLessonLabLink } from "@/hooks/useLessonLabLink";
+import { WHY_LINK_MATTERS } from "./why-link-matters";
 
 /* ════════════════════════════════════════════════════════════════════
    LESSONLAB BOG'LASH DARVOZASI — `OnboardingGate` bilan bir xil naqsh
@@ -19,49 +17,25 @@ import {
    bog'lanmagan nusxa" holatiga olib keladi (2026-08-05 da amalda
    sodir bo'lgan).
 
-   Bu LessonLab bot tomonidagi `ustozona_gate_*_middleware` bilan
-   AYNAN bir xil qoidaning teskari tomoni: u yerda o'qituvchi rol
-   botda tanlanguncha ishlay olmaydi, bu yerda esa Telegram
-   bog'lanmaguncha dashboard'dan foydalana olmaydi.
+   Holat/amallar `useLessonLabLink()` orqali — Profil va Sozlamalar
+   bilan BIR XIL mantiq (`LessonLabLinkPanel`).
 
    ⛔ NEGA `dashboard/layout.tsx` GA BITTA QATOR SIFATIDA QO'SHILDI
    -------------------------------------------------------------
    `dashboard/layout.tsx` markaziy fayl (`AGENTS.md` qoida 5). Lekin u
    yerda ALLAQACHON xuddi shu naqsh bor — `<OnboardingGate />`, ya'ni
    "hydration tugagach shart tekshirib, kerak bo'lsa to'liq ekranli
-   modal ko'rsatish". Bu komponent o'sha konvensiyani AYNAN takrorlaydi
-   va yoniga BITTA qator qo'shiladi — layout'ning o'z mantig'iga
-   tegilmaydi.
+   modal ko'rsatish". Bu komponent o'sha konvensiyani AYNAN takrorlaydi.
 
    ⚠️ FAIL-OPEN — bot tomonidagi bilan bir xil sabab
    --------------------------------------------------
-   Holat tekshiruvi (server so'rovi) xato bersa, DARVOZA OCHIQ qoladi
-   (hech narsa ko'rsatilmaydi). Yopiq qilsak bitta vaqtinchalik server
-   xatosi BARCHA o'qituvchilar uchun butun dashboardni to'xtatardi.
+   Holat tekshiruvi (server so'rovi) xato bersa, DARVOZA OCHIQ qoladi.
+   Yopiq qilsak bitta vaqtinchalik server xatosi BARCHA o'qituvchilar
+   uchun butun dashboardni to'xtatardi.
    ════════════════════════════════════════════════════════════════════ */
 
 export default function LessonLabLinkGate() {
-  const [status, setStatus] = React.useState<
-    (LinkState & { required: boolean }) | null | "checking"
-  >("checking");
-  const [checking, setChecking] = React.useState(false);
-
-  const check = React.useCallback(async () => {
-    setChecking(true);
-    try {
-      const s = await getLessonLabLinkStatusAction();
-      setStatus(s);
-    } catch {
-      // Fail-open: xatoni yutamiz, darvoza yopiq qolmasin.
-      setStatus(null);
-    } finally {
-      setChecking(false);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    check();
-  }, [check]);
+  const { status, busy, refresh } = useLessonLabLink();
 
   if (status === "checking" || status === null) return null;
   if (!status.required || status.linked) return null;
@@ -81,10 +55,8 @@ export default function LessonLabLinkGate() {
           <DialogTitle className="text-lg">
             Telegram akkauntingizni bog'lang
           </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Ustozona va LessonLab — bitta tizim. Sinf va o'quvchilaringiz
-            ikkalasida ham ko'rinishi uchun, ishni boshlashdan oldin
-            Telegram akkauntingizni bir marta bog'lashingiz kerak.
+          <DialogDescription className="whitespace-pre-line text-left text-sm text-muted-foreground">
+            {WHY_LINK_MATTERS}
           </DialogDescription>
         </div>
 
@@ -97,9 +69,9 @@ export default function LessonLabLinkGate() {
           </Button>
           <Button
             variant="outline" size="lg" className="gap-2"
-            disabled={checking} onClick={check}
+            disabled={busy} onClick={refresh}
           >
-            <RefreshCw className={checking ? "size-4 animate-spin" : "size-4"} />
+            <RefreshCw className={busy ? "size-4 animate-spin" : "size-4"} />
             Bog'ladim, tekshirish
           </Button>
         </div>
