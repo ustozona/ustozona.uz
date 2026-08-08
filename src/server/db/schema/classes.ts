@@ -87,6 +87,17 @@ export const students = pgTable(
     parentName: text("parent_name"),
     parentPhone: text("parent_phone"),
     studentPhone: text("student_phone"),
+    /** Taxallus (ixtiyoriy).
+
+        Bu maydon LessonLab bilan BIRGA ishlatiladi va uning YAGONA
+        manbasi shu yer: bot `bot_students` da nusxa saqlamaydi, uni
+        `roster_links` orqali `v_unified_students` dan o'qiydi.
+
+        ⛔ `bot_students` ga `nickname` qo'shmang — bir xil maydon ikki
+        jadvalda yashasa vaqt o'tib ajralib ketadi va qaysi biri
+        to'g'ri ekanini hech kim bilmaydi. Batafsil: LessonLab
+        repo'sida `docs/CROSS_PLATFORM.md`. */
+    nickname: text("nickname"),
     /** Roster tartibi (sinf ichida). */
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
