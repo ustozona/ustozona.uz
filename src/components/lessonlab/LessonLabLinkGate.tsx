@@ -5,7 +5,7 @@ import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useLessonLabLink } from "@/hooks/useLessonLabLink";
+import { useLessonLabLink, isLinkState } from "@/hooks/useLessonLabLink";
 import { WHY_LINK_MATTERS } from "./why-link-matters";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -37,7 +37,11 @@ import { WHY_LINK_MATTERS } from "./why-link-matters";
 export default function LessonLabLinkGate() {
   const { status, busy, refresh } = useLessonLabLink();
 
-  if (status === "checking" || status === null) return null;
+  // Holatni bilib bo'lmadi — darvozani KO'RSATMAYMIZ (fail-open).
+  // Bot tomonidagi darvoza bilan bir xil qoida: bitta vaqtinchalik
+  // nosozlik butun dashboard'ni bloklamasligi kerak. Sababni bu yerda
+  // ko'rsatmaymiz — u Sozlamalar > LessonLab kartasida chiqadi.
+  if (status === "checking" || !isLinkState(status)) return null;
   if (!status.required || status.linked) return null;
 
   return (

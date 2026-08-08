@@ -10,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useLessonLabLink } from "@/hooks/useLessonLabLink";
+import { useLessonLabLink, isLinkState } from "@/hooks/useLessonLabLink";
 import { WHY_LINK_MATTERS } from "./why-link-matters";
 
 /* LessonLab bog'lanishi — Profil (ixcham) va Sozlamalar (to'liq karta)
@@ -54,11 +54,44 @@ export function LessonLabLinkPanel({
   if (status === "checking") {
     return <p className="text-sm text-muted-foreground">Tekshirilmoqda…</p>;
   }
-  if (status === null) {
+
+  // ⛔ SABABNI KO'RSATAMIZ — «Holatni tekshirib bo'lmadi» YETARLI EMAS.
+  //
+  // Ilgari shu yerda aynan o'sha mazmunsiz xabar turgan edi va
+  // 2026-08-08 da nosozlik butun kun noto'g'ri qatlamlarda izlandi:
+  // ekranda ham, brauzer konsolida ham sabab yo'q edi (Next.js
+  // production'da Server Action xatosini yashiradi). Endi sabab
+  // serverda nomlanadi (`dal/_failure-reason.ts`) va foydalanuvchi
+  // NIMA QILISHINI ko'radi.
+  if (!isLinkState(status)) {
+    const FAILURE = {
+      unauthorized: {
+        text: "Sessiya tugagan. Qaytadan kirsangiz bog'lanish holati ko'rinadi.",
+        // Eng amaliy chiqish yo'li: sessiyani tozalab qaytadan kirish.
+        // Shunchaki «qayta urinish» bu holatda HAR DOIM o'sha natijani
+        // beradi — foydalanuvchi aylanib qolardi.
+        action: (
+          <Button variant="outline" size="sm" asChild>
+            <a href="/login">Qaytadan kirish</a>
+          </Button>
+        ),
+      },
+      forbidden: {
+        text: "Bu hisob o'qituvchi hisobi emas — bog'lanish faqat o'qituvchi uchun.",
+        action: null,
+      },
+      server: {
+        text: "Serverda xato. Birozdan keyin qayta urinib ko'ring.",
+        action: (
+          <Button variant="ghost" size="sm" onClick={refresh}>Qayta urinish</Button>
+        ),
+      },
+    }[status.failed];
+
     return (
-      <div className="flex items-center gap-2">
-        <p className="text-sm text-muted-foreground">Holatni tekshirib bo'lmadi.</p>
-        <Button variant="ghost" size="sm" onClick={refresh}>Qayta urinish</Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-sm text-muted-foreground">{FAILURE.text}</p>
+        {FAILURE.action}
       </div>
     );
   }
