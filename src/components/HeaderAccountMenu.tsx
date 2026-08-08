@@ -73,7 +73,12 @@ export default function HeaderAccountMenu() {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const isDark = mounted && resolvedTheme === "dark";
-  const name = hydrated ? profile.name : t("defaultUserName");
+  // `profile.name` BO'SH bo'lishi mumkin: hydration yiqilganda store
+  // standart (neytral) qiymatda qoladi. Bo'sh satr ko'rsatish menyuni
+  // buzardi, shuning uchun umumiy nom bilan almashtiriladi.
+  // ⛔ Bu yerga haqiqiy ism yozib qo'ymang — sabab: useSettingsStore.ts
+  // dagi DEFAULT_PROFILE izohi.
+  const name = (hydrated && profile.name) || t("defaultUserName");
   const initials = hydrated ? initialsOf(profile.name) || t("defaultInitial") : t("defaultInitial");
   const avatarHex = hydrated
     ? CLASS_COLOR_HEX[(profile.avatarColor as ClassColor) ?? "orange"] ?? CLASS_COLOR_HEX.orange
