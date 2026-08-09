@@ -10,6 +10,7 @@ import { studentSummary } from "@/lib/grades-stats";
 import { studentStats } from "@/lib/attendance-data";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { useGradesStore } from "@/store/useGradesStore";
+import { useRequireLessonLabLink } from "@/hooks/useRequireLessonLabLink";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
@@ -154,6 +155,7 @@ export default function StudentsPage() {
   // Yozishlar updateClass orqali → GradesServerSync serverga sinxronlaydi.
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
+  const ensureLinked = useRequireLessonLabLink();
   const attendanceRecords = useAttendanceStore((s) =>
     selectedClassId ? s.recordsByClass[selectedClassId] : undefined
   );
@@ -319,6 +321,9 @@ export default function StudentsPage() {
   };
 
   const handleCreate = (data: NewStudentInput) => {
+    // Bog'lanmagan o'quvchi qatori paydo bo'lmasin — «Keyinroq»
+    // bosilgan bo'lsa darvoza qayta ochiladi va qo'shish bekor bo'ladi.
+    if (!ensureLinked()) return;
     const name = `${data.firstName} ${data.lastName}`.trim();
     const student: Student = {
       id: crypto.randomUUID(),
@@ -339,6 +344,9 @@ export default function StudentsPage() {
   // Roʻyxatdan bir nechta oʻquvchini joriy sinfga qoʻshish (faqat ism/familiya)
   const handleImport = (incoming: { firstName: string; lastName: string }[]) => {
     if (!selectedClassId || incoming.length === 0) return;
+    // Bog'lanmagan o'quvchi qatori paydo bo'lmasin — «Keyinroq»
+    // bosilgan bo'lsa darvoza qayta ochiladi va qo'shish bekor bo'ladi.
+    if (!ensureLinked()) return;
     const rows: Student[] = incoming.map((s) => ({
       id: crypto.randomUUID(),
       name: `${s.firstName} ${s.lastName}`.trim(),

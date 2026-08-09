@@ -788,7 +788,14 @@ export default function LessonsPage() {
         {classModalOpen && (
           <ClassFormModal
             mode="create"
-            onSubmit={(v) => { handleSelectClass(createClass(v)); setClassModalOpen(false); }}
+            onSubmit={(v) => {
+              // `null` — bog'lash darvozasi qayta ochildi, sinf yaratilmadi.
+              // Bunda joriy tanlovni O'ZGARTIRMAYMIZ (null uzatilsa sinf
+              // tanlovi bekorga tozalanardi).
+              const id = createClass(v);
+              if (id) handleSelectClass(id);
+              setClassModalOpen(false);
+            }}
             onClose={() => setClassModalOpen(false)}
           />
         )}

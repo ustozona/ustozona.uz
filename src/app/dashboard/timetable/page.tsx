@@ -499,7 +499,9 @@ export default function TimetablePage() {
   /** "+" — yangi JONLI sinf yaratish (server-sync) + slotlarini jadvalga yozish */
   const handleCreateClass = useCallback((values: ClassFormValues) => {
     const newId = createClass(values);
-    handleSaveClassSlots(newId, values.slots);
+    // `null` — LessonLab bog'lash darvozasi qayta ochildi, sinf
+    // yaratilmadi; slot yozadigan narsa ham yo'q.
+    if (newId) handleSaveClassSlots(newId, values.slots);
     setCreateOpen(false);
   }, [createClass, handleSaveClassSlots]);
 
