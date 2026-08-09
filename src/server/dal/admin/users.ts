@@ -16,8 +16,6 @@ import {
   user,
   session,
   teachers,
-  classes,
-  students,
   attendanceRecords,
   grades,
 } from "@/server/db/schema";
@@ -72,6 +70,36 @@ export type AdminUsersFilter = {
   page?: number;
   pageSize?: number;
 };
+
+/* ════════════════════════════════════════════════════════════════════
+   YAGONA SANOQ — `v_teacher_totals` ko'rinishidan.
+
+   Ko'rinish `supabase/migrations/20260808_v_teacher_totals.sql` da.
+   Bu yerda faqat o'qiladi: mantiq SQL'da bo'lgani uchun admin paneli,
+   hisobotlar va bot bir xil raqamni ko'radi.
+   ════════════════════════════════════════════════════════════════════ */
+type TeacherTotals = { teacherId: string; classCount: number; studentCount: number };
+
+async function listTeacherTotals(ids: string[]): Promise<TeacherTotals[]> {
+  const rows = await db.execute<{
+    uz_teacher_id: string;
+    class_count: number | string;
+    student_count: number | string;
+  }>(sql`
+    SELECT uz_teacher_id, class_count, student_count
+    FROM v_teacher_totals
+    WHERE uz_teacher_id IN (${sql.join(ids.map((id) => sql`${id}`), sql`, `)})
+  `);
+
+  // ⚠️ postgres-js `count(*)` ni bigint sifatida qaytaradi va u JS'ga
+  // STRING bo'lib keladi — `Number()` siz «5» + 1 = «51» bo'lardi
+  // (`getUnlinkImpact` da ham xuddi shu tuzoq bor edi).
+  return Array.from(rows).map((r) => ({
+    teacherId: r.uz_teacher_id,
+    classCount: Number(r.class_count),
+    studentCount: Number(r.student_count),
+  }));
+}
 
 export async function listUsersForAdmin(
   params: AdminUsersFilter,
@@ -134,18 +162,24 @@ export async function listUsersForAdmin(
   ]);
 
   const ids = rows.map((r) => r.id);
-  const [classCounts, studentCounts, lastSeens, attendanceStats, gradeStats] = ids.length
+  const [totals, lastSeens, attendanceStats, gradeStats] = ids.length
     ? await Promise.all([
-        db
-          .select({ teacherId: classes.teacherId, n: count() })
-          .from(classes)
-          .where(inArray(classes.teacherId, ids))
-          .groupBy(classes.teacherId),
-        db
-          .select({ teacherId: students.teacherId, n: count() })
-          .from(students)
-          .where(inArray(students.teacherId, ids))
-          .groupBy(students.teacherId),
+        /* ⛔ SINF/O'QUVCHI SONI — `classes`/`students` dan EMAS.
+
+           Loyihada ma'lumot NUSXALANMAYDI: o'qituvchining ishi qaysi
+           tomonda yaratilgan bo'lsa, o'sha yerda qoladi va bog'lanish
+           orqali o'qiladi. Faqat `classes`/`students` sanalsa, bot
+           orqali ishlaydigan o'qituvchi panelda «0 sinf, 0 o'quvchi»
+           bo'lib ko'rinardi — 2026-08-08 da aynan shunday bo'ldi
+           (`ejavohirxon@gmail.com`: panelda 0/0, aslida 4 sinf va
+           102 o'quvchi) va bu «ma'lumot o'chib ketdi» deb tushunildi.
+
+           `v_teacher_totals` ikkala tomonni DUBLIKATSIZ sanaydi:
+           bog'langan juftlik bir marta hisoblanadi. Ta'rif SQL'da —
+           admin paneli, hisobotlar va bot AYNAN bir xil raqamni
+           ko'rishi uchun (`account_unlink_impact` bilan bir xil
+           sabab). */
+        listTeacherTotals(ids),
         db
           .select({ userId: session.userId, last: max(session.updatedAt) })
           .from(session)
@@ -166,10 +200,10 @@ export async function listUsersForAdmin(
           .where(inArray(grades.teacherId, ids))
           .groupBy(grades.teacherId),
       ])
-    : [[], [], [], [], []];
+    : [[], [], [], []];
 
-  const classMap = new Map(classCounts.map((c) => [c.teacherId, c.n]));
-  const studentMap = new Map(studentCounts.map((c) => [c.teacherId, c.n]));
+  const classMap = new Map(totals.map((t) => [t.teacherId, t.classCount]));
+  const studentMap = new Map(totals.map((t) => [t.teacherId, t.studentCount]));
   const seenMap = new Map(lastSeens.map((s) => [s.userId, s.last]));
   const attendanceMap = new Map(attendanceStats.map((a) => [a.teacherId, a]));
   const gradeMap = new Map(gradeStats.map((g) => [g.teacherId, g]));
@@ -247,9 +281,10 @@ export async function getUserDetailForAdmin(
     .where(eq(user.id, userId));
   if (!row) return null;
 
-  const [classCount, studentCount, sessions, attendanceStat, gradeStat] = await Promise.all([
-    db.$count(classes, eq(classes.teacherId, userId)),
-    db.$count(students, eq(students.teacherId, userId)),
+  const [totals, sessions, attendanceStat, gradeStat] = await Promise.all([
+    // Ro'yxat bilan AYNI manba — aks holda jadval va tafsilot
+    // bir-biriga zid raqam ko'rsatardi (`listTeacherTotals` izohi).
+    listTeacherTotals([userId]),
     db
       .select({
         id: session.id,
@@ -284,8 +319,8 @@ export async function getUserDetailForAdmin(
 
   return {
     ...row,
-    classCount,
-    studentCount,
+    classCount: totals[0]?.classCount ?? 0,
+    studentCount: totals[0]?.studentCount ?? 0,
     lastSeen: sessions[0]?.updatedAt ?? null,
     lastActiveAt,
     attendanceCount,
