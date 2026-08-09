@@ -6,6 +6,8 @@ import { Gamepad2, Info, Layers, Printer, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { startSessionAction } from "@/server/actions/assess-sessions";
+import { syncRosterAction, syncTestsAction } from "@/server/actions/lessonlab-sync";
+import type { SyncOutcome } from "@/lib/sync-types";
 import type { QuizSessionRow, SyncReportDetail } from "@/server/db/schema";
 import type { SetContentSummary } from "@/lib/baholash-shells";
 import DeliveryPanel, { type Delivery } from "./DeliveryPanel";
@@ -275,9 +277,44 @@ export default function BaholashWorkspace({
    ism yozish degani va Ustozonaga oʻtishning eng katta toʻsigʻi. */
 function ImportPanel({ status, hasClasses, classId }:
                      { status?: ImportStatus; hasClasses: boolean; classId: string }) {
+  const [syncing, setSyncing] = useState(false);
+  const [live, setLive] = useState<SyncOutcome | null>(null);
+
+  /* Toʻgʻridan sinxronizatsiya; `not_linked` boʻlsa eski OAuth yoʻliga.
+
+     ⚠️ `not_linked` XATO EMAS — bu oʻqituvchi hali Telegram'ni
+     bogʻlamagan degani va u yerda rozilik HAQIQATAN kerak. Shuning
+     uchun xato koʻrsatilmaydi, jimgina toʻgʻri yoʻlga yuboriladi. */
+  async function runSync(fn: () => Promise<SyncOutcome>, fallback: string) {
+    setSyncing(true);
+    try {
+      const out = await fn();
+      if (!out.ok && out.reason === "not_linked") {
+        window.location.href = fallback;
+        return;
+      }
+      setLive(out);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   const s = status?.state ?? null;
 
   const message = (() => {
+    /* Jonli sinxronizatsiya natijasi URL'dagi eski holatdan USTUN —
+       aks holda o'qituvchi tugmani bosib, ekranda avvalgi importning
+       xabarini ko'rib turardi. */
+    if (live) {
+      if (!live.ok) return "Sinxronlab boʻlmadi — keyinroq urinib koʻring.";
+      const parts: string[] = [];
+      if (live.classesCreated) parts.push(`${live.classesCreated} sinf`);
+      if (live.studentsCreated) parts.push(`${live.studentsCreated} oʻquvchi`);
+      if (live.testsCreated) parts.push(`${live.testsCreated} test`);
+      if (live.testsUpdated) parts.push(`${live.testsUpdated} test yangilandi`);
+      if (!parts.length) return "Hammasi joyida — yangi narsa yoʻq.";
+      return `Sinxronlandi: ${parts.join(", ")}`;
+    }
     if (s === "ok") {
       const parts: string[] = [];
       if (status?.classes) parts.push(`${status.classes} sinf`);
@@ -327,19 +364,32 @@ function ImportPanel({ status, hasClasses, classId }:
             ? "LessonLab botida sinflaringiz bormi? Ularni bir marta koʻchirib olishingiz mumkin — mavjud sinflarga tegilmaydi."
             : "LessonLab botida sinflaringiz bormi? Ularni qoʻlda kiritmang — bir marta koʻchirib oling.")}
         </p>
-        <Button asChild size="sm" variant="outline">
-          <a href="/api/lessonlab/start">
-            {s === "ok" ? "Yana koʻchirish" : "Sinflarni koʻchirish"}
-          </a>
+        {/* ⚠️ BITTA TUGMA, YOʻLNI SERVER TANLAYDI.
+
+            Bogʻlangan oʻqituvchida OAuth ORTIQCHA: ikkala mahsulot
+            bitta bazada va `user_telegram` kimlikni allaqachon
+            tasdiqlagan. Ilgari har koʻchirish toʻliq rozilik zanjirini
+            talab qilardi (Telegram'ga oʻtish, tugma bosish), va
+            roʻyxat bilan test uchun IKKI ALOHIDA rozilik kerak edi —
+            natijada sinxronizatsiya amalda hech qachon qilinmasdi.
+
+            Endi amal `not_linked` qaytarsagina eski yoʻlga yuboriladi.
+            Foydalanuvchi «qaysi yoʻl meniki?» degan savolni umuman
+            koʻrmaydi. */}
+        <Button size="sm" variant="outline" disabled={syncing}
+                onClick={() => runSync(syncRosterAction, "/api/lessonlab/start")}>
+          {syncing ? "Sinxronlanmoqda…" : "Sinflarni sinxronlash"}
         </Button>
-        {/* Test koʻchirish sinfga bogʻlangan — qaysi sinfga tushishini
+        {/* Test sinxronlash sinfga bogʻlangan — qaysi sinfga tushishini
             bilmasdan chaqirib boʻlmaydi, shuning uchun sinf tanlanmagan
             boʻlsa tugma umuman koʻrsatilmaydi. */}
         {classId && (
-          <Button asChild size="sm" variant="outline">
-            <a href={`/api/lessonlab/start?class=${encodeURIComponent(classId)}`}>
-              Testlarni koʻchirish
-            </a>
+          <Button size="sm" variant="outline" disabled={syncing}
+                  onClick={() => runSync(
+                    () => syncTestsAction(classId),
+                    `/api/lessonlab/start?class=${encodeURIComponent(classId)}`
+                  )}>
+            Testlarni sinxronlash
           </Button>
         )}
       </div>

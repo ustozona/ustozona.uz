@@ -4,11 +4,13 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activities, activityItems, activitySets, classes, classLinks, responses,
-  rosterLinks, students, syncReports, testLinks,
+  rosterLinks, students, syncReports, testLinks, userTelegram,
   type SyncReportDetail, type SyncReportRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
-import { lessonlab } from "@/server/lessonlab/client";
+import {
+  dbSource, type LlSource,
+} from "@/server/dal/lessonlab-source";
 
 /* ════════════════════════════════════════════════════════════════════
    LESSONLAB'DAN KOʻCHIRISH — bir martalik import
@@ -137,26 +139,7 @@ function initialsOf(name: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-type LlClass = { id: number; name: string; subject?: string | null; grade?: string | null };
-type LlStudent = { id: number; number_in_class: number; full_name: string };
-type LlTest = { id: number; title: string; subject?: string | null; question_count?: number | null };
 
-async function fetchAll<T>(path: string, token: string, key: string): Promise<T[]> {
-  const out: T[] = [];
-  let cursor = "";
-  // Sahifalash cheksiz aylanmasin — 40 sahifa (2000 yozuv) yetarlidan
-  // ortiq; undan koʻpi maʼlumotda nosozlik belgisi.
-  for (let page = 0; page < 40; page++) {
-    const qs = cursor ? `${path}${path.includes("?") ? "&" : "?"}cursor=${encodeURIComponent(cursor)}` : path;
-    const res = await lessonlab<{ data: T[]; next_cursor: string | null }>({
-      method: "GET", path: qs, accessToken: token,
-    });
-    out.push(...(res[key as "data"] as T[] ?? []));
-    if (!res.next_cursor) break;
-    cursor = res.next_cursor;
-  }
-  return out;
-}
 
 /** Sinf va oʻquvchilarni Ustozona tomonida KOʻRINADIGAN qilish.
 
@@ -189,7 +172,7 @@ async function fetchAll<T>(path: string, token: string, key: string): Promise<T[
     tanlov emas. Farqi: bu qator mustaqil nusxa emas, `linked_by:
     "shadow"` bilan belgilangan KIMLIK qatori va uning haqiqati
     bogʻlanish orqali ASL tomonda turadi. */
-export async function importRoster(token: string): Promise<ImportReport> {
+export async function importRoster(source: LlSource): Promise<ImportReport> {
   const teacher = await requireTeacher();
   const report: ImportReport = {
     classesCreated: 0, studentsCreated: 0, testsCreated: 0, testsUpdated: 0,
@@ -209,7 +192,7 @@ export async function importRoster(token: string): Promise<ImportReport> {
       .map((r) => r.llClassId)
   );
 
-  const llClasses = await fetchAll<LlClass>("/api/v1/classes?limit=100", token, "data");
+  const llClasses = await source.classes();
 
   for (const cls of llClasses) {
     if (linked.has(cls.id)) {
@@ -232,8 +215,7 @@ export async function importRoster(token: string): Promise<ImportReport> {
     }
 
     const classId = randomUUID();
-    const roster = await fetchAll<LlStudent>(
-      `/api/v1/classes/${cls.id}/students?limit=100`, token, "data");
+    const roster = await source.students(cls.id);
 
     // Sinf + roʻyxat + bogʻlanish BITTA tranzaksiyada.
     // Aks holda tarmoq uzilsa bogʻlanmagan sinf qolib ketardi — ya'ni
@@ -277,11 +259,6 @@ export async function importRoster(token: string): Promise<ImportReport> {
 
   return report;
 }
-
-type LlQuestion = {
-  text: string;
-  options: { text: string; is_correct?: boolean }[];
-};
 
 /** Tahlil qilingan savol — LessonLab shaklidan Ustozona shakliga. */
 type ParsedQuestion = {
@@ -481,7 +458,7 @@ async function syncLinkedSet(
     Savol soni oʻzgargan boʻlsa toʻplam qayta quriladi — lekin bu ham
     faqat 1-shart oʻtganda, ya'ni yoʻqotiladigan javob yoʻqligi
     ANIQLANGANDAN keyin. */
-export async function importTests(token: string, classId: string): Promise<ImportReport> {
+export async function importTests(source: LlSource, classId: string): Promise<ImportReport> {
   const teacher = await requireTeacher();
   const report: ImportReport = {
     classesCreated: 0, studentsCreated: 0, testsCreated: 0, testsUpdated: 0,
@@ -508,7 +485,7 @@ export async function importTests(token: string, classId: string): Promise<Impor
       .map((r) => [r.llTestId, r.uzSetId] as const)
   );
 
-  const llTests = await fetchAll<LlTest>("/api/v1/tests?limit=100", token, "data");
+  const llTests = await source.tests();
 
   for (const test of llTests) {
     const linkedSetId = linkedSet.get(test.id);
@@ -530,10 +507,7 @@ export async function importTests(token: string, classId: string): Promise<Impor
     // Ilgari `full.test.questions` o'qilardi va u HAR DOIM undefined
     // bo'lgani uchun barcha testlar «savollari yo'q» deb o'tkazib
     // yuborilardi (2026-08: 25 testdan 25 tasi skipped).
-    const full = await lessonlab<{ questions?: LlQuestion[] }>({
-      method: "GET", path: `/api/v1/tests/${test.id}`, accessToken: token,
-    });
-    const questions = full?.questions ?? [];
+    const questions = await source.questions(test.id);
     if (questions.length === 0) {
       report.skipped.push({ kind: "test", name: test.title, reason: "Savollari yoʻq" });
       continue;
@@ -623,4 +597,61 @@ export async function importTests(token: string, classId: string): Promise<Impor
   }
 
   return report;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   TOʻGʻRIDAN SINXRONIZATSIYA — rozilikSIZ
+
+   Bogʻlangan oʻqituvchi uchun OAuth ORTIQCHA: ikkala mahsulot bitta
+   bazada va `user_telegram` «bu telegram aynan shu oʻqituvchiniki»
+   deb yozib qoʻygan. Bogʻlanish bor — demak ruxsat bor.
+
+   Eski yoʻl (`/api/lessonlab/start` → Telegram → callback) bogʻlanmagan
+   oʻqituvchi uchun QOLADI: u yerda kimlik hali isbotlanmagan va rozilik
+   HAQIQATAN kerak.
+
+   ⛔ TELEGRAM ID FAQAT SESSIYADAN. U `user_telegram` dan, joriy
+   oʻqituvchining qatoridan olinadi. Argument sifatida qabul qiladigan
+   variant YOZMANG — u bir oʻqituvchiga boshqasining sinflarini ochib
+   berardi.
+   ════════════════════════════════════════════════════════════════════ */
+
+/** Joriy oʻqituvchining bogʻlangan telegram id'si (yoki null). */
+async function linkedTelegramId(teacherId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ telegramId: userTelegram.telegramId })
+    .from(userTelegram)
+    .where(eq(userTelegram.userId, teacherId));
+  return row?.telegramId ?? null;
+}
+
+export type DirectSyncResult =
+  | { ok: true; report: ImportReport; reportId: string | null }
+  | { ok: false; reason: "not_linked" };
+
+/** Roʻyxatni bazadan sinxronlash — rozilik soʻralmaydi. */
+export async function syncRosterDirect(): Promise<DirectSyncResult> {
+  const teacher = await requireTeacher();
+  const tgId = await linkedTelegramId(teacher.id);
+  // Bogʻlanmagan — chaqiruvchi joy OAuth yoʻliga yuborishi kerak.
+  if (!tgId) return { ok: false, reason: "not_linked" };
+
+  const report = await importRoster(dbSource(tgId));
+  const reportId = await saveImportReport(teacher.id, "roster", report);
+  return { ok: true, report, reportId };
+}
+
+/** Testlarni bazadan sinxronlash — rozilik soʻralmaydi.
+
+    `classId` EGALIGI `importTests()` ichida `requireTeacher()` bilan
+    tekshiriladi (u yerda «Sinf topilmadi yoki sizga tegishli emas»
+    xatosi bor) — bu yerda takrorlanmaydi. */
+export async function syncTestsDirect(classId: string): Promise<DirectSyncResult> {
+  const teacher = await requireTeacher();
+  const tgId = await linkedTelegramId(teacher.id);
+  if (!tgId) return { ok: false, reason: "not_linked" };
+
+  const report = await importTests(dbSource(tgId), classId);
+  const reportId = await saveImportReport(teacher.id, "tests", report);
+  return { ok: true, report, reportId };
 }

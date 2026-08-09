@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { exchangeCode } from "@/server/lessonlab/oauth";
 import { importRoster, importTests, saveImportReport } from "@/server/dal/lessonlab-import";
+import { apiSource } from "@/server/dal/lessonlab-source";
 import { requireTeacher } from "@/server/session";
 import { bridgeTelegramIdentity } from "@/server/dal/cross-platform";
 
@@ -62,8 +63,8 @@ export async function GET(request: Request) {
 
     const kind = targetClass ? "tests" : "roster";
     const report = targetClass
-      ? await importTests(tokens.access_token, targetClass)
-      : await importRoster(tokens.access_token);
+      ? await importTests(apiSource(tokens.access_token), targetClass)
+      : await importRoster(apiSource(tokens.access_token));
 
     /* Hisobotni SAQLAYMIZ — URL'da faqat uning id'si ketadi.
 
