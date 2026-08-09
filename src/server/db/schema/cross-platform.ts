@@ -1,5 +1,6 @@
 import { index, integer, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 import { classes, students } from "./classes";
+import { activitySets } from "./assess";
 import { user } from "./auth";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -82,6 +83,51 @@ export const rosterLinks = pgTable(
     index("roster_links_uz_idx").on(t.uzStudentId),
   ]
 );
+
+/** bot_tests ↔ activity_sets, 1:1 — bitta testning ikki tizimdagi qatori.
+
+    NEGA QOʻSHILDI (2026-08-09)
+    ---------------------------
+    Sinf va oʻquvchi 2026-08-08 da nusxadan bogʻlashga oʻtkazildi, TEST
+    esa chetda qolgan: `importTests()` hamon nusxalar va dedupni NOM
+    boʻyicha qilardi. Bu `docs/CROSS_PLATFORM.md` §2 dagi «halokatli»
+    naqshning aynan oʻzi va uchta oʻlchanadigan oqibati bor edi:
+
+      1. Botda savol tuzatilsa — Ustozonada ESKISI qolardi (qayta import
+         «nizo» deb oʻtkazib yuborardi, tuzatish hech qachon oʻtmasdi).
+      2. Botda test NOMI oʻzgartirilsa — IKKINCHI NUSXA paydo boʻlardi.
+      3. «Bu toʻplam aynan oʻsha bot testi» degan fakt saqlanmasdi, yaʼni
+         keyin avtomatik bogʻlash ham imkonsiz edi.
+
+    NEGA `activity_sets` DARAJASIDA (savol darajasida EMAS)
+    ------------------------------------------------------
+    LessonLab testi = savollar toʻplami, Ustozonada unga mos keladigan
+    narsa `activity_sets` (sessiya AYNAN toʻplam ustida ochiladi). Har
+    savol alohida `activities` qatori, yaʼni savol darajasidagi
+    bogʻlanish 1:N boʻlardi va yagonalik kafolati yoʻqolardi.
+
+    `references()` bu yerda YOʻQ — sababi fayl boshidagi izohda
+    (`ll_test_id` → `bot_tests`, u Drizzle sxemasida taʼriflanmagan).
+    Haqiqiy FK bazada:
+    `supabase/migrations/20260809_test_links.sql`. */
+export const testLinks = pgTable(
+  "test_links",
+  {
+    llTestId: integer("ll_test_id").primaryKey(),
+    uzSetId: text("uz_set_id")
+      .notNull()
+      .references(() => activitySets.id, { onDelete: "cascade" }),
+    origin: text("origin").$type<LinkOrigin>().notNull(),
+    linkedBy: text("linked_by").$type<LinkedBy>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("test_links_uz_uniq").on(t.uzSetId),
+    index("test_links_uz_idx").on(t.uzSetId),
+  ]
+);
+
+export type TestLinkRow = typeof testLinks.$inferSelect;
 
 /** Ro'yxatdan o'tishda akkauntlarni biriktirish uchun bir martalik kod.
 

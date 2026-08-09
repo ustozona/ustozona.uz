@@ -43,6 +43,10 @@ export type ImportStatus = {
   classes: number;
   students: number;
   tests: number;
+  /** Bogʻlangan test yangilandi (botdagi tuzatish koʻchdi).
+      `test_links` bilan qoʻshildi — usiz yangilangan test hech qayerda
+      koʻrinmasdi va oʻqituvchi «hech narsa boʻlmadi» deb oʻylardi. */
+  updated: number;
   conflicts: number;
   skipped: number;
 };
@@ -275,6 +279,10 @@ function ImportPanel({ status, hasClasses, classId }:
       if (status?.classes) parts.push(`${status.classes} sinf`);
       if (status?.students) parts.push(`${status.students} oʻquvchi`);
       if (status?.tests) parts.push(`${status.tests} test`);
+      // Yangilangan test ALOHIDA aytiladi: «ko'chirildi» deb qo'shib
+      // yuborish noto'g'ri bo'lardi — bu yangi test emas, botda
+      // tuzatilgan eski testning Ustozonaga o'tishi.
+      if (status?.updated) parts.push(`${status.updated} test yangilandi`);
       // Hech narsa koʻchmasa buni ochiq aytamiz. «Koʻchirildi: » deb
       // boʻsh roʻyxat koʻrsatish oʻqituvchini ishlagan deb adashtirardi.
       if (parts.length === 0) {

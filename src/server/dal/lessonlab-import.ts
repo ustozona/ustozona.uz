@@ -1,9 +1,10 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
-  activities, activityItems, activitySets, classes, classLinks, rosterLinks, students,
+  activities, activityItems, activitySets, classes, classLinks, responses,
+  rosterLinks, students, testLinks,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import { lessonlab } from "@/server/lessonlab/client";
@@ -41,6 +42,11 @@ export type ImportReport = {
   classesCreated: number;
   studentsCreated: number;
   testsCreated: number;
+  /** Bogʻlangan va botdagi tuzatish koʻchirilgan testlar soni.
+      `test_links` bilan birga qoʻshildi — usiz «yangilandi» degan
+      tushunchaning oʻzi yoʻq edi (har import yo yaratardi, yo
+      «nizo» deb tashlab ketardi). */
+  testsUpdated: number;
   /** Nomi bir xil boʻlgani uchun tegilmagan narsalar. */
   conflicts: { kind: "class" | "test"; name: string; reason: string }[];
   /** Koʻchirib boʻlmagan narsalar (mos kelmaydigan shakl va h.k.). */
@@ -123,7 +129,7 @@ async function fetchAll<T>(path: string, token: string, key: string): Promise<T[
 export async function importRoster(token: string): Promise<ImportReport> {
   const teacher = await requireTeacher();
   const report: ImportReport = {
-    classesCreated: 0, studentsCreated: 0, testsCreated: 0,
+    classesCreated: 0, studentsCreated: 0, testsCreated: 0, testsUpdated: 0,
     conflicts: [], skipped: [],
   };
 
@@ -214,15 +220,208 @@ type LlQuestion = {
   options: { text: string; is_correct?: boolean }[];
 };
 
+/** Tahlil qilingan savol — LessonLab shaklidan Ustozona shakliga. */
+type ParsedQuestion = {
+  stem: string;
+  options: { id: string; text: string; isCorrect: boolean }[];
+};
+
+/** Bogʻlangan toʻplamni bot tomonидagi holatga keltirish.
+
+    Qaytadi:
+      `in_use`    — toʻplam allaqachon oʻtkazilgan, TEGILMADI
+      `changed`   — yangilandi
+      `unchanged` — farq yoʻq edi
+
+    ⛔ NEGA `updateActivity()` NAQSHI BU YERDA ISHLAMAYDI
+    ----------------------------------------------------
+    `assess/activities.ts:updateActivity()` elementlarni OʻCHIRIB qayta
+    yaratadi. U yerda bu toʻgʻri, chunki oʻqituvchi oʻz savolini ongli
+    tahrirlayapti. Bu yerda esa oʻzgarish BOTDAN, fon rejimida keladi —
+    va `responses.item_id` → `activity_items.id` bogʻlanishi
+    **ON DELETE CASCADE**. Yaʼni oʻchirish oʻtmishdagi javoblarni ham
+    olib ketardi: oʻqituvchi hech narsa qilmasdan turib chorak natijasini
+    yoʻqotardi.
+
+    Shuning uchun ikki himoya:
+
+      1. Javob bor boʻlsa — umuman tegilmaydi (`in_use`). Baholash
+         tarixi sinxronizatsiya qulayligidan muhimroq.
+      2. Javob yoʻq boʻlsa — element `content` i OʻRNIDA yangilanadi,
+         `id` oʻzgarmaydi, ya'ni CASCADE umuman ishga tushmaydi.
+
+    `activities.version` `updateActivity` dagi qoida boʻyicha oshiriladi:
+    element tahrirlansa oshadi (`responses.itemVersion` shu bilan
+    qulflanadi). */
+async function syncLinkedSet(
+  teacherId: string,
+  setId: string,
+  title: string,
+  parsed: ParsedQuestion[]
+): Promise<"in_use" | "changed" | "unchanged"> {
+  const [set] = await db
+    .select({ title: activitySets.title, items: activitySets.items })
+    .from(activitySets)
+    .where(and(eq(activitySets.id, setId), eq(activitySets.teacherId, teacherId)));
+  // Bogʻlanish bor, lekin toʻplam yoʻq. FK CASCADE buni imkonsiz qiladi
+  // (toʻplam oʻchsa bogʻlanish ham oʻchadi), shuning uchun bu holat
+  // faqat sxema qoʻlda buzilganda yuz beradi — jim oʻtkazamiz.
+  if (!set) return "unchanged";
+
+  const activityIds = (set.items ?? [])
+    .map((i) => i.activityId)
+    .filter((id): id is string => Boolean(id));
+
+  // ⛔ HAL QILUVCHI TEKSHIRUV — yuqoridagi izohga qarang.
+  if (activityIds.length > 0) {
+    const [used] = await db
+      .select({ id: responses.id })
+      .from(responses)
+      .where(inArray(responses.activityId, activityIds))
+      .limit(1);
+    if (used) return "in_use";
+  }
+
+  // Boʻsh toʻplamda umuman soʻrov yubormaymiz — `inArray` boʻsh roʻyxat
+  // bilan yaroqsiz SQL (`IN ()`) hosil qiladi.
+  const rows = activityIds.length === 0 ? [] : await db
+    .select({
+      activityId: activityItems.activityId,
+      itemId: activityItems.id,
+      content: activityItems.content,
+    })
+    .from(activityItems)
+    .where(inArray(activityItems.activityId, activityIds));
+
+  const byActivity = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const list = byActivity.get(r.activityId) ?? [];
+    list.push(r);
+    byActivity.set(r.activityId, list);
+  }
+
+  /* OʻRNIDA yangilash faqat toʻplam AYNAN import yaratgan shaklda
+     boʻlganda: faoliyat soni savol soniga teng VA har faoliyatda bitta
+     element.
+
+     ⚠️ Nega bu qadar qatʼiy. Bogʻlanish `backfill` orqali oʻqituvchi
+     OʻZI tuzgan toʻplamga ham tushishi mumkin, u yerda esa bitta
+     faoliyatda bir nechta element boʻlishi odatiy. Faqat umumiy songa
+     qarasak (masalan 1+2+0 = 3 element, 3 savol) shakl «mos» koʻrinardi,
+     lekin `parsed[i] ↔ element[i]` moslashuvi notoʻgʻri boʻlib savollar
+     ARALASHIB ketardi.
+
+     Tartib ham `set.items` dan olinadi, `ordinal` dan emas: import
+     yaratgan toʻplamda ordinal 0..N-1 boʻladi, oʻqituvchi tuzganida esa
+     har faoliyat oʻz ichida 0 dan boshlanadi va tartib maʼnosini
+     yoʻqotadi. `set.items` — yagona ishonchli tartib manbai. */
+  const inPlace =
+    activityIds.length === parsed.length &&
+    activityIds.every((id) => (byActivity.get(id)?.length ?? 0) === 1);
+
+  if (inPlace) {
+    let changed = set.title !== title;
+    await db.transaction(async (tx) => {
+      for (const [i, p] of parsed.entries()) {
+        const activityId = activityIds[i];
+        const row = byActivity.get(activityId)![0];
+        const next = { stem: p.stem, options: p.options };
+        if (JSON.stringify(row.content) === JSON.stringify(next)) continue;
+        changed = true;
+        await tx.update(activityItems)
+          .set({ content: next })
+          .where(eq(activityItems.id, row.itemId));
+        await tx.update(activities)
+          .set({
+            title: p.stem.slice(0, 200),
+            version: sql`${activities.version} + 1`,
+            updatedAt: new Date(),
+          })
+          .where(eq(activities.id, activityId));
+      }
+      if (set.title !== title) {
+        await tx.update(activitySets)
+          .set({ title, updatedAt: new Date() })
+          .where(eq(activitySets.id, setId));
+      }
+    });
+    return changed ? "changed" : "unchanged";
+  }
+
+  // Shakl mos emas — eski faoliyatlar oʻchiriladi va qaytadan
+  // quriladi. `activity_items` CASCADE bilan ketadi, `responses` esa
+  // YOʻQ (yuqorida tekshirilgan).
+  await db.transaction(async (tx) => {
+    const items: { activityId: string; role: "check" }[] = [];
+    for (const [ordinal, p] of parsed.entries()) {
+      const activityId = randomUUID();
+      await tx.insert(activities).values({
+        id: activityId, teacherId, shape: "mcq",
+        title: p.stem.slice(0, 200), source: "teacher", approved: true,
+        grading: "exact",
+      });
+      await tx.insert(activityItems).values({
+        id: randomUUID(), activityId, teacherId, ordinal,
+        content: { stem: p.stem, options: p.options },
+      });
+      items.push({ activityId, role: "check" });
+    }
+    // Toʻplam AVVAL yangi roʻyxatga oʻtadi, keyin eskilari oʻchadi —
+    // teskari tartibda `items` bir lahza mavjud boʻlmagan faoliyatga
+    // ishora qilardi.
+    await tx.update(activitySets)
+      .set({ title, items, updatedAt: new Date() })
+      .where(eq(activitySets.id, setId));
+    if (activityIds.length > 0) {
+      await tx.delete(activities).where(inArray(activities.id, activityIds));
+    }
+  });
+  return "changed";
+}
+
 /** Testlarni `activities` (mcq) sifatida koʻchirish.
 
     LessonLab testi — faqat ABCD savollar, shuning uchun ular toʻgʻridan
     toʻgʻri `shape: "mcq"` ga tushadi. Har test bitta toʻplam (`set`)
-    boʻlib keladi, chunki Ustozonada sessiya toʻplam ustida ochiladi. */
+    boʻlib keladi, chunki Ustozonada sessiya toʻplam ustida ochiladi.
+
+    ⚠️ 2026-08-09 dan buyon bu funksiya ham nusxa qoldirmaydi — BOGʻLAYDI.
+    Sinf/oʻquvchi 2026-08-08 da oʻtkazilgan, test esa chetda qolgan edi.
+
+    Idempotentlik darvozasi endi NOM emas, `test_links`:
+
+      link bor  → savollar YANGILANADI (botdagi tuzatish oʻtadi)
+      link yoʻq → yaratiladi va bogʻlanish DARHOL yoziladi
+
+    Nom oʻzgarishi endi dublikat yaratmaydi va botdagi tuzatish
+    Ustozonaga yetib boradi — ikkalasi ham eski modelda imkonsiz edi.
+
+    ⛔ YANGILASH — FAQAT ISHLATILMAGAN TOʻPLAM UCHUN
+    -----------------------------------------------
+    Bu cheklov kod oʻqib topilgan va u MAJBURIY:
+    `responses.item_id` → `activity_items.id` ga **ON DELETE CASCADE**
+    bilan bogʻlangan. Yaʼni `updateActivity()` naqshidagi
+    «oʻchir-va-qayta-yarat» yoʻli oʻtmishdagi javoblarni CASCADE bilan
+    OʻCHIRIB YUBORADI — aynan `itemVersion` himoya qilmoqchi boʻlgan
+    narsani.
+
+    Shuning uchun bu yerda ikki himoya bor:
+
+      1. Toʻplam allaqachon ISHLATILGAN boʻlsa (bironta javob bor) —
+         umuman TEGILMAYDI va hisobotda sabab koʻrsatiladi. Oʻqituvchining
+         baholash tarixi sinxronizatsiya qulayligidan MUHIMROQ.
+      2. Ishlatilmagan boʻlsa — element `content` i OʻRNIDA yangilanadi
+         (id oʻzgarmaydi, ya'ni CASCADE ishga tushmaydi) va
+         `activities.version` oshiriladi (`updateActivity` bilan bir xil
+         qoida).
+
+    Savol soni oʻzgargan boʻlsa toʻplam qayta quriladi — lekin bu ham
+    faqat 1-shart oʻtganda, ya'ni yoʻqotiladigan javob yoʻqligi
+    ANIQLANGANDAN keyin. */
 export async function importTests(token: string, classId: string): Promise<ImportReport> {
   const teacher = await requireTeacher();
   const report: ImportReport = {
-    classesCreated: 0, studentsCreated: 0, testsCreated: 0,
+    classesCreated: 0, studentsCreated: 0, testsCreated: 0, testsUpdated: 0,
     conflicts: [], skipped: [],
   };
 
@@ -233,18 +432,32 @@ export async function importTests(token: string, classId: string): Promise<Impor
   if (!own) throw new Error("Sinf topilmadi yoki sizga tegishli emas");
 
   const existingSets = await db
-    .select({ title: activitySets.title })
+    .select({ id: activitySets.id, title: activitySets.title })
     .from(activitySets)
     .where(eq(activitySets.teacherId, teacher.id));
   const takenSets = new Set(existingSets.map((s) => normalizeName(s.title)));
 
+  // ASOSIY idempotentlik darvozasi: allaqachon bogʻlangan bot testlari.
+  // Nom emas, BOGʻLANISH boʻyicha — `importRoster` dagi bilan bir xil.
+  const linkedSet = new Map(
+    (await db.select({ llTestId: testLinks.llTestId, uzSetId: testLinks.uzSetId })
+      .from(testLinks))
+      .map((r) => [r.llTestId, r.uzSetId] as const)
+  );
+
   const llTests = await fetchAll<LlTest>("/api/v1/tests?limit=100", token, "data");
 
   for (const test of llTests) {
-    if (takenSets.has(normalizeName(test.title))) {
+    const linkedSetId = linkedSet.get(test.id);
+
+    // Bogʻlanmagan, lekin nomi band — HAQIQIY nizo: yo tarixiy nusxa,
+    // yo boshqa test. Avtomatik bogʻlamaymiz (noto'gʻri bogʻlanish
+    // boshqa testning savollarini ustiga yozardi), oʻqituvchiga
+    // koʻrsatamiz. Bogʻlash uchun: `v_test_duplicate_candidates`.
+    if (!linkedSetId && takenSets.has(normalizeName(test.title))) {
       report.conflicts.push({
         kind: "test", name: test.title,
-        reason: "Shu nomli test allaqachon bor — tegilmadi",
+        reason: "Shu nomli test bor, lekin bogʻlanmagan — tegilmadi",
       });
       continue;
     }
@@ -263,7 +476,9 @@ export async function importTests(token: string, classId: string): Promise<Impor
       continue;
     }
 
-    const items: { activityId: string; role: "check" }[] = [];
+    // Savollarni bir marta tahlil qilamiz — natija ikkala yoʻl
+    // (yangilash va yaratish) uchun bir xil.
+    const parsed: ParsedQuestion[] = [];
     for (const [ordinal, q] of questions.entries()) {
       const options = (q.options ?? []).map((o, i) => ({
         id: String.fromCharCode(97 + i),
@@ -279,31 +494,68 @@ export async function importTests(token: string, classId: string): Promise<Impor
         });
         continue;
       }
-
-      const activityId = randomUUID();
-      await db.insert(activities).values({
-        id: activityId, teacherId: teacher.id, shape: "mcq",
-        title: q.text.slice(0, 200), source: "teacher", approved: true,
-        grading: "exact",
-      });
-      await db.insert(activityItems).values({
-        id: randomUUID(), activityId, teacherId: teacher.id, ordinal,
-        content: { stem: q.text, options },
-      });
-      items.push({ activityId, role: "check" });
+      parsed.push({ stem: q.text, options });
     }
 
-    if (items.length === 0) {
+    if (parsed.length === 0) {
       report.skipped.push({ kind: "test", name: test.title,
                             reason: "Koʻchirishga yaroqli savol qolmadi" });
       continue;
     }
 
-    await db.insert(activitySets).values({
-      id: randomUUID(), teacherId: teacher.id, classId,
-      title: test.title, purpose: "formative", items,
+    // ── YOʻL 1: bogʻlangan toʻplam bor — yangilaymiz ──────────────────
+    if (linkedSetId) {
+      const outcome = await syncLinkedSet(teacher.id, linkedSetId, test.title, parsed);
+      if (outcome === "in_use") {
+        // T2 (shaffoflik): bu jim oʻtkazib yuborilmaydi. Oʻqituvchi
+        // botda savolni tuzatgan boʻlishi mumkin va u OʻTMAGANINI
+        // bilishi kerak — aks holda eski savol bilan ishlab yuraveradi.
+        report.skipped.push({
+          kind: "test", name: test.title,
+          reason: "Test allaqachon oʻtkazilgan — javoblarni saqlash uchun tegilmadi",
+        });
+      } else if (outcome === "changed") {
+        report.testsUpdated += 1;
+      }
+      // "unchanged" — oʻzgarish yoʻq, hisobotda shovqin qilmaydi.
+      continue;
+    }
+
+    // ── YOʻL 2: yangi toʻplam — yaratamiz va DARHOL bogʻlaymiz ────────
+    const setId = randomUUID();
+
+    // Toʻplam, savollar va BOGʻLANISH bitta tranzaksiyada.
+    // Aks holda tarmoq uzilsa bogʻlanmagan toʻplam qolib ketardi — ya'ni
+    // aynan tuzatayotgan xatoni qaytadan yaratardik (`importRoster`
+    // dagi bilan bir xil sabab).
+    await db.transaction(async (tx) => {
+      const items: { activityId: string; role: "check" }[] = [];
+      for (const [ordinal, p] of parsed.entries()) {
+        const activityId = randomUUID();
+        await tx.insert(activities).values({
+          id: activityId, teacherId: teacher.id, shape: "mcq",
+          title: p.stem.slice(0, 200), source: "teacher", approved: true,
+          grading: "exact",
+        });
+        await tx.insert(activityItems).values({
+          id: randomUUID(), activityId, teacherId: teacher.id, ordinal,
+          content: { stem: p.stem, options: p.options },
+        });
+        items.push({ activityId, role: "check" });
+      }
+
+      await tx.insert(activitySets).values({
+        id: setId, teacherId: teacher.id, classId,
+        title: test.title, purpose: "formative", items,
+      });
+      await tx.insert(testLinks).values({
+        llTestId: test.id, uzSetId: setId,
+        origin: "lessonlab", linkedBy: "shadow",
+      });
     });
+
     takenSets.add(normalizeName(test.title));
+    linkedSet.set(test.id, setId);
     report.testsCreated += 1;
   }
 
