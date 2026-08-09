@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useGradesStore } from "@/store/useGradesStore";
+import { useOnboardingVisible } from "./onboarding-visible";
 import OnboardingWizard from "./OnboardingWizard";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -40,6 +41,17 @@ export default function OnboardingGate() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  if (onboarded || !latched) return null;
+  const visible = !onboarded && latched;
+
+  // Sehrgar ekrandaligini eʼlon qilamiz — boshqa toʻliq ekranli
+  // darvozalar (masalan `LessonLabLinkGate`) ustiga chiqmasligi uchun.
+  // `TourProvider` dagi `setActiveTour` bilan bir xil naqsh.
+  const setOpen = useOnboardingVisible((s) => s.setOpen);
+  React.useEffect(() => {
+    setOpen(visible);
+    return () => setOpen(false);
+  }, [visible, setOpen]);
+
+  if (!visible) return null;
   return <OnboardingWizard />;
 }
