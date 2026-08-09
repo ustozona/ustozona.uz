@@ -4,8 +4,10 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getSession } from "@/server/session";
 import { isSuperAdmin } from "@/lib/auth-roles";
 import NotificationsServerSync from "@/components/sync/NotificationsServerSync";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
 import AdminSidebar from "./_components/AdminSidebar";
 import AdminHeader from "./_components/AdminHeader";
+import StopImpersonationButton from "./_components/StopImpersonationButton";
 
 /* ════════════════════════════════════════════════════════════════════
    ADMIN QOBIQ — /admin/* uchun yengil shell.
@@ -47,6 +49,55 @@ export default async function AdminLayout({
      yozmaymiz — begona odamga tizim tuzilishi haqida ma'lumot
      bermaslik kerak. */
   if (!isSuperAdmin(session.user)) {
+    /* ⛔ ENG KO'P UCHRAGAN SABAB — IMPERSONATSIYA, "boshqa hisob" EMAS.
+
+       Admin o'zi `/admin/users` dan «... sifatida ko'rish» tugmasini
+       bosadi; bu joriy cookie'ni impersonatsiya sessiyasiga ALMASHTIRADI
+       va uning roli — o'sha odamniki, ya'ni odatda oddiy `teacher`
+       (`src/server/session.ts` dagi izoh). Shundan keyin `/admin` ga
+       qaytilsa mana shu ekran chiqadi.
+
+       2026-08-09 da loyiha egasi aynan shunga tushdi: `ustozona@gmail.com`
+       soat 18:05 da Otabekni impersonate qilgan (bu tugmaning o'zi
+       super_admin talab qiladi, ya'ni huquq JOYIDA edi), 18:33 da esa
+       «super admin bo'lsam ham admin panelga kirolmayapman» degan
+       xulosaga keldi. Yechim bir bosish edi, lekin ko'rinmasdi:
+       «Chiqish» tugmasi faqat `dashboard/layout.tsx` dagi qizil
+       chiziqda, bu yerda esa yo'q edi. Yuqoridagi umumiy matn
+       («boshqa hisob bilan kiring») bunday holatda NOTO'G'RI maslahat.
+
+       Shuning uchun sababni ajratib aytamiz va chiqish yo'lini SHU
+       YERGA qo'yamiz. */
+    if (session.session.impersonatedBy) {
+      return (
+        <div className="flex min-h-svh items-center justify-center p-6">
+          <div className="max-w-md rounded-xl border bg-card p-6 shadow-sm">
+            <h1 className="text-lg font-semibold">
+              Siz hozir boshqa hisobni ko&apos;rib turibsiz
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              <strong>{session.user.name}</strong> sifatida ko&apos;rmoqdasiz.
+              Administrator bo&apos;limi bu rejimda yopiq — chunki hozirgi
+              sessiya o&apos;sha hisobning huquqlari bilan ishlaydi.
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Admin huquqingiz joyida. Impersonatsiyani to&apos;xtatsangiz
+              darhol qaytadi.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <StopImpersonationButton />
+              <Link
+                href="/dashboard"
+                className="text-sm text-muted-foreground underline underline-offset-4"
+              >
+                Boshqaruv paneliga qaytish
+              </Link>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex min-h-svh items-center justify-center p-6">
         <div className="max-w-md rounded-xl border bg-card p-6 shadow-sm">
@@ -80,6 +131,13 @@ export default async function AdminLayout({
       <NotificationsServerSync />
       <AdminSidebar />
       <SidebarInset className="min-h-0 overflow-hidden">
+        {/* Admin BOSHQA ADMINNI impersonate qilsa yuqoridagi darvoza o'tib
+            ketadi (rol baribir super_admin) va panel ochiq qoladi — hech
+            qanday belgisiz. Chiziq impersonatsiya bo'lmasa `null`
+            qaytaradi, ya'ni oddiy holatda hech narsa qo'shmaydi.
+            Joylashuvi `dashboard/layout.tsx` bilan bir xil: SidebarInset
+            ichida, sarlavhadan OLDIN. */}
+        <ImpersonationBanner />
         <AdminHeader />
         <div className="relative flex-1 min-w-0 min-h-0 overflow-auto">
           {children}
