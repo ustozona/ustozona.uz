@@ -7,6 +7,7 @@ import type { ClassFormValues, ClassSlot } from "@/components/ClassFormModal";
 import { DAYS_UZ, DAYS_UZ_SHORT } from "@/lib/localization";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { displayClassName, withGradeForYear } from "@/lib/class-naming";
+import { useRequireLessonLabLink } from "./useRequireLessonLabLink";
 
 /* ════════════════════════════════════════════════════════════════════
    JONLI SINF MANBAI — statik CLASSES / CLASS_DATA oʻrnini bosadi.
@@ -113,11 +114,21 @@ export function classFormInitial(
   };
 }
 
-/** Yangi sinf yaratish — id qaytaradi; GradesServerSync serverga yozadi. */
-export function useCreateClass(): (v: ClassFormValues) => string {
+/** Yangi sinf yaratish — id qaytaradi; GradesServerSync serverga yozadi.
+ *
+ *  ⛔ `null` QAYTISHI MUMKIN — LessonLab bog'lanishi kutilyapti.
+ *  O'qituvchi darvozadagi «Keyinroq»ni bosgan bo'lsa, sinf yaratishga
+ *  urinish darvozani QAYTA ochadi va yaratish bekor qilinadi
+ *  (`useRequireLessonLabLink` izohi: bog'lanmagan sinf qatori paydo
+ *  bo'lmasligi kerak). Chaqiruvchi `null` ni tekshirsin — tip shuning
+ *  uchun `string | null`, aks holda birorta chaqiruv joyi jimgina
+ *  e'tibordan chetda qolardi. */
+export function useCreateClass(): (v: ClassFormValues) => string | null {
   const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
+  const ensureLinked = useRequireLessonLabLink();
   return useCallback(
     (v: ClassFormValues) => {
+      if (!ensureLinked()) return null;
       const id = crypto.randomUUID();
       setClassDataMap((prev) => ({
         ...prev,
@@ -131,6 +142,6 @@ export function useCreateClass(): (v: ClassFormValues) => string {
       }));
       return id;
     },
-    [setClassDataMap]
+    [setClassDataMap, ensureLinked]
   );
 }

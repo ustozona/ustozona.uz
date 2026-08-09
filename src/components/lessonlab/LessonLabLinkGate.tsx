@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useLessonLabLink, isLinkState } from "@/hooks/useLessonLabLink";
 import { useOnboardingVisible } from "@/components/onboarding/onboarding-visible";
 import { useTourRequest } from "@/components/tour/tour-request";
+import { useLinkDeferred } from "./link-deferred";
 import { WHY_LINK_MATTERS } from "./why-link-matters";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -60,6 +61,12 @@ export default function LessonLabLinkGate() {
   const onboardingOpen = useOnboardingVisible((s) => s.open);
   const tourActive = useTourRequest((s) => s.activeTourId !== null);
 
+  // «Keyinroq» — shu sessiya uchun chetga surilgan. Qoida bekor
+  // BO'LMAYDI: sinf/o'quvchi yaratilishi bilan `requireNow()` chaqiriladi
+  // va bu darvoza qaytadan ochiladi (`link-deferred.ts`).
+  const deferred = useLinkDeferred((s) => s.deferred);
+  const defer = useLinkDeferred((s) => s.defer);
+
   // Holatni bilib bo'lmadi — darvozani KO'RSATMAYMIZ (fail-open).
   // Bot tomonidagi darvoza bilan bir xil qoida: bitta vaqtinchalik
   // nosozlik butun dashboard'ni bloklamasligi kerak. Sababni bu yerda
@@ -67,6 +74,7 @@ export default function LessonLabLinkGate() {
   if (status === "checking" || !isLinkState(status)) return null;
   if (!status.required || status.linked) return null;
   if (onboardingOpen || tourActive) return null;
+  if (deferred) return null;
 
   return (
     <Dialog open>
@@ -101,6 +109,14 @@ export default function LessonLabLinkGate() {
           >
             <RefreshCw className={busy ? "size-4 animate-spin" : "size-4"} />
             Bog'ladim, tekshirish
+          </Button>
+          {/* Uchinchi yo'l — KO'RIB CHIQISH. Darvoza ilgari mutlaqo
+              o'tib bo'lmaydigan edi; o'qituvchi nimaga ro'yxatdan
+              o'tganini ko'rmasdan turib bog'lashga majbur bo'lardi.
+              Bu tugma faqat KECHIKTIRADI: sinf yoki o'quvchi
+              yaratishga urinilsa darvoza qaytadan ochiladi. */}
+          <Button variant="ghost" size="sm" onClick={defer}>
+            Keyinroq
           </Button>
         </div>
 
