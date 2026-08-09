@@ -28,6 +28,47 @@ qilinsa Vercel deploy qilmay qoladi). Shuning uchun tartib qat'iy:
    `dashboard/layout.tsx` va shunga o'xshash umumiy fayllar). Avval
    chatda kelishing: kim qaysi faylda ishlayapti.
 
+## Kundalik oqim — amalda ikkita buyruq
+
+Yuqoridagi besh qoida roʻyxat qilib yozilganda ogʻir koʻrinadi, lekin
+kundalik ishda ikkita satrga sigʻadi:
+
+```bash
+# 1. Ish boshida (1-qoida)
+git checkout main && git pull && git checkout -b otabek/yangi-ish
+
+# 2. Push oldidan (2, 3, 4-qoida)
+git fetch && git rebase origin/main && npm run build && git push -u origin HEAD
+```
+
+`roziyevbehroz-tech` dan ishlayotgan boʻlsangiz `origin` oʻrniga
+`upstream` — pastdagi «QAYSI main» boʻlimiga qarang.
+
+Bu buyruqlarni oʻzingizga alias qilib qoʻysangiz boʻladi (`~/.gitconfig`,
+repo sozlamasi emas). Tartib baribir oʻzgarmaydi.
+
+### Branch'ni oʻchirish — avtomatlashtirilgan
+
+**Masofadagi branch:** repo'da «Automatically delete head branches»
+yoqilgan (2026-08-10) — PR birlashgach GitHub branch'ni oʻzi oʻchiradi.
+Qoʻlda hech nima qilinmaydi.
+
+**Lokal nusxalar:** git buni oʻzi bilmaydi, chunki merge GitHub tomonda
+sodir boʻladi. Ikkita global sozlama shuni yopadi:
+
+```bash
+git config --global fetch.prune true
+git config --global alias.gone '!git fetch -p && git branch -vv | grep ": gone]" | awk "{print \$1}" | xargs -r git branch -d'
+```
+
+Birinchisi har `fetch`/`pull` da oʻlik `origin/...` nusxalarini tozalaydi.
+Ikkinchisi — `git gone` buyrugʻi: remote'i yoʻqolgan lokal branch'larni
+oʻchiradi. Haftada bir marta yurgizish kifoya.
+
+`-d` ishlatilgan, `-D` emas — birlashmagan commit qolgan branch oʻchmaydi.
+PR **squash** bilan birlashtirilsa git commit'larni tanimay `-d` ni rad
+etishi mumkin; bu repo merge commit ishlatadi, shuning uchun tegmaydi.
+
 ## ⚠️ 1- va 3-qoidada `main` — QAYSI main
 
 Ish `roziyevbehroz-tech/ustozona.uz` da olib borilishi mumkin, lekin
