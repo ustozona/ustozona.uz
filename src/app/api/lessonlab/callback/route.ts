@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { exchangeCode } from "@/server/lessonlab/oauth";
-import { importRoster, importTests } from "@/server/dal/lessonlab-import";
+import { importRoster, importTests, saveImportReport } from "@/server/dal/lessonlab-import";
+import { requireTeacher } from "@/server/session";
 import { bridgeTelegramIdentity } from "@/server/dal/cross-platform";
 
 /* GET /api/lessonlab/callback?code=…&state=…
@@ -59,11 +60,23 @@ export async function GET(request: Request) {
     // yoʻnalish uchun kerak: bot Ustozona sinflarini shu orqali topadi.
     await bridgeTelegramIdentity(tokens.access_token);
 
+    const kind = targetClass ? "tests" : "roster";
     const report = targetClass
       ? await importTests(tokens.access_token, targetClass)
       : await importRoster(tokens.access_token);
+
+    /* Hisobotni SAQLAYMIZ — URL'da faqat uning id'si ketadi.
+
+       Nomlarni URL'ga solib bo'lmaydi: 25 ta nom satrga sig'maydi va
+       havolani ulashgan odam begona o'quvchi/test nomlarini ko'rardi.
+       Sonlar esa avvalgidek qoladi — hisobot yozilmay qolsa ham banner
+       ishlashda davom etsin (`saveImportReport` yiqilsa `null`). */
+    const teacher = await requireTeacher();
+    const reportId = await saveImportReport(teacher.id, kind, report);
+
     return back(request, {
       import: "ok",
+      ...(reportId ? { report: reportId } : {}),
       classes: String(report.classesCreated),
       students: String(report.studentsCreated),
       tests: String(report.testsCreated),

@@ -4,6 +4,7 @@ import { isTeacher } from "@/lib/auth-roles";
 import { listSets, summarizeSetContent } from "@/server/dal/assess/sets";
 import { getGradesPayload } from "@/server/dal/grades";
 import { isConfigured, isGamesConfigured } from "@/server/lessonlab/baholash";
+import { getImportReport } from "@/server/dal/lessonlab-import";
 import BaholashWorkspace from "./_components/BaholashWorkspace";
 
 export const metadata = {
@@ -43,6 +44,14 @@ export default async function BaholashPage({
       .filter((c) => !c.info.archivedAt)
       .map((c) => ({ id: c.info.id, name: c.info.name }));
 
+    /* Import tafsiloti — `?report=<id>` bo'lsa. `getImportReport()`
+       o'z ichida `teacherId` bo'yicha filtrlaydi, ya'ni begona id
+       yozilsa `null` qaytadi va sahifa avvalgidek ishlaydi. */
+    const reportId = typeof params?.report === "string" ? params.report : "";
+    const importDetails = reportId
+      ? (await getImportReport(reportId))?.details ?? []
+      : [];
+
     return (
       <BaholashWorkspace
         importStatus={{
@@ -51,6 +60,9 @@ export default async function BaholashPage({
           students: Number(params?.students ?? 0) || 0,
           tests: Number(params?.tests ?? 0) || 0,
           updated: Number(params?.updated ?? 0) || 0,
+          // Tafsilot — NOMI va SABABI bilan. URL'da faqat id ketadi;
+          // nomlar bazadan va FAQAT o'z hisobotidan o'qiladi.
+          details: importDetails,
           conflicts: Number(params?.conflicts ?? 0) || 0,
           skipped: Number(params?.skipped ?? 0) || 0,
         }}

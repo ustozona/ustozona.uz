@@ -6,7 +6,7 @@ import { Gamepad2, Info, Layers, Printer, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { startSessionAction } from "@/server/actions/assess-sessions";
-import type { QuizSessionRow } from "@/server/db/schema";
+import type { QuizSessionRow, SyncReportDetail } from "@/server/db/schema";
 import type { SetContentSummary } from "@/lib/baholash-shells";
 import DeliveryPanel, { type Delivery } from "./DeliveryPanel";
 
@@ -49,6 +49,10 @@ export type ImportStatus = {
   updated: number;
   conflicts: number;
   skipped: number;
+  /** Nomi va sababi bilan — `sync_reports` dan. Son yetarli emasligi
+      2026-08 da o'lchangan: 25 test jimgina tashlangan va faqat son
+      ko'ringani uchun nosozlik uzoq vaqt sezilmagan. */
+  details?: SyncReportDetail[];
 };
 
 type Props = {
@@ -312,28 +316,64 @@ function ImportPanel({ status, hasClasses, classId }:
     return null;
   })();
 
+  const details = status?.details ?? [];
+
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3.5">
-      <Info className="size-4 shrink-0 text-muted-foreground" />
-      <p className="flex-1 text-sm text-muted-foreground">
-        {message ?? (hasClasses
-          ? "LessonLab botida sinflaringiz bormi? Ularni bir marta koʻchirib olishingiz mumkin — mavjud sinflarga tegilmaydi."
-          : "LessonLab botida sinflaringiz bormi? Ularni qoʻlda kiritmang — bir marta koʻchirib oling.")}
-      </p>
-      <Button asChild size="sm" variant="outline">
-        <a href="/api/lessonlab/start">
-          {s === "ok" ? "Yana koʻchirish" : "Sinflarni koʻchirish"}
-        </a>
-      </Button>
-      {/* Test koʻchirish sinfga bogʻlangan — qaysi sinfga tushishini
-          bilmasdan chaqirib boʻlmaydi, shuning uchun sinf tanlanmagan
-          boʻlsa tugma umuman koʻrsatilmaydi. */}
-      {classId && (
+    <div className="rounded-xl border border-border bg-muted/40 px-4 py-3.5">
+      <div className="flex flex-wrap items-center gap-3">
+        <Info className="size-4 shrink-0 text-muted-foreground" />
+        <p className="flex-1 text-sm text-muted-foreground">
+          {message ?? (hasClasses
+            ? "LessonLab botida sinflaringiz bormi? Ularni bir marta koʻchirib olishingiz mumkin — mavjud sinflarga tegilmaydi."
+            : "LessonLab botida sinflaringiz bormi? Ularni qoʻlda kiritmang — bir marta koʻchirib oling.")}
+        </p>
         <Button asChild size="sm" variant="outline">
-          <a href={`/api/lessonlab/start?class=${encodeURIComponent(classId)}`}>
-            Testlarni koʻchirish
+          <a href="/api/lessonlab/start">
+            {s === "ok" ? "Yana koʻchirish" : "Sinflarni koʻchirish"}
           </a>
         </Button>
+        {/* Test koʻchirish sinfga bogʻlangan — qaysi sinfga tushishini
+            bilmasdan chaqirib boʻlmaydi, shuning uchun sinf tanlanmagan
+            boʻlsa tugma umuman koʻrsatilmaydi. */}
+        {classId && (
+          <Button asChild size="sm" variant="outline">
+            <a href={`/api/lessonlab/start?class=${encodeURIComponent(classId)}`}>
+              Testlarni koʻchirish
+            </a>
+          </Button>
+        )}
+      </div>
+
+      {/* ⚠️ TAFSILOT — «2 ta nizo» degan SON hech narsa aytmaydi.
+          2026-08 da 25 testdan 25 tasi jimgina «savoli yoʻq» deb
+          tashlab yuborilgan va ekranda faqat son turgani uchun
+          nosozlik uzoq vaqt koʻrinmagan. Endi nomi va sababi bilan.
+
+          `<details>` — ochiq holatda emas: muvaffaqiyatli importda bu
+          roʻyxat shovqin, kerak boʻlganda esa bir bosishda ochiladi. */}
+      {details.length > 0 && (
+        <details className="mt-3 border-t border-border pt-3">
+          <summary className="cursor-pointer text-sm font-medium text-foreground">
+            Nima oʻtmadi — {details.length} ta
+          </summary>
+          <ul className="mt-2 space-y-1.5">
+            {details.map((d, i) => (
+              <li key={i} className="flex flex-wrap gap-x-2 text-sm">
+                <span
+                  className={
+                    d.group === "conflict"
+                      ? "shrink-0 font-medium text-amber-700 dark:text-amber-500"
+                      : "shrink-0 font-medium text-muted-foreground"
+                  }
+                >
+                  {d.group === "conflict" ? "Nizo" : "Oʻtkazildi"}
+                </span>
+                <span className="font-medium text-foreground">{d.name}</span>
+                <span className="text-muted-foreground">— {d.reason}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
     </div>
   );

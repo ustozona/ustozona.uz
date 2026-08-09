@@ -4,7 +4,8 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activities, activityItems, activitySets, classes, classLinks, responses,
-  rosterLinks, students, testLinks,
+  rosterLinks, students, syncReports, testLinks,
+  type SyncReportDetail, type SyncReportRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import { lessonlab } from "@/server/lessonlab/client";
@@ -52,6 +53,68 @@ export type ImportReport = {
   /** Koʻchirib boʻlmagan narsalar (mos kelmaydigan shakl va h.k.). */
   skipped: { kind: string; name: string; reason: string }[];
 };
+
+/** Hisobotni SAQLASH — sonlar emas, NOMLAR bilan.
+
+    Ilgari callback natijani URL'ga faqat son sifatida qaytarardi
+    (`?conflicts=2&skipped=5`). O'qituvchi «2 ta nizo» ni ko'rardi,
+    lekin QAYSI test ekanini bilmasdi va nima qilishni ham bilmasdi.
+
+    Bu nazariy noqulaylik emas: 2026-08 da 25 testdan 25 tasi jimgina
+    «savoli yo'q» deb tashlab yuborilgan va ekranda faqat son turgani
+    uchun nosozlik uzoq vaqt ko'rinmagan.
+
+    ⚠️ Saqlash YIQILSA import BEKOR QILINMAYDI. Hisobot — ko'rinish
+    vositasi; uni yozib bo'lmagani uchun allaqachon muvaffaqiyatli
+    ko'chirilgan sinf va testlarni qaytarish nomutanosib zarar bo'lardi.
+    Shuning uchun `null` qaytadi va chaqiruvchi joy sonlar bilan davom
+    etadi (eski xulq). */
+export async function saveImportReport(
+  teacherId: string,
+  kind: "roster" | "tests",
+  report: ImportReport
+): Promise<string | null> {
+  const details: SyncReportDetail[] = [
+    ...report.conflicts.map((c) => ({
+      group: "conflict" as const, kind: c.kind, name: c.name, reason: c.reason,
+    })),
+    ...report.skipped.map((s) => ({
+      group: "skipped" as const, kind: s.kind, name: s.name, reason: s.reason,
+    })),
+  ];
+
+  const id = randomUUID();
+  try {
+    await db.insert(syncReports).values({
+      id,
+      teacherId,
+      kind,
+      summary: {
+        classesCreated: report.classesCreated,
+        studentsCreated: report.studentsCreated,
+        testsCreated: report.testsCreated,
+        testsUpdated: report.testsUpdated,
+      },
+      details,
+    });
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+/** Hisobotni o'qish — FAQAT o'z hisobotini.
+
+    `teacherId` sharti majburiy: `id` URL'da ko'rinadi va usiz begona
+    odam boshqa o'qituvchining o'quvchi/test nomlarini o'qib olardi. */
+export async function getImportReport(id: string): Promise<SyncReportRow | null> {
+  const teacher = await requireTeacher();
+  const [row] = await db
+    .select()
+    .from(syncReports)
+    .where(and(eq(syncReports.id, id), eq(syncReports.teacherId, teacher.id)));
+  return row ?? null;
+}
 
 /** Nom solishtirish uchun normalizatsiya.
 
