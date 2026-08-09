@@ -218,6 +218,13 @@
       "when": 1785909187074,
       "tag": "0030_minor_solo",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1786310171468,
+      "tag": "0031_overrated_sabretooth",
+      "breakpoints": true
     }
   ]
 }

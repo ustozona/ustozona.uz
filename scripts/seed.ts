@@ -34,9 +34,17 @@ import { SEED_NOTIFICATIONS } from "@/store/useNotificationsStore";
    Better Auth API orqali yaratish — parol hash toʻgʻri boʻlishi uchun.
    ════════════════════════════════════════════════════════════════════ */
 
+/* Standart egasi — demo hisob. Skrinshot va koʻrsatuv uchun aynan shu
+   ishlatiladi: header'da hisob emaili koʻrinadi, u yerda shaxsiy pochta
+   turmasligi kerak.
+
+   Oʻz hisobingiz ostida ishlash uchun egasini almashtiring:
+     SEED_EMAIL=kodyozar@gmail.com npm run db:seed
+   Bunday hisob allaqachon mavjud boʻlsa (masalan Google orqali kirgansiz),
+   paroli oʻzgarmaydi — maʼlumot shunchaki oʻsha hisobga bogʻlanadi. */
 const DEMO = {
   name: "Otabek Abdusattorov",
-  email: "demo@ustozona.uz",
+  email: process.env.SEED_EMAIL || "demo@ustozona.uz",
   password: "demo12345",
   subject: "Ingliz tili",
 };

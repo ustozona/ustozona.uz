@@ -165,7 +165,62 @@ qaytish ehtimoli past. Kod tomoni esa haqiqatan ikkala bazada ham
 ishlaydi (`postgres-js` Neon bilan ham gaplashadi) — muammo faqat
 parolda.
 
-Hammasi bir hafta silliq ishlagach Neon loyihasini oʻchirish mumkin.
+### 6.1. QAROR (2026-08-10): Neon OʻCHIRILMAYDI — u endi DEV bazasi
+
+Yuqoridagi «bir haftadan keyin oʻchirish mumkin» bandi **bekor qilindi**.
+Neon oʻz joyida qoladi va roli oʻzgardi:
+
+| Baza | Roli |
+|---|---|
+| Supabase `lxppxnawxmcfebmzdgil` | **prod** — jonli sayt, haqiqiy oʻqituvchilar |
+| Neon `ep-withered-bread-asajjok2` | **dev** — lokal ish, demo maʼlumot |
+
+**Nega kerak boʻldi.** Koʻchishdan keyin lokal muhit ham prodga ulanib
+qolgan edi. Bu ikki tomondan xavfli: `npm run db:seed` jonli bazaga
+yozadi, sinov paytidagi xato haqiqiy maʼlumotga tegadi, va baza LessonLab
+bilan umumiy boʻlgani uchun zarar ikkala mahsulotga yetadi.
+
+**Nega aynan Neon.** Klassik yechim — alohida dev loyihasi ochish, lekin
+Supabase bepul rejada 2 tadan ortiq loyihaga ruxsat bermaydi (limit
+tugagan). Neon esa toʻliq tayyor turibdi: 61 jadval, migratsiya tarixi
+butun, `postgres-js` u bilan ham gaplashadi. Oʻchirilishi kutilayotgan
+baza shu tariqa foydali ishga oʻtdi.
+
+**Amalda.** `.env.local` da ikkala satr ham bor — Neon faol, Supabase
+izohda va ogohlantirish bilan. Prod migratsiyasi kabi ataylab
+qilinadigan ishda Supabase yoqiladi, ish tugagach **darhol** Neon
+qaytariladi. `.env.local` git'da yoʻq, yaʼni bu tanlov har dasturchining
+oʻzida.
+
+Demo maʼlumot: `npm run db:seed`. Egasi standart `demo@ustozona.uz`,
+oʻz hisobingiz ostida ishlash uchun `SEED_EMAIL=<pochtangiz> npm run db:seed`.
+
+### 6.2. Sxemani PANELDA qoʻlda oʻzgartirmang
+
+Har qanday sxema oʻzgarishi **migratsiya fayli** orqali boradi
+(`npm run db:generate` → git → `npm run db:migrate`). Tartib: avval
+Neon'da sinaladi, keyin Supabase'ga qoʻllanadi.
+
+2026-08-10 da aynan shu qoida buzilgani aniqlandi. `students.nickname`
+ustuni va oltita jadval (`class_links`, `roster_links`, `test_links`,
+`sync_reports`, `account_link_codes`, `tg_signup_tickets`) kodda bor
+edi, Supabase panelida qoʻlda yaratilgan edi, migratsiya tarixida esa
+yoʻq edi. Oqibati:
+
+- prod ishlardi — ustun qoʻlda qoʻyilgan;
+- lokal muhit **butunlay yiqilardi** — `getGradesPayload` yoʻq ustunni
+  soʻrardi, jurnal umuman yuklanmasdi;
+- git'da izi yoʻq edi, yaʼni yangi dasturchida ham xuddi shu xato chiqardi.
+
+`drizzle/0031_overrated_sabretooth.sql` shu qarzni yopdi. U **qoʻlda
+idempotent qilingan** (`IF NOT EXISTS` + `DO $$ … duplicate_object`) —
+chunki Supabase'da obyektlar allaqachon bor va oddiy migratsiya
+«relation already exists» bilan yiqilardi. Shu koʻrinishda bitta fayl
+ikkala bazada ham xavfsiz.
+
+⏳ **Qoldi:** `0031` prod Supabase'ga hali qoʻllanmagan. Qoʻllanganda
+hech nima yaratmaydi, faqat migratsiya tarixiga belgi qoʻyadi — shundan
+keyin ikkala baza bir nuqtadan davom etadi.
 
 ---
 
