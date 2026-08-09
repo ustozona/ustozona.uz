@@ -50,6 +50,7 @@ export default async function BaholashPage({
           classes: Number(params?.classes ?? 0) || 0,
           students: Number(params?.students ?? 0) || 0,
           tests: Number(params?.tests ?? 0) || 0,
+          updated: Number(params?.updated ?? 0) || 0,
           conflicts: Number(params?.conflicts ?? 0) || 0,
           skipped: Number(params?.skipped ?? 0) || 0,
         }}

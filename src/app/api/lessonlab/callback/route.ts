@@ -67,6 +67,11 @@ export async function GET(request: Request) {
       classes: String(report.classesCreated),
       students: String(report.studentsCreated),
       tests: String(report.testsCreated),
+      // Bogʻlangan test yangilangani ALOHIDA koʻrsatiladi: «0 ta test
+      // koʻchdi» degan xabar oʻqituvchini «ishlamadi» deb adashtirardi,
+      // holbuki botdagi tuzatish aynan oʻsha importda oʻtgan boʻlishi
+      // mumkin (`test_links`, 2026-08-09).
+      updated: String(report.testsUpdated),
       conflicts: String(report.conflicts.length),
       skipped: String(report.skipped.length),
     });
