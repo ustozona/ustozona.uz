@@ -6,6 +6,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useLessonLabLink, isLinkState } from "@/hooks/useLessonLabLink";
+import { useOnboardingVisible } from "@/components/onboarding/onboarding-visible";
+import { useTourRequest } from "@/components/tour/tour-request";
 import { WHY_LINK_MATTERS } from "./why-link-matters";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -37,12 +39,34 @@ import { WHY_LINK_MATTERS } from "./why-link-matters";
 export default function LessonLabLinkGate() {
   const { status, busy, refresh } = useLessonLabLink();
 
+  /* ⛔ NAVBAT: sehrgar va yo'l ko'rsatkichdan KEYIN
+     ------------------------------------------------
+     Ilgari bu darvoza hech narsani kutmasdi. Yangi o'qituvchida
+     ketma-ketlik shunday chiqardi:
+
+       sehrgar tugadi → `onboardingCompleted = true`
+       → `TourProvider` 700 ms dan keyin «home» turini o'zi boshlaydi
+       → Telegram oynasi HAMON ochiq → ikkita modal ustma-ust,
+         ekran butunlay bloklangan (2026-08-09 da kuzatildi).
+
+     Tur nishonlarni yoritib ko'rsatadi, ustida modal tursa u umuman
+     ishlamaydi. Shuning uchun bog'lash so'rovi tur TUGAGANDA yoki
+     foydalanuvchi uni bekor qilganda chiqadi — o'shanda `activeTourId`
+     null bo'ladi va bu darvoza o'zi ochiladi.
+
+     ⚠️ `onboardingCompleted` NING O'ZIGA qaramaymiz — sababi
+     `onboarding-visible.ts` izohida: eski hisoblarda u false bo'lib
+     qolishi mumkin va darvoza abadiy yopilib qolardi. */
+  const onboardingOpen = useOnboardingVisible((s) => s.open);
+  const tourActive = useTourRequest((s) => s.activeTourId !== null);
+
   // Holatni bilib bo'lmadi — darvozani KO'RSATMAYMIZ (fail-open).
   // Bot tomonidagi darvoza bilan bir xil qoida: bitta vaqtinchalik
   // nosozlik butun dashboard'ni bloklamasligi kerak. Sababni bu yerda
   // ko'rsatmaymiz — u Sozlamalar > LessonLab kartasida chiqadi.
   if (status === "checking" || !isLinkState(status)) return null;
   if (!status.required || status.linked) return null;
+  if (onboardingOpen || tourActive) return null;
 
   return (
     <Dialog open>
