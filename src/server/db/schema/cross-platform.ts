@@ -1,6 +1,7 @@
-import { index, integer, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 import { classes, students } from "./classes";
 import { activitySets } from "./assess";
+import { teachers } from "./teachers";
 import { user } from "./auth";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -128,6 +129,61 @@ export const testLinks = pgTable(
 );
 
 export type TestLinkRow = typeof testLinks.$inferSelect;
+
+/** Import hisoboti — «nima o'tdi, nima o'tmadi va NEGA».
+
+    NEGA QO'SHILDI (2026-08-09)
+    ---------------------------
+    `importRoster()` / `importTests()` batafsil hisobot tuzadi
+    (`conflicts`, `skipped` — nomi va sababi bilan), lekin callback uni
+    URL'ga faqat SON sifatida qaytarardi. O'qituvchi «2 ta nizo» ni
+    ko'rardi, lekin QAYSI test ekanini bilmasdi.
+
+    Bu nazariy noqulaylik emas: 2026-08 da `full.test.questions` har
+    doim `undefined` bo'lgani uchun 25 testdan 25 tasi jimgina «savoli
+    yo'q» deb tashlab yuborilgan va ekranda faqat son turgani uchun
+    nosozlik UZOQ VAQT ko'rinmagan.
+
+    Jadval tanlandi, URL yoki cookie emas: 25 ta nom URL'ga sig'maydi
+    (va havolada ko'rinib qolardi), cookie esa 4 KB da JIMGINA
+    kesiladi — ya'ni «jim yo'qolish» muammosini yechayotib uni qayta
+    yaratardik.
+
+    Jadval `supabase/migrations/20260809c_sync_reports.sql` da;
+    bu yerda faqat TUR e'lon qilinadi (fayl boshidagi izohga qarang —
+    `db:generate` bu fayldan migratsiya YASAMASLIGI kerak). */
+export const syncReports = pgTable(
+  "sync_reports",
+  {
+    id: text("id").primaryKey(),
+    teacherId: text("teacher_id")
+      .notNull()
+      .references(() => teachers.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<"roster" | "tests">().notNull(),
+    summary: jsonb("summary")
+      .$type<Record<string, number>>()
+      .notNull()
+      .default({}),
+    details: jsonb("details")
+      .$type<SyncReportDetail[]>()
+      .notNull()
+      .default([]),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("sync_reports_teacher_idx").on(t.teacherId, t.createdAt)]
+);
+
+/** Hisobotdagi bitta satr. `group` — nima uchun o'tmagani turi:
+      conflict — nomi band, lekin bog'lanmagan (qaror o'qituvchida)
+      skipped  — ko'chirib bo'lmadi (savoli yo'q, javobi yo'q...) */
+export type SyncReportDetail = {
+  group: "conflict" | "skipped";
+  kind: string;
+  name: string;
+  reason: string;
+};
+
+export type SyncReportRow = typeof syncReports.$inferSelect;
 
 /** Ro'yxatdan o'tishda akkauntlarni biriktirish uchun bir martalik kod.
 
