@@ -122,8 +122,11 @@ const FieldRow = ({
  * soʻraladi.
  *
  * `session.kind === "draft"` — QORALAMA rejimi: DB'ga hech narsa yozilmaydi.
- * `manualCreate` — Jurnaldan ochilganda mazmun tanlash ixtiyoriy boʻladi va
- * "Yaratish" tugmasi chiqadi (`kind: "manual"`, baho ustuni).
+ * Tur kartalari (Test/Taqdimot/...) faqat TANLAYDI — DB yozuvi faqat
+ * "Yaratish" bosilganda (`handleCreate`). `manualCreate` faqat tugma
+ * yoqiq/oʻchiqligini belgilaydi: `true` boʻlsa tursiz ham (`kind: "manual"`,
+ * mazmunsiz baho ustuni) yaratish mumkin; `false` boʻlsa avval tur
+ * tanlanishi shart (Topshiriqlar sahifasidan ochilganda).
  */
 export default function AssignmentEditorOverlay({
   session,
@@ -152,6 +155,9 @@ export default function AssignmentEditorOverlay({
   const [panelOpen, setPanelOpen] = useState(true);
   const [openingQuiz, setOpeningQuiz] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  /* Karta bosilganda ENDI hech narsa yaratilmaydi — faqat tur tanlanadi.
+     Haqiqiy yozuv faqat "Yaratish" bosilganda (handleCreate). */
+  const [selectedKind, setSelectedKind] = useState<Extract<AssignmentKind, "test" | "deck"> | null>(null);
   /* ✕ bosilganda: qoralama boʻsh boʻlmasa "saqlaymizmi?" soʻraladi (Gmail). */
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [testWorkspace, setTestWorkspace] = useState<{
@@ -243,6 +249,12 @@ export default function AssignmentEditorOverlay({
     const setId = await getSetIdForSessionAction(current.sourceSessionId);
     setOpeningQuiz(false);
     if (setId) setTestWorkspace({ autoOpenSetId: setId });
+  }
+
+  /** Test QORALAMA sifatida allaqachon yaratilgan, lekin savollari yoʻq —
+      qurish faqat shu tugma bosilganda, avtomatik emas. */
+  function handleStartQuiz() {
+    setTestWorkspace({ autoOpenNewSet: true, autoOpenTitle: current.title.trim() || undefined });
   }
 
   /** Umumiy maydonlar (sarlavha/yoʻriqnoma/toifa/ball) — butun guruhga. */
@@ -432,20 +444,25 @@ export default function AssignmentEditorOverlay({
     return copies.find((c) => c.cid === classId)?.copy ?? null;
   }
 
-  function handlePickAssessment() {
-    setTestWorkspace({ autoOpenNewSet: true, autoOpenTitle: current.title.trim() || undefined });
-  }
-
-  function handlePickPresentation() {
-    const created = createAcrossClasses("deck", true);
-    if (!created) return;
-    // Taqdimot yaratildi — sessiya darhol TAHRIRga oʻtadi (mazmun ustida ishlanadi).
-    openEdit(classId, created.id);
-  }
-
-  /* Jurnal yoʻli: mazmunsiz baho ustuni. Sarlavha boʻsh boʻlsa CTA'ni
+  /* Yagona "Yaratish" — kartalar endi faqat tur tanlaydi (selectedKind),
+     haqiqiy yozuv shu yerda amalga oshadi. Sarlavha boʻsh boʻlsa CTA'ni
      bloklamaymiz (modal-ux qoidasi) — sarlavha standart nom bilan toʻladi. */
-  function handleCreateManual() {
+  function handleCreate() {
+    if (selectedKind === "test") {
+      // Test yozuvi bizda emas, `publishSessionToGrades` orqali — savol
+      // toʻplami yaratilib, natija jurnalga ANIQ bosilganda koʻchadi.
+      // Shuning uchun "Yaratish" shu yerda ham xuddi kartani bosgandek —
+      // qurish oynasini ochadi, boʻsh yozuv hosil qilmaydi.
+      handleStartQuiz();
+      return;
+    }
+    if (selectedKind === "deck") {
+      const created = createAcrossClasses("deck", true);
+      if (!created) return;
+      // Taqdimot yaratildi — sessiya darhol TAHRIRga oʻtadi (mazmun ustida ishlanadi).
+      openEdit(classId, created.id);
+      return;
+    }
     const created = createAcrossClasses("manual", false);
     if (!created) return;
     closeSession();
@@ -516,10 +533,10 @@ export default function AssignmentEditorOverlay({
     title: string;
     desc: string;
     color: string;
-    onSelect?: () => void;
+    kind?: Extract<AssignmentKind, "test" | "deck">;
   }[] = [
-    { key: "assessment", icon: ClipboardCheck, title: t("kindTest"), desc: t("kindTestDesc"), color: "#22c55e", onSelect: handlePickAssessment },
-    { key: "presentation", icon: Presentation, title: t("kindDeck"), desc: t("kindDeckDesc"), color: "#fb923c", onSelect: handlePickPresentation },
+    { key: "assessment", icon: ClipboardCheck, title: t("kindTest"), desc: t("kindTestDesc"), color: "#22c55e", kind: "test" },
+    { key: "presentation", icon: Presentation, title: t("kindDeck"), desc: t("kindDeckDesc"), color: "#fb923c", kind: "deck" },
     { key: "video", icon: Clapperboard, title: t("contentVideo"), desc: t("contentVideoDesc"), color: "#f43f5e" },
     { key: "passage", icon: FileText, title: t("contentPassage"), desc: t("contentPassageDesc"), color: "#3b82f6" },
     { key: "flashcards", icon: Zap, title: t("contentFlashcards"), desc: t("contentFlashcardsDesc"), color: "#a855f7" },
@@ -566,8 +583,12 @@ export default function AssignmentEditorOverlay({
             )}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            {isDraft && manualCreate && (
-              <Button onClick={handleCreateManual} className="mr-1.5 gap-1.5 font-semibold">
+            {isDraft && (
+              <Button
+                onClick={handleCreate}
+                disabled={!manualCreate && !selectedKind}
+                className="mr-1.5 gap-1.5 font-semibold"
+              >
                 <Plus className="size-4" />
                 {t("create")}
               </Button>
@@ -633,29 +654,87 @@ export default function AssignmentEditorOverlay({
               {isDraft ? (
                 <div className="flex flex-col gap-2.5">
                   <span className="text-label text-muted-foreground">{t("chooseContentLabel")}</span>
-                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-                    {contentTypes.map((ct) => (
-                      <button
-                        key={ct.key}
-                        type="button"
-                        disabled={!ct.onSelect}
-                        title={ct.onSelect ? undefined : t("attachSoon")}
-                        onClick={ct.onSelect}
-                        className="flex flex-col items-start gap-2.5 rounded-xl border border-border p-4 text-left transition-colors enabled:hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <span
-                          className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white"
-                          style={{ backgroundColor: ct.color }}
+                  {(() => {
+                    const selected = contentTypes.find((ct) => ct.kind === selectedKind);
+                    if (selected) {
+                      // Test uchun karta bosiladi — qurish oynasi (overlay,
+                      // sahifa emas) shu yerdan ochiladi. Taqdimotda hali
+                      // ochiladigan alohida muharrir yoʻq — statik qoladi.
+                      const openable = selected.kind === "test";
+                      return (
+                        <div
+                          role={openable ? "button" : undefined}
+                          tabIndex={openable ? 0 : undefined}
+                          onClick={openable ? handleStartQuiz : undefined}
+                          onKeyDown={
+                            openable
+                              ? (e) => {
+                                  if (e.key !== "Enter" && e.key !== " ") return;
+                                  e.preventDefault();
+                                  handleStartQuiz();
+                                }
+                              : undefined
+                          }
+                          className={cn(
+                            "flex w-full items-center gap-3 rounded-xl border border-border p-3.5 text-left transition-colors",
+                            openable && "cursor-pointer hover:bg-muted/50"
+                          )}
                         >
-                          <ct.icon className="size-5" />
-                        </span>
-                        <div className="min-w-0">
-                          <h4 className="text-sm font-semibold text-foreground">{ct.title}</h4>
-                          <p className="text-xs leading-snug text-muted-foreground">{ct.desc}</p>
+                          <span
+                            className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white"
+                            style={{ backgroundColor: selected.color }}
+                          >
+                            <selected.icon className="size-5" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate text-sm font-semibold text-foreground">{selected.title}</h4>
+                            <p className="text-xs text-muted-foreground">
+                              {openable ? t("startQuizDescription") : selected.desc}
+                            </p>
+                          </div>
+                          {openable && <ChevronRight className="size-5 shrink-0 text-muted-foreground" />}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedKind(null);
+                            }}
+                            title={t("attachRemove")}
+                            className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          >
+                            <X className="size-4" />
+                            <span className="sr-only">{t("attachRemove")}</span>
+                          </button>
                         </div>
-                      </button>
-                    ))}
-                  </div>
+                      );
+                    }
+                    // Kartaga aylanmagan holat — kompakt ikonka reyi (Google
+                    // Classroom "Attach" naqshi): bosilganda faqat tur
+                    // TANLANADI, karta ustiga chiqadi; haqiqiy yaratish
+                    // "Yaratish" tugmasi bilan (handleCreate).
+                    return (
+                      <div className="flex flex-wrap items-start gap-1">
+                        {contentTypes.map((ct) => (
+                          <button
+                            key={ct.key}
+                            type="button"
+                            disabled={!ct.kind}
+                            title={ct.kind ? undefined : t("attachSoon")}
+                            onClick={() => setSelectedKind(ct.kind!)}
+                            className="flex w-20 flex-col items-center gap-1.5 rounded-lg px-1 py-2 text-center transition-colors enabled:hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <span
+                              className="flex size-11 shrink-0 items-center justify-center rounded-full text-white"
+                              style={{ backgroundColor: ct.color }}
+                            >
+                              <ct.icon className="size-5" />
+                            </span>
+                            <span className="text-xs font-medium text-foreground">{ct.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : !isDeck && current.sourceSessionId ? (
                 <button

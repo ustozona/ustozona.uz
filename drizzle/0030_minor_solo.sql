@@ -1,0 +1,2 @@
+ALTER TABLE "assignments" ADD COLUMN "set_id" text;--> statement-breakpoint
+ALTER TABLE "assignments" ADD CONSTRAINT "assignments_set_id_activity_sets_id_fk" FOREIGN KEY ("set_id") REFERENCES "public"."activity_sets"("id") ON DELETE set null ON UPDATE no action;

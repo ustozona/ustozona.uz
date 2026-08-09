@@ -55,13 +55,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
-  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
+  Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
 } from "@/components/ui/empty";
 import { ColorPickerButton } from "@/components/ui/color-picker-button";
 import { cn } from "@/lib/utils";
 import {
   TOPIC_COLOR_HEX,
   TOPIC_COLOR_ORDER,
+  DEFAULT_TOPIC_TEMPLATES,
   GRADING_SCALE_PRESETS,
   SCALE_SHORT_LABELS,
   classColor,
@@ -104,6 +105,8 @@ type Props = {
   currentClassId: string;
   onClose: () => void;
   onApply: (payload: TopicApplyPayload) => void;
+  /** Boʻsh roʻyxatdagi "standart toifalar" taklifi — berilgan sinflarga qoʻshadi. */
+  onSeedDefaults: (classIds: string[]) => void;
   onDeleteGroup: (groupId: string) => void;
 };
 
@@ -133,13 +136,26 @@ export default function NewTopicModal({
   currentClassId,
   onClose,
   onApply,
+  onSeedDefaults,
   onDeleteGroup,
 }: Props) {
   const t = useTranslations("NewTopicModal");
-  const [filterClassId, setFilterClassId] = useState(ALL);
+  /* Modal joriy sinf jurnalidan ochiladi — kutubxona ham oʻsha sinf bilan
+     doiralanib boshlanadi (Canvas/Google Classroom xuddi shunday: toifalar
+     kursga tegishli). "Barcha sinflar" ochiq variant boʻlib qolaveradi. */
+  const [filterClassId, setFilterClassId] = useState(
+    currentClassId && classDataMap[currentClassId] ? currentClassId : ALL
+  );
   const [editing, setEditing] = useState<{ mode: "create" | "edit"; groupId: string } | null>(null);
 
-  const classEntries = useMemo(() => Object.entries(classDataMap), [classDataMap]);
+  /* Arxivlangan sinflar chiqarib tashlanadi — sinf "oʻchirilganda" aslida
+     `archivedAt` qoʻyiladi va yozuv `classDataMap` da qolaveradi. Filtrsiz
+     oʻqilsa, oʻchirilgan sinflar filtr roʻyxatida ham, kartalardagi
+     "N ta sinf" sanogʻida ham koʻrinib qolardi. */
+  const classEntries = useMemo(
+    () => Object.entries(classDataMap).filter(([, cd]) => !cd.info.archivedAt),
+    [classDataMap]
+  );
   const totalClasses = classEntries.length;
   const allHexes = classEntries
     .slice(0, 4)
@@ -176,11 +192,26 @@ export default function NewTopicModal({
       ? groups
       : groups.filter((g) => g.classIds.includes(filterClassId));
 
+  /* Taklif qaysi sinfga tushadi: filtr sinfga qoʻyilgan boʻlsa oʻshanga,
+     aks holda joriy sinfga. Sinf umuman yoʻq boʻlsa taklif koʻrsatilmaydi. */
+  const seedTargetIds = useMemo(() => {
+    const id = filterClassId !== ALL ? filterClassId : currentClassId;
+    return id && classDataMap[id] ? [id] : [];
+  }, [filterClassId, currentClassId, classDataMap]);
+
+  /* Taklif sharti — roʻyxat boʻshligi EMAS, joriy sinfda toifa yoʻqligi.
+     Oʻqituvchining boshqa sinflarida toifa boʻlsa roʻyxat toʻla koʻrinadi,
+     yangi sinf esa baribir toifasiz qoladi (aynan shu holat oʻtkazib
+     yuborilgan edi). Qoʻshilganda mavjud guruhga nom boʻyicha ulanadi. */
+  const needsDefaults =
+    seedTargetIds.length > 0 && (classDataMap[seedTargetIds[0]]?.topics.length ?? 0) === 0;
+
   // Per-class vazn validatsiyasi: har sinfdagi summativ toifalar vazni yigʻindisi.
   const classTotals = useMemo(
     () =>
       classEntries.map(([, cd]) => ({
         name: cd.info.name,
+        hasTopics: cd.topics.length > 0,
         total: cd.topics.reduce(
           (s, t) => s + ((t.purpose ?? "summative") === "summative" ? t.weightPercent || 0 : 0),
           0
@@ -189,7 +220,11 @@ export default function NewTopicModal({
     [classEntries]
   );
   const overClasses = classTotals.filter((c) => c.total > 100);
-  const underClasses = classTotals.filter((c) => c.total > 0 && c.total < 100);
+  /* Toifasi bor, lekin summativ vazni 100% ga yetmagan sinflar. `total === 0`
+     ham shu yerga kiradi: hamma toifasi formativ boʻlgan sinfda yakuniy baho
+     umuman hisoblanmaydi — bu "joyida" emas. Toifasi YOʻQ sinf bu roʻyxatda
+     emas, uni taklif banneri qamrab oladi. */
+  const underClasses = classTotals.filter((c) => c.hasTopics && c.total < 100);
 
   const formSchema = useMemo(() => buildFormSchema(t), [t]);
   const form = useForm<TopicFormValues>({
@@ -221,6 +256,25 @@ export default function NewTopicModal({
       scaleKind: g.scaleKind,
     });
     setEditing({ mode: "edit", groupId: g.groupId });
+  }
+
+  /* Mavjud toifani joriy sinfga ulash — muharrirni ochmasdan. Bu tahrir
+     (isEdit): guruh maydonlari oʻzgarmaydi, faqat sinflar toʻplami kengayadi,
+     shuning uchun `handleApplyTopic` ning oʻz mantigʻi yetarli. */
+  function addGroupToTargetClass(g: TopicGroup) {
+    const target = seedTargetIds[0];
+    if (!target || g.classIds.includes(target)) return;
+    const uniform = g.weights.every((w) => w === g.weights[0]);
+    onApply({
+      groupId: g.groupId,
+      classIds: [...g.classIds, target],
+      name: g.name,
+      color: g.color,
+      purpose: g.purpose,
+      scaleKind: g.scaleKind,
+      weightPercent: g.purpose === "summative" ? (uniform ? g.weights[0] : Math.max(...g.weights)) : 0,
+      isEdit: true,
+    });
   }
 
   function onSubmit(values: TopicFormValues) {
@@ -327,7 +381,45 @@ export default function NewTopicModal({
             {/* Toifalar roʻyxati (orqada) + editor (ustida) */}
             <div className="relative flex-1 min-h-0 overflow-hidden">
               <ScrollArea className="h-full px-5">
-                {visibleGroups.length === 0 ? (
+                {/* Joriy sinf toifasiz — boshqa sinflarning toifalari BU YERDA
+                    koʻrsatilmaydi. Birinchi qadam bitta boʻlishi kerak: shablonni
+                    qoʻshish. Kartalar haqiqiy toifa kartasining koʻrinishini
+                    takrorlaydi, shuning uchun natija oldindan koʻrinadi. */}
+                {needsDefaults ? (
+                  <div className="relative py-4">
+                    {/* Fon: natijaning oldindan koʻrinishi. Soʻndirilgan va
+                        klik oʻtkazmaydi; ekran oʻqigichlar uchun ham yashirin —
+                        haqiqiy maʼlumot emas, illyustratsiya. */}
+                    <div
+                      aria-hidden
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-2 opacity-50 pointer-events-none select-none"
+                    >
+                      {DEFAULT_TOPIC_TEMPLATES.map((tpl) => (
+                        <TemplateCard key={tpl.name} template={tpl} />
+                      ))}
+                    </div>
+                    {/* Skrim + xuddi shu `Empty` primitivi (roʻyxat boʻsh
+                        holatida ishlatilgani bilan bir xil koʻrinish) —
+                        boshqa card/shadow ixtiro qilinmaydi, standart
+                        boʻsh-holat qoliplanadi. */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-card/50">
+                      <Empty className="min-h-0 border-none bg-transparent">
+                        <EmptyHeader>
+                          <EmptyMedia variant="icon"><Tag /></EmptyMedia>
+                          <EmptyTitle>
+                            {t("seedBannerText", { class: classDataMap[seedTargetIds[0]]?.info.name ?? "" })}
+                          </EmptyTitle>
+                          <EmptyDescription>{t("noTopicsDescription")}</EmptyDescription>
+                        </EmptyHeader>
+                        <EmptyContent>
+                          <Button onClick={() => onSeedDefaults(seedTargetIds)}>
+                            <Plus /> {t("seedDefaults")}
+                          </Button>
+                        </EmptyContent>
+                      </Empty>
+                    </div>
+                  </div>
+                ) : visibleGroups.length === 0 ? (
                   <Empty className="min-h-[300px]">
                     <EmptyHeader>
                       <EmptyMedia variant="icon"><Tag /></EmptyMedia>
@@ -344,6 +436,9 @@ export default function NewTopicModal({
                         totalClasses={totalClasses}
                         classDataMap={classDataMap}
                         onEdit={() => openEdit(g)}
+                        isMember={seedTargetIds.length === 0 || g.classIds.includes(seedTargetIds[0])}
+                        currentClassName={classDataMap[seedTargetIds[0]]?.info.name ?? ""}
+                        onAdd={() => addGroupToTargetClass(g)}
                       />
                     ))}
                   </div>
@@ -547,7 +642,9 @@ export default function NewTopicModal({
                 <TypographyMuted className="text-xs">
                   {t("topicCount", { count: visibleGroups.length })}
                 </TypographyMuted>
-                {visibleGroups.length > 0 && (
+                {/* Joriy sinf toifasiz boʻlsa "Vaznlar joyida" yashili yolgʻon
+                    boʻlardi — bu holatda gapni banner aytadi. */}
+                {visibleGroups.length > 0 && !needsDefaults && (
                   <WeightStatus overClasses={overClasses} underClasses={underClasses} />
                 )}
               </div>
@@ -559,17 +656,68 @@ export default function NewTopicModal({
   );
 }
 
+/**
+ * Standart toifa shabloni kartasi — hali QOʻSHILMAGAN toifa koʻrinishi.
+ * GroupCard bilan bir xil tuzilma, lekin interaktiv emas: punktir chegara va
+ * "N ta sinf" chipining yoʻqligi buni "taklif" deb oʻqitadi.
+ */
+function TemplateCard({ template }: { template: (typeof DEFAULT_TOPIC_TEMPLATES)[number] }) {
+  const t = useTranslations("NewTopicModal");
+  const isFormative = template.purpose === "formative";
+
+  return (
+    <div
+      className="flex flex-col gap-3 rounded-lg border border-dashed border-border p-4"
+      style={{ ["--card-accent" as string]: TOPIC_COLOR_HEX[template.color] }}
+    >
+      <div
+        className="size-10 shrink-0 flex items-center justify-center rounded-full text-white"
+        style={topicTints(template.color).gradientTile}
+      >
+        <Tag className="size-4.5" />
+      </div>
+      <div className="min-w-0">
+        <h4 className="heading-small truncate text-foreground">{template.name}</h4>
+        <TypographyMuted className="mt-0.5 text-xs">
+          {t("scoreEnteredNotice")}
+          {" · "}
+          {SCALE_SHORT_LABELS[template.scaleKind ?? "ten"]}
+        </TypographyMuted>
+      </div>
+      <div className="flex items-center justify-end gap-2">
+        {isFormative ? (
+          <Badge variant="outline" className="gap-1 border-dashed text-[10px] text-muted-foreground">
+            <Ban className="size-3" /> {t("formativeBadge")}
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="gap-1 tabular-nums text-[10px]">
+            {t("summativeBadge")} {template.weightPercent}%
+            <WeightDonut percent={template.weightPercent} compact />
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** Toifa kartasi — grid koʻrinishi uchun (GroupRow bilan bir xil maʼlumot, tik joylashuv). */
 function GroupCard({
   group,
   totalClasses,
   classDataMap,
   onEdit,
+  isMember,
+  currentClassName,
+  onAdd,
 }: {
   group: TopicGroup;
   totalClasses: number;
   classDataMap: Record<string, ClassData>;
   onEdit: () => void;
+  /** Joriy sinf shu guruhga kiradimi. `false` → karta soʻndiriladi. */
+  isMember: boolean;
+  currentClassName: string;
+  onAdd: () => void;
 }) {
   const t = useTranslations("NewTopicModal");
   const hex = TOPIC_COLOR_HEX[group.color];
@@ -581,24 +729,38 @@ function GroupCard({
 
   return (
     <div
-      className="list-card group flex flex-col gap-3 p-4"
+      className={cn(
+        "list-card group flex flex-col gap-3 p-4 transition-opacity",
+        // Joriy sinf kirmagan toifa — kutubxonada koʻrinadi, lekin "meniki
+        // emas": soʻndiriladi va yagona harakati "qoʻshish" boʻladi.
+        !isMember && "opacity-55 hover:opacity-100"
+      )}
       style={{ ["--card-accent" as string]: hex }}
     >
       <div className="flex items-start justify-between gap-2">
         <div
-          className="list-card-icon size-10 shrink-0 flex items-center justify-center rounded-full text-white"
+          className={cn(
+            "list-card-icon size-10 shrink-0 flex items-center justify-center rounded-full text-white",
+            !isMember && "grayscale"
+          )}
           style={topicTints(group.color).gradientTile}
         >
           <Tag className="size-4.5" />
         </div>
-        <button
-          type="button"
-          onClick={onEdit}
-          title={t("edit")}
-          className="flex size-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100"
-        >
-          <Pencil className="size-4" />
-        </button>
+        {isMember ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            title={t("edit")}
+            className="flex size-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100"
+          >
+            <Pencil className="size-4" />
+          </button>
+        ) : (
+          <Button type="button" size="sm" variant="outline" onClick={onAdd}>
+            <Plus /> {currentClassName}
+          </Button>
+        )}
       </div>
       <div className="min-w-0">
         <h4 className="heading-small truncate text-foreground">{group.name}</h4>

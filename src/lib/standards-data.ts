@@ -7,37 +7,89 @@ export const BLOOM_LEVELS = [
   { id: 'yaratish', label: 'Yaratish', color: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' }
 ];
 
-/** Maktab fanlari — barcha asosiy fanlar (Oʻzbekiston umumtaʼlim + xalqaro). */
-export const SUBJECTS = [
-  "Ona tili va adabiyot",
-  "Rus tili",
-  "Ingliz tili",
-  "Xorijiy til",
-  "Matematika",
-  "Algebra",
-  "Geometriya",
-  "Informatika",
-  "Fizika",
-  "Kimyo",
-  "Biologiya",
-  "Tabiatshunoslik",
-  "Geografiya",
-  "Astronomiya",
-  "Tarix",
-  "Oʻzbekiston tarixi",
-  "Jahon tarixi",
-  "Davlat va huquq asoslari",
-  "Iqtisodiy bilim asoslari",
-  "Tarbiya",
-  "Odobnoma",
-  "Jismoniy tarbiya",
-  "Chizmachilik",
-  "Texnologiya",
-  "Mehnat taʼlimi",
-  "Musiqa",
-  "Tasviriy sanʼat",
-  "Ekologiya",
+/* ── Maktab fanlari ─────────────────────────────────────────────────────
+   Oʻzbekiston umumtaʼlim + xalqaro fanlar.
+
+   MAʼLUMOTGA `id` YOZILADI, `label` EMAS. Sabab: ilova 6 tilda ishlaydi —
+   ruscha interfeysda saqlangan "Математика" va oʻzbekchada saqlangan
+   "Matematika" bir xil fan ekanini tizim hech qachon bila olmasdi
+   (qidiruv, filtr, oʻqituvchilar aro ulashish — hammasi buzilardi).
+   `id` esa tilga bogʻliq emas va oʻzgarmaydi.
+
+   ⚠️ `id` — DOIMIY kalit. Yozib boʻlingach hech qachon oʻzgartirilmaydi
+   (maʼlumot unga bogʻlanadi); faqat `label` tahrirlanadi yoki tarjima
+   qatlami qoʻshiladi.
+   ────────────────────────────────────────────────────────────────────── */
+
+export type SubjectId = (typeof SUBJECT_CATALOG)[number]["id"];
+
+export const SUBJECT_CATALOG = [
+  { id: "native_language", label: "Ona tili va adabiyot" },
+  { id: "russian", label: "Rus tili" },
+  { id: "english", label: "Ingliz tili" },
+  { id: "foreign_language", label: "Xorijiy til" },
+  { id: "math", label: "Matematika" },
+  { id: "algebra", label: "Algebra" },
+  { id: "geometry", label: "Geometriya" },
+  { id: "informatics", label: "Informatika" },
+  { id: "physics", label: "Fizika" },
+  { id: "chemistry", label: "Kimyo" },
+  { id: "biology", label: "Biologiya" },
+  { id: "natural_science", label: "Tabiatshunoslik" },
+  { id: "geography", label: "Geografiya" },
+  { id: "astronomy", label: "Astronomiya" },
+  { id: "history", label: "Tarix" },
+  { id: "history_uz", label: "Oʻzbekiston tarixi" },
+  { id: "history_world", label: "Jahon tarixi" },
+  { id: "law_basics", label: "Davlat va huquq asoslari" },
+  { id: "economics", label: "Iqtisodiy bilim asoslari" },
+  { id: "upbringing", label: "Tarbiya" },
+  { id: "ethics", label: "Odobnoma" },
+  { id: "physical_education", label: "Jismoniy tarbiya" },
+  { id: "technical_drawing", label: "Chizmachilik" },
+  { id: "technology", label: "Texnologiya" },
+  { id: "labour", label: "Mehnat taʼlimi" },
+  { id: "music", label: "Musiqa" },
+  { id: "fine_arts", label: "Tasviriy sanʼat" },
+  { id: "ecology", label: "Ekologiya" },
 ] as const;
+
+/** Fan nomlari roʻyxati — standart shablonlari va eski filtrlar shu shaklda
+    ishlaydi (ular hali `label` boʻyicha moslashtiradi). Yangi kod
+    `SUBJECT_CATALOG` va `SubjectId` dan foydalanishi kerak. */
+export const SUBJECTS = SUBJECT_CATALOG.map((s) => s.label);
+
+const SUBJECT_BY_ID = new Map(SUBJECT_CATALOG.map((s) => [s.id as string, s]));
+const SUBJECT_BY_LABEL = new Map(
+  SUBJECT_CATALOG.map((s) => [s.label.toLowerCase(), s])
+);
+
+/** `id` → koʻrsatiladigan nom. Notanish id boʻlsa oʻzini qaytaradi (maʼlumot
+    yoʻqolmasin — oʻqituvchi kiritgan erkin fan nomi ham boʻlishi mumkin). */
+export function subjectLabel(id: string | null | undefined): string {
+  if (!id) return "";
+  return SUBJECT_BY_ID.get(id)?.label ?? id;
+}
+
+/**
+ * Nom → `id`. ESKI maʼlumotni oʻqish uchun: `classes.subject` va
+ * `teachers.subject` da hozir oʻzbekcha nom saqlangan. Mos kelmasa `null` —
+ * chaqiruvchi xom qiymatni saqlab qolishi mumkin.
+ */
+export function subjectIdFromLabel(label: string | null | undefined): SubjectId | null {
+  if (!label) return null;
+  const hit = SUBJECT_BY_LABEL.get(label.trim().toLowerCase());
+  return (hit?.id as SubjectId) ?? null;
+}
+
+/** Xom qiymatni (id yoki eski nom) normallashtiradi — oʻqishda ishlatiladi. */
+export function normalizeSubject(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (SUBJECT_BY_ID.has(trimmed)) return trimmed;
+  return subjectIdFromLabel(trimmed) ?? trimmed;
+}
 
 /** Bitta standart yozuvi — kutubxonada ham, sinfga biriktirilganda ham shu shakl. */
 export interface StandardItem {

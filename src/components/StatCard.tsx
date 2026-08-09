@@ -108,7 +108,13 @@ export function StatCard({
               <Icon />
             </SectionIcon>
           )}
-          <span className="truncate text-sm font-medium text-muted-foreground">{label}</span>
+          {/* `truncate` EMAS: uzun yorliqlar ("Shu haftada bajarilgan") tor
+              kartada "Shu haftada b…" boʻlib kesilardi va karta nimani
+              oʻlchayotgani nomaʼlum qolardi. `line-clamp-2` — bir qatorga
+              sigʻsa avvalgidek koʻrinadi, sigʻmasa ikkinchi qatorga oʻtadi;
+              chegara baribir bor, shuning uchun karta balandligi
+              nazoratdan chiqmaydi. */}
+          <span className="line-clamp-2 text-sm font-medium text-muted-foreground">{label}</span>
         </div>
         {delta && (
           <span

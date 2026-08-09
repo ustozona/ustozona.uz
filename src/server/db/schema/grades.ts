@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { teachers } from "./teachers";
 import { classes, students } from "./classes";
+import { activitySets } from "./assess";
 
 /* ════════════════════════════════════════════════════════════════════
    JURNAL — toifalar (topics), topshiriqlar (assignments), baholar.
@@ -75,6 +76,11 @@ export const assignments = pgTable(
     /** Baholash sessiyasidan nashr qilingan boʻlsa — izlanuvchanlik uchun
         manba sessiya id'si (docs/ost-loyihalar-arxitektura.md, publish.ts). */
     sourceSessionId: text("source_session_id"),
+    /** Biriktirilgan savollar toʻplami (kind: "test"). Topshiriq oʻtkazishdan
+        OLDIN yaratiladi va shu maydon orqali mazmuniga bogʻlanadi — sessiya
+        hali boʻlmagan holatda ham (qogʻoz/OCR yoʻli) jurnal ustuni mavjud.
+        `set null`: toʻplam oʻchsa topshiriq (va baholari) qolaveradi. */
+    setId: text("set_id").references(() => activitySets.id, { onDelete: "set null" }),
     /** Jurnal ustunlari tartibi — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

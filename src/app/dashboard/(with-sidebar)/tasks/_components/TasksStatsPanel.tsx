@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowUpRight, BarChart3, CalendarClock, CheckCircle2, ListChecks, Timer } from "lucide-react";
+import { BarChart3, CalendarClock, CheckCircle2, ListChecks, Timer } from "lucide-react";
 import { Panel, PanelHeader, PanelBody } from "@/components/ui/panel";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { StatCard } from "@/components/StatCard";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AttendanceRing } from "../../statistics/_components/AttendanceRing";
 import { taskPomoLengthMin, totalFocusMinutes, type Task } from "@/lib/tasks-data";
@@ -56,22 +54,7 @@ export function TasksStatsPanel({
 
   return (
     <Panel>
-      <PanelHeader
-        icon={<BarChart3 />}
-        title={t("title")}
-        actions={
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button asChild variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
-                <Link href="/dashboard/statistics" aria-label={t("fullStats")}>
-                  <ArrowUpRight className="size-4" />
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t("fullStats")}</TooltipContent>
-          </Tooltip>
-        }
-      />
+      <PanelHeader icon={<BarChart3 />} title={t("title")} />
       <PanelBody inset>
         {/* A-yondashuv (Notion/Linear/Todoist yon-panel standarti): kartalar
             TABIIY (ixcham) balandlikda, tepadan pastga oqadi (`flex-col`,
