@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
+  DEFAULT_TOPIC_TEMPLATES,
   type Assignment,
   type ClassData,
 } from "@/lib/grades-data";
@@ -301,7 +302,11 @@ export default function GradesView({
               topics: [...cd.topics, { id: `${payload.groupId}-${id}`, ...fields }],
             };
           }
-        } else if (existing) {
+        } else if (existing && !cd.info.archivedAt) {
+          // Arxivlangan sinf modalda umuman koʻrsatilmaydi, shuning uchun u
+          // hech qachon `wanted` ichida boʻlmaydi. Guardsiz qolsa, har qanday
+          // tahrir arxivdagi sinfning toifasini — va u bilan topshiriq/baholar
+          // tarixini — jimgina oʻchirib yuborardi.
           // Sinf tanlovdan olib tashlandi — mavzu va unga bogʻliq topshiriq/baholar oʻchadi.
           removedAny = true;
           const droppedIds = new Set(
@@ -329,6 +334,45 @@ export default function GradesView({
           },
         },
       } : {}),
+    });
+  }
+
+  /**
+   * Standart toifalar taklifini bir bosishda qoʻllaydi (faqat boʻsh roʻyxatda
+   * koʻrsatiladi). Bir xil nomli guruh boshqa sinfda allaqachon bor boʻlsa,
+   * YANGI guruh ochilmaydi — mavjudiga qoʻshiladi, aks holda toifalar
+   * roʻyxatida ikkita "Uy ishi" paydo boʻlardi.
+   */
+  function handleSeedDefaultTopics(classIds: string[]) {
+    const wanted = new Set(classIds);
+    const snapshot = classDataMap;
+    setClassDataMap((prev) => {
+      const next = { ...prev };
+      // Mavjud guruhlarni nom boʻyicha indekslaymiz (sinflar aro).
+      const byName = new Map<string, string>();
+      for (const cd of Object.values(prev)) {
+        for (const t of cd.topics) byName.set(t.name.trim().toLowerCase(), t.groupId ?? t.id);
+      }
+      for (const tpl of DEFAULT_TOPIC_TEMPLATES) {
+        const groupId = byName.get(tpl.name.toLowerCase()) ?? `grp-${crypto.randomUUID()}`;
+        byName.set(tpl.name.toLowerCase(), groupId);
+        for (const id of wanted) {
+          const cd = next[id];
+          if (!cd || cd.topics.some((t) => (t.groupId ?? t.id) === groupId)) continue;
+          next[id] = { ...cd, topics: [...cd.topics, { id: `${groupId}-${id}`, groupId, ...tpl }] };
+        }
+      }
+      return next;
+    });
+    toast.success(t("defaultsAdded"), {
+      description: DEFAULT_TOPIC_TEMPLATES.map((x) => x.name).join(" · "),
+      action: {
+        label: t("undo"),
+        onClick: () => {
+          setClassDataMap(snapshot);
+          toast.success(t("restored"));
+        },
+      },
     });
   }
 
@@ -445,6 +489,7 @@ export default function GradesView({
           currentClassId={classId}
           onClose={() => setModal(null)}
           onApply={handleApplyTopic}
+          onSeedDefaults={handleSeedDefaultTopics}
           onDeleteGroup={handleDeleteTopicGroup}
         />
       )}

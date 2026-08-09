@@ -61,7 +61,9 @@ export default function ReuseModal({
       topicName: string;
       topicColor: string;
     }[] = [];
+    // Arxivlangan sinf ("oʻchirilgan") qayta ishlatish manbai boʻlmaydi.
     Object.entries(classDataMap).forEach(([cid, cd]) => {
+      if (cd.info.archivedAt) return;
       cd.assignments.forEach((a) => {
         const topic = cd.topics.find((x) => x.id === a.topicId);
         items.push({
@@ -130,10 +132,9 @@ export default function ReuseModal({
               }}
               options={[
                 { value: "__all", label: t("allClasses") },
-                ...Object.entries(classDataMap).map(([id, cd]) => ({
-                  value: id,
-                  label: cd.info.name,
-                })),
+                ...Object.entries(classDataMap)
+                  .filter(([, cd]) => !cd.info.archivedAt)
+                  .map(([id, cd]) => ({ value: id, label: cd.info.name })),
               ]}
             />
             <FilterSelect

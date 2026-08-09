@@ -141,6 +141,26 @@ export type Topic = {
   scaleKind?: GradingScale; // toifa darajasidagi baholash shkalasi (preset)
 };
 
+/**
+ * Standart toifalar SHABLONI — avtomatik qoʻllanMAYDI.
+ *
+ * Nega taklif, seed emas: toifa avtomatik yaratilsa, oʻqituvchining mavjud
+ * toifalari bilan yonma-yon turib takrorlanadi (bir xil nomli ikki guruh).
+ * Shuning uchun roʻyxat boʻsh boʻlgandagina taklif sifatida koʻrsatiladi va
+ * oʻqituvchi bir bosishda qoʻshadi.
+ *
+ * `id`/`groupId` ataylab yoʻq — qoʻshilayotganda mavjud bir xil nomli
+ * guruhga ulanadi, boʻlmasa yangi guruh ochiladi (GradesView).
+ *
+ * Vazn: formativ yakuniyga kirmaydi → 0. Summativ ikkitasi 50/50.
+ */
+export const DEFAULT_TOPIC_TEMPLATES: Omit<Topic, "id" | "groupId">[] = [
+  { name: "Sinf ishi",       color: "orange", purpose: "formative", weightPercent: 0,  scaleKind: "ten" },
+  { name: "Uy ishi",         color: "lime",   purpose: "formative", weightPercent: 0,  scaleKind: "ten" },
+  { name: "Nazorat ishi",    color: "violet", purpose: "summative", weightPercent: 50, scaleKind: "ten" },
+  { name: "Yakuniy imtihon", color: "cyan",   purpose: "summative", weightPercent: 50, scaleKind: "ten" },
+];
+
 // Baho yo‘qligi turi: Q (Qatnashmadi/absent), T (Topshirmadi/unsubmitted).
 // Ikkalasi ham o‘rtachadan chiqariladi (dalil yo‘qligi ≠ bilim yo‘qligi).
 export type GradeMissing = "absent" | "unsubmitted";
@@ -181,6 +201,19 @@ export type Assignment = {
   /** Baholash sessiyasidan nashr qilingan boʻlsa — manba sessiya id'si
       (izlanuvchanlik; AssignmentEditorOverlay shu orqali toʻplamni ochadi). */
   sourceSessionId?: string;
+  /**
+   * Biriktirilgan savollar toʻplami (`kind: "test"`).
+   *
+   * Topshiriq oʻtkazishdan OLDIN yaratiladi: jurnal ustuni "rejalangan"
+   * holatda darhol paydo boʻladi va test qanday yetkazilishidan qatʼi nazar
+   * (jonli, mustaqil, qogʻoz+OCR) natija shu ustunga tushadi. Sessiyaga
+   * bogʻlanish esa keyin, oʻtkazilganda — `sourceSessionId` orqali.
+   *
+   * `maxScore` shu toʻplamdagi savollar sonidan olinadi va test biriktirilgan
+   * topshiriqda qoʻlda tahrirlanmaydi (aks holda qogʻoz yoʻlida oʻqituvchi
+   * "8/10" deb yozgan bahoni tizim "8/100" deb oʻqirdi).
+   */
+  setId?: string;
 };
 
 /** "Toifasiz" — virtual chelak: DB qatori emas, UI'da hisoblanadi. */

@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
-import { Loader2, X } from "lucide-react";
+import { Check, Loader2, Minus, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { FileCheck2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { getSetDraftAction, saveSetDraftAction } from "@/server/actions/assess";
 import type { ActivitySetRow } from "@/server/db/schema";
 import QuestionCanvas from "./builder/QuestionCanvas";
@@ -43,6 +49,7 @@ export default function SetBuilderOverlay({
   onClose: () => void;
   onSaved: (set: ActivitySetRow) => void;
 }) {
+  const t = useTranslations("SetBuilder");
   const [loading, setLoading] = useState(Boolean(setId));
   const [currentSetId, setCurrentSetId] = useState(setId);
   const [title, setTitle] = useState(() => (setId ? "" : initialTitle ?? ""));
@@ -53,7 +60,17 @@ export default function SetBuilderOverlay({
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [panel, setPanel] = useState<BuilderPanel>("properties");
   const [saving, setSaving] = useState(false);
+  const [autosaving, setAutosaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  /* Kichraytirilganda komponent UNMOUNT QILINMAYDI — faqat yashiriladi.
+     Shu sabab savollar, tanlangan savol, mavzu — hammasi joyida qoladi va
+     tiklanganda oʻsha holatda ochiladi (avtosaqlash ham ishlab turaveradi). */
+  const [minimized, setMinimized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /* Oxirgi SAQLANGAN holat imzosi — avtosaqlash shu bilan solishtirib,
+     hech narsa oʻzgarmagan boʻlsa server soʻrovini takrorlamaydi. */
+  const savedSnapshotRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!setId) {
@@ -64,7 +81,7 @@ export default function SetBuilderOverlay({
     getSetDraftAction(setId).then((draft) => {
       if (cancelled) return;
       if (!draft) {
-        setError("Toʻplam topilmadi");
+        setError(t("errNotFound"));
         setLoading(false);
         return;
       }
@@ -78,6 +95,10 @@ export default function SetBuilderOverlay({
     return () => {
       cancelled = true;
     };
+    // `t` ataylab bogʻliqliklarda yoʻq: u faqat xato matni uchun ishlatiladi,
+    // roʻyxatga qoʻshilsa esa til obyekti yangilanganda toʻplam qaytadan
+    // yuklanib, oʻqituvchining tahrirlanmagan qoralamasi ustiga yozilardi.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setId]);
 
   // Faol savol har doim mavjud boʻlishi kerak — yuklangandan yoki
@@ -125,16 +146,10 @@ export default function SetBuilderOverlay({
     setQuestions((prev) => (prev.length <= 1 ? prev : prev.filter((q) => q.key !== key)));
   }
 
-  async function handleSave() {
-    setError(null);
-    const cleanTitle = title.trim();
-    if (!cleanTitle) {
-      setError("Toʻplam nomini kiriting");
-      return;
-    }
-    // Boʻsh variant/juftliklar saqlashdan oldin tushirib qoldiriladi —
-    // server validatsiyasi shu tozalangan roʻyxat ustida ishlaydi.
-    const payload = questions.map((q, index) => ({
+  // Boʻsh variant/juftliklar saqlashdan oldin tushirib qoldiriladi —
+  // server validatsiyasi shu tozalangan roʻyxat ustida ishlaydi.
+  function buildPayload() {
+    return questions.map((q, index) => ({
       activityId: q.activityId,
       shape: q.shape,
       title: (q.title.trim() || q.stem.trim() || `${index + 1}-savol`).slice(0, 200),
@@ -148,32 +163,93 @@ export default function SetBuilderOverlay({
       multiSelect: q.multiSelect,
       answerLayout: q.answerLayout,
     }));
+  }
 
+  /** Haqiqiy yozish — qoʻlda "Saqlash" ham, jim avtosaqlash ham shundan foydalanadi. */
+  async function persist(cleanTitle: string) {
+    const draft = await saveSetDraftAction({
+      setId: currentSetId,
+      classId,
+      title: cleanTitle,
+      purpose: "summative",
+      stageTheme,
+      questions: buildPayload(),
+    });
+    setCurrentSetId(draft.set.id);
+    setQuestions((prev) =>
+      prev.map((q, index) => ({ ...q, activityId: draft.questions[index]?.activityId }))
+    );
+    return draft;
+  }
+
+  async function handleSave() {
+    setError(null);
+    const cleanTitle = title.trim();
+    if (!cleanTitle) {
+      setError(t("errTitleRequired"));
+      return;
+    }
     setSaving(true);
     try {
-      const draft = await saveSetDraftAction({
-        setId: currentSetId,
-        classId,
-        title: cleanTitle,
-        purpose: "summative",
-        stageTheme,
-        questions: payload,
-      });
-      setCurrentSetId(draft.set.id);
-      setQuestions((prev) =>
-        prev.map((q, index) => ({ ...q, activityId: draft.questions[index]?.activityId }))
-      );
+      const draft = await persist(cleanTitle);
+      savedSnapshotRef.current = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme });
       onSaved(draft.set);
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Saqlashda xatolik yuz berdi");
+      setError(e instanceof Error ? e.message : t("errSaveFailed"));
     } finally {
       setSaving(false);
     }
   }
 
+  /* Jim avtosaqlash — 30 daqiqalik savol mehnati bitta "X" bosishda
+     yoʻqolib ketmasin (SetBuilderOverlay ilgari hech qayerga yozmasdi).
+     Nom kiritilmagan boʻlsa saqlanmaydi (server talabi) — bu holat
+     `requestClose`da alohida ogohlantiriladi. */
+  useEffect(() => {
+    if (loading) return;
+    const cleanTitle = title.trim();
+    if (!cleanTitle) return;
+    const sig = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme });
+    if (sig === savedSnapshotRef.current) return;
+    const timer = setTimeout(async () => {
+      setAutosaving(true);
+      try {
+        await persist(cleanTitle);
+        savedSnapshotRef.current = sig;
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 2000);
+      } catch {
+        // Jim — keyingi oʻzgarishda yana urinadi, foydalanuvchini bezovta qilmaydi.
+      } finally {
+        setAutosaving(false);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, questions, stageTheme, loading]);
+
+  /* Yopishni soʻraydi: nom hali kiritilmagan boʻlsa avtosaqlash ishlamagan
+     boʻladi — shu bitta holatda "chindan ham tashlaymizmi?" soʻraladi. */
+  function requestClose() {
+    const hasContent = questions.some(
+      (q) => q.stem.trim() || q.title.trim() || q.options.some((o) => o.text.trim())
+    );
+    if (!title.trim() && hasContent) {
+      setConfirmDiscard(true);
+      return;
+    }
+    onClose();
+  }
+
   return createPortal(
-    <div className="fixed inset-0 z-[48] flex flex-col bg-card animate-in fade-in-0 duration-fast">
+    <>
+    <div
+      className={cn(
+        "fixed inset-0 z-[48] flex flex-col bg-card animate-in fade-in-0 duration-fast",
+        minimized && "hidden"
+      )}
+    >
       <header className="flex min-h-16 shrink-0 items-center gap-3 border-b border-border px-4">
         <SectionIcon className="shrink-0">
           <FileCheck2 />
@@ -181,21 +257,40 @@ export default function SetBuilderOverlay({
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Test nomini kiriting…"
+          placeholder={t("titlePlaceholder")}
           maxLength={200}
           className="h-9 max-w-xs border-0 bg-transparent px-0 text-base font-semibold shadow-none focus-visible:ring-0"
         />
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {error && <span className="max-w-xs truncate text-sm text-destructive">{error}</span>}
-          <Button variant="ghost" size="sm" onClick={onClose} disabled={saving}>
-            Chiqish
-          </Button>
+          {!error && autosaving && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" /> {t("saving")}
+            </span>
+          )}
+          {!error && !autosaving && justSaved && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Check className="size-3.5" /> {t("saved")}
+            </span>
+          )}
           <Button size="sm" onClick={handleSave} disabled={saving || loading}>
             {saving && <Loader2 className="size-4 animate-spin" />}
-            {saving ? "Saqlanmoqda…" : "Saqlash"}
+            {saving ? t("saving") : t("save")}
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Yopish" onClick={onClose} disabled={saving}>
+          {/* Oyna boshqaruvi — AssignmentEditorOverlay sarlavhasidagi bilan
+              bir xil juftlik. Ilgari yonida "Chiqish" matnli tugmasi ham bor
+              edi: uchta chiqish yoʻli, ikkitasi aynan bir xil amal. */}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("minimize")}
+            onClick={() => setMinimized(true)}
+            disabled={saving}
+          >
+            <Minus className="size-4" />
+          </Button>
+          <Button variant="ghost" size="icon" aria-label={t("close")} onClick={requestClose} disabled={saving}>
             <X className="size-4" />
           </Button>
         </div>
@@ -203,7 +298,7 @@ export default function SetBuilderOverlay({
 
       {loading ? (
         <div className="flex flex-1 items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Yuklanmoqda…
+          <Loader2 className="size-4 animate-spin" /> {t("loading")}
         </div>
       ) : (
         <div
@@ -233,7 +328,7 @@ export default function SetBuilderOverlay({
             />
           ) : (
             <div className="flex items-center justify-center text-sm text-muted-foreground">
-              Savol tanlang
+              {t("pickQuestion")}
             </div>
           )}
 
@@ -262,7 +357,54 @@ export default function SetBuilderOverlay({
           <BuilderRail panel={panel} onSelect={setPanel} />
         </div>
       )}
-    </div>,
+    </div>
+
+    {/* Kichraytirilgan yorliq — bosilsa quruvchi oʻsha holatida qaytadi.
+        z-[49]: quruvchining oʻzidan (48) baland, shuning uchun ostidagi
+        test roʻyxati koʻrinib turganda ham ustida qalqib turadi. */}
+    {minimized && (
+      <button
+        type="button"
+        onClick={() => setMinimized(false)}
+        className="fixed bottom-4 left-4 z-[49] flex max-w-xs items-center gap-2.5 rounded-xl border border-border bg-card px-3.5 py-2.5 shadow-lg transition-colors hover:bg-muted/50"
+      >
+        <SectionIcon className="size-8 shrink-0">
+          <FileCheck2 />
+        </SectionIcon>
+        <span className="min-w-0 flex-1 text-left">
+          <span className="block truncate text-sm font-medium text-foreground">
+            {title.trim() || t("untitled")}
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            {autosaving ? t("saving") : t("questionCount", { count: questions.length })}
+          </span>
+        </span>
+      </button>
+    )}
+
+    <AlertDialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t("discardTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t("discardDescription")}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t("discardCancel")}</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-white hover:bg-destructive/90"
+            onClick={() => {
+              setConfirmDiscard(false);
+              onClose();
+            }}
+          >
+            {t("discardConfirm")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>,
     document.body
   );
 }

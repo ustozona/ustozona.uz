@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, ChevronUp, Tag } from "lucide-react";
+import { ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, Tag } from "lucide-react";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import ClassListPanel from "@/components/ClassListPanel";
@@ -115,9 +116,15 @@ export default function AssignmentsPage() {
       if (!byTopic.has(key)) byTopic.set(key, []);
       byTopic.get(key)!.push(a);
     }
-    const named = classData.topics
-      .filter((topic) => byTopic.has(topic.id))
-      .map((topic) => ({ id: topic.id, name: topic.name, color: topic.color as TopicColor | null, items: byTopic.get(topic.id)! }));
+    // Toifalar topshiriqsiz ham koʻrsatiladi (Canvas Assignment Groups
+    // naqshi) — jurnaldagi toifa mavjudligi shu yerda ham sezilib turishi
+    // kerak, boʻsh toifa "yoʻqolib qolmasin".
+    const named = classData.topics.map((topic) => ({
+      id: topic.id,
+      name: topic.name,
+      color: topic.color as TopicColor | null,
+      items: byTopic.get(topic.id) ?? [],
+    }));
     const other = byTopic.get(OTHER_GROUP);
     return other ? [...named, { id: OTHER_GROUP, name: t("otherGroup"), color: null, items: other }] : named;
   }, [classData, t]);
@@ -128,14 +135,15 @@ export default function AssignmentsPage() {
     if (selectedClassId) openEdit(selectedClassId, id);
   };
 
-  /* Topshiriqlar sahifasidan yaratish — mazmun MAJBURIY (test/taqdimot),
-     shu sabab `manualCreate: false`: "Yaratish" tugmasi chiqmaydi. */
-  const handleCreateClick = () => {
+  /* Topshiriqlar sahifasidan yaratish — mazmun MAJBURIY (test/taqdimot):
+     `manualCreate: false` "Yaratish" tugmasini tur tanlanmaguncha oʻchiq
+     qiladi (AssignmentEditorOverlay). */
+  const handleCreateClick = (topicId?: string) => {
     if (!selectedClassId || !classData) return;
     openDraft(
       selectedClassId,
       false,
-      makeDraftPayload(selectedClassId, classData.topics[0]?.id ?? null)
+      makeDraftPayload(selectedClassId, topicId ?? classData.topics[0]?.id ?? null)
     );
   };
 
@@ -214,14 +222,17 @@ export default function AssignmentsPage() {
                     ({totalCount})
                   </TypographyMuted>
                 </div>
-                <Button onClick={handleCreateClick} className="gap-1.5 font-semibold">
+                <Button onClick={() => handleCreateClick()} className="gap-1.5 font-semibold">
                   <Plus className="size-4" />
                   {t("createButton")}
                 </Button>
               </div>
 
               <div className={panelCardContentClass}>
-                {totalCount === 0 && pendingSets.length === 0 ? (
+                {/* Boʻsh holat — toifa ham, tayyor test ham yoʻq. `groups`
+                    endi BOʻSH toifalarni ham qamraydi, shuning uchun shart
+                    `totalCount` emas: toifasi bor sinf boʻsh koʻrinmasin. */}
+                {groups.length === 0 && pendingSets.length === 0 ? (
                   <Empty className="h-full border-0">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
@@ -229,7 +240,7 @@ export default function AssignmentsPage() {
                       <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
-                      <Button onClick={handleCreateClick} className="gap-2">
+                      <Button onClick={() => handleCreateClick()} className="gap-2">
                         <Plus className="size-4" /> {t("createButton")}
                       </Button>
                     </EmptyContent>
@@ -285,14 +296,19 @@ export default function AssignmentsPage() {
                         </div>
                       )}
 
+                    <Accordion
+                      type="multiple"
+                      defaultValue={groups.map((g) => g.id)}
+                      className="flex flex-col gap-3"
+                    >
                       {groups.map((group) => (
-                        <div key={group.id} className="flex flex-col gap-2.5">
-                          <div className="flex items-center gap-2">
+                        <AccordionItem key={group.id} value={group.id} className="border-b-0">
+                          <AccordionTrigger className="items-center gap-3 rounded-lg px-2 py-3 hover:bg-muted/40 hover:no-underline [&[data-state=open]>svg]:rotate-180">
                             <div
                               className={
                                 group.color
-                                  ? "flex size-7 shrink-0 items-center justify-center rounded-lg"
-                                  : "flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
+                                  ? "flex size-8 shrink-0 items-center justify-center rounded-lg"
+                                  : "flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
                               }
                               style={
                                 group.color
@@ -303,58 +319,82 @@ export default function AssignmentsPage() {
                                   : undefined
                               }
                             >
-                              <Tag className="size-3.5" />
+                              <Tag className="size-4" />
                             </div>
-                            <h3 className="text-sm font-semibold text-foreground">{group.name}</h3>
+                            <span className="text-[15px] font-semibold text-foreground">{group.name}</span>
                             <TypographyMuted className="text-xs">{group.items.length}</TypographyMuted>
-                            <ChevronUp className="size-3.5 text-muted-foreground" />
-                          </div>
-                          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-                            {group.items.map((a) => {
-                              const isDeck = a.kind === "deck";
-                              const Icon = isDeck ? Presentation : FileCheck2;
-                              return (
-                                <ContextMenu key={a.id}>
-                                  <ContextMenuTrigger asChild>
-                                    <button
-                                      type="button"
-                                      onClick={() => openEditor(a.id)}
-                                      className="list-card group flex items-center gap-3 p-3.5 text-left"
-                                    >
-                                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                                        <Icon className="size-4" />
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <h4 className="truncate text-sm font-medium text-foreground">
-                                          {a.title}
-                                        </h4>
-                                      </div>
-                                      <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
-                                        {isDeck ? t("kindDeck") : t("kindTest")}
-                                      </Badge>
-                                    </button>
-                                  </ContextMenuTrigger>
-                                  <ContextMenuContent>
-                                    <ContextMenuItem className="gap-2" onSelect={() => handleDuplicate(a)}>
-                                      <Copy className="size-4" />
-                                      {t("duplicate")}
-                                    </ContextMenuItem>
-                                    <ContextMenuSeparator />
-                                    <ContextMenuItem
-                                      variant="destructive"
-                                      className="gap-2"
-                                      onSelect={() => setDeleteTarget(a)}
-                                    >
-                                      <Trash2 className="size-4" />
-                                      {t("delete")}
-                                    </ContextMenuItem>
-                                  </ContextMenuContent>
-                                </ContextMenu>
-                              );
-                            })}
-                          </div>
-                        </div>
+                            {group.items.length === 0 && (
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCreateClick(group.id !== OTHER_GROUP ? group.id : undefined);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key !== "Enter" && e.key !== " ") return;
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  handleCreateClick(group.id !== OTHER_GROUP ? group.id : undefined);
+                                }}
+                                className="ml-auto flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                              >
+                                <Plus className="size-3.5" />
+                                {t("createButton")}
+                              </span>
+                            )}
+                          </AccordionTrigger>
+                          {group.items.length > 0 && (
+                            <AccordionContent className="px-2 pb-3">
+                              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+                                {group.items.map((a) => {
+                                  const isDeck = a.kind === "deck";
+                                  const Icon = isDeck ? Presentation : FileCheck2;
+                                  return (
+                                    <ContextMenu key={a.id}>
+                                      <ContextMenuTrigger asChild>
+                                        <button
+                                          type="button"
+                                          onClick={() => openEditor(a.id)}
+                                          className="list-card group flex items-center gap-3 p-3.5 text-left"
+                                        >
+                                          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                            <Icon className="size-4" />
+                                          </div>
+                                          <div className="min-w-0 flex-1">
+                                            <h4 className="truncate text-sm font-medium text-foreground">
+                                              {a.title}
+                                            </h4>
+                                          </div>
+                                          <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
+                                            {isDeck ? t("kindDeck") : t("kindTest")}
+                                          </Badge>
+                                        </button>
+                                      </ContextMenuTrigger>
+                                      <ContextMenuContent>
+                                        <ContextMenuItem className="gap-2" onSelect={() => handleDuplicate(a)}>
+                                          <Copy className="size-4" />
+                                          {t("duplicate")}
+                                        </ContextMenuItem>
+                                        <ContextMenuSeparator />
+                                        <ContextMenuItem
+                                          variant="destructive"
+                                          className="gap-2"
+                                          onSelect={() => setDeleteTarget(a)}
+                                        >
+                                          <Trash2 className="size-4" />
+                                          {t("delete")}
+                                        </ContextMenuItem>
+                                      </ContextMenuContent>
+                                    </ContextMenu>
+                                  );
+                                })}
+                              </div>
+                            </AccordionContent>
+                          )}
+                        </AccordionItem>
                       ))}
+                    </Accordion>
                     </div>
                   </ScrollArea>
                 )}
