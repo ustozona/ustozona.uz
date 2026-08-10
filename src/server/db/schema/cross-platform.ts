@@ -130,6 +130,63 @@ export const testLinks = pgTable(
 
 export type TestLinkRow = typeof testLinks.$inferSelect;
 
+/** Toʻplam QAYSI bank testidan olingani — N:1 (koʻp toʻplam, bitta test).
+
+    ⛔ `testLinks` BILAN ARALASHTIRMANG — ular boshqa munosabatlar:
+
+      testLinks   1:1  oʻqituvchining OʻZ testining Ustozonadagi koʻzgusi.
+                       Ikki qator, bitta haqiqat — sinxronlanadi.
+      setSources  N:1  BANK testidan olingan nusxa. Manba boshqa
+                       odamniki boʻlishi mumkin.
+
+    NEGA ALOHIDA JADVAL KERAK BOʻLDI
+    --------------------------------
+    Bank testini yuz oʻqituvchi oʻz sinfiga bera oladi va har biriga
+    alohida `activity_sets` qatori kerak (`classId`/`teacherId` NOT
+    NULL). Buni `testLinks` ga tiqish uchun `PRIMARY KEY (ll_test_id)`
+    ni olib tashlash kerak boʻlardi — yaʼni `docs/CROSS_PLATFORM.md` §3
+    kafolatini buzish. Ikkinchi oʻqituvchi testni olgan zahoti
+    birinchisining bogʻlanishi JIMGINA qayta yozilardi.
+
+    ⛔ MANBA NUSXANI TAHRIRLAY OLMAYDI. `syncLinkedSet()` faqat
+    `testLinks` boʻyicha ishlaydi va bu jadvalga umuman qaramaydi —
+    ataylab. Aks holda ommaviy test egasi savolini oʻzgartirsa, uni
+    allaqachon oʻtkazgan yuzlab sinfdagi natijalar maʼnosini
+    yoʻqotardi.
+
+    `uzClassId` `activity_sets` da ham bor va bu yerda TAKRORLANADI:
+    dublikat cheklovi (`UNIQUE (uz_class_id, ll_test_id)`) faqat shu
+    jadvalning ustunlari bilan ifodalanishi mumkin.
+
+    `references()` `llTestId` da YOʻQ — sababi fayl boshidagi izohda
+    (`bot_tests` Drizzle sxemasida taʼriflanmagan). Haqiqiy FK bazada:
+    `lessonlab-scanner/supabase/migrations/20260810_test_bank.sql`. */
+export const setSources = pgTable(
+  "set_sources",
+  {
+    uzSetId: text("uz_set_id")
+      .primaryKey()
+      .references(() => activitySets.id, { onDelete: "cascade" }),
+    llTestId: integer("ll_test_id").notNull(),
+    uzClassId: text("uz_class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    /** Olingan PAYTDAGI daraja — manba keyin oʻzgarsa ham oʻzgarmaydi. */
+    tier: text("tier").$type<BankTier>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("set_sources_class_test_uniq").on(t.uzClassId, t.llTestId),
+    index("set_sources_test_idx").on(t.llTestId),
+    index("set_sources_class_idx").on(t.uzClassId),
+  ]
+);
+
+/** Bank darajasi. Taʼrif SQL da (`v_test_bank`) — bu faqat TUR. */
+export type BankTier = "ommaviy" | "tasdiqlangan" | "shaxsiy";
+
+export type SetSourceRow = typeof setSources.$inferSelect;
+
 /** Import hisoboti — «nima o'tdi, nima o'tmadi va NEGA».
 
     NEGA QO'SHILDI (2026-08-09)
