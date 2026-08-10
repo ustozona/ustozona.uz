@@ -1,13 +1,15 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activities, activityItems, activitySets, classes, setSources, userTelegram,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { createSession, openSession } from "@/server/dal/assess/sessions";
 import type {
-  AssignBankTestResult, BankFacets, BankPage, BankQuery, BankTest, BankTier,
+  AssignBankTestResult, AssignedClass, BankFacets, BankPage, BankPreview,
+  BankQuery, BankTest, BankTier,
 } from "@/lib/test-bank-types";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -238,6 +240,57 @@ type ParsedQuestion = {
   options: { id: string; text: string; isCorrect: boolean }[];
 };
 
+/** Test bankka tegishlimi (ochiq) — yoki oʻqituvchining OʻZINIKIMI.
+
+    ⛔ Ikkala shart ham kerak. Ikkinchisisiz «Shaxsiy» tabidan test
+    berib boʻlmasdi; birinchisisiz esa har kim istalgan YOPIQ testni id
+    boʻyicha taxmin qilib sinfiga koʻchirib olardi.
+
+    Bu tekshiruv `assignBankTest` va `bankTestQuestions` ikkalasida ham
+    kerak — shuning uchun bitta joyda. Nusxalansa, keyin bittasida
+    unutilib qolardi va u teshik boʻlardi. */
+async function bankTestMeta(
+  llTestId: number,
+  teacherId: string
+): Promise<{ title: string | null; tier: string } | null> {
+  const telegramId = await linkedTelegramId(teacherId);
+  const found = await db.execute<{ title: string | null; tier: string }>(sql`
+    SELECT title, tier FROM v_test_bank WHERE ll_test_id = ${llTestId}
+    UNION ALL
+    SELECT t.title, 'shaxsiy'::text AS tier
+      FROM bot_tests t
+     WHERE ${telegramId === null ? sql`FALSE` : sql`t.user_id = ${telegramId}::bigint`}
+       AND t.id = ${llTestId}
+    LIMIT 1
+  `);
+  return Array.from(found)[0] ?? null;
+}
+
+/** Savollarni KOʻRISH — berishdan oldin.
+
+    NEGA KERAK: kartochkada faqat nom va savol soni bor edi. Oʻqituvchi
+    begona odam tuzgan testni koʻrmasdan sinfiga bermaydi — amalda
+    tugma bosilmasdi, yoki bosilib, keyin toʻplam muharririda ochib
+    tekshirilardi va yoqmasa oʻchirilardi. Yaʼni «koʻrish» qadami
+    baribir bor edi, faqat eng qimmat joyda.
+
+    Toʻgʻri javob HAM qaytadi: ustoz test sifatini aynan shundan
+    baholaydi (javobi notoʻgʻri belgilangan test bankda uchraydi).
+    Bu maʼlumot sirlash emas — test allaqachon ochiq va uni
+    `share_code` bilan botda ham koʻrish mumkin. */
+export async function bankTestQuestions(llTestId: number): Promise<BankPreview> {
+  const teacher = await requireTeacher();
+  const meta = await bankTestMeta(llTestId, teacher.id);
+  if (!meta) return { ok: false };
+
+  const parsed = await readQuestions(llTestId);
+  return {
+    ok: true,
+    title: meta.title ?? "Test",
+    questions: parsed.map((p) => ({ stem: p.stem, options: p.options })),
+  };
+}
+
 /** Bank testining savollarini oʻqiydi va Ustozona shakliga keltiradi.
 
     ⚠️ EGALIK BU YERDA TEKSHIRILMAYDI — ataylab. Bank testi taʼrifi
@@ -305,69 +358,129 @@ async function readQuestions(llTestId: number): Promise<ParsedQuestion[]> {
     IKKINCHI marta qoʻshilardi. */
 export async function assignBankTest(
   llTestId: number,
-  classId: string
+  classIds: string[],
+  options: { startSession?: boolean } = {}
 ): Promise<AssignBankTestResult> {
   const teacher = await requireTeacher();
-  await requireOwnClass(classId, teacher.id);
+  if (classIds.length === 0) return { ok: false, reason: "no_class" };
+  // Egalik HAR sinf uchun alohida tekshiriladi. Bittasini oʻtkazib
+  // yuborish «bitta oʻzimniki + bitta begona» roʻyxati bilan begona
+  // sinfga test yozib qoʻyish imkonini berardi.
+  for (const classId of classIds) await requireOwnClass(classId, teacher.id);
 
-  // Test bankka tegishlimi (ochiq) — yoki oʻqituvchining OʻZINIKIMI.
-  // ⛔ Ikkinchi shartsiz «Shaxsiy» tabidan test berib boʻlmasdi;
-  //    birinchisisiz esa har kim istalgan yopiq testni id boʻyicha
-  //    taxmin qilib sinfiga koʻchirib olardi.
-  const telegramId = await linkedTelegramId(teacher.id);
-  const found = await db.execute<{ title: string | null; tier: string }>(sql`
-    SELECT title, tier FROM v_test_bank WHERE ll_test_id = ${llTestId}
-    UNION ALL
-    SELECT t.title, 'shaxsiy'::text AS tier
-      FROM bot_tests t
-     WHERE ${telegramId === null ? sql`FALSE` : sql`t.user_id = ${telegramId}::bigint`}
-       AND t.id = ${llTestId}
-    LIMIT 1
-  `);
-  const meta = Array.from(found)[0];
+  const meta = await bankTestMeta(llTestId, teacher.id);
   if (!meta) return { ok: false, reason: "not_found" };
-
-  const [existing] = await db
-    .select({ setId: setSources.uzSetId })
-    .from(setSources)
-    .where(and(eq(setSources.uzClassId, classId), eq(setSources.llTestId, llTestId)));
-  if (existing) return { ok: false, reason: "duplicate", setId: existing.setId };
 
   const parsed = await readQuestions(llTestId);
   if (parsed.length === 0) return { ok: false, reason: "no_usable_questions" };
 
-  const setId = randomUUID();
+  // Allaqachon berilgan sinflar — ular jimgina oʻtkazib yuborilmaydi,
+  // hisobotda alohida koʻrsatiladi (pastdagi `skipped`).
+  const already = new Map(
+    (await db
+      .select({ classId: setSources.uzClassId, setId: setSources.uzSetId })
+      .from(setSources)
+      .where(and(eq(setSources.llTestId, llTestId),
+                 inArray(setSources.uzClassId, classIds))))
+      .map((r) => [r.classId, r.setId] as const)
+  );
+
   const title = meta.title ?? "Test";
+  const created: AssignedClass[] = [];
+  const skipped: AssignedClass[] = [];
 
-  // Toʻplam, savollar va MANBA YOZUVI bitta tranzaksiyada. Aks holda
-  // tarmoq uzilsa manbasiz toʻplam qolib ketardi — yaʼni dublikat
-  // cheklovi uni koʻrmasdi va keyingi urinish IKKINCHI nusxa yaratardi
-  // (`importTests()` dagi bilan aynan bir sabab).
-  await db.transaction(async (tx) => {
-    const items: { activityId: string; role: "check" }[] = [];
-    for (const [ordinal, p] of parsed.entries()) {
-      const activityId = randomUUID();
-      await tx.insert(activities).values({
-        id: activityId, teacherId: teacher.id, shape: "mcq",
-        title: p.stem.slice(0, 200), source: "bank", approved: true,
-        grading: "exact",
-      });
-      await tx.insert(activityItems).values({
-        id: randomUUID(), activityId, teacherId: teacher.id, ordinal,
-        content: { stem: p.stem, options: p.options },
-      });
-      items.push({ activityId, role: "check" });
+  for (const classId of classIds) {
+    const existingSetId = already.get(classId);
+    if (existingSetId) {
+      skipped.push({ classId, setId: existingSetId, sessionCode: null });
+      continue;
     }
+    const setId = randomUUID();
 
-    await tx.insert(activitySets).values({
-      id: setId, teacherId: teacher.id, classId,
-      title, purpose: "formative", items,
-    });
-    await tx.insert(setSources).values({
-      uzSetId: setId, llTestId, uzClassId: classId,
-      tier: meta.tier as BankTier,
-    });
-  });
+    // Toʻplam, savollar va MANBA YOZUVI bitta tranzaksiyada. Aks holda
+    // tarmoq uzilsa manbasiz toʻplam qolib ketardi — yaʼni dublikat
+    // cheklovi uni koʻrmasdi va keyingi urinish IKKINCHI nusxa yaratardi
+    // (`importTests()` dagi bilan aynan bir sabab).
+    //
+    // ⚠️ Har sinf — ALOHIDA tranzaksiya. Bittasini yiqilishi (masalan
+    // poyga holatida `unique_violation`) qolgan sinflarni bekor
+    // qilmasligi kerak: oʻqituvchi uchun «uchtadan ikkitasi berildi»
+    // «hech biri berilmadi» dan yaxshiroq.
+    await db.transaction(async (tx) => {
+      const items: { activityId: string; role: "check" }[] = [];
+      for (const [ordinal, p] of parsed.entries()) {
+        const activityId = randomUUID();
+        await tx.insert(activities).values({
+          id: activityId, teacherId: teacher.id, shape: "mcq",
+          title: p.stem.slice(0, 200), source: "bank", approved: true,
+          grading: "exact",
+        });
+        await tx.insert(activityItems).values({
+          id: randomUUID(), activityId, teacherId: teacher.id, ordinal,
+          content: { stem: p.stem, options: p.options },
+        });
+        items.push({ activityId, role: "check" });
+      }
 
-  return { ok: true, setId, title, questionCount: parsed.length };
+      await tx.insert(activitySets).values({
+        id: setId, teacherId: teacher.id, classId,
+        title,
+        /* ⛔ `summative` — `formative` EMAS, va bu jiddiy farq.
+           `publish.ts:52` formativ toʻplamni jurnalga koʻchirishni RAD
+           ETADI, `SessionPanelModal` esa «Jurnalga» tugmasini umuman
+           chizmaydi. Yaʼni formativ qoldirilsa bankdan olingan test
+           hech qachon baho ustuniga aylana olmasdi — Topshiriqlar
+           sahifasining «jurnalga avtomatik ulanadi» vaʼdasi buzilardi,
+           va oʻqituvchi sababini koʻrmasdi ham.
+
+           `SetBuilderOverlay:174` — qoʻlda tuzilgan HAR test ham
+           `summative`. Bank oʻsha qatorda turishi kerak.
+
+           Summativ qatʼiyroq emas, KENGROQ: nashr qilish majburiy
+           emas, faqat MUMKIN. Formativ esa eshikni butunlay yopardi.
+
+           ⚠️ `importTests()` dagi `formative` TOʻGʻRI va oʻzgarmaydi —
+           u fon importi, oʻqituvchi soʻramagan holda koʻchirilgan test
+           oʻz-oʻzidan baholanadigan boʻlib qolmasligi kerak. */
+        purpose: "summative",
+        items,
+      });
+      await tx.insert(setSources).values({
+        uzSetId: setId, llTestId, uzClassId: classId,
+        tier: meta.tier as BankTier,
+      });
+    });
+
+    created.push({ classId, setId, sessionCode: null });
+  }
+
+  /* «Berish va boshlash» — sessiya SHU YERDA ochiladi.
+
+     Nega DAL da, UI da emas: oʻqituvchi «berish» deganda amalda
+     «bolalar hozir ishlasin» demoqchi. UI dan ketma-ket ikki chaqiruv
+     qilinsa, ikkinchisi yiqilganda toʻplam bor, sessiya yoʻq holat
+     qolardi va bu ekranda hech qanday belgi bermasdi.
+
+     Sessiya yiqilsa toʻplam BEKOR QILINMAYDI — u allaqachon yaratilgan
+     va oʻzi qimmatli. Kod `null` boʻlib qaytadi, UI esa «toʻplam
+     tayyor, sessiyani oʻzingiz boshlang» holatiga tushadi. */
+  if (options.startSession) {
+    for (const row of created) {
+      try {
+        const session = await createSession({
+          setId: row.setId, classId: row.classId, title, mode: "selfpaced",
+        });
+        const opened = await openSession(session.id);
+        row.sessionCode = opened.joinCode ?? null;
+      } catch {
+        // Sabab yuqoridagi izohda — toʻplam saqlanadi, kod `null` qoladi.
+        row.sessionCode = null;
+      }
+    }
+  }
+
+  return {
+    ok: true, title, questionCount: parsed.length,
+    created, skipped,
+  };
 }
