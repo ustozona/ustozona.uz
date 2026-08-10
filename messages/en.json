@@ -912,7 +912,8 @@
     "fileErrorEmpty": "No students found in the file. Check the sample CSV format.",
     "fileErrorParse": "Could not read the file. Choose a .csv, .xls, or .xlsx file.",
     "reviewReady": "{count} students ready",
-    "swapNames": "Swap first/last name",
+    "swapNames": "Swap all",
+    "swapRowAria": "Swap first and last name",
     "columnFirstName": "First name",
     "columnLastName": "Last name",
     "removeRowAria": "Remove",
@@ -1137,6 +1138,10 @@
     "emptyTitle": "No classes yet",
     "emptyDescription": "Add your first class and start managing your roster, attendance, and grading.",
     "emptyAddClass": "Add a class",
+    "moreActions": "More actions",
+    "importClasses": "Import",
+    "exportClasses": "Export",
+    "exportToast": "{count} classes exported",
     "notFoundTitle": "Not found",
     "notFoundDescription": "Nothing matches “{search}”",
     "archivedSection": "Archived classes",
@@ -1964,6 +1969,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "sinf-import-eksport": {
+        "title": "Add classes in bulk and export them to a file",
+        "body": "The button next to “New class” lets you paste a list of classes or hand over a spreadsheet — if it has a “Class” column, students land in their own class too. Before you confirm you can see how many new classes will be created; a class that already exists is not created again. From the same menu you can export every class with its students to a file."
+      },
       "assignment-draft-persist": {
         "title": "Assignment drafts no longer disappear",
         "body": "Start creating an assignment, move to another section, and the draft is still there — pick it up from the chip at the bottom. Closing the editor asks whether to save it as a draft or discard it, so nothing is lost by accident."
@@ -3857,5 +3866,34 @@
     "loadFailedDescription": "There was a connection problem. Please try again.",
     "retry": "Retry",
     "pageOf": "{page} / {total}"
+  },
+  "ImportClassesModal": {
+    "title": "Import classes",
+    "close": "Close",
+    "back": "Back",
+    "review": "Review",
+    "choicePasteTitle": "Paste a list",
+    "choicePasteDescription": "One class name per line",
+    "choiceFileTitle": "CSV or Excel file",
+    "choiceFileDescription": "With a “Class” column, students come too",
+    "pasteLabel": "List of classes",
+    "pasteHint": "“5-A”, “5 a” and “5-А” are treated as one class.",
+    "pasteCountFound": "{count} classes found",
+    "pasteCountEmpty": "No classes found",
+    "fileLabel": "Choose a file",
+    "fileHint": "Columns: Class, Last name, First name. A header row is required.",
+    "sampleCsv": "Sample file",
+    "fileErrorNoClass": "No “Class” column found in the file.",
+    "fileErrorParse": "Could not read the file.",
+    "summaryNew": "{count} new classes",
+    "summaryExisting": "{count} already exist",
+    "summaryStudents": "{count} students",
+    "unassignedNote": "{count} rows have no class — they will be skipped.",
+    "columnClass": "Class",
+    "columnStudents": "Status",
+    "existsBadge": "Exists",
+    "newBadge": "New",
+    "removeRowAria": "Remove",
+    "submit": "Add {count} classes"
   }
 }

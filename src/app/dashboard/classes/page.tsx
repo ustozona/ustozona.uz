@@ -41,7 +41,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import {
-  XIcon, PlusIcon, ChevronDownIcon,
+  XIcon, PlusIcon, ChevronDownIcon, Upload as UploadIcon, Download as DownloadIcon,
   LayoutGrid, List as ListIcon, Table as TableIcon, PencilIcon, Trash2 as TrashIcon,
   GraduationCap, Search, ArrowUpDown, BarChart3, Users, BookOpen,
   ClipboardList, MoreHorizontal, ArrowRight, Archive as ArchiveIcon, ArchiveRestore,
@@ -59,6 +59,8 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeClassesTourDemo } from "@/components/tour/classes-tour-demo";
 import { ClassFormModal, type ClassFormValues } from "@/components/ClassFormModal";
+import { ImportClassesModal } from "@/components/ImportClassesModal";
+import { downloadClassesCsv } from "@/lib/import-roster";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -117,6 +119,7 @@ export default function ClassesPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<LiveClass | null>(null);
   const [deleteTargets, setDeleteTargets] = useState<LiveClass[] | null>(null);
   // Jadval koʻrinishida qator tanlash — faqat bulk arxivlash/oʻchirish uchun.
@@ -182,6 +185,18 @@ export default function ClassesPage() {
   const liveClassesDisplay = isDemoMode ? tourDemoClasses! : liveClasses;
 
   const createClass = useCreateClass();
+
+  /** Sinflarni oʻquvchilari bilan CSV ga chiqarish. Fayl aynan
+   *  importning kutgan shaklida — zaxira ham, koʻchirish ham shu bitta
+   *  fayl orqali. Arxivlangan sinflar chiqmaydi. */
+  const handleExportClasses = () => {
+    const rows = liveClasses.map((c) => ({
+      name: c.name,
+      students: classDataMap[c.id]?.students ?? [],
+    }));
+    downloadClassesCsv(rows);
+    toast.success(t("exportToast", { count: rows.length }));
+  };
 
   const handleCreate = (v: ClassFormValues) => {
     createClass(v);
@@ -359,11 +374,42 @@ export default function ClassesPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* New class */}
-              <Button data-tour="classes-add" onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
-                <PlusIcon className="size-4" />
-                {t("newClass")}
-              </Button>
+              {/* Yangi sinf — boʻlingan tugma: asosiy qism bitta sinf,
+                  `⌄` esa koʻplab import (ClassListPanel bilan bir xil). */}
+              <div className="flex items-center">
+                <Button
+                  data-tour="classes-add"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="gap-1.5 rounded-r-none pr-2.5"
+                >
+                  <PlusIcon className="size-4" />
+                  {t("newClass")}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className="rounded-l-none border-l border-primary-foreground/20 px-2"
+                      aria-label={t("moreActions")}
+                    >
+                      <ChevronDownIcon className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setIsImportOpen(true)}>
+                      <UploadIcon className="size-4" />
+                      {t("importClasses")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 cursor-pointer"
+                      disabled={liveClasses.length === 0}
+                      onClick={handleExportClasses}
+                    >
+                      <DownloadIcon className="size-4" />
+                      {t("exportClasses")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </CardHeader>
 
@@ -414,10 +460,24 @@ export default function ClassesPage() {
                     </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
-                    <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
-                      <PlusIcon className="size-4" />
-                      {t("emptyAddClass")}
-                    </Button>
+                    {/* Boʻsh holat — importning eng qimmatli joyi:
+                        oʻqituvchining sinflari koʻpincha allaqachon
+                        jadvalda yozib qoʻyilgan boʻladi. */}
+                    <div className="flex flex-col items-center gap-2">
+                      <Button onClick={() => setIsCreateModalOpen(true)} className="gap-1.5">
+                        <PlusIcon className="size-4" />
+                        {t("emptyAddClass")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsImportOpen(true)}
+                        className="gap-1.5 text-muted-foreground"
+                      >
+                        <UploadIcon className="size-4" />
+                        {t("importClasses")}
+                      </Button>
+                    </div>
                   </EmptyContent>
                 </Empty>
               ) : filteredAndSorted.length === 0 ? (
@@ -566,6 +626,8 @@ export default function ClassesPage() {
           onClose={() => setIsCreateModalOpen(false)}
         />
       )}
+
+      <ImportClassesModal open={isImportOpen} onOpenChange={setIsImportOpen} />
 
       {editTarget && (
         <ClassFormModal

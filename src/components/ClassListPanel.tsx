@@ -279,10 +279,7 @@ export default function ClassListPanel({
         <ClassFormModal
           mode="create"
           onSubmit={(v) => {
-            // `null` — LessonLab bog'lash darvozasi qayta ochildi, sinf
-            // yaratilmadi. Modalni yopamiz, tanlashga esa hech narsa yo'q.
-            const id = createClass(v);
-            if (id) onSelect(id);
+            onSelect(createClass(v));
             setInternalModalOpen(false);
           }}
           onClose={() => setInternalModalOpen(false)}

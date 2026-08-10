@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "sinf-import-eksport",
+    date: "2026-08-10",
+    type: "yangi",
+    title: "Sinflarni bir yoʻla qoʻshish va faylga chiqarish",
+    body:
+      "«Yangi sinf» yonidagi tugmachadan sinflar roʻyxatini joylashtirasiz yoki jadval faylini berasiz — «Sinf» ustuni boʻlsa oʻquvchilar ham oʻz sinfiga tushadi. Tasdiqdan oldin nechta yangi sinf ochilishi koʻrinadi, allaqachon bor sinf qayta yaratilmaydi. Shu yerdan barcha sinflarni oʻquvchilari bilan faylga chiqarsa ham boʻladi.",
+    href: "/dashboard/classes",
+  },
+  {
     id: "baholash-card-scanner",
     date: "2026-08-06",
     type: "yangi",

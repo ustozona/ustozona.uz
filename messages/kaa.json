@@ -912,7 +912,8 @@
     "fileErrorEmpty": "Faylda oqıwshı tabılmadı. Úlgi CSV formatına qarań.",
     "fileErrorParse": "Fayldı oqıp bolmadı. .csv, .xls yamasa .xlsx fayl tańlań.",
     "reviewReady": "{count} oqıwshı tayın",
-    "swapNames": "Atı/familiyasın almastırıw",
+    "swapNames": "Barlıgın almastırıw",
+    "swapRowAria": "Atı menen familiyasın almastırıw",
     "columnFirstName": "Atı",
     "columnLastName": "Familiyası",
     "removeRowAria": "Alıp taslaw",
@@ -1137,6 +1138,10 @@
     "emptyTitle": "Házirshe klaslar joq",
     "emptyDescription": "Birinshi klasıńızdı qosıń hám oqıwshılar dizimi, dawamat hámde bahalawdı júrgiziwdi baslań.",
     "emptyAddClass": "Jańa klas qosıw",
+    "moreActions": "Basqa ámeller",
+    "importClasses": "Import qılıw",
+    "exportClasses": "Eksport qılıw",
+    "exportToast": "{count} klas faylǵa shıǵarıldı",
     "notFoundTitle": "Tabılmadı",
     "notFoundDescription": "«{search}» boyınsha hesh nárse joq",
     "archivedSection": "Arxivlengen klaslar",
@@ -1964,6 +1969,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "sinf-import-eksport": {
+        "title": "Klaslardı bir jolı qosıw hám faylǵa shıǵarıw",
+        "body": "«Jańa klas» janındaǵı tuymeden klaslar dizimin qoyasız yamasa keste faylın beresiz — «Klas» baǵanası bolsa oqıwshılar da óz klasına túsedi. Tastıyıqlawdan aldın neshe jańa klas ashılatuǵını kórinedi, bar klas qayta jaratılmaydı. Usı jerden barlıq klaslardı oqıwshıları menen faylǵa shıǵarıwǵa da boladı."
+      },
       "assignment-draft-persist": {
         "title": "Tapsırma qaralaması endi joǵalmaydı",
         "body": "Tapsırma jaratıp atırıp basqa bólimge ótseńiz de qaralama saqlanıp qaladı — tómendegi belgiden dawam etesiz. Redaktordı jappaqshı bolsańız \"Qaralama retinde saqlaw\" yamasa \"Óshiriw\" soraladı, jumıs biykarǵa ketpeydi."
@@ -3861,5 +3870,34 @@
     "loadFailedDescription": "Aloqada muammo boʻldi. Qaytadan urinib koʻring.",
     "retry": "Qayta urinish",
     "pageOf": "{page} / {total}"
+  },
+  "ImportClassesModal": {
+    "title": "Klaslardı import qılıw",
+    "close": "Jabıw",
+    "back": "Artqa",
+    "review": "Kórip shıgıw",
+    "choicePasteTitle": "Dizimdi qoyıw",
+    "choicePasteDescription": "Hár qatarda bir klas atı",
+    "choiceFileTitle": "CSV yamasa Excel fayl",
+    "choiceFileDescription": "«Klas» baǵanası bolsa oqıwshılar da qosıladı",
+    "pasteLabel": "Klaslar dizimi",
+    "pasteHint": "«5-A», «5 a» hám «5-А» bir klas dep alınadı.",
+    "pasteCountFound": "{count} klas tabıldı",
+    "pasteCountEmpty": "Klas tabılmadı",
+    "fileLabel": "Fayldı saylań",
+    "fileHint": "Baǵanalar: Klas, Familiya, At. Sarlawha qatarı shárt.",
+    "sampleCsv": "Úlgi fayl",
+    "fileErrorNoClass": "Faylda «Klas» baǵanası tabılmadı.",
+    "fileErrorParse": "Fayldı oqıp bolmadı.",
+    "summaryNew": "{count} jańa klas",
+    "summaryExisting": "{count} tası bar",
+    "summaryStudents": "{count} oqıwshı",
+    "unassignedNote": "{count} qatarda klas kórsetilmegen — olar qosılmaydı.",
+    "columnClass": "Klas",
+    "columnStudents": "Jaǵdayı",
+    "existsBadge": "Bar",
+    "newBadge": "Jańa",
+    "removeRowAria": "Alıp taslaw",
+    "submit": "{count} klastı qosıw"
   }
 }
