@@ -11,7 +11,6 @@ import { studentSummary } from "@/lib/grades-stats";
 import { deriveLessonDays, weightedRate, statusWeights } from "@/lib/attendance-data";
 import { todayKey } from "@/lib/date-keys";
 import { useGradesStore } from "@/store/useGradesStore";
-import { useRequireLessonLabLink } from "@/hooks/useRequireLessonLabLink";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
@@ -108,7 +107,6 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   // (server-backed). Hydration'gacha roʻyxat boʻsh boʻlib turadi.
   const mounted = useMounted();
   const updateClass = useGradesStore((s) => s.updateClass);
-  const ensureLinked = useRequireLessonLabLink();
   const liveGrades = useGradesStore((s) => s.classDataMap[classId]);
   const storedRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
   const attendanceStatuses = useAttendanceStore((s) => s.statuses);
@@ -139,9 +137,6 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
 
   const handleImport = (incoming: { firstName: string; lastName: string }[]) => {
     if (incoming.length === 0) return;
-    // Bog'lanmagan o'quvchi qatori paydo bo'lmasin — «Keyinroq»
-    // bosilgan bo'lsa darvoza qayta ochiladi va qo'shish bekor bo'ladi.
-    if (!ensureLinked()) return;
     const rows: Student[] = incoming.map((s) => ({
       id: crypto.randomUUID(),
       name: `${s.firstName} ${s.lastName}`.trim(),

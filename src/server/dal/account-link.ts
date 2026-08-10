@@ -43,19 +43,26 @@ import type {
 const BOT_USERNAME = process.env.LESSONLAB_BOT_USERNAME || "uzlessonlabbot";
 const TTL_MINUTES = 15;
 
-// ⚙️ O'CHIRISH KALITI — LessonLab tomonidagi `USTOZONA_LINK_REQUIRED`
-// bilan bir xil sabab. Bu majburiylik BARCHA mavjud o'qituvchilarga
-// (hozir 4 ta) DARHOL ta'sir qiladi — ular keyingi kirishda darhol
-// bog'lash oynasini ko'radi. Kutilmagan muammo chiqsa, .env'da
-// `LESSONLAB_LINK_REQUIRED=0` qo'yib DARHOL o'chirish mumkin bo'lishi
-// kerak, deploy'ni qaytarmasdan. Standart — yoqilgan.
-const LINK_REQUIRED = (process.env.LESSONLAB_LINK_REQUIRED ?? "1") !== "0";
+/* ⛔ `LINK_REQUIRED` / `LESSONLAB_LINK_REQUIRED` OLIB TASHLANDI (2026-08-10)
 
+   U «bog'lanish majburiy» darvozasini yoqib-o'chirish uchun edi. Darvoza
+   endi yo'q (`dashboard/layout.tsx` dagi izohga qarang), shuning uchun
+   bayroq ham keraksiz — turgan bo'lsa «bu yerda majburiylik bor» degan
+   yolg'on taassurot berardi.
 
-/** Dashboard gate uchun: bog'lanish holati + majburiymi. */
-export async function getLinkStatus(): Promise<LinkState & { required: boolean }> {
-  const state = await getOrCreateLink();
-  return { ...state, required: LINK_REQUIRED };
+   ⚠️ Vercel'da `LESSONLAB_LINK_REQUIRED` qolgan bo'lsa endi HECH NARSA
+   qilmaydi. Zarari yo'q, lekin olib tashlangani ma'qul.
+
+   Bog'lanish MAJBURIYLIGI qaytarilishi kerak bo'lsa, u global bayroq
+   emas, PER-USER shart bo'lishi kerak: faqat botda haqiqatan ma'lumoti
+   bor o'qituvchiga. Buni oldindan bilib bo'lmaydi — `telegram_id`
+   bog'langandan keyin ma'lum bo'ladi va `bot_users` da email yo'q, ya'ni
+   moslashtirishning boshqa yo'li ham yo'q. Yagona signal — o'qituvchining
+   O'ZIDAN so'rash. */
+
+/** Bog'lanish holati — Sozlamalar, Profil va import oqimi uchun. */
+export async function getLinkStatus(): Promise<LinkState> {
+  return getOrCreateLink();
 }
 
 /** Joriy o'qituvchining biriktirish holati + kerak bo'lsa yangi havola.

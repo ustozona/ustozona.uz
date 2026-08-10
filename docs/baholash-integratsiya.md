@@ -618,6 +618,56 @@ Kerak boʻlsa: burilish → javob jadvali va karta geometriyasi.
 - **Surat brauzerda kichraytiriladi** (2000 px, JPEG): Vercel soʻrov
   tanasi ~4.5 MB, telefon surati esa bemalol 8 MB boʻladi.
 
+## 8-octies. MAJBURIY BOGʻLASH DARVOZASI OLIB TASHLANDI (2026-08-10)
+
+Kirish bilan chiqadigan «Telegram akkauntingizni bogʻlang» modali —
+`LessonLabLinkGate` — oʻchirildi. Bu qaror yozib qoʻyilishi kerak,
+chunki darvoza qaytadan qoʻshilib qoʻyilishi juda oson.
+
+### Nima bor edi
+
+`570c049` (2026-08-08) da qoʻshilgan modal: yopilmasdi
+(`showCloseButton={false}`, tashqariga bosish va Esc bloklangan) va
+`LESSONLAB_LINK_REQUIRED` yoqilgan boʻlsa bogʻlanmagan har bir
+oʻqituvchini ilovaga umuman kiritmasdi.
+
+### Nega notoʻgʻri edi
+
+1. **Asos yoʻqolgan.** Darvoza *nusxa koʻchirish* modeli davrida
+   yozilgan: maʼlumot ikki tomonga koʻchsa dublikat chiqmasligi uchun
+   akkaunt oldindan bogʻlanishi shart edi. Oʻsha haftaning oʻzida
+   arxitektura *xizmat* modeliga oʻtdi — yuqoridagi 2-boʻlim:
+   «LessonLabga bizning maʼlumot koʻchmaydi… shu sababli dublikat
+   muammosi tugʻilmaydi», va 7-boʻlim: «Ustozona oʻqituvchisida
+   LessonLab akkaunti yoʻq va boʻlishi ham shart emas». Darvoza esa
+   qolib ketdi.
+2. **Auditoriya notoʻgʻri.** Ustozonaga toʻgʻridan-toʻgʻri kelgan
+   oʻqituvchi LessonLab nimaligini bilmaydi. Undan birinchi ekranda
+   boshqa mahsulotning akkauntini soʻrash — hech qanday qiymat
+   bermaydigan toʻsiq.
+3. **`required` ni hisoblab boʻlmaydi.** Bogʻlanmaguncha telegram_id
+   nomaʼlum, `bot_users` da esa email yoʻq — yaʼni «bu odam aslida
+   LessonLab foydalanuvchisi» degan xulosani server chiqara olmaydi.
+   Bayroq shu sababli hammaga birdek qoʻllanardi.
+
+### Nima qoldi
+
+Bogʻlash **yoʻqolgani yoʻq**, faqat majburiyligi ketdi:
+
+- Sozlamalar → Profildagi `LessonLabLinkPanel` — asosiy kirish nuqtasi;
+- `BaholashWorkspace` bogʻlanmagan holatda oʻsha sahifaga yoʻnaltiradi
+  (yaʼni soʻrov aynan kerak boʻlgan paytda chiqadi).
+
+Birga oʻchgan oʻlik kod: `useRequireLessonLabLink` va `link-deferred`
+store. `defer()` ni hech kim chaqirmasdi — tekshiruv har doim `true`
+qaytarardi, lekin 4 ta chaqiruv joyini boʻlmaydigan `null` natijani
+qayta ishlashga majbur qilardi. `useCreateClass()` endi `string`
+qaytaradi.
+
+`LESSONLAB_LINK_REQUIRED` muhit oʻzgaruvchisi ham olib tashlandi.
+Kelajakda «kerak» degan holat qaytadigan boʻlsa, u **har bir
+foydalanuvchi uchun alohida** hisoblanishi shart — global bayroq emas.
+
 ## 9. Hali qilinmagan
 - ~~Javob varagʻi PDF endpointi~~ — tayyor va UI'ga ulangan:
   `/baholash` → Qogʻoz test → «Sinf roʻyxati bilan» / «Imtihon».

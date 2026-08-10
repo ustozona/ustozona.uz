@@ -18,13 +18,11 @@ import type { LinkState, UnlinkImpactRow, FailureReason } from "@/lib/link-types
 
 export type LessonLabLinkStatus =
   | "checking"
-  | (LinkState & { required: boolean })
+  | LinkState
   | { failed: FailureReason; detail?: string };
 
 /** Holat muvaffaqiyatlimi — `status.linked` ga murojaat qilishdan oldin. */
-export function isLinkState(
-  s: LessonLabLinkStatus
-): s is LinkState & { required: boolean } {
+export function isLinkState(s: LessonLabLinkStatus): s is LinkState {
   return s !== "checking" && !("failed" in s);
 }
 
@@ -56,10 +54,11 @@ export function useLessonLabLink() {
     refresh();
   }, [refresh]);
 
-  const preserveRequired = (next: LinkState) => ({
-    ...next,
-    required: isLinkState(status) ? status.required : true,
-  });
+  /* Ilgari bu yerda `preserveRequired()` bor edi — u uzishdan keyingi
+     yangi holatga `required` bayrog'ini qayta yopishtirardi. `required`
+     olib tashlangach (`dal/account-link.ts` izohi) u keraksiz bo'ldi va
+     u bilan birga `[status]` bog'liqligi ham ketdi: endi ikkala amal
+     ham barqaror, eslint chetlab o'tilmaydi. */
 
   /** Uzishga urinish. Oqibat bo'lsa `impact` to'ldiriladi va `true`
       qaytadi — chaqiruvchi tasdiq dialogini ochsin. */
@@ -71,25 +70,23 @@ export function useLessonLabLink() {
         setImpact(result.impact);
         return true;
       }
-      setStatus(preserveRequired(result));
+      setStatus(result);
       return false;
     } finally {
       setBusy(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, []);
 
   const confirmUnlink = React.useCallback(async () => {
     setBusy(true);
     try {
       const result = await unlinkLessonLabAction(true);
-      if (!("blocked" in result)) setStatus(preserveRequired(result));
+      if (!("blocked" in result)) setStatus(result);
     } finally {
       setBusy(false);
       setImpact(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, []);
 
   const cancelUnlink = React.useCallback(() => setImpact(null), []);
 

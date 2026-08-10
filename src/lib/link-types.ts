@@ -67,7 +67,7 @@ export type FailureReason = "unauthorized" | "forbidden" | "server";
     qiymat bilan ifodalash kerak, aks holda UI unga javob bera olmaydi
     (Next production'da Server Action xatosini mijozdan yashiradi). */
 export type LinkStatusResult =
-  | (LinkState & { required: boolean })
+  | LinkState
   | { failed: FailureReason; detail?: string };
 
 /** Telegram chiptasi holati — `/tg-royxat` sahifasi uchun. */

@@ -24,7 +24,6 @@ import FocusEngine from "@/components/tasks/FocusEngine";
 import BehaviorAutoReconciler from "@/components/behavior/BehaviorAutoReconciler";
 import LegacyStorageCleanup from "@/components/sync/LegacyStorageCleanup";
 import OnboardingGate from "@/components/onboarding/OnboardingGate";
-import LessonLabLinkGate from "@/components/lessonlab/LessonLabLinkGate";
 import TourProvider from "@/components/tour/TourProvider";
 import AssignmentEditorHost from "@/components/assignments/AssignmentEditorHost";
 
@@ -58,10 +57,36 @@ export default function DashboardLayout({
       <BehaviorAutoReconciler />
       <LegacyStorageCleanup />
       <OnboardingGate />
-      {/* LessonLab bilan bog'lash — OnboardingGate bilan bir xil naqsh
-          (docs/CROSS_PLATFORM.md). Bitta qator, layout mantig'iga
-          tegilmadi. */}
-      <LessonLabLinkGate />
+      {/* ⛔ `LessonLabLinkGate` BU YERDA EDI — OLIB TASHLANDI (2026-08-10)
+
+          U kirish bilan butun dashboard ustiga yopib bo'lmaydigan modal
+          qo'yardi: «Telegram akkauntingizni bog'lang». Sabab 2026-08-08
+          da o'rinli edi — o'sha paytdagi NUSXA modelida bot ma'lumoti
+          Ustozonaga ko'chirilardi va kimlik oldindan mixlanmasa dublikat
+          tug'ilardi (2026-08-05: 8 sinf, 94 o'quvchi).
+
+          Lekin arxitektura o'sha haftaning o'zida XIZMAT modeliga o'tdi
+          va asos yo'qoldi — `docs/baholash-integratsiya.md`:
+            §2 «LessonLabga bizning ma'lumot ko'chmaydi... shu sababli
+                dublikat muammosi tug'ilmaydi»
+            §7 «Ustozona o'qituvchisida LessonLab akkaunti yo'q va
+                bo'lishi ham shart emas»
+
+          O'yin qobig'i, OMR skaneri va javob varag'i PDF — uchalasi ham
+          hamkor imzosi (`LESSONLAB_PARTNER_KEY`) bilan ishlaydi va
+          `user_telegram` ni UMUMAN o'qimaydi. Bog'lanish faqat BOTDAN
+          IMPORT uchun kerak (`importRoster` / `importTests`), ya'ni
+          faqat botda haqiqatan ma'lumoti bor o'qituvchi uchun.
+
+          To'g'ridan Ustozonaga kelgan odam esa LessonLabni bilmaydi —
+          undan birinchi qadamda begona tizimga ulanishni talab qilish
+          ro'yxatdan o'tish voronkasini bekorga uzardi.
+
+          O'RNIGA: bog'lash o'zi kerak bo'lgan joyda so'raladi —
+            · Sozlamalar > LessonLab / Profil  (`LessonLabLinkPanel`)
+            · «Sinflarni sinxronlash»          (`BaholashWorkspace`,
+              `not_linked` bo'lsa jimgina bog'lash yo'liga yuboradi)
+          Bu naqsh allaqachon yozilgan va ishlaydi. */}
       <TourProvider />
       <AssignmentEditorHost />
       <AppSidebar />
