@@ -20,12 +20,12 @@ import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import {
   type ParsedStudent, parseText, parseSpreadsheetFile, downloadSampleCsv, IMPORT_PLACEHOLDER,
-} from "./import-students-utils";
+} from "@/lib/import-roster";
 import type { Gender, NewStudentInput } from "./CreateStudentModal";
 import { FileUploadStruc } from "@/components/shadcn-space/file-upload/file-upload-01";
 import {
   Users, UserPlus, ArrowLeft, ChevronDown, Camera, X, CalendarDays,
-  Mars, Venus, Trash2, FileText, Repeat, Download, ChevronRight, FileSpreadsheet,
+  Mars, Venus, Trash2, FileText, Repeat, ArrowLeftRight, Download, ChevronRight, FileSpreadsheet,
 } from "lucide-react";
 
 type Step = "choice" | "single" | "paste" | "file" | "review";
@@ -168,8 +168,26 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
   const removeRow = (id: string) => setRows((prev) => prev.filter((r) => r.id !== id));
   const updateRow = (id: string, field: "firstName" | "lastName", value: string) =>
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+  /* Ikkita almashtirgich, ikkita boshqa vazifa — biri ikkinchisini
+     almashtirmaydi:
+
+       flipNames()  — BUTUN roʻyxat teskari joylashtirilgan (eng koʻp
+                      uchraydigan holat: oʻqituvchi «Ism Familiya»
+                      tartibida yozgan). Bitta bosish hammasini tuzatadi.
+       swapRow(id)  — roʻyxat ARALASH (ikki manbadan qoʻshilgan). Umumiy
+                      tugma bunda yordam bermaydi: toʻgʻri qatorlarni ham
+                      buzib yuboradi.
+
+     Taxmin qilinmaydi: familiyani qoʻshimchasidan (-ov, -ova, -zoda)
+     topish mumkin edi, lekin heuristika hech qachon 100% emas va jimgina
+     almashtirish — foydalanuvchi koʻrmagan oʻzgarish. Qaror oʻqituvchida
+     qoladi, jadval esa oldida turibdi. */
   const flipNames = () =>
     setRows((prev) => prev.map((r) => ({ ...r, firstName: r.lastName, lastName: r.firstName })));
+  const swapRow = (id: string) =>
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, firstName: r.lastName, lastName: r.firstName } : r))
+    );
   const validRows = rows.filter((r) => r.firstName.trim() || r.lastName.trim());
 
   const submitImport = () => {
@@ -503,15 +521,30 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
-              <div className="mb-2 grid grid-cols-[1fr_1fr_auto] items-center gap-3 px-1">
+              {/* ⇄ ustuni ATAYLAB ikki maydon ORASIDA — oʻchirish tugmasi
+                  yonida emas. Ikki sabab: shakl «shu ikkisini almashtir»
+                  maʼnosini oʻzi koʻrsatadi (izoh kerak boʻlmaydi), va
+                  ikkita mayda ikonka yonma-yon turmaydi — notoʻgʻri
+                  bosilsa qator oʻchib ketardi. */}
+              <div className="mb-2 grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3 px-1">
                 <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("columnFirstName")}</span>
+                <span className="w-9" />
                 <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("columnLastName")}</span>
                 <span className="w-9" />
               </div>
               <div className="space-y-2">
                 {rows.map((r) => (
-                  <div key={r.id} className="grid grid-cols-[1fr_1fr_auto] items-center gap-3">
+                  <div key={r.id} className="grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3">
                     <Input value={r.firstName} onChange={(e) => updateRow(r.id, "firstName", e.target.value)} className="h-9" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => swapRow(r.id)}
+                      className="size-9 shrink-0 text-muted-foreground hover:text-foreground"
+                      aria-label={t("swapRowAria")}
+                    >
+                      <ArrowLeftRight className="size-4" />
+                    </Button>
                     <Input value={r.lastName} onChange={(e) => updateRow(r.id, "lastName", e.target.value)} className="h-9" />
                     <Button
                       variant="ghost"

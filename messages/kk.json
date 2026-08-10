@@ -912,7 +912,8 @@
     "fileErrorEmpty": "Файлда оқушы табылмады. Үлгі CSV форматын қараңыз.",
     "fileErrorParse": "Файлды оқу мүмкін болмады. .csv, .xls немесе .xlsx файлын таңдаңыз.",
     "reviewReady": "{count} оқушы дайын",
-    "swapNames": "Аты/тегін ауыстыру",
+    "swapNames": "Барлығын ауыстыру",
+    "swapRowAria": "Аты мен тегін ауыстыру",
     "columnFirstName": "Аты",
     "columnLastName": "Тегі",
     "removeRowAria": "Алып тастау",
@@ -1137,6 +1138,10 @@
     "emptyTitle": "Әзірге сыныптар жоқ",
     "emptyDescription": "Бірінші сыныбыңызды қосып, оқушылар тізімін, қатысуды және бағалауды жүргізуді бастаңыз.",
     "emptyAddClass": "Жаңа сынып қосу",
+    "moreActions": "Басқа әрекеттер",
+    "importClasses": "Импорттау",
+    "exportClasses": "Экспорттау",
+    "exportToast": "{count} сынып файлға шығарылды",
     "notFoundTitle": "Табылмады",
     "notFoundDescription": "«{search}» бойынша ештеңе жоқ",
     "archivedSection": "Мұрағатталған сыныптар",
@@ -1964,6 +1969,10 @@
       "changelog": "Жаңартулар"
     },
     "entries": {
+      "sinf-import-eksport": {
+        "title": "Сыныптарды топтап қосу және файлға шығару",
+        "body": "«Жаңа сынып» жанындағы түймеден сыныптар тізімін қоясыз немесе кесте файлын бересіз — «Сынып» бағаны болса оқушылар да өз сыныбына түседі. Растау алдында қанша жаңа сынып ашылатыны көрінеді, бұрыннан бар сынып қайта жасалмайды. Осы жерден барлық сыныптарды оқушыларымен файлға шығаруға да болады."
+      },
       "assignment-draft-persist": {
         "title": "Тапсырма жобасы енді жоғалмайды",
         "body": "Тапсырма жасап жатып басқа бөлімге өтсеңіз де жоба сақталып қалады — төмендегі белгіден жалғастырасыз. Редакторды жапқанда «Жоба ретінде сақтау» немесе «Жою» сұралады, жұмыс босқа кетпейді."
@@ -3861,5 +3870,34 @@
     "loadFailedDescription": "Aloqada muammo boʻldi. Qaytadan urinib koʻring.",
     "retry": "Qayta urinish",
     "pageOf": "{page} / {total}"
+  },
+  "ImportClassesModal": {
+    "title": "Сыныптарды импорттау",
+    "close": "Жабу",
+    "back": "Артқа",
+    "review": "Қарап шығу",
+    "choicePasteTitle": "Тізімді қою",
+    "choicePasteDescription": "Әр жолда бір сынып атауы",
+    "choiceFileTitle": "CSV немесе Excel файлы",
+    "choiceFileDescription": "«Сынып» бағаны болса оқушылар да қосылады",
+    "pasteLabel": "Сыныптар тізімі",
+    "pasteHint": "«5-A», «5 a» және «5-А» бір сынып деп саналады.",
+    "pasteCountFound": "{count} сынып табылды",
+    "pasteCountEmpty": "Сынып табылмады",
+    "fileLabel": "Файлды таңдаңыз",
+    "fileHint": "Бағандар: Сынып, Тегі, Аты. Тақырып жолы міндетті.",
+    "sampleCsv": "Үлгі файл",
+    "fileErrorNoClass": "Файлда «Сынып» бағаны табылмады.",
+    "fileErrorParse": "Файлды оқу мүмкін болмады.",
+    "summaryNew": "{count} жаңа сынып",
+    "summaryExisting": "{count} қазірдің өзінде бар",
+    "summaryStudents": "{count} оқушы",
+    "unassignedNote": "{count} жолда сынып көрсетілмеген — олар қосылмайды.",
+    "columnClass": "Сынып",
+    "columnStudents": "Күйі",
+    "existsBadge": "Бар",
+    "newBadge": "Жаңа",
+    "removeRowAria": "Алып тастау",
+    "submit": "{count} сыныпты қосу"
   }
 }

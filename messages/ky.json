@@ -912,7 +912,8 @@
     "fileErrorEmpty": "Файлда окуучу табылган жок. Үлгү CSV форматын караңыз.",
     "fileErrorParse": "Файлды окуу мүмкүн эмес. .csv, .xls же .xlsx файлын тандаңыз.",
     "reviewReady": "{count} окуучу даяр",
-    "swapNames": "Аты/фамилияны алмаштыруу",
+    "swapNames": "Баарын алмаштыруу",
+    "swapRowAria": "Аты менен фамилиясын алмаштыруу",
     "columnFirstName": "Аты",
     "columnLastName": "Фамилиясы",
     "removeRowAria": "Алып салуу",
@@ -1137,6 +1138,10 @@
     "emptyTitle": "Азырынча класстар жок",
     "emptyDescription": "Биринчи классыңызды кошуңуз жана окуучулардын тизмесин, катышууну жана баалоону жүргүзүүнү баштаңыз.",
     "emptyAddClass": "Жаңы класс кошуу",
+    "moreActions": "Башка аракеттер",
+    "importClasses": "Импорттоо",
+    "exportClasses": "Экспорттоо",
+    "exportToast": "{count} класс файлга чыгарылды",
     "notFoundTitle": "Табылган жок",
     "notFoundDescription": "«{search}» боюнча эч нерсе жок",
     "archivedSection": "Архивделген класстар",
@@ -1964,6 +1969,10 @@
       "changelog": "Жаңылануулар"
     },
     "entries": {
+      "sinf-import-eksport": {
+        "title": "Класстарды топтоп кошуу жана файлга чыгаруу",
+        "body": "«Жаңы класс» жанындагы баскычтан класстардын тизмесин коесуз же таблица файлын бересиз — «Класс» тилкеси болсо окуучулар да өз классына түшөт. Ырастоодон мурун канча жаңы класс ачыларын көрөсүз, мурунтан бар класс кайра түзүлбөйт. Ушул эле жерден бардык класстарды окуучулары менен файлга чыгарса болот."
+      },
       "assignment-draft-persist": {
         "title": "Тапшырма долбоору эми жоголбойт",
         "body": "Тапшырма түзүп жатып башка бөлүмгө өтсөңүз да долбоор сакталып калат — ылдыйдагы белгиден улантасыз. Редакторду жапканда «Долбоор катары сактоо» же «Өчүрүү» суралат, эмгек текке кетпейт."
@@ -3861,5 +3870,34 @@
     "loadFailedDescription": "Aloqada muammo boʻldi. Qaytadan urinib koʻring.",
     "retry": "Qayta urinish",
     "pageOf": "{page} / {total}"
+  },
+  "ImportClassesModal": {
+    "title": "Класстарды импорттоо",
+    "close": "Жабуу",
+    "back": "Артка",
+    "review": "Карап чыгуу",
+    "choicePasteTitle": "Тизмени коюу",
+    "choicePasteDescription": "Ар бир сапта бир класс аты",
+    "choiceFileTitle": "CSV же Excel файлы",
+    "choiceFileDescription": "«Класс» тилкеси болсо окуучулар да кошулат",
+    "pasteLabel": "Класстардын тизмеси",
+    "pasteHint": "«5-A», «5 a» жана «5-А» бир класс деп эсептелет.",
+    "pasteCountFound": "{count} класс табылды",
+    "pasteCountEmpty": "Класс табылган жок",
+    "fileLabel": "Файлды тандаңыз",
+    "fileHint": "Тилкелер: Класс, Фамилия, Аты. Аталыш сабы милдеттүү.",
+    "sampleCsv": "Үлгү файл",
+    "fileErrorNoClass": "Файлдан «Класс» тилкеси табылган жок.",
+    "fileErrorParse": "Файлды окуу мүмкүн болгон жок.",
+    "summaryNew": "{count} жаңы класс",
+    "summaryExisting": "{count} мурунтан бар",
+    "summaryStudents": "{count} окуучу",
+    "unassignedNote": "{count} сапта класс көрсөтүлгөн эмес — алар кошулбайт.",
+    "columnClass": "Класс",
+    "columnStudents": "Абалы",
+    "existsBadge": "Бар",
+    "newBadge": "Жаңы",
+    "removeRowAria": "Алып салуу",
+    "submit": "{count} классты кошуу"
   }
 }

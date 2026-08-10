@@ -29,6 +29,29 @@ export const COMMON_SECTIONS = ["A", "B", "D", "E", "F", "G", "H", "J", "K", "L"
 /** Sinf nomi harfi uchun ruxsat etilgan maksimal uzunlik. */
 export const SECTION_MAX_LENGTH = 3;
 
+/* ⚠️ KIRILL ↔ LOTIN OMOGLIFLARI.
+
+   Ekranda «5-A» va «5-А» bir xil koʻrinadi, lekin ikkinchisining harfi
+   kirill U+0410. Import qilingan jadvalda (ayniqsa eski .xls va ruscha
+   shablonlarda) aynan kirill harfi keladi. Normallashtirilmasa tizim
+   ikkita ALOHIDA sinf yaratadi va oʻqituvchi farqni koʻra olmaydi.
+
+   Faqat PARALLEL HARFIGA qoʻllanadi (1–3 belgi), erkin `label` ga emas —
+   «Ингliz toʻgaragi» kabi ataylab kirillcha nom buzilmasin. */
+const CYRILLIC_LOOKALIKES: Record<string, string> = {
+  А: "A", В: "B", Е: "E", К: "K", М: "M", Н: "H",
+  О: "O", Р: "P", С: "C", Т: "T", У: "Y", Х: "X",
+};
+
+/** Parallel harfini kanonik shaklga keltiradi: katta harf + kirill
+    omogliflari lotinga. */
+export function normalizeSection(section: string): string {
+  return section
+    .trim()
+    .toUpperCase()
+    .replace(/./gu, (ch) => CYRILLIC_LOOKALIKES[ch] ?? ch);
+}
+
 /** Nom manbasi — `ClassInfo` ning nom hosil qiluvchi qismi. */
 export type ClassNameParts = {
   grade?: number | null;
@@ -63,7 +86,7 @@ export function parseClassName(name: string): ClassNameParts {
   if (m) {
     const grade = Number(m[1]);
     if (grade >= 1 && grade <= 11) {
-      return { grade, section: m[2].toUpperCase() };
+      return { grade, section: normalizeSection(m[2]) };
     }
   }
   return { label: name.trim() };
