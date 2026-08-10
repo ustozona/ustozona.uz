@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, Tag } from "lucide-react";
+import { ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, Tag, Library } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
@@ -33,12 +33,14 @@ import {
 } from "@/store/useAssignmentEditorStore";
 import { listSetsWithPublishStateAction } from "@/server/actions/assess";
 import TestWorkspaceOverlay from "./_components/TestWorkspaceOverlay";
+import TestBankOverlay from "./_components/TestBankOverlay";
 
 /** "Other" (Toifasiz) chelagi uchun sentinel — DB qatori emas, faqat guruhlash kaliti. */
 const OTHER_GROUP = "__other__";
 
 export default function AssignmentsPage() {
   const t = useTranslations("AssignmentsPage");
+  const tb = useTranslations("TestBank");
   const searchParams = useSearchParams();
   const openId = searchParams.get("assignment");
 
@@ -69,6 +71,15 @@ export default function AssignmentsPage() {
     { id: string; title: string; itemCount: number }[]
   >([]);
   const [testWorkspaceSetId, setTestWorkspaceSetId] = useState<string | null>(null);
+  /* Test banki — LessonLab bazasidan tayyor test tanlash. Ayni shu
+     sahifada, chunki bank testi ham «tayyorlangan test» boʻlib tushadi:
+     yaratish yoʻli boshqa, natija bir xil. */
+  const [bankOpen, setBankOpen] = useState(false);
+  /* Bankdan test olinganda roʻyxat qayta soʻralishi kerak, lekin oyna
+     OCHIQ qoladi (oʻqituvchi ketma-ket bir nechta test beradi). Shuning
+     uchun signal `bankOpen` emas, alohida hisoblagich — aks holda
+     yangilanish faqat oyna yopilganda boʻlardi. */
+  const [bankVersion, setBankVersion] = useState(0);
 
   /* Roʻyxat QACHON yangilanadi.
 
@@ -105,7 +116,7 @@ export default function AssignmentsPage() {
     return () => {
       alive = false;
     };
-  }, [selectedClassId, editorSession, testWorkspaceSetId]);
+  }, [selectedClassId, editorSession, testWorkspaceSetId, bankVersion]);
 
   const groups = useMemo(() => {
     if (!classData) return [];
@@ -222,10 +233,22 @@ export default function AssignmentsPage() {
                     ({totalCount})
                   </TypographyMuted>
                 </div>
-                <Button onClick={() => handleCreateClick()} className="gap-1.5 font-semibold">
-                  <Plus className="size-4" />
-                  {t("createButton")}
-                </Button>
+                <div className="flex shrink-0 items-center gap-2">
+                  {/* Bank «Yaratish» dan OLDIN turadi: tayyor test tanlash
+                      noldan tuzishdan tezroq va koʻpincha aynan shu kerak. */}
+                  <Button
+                    variant="outline"
+                    onClick={() => setBankOpen(true)}
+                    className="gap-1.5 font-semibold"
+                  >
+                    <Library className="size-4" />
+                    <span className="hidden sm:inline">{tb("openButton")}</span>
+                  </Button>
+                  <Button onClick={() => handleCreateClick()} className="gap-1.5 font-semibold">
+                    <Plus className="size-4" />
+                    {t("createButton")}
+                  </Button>
+                </div>
               </div>
 
               <div className={panelCardContentClass}>
@@ -403,6 +426,16 @@ export default function AssignmentsPage() {
           )}
         </div>
       </DashboardColumns>
+
+      {/* LessonLab test banki — tayyor testni shu sinfga berish. */}
+      {bankOpen && selectedClassId && (
+        <TestBankOverlay
+          classId={selectedClassId}
+          className={classData?.info.name ?? ""}
+          onClose={() => setBankOpen(false)}
+          onAssigned={() => setBankVersion((v) => v + 1)}
+        />
+      )}
 
       {/* Test bosilganda oʻz ish maydonida ochiladi — muharrir ham,
           sessiya paneli ham oʻsha yerda (BaholashView). */}
