@@ -1,12 +1,14 @@
 "use client";
 
 import { forwardRef, type CSSProperties, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from "react";
-import { classTints, classStripedSurface, type ClassColor } from "@/lib/class-colors";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { classTints, type ClassColor } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
 
 /** Kunning oqimiga nisbatan holat (TodayRail semantikasi):
-    past = oʻtib boʻlgan (xira), current = hozir ketyapti (rang halqa),
-    next = navbatdagi (yumshoq halqa). */
+    current = hozir ketyapti (rang halqa), next = navbatdagi (yumshoq halqa).
+    past uchun endi vizual farq yoʻq — darslar hech qachon xira koʻrinmaydi. */
 export type EventCardTemporal = "past" | "current" | "next";
 
 type EventCardOwnProps = {
@@ -30,6 +32,15 @@ type EventCardOwnProps = {
   temporal?: EventCardTemporal;
   interactive?: boolean;
   titleRowClassName?: string;
+  /** Sarlavha matni uchun qoʻshimcha klass (masalan kattaroq shrift) — bosiladigan
+      hajm/zichlikni buzmasdan faqat matn oʻlchamini ustidan yozadi. */
+  titleClassName?: string;
+  /** Berilsa — sarlavhaning OʻZI havola boʻladi: hoverda tagi chiziladi va
+      yonida `↗` chiqadi. Burchakka alohida tugma qoʻyishdan afzal — yolgʻiz
+      amal uchun menyu ochish kerak boʻlmaydi va burchak boʻsh qoladi. */
+  titleHref?: string;
+  /** `titleHref` uchun tooltip / aria matni. */
+  titleHrefLabel?: string;
 };
 
 type EventCardDivProps = EventCardOwnProps & { as?: "div" } & HTMLAttributes<HTMLDivElement>;
@@ -57,6 +68,9 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
       temporal,
       interactive = false,
       titleRowClassName,
+      titleClassName,
+      titleHref,
+      titleHrefLabel,
       className,
       style,
       children,
@@ -86,35 +100,65 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
         {...(rest as HTMLAttributes<HTMLDivElement>)}
         ref={ref as never}
         style={{
-          ...(filled ? classStripedSurface(color) : { ...tints.tint, ...tints.borderMedium }),
+          /* Ulangan yuza — tekstura SAQLANADI, lekin tekis rang ustida emas,
+             gradient ustida (`gradientSurface` ikki qatlam beradi). Jadval
+             (PeriodGrid) va chop etish varagʻi hozircha tekis-rangli
+             `classStripedSurface` da qoladi — boshqa masshtabdagi yuzalar. */
+          ...(filled ? tints.gradientSurface : { ...tints.tint, ...tints.borderMedium }),
           ...ringStyle,
           ...style,
         }}
         className={cn(
-          // rounded-xl + p-2 → ichki elementlar rounded-sm (14−8=6px) boʻlishi kerak
-        // [[design-system]] konsentriklik qoidasi
-        "group/ev relative flex flex-col overflow-hidden rounded-xl p-2 text-left",
+          // [[design-system]] konsentriklik qoidasi: rounded-xl (12px) tashqarida,
+          // ichki elementlar rounded-md (12−padding).
+          "group/ev relative flex flex-col overflow-hidden rounded-xl text-left",
+          // BOʻSHLIQ SHKALASI — yagona manba, 4px setkasida. Isteʼmolchilar
+          // `p-*` ni ustidan yozmasin: zichlik allaqachon kartaning oʻz
+          // balandligidan hisoblanadi.
+          resolvedDensity === "cozy" ? "gap-0.5 p-3" : resolvedDensity === "compact" ? "gap-0.5 p-2" : "gap-0 p-1.5",
           // Boʻsh slot yuzasi juda xira — chegara boʻlmasa fon bilan qoʻshilib ketadi
           !filled && "border border-dashed",
-          resolvedDensity === "micro" ? "gap-0" : "gap-0.5",
-          temporal === "past" && "grayscale-[0.4] opacity-70",
           interactive && "cursor-pointer transition hover:brightness-[0.97]",
           as === "button" && "w-full",
           className,
         )}
       >
+        {/* Boʻsh slot belgisi FAQAT nozik dashed perimetr. Burchak qavslari
+            ataylab yoʻq: ular karta ichidagi "+ Mavzu qoʻshish" tugmasida
+            ishlatiladi, ikkala masshtabda takrorlansa pastki burchaklarda
+            ikki qavs 10px masofada yonma-yon tushib, belgi maʼnosini
+            yoʻqotardi. Bitta motiv — bitta joyda. */}
         <span className={cn("relative flex min-w-0 items-center gap-1.5", resolvedDensity === "compact" && "items-baseline", titleRowClassName)}>
           {leading}
-          <span
-            title={title}
-            style={filled ? tints.textOnSolid : tints.textOnTint}
-            className={cn(
-              "min-w-0 truncate font-bold leading-tight",
-              resolvedDensity === "micro" ? "text-xs" : "text-sm",
-            )}
-          >
-            {title}
-          </span>
+          {titleHref ? (
+            <Link
+              href={titleHref}
+              title={titleHrefLabel ?? title}
+              aria-label={titleHrefLabel}
+              onClick={(e) => e.stopPropagation()}
+              style={filled ? tints.textOnSolid : tints.textOnTint}
+              className={cn(
+                "group/title flex min-w-0 items-center gap-1 font-bold leading-tight underline-offset-[3px] hover:underline focus-visible:underline focus-visible:outline-none",
+                resolvedDensity === "micro" ? "text-xs" : "text-sm",
+                titleClassName,
+              )}
+            >
+              <span className="min-w-0 truncate">{title}</span>
+              <ArrowUpRight className="size-3.5 shrink-0 opacity-0 transition-opacity duration-fast group-hover/ev:opacity-100 group-focus-visible/title:opacity-100 [@media(hover:none)]:opacity-100" />
+            </Link>
+          ) : (
+            <span
+              title={title}
+              style={filled ? tints.textOnSolid : tints.textOnTint}
+              className={cn(
+                "min-w-0 truncate font-bold leading-tight",
+                resolvedDensity === "micro" ? "text-xs" : "text-sm",
+                titleClassName,
+              )}
+            >
+              {title}
+            </span>
+          )}
           {trailing}
           {resolvedDensity === "compact" && subtitle != null && (
             <span
@@ -139,7 +183,7 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
             {actions}
           </div>
         )}
-        {footer != null && <div className="relative mt-auto pt-1.5">{footer}</div>}
+        {footer != null && <div className="relative mt-auto pt-2">{footer}</div>}
       </Comp>
     );
   },
