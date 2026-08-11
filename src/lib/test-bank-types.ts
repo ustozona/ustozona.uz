@@ -68,14 +68,49 @@ export type BankPage = {
   pageSize: number;
 };
 
-/** Bank testini sinfga berish natijasi.
+/** Bitta sinfga berilgan test natijasi. */
+export type AssignedClass = {
+  classId: string;
+  setId: string;
+  /** «Berish va boshlash» da ochilgan sessiya kodi.
 
-    `duplicate` — hech narsa yaratilmadi, chunki shu test shu sinfda
-    allaqachon bor. Bu XATO EMAS: oʻqituvchi ikki marta bosgan boʻlishi
-    mumkin va unga «yaratildi» deb yolgʻon aytish ikkinchi nusxani
-    qidirishga majbur qilardi. */
+      `null` uchta holatda: sessiya soʻralmagan; sinf allaqachon
+      berilgan (`skipped`); yoki sessiya ochilmadi. Oxirgisida toʻplam
+      BEKOR QILINMAYDI — u yaratilgan va oʻzi qimmatli, UI esa
+      «sessiyani oʻzingiz boshlang» holatiga tushadi. */
+  sessionCode: string | null;
+};
+
+/** Bank testini sinf(lar)ga berish natijasi.
+
+    ⚠️ `ok: true` «hammasi berildi» degani EMAS — `skipped` boʻsh
+    boʻlmasligi mumkin. Allaqachon berilgan sinf XATO emas: oʻqituvchi
+    ikki marta bosgan boʻlishi yoki uchta sinfdan bittasiga oldin
+    bergan boʻlishi mumkin. Shuning uchun butun amal yiqilmaydi, faqat
+    oʻsha sinf `skipped` ga tushadi va oʻqituvchi buni koʻradi. */
 export type AssignBankTestResult =
-  | { ok: true; setId: string; title: string; questionCount: number }
-  | { ok: false; reason: "duplicate"; setId: string }
+  | {
+      ok: true;
+      title: string;
+      questionCount: number;
+      /** Endi yaratilgan toʻplamlar. */
+      created: AssignedClass[];
+      /** Allaqachon shu test berilgan sinflar — tegilmadi. */
+      skipped: AssignedClass[];
+    }
   | { ok: false; reason: "not_found" }
+  | { ok: false; reason: "no_class" }
   | { ok: false; reason: "no_usable_questions" };
+
+/** Berishdan OLDIN savollarni koʻrish.
+
+    Toʻgʻri javob ham qaytadi — ustoz test sifatini aynan shundan
+    baholaydi. Bu sirlash emas: test allaqachon ochiq va uni botda
+    `share_code` bilan ham koʻrish mumkin. */
+export type BankPreview =
+  | {
+      ok: true;
+      title: string;
+      questions: { stem: string; options: { id: string; text: string; isCorrect: boolean }[] }[];
+    }
+  | { ok: false };

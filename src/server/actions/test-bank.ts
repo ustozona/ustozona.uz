@@ -2,11 +2,11 @@
 
 import { z } from "zod";
 import {
-  assignBankTest, bankFacets, listBankTests,
+  assignBankTest, bankFacets, bankTestQuestions, listBankTests,
 } from "@/server/dal/test-bank";
 import { BANK_TIERS } from "@/lib/test-bank-types";
 import type {
-  AssignBankTestResult, BankFacets, BankPage, BankTier,
+  AssignBankTestResult, BankFacets, BankPage, BankPreview, BankTier,
 } from "@/lib/test-bank-types";
 
 /* ⛔ BU FAYLDA `export type { … }` YOZMANG.
@@ -50,12 +50,24 @@ export async function bankFacetsAction(tier: BankTier): Promise<BankFacets> {
 const assignSchema = z.object({
   // LessonLab `bot_tests.id` — SERIAL, yaʼni musbat butun son.
   testId: z.number().int().positive(),
-  classId: z.string().min(1),
+  // Koʻp sinf: bitta testni 8A, 8B, 8D ga bir bosishda berish.
+  // Chegara 40 — bitta oʻqituvchida bundan koʻp sinf boʻlmaydi, va u
+  // tasodifiy/zararli katta roʻyxatni toʻxtatadi (har sinf = alohida
+  // toʻplam + savollar, yaʼni haqiqiy yozuv hajmi).
+  classIds: z.array(z.string().min(1)).min(1).max(40),
+  /** «Berish va boshlash» — sessiya ham darhol ochiladi. */
+  startSession: z.boolean().optional(),
 });
 
 export async function assignBankTestAction(
   input: z.input<typeof assignSchema>
 ): Promise<AssignBankTestResult> {
-  const { testId, classId } = assignSchema.parse(input);
-  return assignBankTest(testId, classId);
+  const { testId, classIds, startSession } = assignSchema.parse(input);
+  // Takroriy sinf id'si — bir sinfga ikkita toʻplam yaratardi va
+  // ikkinchisi `unique_violation` bilan yiqilardi.
+  return assignBankTest(testId, [...new Set(classIds)], { startSession });
+}
+
+export async function bankTestQuestionsAction(testId: number): Promise<BankPreview> {
+  return bankTestQuestions(z.number().int().positive().parse(testId));
 }
