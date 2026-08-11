@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { classTints, classStripedSurface, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
+import { classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
 import type { TimetableEvent } from "@/lib/timetable";
 import type { PeriodRow } from "@/lib/bell-schedule";
@@ -276,9 +276,11 @@ function PeriodBlock({ color, name, interactive, actions, role, tabIndex, onClic
       role={role}
       tabIndex={tabIndex}
       onClick={onClick}
-      style={classStripedSurface(color)}
+      /* Toʻyingan yuza — EventCard bilan bir xil retsept: gradient + ustidan
+         shaffof diagonal tekstura ([[color-system-layers]]). */
+      style={tints.gradientSurface}
       className={cn(
-        "group/ev relative flex h-full min-h-[56px] w-full items-center justify-center overflow-hidden rounded-lg p-2 text-center",
+        "group/ev relative flex h-full min-h-[56px] w-full items-center justify-center overflow-hidden rounded-xl p-3 text-center",
         interactive && cn("cursor-pointer", CLASS_CARD_INTERACTION),
       )}
     >

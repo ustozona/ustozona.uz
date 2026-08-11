@@ -8,17 +8,21 @@ import {
   BookOpenCheck,
   CalendarDays,
   Check,
-  Clock,
   Eye,
   EyeOff,
   Link as LinkIcon,
-  Plus,
+  MoreHorizontal,
   UserCheck,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -27,6 +31,8 @@ import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { addDays, startOfWeekMon } from "@/lib/calendar-core/date-math";
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
 import { EventCard } from "@/components/calendar/EventCard";
+import { AddTopicButton } from "@/components/calendar/AddTopicButton";
+import { LessonChip } from "@/components/calendar/LessonChip";
 import { LinkLessonDialog, type LinkLessonSlot } from "@/components/LinkLessonDialog";
 import { panelCardClass, panelCardHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
 import { useTimetableStore } from "@/store/useTimetableStore";
@@ -40,7 +46,7 @@ import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
 import { classColor } from "@/lib/grades-data";
-import { classTints, autoClassColor, type ClassColor } from "@/lib/class-colors";
+import { autoClassColor, type ClassColor } from "@/lib/class-colors";
 import { lessonSessions, type LessonStatus } from "@/lib/lessons-data";
 import { fmtMin } from "@/lib/timetable";
 import { cn } from "@/lib/utils";
@@ -59,7 +65,7 @@ import { cn } from "@/lib/utils";
     tur-demo eventi ham shu shaklga tushadi). */
 type RailEvent = { id: string; classId: string; startMin: number; endMin: number };
 
-type LessonInfo = { title: string; status: LessonStatus };
+type LessonInfo = { id: string; title: string; status: LessonStatus };
 
 const SUNDAY_PREF_KEY = "today-rail-show-sunday";
 
@@ -143,7 +149,7 @@ export function TodayRail({ now }: { now: Date }) {
           classId: s.classId,
           startMin: s.startMin,
           endMin: s.endMin,
-          info: { title: l.title, status: l.status },
+          info: { id: l.id, title: l.title, status: l.status },
         });
       }
     }
@@ -152,24 +158,6 @@ export function TodayRail({ now }: { now: Date }) {
   // "overlap" — rail'ning tarixiy semantikasi (planner "start-in-slot" ishlatadi).
   const lessonFor = (ev: RailEvent): LessonInfo | undefined =>
     daySessions.find((s) => sessionMatchesSlot(ev, s, "overlap"))?.info;
-
-  // ── "Nazorat" belgisi — shu kunga summativ topshiriq muddati bor sinflar ──
-  const controlClassIds = useMemo(() => {
-    const set = new Set<string>();
-    for (const [cid, cd] of Object.entries(classDataMap)) {
-      if (!cd) continue;
-      const summative = new Set(
-        cd.topics.filter((tp) => tp.purpose === "summative").map((tp) => tp.id)
-      );
-      if (
-        cd.assignments.some(
-          (a) => (a.dueDate ?? a.date) === selectedKey && !!a.topicId && summative.has(a.topicId)
-        )
-      )
-        set.add(cid);
-    }
-    return set;
-  }, [classDataMap, selectedKey]);
 
   // ── Temporal holat (faqat bugun) ──
   const nextEvent = isToday ? events.find((e) => e.startMin > nowMin) : undefined;
@@ -212,9 +200,12 @@ export function TodayRail({ now }: { now: Date }) {
     return { count: evs.length, firstMin: Math.min(...evs.map((e) => e.startMin)) };
   }, [now, calendar, versions]);
 
-  // ── Yaratish — toʻgʻridan-toʻgʻri dars muharrirga oʻtadi (planner bilan bir xil). ──
+  // ── Yaratish — toʻgʻridan-toʻgʻri dars muharrirga oʻtadi (planner bilan bir xil).
+  //    Sarlavha boʻsh emas, "(nomsiz mavzu)" bilan boshlanadi — oʻqituvchi
+  //    darhol muharrirda oʻzgartiraveradi, lekin xaritada/rejada butunlay
+  //    boʻsh nom qoldirmaydi. ──
   const createLessonInSlot = (ev: RailEvent) => {
-    const id = addLesson({ classId: ev.classId, unitId: null, title: "", status: "Draft" });
+    const id = addLesson({ classId: ev.classId, unitId: null, title: t("untitledTopic"), status: "Draft" });
     addScheduleForClass(id, ev.classId, selectedKey, ev.startMin, ev.endMin);
     router.push(`/lessons/${id}`);
   };
@@ -297,7 +288,6 @@ export function TodayRail({ now }: { now: Date }) {
                 isToday={isToday}
                 metaFor={metaFor}
                 lessonFor={lessonFor}
-                controlClassIds={controlClassIds}
                 temporalOf={temporalOf}
                 onCreate={createLessonInSlot}
                 onLink={(ev) =>
@@ -308,6 +298,7 @@ export function TodayRail({ now }: { now: Date }) {
                     endMin: ev.endMin,
                   })
                 }
+                onOpenLesson={(id) => router.push(`/lessons/${id}`)}
               />
             )}
 
@@ -356,21 +347,21 @@ function DayGridView({
   isToday,
   metaFor,
   lessonFor,
-  controlClassIds,
   temporalOf,
   onCreate,
   onLink,
+  onOpenLesson,
 }: {
   events: RailEvent[];
   nowMin: number;
   isToday: boolean;
   metaFor: (classId: string) => { name: string; color: ClassColor };
   lessonFor: (ev: RailEvent) => LessonInfo | undefined;
-  controlClassIds: Set<string>;
   temporalOf: (ev: RailEvent) => "past" | "current" | "next" | "none";
   /** Boʻsh slotga mavzu yaratish / mavjudini ulash — planner bilan bir xil. */
   onCreate: (ev: RailEvent) => void;
   onLink: (ev: RailEvent) => void;
+  onOpenLesson: (lessonId: string) => void;
 }) {
   const t = useTranslations("TodayRail");
   const tp = useTranslations("PlannerView");
@@ -417,17 +408,12 @@ function DayGridView({
 
       {events.map((ev) => {
         const meta = metaFor(ev.classId);
-        const tints = classTints(meta.color);
         const lesson = lessonFor(ev);
         const hasLesson = !!lesson;
         const temporal = temporalOf(ev);
-        const control = controlClassIds.has(ev.classId);
         const top = (ev.startMin - rangeStart) * PX_PER_MIN;
         const height = Math.max((ev.endMin - ev.startMin) * PX_PER_MIN, 32);
         const compact = height < 60;
-        // Qisqa darslarda ikki tugma ustma-ust (har biri ~36px + boʻshliq)
-        // sigʻmaydi — shunday holatda faqat ikonka koʻrsatiladi (yonma-yon).
-        const roomy = height >= 120;
         return (
           <EventCard
             key={ev.id}
@@ -436,114 +422,81 @@ function DayGridView({
             title={meta.name}
             density="cozy"
             temporal={temporal === "none" ? undefined : temporal}
-            titleRowClassName="pr-14"
-            subtitle={
-              <>
-                <Clock className="size-3 shrink-0" />
-                {fmtMin(ev.startMin)}–{fmtMin(ev.endMin)}
-              </>
+            /* ── Amal zonasi va boʻshliq shkalasi ───────────────────────────
+               Karta `p-3` (12px). `⋯` — asosiy tugma bilan BIR XIL 36px quti
+               (`size-9`), shuning uchun sarlavha qatoriga 40px zaxira (`pr-10`)
+               kerak: 4px gutter + 36px quti.
+               Nega gutter 12px emas, 4px: `⋯` ghost (fonsiz), shuning uchun u
+               qutisi boʻyicha emas, IKONKASI boʻyicha tekislanadi — 36px quti
+               ichida 16px ikonka atrofida 10px oʻz padding'i bor, 4+10 = 14px
+               ≈ kartaning 12px kontent gutter'i.
+               Tor kartada (`compact`, <60px) 36px sigʻmaydi — u yerda kichik
+               24px token qoladi, zaxira ham `pr-8`.
+               `⋯` HAR IKKALA holatda ham aynan shu joyda — oʻng-yuqorida.
+               Ilgari boʻsh slotda u pastki qatorga, "Mavzu qoʻshish" yoniga
+               tushardi: bir xil amal ikki xil joyda turgani uchun mushak
+               xotirasi ishlamasdi va koʻz uni har safar qidirishga majbur
+               edi. Karta ustidagi ortiqcha amal menyusining kanonik oʻrni —
+               oʻng-yuqori burchak. */
+            titleRowClassName={compact ? "pr-8" : "pr-10"}
+            subtitle={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`}
+            actions={
+              <EventActions
+                classId={ev.classId}
+                triggerClassName={compact ? undefined : "size-9 [&_svg]:size-4"}
+              />
             }
-            trailing={
-              control ? (
-                <Badge
-                  variant="outline"
-                  className="shrink-0 rounded-full border-warning/40 bg-warning/10 px-1.5 py-0 text-[10px] font-semibold text-warning"
-                >
-                  {t("controlBadge")}
-                </Badge>
-              ) : undefined
-            }
-            actions={<EventActions classId={ev.classId} solidBg />}
             className="absolute isolate"
             style={{ top, height, left: 48, right: 0 }}
           >
             {!compact && hasLesson && (
-              /* Haftalik/kunlik panel bilan bir xil naqsh — mavzu tashqi (sinf)
-                 karta ICHIDA alohida oq chip sifatida chiqadi. */
-              <div className="relative mt-1 flex items-center gap-2 overflow-hidden rounded-sm border border-border bg-card p-1.5 pr-2.5 text-left shadow-xs">
-                <span style={tints.iconBg} className="flex size-6 shrink-0 items-center justify-center rounded-full">
-                  {lesson.status === "Completed" ? (
-                    <Check style={tints.iconText} className="size-3.5" strokeWidth={3} />
-                  ) : (
-                    <BookOpenCheck style={tints.iconText} className="size-3.5" />
-                  )}
-                </span>
-                <span className="truncate text-xs font-semibold text-foreground">
-                  {lesson.title || t("untitledTopic")}
-                </span>
-              </div>
+              /* Mavzu chipi — umumiy [[LessonChip]] (Planner ham shuni
+                 ishlatadi). Karta ostiga tekislangan (mt-auto). */
+              <LessonChip
+                color={meta.color}
+                title={lesson.title || t("untitledTopic")}
+                done={lesson.status === "Completed"}
+                className="mt-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenLesson(lesson.id);
+                }}
+              />
             )}
             {!compact && !hasLesson && (
-              /* Tinch holatda "Reja yoʻq" yorligʻi; kartaga hover qilinganda
-                 (group/ev — EventCard'ning oʻzida) planner'dagi bilan bir xil
-                 ikki tez-amal tugmasi (Yaratish / Ulash) ustidan chiqadi. */
-              <div className={cn("relative mt-0.5", roomy ? "min-h-[78px]" : "min-h-[22px]")}>
-                <p
-                  style={tints.textOnTint}
-                  className="absolute inset-0 truncate text-xs font-medium leading-snug opacity-100 transition-opacity duration-fast group-hover/ev:opacity-0"
-                >
-                  {t("noPlan")}
-                </p>
-                <div
-                  className={cn(
-                    "absolute inset-0 flex gap-1.5 opacity-0 transition-opacity duration-fast",
-                    roomy ? "flex-col" : "justify-center",
-                    "pointer-events-none group-hover/ev:pointer-events-auto group-hover/ev:opacity-100",
-                    "focus-within:pointer-events-auto focus-within:opacity-100",
-                    "[@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100"
-                  )}
-                >
-                  {roomy ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => onCreate(ev)}
-                        className="flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-foreground/6 px-3 text-sm font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
-                      >
-                        <Plus className="size-4 shrink-0" strokeWidth={2.5} />
-                        <span className="truncate">{tp("create")}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onLink(ev)}
-                        className="flex h-9 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-foreground/6 px-3 text-sm font-semibold text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
-                      >
-                        <LinkIcon className="size-4 shrink-0" />
-                        <span className="truncate">{tp("link")}</span>
-                      </button>
-                    </>
-                  ) : (
-                    /* Tor karta — faqat ikonka, tooltip orqali izohlangan. */
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label={tp("create")}
-                            onClick={() => onCreate(ev)}
-                            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm bg-foreground/6 text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
-                          >
-                            <Plus className="size-3.5" strokeWidth={2.5} />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>{tp("create")}</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label={tp("link")}
-                            onClick={() => onLink(ev)}
-                            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm bg-foreground/6 text-foreground/80 transition-colors duration-fast hover:bg-foreground/12 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]"
-                          >
-                            <LinkIcon className="size-3.5" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>{tp("link")}</TooltipContent>
-                      </Tooltip>
-                    </>
-                  )}
-                </div>
+              /* CHORLOVCHI boʼsh slot. Eski yechimda "Reja yoʻq" yorligʻi
+                 hoverda ikki tugmaga almashardi: rail boʻylab sichqoncha
+                 yurganda kartalar "miltillardi", oʻlik matn hech nima taklif
+                 qilmasdi, Yaratish/Ulash esa teng ogʻirlikda edi. Endi bitta
+                 DOIM koʻrinadigan chorlov — aynan mavzu chipi turadigan joyda
+                 (mt-auto, h-9), shuning uchun boʻsh↔toʻlgan oʻtishda geometriya
+                 sakramaydi. Ikkilamchi "Ulash" — Planner bilan bir xil: SHU
+                 QATORDA, "Mavzu qoʻshish" uslubida (dashed+qavs+gradient),
+                 faqat ikon-tugma sifatida (`iconOnly`). Ilgari yuqoridagi `⋯`
+                 menyusida edi — bir xil chorlov ikki xil vizual tilda
+                 (ghost menyu vs dashed-qavs tugma) turishi nomuvofiq edi.
+                 [[AddTopicButton]] */
+              <div className="mt-auto flex shrink-0 items-stretch gap-1.5">
+                <AddTopicButton
+                  color={meta.color}
+                  label={t("addTopic")}
+                  tooltip={t("addTopicTooltip")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCreate(ev);
+                  }}
+                />
+                <AddTopicButton
+                  color={meta.color}
+                  label={tp("link")}
+                  tooltip={t("linkTooltip")}
+                  icon={LinkIcon}
+                  iconOnly
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onLink(ev);
+                  }}
+                />
               </div>
             )}
           </EventCard>
@@ -555,35 +508,57 @@ function DayGridView({
 
 /* ─────────────── Davomat/Jurnal harakatlari (deep-link) ─────────────── */
 
-function EventActions({ classId, solidBg }: { classId: string; solidBg?: boolean }) {
+/* I variant — BITTA MENYU. Ilgari uchta 24px ikon-katak segmentli guruhda
+   turardi: 14px ikonka atrofida 5px joy (dizayn tizimi 36px nazoratining
+   uchdan ikkisi), ajratgich chiziqlari shu oʻlchamda ikonkalar bilan
+   qorishardi, guruh sarlavhadan ~84px oʻgʻirlardi va har ikonka tooltipsiz
+   taxmin talab qilardi. Endi bitta 26px `⋯` — sarlavha deyarli toʻliq
+   boʻshaydi, har amal menyuda YOZUV bilan chiqadi.
+   Hover-reveal logikasi shart emas: EventCard `actions` slotining oʻzi
+   `group-hover/ev` bilan boshqariladi. */
+function EventActions({
+  classId,
+  triggerClassName,
+}: {
+  classId: string;
+  /** Joylashuvga qarab oʻlcham tokeni — ikkalasi ham `Button` komponentining
+      oʻz oʻlchamlaridan olingan ([[design-system]]), oraliq qiymat emas:
+      — default `icon-xs` = 24px quti + 12px ikonka — faqat TOR kartada;
+      — `icon` = 36px quti + 16px ikonka — asosiy holat, "Mavzu qoʻshish"
+        tugmasining `h-9` balandligiga aynan teng. */
+  triggerClassName?: string;
+}) {
   const t = useTranslations("TodayRail");
   return (
-    <div
-      className={cn(
-        "flex shrink-0 items-center gap-0.5",
-        solidBg && "rounded-md bg-background/85 shadow-sm backdrop-blur-sm"
-      )}
-    >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button asChild variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
-            <Link href={`/dashboard/attendance?classId=${encodeURIComponent(classId)}`}>
-              <UserCheck className="size-3.5" />
-            </Link>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t("attendanceAction")}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button asChild variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
-            <Link href={`/dashboard/grades?classId=${encodeURIComponent(classId)}`}>
-              <BookOpenCheck className="size-3.5" />
-            </Link>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t("gradesAction")}</TooltipContent>
-      </Tooltip>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={t("moreActions")}
+        onClick={(e) => e.stopPropagation()}
+        className={cn(
+          /* Ghost: fon/chegara/soya yoʻq — yonidagi "Mavzu qoʻshish" ham
+             ghost, ikkalasi bitta materialda. Ilgari `⋯` oq fon + chegara +
+             soya bilan "koʻtarilgan" nazorat edi va ikkilamchi boʻlishiga
+             qaramay asosiy CTA dan ustunroq oʻqilardi. */
+          "flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-foreground/55 transition-colors duration-fast hover:bg-foreground/8 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] data-[state=open]:bg-accent data-[state=open]:text-foreground [&_svg]:size-3",
+          triggerClassName,
+        )}
+      >
+        <MoreHorizontal />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-40" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem asChild>
+          <Link href={`/dashboard/attendance?classId=${encodeURIComponent(classId)}`}>
+            <UserCheck />
+            {t("attendanceAction")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/dashboard/grades?classId=${encodeURIComponent(classId)}`}>
+            <BookOpenCheck />
+            {t("gradesAction")}
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

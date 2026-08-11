@@ -286,6 +286,27 @@ export function makeColorTints(c: string) {
     gradient: { backgroundImage: `linear-gradient(155deg, ${mix(13)} 0%, ${mix(4)} 100%)` } as CSSProperties,
     /** Karta pasporti v2: 44px iconbox uchun toʻyingan gradient (-300 dan -400 ga — "portlab turishi" uchun) */
     gradientTile: { backgroundImage: `linear-gradient(135deg, ${lightC} 0%, ${c} 100%)` } as CSSProperties,
+    /** Ulangan (filled) event kartasi yuzasi — IKKI QATLAM:
+        1) ustki qatlam: diagonal chiziqli tekstura (`classStripedSurface`
+           bilan bir xil 45°/20px ritm);
+        2) ostki qatlam: gradient — och ottenka (-300) chap-yuqorida, baza
+           rang (-400) oʻng-pastda; `gradientTile` bilan bir xil yoʻnalish.
+
+        Chiziq shaffof QORA (oq emas!) — `backgroundBlendMode` shart emas:
+        sinf ranglarimiz hammasi allaqachon TOR diapazonda, hammasi yorugʻ
+        (L 0.67–0.85, Tailwind -400 darajasi). Bunday palitrada yorugʻ
+        fonni qoraytirish HAR DOIM koʻrinadi — Google Calendar/Basecamp
+        "band" chiziqlari ham xuddi shunday: adaptiv blend-mode emas,
+        oldindan kalibrlangan tor palitra + bitta qattiq sozlama. Avval
+        sinalgan `overlay` blend-mode (neytral kulrang) texnik ishlagan,
+        lekin bizning holatda ortiqcha murakkablik edi — brauzerlar
+        orasidagi rang-fazosi farqi xavfisiz shu soddaroq yechim yetadi. */
+    gradientSurface: {
+      backgroundImage: [
+        `repeating-linear-gradient(45deg, transparent, transparent 20px, oklch(0 0 0 / 0.025) 20px, oklch(0 0 0 / 0.025) 40px)`,
+        `linear-gradient(135deg, ${lightC} 0%, ${c} 100%)`,
+      ].join(", "),
+    } as CSSProperties,
     /** Oy-koʻrinish chipi (EventPill) — surfaceStrong'dan toʻyinganroq yuza */
     chipFill: { backgroundColor: mix(55, "var(--card)") } as CSSProperties,
     /** Oʻrtacha toʻyingan karta yuzasi — timetable/planner event kartalari */

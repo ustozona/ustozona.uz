@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { autoClassColor, CLASS_COLOR_HEX, classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
+import { autoClassColor, CLASS_COLOR_HEX, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm, classFormInitial } from "@/hooks/useLiveClasses";
@@ -1072,12 +1072,9 @@ function EventBlock({ name, startMin, endMin, color, top, height, resizable, rea
     <EventCard
       color={color}
       title={name}
-      subtitle={
-        <>
-          <Clock2Icon className="size-2.5 shrink-0" />
-          <span className="truncate tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>
-        </>
-      }
+      /* Soat ikonkasi yoʻq — vaqt qatori barcha event kartalarida bir xil:
+         faqat "HH:MM–HH:MM" ([[design-system]] standarti, TodayRail etalon). */
+      subtitle={<span className="truncate tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>}
       density="auto"
       draggable={!readOnly && !resizing}
       onDragStart={onDragStart}
