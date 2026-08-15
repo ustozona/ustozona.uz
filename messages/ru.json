@@ -1417,6 +1417,7 @@
     "lessonRestoredToast": "Тема восстановлена",
     "lessonMovedToast": "Урок перенесён",
     "lessonFallback": "Урок",
+    "noTopicYet": "Тема ещё не выбрана",
     "week": "Неделя",
     "month": "Месяц",
     "hideOffDays": "Скрыть выходные",

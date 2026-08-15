@@ -113,3 +113,24 @@ export function getMonthGrid(year: number, month: number): (Date | null)[] {
 export function getMonthGridKeys(year: number, month: number): (string | null)[] {
   return getMonthGrid(year, month).map((d) => (d ? dateToKey(d) : null));
 }
+
+/**
+ * Oy toʻri — 42 ta HAQIQIY sana (6 hafta × 7 kun), DUSHANBA-birinchi.
+ *
+ * `getMonthGrid` dan ikki farqi bor va ikkalasi ham ataylab:
+ *  ① Boʻsh katak YOʻQ — bosh/oxirdagi joylar oldingi va keyingi oyning
+ *    kunlari bilan toʻldiriladi (Google/Apple/Outlook oy koʻrinishi
+ *    konvensiyasi). Foydalanuvchi oy chegarasidagi kunni ham koʻradi.
+ *  ② Uzunlik DOIM 42 — oyning necha haftaga tushishidan qatʼi nazar.
+ *    Aks holda 5-haftali oydan 6-haftaliga oʻtganda qator balandligi
+ *    sakrab, butun toʻr "qaltirab" ketadi.
+ */
+export function getMonthGridFilled(year: number, month: number): Date[] {
+  const firstDow = new Date(year, month, 1).getDay();
+  const offset = (firstDow + 6) % 7; // Dushanba-birinchi fazoga surish
+  const start = new Date(year, month, 1 - offset);
+  return Array.from(
+    { length: 42 },
+    (_, i) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + i),
+  );
+}

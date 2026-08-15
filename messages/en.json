@@ -1417,6 +1417,7 @@
     "lessonRestoredToast": "Lesson restored",
     "lessonMovedToast": "Lesson moved",
     "lessonFallback": "Lesson",
+    "noTopicYet": "No topic selected yet",
     "week": "Week",
     "month": "Month",
     "hideOffDays": "Hide off days",

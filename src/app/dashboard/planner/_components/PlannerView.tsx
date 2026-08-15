@@ -17,14 +17,15 @@ import {
   minToHHMM,
   hhmmToMin as HHMMToMin,
   getWeekDates,
-  getMonthGrid,
+  getMonthGridFilled,
   isSameDay,
   jsDayToIsoDay,
 } from "@/lib/calendar-core/date-math";
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
 import { EventPill as CalendarEventPill } from "@/components/calendar/EventPill";
+import { ClassBadge } from "@/components/ClassBadge";
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
-import { MonthGrid, MonthMorePopover } from "@/components/calendar/MonthGrid";
+import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
 import { lessonSessions, lessonClassIds, unitIdForClass, type Lesson } from "@/lib/lessons-data";
@@ -69,7 +70,7 @@ import {
 import { EventCard } from "@/components/calendar/EventCard";
 import { AddTopicButton } from "@/components/calendar/AddTopicButton";
 import { LessonChip } from "@/components/calendar/LessonChip";
-import { LessonStatusBadge } from "@/components/LessonStatusBadge";
+import { LessonStatusBadge, LessonStatusPill } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makePlannerTourDemo } from "@/components/tour/planner-tour-demo";
 
@@ -414,7 +415,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
   const today = new Date();
   const allWeekDates = useMemo(() => getWeekDates(anchor), [anchor]);
-  const monthGrid = useMemo(() => getMonthGrid(anchor.getFullYear(), anchor.getMonth()), [anchor]);
+  const monthGrid = useMemo(() => getMonthGridFilled(anchor.getFullYear(), anchor.getMonth()), [anchor]);
 
   // ── Joylangan sessiyalar (yagona manba: lessonSessions) ──
   const placedByDate = useMemo(() => {
@@ -448,6 +449,21 @@ export default function PlannerView({ classId }: { classId?: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [allWeekDates, showOffDays, blockedSet, placedByDate]
   );
+
+  /* Oy toʻrida dam kuni — BUTUN USTUN, alohida kun emas: toʻr 6×N setka,
+     bitta katakni olib tashlab boʻlmaydi. Shuning uchun bu yerda faqat
+     yakshanba ustuni hisobga olinadi (bloklangan kunlar oy toʻrida
+     alohida-alohida, qizil tus bilan koʻrsatiladi — ular ustunga tegmaydi).
+
+     Haftalik koʻrinishdagi "darsli dam kuni YASHIRILMAYDI" qoidasi shu
+     yerda ustun darajasiga koʻtariladi: oyda birorta yakshanbada dars
+     boʻlsa, ustun oʻrnida qoladi — aks holda dars koʻzdan yoʻqoladi. */
+  const monthVisibleIsoDays = useMemo(() => {
+    if (showOffDays) return undefined;
+    const sundayHasLessons = monthGrid.some((d) => dateToTimetableDay(d) === 7 && hasLessonsOn(d));
+    return sundayHasLessons ? undefined : [1, 2, 3, 4, 5, 6];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showOffDays, monthGrid, placedByDate]);
 
   // Oy/koʻrinish almashsa tanlangan kun yopiladi — boshqa oyning kuni panelda
   // osilib qolmasin.
@@ -673,28 +689,72 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const slotClass = (m: SlotModal | null) => (m ? classInfoById(m.classId) : undefined);
   const slotTints = (m: SlotModal | null) => { const c = slotClass(m); return c ? classTints(liveClassColor(c)) : null; };
 
+  // Pill hover popover'idagi vaqt qatori — ikkala holat (boʻsh/darsli) baham
+  // koʻradi. Ikonka `size-3` (12px) — `LessonStatusPill` ichidagi ikonka
+  // bilan bir xil shkala (bitta popoverda ikki xil ikonka oʻlchami boʻlmasin).
+  // Tire — `—` (em dash), loyihadagi vaqt oralig'i yozuvlari bilan bir xil
+  // ([[NextLessonsCard]], [[TodayRail]]).
+  function PillHoverTime({ startMin, endMin }: { startMin: number; endMin: number }) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Clock className="size-3 shrink-0" />
+        {fmtMin(startMin)} — {fmtMin(endMin)}
+      </div>
+    );
+  }
+
   // Oy-koʻrinish chiplari — umumiy CalendarEventPill (chipFill retsepti u yerda).
-  function EventPill({ ev, onOpen }: { ev: TimetableEvent; onOpen?: () => void }) {
+  // Hoverda: toʻliq vaqt oralig'i + "mavzu tanlanmagan" eslatmasi — pilldagi
+  // sinf badge'i allaqachon koʻrinadi, shuning uchun bu yerda takrorlanmaydi.
+  //
+  // `blocked` — bloklangan kundagi BOʻSH slot: "bu yerda dars boʻlishi mumkin
+  // edi, lekin kun bloklangan" signalini beradi (soʻnib, bosilmay qoladi),
+  // butunlay yashirilmaydi — aks holda oʻqituvchi nima yoʻqolganini bilmaydi.
+  // Joylangan (haqiqiy) darslar bloklangan kunda ham SOʻNMAYDI — ular
+  // real maʼlumot, kun keyinroq bloklangan boʻlishi mumkin.
+  function EventPill({ ev, onOpen, blocked }: { ev: TimetableEvent; onOpen?: () => void; blocked?: boolean }) {
     const cls = classInfoById(ev.classId);
     if (!cls) return null;
-    return <CalendarEventPill color={liveClassColor(cls)} label={cls.name} onClick={onOpen} />;
+    return (
+      <CalendarEventPill
+        color={liveClassColor(cls)}
+        label={cls.name}
+        time={fmtMin(ev.startMin)}
+        onClick={blocked ? undefined : onOpen}
+        className={blocked ? "pointer-events-none opacity-40 grayscale" : undefined}
+        hoverContent={
+          blocked ? undefined : (
+            <div className="flex flex-col gap-1.5">
+              <PillHoverTime startMin={ev.startMin} endMin={ev.endMin} />
+              <p className="text-xs text-muted-foreground">{t("noTopicYet")}</p>
+            </div>
+          )
+        }
+      />
+    );
   }
 
   // Joylangan mavzu pili (oy koʻrinishi) — MAVZU nomini koʻrsatadi (sinf emas).
+  // Hoverda: TOʻLIQ mavzu nomi (pillda kesilgan boʻlishi mumkin) + sinf + holat.
   function PlacedPill({ p, dateKey }: { p: Placement; dateKey: string }) {
-    const { color, tints } = lessonDisplay(p.lesson, p.classId);
+    const { color } = lessonDisplay(p.lesson, p.classId);
+    const cls = classInfoById(p.classId);
     return (
       <CalendarEventPill
         color={color}
         variant="fill"
         label={p.lesson.title}
+        time={fmtMin(p.startMin)}
         onClick={() => openEdit(p, dateKey)}
-        trailing={
-          <span className="flex size-4 shrink-0 items-center justify-center rounded bg-[var(--card)]/60">
-            {p.lesson.status === "Completed"
-              ? <Check style={tints.textStrong} className="size-2.5" strokeWidth={3} />
-              : <FileText style={tints.textStrong} className="size-2.5" />}
-          </span>
+        hoverContent={
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-semibold leading-snug text-foreground">{p.lesson.title}</p>
+            <PillHoverTime startMin={p.startMin} endMin={p.endMin} />
+            <div className="flex items-center gap-1.5">
+              {cls && <ClassBadge color={color} name={cls.name} />}
+              <LessonStatusPill status={p.lesson.status} />
+            </div>
+          </div>
         }
       />
     );
@@ -704,8 +764,16 @@ export default function PlannerView({ classId }: { classId?: string }) {
      Faqat katak bosilganda ochiladi. Oy toʻrida katak juda tor — bu yerda
      shu kunning TOʻLIQ jadvali vaqti bilan koʻrinadi. */
   const selectedDate = selectedDayKey
-    ? monthGrid.find((d): d is Date => d !== null && toDateKey(d) === selectedDayKey) ?? null
+    ? monthGrid.find((d) => toDateKey(d) === selectedDayKey) ?? null
     : null;
+
+  // Dam kuni ustuni yashirilganda oʻsha kundagi tanlov ham yopiladi — aks
+  // holda panel toʻrda umuman koʻrinmayotgan kunni koʻrsatib turadi va uni
+  // yopish uchun bosiladigan katak yoʻq.
+  useEffect(() => {
+    if (!selectedDate || !monthVisibleIsoDays) return;
+    if (!monthVisibleIsoDays.includes(dateToTimetableDay(selectedDate))) setSelectedDayKey(null);
+  }, [selectedDate, monthVisibleIsoDays]);
 
   // Panel toʻliq 00:00–24:00 qamraydi, lekin ochilganda shu kunning BIRINCHI
   // eventiga scroll qilinadi (hech narsa boʻlmasa — 08:00 ga, haftalik
@@ -1182,17 +1250,17 @@ export default function PlannerView({ classId }: { classId?: string }) {
               </Popover>
             )}
 
-            {view === "week" && (
-              <Button
-                variant={showOffDays ? "ghost" : "secondary"}
-                size="icon-sm"
-                onClick={() => setShowOffDays((v) => !v)}
-                title={showOffDays ? t("hideOffDays") : t("showOffDays")}
-                aria-label={t("offDaysAria")}
-              >
-                {showOffDays ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-              </Button>
-            )}
+            {/* Dam kunini yashirish IKKALA koʻrinishda ham: haftada — kun
+                ustuni, oyda — butun yakshanba ustuni. */}
+            <Button
+              variant={showOffDays ? "ghost" : "secondary"}
+              size="icon-sm"
+              onClick={() => setShowOffDays((v) => !v)}
+              title={showOffDays ? t("hideOffDays") : t("showOffDays")}
+              aria-label={t("offDaysAria")}
+            >
+              {showOffDays ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+            </Button>
             <Button variant="ghost" size="icon-sm" onClick={prevPeriod} aria-label={t("previousAria")}>
               <ChevronLeft className="size-4" />
             </Button>
@@ -1329,7 +1397,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                   data-tour="planner-day-settings"
                                   aria-label={t("daySettingsAria")}
                                   className={cn(
-                                    "flex size-7 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-primary hover:text-primary-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-primary data-[state=open]:text-primary-foreground",
+                                    "flex size-7 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-primary hover:text-primary-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 pointer-coarse:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-primary data-[state=open]:text-primary-foreground",
                                     forceShowDaySettings && "opacity-100 bg-foreground/10 text-foreground"
                                   )}
                                 >
@@ -1558,26 +1626,28 @@ export default function PlannerView({ classId }: { classId?: string }) {
               <MonthGrid
                 year={anchor.getFullYear()}
                 month={anchor.getMonth()}
+                visibleIsoDays={monthVisibleIsoDays}
                 className={cn("h-auto flex-1", isDemoMode && "pointer-events-none")}
                 getCellProps={(date, key) => {
-                  const isCurrentMonth = date.getMonth() === anchor.getMonth();
                   const isBlocked = blockedSet.has(key);
                   const holiday = getHolidayForDate(calendar, key);
                   return {
                     // Katakni bosish → chapdagi kunlik panel. Katak ichidagi oʻz
-                    // tugmalari (sana menyusi, chiplar, "+N ta") oʻz ishini qiladi,
-                    // shuning uchun ular ustidagi bosish bu yerda eʼtiborsiz qoldiriladi.
+                    // tugmalari (sana menyusi, chiplar) oʻz ishini qiladi, shuning
+                    // uchun ular ustidagi bosish bu yerda eʼtiborsiz qoldiriladi.
                     onClick: (e: React.MouseEvent<HTMLDivElement>) => {
                       if ((e.target as HTMLElement).closest("button, a")) return;
                       setSelectedDayKey((k) => (k === key ? null : key));
                     },
                     className: cn(
                       "cursor-pointer",
-                      // "Bugun" — katak foni ATAYLAB neytral; signal sana doirasida (renderCell).
-                      !isCurrentMonth && "bg-muted/10",
+                      // "Bugun" ham, "tanlangan" ham, "boshqa oy" ham katak FONI/
+                      // CHEGARASI bilan belgilanmaydi — signal kun raqami doirasida
+                      // (renderCell, `ui/calendar.tsx` DayPicker bilan bir xil naqsh:
+                      // tanlangan = boʻyalgan doira, chegarasiz). Fon faqat HOLAT
+                      // uchun: bloklangan / bayram.
                       isBlocked && "bg-destructive/10",
                       !isBlocked && holiday && "bg-muted/40",
-                      selectedDayKey === key && "bg-muted/30 inset-ring-2 inset-ring-foreground/25",
                     ),
                   };
                 }}
@@ -1594,62 +1664,91 @@ export default function PlannerView({ classId }: { classId?: string }) {
                     type MonthItem = { t: "l"; p: Placement; s: number } | { t: "e"; ev: TimetableEvent; s: number };
                     const items: MonthItem[] = [
                       ...placed.map((p): MonthItem => ({ t: "l", p, s: p.startMin })),
-                      ...(isBlocked ? [] : emptyEvents.map((ev): MonthItem => ({ t: "e", ev, s: ev.startMin }))),
+                      ...emptyEvents.map((ev): MonthItem => ({ t: "e", ev, s: ev.startMin })),
                     ].sort((a, b) => a.s - b.s);
-                    const shown = items.slice(0, 2);
-                    const hidden = items.length - shown.length;
 
                     const goToDay = () => { setAnchor(date); setView("week"); };
                     const isCurrentMonth = date.getMonth() === anchor.getMonth();
+                    const isSelected = selectedDayKey === key;
+                    // Oy chegarasi — har oyning 1-kuni qaysi oy ekanini oʻzi
+                    // aytadi ("1 Sen"). Qoʻshni oy kunlari toʻrda koʻringani
+                    // uchun bu belgisiz sanalar aralashib ketardi (Google
+                    // Calendar naqshi).
+                    const isMonthStart = date.getDate() === 1;
                     return (
                       <>
                         <MonthDayDropZone dateKey={key} />
-                        <div className="relative mb-0.5 flex items-center justify-between gap-1">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button type="button" aria-label={t("dayActionsAria", { day: date.getDate() })}
-                                className={cn(
-                                  "flex size-6 items-center justify-center rounded-full text-xs font-bold outline-none transition-colors hover:ring-2 hover:ring-foreground/20 focus-visible:ring-2 focus-visible:ring-[var(--ring)] data-[state=open]:ring-2 data-[state=open]:ring-foreground/30",
-                                  isToday ? "bg-foreground text-background"
-                                    : !isCurrentMonth ? "text-muted-foreground/40 hover:text-foreground"
-                                      : "text-foreground hover:bg-muted"
-                                )}>{date.getDate()}</button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-44">
-                              <DropdownMenuItem onClick={goToDay}>
-                                <CalendarIcon />
-                                {t("goToWeek")}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openBlockModal(date)} variant={isBlocked ? "default" : "destructive"}>
-                                {isBlocked ? <CalendarOff /> : <Ban />}
-                                {isBlocked ? t("unblockDay") : t("blockDay")}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          {isBlocked && blockLbl && (
-                            <span className="max-w-[80px] truncate rounded bg-destructive/10 px-1 py-0.5 text-[11px] font-semibold text-destructive">
-                              {blockLbl}
-                            </span>
-                          )}
-                          {!isBlocked && holiday && (
-                            <span className="max-w-[80px] truncate rounded bg-foreground/5 px-1 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                              {holiday.name}
-                            </span>
-                          )}
+                        {/* Sarlavha qatori: CHAPDA kun raqami, OʻNGDA holat yorliqlari
+                            va kun menyusi (Google/Notion Calendar oy-koʻrinishi —
+                            sana doim satr boshida, koʻz yoʻnalishi bilan mos). */}
+                        <div className="relative mb-0.5 flex shrink-0 items-center justify-between gap-1">
+                          {/* Kun raqami — FAQAT navigatsiya (haftaga oʻtish). Bayram/bloklash
+                              amali alohida `⋯` tugmasida: bitta doira ikkita maʼnoni
+                              yashirmasin (Google/Outlook naqshi). Rang ustunligi
+                              `ui/calendar.tsx` DayPicker bilan bir xil: TANLANGAN
+                              (`bg-primary`, `data-selected-single` naqshi) > BUGUN
+                              (`bg-accent`, DayPicker `today` naqshi) > oddiy kun.
+                              Chegara/katak foni ISHLATILMAYDI — signal faqat doirada. */}
+                          <button
+                            type="button"
+                            onClick={goToDay}
+                            aria-label={t("goToWeek")}
+                            title={t("goToWeek")}
+                            className={cn(
+                              "flex h-6 shrink-0 items-center justify-center rounded-full text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
+                              isMonthStart ? "px-1.5" : "w-6",
+                              isSelected
+                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                : isToday
+                                  ? "bg-accent text-accent-foreground hover:bg-accent/70"
+                                  : isCurrentMonth
+                                    ? "text-foreground hover:bg-accent"
+                                    : "text-muted-foreground/50 hover:bg-accent hover:text-foreground",
+                            )}
+                          >
+                            {isMonthStart ? `${date.getDate()} ${fmt.monthShort(date.getMonth())}` : date.getDate()}
+                          </button>
+                          <div className="flex min-w-0 items-center gap-1">
+                            {isBlocked && blockLbl && (
+                              <span className="max-w-[80px] truncate rounded bg-destructive/10 px-1 py-0.5 text-[11px] font-semibold text-destructive">
+                                {blockLbl}
+                              </span>
+                            )}
+                            {!isBlocked && holiday && (
+                              <span className="max-w-[80px] truncate rounded bg-foreground/5 px-1 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                                {holiday.name}
+                              </span>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  aria-label={t("dayActionsAria", { day: date.getDate() })}
+                                  className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[var(--ring)] group-hover/cell:opacity-100 pointer-coarse:opacity-100 data-[state=open]:opacity-100 [&_svg]:size-3.5"
+                                >
+                                  <MoreVertical />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuItem onClick={() => openBlockModal(date)} variant={isBlocked ? "default" : "destructive"}>
+                                  {isBlocked ? <CalendarOff /> : <Ban />}
+                                  {isBlocked ? t("unblockDay") : t("blockDay")}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </div>
-                        {shown.map((it, k) =>
-                          it.t === "l"
-                            ? <PlacedPill key={`l-${it.p.lesson.id}-${it.p.classId}-${it.p.startMin}`} p={it.p} dateKey={key} />
-                            : <EventPill key={`e-${it.ev.id}-${k}`} ev={it.ev} onOpen={goToDay} />
-                        )}
-                        <MonthMorePopover count={hidden} title={`${date.getDate()} ${fmt.monthName(date.getMonth())}`}>
+                        {/* Katak mazmuni — KATAK ICHIDA scroll. Ilgari 2 ta chip
+                            koʻrsatilib, qolgani "+N ta" popover'iga yigʻilardi;
+                            endi hammasi shu yerda, nozik scrollbar bilan. */}
+                        <div className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto">
                           {items.map((it, k) =>
                             it.t === "l"
-                              ? <PlacedPill key={`pl-${it.p.lesson.id}-${it.p.classId}-${it.p.startMin}`} p={it.p} dateKey={key} />
-                              : <EventPill key={`pe-${it.ev.id}-${k}`} ev={it.ev} onOpen={goToDay} />
+                              ? <PlacedPill key={`l-${it.p.lesson.id}-${it.p.classId}-${it.p.startMin}`} p={it.p} dateKey={key} />
+                              : <EventPill key={`e-${it.ev.id}-${k}`} ev={it.ev} onOpen={goToDay} blocked={isBlocked} />
                           )}
-                        </MonthMorePopover>
-                        {isBlocked && <TypographyMuted className="mt-0.5 pl-0.5 text-xs font-medium text-destructive/60">{t("blockedDay")}</TypographyMuted>}
+                        </div>
+                        {isBlocked && <TypographyMuted className="mt-0.5 shrink-0 pl-0.5 text-xs font-medium text-destructive/60">{t("blockedDay")}</TypographyMuted>}
                       </>
                     );
                 }}

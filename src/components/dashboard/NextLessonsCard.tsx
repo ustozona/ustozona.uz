@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useMemo, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarClock, FileText, CircleCheck, CalendarCheck, CalendarX, PencilLine } from "lucide-react";
+import { CalendarClock, FileText } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { STATUS_ICON, STATUS_PILL_CLASS } from "@/components/LessonStatusBadge";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -33,22 +34,6 @@ import { cn } from "@/lib/utils";
    ════════════════════════════════════════════════════════════════════ */
 
 const LIMIT = 40;
-
-/** Status badge ranglari — Vazifalar sahifasidagi bilan bir xil semantik tokenlar. */
-const STATUS_STYLES: Record<Lesson["status"], string> = {
-  Completed: "bg-success/10 text-success",
-  Scheduled: "bg-info/10 text-info",
-  Unscheduled: "bg-warning/10 text-warning",
-  Draft: "bg-muted text-muted-foreground",
-};
-
-/** Status belgisi — nuqta oʻrniga holatga mos ikonka. */
-const STATUS_ICONS: Record<Lesson["status"], typeof CircleCheck> = {
-  Completed: CircleCheck,
-  Scheduled: CalendarCheck,
-  Unscheduled: CalendarX,
-  Draft: PencilLine,
-};
 
 type Row = {
   key: string;
@@ -165,7 +150,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
                   </div>
                   <div className="flex flex-col gap-2">
                     {g.rows.map((r) => {
-                      const StatusIcon = STATUS_ICONS[r.status];
+                      const StatusIcon = STATUS_ICON[r.status];
                       return (
                       <Link
                         key={r.key}
@@ -195,7 +180,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
                           variant="secondary"
                           className={cn(
                             "shrink-0 gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border-transparent",
-                            STATUS_STYLES[r.status]
+                            STATUS_PILL_CLASS[r.status]
                           )}
                         >
                           <StatusIcon className="size-3" />

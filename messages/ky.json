@@ -1417,6 +1417,7 @@
     "lessonRestoredToast": "Тема кайтарылды",
     "lessonMovedToast": "Сабак жылдырылды",
     "lessonFallback": "Сабак",
+    "noTopicYet": "Тема азырынча тандалган эмес",
     "week": "Апта",
     "month": "Ай",
     "hideOffDays": "Дем алыш күндөрүн жашыруу",
