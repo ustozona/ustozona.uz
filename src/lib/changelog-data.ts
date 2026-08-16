@@ -32,6 +32,67 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "topshiriq-qoralama-royxatda",
+    date: "2026-08-16",
+    type: "yaxshilandi",
+    title: "Tugallanmagan topshiriq endi roʻyxatda turadi va yoʻqolmaydi",
+    body:
+      "Muharrirni yopsangiz hech nima soʻralmaydi — qoralama Topshiriqlar roʻyxatida karta boʻlib turadi, bosib davom ettirasiz. Boshqa sinfda «+» bossangiz ham eski qoralamangiz oʻchib ketmaydi, oʻsha ochiladi. Kichraytirish tugmasi va burchakdagi yorliq kerak boʻlmay qoldi.",
+    href: "/dashboard/assignments",
+  },
+  {
+    id: "topshiriq-holat-raqami",
+    date: "2026-08-16",
+    type: "yaxshilandi",
+    title: "Topshiriq sarlavhasida endi «nechtasi baholandi» koʻrinadi",
+    body:
+      "«Baholanmoqda» degan noaniq yozuv oʻrniga toʻlib boruvchi halqa va aniq raqam: 12/25. Bugun oʻtadigan ish «Bugun» deb belgilanadi, bir necha sinfga berilgan topshiriqda esa hali oʻtmagan sinf hisobga olinmaydi. Doimiy «Saqlandi» yozuvi olib tashlandi — endi u faqat oʻzgarish serverga yetmasa gapiradi.",
+    href: "/dashboard/assignments",
+  },
+  {
+    id: "topshiriq-maks-ball-ogohlantirish",
+    date: "2026-08-16",
+    type: "tuzatildi",
+    title: "Maks. ballni oʻzgartirsangiz, nechta baho qayta hisoblangani aytiladi",
+    body:
+      "Ilgari 10 ballik ishni 100 ballik qilib qoʻysangiz, katakdagi «8» oʻsha-oʻsha turardi-yu, 80% jimgina 8% ga aylanardi. Endi «25 ta baho qayta hisoblandi» deb yoziladi va darhol bekor qilsa boʻladi.",
+    href: "/dashboard/assignments",
+  },
+  {
+    id: "test-oraliq-ekran-olib-tashlandi",
+    date: "2026-08-16",
+    type: "yaxshilandi",
+    title: "Testga oʻtish qisqardi — oraliq «Testlar» roʻyxati olib tashlandi",
+    body:
+      "Topshiriqdan test tuzsangiz yoki sessiya oʻtkazsangiz, endi toʻgʻridan-toʻgʻri oʻsha joyga tushasiz: ortiqcha bir oyna yoʻqoldi. Sinfning barcha testlari Topshiriqlar sahifasida turadi. Bir xil nomli test ikki marta yaratilib qoladigan xato ham tuzatildi.",
+    href: "/dashboard/assignments",
+  },
+  {
+    id: "topshiriq-maks-ball-chiplari",
+    date: "2026-08-16",
+    type: "yaxshilandi",
+    title: "Maks. ball uchun tez tanlash — koʻp ishlatgan qiymatlaringiz bir bosishda",
+    href: "/dashboard/assignments",
+  },
+  {
+    id: "topshiriq-yoriqnoma",
+    date: "2026-08-16",
+    type: "yangi",
+    title: "Topshiriqqa yoʻriqnoma yozib qoʻyiladi",
+    body:
+      "Sarlavha ostidagi yangi maydonga topshiriq shartini yozasiz — «5-mashq, 2-bandigacha» yoki qanday baholanishi. Keyin ochganingizda oʻsha yerda turadi, esdan chiqmaydi.",
+    href: "/dashboard/assignments",
+  },
+  {
+    id: "topshiriq-mazmun-biriktirish",
+    date: "2026-08-16",
+    type: "yaxshilandi",
+    title: "Topshiriqqa test istalgan payt biriktiriladi",
+    body:
+      "Ilgari topshiriq turini faqat yaratayotganda tanlash mumkin edi — keyin fikringiz oʻzgarsa yoʻl yoʻq edi. Endi mazmun topshiriqning oʻz muharririda turadi: tayyor ustunga yangi test tuzasiz yoki bankdan olgan, ilgari tuzgan testingizni tanlab biriktirasiz. Test biriktirilishi bilan jurnalda ustun paydo boʻladi — qogʻozda oʻtkazsangiz ham baho oʻsha ustunga yoziladi.",
+    href: "/dashboard/assignments",
+  },
+  {
     id: "sinf-import-eksport",
     date: "2026-08-10",
     type: "yangi",

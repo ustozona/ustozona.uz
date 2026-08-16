@@ -39,6 +39,8 @@ export default function GradesView({
   demoClassData?: ClassData;
 }) {
   const t = useTranslations("GradesView");
+  /* Qoralama xabarlari muharrir bilan bir joyda yashaydi (AssignmentsPage). */
+  const tAssignments = useTranslations("AssignmentsPage");
   const mounted = useMounted();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
@@ -99,12 +101,17 @@ export default function GradesView({
       ? t("archiveNotice")
       : null;
 
-  /* Jurnaldan yaratish — mazmun ixtiyoriy (`manualCreate`), natija baho ustuni.
+  /* Jurnaldan yaratish — mazmun ixtiyoriy: mazmunsiz topshiriq ham toʻlaqonli
+     baho ustuni (qogʻozdagi ish, ogʻzaki soʻrov). Topshiriqlar sahifasidan
+     ochilganda ham qoida AYNAN SHU — ilgari u yerda tur majburiy edi.
      Manba HAQIQIY store: tur/demo namunasida sinf yoʻq, muharrir ochilmaydi. */
   function handleCreateAssignment() {
     const real = classDataMap[classId];
     if (!real) return;
-    openDraft(classId, true, makeDraftPayload(classId, real.topics[0]?.id ?? null));
+    const result = openDraft(classId, makeDraftPayload(classId, real.topics[0]?.id ?? null));
+    // Tugallanmagan qoralama bor boʻlsa u TIKLANADI (ustiga yozilmaydi) —
+    // ilgari boshqa sinfda "+" bosilsa eski qoralama izsiz yoʻqolardi.
+    if (result === "restored") toast.info(tAssignments("draftRestored"));
   }
 
   function handleCellEdit(

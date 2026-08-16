@@ -14,9 +14,11 @@ import {
   createSet,
   deleteSet,
   getSet,
+  getSetMeta,
   listSets,
   listSetsWithPublishState,
   updateSet,
+  type SetMeta,
   type SetPublishState,
 } from "@/server/dal/assess/sets";
 import type { ActivityBankRow, ActivityRow, ActivitySetRow } from "@/server/db/schema";
@@ -160,6 +162,18 @@ export async function listSetsWithPublishStateAction(
   classId: string
 ): Promise<SetPublishState[]> {
   return listSetsWithPublishState(classId);
+}
+
+/** Topshiriqqa biriktirilgan toʻplamning pasporti (nom · savol soni ·
+    maks. ball) — muharrirdagi mazmun kartasi shu bilan chiziladi. */
+export async function getSetMetaAction(setId: string): Promise<SetMeta | null> {
+  return getSetMeta(setId);
+}
+
+/** Toʻliq toʻplam qatori — sessiya paneli `classId` va `items` ni talab
+    qiladi, topshiriqda esa faqat `setId` bor. */
+export async function getSetAction(setId: string): Promise<ActivitySetRow | null> {
+  return getSet(setId);
 }
 
 export async function createSetAction(input: CreateSetFormValues): Promise<ActivitySetRow> {

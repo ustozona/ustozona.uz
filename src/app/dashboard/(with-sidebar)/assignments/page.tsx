@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, Tag, Library } from "lucide-react";
+import {
+  ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, Tag, Library, Columns3, Users,
+  PenLine,
+} from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
@@ -31,8 +34,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   useAssignmentEditorStore, makeDraftPayload,
 } from "@/store/useAssignmentEditorStore";
-import { listSetsWithPublishStateAction } from "@/server/actions/assess";
-import TestWorkspaceOverlay from "./_components/TestWorkspaceOverlay";
+import {
+  deleteSetAction, getSetAction, listSetsWithPublishStateAction,
+} from "@/server/actions/assess";
+import type { ActivitySetRow } from "@/server/db/schema";
+import SetBuilderOverlay from "./_components/test/SetBuilderOverlay";
+import SessionPanelModal from "./_components/test/SessionPanelModal";
 import TestBankOverlay from "./_components/TestBankOverlay";
 
 /** "Other" (Toifasiz) chelagi uchun sentinel — DB qatori emas, faqat guruhlash kaliti. */
@@ -70,7 +77,13 @@ export default function AssignmentsPage() {
   const [pendingSets, setPendingSets] = useState<
     { id: string; title: string; itemCount: number }[]
   >([]);
-  const [testWorkspaceSetId, setTestWorkspaceSetId] = useState<string | null>(null);
+  /* Toʻplam amallari — savol muharriri, sessiya paneli, oʻchirish. Ilgari
+     uchalasi ham "Testlar (5-A)" oraliq overlay'ida edi; u sidebar'dan
+     olib tashlangan `/dashboard/baholash` sahifasining qoldigʻi bo'lib,
+     ortiqcha toʻliq-ekran qavati qoʻshardi. Roʻyxatning uyi — shu sahifa. */
+  const [builderSetId, setBuilderSetId] = useState<string | null>(null);
+  const [sessionSet, setSessionSet] = useState<ActivitySetRow | null>(null);
+  const [deleteSet, setDeleteSet] = useState<{ id: string; title: string } | null>(null);
   /* Test banki — LessonLab bazasidan tayyor test tanlash. Ayni shu
      sahifada, chunki bank testi ham «tayyorlangan test» boʻlib tushadi:
      yaratish yoʻli boshqa, natija bir xil. */
@@ -92,6 +105,20 @@ export default function AssignmentsPage() {
      Test ish maydoni yopilgani ham hisobga olinadi: u yerda test
      tahrirlanishi, oʻchirilishi yoki nashr qilinishi mumkin. */
   const editorSession = useAssignmentEditorStore((s) => s.session);
+  const restoreSession = useAssignmentEditorStore((s) => s.restore);
+  const closeSession = useAssignmentEditorStore((s) => s.close);
+
+  /* Tugallanmagan qoralama — muharrir yopilganda u yoʻqolmaydi, shu
+     roʻyxatda karta boʻlib turadi (Google Classroom "Draft" naqshi).
+     Ilgari uning oʻrniga ekran burchagida suzuvchi yorliq bor edi va
+     kichraytirish tugmasi kerak boʻlardi. */
+  const draftCard =
+    editorSession?.kind === "draft" && editorSession.classId === selectedClassId
+      ? {
+          title: editorSession.payload.assignment.title.trim(),
+          topicId: editorSession.payload.assignment.topicId,
+        }
+      : null;
 
   useEffect(() => {
     if (!selectedClassId) {
@@ -116,13 +143,50 @@ export default function AssignmentsPage() {
     return () => {
       alive = false;
     };
-  }, [selectedClassId, editorSession, testWorkspaceSetId, bankVersion]);
+  }, [selectedClassId, editorSession, builderSetId, sessionSet, bankVersion]);
+
+  /** Toʻplamning sessiya paneli — panel toʻliq qator talab qiladi. */
+  async function openSetSession(setId: string) {
+    const row = await getSetAction(setId).catch(() => null);
+    if (row) setSessionSet(row);
+    else toast.error(t("setMissing"));
+  }
+
+  function handleDeleteSetConfirm() {
+    if (!deleteSet) return;
+    const removed = deleteSet;
+    setDeleteSet(null);
+    setPendingSets((prev) => prev.filter((s) => s.id !== removed.id));
+    deleteSetAction(removed.id)
+      .then(() => toast.success(t("toastDeleted"), { description: removed.title }))
+      // Server rad etsa roʻyxat haqiqatdan chetga chiqmasin.
+      .catch(() => {
+        toast.error(t("deleteSetFailed"));
+        setBankVersion((v) => v + 1);
+      });
+  }
+
+  /* Roʻyxat SINFNING BARCHA topshirigʻini qamraydi — mazmunlisini ham,
+     mazmunsiz baho ustunini ham. Ilgari `kind` boʻyicha filtr bor edi:
+     shu sahifadan yaratilgan mazmunsiz topshiriq darhol koʻzdan gʻoyib
+     boʻlardi, shuning uchun yaratishda tur majburiy qilingandi. Filtr
+     ketgach, ikkala eshikda yaratish qoidasi bir xil boʻldi. */
+  /* Serverdagi holat 1.5s debounce bilan yangilanadi, shuning uchun endigina
+     biriktirilgan toʻplam bir zumga "yetim" boʻlib koʻrinishi mumkin. Jonli
+     store shuni darhol tuzatadi. */
+  const linkedSetIds = useMemo(
+    () => new Set((classData?.assignments ?? []).map((a) => a.setId).filter(Boolean) as string[]),
+    [classData]
+  );
+  const orphanSets = useMemo(
+    () => pendingSets.filter((s) => !linkedSetIds.has(s.id)),
+    [pendingSets, linkedSetIds]
+  );
 
   const groups = useMemo(() => {
     if (!classData) return [];
     const byTopic = new Map<string, Assignment[]>();
     for (const a of classData.assignments) {
-      if (a.kind !== "test" && a.kind !== "deck") continue;
       const key = a.topicId ?? OTHER_GROUP;
       if (!byTopic.has(key)) byTopic.set(key, []);
       byTopic.get(key)!.push(a);
@@ -146,16 +210,19 @@ export default function AssignmentsPage() {
     if (selectedClassId) openEdit(selectedClassId, id);
   };
 
-  /* Topshiriqlar sahifasidan yaratish — mazmun MAJBURIY (test/taqdimot):
-     `manualCreate: false` "Yaratish" tugmasini tur tanlanmaguncha oʻchiq
-     qiladi (AssignmentEditorOverlay). */
+  /* Yaratish qoidasi jurnaldagi bilan BIR XIL — mazmun ixtiyoriy. Ilgari bu
+     sahifada tur tanlanmaguncha "Yaratish" oʻchiq turardi (sababi ekranda
+     yozilmagan holda), chunki roʻyxat faqat test/taqdimotni koʻrsatardi.
+     Endi roʻyxat barcha topshiriqni qamraydi — cheklovning asosi qolmadi. */
   const handleCreateClick = (topicId?: string) => {
     if (!selectedClassId || !classData) return;
-    openDraft(
+    const result = openDraft(
       selectedClassId,
-      false,
       makeDraftPayload(selectedClassId, topicId ?? classData.topics[0]?.id ?? null)
     );
+    // Tugallanmagan qoralama ustiga yozilmaydi — u tiklanadi va shu
+    // aytiladi, aks holda "nega mening eski matnim turibdi?" savoli chiqardi.
+    if (result === "restored") toast.info(t("draftRestored"));
   };
 
   /* `?assignment=<id>` — tashqi havola uchun kirish nuqtasi. Sessiyaga
@@ -255,7 +322,7 @@ export default function AssignmentsPage() {
                 {/* Boʻsh holat — toifa ham, tayyor test ham yoʻq. `groups`
                     endi BOʻSH toifalarni ham qamraydi, shuning uchun shart
                     `totalCount` emas: toifasi bor sinf boʻsh koʻrinmasin. */}
-                {groups.length === 0 && pendingSets.length === 0 ? (
+                {groups.length === 0 && orphanSets.length === 0 && !draftCard ? (
                   <Empty className="h-full border-0">
                     <EmptyHeader>
                       <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
@@ -271,49 +338,114 @@ export default function AssignmentsPage() {
                 ) : (
                   <ScrollArea className="h-full w-full">
                     <div className="flex flex-col gap-6 p-5">
+                      {/* Tugallanmagan qoralama — eng tepada, chunki u
+                          oʻqituvchining yarim qolgan ishi. */}
+                      {draftCard && (
+                        <ContextMenu>
+                          <ContextMenuTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={restoreSession}
+                              className="list-card flex items-center gap-3 border-dashed p-3.5 text-left"
+                            >
+                              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                <PenLine className="size-4" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="truncate text-sm font-medium text-foreground">
+                                  {draftCard.title || t("untitledDeck")}
+                                </h4>
+                                <TypographyMuted className="truncate text-xs">
+                                  {t("draftCardHint")}
+                                </TypographyMuted>
+                              </div>
+                              <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
+                                {t("status_draft")}
+                              </Badge>
+                            </button>
+                          </ContextMenuTrigger>
+                          <ContextMenuContent>
+                            <ContextMenuItem
+                              variant="destructive"
+                              className="gap-2"
+                              onSelect={() => {
+                                closeSession();
+                                toast.success(t("draftDiscarded"));
+                              }}
+                            >
+                              <Trash2 className="size-4" />
+                              {t("deleteDraft")}
+                            </ContextMenuItem>
+                          </ContextMenuContent>
+                        </ContextMenu>
+                      )}
+
                       {/* Tuzilgan, lekin hali jurnalga chiqmagan testlar —
                           eng tepada, chunki oʻqituvchi aynan ularni
                           qidirib keladi (endigina tuzgan). */}
-                      {pendingSets.length > 0 && (
+                      {orphanSets.length > 0 && (
                         <div className="flex flex-col gap-2.5">
                           <div className="flex items-center gap-2">
                             <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                               <FileCheck2 className="size-3.5" />
                             </div>
                             <h3 className="text-sm font-semibold text-foreground">
-                              Tayyorlangan testlar
+                              {t("orphanSetsTitle")}
                             </h3>
                             <TypographyMuted className="text-xs">
-                              {pendingSets.length}
+                              {orphanSets.length}
                             </TypographyMuted>
                           </div>
                           <TypographyMuted className="text-xs">
-                            Bular hali jurnalda emas. Sessiya oʻtkazib natijani
-                            koʻchirganingizdan keyin baho ustuni paydo boʻladi.
+                            {t("orphanSetsDescription")}
                           </TypographyMuted>
+                          {/* Karta bosilsa savollar muharriri ochiladi;
+                              sessiya va oʻchirish — oʻng-tugma menyusida
+                              (topshiriq kartalari bilan bir til). */}
                           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-                            {pendingSets.map((set) => (
-                              <button
-                                key={set.id}
-                                type="button"
-                                onClick={() => setTestWorkspaceSetId(set.id)}
-                                className="list-card group flex items-center gap-3 p-3.5 text-left"
-                              >
-                                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                                  <FileCheck2 className="size-4" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="truncate text-sm font-medium text-foreground">
-                                    {set.title}
-                                  </h4>
-                                </div>
-                                <Badge
-                                  variant="outline"
-                                  className="shrink-0 text-[10px] text-muted-foreground"
-                                >
-                                  {set.itemCount} savol
-                                </Badge>
-                              </button>
+                            {orphanSets.map((set) => (
+                              <ContextMenu key={set.id}>
+                                <ContextMenuTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => setBuilderSetId(set.id)}
+                                    className="list-card group flex items-center gap-3 p-3.5 text-left"
+                                  >
+                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                      <FileCheck2 className="size-4" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <h4 className="truncate text-sm font-medium text-foreground">
+                                        {set.title}
+                                      </h4>
+                                    </div>
+                                    <Badge
+                                      variant="outline"
+                                      className="shrink-0 text-[10px] text-muted-foreground"
+                                    >
+                                      {t("questionCount", { count: set.itemCount })}
+                                    </Badge>
+                                  </button>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent>
+                                  <ContextMenuItem
+                                    className="gap-2"
+                                    onSelect={() => void openSetSession(set.id)}
+                                  >
+                                    <Users className="size-4" />
+                                    {t("runSession")}
+                                  </ContextMenuItem>
+                                  <ContextMenuSeparator />
+                                  <ContextMenuItem
+                                    variant="destructive"
+                                    className="gap-2"
+                                    onSelect={() => setDeleteSet({ id: set.id, title: set.title })}
+                                  >
+                                    <Trash2 className="size-4" />
+                                    {t("delete")}
+                                  </ContextMenuItem>
+                                </ContextMenuContent>
+                              </ContextMenu>
                             ))}
                           </div>
                         </div>
@@ -371,8 +503,17 @@ export default function AssignmentsPage() {
                             <AccordionContent className="px-2 pb-3">
                               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
                                 {group.items.map((a) => {
+                                  // Mazmun turi — kartaning ikonkasi va yorligʻi.
+                                  // Mazmunsiz topshiriq ham toʻlaqonli: u jurnaldagi
+                                  // baho ustuni (qogʻozdagi ish, ogʻzaki soʻrov).
                                   const isDeck = a.kind === "deck";
-                                  const Icon = isDeck ? Presentation : FileCheck2;
+                                  const isTest = a.kind === "test" || Boolean(a.setId);
+                                  const Icon = isDeck ? Presentation : isTest ? FileCheck2 : Columns3;
+                                  const kindLabel = isDeck
+                                    ? t("kindDeck")
+                                    : isTest
+                                      ? t("kindTest")
+                                      : t("kindManual");
                                   return (
                                     <ContextMenu key={a.id}>
                                       <ContextMenuTrigger asChild>
@@ -390,7 +531,7 @@ export default function AssignmentsPage() {
                                             </h4>
                                           </div>
                                           <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
-                                            {isDeck ? t("kindDeck") : t("kindTest")}
+                                            {kindLabel}
                                           </Badge>
                                         </button>
                                       </ContextMenuTrigger>
@@ -437,16 +578,39 @@ export default function AssignmentsPage() {
         />
       )}
 
-      {/* Test bosilganda oʻz ish maydonida ochiladi — muharrir ham,
-          sessiya paneli ham oʻsha yerda (BaholashView). */}
-      {testWorkspaceSetId && selectedClassId && (
-        <TestWorkspaceOverlay
+      {/* Savol muharriri va sessiya paneli — oraliq ekransiz. */}
+      {builderSetId && selectedClassId && (
+        <SetBuilderOverlay
           classId={selectedClassId}
-          className={classData?.info.name ?? ""}
-          autoOpenSetId={testWorkspaceSetId}
-          onClose={() => setTestWorkspaceSetId(null)}
+          setId={builderSetId}
+          onSaved={() => setBankVersion((v) => v + 1)}
+          onClose={() => setBuilderSetId(null)}
         />
       )}
+
+      {sessionSet && (
+        <SessionPanelModal set={sessionSet} onClose={() => setSessionSet(null)} />
+      )}
+
+      <AlertDialog open={!!deleteSet} onOpenChange={(open) => { if (!open) setDeleteSet(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteSetDialogTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("deleteSetDialogDescription", { title: deleteSet?.title ?? "" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={handleDeleteSetConfirm}
+            >
+              {t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
         <AlertDialogContent>

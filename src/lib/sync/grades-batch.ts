@@ -64,6 +64,11 @@ export const assignmentUpsertSchema = z.object({
   dueDate: z.string().max(20).optional(),
   kind: z.enum(["manual", "test", "deck"]).optional(),
   instructions: z.string().max(20000).optional(),
+  /** Biriktirilgan savollar toʻplami (R215). Boʻsh kelsa halqa uziladi —
+      shuning uchun `nullable`: "yuborilmadi" va "ajratildi" farqlanadi
+      emas, client har doim joriy holatni yuboradi. Egalik serverda
+      tekshiriladi (begona toʻplam `null` boʻlib yoziladi). */
+  setId: id.nullable().optional(),
   sortOrder: z.number().int().min(0),
 });
 

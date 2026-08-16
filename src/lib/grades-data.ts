@@ -712,6 +712,40 @@ export function assignmentGroupKey(a: Assignment): string {
 }
 
 /**
+ * Maks. ball uchun "tez tanlash" takliflari (R207).
+ *
+ * Referensda (EMStudio) bu maydon erkin raqam emas, dropdown — chunki
+ * oʻqituvchi amalda 3–4 xil maxrajni aylantiradi (5, 10, 100...) va har
+ * safar qoʻlda terish ortiqcha. Taklif OʻZINING tarixidan olinadi:
+ * shu jurnalda qaysi qiymat koʻp ishlatilgan boʻlsa — oldinda.
+ *
+ * Standart qiymatlar oxiriga qoʻshiladi, chunki boʻsh jurnalda tarix yoʻq
+ * (birinchi topshiriq ham taklifsiz qolmasin). Roʻyxat qisqa: uzun qator
+ * tanlovni tezlashtirmaydi, sekinlashtiradi.
+ */
+export function buildScoreSuggestions(
+  assignments: Assignment[],
+  limit = 5
+): number[] {
+  const freq = new Map<number, number>();
+  for (const a of assignments) {
+    if (!Number.isFinite(a.maxScore) || a.maxScore <= 0) continue;
+    freq.set(a.maxScore, (freq.get(a.maxScore) ?? 0) + 1);
+  }
+  const used = [...freq.entries()]
+    // Koʻp ishlatilgani oldinda; teng boʻlsa kichigi (5 dan 100 ga qarab).
+    .sort((a, b) => b[1] - a[1] || a[0] - b[0])
+    .map(([score]) => score);
+
+  const out: number[] = [];
+  for (const score of [...used, 5, 10, 20, 50, 100]) {
+    if (out.length >= limit) break;
+    if (!out.includes(score)) out.push(score);
+  }
+  return out;
+}
+
+/**
  * Toifani boshqa sinfdagi ekvivalentiga moslash — `Topic.groupId` boʻyicha.
  * Toifalar har sinfda alohida qator, shuning uchun topshiriq boshqa sinfga
  * nusxalanganda `topicId`ni koʻchirib boʻlmaydi, qayta topish kerak.
