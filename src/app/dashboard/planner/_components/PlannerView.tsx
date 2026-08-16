@@ -1398,7 +1398,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                   aria-label={t("daySettingsAria")}
                                   className={cn(
                                     "flex size-7 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-opacity transition hover:bg-primary hover:text-primary-foreground focus-visible:opacity-100 focus-visible:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)] group-hover/day:opacity-100 pointer-coarse:opacity-100 data-[state=open]:opacity-100 data-[state=open]:bg-primary data-[state=open]:text-primary-foreground",
-                                    forceShowDaySettings && "opacity-100 bg-foreground/10 text-foreground"
+                                    hydrated && forceShowDaySettings && "opacity-100 bg-foreground/10 text-foreground"
                                   )}
                                 >
                                   <SlidersHorizontal className="size-4" />
