@@ -58,13 +58,7 @@ function SwitchRow({
  * Ikki boʻlim: (1) Baholash shkalasi, (2) Jadval koʻrinishi. Shkala faqat
  * koʻrinishni oʻzgartiradi — bahoni emas. Barcha sinflar uchun bitta shkala.
  */
-export default function GradesSettingsModal({
-  showTrend,
-  onShowTrendChange,
-}: {
-  showTrend: boolean;
-  onShowTrendChange: (v: boolean) => void;
-}) {
+export default function GradesSettingsModal() {
   // Shkala — explicit Save (Sozlamalar > Jurnal bilan bir xil semantika);
   // jadval koʻrinishi togglelari view-pref sifatida darhol qoʻllanadi.
   const journalScale = useClassStore((s) => s.journalScale);
@@ -116,23 +110,14 @@ export default function GradesSettingsModal({
             onChange={(p) => setDraft({ ...draft, ...p })}
           />
 
-          <div className="flex flex-col gap-3.5">
-            {draft.kind !== "percent" && (
-              <SwitchRow
-                title={t("showPercentTitle")}
-                desc={t("showPercentDesc")}
-                checked={draft.showPercent}
-                onChange={(v) => setDraft({ ...draft, showPercent: v })}
-              />
-            )}
-
+          {draft.kind !== "percent" && (
             <SwitchRow
-              title={t("statusColumnFieldLabel")}
-              desc={t("trendHintPart")}
-              checked={showTrend}
-              onChange={onShowTrendChange}
+              title={t("showPercentTitle")}
+              desc={t("showPercentDesc")}
+              checked={draft.showPercent}
+              onChange={(v) => setDraft({ ...draft, showPercent: v })}
             />
-          </div>
+          )}
         </div>
 
         <DialogFooter className="flex-row items-center justify-end gap-3 border-t border-border bg-muted/20 px-6 py-3">

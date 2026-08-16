@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import {
   ClipboardList,
   Search,
@@ -16,8 +16,6 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
-  Lightbulb,
-  Info,
   ChevronRight,
   ArrowRight,
   Check,
@@ -39,21 +37,24 @@ import {
   classColor,
   type ClassData,
   type Grade,
-  type GradingScale,
 } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { scoreBarColor } from "@/lib/score-colors";
 import { useClassStore, journalScaleFor } from "@/store/useClassStore";
-import { formatByScaleKind, formatScore } from "@/lib/grade-scale";
+import { formatScore } from "@/lib/grade-scale";
 import GradesSettingsModal from "./GradesSettingsModal";
 import {
   calcAssignmentAverages,
   calcStudentTotals,
 } from "./helpers";
-import { UZ_COLLATOR, splitName, formatDueDate, pedagogikSignal } from "./grades-table-helpers";
-import { classSummativeAverage, studentTrend, gradePercent } from "@/lib/grades-stats";
-import { aggregateTrend, type DatedScore } from "@/lib/student-profile";
-import { TrendChart } from "@/app/dashboard/(with-sidebar)/students/[id]/_components/charts";
+import { UZ_COLLATOR, splitName, formatDueDate } from "./grades-table-helpers";
+import {
+  classSummativeAverage,
+  gradePercent,
+  studentTrend,
+  studentFormativeRecent,
+  classFormativeRecent,
+} from "@/lib/grades-stats";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -95,14 +96,11 @@ import {
 function LetterAvg({
   percent,
   classId,
-  scale,
   hasData = true,
 }: {
   percent: number;
-  /** Jami/Holat — sinfning oʻz shkalasi (`journalScaleFor`), `scale` bermaganda ishlatiladi. */
+  /** Sinfning yagona jurnal shkalasi (`journalScaleFor`) — barcha oʻrtachalar shunda. */
   classId?: string;
-  /** Toifa oʻzining shkalasida koʻrsatiladi (ustun oʻrtachasi) — Jami/Holat esa sinf shkalasida. */
-  scale?: { kind: GradingScale; passLabel?: string; failLabel?: string };
   /** Hali baho yoʻq boʻlsa (count=0) — 0% real natija emas, shkala labelini koʻrsatmaymiz. */
   hasData?: boolean;
 }) {
@@ -114,20 +112,12 @@ function LetterAvg({
       </div>
     );
   }
-  let primary: string;
-  let secondary: string | undefined;
-  if (scale) {
-    // Toifa shkalasi — yagona jurnal shkalasidan mustasno.
-    primary = formatByScaleKind(percent, scale.kind, scale);
-    secondary = `${percent.toFixed(1)}%`;
-  } else {
-    // Holat / umumiy / ustun-oʻrtacha — YAGONA jurnal shkalasi: "4 (78%)".
-    const f = formatScore(percent, journalScale);
-    primary = f.label;
-    secondary = journalScale.showPercent ? f.percent : undefined;
-  }
+  // Holat / umumiy / ustun-oʻrtacha — YAGONA jurnal shkalasi: "4 (78%)".
+  const f = formatScore(percent, journalScale);
+  const primary = f.label;
+  const secondary = journalScale.showPercent ? f.percent : undefined;
   const color = scoreBarColor(percent);
-  // "Bajardi/Bajarmadi" uzun — kichikroq shrift bilan.
+  // Uzun yorliq (masalan soʻz uslubi) — kichikroq shrift bilan.
   const isLong = primary.length > 3;
   const primarySize = isLong ? "text-xs leading-tight" : "text-base";
   return (
@@ -142,235 +132,6 @@ function LetterAvg({
         <TypographyMuted className="text-xs">{secondary}</TypographyMuted>
       )}
     </div>
-  );
-}
-/**
- * "Holat" ustunining burchagidagi Trend ↗/↘ belgisi — faqat |Δ| ±3pp
- * deadband'dan oshganda koʻrsatiladi (v1 SEM-proksisi: oʻlchash shovqinini
- * neytral qoldiramiz). `showTrend=false` boʻlsa butunlay yashiriladi.
- */
-function StatusBadge({
-  showTrend,
-  trend,
-}: {
-  showTrend: boolean;
-  trend: number | null;
-}) {
-  const t = useTranslations("GradesTable");
-  if (!showTrend) return null;
-  if (trend === null) return null;
-  const up = trend > 3;
-  const down = trend < -3;
-  if (!up && !down) return null; // deadband ichida — shovqin, ko‘rsatmaymiz
-  const Icon = up ? TrendingUp : TrendingDown;
-  const color = up ? "var(--success)" : "var(--destructive)";
-  const label = `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%`;
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Icon className="absolute bottom-0.5 right-1 size-3" style={{ color }} aria-label={t("trendAriaLabel", { label })} />
-      </TooltipTrigger>
-      <TooltipContent>{t("trendTooltip", { label })}</TooltipContent>
-    </Tooltip>
-  );
-}
-
-/** O‘quvchining sanali normallashgan baholari (formativ+summativ) — chart uchun. */
-function buildDatedScores(
-  studentId: string,
-  assignments: ClassData["assignments"],
-  grades: Grade[]
-): DatedScore[] {
-  const byKey = new Map<string, Grade>();
-  grades.forEach((g) => {
-    if (g.studentId === studentId) byKey.set(g.assignmentId, g);
-  });
-  const out: DatedScore[] = [];
-  for (const a of assignments) {
-    if (!a.date) continue;
-    const pct = gradePercent(byKey.get(a.id), a);
-    if (pct !== null) out.push({ date: new Date(a.date), pct });
-  }
-  return out;
-}
-
-function HolatStat({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  /** ⓘ tooltip — metrikani qisqa tushuntiradi. */
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  const t = useTranslations("GradesTable");
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-        {hint && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Info className="size-3 cursor-help opacity-60 hover:opacity-100" aria-label={t("statHintAria", { label })} />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-[220px] text-xs leading-snug">{hint}</TooltipContent>
-          </Tooltip>
-        )}
-      </span>
-      <span className="text-sm font-semibold tabular-nums text-foreground">{children}</span>
-    </div>
-  );
-}
-
-/** Sinf bilan vizual solishtirish: o‘quvchi to‘ldirilishi + sinf o‘rtachasi belgisi. */
-function LevelBar({ level, classAverage }: { level: number; classAverage: number }) {
-  const t = useTranslations("GradesTable");
-  const delta = level - classAverage;
-  const deltaColor =
-    delta > 1 ? "var(--success)" : delta < -1 ? "var(--destructive)" : "var(--muted-foreground)";
-  const deltaLabel = t("classDeltaLabel", { sign: delta > 0 ? "+" : "", value: delta.toFixed(0) });
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-        <span>{t("compareWithClass")}</span>
-        <span className="font-semibold tabular-nums" style={{ color: deltaColor }}>
-          {deltaLabel}
-        </span>
-      </div>
-      <div className="relative h-1.5 w-full rounded-full bg-muted">
-        <div
-          className="absolute inset-y-0 left-0 rounded-full"
-          style={{ width: `${Math.min(100, Math.max(0, level))}%`, backgroundColor: scoreBarColor(level) }}
-        />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div
-              className="absolute -top-1 h-3.5 w-0.5 cursor-help rounded-full bg-foreground/70"
-              style={{ left: `calc(${Math.min(100, Math.max(0, classAverage))}% - 1px)` }}
-              aria-label={t("classAverage")}
-            />
-          </TooltipTrigger>
-          <TooltipContent className="text-xs">{t("classAverageTooltip", { value: classAverage.toFixed(0) })}</TooltipContent>
-        </Tooltip>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Pedagogik signal — raqamlarni "qaror"ga aylantiruvchi yo‘naltiruvchi qator.
- * Daisy: tayyor "verdikt" emas (soxta aniqlik), ehtiyotkor til + o‘lchov xatosi (SEM).
- * Komil: buyruq emas, ishonchlilikni oshirishga qaratilgan "retsept".
- * Ustuvorlik: dalil yo‘q → kam dalil → transfer → pasayish → o‘sish → barqaror.
- */
-/**
- * "Holat" katagiga hover — diagnostika xonasi: oʻzlashtirish darajasi, oʻzgarish
- * dinamikasi, kundalik tushunish, summativ dalil, grafik va pedagogik signal.
- * `student` berilmasa (sinf qatori) — grafik va sinf solishtiruvi koʻrsatilmaydi.
- */
-function HolatHover({
-  name,
-  level,
-  trend,
-  formative,
-  formativeCount,
-  summativeCount,
-  classAverage,
-  student,
-  assignments,
-  grades,
-  children,
-}: {
-  name: string;
-  level: number;
-  trend: number | null;
-  formative: number;
-  formativeCount: number;
-  summativeCount: number;
-  /** Sinf oʻrtachasi — solishtirish uchun (sinf qatorida berilmaydi). */
-  classAverage?: number;
-  student?: { id: string } | null;
-  assignments: ClassData["assignments"];
-  grades: Grade[];
-  children: React.ReactNode;
-}) {
-  const t = useTranslations("GradesTable");
-  const journalScale = useClassStore((s) => s.journalScale);
-  // Yagona jurnal shkalasi: "4 (78%)" (yoki yorliq === foiz boʻlsa, faqat bittasi).
-  const levelDisplay = formatScore(level, journalScale).display;
-  const points = useMemo(
-    () => (student ? aggregateTrend(buildDatedScores(student.id, assignments, grades), "monthly") : []),
-    [student, assignments, grades]
-  );
-  const up = trend !== null && trend > 3;
-  const down = trend !== null && trend < -3;
-  // Daisy: deadband ichidagi o‘zgarishni rang bilan belgilamaymiz — "Barqaror".
-  const TrendIcon = up ? TrendingUp : down ? TrendingDown : Minus;
-  const trendColor = up ? "var(--success)" : down ? "var(--destructive)" : "var(--muted-foreground)";
-  const trendDisplay =
-    trend === null ? "—" : up || down ? `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%` : t("stable");
-  const signal = pedagogikSignal({ level, formative, formativeCount, summativeCount, up, down });
-
-  return (
-    <HoverCard openDelay={150} closeDelay={100}>
-      <HoverCardTrigger asChild>{children}</HoverCardTrigger>
-      <HoverCardContent align="start" className="w-72 space-y-3">
-        <div>
-          <p className="text-sm font-semibold text-foreground">{name}</p>
-          <TypographyMuted className="text-xs">{t("holatDetails")}</TypographyMuted>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <HolatStat
-            label={t("masteryLabel")}
-            hint={t("masteryHint")}
-          >
-            {levelDisplay}
-          </HolatStat>
-          <HolatStat
-            label={t("dynamicsLabel")}
-            hint={t("dynamicsHint")}
-          >
-            <span className="inline-flex items-center gap-1" style={{ color: trendColor }}>
-              <TrendIcon className="size-3.5" />
-              {trendDisplay}
-            </span>
-          </HolatStat>
-          <HolatStat
-            label={t("formativeGradeLabel")}
-            hint={t("formativeGradeHint")}
-          >
-            {formativeCount > 0 ? `${formative.toFixed(0)}%` : "—"}
-          </HolatStat>
-          <HolatStat
-            label={t("summativeWorksLabel")}
-            hint={t("summativeWorksHint")}
-          >
-            <span className={cn(summativeCount > 0 && summativeCount < 3 && "text-warning")}>
-              {t("countUnit", { count: summativeCount })}
-            </span>
-          </HolatStat>
-        </div>
-        {classAverage != null && <LevelBar level={level} classAverage={classAverage} />}
-        {student && points.length >= 2 && (
-          <div>
-            <TypographyMuted className="mb-1 text-[10px] uppercase tracking-wide">
-              {t("monthlyGradeDynamics")}
-            </TypographyMuted>
-            <div className="h-28 w-full">
-              <TrendChart points={points} color={scoreBarColor(level)} />
-            </div>
-          </div>
-        )}
-        <div className="flex items-start gap-2 rounded-md bg-muted/50 p-2.5">
-          <Lightbulb className="mt-0.5 size-3.5 shrink-0" style={{ color: signal.tone }} aria-hidden />
-          <div>
-            <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{t("pedagogicalSignal")}</p>
-            <p className="text-xs leading-snug text-foreground">{signal.text}</p>
-          </div>
-        </div>
-      </HoverCardContent>
-    </HoverCard>
   );
 }
 
@@ -469,7 +230,13 @@ type Props = {
   archiveNotice?: string | null;
 };
 
-type SortField = "firstName" | "lastName";
+/**
+ * Saralash maydoni. Ism/familiya — matn boʻyicha; qolgani RAQAM boʻyicha
+ * (`a:<assignmentId>` — bitta topshiriq ustuni). Bahosi yoʻq oʻquvchi
+ * yoʻnalishdan qatʼi nazar HAR DOIM oxirida turadi — aks holda "eng past
+ * natijalar" roʻyxati boʻsh kataklar bilan boshlanib, maʼnosini yoʻqotadi.
+ */
+type SortField = "firstName" | "lastName" | "formative" | "summative" | `a:${string}`;
 type SortDir = "asc" | "desc";
 type Move = "down" | "up" | "left" | "right" | null;
 
@@ -493,8 +260,6 @@ export default function GradesTable({
   const { students, assignments, grades, topics } = classData;
   const classHex = CLASS_COLOR_HEX[classColor(classData.info)];
   const [createOpen, setCreateOpen] = useState(false);
-  // Holat ustunining burchagidagi Trend belgisi koʻrsatilsinmi.
-  const [showTrend, setShowTrend] = useState(true);
   const [editingCell, setEditingCell] = useState<{ s: string; a: string } | null>(null);
   const [sortField, setSortField] = useState<SortField>("firstName");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -520,28 +285,10 @@ export default function GradesTable({
     [students, grades, assignments, topics]
   );
 
-  const sortedStudents = useMemo(() => {
-    return [...students].sort((a, b) => {
-      const na = splitName(a.name);
-      const nb = splitName(b.name);
-      const ka = sortField === "lastName" ? na.last || na.first : na.first;
-      const kb = sortField === "lastName" ? nb.last || nb.first : nb.first;
-      const cmp = UZ_COLLATOR.compare(ka, kb);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-  }, [students, sortField, sortDir]);
-
   const totalsById = useMemo(
     () => new Map(rawTotals.map((t) => [t.student.id, t])),
     [rawTotals]
   );
-
-  // Qidiruv bo‘yicha filtrlangan qatorlar.
-  const filteredStudents = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return sortedStudents;
-    return sortedStudents.filter((s) => s.name.toLowerCase().includes(q));
-  }, [sortedStudents, search]);
 
   // Ustunlar: maqsad bo‘yicha filtr + Topic bo‘yicha guruhlash (ichida sana).
   const orderedAssignments = useMemo(() => {
@@ -568,18 +315,78 @@ export default function GradesTable({
     () => classSummativeAverage(students, assignments, grades, topics),
     [students, assignments, grades, topics]
   );
-  // Sinf formativ o‘rtachasi (signal) — ball olganlar bo‘yicha.
-  const classFormative = useMemo(() => {
-    const f = rawTotals.filter((t) => t.summary.formativeCount > 0);
-    return f.length ? f.reduce((s, t) => s + t.summary.formative, 0) / f.length : null;
-  }, [rawTotals]);
-  // Sinf trendi = ball olgan o‘quvchilar trendlarining o‘rtachasi (yo‘nalish signali).
-  const classTrend = useMemo(() => {
-    const ds = students
-      .map((s) => studentTrend(s.id, assignments, grades))
-      .filter((d): d is number => d !== null);
-    return ds.length ? ds.reduce((a, b) => a + b, 0) / ds.length : null;
-  }, [students, assignments, grades]);
+  // Formativ ustuni — har oʻquvchining oxirgi 3 formativ ishi mediani.
+  const formativeById = useMemo(() => {
+    const m = new Map<string, number | null>();
+    students.forEach((s) =>
+      m.set(s.id, studentFormativeRecent(s.id, assignments, grades, topics))
+    );
+    return m;
+  }, [students, assignments, grades, topics]);
+  const classFormative = useMemo(
+    () => classFormativeRecent(students, assignments, grades, topics),
+    [students, assignments, grades, topics]
+  );
+  /** Ustun boʻyicha saralash: yangi ustun → oʻsish; oʻsha ustun → yoʻnalish teskari. */
+  const toggleSort = useCallback(
+    (field: SortField) => {
+      if (sortField === field) {
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+        return;
+      }
+      setSortField(field);
+      setSortDir("asc");
+    },
+    [sortField]
+  );
+
+  /** Raqamli saralash kaliti (null = baho yoʻq → doim oxirida). */
+  const sortValue = useCallback(
+    (studentId: string): number | null => {
+      if (sortField === "formative") return formativeById.get(studentId) ?? null;
+      if (sortField === "summative") {
+        const tot = totalsById.get(studentId);
+        return tot && tot.summary.summativeCount > 0 ? tot.percent : null;
+      }
+      if (sortField.startsWith("a:")) {
+        const aid = sortField.slice(2);
+        const a = assignments.find((x) => x.id === aid);
+        return a ? gradePercent(gradeMap.get(`${studentId}:${aid}`), a) : null;
+      }
+      return null;
+    },
+    [sortField, formativeById, totalsById, assignments, gradeMap]
+  );
+
+  const sortedStudents = useMemo(() => {
+    const byName = sortField === "firstName" || sortField === "lastName";
+    return [...students].sort((a, b) => {
+      if (byName) {
+        const na = splitName(a.name);
+        const nb = splitName(b.name);
+        const ka = sortField === "lastName" ? na.last || na.first : na.first;
+        const kb = sortField === "lastName" ? nb.last || nb.first : nb.first;
+        const cmp = UZ_COLLATOR.compare(ka, kb);
+        return sortDir === "asc" ? cmp : -cmp;
+      }
+      const va = sortValue(a.id);
+      const vb = sortValue(b.id);
+      // Baho yoʻq — yoʻnalishdan qatʼi nazar oxirida.
+      if (va === null && vb === null) return UZ_COLLATOR.compare(a.name, b.name);
+      if (va === null) return 1;
+      if (vb === null) return -1;
+      const cmp = va - vb;
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [students, sortField, sortDir, sortValue]);
+
+  // Qidiruv bo‘yicha filtrlangan qatorlar.
+  const filteredStudents = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return sortedStudents;
+    return sortedStudents.filter((s) => s.name.toLowerCase().includes(q));
+  }, [sortedStudents, search]);
+
   const draftCount = grades.filter((g) => g.isDraft).length;
   const draftAssignmentCount = useMemo(
     () => new Set(grades.filter((g) => g.isDraft).map((g) => g.assignmentId)).size,
@@ -719,10 +526,7 @@ export default function GradesTable({
               </DropdownMenuContent>
             </DropdownMenu>
 
-          <GradesSettingsModal
-            showTrend={showTrend}
-            onShowTrendChange={setShowTrend}
-          />
+          <GradesSettingsModal />
         </div>
       </CardHeader>
 
@@ -741,7 +545,14 @@ export default function GradesTable({
                 className="sticky left-0 z-40 border-r border-b border-border min-w-[260px] w-[260px] h-[176px]"
                 style={{ backgroundColor: EMPTY_BG }}
               />
-              <ColHeader label={t("statusColumn")} stickyLeft />
+              <ColHeader
+                label={t("formativeColumn")}
+                stick="left"
+                bg="var(--card)"
+                active={sortField === "formative"}
+                dir={sortDir}
+                onSort={() => toggleSort("formative")}
+              />
               {orderedAssignments.map((a) => {
                 const topic = topicMap.get(a.topicId ?? "");
                 const hex = topic ? TOPIC_COLOR_HEX[topic.color] : null;
@@ -784,9 +595,13 @@ export default function GradesTable({
                           >
                             {a.title}
                           </div>
-                          <div className="flex items-center justify-center gap-0.5 py-1 mb-1 text-muted-foreground/60">
-                            <ChevronUp className="size-3" />
-                            <ChevronDown className="size-3" />
+                          <div className="flex items-center justify-center py-1 mb-1">
+                            <SortChevrons
+                              active={sortField === `a:${a.id}`}
+                              dir={sortDir}
+                              onClick={() => toggleSort(`a:${a.id}`)}
+                              label={t("sortByColumn", { label: a.title })}
+                            />
                           </div>
                           {hex && (
                             <div
@@ -837,6 +652,14 @@ export default function GradesTable({
                 className="sticky top-0 z-20 border-b border-border"
                 style={{ backgroundColor: EMPTY_BG }}
               />
+              {/* Summativ (yakuniy natija) — oʻng chekkada qotirilgan. */}
+              <ColHeader
+                label={t("statusColumn")}
+                stick="right"
+                active={sortField === "summative"}
+                dir={sortDir}
+                onSort={() => toggleSort("summative")}
+              />
             </TableRow>
           </TableHeader>
 
@@ -850,7 +673,7 @@ export default function GradesTable({
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
-                          onClick={() => setSortField((f) => f === "firstName" ? "lastName" : "firstName")}
+                          onClick={() => toggleSort(sortField === "firstName" ? "lastName" : "firstName")}
                           className="text-xs font-bold uppercase tracking-wider text-foreground hover:text-foreground/70 transition-colors h-auto min-h-0 p-0 hover:bg-transparent"
                         >
                           {t("student")}
@@ -860,67 +683,52 @@ export default function GradesTable({
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => setSortDir((d) => d === "asc" ? "desc" : "asc")}
-                          className="flex flex-col -space-y-1 hover:opacity-80 transition-opacity h-auto min-h-0 w-auto p-0 hover:bg-transparent"
-                        >
-                          <ChevronUp className={cn("size-3", sortDir === "asc" ? "text-foreground" : "text-muted-foreground/30")} />
-                          <ChevronDown className={cn("size-3", sortDir === "desc" ? "text-foreground" : "text-muted-foreground/30")} />
-                        </Button>
+                        <div>
+                          <SortChevrons
+                            active={sortField === "firstName" || sortField === "lastName"}
+                            dir={sortDir}
+                            onClick={() =>
+                              toggleSort(sortField === "lastName" ? "lastName" : "firstName")
+                            }
+                            label={sortDir === "asc" ? t("sortDescending") : t("sortAscending")}
+                          />
+                        </div>
                       </TooltipTrigger>
                       <TooltipContent>{sortDir === "asc" ? t("sortDescending") : t("sortAscending")}</TooltipContent>
                     </Tooltip>
                   </div>
                 </div>
               </TableCell>
-              <TableCell
-                className="sticky left-[260px] z-30 border-b-2 border-r border-border p-0 w-16 min-w-16 max-w-16 h-16"
-                style={{ backgroundColor: HOLAT_BG }}
-              >
-                <HolatHover
-                  name={t("classAverage")}
-                  level={classAverage}
-                  trend={classTrend}
-                  formative={classFormative ?? 0}
-                  formativeCount={classFormative !== null ? 1 : 0}
-                  summativeCount={rawTotals.filter((t) => t.summary.summativeCount > 0).length}
-                  student={null}
-                  assignments={assignments}
-                  grades={grades}
-                >
-                  <div className="relative h-full w-full cursor-default">
-                    <LetterAvg
-                      percent={classAverage}
-                      classId={classData.info.id}
-                      hasData={rawTotals.some((t) => t.summary.summativeCount > 0)}
-                    />
-                    <StatusBadge showTrend={showTrend} trend={classTrend} />
-                  </div>
-                </HolatHover>
+              <TableCell className="sticky left-[260px] z-30 bg-card border-b-2 border-r border-border p-0 w-16 min-w-16 max-w-16 h-16">
+                <FormativeCell percent={classFormative} />
               </TableCell>
-              {assignmentAverages.map((aa) => {
-                const topic = topicMap.get(aa.assignment.topicId ?? "");
-                return (
-                  <TableCell
-                    key={aa.assignment.id}
-                    className="bg-card border-b-2 border-r border-border p-0 w-16 min-w-16 h-16 text-center"
-                  >
-                    <LetterAvg
-                      percent={aa.percent}
-                      scale={
-                        topic
-                          ? { kind: (topic.scaleKind ?? "pass_fail") as GradingScale }
-                          : undefined
-                      }
-                      hasData={aa.count > 0}
-                    />
-                  </TableCell>
-                );
-              })}
+              {assignmentAverages.map((aa) => (
+                // Ustun oʻrtachasi — toifa shkalasida EMAS, sinfning yagona
+                // jurnal shkalasida (topshiriq "Bajardi/Bajarmadi" boʻlsa ham
+                // oʻrtacha baho shkala boʻyicha oʻqiladi).
+                <TableCell
+                  key={aa.assignment.id}
+                  className="bg-card border-b-2 border-r border-border p-0 w-16 min-w-16 h-16 text-center"
+                >
+                  <LetterAvg
+                    percent={aa.percent}
+                    classId={classData.info.id}
+                    hasData={aa.count > 0}
+                  />
+                </TableCell>
+              ))}
               <TableCell className="bg-card border-b-2 border-r border-border w-16 min-w-16" />
               <TableCell className="border-b-2 border-border" style={{ backgroundColor: EMPTY_BG }} />
+              <TableCell
+                className="sticky right-0 z-30 border-b-2 border-l border-border p-0 w-16 min-w-16 max-w-16 h-16"
+                style={{ backgroundColor: HOLAT_BG }}
+              >
+                <LetterAvg
+                  percent={classAverage}
+                  classId={classData.info.id}
+                  hasData={rawTotals.some((t) => t.summary.summativeCount > 0)}
+                />
+              </TableCell>
             </TableRow>
 
             {filteredStudents.map((s) => {
@@ -962,32 +770,7 @@ export default function GradesTable({
                   </TableCell>
 
                   <TableCell className="sticky left-[260px] z-10 bg-card group-hover:bg-muted border-b border-r border-border p-0 w-16 min-w-16 max-w-16 h-16">
-                    <HolatHover
-                      name={s.name}
-                      level={total.percent}
-                      trend={trend}
-                      formative={total.summary.formative}
-                      formativeCount={total.summary.formativeCount}
-                      summativeCount={total.summary.summativeCount}
-                      classAverage={classAverage}
-                      student={s}
-                      assignments={assignments}
-                      grades={grades}
-                    >
-                      <div className="relative h-full w-full cursor-default">
-                        <LetterAvg
-                          percent={total.percent}
-                          classId={classData.info.id}
-                          hasData={total.summary.summativeCount > 0}
-                        />
-                        <StatusBadge showTrend={showTrend} trend={trend} />
-                        {total.summary.summativeCount > 0 && total.summary.summativeCount < 3 && (
-                          <span className="absolute top-0.5 right-0.5 flex size-3.5 items-center justify-center rounded-full bg-warning/15 text-[9px] font-bold text-warning">
-                            !
-                          </span>
-                        )}
-                      </div>
-                    </HolatHover>
+                    <FormativeCell percent={formativeById.get(s.id) ?? null} />
                   </TableCell>
 
                   {orderedAssignments.map((a) => {
@@ -1030,6 +813,16 @@ export default function GradesTable({
 
                   <TableCell className="border-b border-r border-border bg-card group-hover:bg-muted w-16 min-w-16" />
                   <TableCell className="border-b border-border" style={{ backgroundColor: EMPTY_BG }} />
+                  <TableCell
+                    className="sticky right-0 z-10 border-b border-l border-border p-0 w-16 min-w-16 max-w-16 h-16"
+                    style={{ backgroundColor: HOLAT_BG }}
+                  >
+                    <LetterAvg
+                      percent={total.percent}
+                      classId={classData.info.id}
+                      hasData={total.summary.summativeCount > 0}
+                    />
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -1092,14 +885,112 @@ const HOLAT_BG = "color-mix(in srgb, var(--muted) 35%, var(--card))";
 // Boʻsh struktura kataklari (chap-yuqori burchak + oʻngdagi boʻsh maydon) — sal koʻproq kulrang.
 const EMPTY_BG = "color-mix(in srgb, var(--muted) 60%, var(--card))";
 
-function ColHeader({ label, stickyLeft = false }: { label: string; stickyLeft?: boolean }) {
+/**
+ * Formativ ustuni katagi — oxirgi 3 formativ ishning MEDIANI (foiz).
+ * Ataylab jurnal shkalasiga oʻgirilmaydi: bu rasmiy baho emas, "hozir qayerda"
+ * signali. Foiz koʻrinishi uni "Summativ" ustunidan darrov ajratib turadi.
+ */
+function FormativeCell({ percent }: { percent: number | null }) {
+  const t = useTranslations("GradesTable");
+  if (percent === null) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <span className="text-base font-semibold text-muted-foreground/40">—</span>
+      </div>
+    );
+  }
+  const color = scoreBarColor(percent);
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="h-full w-full flex items-center justify-center cursor-default"
+          style={{ backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)` }}
+        >
+          <span className="font-bold text-base font-mono" style={{ color }}>
+            {Math.round(percent)}%
+          </span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[220px] text-xs leading-snug">
+        {t("formativeColumnHint")}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+/**
+ * Ustun sarlavhasidagi saralash chevronlari — faol yoʻnalish toʻq rangda.
+ * Bosilganda: boshqa ustun edi → shu ustun boʻyicha oʻsish; shu ustun edi →
+ * yoʻnalish teskarisiga.
+ */
+function SortChevrons({
+  active,
+  dir,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  dir: SortDir;
+  onClick: () => void;
+  label: string;
+}) {
+  // ⚠️ `<button>` EMAS: topshiriq sarlavhasida bu element hover-kartani ochuvchi
+  // tugma ICHIDA turadi — ichma-ich tugma yaroqsiz HTML va hidratsiya xatosi.
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      aria-label={label}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
+      className="flex cursor-pointer flex-col -space-y-1 rounded transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
+      <ChevronUp
+        className={cn("size-3", active && dir === "asc" ? "text-foreground" : "text-muted-foreground/30")}
+      />
+      <ChevronDown
+        className={cn("size-3", active && dir === "desc" ? "text-foreground" : "text-muted-foreground/30")}
+      />
+    </span>
+  );
+}
+
+function ColHeader({
+  label,
+  stick,
+  bg = HOLAT_BG,
+  active,
+  dir,
+  onSort,
+}: {
+  label: string;
+  /** Qaysi chekkaga qotiriladi: chapda ism ustunidan keyin yoki oʻng chekkada. */
+  stick?: "left" | "right";
+  bg?: string;
+  active: boolean;
+  dir: SortDir;
+  onSort: () => void;
+}) {
+  const t = useTranslations("GradesTable");
   return (
     <TableHead
       className={cn(
         "sticky top-0 bg-card border-b border-border w-[68px] min-w-[68px] px-1 align-bottom h-[176px]",
-        stickyLeft ? "left-[260px] z-40 border-r" : "z-20"
+        stick === "left" && "left-[260px] z-40 border-r",
+        stick === "right" && "right-0 z-40 border-l",
+        !stick && "z-20"
       )}
-      style={{ backgroundColor: HOLAT_BG }}
+      style={{ backgroundColor: bg }}
     >
       <div className="flex flex-col items-center justify-end h-full pb-2">
         <div
@@ -1108,10 +999,19 @@ function ColHeader({ label, stickyLeft = false }: { label: string; stickyLeft?: 
         >
           {label}
         </div>
-        <div className="flex flex-col gap-0.5 text-muted-foreground mt-2">
-          <ChevronUp className="size-3" />
-          <ChevronDown className="size-3" />
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="mt-2">
+              <SortChevrons
+                active={active}
+                dir={dir}
+                onClick={onSort}
+                label={t("sortByColumn", { label })}
+              />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{t("sortByColumn", { label })}</TooltipContent>
+        </Tooltip>
       </div>
     </TableHead>
   );

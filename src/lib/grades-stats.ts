@@ -201,6 +201,62 @@ export function studentTrend(
   return avg(pts.slice(mid)) - avg(pts.slice(0, mid));
 }
 
+/** Toq/juft uchun median (bo‘sh massivda null). */
+function median(xs: number[]): number | null {
+  if (xs.length === 0) return null;
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}
+
+/** Formativ ustuni uchun nechta oxirgi ish hisobga olinadi. */
+export const FORMATIVE_RECENT_COUNT = 3;
+
+/**
+ * O‘quvchining FORMATIV holati — oxirgi `count` ta formativ ishning MEDIANI.
+ *
+ * Nega o‘rtacha emas: formativ "hozir qayerdaman" dalili, "yil davomida qanday
+ * edim" emas. Sentabrdagi past natija dekabrdagi rasmni buzmasligi kerak, va
+ * median bitta chetdagi qiymatga (bir kunlik omadsizlik) chidamli.
+ * Formativ toifasi yo‘q yoki baho yo‘q bo‘lsa — null (jadvalda "—").
+ */
+export function studentFormativeRecent(
+  studentId: string,
+  assignments: Assignment[],
+  grades: Grade[],
+  topics?: Topic[],
+  count: number = FORMATIVE_RECENT_COUNT
+): number | null {
+  const tmap = topicMapOf(topics);
+  const byKey = new Map<string, Grade>();
+  grades.forEach((g) => {
+    if (g.studentId === studentId) byKey.set(g.assignmentId, g);
+  });
+  const ordered = [...assignments]
+    .filter((a) => a.topicId && topicPurpose(tmap.get(a.topicId)) === "formative")
+    .sort((a, b) => (a.date ?? a.id).localeCompare(b.date ?? b.id));
+  const pts: number[] = [];
+  for (const a of ordered) {
+    const pct = gradePercent(byKey.get(a.id), a);
+    if (pct !== null) pts.push(pct);
+  }
+  return median(pts.slice(-count));
+}
+
+/** Sinfning formativ holati = ball olgan o‘quvchilar medianlarining o‘rtachasi. */
+export function classFormativeRecent(
+  students: Student[],
+  assignments: Assignment[],
+  grades: Grade[],
+  topics?: Topic[]
+): number | null {
+  const vals = students
+    .map((s) => studentFormativeRecent(s.id, assignments, grades, topics))
+    .filter((v): v is number => v !== null);
+  if (vals.length === 0) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
 /** Sinfning summativ o‘rtachasi = ball olgan o‘quvchilarning summativ o‘rtachasi. */
 export function classSummativeAverage(
   students: Student[],
