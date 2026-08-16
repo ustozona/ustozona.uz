@@ -2,6 +2,7 @@ import "server-only";
 import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
+  activitySets,
   assignments,
   classes,
   grades,
@@ -164,7 +165,12 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
 /* ── Yozish: batch'ni qoʻllash ───────────────────────────────────────── */
 
 async function ownedIds(
-  table: typeof classes | typeof students | typeof topics | typeof assignments,
+  table:
+    | typeof classes
+    | typeof students
+    | typeof topics
+    | typeof assignments
+    | typeof activitySets,
   tid: string
 ): Promise<Set<string>> {
   const rows = await db.select({ id: table.id }).from(table).where(eq(table.teacherId, tid));
@@ -299,6 +305,11 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   const assignmentUpserts = batch.assignmentsUpsert.filter(
     (a) => ownClasses.has(a.classId) && (a.topicId === null || ownTopics.has(a.topicId))
   );
+  /* Biriktirilgan toʻplam (R215) — begonasi yozilmasin. Roʻyxat faqat
+     kerak boʻlganda soʻraladi: topshiriqlarning katta qismi mazmunsiz. */
+  const ownSets = assignmentUpserts.some((a) => a.setId)
+    ? await ownedIds(activitySets, tid)
+    : new Set<string>();
   for (const part of chunks(assignmentUpserts)) {
     await db
       .insert(assignments)
@@ -314,6 +325,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           dueDate: a.dueDate ?? null,
           kind: a.kind ?? "manual",
           instructions: a.instructions ?? null,
+          setId: a.setId && ownSets.has(a.setId) ? a.setId : null,
           sortOrder: a.sortOrder,
         }))
       )
@@ -328,6 +340,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           dueDate: sql`excluded.due_date`,
           kind: sql`excluded.kind`,
           instructions: sql`excluded.instructions`,
+          setId: sql`excluded.set_id`,
           sortOrder: sql`excluded.sort_order`,
           updatedAt: now,
         },

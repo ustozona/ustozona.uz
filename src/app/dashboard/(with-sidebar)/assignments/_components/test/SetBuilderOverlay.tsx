@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { getSetDraftAction, saveSetDraftAction } from "@/server/actions/assess";
+import { getSetDraftAction, saveSetDraftAction, type SetDraft } from "@/server/actions/assess";
 import type { ActivitySetRow } from "@/server/db/schema";
 import QuestionCanvas from "./builder/QuestionCanvas";
 import PropertiesPanel from "./builder/PropertiesPanel";
@@ -33,14 +33,12 @@ import { newQuestion, type DraftQuestion } from "./builder/types";
  */
 export default function SetBuilderOverlay({
   classId,
-  className,
   setId,
   initialTitle,
   onClose,
   onSaved,
 }: {
   classId: string;
-  className: string;
   /** Boʻsh — yangi toʻplam yaratiladi. */
   setId?: string;
   /** Yangi toʻplam uchun boshlangʻich nom — topshiriq nomi bilan bir
@@ -51,7 +49,13 @@ export default function SetBuilderOverlay({
 }) {
   const t = useTranslations("SetBuilder");
   const [loading, setLoading] = useState(Boolean(setId));
-  const [currentSetId, setCurrentSetId] = useState(setId);
+  /* ⚠️ Toʻplam id'si REF'da (holatda emas). `persist` ketma-ket ikki marta
+     chaqirilishi mumkin — avtosaqlash ustiga "Saqlash" bosilsa yoki sekin
+     tarmoqda birinchi yozuv 2 soniyadan uzoq ketsa. React holati oʻsha
+     paytda hali yangilanmagan boʻladi va ikkala chaqiruv ham
+     `setId: undefined` yuborib IKKITA bir xil toʻplam yaratardi (roʻyxatda
+     bir xil nomli ikki qator — kuzatilgan alomat). */
+  const setIdRef = useRef(setId);
   const [title, setTitle] = useState(() => (setId ? "" : initialTitle ?? ""));
   const [stageTheme, setStageTheme] = useState("violet");
   const [questions, setQuestions] = useState<DraftQuestion[]>(() =>
@@ -71,6 +75,8 @@ export default function SetBuilderOverlay({
   /* Oxirgi SAQLANGAN holat imzosi — avtosaqlash shu bilan solishtirib,
      hech narsa oʻzgarmagan boʻlsa server soʻrovini takrorlamaydi. */
   const savedSnapshotRef = useRef<string | null>(null);
+  /* Ketayotgan yozuv — ikkinchisi navbatda kutadi (yuqoridagi izoh). */
+  const persistLock = useRef<Promise<SetDraft> | null>(null);
 
   useEffect(() => {
     if (!setId) {
@@ -165,21 +171,35 @@ export default function SetBuilderOverlay({
     }));
   }
 
-  /** Haqiqiy yozish — qoʻlda "Saqlash" ham, jim avtosaqlash ham shundan foydalanadi. */
-  async function persist(cleanTitle: string) {
-    const draft = await saveSetDraftAction({
-      setId: currentSetId,
-      classId,
-      title: cleanTitle,
-      purpose: "summative",
-      stageTheme,
-      questions: buildPayload(),
-    });
-    setCurrentSetId(draft.set.id);
-    setQuestions((prev) =>
-      prev.map((q, index) => ({ ...q, activityId: draft.questions[index]?.activityId }))
-    );
-    return draft;
+  /** Haqiqiy yozish — qoʻlda "Saqlash" ham, jim avtosaqlash ham shundan
+      foydalanadi. Bir vaqtda BITTA yozuv ketadi: ikkinchi chaqiruv
+      birinchisini kutadi va shundan keyingina `setIdRef` ni oʻqiydi. */
+  async function persist(cleanTitle: string): Promise<SetDraft> {
+    const previous = persistLock.current;
+    if (previous) await previous.catch(() => {});
+
+    const run = (async () => {
+      const draft = await saveSetDraftAction({
+        setId: setIdRef.current,
+        classId,
+        title: cleanTitle,
+        purpose: "summative",
+        stageTheme,
+        questions: buildPayload(),
+      });
+      setIdRef.current = draft.set.id;
+      setQuestions((prev) =>
+        prev.map((q, index) => ({ ...q, activityId: draft.questions[index]?.activityId }))
+      );
+      return draft;
+    })();
+
+    persistLock.current = run;
+    try {
+      return await run;
+    } finally {
+      if (persistLock.current === run) persistLock.current = null;
+    }
   }
 
   async function handleSave() {
@@ -215,8 +235,13 @@ export default function SetBuilderOverlay({
     const timer = setTimeout(async () => {
       setAutosaving(true);
       try {
-        await persist(cleanTitle);
+        const draft = await persist(cleanTitle);
         savedSnapshotRef.current = sig;
+        // Avtosaqlashdan keyin ham xabar beramiz: toʻplam bazada
+        // paydo boʻlgani zahoti topshiriq bilan halqasi bogʻlansin.
+        // Ilgari faqat "Saqlash" bosilganda edi — oʻqituvchi ✕ bilan
+        // chiqsa test yaratilgan, lekin biriktirilmagan boʻlib qolardi.
+        onSaved(draft.set);
         setJustSaved(true);
         setTimeout(() => setJustSaved(false), 2000);
       } catch {

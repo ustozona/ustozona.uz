@@ -22,6 +22,9 @@ export default function GradesServerSync() {
       diff: diffGradesMap,
       push: syncGradesAction,
       errorMessage: "Baholar serverga saqlanmadi",
+      // Topshiriq muharriridagi "Saqlanmadi" belgisi aynan shu boʻlakka
+      // qaraydi (`useSyncFailing("grades")`).
+      scope: "grades",
     });
     return sync.stop;
   }, [hydrated]);

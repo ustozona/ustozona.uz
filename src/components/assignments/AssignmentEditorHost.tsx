@@ -20,6 +20,9 @@ export default function AssignmentEditorHost() {
   useEffect(() => setMounted(true), []);
 
   const session = useAssignmentEditorStore((s) => s.session);
+  /* Parklangan sessiya — qoralama saqlanadi, muharrir chizilmaydi.
+     U Topshiriqlar roʻyxatida karta boʻlib koʻrinadi. */
+  const parked = useAssignmentEditorStore((s) => s.parked);
   const close = useAssignmentEditorStore((s) => s.close);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const hydrated = useGradesStore((s) => s._hasHydrated);
@@ -39,7 +42,7 @@ export default function AssignmentEditorHost() {
     }
   }, [hydrated, session, classDataMap, close]);
 
-  if (!mounted || !hydrated || !session) return null;
+  if (!mounted || !hydrated || !session || parked) return null;
 
   const cd = classDataMap[session.classId];
   if (!cd) return null;

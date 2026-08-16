@@ -1,12 +1,16 @@
 "use client";
 
 import { scoreBarColor } from "@/lib/score-colors";
+import { ProgressRing } from "@/components/ui/progress-ring";
 
 const DEFAULT_SIZE = 38;
 
 /** Kichik doiraviy davomat koʻrsatkichi (Tremor "KPI Cards" naqshiga
     ilhomlangan) — svetofor rangi `scoreBarColor`dan, markazda foiz.
-    Statistika jadvallarida (Sinflar, Oʻquvchilar) umumiy ishlatiladi. */
+    Statistika jadvallarida (Sinflar, Oʻquvchilar) umumiy ishlatiladi.
+
+    Halqaning oʻzi endi `ui/progress-ring` primitivida: bu yerda faqat
+    domenga xos qismi — svetofor rangi va markazdagi foiz matni. */
 export function AttendanceRing({
   pct,
   showLabel = true,
@@ -24,28 +28,22 @@ export function AttendanceRing({
   size?: number;
 }) {
   if (pct === null) return <span className="text-xs text-muted-foreground/50">—</span>;
-  const radius = size * (15 / DEFAULT_SIZE);
-  const circumference = 2 * Math.PI * radius;
-  const color = scoreBarColor(pct);
-  const offset = circumference * (1 - pct / 100);
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 size-full -rotate-90">
-        <circle
-          cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={3}
-          style={{ stroke: `color-mix(in srgb, ${color} 16%, transparent)` }}
-        />
-        <circle
-          cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={3} strokeLinecap="round"
-          style={{ stroke: color, strokeDasharray: circumference, strokeDashoffset: offset }}
-        />
-      </svg>
+    <ProgressRing
+      pct={pct}
+      size={size}
+      strokeWidth={3}
+      // Mavjud koʻrinish piksel-aniq saqlansin — eski nisbat.
+      radius={size * (15 / DEFAULT_SIZE)}
+      color={scoreBarColor(pct)}
+      trackMix={16}
+    >
       {showLabel && (
-        <span className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold tabular-nums text-foreground">
+        <span className="text-[11px] font-semibold tabular-nums text-foreground">
           {Math.round(pct)}
           {showUnit && "%"}
         </span>
       )}
-    </div>
+    </ProgressRing>
   );
 }

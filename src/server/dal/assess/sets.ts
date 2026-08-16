@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activities,
@@ -51,8 +51,13 @@ export async function listSets(classId?: string): Promise<ActivitySetRow[]> {
 
     Bu chegara toʻgʻri, lekin oʻqituvchiga koʻrinmasdi: u Topshiriqlar
     boʻlimida test tuzib, oʻsha sahifada hech narsa koʻrmasdi va ishim
-    yoʻqoldi deb oʻylardi. Endi tuzilgan, ammo hali nashr qilinmagan
-    testlar shu roʻyxat orqali oʻsha sahifada koʻrsatiladi. */
+    yoʻqoldi deb oʻylardi. Endi tuzilgan, ammo hali jurnalda joyi yoʻq
+    testlar shu roʻyxat orqali oʻsha sahifada koʻrsatiladi.
+
+    ⚠️ "Jurnalda joyi bor" ikki xil boʻladi: toʻplam topshiriqqa
+    BIRIKTIRILGAN (`assignments.set_id`) yoki sessiyadan NASHR QILINGAN
+    (`assignments.source_session_id`). Faqat ikkinchisiga qaralsa,
+    muharrirda biriktirilgan test hali "yetim" boʻlib koʻrinardi. */
 export type SetPublishState = {
   set: ActivitySetRow;
   /** Jurnalga koʻchirilgan boʻlsa — topshiriq id'si. */
@@ -73,12 +78,23 @@ export async function listSetsWithPublishState(classId: string): Promise<SetPubl
   if (sets.length === 0) return [];
 
   const setIds = sets.map((s) => s.id);
+
+  /* Toʻgʻridan-toʻgʻri halqa — topshiriq muharririda biriktirilgan test. */
+  const linkedRows = await db
+    .select({ id: assignments.id, setId: assignments.setId })
+    .from(assignments)
+    .where(and(eq(assignments.teacherId, teacher.id), inArray(assignments.setId, setIds)));
+  const assignmentBySet = new Map<string, string>();
+  for (const row of linkedRows) {
+    if (row.setId && !assignmentBySet.has(row.setId)) assignmentBySet.set(row.setId, row.id);
+  }
+
   const sessionRows = await db
     .select({ id: quizSessions.id, setId: quizSessions.setId })
     .from(quizSessions)
     .where(and(eq(quizSessions.teacherId, teacher.id), inArray(quizSessions.setId, setIds)));
   if (sessionRows.length === 0) {
-    return sets.map((set) => ({ set, assignmentId: null }));
+    return sets.map((set) => ({ set, assignmentId: assignmentBySet.get(set.id) ?? null }));
   }
 
   const publishedRows = await db
@@ -99,7 +115,6 @@ export async function listSetsWithPublishState(classId: string): Promise<SetPubl
       .filter((r) => r.sourceSessionId)
       .map((r) => [r.sourceSessionId as string, r.id])
   );
-  const assignmentBySet = new Map<string, string>();
   for (const session of sessionRows) {
     const assignmentId = assignmentBySession.get(session.id);
     if (assignmentId && !assignmentBySet.has(session.setId)) {
@@ -181,6 +196,39 @@ export async function summarizeSetContent(
   }
 
   return out;
+}
+
+/** Topshiriqqa biriktirilgan toʻplamning qisqa pasporti.
+
+    Nega alohida funksiya: topshiriq muharriri toʻplamning butun
+    qoralamasiga (savol matnlari, variantlar) muhtoj emas — unga nom,
+    savol soni va MAKS. BALL kerak. `maxScore` bu yerda `publish.ts`
+    bilan AYNAN bir xil hisoblanadi (avto-tekshiriladigan elementlar
+    soni); ikki joyda ikki xil boʻlsa qogʻoz yoʻlida maxraj ogʻib,
+    "8/10" tizimda "8/100" boʻlib oʻqilardi (R216). */
+export type SetMeta = {
+  id: string;
+  title: string;
+  /** Toʻplamdagi faoliyat soni — oʻqituvchi koʻradigan "N savol". */
+  itemCount: number;
+  /** Baho maxraji — avto-tekshiriladigan elementlar soni. */
+  maxScore: number;
+};
+
+export async function getSetMeta(setId: string): Promise<SetMeta | null> {
+  const set = await getSet(setId);
+  if (!set) return null;
+  const activityIds = set.items.map((i) => i.activityId);
+  const maxScore =
+    activityIds.length === 0
+      ? 0
+      : (
+          await db
+            .select({ count: sql<number>`count(*)::int` })
+            .from(activityItems)
+            .where(inArray(activityItems.activityId, activityIds))
+        )[0]?.count ?? 0;
+  return { id: set.id, title: set.title, itemCount: activityIds.length, maxScore };
 }
 
 /** `actorId` — cookie sessiyasi boʻlmagan oqim uchun (telefondagi

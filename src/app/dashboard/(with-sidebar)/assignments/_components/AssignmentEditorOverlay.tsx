@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
-  X, FileCheck2, Presentation, Check, Tag, Star,
-  ChevronRight, ChevronDown, Loader2, ClipboardCheck, Clapperboard, FileText, Zap, Info,
-  Minus, ChevronUp, CalendarClock, Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal,
-  CircleAlert, CheckCircle2, PenLine, CircleDashed, Calendar, Clock,
+  X, FileCheck2, Presentation, Check, Tag, Star, Library, CloudOff,
+  ChevronRight, ChevronDown, Loader2, ClipboardCheck, Info, Users, CalendarDays,
+  CalendarClock, Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal,
+  CircleAlert, CheckCircle2, PenLine, CircleDashed, Calendar, Clock, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,8 +18,12 @@ import {
 } from "@/store/useAssignmentEditorStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { getSetIdForSessionAction } from "@/server/actions/assess-sessions";
+import { getSetAction, getSetMetaAction } from "@/server/actions/assess";
+import type { SetMeta } from "@/server/dal/assess/sets";
+import type { ActivitySetRow } from "@/server/db/schema";
 import {
   TOPIC_COLOR_HEX, classColor, assignmentGroupKey, mapTopicIdToClass,
+  buildScoreSuggestions,
   type Assignment, type AssignmentKind, type ClassData, NO_TOPIC_ID,
 } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
@@ -28,7 +32,9 @@ import { todayKey, dateKeyToDate } from "@/lib/date-keys";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { ProgressRing } from "@/components/ui/progress-ring";
+import { useSyncFailing } from "@/store/useSyncHealthStore";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -47,23 +53,43 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
-import TestWorkspaceOverlay from "./TestWorkspaceOverlay";
+import SetBuilderOverlay from "./test/SetBuilderOverlay";
+import SessionPanelModal from "./test/SessionPanelModal";
+import AttachTestDialog from "./AttachTestDialog";
 
 const NO_TOPIC_VALUE = "__no_topic__";
 
 /* Topshiriq holati — dars muharriridagi holat chipi bilan bir tilda, LEKIN
    qoʻlda tanlanmaydi: u sana va baholardan HISOBLANADI. Qoʻlda oʻzgartirish
    maʼlumotga zid holat yaratardi ("Tugallandi", lekin yarim sinf baholanmagan).
-   Toifalar `LessonEditor.STATUS_META` bilan bir xil tonlarda. */
+   Toifalar `LessonEditor.STATUS_META` bilan bir xil tonlarda.
+
+   ⚠️ Holatlar IKKI TURGA boʻlinadi va shakli ham shunga qarab:
+
+     KATEGORIYA (qoralama · sanasiz · rejalashtirilgan · bugun) — soʻz.
+     MIQDOR     (baholash · tugallandi)                        — HALQA + kasr.
+
+   Ilgari miqdor ham soʻz edi ("Baholanmoqda") va u aslida alohida holat
+   emas, qolgan hammasi tushadigan CHELAK edi: sanasi bugun boʻlgan
+   topshiriq yaratilgan zahoti, bironta baho boʻlmasa ham shu yorliqni
+   olardi. Oʻqituvchining savoli esa "baholanyaptimi?" emas, "nechtasi
+   qoldi?" — javob raqam boʻlishi kerak (Classroom "12 Turned in",
+   Canvas "Needs Grading (7)", Gradescope % halqasi). */
 const STATUS_META = {
   draft: { icon: PenLine, cls: "bg-muted text-muted-foreground" },
   undated: { icon: CircleAlert, cls: "bg-warning/10 text-warning" },
   planned: { icon: CalendarClock, cls: "bg-info/10 text-info" },
+  today: { icon: CalendarDays, cls: "bg-primary/10 text-primary" },
   grading: { icon: CircleDashed, cls: "bg-muted text-muted-foreground" },
   done: { icon: CheckCircle2, cls: "bg-success/10 text-success" },
 } as const;
 
 type AssignmentStatus = keyof typeof STATUS_META;
+
+/** Miqdoriy holatlarda kasr ham boʻladi; kategoriyada faqat tur. */
+type StatusInfo =
+  | { kind: Exclude<AssignmentStatus, "grading" | "done"> }
+  | { kind: "grading" | "done"; graded: number; total: number };
 
 /* Tafsilotlar qatori — dars muharriridagi `DetailsPanel` tili bilan bir xil
    (`text-label` yorliq USTIDA, `rounded-xl` karta, `size-9` DOIRA ikonka).
@@ -121,12 +147,28 @@ const FieldRow = ({
  * pastda yorliq qoladi; ✕ bosilsa "Qoralama sifatida saqlash / Oʻchirish"
  * soʻraladi.
  *
- * `session.kind === "draft"` — QORALAMA rejimi: DB'ga hech narsa yozilmaydi.
- * Tur kartalari (Test/Taqdimot/...) faqat TANLAYDI — DB yozuvi faqat
- * "Yaratish" bosilganda (`handleCreate`). `manualCreate` faqat tugma
- * yoqiq/oʻchiqligini belgilaydi: `true` boʻlsa tursiz ham (`kind: "manual"`,
- * mazmunsiz baho ustuni) yaratish mumkin; `false` boʻlsa avval tur
- * tanlanishi shart (Topshiriqlar sahifasidan ochilganda).
+ * `session.kind === "draft"` — QORALAMA rejimi: `assignments` ga hech narsa
+ * yozilmaydi, yozuv faqat "Yaratish" bosilganda (`handleCreate`).
+ *
+ * ── MAZMUN ILOVA, TUR EMAS (R213) ────────────────────────────────────────
+ * Topshiriq — JURNAL USTUNI; test/taqdimot esa unga biriktiriladigan mazmun.
+ * Shuning uchun `kind` tanlanmaydi, HISOBLANADI: `setId` bor → "test",
+ * yoʻq → "manual" (mazmunsiz ustun — qogʻozdagi ish, ogʻzaki soʻrov uchun
+ * toʻlaqonli holat, nuqson emas). Buning ikki amaliy oqibati:
+ *
+ *  1. Mazmun boʻlimi qoralamada ham, TAHRIRDA ham chiziladi. Ilgari u faqat
+ *     qoralamada bor edi: yaratilgandan keyin test biriktirish yoʻli umuman
+ *     yoʻq edi va mazmunsiz ustunga "Test muharriri tez orada" deb yozilardi
+ *     (u aslida test emas edi).
+ *  2. "Test" tugmasi turni belgilamaydi — toʻplam muharririni ochadi.
+ *     `kind`/`setId` faqat toʻplam SAQLANGANDA yoziladi, shuning uchun
+ *     "test deb belgilangan, lekin orqasida hech nima yoʻq" holati
+ *     tugʻilmaydi. Qoralama tashlansa toʻplam yetim qoladi — bu ataylab:
+ *     u Topshiriqlar sahifasidagi "Tayyorlangan testlar" roʻyxatida turadi
+ *     va qayta ishlatiladi.
+ *
+ * Yaratish qoidasi ikkala eshikda BIR XIL (jurnal ham, Topshiriqlar sahifasi
+ * ham): mazmun ixtiyoriy, "Yaratish" hech qachon oʻchiq turmaydi.
  */
 export default function AssignmentEditorOverlay({
   session,
@@ -135,36 +177,38 @@ export default function AssignmentEditorOverlay({
 }) {
   const t = useTranslations("AssignmentsPage");
   const classId = session.classId;
-  const manualCreate = session.kind === "draft" && session.manualCreate;
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
   const setClassDataMap = useGradesStore((s) => s.setClassDataMap);
   const liveClasses = useLiveClasses();
+  const syncFailing = useSyncFailing("grades");
   const isMobile = useIsMobile();
   const detailsPanelWidth = useResponsivePanelWidth(300, 0.25);
   const classData = classDataMap[classId] as ClassData | undefined;
 
   /* Sessiya holati — global store'da (sahifa almashinuvidan omon chiqadi). */
-  const minimized = useAssignmentEditorStore((s) => s.minimized);
-  const setMinimized = useAssignmentEditorStore((s) => s.minimize);
-  const restore = useAssignmentEditorStore((s) => s.restore);
+  const parkSession = useAssignmentEditorStore((s) => s.park);
   const closeSession = useAssignmentEditorStore((s) => s.close);
   const patchDraft = useAssignmentEditorStore((s) => s.patchDraft);
-  const openEdit = useAssignmentEditorStore((s) => s.openEdit);
 
   const [panelOpen, setPanelOpen] = useState(true);
   const [openingQuiz, setOpeningQuiz] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  /* Karta bosilganda ENDI hech narsa yaratilmaydi — faqat tur tanlanadi.
-     Haqiqiy yozuv faqat "Yaratish" bosilganda (handleCreate). */
-  const [selectedKind, setSelectedKind] = useState<Extract<AssignmentKind, "test" | "deck"> | null>(null);
-  /* ✕ bosilganda: qoralama boʻsh boʻlmasa "saqlaymizmi?" soʻraladi (Gmail). */
-  const [confirmDiscard, setConfirmDiscard] = useState(false);
-  const [testWorkspace, setTestWorkspace] = useState<{
-    autoOpenNewSet?: boolean;
-    autoOpenSetId?: string;
-    autoOpenTitle?: string;
-  } | null>(null);
+  /* Biriktirilgan toʻplam pasporti (nom · savol soni · maks. ball).
+     Toʻplamning butun qoralamasi kerak emas — shuning uchun yengil amal. */
+  const [setMeta, setSetMeta] = useState<SetMeta | null>(null);
+  /* Mavjud testni tanlash oynasi — toʻplam muharrirdan tashqarida ham
+     tugʻiladi (bank, oldingi ishlar), ularni ulash yoʻli kerak. */
+  const [attachOpen, setAttachOpen] = useState(false);
+  /* Savol muharriri va sessiya paneli TOʻGʻRIDAN-TOʻGʻRI ochiladi.
+     Ilgari orada "Testlar (5-A)" roʻyxati turardi — sidebar'dan olib
+     tashlangan `/dashboard/baholash` sahifasining qoldigʻi. U uchinchi
+     toʻliq-ekran qavatini qoʻshardi va faqat savol muharriri yopilganda
+     koʻrinardi ("qayerdaman?" ekrani). Sinf testlari roʻyxatining uyi —
+     Topshiriqlar sahifasi. */
+  const [builder, setBuilder] = useState<{ setId?: string } | null>(null);
+  const [sessionSet, setSessionSet] = useState<ActivitySetRow | null>(null);
+  const [sessionLoading, setSessionLoading] = useState(false);
 
   const isDraft = session.kind === "draft";
   const payload = session.kind === "draft" ? session.payload : null;
@@ -182,6 +226,10 @@ export default function AssignmentEditorOverlay({
   const assignment = stored;
   const current = (assignment ?? draft)!;
   const isDeck = current.kind === "deck";
+  /* Biriktirilgan toʻplam — mazmun kartasining va maks. ball qulfining
+     yagona sharti (R215/R216). `sourceSessionId` esa ESKI, sessiyadan
+     tugʻilgan ustunlar uchun: ular biriktirilmagan, nashr qilingan. */
+  const attachedSetId = current.setId;
   const Icon = isDeck ? Presentation : FileCheck2;
   const groupKey = assignmentGroupKey(current);
   const isDue = !!current.dueDate;
@@ -202,15 +250,34 @@ export default function AssignmentEditorOverlay({
   const selectedIds = isDraft ? draftClassIds : Object.keys(members);
   const selectedClasses = liveClasses.filter((c) => selectedIds.includes(c.id));
 
-  /* Holat — sanadan va baholardan hisoblanadi (qoʻlda tanlanmaydi). */
-  const status: AssignmentStatus = useMemo(() => {
-    if (isDraft) return "draft";
-    const dates = Object.values(members).map((m) => m.date).filter(Boolean) as string[];
-    if (!dates.length) return "undated";
-    if ([...dates].sort()[0] > todayKey()) return "planned";
+  /* Maks. ball takliflari — butun jurnaldan (bitta sinf emas): oʻqituvchi
+     odatda hamma sinfda bir xil maxraj bilan ishlaydi. */
+  const scoreSuggestions = useMemo(
+    () =>
+      buildScoreSuggestions(
+        Object.values(classDataMap).flatMap((cd) => cd.assignments)
+      ),
+    [classDataMap]
+  );
+
+  /* Holat — sanadan va baholardan hisoblanadi (qoʻlda tanlanmaydi).
+
+     Koʻp sinfda maxraj faqat SANASI KELGAN sinflardan yigʻiladi: nazorat
+     5-A da dushanba, 5-B da jumada boʻlsa, dushanbada 5-B ning oʻquvchilari
+     "baholanmagan" deb sanalishi notoʻgʻri edi (ilgari eng erta sana
+     olinardi va butun topshiriq "Baholanmoqda" boʻlib qolardi). */
+  const status: StatusInfo = useMemo(() => {
+    if (isDraft) return { kind: "draft" };
+    const dated = Object.entries(members).filter(([, m]) => m.date);
+    if (!dated.length) return { kind: "undated" };
+
+    const today = todayKey();
+    const started = dated.filter(([, m]) => m.date! <= today);
+    if (!started.length) return { kind: "planned" };
+
     let total = 0;
     let graded = 0;
-    for (const [cid, m] of Object.entries(members)) {
+    for (const [cid, m] of started) {
       const cd = classDataMap[cid];
       if (!cd) continue;
       total += cd.students.length;
@@ -219,11 +286,29 @@ export default function AssignmentEditorOverlay({
         return g && (g.score !== null || g.missing);
       }).length;
     }
-    return total > 0 && graded >= total ? "done" : "grading";
+    if (total === 0) return { kind: "planned" };
+
+    /* Bugun boshlangan va hali hech nima kiritilmagan — bu "baholanmoqda"
+       emas. Dars kunning istalgan soatida boʻlishi mumkin, biz esa faqat
+       sanani bilamiz; "0/25" oʻrniga halol "Bugun" deymiz. */
+    if (graded === 0 && started.every(([, m]) => m.date === today)) {
+      return { kind: "today" };
+    }
+
+    // Kelgusi sinf qolgan boʻlsa "Tugallandi" deb boʻlmaydi.
+    const allStarted = started.length === dated.length;
+    return graded >= total && allStarted
+      ? { kind: "done", graded, total }
+      : { kind: "grading", graded, total };
   }, [isDraft, members, classDataMap]);
 
-  const statusMeta = STATUS_META[status];
+  const statusMeta = STATUS_META[status.kind];
   const StatusIcon = statusMeta.icon;
+  const statusCount = status.kind === "grading" || status.kind === "done" ? status : null;
+  /* Chip va kichraytirilgan yorliqda bir xil matn ishlatiladi. */
+  const statusLabel = statusCount
+    ? `${statusCount.graded}/${statusCount.total}`
+    : t(`status_${status.kind}`);
 
   const dateOf = (cid: string) =>
     isDraft ? (draftDates[cid] ?? todayKey()) : (members[cid]?.date ?? "");
@@ -243,18 +328,149 @@ export default function AssignmentEditorOverlay({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTopic?.purpose, isDraft, modeTouched]);
 
+  /* Biriktirilgan toʻplam pasporti. Toʻplam oʻchirilgan boʻlsa `null`
+     qaytadi — karta oʻzini "topilmadi" holatida chizadi, halqa esa
+     `on delete set null` bilan serverda allaqachon uzilgan. */
+  useEffect(() => {
+    if (!attachedSetId) {
+      setSetMeta(null);
+      return;
+    }
+    let alive = true;
+    getSetMetaAction(attachedSetId)
+      .then((meta) => alive && setSetMeta(meta))
+      .catch(() => alive && setSetMeta(null));
+    return () => {
+      alive = false;
+    };
+  }, [attachedSetId]);
+
+  /* R216 — test biriktirilgan boʻlsa maks. ball SAVOLLAR SONIdan olinadi.
+     Jonli yoʻlda `publish.ts` uni baribir qayta hisoblaydi, qogʻoz yoʻlida
+     esa hech kim: oʻqituvchi "8" yozadi (8/10 demoqchi), tizim standart
+     100 maxraji bilan 8% deb oʻqirdi. */
+  useEffect(() => {
+    if (!attachedSetId || !setMeta || setMeta.maxScore <= 0) return;
+    if (current.maxScore === setMeta.maxScore) return;
+    patch({ maxScore: setMeta.maxScore });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attachedSetId, setMeta, current.maxScore]);
+
+  /** Eski, sessiyadan nashr qilingan ustun — toʻplamini sessiya panelida
+      ochadi (`sourceSessionId` → `setId` → qator). */
   async function handleOpenQuiz() {
     if (!current.sourceSessionId || openingQuiz) return;
     setOpeningQuiz(true);
     const setId = await getSetIdForSessionAction(current.sourceSessionId);
+    if (setId) await openSessionPanel(setId);
     setOpeningQuiz(false);
-    if (setId) setTestWorkspace({ autoOpenSetId: setId });
   }
 
-  /** Test QORALAMA sifatida allaqachon yaratilgan, lekin savollari yoʻq —
-      qurish faqat shu tugma bosilganda, avtomatik emas. */
-  function handleStartQuiz() {
-    setTestWorkspace({ autoOpenNewSet: true, autoOpenTitle: current.title.trim() || undefined });
+  /** Sessiya paneli toʻliq qator talab qiladi (`classId`, `items`),
+      topshiriqda esa faqat `setId` bor — shuning uchun oldin olib kelamiz. */
+  async function openSessionPanel(setId: string) {
+    setSessionLoading(true);
+    try {
+      const row = await getSetAction(setId);
+      if (row) setSessionSet(row);
+      else toast.error(t("setMissing"));
+    } catch {
+      toast.error(t("setMissing"));
+    } finally {
+      setSessionLoading(false);
+    }
+  }
+
+  /** Yangi test tuzish — savol muharriri darhol ochiladi. `kind`/`setId`
+      shu yerda EMAS, toʻplam saqlanganda yoziladi (`handleSetSaved`): aks
+      holda "test deb belgilangan, lekin orqasida hech nima yoʻq" holati
+      tugʻilardi. */
+  function handleAttachTest() {
+    setAttachOpen(false);
+    setBuilder({});
+  }
+
+  /** Mavjud toʻplam tanlandi — halqa darhol bogʻlanadi. */
+  function handlePickExistingSet(set: { id: string; title: string }) {
+    setAttachOpen(false);
+    handleSetSaved(set);
+    toast.success(t("attachedTitle"), { description: set.title });
+  }
+
+  /** Biriktirilgan testning savollarini tahrirlash. */
+  function handleEditAttachedTest() {
+    if (!attachedSetId) return;
+    setBuilder({ setId: attachedSetId });
+  }
+
+  /** Sessiya paneli — testni jonli/mustaqil/qogʻoz yoʻli bilan oʻtkazish. */
+  function handleRunSession() {
+    if (!attachedSetId || sessionLoading) return;
+    void openSessionPanel(attachedSetId);
+  }
+
+  /** Toʻplam saqlandi — endi halqa haqiqiy. Sarlavha hali boʻsh boʻlsa
+      toʻplam nomini olamiz: oʻqituvchi bir nomni ikki marta yozmasin.
+      Xabar avtosaqlashda ham keladi, shuning uchun oʻzgarish boʻlmasa
+      tegmaymiz — aks holda har ikki soniyada bekorga sync yuborilardi. */
+  function handleSetSaved(set: { id: string; title: string }) {
+    const needsTitle = !current.title.trim();
+    if (current.setId === set.id && current.kind === "test" && !needsTitle) return;
+    patch({
+      kind: "test",
+      setId: set.id,
+      ...(needsTitle ? { title: set.title } : {}),
+    });
+  }
+
+  /* ── MAKS. BALL — OQIBATLI MAYDON ────────────────────────────────────
+     Maks. ball oʻzgarsa katakdagi XOM ball oʻzgarmaydi, lekin foiz qayta
+     hisoblanadi: 10 savollik testda "8" — 80%, maks. ball 100 boʻlsa oʻsha
+     "8" endi 8%. Jurnalga qarab buni sezib boʻlmaydi, chunki koʻrinadigan
+     raqam oʻsha-oʻsha. Canvas/PowerSchool shu sabab "Saqlash" tugmasi
+     qoʻyadi; biz avtosaqlashni saqlaymiz (global sessiya arxitekturasi),
+     lekin OQIBATNI aytamiz — tugma faqat "qoʻllaymizmi?" deb soʻrardi,
+     nechta baho qayta hisoblanishini aytmasdi. */
+  const gradedCount = useMemo(() => {
+    if (isDraft) return 0;
+    let n = 0;
+    for (const [cid, m] of Object.entries(members)) {
+      const cd = classDataMap[cid];
+      if (!cd) continue;
+      n += cd.grades.filter((g) => g.assignmentId === m.id && g.score !== null).length;
+    }
+    return n;
+  }, [isDraft, members, classDataMap]);
+
+  /** Tahrir boshlanishidagi surat — "Bekor qilish" shu holatga qaytaradi. */
+  const maxScoreUndo = useRef<{ map: typeof classDataMap; value: number } | null>(null);
+
+  function announceMaxScore(before: typeof classDataMap, previous: number) {
+    if (gradedCount === 0 || previous === current.maxScore) return;
+    toast.warning(t("maxScoreRecalculated", { count: gradedCount }), {
+      description: t("maxScoreRecalculatedHint", { from: previous, to: current.maxScore }),
+      action: { label: t("undo"), onClick: () => setClassDataMap(before) },
+    });
+  }
+
+  /** Chip bilan tanlash — bir bosish, shuning uchun darhol xabar beriladi. */
+  function pickMaxScore(next: number) {
+    if (next === current.maxScore) return;
+    const before = classDataMap;
+    const previous = current.maxScore;
+    patch({ maxScore: next });
+    if (isDraft || gradedCount === 0) return;
+    toast.warning(t("maxScoreRecalculated", { count: gradedCount }), {
+      description: t("maxScoreRecalculatedHint", { from: previous, to: next }),
+      action: { label: t("undo"), onClick: () => setClassDataMap(before) },
+    });
+  }
+
+  /** Ajratish — faqat HALQA uziladi: toʻplam ham, baholar ham qolaveradi
+      (R215). Ustun oddiy baho ustuniga aylanadi, maks. ball yana ochiladi. */
+  function handleDetachTest() {
+    patch({ kind: "manual", setId: undefined });
+    toast.success(t("detachedTitle"), { description: t("detachedDescription") });
   }
 
   /** Umumiy maydonlar (sarlavha/yoʻriqnoma/toifa/ball) — butun guruhga. */
@@ -404,7 +620,7 @@ export default function AssignmentEditorOverlay({
   }
 
   /** Tanlangan har bir sinfga nusxa yaratadi; ochilgan sinfnikini qaytaradi. */
-  function createAcrossClasses(kind: AssignmentKind, prepend: boolean): Assignment | null {
+  function createAcrossClasses(kind: AssignmentKind): Assignment | null {
     if (!draft) return null;
     const gid = crypto.randomUUID();
     const multi = draftClassIds.length > 1;
@@ -433,10 +649,7 @@ export default function AssignmentEditorOverlay({
       for (const { cid, copy } of copies) {
         const cd = out[cid];
         if (!cd) continue;
-        out[cid] = {
-          ...cd,
-          assignments: prepend ? [copy, ...cd.assignments] : [...cd.assignments, copy],
-        };
+        out[cid] = { ...cd, assignments: [...cd.assignments, copy] };
       }
       return out;
     });
@@ -444,45 +657,37 @@ export default function AssignmentEditorOverlay({
     return copies.find((c) => c.cid === classId)?.copy ?? null;
   }
 
-  /* Yagona "Yaratish" — kartalar endi faqat tur tanlaydi (selectedKind),
-     haqiqiy yozuv shu yerda amalga oshadi. Sarlavha boʻsh boʻlsa CTA'ni
-     bloklamaymiz (modal-ux qoidasi) — sarlavha standart nom bilan toʻladi. */
+  /* Yagona "Yaratish" — mazmun bor-yoʻqligidan qatʼi nazar jurnal ustuni
+     TUGʻILADI (R214). Ilgari "Test" tanlangan boʻlsa hech nima yaratilmasdi:
+     oʻqituvchi savollarni yozardi, jurnal esa boʻsh qolardi va ish yoʻqolgandek
+     koʻrinardi. Sarlavha boʻsh boʻlsa ham bloklamaymiz (modal-ux qoidasi) —
+     standart nom bilan toʻladi. */
   function handleCreate() {
-    if (selectedKind === "test") {
-      // Test yozuvi bizda emas, `publishSessionToGrades` orqali — savol
-      // toʻplami yaratilib, natija jurnalga ANIQ bosilganda koʻchadi.
-      // Shuning uchun "Yaratish" shu yerda ham xuddi kartani bosgandek —
-      // qurish oynasini ochadi, boʻsh yozuv hosil qilmaydi.
-      handleStartQuiz();
-      return;
-    }
-    if (selectedKind === "deck") {
-      const created = createAcrossClasses("deck", true);
-      if (!created) return;
-      // Taqdimot yaratildi — sessiya darhol TAHRIRga oʻtadi (mazmun ustida ishlanadi).
-      openEdit(classId, created.id);
-      return;
-    }
-    const created = createAcrossClasses("manual", false);
+    const created = createAcrossClasses(current.kind ?? "manual");
     if (!created) return;
     closeSession();
     toast.success(t("assignmentCreated"), { description: created.title });
   }
 
-  /* ✕ — qoralamada boʻsh boʻlmasa Gmail kabi soʻraymiz, boʻsh boʻlsa
-     shundoq yopamiz. Tahrirda avtosaqlash bor, soʻrashning maʼnosi yoʻq. */
+  /* ✕ — HECH NIMA SOʻRAMAYDI, chunki hech nima yoʻqolmaydi.
+     Qoralama "parkka" oʻtadi va Topshiriqlar roʻyxatida karta boʻlib
+     turadi; tahrirda esa avtosaqlash bor, sessiyani saqlashning maʼnosi
+     yoʻq. Ilgari bu yerda "Qoralama sifatida saqlash / Oʻchirish" dialogi
+     chiqardi, uning "saqlash" tugmasi esa aynan kichraytirish tugmasini
+     takrorlardi — bitta amal ikki joyda edi. */
   function handleCloseRequest() {
     if (isDraft && payload && isDraftDirty(payload)) {
-      setConfirmDiscard(true);
+      parkSession();
+      toast.success(t("draftKeptTitle"), { description: t("draftKeptDescription") });
       return;
     }
     closeSession();
   }
 
-  function handleSaveAsDraft() {
-    setConfirmDiscard(false);
-    setMinimized();
-    toast.success(t("draftKeptTitle"), { description: t("draftKeptDescription") });
+  /** Qoralamani butunlay tashlash — ⋯ menyusidagi yagona yoʻqotuvchi amal. */
+  function handleDiscardDraft() {
+    closeSession();
+    toast.success(t("draftDiscarded"));
   }
 
   /* ── "⋯" menyu amallari — ilgari uch joyga sochilgan edi (R204). ── */
@@ -527,28 +732,146 @@ export default function AssignmentEditorOverlay({
   const bareControl =
     "h-auto w-full justify-between gap-1.5 border-none bg-transparent p-0 text-sm font-medium text-foreground shadow-none hover:bg-transparent focus-visible:ring-0 [&>svg]:opacity-40";
 
-  const contentTypes: {
-    key: string;
-    icon: typeof ClipboardCheck;
-    title: string;
-    desc: string;
-    color: string;
-    kind?: Extract<AssignmentKind, "test" | "deck">;
-  }[] = [
-    { key: "assessment", icon: ClipboardCheck, title: t("kindTest"), desc: t("kindTestDesc"), color: "#22c55e", kind: "test" },
-    { key: "presentation", icon: Presentation, title: t("kindDeck"), desc: t("kindDeckDesc"), color: "#fb923c", kind: "deck" },
-    { key: "video", icon: Clapperboard, title: t("contentVideo"), desc: t("contentVideoDesc"), color: "#f43f5e" },
-    { key: "passage", icon: FileText, title: t("contentPassage"), desc: t("contentPassageDesc"), color: "#3b82f6" },
-    { key: "flashcards", icon: Zap, title: t("contentFlashcards"), desc: t("contentFlashcardsDesc"), color: "#a855f7" },
-  ];
+  /* ── MAZMUN BOʻLIMI ─────────────────────────────────────────────────
+     Toʻrt holat, ikkala rejimda ham bir xil chiziladi. Tartib muhim:
+     biriktirilgan toʻplam eng aniq belgi, `sourceSessionId` esa eski
+     (sessiyadan nashr qilingan) ustunlar uchun zaxira. */
+  function renderContent() {
+    if (attachedSetId) {
+      return (
+        <div className="flex items-center gap-3 rounded-xl border border-border p-3.5">
+          <button
+            type="button"
+            onClick={handleEditAttachedTest}
+            className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          >
+            <span
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white"
+              style={{ backgroundColor: "#22c55e" }}
+            >
+              <ClipboardCheck className="size-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h4 className="truncate text-sm font-semibold text-foreground">
+                {setMeta?.title ?? (current.title || t("kindTest"))}
+              </h4>
+              <p className="truncate text-xs text-muted-foreground">
+                {setMeta
+                  ? `${t("kindTest")} · ${t("questionCount", { count: setMeta.itemCount })}`
+                  : t("loadingLabel")}
+              </p>
+            </div>
+          </button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 gap-1.5"
+            disabled={sessionLoading}
+            onClick={handleRunSession}
+          >
+            {sessionLoading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Users className="size-3.5" />
+            )}
+            <span className="hidden sm:inline">{t("runSession")}</span>
+          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={handleDetachTest}
+                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <X className="size-4" />
+                <span className="sr-only">{t("detachTest")}</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-56">
+              {t("detachTestHint")}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      );
+    }
+
+    if (!isDeck && current.sourceSessionId) {
+      return (
+        <button
+          type="button"
+          onClick={handleOpenQuiz}
+          disabled={openingQuiz}
+          className="flex w-full items-center gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-wait"
+        >
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <FileCheck2 className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h4 className="truncate text-sm font-semibold text-foreground">{current.title}</h4>
+            <p className="text-xs text-muted-foreground">{t("kindTest")}</p>
+          </div>
+          {openingQuiz ? (
+            <Loader2 className="size-5 shrink-0 animate-spin text-muted-foreground" />
+          ) : (
+            <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+          )}
+        </button>
+      );
+    }
+
+    if (isDeck) {
+      return (
+        <Empty className="rounded-xl border border-dashed border-border">
+          <EmptyHeader>
+            <EmptyMedia variant="icon"><Presentation /></EmptyMedia>
+            <EmptyTitle>{t("deckEditorSoonTitle")}</EmptyTitle>
+            <EmptyDescription>{t("editorSoonDescription")}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      );
+    }
+
+    /* Mazmunsiz — bu NUQSON EMAS, toʻlaqonli holat: qogʻozdagi ish,
+       ogʻzaki soʻrov, sinfdan tashqarida oʻtgan ish. Ilgari bu yerda
+       "Test muharriri tez orada" yozilardi va ustun buzuq testdek
+       koʻrinardi. */
+    return (
+      <div className="flex flex-col gap-4 rounded-xl border border-dashed border-border p-5">
+        <div className="flex items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+            <FileCheck2 className="size-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h4 className="text-sm font-semibold text-foreground">{t("noContentTitle")}</h4>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              {t("noContentDescription")}
+            </p>
+          </div>
+        </div>
+        {/* Ikki yoʻl ochiq turadi: koʻpincha yangi test tuziladi, lekin
+            bankdan olingan yoki ilgari tuzilgan toʻplam ham shu ustunga
+            ulanishi kerak — ilgari ikkinchi yoʻl umuman yoʻq edi. */}
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleAttachTest}>
+              <ClipboardCheck className="size-4" />
+              {t("attachNewTest")}
+            </Button>
+            <Button variant="ghost" className="gap-2" onClick={() => setAttachOpen(true)}>
+              <Library className="size-4" />
+              {t("attachExisting")}
+            </Button>
+          </div>
+          <span className="text-xs text-muted-foreground">{t("moreKindsSoon")}</span>
+        </div>
+      </div>
+    );
+  }
 
   return createPortal(
     <>
       <div
-        className={cn(
-          "fixed inset-0 z-40 flex flex-col bg-card animate-in fade-in-0 duration-fast",
-          minimized && "hidden"
-        )}
+        className="fixed inset-0 z-40 flex flex-col bg-card animate-in fade-in-0 duration-fast"
       >
         {/* Sarlavha */}
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
@@ -559,6 +882,8 @@ export default function AssignmentEditorOverlay({
             <h1 className="min-w-0 truncate text-lg font-semibold text-foreground">
               {current.title || t("untitledDeck")}
             </h1>
+            {/* Holat chipi — miqdoriy holatda ikonka oʻrniga HALQA. Halqa
+                rangi `currentColor`, yaʼni chip ohangidan meros. */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <span
@@ -567,64 +892,97 @@ export default function AssignmentEditorOverlay({
                     statusMeta.cls
                   )}
                 >
-                  <StatusIcon className="size-3.5" />
-                  {t(`status_${status}`)}
+                  {statusCount ? (
+                    <ProgressRing
+                      pct={
+                        statusCount.total > 0
+                          ? (statusCount.graded / statusCount.total) * 100
+                          : 0
+                      }
+                      size={14}
+                      strokeWidth={2.5}
+                      trackMix={25}
+                    />
+                  ) : (
+                    <StatusIcon className="size-3.5" />
+                  )}
+                  <span className={cn(statusCount && "font-mono tabular-nums")}>
+                    {statusLabel}
+                  </span>
                 </span>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-56">
-                {t(`statusHint_${status}`)}
+                {statusCount
+                  ? t(`statusHint_${status.kind}`, {
+                      graded: statusCount.graded,
+                      total: statusCount.total,
+                    })
+                  : t(`statusHint_${status.kind}`)}
               </TooltipContent>
             </Tooltip>
-            {!isDraft && (
-              <Badge variant="outline" className="hidden shrink-0 gap-1 text-muted-foreground sm:inline-flex">
-                <Check className="size-3" />
-                {t("autosaved")}
-              </Badge>
+            {/* ⚠️ Bu yerda ilgari doimiy «Saqlandi» nishoni turardi. U holat
+                emas, konstanta edi: sinxronizatsiya XATO berganda ham
+                «Saqlandi» deb turaverardi. Sukunat = saqlangan (Notion
+                naqshi), gapiriladigan yagona holat — muammo. */}
+            {syncFailing && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex shrink-0 cursor-default items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning">
+                    <CloudOff className="size-3.5" />
+                    <span className="hidden sm:inline">{t("syncFailing")}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-56">
+                  {t("syncFailingHint")}
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             {isDraft && (
-              <Button
-                onClick={handleCreate}
-                disabled={!manualCreate && !selectedKind}
-                className="mr-1.5 gap-1.5 font-semibold"
-              >
+              <Button onClick={handleCreate} className="mr-1.5 gap-1.5 font-semibold">
                 <Plus className="size-4" />
                 {t("create")}
               </Button>
             )}
-            {!isDraft && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label={t("more")}>
-                    <MoreHorizontal className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem className="gap-2" onSelect={handleDuplicate}>
-                    <Copy className="size-4" />
-                    {t("duplicate")}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+            {/* "⋯" — YOʻQOTUVCHI amallarning yagona uyi. Qoralamada u
+                bitta bandli: `✕` endi hech nimani oʻchirmagani uchun
+                "bu qoralama kerak emas" deyish yoʻli shu yerda. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label={t("more")}>
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                {isDraft ? (
                   <DropdownMenuItem
                     variant="destructive"
                     className="gap-2"
-                    onSelect={() => setConfirmDelete(true)}
+                    onSelect={handleDiscardDraft}
                   >
                     <Trash2 className="size-4" />
-                    {t("delete")}
+                    {t("deleteDraft")}
                   </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-            <button
-              type="button"
-              onClick={setMinimized}
-              className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Minus className="size-4" />
-              <span className="sr-only">{t("minimize")}</span>
-            </button>
+                ) : (
+                  <>
+                    <DropdownMenuItem className="gap-2" onSelect={handleDuplicate}>
+                      <Copy className="size-4" />
+                      {t("duplicate")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      className="gap-2"
+                      onSelect={() => setConfirmDelete(true)}
+                    >
+                      <Trash2 className="size-4" />
+                      {t("delete")}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <button
               type="button"
               onClick={handleCloseRequest}
@@ -651,122 +1009,25 @@ export default function AssignmentEditorOverlay({
                 />
               </div>
 
-              {isDraft ? (
-                <div className="flex flex-col gap-2.5">
-                  <span className="text-label text-muted-foreground">{t("chooseContentLabel")}</span>
-                  {(() => {
-                    const selected = contentTypes.find((ct) => ct.kind === selectedKind);
-                    if (selected) {
-                      // Test uchun karta bosiladi — qurish oynasi (overlay,
-                      // sahifa emas) shu yerdan ochiladi. Taqdimotda hali
-                      // ochiladigan alohida muharrir yoʻq — statik qoladi.
-                      const openable = selected.kind === "test";
-                      return (
-                        <div
-                          role={openable ? "button" : undefined}
-                          tabIndex={openable ? 0 : undefined}
-                          onClick={openable ? handleStartQuiz : undefined}
-                          onKeyDown={
-                            openable
-                              ? (e) => {
-                                  if (e.key !== "Enter" && e.key !== " ") return;
-                                  e.preventDefault();
-                                  handleStartQuiz();
-                                }
-                              : undefined
-                          }
-                          className={cn(
-                            "flex w-full items-center gap-3 rounded-xl border border-border p-3.5 text-left transition-colors",
-                            openable && "cursor-pointer hover:bg-muted/50"
-                          )}
-                        >
-                          <span
-                            className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white"
-                            style={{ backgroundColor: selected.color }}
-                          >
-                            <selected.icon className="size-5" />
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <h4 className="truncate text-sm font-semibold text-foreground">{selected.title}</h4>
-                            <p className="text-xs text-muted-foreground">
-                              {openable ? t("startQuizDescription") : selected.desc}
-                            </p>
-                          </div>
-                          {openable && <ChevronRight className="size-5 shrink-0 text-muted-foreground" />}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedKind(null);
-                            }}
-                            title={t("attachRemove")}
-                            className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          >
-                            <X className="size-4" />
-                            <span className="sr-only">{t("attachRemove")}</span>
-                          </button>
-                        </div>
-                      );
-                    }
-                    // Kartaga aylanmagan holat — kompakt ikonka reyi (Google
-                    // Classroom "Attach" naqshi): bosilganda faqat tur
-                    // TANLANADI, karta ustiga chiqadi; haqiqiy yaratish
-                    // "Yaratish" tugmasi bilan (handleCreate).
-                    return (
-                      <div className="flex flex-wrap items-start gap-1">
-                        {contentTypes.map((ct) => (
-                          <button
-                            key={ct.key}
-                            type="button"
-                            disabled={!ct.kind}
-                            title={ct.kind ? undefined : t("attachSoon")}
-                            onClick={() => setSelectedKind(ct.kind!)}
-                            className="flex w-20 flex-col items-center gap-1.5 rounded-lg px-1 py-2 text-center transition-colors enabled:hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            <span
-                              className="flex size-11 shrink-0 items-center justify-center rounded-full text-white"
-                              style={{ backgroundColor: ct.color }}
-                            >
-                              <ct.icon className="size-5" />
-                            </span>
-                            <span className="text-xs font-medium text-foreground">{ct.title}</span>
-                          </button>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-              ) : !isDeck && current.sourceSessionId ? (
-                <button
-                  type="button"
-                  onClick={handleOpenQuiz}
-                  disabled={openingQuiz}
-                  className="flex w-full items-center gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-wait"
-                >
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <FileCheck2 className="size-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-sm font-semibold text-foreground">{current.title}</h4>
-                    <p className="text-xs text-muted-foreground">{t("kindTest")}</p>
-                  </div>
-                  {openingQuiz ? (
-                    <Loader2 className="size-5 shrink-0 animate-spin text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
-                  )}
-                </button>
-              ) : (
-                <Empty className="rounded-xl border border-dashed border-border">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon"><Icon /></EmptyMedia>
-                    <EmptyTitle>
-                      {isDeck ? t("deckEditorSoonTitle") : t("testEditorSoonTitle")}
-                    </EmptyTitle>
-                    <EmptyDescription>{t("editorSoonDescription")}</EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
-              )}
+              {/* YOʻRIQNOMA (R203) — maydon tipda, bazada, sync'da va oltita
+                  tilda tayyor edi, lekin hech qayerda chizilmasdi. Referensda
+                  (EMStudio/Classroom) u sarlavhadan keyingi eng katta maydon:
+                  oʻqituvchi "nima qilinsin"ni aynan shu yerda yozadi. */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-label text-muted-foreground">{t("instructionsLabel")}</span>
+                <Textarea
+                  value={current.instructions ?? ""}
+                  onChange={(e) => patch({ instructions: e.target.value })}
+                  placeholder={t("instructionsPlaceholder")}
+                  className="min-h-24 rounded-xl bg-muted/40 px-4 py-3 text-sm shadow-none"
+                />
+              </div>
+
+              {/* MAZMUN — qoralamada ham, tahrirda ham. */}
+              <div className="flex flex-col gap-2.5">
+                <span className="text-label text-muted-foreground">{t("contentLabel")}</span>
+                {renderContent()}
+              </div>
             </div>
           </div>
 
@@ -1019,6 +1280,9 @@ export default function AssignmentEditorOverlay({
                 })()}
               </div>
 
+              {/* MAKS. BALL — test biriktirilgan boʻlsa QULF (R216): maxraj
+                  savollar sonidan olinadi, aks holda qogʻozdagi "8/10" tizimda
+                  8% boʻlib oʻqilardi. */}
               <FieldRow
                 label={t("maxScoreLabel")}
                 icon={<Star className="size-4" />}
@@ -1026,23 +1290,62 @@ export default function AssignmentEditorOverlay({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button type="button" className="shrink-0 text-muted-foreground/60 hover:text-foreground">
-                        <Info className="size-3.5" />
+                        {attachedSetId ? <Lock className="size-3.5" /> : <Info className="size-3.5" />}
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-56">
-                      {t("maxScoreTooltip")}
+                      {attachedSetId ? t("maxScoreLockedTooltip") : t("maxScoreTooltip")}
                     </TooltipContent>
                   </Tooltip>
                 }
               >
-                <Input
-                  type="number"
-                  min={1}
-                  value={current.maxScore}
-                  onChange={(e) => patch({ maxScore: Number(e.target.value) || 0 })}
-                  className={bareControl}
-                />
+                {attachedSetId ? (
+                  <span className="text-sm font-medium text-muted-foreground">{current.maxScore}</span>
+                ) : (
+                  /* Xabar har bosishda emas, tahrir TUGAGANDA (blur) —
+                     "1", "10", "100" deb yozilayotganda uch marta
+                     ogohlantirish shovqin boʻlardi. */
+                  <Input
+                    type="number"
+                    min={1}
+                    value={current.maxScore}
+                    onFocus={() => {
+                      maxScoreUndo.current = { map: classDataMap, value: current.maxScore };
+                    }}
+                    onChange={(e) => patch({ maxScore: Number(e.target.value) || 0 })}
+                    onBlur={() => {
+                      const snap = maxScoreUndo.current;
+                      maxScoreUndo.current = null;
+                      if (snap) announceMaxScore(snap.map, snap.value);
+                    }}
+                    className={bareControl}
+                  />
+                )}
               </FieldRow>
+
+              {/* Tez tanlash (R207) — oʻqituvchining oʻz jurnalidan olingan
+                  maxrajlar. Qulflangan holatda koʻrsatilmaydi: bosilsa ham
+                  ishlamaydigan tugma faqat chalgʻitardi. */}
+              {!attachedSetId && scoreSuggestions.length > 0 && (
+                <div className="-mt-3 flex flex-wrap items-center gap-1.5">
+                  {scoreSuggestions.map((score) => (
+                    <button
+                      key={score}
+                      type="button"
+                      onClick={() => pickMaxScore(score)}
+                      aria-pressed={current.maxScore === score}
+                      className={cn(
+                        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                        current.maxScore === score
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      {score}
+                    </button>
+                  ))}
+                </div>
+              )}
               </div>
             </div>
           </aside>
@@ -1066,73 +1369,32 @@ export default function AssignmentEditorOverlay({
           </nav>
         </div>
 
-        {testWorkspace && (
-          <TestWorkspaceOverlay
+        {attachOpen && (
+          <AttachTestDialog
             classId={classId}
-            className={classData?.info.name ?? ""}
-            autoOpenNewSet={testWorkspace.autoOpenNewSet}
-            autoOpenSetId={testWorkspace.autoOpenSetId}
-            autoOpenTitle={testWorkspace.autoOpenTitle}
-            onClose={() => setTestWorkspace(null)}
+            assignmentId={current.id}
+            onPick={handlePickExistingSet}
+            onCreateNew={handleAttachTest}
+            onClose={() => setAttachOpen(false)}
           />
+        )}
+
+        {/* Savol muharriri — muharrir ustida, oraliq ekransiz. */}
+        {builder && (
+          <SetBuilderOverlay
+            classId={classId}
+            setId={builder.setId}
+            initialTitle={builder.setId ? undefined : current.title.trim() || undefined}
+            onSaved={(set) => handleSetSaved(set)}
+            onClose={() => setBuilder(null)}
+          />
+        )}
+
+        {sessionSet && (
+          <SessionPanelModal set={sessionSet} onClose={() => setSessionSet(null)} />
         )}
       </div>
 
-      {/* Kichraytirilgan yorliq — Windows vazifalar panelidagidek: bosilsa
-          overlay oʻsha holatida (qoralama saqlanib) qayta ochiladi. Ikonka
-          TOIFA rangida (FieldRow bilan bir til), sarlavha qisqarganda
-          toʻlig'i tooltipda koʻrinadi. */}
-      {minimized && (
-        <div className="fixed bottom-4 right-4 z-40 flex items-center gap-1 rounded-xl border border-border bg-card p-1.5 card-elevation animate-in fade-in-0 slide-in-from-bottom-2 duration-fast">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={restore}
-                className="flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted"
-              >
-                <span
-                  className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"
-                  style={
-                    currentTopic
-                      ? {
-                          backgroundColor: `color-mix(in srgb, ${TOPIC_COLOR_HEX[currentTopic.color]} 15%, transparent)`,
-                          color: TOPIC_COLOR_HEX[currentTopic.color],
-                        }
-                      : undefined
-                  }
-                >
-                  <Icon className="size-4" />
-                </span>
-                <span className="max-w-48 truncate text-sm font-medium text-foreground">
-                  {current.title || t("untitledDeck")}
-                </span>
-                <ChevronUp className="size-4 shrink-0 text-muted-foreground" />
-                <span className="sr-only">{t("restore")}</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" align="end" className="max-w-64">
-              <p className="font-semibold">{current.title || t("untitledDeck")}</p>
-              <p className="text-background/70">
-                {[currentTopic?.name, t(`status_${status}`)].filter(Boolean).join(" · ")}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={handleCloseRequest}
-                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive hover:text-white"
-              >
-                <X className="size-3.5" />
-                <span className="sr-only">{t("discardDraft")}</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top">{t("discardDraft")}</TooltipContent>
-          </Tooltip>
-        </div>
-      )}
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
@@ -1159,35 +1421,6 @@ export default function AssignmentEditorOverlay({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ✕ bosilgan qoralama — Gmail'dagi "Save draft / Discard" tanlovi.
-          Kichraytirilgan holatda qoralama allaqachon yorliqda turibdi,
-          shuning uchun "saqlash" tugmasi koʻrsatilmaydi. */}
-      <AlertDialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("discardDialogTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("discardDialogDescription", {
-                title: current.title.trim() || t("untitledDeck"),
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-white hover:bg-destructive/90"
-              onClick={closeSession}
-            >
-              {t("discardDraft")}
-            </AlertDialogAction>
-            {!minimized && (
-              <AlertDialogAction onClick={handleSaveAsDraft}>
-                {t("saveAsDraft")}
-              </AlertDialogAction>
-            )}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>,
     document.body
   );

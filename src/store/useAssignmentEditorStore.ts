@@ -49,31 +49,42 @@ export function makeDraftPayload(classId: string, defaultTopicId: string | null)
   };
 }
 
-/** Qoralamada oʻqituvchi biror narsa yozganmi — "saqlaymizmi?" soʻrash uchun. */
+/** Qoralamada oʻqituvchi biror narsa yozganmi — "saqlaymizmi?" soʻrash uchun.
+    `kind`/`setId` ham hisobga olinadi: mazmun tanlovi endi shu payload'da
+    yashaydi (ilgari komponent ichidagi `useState` edi va bu tekshiruvga
+    koʻrinmasdi — test tanlab `✕` bosilsa qoralama jimgina yoʻqolardi). */
 export function isDraftDirty(p: DraftPayload): boolean {
   return (
     p.assignment.title.trim() !== "" ||
+    (p.assignment.instructions ?? "").trim() !== "" ||
     p.classIds.length > 1 ||
-    p.assignment.kind !== "manual"
+    p.assignment.kind !== "manual" ||
+    Boolean(p.assignment.setId)
   );
 }
 
 export type EditorSession =
   /** Yangi topshiriq — mazmuni shu yerda, DB'ga hali yozilmagan. */
-  | { kind: "draft"; classId: string; manualCreate: boolean; payload: DraftPayload }
+  | { kind: "draft"; classId: string; payload: DraftPayload }
   /** Mavjud topshiriq — mazmuni `useGradesStore`da, bu yerda faqat havola. */
   | { kind: "edit"; classId: string; assignmentId: string };
 
 interface AssignmentEditorState {
   session: EditorSession | null;
-  /** Toʻliq ekran yopiq, pastda tiklash yorligʻi turibdi. */
-  minimized: boolean;
+  /** Sessiya turibdi, lekin muharrir CHIZILMAYDI — qoralama "parkda".
+      Ilgari bu `minimized` edi va pastda suzuvchi yorliq chizilardi;
+      yorliq oʻrniga qoralama endi Topshiriqlar roʻyxatida karta boʻlib
+      turadi (Google Classroom "Draft" naqshi). */
+  parked: boolean;
 
-  openDraft: (classId: string, manualCreate: boolean, payload: DraftPayload) => void;
+  /** Yangi qoralama. Tugallanmagan qoralama bor boʻlsa — u TIKLANADI,
+      ustiga yozilmaydi. Qaytadigan qiymat shuni bildiradi. */
+  openDraft: (classId: string, payload: DraftPayload) => "created" | "restored";
   openEdit: (classId: string, assignmentId: string) => void;
   /** Qoralama mazmunini yangilaydi. Tahrir sessiyasida no-op. */
   patchDraft: (next: (prev: DraftPayload) => DraftPayload) => void;
-  minimize: () => void;
+  /** Muharrirni yopadi, sessiyani SAQLAB qoladi. */
+  park: () => void;
   restore: () => void;
   /** Sessiyani butunlay tashlaydi (qoralama yoʻqoladi). */
   close: () => void;
@@ -83,13 +94,24 @@ export const useAssignmentEditorStore = create<AssignmentEditorState>()(
   persist(
     (set, get) => ({
       session: null,
-      minimized: false,
+      parked: false,
 
-      openDraft: (classId, manualCreate, payload) =>
-        set({ session: { kind: "draft", classId, manualCreate, payload }, minimized: false }),
+      openDraft: (classId, payload) => {
+        /* ⚠️ Ilgari bu yerda shart yoʻq edi: parklangan qoralama ustiga
+           jimgina yozilardi. Alomat: 5-A da qoralama qoldirib, 5-B da
+           "+" bosilsa 5-A dagi ish izsiz yoʻqolardi. Endi tugallanmagan
+           qoralama tiklanadi (Linear naqshi — avto-tiklash). */
+        const s = get().session;
+        if (s?.kind === "draft" && isDraftDirty(s.payload)) {
+          set({ parked: false });
+          return "restored";
+        }
+        set({ session: { kind: "draft", classId, payload }, parked: false });
+        return "created";
+      },
 
       openEdit: (classId, assignmentId) =>
-        set({ session: { kind: "edit", classId, assignmentId }, minimized: false }),
+        set({ session: { kind: "edit", classId, assignmentId }, parked: false }),
 
       patchDraft: (next) => {
         const s = get().session;
@@ -97,18 +119,24 @@ export const useAssignmentEditorStore = create<AssignmentEditorState>()(
         set({ session: { ...s, payload: next(s.payload) } });
       },
 
-      minimize: () => {
+      park: () => {
         if (!get().session) return;
-        set({ minimized: true });
+        set({ parked: true });
       },
 
-      restore: () => set({ minimized: false }),
+      restore: () => set({ parked: false }),
 
-      close: () => set({ session: null, minimized: false }),
+      close: () => set({ session: null, parked: false }),
     }),
     {
       name: "ustozona-assignment-editor-v1",
-      version: 1,
+      version: 2,
+      migrate: (state, version) => {
+        // v1 da bayroq `minimized` deb atalardi — maʼnosi oʻsha.
+        if (version >= 2) return state as AssignmentEditorState;
+        const old = state as { minimized?: boolean } & Partial<AssignmentEditorState>;
+        return { ...old, parked: Boolean(old.minimized) } as AssignmentEditorState;
+      },
     }
   )
 );

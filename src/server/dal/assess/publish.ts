@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activityItems,
@@ -20,7 +20,8 @@ import { requireTeacher } from "@/server/session";
    HECH QACHON avtomatik emas — oʻqituvchi aniq bosadi. Besh qadam:
    1. activity_sets.purpose qayta oʻqiladi; `formative` boʻlsa — xato.
    2. Nishon topic.purpose `formative` boʻlsa — xato.
-   3. Bitta `assignments` qatori (+ `sourceSessionId` izlanuvchanlik uchun).
+   3. Bitta `assignments` qatori — MAVJUDI qayta ishlatiladi (sessiya
+      boʻyicha yoki `set_id` halqasi boʻyicha), boʻlmasa yangisi.
    4. Har ishtirokchiga bitta `grades` qatori — PK (studentId, assignmentId)
       boʻlgani uchun qayta nashr tabiiy idempotent.
    5. `studentId = null` (anonim) ishtirokchilar jimgina oʻtkazib yuboriladi.
@@ -77,18 +78,49 @@ export async function publishSessionToGrades(
         )[0]?.count ?? 0;
   if (maxScore === 0) throw new PublishError("Toʻplamda elementlar yoʻq");
 
-  // 3 — bitta assignments qatori. Bir xil sessiyadan qayta nashr qilinsa
-  // avvalgi qator qayta ishlatiladi (sourceSessionId idempotent kalit).
-  const [existingAssignment] = await db
+  // 3 — bitta assignments qatori. Uch holat, shu tartibda:
+  //
+  //   a) shu sessiyadan avval nashr qilingan → oʻsha qator (idempotent);
+  //   b) toʻplam topshiriqqa BIRIKTIRILGAN va hali nashr koʻrmagan →
+  //      oʻsha qator toʻldiriladi. Bu R213/R214 talabi: oʻqituvchi testni
+  //      topshiriq ichida tuzganda ustun ALLAQACHON bor (qogʻoz yoʻli
+  //      shunga tayanadi) — bu yerda yangisini yaratsak, bitta test
+  //      ikkita baho ustuni boʻlib chiqardi;
+  //   c) hech biri yoʻq → yangi qator (tashqarida tuzilgan test).
+  const [publishedBefore] = await db
     .select()
     .from(assignments)
     .where(and(eq(assignments.sourceSessionId, sessionId), eq(assignments.teacherId, tid)));
 
-  const assignmentId = existingAssignment?.id ?? randomUUID();
-  if (existingAssignment) {
+  const [linkedAssignment] = publishedBefore
+    ? []
+    : await db
+        .select()
+        .from(assignments)
+        .where(
+          and(
+            eq(assignments.teacherId, tid),
+            eq(assignments.setId, session.setId),
+            eq(assignments.classId, session.classId),
+            isNull(assignments.sourceSessionId)
+          )
+        );
+
+  const target = publishedBefore ?? linkedAssignment;
+  const assignmentId = target?.id ?? randomUUID();
+  if (target) {
+    // `topicId` nashr oynasida ANIQ tanlanadi — oʻqituvchining shu
+    // paytdagi qarori topshiriqdagi eski toifadan ustun turadi.
     await db
       .update(assignments)
-      .set({ maxScore, topicId, updatedAt: new Date() })
+      .set({
+        maxScore,
+        topicId,
+        kind: "test",
+        setId: session.setId,
+        sourceSessionId: sessionId,
+        updatedAt: new Date(),
+      })
       .where(eq(assignments.id, assignmentId));
   } else {
     await db.insert(assignments).values({
@@ -99,6 +131,7 @@ export async function publishSessionToGrades(
       title: session.title ?? set.title,
       maxScore,
       kind: "test",
+      setId: session.setId,
       sourceSessionId: sessionId,
     });
   }

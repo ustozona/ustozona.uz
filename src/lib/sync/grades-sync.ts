@@ -95,6 +95,8 @@ function toAssignmentUpsert(
     ...(a.dueDate ? { dueDate: a.dueDate } : {}),
     ...(a.kind ? { kind: a.kind } : {}),
     ...(a.instructions ? { instructions: a.instructions } : {}),
+    // Halqa HAR DOIM yuboriladi (`null` ham) — ajratish ham oʻzgarish.
+    setId: a.setId ?? null,
     sortOrder,
   };
 }

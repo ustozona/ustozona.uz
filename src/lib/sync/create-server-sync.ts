@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { useSyncHealthStore } from "@/store/useSyncHealthStore";
 
 /* ════════════════════════════════════════════════════════════════════
    createServerSync — zustand store → server sync (v1 pattern).
@@ -52,9 +53,12 @@ export function createServerSync<S, P, D = P>(opts: {
   push: (payload: D) => Promise<unknown>;
   debounceMs?: number;
   errorMessage?: string;
+  /** Sogʻlik hisobidagi nom (`useSyncHealthStore`). Berilmasa xato xabari. */
+  scope?: string;
 }): { stop: () => void; flush: () => Promise<void> } {
   const debounceMs = opts.debounceMs ?? 1500;
   const errorMessage = opts.errorMessage ?? "Oʻzgarishlar serverga saqlanmadi";
+  const scope = opts.scope ?? errorMessage;
   const diff =
     opts.diff ??
     ((prev: P, next: P) => (shallowEqual(prev, next) ? null : (next as unknown as D)));
@@ -96,12 +100,16 @@ export function createServerSync<S, P, D = P>(opts: {
       await opts.push(payload);
       lastSynced = next;
       attempt = 0;
+      useSyncHealthStore.getState().ok(scope);
       // Push davomida yangi oʻzgarish kelgan boʻlsa — qolgan farq keyingi flush'da.
       dirty = opts.select(opts.store.getState()) !== next;
       if (dirty) schedule(debounceMs);
     } catch (err) {
       console.error("[sync] push xatosi:", err);
       attempt += 1;
+      // Toast bir marta chiqadi va soʻniydi; muharrirdagi doimiy belgi
+      // esa muammo tuzalgunicha turadi (useSyncHealthStore).
+      useSyncHealthStore.getState().fail(scope);
       if (attempt === 1) toast.error(`${errorMessage} — qayta urinilmoqda…`);
       schedule(Math.min(30_000, 2_000 * 2 ** (attempt - 1)));
     } finally {
