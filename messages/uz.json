@@ -2005,7 +2005,7 @@
       },
       "topshiriq-mazmun-biriktirish": {
         "title": "Topshiriqqa test istalgan payt biriktiriladi",
-        "body": "Ilgari topshiriq turini faqat yaratayotganda tanlash mumkin edi — keyin fikringiz oʻzgarsa yoʻl yoʻq edi. Endi mazmun topshiriqning oʻz muharririda turadi: tayyor ustunga yangi test tuzasiz yoki bankdan olgan, ilgari tuzgan testingizni tanlab biriktirasiz. Test biriktirilishi bilan jurnalda ustun paydo boʻladi — qogʻozda oʻtkazsangiz ham baho oʻsha ustunga yoziladi."
+        "body": "Ilgari topshiriq turini faqat yaratayotganda tanlash mumkin edi — keyin fikringiz oʻzgarsa yoʻl yoʻq edi. Endi kontent topshiriqning oʻz muharririda turadi: tayyor ustunga yangi test tuzasiz yoki bankdan olgan, ilgari tuzgan testingizni tanlab biriktirasiz. Test biriktirilishi bilan jurnalda ustun paydo boʻladi — qogʻozda oʻtkazsangiz ham baho oʻsha ustunga yoziladi."
       },
       "assignment-draft-persist": {
         "title": "Topshiriq qoralamasi endi yoʻqolmaydi",
@@ -3696,9 +3696,9 @@
     "statusHint_planned": "Sana hali kelmagan.",
     "statusHint_grading": "{graded} / {total} oʻquvchi baholandi.",
     "statusHint_done": "Barchasi baholandi — {graded} / {total}.",
-    "contentLabel": "Mazmun",
+    "contentLabel": "Kontent",
     "kindManual": "Baho ustuni",
-    "noContentTitle": "Mazmun biriktirilmagan",
+    "noContentTitle": "Kontent biriktirilmagan",
     "noContentDescription": "Bu — jurnaldagi baho ustuni: qogʻozdagi ish, ogʻzaki soʻrov yoki sinfda oʻtgan ish uchun baho shu ustunga yoziladi. Xohlasangiz test biriktiring.",
     "moreKindsSoon": "Taqdimot, video, matn va flashkartalar tez orada.",
     "questionCount": "{count} savol",

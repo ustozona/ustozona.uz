@@ -2005,7 +2005,7 @@
       },
       "topshiriq-mazmun-biriktirish": {
         "title": "Tapsırmagʻa test qálegen waqıtta tirkeledi",
-        "body": "Buringʻı tapsırma túrin tek jaratıp atırgʻanda tanlaw múmkin edi — keyin pikiringiz ózgerse jol joq edi. Endi mazmun tapsırmanıng óz redaktorında turadı: tayar bagʻanagʻa jańa test dúzesiz yamasa banktan alıngʻan, burın dúzilgen testti tanlap tirkeysiz. Test tirkelisi menen jurnalda bagʻana payda boladı — qagʻazda ótkersengiz de baha sol bagʻanagʻa jazıladı."
+        "body": "Buringʻı tapsırma túrin tek jaratıp atırgʻanda tanlaw múmkin edi — keyin pikiringiz ózgerse jol joq edi. Endi kontent tapsırmanıng óz redaktorında turadı: tayar bagʻanagʻa jańa test dúzesiz yamasa banktan alıngʻan, burın dúzilgen testti tanlap tirkeysiz. Test tirkelisi menen jurnalda bagʻana payda boladı — qagʻazda ótkersengiz de baha sol bagʻanagʻa jazıladı."
       },
       "sinf-import-eksport": {
         "title": "Klaslardı bir jolı qosıw hám faylǵa shıǵarıw",
@@ -3867,9 +3867,9 @@
     "statusHint_planned": "Kún ele kelmegen.",
     "statusHint_grading": "{graded} / {total} oqıwshı bahalandı.",
     "statusHint_done": "Barlıgʻı bahalandı — {graded} / {total}.",
-    "contentLabel": "Mazmun",
+    "contentLabel": "Kontent",
     "kindManual": "Baha bagʻanası",
-    "noContentTitle": "Mazmun tirkelmegen",
+    "noContentTitle": "Kontent tirkelmegen",
     "noContentDescription": "Bul — jurnaldagʻı baha bagʻanası: qagʻazdagʻı jumıs, awızsha soraw yamasa klasta ótken jumıs ushın baha usı jerge jazıladı. Qálesengiz test tirkeng.",
     "moreKindsSoon": "Prezentaciya, video, tekst hám fleshkartalar tez arada.",
     "questionCount": "{count} soraw",
