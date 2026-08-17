@@ -32,7 +32,8 @@ export type ClassOption = { id: string; name: string };
 
 export type SetOption = {
   id: string;
-  classId: string;
+  /** Qayerda tuzilgani — `null` = sinfsiz (kutubxonada yashaydi). */
+  classId: string | null;
   title: string;
   purpose: "formative" | "summative";
   itemCount: number;
@@ -204,7 +205,9 @@ export default function BaholashWorkspace({
                       nomli ikki testni ajrata olishi shart. */}
                   {set.classId !== classId && (
                     <Badge variant="outline" className="text-[10px] text-muted-foreground">
-                      {classNameById.get(set.classId) ?? "boshqa sinf"}dan
+                      {set.classId === null
+                        ? "materiallardan"
+                        : `${classNameById.get(set.classId) ?? "boshqa sinf"}dan`}
                     </Badge>
                   )}
                   <Badge variant="outline" className="text-[10px] text-muted-foreground">

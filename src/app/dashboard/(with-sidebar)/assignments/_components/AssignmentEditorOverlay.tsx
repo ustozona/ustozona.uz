@@ -1316,7 +1316,11 @@ export default function AssignmentEditorOverlay({
         )}
 
         {sessionSet && (
-          <SessionPanelModal set={sessionSet} onClose={() => setSessionSet(null)} />
+          <SessionPanelModal
+            set={sessionSet}
+            classId={classId}
+            onClose={() => setSessionSet(null)}
+          />
         )}
       </div>
 

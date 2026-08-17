@@ -33,15 +33,25 @@ import type { SessionReport } from "@/server/dal/assess/results";
 
 type Props = {
   set: ActivitySetRow;
+  /**
+   * Sessiya QAYSI sinfga — `set.classId` EMAS, oʻqituvchi turgan sinf.
+   *
+   * Toʻplamning `classId` si endi «qayerda tuzilgan» degan maʼlumot va
+   * `null` boʻlishi mumkin (kutubxonadagi sinfsiz test). Ijro esa doim
+   * sinfga tayanadi: `play/join.ts` roʻyxatni, `publish.ts` bahoni
+   * `session.classId` dan oladi. `BaholashWorkspace` allaqachon shu
+   * qoidada ishlaydi — bu panel ham unga tenglashtirildi.
+   */
+  classId: string;
   onClose: () => void;
 };
 
-export default function SessionPanelModal({ set, onClose }: Props) {
+export default function SessionPanelModal({ set, classId, onClose }: Props) {
   const [sessions, setSessions] = useState<QuizSessionRow[]>([]);
   const [reports, setReports] = useState<Record<string, SessionReport>>({});
   const [publishTopicId, setPublishTopicId] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
-  const topics = useGradesStore((s) => s.classDataMap[set.classId]?.topics ?? []);
+  const topics = useGradesStore((s) => s.classDataMap[classId]?.topics ?? []);
   const summativeTopics = topics.filter((t) => t.purpose === "summative");
 
   useEffect(() => {
@@ -51,7 +61,7 @@ export default function SessionPanelModal({ set, onClose }: Props) {
   async function handleStart() {
     setBusy("start");
     try {
-      const session = await startSessionAction({ setId: set.id, classId: set.classId, title: set.title });
+      const session = await startSessionAction({ setId: set.id, classId, title: set.title });
       setSessions((prev) => [session, ...prev]);
     } finally {
       setBusy(null);

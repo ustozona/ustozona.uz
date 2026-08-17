@@ -151,12 +151,26 @@ export const activitySets = pgTable(
     teacherId: text("teacher_id")
       .notNull()
       .references(() => teachers.id, { onDelete: "cascade" }),
-    classId: text("class_id")
-      .notNull()
-      .references(() => classes.id, { onDelete: "cascade" }),
+    /**
+     * Toʻplam QAYERDA tuzilgani — EGALIK EMAS (egalik `teacherId` da).
+     *
+     * ⚠️ 2026-08-18 gacha bu ustun `notNull` + `onDelete: cascade` edi,
+     * yaʼni sinf oʻchsa uning testlari ham oʻchardi. Materiallar
+     * kutubxonasi uchun bu halokatli: oʻqituvchi 5-A ni arxivlab
+     * tashlasa yillar davomida tuzgan testlari yoʻqolardi. Endi
+     * `set null` — toʻplam sinfsiz qolib kutubxonada yashayveradi.
+     */
+    classId: text("class_id").references(() => classes.id, { onDelete: "set null" }),
     title: text("title").notNull(),
     /** formative | summative ← YADRO AJRATUVCHI (publish.ts shu bilan tekshiradi). */
     purpose: text("purpose").notNull(),
+    /**
+     * Kutubxona filtrlari — oʻqituvchidan SOʻRALMAYDI (R227a), tuzilgan
+     * paytdagi sinfdan avtomatik olinadi. `classId` `null` boʻlib
+     * qolganda ham toʻplam "8-sinf · Informatika" boʻlib qidiriladi.
+     */
+    subject: text("subject"),
+    grade: integer("grade"),
     /** [{ activityId, role }] — ROLLI roʻyxat (R46). role: entry|check|vocabulary|practice|exit. */
     items: jsonb("items").$type<{ activityId: string; role: string }[]>().notNull().default([]),
     /** none | deck | video | passage (B4.3). */

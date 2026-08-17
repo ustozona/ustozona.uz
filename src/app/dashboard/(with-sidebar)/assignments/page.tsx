@@ -799,8 +799,15 @@ export default function AssignmentsPage() {
         />
       )}
 
-      {sessionSet && (
-        <SessionPanelModal set={sessionSet} onClose={() => setSessionSet(null)} />
+      {/* Sessiya sinfsiz boshlanmaydi — roʻyxat ham, baho ham sinfdan
+          keladi. Bu yerda sinf doim tanlangan (toʻplamlar roʻyxati
+          shundan yuklanadi), shart faqat tipni toraytiradi. */}
+      {sessionSet && selectedClassId && (
+        <SessionPanelModal
+          set={sessionSet}
+          classId={selectedClassId}
+          onClose={() => setSessionSet(null)}
+        />
       )}
 
       <AlertDialog open={!!deleteSet} onOpenChange={(open) => { if (!open) setDeleteSet(null); }}>
