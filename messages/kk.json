@@ -3884,7 +3884,9 @@
     "deleteDraft": "Нобайды өшіру",
     "draftDiscarded": "Нобай өшірілді",
     "draftRestored": "Аяқталмаған нобай ашылды",
-    "draftCardHint": "Аяқталмаған — жалғастыру үшін басыңыз"
+    "draftCardHint": "Аяқталмаған — жалғастыру үшін басыңыз",
+    "actionsMenu": "Әрекеттер",
+    "groupClassesHint": "Бұл тапсырма {classes} сыныптарында да бар — өзгеріс барлығына әсер етеді."
   },
   "TestBank": {
     "title": "Test banki",

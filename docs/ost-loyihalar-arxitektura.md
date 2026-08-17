@@ -2370,6 +2370,162 @@ Saboq: "Bajarildi" deb yozishdan oldin kodda tasdiqlang — hujjat kod bilan tar
 
 ---
 
+### Resurs kutubxonasi — muhokama va KEYINGA SURISH qarori (2026-08-17, R221–R228)
+
+**Kim uchun bu yozuv:** jamoa. Savol qaytib keladi («Wayground'dagi
+kutubxonani qilaylik»), shuning uchun nega **hozir qilinmayotgani** yozib
+qoʻyilyapti. Gʻoya rad etilmagan — navbati kelmagan.
+
+**Muhokamaning boshlanishi:** Topshiriqlar sahifasining UX koʻrigi →
+Wayground `My library` skrinshoti → «yaratilgan dars rejalari, testlar,
+worksheet, taqdimotlarni bir joyda saqlab, qayta ishlatsak» taklifi.
+
+---
+
+**R221 — ⭐⭐ Ikki sirt naqshi sanoatda hukmron, va u bizga toʻgʻri keladi.**
+Deyarli hamma mahsulot mazmunni sinfdan ajratgan: Wayground `My library`
++ `Classes`, Kahoot `Kahoots` + `Groups`, Canvas `Commons` + `Assignments`,
+Seesaw `Activity Library` + `Class journal`. Ajratish chizigʻi bitta:
+**sinfsiz = «men nima yaratganman», sinfli = «bu sinfga nima berilgan»**.
+Munosabat: `1 resurs → N topshiriq → N baho ustuni`.
+
+Yaʼni Topshiriqlar sahifasini kutubxonaga **aylantirish kerak emas** —
+u sinfga bogʻlangan holida qoladi, kutubxona uning yoniga qoʻshiladi. (Muhokamada
+avval «sahifani aylantiramiz» degan taklif boʻldi va u **rad etildi**:
+Classroom'da `Classwork` — oʻquvchi koʻradigan sirt, Shogird chiqqanda u
+bizga ham kerak boʻladi.)
+
+**R222 — ⚠️⚠️ Mazmun bizda SINFSIZ EMAS — sinfga qotirilgan. Kutubxona
+birinchi qadamdan migratsiya talab qiladi.** Muhokamada «testlar allaqachon
+sinfsiz» deb aytilgan edi — bu **notoʻgʻri**. Sxemada:
+
+```
+activity_sets.class_id  →  notNull        (schema/assess.ts)
+units.class_id          →  notNull
+subject / grade         →  umuman YOʻQ
+```
+
+Chalkashlik manbai: `activity_sets.classId` **filtri** soʻrovlardan olib
+tashlangan («test istalgan sinfga berilsin»), lekin **ustun** joyida va
+`notNull`. Yaʼni «chapda `5-sinf / 6-sinf` papkalari» degan maket bazada
+`grade` ustuni boʻlmaganidan **qurilmaydi**.
+→ Poydevor: `activity_sets` ga `subject`/`grade`, `class_id` → nullable.
+R219 bilan bitta ish (`Lesson.subject` + `Lesson.grade`, `units` shu bilan).
+
+**R223 — ⭐⭐⭐ Qayta ishlatish IKKINCHI YIL funksiyasi. Bugungi ogʻriq
+yillar orasida emas, SINFLAR orasida.** Kutubxonaning butun qiymati
+`N marta ishlatilgan` raqamida — bizda u bir yil davomida `1` boʻlib turadi.
+Haqiqiy takroriy ish esa **shu hafta** boʻlyapti: bir oʻqituvchi 5-A, 5-B,
+5-D ga bir xil «Kasrlar» ni beradi. Bu **allaqachon yechilgan** (R212 —
+bitta topshiriq, koʻp sinf; darsda `classIds`), lekin **UI'da koʻrinmaydi**,
+shuning uchun oʻqituvchi uch marta qoʻlda yaratadi.
+→ Tartib: **avval sinflar orasi, keyin yillar orasi.**
+
+⚠️ Lekin qarang: `assignments.group_id` ustuni hali YOʻQ (yuqorida ham
+qayd etilgan) — koʻp-sinf guruhi faqat `localStorage` da. Yaʼni bu
+funksiyani **koʻzga koʻrinadigan qilishdan oldin** bitta ustunlik
+migratsiya kerak, aks holda boshqa qurilmada jimgina yoʻqoladigan
+narsani reklama qilamiz.
+
+**R224 — ⭐⭐ Kutubxonaning eng katta xavfi «yozish uchun ombor».**
+Tadqiqot aniq: OER repozitoriylarining asosiy toʻsigʻi — **topilmaslik**;
+oʻqituvchilar maxsus ombor borligini bilib ham oddiy qidiruvdan
+foydalanadi, chunki har omborni alohida kavlashni istamaydi
+([Springer 2019](https://link.springer.com/article/10.1007/s10639-019-09921-3),
+[LearnTechLib](https://www.learntechlib.org/noaccess/20127/)).
+→ Qaror: **kutubxonani sahifadan emas, QIDIRUVdan boshlaymiz.**
+Kirish nuqtasi — topshiriq ichidagi biriktirish qatori (`Mavjud
+mazmundan tanlash`, Classroom naqshi — R152) va `Ctrl+K`. Resurslar
+sahifasi — **ombor**, kirish nuqtasi emas.
+❌ «Noldan boshlaymizmi yoki mavjudidan?» degan modal savol **rad etildi**:
+10 holatning 9 tasida yangisi yaratiladi, savol esa har safar beriladi.
+Tanlov soʻralmaydi — **koʻrsatiladi** (Google Slides naqshi: `Blank` —
+shablonlar galereyasidagi birinchi katak, alohida savol yoʻq).
+
+**R225 — Nusxa vs havola: v1 uchun HAVOLA + SNAPSHOT.** Uch model bor:
+nusxa (Classroom `Reuse post` — 5 yilda bir darsning 5 ta ajralgan
+nusxasi, biridagi tuzatish boshqasiga oʻtmaydi), master+sinxron (Canvas
+Blueprint — nusxalar ustiga yoziladi, lekin tahrirlangani ustiga
+yozilmaydi va bu chalkashlik manbai), ombor (Canvas Commons — R224 xavfi).
+⚠️ Havolaning oʻz narxi bor: ishlatilgan testni keyin tahrirlasangiz
+**oʻtgan chorak bahosining maʼnosi oʻzgaradi** (10 savollik test 13 boʻlib
+qoladi). Shuning uchun: bitta kanonik resurs **+ har yetkazishning
+muzlatilgan nusxasi**. Bu qaror **oldin** qilinishi kerak — keyin
+migratsiya bilan qoʻshish ogʻriqli.
+Manba: [Canvas Commons vs Blueprint](https://kb.uwm.edu/cetl/92975),
+[Course Content Distribution Comparison](https://community.canvaslms.com/t5/Canvas-Resource-Documents/Course-Content-Distribution-Comparison/ta-p/387051).
+
+**R226 — Bitta roʻyxat, tur = FILTR.** 5 tur (dars rejasi · test · onlayn
+test · taqdimot · ish varagʻi) → 5 ta alohida kutubxona boʻlib ketish
+xavfi. Wayground yechimi: «Taqdimot» alohida mahsulot emas, **baholash
+ichidagi resurs turi** (R145). ⚠️ «Bir joyda saqlash» ikki narsani
+yashiradi: bitta **jadval** (kerak EMAS — testlar `activity_sets` da,
+darslar `lessons` da qolsin) va bitta **koʻrinish + amal tili** (kerak:
+`Ishlatish · Nusxalash · Tahrirlash` har turda bir xil soʻz).
+⚠️ «Darslar sahifasi Resurslarning filtri boʻlib qoladi» degan taklif
+**yengil edi**: u sahifada boʻlimlar (`units`) va bajarilish holati bor —
+bular kurrikulum tuzilmasi, kutubxona filtri ularni yoʻqotadi.
+
+**R227 — Metadata yuki va nomlash.** (a) Saqlashda `fan / daraja / boʻlim /
+teg` soʻralsa — oʻqituvchi saqlamaydi; hammasi kontekstdan **avtomatik**
+olinishi kerak (dars muharririda fan va daraja allaqachon maʼlum).
+(b) `Resurs` — platforma jargoni; oʻqituvchi «materiallarim»,
+«testlarim», «darslarim» deydi. Nom hal qilinmagan.
+(c) Koʻrinuvchanlik standarti — **`private`**. Uch mustaqil koʻrikda bir
+xil xato: Kahoot (R57), Wayground (R67), Blooket — uchtasi ham `Public`
+ni standart qilib, oʻqituvchining butun kutubxonasini ataylab boʻlmagan
+holda ommaviy qilib qoʻygan. Maktab umumiy kutubxonasi — `School`
+tarifining qiymati (R177).
+
+**R228 — ⭐ Bu funksiya TALABDAN emas, REFERENSDAN tugʻildi.** Hech bir
+foydalanuvchi soʻramagan; manba — Wayground `My library` skrinshoti. Bu
+oʻz-oʻzidan yomon emas, lekin shunday deb atash kerak. Sidebar'da hozir
+12 asosiy yozuv; «Resurslar» 13-chi eshik boʻlardi, holbuki onboarding
+allaqachon keng.
+
+⚠️⚠️ **`npm run metrics` NOTOʻGʻRI BAZANI oʻlchaydi.** Skript
+`--env-file=.env.local` bilan ishlaydi, `.env.local` esa **Neon (dev)** ga
+qaraydi — prod **Supabase**da. Ikki baza butunlay boshqa (2026-08-17):
+
+| | Neon (dev, metrics shuni koʻrsatadi) | Supabase (PROD) |
+|---|---|---|
+| Oʻqituvchi | 6 | **15** |
+| Sinf | 4 | **30** |
+| Oʻquvchi | 3 | **397** |
+| Topshiriq | — | **0** |
+| Baho | — | **0** |
+
+Yaʼni «6 dan 2 tasi sinf yaratmagan» degan xulosa **dev shovqini** edi.
+Prodda manzara boshqa va aniqroq: **397 oʻquvchi kiritilgan, bitta ham
+baho yoʻq** — oʻqituvchilar roʻyxatni tayyorlab, aynan baholashdan oldin
+toʻxtagan. Avgustda bu **kutilgan holat** (dars 2-sentyabrdan), va u
+R223 dagi «avgust = tayyorgarlik mavsumi» oʻqishini tasdiqlaydi.
+
+**Ikki tuzatish kerak:** (a) `metrics` prod bazaga qarasin (yoki qaysi
+bazaga ulanganini ekranga chiqarsin); (b) «faollashgan = davomat/baho»
+mezoni mavsumga koʻr — avgustda faollashish **imkonsiz**, shuning uchun
+«davomat belgilamagan» ayblovi nohaq. Tayyorgarlik bosqichi qoʻshilsin:
+sinf + oʻquvchi + kalendar + jadval + mazmun.
+
+---
+
+**QAROR — ish tartibi:**
+
+| # | Ish | Holat |
+|---|---|---|
+| 1 | `assignments.group_id` ustuni (1 ustun, nullable) | migratsiya, kichik |
+| 2 | «Bitta topshiriq → bir nechta sinf» ni ekranda koʻrinadigan qilish | UI |
+| 3 | `Ctrl+K` da mavjud test/dars/taqdimotni qidirish | UI, R224 |
+| 4 | `activity_sets`/`lessons`/`units` ga `subject`+`grade`, `class_id` → nullable | migratsiya, R222+R219 |
+| 5 | Resurslar sahifasi (bitta roʻyxat, tur = filtr) | 4 dan keyin |
+| 6 | Havola + snapshot semantikasi | R225 |
+
+**1–3 hozir. 4–6 — 2-sentyabrdan keyin.** Sabab bir jumlada:
+*ombor qurishdan oldin topishni qilamiz, va yillar orasidan oldin
+sinflar orasini qilamiz.*
+
+---
+
 ## C. Dizayn tizimi — fayllar
 
 ```

@@ -117,6 +117,7 @@ function rowToAssignment(a: AssignmentRow): Assignment {
     ...(a.instructions ? { instructions: a.instructions } : {}),
     ...(a.sourceSessionId ? { sourceSessionId: a.sourceSessionId } : {}),
     ...(a.setId ? { setId: a.setId } : {}),
+    ...(a.groupId ? { groupId: a.groupId } : {}),
   };
 }
 
@@ -326,6 +327,10 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           kind: a.kind ?? "manual",
           instructions: a.instructions ?? null,
           setId: a.setId && ownSets.has(a.setId) ? a.setId : null,
+          /* Egalik tekshiruvi kerak emas: guruh kaliti begona qatorga
+             havola qilmaydi (FK yoʻq), va guruh baribir shu oʻqituvchining
+             topshiriqlari doirasida qidiriladi (`assignments_teacher_idx`). */
+          groupId: a.groupId ?? null,
           sortOrder: a.sortOrder,
         }))
       )
@@ -341,6 +346,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           kind: sql`excluded.kind`,
           instructions: sql`excluded.instructions`,
           setId: sql`excluded.set_id`,
+          groupId: sql`excluded.group_id`,
           sortOrder: sql`excluded.sort_order`,
           updatedAt: now,
         },

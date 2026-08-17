@@ -225,6 +225,13 @@
       "when": 1786310171468,
       "tag": "0031_overrated_sabretooth",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1786990933899,
+      "tag": "0032_goofy_lightspeed",
+      "breakpoints": true
     }
   ]
 }

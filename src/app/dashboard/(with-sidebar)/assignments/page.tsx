@@ -6,14 +6,20 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   ClipboardList, Plus, Presentation, FileCheck2, Copy, Trash2, Tag, Library, Columns3, Users,
-  PenLine,
+  PenLine, MoreHorizontal,
 } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn, panelHeaderClass, panelCardContentClass } from "@/components/DashboardPage";
-import { TOPIC_COLOR_HEX, type Assignment, type TopicColor } from "@/lib/grades-data";
+import {
+  TOPIC_COLOR_HEX, assignmentGroupKey, classColor,
+  type Assignment, type TopicColor,
+} from "@/lib/grades-data";
+import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { ClassSwatch } from "@/components/ClassSwatch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { TypographyMuted } from "@/components/ui/typography";
@@ -29,6 +35,13 @@ import {
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent,
 } from "@/components/ui/empty";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { AssignmentStatusChip } from "@/components/AssignmentStatusChip";
+import { assignmentStatusFrom, gradedCountByAssignment } from "@/lib/assignment-status";
+import { MONTHS_UZ_SHORT } from "@/lib/localization";
+import { todayKey } from "@/lib/date-keys";
 import { Illustration } from "@/components/ui/illustration";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -44,6 +57,13 @@ import TestBankOverlay from "./_components/TestBankOverlay";
 
 /** "Other" (Toifasiz) chelagi uchun sentinel — DB qatori emas, faqat guruhlash kaliti. */
 const OTHER_GROUP = "__other__";
+
+/** `yyyy-mm-dd` → "14-sen". Qatorda joy tor — hafta kuni chipda emas, tooltipda. */
+function shortDate(key: string): string {
+  const [y, m, d] = key.split("-").map(Number);
+  if (!y || !m || !d) return key;
+  return `${d}-${MONTHS_UZ_SHORT[(m - 1) % 12]}`;
+}
 
 export default function AssignmentsPage() {
   const t = useTranslations("AssignmentsPage");
@@ -206,6 +226,60 @@ export default function AssignmentsPage() {
 
   const totalCount = groups.reduce((sum, g) => sum + g.items.length, 0);
 
+  /* Qatordagi holat uchun baho sanogʻi — BITTA oʻtishda. Har topshiriq uchun
+     `grades` ni qayta kezish oʻnta ustunda kvadrat ish boʻlardi. */
+  const gradedCounts = useMemo(
+    () => gradedCountByAssignment(classData?.grades ?? []),
+    [classData]
+  );
+  const studentCount = classData?.students.length ?? 0;
+  const today = todayKey();
+
+  /* ── KOʻP-SINF GURUHI ROʻYXATDA KOʻRINADI (R212/R223) ──────────────
+     «Bitta topshiriq, koʻp sinf» kodda allaqachon bor edi (muharrirda
+     sinf qoʻshiladi), lekin roʻyxatda hech qanday belgisi yoʻq edi:
+     oʻqituvchi bu imkoniyat borligini bilmasdi va 5-A, 5-B, 5-D uchun
+     bir xil nazorat ishini uch marta qoʻlda yaratardi. Bugungi haqiqiy
+     takroriy ish aynan shu — yillar orasidagi qayta ishlatish emas.
+
+     Guruh bir oʻtishda yigʻiladi: har qator uchun butun `classDataMap`
+     ni kezish kvadrat ish boʻlardi.
+
+     ⚠️ Arxivlangan sinflar hisobga olinmaydi — «oʻchirilgan» sinf
+     `archivedAt` bilan yashiringan, lekin `classDataMap` da qolaveradi
+     (yumshoq oʻchirish). Filtrsiz oʻqilsa bitiruvchi guruh ham
+     «3 sinf» hisobiga kirib ketardi. */
+  const groupClasses = useMemo(() => {
+    const byKey = new Map<string, string[]>();
+    for (const [cid, cd] of Object.entries(classDataMap)) {
+      if (cd.info.archivedAt) continue;
+      for (const a of cd.assignments) {
+        const key = assignmentGroupKey(a);
+        const list = byKey.get(key);
+        if (list) list.push(cid);
+        else byKey.set(key, [cid]);
+      }
+    }
+    return byKey;
+  }, [classDataMap]);
+
+  /** Guruhdagi sinflar — nom + rang, joriy sinf birinchi. */
+  const groupMembers = (a: Assignment) => {
+    const ids = groupClasses.get(assignmentGroupKey(a)) ?? [];
+    if (ids.length < 2) return [];
+    return ids
+      .map((cid) => classDataMap[cid]?.info)
+      .filter((info): info is NonNullable<typeof info> => Boolean(info))
+      .map((info) => ({
+        id: info.id,
+        name: info.name,
+        hex: CLASS_COLOR_HEX[classColor(info)],
+      }))
+      .sort((x, y) =>
+        x.id === selectedClassId ? -1 : y.id === selectedClassId ? 1 : x.name.localeCompare(y.name)
+      );
+  };
+
   const openEditor = (id: string) => {
     if (selectedClassId) openEdit(selectedClassId, id);
   };
@@ -346,9 +420,9 @@ export default function AssignmentsPage() {
                             <button
                               type="button"
                               onClick={restoreSession}
-                              className="list-card flex items-center gap-3 border-dashed p-3.5 text-left"
+                              className="list-card flex w-full items-center gap-3 border-dashed py-3 pl-4 pr-3.5 text-left"
                             >
-                              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                              <div className="list-card-icon flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                                 <PenLine className="size-4" />
                               </div>
                               <div className="min-w-0 flex-1">
@@ -402,30 +476,62 @@ export default function AssignmentsPage() {
                           {/* Karta bosilsa savollar muharriri ochiladi;
                               sessiya va oʻchirish — oʻng-tugma menyusida
                               (topshiriq kartalari bilan bir til). */}
-                          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+                          <div className="flex flex-col gap-2">
                             {orphanSets.map((set) => (
                               <ContextMenu key={set.id}>
                                 <ContextMenuTrigger asChild>
-                                  <button
-                                    type="button"
-                                    onClick={() => setBuilderSetId(set.id)}
-                                    className="list-card group flex items-center gap-3 p-3.5 text-left"
-                                  >
-                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                                      <FileCheck2 className="size-4" />
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                      <h4 className="truncate text-sm font-medium text-foreground">
-                                        {set.title}
-                                      </h4>
-                                    </div>
+                                  <div className="list-card group flex items-center gap-2 pr-2.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => setBuilderSetId(set.id)}
+                                      className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left"
+                                    >
+                                      <div className="list-card-icon flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                        <FileCheck2 className="size-4" />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <h4 className="truncate text-sm font-medium text-foreground">
+                                          {set.title}
+                                        </h4>
+                                      </div>
+                                    </button>
                                     <Badge
                                       variant="outline"
                                       className="shrink-0 text-[10px] text-muted-foreground"
                                     >
                                       {t("questionCount", { count: set.itemCount })}
                                     </Badge>
-                                  </button>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          aria-label={t("actionsMenu")}
+                                          className="size-8 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+                                        >
+                                          <MoreHorizontal className="size-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                          className="gap-2"
+                                          onSelect={() => void openSetSession(set.id)}
+                                        >
+                                          <Users className="size-4" />
+                                          {t("runSession")}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                          variant="destructive"
+                                          className="gap-2"
+                                          onSelect={() => setDeleteSet({ id: set.id, title: set.title })}
+                                        >
+                                          <Trash2 className="size-4" />
+                                          {t("delete")}
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
                                 </ContextMenuTrigger>
                                 <ContextMenuContent>
                                   <ContextMenuItem
@@ -458,7 +564,13 @@ export default function AssignmentsPage() {
                     >
                       {groups.map((group) => (
                         <AccordionItem key={group.id} value={group.id} className="border-b-0">
-                          <AccordionTrigger className="items-center gap-3 rounded-lg px-2 py-3 hover:bg-muted/40 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                          {/* `justify-start` MAJBURIY: AccordionTrigger'ning
+                              standart `justify-between`i ikonka/nom/sonni
+                              butun kenglikka tarqatib, sarlavhani ekran
+                              oʻrtasiga tashlab yuborardi — roʻyxat vertikal
+                              skanerlanmasdi. Chevron `mr-auto` bilan chetga
+                              suriladi. */}
+                          <AccordionTrigger className="items-center justify-start gap-3 rounded-lg px-2 py-3 hover:bg-muted/40 hover:no-underline [&[data-state=open]>svg]:rotate-180">
                             <div
                               className={
                                 group.color
@@ -478,6 +590,8 @@ export default function AssignmentsPage() {
                             </div>
                             <span className="text-[15px] font-semibold text-foreground">{group.name}</span>
                             <TypographyMuted className="text-xs">{group.items.length}</TypographyMuted>
+                            {/* Chevron'ni chetga suruvchi boʻshliq. */}
+                            <span className="mr-auto" />
                             {group.items.length === 0 && (
                               <span
                                 role="button"
@@ -492,7 +606,7 @@ export default function AssignmentsPage() {
                                   e.preventDefault();
                                   handleCreateClick(group.id !== OTHER_GROUP ? group.id : undefined);
                                 }}
-                                className="ml-auto flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                                className="flex h-7 shrink-0 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                               >
                                 <Plus className="size-3.5" />
                                 {t("createButton")}
@@ -501,7 +615,11 @@ export default function AssignmentsPage() {
                           </AccordionTrigger>
                           {group.items.length > 0 && (
                             <AccordionContent className="px-2 pb-3">
-                              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+                              {/* BITTA ustun, chapga tekis — Classroom/Canvas
+                                  roʻyxati naqshi. Uch ustunli karta gridida
+                                  koʻz vertikal skanerlay olmasdi va qatorga
+                                  holat/sana sigʻmasdi. */}
+                              <div className="flex flex-col gap-2">
                                 {group.items.map((a) => {
                                   // Mazmun turi — kartaning ikonkasi va yorligʻi.
                                   // Mazmunsiz topshiriq ham toʻlaqonli: u jurnaldagi
@@ -514,26 +632,119 @@ export default function AssignmentsPage() {
                                     : isTest
                                       ? t("kindTest")
                                       : t("kindManual");
+                                  /* Holat sanadan va baholardan hisoblanadi —
+                                     muharrir sarlavhasidagi chip bilan bitta
+                                     komponent, bitta mantiq. */
+                                  const status = assignmentStatusFrom(
+                                    a.date,
+                                    studentCount,
+                                    gradedCounts.get(a.id) ?? 0,
+                                    today
+                                  );
+                                  /* Ikkinchi qator — sana. Muddatli topshiriqda
+                                     rejim aytiladi ("Soʻngmuddat"), oʻtkaziladigan
+                                     ishda faqat sana: prefiks maʼlumot
+                                     qoʻshmaydi. Sanasiz boʻlsa chip aytadi. */
+                                  const meta = a.dueDate
+                                    ? `${t("modeDue")} · ${shortDate(a.dueDate)}`
+                                    : a.date
+                                      ? shortDate(a.date)
+                                      : null;
+                                  const members = groupMembers(a);
                                   return (
                                     <ContextMenu key={a.id}>
                                       <ContextMenuTrigger asChild>
-                                        <button
-                                          type="button"
-                                          onClick={() => openEditor(a.id)}
-                                          className="list-card group flex items-center gap-3 p-3.5 text-left"
-                                        >
-                                          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                                            <Icon className="size-4" />
-                                          </div>
-                                          <div className="min-w-0 flex-1">
-                                            <h4 className="truncate text-sm font-medium text-foreground">
-                                              {a.title}
-                                            </h4>
-                                          </div>
-                                          <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
+                                        <div className="list-card group flex items-center gap-2 pr-2.5">
+                                          <button
+                                            type="button"
+                                            onClick={() => openEditor(a.id)}
+                                            className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-4 text-left"
+                                          >
+                                            <div className="list-card-icon flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                              <Icon className="size-4" />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                              <h4 className="truncate text-sm font-medium text-foreground">
+                                                {a.title}
+                                              </h4>
+                                              {meta && (
+                                                <TypographyMuted className="truncate text-xs">
+                                                  {meta}
+                                                </TypographyMuted>
+                                              )}
+                                            </div>
+                                          </button>
+                                          {/* Koʻp-sinf belgisi — sinf ranglari
+                                              doira boʻlib (ClassSwatch
+                                              standarti), tooltipda nomlar. */}
+                                          {members.length > 1 && (
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <span className="hidden shrink-0 cursor-default items-center gap-1.5 rounded-full bg-muted px-2 py-1 sm:inline-flex">
+                                                  <span className="flex items-center -space-x-1">
+                                                    {members.slice(0, 3).map((m) => (
+                                                      <ClassSwatch
+                                                        key={m.id}
+                                                        hex={m.hex}
+                                                        className="size-2.5 ring-1 ring-card"
+                                                      />
+                                                    ))}
+                                                  </span>
+                                                  <span className="text-[10px] font-semibold text-muted-foreground">
+                                                    {members.length}
+                                                  </span>
+                                                </span>
+                                              </TooltipTrigger>
+                                              <TooltipContent side="bottom" className="max-w-56">
+                                                {t("groupClassesHint", {
+                                                  classes: members.map((m) => m.name).join(", "),
+                                                })}
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          )}
+                                          <Badge
+                                            variant="outline"
+                                            className="hidden shrink-0 text-[10px] text-muted-foreground sm:inline-flex"
+                                          >
                                             {kindLabel}
                                           </Badge>
-                                        </button>
+                                          <AssignmentStatusChip status={status} />
+                                          {/* Amal endi KOʻRINADI. Oʻng-tugma
+                                              menyusi yagona yoʻl boʻlib
+                                              qolgan edi — sichqonchasiz yoki
+                                              bilmagan oʻqituvchi uchun amal
+                                              mavjud emasdek edi. */}
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                aria-label={t("actionsMenu")}
+                                                className="size-8 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+                                              >
+                                                <MoreHorizontal className="size-4" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                              <DropdownMenuItem
+                                                className="gap-2"
+                                                onSelect={() => handleDuplicate(a)}
+                                              >
+                                                <Copy className="size-4" />
+                                                {t("duplicate")}
+                                              </DropdownMenuItem>
+                                              <DropdownMenuSeparator />
+                                              <DropdownMenuItem
+                                                variant="destructive"
+                                                className="gap-2"
+                                                onSelect={() => setDeleteTarget(a)}
+                                              >
+                                                <Trash2 className="size-4" />
+                                                {t("delete")}
+                                              </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                          </DropdownMenu>
+                                        </div>
                                       </ContextMenuTrigger>
                                       <ContextMenuContent>
                                         <ContextMenuItem className="gap-2" onSelect={() => handleDuplicate(a)}>

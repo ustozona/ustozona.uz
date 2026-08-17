@@ -6,9 +6,9 @@ import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   X, FileCheck2, Presentation, Check, Tag, Star, Library, CloudOff,
-  ChevronRight, ChevronDown, Loader2, ClipboardCheck, Info, Users, CalendarDays,
-  CalendarClock, Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal,
-  CircleAlert, CheckCircle2, PenLine, CircleDashed, Calendar, Clock, Lock,
+  ChevronRight, ChevronDown, Loader2, ClipboardCheck, Info, Users,
+  Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal,
+  Calendar, Clock, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,8 @@ import { ClassSwatch } from "@/components/ClassSwatch";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ProgressRing } from "@/components/ui/progress-ring";
+import { AssignmentStatusChip } from "@/components/AssignmentStatusChip";
+import { type StatusInfo } from "@/lib/assignment-status";
 import { useSyncFailing } from "@/store/useSyncHealthStore";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -58,38 +59,6 @@ import SessionPanelModal from "./test/SessionPanelModal";
 import AttachTestDialog from "./AttachTestDialog";
 
 const NO_TOPIC_VALUE = "__no_topic__";
-
-/* Topshiriq holati — dars muharriridagi holat chipi bilan bir tilda, LEKIN
-   qoʻlda tanlanmaydi: u sana va baholardan HISOBLANADI. Qoʻlda oʻzgartirish
-   maʼlumotga zid holat yaratardi ("Tugallandi", lekin yarim sinf baholanmagan).
-   Toifalar `LessonEditor.STATUS_META` bilan bir xil tonlarda.
-
-   ⚠️ Holatlar IKKI TURGA boʻlinadi va shakli ham shunga qarab:
-
-     KATEGORIYA (qoralama · sanasiz · rejalashtirilgan · bugun) — soʻz.
-     MIQDOR     (baholash · tugallandi)                        — HALQA + kasr.
-
-   Ilgari miqdor ham soʻz edi ("Baholanmoqda") va u aslida alohida holat
-   emas, qolgan hammasi tushadigan CHELAK edi: sanasi bugun boʻlgan
-   topshiriq yaratilgan zahoti, bironta baho boʻlmasa ham shu yorliqni
-   olardi. Oʻqituvchining savoli esa "baholanyaptimi?" emas, "nechtasi
-   qoldi?" — javob raqam boʻlishi kerak (Classroom "12 Turned in",
-   Canvas "Needs Grading (7)", Gradescope % halqasi). */
-const STATUS_META = {
-  draft: { icon: PenLine, cls: "bg-muted text-muted-foreground" },
-  undated: { icon: CircleAlert, cls: "bg-warning/10 text-warning" },
-  planned: { icon: CalendarClock, cls: "bg-info/10 text-info" },
-  today: { icon: CalendarDays, cls: "bg-primary/10 text-primary" },
-  grading: { icon: CircleDashed, cls: "bg-muted text-muted-foreground" },
-  done: { icon: CheckCircle2, cls: "bg-success/10 text-success" },
-} as const;
-
-type AssignmentStatus = keyof typeof STATUS_META;
-
-/** Miqdoriy holatlarda kasr ham boʻladi; kategoriyada faqat tur. */
-type StatusInfo =
-  | { kind: Exclude<AssignmentStatus, "grading" | "done"> }
-  | { kind: "grading" | "done"; graded: number; total: number };
 
 /* Tafsilotlar qatori — dars muharriridagi `DetailsPanel` tili bilan bir xil
    (`text-label` yorliq USTIDA, `rounded-xl` karta, `size-9` DOIRA ikonka).
@@ -301,14 +270,6 @@ export default function AssignmentEditorOverlay({
       ? { kind: "done", graded, total }
       : { kind: "grading", graded, total };
   }, [isDraft, members, classDataMap]);
-
-  const statusMeta = STATUS_META[status.kind];
-  const StatusIcon = statusMeta.icon;
-  const statusCount = status.kind === "grading" || status.kind === "done" ? status : null;
-  /* Chip va kichraytirilgan yorliqda bir xil matn ishlatiladi. */
-  const statusLabel = statusCount
-    ? `${statusCount.graded}/${statusCount.total}`
-    : t(`status_${status.kind}`);
 
   const dateOf = (cid: string) =>
     isDraft ? (draftDates[cid] ?? todayKey()) : (members[cid]?.date ?? "");
@@ -882,44 +843,8 @@ export default function AssignmentEditorOverlay({
             <h1 className="min-w-0 truncate text-lg font-semibold text-foreground">
               {current.title || t("untitledDeck")}
             </h1>
-            {/* Holat chipi — miqdoriy holatda ikonka oʻrniga HALQA. Halqa
-                rangi `currentColor`, yaʼni chip ohangidan meros. */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className={cn(
-                    "inline-flex shrink-0 cursor-default items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
-                    statusMeta.cls
-                  )}
-                >
-                  {statusCount ? (
-                    <ProgressRing
-                      pct={
-                        statusCount.total > 0
-                          ? (statusCount.graded / statusCount.total) * 100
-                          : 0
-                      }
-                      size={14}
-                      strokeWidth={2.5}
-                      trackMix={25}
-                    />
-                  ) : (
-                    <StatusIcon className="size-3.5" />
-                  )}
-                  <span className={cn(statusCount && "font-mono tabular-nums")}>
-                    {statusLabel}
-                  </span>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-56">
-                {statusCount
-                  ? t(`statusHint_${status.kind}`, {
-                      graded: statusCount.graded,
-                      total: statusCount.total,
-                    })
-                  : t(`statusHint_${status.kind}`)}
-              </TooltipContent>
-            </Tooltip>
+            {/* Holat chipi — roʻyxat qatoridagi bilan bitta komponent. */}
+            <AssignmentStatusChip status={status} />
             {/* ⚠️ Bu yerda ilgari doimiy «Saqlandi» nishoni turardi. U holat
                 emas, konstanta edi: sinxronizatsiya XATO berganda ham
                 «Saqlandi» deb turaverardi. Sukunat = saqlangan (Notion
