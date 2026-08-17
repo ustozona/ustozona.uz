@@ -3884,7 +3884,9 @@
     "deleteDraft": "Qaralamanı óshiriw",
     "draftDiscarded": "Qaralama óshirildi",
     "draftRestored": "Tamamlanbagʻan qaralama ashıldı",
-    "draftCardHint": "Tamamlanbagʻan — dawam etiw ushın basıng"
+    "draftCardHint": "Tamamlanbagʻan — dawam etiw ushın basıng",
+    "actionsMenu": "Ámeller",
+    "groupClassesHint": "Bul tapsırma {classes} klaslarında da bar — ózgeris hámmesine tiyedi."
   },
   "TestBank": {
     "title": "Test banki",

@@ -3884,7 +3884,9 @@
     "deleteDraft": "Долбоорду өчүрүү",
     "draftDiscarded": "Долбоор өчүрүлдү",
     "draftRestored": "Аякталбаган долбоор ачылды",
-    "draftCardHint": "Аякталбаган — улантуу үчүн басыңыз"
+    "draftCardHint": "Аякталбаган — улантуу үчүн басыңыз",
+    "actionsMenu": "Аракеттер",
+    "groupClassesHint": "Бул тапшырма {classes} класстарында да бар — өзгөртүү бардыгына тиет."
   },
   "TestBank": {
     "title": "Test banki",

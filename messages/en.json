@@ -3880,7 +3880,9 @@
     "deleteDraft": "Delete draft",
     "draftDiscarded": "Draft deleted",
     "draftRestored": "Reopened your unfinished draft",
-    "draftCardHint": "Unfinished — click to continue"
+    "draftCardHint": "Unfinished — click to continue",
+    "actionsMenu": "Actions",
+    "groupClassesHint": "This assignment also exists in {classes} — edits apply to all."
   },
   "TestBank": {
     "title": "Test bank",

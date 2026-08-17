@@ -3713,7 +3713,9 @@
     "deleteDraft": "Qoralamani oʻchirish",
     "draftDiscarded": "Qoralama oʻchirildi",
     "draftRestored": "Tugallanmagan qoralama ochildi",
-    "draftCardHint": "Tugallanmagan — davom ettirish uchun bosing"
+    "draftCardHint": "Tugallanmagan — davom ettirish uchun bosing",
+    "actionsMenu": "Amallar",
+    "groupClassesHint": "Shu topshiriq {classes} sinflarida ham bor — tahrir hammasiga tegadi."
   },
   "TestBank": {
     "title": "Test banki",

@@ -81,6 +81,22 @@ export const assignments = pgTable(
         hali boʻlmagan holatda ham (qogʻoz/OCR yoʻli) jurnal ustuni mavjud.
         `set null`: toʻplam oʻchsa topshiriq (va baholari) qolaveradi. */
     setId: text("set_id").references(() => activitySets.id, { onDelete: "set null" }),
+    /**
+     * Sinflar aro guruh kaliti (R212) — bitta topshiriq, bir nechta sinf.
+     *
+     * `Topic.groupId` bilan bir xil naqsh: har sinfda ALOHIDA qator (oʻz
+     * baholari va oʻz SANASI bilan), lekin sarlavha/toifa/ball/yoʻriqnoma
+     * umumiy — tahrir guruhning hamma nusxasiga tegadi.
+     *
+     * Nega FK emas: guruh mustaqil obyekt emas, faqat kalit. Yolgʻiz
+     * topshiriqda `null` — kalit sifatida oʻz `id` si ishlatiladi
+     * (`assignmentGroupKey`).
+     *
+     * ⚠️ Bu ustun 2026-08-17 gacha YOʻQ edi: guruh faqat `localStorage` da
+     * yashardi, yaʼni «5-A, 5-B, 5-D ga bir xil nazorat» ishi boshqa
+     * qurilmada jimgina yolgʻiz topshiriqlarga boʻlinib ketardi.
+     */
+    groupId: text("group_id"),
     /** Jurnal ustunlari tartibi — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -90,6 +106,8 @@ export const assignments = pgTable(
     index("assignments_teacher_idx").on(t.teacherId),
     index("assignments_class_idx").on(t.classId),
     index("assignments_topic_idx").on(t.topicId),
+    /* Guruhning boshqa sinflardagi nusxalarini topish uchun. */
+    index("assignments_group_idx").on(t.groupId),
   ]
 );
 

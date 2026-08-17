@@ -69,6 +69,10 @@ export const assignmentUpsertSchema = z.object({
       emas, client har doim joriy holatni yuboradi. Egalik serverda
       tekshiriladi (begona toʻplam `null` boʻlib yoziladi). */
   setId: id.nullable().optional(),
+  /** Sinflar aro guruh kaliti (R212). `setId` bilan bir xil sabab bilan
+      `nullable`: guruhdan chiqarish ham oʻzgarish, "yuborilmadi" degani
+      emas. FK yoʻq — guruh mustaqil obyekt emas, kalit. */
+  groupId: id.nullable().optional(),
   sortOrder: z.number().int().min(0),
 });
 

@@ -97,6 +97,8 @@ function toAssignmentUpsert(
     ...(a.instructions ? { instructions: a.instructions } : {}),
     // Halqa HAR DOIM yuboriladi (`null` ham) — ajratish ham oʻzgarish.
     setId: a.setId ?? null,
+    // Guruh kaliti ham shu qoidada — guruhdan chiqarish oʻzgarish.
+    groupId: a.groupId ?? null,
     sortOrder,
   };
 }
