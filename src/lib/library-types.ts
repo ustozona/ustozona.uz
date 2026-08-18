@@ -21,4 +21,14 @@ export type LibraryItem = {
   updatedAt: Date;
   /** Necha marta ishlatilgan; hisoblanmaydigan turda `null`. */
   usedCount: number | null;
+  /** Oxirgi marta qachon ishlatilgan — «Yaqinda ishlatilgan» saralashi. */
+  lastUsedAt: Date | null;
+  /**
+   * Hali tugallanmagan material.
+   *
+   * Darsda bu haqiqiy holat (`lessons.status === "Draft"`). Testda
+   * qoralama tushunchasi YOʻQ — toʻplam atomik saqlanadi, yarim holat
+   * bazaga yozilmaydi — shuning uchun u doim `false`.
+   */
+  isDraft: boolean;
 };

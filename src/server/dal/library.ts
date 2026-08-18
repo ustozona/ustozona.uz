@@ -44,11 +44,13 @@ export async function getLibrary(): Promise<LibraryItem[]> {
   );
   const unitTitleById = new Map(unitRows.map((u) => [u.id, u.title]));
 
-  /* Testning "ishlatilgan" oʻlchovi — nechta sessiya oʻtkazilgani. */
+  /* Testning "ishlatilgan" oʻlchovi — nechta sessiya oʻtkazilgani va
+     oxirgisi qachon. Ikkalasi bitta soʻrovdan chiqadi. */
   const sessionCount = new Map<string, number>();
+  const lastUsed = new Map<string, Date>();
   if (setRows.length > 0) {
     const rows = await db
-      .select({ setId: quizSessions.setId })
+      .select({ setId: quizSessions.setId, createdAt: quizSessions.createdAt })
       .from(quizSessions)
       .where(
         inArray(
@@ -58,6 +60,8 @@ export async function getLibrary(): Promise<LibraryItem[]> {
       );
     for (const row of rows) {
       sessionCount.set(row.setId, (sessionCount.get(row.setId) ?? 0) + 1);
+      const prev = lastUsed.get(row.setId);
+      if (!prev || row.createdAt > prev) lastUsed.set(row.setId, row.createdAt);
     }
   }
 
@@ -86,6 +90,8 @@ export async function getLibrary(): Promise<LibraryItem[]> {
         classId: set.classId,
         updatedAt: set.updatedAt,
         usedCount: sessionCount.get(set.id) ?? 0,
+        lastUsedAt: lastUsed.get(set.id) ?? null,
+        isDraft: false, // toʻplam atomik saqlanadi — yarim holat yoʻq
         ...inherit(set.classId, set.subject, set.grade),
       };
     }),
@@ -99,6 +105,8 @@ export async function getLibrary(): Promise<LibraryItem[]> {
         classId: lesson.classId,
         updatedAt: lesson.updatedAt,
         usedCount: null,
+        lastUsedAt: null,
+        isDraft: lesson.status === "Draft",
         ...inherit(lesson.classId, lesson.subject, lesson.grade),
       };
     }),
