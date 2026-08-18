@@ -1,16 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { FileText, Library, ListChecks, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowDown, ArrowUp, ArrowUpDown, EllipsisVertical, ExternalLink,
+  FileText, Library, ListChecks, Search,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { TypographyMuted } from "@/components/ui/typography";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
@@ -23,7 +28,12 @@ import type { LibraryItem, LibraryKind } from "@/lib/library-types";
 
 /* Bitta koʻrinish, tur = FILTR (R226). Taqdimot va ish varagʻi obyekt
    sifatida paydo boʻlganda shu jadvalga bitta qator qoʻshiladi —
-   sahifa qayta yozilmaydi. */
+   sahifa qayta yozilmaydi.
+
+   Jadval naqshi `ClassesTable` bilan bir xil (shadcn-space `table-01`
+   oilasi): butun qator bosiladi, chapda ikonka + ikki qatorli asosiy
+   katak, oʻngda amal menyusi. Ichki scroll BITTA — jadval ustiga
+   ScrollArea qoʻyilmaydi (ikkita ustma-ust scrollbar antipattern). */
 const KIND_META: Record<
   LibraryKind,
   { label: string; icon: typeof FileText; href: (id: string) => string }
@@ -34,13 +44,17 @@ const KIND_META: Record<
 
 const ALL = "__all__";
 
-type SortKey = "recent" | "title" | "used";
+type SortKey = "title" | "used" | "updatedAt";
 
 export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<string>(ALL);
   const [grade, setGrade] = useState<string>(ALL);
-  const [sort, setSort] = useState<SortKey>("recent");
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({
+    key: "updatedAt",
+    dir: "desc",
+  });
 
   const grades = useMemo(
     () =>
@@ -62,13 +76,43 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
         (item.className ?? "").toLowerCase().includes(q)
       );
     });
+    const dirMul = sort.dir === "asc" ? 1 : -1;
     // Saralash roʻyxat NUSXASIDA — `items` prop, oʻzgartirilmaydi.
     return [...rows].sort((a, b) => {
-      if (sort === "title") return a.title.localeCompare(b.title);
-      if (sort === "used") return (b.usedCount ?? -1) - (a.usedCount ?? -1);
-      return b.updatedAt.getTime() - a.updatedAt.getTime();
+      if (sort.key === "title") return a.title.localeCompare(b.title) * dirMul;
+      if (sort.key === "used") return ((a.usedCount ?? -1) - (b.usedCount ?? -1)) * dirMul;
+      return (a.updatedAt.getTime() - b.updatedAt.getTime()) * dirMul;
     });
   }, [items, query, kind, grade, sort]);
+
+  const toggleSort = (key: SortKey) =>
+    setSort((prev) =>
+      prev.key === key
+        ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: key === "title" ? "asc" : "desc" }
+    );
+
+  const SortHeader = ({
+    label, sortKey, className, align = "left",
+  }: { label: string; sortKey: SortKey; className?: string; align?: "left" | "center" }) => (
+    <TableHead className={cn("px-3 py-3", align === "center" && "text-center", className)}>
+      <button
+        type="button"
+        onClick={() => toggleSort(sortKey)}
+        className={cn(
+          "inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+          align === "center" && "justify-center"
+        )}
+      >
+        {label}
+        {sort.key === sortKey ? (
+          sort.dir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />
+        ) : (
+          <ArrowUpDown className="size-3 opacity-40" />
+        )}
+      </button>
+    </TableHead>
+  );
 
   return (
     <div className={withSidebarPageClass}>
@@ -125,53 +169,55 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
               </SelectContent>
             </Select>
           )}
-
-          <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recent">Eng yangi</SelectItem>
-              <SelectItem value="title">Nom boʻyicha</SelectItem>
-              <SelectItem value="used">Koʻp ishlatilgan</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
-        <ScrollArea className="min-h-0 flex-1">
-          {visible.length === 0 ? (
-            <Empty className="py-16">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Illustration name="empty" className="size-16" />
-                </EmptyMedia>
-                <EmptyTitle>
-                  {items.length === 0 ? "Hali material yoʻq" : "Hech narsa topilmadi"}
-                </EmptyTitle>
-                <EmptyDescription>
-                  {items.length === 0
-                    ? "Tuzgan test va darslaringiz shu yerda toʻplanadi."
-                    : "Qidiruv yoki filtrni oʻzgartirib koʻring."}
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          ) : (
-            <ul className="divide-y divide-border">
-              {visible.map((item) => (
-                <LibraryRow key={`${item.kind}:${item.id}`} item={item} />
-              ))}
-            </ul>
-          )}
-        </ScrollArea>
+        {visible.length === 0 ? (
+          <Empty className="py-16">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Illustration name="empty" className="size-16" />
+              </EmptyMedia>
+              <EmptyTitle>
+                {items.length === 0 ? "Hali material yoʻq" : "Hech narsa topilmadi"}
+              </EmptyTitle>
+              <EmptyDescription>
+                {items.length === 0
+                  ? "Tuzgan test va darslaringiz shu yerda toʻplanadi."
+                  : "Qidiruv yoki filtrni oʻzgartirib koʻring."}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <div className="min-h-0 flex-1 overflow-auto">
+            <table className="w-full min-w-3xl caption-bottom text-sm">
+              <TableHeader className="sticky top-0 z-10 bg-card">
+                <TableRow className="hover:bg-transparent!">
+                  <SortHeader label="Material" sortKey="title" className="min-w-64 pl-5" />
+                  <TableHead className="w-28 px-3 py-3">Tur</TableHead>
+                  <TableHead className="w-56 px-3 py-3">Fan va sinf</TableHead>
+                  <SortHeader label="Ishlatilgan" sortKey="used" className="w-32" align="center" />
+                  <SortHeader label="Oʻzgartirilgan" sortKey="updatedAt" className="w-40" />
+                  <TableHead className="w-12 px-3 py-3" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visible.map((item) => (
+                  <LibraryRow
+                    key={`${item.kind}:${item.id}`}
+                    item={item}
+                    onOpen={() => router.push(KIND_META[item.kind].href(item.id))}
+                  />
+                ))}
+              </TableBody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-/* Amal tili har turda BIR XIL — oʻqituvchi test bilan darsni bir xil
-   qoʻl harakati bilan boshqaradi. v1 da "Ochish"; nusxalash keyingi
-   bosqichda, chunki u har turda alohida server amali talab qiladi. */
-function LibraryRow({ item }: { item: LibraryItem }) {
+function LibraryRow({ item, onOpen }: { item: LibraryItem; onOpen: () => void }) {
   const meta = KIND_META[item.kind];
   const Icon = meta.icon;
   const facets = [
@@ -181,40 +227,64 @@ function LibraryRow({ item }: { item: LibraryItem }) {
   ].filter(Boolean) as string[];
 
   return (
-    <li className="flex items-center gap-3 px-5 py-3 hover:bg-muted/40">
-      <SectionIcon size="sm">
-        <Icon />
-      </SectionIcon>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium">{item.title}</span>
-          <Badge variant="outline" className="text-[10px]">
-            {meta.label}
-          </Badge>
-          {item.classId === null && (
-            <Badge variant="outline" className="text-[10px] text-muted-foreground">
-              sinfsiz
-            </Badge>
-          )}
+    <TableRow className="group cursor-pointer" onClick={onOpen}>
+      <TableCell className="py-3 pl-5 pr-3">
+        <div className="flex items-center gap-3">
+          <SectionIcon className="shrink-0">
+            <Icon />
+          </SectionIcon>
+          <div className="min-w-0">
+            <h6 className="truncate text-sm font-medium">{item.title}</h6>
+            <p className="truncate text-xs text-muted-foreground">{item.meta}</p>
+          </div>
         </div>
-        <TypographyMuted className="truncate text-xs">
-          {[item.meta, ...facets].join(" · ")}
-        </TypographyMuted>
-      </div>
+      </TableCell>
 
-      {item.usedCount !== null && item.usedCount > 0 && (
-        <TypographyMuted className="hidden text-xs sm:block">
-          {item.usedCount} marta
-        </TypographyMuted>
-      )}
-      <TypographyMuted className="hidden w-24 text-right text-xs md:block">
+      <TableCell className="whitespace-nowrap px-3">
+        <Badge variant="outline" className="text-[10px]">
+          {meta.label}
+        </Badge>
+      </TableCell>
+
+      <TableCell className="px-3">
+        <span className="block truncate text-sm text-muted-foreground">
+          {facets.length > 0 ? facets.join(" · ") : "—"}
+        </span>
+        {/* Sinfsiz toʻplam kutubxonada yashaydi — sinf oʻchirilgan yoki
+            material umuman sinfsiz tuzilgan boʻlishi mumkin. */}
+        {item.classId === null && (
+          <span className="text-xs text-muted-foreground/70">sinfsiz</span>
+        )}
+      </TableCell>
+
+      <TableCell className="whitespace-nowrap px-3 text-center text-sm text-muted-foreground">
+        {item.usedCount === null ? "—" : `${item.usedCount} marta`}
+      </TableCell>
+
+      <TableCell className="whitespace-nowrap px-3 text-sm text-muted-foreground">
         {item.updatedAt.toLocaleDateString("uz-UZ")}
-      </TypographyMuted>
+      </TableCell>
 
-      <Button asChild size="sm" variant="outline">
-        <Link href={meta.href(item.id)}>Ochish</Link>
-      </Button>
-    </li>
+      <TableCell className="px-3">
+        {/* Amal tili har turda BIR XIL. v1 da faqat "Ochish"; nusxalash
+            keyingi bosqichda — u har turda alohida server amali talab
+            qiladi (test uchun `activities` ham koʻchiriladi). */}
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <span className="flex cursor-pointer items-center justify-center rounded-full p-2 hover:bg-muted">
+                <EllipsisVertical className="size-4" />
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem onSelect={onOpen}>
+                <ExternalLink />
+                Ochish
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }
