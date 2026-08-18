@@ -3820,6 +3820,7 @@
     "attachExisting": "Выбрать существующий",
     "contentCreate": "Создать",
     "contentAttach": "Прикрепить",
+    "gradingModeLabel": "Способ оценивания",
     "gradingManual": "Вручную",
     "gradingAuto": "Автоматически",
     "attachExistingTitle": "Какой тест прикрепить?",

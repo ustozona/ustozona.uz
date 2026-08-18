@@ -3816,6 +3816,7 @@
     "attachExisting": "Pick an existing test",
     "contentCreate": "Create",
     "contentAttach": "Attach",
+    "gradingModeLabel": "Grading method",
     "gradingManual": "Manual",
     "gradingAuto": "Automatic",
     "attachExistingTitle": "Which test should be attached?",

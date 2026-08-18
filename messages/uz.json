@@ -3649,6 +3649,7 @@
     "attachExisting": "Mavjud testdan tanlash",
     "contentCreate": "Yaratish",
     "contentAttach": "Biriktirish",
+    "gradingModeLabel": "Baholash usuli",
     "gradingManual": "Qoʻlda",
     "gradingAuto": "Avtomatik",
     "attachExistingTitle": "Qaysi test biriktirilsin?",

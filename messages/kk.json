@@ -3820,6 +3820,7 @@
     "attachExisting": "Бар тесттен таңдау",
     "contentCreate": "Жасау",
     "contentAttach": "Тіркеу",
+    "gradingModeLabel": "Бағалау әдісі",
     "gradingManual": "Қолмен",
     "gradingAuto": "Автоматты",
     "attachExistingTitle": "Қай тест тіркелсін?",

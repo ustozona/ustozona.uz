@@ -3820,6 +3820,7 @@
     "attachExisting": "Бар тесттен тандоо",
     "contentCreate": "Түзүү",
     "contentAttach": "Тиркөө",
+    "gradingModeLabel": "Баалоо ыкмасы",
     "gradingManual": "Кол менен",
     "gradingAuto": "Автоматтык",
     "attachExistingTitle": "Кайсы тест тиркелсин?",
