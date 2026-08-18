@@ -232,6 +232,13 @@
       "when": 1786990933899,
       "tag": "0032_goofy_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1786994943334,
+      "tag": "0033_tense_maggott",
+      "breakpoints": true
     }
   ]
 }

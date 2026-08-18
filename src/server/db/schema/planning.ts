@@ -49,6 +49,14 @@ export const lessons = pgTable(
     number: integer("number").notNull(),
     title: text("title").notNull(),
     status: text("status").notNull(), // Completed | Scheduled | Unscheduled | Draft
+    /**
+     * Materiallar kutubxonasi filtrlari — oʻqituvchidan SOʻRALMAYDI
+     * (R227a), dars tuzilgan sinfdan avtomatik olinadi. `activity_sets`
+     * dagi juftlik bilan bir xil maʼno: kutubxona ikkala turni bitta
+     * roʻyxatda, bitta filtr tili bilan koʻrsatadi (R226).
+     */
+    subject: text("subject"),
+    grade: integer("grade"),
     sortOrder: integer("sort_order").notNull().default(0),
     /** TOʻLIQ Lesson obyekti — oʻqishda aynan shu qaytariladi. */
     data: jsonb("data").$type<Record<string, unknown>>().notNull(),

@@ -25,6 +25,7 @@ import { BrandWordmark } from "@/assets/logo/brand-wordmark";
 import { BrandShield } from "@/assets/logo/brand-shield";
 import {
   LayoutGrid,
+  Library,
   Calendar,
   BookOpen,
   FileText,
@@ -76,6 +77,7 @@ const navGroups: NavGroup[] = [
       { href: "/dashboard/planner", labelKey: "planner", icon: BookOpen },
       { href: "/dashboard/lessons", labelKey: "lessons", icon: FileText },
       { href: "/dashboard/assignments", labelKey: "assignments", icon: ClipboardList },
+      { href: "/dashboard/resources", labelKey: "resources", icon: Library },
     ],
   },
   {

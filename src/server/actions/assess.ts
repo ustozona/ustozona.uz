@@ -159,7 +159,7 @@ export async function listSetsAction(classId?: string): Promise<ActivitySetRow[]
     oʻsha sahifada hech narsa koʻrinmasdi (`listSetsWithPublishState`
     izohiga qarang). */
 export async function listSetsWithPublishStateAction(
-  classId: string
+  classId?: string
 ): Promise<SetPublishState[]> {
   return listSetsWithPublishState(classId);
 }

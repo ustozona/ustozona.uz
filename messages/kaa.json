@@ -19,6 +19,7 @@
     "feedback": "Pikir-usınıs",
     "settings": "Sazlawlar",
     "assignments": "Tapsırmalar",
+    "resources": "Materiallar",
     "baholash": "Baholash",
     "blog": "Blog"
   },
@@ -34,6 +35,7 @@
     "timetable": "Sabaq kestesi",
     "planner": "Jobalawshı",
     "lessons": "Sabaqlar",
+    "resources": "Materiallar",
     "attendance": "Dawamat",
     "behavior": "Minez-qulıq",
     "grades": "Jurnal",
@@ -2005,7 +2007,7 @@
       },
       "topshiriq-mazmun-biriktirish": {
         "title": "Tapsırmagʻa test qálegen waqıtta tirkeledi",
-        "body": "Buringʻı tapsırma túrin tek jaratıp atırgʻanda tanlaw múmkin edi — keyin pikiringiz ózgerse jol joq edi. Endi mazmun tapsırmanıng óz redaktorında turadı: tayar bagʻanagʻa jańa test dúzesiz yamasa banktan alıngʻan, burın dúzilgen testti tanlap tirkeysiz. Test tirkelisi menen jurnalda bagʻana payda boladı — qagʻazda ótkersengiz de baha sol bagʻanagʻa jazıladı."
+        "body": "Buringʻı tapsırma túrin tek jaratıp atırgʻanda tanlaw múmkin edi — keyin pikiringiz ózgerse jol joq edi. Endi kontent tapsırmanıng óz redaktorında turadı: tayar bagʻanagʻa jańa test dúzesiz yamasa banktan alıngʻan, burın dúzilgen testti tanlap tirkeysiz. Test tirkelisi menen jurnalda bagʻana payda boladı — qagʻazda ótkersengiz de baha sol bagʻanagʻa jazıladı."
       },
       "sinf-import-eksport": {
         "title": "Klaslardı bir jolı qosıw hám faylǵa shıǵarıw",
@@ -3785,6 +3787,24 @@
     "discardCancel": "Dawam etiw",
     "discardConfirm": "Saqlamay shıǵıw"
   },
+  "MaterialKinds": {
+    "test": "Test",
+    "testHint": "Sorawlar toplamı — janlı yamasa ózbetinshe",
+    "lesson": "Sabaq",
+    "lessonHint": "Tekst, súwret hám formulalı tolıq sabaq hújjeti",
+    "deck": "Prezentatsiya",
+    "deckHint": "Slaydlar hám olardaǵı sorawlar",
+    "video": "Video",
+    "videoHint": "Video dawamında soraw beriledi",
+    "flashcard": "Flashkarta",
+    "flashcardHint": "Aldınǵı tárepte soraw, artında juwap",
+    "testShort": "Sorawlar toplamı",
+    "lessonShort": "Tolıq hújjet",
+    "deckShort": "Slaydlar",
+    "videoShort": "Sorawlı video",
+    "flashcardShort": "Ald–art kartalar",
+    "soon": "Tez arada"
+  },
   "AssignmentsPage": {
     "status_today": "Búgin",
     "statusHint_today": "Búgin ótkeriledi — ele baha kirgizilmegen.",
@@ -3798,7 +3818,14 @@
     "deleteSetFailed": "Testti óshirip bolmadı",
     "attachNewTest": "Jańa test dúziw",
     "attachExisting": "Bar testten tanlaw",
+    "contentCreate": "Jaratıw",
+    "contentAttach": "Tirkew",
+    "contentCreateHint": "Jańa test, sabaq yamasa prezentatsiya",
+    "contentAttachHint": "Materiallardan tayarın tańlaw",
     "attachExistingTitle": "Qaysı test tirkelsin?",
+    "attachFromThisClass": "Usı klassta dúzilgen",
+    "attachFromLibrary": "Materiallardan",
+    "attachOriginNoClass": "klasssız",
     "attachExistingDescription": "Usı klass ushın dúzilgen yamasa banktan alıngʻan testler. Tanlangʻanı jurnaldagʻı usı bagʻanagʻa baylanadı.",
     "attachedTitle": "Test tirkeldi",
     "setAlreadyUsed": "Basqa tapsırmada da isletilgen",
@@ -3867,11 +3894,8 @@
     "statusHint_planned": "Kún ele kelmegen.",
     "statusHint_grading": "{graded} / {total} oqıwshı bahalandı.",
     "statusHint_done": "Barlıgʻı bahalandı — {graded} / {total}.",
-    "contentLabel": "Mazmun",
+    "contentLabel": "Kontent",
     "kindManual": "Baha bagʻanası",
-    "noContentTitle": "Mazmun tirkelmegen",
-    "noContentDescription": "Bul — jurnaldagʻı baha bagʻanası: qagʻazdagʻı jumıs, awızsha soraw yamasa klasta ótken jumıs ushın baha usı jerge jazıladı. Qálesengiz test tirkeng.",
-    "moreKindsSoon": "Prezentaciya, video, tekst hám fleshkartalar tez arada.",
     "questionCount": "{count} soraw",
     "runSession": "Sessiya",
     "detachTest": "Testti ajıratıw",

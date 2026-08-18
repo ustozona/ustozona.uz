@@ -57,8 +57,41 @@ import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
 import SetBuilderOverlay from "./test/SetBuilderOverlay";
 import SessionPanelModal from "./test/SessionPanelModal";
 import AttachTestDialog from "./AttachTestDialog";
+import { MaterialKindPicker } from "@/components/materials/MaterialKindPicker";
 
 const NO_TOPIC_VALUE = "__no_topic__";
+
+/** Kontent qoʻshishning ikki yoʻli — «Yaratish» va «Biriktirish» kartasi.
+
+    Ikkalasi bitta komponentdan chiziladi: ular teng vaznli tanlov, demak
+    bir pikselda ham farq qilmasligi kerak. Ikki joyda alohida yozilsa,
+    vaqt oʻtib biri boshqasidan qalinroq/kattaroq boʻlib ketardi. */
+const ContentChoiceCard = ({
+  icon,
+  title,
+  hint,
+  active = false,
+  onClick,
+}: {
+  icon: ReactNode;
+  title: string;
+  hint: string;
+  active?: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "flex flex-col items-center gap-1.5 rounded-card border border-border bg-card px-4 py-5 text-center transition-colors hover:bg-muted/40",
+      active && "border-foreground/30 bg-muted/50"
+    )}
+  >
+    <span className="text-foreground">{icon}</span>
+    <span className="text-sm font-medium text-foreground">{title}</span>
+    <span className="text-xs leading-snug text-muted-foreground">{hint}</span>
+  </button>
+);
 
 /* Tafsilotlar qatori — dars muharriridagi `DetailsPanel` tili bilan bir xil
    (`text-label` yorliq USTIDA, `rounded-xl` karta, `size-9` DOIRA ikonka).
@@ -169,6 +202,8 @@ export default function AssignmentEditorOverlay({
   /* Mavjud testni tanlash oynasi — toʻplam muharrirdan tashqarida ham
      tugʻiladi (bank, oldingi ishlar), ularni ulash yoʻli kerak. */
   const [attachOpen, setAttachOpen] = useState(false);
+  /** «Yaratish» bosilganda shakl kartalari ochiladi (default — yopiq). */
+  const [showKinds, setShowKinds] = useState(false);
   /* Savol muharriri va sessiya paneli TOʻGʻRIDAN-TOʻGʻRI ochiladi.
      Ilgari orada "Testlar (5-A)" roʻyxati turardi — sidebar'dan olib
      tashlangan `/dashboard/baholash` sahifasining qoldigʻi. U uchinchi
@@ -796,35 +831,45 @@ export default function AssignmentEditorOverlay({
        ogʻzaki soʻrov, sinfdan tashqarida oʻtgan ish. Ilgari bu yerda
        "Test muharriri tez orada" yozilardi va ustun buzuq testdek
        koʻrinardi. */
+    /* ── YARATISH / BIRIKTIRISH ──────────────────────────────────────
+       Google Classroom'ning `Create` / `Add` boʻlinishi. Ikkalasi bir
+       xil natijaga olib kelsa-da (ustunga kontent ulanadi), oʻqituvchi
+       boshida IKKI XIL fikrda boʻladi: «yangi tuzaman» yoki «tayyorini
+       olaman». Bitta qatorda aralashtirilganda tanlov ogʻirlashadi —
+       shakl kartalari (tur) va kutubxona (manba) bir xil koʻrinishga
+       ega boʻlib, ular boshqa-boshqa savolga javob beradi.
+
+       Shakllar DARHOL koʻrsatilmaydi: beshta katta karta boʻsh ustunni
+       «toʻldirilmagan forma» kabi koʻrsatardi. Holbuki kontentsiz ustun
+       — toʻlaqonli holat (daftardagi ish, ogʻzaki soʻrov). */
     return (
       <div className="flex flex-col gap-4 rounded-xl border border-dashed border-border p-5">
-        <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <FileCheck2 className="size-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-semibold text-foreground">{t("noContentTitle")}</h4>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {t("noContentDescription")}
-            </p>
-          </div>
+        {/* Ikkala yoʻl BIR XIL balandlikda — ataylab. Amalda koʻpincha
+            yangi tuziladi, lekin kutubxona yangi funksiya va oʻqituvchi
+            uni hali bilmaydi. Ierarxiya berilsa (biri solid tugma, biri
+            matn-havola) kutubxona yoʻli yillab oʻrganilmay qolardi. */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ContentChoiceCard
+            icon={<Plus className="size-5" />}
+            title={t("contentCreate")}
+            hint={t("contentCreateHint")}
+            active={showKinds}
+            onClick={() => setShowKinds((v) => !v)}
+          />
+          <ContentChoiceCard
+            icon={<Library className="size-5" />}
+            title={t("contentAttach")}
+            hint={t("contentAttachHint")}
+            onClick={() => setAttachOpen(true)}
+          />
         </div>
-        {/* Ikki yoʻl ochiq turadi: koʻpincha yangi test tuziladi, lekin
-            bankdan olingan yoki ilgari tuzilgan toʻplam ham shu ustunga
-            ulanishi kerak — ilgari ikkinchi yoʻl umuman yoʻq edi. */}
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleAttachTest}>
-              <ClipboardCheck className="size-4" />
-              {t("attachNewTest")}
-            </Button>
-            <Button variant="ghost" className="gap-2" onClick={() => setAttachOpen(true)}>
-              <Library className="size-4" />
-              {t("attachExisting")}
-            </Button>
-          </div>
-          <span className="text-xs text-muted-foreground">{t("moreKindsSoon")}</span>
-        </div>
+
+        {/* Shakl tanlovi — Wayground naqshi. Tayyor boʻlmagan turlar ham
+            koʻrinadi (soʻniq): ilgari ular haqida faqat kulrang matn
+            yozilardi, endi oʻqituvchi nima kelayotganini KOʻRADI. */}
+        {showKinds && (
+          <MaterialKindPicker onPick={(kind) => kind === "test" && handleAttachTest()} />
+        )}
       </div>
     );
   }
@@ -1316,7 +1361,11 @@ export default function AssignmentEditorOverlay({
         )}
 
         {sessionSet && (
-          <SessionPanelModal set={sessionSet} onClose={() => setSessionSet(null)} />
+          <SessionPanelModal
+            set={sessionSet}
+            classId={classId}
+            onClose={() => setSessionSet(null)}
+          />
         )}
       </div>
 

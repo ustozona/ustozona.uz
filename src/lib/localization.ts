@@ -38,6 +38,31 @@ export const MONTHS_UZ_SHORT: readonly string[] = [
 ];
 
 /**
+ * Nisbiy vaqt: "hozir / 5 daq oldin / 3 soat oldin / 2 kun oldin / 12 avg".
+ *
+ * Nega nisbiy: takrorlanuvchi aniq sanalar (`2026-08-11` yetti marta)
+ * koʻzga ilashmaydi — roʻyxatda «qaysi biri yangiroq» degan savol
+ * muhim, aniq sana emas. Bir haftadan oshgach aniq kunga oʻtiladi,
+ * chunki «47 kun oldin» ni odam baribir sanaga aylantirib oʻylaydi.
+ * Aniq sanani chaqiruvchi `title` (tooltip) da koʻrsatsin.
+ *
+ * ⚠️ Bu funksiya `NotificationsBell` dagi mahalliy nusxadan koʻchirildi —
+ * u yerda `MONTHS_SHORT` ham qaytadan yozilgan edi. Yagona manba shu yer.
+ */
+export function timeAgoUz(value: Date | string): string {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const min = Math.floor((Date.now() - d.getTime()) / 60_000);
+  if (min < 1) return "hozir";
+  if (min < 60) return `${min} daq oldin`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} soat oldin`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day} kun oldin`;
+  return `${d.getDate()} ${MONTHS_UZ_SHORT[d.getMonth()]}`;
+}
+
+/**
  * `yyyy-mm-dd` → "Dushanba, 14-sentabr" — hafta kuni bilan.
  * Muddat/sana maydonlarida ishlatiladi: oʻqituvchi kunni sana emas, hafta
  * kuni boʻyicha eslaydi ("dushanbagacha"), shuning uchun kun nomi oldinda.
