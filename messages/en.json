@@ -2772,7 +2772,6 @@
   },
   "SignupForm": {
     "title": "Get started for free",
-    "subtitle": "No credit card required. You'll be up and running in a minute.",
     "continueWithGoogle": "Continue with Google",
     "orWithEmail": "or with email",
     "firstNameLabel": "First name",
@@ -2789,14 +2788,19 @@
     "signIn": "Sign in",
     "googleNotConfigured": "Google sign-in isn't configured yet.",
     "errors": {
+      "required": "This field is required.",
       "userAlreadyExists": "An account with this email already exists.",
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordTooLong": "Password is too long.",
       "invalidEmail": "That email address doesn't look right.",
       "generic": "Something went wrong signing up. Please try again."
     },
-    "continueWithTelegram": "Continue with Telegram",
-    "telegramHint": "Fastest way — name and account linking are automatic"
+    "passwordStrength": {
+      "weak": "Weak",
+      "medium": "Medium",
+      "strong": "Strong"
+    },
+    "continueWithTelegram": "Continue with Telegram"
   },
   "ForgotPasswordPage": {
     "title": "Forgot your password?",
@@ -2870,7 +2874,9 @@
       "schoolLabel": "School / institution",
       "schoolPlaceholder": "e.g. School No. 24",
       "subjectLabel": "Main subject",
-      "subjectPlaceholder": "e.g. English",
+      "subjectPlaceholder": "Choose a subject",
+      "subjectSearchPlaceholder": "Search subjects…",
+      "subjectUseCustom": "\"{value}\" — not on the list, use it anyway",
       "birthDateLabel": "Date of birth"
     },
     "yearStep": {
@@ -3272,27 +3278,15 @@
         },
         "1": {
           "title": "Your day's command center",
-          "body": "The greeting chips are clickable: checks lead to the gradebook, the attendance counter to the attendance page. The thin bar below tracks the school year — hover the season marks to see quarter dates."
+          "body": "This card shows your day's status: on your first visit — a greeting with today's status (how many lessons, when the next one starts); after that — a quote, which you can click to manage your own. During the greeting, a thin bar below tracks the school year — hover the season marks to see quarter dates."
         },
         "2": {
           "title": "Work queue",
-          "body": "Tasks, ungraded work, and upcoming assessments share one queue. Use “Today” in the header to widen the horizon (week or all), and “+ Task” adds one right here."
+          "body": "Grading tasks are grouped by due date — overdue, today, and this coming week. Check the box to mark one done, click a row to jump straight to that class's gradebook; if there are more than fit, a “View more” link appears below."
         },
         "3": {
           "title": "Today's lessons",
-          "body": "Switch between list and timeline — your choice is remembered. Past lessons fade, the current one stands out; after the last lesson a day-summary card appears where you can manage your own quotes."
-        },
-        "4": {
-          "title": "Week strip",
-          "body": "Picking a day changes only the lessons panel — the work queue keeps looking at today. A dot under a day means a lesson is planned."
-        },
-        "5": {
-          "title": "Guide hub",
-          "body": "Forgot how a section works? Click this button — you can replay any page's guide at any time."
-        },
-        "6": {
-          "title": "Your feedback matters",
-          "body": "Found a bug or have a suggestion? Send it straight to the team from here — you can attach a screenshot too."
+          "body": "Lessons sit on a time axis, sized to their duration. Past lessons fade, the current one stands out; after the last lesson, a card appears confirming the day is done and showing when tomorrow's first lesson starts. Picking a day above changes only this panel — the work queue keeps looking at today; a dot under a day means a lesson is planned."
         }
       }
     },

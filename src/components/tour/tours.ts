@@ -72,9 +72,6 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
       { target: '[data-tour="home-overview"]', placement: "right" },
       { target: '[data-tour="home-queue"]', placement: "right" },
       { target: '[data-tour="home-schedule"]', placement: "left" },
-      { target: '[data-tour="home-week"]', placement: "left" },
-      { target: '[data-tour="header-guide"]', placement: "bottom" },
-      { target: '[data-tour="header-feedback"]', placement: "bottom" },
     ],
   },
   {

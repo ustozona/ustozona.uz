@@ -2776,7 +2776,6 @@
   },
   "SignupForm": {
     "title": "Tegin baslaw",
-    "subtitle": "Bank kartası talap etilmeydi. Bir minutta iske túsersiz.",
     "continueWithGoogle": "Google arqalı dawam etiw",
     "orWithEmail": "yamasa email menen",
     "firstNameLabel": "Atı",
@@ -2793,14 +2792,19 @@
     "signIn": "Sistemag'a kiriw",
     "googleNotConfigured": "Google arqalı kiriw házirshe sazlanbaǵan.",
     "errors": {
+      "required": "Bul maydan tolıtırılıwı shárt.",
       "userAlreadyExists": "Bul email menen esap allaaqashan bar.",
       "passwordTooShort": "Parol keminde 8 belgiden ibarat bolsın.",
       "passwordTooLong": "Parol júdá uzın.",
       "invalidEmail": "Email mánzili qáte kóriniste.",
       "generic": "Dizimnen ótiwde qátelik júz berdi. Qaytadan urinıp kóriń."
     },
-    "continueWithTelegram": "Telegram menen dawam etiw",
-    "telegramHint": "Eń tez jol — atı-familiyası hám baylanıs avtomatikalıq"
+    "passwordStrength": {
+      "weak": "Álsiz",
+      "medium": "Ortasha",
+      "strong": "Kúshli"
+    },
+    "continueWithTelegram": "Telegram menen dawam etiw"
   },
   "ForgotPasswordPage": {
     "title": "Paroldi unıttıńız ba?",
@@ -2874,7 +2878,9 @@
       "schoolLabel": "Mektep / mákeme",
       "schoolPlaceholder": "Mısalı, 24-mektep",
       "subjectLabel": "Tiykarǵı pán",
-      "subjectPlaceholder": "Mısalı, Ingliz tili",
+      "subjectPlaceholder": "Pándi tańlań",
+      "subjectSearchPlaceholder": "Pán izlew…",
+      "subjectUseCustom": "\"{value}\" — dizimde joq, sonı qollanaman",
       "birthDateLabel": "Tuwılǵan sáne"
     },
     "yearStep": {
@@ -3276,27 +3282,15 @@
         },
         "1": {
           "title": "Kúndi basqarıw orayı",
-          "body": "Sálemlesiwdegi chipler basıladı: tekseriwler jurnalǵa, qatnasıw sanaǵıshı qatnasıw betine alıp baradı. Tómendegi jińishke sızıq — oqıw jılınıń barısı; máwsim belgilerine kursordı alıp barsańız, sherek kúnleri shıǵadı."
+          "body": "Bul jerde kúnniń jaǵdayı shıǵadı: birinshi kirgende — sálemlesiw hám búgingi jaǵday (neshshe sabaq bar, keyingisi qashan); keyingi kirgenlerde — sitata, onı basıp ózińizdikin qosasız. Sálemlesiw waqtında tómende jińishke sızıq — oqıw jılınıń barısı; máwsim belgilerine kursordı alıp barsańız, sherek kúnleri shıǵadı."
         },
         "2": {
           "title": "Isler gezegi",
-          "body": "Wazıypalar, tekserilmegen isler hám qadaǵalaw múddetleri bir gezekte. Atamadaǵı «Búgin» arqalı gorizonttı keńeytesiz (hápte yamasa barlıǵı), «+ Wazıypa» usı jerden tez qosadı."
+          "body": "Bahalaw wazıypaları múddetine qaray toparlanǵan — ótip ketken, búgingi, kelesi hápte ishindegi. Katekshedi belgilesengiz orınlanǵan boladı, qatardı basıp sol klasstıń jurnalına ótesiz; hámmesi sıymasa, tómende «Tagı kóriw» siltemesi shıǵadı."
         },
         "3": {
           "title": "Búgingi sabaqlar",
-          "body": "Dizim menen waqıt kósheri arasında almastırǵısh bar — tańlawıńız este saqlanadı. Ótken sabaqlar kúńgirt, házirgisi ajıralıp turadı; sońǵı sabaqtan keyin kún juwmaǵı kartası shıǵadı, ondaǵı túyme menen sitatalardı ózińiz basqarasız."
-        },
-        "4": {
-          "title": "Háptelik taspa",
-          "body": "Kúndi tańlasańız tek sabaqlar paneli sol kúnge ótedi — isler gezegi búginge qaray beredi. Kún astındaǵı noqat sol kúnge sabaq rejelestirilgenin bildiredi."
-        },
-        "5": {
-          "title": "Jol-joba orayı",
-          "body": "Biraq bólim qalay islewiniń unıtsańız, usı túymeni basıń — hár bir bettiń qollanbasın qálegen waqıtta qaytadan kóresiz."
-        },
-        "6": {
-          "title": "Pikirińiz biz ushın áhmiyetli",
-          "body": "Qáte taptıńız ba yamasa usınıs bar ma? Usı jerden komandaǵa tuwrıdan-tuwrı jazıń — skrinshot ta biriktirse boladı."
+          "body": "Sabaqlar waqıt kósherinde dawamlılıǵına sáykes biyiklikte ornalasadı. Ótken sabaqlar kúńgirt, házirgisi ajıralıp turadı; sońǵı sabaqtan keyin kún juwmaqlanǵanı hám erteńgi birinshi sabaq waqtı kórsetiletuǵın karta shıǵadı. Joqarıdaǵı kúndi tańlasańız tek usı panel sol kúnge ótedi — isler gezegi búginge qaray beredi; kún astındaǵı noqat sol kúnge sabaq rejelestirilgenin bildiredi."
         }
       }
     },

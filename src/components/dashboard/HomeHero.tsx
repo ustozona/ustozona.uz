@@ -142,7 +142,11 @@ export function HomeHero({
   const showQuote = !greetedFirst && isSetup && !timeCritical && quote != null;
 
   return (
-    <Card className="relative shrink-0 overflow-hidden rounded-xl border border-border p-0 shadow-none">
+    // `data-tour="home-overview"` — ATAYIN shu yerda (HomeHero'ning oʻzida),
+    // sahifada emas: avval butun 3-ustunli grid'ga qoʻyilgan edi (deyarli
+    // sahifa kengligida), shuning uchun tur tooltip'i "oʻng tomonga" joy
+    // topolmay chapga — sidebar ustiga — kesilib chiqardi (2026-08-18).
+    <Card data-tour="home-overview" className="relative shrink-0 overflow-hidden rounded-xl border border-border p-0 shadow-none">
       <CardContent className="group/hero p-0">
         {/* Landing hero gradienti — yumshoq blur blob (sky → white → amber) */}
         <div

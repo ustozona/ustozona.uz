@@ -98,14 +98,12 @@ export default function Header() {
       <div className="flex items-center gap-3">
         {/* Tez-tez ishlatiladigan ish vositalari */}
         <div className="flex items-center gap-1">
-          <span data-tour="header-feedback" className="inline-flex">
+          <span className="inline-flex">
             <QuickFeedback />
           </span>
           <GlobalCommandPalette />
           <NotificationsBell />
-          <span data-tour="header-guide" className="inline-flex">
-            <GuideHub />
-          </span>
+          <GuideHub />
         </div>
 
         {/* Profil — Mavzu, Til va akkaunt bandlari ichida */}

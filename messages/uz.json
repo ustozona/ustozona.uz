@@ -2593,7 +2593,7 @@
     "signingIn": "Kirilmoqda…",
     "signIn": "Tizimga kirish",
     "noAccount": "Hisobingiz yoʻqmi?",
-    "getStartedFree": "Bepul boshlash",
+    "getStartedFree": "Roʻyxatdan oʻtish",
     "googleNotConfigured": "Google orqali kirish hozircha sozlanmagan.",
     "errors": {
       "invalidEmailOrPassword": "Email yoki parol notoʻgʻri.",
@@ -2604,8 +2604,7 @@
     "continueWithTelegram": "Telegram bilan davom etish"
   },
   "SignupForm": {
-    "title": "Bepul boshlash",
-    "subtitle": "Bank kartasi talab qilinmaydi. Bir daqiqada ishga tushasiz.",
+    "title": "Roʻyxatdan oʻtish",
     "continueWithGoogle": "Google orqali davom etish",
     "orWithEmail": "yoki email bilan",
     "firstNameLabel": "Ism",
@@ -2617,19 +2616,24 @@
     "passwordLabel": "Parol",
     "passwordPlaceholder": "Kamida 8 belgi",
     "creating": "Yaratilmoqda…",
-    "submit": "Bepul boshlash",
+    "submit": "Hisob yarating",
     "haveAccount": "Hisobingiz bormi?",
     "signIn": "Tizimga kirish",
     "googleNotConfigured": "Google orqali kirish hozircha sozlanmagan.",
     "errors": {
+      "required": "Bu maydon toʻldirilishi shart.",
       "userAlreadyExists": "Bu email bilan hisob allaqachon mavjud.",
       "passwordTooShort": "Parol kamida 8 belgidan iborat boʻlsin.",
       "passwordTooLong": "Parol juda uzun.",
       "invalidEmail": "Email manzili notoʻgʻri koʻrinishda.",
       "generic": "Roʻyxatdan oʻtishda xatolik yuz berdi. Qayta urinib koʻring."
     },
-    "continueWithTelegram": "Telegram bilan davom etish",
-    "telegramHint": "Eng tez yoʻl — ism-familiya va bogʻlanish avtomatik"
+    "passwordStrength": {
+      "weak": "Zaif",
+      "medium": "Oʻrtacha",
+      "strong": "Kuchli"
+    },
+    "continueWithTelegram": "Telegram bilan davom etish"
   },
   "ForgotPasswordPage": {
     "title": "Parolni unutdingizmi?",
@@ -2703,7 +2707,9 @@
       "schoolLabel": "Maktab / muassasa",
       "schoolPlaceholder": "Masalan, 24-maktab",
       "subjectLabel": "Asosiy fan",
-      "subjectPlaceholder": "Masalan, Ingliz tili",
+      "subjectPlaceholder": "Fanni tanlang",
+      "subjectSearchPlaceholder": "Fan qidiring…",
+      "subjectUseCustom": "\"{value}\" — roʻyxatda yoʻq, shuni ishlataman",
       "birthDateLabel": "Tavallud sana"
     },
     "yearStep": {
@@ -3105,27 +3111,15 @@
         },
         "1": {
           "title": "Kunni boshqarish markazi",
-          "body": "Salomdagi chiplar bosiladi: tekshirishlar jurnalga, davomat sanashi davomat sahifasiga olib boradi. Pastdagi yupqa chiziq — oʻquv yili progressi; fasl belgilariga kursorni olib borsangiz chorak sanalari chiqadi."
+          "body": "Bu yerda kunning holati chiqadi: birinchi kirishda — salom va bugungi holat (nechta dars, keyingisi qachon); keyingi kirishlarda — iqtibos, uni bosib oʻzingiznikini qoʻshasiz. Salom paytida pastda yupqa chiziq — oʻquv yili progressi; fasl belgilariga kursorni olib borsangiz chorak sanalari chiqadi."
         },
         "2": {
           "title": "Ishlar navbati",
-          "body": "Vazifalar, tekshirilmagan ishlar va nazorat muddatlari bitta navbatda. Sarlavhadagi «Bugun» bilan ufqni kengaytirasiz (hafta yoki hammasi), «+ Vazifa» esa shu yerning oʻzida tez qoʻshadi."
+          "body": "Baholash kutayotgan vazifalar muddatiga qarab guruhlangan — muddati oʻtgan, bugungi, keyingi hafta ichidagi. Katakchani belgilasangiz bajarilgan boʻladi, qatorni bossangiz toʻgʻridan-toʻgʻri shu sinf jurnaliga oʻtasiz; hammasi sigʻmasa, pastda «Yana koʻrish» havolasi chiqadi."
         },
         "3": {
           "title": "Bugungi darslar",
-          "body": "Roʻyxat va vaqt oʻqi orasida almashtirgich bor — tanlovingiz eslab qolinadi. Oʻtgan darslar xira, joriysi ajralib turadi; oxirgi darsdan soʻng kun yakuni kartasi chiqadi, undagi tugma bilan iqtiboslarni oʻzingiz boshqarasiz."
-        },
-        "4": {
-          "title": "Haftalik tasma",
-          "body": "Kun tanlasangiz faqat darslar paneli oʻsha kunga oʻtadi — ishlar navbati bugunga qarayveradi. Kun ostidagi nuqta oʻsha kunga dars rejalanganini bildiradi."
-        },
-        "5": {
-          "title": "Yoʻl-yoʻriq markazi",
-          "body": "Biror boʻlim qanday ishlashini unutsangiz, shu tugmani bosing — har bir sahifaning qoʻllanmasini istalgan vaqt qayta koʻrasiz."
-        },
-        "6": {
-          "title": "Fikringiz biz uchun muhim",
-          "body": "Xato topdingizmi yoki taklif bormi? Shu yerdan jamoaga toʻgʻridan-toʻgʻri yozing — skrinshot ham biriktirsa boʻladi."
+          "body": "Darslar vaqt oʻqida davomiyligiga mos balandlikda joylashadi. Oʻtgan darslar xira, joriysi ajralib turadi; oxirgi darsdan soʻng kun yakunlangani va ertangi birinchi dars vaqti koʻrsatiladigan karta chiqadi. Yuqorida kun tanlasangiz faqat shu panel oʻsha kunga oʻtadi — ishlar navbati bugunga qarayveradi; kun ostidagi nuqta oʻsha kunga dars rejalanganini bildiradi."
         }
       }
     },
