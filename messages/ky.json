@@ -3815,6 +3815,8 @@
     "attachExisting": "Бар тесттен тандоо",
     "contentCreate": "Түзүү",
     "contentAttach": "Тиркөө",
+    "contentCreateHint": "Жаңы тест, сабак же презентация",
+    "contentAttachHint": "Материалдардан даярын тандоо",
     "attachExistingTitle": "Кайсы тест тиркелсин?",
     "attachFromThisClass": "Ушул класста түзүлгөн",
     "attachFromLibrary": "Материалдардан",

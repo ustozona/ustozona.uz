@@ -3644,6 +3644,8 @@
     "attachExisting": "Mavjud testdan tanlash",
     "contentCreate": "Yaratish",
     "contentAttach": "Biriktirish",
+    "contentCreateHint": "Yangi test, dars yoki taqdimot",
+    "contentAttachHint": "Materiallardan tayyorini tanlash",
     "attachExistingTitle": "Qaysi test biriktirilsin?",
     "attachFromThisClass": "Shu sinfda tuzilgan",
     "attachFromLibrary": "Materiallardan",

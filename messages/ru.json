@@ -3815,6 +3815,8 @@
     "attachExisting": "Выбрать существующий",
     "contentCreate": "Создать",
     "contentAttach": "Прикрепить",
+    "contentCreateHint": "Новый тест, урок или презентация",
+    "contentAttachHint": "Выбрать готовое из материалов",
     "attachExistingTitle": "Какой тест прикрепить?",
     "attachFromThisClass": "Созданные в этом классе",
     "attachFromLibrary": "Из материалов",

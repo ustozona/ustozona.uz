@@ -3815,6 +3815,8 @@
     "attachExisting": "Бар тесттен таңдау",
     "contentCreate": "Жасау",
     "contentAttach": "Тіркеу",
+    "contentCreateHint": "Жаңа тест, сабақ немесе презентация",
+    "contentAttachHint": "Материалдардан дайынын таңдау",
     "attachExistingTitle": "Қай тест тіркелсін?",
     "attachFromThisClass": "Осы сыныпта жасалған",
     "attachFromLibrary": "Материалдардан",

@@ -3811,6 +3811,8 @@
     "attachExisting": "Pick an existing test",
     "contentCreate": "Create",
     "contentAttach": "Attach",
+    "contentCreateHint": "A new test, lesson or presentation",
+    "contentAttachHint": "Pick something ready from your library",
     "attachExistingTitle": "Which test should be attached?",
     "attachFromThisClass": "Created in this class",
     "attachFromLibrary": "From library",

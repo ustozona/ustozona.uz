@@ -61,6 +61,38 @@ import { MaterialKindPicker } from "@/components/materials/MaterialKindPicker";
 
 const NO_TOPIC_VALUE = "__no_topic__";
 
+/** Kontent qoʻshishning ikki yoʻli — «Yaratish» va «Biriktirish» kartasi.
+
+    Ikkalasi bitta komponentdan chiziladi: ular teng vaznli tanlov, demak
+    bir pikselda ham farq qilmasligi kerak. Ikki joyda alohida yozilsa,
+    vaqt oʻtib biri boshqasidan qalinroq/kattaroq boʻlib ketardi. */
+const ContentChoiceCard = ({
+  icon,
+  title,
+  hint,
+  active = false,
+  onClick,
+}: {
+  icon: ReactNode;
+  title: string;
+  hint: string;
+  active?: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "flex flex-col items-center gap-1.5 rounded-card border border-border bg-card px-4 py-5 text-center transition-colors hover:bg-muted/40",
+      active && "border-foreground/30 bg-muted/50"
+    )}
+  >
+    <span className="text-foreground">{icon}</span>
+    <span className="text-sm font-medium text-foreground">{title}</span>
+    <span className="text-xs leading-snug text-muted-foreground">{hint}</span>
+  </button>
+);
+
 /* Tafsilotlar qatori — dars muharriridagi `DetailsPanel` tili bilan bir xil
    (`text-label` yorliq USTIDA, `rounded-xl` karta, `size-9` DOIRA ikonka).
    Yangi til oʻylab topilmadi: ikkala muharrir bir xil koʻrinsin. */
@@ -812,23 +844,24 @@ export default function AssignmentEditorOverlay({
        — toʻlaqonli holat (daftardagi ish, ogʻzaki soʻrov). */
     return (
       <div className="flex flex-col gap-4 rounded-xl border border-dashed border-border p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant={showKinds ? "default" : "outline"}
-            className="gap-2 shadow-none"
+        {/* Ikkala yoʻl BIR XIL balandlikda — ataylab. Amalda koʻpincha
+            yangi tuziladi, lekin kutubxona yangi funksiya va oʻqituvchi
+            uni hali bilmaydi. Ierarxiya berilsa (biri solid tugma, biri
+            matn-havola) kutubxona yoʻli yillab oʻrganilmay qolardi. */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ContentChoiceCard
+            icon={<Plus className="size-5" />}
+            title={t("contentCreate")}
+            hint={t("contentCreateHint")}
+            active={showKinds}
             onClick={() => setShowKinds((v) => !v)}
-          >
-            <Plus className="size-4" />
-            {t("contentCreate")}
-          </Button>
-          <Button
-            variant="outline"
-            className="gap-2 shadow-none"
+          />
+          <ContentChoiceCard
+            icon={<Library className="size-5" />}
+            title={t("contentAttach")}
+            hint={t("contentAttachHint")}
             onClick={() => setAttachOpen(true)}
-          >
-            <Library className="size-4" />
-            {t("contentAttach")}
-          </Button>
+          />
         </div>
 
         {/* Shakl tanlovi — Wayground naqshi. Tayyor boʻlmagan turlar ham

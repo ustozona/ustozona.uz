@@ -3815,6 +3815,8 @@
     "attachExisting": "Bar testten tanlaw",
     "contentCreate": "Jaratıw",
     "contentAttach": "Tirkew",
+    "contentCreateHint": "Jańa test, sabaq yamasa prezentatsiya",
+    "contentAttachHint": "Materiallardan tayarın tańlaw",
     "attachExistingTitle": "Qaysı test tirkelsin?",
     "attachFromThisClass": "Usı klassta dúzilgen",
     "attachFromLibrary": "Materiallardan",
