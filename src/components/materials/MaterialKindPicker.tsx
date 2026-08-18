@@ -29,6 +29,10 @@ import { MATERIAL_KINDS, MATERIAL_KIND_ORDER, type MaterialKind } from "@/lib/ma
  * neytral plitkali holda qoladi — yoʻl xaritasi shu yerning oʻzida
  * koʻrinib turadi va tur qoʻshilganda interfeys oʻzgarmaydi.
  */
+/* Faqat SAVOL IDISHLARI. Dars bu yerda yoʻq — u savol idishi emas,
+   baholanmaydigan dars hujjati (registrdagi izohga qarang). */
+const CONTAINER_KINDS = MATERIAL_KIND_ORDER.filter((k) => MATERIAL_KINDS[k].isContainer);
+
 export function MaterialKindPicker({
   onPick,
   className,
@@ -45,7 +49,7 @@ export function MaterialKindPicker({
         className
       )}
     >
-      {MATERIAL_KIND_ORDER.map((kind) => {
+      {CONTAINER_KINDS.map((kind) => {
         const meta = MATERIAL_KINDS[kind];
         const ready = meta.attachable;
         return (

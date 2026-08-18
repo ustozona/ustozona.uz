@@ -17,13 +17,29 @@ import type { ClassColor } from "./class-colors";
    (`class-colors.ts`) — qotirilgan Tailwind klass yoʻq, dark mode
    avtomatik.
 
-   ⚠️ Ikkita ALOHIDA tayyorlik bayrogʻi bor, chunki «bor» degani har
-   ikkala sirtda bir xil maʼnoni anglatmaydi:
-   - `inLibrary` — kutubxonada obyekt sifatida yashaydimi (saqlanadimi);
-   - `attachable` — topshiriqqa kontent sifatida ulanadimi.
-   Dars kutubxonada BOR, lekin topshiriq ustuniga ulanmaydi — bunday
-   yoʻl hali yoʻq. Bitta bayroq bilan boshqarilsa, muharrirda ishlamaydigan
-   tugma paydo boʻlardi.
+   ⚠️ UCHTA ALOHIDA bayroq bor, chunki «bor» degani har sirtda bir xil
+   maʼnoni anglatmaydi:
+   - `inLibrary`   — kutubxonada obyekt sifatida yashaydimi;
+   - `isContainer` — SAVOL IDISHIMI (topshiriq shakli boʻla oladimi);
+   - `attachable`  — hozir amalda ulanadimi (muharriri yozilganmi).
+
+   `isContainer` eng muhimi va u toifa chegarasi. Wayground'ning beshta
+   «turi» aslida bitta obyektning beshta idishi: Assessment = savollar
+   idishsiz, Presentation = savollar slayd ichida, Video = savollar
+   video ichida, Passage = savollar matn ostida, Flashcards = savollar
+   kartochka shaklida. Bizda ham shunday — `activity_sets.container_kind`.
+
+   DARS esa savol idishi EMAS: u oʻqituvchining dars hujjati, baholanmaydi.
+   Bir muddat u shakl tanlash qatorida «tez orada» boʻlib turgan edi —
+   bu toifa xatosi edi. Dars kutubxonada qoladi, topshiriq shakli
+   roʻyxatida esa umuman koʻrinmaydi.
+
+   ⚠️ Savol SHAKLI (4 tanlovli, rost/yolgʻon, juftlik) va YETKAZISH
+   shakli (jonli, mustaqil, qogʻoz, QR) bu registrga KIRMAYDI — ular
+   boshqa oʻqlar: birinchisi `activities.shape` (har savolda alohida),
+   ikkinchisi `quiz_sessions.mode` (sessiya boshlanganda). Bitta test
+   4 tanlovli savollardan iborat boʻlib, slayd ichida turib, qogʻozda
+   oʻtkazilishi mumkin.
    ════════════════════════════════════════════════════════════════════ */
 
 export type MaterialKind = "test" | "lesson" | "deck" | "video" | "flashcard";
@@ -38,6 +54,8 @@ export type MaterialKindMeta = {
   icon: typeof FileText;
   color: ClassColor;
   inLibrary: boolean;
+  /** Savol idishimi — topshiriq shakli boʻla oladimi. */
+  isContainer: boolean;
   attachable: boolean;
 };
 
@@ -48,6 +66,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
     shortHintKey: "testShort",
     icon: ListChecks,
     color: "green",
+    isContainer: true,
     inLibrary: true,
     attachable: true,
   },
@@ -57,6 +76,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
     shortHintKey: "lessonShort",
     icon: FileText,
     color: "blue",
+    isContainer: false,
     inLibrary: true,
     attachable: false,
   },
@@ -66,6 +86,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
     shortHintKey: "deckShort",
     icon: Presentation,
     color: "orange",
+    isContainer: true,
     inLibrary: false,
     attachable: false,
   },
@@ -75,6 +96,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
     shortHintKey: "videoShort",
     icon: Video,
     color: "rose",
+    isContainer: true,
     inLibrary: false,
     attachable: false,
   },
@@ -84,6 +106,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
     shortHintKey: "flashcardShort",
     icon: Layers,
     color: "violet",
+    isContainer: true,
     inLibrary: false,
     attachable: false,
   },
