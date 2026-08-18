@@ -913,10 +913,12 @@ export default function AssignmentEditorOverlay({
        tanlov — YOʻLNI OCHUVCHI tugma, maʼlumot emas. */
     return (
       <div className="flex flex-col gap-4">
-        {/* Yorliq SARLAVHA/YOʻRIQNOMA bilan bir xil uslubda — ilgari ikkita
-            tugma yolgʻiz turardi va «Qoʻlda / Avtomatik» nimaga tegishli
-            ekani koʻrinmasdi. Yorliq ularga ega beradi. */}
-        <div className="flex flex-col gap-1.5">
+        {/* Yorliq TEPADA emas, YONIDA — sarlavha va yoʻriqnomadan farqli
+            oʻlaroq bu maydon bitta kichkina boshqaruv. Yorliq ustiga
+            qoʻyilsa ikki qator egallab, oʻzidan katta joy olardi. Yonma-yon
+            qoʻyilganda bitta qatorda oʻqiladi: «Baholash usuli — Qoʻlda».
+            GitHub/Linear sozlama qatorlari shu naqshda. */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="text-label text-muted-foreground">
             {t("gradingModeLabel")}
           </span>
