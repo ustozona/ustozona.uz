@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { TypographyMuted } from "@/components/ui/typography";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,7 +23,9 @@ import { Illustration } from "@/components/ui/illustration";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { panelCardClass, panelHeaderClass, withSidebarPageClass } from "@/components/DashboardPage";
+import {
+  panelCardClass, panelCardHeaderClass, withSidebarPageClass,
+} from "@/components/DashboardPage";
 import type { LibraryItem, LibraryKind } from "@/lib/library-types";
 
 /* Bitta koʻrinish, tur = FILTR (R226). Taqdimot va ish varagʻi obyekt
@@ -115,9 +117,13 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
   );
 
   return (
-    <div className={withSidebarPageClass}>
-      <div className={cn(panelCardClass, "min-h-0 flex-1")}>
-        <div className={cn(panelHeaderClass, "items-center gap-3")}>
+    /* `flex-1 min-w-0` — sahifa qobigʻi qator-flex ichida yashaydi
+       ((with-sidebar)/layout.tsx `flex gap-6`), shuning uchun kenglik
+       oʻz-oʻzidan toʻlmaydi: usiz karta kontent kengligida qolib, oʻngda
+       sahifa foni koʻrinib turadi. */
+    <div className={cn(withSidebarPageClass, "min-w-0 flex-1")}>
+      <Card className={cn("min-w-0", panelCardClass)}>
+        <CardHeader className={cn(panelCardHeaderClass, "gap-3")}>
           <SectionIcon>
             <Library />
           </SectionIcon>
@@ -127,7 +133,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
               {items.length} ta material · sinfdan qatʼi nazar
             </TypographyMuted>
           </div>
-        </div>
+        </CardHeader>
 
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
           <div className="relative min-w-56 flex-1">
@@ -212,7 +218,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
