@@ -57,6 +57,7 @@ import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
 import SetBuilderOverlay from "./test/SetBuilderOverlay";
 import SessionPanelModal from "./test/SessionPanelModal";
 import AttachTestDialog from "./AttachTestDialog";
+import { MaterialKindPicker } from "@/components/materials/MaterialKindPicker";
 
 const NO_TOPIC_VALUE = "__no_topic__";
 
@@ -809,22 +810,20 @@ export default function AssignmentEditorOverlay({
             </p>
           </div>
         </div>
+        {/* Shakl tanlovi — Wayground naqshi. Tayyor boʻlmagan turlar ham
+            koʻrinadi (soʻniq): ilgari ular haqida faqat kulrang matn
+            yozilardi, endi oʻqituvchi nima kelayotganini KOʻRADI. */}
+        <MaterialKindPicker onPick={(kind) => kind === "test" && handleAttachTest()} />
+
         {/* Ikki yoʻl ochiq turadi: koʻpincha yangi test tuziladi, lekin
             bankdan olingan yoki ilgari tuzilgan toʻplam ham shu ustunga
-            ulanishi kerak — ilgari ikkinchi yoʻl umuman yoʻq edi. */}
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleAttachTest}>
-              <ClipboardCheck className="size-4" />
-              {t("attachNewTest")}
-            </Button>
-            <Button variant="ghost" className="gap-2" onClick={() => setAttachOpen(true)}>
-              <Library className="size-4" />
-              {t("attachExisting")}
-            </Button>
-          </div>
-          <span className="text-xs text-muted-foreground">{t("moreKindsSoon")}</span>
-        </div>
+            ulanishi kerak — ilgari ikkinchi yoʻl umuman yoʻq edi.
+            Kutubxona yoʻli endi shaklga bogʻliq emas, shuning uchun
+            tanlov qatoridan pastda alohida turadi. */}
+        <Button variant="ghost" className="gap-2 self-start" onClick={() => setAttachOpen(true)}>
+          <Library className="size-4" />
+          {t("attachExisting")}
+        </Button>
       </div>
     );
   }

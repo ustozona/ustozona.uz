@@ -3783,6 +3783,19 @@
     "discardCancel": "Keep editing",
     "discardConfirm": "Discard"
   },
+  "MaterialKinds": {
+    "test": "Test",
+    "testHint": "A set of questions — live or self-paced",
+    "lesson": "Lesson",
+    "lessonHint": "A full lesson document with text, images and formulas",
+    "deck": "Presentation",
+    "deckHint": "Slides with questions inside them",
+    "video": "Video",
+    "videoHint": "Questions asked during the video",
+    "flashcard": "Flashcard",
+    "flashcardHint": "Question on the front, answer on the back",
+    "soon": "Coming soon"
+  },
   "AssignmentsPage": {
     "status_today": "Today",
     "statusHint_today": "Happens today — no grades entered yet.",
@@ -3872,7 +3885,6 @@
     "kindManual": "Grade column",
     "noContentTitle": "No content attached",
     "noContentDescription": "This is a gradebook column: scores for paper work, an oral check or anything done in class go here. You can attach a test if you want.",
-    "moreKindsSoon": "Slides, video, reading and flashcards are coming soon.",
     "questionCount": "{count} questions",
     "runSession": "Session",
     "detachTest": "Detach test",

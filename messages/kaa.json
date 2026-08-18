@@ -3787,6 +3787,19 @@
     "discardCancel": "Dawam etiw",
     "discardConfirm": "Saqlamay shıǵıw"
   },
+  "MaterialKinds": {
+    "test": "Test",
+    "testHint": "Sorawlar toplamı — janlı yamasa ózbetinshe",
+    "lesson": "Sabaq",
+    "lessonHint": "Tekst, súwret hám formulalı tolıq sabaq hújjeti",
+    "deck": "Prezentatsiya",
+    "deckHint": "Slaydlar hám olardaǵı sorawlar",
+    "video": "Video",
+    "videoHint": "Video dawamında soraw beriledi",
+    "flashcard": "Flashkarta",
+    "flashcardHint": "Aldınǵı tárepte soraw, artında juwap",
+    "soon": "Tez arada"
+  },
   "AssignmentsPage": {
     "status_today": "Búgin",
     "statusHint_today": "Búgin ótkeriledi — ele baha kirgizilmegen.",
@@ -3876,7 +3889,6 @@
     "kindManual": "Baha bagʻanası",
     "noContentTitle": "Kontent tirkelmegen",
     "noContentDescription": "Bul — jurnaldagʻı baha bagʻanası: qagʻazdagʻı jumıs, awızsha soraw yamasa klasta ótken jumıs ushın baha usı jerge jazıladı. Qálesengiz test tirkeng.",
-    "moreKindsSoon": "Prezentaciya, video, tekst hám fleshkartalar tez arada.",
     "questionCount": "{count} soraw",
     "runSession": "Sessiya",
     "detachTest": "Testti ajıratıw",

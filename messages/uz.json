@@ -3616,6 +3616,19 @@
     "discardCancel": "Davom etish",
     "discardConfirm": "Tashlab chiqish"
   },
+  "MaterialKinds": {
+    "test": "Test",
+    "testHint": "Savollar toʻplami — jonli yoki mustaqil yechiladi",
+    "lesson": "Dars",
+    "lessonHint": "Matn, rasm va formulali toʻliq dars hujjati",
+    "deck": "Taqdimot",
+    "deckHint": "Slaydlar va ular ichidagi savollar",
+    "video": "Video",
+    "videoHint": "Video davomida savol beriladi",
+    "flashcard": "Flashkarta",
+    "flashcardHint": "Old tomonda savol, orqasida javob",
+    "soon": "Tez orada"
+  },
   "AssignmentsPage": {
     "status_today": "Bugun",
     "statusHint_today": "Bugun oʻtkaziladi — hali baho kiritilmagan.",
@@ -3703,9 +3716,8 @@
     "statusHint_done": "Barchasi baholandi — {graded} / {total}.",
     "contentLabel": "Kontent",
     "kindManual": "Baho ustuni",
-    "noContentTitle": "Kontent biriktirilmagan",
-    "noContentDescription": "Bu — jurnaldagi baho ustuni: qogʻozdagi ish, ogʻzaki soʻrov yoki sinfda oʻtgan ish uchun baho shu ustunga yoziladi. Xohlasangiz test biriktiring.",
-    "moreKindsSoon": "Taqdimot, video, matn va flashkartalar tez orada.",
+    "noContentTitle": "Baho ustuni — kontentsiz",
+    "noContentDescription": "Shu holicha ham toʻliq ishlaydi: daftardagi ish, ogʻzaki soʻrov yoki sinfda oʻtkazilgan nazorat uchun bahoni shu ustunga qoʻyaverasiz. Ilovada yechiladigan qilmoqchi boʻlsangiz, quyidan shaklini tanlang.",
     "questionCount": "{count} savol",
     "runSession": "Sessiya",
     "detachTest": "Testni ajratish",
