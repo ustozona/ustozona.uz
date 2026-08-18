@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { timeAgoUz } from "@/lib/localization";
 import { IconButton } from "@/components/ui/icon-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,25 +30,6 @@ const KIND_BADGE: Record<NotificationKind, string> = {
   status: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
   system: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
 };
-
-/** ISO → "hozir / 5 daq oldin / 3 soat oldin / 2 kun oldin / 12 iyun". */
-const MONTHS_SHORT = [
-  "yan", "fev", "mar", "apr", "may", "iyun",
-  "iyul", "avg", "sen", "okt", "noy", "dek",
-];
-function timeAgo(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const diff = Date.now() - d.getTime();
-  const min = Math.floor(diff / 60_000);
-  if (min < 1) return "hozir";
-  if (min < 60) return `${min} daq oldin`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr} soat oldin`;
-  const day = Math.floor(hr / 24);
-  if (day < 7) return `${day} kun oldin`;
-  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
-}
 
 export default function NotificationsBell() {
   const router = useRouter();
@@ -141,7 +123,7 @@ export default function NotificationsBell() {
                             {n.body}
                           </span>
                         )}
-                        <span className="mt-1 block text-xs text-muted-foreground">{timeAgo(n.createdAt)}</span>
+                        <span className="mt-1 block text-xs text-muted-foreground">{timeAgoUz(n.createdAt)}</span>
                       </span>
                     </button>
                   </li>
