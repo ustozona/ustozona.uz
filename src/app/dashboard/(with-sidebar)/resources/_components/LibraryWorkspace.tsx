@@ -73,6 +73,8 @@ const KIND_META: Record<
   LibraryKind,
   {
     label: string;
+    /** Menyudagi bir qatorlik tushuntirish — turlar koʻpayganda kerak. */
+    hint: string;
     icon: typeof FileText;
     color: ClassColor;
     href: (id: string) => string;
@@ -82,6 +84,7 @@ const KIND_META: Record<
 > = {
   test: {
     label: "Test",
+    hint: "Savollar toʻplami — jonli yoki mustaqil yechiladi",
     icon: ListChecks,
     color: "green",
     href: (id) => `/dashboard/assignments?setId=${id}`,
@@ -89,6 +92,7 @@ const KIND_META: Record<
   },
   lesson: {
     label: "Dars",
+    hint: "Matn, rasm va formulali toʻliq dars hujjati",
     icon: FileText,
     color: "blue",
     href: (id) => `/lessons/${id}`,
@@ -539,18 +543,25 @@ function CreateMenu() {
           Yaratish
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {Object.entries(KIND_META).map(([key, meta]) => {
-          const Icon = meta.icon;
-          return (
-            <DropdownMenuItem key={key} asChild>
-              <a href={meta.createHref}>
-                <Icon />
-                {meta.label}
-              </a>
-            </DropdownMenuItem>
-          );
-        })}
+      {/* Wayground naqshi: har turda RANGLI ikonka + bir qatorlik izoh.
+          Faqat nom yozilganda oʻqituvchi «Test bilan Dars nima farqi
+          bor?» degan savolga menyuni yopmasdan javob ololmaydi. Ikonka
+          jadvaldagi plitka BILAN AYNAN bir xil — menyuda koʻrgan yashil
+          belgisini roʻyxatda darhol taniydi. */}
+      <DropdownMenuContent align="end" className="w-72 p-1.5">
+        {Object.entries(KIND_META).map(([key, meta]) => (
+          <DropdownMenuItem key={key} asChild className="gap-3 py-2.5">
+            <a href={meta.createHref}>
+              <KindTile kind={key as LibraryKind} className="size-8 [&_svg]:size-4" />
+              <span className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-sm font-medium leading-none">{meta.label}</span>
+                <span className="text-xs leading-snug text-muted-foreground">
+                  {meta.hint}
+                </span>
+              </span>
+            </a>
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
