@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   X, FileCheck2, Presentation, Check, Tag, Star, Library, CloudOff,
   ChevronRight, ChevronDown, Loader2, ClipboardCheck, Info, Users,
-  Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal,
+  Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal, PenLine,
   Calendar, Clock, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -60,38 +60,6 @@ import AttachTestDialog from "./AttachTestDialog";
 import { MaterialKindPicker } from "@/components/materials/MaterialKindPicker";
 
 const NO_TOPIC_VALUE = "__no_topic__";
-
-/** Kontent qoʻshishning ikki yoʻli — «Yaratish» va «Biriktirish» kartasi.
-
-    Ikkalasi bitta komponentdan chiziladi: ular teng vaznli tanlov, demak
-    bir pikselda ham farq qilmasligi kerak. Ikki joyda alohida yozilsa,
-    vaqt oʻtib biri boshqasidan qalinroq/kattaroq boʻlib ketardi. */
-const ContentChoiceCard = ({
-  icon,
-  title,
-  hint,
-  active = false,
-  onClick,
-}: {
-  icon: ReactNode;
-  title: string;
-  hint: string;
-  active?: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      "flex flex-col items-center gap-1.5 rounded-card border border-border bg-card px-4 py-5 text-center transition-colors hover:bg-muted/40",
-      active && "border-foreground/30 bg-muted/50"
-    )}
-  >
-    <span className="text-foreground">{icon}</span>
-    <span className="text-sm font-medium text-foreground">{title}</span>
-    <span className="text-xs leading-snug text-muted-foreground">{hint}</span>
-  </button>
-);
 
 /* Tafsilotlar qatori — dars muharriridagi `DetailsPanel` tili bilan bir xil
    (`text-label` yorliq USTIDA, `rounded-xl` karta, `size-9` DOIRA ikonka).
@@ -753,7 +721,7 @@ export default function AssignmentEditorOverlay({
               </h4>
               <p className="truncate text-xs text-muted-foreground">
                 {setMeta
-                  ? `${t("kindTest")} · ${t("questionCount", { count: setMeta.itemCount })}`
+                  ? `${t("kindTest")} · ${t("questionCount", { count: setMeta.itemCount })} · ${t("gradingAuto")}`
                   : t("loadingLabel")}
               </p>
             </div>
@@ -827,46 +795,62 @@ export default function AssignmentEditorOverlay({
       );
     }
 
-    /* Mazmunsiz — bu NUQSON EMAS, toʻlaqonli holat: qogʻozdagi ish,
-       ogʻzaki soʻrov, sinfdan tashqarida oʻtgan ish. Ilgari bu yerda
-       "Test muharriri tez orada" yozilardi va ustun buzuq testdek
-       koʻrinardi. */
-    /* ── YARATISH / BIRIKTIRISH ──────────────────────────────────────
-       Google Classroom'ning `Create` / `Add` boʻlinishi. Ikkalasi bir
-       xil natijaga olib kelsa-da (ustunga kontent ulanadi), oʻqituvchi
-       boshida IKKI XIL fikrda boʻladi: «yangi tuzaman» yoki «tayyorini
-       olaman». Bitta qatorda aralashtirilganda tanlov ogʻirlashadi —
-       shakl kartalari (tur) va kutubxona (manba) bir xil koʻrinishga
-       ega boʻlib, ular boshqa-boshqa savolga javob beradi.
+    /* Kontentsiz topshiriq — bu NUQSON EMAS, toʻlaqonli holat: daftardagi
+       insho, ogʻzaki soʻrov, sinfdan tashqarida bajarilgan ish. Aynan shu
+       yoʻl eng koʻp ishlatiladi.
 
-       Shakllar DARHOL koʻrsatilmaydi: beshta katta karta boʻsh ustunni
-       «toʻldirilmagan forma» kabi koʻrsatardi. Holbuki kontentsiz ustun
-       — toʻlaqonli holat (daftardagi ish, ogʻzaki soʻrov). */
+       ⚠️ BU YERDA TANLOV SOʻRALMAYDI. «Qoʻlda / avtomatik» degan tanlov
+       oʻylab koʻrilib RAD ETILDI: oʻqituvchi «avtomatik» deb belgilab,
+       keyin test biriktirmasa (yoki teskarisi) tanlov yolgʻon boʻlib
+       qolardi va tizim qaysi haqiqatga ishonishini bilmasdi. Baholash
+       usuli — KUZATUV, qaror emas: test bor → avtomatik, yoʻq → qoʻlda.
+       Bu `kind` ning `setId` dan hisoblanishi bilan bir xil qoida
+       ([[assignment-content-is-attachment]]).
+
+       Ilgari bu yerda ikkita KATTA karta turardi. Ular blokni sahifadagi
+       eng ogʻir elementga aylantirib, ixtiyoriy qadamni majburiydek
+       koʻrsatardi — insho topshirigʻini tuzayotgan oʻqituvchi shu yerda
+       nimadir tanlashi kerak deb toʻxtab qolardi. Endi Google Classroom
+       naqshi: holat bir qatorda aytiladi, ikkala yoʻl esa chetdagi
+       kichik tugma boʻlib, koʻrinadi-yu, yoʻlni toʻsmaydi. */
     return (
-      <div className="flex flex-col gap-4 rounded-xl border border-dashed border-border p-5">
-        {/* Ikkala yoʻl BIR XIL balandlikda — ataylab. Amalda koʻpincha
-            yangi tuziladi, lekin kutubxona yangi funksiya va oʻqituvchi
-            uni hali bilmaydi. Ierarxiya berilsa (biri solid tugma, biri
-            matn-havola) kutubxona yoʻli yillab oʻrganilmay qolardi. */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <ContentChoiceCard
-            icon={<Plus className="size-5" />}
-            title={t("contentCreate")}
-            hint={t("contentCreateHint")}
-            active={showKinds}
-            onClick={() => setShowKinds((v) => !v)}
-          />
-          <ContentChoiceCard
-            icon={<Library className="size-5" />}
-            title={t("contentAttach")}
-            hint={t("contentAttachHint")}
-            onClick={() => setAttachOpen(true)}
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-border p-4">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <PenLine className="size-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-foreground">{t("gradingManual")}</p>
+            <p className="text-xs text-muted-foreground">{t("gradingManualHint")}</p>
+          </div>
+          {/* Ikkala yoʻl bir xil vaznda — «yangi tuzaman» va «tayyorini
+              olaman» boshqa-boshqa savolga javob beradi, biri ikkinchisidan
+              muhimroq emas. */}
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              aria-pressed={showKinds}
+              onClick={() => setShowKinds((v) => !v)}
+            >
+              <Plus className="size-3.5" />
+              {t("contentCreate")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setAttachOpen(true)}
+            >
+              <Library className="size-3.5" />
+              {t("contentAttach")}
+            </Button>
+          </div>
         </div>
 
         {/* Shakl tanlovi — Wayground naqshi. Tayyor boʻlmagan turlar ham
-            koʻrinadi (soʻniq): ilgari ular haqida faqat kulrang matn
-            yozilardi, endi oʻqituvchi nima kelayotganini KOʻRADI. */}
+            koʻrinadi (soʻniq): oʻqituvchi nima kelayotganini KOʻRADI. */}
         {showKinds && (
           <MaterialKindPicker onPick={(kind) => kind === "test" && handleAttachTest()} />
         )}
