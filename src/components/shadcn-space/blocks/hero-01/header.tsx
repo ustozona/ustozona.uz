@@ -31,7 +31,7 @@ type HeaderProps = {
 
 const CollaborateButton = ({ className }: { className?: string }) => (
   <ButtonWithIcon href="/register" size="sm" className={className}>
-    Bepul boshlash
+    Roʻyxatdan oʻtish
   </ButtonWithIcon>
 );
 

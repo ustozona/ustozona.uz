@@ -9,7 +9,7 @@ import { TELEGRAM_SIGNUP_URL } from "@/lib/lessonlab-bot";
    uzatiladi. Formaning oʻzi avvalgidek mijoz komponenti. */
 export default function RegisterPage() {
   return (
-    <AuthShell maxWidth="max-w-md">
+    <AuthShell maxWidth="max-w-sm">
       <SignupForm telegramSignupUrl={TELEGRAM_SIGNUP_URL} />
     </AuthShell>
   );

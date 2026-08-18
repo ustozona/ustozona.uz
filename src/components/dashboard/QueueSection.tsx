@@ -22,9 +22,10 @@ import { useTasksStore } from "@/store/useTasksStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, autoClassColor } from "@/lib/class-colors";
 import { addDaysKey, dateToKey } from "@/lib/date-keys";
 import { formatDateGroupLabel, sortTasks, type Task } from "@/lib/tasks-data";
+import { DEMO_CLASS_NAMES } from "@/components/tour/home-tour-demo";
 import { cn } from "@/lib/utils";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -39,11 +40,12 @@ import { cn } from "@/lib/utils";
 
 const MAX_ROWS = 7;
 
-export function QueueSection({ now }: { now: Date }) {
+export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol paytida boʻsh navbat oʻrniga koʻrsatiladigan namunaviy vazifalar — store'ga taʼsir qilmaydi. */ demoTasks?: Task[] }) {
   const t = useTranslations("QueueSection");
   const router = useRouter();
 
-  const items = useTasksStore((s) => s.items);
+  const storeItems = useTasksStore((s) => s.items);
+  const items = demoTasks ?? storeItems;
   const setStatus = useTasksStore((s) => s.setStatus);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const liveClasses = useLiveClasses();
@@ -52,10 +54,17 @@ export function QueueSection({ now }: { now: Date }) {
   const tomorrowKey = addDaysKey(todayKey, 1);
   const weekKey = addDaysKey(todayKey, 7);
 
-  const classMeta = useMemo(
-    () => new Map(liveClasses.map((c) => [c.id, { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] }])),
-    [liveClasses]
-  );
+  // Demo vazifalar `liveClasses`da yoʻq — nomi/rangi DEMO_CLASS_NAMES'dan
+  // (TodayRail'dagi bilan bir xil naqsh, [[dashboard-hero-stats]]).
+  const classMeta = useMemo(() => {
+    const map = new Map(liveClasses.map((c) => [c.id, { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] }]));
+    if (demoTasks) {
+      for (const classId of Object.keys(DEMO_CLASS_NAMES)) {
+        map.set(classId, { name: DEMO_CLASS_NAMES[classId], hex: CLASS_COLOR_HEX[autoClassColor(classId)] });
+      }
+    }
+    return map;
+  }, [liveClasses, demoTasks]);
 
   // ── Baholash navbati: faqat "grading" manbali, hali bajarilmagan,
   //    7 kunlik ufq ichidagi vazifalar (Vazifalar sahifasidagi "todo" bilan bir xil). ──

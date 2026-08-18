@@ -181,12 +181,17 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    // `data-tour="sidebar-nav"` — butun panelda (header+content+footer),
+    // faqat SidebarContent'da EMAS: tur matni yuqoridagi yigʻish tugmasiga
+    // (Header'dagi SidebarTrigger — bu yerdan tashqarida, lekin viewport
+    // jihatidan panelning tepasiga yaqin) ishora qiladi, shuning uchun
+    // butun panel yoritilishi kerak (2026-08-18).
+    <Sidebar collapsible="icon" data-tour="sidebar-nav">
       <SidebarHeader>
         <SidebarBrandHeader />
       </SidebarHeader>
 
-      <SidebarContent data-tour="sidebar-nav">
+      <SidebarContent>
         {navGroups.map((group, i) => (
           <SidebarGroup key={group.labelKey ?? `group-${i}`}>
             {group.labelKey && <SidebarGroupLabel>{t(group.labelKey)}</SidebarGroupLabel>}

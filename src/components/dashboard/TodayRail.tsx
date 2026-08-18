@@ -156,8 +156,14 @@ export function TodayRail({ now }: { now: Date }) {
     return list;
   }, [allLessons, selectedKey]);
   // "overlap" — rail'ning tarixiy semantikasi (planner "start-in-slot" ishlatadi).
-  const lessonFor = (ev: RailEvent): LessonInfo | undefined =>
-    daySessions.find((s) => sessionMatchesSlot(ev, s, "overlap"))?.info;
+  // Demo hodisalar (classId DEMO_CLASS_NAMES'da) haqiqiy `allLessons`da hech
+  // qachon topilmaydi — mavzusi `home-tour-demo.ts`dagi `event.lesson`dan.
+  const lessonFor = (ev: RailEvent): LessonInfo | undefined => {
+    if (DEMO_CLASS_NAMES[ev.classId]) {
+      return tourDemo?.events.find((e) => e.id === ev.id)?.lesson;
+    }
+    return daySessions.find((s) => sessionMatchesSlot(ev, s, "overlap"))?.info;
+  };
 
   // ── Temporal holat (faqat bugun) ──
   const nextEvent = isToday ? events.find((e) => e.startMin > nowMin) : undefined;
@@ -211,7 +217,11 @@ export function TodayRail({ now }: { now: Date }) {
   };
 
   return (
-    <Card className={panelCardClass}>
+    // `data-tour="home-schedule"` — ATAYIN butun Card'da (sarlavha + hafta
+    // tasmasi + jadval), pastdagi scroll qismida EMAS: avval faqat scroll
+    // konteynerida edi, shuning uchun tur spotlight'i sarlavha va hafta
+    // tasmasini tashlab ketardi (2026-08-18, sidebar bilan bir xil sabab).
+    <Card data-tour="home-schedule" className={panelCardClass}>
       {/* border-b-0: kontent (kun tasmasi) darhol davom etadi, ajratuvchi chiziq keraksiz — panel-language-v1 "no-divider" istisnosi */}
       <CardHeader className={cn(panelCardHeaderClass, "border-b-0 pt-4! pb-4!")}>
         <div className="flex min-w-0 items-center gap-2">
@@ -237,7 +247,7 @@ export function TodayRail({ now }: { now: Date }) {
         </Tooltip>
       </CardHeader>
 
-      <div data-tour="home-week" className="shrink-0 px-4 pb-3">
+      <div className="shrink-0 px-4 pb-3">
         <WeekStrip
           selected={selectedDate}
           onSelect={setSelectedDate}
@@ -250,7 +260,7 @@ export function TodayRail({ now }: { now: Date }) {
         />
       </div>
 
-      <div data-tour="home-schedule" className="relative flex min-h-0 flex-1 flex-col">
+      <div className="relative flex min-h-0 flex-1 flex-col">
         <ScrollFade position="top" />
         <div ref={scrollRef} className={panelCardContentClass}>
           <div className="px-4 py-4">

@@ -13,6 +13,7 @@ import {
   Users,
   User,
   School,
+  ChevronDown,
 } from "lucide-react";
 import {
   Dialog,
@@ -26,6 +27,8 @@ import { Label } from "@/components/ui/label";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { BirthDatePicker } from "@/components/ui/birth-date-picker";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AppleEmoji } from "@/components/ui/apple-emoji";
 import { Illustration } from "@/components/ui/illustration";
@@ -46,6 +49,7 @@ import {
   StepperContent,
 } from "@/components/ui/stepper";
 import { cn } from "@/lib/utils";
+import { ALL_SUBJECTS } from "@/lib/standard-templates";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import {
@@ -115,6 +119,8 @@ export default function OnboardingWizard() {
   const [school, setSchool] = React.useState(profile.school);
   const [subject, setSubject] = React.useState(profile.subject);
   const [birthDate, setBirthDate] = React.useState(profile.birthDate);
+  const [subjectOpen, setSubjectOpen] = React.useState(false);
+  const [subjectQuery, setSubjectQuery] = React.useState("");
 
   // Oʻquv yili qadam — kalendar allaqachon eager-seed qilingan; foydalanuvchi
   // sukut oraligʻini tasdiqlaydi yoki tuzatadi (editing). Sukut oraligʻi
@@ -320,17 +326,67 @@ export default function OnboardingWizard() {
                       </InputGroup>
                     </Field>
                     <Field label={t("profileStep.subjectLabel")} htmlFor="ob-subject">
-                      <InputGroup>
-                        <InputGroupAddon>
-                          <BookOpen className="size-4" />
-                        </InputGroupAddon>
-                        <InputGroupInput
-                          id="ob-subject"
-                          value={subject}
-                          onChange={(e) => setSubject(e.target.value)}
-                          placeholder={t("profileStep.subjectPlaceholder")}
-                        />
-                      </InputGroup>
+                      {/* Kanonik fanlar roʻyxatidan (SUBJECT_CATALOG) tanlash —
+                          erkin matn oʻrniga. Sabab: bitta fan "Ingliz tili" /
+                          "ingliz" / "English" kabi turli yozilishda saqlansa,
+                          Standartlar boʻlimidagi fan bilan keyin moslashtirib
+                          boʻlmaydi. Roʻyxatda yoʻq fan uchun pastda erkin
+                          matnni saqlash imkoniyati qoladi. */}
+                      <Popover open={subjectOpen} onOpenChange={setSubjectOpen}>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            id="ob-subject"
+                            className="flex h-9 w-full items-center gap-2 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                          >
+                            <BookOpen className="size-4 shrink-0 text-muted-foreground" />
+                            <span className={cn("flex-1 truncate text-left", !subject && "text-muted-foreground")}>
+                              {subject || t("profileStep.subjectPlaceholder")}
+                            </span>
+                            <ChevronDown className="size-4 shrink-0 text-muted-foreground opacity-50" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
+                          <Command>
+                            <CommandInput
+                              value={subjectQuery}
+                              onValueChange={setSubjectQuery}
+                              placeholder={t("profileStep.subjectSearchPlaceholder")}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                {subjectQuery && (
+                                  <button
+                                    type="button"
+                                    className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+                                    onClick={() => {
+                                      setSubject(subjectQuery);
+                                      setSubjectOpen(false);
+                                    }}
+                                  >
+                                    {t("profileStep.subjectUseCustom", { value: subjectQuery })}
+                                  </button>
+                                )}
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {ALL_SUBJECTS.map((label) => (
+                                  <CommandItem
+                                    key={label}
+                                    value={label}
+                                    onSelect={() => {
+                                      setSubject(label);
+                                      setSubjectQuery("");
+                                      setSubjectOpen(false);
+                                    }}
+                                  >
+                                    {label}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </Field>
                   </div>
                   <Field label={t("profileStep.birthDateLabel")} htmlFor="ob-birth-date">

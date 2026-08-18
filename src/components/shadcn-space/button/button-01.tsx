@@ -25,7 +25,7 @@ type ButtonWithIconProps = {
 };
 
 const ButtonWithIcon = ({
-  children = "Bepul boshlash",
+  children = "Roʻyxatdan oʻtish",
   href,
   className,
   size = "lg",

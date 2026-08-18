@@ -84,6 +84,9 @@ export default function DashboardPage() {
       })),
     [welcomeDemo, tourDemo, todaysEvents, classNameById]
   );
+  // Ishlar navbati ham xuddi shu shartda (hisob boʻsh + tur faol) demoga
+  // oʻtadi — Hero/TodayRail bilan bir xil signal, panellar mos holatda qoladi.
+  const queueDemoTasks = welcomeDemo && tourDemo ? tourDemo.tasks : undefined;
 
   const hour = currentTime.getHours();
   const minute = currentTime.getMinutes();
@@ -107,7 +110,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-full">
       <DashboardPageLayout className="flex-1">
-        <div data-tour="home-overview" className={cn(dashboardGridClass, "stagger-children flex-1 min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,45fr)_minmax(0,30fr)_minmax(0,25fr)] lg:grid-rows-[1fr]")}>
+        <div className={cn(dashboardGridClass, "stagger-children flex-1 min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,45fr)_minmax(0,30fr)_minmax(0,25fr)] lg:grid-rows-[1fr]")}>
 
           {/* Chap ustun (45%) — Hero + Kelgusi darslar */}
           <div className={cn(dashboardStackClass, "h-full min-h-0")}>
@@ -135,7 +138,7 @@ export default function DashboardPage() {
 
           {/* Oʻng ustun (25%) — Vazifalar (tekshirish + summativ muddatlar) */}
           <div className={cn(dashboardStackClass, "h-full min-h-0")}>
-            <QueueSection now={currentTime} />
+            <QueueSection now={currentTime} demoTasks={queueDemoTasks} />
           </div>
 
         </div>
