@@ -5,16 +5,38 @@ import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
-  X, FileCheck2, Presentation, Check, Tag, Star, Library, CloudOff,
-  ChevronRight, ChevronDown, Loader2, ClipboardCheck, Info, Users,
-  Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal,
-  Calendar, Clock, Lock,
+  X,
+  FileCheck2,
+  Presentation,
+  Check,
+  Tag,
+  Star,
+  Library,
+  CloudOff,
+  ChevronRight,
+  ChevronDown,
+  Loader2,
+  ClipboardCheck,
+  Info,
+  Users,
+  Plus,
+  MoreHorizontal,
+  Copy,
+  Trash2,
+  SlidersHorizontal,
+  PenLine,
+  Zap,
+  Calendar,
+  Clock,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useGradesStore } from "@/store/useGradesStore";
 import {
-  useAssignmentEditorStore, isDraftDirty, type EditorSession,
+  useAssignmentEditorStore,
+  isDraftDirty,
+  type EditorSession,
 } from "@/store/useAssignmentEditorStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { getSetIdForSessionAction } from "@/server/actions/assess-sessions";
@@ -22,9 +44,15 @@ import { getSetAction, getSetMetaAction } from "@/server/actions/assess";
 import type { SetMeta } from "@/server/dal/assess/sets";
 import type { ActivitySetRow } from "@/server/db/schema";
 import {
-  TOPIC_COLOR_HEX, classColor, assignmentGroupKey, mapTopicIdToClass,
+  TOPIC_COLOR_HEX,
+  classColor,
+  assignmentGroupKey,
+  mapTopicIdToClass,
   buildScoreSuggestions,
-  type Assignment, type AssignmentKind, type ClassData, NO_TOPIC_ID,
+  type Assignment,
+  type AssignmentKind,
+  type ClassData,
+  NO_TOPIC_ID,
 } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { MONTHS_UZ_SHORT, DAYS_UZ_SUN } from "@/lib/localization";
@@ -37,20 +65,44 @@ import { AssignmentStatusChip } from "@/components/AssignmentStatusChip";
 import { type StatusInfo } from "@/lib/assignment-status";
 import { useSyncFailing } from "@/store/useSyncHealthStore";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
-  AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
@@ -60,38 +112,6 @@ import AttachTestDialog from "./AttachTestDialog";
 import { MaterialKindPicker } from "@/components/materials/MaterialKindPicker";
 
 const NO_TOPIC_VALUE = "__no_topic__";
-
-/** Kontent qoʻshishning ikki yoʻli — «Yaratish» va «Biriktirish» kartasi.
-
-    Ikkalasi bitta komponentdan chiziladi: ular teng vaznli tanlov, demak
-    bir pikselda ham farq qilmasligi kerak. Ikki joyda alohida yozilsa,
-    vaqt oʻtib biri boshqasidan qalinroq/kattaroq boʻlib ketardi. */
-const ContentChoiceCard = ({
-  icon,
-  title,
-  hint,
-  active = false,
-  onClick,
-}: {
-  icon: ReactNode;
-  title: string;
-  hint: string;
-  active?: boolean;
-  onClick: () => void;
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      "flex flex-col items-center gap-1.5 rounded-card border border-border bg-card px-4 py-5 text-center transition-colors hover:bg-muted/40",
-      active && "border-foreground/30 bg-muted/50"
-    )}
-  >
-    <span className="text-foreground">{icon}</span>
-    <span className="text-sm font-medium text-foreground">{title}</span>
-    <span className="text-xs leading-snug text-muted-foreground">{hint}</span>
-  </button>
-);
 
 /* Tafsilotlar qatori — dars muharriridagi `DetailsPanel` tili bilan bir xil
    (`text-label` yorliq USTIDA, `rounded-xl` karta, `size-9` DOIRA ikonka).
@@ -118,7 +138,9 @@ const FieldRow = ({
       >
         {icon}
       </span>
-      <div className="min-w-0 flex-1 text-sm font-medium text-foreground">{children}</div>
+      <div className="min-w-0 flex-1 text-sm font-medium text-foreground">
+        {children}
+      </div>
       {action}
     </div>
   </div>
@@ -204,6 +226,8 @@ export default function AssignmentEditorOverlay({
   const [attachOpen, setAttachOpen] = useState(false);
   /** «Yaratish» bosilganda shakl kartalari ochiladi (default — yopiq). */
   const [showKinds, setShowKinds] = useState(false);
+  /** Baholash usuli tanlovi — faqat koʻrinish uchun, bazaga yozilmaydi. */
+  const [autoGrading, setAutoGrading] = useState(false);
   /* Savol muharriri va sessiya paneli TOʻGʻRIDAN-TOʻGʻRI ochiladi.
      Ilgari orada "Testlar (5-A)" roʻyxati turardi — sidebar'dan olib
      tashlangan `/dashboard/baholash` sahifasining qoldigʻi. U uchinchi
@@ -245,7 +269,9 @@ export default function AssignmentEditorOverlay({
     const map: Record<string, Assignment> = {};
     if (isDraft) return map;
     for (const [cid, cd] of Object.entries(classDataMap)) {
-      const found = cd.assignments.find((a) => assignmentGroupKey(a) === groupKey);
+      const found = cd.assignments.find(
+        (a) => assignmentGroupKey(a) === groupKey,
+      );
       if (found) map[cid] = found;
     }
     return map;
@@ -259,9 +285,9 @@ export default function AssignmentEditorOverlay({
   const scoreSuggestions = useMemo(
     () =>
       buildScoreSuggestions(
-        Object.values(classDataMap).flatMap((cd) => cd.assignments)
+        Object.values(classDataMap).flatMap((cd) => cd.assignments),
       ),
-    [classDataMap]
+    [classDataMap],
   );
 
   /* Holat — sanadan va baholardan hisoblanadi (qoʻlda tanlanmaydi).
@@ -286,7 +312,9 @@ export default function AssignmentEditorOverlay({
       if (!cd) continue;
       total += cd.students.length;
       graded += cd.students.filter((s) => {
-        const g = cd.grades.find((x) => x.studentId === s.id && x.assignmentId === m.id);
+        const g = cd.grades.find(
+          (x) => x.studentId === s.id && x.assignmentId === m.id,
+        );
         return g && (g.score !== null || g.missing);
       }).length;
     }
@@ -316,7 +344,9 @@ export default function AssignmentEditorOverlay({
     if (!isDraft || modeTouched) return;
     const shouldBeDue = (currentTopic?.purpose ?? "summative") === "formative";
     patchDraft((p) => {
-      const want = shouldBeDue ? (p.dates[classId] ?? p.assignment.date ?? todayKey()) : undefined;
+      const want = shouldBeDue
+        ? (p.dates[classId] ?? p.assignment.date ?? todayKey())
+        : undefined;
       return (p.assignment.dueDate ?? undefined) === want
         ? p
         : { ...p, assignment: { ...p.assignment, dueDate: want } };
@@ -411,7 +441,8 @@ export default function AssignmentEditorOverlay({
       tegmaymiz — aks holda har ikki soniyada bekorga sync yuborilardi. */
   function handleSetSaved(set: { id: string; title: string }) {
     const needsTitle = !current.title.trim();
-    if (current.setId === set.id && current.kind === "test" && !needsTitle) return;
+    if (current.setId === set.id && current.kind === "test" && !needsTitle)
+      return;
     patch({
       kind: "test",
       setId: set.id,
@@ -433,18 +464,26 @@ export default function AssignmentEditorOverlay({
     for (const [cid, m] of Object.entries(members)) {
       const cd = classDataMap[cid];
       if (!cd) continue;
-      n += cd.grades.filter((g) => g.assignmentId === m.id && g.score !== null).length;
+      n += cd.grades.filter(
+        (g) => g.assignmentId === m.id && g.score !== null,
+      ).length;
     }
     return n;
   }, [isDraft, members, classDataMap]);
 
   /** Tahrir boshlanishidagi surat — "Bekor qilish" shu holatga qaytaradi. */
-  const maxScoreUndo = useRef<{ map: typeof classDataMap; value: number } | null>(null);
+  const maxScoreUndo = useRef<{
+    map: typeof classDataMap;
+    value: number;
+  } | null>(null);
 
   function announceMaxScore(before: typeof classDataMap, previous: number) {
     if (gradedCount === 0 || previous === current.maxScore) return;
     toast.warning(t("maxScoreRecalculated", { count: gradedCount }), {
-      description: t("maxScoreRecalculatedHint", { from: previous, to: current.maxScore }),
+      description: t("maxScoreRecalculatedHint", {
+        from: previous,
+        to: current.maxScore,
+      }),
       action: { label: t("undo"), onClick: () => setClassDataMap(before) },
     });
   }
@@ -466,7 +505,9 @@ export default function AssignmentEditorOverlay({
       (R215). Ustun oddiy baho ustuniga aylanadi, maks. ball yana ochiladi. */
   function handleDetachTest() {
     patch({ kind: "manual", setId: undefined });
-    toast.success(t("detachedTitle"), { description: t("detachedDescription") });
+    toast.success(t("detachedTitle"), {
+      description: t("detachedDescription"),
+    });
   }
 
   /** Umumiy maydonlar (sarlavha/yoʻriqnoma/toifa/ball) — butun guruhga. */
@@ -475,11 +516,15 @@ export default function AssignmentEditorOverlay({
       patchDraft((p) => ({ ...p, assignment: { ...p.assignment, ...next } }));
       return;
     }
-    const srcTopic = "topicId" in next ? topics.find((tp) => tp.id === next.topicId) : undefined;
+    const srcTopic =
+      "topicId" in next
+        ? topics.find((tp) => tp.id === next.topicId)
+        : undefined;
     setClassDataMap((prev) => {
       const out = { ...prev };
       for (const [cid, cd] of Object.entries(out)) {
-        if (!cd.assignments.some((a) => assignmentGroupKey(a) === groupKey)) continue;
+        if (!cd.assignments.some((a) => assignmentGroupKey(a) === groupKey))
+          continue;
         out[cid] = {
           ...cd,
           assignments: cd.assignments.map((a) => {
@@ -505,7 +550,11 @@ export default function AssignmentEditorOverlay({
         dates: { ...p.dates, [cid]: value },
         assignment:
           cid === classId
-            ? { ...p.assignment, date: value, ...(isDue ? { dueDate: value } : {}) }
+            ? {
+                ...p.assignment,
+                date: value,
+                ...(isDue ? { dueDate: value } : {}),
+              }
             : p.assignment,
       }));
       return;
@@ -515,7 +564,7 @@ export default function AssignmentEditorOverlay({
       assignments: cd.assignments.map((a) =>
         assignmentGroupKey(a) === groupKey
           ? { ...a, date: value, ...(a.dueDate ? { dueDate: value } : {}) }
-          : a
+          : a,
       ),
     }));
   }
@@ -536,13 +585,14 @@ export default function AssignmentEditorOverlay({
     setClassDataMap((prev) => {
       const out = { ...prev };
       for (const [cid, cd] of Object.entries(out)) {
-        if (!cd.assignments.some((a) => assignmentGroupKey(a) === groupKey)) continue;
+        if (!cd.assignments.some((a) => assignmentGroupKey(a) === groupKey))
+          continue;
         out[cid] = {
           ...cd,
           assignments: cd.assignments.map((a) =>
             assignmentGroupKey(a) === groupKey
               ? { ...a, dueDate: due ? a.date : undefined }
-              : a
+              : a,
           ),
         };
       }
@@ -558,10 +608,15 @@ export default function AssignmentEditorOverlay({
     if (isDraft) {
       patchDraft((p) => ({
         ...p,
-        classIds: on ? p.classIds.filter((x) => x !== cid) : [...p.classIds, cid],
+        classIds: on
+          ? p.classIds.filter((x) => x !== cid)
+          : [...p.classIds, cid],
         dates: on
           ? p.dates
-          : { ...p.dates, [cid]: p.dates[cid] ?? p.dates[classId] ?? todayKey() },
+          : {
+              ...p.dates,
+              [cid]: p.dates[cid] ?? p.dates[classId] ?? todayKey(),
+            },
       }));
       return;
     }
@@ -573,7 +628,9 @@ export default function AssignmentEditorOverlay({
       if (!cd) return prev;
       if (on) {
         const dropped = new Set(
-          cd.assignments.filter((a) => assignmentGroupKey(a) === groupKey).map((a) => a.id)
+          cd.assignments
+            .filter((a) => assignmentGroupKey(a) === groupKey)
+            .map((a) => a.id),
         );
         out[cid] = {
           ...cd,
@@ -599,7 +656,7 @@ export default function AssignmentEditorOverlay({
           out[classId] = {
             ...own,
             assignments: own.assignments.map((a) =>
-              a.id === current.id ? { ...a, groupId: groupKey } : a
+              a.id === current.id ? { ...a, groupId: groupKey } : a,
             ),
           };
         }
@@ -634,7 +691,10 @@ export default function AssignmentEditorOverlay({
           date,
           dueDate: isDue ? date : undefined,
           id: cid === classId ? draft.id : crypto.randomUUID(),
-          topicId: cid === classId ? draft.topicId : mapTopicIdToClass(srcTopic, classDataMap[cid]),
+          topicId:
+            cid === classId
+              ? draft.topicId
+              : mapTopicIdToClass(srcTopic, classDataMap[cid]),
           ...(multi ? { groupId: gid } : {}),
         };
         return { cid, copy };
@@ -674,7 +734,9 @@ export default function AssignmentEditorOverlay({
   function handleCloseRequest() {
     if (isDraft && payload && isDraftDirty(payload)) {
       parkSession();
-      toast.success(t("draftKeptTitle"), { description: t("draftKeptDescription") });
+      toast.success(t("draftKeptTitle"), {
+        description: t("draftKeptDescription"),
+      });
       return;
     }
     closeSession();
@@ -694,7 +756,10 @@ export default function AssignmentEditorOverlay({
       groupId: undefined,
       title: t("copySuffix", { title: current.title }),
     };
-    updateClass(classId, (cd) => ({ ...cd, assignments: [copy, ...cd.assignments] }));
+    updateClass(classId, (cd) => ({
+      ...cd,
+      assignments: [copy, ...cd.assignments],
+    }));
     toast.success(t("toastDuplicated"), { description: copy.title });
     closeSession();
   }
@@ -706,7 +771,9 @@ export default function AssignmentEditorOverlay({
       const out = { ...prev };
       for (const [cid, cd] of Object.entries(out)) {
         const dropped = new Set(
-          cd.assignments.filter((a) => assignmentGroupKey(a) === groupKey).map((a) => a.id)
+          cd.assignments
+            .filter((a) => assignmentGroupKey(a) === groupKey)
+            .map((a) => a.id),
         );
         if (!dropped.size) continue;
         out[cid] = {
@@ -753,7 +820,7 @@ export default function AssignmentEditorOverlay({
               </h4>
               <p className="truncate text-xs text-muted-foreground">
                 {setMeta
-                  ? `${t("kindTest")} · ${t("questionCount", { count: setMeta.itemCount })}`
+                  ? `${t("kindTest")} · ${t("questionCount", { count: setMeta.itemCount })} · ${t("gradingAuto")}`
                   : t("loadingLabel")}
               </p>
             </div>
@@ -803,7 +870,9 @@ export default function AssignmentEditorOverlay({
             <FileCheck2 className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <h4 className="truncate text-sm font-semibold text-foreground">{current.title}</h4>
+            <h4 className="truncate text-sm font-semibold text-foreground">
+              {current.title}
+            </h4>
             <p className="text-xs text-muted-foreground">{t("kindTest")}</p>
           </div>
           {openingQuiz ? (
@@ -819,7 +888,9 @@ export default function AssignmentEditorOverlay({
       return (
         <Empty className="rounded-xl border border-dashed border-border">
           <EmptyHeader>
-            <EmptyMedia variant="icon"><Presentation /></EmptyMedia>
+            <EmptyMedia variant="icon">
+              <Presentation />
+            </EmptyMedia>
             <EmptyTitle>{t("deckEditorSoonTitle")}</EmptyTitle>
             <EmptyDescription>{t("editorSoonDescription")}</EmptyDescription>
           </EmptyHeader>
@@ -827,48 +898,98 @@ export default function AssignmentEditorOverlay({
       );
     }
 
-    /* Mazmunsiz — bu NUQSON EMAS, toʻlaqonli holat: qogʻozdagi ish,
-       ogʻzaki soʻrov, sinfdan tashqarida oʻtgan ish. Ilgari bu yerda
-       "Test muharriri tez orada" yozilardi va ustun buzuq testdek
-       koʻrinardi. */
-    /* ── YARATISH / BIRIKTIRISH ──────────────────────────────────────
-       Google Classroom'ning `Create` / `Add` boʻlinishi. Ikkalasi bir
-       xil natijaga olib kelsa-da (ustunga kontent ulanadi), oʻqituvchi
-       boshida IKKI XIL fikrda boʻladi: «yangi tuzaman» yoki «tayyorini
-       olaman». Bitta qatorda aralashtirilganda tanlov ogʻirlashadi —
-       shakl kartalari (tur) va kutubxona (manba) bir xil koʻrinishga
-       ega boʻlib, ular boshqa-boshqa savolga javob beradi.
+    /* Baholash usuli — IKKI TANLOV, yozuvsiz.
 
-       Shakllar DARHOL koʻrsatilmaydi: beshta katta karta boʻsh ustunni
-       «toʻldirilmagan forma» kabi koʻrsatardi. Holbuki kontentsiz ustun
-       — toʻlaqonli holat (daftardagi ish, ogʻzaki soʻrov). */
+       Maktabdagi ishlarning koʻpchiligi qoʻlda baholanadi (insho, diktant,
+       masala yechish, ogʻzaki javob, laboratoriya ishi, normativ). Avtomatik
+       baholanadigani esa amalda bitta — test. Shu sabab «Qoʻlda» BOSHLANGʻICH
+       holat: eng koʻp yoʻl hech narsa bosmasdan kechadi.
+
+       Tanlov SAQLANMAYDI — u faqat shu muharrirdagi koʻrinishni boshqaradi.
+       Bazada baholash usuli baribir `setId` dan hisoblanadi (test bor →
+       avtomatik). Agar tanlov ustun boʻlib saqlansa, «avtomatik» deb
+       belgilab test biriktirmagan topshiriq ikki xil haqiqatga ega boʻlib
+       qolardi ([[assignment-content-is-attachment]]). Shu bois bu yerda
+       tanlov — YOʻLNI OCHUVCHI tugma, maʼlumot emas. */
     return (
-      <div className="flex flex-col gap-4 rounded-xl border border-dashed border-border p-5">
-        {/* Ikkala yoʻl BIR XIL balandlikda — ataylab. Amalda koʻpincha
-            yangi tuziladi, lekin kutubxona yangi funksiya va oʻqituvchi
-            uni hali bilmaydi. Ierarxiya berilsa (biri solid tugma, biri
-            matn-havola) kutubxona yoʻli yillab oʻrganilmay qolardi. */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          <ContentChoiceCard
-            icon={<Plus className="size-5" />}
-            title={t("contentCreate")}
-            hint={t("contentCreateHint")}
-            active={showKinds}
-            onClick={() => setShowKinds((v) => !v)}
-          />
-          <ContentChoiceCard
-            icon={<Library className="size-5" />}
-            title={t("contentAttach")}
-            hint={t("contentAttachHint")}
-            onClick={() => setAttachOpen(true)}
-          />
+      <div className="flex flex-col gap-4">
+        {/* Yorliq TEPADA emas, YONIDA — sarlavha va yoʻriqnomadan farqli
+            oʻlaroq bu maydon bitta kichkina boshqaruv. Yorliq ustiga
+            qoʻyilsa ikki qator egallab, oʻzidan katta joy olardi. Yonma-yon
+            qoʻyilganda bitta qatorda oʻqiladi: «Baholash usuli — Qoʻlda».
+            GitHub/Linear sozlama qatorlari shu naqshda. */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-label text-muted-foreground">
+            {t("gradingModeLabel")}
+          </span>
+          <div className="inline-flex w-fit gap-1 rounded-xl border border-border p-1">
+            {([false, true] as const).map((auto) => (
+              <button
+                key={String(auto)}
+                type="button"
+                aria-pressed={autoGrading === auto}
+                onClick={() => {
+                  setAutoGrading(auto);
+                  if (!auto) setShowKinds(false);
+                }}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors",
+                  autoGrading === auto
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-muted",
+                )}
+              >
+                {auto ? (
+                  <Zap className="size-3.5" />
+                ) : (
+                  <PenLine className="size-3.5" />
+                )}
+                {t(auto ? "gradingAuto" : "gradingManual")}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Shakl tanlovi — Wayground naqshi. Tayyor boʻlmagan turlar ham
-            koʻrinadi (soʻniq): ilgari ular haqida faqat kulrang matn
-            yozilardi, endi oʻqituvchi nima kelayotganini KOʻRADI. */}
-        {showKinds && (
-          <MaterialKindPicker onPick={(kind) => kind === "test" && handleAttachTest()} />
+        {/* Tugmalar KATTA — va bu endi xavfsiz. Ilgari ular boshlangʻich
+            koʻrinishda turgani uchun ixtiyoriy qadamni majburiydek
+            koʻrsatardi; hozir esa faqat «Avtomatik» ataylab tanlangach
+            chiqadi. Yaʼni oʻqituvchi allaqachon kontent soʻragan — endi
+            uni yaxshi koʻrinadigan nishon bilan taʼminlash kerak.
+
+            Ikkalasi TENG oʻlchamda: «yangi tuzaman» va «tayyorini olaman»
+            boshqa-boshqa savolga javob beradi, biri ikkinchisidan muhim
+            emas. */}
+        {autoGrading && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                { key: "create", icon: Plus, label: t("contentCreate"), active: showKinds,
+                  onClick: () => setShowKinds((v) => !v) },
+                { key: "attach", icon: Library, label: t("contentAttach"), active: false,
+                  onClick: () => setAttachOpen(true) },
+              ] as const
+            ).map(({ key, icon: Icon, label, active, onClick }) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={active}
+                onClick={onClick}
+                className={cn(
+                  "flex flex-col items-center gap-2 rounded-card border border-border bg-card px-4 py-5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40",
+                  active && "border-foreground/30 bg-muted/50"
+                )}
+              >
+                <Icon className="size-5" />
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {autoGrading && showKinds && (
+          <MaterialKindPicker
+            onPick={(kind) => kind === "test" && handleAttachTest()}
+          />
         )}
       </div>
     );
@@ -876,9 +997,7 @@ export default function AssignmentEditorOverlay({
 
   return createPortal(
     <>
-      <div
-        className="fixed inset-0 z-40 flex flex-col bg-card animate-in fade-in-0 duration-fast"
-      >
+      <div className="fixed inset-0 z-40 flex flex-col bg-card animate-in fade-in-0 duration-fast">
         {/* Sarlavha */}
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-4">
           <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -910,7 +1029,10 @@ export default function AssignmentEditorOverlay({
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             {isDraft && (
-              <Button onClick={handleCreate} className="mr-1.5 gap-1.5 font-semibold">
+              <Button
+                onClick={handleCreate}
+                className="mr-1.5 gap-1.5 font-semibold"
+              >
                 <Plus className="size-4" />
                 {t("create")}
               </Button>
@@ -936,7 +1058,10 @@ export default function AssignmentEditorOverlay({
                   </DropdownMenuItem>
                 ) : (
                   <>
-                    <DropdownMenuItem className="gap-2" onSelect={handleDuplicate}>
+                    <DropdownMenuItem
+                      className="gap-2"
+                      onSelect={handleDuplicate}
+                    >
                       <Copy className="size-4" />
                       {t("duplicate")}
                     </DropdownMenuItem>
@@ -970,7 +1095,9 @@ export default function AssignmentEditorOverlay({
           <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin p-6">
             <div className="mx-auto flex max-w-2xl flex-col gap-6">
               <div className="flex flex-col gap-1.5">
-                <span className="text-label text-muted-foreground">{t("titleLabel")}</span>
+                <span className="text-label text-muted-foreground">
+                  {t("titleLabel")}
+                </span>
                 <Input
                   value={current.title}
                   onChange={(e) => patch({ title: e.target.value })}
@@ -984,7 +1111,9 @@ export default function AssignmentEditorOverlay({
                   (EMStudio/Classroom) u sarlavhadan keyingi eng katta maydon:
                   oʻqituvchi "nima qilinsin"ni aynan shu yerda yozadi. */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-label text-muted-foreground">{t("instructionsLabel")}</span>
+                <span className="text-label text-muted-foreground">
+                  {t("instructionsLabel")}
+                </span>
                 <Textarea
                   value={current.instructions ?? ""}
                   onChange={(e) => patch({ instructions: e.target.value })}
@@ -993,11 +1122,12 @@ export default function AssignmentEditorOverlay({
                 />
               </div>
 
-              {/* MAZMUN — qoralamada ham, tahrirda ham. */}
-              <div className="flex flex-col gap-2.5">
-                <span className="text-label text-muted-foreground">{t("contentLabel")}</span>
-                {renderContent()}
-              </div>
+              {/* Boʻlim ATAYLAB NOMSIZ. «Kontent» — dasturchi soʻzi edi:
+                  oʻqituvchi test yoki taqdimotni «kontent» deb oʻylamaydi, va
+                  «Materiallar» deb nomlansa sidebar'dagi sahifa bilan
+                  chalkashardi. Nomsiz qoldirish Google Classroom naqshi —
+                  u ham bu joyni nomlamaydi. */}
+              <div className="flex flex-col gap-2.5">{renderContent()}</div>
             </div>
           </div>
 
@@ -1005,9 +1135,13 @@ export default function AssignmentEditorOverlay({
             className={cn(
               "shrink-0 overflow-hidden border-t border-border bg-card md:border-l md:border-t-0",
               "md:transition-[width] md:duration-200 md:ease-out",
-              !panelOpen && "hidden md:block"
+              !panelOpen && "hidden md:block",
             )}
-            style={isMobile ? undefined : { width: panelOpen ? detailsPanelWidth : 0 }}
+            style={
+              isMobile
+                ? undefined
+                : { width: panelOpen ? detailsPanelWidth : 0 }
+            }
           >
             <div
               className="flex h-full flex-col"
@@ -1020,302 +1154,358 @@ export default function AssignmentEditorOverlay({
                 closeLabel={t("close")}
               />
               <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto scrollbar-thin px-5 py-5">
-              {/* SINFLAR — koʻp tanlov (dars muharriridagi naqsh). */}
-              <div className="flex flex-col">
-                <h3 className="text-label mb-2.5">{t("classesLabel")}</h3>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-left text-sm transition-colors hover:bg-accent/40"
-                    >
-                      <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-                        {selectedClasses.length > 3 ? (
-                          <>
-                            <span className="flex items-center -space-x-1.5">
-                              {selectedClasses.slice(0, 4).map((c) => (
+                {/* SINFLAR — koʻp tanlov (dars muharriridagi naqsh). */}
+                <div className="flex flex-col">
+                  <h3 className="text-label mb-2.5">{t("classesLabel")}</h3>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-left text-sm transition-colors hover:bg-accent/40"
+                      >
+                        <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+                          {selectedClasses.length > 3 ? (
+                            <>
+                              <span className="flex items-center -space-x-1.5">
+                                {selectedClasses.slice(0, 4).map((c) => (
+                                  <ClassSwatch
+                                    key={c.id}
+                                    hex={CLASS_COLOR_HEX[classColor(c)]}
+                                    className="size-5 ring-2 ring-card"
+                                  />
+                                ))}
+                              </span>
+                              <span className="text-sm font-medium text-foreground">
+                                {t("classCount", {
+                                  count: selectedClasses.length,
+                                })}
+                              </span>
+                            </>
+                          ) : (
+                            selectedClasses.map((c) => (
+                              <span
+                                key={c.id}
+                                className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+                                style={{
+                                  backgroundColor: `color-mix(in srgb, ${CLASS_COLOR_HEX[classColor(c)]} 12%, transparent)`,
+                                  color: `color-mix(in srgb, ${CLASS_COLOR_HEX[classColor(c)]} 55%, var(--foreground))`,
+                                }}
+                              >
                                 <ClassSwatch
-                                  key={c.id}
                                   hex={CLASS_COLOR_HEX[classColor(c)]}
-                                  className="size-5 ring-2 ring-card"
+                                  className="size-2.5"
                                 />
-                              ))}
-                            </span>
-                            <span className="text-sm font-medium text-foreground">
-                              {t("classCount", { count: selectedClasses.length })}
-                            </span>
-                          </>
-                        ) : (
-                          selectedClasses.map((c) => (
-                            <span
-                              key={c.id}
-                              className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-                              style={{
-                                backgroundColor: `color-mix(in srgb, ${CLASS_COLOR_HEX[classColor(c)]} 12%, transparent)`,
-                                color: `color-mix(in srgb, ${CLASS_COLOR_HEX[classColor(c)]} 55%, var(--foreground))`,
-                              }}
-                            >
-                              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} className="size-2.5" />
-                              <span className="truncate">{c.name}</span>
-                            </span>
-                          ))
-                        )}
-                      </span>
-                      <ChevronDown className="size-4 shrink-0 opacity-40" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="start"
-                    className="max-h-[280px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto"
-                  >
-                    {liveClasses.map((c) => {
-                      const hex = CLASS_COLOR_HEX[classColor(c)];
-                      const on = selectedIds.includes(c.id);
-                      const locked = c.id === classId;
-                      return (
-                        <DropdownMenuItem
-                          key={c.id}
-                          disabled={locked}
-                          title={locked ? t("classLockedHint") : undefined}
-                          onSelect={(e) => { e.preventDefault(); toggleClass(c.id); }}
-                          className="gap-2.5"
-                        >
-                          <span
-                            className={cn(
-                              "flex size-4 shrink-0 items-center justify-center rounded border",
-                              on ? "border-transparent" : "border-border"
-                            )}
-                            style={on ? { backgroundColor: hex } : undefined}
+                                <span className="truncate">{c.name}</span>
+                              </span>
+                            ))
+                          )}
+                        </span>
+                        <ChevronDown className="size-4 shrink-0 opacity-40" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      className="max-h-[280px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto"
+                    >
+                      {liveClasses.map((c) => {
+                        const hex = CLASS_COLOR_HEX[classColor(c)];
+                        const on = selectedIds.includes(c.id);
+                        const locked = c.id === classId;
+                        return (
+                          <DropdownMenuItem
+                            key={c.id}
+                            disabled={locked}
+                            title={locked ? t("classLockedHint") : undefined}
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              toggleClass(c.id);
+                            }}
+                            className="gap-2.5"
                           >
-                            {on && <Check className="size-3 text-white" />}
-                          </span>
-                          <ClassSwatch hex={hex} className="size-2.5" />
-                          <span className="truncate">{c.name}</span>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                            <span
+                              className={cn(
+                                "flex size-4 shrink-0 items-center justify-center rounded border",
+                                on ? "border-transparent" : "border-border",
+                              )}
+                              style={on ? { backgroundColor: hex } : undefined}
+                            >
+                              {on && <Check className="size-3 text-white" />}
+                            </span>
+                            <ClassSwatch hex={hex} className="size-2.5" />
+                            <span className="truncate">{c.name}</span>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
 
-              <FieldRow
-                label={t("topicLabel")}
-                icon={<Tag className="size-4" />}
-                iconStyle={
-                  currentTopic
-                    ? {
-                        backgroundColor: `color-mix(in srgb, ${TOPIC_COLOR_HEX[currentTopic.color]} 15%, transparent)`,
-                        color: TOPIC_COLOR_HEX[currentTopic.color],
-                      }
-                    : undefined
-                }
-              >
-                <Select
-                  value={current.topicId ?? NO_TOPIC_VALUE}
-                  onValueChange={(v) => patch({ topicId: v === NO_TOPIC_VALUE ? NO_TOPIC_ID : v })}
+                <FieldRow
+                  label={t("topicLabel")}
+                  icon={<Tag className="size-4" />}
+                  iconStyle={
+                    currentTopic
+                      ? {
+                          backgroundColor: `color-mix(in srgb, ${TOPIC_COLOR_HEX[currentTopic.color]} 15%, transparent)`,
+                          color: TOPIC_COLOR_HEX[currentTopic.color],
+                        }
+                      : undefined
+                  }
                 >
-                  <SelectTrigger className={bareControl}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {topics.map((topic) => (
-                      <SelectItem key={topic.id} value={topic.id}>
-                        {topic.name}
+                  <Select
+                    value={current.topicId ?? NO_TOPIC_VALUE}
+                    onValueChange={(v) =>
+                      patch({ topicId: v === NO_TOPIC_VALUE ? NO_TOPIC_ID : v })
+                    }
+                  >
+                    <SelectTrigger className={bareControl}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {topics.map((topic) => (
+                        <SelectItem key={topic.id} value={topic.id}>
+                          {topic.name}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value={NO_TOPIC_VALUE}>
+                        {t("noTopic")}
                       </SelectItem>
-                    ))}
-                    <SelectItem value={NO_TOPIC_VALUE}>{t("noTopic")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FieldRow>
+                    </SelectContent>
+                  </Select>
+                </FieldRow>
 
-              <Separator />
+                <Separator />
 
-              {/* SANA — bitta maydon, ikki rejim (R211). Koʻp sinfda har
+                {/* SANA — bitta maydon, ikki rejim (R211). Koʻp sinfda har
                   sinfning oʻz sanasi boʻladi, rejim esa umumiy. */}
-              <div className="flex flex-col">
-                <ToggleGroup
-                  type="single"
-                  variant="outline"
-                  className="mb-2.5 w-full"
-                  value={isDue ? "due" : "event"}
-                  onValueChange={(v) => {
-                    if (v) setDueMode(v === "due");
-                  }}
-                >
-                  <ToggleGroupItem value="event" className="flex-1 gap-1.5">
-                    <Calendar className="size-4" />
-                    {t("modeEvent")}
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="due" className="flex-1 gap-1.5">
-                    <Clock className="size-4" />
-                    {t("modeDue")}
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                <div className="flex flex-col">
+                  <ToggleGroup
+                    type="single"
+                    variant="outline"
+                    className="mb-2.5 w-full"
+                    value={isDue ? "due" : "event"}
+                    onValueChange={(v) => {
+                      if (v) setDueMode(v === "due");
+                    }}
+                  >
+                    <ToggleGroupItem value="event" className="flex-1 gap-1.5">
+                      <Calendar className="size-4" />
+                      {t("modeEvent")}
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="due" className="flex-1 gap-1.5">
+                      <Clock className="size-4" />
+                      {t("modeDue")}
+                    </ToggleGroupItem>
+                  </ToggleGroup>
 
-                {/* Sana kartalari — dars muharriridagi JADVAL bilan bir xil: bir
+                  {/* Sana kartalari — dars muharriridagi JADVAL bilan bir xil: bir
                     sanada boʻlgan sinflar BITTA kartada guruhlanadi (chapda
                     oy/kun bloki, oʻngda hafta kuni + sinf chiplari). Sanasi
                     yoʻq sinf uchun punktir "Sana qoʻshish" tugmasi. */}
-                {(() => {
-                  type Item = { classId: string; name: string; hex: string };
-                  const withoutDate = selectedClasses.filter((c) => !dateOf(c.id));
-                  const groups: { key: string; items: Item[] }[] = [];
-                  selectedClasses.forEach((c) => {
-                    const key = dateOf(c.id);
-                    if (!key) return;
-                    let g = groups.find((x) => x.key === key);
-                    if (!g) { g = { key, items: [] }; groups.push(g); }
-                    g.items.push({ classId: c.id, name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] });
-                  });
-                  groups.sort((a, b) => a.key.localeCompare(b.key));
+                  {(() => {
+                    type Item = { classId: string; name: string; hex: string };
+                    const withoutDate = selectedClasses.filter(
+                      (c) => !dateOf(c.id),
+                    );
+                    const groups: { key: string; items: Item[] }[] = [];
+                    selectedClasses.forEach((c) => {
+                      const key = dateOf(c.id);
+                      if (!key) return;
+                      let g = groups.find((x) => x.key === key);
+                      if (!g) {
+                        g = { key, items: [] };
+                        groups.push(g);
+                      }
+                      g.items.push({
+                        classId: c.id,
+                        name: c.name,
+                        hex: CLASS_COLOR_HEX[classColor(c)],
+                      });
+                    });
+                    groups.sort((a, b) => a.key.localeCompare(b.key));
 
-                  return (
-                    <div className="flex flex-col gap-1.5">
-                      {groups.map((g) => {
-                        const d = dateKeyToDate(g.key);
-                        return (
-                          <div
-                            key={g.key}
-                            className="flex items-stretch gap-3 overflow-hidden rounded-xl border border-border bg-card"
-                          >
-                            <div className="flex shrink-0 flex-col items-center justify-center bg-muted/50 px-3 py-2">
-                              <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                                {MONTHS_UZ_SHORT[d.getMonth()]}
-                              </span>
-                              <span className="text-lg font-bold leading-none text-foreground">
-                                {d.getDate()}
-                              </span>
-                            </div>
-                            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-2 pr-2">
-                              <DateKeyPicker
-                                value={g.key}
-                                onChange={(v) => g.items.forEach((it) => setDateFor(it.classId, v))}
-                                formatLabel={(k) => DAYS_UZ_SUN[dateKeyToDate(k).getDay()]}
-                                className="h-auto w-fit min-w-0 justify-start border-none bg-transparent p-0 text-sm font-medium text-foreground shadow-none hover:bg-transparent focus-visible:ring-0 [&_svg]:hidden"
-                                ariaLabel={isDue ? t("dueDateLabel") : t("dateLabel")}
-                              />
-                              {selectedClasses.length > 1 && (
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                  {g.items.map((it) => (
-                                    <span
-                                      key={it.classId}
-                                      className="inline-flex min-w-0 shrink items-center gap-1.5 rounded-full py-0.5 pl-2 pr-1 text-xs font-medium"
-                                      style={{
-                                        backgroundColor: `color-mix(in srgb, ${it.hex} 12%, transparent)`,
-                                        color: `color-mix(in srgb, ${it.hex} 55%, var(--foreground))`,
-                                      }}
-                                    >
-                                      <ClassSwatch hex={it.hex} className="size-2 shrink-0" />
-                                      <span className="truncate">{it.name}</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => setDateFor(it.classId, "")}
-                                        aria-label={t("clearDate")}
-                                        className="shrink-0 opacity-60 transition-opacity hover:opacity-100"
+                    return (
+                      <div className="flex flex-col gap-1.5">
+                        {groups.map((g) => {
+                          const d = dateKeyToDate(g.key);
+                          return (
+                            <div
+                              key={g.key}
+                              className="flex items-stretch gap-3 overflow-hidden rounded-xl border border-border bg-card"
+                            >
+                              <div className="flex shrink-0 flex-col items-center justify-center bg-muted/50 px-3 py-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                  {MONTHS_UZ_SHORT[d.getMonth()]}
+                                </span>
+                                <span className="text-lg font-bold leading-none text-foreground">
+                                  {d.getDate()}
+                                </span>
+                              </div>
+                              <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-2 pr-2">
+                                <DateKeyPicker
+                                  value={g.key}
+                                  onChange={(v) =>
+                                    g.items.forEach((it) =>
+                                      setDateFor(it.classId, v),
+                                    )
+                                  }
+                                  formatLabel={(k) =>
+                                    DAYS_UZ_SUN[dateKeyToDate(k).getDay()]
+                                  }
+                                  className="h-auto w-fit min-w-0 justify-start border-none bg-transparent p-0 text-sm font-medium text-foreground shadow-none hover:bg-transparent focus-visible:ring-0 [&_svg]:hidden"
+                                  ariaLabel={
+                                    isDue ? t("dueDateLabel") : t("dateLabel")
+                                  }
+                                />
+                                {selectedClasses.length > 1 && (
+                                  <div className="flex flex-wrap items-center gap-1.5">
+                                    {g.items.map((it) => (
+                                      <span
+                                        key={it.classId}
+                                        className="inline-flex min-w-0 shrink items-center gap-1.5 rounded-full py-0.5 pl-2 pr-1 text-xs font-medium"
+                                        style={{
+                                          backgroundColor: `color-mix(in srgb, ${it.hex} 12%, transparent)`,
+                                          color: `color-mix(in srgb, ${it.hex} 55%, var(--foreground))`,
+                                        }}
                                       >
-                                        <X className="size-3" />
-                                      </button>
-                                    </span>
-                                  ))}
-                                </div>
+                                        <ClassSwatch
+                                          hex={it.hex}
+                                          className="size-2 shrink-0"
+                                        />
+                                        <span className="truncate">
+                                          {it.name}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setDateFor(it.classId, "")
+                                          }
+                                          aria-label={t("clearDate")}
+                                          className="shrink-0 opacity-60 transition-opacity hover:opacity-100"
+                                        >
+                                          <X className="size-3" />
+                                        </button>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              {selectedClasses.length === 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setDateFor(g.items[0].classId, "")
+                                  }
+                                  aria-label={t("clearDate")}
+                                  className="shrink-0 self-center pr-2 text-muted-foreground/40 transition-colors hover:text-destructive"
+                                >
+                                  <X className="size-4" />
+                                </button>
                               )}
                             </div>
-                            {selectedClasses.length === 1 && (
-                              <button
-                                type="button"
-                                onClick={() => setDateFor(g.items[0].classId, "")}
-                                aria-label={t("clearDate")}
-                                className="shrink-0 self-center pr-2 text-muted-foreground/40 transition-colors hover:text-destructive"
-                              >
-                                <X className="size-4" />
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                      {withoutDate.map((c) => (
-                        <DateKeyPicker
-                          key={c.id}
-                          value=""
-                          onChange={(v) => setDateFor(c.id, v)}
-                          formatLabel={() =>
-                            selectedClasses.length > 1 ? `${c.name} — ${t("addDate")}` : t("addDate")
-                          }
-                          className="w-full justify-center gap-2 rounded-lg border border-dashed border-border bg-transparent py-2.5 text-sm font-normal text-muted-foreground shadow-none hover:bg-accent/40 hover:text-foreground"
-                          ariaLabel={`${c.name} — ${t("addDate")}`}
-                        />
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
+                          );
+                        })}
+                        {withoutDate.map((c) => (
+                          <DateKeyPicker
+                            key={c.id}
+                            value=""
+                            onChange={(v) => setDateFor(c.id, v)}
+                            formatLabel={() =>
+                              selectedClasses.length > 1
+                                ? `${c.name} — ${t("addDate")}`
+                                : t("addDate")
+                            }
+                            className="w-full justify-center gap-2 rounded-lg border border-dashed border-border bg-transparent py-2.5 text-sm font-normal text-muted-foreground shadow-none hover:bg-accent/40 hover:text-foreground"
+                            ariaLabel={`${c.name} — ${t("addDate")}`}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
 
-              {/* MAKS. BALL — test biriktirilgan boʻlsa QULF (R216): maxraj
+                {/* MAKS. BALL — test biriktirilgan boʻlsa QULF (R216): maxraj
                   savollar sonidan olinadi, aks holda qogʻozdagi "8/10" tizimda
                   8% boʻlib oʻqilardi. */}
-              <FieldRow
-                label={t("maxScoreLabel")}
-                icon={<Star className="size-4" />}
-                action={
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button type="button" className="shrink-0 text-muted-foreground/60 hover:text-foreground">
-                        {attachedSetId ? <Lock className="size-3.5" /> : <Info className="size-3.5" />}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-56">
-                      {attachedSetId ? t("maxScoreLockedTooltip") : t("maxScoreTooltip")}
-                    </TooltipContent>
-                  </Tooltip>
-                }
-              >
-                {attachedSetId ? (
-                  <span className="text-sm font-medium text-muted-foreground">{current.maxScore}</span>
-                ) : (
-                  /* Xabar har bosishda emas, tahrir TUGAGANDA (blur) —
+                <FieldRow
+                  label={t("maxScoreLabel")}
+                  icon={<Star className="size-4" />}
+                  action={
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="shrink-0 text-muted-foreground/60 hover:text-foreground"
+                        >
+                          {attachedSetId ? (
+                            <Lock className="size-3.5" />
+                          ) : (
+                            <Info className="size-3.5" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-56">
+                        {attachedSetId
+                          ? t("maxScoreLockedTooltip")
+                          : t("maxScoreTooltip")}
+                      </TooltipContent>
+                    </Tooltip>
+                  }
+                >
+                  {attachedSetId ? (
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {current.maxScore}
+                    </span>
+                  ) : (
+                    /* Xabar har bosishda emas, tahrir TUGAGANDA (blur) —
                      "1", "10", "100" deb yozilayotganda uch marta
                      ogohlantirish shovqin boʻlardi. */
-                  <Input
-                    type="number"
-                    min={1}
-                    value={current.maxScore}
-                    onFocus={() => {
-                      maxScoreUndo.current = { map: classDataMap, value: current.maxScore };
-                    }}
-                    onChange={(e) => patch({ maxScore: Number(e.target.value) || 0 })}
-                    onBlur={() => {
-                      const snap = maxScoreUndo.current;
-                      maxScoreUndo.current = null;
-                      if (snap) announceMaxScore(snap.map, snap.value);
-                    }}
-                    className={bareControl}
-                  />
-                )}
-              </FieldRow>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={current.maxScore}
+                      onFocus={() => {
+                        maxScoreUndo.current = {
+                          map: classDataMap,
+                          value: current.maxScore,
+                        };
+                      }}
+                      onChange={(e) =>
+                        patch({ maxScore: Number(e.target.value) || 0 })
+                      }
+                      onBlur={() => {
+                        const snap = maxScoreUndo.current;
+                        maxScoreUndo.current = null;
+                        if (snap) announceMaxScore(snap.map, snap.value);
+                      }}
+                      className={bareControl}
+                    />
+                  )}
+                </FieldRow>
 
-              {/* Tez tanlash (R207) — oʻqituvchining oʻz jurnalidan olingan
+                {/* Tez tanlash (R207) — oʻqituvchining oʻz jurnalidan olingan
                   maxrajlar. Qulflangan holatda koʻrsatilmaydi: bosilsa ham
                   ishlamaydigan tugma faqat chalgʻitardi. */}
-              {!attachedSetId && scoreSuggestions.length > 0 && (
-                <div className="-mt-3 flex flex-wrap items-center gap-1.5">
-                  {scoreSuggestions.map((score) => (
-                    <button
-                      key={score}
-                      type="button"
-                      onClick={() => pickMaxScore(score)}
-                      aria-pressed={current.maxScore === score}
-                      className={cn(
-                        "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                        current.maxScore === score
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                      )}
-                    >
-                      {score}
-                    </button>
-                  ))}
-                </div>
-              )}
+                {!attachedSetId && scoreSuggestions.length > 0 && (
+                  <div className="-mt-3 flex flex-wrap items-center gap-1.5">
+                    {scoreSuggestions.map((score) => (
+                      <button
+                        key={score}
+                        type="button"
+                        onClick={() => pickMaxScore(score)}
+                        aria-pressed={current.maxScore === score}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                          current.maxScore === score
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
+                        )}
+                      >
+                        {score}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </aside>
@@ -1331,7 +1521,7 @@ export default function AssignmentEditorOverlay({
               className={cn(
                 "rounded-full",
                 panelOpen &&
-                  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
               )}
             >
               <SlidersHorizontal className="size-5" />
@@ -1354,7 +1544,9 @@ export default function AssignmentEditorOverlay({
           <SetBuilderOverlay
             classId={classId}
             setId={builder.setId}
-            initialTitle={builder.setId ? undefined : current.title.trim() || undefined}
+            initialTitle={
+              builder.setId ? undefined : current.title.trim() || undefined
+            }
             onSaved={(set) => handleSetSaved(set)}
             onClose={() => setBuilder(null)}
           />
@@ -1368,7 +1560,6 @@ export default function AssignmentEditorOverlay({
           />
         )}
       </div>
-
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
@@ -1394,8 +1585,7 @@ export default function AssignmentEditorOverlay({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
     </>,
-    document.body
+    document.body,
   );
 }
