@@ -49,7 +49,7 @@ const pricingData: PricingPlan[] = [
     plan_descp:
       "Kundalik ishingiz uchun toʻliq yetarli. Bank kartasi talab qilinmaydi.",
     plan_price: "0 soʻm",
-    plan_cta: "Bepul boshlash",
+    plan_cta: "Roʻyxatdan oʻtish",
     plan_href: "/register",
     plan_feature: [
       "Elektron jurnal va 10+ shkala",

@@ -75,32 +75,37 @@ export function LoginForm({
           </p>
         </div>
 
-        {/* Google eng tepada — bir bosishli kirish eng past ishqalanishli yoʻl. */}
-        <Field>
-          <Button variant="outline" type="button" onClick={handleGoogle}>
-            <GoogleIcon className="h-4 w-4" />
-            {t("continueWithGoogle")}
-          </Button>
-        </Field>
-
-        {/* Telegram — LessonLab boti orqali.
-
-            Kirish sahifasida ham turadi (nafaqat roʻyxatda): akkaunti
-            YOʻQ odam koʻpincha shu yerga tushadi, «Roʻyxatdan oʻtish»
-            havolasini izlab ketmasligi kerak. Bot allaqachon bogʻlangan
-            odamni tanib oladi va uni ortiqcha qadamga yubormaydi.
-
-            ⚠️ `<a>` — ataylab, `Link` emas: bu tashqi (t.me) havola. */}
-        {telegramSignupUrl && (
+        {/* Tezkor kirish guruhi — Google va Telegram bir xil turdagi
+            muqobillar, shuning uchun oralaridagi masofa FieldGroup'ning
+            umumiy gap-7'idan kichikroq (gap-2). */}
+        <div className="flex flex-col gap-2">
+          {/* Google eng tepada — bir bosishli kirish eng past ishqalanishli yoʻl. */}
           <Field>
-            <Button variant="outline" type="button" asChild>
-              <a href={telegramSignupUrl}>
-                <TelegramIcon className="h-4 w-4" />
-                {t("continueWithTelegram")}
-              </a>
+            <Button variant="outline" type="button" onClick={handleGoogle}>
+              <GoogleIcon className="h-4 w-4" />
+              {t("continueWithGoogle")}
             </Button>
           </Field>
-        )}
+
+          {/* Telegram — LessonLab boti orqali.
+
+              Kirish sahifasida ham turadi (nafaqat roʻyxatda): akkaunti
+              YOʻQ odam koʻpincha shu yerga tushadi, «Roʻyxatdan oʻtish»
+              havolasini izlab ketmasligi kerak. Bot allaqachon bogʻlangan
+              odamni tanib oladi va uni ortiqcha qadamga yubormaydi.
+
+              ⚠️ `<a>` — ataylab, `Link` emas: bu tashqi (t.me) havola. */}
+          {telegramSignupUrl && (
+            <Field>
+              <Button variant="outline" type="button" asChild>
+                <a href={telegramSignupUrl}>
+                  <TelegramIcon className="h-4 w-4" />
+                  {t("continueWithTelegram")}
+                </a>
+              </Button>
+            </Field>
+          )}
+        </div>
 
         <FieldSeparator>{t("orWithEmail")}</FieldSeparator>
 

@@ -36,7 +36,7 @@ function HeroSection() {
               </div>
               <div className="flex items-center flex-col gap-3">
                 <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <ButtonWithIcon href="/register">Bepul boshlash</ButtonWithIcon>
+                  <ButtonWithIcon href="/register">Roʻyxatdan oʻtish</ButtonWithIcon>
                   <ButtonWithIcon href="#features" variant="outline">
                     Imkoniyatlarni koʻrish
                   </ButtonWithIcon>
