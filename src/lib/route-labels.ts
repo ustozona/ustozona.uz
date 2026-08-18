@@ -9,6 +9,7 @@ export const ROUTE_LABEL_KEYS: Record<string, string> = {
   "/dashboard/planner": "planner",
   "/dashboard/tasks": "tasks",
   "/dashboard/lessons": "lessons",
+  "/dashboard/resources": "resources",
   "/dashboard/attendance": "attendance",
   "/dashboard/behavior": "behavior",
   "/dashboard/grades": "grades",

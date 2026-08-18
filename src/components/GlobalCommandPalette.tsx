@@ -20,7 +20,7 @@ import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutGrid, Users, Calendar, BookOpen, FileText, ClipboardCheck,
+  LayoutGrid, Users, Calendar, BookOpen, FileText, ClipboardCheck, Library,
   Award, BarChart2, Target, MessagesSquare, Megaphone, Settings, Home,
   Search,
   type LucideIcon,
@@ -33,6 +33,7 @@ const PAGE_ICONS: Record<string, LucideIcon> = {
   "/dashboard/timetable": Calendar,
   "/dashboard/planner": BookOpen,
   "/dashboard/lessons": FileText,
+  "/dashboard/resources": Library,
   "/dashboard/attendance": ClipboardCheck,
   "/dashboard/behavior": Award,
   "/dashboard/grades": BarChart2,
