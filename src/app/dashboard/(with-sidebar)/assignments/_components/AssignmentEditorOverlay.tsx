@@ -950,27 +950,39 @@ export default function AssignmentEditorOverlay({
           </div>
         </div>
 
+        {/* Tugmalar KATTA — va bu endi xavfsiz. Ilgari ular boshlangʻich
+            koʻrinishda turgani uchun ixtiyoriy qadamni majburiydek
+            koʻrsatardi; hozir esa faqat «Avtomatik» ataylab tanlangach
+            chiqadi. Yaʼni oʻqituvchi allaqachon kontent soʻragan — endi
+            uni yaxshi koʻrinadigan nishon bilan taʼminlash kerak.
+
+            Ikkalasi TENG oʻlchamda: «yangi tuzaman» va «tayyorini olaman»
+            boshqa-boshqa savolga javob beradi, biri ikkinchisidan muhim
+            emas. */}
         {autoGrading && (
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              aria-pressed={showKinds}
-              onClick={() => setShowKinds((v) => !v)}
-            >
-              <Plus className="size-3.5" />
-              {t("contentCreate")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => setAttachOpen(true)}
-            >
-              <Library className="size-3.5" />
-              {t("contentAttach")}
-            </Button>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                { key: "create", icon: Plus, label: t("contentCreate"), active: showKinds,
+                  onClick: () => setShowKinds((v) => !v) },
+                { key: "attach", icon: Library, label: t("contentAttach"), active: false,
+                  onClick: () => setAttachOpen(true) },
+              ] as const
+            ).map(({ key, icon: Icon, label, active, onClick }) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={active}
+                onClick={onClick}
+                className={cn(
+                  "flex flex-col items-center gap-2 rounded-card border border-border bg-card px-4 py-5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40",
+                  active && "border-foreground/30 bg-muted/50"
+                )}
+              >
+                <Icon className="size-5" />
+                {label}
+              </button>
+            ))}
           </div>
         )}
 
