@@ -26,8 +26,6 @@ import {
   SlidersHorizontal,
   PenLine,
   Zap,
-  Calendar,
-  Clock,
   Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -89,8 +87,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
-import { Separator } from "@/components/ui/separator";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import {
   Empty,
   EmptyHeader,
@@ -243,7 +240,6 @@ export default function AssignmentEditorOverlay({
   const draft = payload?.assignment;
   const draftClassIds = payload?.classIds ?? [];
   const draftDates = payload?.dates ?? {};
-  const modeTouched = payload?.modeTouched ?? false;
 
   /* Tahrir rejimida manba — store (avtosaqlash). Topshiriq oʻchirilgan
      boʻlsa `current` topilmaydi; overlay quyida oʻzini yopadi. */
@@ -336,23 +332,6 @@ export default function AssignmentEditorOverlay({
 
   const dateOf = (cid: string) =>
     isDraft ? (draftDates[cid] ?? todayKey()) : (members[cid]?.date ?? "");
-
-  /* Toifa oʻzgarganda sana rejimini toifaning maqsadidan taxmin qilamiz:
-     formativ (uy vazifasi) → muddatli, summativ (nazorat) → oʻtkaziladi.
-     Oʻqituvchi tanlagichga bir marta tegsa — aralashmaymiz. */
-  useEffect(() => {
-    if (!isDraft || modeTouched) return;
-    const shouldBeDue = (currentTopic?.purpose ?? "summative") === "formative";
-    patchDraft((p) => {
-      const want = shouldBeDue
-        ? (p.dates[classId] ?? p.assignment.date ?? todayKey())
-        : undefined;
-      return (p.assignment.dueDate ?? undefined) === want
-        ? p
-        : { ...p, assignment: { ...p.assignment, dueDate: want } };
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTopic?.purpose, isDraft, modeTouched]);
 
   /* Biriktirilgan toʻplam pasporti. Toʻplam oʻchirilgan boʻlsa `null`
      qaytadi — karta oʻzini "topilmadi" holatida chizadi, halqa esa
@@ -567,37 +546,6 @@ export default function AssignmentEditorOverlay({
           : a,
       ),
     }));
-  }
-
-  /** Rejim butun guruhga umumiy — topshiriqning tabiati sinfga qarab oʻzgarmaydi. */
-  function setDueMode(due: boolean) {
-    if (isDraft) {
-      patchDraft((p) => ({
-        ...p,
-        modeTouched: true,
-        assignment: {
-          ...p.assignment,
-          dueDate: due ? (p.dates[classId] ?? p.assignment.date) : undefined,
-        },
-      }));
-      return;
-    }
-    setClassDataMap((prev) => {
-      const out = { ...prev };
-      for (const [cid, cd] of Object.entries(out)) {
-        if (!cd.assignments.some((a) => assignmentGroupKey(a) === groupKey))
-          continue;
-        out[cid] = {
-          ...cd,
-          assignments: cd.assignments.map((a) =>
-            assignmentGroupKey(a) === groupKey
-              ? { ...a, dueDate: due ? a.date : undefined }
-              : a,
-          ),
-        };
-      }
-      return out;
-    });
   }
 
   /** Sinfni qoʻshish/olib tashlash. Ochilgan sinf doim ichida qoladi. */
@@ -922,32 +870,26 @@ export default function AssignmentEditorOverlay({
           <span className="text-label text-muted-foreground">
             {t("gradingModeLabel")}
           </span>
-          <div className="inline-flex w-fit gap-1 rounded-xl border border-border p-1">
-            {([false, true] as const).map((auto) => (
-              <button
-                key={String(auto)}
-                type="button"
-                aria-pressed={autoGrading === auto}
-                onClick={() => {
-                  setAutoGrading(auto);
-                  if (!auto) setShowKinds(false);
-                }}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors",
-                  autoGrading === auto
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:bg-muted",
-                )}
-              >
-                {auto ? (
-                  <Zap className="size-3.5" />
-                ) : (
-                  <PenLine className="size-3.5" />
-                )}
-                {t(auto ? "gradingAuto" : "gradingManual")}
-              </button>
-            ))}
-          </div>
+          <SegmentedToggle
+            variant="pill"
+            value={autoGrading ? "auto" : "manual"}
+            onValueChange={(v) => {
+              setAutoGrading(v === "auto");
+              if (v === "manual") setShowKinds(false);
+            }}
+            options={[
+              {
+                value: "manual",
+                label: t("gradingManual"),
+                icon: <PenLine className="size-3.5" />,
+              },
+              {
+                value: "auto",
+                label: t("gradingAuto"),
+                icon: <Zap className="size-3.5" />,
+              },
+            ]}
+          />
         </div>
 
         {/* Tugmalar KATTA — va bu endi xavfsiz. Ilgari ular boshlangʻich
@@ -963,10 +905,20 @@ export default function AssignmentEditorOverlay({
           <div className="grid gap-3 sm:grid-cols-2">
             {(
               [
-                { key: "create", icon: Plus, label: t("contentCreate"), active: showKinds,
-                  onClick: () => setShowKinds((v) => !v) },
-                { key: "attach", icon: Library, label: t("contentAttach"), active: false,
-                  onClick: () => setAttachOpen(true) },
+                {
+                  key: "create",
+                  icon: Plus,
+                  label: t("contentCreate"),
+                  active: showKinds,
+                  onClick: () => setShowKinds((v) => !v),
+                },
+                {
+                  key: "attach",
+                  icon: Library,
+                  label: t("contentAttach"),
+                  active: false,
+                  onClick: () => setAttachOpen(true),
+                },
               ] as const
             ).map(({ key, icon: Icon, label, active, onClick }) => (
               <button
@@ -976,7 +928,7 @@ export default function AssignmentEditorOverlay({
                 onClick={onClick}
                 className={cn(
                   "flex flex-col items-center gap-2 rounded-card border border-border bg-card px-4 py-5 text-sm font-medium text-foreground transition-colors hover:bg-muted/40",
-                  active && "border-foreground/30 bg-muted/50"
+                  active && "border-foreground/30 bg-muted/50",
                 )}
               >
                 <Icon className="size-5" />
@@ -1274,29 +1226,12 @@ export default function AssignmentEditorOverlay({
                   </Select>
                 </FieldRow>
 
-                <Separator />
-
-                {/* SANA — bitta maydon, ikki rejim (R211). Koʻp sinfda har
-                  sinfning oʻz sanasi boʻladi, rejim esa umumiy. */}
+                {/* SANA — bitta maydon. Koʻp sinfda har sinfning oʻz sanasi
+                  boʻladi (R211). Soʻngmuddat rejimi olib tashlandi: jurnalda
+                  topshiriq DARS kunida turadi, alohida topshirish muddati
+                  tushunchasi ortiqcha edi. */}
                 <div className="flex flex-col">
-                  <ToggleGroup
-                    type="single"
-                    variant="outline"
-                    className="mb-2.5 w-full"
-                    value={isDue ? "due" : "event"}
-                    onValueChange={(v) => {
-                      if (v) setDueMode(v === "due");
-                    }}
-                  >
-                    <ToggleGroupItem value="event" className="flex-1 gap-1.5">
-                      <Calendar className="size-4" />
-                      {t("modeEvent")}
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="due" className="flex-1 gap-1.5">
-                      <Clock className="size-4" />
-                      {t("modeDue")}
-                    </ToggleGroupItem>
-                  </ToggleGroup>
+                  <h3 className="text-label mb-2.5">{t("dateLabel")}</h3>
 
                   {/* Sana kartalari — dars muharriridagi JADVAL bilan bir xil: bir
                     sanada boʻlgan sinflar BITTA kartada guruhlanadi (chapda
