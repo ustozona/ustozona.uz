@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   X, FileCheck2, Presentation, Check, Tag, Star, Library, CloudOff,
   ChevronRight, ChevronDown, Loader2, ClipboardCheck, Info, Users,
-  Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal, PenLine,
+  Plus, MoreHorizontal, Copy, Trash2, SlidersHorizontal, PenLine, Zap,
   Calendar, Clock, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -172,6 +172,8 @@ export default function AssignmentEditorOverlay({
   const [attachOpen, setAttachOpen] = useState(false);
   /** «Yaratish» bosilganda shakl kartalari ochiladi (default — yopiq). */
   const [showKinds, setShowKinds] = useState(false);
+  /** Baholash usuli tanlovi — faqat koʻrinish uchun, bazaga yozilmaydi. */
+  const [autoGrading, setAutoGrading] = useState(false);
   /* Savol muharriri va sessiya paneli TOʻGʻRIDAN-TOʻGʻRI ochiladi.
      Ilgari orada "Testlar (5-A)" roʻyxati turardi — sidebar'dan olib
      tashlangan `/dashboard/baholash` sahifasining qoldigʻi. U uchinchi
@@ -795,38 +797,46 @@ export default function AssignmentEditorOverlay({
       );
     }
 
-    /* Kontentsiz topshiriq — bu NUQSON EMAS, toʻlaqonli holat: daftardagi
-       insho, ogʻzaki soʻrov, sinfdan tashqarida bajarilgan ish. Aynan shu
-       yoʻl eng koʻp ishlatiladi.
+    /* Baholash usuli — IKKI TANLOV, yozuvsiz.
 
-       ⚠️ BU YERDA TANLOV SOʻRALMAYDI. «Qoʻlda / avtomatik» degan tanlov
-       oʻylab koʻrilib RAD ETILDI: oʻqituvchi «avtomatik» deb belgilab,
-       keyin test biriktirmasa (yoki teskarisi) tanlov yolgʻon boʻlib
-       qolardi va tizim qaysi haqiqatga ishonishini bilmasdi. Baholash
-       usuli — KUZATUV, qaror emas: test bor → avtomatik, yoʻq → qoʻlda.
-       Bu `kind` ning `setId` dan hisoblanishi bilan bir xil qoida
-       ([[assignment-content-is-attachment]]).
+       Maktabdagi ishlarning koʻpchiligi qoʻlda baholanadi (insho, diktant,
+       masala yechish, ogʻzaki javob, laboratoriya ishi, normativ). Avtomatik
+       baholanadigani esa amalda bitta — test. Shu sabab «Qoʻlda» BOSHLANGʻICH
+       holat: eng koʻp yoʻl hech narsa bosmasdan kechadi.
 
-       Ilgari bu yerda ikkita KATTA karta turardi. Ular blokni sahifadagi
-       eng ogʻir elementga aylantirib, ixtiyoriy qadamni majburiydek
-       koʻrsatardi — insho topshirigʻini tuzayotgan oʻqituvchi shu yerda
-       nimadir tanlashi kerak deb toʻxtab qolardi. Endi Google Classroom
-       naqshi: holat bir qatorda aytiladi, ikkala yoʻl esa chetdagi
-       kichik tugma boʻlib, koʻrinadi-yu, yoʻlni toʻsmaydi. */
+       Tanlov SAQLANMAYDI — u faqat shu muharrirdagi koʻrinishni boshqaradi.
+       Bazada baholash usuli baribir `setId` dan hisoblanadi (test bor →
+       avtomatik). Agar tanlov ustun boʻlib saqlansa, «avtomatik» deb
+       belgilab test biriktirmagan topshiriq ikki xil haqiqatga ega boʻlib
+       qolardi ([[assignment-content-is-attachment]]). Shu bois bu yerda
+       tanlov — YOʻLNI OCHUVCHI tugma, maʼlumot emas. */
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-border p-4">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <PenLine className="size-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground">{t("gradingManual")}</p>
-            <p className="text-xs text-muted-foreground">{t("gradingManualHint")}</p>
-          </div>
-          {/* Ikkala yoʻl bir xil vaznda — «yangi tuzaman» va «tayyorini
-              olaman» boshqa-boshqa savolga javob beradi, biri ikkinchisidan
-              muhimroq emas. */}
-          <div className="flex shrink-0 items-center gap-2">
+        <div className="inline-flex w-fit gap-1 rounded-xl border border-border p-1">
+          {([false, true] as const).map((auto) => (
+            <button
+              key={String(auto)}
+              type="button"
+              aria-pressed={autoGrading === auto}
+              onClick={() => {
+                setAutoGrading(auto);
+                if (!auto) setShowKinds(false);
+              }}
+              className={cn(
+                "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors",
+                autoGrading === auto
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+            >
+              {auto ? <Zap className="size-3.5" /> : <PenLine className="size-3.5" />}
+              {t(auto ? "gradingAuto" : "gradingManual")}
+            </button>
+          ))}
+        </div>
+
+        {autoGrading && (
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -847,11 +857,9 @@ export default function AssignmentEditorOverlay({
               {t("contentAttach")}
             </Button>
           </div>
-        </div>
+        )}
 
-        {/* Shakl tanlovi — Wayground naqshi. Tayyor boʻlmagan turlar ham
-            koʻrinadi (soʻniq): oʻqituvchi nima kelayotganini KOʻRADI. */}
-        {showKinds && (
+        {autoGrading && showKinds && (
           <MaterialKindPicker onPick={(kind) => kind === "test" && handleAttachTest()} />
         )}
       </div>
@@ -977,11 +985,12 @@ export default function AssignmentEditorOverlay({
                 />
               </div>
 
-              {/* MAZMUN — qoralamada ham, tahrirda ham. */}
-              <div className="flex flex-col gap-2.5">
-                <span className="text-label text-muted-foreground">{t("contentLabel")}</span>
-                {renderContent()}
-              </div>
+              {/* Boʻlim ATAYLAB NOMSIZ. «Kontent» — dasturchi soʻzi edi:
+                  oʻqituvchi test yoki taqdimotni «kontent» deb oʻylamaydi, va
+                  «Materiallar» deb nomlansa sidebar'dagi sahifa bilan
+                  chalkashardi. Nomsiz qoldirish Google Classroom naqshi —
+                  u ham bu joyni nomlamaydi. */}
+              <div className="flex flex-col gap-2.5">{renderContent()}</div>
             </div>
           </div>
 
