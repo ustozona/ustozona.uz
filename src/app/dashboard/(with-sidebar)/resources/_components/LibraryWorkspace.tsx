@@ -135,8 +135,16 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
           </div>
         </CardHeader>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
-          <div className="relative min-w-56 flex-1">
+        {/* Toolbar qatori — header bilan bir xil oʻlchov: `px-5 py-4`
+            (dizayn tizimi, «Gorizontal gutter — bitta qiymat»). Ichidagi
+            boshqaruvlar 36px, demak qator ham header kabi 68px. */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-4">
+          {/* Qidiruv maydoni CHEKLANADI. `flex-1` da u 1000px+ ga choʻzilib
+              ketardi: keng input skanerlashni ogʻirlashtiradi va yozuv
+              boshi bilan oxiri orasida koʻz sakraydi. Jahon amaliyoti
+              (Linear, GitHub, Notion) — qidiruv ~320–400px, filtrlar
+              oʻng chetga suriladi. */}
+          <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
@@ -146,6 +154,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
             />
           </div>
 
+          <div className="ml-auto flex items-center gap-2">
           <Select value={kind} onValueChange={setKind}>
             <SelectTrigger className="w-36">
               <SelectValue />
@@ -175,10 +184,14 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
               </SelectContent>
             </Select>
           )}
+          </div>
         </div>
 
         {visible.length === 0 ? (
-          <Empty className="py-16">
+          /* `flex-1` — boʻsh holat kartaning butun tanasini egallaydi va
+              markazda turadi; usiz u tepaga yopishib, ostida katta boʻsh
+              maydon qolardi. */
+          <Empty className="flex-1">
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <Illustration name="empty" className="size-16" />
@@ -194,16 +207,27 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="min-h-0 flex-1 overflow-auto">
+          /* `scrollbarGutter` — scroll paydo boʻlganda jadval siljib
+             ketmasin va scrollbar `⋮` ustunini bosmasin. */
+          <div
+            className="min-h-0 flex-1 overflow-auto"
+            style={{ scrollbarGutter: "stable" }}
+          >
+            {/* Ustun kengliklari FOIZDA. Piksel kenglik berilganda butun
+                ortiqcha joy birinchi ustunga qoʻshilib, sarlavha bilan
+                «Tur» orasida ~600px boʻsh tuynuk hosil boʻlardi. Foiz
+                ortiqchani hamma ustunga taqsimlaydi. */}
             <table className="w-full min-w-3xl caption-bottom text-sm">
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow className="hover:bg-transparent!">
-                  <SortHeader label="Material" sortKey="title" className="min-w-64 pl-5" />
-                  <TableHead className="w-28 px-3 py-3">Tur</TableHead>
-                  <TableHead className="w-56 px-3 py-3">Fan va sinf</TableHead>
-                  <SortHeader label="Ishlatilgan" sortKey="used" className="w-32" align="center" />
-                  <SortHeader label="Oʻzgartirilgan" sortKey="updatedAt" className="w-40" />
-                  <TableHead className="w-12 px-3 py-3" />
+                  <SortHeader label="Material" sortKey="title" className="w-[38%] pl-5" />
+                  <TableHead className="w-[10%] px-3 py-3">Tur</TableHead>
+                  <TableHead className="w-[20%] px-3 py-3">Fan va sinf</TableHead>
+                  <SortHeader label="Ishlatilgan" sortKey="used" className="w-[12%]" align="center" />
+                  <SortHeader label="Oʻzgartirilgan" sortKey="updatedAt" className="w-[16%]" />
+                  {/* Oʻng gutter `pr-5` — chapdagi `pl-5` bilan simmetrik
+                      (dizayn tizimi: gorizontal gutter bitta qiymat, 20px). */}
+                  <TableHead className="w-16 py-3 pl-3 pr-5" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -271,7 +295,7 @@ function LibraryRow({ item, onOpen }: { item: LibraryItem; onOpen: () => void })
         {item.updatedAt.toLocaleDateString("uz-UZ")}
       </TableCell>
 
-      <TableCell className="px-3">
+      <TableCell className="pl-3 pr-5">
         {/* Amal tili har turda BIR XIL. v1 da faqat "Ochish"; nusxalash
             keyingi bosqichda — u har turda alohida server amali talab
             qiladi (test uchun `activities` ham koʻchiriladi). */}
