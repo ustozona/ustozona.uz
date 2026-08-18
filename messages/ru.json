@@ -3798,6 +3798,11 @@
     "videoHint": "Вопросы по ходу видео",
     "flashcard": "Карточка",
     "flashcardHint": "Вопрос спереди, ответ сзади",
+    "testShort": "Набор вопросов",
+    "lessonShort": "Полный документ",
+    "deckShort": "Слайды",
+    "videoShort": "Видео с вопросами",
+    "flashcardShort": "Карточки: лицо и оборот",
     "soon": "Скоро"
   },
   "AssignmentsPage": {

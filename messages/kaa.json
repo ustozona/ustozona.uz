@@ -3798,6 +3798,11 @@
     "videoHint": "Video dawamında soraw beriledi",
     "flashcard": "Flashkarta",
     "flashcardHint": "Aldınǵı tárepte soraw, artında juwap",
+    "testShort": "Sorawlar toplamı",
+    "lessonShort": "Tolıq hújjet",
+    "deckShort": "Slaydlar",
+    "videoShort": "Sorawlı video",
+    "flashcardShort": "Ald–art kartalar",
     "soon": "Tez arada"
   },
   "AssignmentsPage": {

@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  ArrowDown, ArrowUp, ArrowUpDown, EllipsisVertical, ExternalLink, FileText,
-  LayoutGrid, Library, List, ListChecks, Plus, Search, Trash2,
+  ArrowDown, ArrowUp, ArrowUpDown, EllipsisVertical, ExternalLink,
+  LayoutGrid, Library, List, Plus, Search, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -35,70 +35,42 @@ import {
 import {
   panelCardClass, panelCardHeaderClass, withSidebarPageClass,
 } from "@/components/DashboardPage";
-import { classTints, type ClassColor } from "@/lib/class-colors";
+import { useTranslations } from "next-intl";
+import { MATERIAL_KINDS, MATERIAL_KIND_ORDER } from "@/lib/material-kinds";
+import { MaterialKindTile } from "@/components/materials/MaterialKindTile";
 import { timeAgoUz } from "@/lib/localization";
 import { deleteSetAction } from "@/server/actions/assess";
 import { useLessonStore } from "@/store/useLessonStore";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import type { LibraryItem, LibraryKind } from "@/lib/library-types";
 
-/* Bitta koʻrinish, tur = FILTR (R226). Taqdimot va ish varagʻi obyekt
-   sifatida paydo boʻlganda shu yerga bitta qator qoʻshiladi — sahifa
-   qayta yozilmaydi.
+/* Bitta koʻrinish, tur = FILTR (R226). Taqdimot, video va flashkarta
+   obyekt sifatida paydo boʻlganda shu yerga bitta qator qoʻshiladi —
+   sahifa qayta yozilmaydi.
 
    Jadval naqshi `ClassesTable` bilan bir xil (shadcn-space `table-01`
    oilasi): butun qator bosiladi, chapda ikonka + ikki qatorli asosiy
    katak, oʻngda amal menyusi.
 
-   ⚠️ RANG = TUR, SINF EMAS. Bir muddat plitka sinf rangida chizilgan
-   edi — bu xato: kutubxonaning butun maʼnosi materialni sinfdan
-   AJRATISH, `classId` esa faqat «qayerda tuzilgan» degan ikkilamchi
-   maʼlumot (`null` ham boʻlishi mumkin). Undan rang olish oʻsha
-   ataylab pasaytirilgan maydonni qatordagi eng kuchli vizual belgiga
-   aylantirardi.
-
-   Sinf rangi bilan chalkashmaydi, chunki SHAKL ajratadi (dizayn tizimi,
-   «Class swatch standard»): sinf = doira, tur = kvadrat plitka. Rang
-   bazasi ham oʻsha OKLCH dvigatelidan (`makeColorTints`) — qotirilgan
-   Tailwind klass yoʻq, dark mode avtomatik.
-
-   RANG XARITASI Wayground'dan olingan va KELGUSI turlar uchun ham shu
-   yerda band qilinadi — yangi tur qoʻshilganda rang tanlash bahsi
-   qaytadan boshlanmasin:
-     test (Assessment) → green    | taqdimot (Presentation) → orange
-     matn (Passage)    → blue     | video (Video)           → rose
-     kartochka (Flashcard) → violet
-   «Dars» bizda toʻliq matnli hujjat, yaʼni Passage oilasidan — blue. */
-const KIND_META: Record<
-  LibraryKind,
-  {
-    label: string;
-    /** Menyudagi bir qatorlik tushuntirish — turlar koʻpayganda kerak. */
-    hint: string;
-    icon: typeof FileText;
-    color: ClassColor;
-    href: (id: string) => string;
-    /** Yangi material qayerda tuziladi — «Yaratish» menyusi shundan. */
-    createHref: string;
-  }
-> = {
+   Turning nomi, ikonkasi va rangi BU YERDA emas — `lib/material-kinds.ts`
+   registrida. Ilgari sahifa oʻz nusxasini saqlardi va topshiriq
+   muharriri bilan ikki xil koʻrinardi. Bu yerda faqat MARSHRUTLAR
+   qoladi: ular sahifaga xos va registrga aloqasi yoʻq. */
+const KIND_ROUTE: Record<LibraryKind, { open: (id: string) => string; create: string }> = {
   test: {
-    label: "Test",
-    hint: "Savollar toʻplami — jonli yoki mustaqil yechiladi",
-    icon: ListChecks,
-    color: "green",
-    href: (id) => `/dashboard/assignments?setId=${id}`,
-    createHref: "/dashboard/assignments",
+    open: (id) => `/dashboard/assignments?setId=${id}`,
+    create: "/dashboard/assignments",
   },
   lesson: {
-    label: "Dars",
-    hint: "Matn, rasm va formulali toʻliq dars hujjati",
-    icon: FileText,
-    color: "blue",
-    href: (id) => `/lessons/${id}`,
-    createHref: "/dashboard/lessons",
+    open: (id) => `/lessons/${id}`,
+    create: "/dashboard/lessons",
   },
 };
+
+/** Kutubxonada obyekt sifatida yashaydigan turlar — registrdan olinadi. */
+const LIBRARY_KINDS = MATERIAL_KIND_ORDER.filter(
+  (k): k is LibraryKind => MATERIAL_KINDS[k].inLibrary
+);
 
 const ALL = "__all__";
 /** Tur emas, HOLAT filtri — pastdagi izohga qarang. */
@@ -115,6 +87,7 @@ const SORT_LABEL: Record<SortKey, string> = {
 
 export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
   const router = useRouter();
+  const tk = useTranslations("MaterialKinds");
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const lessonsHydrated = useLessonStore((s) => s._hasHydrated);
 
@@ -339,9 +312,9 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
             <Tabs value={tab} onValueChange={setTab}>
               <TabsList>
                 <TabsTrigger value={ALL}>Hammasi ({scoped.length})</TabsTrigger>
-                {Object.entries(KIND_META).map(([key, meta]) => (
+                {LIBRARY_KINDS.map((key) => (
                   <TabsTrigger key={key} value={key}>
-                    {meta.label} ({counts.get(key) ?? 0})
+                    {tk(MATERIAL_KINDS[key].labelKey)} ({counts.get(key) ?? 0})
                   </TabsTrigger>
                 ))}
                 <TabsTrigger value={DRAFT}>Qoralama ({counts.get(DRAFT) ?? 0})</TabsTrigger>
@@ -448,7 +421,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
                   item={item}
                   selected={selected.has(rowKey(item))}
                   onToggle={() => toggleOne(item)}
-                  onOpen={() => router.push(KIND_META[item.kind].href(item.id))}
+                  onOpen={() => router.push(KIND_ROUTE[item.kind].open(item.id))}
                 />
               ))}
             </div>
@@ -485,7 +458,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
                     item={item}
                     selected={selected.has(rowKey(item))}
                     onToggle={() => toggleOne(item)}
-                    onOpen={() => router.push(KIND_META[item.kind].href(item.id))}
+                    onOpen={() => router.push(KIND_ROUTE[item.kind].open(item.id))}
                   />
                 ))}
               </TableBody>
@@ -535,6 +508,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
     material tuzish — alohida ish, muharrirlarni oʻzgartirishni talab
     qiladi. */
 function CreateMenu() {
+  const tk = useTranslations("MaterialKinds");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -549,14 +523,16 @@ function CreateMenu() {
           jadvaldagi plitka BILAN AYNAN bir xil — menyuda koʻrgan yashil
           belgisini roʻyxatda darhol taniydi. */}
       <DropdownMenuContent align="end" className="w-72 p-1.5">
-        {Object.entries(KIND_META).map(([key, meta]) => (
+        {LIBRARY_KINDS.map((key) => (
           <DropdownMenuItem key={key} asChild className="gap-3 py-2.5">
-            <a href={meta.createHref}>
-              <KindTile kind={key as LibraryKind} className="size-8 [&_svg]:size-4" />
+            <a href={KIND_ROUTE[key].create}>
+              <MaterialKindTile kind={key} className="size-8 [&_svg]:size-4" />
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="text-sm font-medium leading-none">{meta.label}</span>
+                <span className="text-sm font-medium leading-none">
+                  {tk(MATERIAL_KINDS[key].labelKey)}
+                </span>
                 <span className="text-xs leading-snug text-muted-foreground">
-                  {meta.hint}
+                  {tk(MATERIAL_KINDS[key].hintKey)}
                 </span>
               </span>
             </a>
@@ -564,20 +540,6 @@ function CreateMenu() {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-/** Tur plitkasi — rang va shakl turdan (yuqoridagi izohga qarang). */
-function KindTile({ kind, className }: { kind: LibraryKind; className?: string }) {
-  const meta = KIND_META[kind];
-  const Icon = meta.icon;
-  return (
-    <span
-      className={cn("flex size-9 shrink-0 items-center justify-center rounded-lg", className)}
-      style={classTints(meta.color).gradientTile}
-    >
-      <Icon className="size-[18px] text-white" />
-    </span>
   );
 }
 
@@ -654,7 +616,7 @@ function LibraryRow({
   onToggle: () => void;
   onOpen: () => void;
 }) {
-  const meta = KIND_META[item.kind];
+  const tk = useTranslations("MaterialKinds");
 
   return (
     <TableRow
@@ -667,7 +629,7 @@ function LibraryRow({
 
       <TableCell className="py-3 pl-3 pr-3">
         <div className="flex items-center gap-3">
-          <KindTile kind={item.kind} />
+          <MaterialKindTile kind={item.kind} />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h6 className="truncate text-sm font-medium">{item.title}</h6>
@@ -680,7 +642,7 @@ function LibraryRow({
 
       <TableCell className="whitespace-nowrap px-3">
         <Badge variant="outline" className="text-[10px]">
-          {meta.label}
+          {tk(MATERIAL_KINDS[item.kind].labelKey)}
         </Badge>
       </TableCell>
 
@@ -713,7 +675,7 @@ function LibraryCard({
   onToggle: () => void;
   onOpen: () => void;
 }) {
-  const meta = KIND_META[item.kind];
+  const tk = useTranslations("MaterialKinds");
 
   return (
     <div
@@ -727,7 +689,7 @@ function LibraryCard({
       )}
     >
       <div className="flex items-start gap-3">
-        <KindTile kind={item.kind} className="size-11 [&_svg]:size-5" />
+        <MaterialKindTile kind={item.kind} className="size-11 [&_svg]:size-5" />
         <div className="ml-auto" onClick={(e) => e.stopPropagation()}>
           <Checkbox checked={selected} onCheckedChange={onToggle} aria-label={item.title} />
         </div>
@@ -740,7 +702,7 @@ function LibraryCard({
 
       <div className="mt-auto flex flex-wrap items-center gap-1.5">
         <Badge variant="outline" className="text-[10px]">
-          {meta.label}
+          {tk(MATERIAL_KINDS[item.kind].labelKey)}
         </Badge>
         <ItemBadges item={item} />
         <span

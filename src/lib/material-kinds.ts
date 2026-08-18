@@ -31,7 +31,10 @@ export type MaterialKind = "test" | "lesson" | "deck" | "video" | "flashcard";
 export type MaterialKindMeta = {
   /** `messages/*.json` → `MaterialKinds` nomspeysidagi kalit. */
   labelKey: string;
+  /** Toʻliq izoh — keng joyda (menyu qatori). */
   hintKey: string;
+  /** Qisqa izoh — tor kartada (shakl tanlovi). */
+  shortHintKey: string;
   icon: typeof FileText;
   color: ClassColor;
   inLibrary: boolean;
@@ -42,6 +45,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
   test: {
     labelKey: "test",
     hintKey: "testHint",
+    shortHintKey: "testShort",
     icon: ListChecks,
     color: "green",
     inLibrary: true,
@@ -50,6 +54,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
   lesson: {
     labelKey: "lesson",
     hintKey: "lessonHint",
+    shortHintKey: "lessonShort",
     icon: FileText,
     color: "blue",
     inLibrary: true,
@@ -58,6 +63,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
   deck: {
     labelKey: "deck",
     hintKey: "deckHint",
+    shortHintKey: "deckShort",
     icon: Presentation,
     color: "orange",
     inLibrary: false,
@@ -66,6 +72,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
   video: {
     labelKey: "video",
     hintKey: "videoHint",
+    shortHintKey: "videoShort",
     icon: Video,
     color: "rose",
     inLibrary: false,
@@ -74,6 +81,7 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
   flashcard: {
     labelKey: "flashcard",
     hintKey: "flashcardHint",
+    shortHintKey: "flashcardShort",
     icon: Layers,
     color: "violet",
     inLibrary: false,

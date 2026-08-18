@@ -3798,6 +3798,11 @@
     "videoHint": "Видео учурунда суроо берилет",
     "flashcard": "Флешкарта",
     "flashcardHint": "Алдыңкы жагында суроо, артында жооп",
+    "testShort": "Суроолор топтому",
+    "lessonShort": "Толук документ",
+    "deckShort": "Слайддар",
+    "videoShort": "Суроолуу видео",
+    "flashcardShort": "Алды–арты карталар",
     "soon": "Жакында"
   },
   "AssignmentsPage": {

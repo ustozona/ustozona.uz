@@ -2,23 +2,32 @@
 
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { classTints } from "@/lib/class-colors";
 import { MaterialKindTile } from "./MaterialKindTile";
 import { MATERIAL_KINDS, MATERIAL_KIND_ORDER, type MaterialKind } from "@/lib/material-kinds";
 
 /**
- * Kontent SHAKLINI tanlash qatori — Wayground'ning
- * «Assessment / Presentation / Video / Passage / Flashcards» naqshi.
+ * Kontent SHAKLINI tanlash qatori — ilova launcher'i uslubidagi kartalar.
  *
- * Nega tugma emas, qator: ilgari bu yerda ikkita oddiy tugma turardi
- * («Yangi test tuzish», «Mavjud testdan tanlash») va ostida kulrang
- * matn — «Taqdimot, video, matn va flashkartalar tez orada». Yaʼni
- * kelajakdagi turlar HAQIDA yozilardi, lekin oʻqituvchi ular qanday
- * koʻrinishini tasavvur qila olmasdi. Qator esa oʻsha turlarni
- * KOʻRSATADI: shakli, rangi va bir qatorlik izohi bilan.
+ * Nega qator: ilgari bu yerda ikkita oddiy tugma turardi va ostida
+ * kulrang matn — «Taqdimot, video, matn va flashkartalar tez orada».
+ * Yaʼni kelajakdagi turlar HAQIDA yozilardi, lekin oʻqituvchi ular
+ * qanday koʻrinishini tasavvur qila olmasdi. Qator esa ularni
+ * KOʻRSATADI: shakli, rangi va qisqa izohi bilan.
  *
- * Tayyor boʻlmagan tur oʻchirilmaydi, soʻniq holda qoladi — yoʻl
- * xaritasi shu yerning oʻzida koʻrinib turadi va tur qoʻshilganda
- * interfeys oʻzgarmaydi, faqat rang jonlanadi.
+ * ── KARTA RETSEPTI ───────────────────────────────────────────────────
+ * Karta OQ (`bg-card`), rangli fon butun kartani egallamaydi. Rang —
+ * ikonka ORTIDAGI yumshoq radial dogʻ: chap-yuqori burchakdan chiqib,
+ * kartaning yarmiga yetmay soʻnadi. Butun karta boʻyalganda beshta
+ * karta yonma-yon turib «rangli chiziq» hosil qiladi va matn oʻqilishi
+ * pasayadi; dogʻ esa rangni ikonkaga BOGʻLAB qoʻyadi.
+ *
+ * Rang qotirilmagan — `classTints(...).solid` OKLCH qiymati, yaʼni
+ * `class-colors.ts` dvigatelidan. Dark mode avtomatik.
+ *
+ * Tayyor boʻlmagan tur oʻchirilmaydi: dogʻsiz, uzuq chegarali va
+ * neytral plitkali holda qoladi — yoʻl xaritasi shu yerning oʻzida
+ * koʻrinib turadi va tur qoʻshilganda interfeys oʻzgarmaydi.
  */
 export function MaterialKindPicker({
   onPick,
@@ -32,7 +41,7 @@ export function MaterialKindPicker({
   return (
     <div
       className={cn(
-        "grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]",
+        "grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(124px,1fr))]",
         className
       )}
     >
@@ -46,16 +55,32 @@ export function MaterialKindPicker({
             disabled={!ready}
             onClick={() => onPick(kind)}
             className={cn(
-              "flex flex-col items-center gap-2 rounded-card border border-border p-3 text-center transition-colors",
+              "relative overflow-hidden rounded-card border bg-card p-3.5 text-left transition-colors",
               ready
-                ? "cursor-pointer hover:bg-muted/50"
-                : "cursor-not-allowed border-dashed"
+                ? "cursor-pointer border-border hover:bg-muted/40"
+                : "cursor-not-allowed border-dashed border-border"
             )}
           >
-            <MaterialKindTile kind={kind} className="size-10 [&_svg]:size-5" muted={!ready} />
-            <span className="text-sm font-medium">{t(meta.labelKey)}</span>
-            <span className="text-xs leading-snug text-muted-foreground">
-              {ready ? t(meta.hintKey) : t("soon")}
+            {ready && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -left-7 -top-7 size-28 rounded-full opacity-30 blur-2xl"
+                style={{ backgroundColor: classTints(meta.color).solid }}
+              />
+            )}
+            <span className="relative flex flex-col gap-0.5">
+              <MaterialKindTile kind={kind} muted={!ready} />
+              <span
+                className={cn(
+                  "mt-3 text-sm font-medium",
+                  ready ? "text-foreground" : "text-muted-foreground"
+                )}
+              >
+                {t(meta.labelKey)}
+              </span>
+              <span className="text-xs leading-snug text-muted-foreground">
+                {ready ? t(meta.shortHintKey) : t("soon")}
+              </span>
             </span>
           </button>
         );
