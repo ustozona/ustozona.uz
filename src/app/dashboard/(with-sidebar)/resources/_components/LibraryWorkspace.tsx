@@ -29,9 +29,7 @@ import {
   panelCardClass, panelCardHeaderClass, withSidebarPageClass,
 } from "@/components/DashboardPage";
 import { classTints, type ClassColor } from "@/lib/class-colors";
-import { classColor } from "@/lib/grades-data";
 import { timeAgoUz } from "@/lib/localization";
-import { useLiveClasses } from "@/hooks/useLiveClasses";
 import type { LibraryItem, LibraryKind } from "@/lib/library-types";
 
 /* Bitta koʻrinish, tur = FILTR (R226). Taqdimot va ish varagʻi obyekt
@@ -43,17 +41,41 @@ import type { LibraryItem, LibraryKind } from "@/lib/library-types";
    katak, oʻngda amal menyusi. Ichki scroll BITTA — jadval ustiga
    ScrollArea qoʻyilmaydi (ikkita ustma-ust scrollbar antipattern).
 
-   ⚠️ RANG BERISH QOIDASI: ikonka SHAKLI turni bildiradi, RANGI esa
-   sinfni. Turga rang berish vasvasasi bor edi, lekin loyihada rang
-   allaqachon band: sinf va mavzu bitta OKLCH dvigatelidan rang oladi
-   (`class-colors.ts`). Turga uchinchi rang tili qoʻshilsa, oʻqituvchi
-   uchun "koʻk nimani anglatadi?" savoli paydo boʻlardi. */
+   ⚠️ RANG = TUR, SINF EMAS. Bir muddat plitka sinf rangida chizilgan
+   edi — bu xato: kutubxonaning butun maʼnosi materialni sinfdan
+   AJRATISH, `classId` esa faqat «qayerda tuzilgan» degan ikkilamchi
+   maʼlumot (`null` ham boʻlishi mumkin). Undan rang olish oʻsha
+   ataylab pasaytirilgan maydonni qatordagi eng kuchli vizual belgiga
+   aylantirardi.
+
+   Sinf rangi bilan chalkashmaydi, chunki SHAKL ajratadi (dizayn tizimi,
+   «Class swatch standard»): sinf = doira, tur = kvadrat plitka. Rang
+   bazasi ham oʻsha OKLCH dvigatelidan (`makeColorTints`) — qotirilgan
+   Tailwind klass yoʻq, dark mode avtomatik.
+
+   RANG XARITASI Wayground'dan olingan va KELGUSI turlar uchun ham shu
+   yerda band qilinadi — yangi tur qoʻshilganda rang tanlash bahsi
+   qaytadan boshlanmasin:
+     test (Assessment) → green    | taqdimot (Presentation) → orange
+     matn (Passage)    → blue     | video (Video)           → rose
+     kartochka (Flashcard) → violet
+   «Dars» bizda toʻliq matnli hujjat, yaʼni Passage oilasidan — blue. */
 const KIND_META: Record<
   LibraryKind,
-  { label: string; icon: typeof FileText; href: (id: string) => string }
+  { label: string; icon: typeof FileText; href: (id: string) => string; color: ClassColor }
 > = {
-  test: { label: "Test", icon: ListChecks, href: (id) => `/dashboard/assignments?setId=${id}` },
-  lesson: { label: "Dars", icon: FileText, href: (id) => `/lessons/${id}` },
+  test: {
+    label: "Test",
+    icon: ListChecks,
+    href: (id) => `/dashboard/assignments?setId=${id}`,
+    color: "green",
+  },
+  lesson: {
+    label: "Dars",
+    icon: FileText,
+    href: (id) => `/lessons/${id}`,
+    color: "blue",
+  },
 };
 
 const ALL = "__all__";
@@ -62,7 +84,6 @@ type SortKey = "title" | "updatedAt";
 
 export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
   const router = useRouter();
-  const liveClasses = useLiveClasses();
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<string>(ALL);
   const [grade, setGrade] = useState<string>(ALL);
@@ -70,14 +91,6 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
     key: "updatedAt",
     dir: "desc",
   });
-
-  /* Sinf rangi jonli store'dan — server `className` ni beradi, rang esa
-     klientda hisoblanadi (`classColor` avto-rangga tushishi mumkin). */
-  const colorByClassId = useMemo(() => {
-    const map = new Map<string, ClassColor>();
-    for (const c of liveClasses) map.set(c.id, classColor(c));
-    return map;
-  }, [liveClasses]);
 
   const grades = useMemo(
     () =>
@@ -262,7 +275,6 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
                   <LibraryRow
                     key={`${item.kind}:${item.id}`}
                     item={item}
-                    color={item.classId ? colorByClassId.get(item.classId) : undefined}
                     onOpen={() => router.push(KIND_META[item.kind].href(item.id))}
                   />
                 ))}
@@ -275,15 +287,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
   );
 }
 
-function LibraryRow({
-  item,
-  color,
-  onOpen,
-}: {
-  item: LibraryItem;
-  color: ClassColor | undefined;
-  onOpen: () => void;
-}) {
+function LibraryRow({ item, onOpen }: { item: LibraryItem; onOpen: () => void }) {
   const meta = KIND_META[item.kind];
   const Icon = meta.icon;
 
@@ -299,19 +303,12 @@ function LibraryRow({
     <TableRow className="group cursor-pointer" onClick={onOpen}>
       <TableCell className="py-3 pl-5 pr-3">
         <div className="flex items-center gap-3">
-          {/* Rang = SINF (OKLCH dvigateli, `ClassesTable` bilan bitta
-              retsept), shakl = TUR. Sinfsiz materialda neytral fon. */}
+          {/* Plitka = TUR (rang ham, shakl ham). Yuqoridagi izohga qarang. */}
           <span
             className="flex size-9 shrink-0 items-center justify-center rounded-lg"
-            style={
-              color
-                ? classTints(color).gradientTile
-                : undefined
-            }
+            style={classTints(meta.color).gradientTile}
           >
-            <Icon
-              className={cn("size-[18px]", color ? "text-white" : "text-muted-foreground")}
-            />
+            <Icon className="size-[18px] text-white" />
           </span>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
