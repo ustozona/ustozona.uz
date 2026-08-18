@@ -170,6 +170,8 @@ export default function AssignmentEditorOverlay({
   /* Mavjud testni tanlash oynasi — toʻplam muharrirdan tashqarida ham
      tugʻiladi (bank, oldingi ishlar), ularni ulash yoʻli kerak. */
   const [attachOpen, setAttachOpen] = useState(false);
+  /** «Yaratish» bosilganda shakl kartalari ochiladi (default — yopiq). */
+  const [showKinds, setShowKinds] = useState(false);
   /* Savol muharriri va sessiya paneli TOʻGʻRIDAN-TOʻGʻRI ochiladi.
      Ilgari orada "Testlar (5-A)" roʻyxati turardi — sidebar'dan olib
      tashlangan `/dashboard/baholash` sahifasining qoldigʻi. U uchinchi
@@ -797,33 +799,44 @@ export default function AssignmentEditorOverlay({
        ogʻzaki soʻrov, sinfdan tashqarida oʻtgan ish. Ilgari bu yerda
        "Test muharriri tez orada" yozilardi va ustun buzuq testdek
        koʻrinardi. */
+    /* ── YARATISH / BIRIKTIRISH ──────────────────────────────────────
+       Google Classroom'ning `Create` / `Add` boʻlinishi. Ikkalasi bir
+       xil natijaga olib kelsa-da (ustunga kontent ulanadi), oʻqituvchi
+       boshida IKKI XIL fikrda boʻladi: «yangi tuzaman» yoki «tayyorini
+       olaman». Bitta qatorda aralashtirilganda tanlov ogʻirlashadi —
+       shakl kartalari (tur) va kutubxona (manba) bir xil koʻrinishga
+       ega boʻlib, ular boshqa-boshqa savolga javob beradi.
+
+       Shakllar DARHOL koʻrsatilmaydi: beshta katta karta boʻsh ustunni
+       «toʻldirilmagan forma» kabi koʻrsatardi. Holbuki kontentsiz ustun
+       — toʻlaqonli holat (daftardagi ish, ogʻzaki soʻrov). */
     return (
       <div className="flex flex-col gap-4 rounded-xl border border-dashed border-border p-5">
-        <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <FileCheck2 className="size-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-semibold text-foreground">{t("noContentTitle")}</h4>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {t("noContentDescription")}
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant={showKinds ? "default" : "outline"}
+            className="gap-2 shadow-none"
+            onClick={() => setShowKinds((v) => !v)}
+          >
+            <Plus className="size-4" />
+            {t("contentCreate")}
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2 shadow-none"
+            onClick={() => setAttachOpen(true)}
+          >
+            <Library className="size-4" />
+            {t("contentAttach")}
+          </Button>
         </div>
+
         {/* Shakl tanlovi — Wayground naqshi. Tayyor boʻlmagan turlar ham
             koʻrinadi (soʻniq): ilgari ular haqida faqat kulrang matn
             yozilardi, endi oʻqituvchi nima kelayotganini KOʻRADI. */}
-        <MaterialKindPicker onPick={(kind) => kind === "test" && handleAttachTest()} />
-
-        {/* Ikki yoʻl ochiq turadi: koʻpincha yangi test tuziladi, lekin
-            bankdan olingan yoki ilgari tuzilgan toʻplam ham shu ustunga
-            ulanishi kerak — ilgari ikkinchi yoʻl umuman yoʻq edi.
-            Kutubxona yoʻli endi shaklga bogʻliq emas, shuning uchun
-            tanlov qatoridan pastda alohida turadi. */}
-        <Button variant="ghost" className="gap-2 self-start" onClick={() => setAttachOpen(true)}>
-          <Library className="size-4" />
-          {t("attachExisting")}
-        </Button>
+        {showKinds && (
+          <MaterialKindPicker onPick={(kind) => kind === "test" && handleAttachTest()} />
+        )}
       </div>
     );
   }
