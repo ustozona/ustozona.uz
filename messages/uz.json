@@ -3234,6 +3234,23 @@
         }
       }
     },
+    "resources": {
+      "label": "Materiallar",
+      "steps": {
+        "0": {
+          "title": "Yangi material",
+          "body": "Bu tugmadan test, dars yoki boshqa material yarating. Har bir tur oʻzining muharririga olib boradi."
+        },
+        "1": {
+          "title": "Turlar boʻyicha filtr",
+          "body": "Materiallarni tur boʻyicha (test, dars) yoki qoralama holati boʻyicha filtrlashingiz mumkin."
+        },
+        "2": {
+          "title": "Materiallar roʻyxati",
+          "body": "Barcha tuzgan materiallaringiz shu yerda — qaysi sinfda ishlatilgani va oxirgi oʻzgartirilgan vaqti bilan."
+        }
+      }
+    },
     "attendance": {
       "label": "Davomat",
       "steps": {

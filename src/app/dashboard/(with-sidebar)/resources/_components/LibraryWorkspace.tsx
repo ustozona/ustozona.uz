@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowDown, ArrowUp, ArrowUpDown, EllipsisVertical, ExternalLink,
-  LayoutGrid, Library, List, Plus, Search, Trash2,
+  LayoutGrid, Layers, Library, List, PenLine, Plus, Search, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { TypographyMuted } from "@/components/ui/typography";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -43,6 +43,9 @@ import { deleteSetAction } from "@/server/actions/assess";
 import { useLessonStore } from "@/store/useLessonStore";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import type { LibraryItem, LibraryKind } from "@/lib/library-types";
+import { useTourRequest } from "@/components/tour/tour-request";
+import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
+import { makeResourcesTourDemoItems } from "@/components/tour/resources-tour-demo";
 
 /* Bitta koʻrinish, tur = FILTR (R226). Taqdimot, video va flashkarta
    obyekt sifatida paydo boʻlganda shu yerga bitta qator qoʻshiladi —
@@ -85,11 +88,18 @@ const SORT_LABEL: Record<SortKey, string> = {
   lastUsedAt: "Yaqinda ishlatilgan",
 };
 
-export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
+export default function LibraryWorkspace({ items: realItems }: { items: LibraryItem[] }) {
   const router = useRouter();
   const tk = useTranslations("MaterialKinds");
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const lessonsHydrated = useLessonStore((s) => s._hasHydrated);
+
+  const tourActive = useTourRequest((s) => s.activeTourId === "resources");
+  const isDemoMode = tourActive && realItems.length === 0;
+  const items = useMemo(
+    () => (isDemoMode ? makeResourcesTourDemoItems() : realItems),
+    [isDemoMode, realItems]
+  );
 
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<string>(ALL);
@@ -101,6 +111,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
   });
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<LibraryItem | null>(null);
   const [busy, setBusy] = useState(false);
 
   const grades = useMemo(
@@ -194,9 +205,9 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
    *    roʻyxatda «tirilib» qoladi. `flushLessonsNow()` push'ni majburan
    *    yuboradi va shundan keyingina qayta oʻqiladi.
    */
-  async function handleBulkDelete() {
-    const tests = selectedItems.filter((i) => i.kind === "test");
-    const lessons = selectedItems.filter((i) => i.kind === "lesson");
+  async function performDelete(targets: LibraryItem[]) {
+    const tests = targets.filter((i) => i.kind === "test");
+    const lessons = targets.filter((i) => i.kind === "lesson");
 
     if (lessons.length > 0 && !lessonsHydrated) {
       toast.error("Darslar hali yuklanmadi — bir lahzadan soʻng urinib koʻring");
@@ -210,9 +221,10 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
         lessons.forEach((i) => deleteLesson(i.id));
         await flushLessonsNow();
       }
-      toast.success(`${selectedItems.length} ta material oʻchirildi`);
+      toast.success(targets.length > 1 ? `${targets.length} ta material oʻchirildi` : "Material oʻchirildi");
       setSelected(new Set());
       setConfirmOpen(false);
+      setDeleteTarget(null);
       router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Oʻchirib boʻlmadi");
@@ -254,18 +266,38 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
        sidebar'ga yopishib qolardi. `flex-1 min-w-0` — qobiq qator-flex
        ichida ((with-sidebar)/layout.tsx), kenglik oʻz-oʻzidan toʻlmaydi. */
     <div className={cn(withSidebarPageClass, "min-w-0 flex-1 lg:pl-6")}>
+      <TourDemoBanner tourId="resources" active={isDemoMode} />
       <Card className={cn("min-w-0", panelCardClass)}>
-        <CardHeader className={cn(panelCardHeaderClass, "gap-3")}>
-          <SectionIcon>
-            <Library />
-          </SectionIcon>
-          <div className="min-w-0">
-            <CardTitle>Materiallar</CardTitle>
-            <TypographyMuted className="text-xs">
-              {items.length} ta material · sinfdan qatʼi nazar
-            </TypographyMuted>
+        {/* 3-ustunli grid — [[panel-header-centering]]: koʻrinish almashtirgichi
+            sarlavha va "Yaratish" tugmasi orasida haqiqiy MARKAZDA tursin
+            (ikkalasining kengligi teng emas, `justify-center` bilan siljib
+            ketardi). O'rta ustun `justify-self-center` bilan. */}
+        <CardHeader className={cn(panelCardHeaderClass, "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3")}>
+          <div className="flex min-w-0 items-center gap-3">
+            <SectionIcon>
+              <Library />
+            </SectionIcon>
+            <div className="min-w-0">
+              <CardTitle>Materiallar</CardTitle>
+              <TypographyMuted className="text-xs">
+                {items.length} ta material · sinfdan qatʼi nazar
+              </TypographyMuted>
+            </div>
           </div>
-          <div className="ml-auto">
+
+          <SegmentedToggle
+            value={view}
+            onValueChange={setView}
+            variant="pill"
+            iconOnly
+            className="justify-self-center"
+            options={[
+              { value: "list", label: "Roʻyxat koʻrinishi", icon: <List className="size-4" /> },
+              { value: "grid", label: "Katak koʻrinishi", icon: <LayoutGrid className="size-4" /> },
+            ]}
+          />
+
+          <div className="justify-self-end" data-tour="resources-create">
             <CreateMenu />
           </div>
         </CardHeader>
@@ -298,7 +330,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4">
+          <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4" data-tour="resources-tabs">
             {/* TUR = TAB, select emas. «Barcha turlar» yopiq roʻyxatda
                 turgani uchun oʻqituvchi nima filtrlanganini bilmaydi va
                 qaysi tur nechta ekani koʻrinmaydi. Wayground `Created (18)
@@ -309,15 +341,29 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
                 qarayman?». Wayground/Kahoot ham Draft'ni kontent tablari
                 yoniga qoʻyadi. Qoralama faqat darsda boʻladi
                 (`lessons.status`), testda bunday holat yoʻq. */}
+            {/* Ikonka — tur ROʻYXATDAGI bilan bir xil (registrdan). Rangsiz —
+                ikonkaning oʻzi turni tanitish uchun yetarli, alohida
+                rang faol tabni "Yaratish" tugmasi bilan raqobatlantirardi. */}
             <Tabs value={tab} onValueChange={setTab}>
               <TabsList>
-                <TabsTrigger value={ALL}>Hammasi ({scoped.length})</TabsTrigger>
-                {LIBRARY_KINDS.map((key) => (
-                  <TabsTrigger key={key} value={key}>
-                    {tk(MATERIAL_KINDS[key].labelKey)} ({counts.get(key) ?? 0})
-                  </TabsTrigger>
-                ))}
-                <TabsTrigger value={DRAFT}>Qoralama ({counts.get(DRAFT) ?? 0})</TabsTrigger>
+                <TabsTrigger value={ALL} className="gap-1.5">
+                  <Layers className="size-3.5" />
+                  Hammasi ({scoped.length})
+                </TabsTrigger>
+                {LIBRARY_KINDS.map((key) => {
+                  const meta = MATERIAL_KINDS[key];
+                  const Icon = meta.icon;
+                  return (
+                    <TabsTrigger key={key} value={key} className="gap-1.5">
+                      <Icon className="size-3.5" />
+                      {tk(meta.labelKey)} ({counts.get(key) ?? 0})
+                    </TabsTrigger>
+                  );
+                })}
+                <TabsTrigger value={DRAFT} className="gap-1.5">
+                  <PenLine className="size-3.5" />
+                  Qoralama ({counts.get(DRAFT) ?? 0})
+                </TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -371,20 +417,6 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
                   ))}
                 </SelectContent>
               </Select>
-
-              <ToggleGroup
-                type="single"
-                value={view}
-                onValueChange={(v) => v && setView(v as ViewMode)}
-                variant="outline"
-              >
-                <ToggleGroupItem value="list" aria-label="Roʻyxat koʻrinishi">
-                  <List className="size-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="grid" aria-label="Katak koʻrinishi">
-                  <LayoutGrid className="size-4" />
-                </ToggleGroupItem>
-              </ToggleGroup>
             </div>
           </div>
         )}
@@ -413,7 +445,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
             )}
           </Empty>
         ) : view === "grid" ? (
-          <div className="min-h-0 flex-1 overflow-auto" style={{ scrollbarGutter: "stable" }}>
+          <div className="min-h-0 flex-1 overflow-auto" style={{ scrollbarGutter: "stable" }} data-tour="resources-list">
             <div className="grid gap-4 p-5 [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">
               {visible.map((item) => (
                 <LibraryCard
@@ -422,6 +454,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
                   selected={selected.has(rowKey(item))}
                   onToggle={() => toggleOne(item)}
                   onOpen={() => router.push(KIND_ROUTE[item.kind].open(item.id))}
+                  onDelete={() => setDeleteTarget(item)}
                 />
               ))}
             </div>
@@ -429,7 +462,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
         ) : (
           /* `scrollbarGutter` — scroll paydo boʻlganda jadval siljib
              ketmasin va scrollbar `⋮` ustunini bosmasin. */
-          <div className="min-h-0 flex-1 overflow-auto" style={{ scrollbarGutter: "stable" }}>
+          <div className="min-h-0 flex-1 overflow-auto" style={{ scrollbarGutter: "stable" }} data-tour="resources-list">
             {/* Ustun kengliklari FOIZDA. Piksel kenglik berilganda butun
                 ortiqcha joy birinchi ustunga qoʻshilib, sarlavha bilan
                 «Tur» orasida katta boʻsh tuynuk hosil boʻlardi. */}
@@ -443,8 +476,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
                       aria-label="Hammasini tanlash"
                     />
                   </TableHead>
-                  <SortHeader label="Material" sortKey="title" className="w-[54%]" />
-                  <TableHead className="w-[14%] px-3 py-3">Tur</TableHead>
+                  <SortHeader label="Material" sortKey="title" className="w-[68%]" />
                   <SortHeader label="Oʻzgartirilgan" sortKey="updatedAt" className="w-[18%]" />
                   {/* Oʻng gutter `pr-5` — chapdagi `pl-5` bilan simmetrik
                       (dizayn tizimi: gorizontal gutter bitta qiymat). */}
@@ -459,6 +491,7 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
                     selected={selected.has(rowKey(item))}
                     onToggle={() => toggleOne(item)}
                     onOpen={() => router.push(KIND_ROUTE[item.kind].open(item.id))}
+                    onDelete={() => setDeleteTarget(item)}
                   />
                 ))}
               </TableBody>
@@ -484,7 +517,34 @@ export default function LibraryWorkspace({ items }: { items: LibraryItem[] }) {
               disabled={busy}
               onClick={(e) => {
                 e.preventDefault(); // dialog amal tugagach yopiladi
-                handleBulkDelete();
+                performDelete(selectedItems);
+              }}
+            >
+              Oʻchirish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Qator ⋮ menyusidan bitta materialni oʻchirish — bulk tanlovdan
+          MUSTAQIL, checkbox holatini oʻzgartirmaydi (Wayground naqshi:
+          har qator oʻz amaliga ega, tanlov shart emas). */}
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(v) => !v && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>“{deleteTarget?.title}” oʻchirilsinmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu amalni qaytarib boʻlmaydi. Testdan chiqarilgan baholar jurnalda
+              qoladi — faqat materialning oʻzi oʻchadi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={busy}
+              onClick={(e) => {
+                e.preventDefault();
+                if (deleteTarget) performDelete([deleteTarget]);
               }}
             >
               Oʻchirish
@@ -548,7 +608,14 @@ function CreateMenu() {
    ajratuvchi yagona belgi sinf. U uzoqdagi ustunda turganda koʻz har
    qatorda ikki marta sakrardi. */
 function subtitleOf(item: LibraryItem) {
-  return [item.meta, item.subject, item.className ?? "sinfsiz"].filter(Boolean).join(" · ");
+  /* Sinf nomi (`"7-A"`) allaqachon fan bilan birga koʻrinadigan joyda
+     ishlatilmaydi — ikkalasi ham koʻrsatilsa "Matematika · 7-A" emas,
+     "Matematika · Matematika 7-A" kabi takrorlanish xavfi bor edi (fan
+     nomi sinf nomiga qoʻshib yozilgan holatlar uchun). Shu sabab fan va
+     sinf birga koʻrsatiladi, lekin sinf nomi fan bilan boshlanmasa. */
+  const classPart = item.className ?? "sinfsiz";
+  const subjectRedundant = item.subject && classPart.toLowerCase().startsWith(item.subject.toLowerCase());
+  return [item.meta, subjectRedundant ? null : item.subject, classPart].filter(Boolean).join(" · ");
 }
 
 /** Sarlavha yonidagi belgilar — ikkala koʻrinishda bir xil. */
@@ -573,12 +640,11 @@ function ItemBadges({ item }: { item: LibraryItem }) {
   );
 }
 
-function RowActions({ onOpen }: { onOpen: () => void }) {
+function RowActions({ onOpen, onDelete }: { onOpen: () => void; onDelete: () => void }) {
   return (
-    /* Asosiy amal KOʻRINADI (hover'da), qolganlari `⋮` da. Faqat `⋮`
-       boʻlganda oʻqituvchi qatordan nima qilish mumkinligini bilmaydi.
-       v1 da yagona amal «Ochish»; nusxalash keyingi bosqichda — u har
-       turda alohida server amali talab qiladi. */
+    /* Asosiy amal KOʻRINADI (hover'da), qolganlari `⋮` da (Wayground
+       naqshi: Play koʻrinadi, Save/Copy/Delete menyuda). Nusxalash hali
+       yoʻq — bu har turda alohida server amali talab qiladi (v2). */
     <div className="flex items-center justify-end gap-1">
       <Button
         size="sm"
@@ -602,6 +668,10 @@ function RowActions({ onOpen }: { onOpen: () => void }) {
             <ExternalLink />
             Ochish
           </DropdownMenuItem>
+          <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+            <Trash2 />
+            Oʻchirish
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -609,15 +679,14 @@ function RowActions({ onOpen }: { onOpen: () => void }) {
 }
 
 function LibraryRow({
-  item, selected, onToggle, onOpen,
+  item, selected, onToggle, onOpen, onDelete,
 }: {
   item: LibraryItem;
   selected: boolean;
   onToggle: () => void;
   onOpen: () => void;
+  onDelete: () => void;
 }) {
-  const tk = useTranslations("MaterialKinds");
-
   return (
     <TableRow
       className={cn("group cursor-pointer", selected && "bg-muted/50")}
@@ -627,6 +696,9 @@ function LibraryRow({
         <Checkbox checked={selected} onCheckedChange={onToggle} aria-label={item.title} />
       </TableCell>
 
+      {/* Tur endi FAQAT rangli ikonka orqali koʻrsatiladi — alohida matnli
+          badge yoʻq (Wayground naqshi: ikonka yagona tur signali, sarlavha
+          qatori esa faqat holat/statistika chiplariga ajratilgan). */}
       <TableCell className="py-3 pl-3 pr-3">
         <div className="flex items-center gap-3">
           <MaterialKindTile kind={item.kind} />
@@ -640,12 +712,6 @@ function LibraryRow({
         </div>
       </TableCell>
 
-      <TableCell className="whitespace-nowrap px-3">
-        <Badge variant="outline" className="text-[10px]">
-          {tk(MATERIAL_KINDS[item.kind].labelKey)}
-        </Badge>
-      </TableCell>
-
       <TableCell
         className="whitespace-nowrap px-3 text-sm text-muted-foreground"
         title={item.updatedAt.toLocaleDateString("uz-UZ")}
@@ -654,7 +720,7 @@ function LibraryRow({
       </TableCell>
 
       <TableCell className="py-3 pl-3 pr-5">
-        <RowActions onOpen={onOpen} />
+        <RowActions onOpen={onOpen} onDelete={onDelete} />
       </TableCell>
     </TableRow>
   );
@@ -668,15 +734,14 @@ function LibraryRow({
     va qolgan joy MATNGA beriladi. Natijada katak «buzuq rasm» emas,
     kompakt pasport boʻlib koʻrinadi. */
 function LibraryCard({
-  item, selected, onToggle, onOpen,
+  item, selected, onToggle, onOpen, onDelete,
 }: {
   item: LibraryItem;
   selected: boolean;
   onToggle: () => void;
   onOpen: () => void;
+  onDelete: () => void;
 }) {
-  const tk = useTranslations("MaterialKinds");
-
   return (
     <div
       role="button"
@@ -690,7 +755,24 @@ function LibraryCard({
     >
       <div className="flex items-start gap-3">
         <MaterialKindTile kind={item.kind} className="size-11 [&_svg]:size-5" />
-        <div className="ml-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="ml-auto flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <span className="flex cursor-pointer items-center justify-center rounded-full p-2 opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100">
+                <EllipsisVertical className="size-4" />
+              </span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={onOpen}>
+                <ExternalLink />
+                Ochish
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+                <Trash2 />
+                Oʻchirish
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Checkbox checked={selected} onCheckedChange={onToggle} aria-label={item.title} />
         </div>
       </div>
@@ -701,9 +783,6 @@ function LibraryCard({
       </div>
 
       <div className="mt-auto flex flex-wrap items-center gap-1.5">
-        <Badge variant="outline" className="text-[10px]">
-          {tk(MATERIAL_KINDS[item.kind].labelKey)}
-        </Badge>
         <ItemBadges item={item} />
         <span
           className="ml-auto text-xs text-muted-foreground"
