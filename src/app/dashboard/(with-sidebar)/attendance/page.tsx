@@ -26,9 +26,9 @@ export default function AttendancePage() {
   const effectiveClassId = isDemoMode ? ATTENDANCE_TOUR_DEMO_CLASS_ID : (selectedClassId ?? "");
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-6 p-4 md:p-6">
       <TourDemoBanner tourId="attendance" active={isDemoMode} />
-      <div className="flex flex-1 min-w-0 h-full min-h-0 gap-6 overflow-hidden p-4 md:p-6">
+      <div className="flex flex-1 min-w-0 h-full min-h-0 gap-6 overflow-hidden">
         <div data-tour="attendance-classes" className="hidden lg:block w-[280px] shrink-0 h-full">
           <ClassListPanel
             page="attendance"

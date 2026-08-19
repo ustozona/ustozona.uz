@@ -447,10 +447,10 @@ export default function LessonsPage() {
   };
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-6 p-4 md:p-6">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
       <DndContext sensors={dndSensors} onDragEnd={handleLessonDragEnd}>
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
+      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" data-tour="lessons-classes">
         <ClassListPanel

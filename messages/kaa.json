@@ -3299,17 +3299,13 @@
       "steps": {
         "0": {
           "title": "Barlıǵı usı jerden baslanadı",
-          "body": "Aldın taza klass jaratıń: ataması, páni hám ajıratıp turatuǵın reńin kiritiń. Sistemadaǵı basqa barlıq bólim (keste, oqıwshılar, jurnal, qatnasıw) usı klasslarǵa baylanadı."
+          "body": "Aldın taza klass jaratıń: ataması, páni hám ajıratıp turatuǵın reńin kiritiń (janındaǵı strelka arqalı Excelʼden import qılıwǵa da boladı). Sistemadaǵı basqa barlıq bólim (keste, oqıwshılar, jurnal, qatnasıw) usı klasslarǵa baylanadı."
         },
         "1": {
           "title": "Klass kartochkası",
           "body": "Hár bir kartochkada oqıwshılar, temalar hám tapsırmalar sanı bir qarasta kórinedi. Kartochka ústine basıp tolıq klass betine ótesiz."
         },
         "2": {
-          "title": "Kórinisti ózgertiw",
-          "body": "Klasslarıńızdı kletkasha yamasa dizim kórinisinde kóriw múmkinshiligi bar — ózińizge eń qolaylı kórinisti tańlań."
-        },
-        "3": {
           "title": "Ulıwma statistika",
           "body": "Usı bólimde barlıq klasslar, oqıwshılar, sabaqlar hám tapsırmalardıń ulıwma sanı jıynalǵan. Taza klass qosıwıńız benen bul kórsetkishler óz-ózinen jańalanadı."
         }
@@ -3329,10 +3325,6 @@
         "2": {
           "title": "Oqıwshı maǵlıwmatları",
           "body": "Betten shıqpaǵan halda oqıwshınıń klassı, baylanısıw maǵlıwmatları hám tezkor ámelleri menen tanısıń. Tolıq qatnasıw, bahalar, esletpeler hám jeke toplamı menen tanısıw ushın «Profildi kóriw»di basıń."
-        },
-        "3": {
-          "title": "Jaǵday boyınsha filtrllew",
-          "body": "Oqıwshılardı jaǵdayına qarap (aktiv, demalısta, arxivte) saralań — kerekli oqıwshılarǵa itibar qaratıw ushın qolaylı."
         }
       }
     },

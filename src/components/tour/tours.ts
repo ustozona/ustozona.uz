@@ -90,7 +90,6 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     steps: [
       { target: '[data-tour="classes-add"]', placement: "bottom" },
       { target: '[data-tour="classes-list"]', placement: "left" },
-      { target: '[data-tour="classes-view-toggle"]', placement: "bottom" },
       { target: '[data-tour="classes-stats"]', placement: "left" },
     ],
   },
@@ -101,7 +100,6 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
       { target: '[data-tour="students-classes"]', placement: "right" },
       { target: '[data-tour="students-list"]', placement: "left" },
       { target: '[data-tour="students-preview"]', placement: "left" },
-      { target: '[data-tour="students-filter"]', placement: "bottom" },
     ],
   },
   {

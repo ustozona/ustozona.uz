@@ -1,8 +1,11 @@
 import { cn } from "@/lib/utils";
 
-/** Sahifa padding — shadcn p-6 (24px) scale, responsive */
+/** Sahifa padding — shadcn p-6 (24px) scale, responsive.
+    `gap-6` — TourDemoBanner kabi qoʻshimcha farzandlar asosiy kontentga
+    yopishib qolmasligi uchun (boshqa sahifa qobiqlari — masalan
+    withSidebarPageClass — bu gapʼni allaqachon oʻzida beradi). */
 export const dashboardPageClass =
-  "flex flex-col h-full min-h-0 p-4 md:p-6 lg:p-8";
+  "flex flex-col h-full min-h-0 gap-6 p-4 md:p-6 lg:p-8";
 
 /** Card/panel orasidagi masofa — shadcn Card gap-6 bilan mos */
 export const dashboardCardGapClass = "gap-6";

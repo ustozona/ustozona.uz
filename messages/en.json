@@ -3295,17 +3295,13 @@
       "steps": {
         "0": {
           "title": "It all starts here",
-          "body": "First create a new class: enter its name, subject, and a distinguishing color. Every other section (schedule, students, gradebook, attendance) links back to these classes."
+          "body": "First create a new class: enter its name, subject, and a distinguishing color (or use the arrow next to it to import from Excel). Every other section (schedule, students, gradebook, attendance) links back to these classes."
         },
         "1": {
           "title": "Class card",
           "body": "Each card shows the number of students, topics, and assignments at a glance. Click a card to open the full class page."
         },
         "2": {
-          "title": "Switch the view",
-          "body": "You can view your classes as a grid or a list — pick whichever view suits you best."
-        },
-        "3": {
           "title": "Overall stats",
           "body": "This section totals up all classes, students, lessons, and assignments. These numbers update automatically as you add new classes."
         }
@@ -3325,10 +3321,6 @@
         "2": {
           "title": "Student details",
           "body": "Review the student's class, contact details, and quick actions without leaving the page. Click “View profile” for full attendance, grades, notes, and their personal portfolio."
-        },
-        "3": {
-          "title": "Filter by status",
-          "body": "Sort students by status (active, on leave, archived) — handy for focusing on the students who need attention."
         }
       }
     },

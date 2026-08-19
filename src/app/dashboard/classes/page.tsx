@@ -11,7 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -115,6 +115,22 @@ export default function ClassesPage() {
     if (v !== "table") setSelectedIds(new Set());
     localStorage.setItem(CLASSES_VIEW_STORAGE_KEY, v);
   };
+  /* Koʻrinish almashtirgichi ikki joyda joylashadi (panel KENGLIGIGA qarab,
+     ekran kengligiga emas): keng panelda markazda, tor panelda amallar
+     guruhida. Bitta manba — ikki oʻramda CSS orqali almashtiriladi. */
+  const viewToggle = (
+    <SegmentedToggle
+      value={view}
+      onValueChange={handleViewChange}
+      variant="pill"
+      iconOnly
+      options={[
+        { value: "grid", label: t("gridViewAria"), icon: <LayoutGrid className="size-4" /> },
+        { value: "list", label: t("listViewAria"), icon: <ListIcon className="size-4" /> },
+        { value: "table", label: t("tableViewAria"), icon: <TableIcon className="size-4" /> },
+      ]}
+    />
+  );
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("name");
@@ -296,35 +312,31 @@ export default function ClassesPage() {
       <div className="flex flex-1 min-h-0 gap-6">
 
         {/* ── Main: classes panel ── */}
-        <Card data-tour="classes-list" className={cn("flex-1 min-w-0", panelCardClass)}>
-          <CardHeader className={cn(panelCardHeaderClass, "grid grid-rows-[auto] grid-cols-[1fr_auto_1fr] gap-3 min-h-16 px-5 pt-4! pb-4!")}>
-            <div className="flex items-center gap-2.5 shrink-0 justify-self-start">
+        <Card data-tour="classes-list" className={cn("@container flex-1 min-w-0", panelCardClass)}>
+          {/* Tor panelda — oddiy flex; yetarlicha kengaygandagina simmetrik
+              3-ustunli gridga oʻtadi (simmetrik ustunlar bir-biriga joy bera
+              olmaydi, shuning uchun tor joyda oʻng guruh sarlavha ustiga
+              toshib ketardi). */}
+          <CardHeader className={cn(
+            panelCardHeaderClass,
+            "flex items-center justify-between gap-3 min-h-16 px-5 pt-4! pb-4!",
+            "@[52rem]:grid @[52rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
+          )}>
+            <div className="flex min-w-0 items-center gap-2.5">
               <SectionIcon><GraduationCap /></SectionIcon>
               <CardTitle>{t("title")}</CardTitle>
             </div>
 
-            {/* Koʻrinish toggle — sarlavha va amallar orasida, markazda */}
-            <ToggleGroup
-              data-tour="classes-view-toggle"
-              type="single"
-              value={view}
-              onValueChange={(v) => v && handleViewChange(v as ViewMode)}
-              variant="outline"
-              size="default"
-              className="hidden sm:flex shadow-none justify-self-center"
-            >
-              <ToggleGroupItem value="grid" aria-label={t("gridViewAria")}>
-                <LayoutGrid className="size-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label={t("listViewAria")}>
-                <ListIcon className="size-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="table" aria-label={t("tableViewAria")}>
-                <TableIcon className="size-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
+            {/* Markaziy slot — grid ustuni sifatida JOY BAND QILADI, shuning
+                uchun yon guruhlar hech qachon uning ustiga chiqa olmaydi.
+                Koʻrsatish sharti panel KENGLIGIGA bogʻliq (`@container`). */}
+            <div className="hidden justify-self-center @[52rem]:flex">{viewToggle}</div>
 
             <div className="flex items-center gap-2 justify-self-end">
+              {/* Panel markazga sigʻmaydigan darajada tor boʻlsa — shu yerda.
+                  Ajratgich shart emas: pill oʻz border'iga ega. */}
+              <div className="hidden sm:flex @[52rem]:hidden">{viewToggle}</div>
+
               {/* Search */}
               <div className={cn("flex items-center transition-all duration-fast", searchOpen ? "w-52" : "w-8")}>
                 {searchOpen ? (
@@ -376,9 +388,8 @@ export default function ClassesPage() {
 
               {/* Yangi sinf — boʻlingan tugma: asosiy qism bitta sinf,
                   `⌄` esa koʻplab import (ClassListPanel bilan bir xil). */}
-              <div className="flex items-center">
+              <div className="flex items-center" data-tour="classes-add">
                 <Button
-                  data-tour="classes-add"
                   onClick={() => setIsCreateModalOpen(true)}
                   className="gap-1.5 rounded-r-none pr-2.5"
                 >

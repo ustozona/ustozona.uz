@@ -88,7 +88,7 @@ export default function StudentsDataTable({
 
   return (
     <div ref={scrollRef} className="absolute inset-0 overflow-auto">
-      <table className="w-full min-w-2xl caption-bottom text-sm">
+      <table className="w-full min-w-xl caption-bottom text-sm">
         <TableHeader>
           <TableRow className="hover:bg-transparent! border-b-0!">
             <TableHead className={cn(stickyHead, "w-11 px-4 py-3")}>
@@ -99,10 +99,10 @@ export default function StudentsDataTable({
                 className="cursor-pointer"
               />
             </TableHead>
-            <SortHead label={t("tableColName")} colKey="name" className="min-w-48 py-3 pr-3 pl-0" />
-            <SortHead label={t("tableColAttendance")} colKey="attendance" className="w-20 px-3 py-3" center />
-            <SortHead label={t("tableColGrade")} colKey="grade" className="w-40 px-3 py-3" />
-            <TableHead className={cn(stickyHead, "w-36 px-3 py-3")}>{t("tableColStatus")}</TableHead>
+            <SortHead label={t("tableColName")} colKey="name" className="min-w-40 py-3 pr-3 pl-0" />
+            <SortHead label={t("tableColAttendance")} colKey="attendance" className="w-16 px-3 py-3" center />
+            <SortHead label={t("tableColGrade")} colKey="grade" className="w-32 px-3 py-3" />
+            <TableHead className={cn(stickyHead, "w-32 px-3 py-3")}>{t("tableColStatus")}</TableHead>
             <TableHead className={cn(stickyHead, "w-10 px-4 py-3")} />
           </TableRow>
         </TableHeader>
@@ -157,7 +157,7 @@ export default function StudentsDataTable({
                     <Progress
                       value={s.grade}
                       indicatorColor={scoreColor}
-                      className="h-1.5 w-full max-w-24"
+                      className="h-1.5 w-full max-w-16"
                       style={{ backgroundColor: `color-mix(in srgb, ${scoreColor} 16%, transparent)` }}
                     />
                     <span className="shrink-0 text-sm font-semibold tabular-nums">{s.grade}%</span>

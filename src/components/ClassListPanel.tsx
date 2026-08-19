@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { classColor } from "@/lib/grades-data";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm, classFormInitial } from "@/hooks/useLiveClasses";
 import { classTints } from "@/lib/class-colors";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -176,12 +177,16 @@ export default function ClassListPanel({
                     <ContextMenuTrigger asChild>
                       <button
                         onClick={() => onSelect(cls.id)}
-                        style={isSelected ? { ["--card-accent" as string]: rowTints.solid, ...rowTints.tint } : undefined}
-                        className="list-row group w-full"
+                        style={isSelected ? {
+                          ["--card-accent" as string]: rowTints.solid,
+                          ...rowTints.tint,
+                          ...rowTints.softBorder,
+                        } : undefined}
+                        className="list-row list-row--dot-ring group w-full"
                         data-active={isSelected || undefined}
                         aria-current={isSelected || undefined}
                       >
-                        <span className="size-2.5 rounded-[4px] shrink-0" style={rowTints.dot} />
+                        <ClassSwatch hex={rowTints.solid} className="size-2" />
                         <span className={cn(
                           "text-sm truncate flex-1 transition-colors",
                           isSelected ? "font-semibold text-foreground" : "text-foreground/70 group-hover:text-foreground"
