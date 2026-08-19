@@ -3405,6 +3405,23 @@
         }
       }
     },
+    "resources": {
+      "label": "Materiallar",
+      "steps": {
+        "0": {
+          "title": "Jańa material",
+          "body": "Bul túymeden test, sabaq yamasa basqa material jaratiń. Hár bir túr óz redaktorine alip baradi."
+        },
+        "1": {
+          "title": "Túrler boyınsha filtr",
+          "body": "Materiallardı túri (test, sabaq) yamasa qaralama halatı boyınsha filtrlew múmkin."
+        },
+        "2": {
+          "title": "Materiallar dizimi",
+          "body": "Barlıq jaratqan materiallarıńız usı jerde — qaysı klasta paydalanılğanı hám aqırǵı ózgertilgen waqtı menen."
+        }
+      }
+    },
     "attendance": {
       "label": "Qatnasıw",
       "steps": {

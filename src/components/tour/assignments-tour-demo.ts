@@ -31,6 +31,8 @@ export function makeAssignmentsTourDemoClassData(): ClassData {
     topics: [
       { id: "demo-assignments-t-1", name: "Nazorat ishi", color: "violet", purpose: "summative", weightPercent: 50, scaleKind: "ten" },
       { id: "demo-assignments-t-2", name: "Uy ishi", color: "lime", purpose: "formative", weightPercent: 0, scaleKind: "ten" },
+      { id: "demo-assignments-t-3", name: "Mustaqil ish", color: "amber", purpose: "formative", weightPercent: 20, scaleKind: "ten" },
+      { id: "demo-assignments-t-4", name: "Loyiha", color: "cyan", purpose: "summative", weightPercent: 30, scaleKind: "ten" },
     ],
     assignments: [
       {
@@ -43,11 +45,43 @@ export function makeAssignmentsTourDemoClassData(): ClassData {
       },
       {
         id: "demo-assignments-a-2",
+        title: "Tenglamalar boʻyicha nazorat ishi",
+        maxScore: 10,
+        topicId: "demo-assignments-t-1",
+        date: "2026-08-21",
+        kind: "test",
+      },
+      {
+        id: "demo-assignments-a-3",
         title: "Geometrik shakllar — uy ishi",
         maxScore: 10,
         topicId: "demo-assignments-t-2",
         dueDate: "2026-08-20",
         kind: "manual",
+      },
+      {
+        id: "demo-assignments-a-4",
+        title: "Foizlar boʻyicha masalalar — uy ishi",
+        maxScore: 10,
+        topicId: "demo-assignments-t-2",
+        dueDate: "2026-08-25",
+        kind: "manual",
+      },
+      {
+        id: "demo-assignments-a-5",
+        title: "Burchaklarni oʻlchash — mustaqil ish",
+        maxScore: 10,
+        topicId: "demo-assignments-t-3",
+        date: "2026-08-18",
+        kind: "manual",
+      },
+      {
+        id: "demo-assignments-a-6",
+        title: "Statistika taqdimoti — loyiha",
+        maxScore: 10,
+        topicId: "demo-assignments-t-4",
+        dueDate: "2026-08-28",
+        kind: "deck",
       },
     ],
     grades: [],

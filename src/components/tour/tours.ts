@@ -131,6 +131,15 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     ],
   },
   {
+    id: "resources",
+    route: "/dashboard/resources",
+    steps: [
+      { target: '[data-tour="resources-create"]', placement: "bottom", align: "end" },
+      { target: '[data-tour="resources-tabs"]', placement: "bottom" },
+      { target: '[data-tour="resources-list"]', placement: "top" },
+    ],
+  },
+  {
     id: "attendance",
     route: "/dashboard/attendance",
     steps: [

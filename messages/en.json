@@ -3401,6 +3401,23 @@
         }
       }
     },
+    "resources": {
+      "label": "Materials",
+      "steps": {
+        "0": {
+          "title": "New material",
+          "body": "Use this button to create a test, lesson, or other material. Each type opens its own editor."
+        },
+        "1": {
+          "title": "Filter by type",
+          "body": "Filter materials by type (test, lesson) or by draft status."
+        },
+        "2": {
+          "title": "Materials list",
+          "body": "All the materials you have created appear here, with the class they were used in and when they were last edited."
+        }
+      }
+    },
     "attendance": {
       "label": "Attendance",
       "steps": {
