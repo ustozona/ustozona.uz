@@ -1,6 +1,8 @@
 "use client";
 
+import * as React from "react";
 import { useState, useMemo, useEffect, type ReactNode } from "react";
+import { useComposedRefs } from "@/lib/compose-refs";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -18,6 +20,7 @@ import { useLiveClasses, useCreateClass } from "@/hooks/useLiveClasses";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
 import { lessonClassIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
+import { LessonStatusPill } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
   makeLessonsTourDemoClasses, makeLessonsTourDemoUnits, makeLessonsTourDemoLessons,
@@ -28,9 +31,10 @@ import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown } from "lucide-react";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput } from "lucide-react";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
+  ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -44,17 +48,9 @@ import {
 } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import {
-  AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-
-/** Status badge ranglari — semantik tokenlar (success / info / warning / muted) */
-const STATUS_STYLES: Record<Lesson["status"], string> = {
-  Completed: "bg-success/10 text-success",
-  Scheduled: "bg-info/10 text-info",
-  Unscheduled: "bg-warning/10 text-warning",
-  Draft: "bg-muted text-muted-foreground",
-};
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const NONE = "__none__";
@@ -66,16 +62,23 @@ function UnitDropZone({ id, children }: { id: string; children: (isOver: boolean
   return <div ref={setNodeRef}>{children(isOver)}</div>;
 }
 
-/* Mavzu kartasini sudrab boʻlim-zonalarga tashlash uchun draggable wrapper. */
-function DraggableLesson({ id, className, style, onClick, children }: {
+/* Mavzu kartasini sudrab boʻlim-zonalarga tashlash uchun draggable wrapper.
+   `forwardRef` + `...rest` MAJBURIY — `ContextMenuTrigger asChild` Radix
+   Slot orqali `onContextMenu`ni aynan shu yerga ulaydi; ular yoʻq boʻlsa
+   prop jimgina tushib qoladi va oʻng tugma menyusi umuman ochilmaydi. */
+const DraggableLesson = React.forwardRef<HTMLDivElement, {
   id: string; className?: string; style?: React.CSSProperties; onClick: () => void; children: ReactNode;
-}) {
+} & React.HTMLAttributes<HTMLDivElement>>(function DraggableLesson(
+  { id, className, style, onClick, children, ...rest }, forwardedRef
+) {
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id });
+  const composedRef = useComposedRefs(setNodeRef, forwardedRef);
   return (
     <div
-      ref={setNodeRef}
+      ref={composedRef}
       {...listeners}
       {...attributes}
+      {...rest}
       onClick={onClick}
       style={style}
       className={cn(className, isDragging && "opacity-40")}
@@ -83,16 +86,10 @@ function DraggableLesson({ id, className, style, onClick, children }: {
       {children}
     </div>
   );
-}
+});
 
 export default function LessonsPage() {
   const t = useTranslations("LessonsPage");
-  const STATUS_LABELS: Record<Lesson["status"], string> = {
-    Completed: t("statusCompleted"),
-    Scheduled: t("statusScheduled"),
-    Unscheduled: t("statusUnscheduled"),
-    Draft: t("statusDraft"),
-  };
   const router = useRouter();
   // Sinf tanlash — `?classId=` URL param (refresh/deep-link chidamli).
   // null = hech narsa tanlanmagan (Sinflar ustuni 50%). Tanlanganda URL +
@@ -114,6 +111,7 @@ export default function LessonsPage() {
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
   const [editUnitTitle, setEditUnitTitle] = useState("");
   const [editUnitDesc, setEditUnitDesc] = useState("");
+  const [deleteLessonTarget, setDeleteLessonTarget] = useState<Lesson | null>(null);
 
   const openEditUnit = (unit: Unit) => {
     setEditUnitTarget(unit);
@@ -136,6 +134,12 @@ export default function LessonsPage() {
       action: { label: t("undo"), onClick: () => restoreUnit(unit, lessonIds) },
     });
   };
+  const handleConfirmDeleteLesson = () => {
+    if (!deleteLessonTarget) return;
+    deleteLesson(deleteLessonTarget.id);
+    setDeleteLessonTarget(null);
+    toast.success(t("lessonDeletedToast"));
+  };
 
   useEffect(() => { setSelectedUnitId(null); }, [selectedClassId]);
 
@@ -149,13 +153,16 @@ export default function LessonsPage() {
   const demoUnits = useMemo(() => (isDemoMode ? makeLessonsTourDemoUnits() : null), [isDemoMode]);
   const demoLessons = useMemo(() => (isDemoMode ? makeLessonsTourDemoLessons() : null), [isDemoMode]);
 
-  const effectiveClassId = isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : selectedClassId;
   // "Sinflaringiz" bosqichida boʻlimlar ustuni hali tanlanmagan koʻrinishida
-  // qolsin — aks holda demo boʻlim oldindan tanlangan boʻlib koʻrinib, xuddi
-  // tur allaqachon boʻlimlarga oʻtganday taassurot qoldiradi.
-  const demoUnitPreselected = isDemoMode && activeTourStepId !== "lessons-classes";
+  // qolsin — aks holda (demo REJIMIDA HAM, haqiqiy sinf allaqachon tanlangan
+  // hisobda HAM) boʻlimlar oldindan toʻldirilgan koʻrinib, tooltip matni
+  // ("sinfni tanlang") allaqachon bajarilgan amal bilan ziddiyatga kelardi.
+  const suppressClassForTourIntro = tourActive && activeTourStepId === "lessons-classes";
+  const effectiveClassId = suppressClassForTourIntro
+    ? null
+    : isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : selectedClassId;
   const effectiveUnitId = isDemoMode
-    ? (selectedUnitId ?? (demoUnitPreselected ? LESSONS_TOUR_DEMO_UNIT_ID : null))
+    ? (selectedUnitId ?? (suppressClassForTourIntro ? null : LESSONS_TOUR_DEMO_UNIT_ID))
     : selectedUnitId;
   const unitsSource = isDemoMode ? demoUnits! : units;
   const lessonsSource = isDemoMode ? demoLessons! : lessons;
@@ -333,6 +340,9 @@ export default function LessonsPage() {
   };
 
   // Tor ustun, tanlangan: katta karta + count badge + spring-bounce
+  /* Tor ustun, TANLANGAN: qator kartaga "koʻtariladi" (ataylab morf —
+     tanlangan boʻlim shu ustundagi asosiy obyekt boʻlgani uchun ikonka,
+     tavsif va dars soni bilan toʻliq pasport oladi). */
   const renderUnitSelected = (unit: Unit, isOver = false) => {
     const { total } = unitProgress(unit.id);
     return withUnitMenu(unit,
@@ -368,7 +378,7 @@ export default function LessonsPage() {
         className={cn("list-row group w-full", isOver && "ring-2 rounded-lg")}
         style={isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : undefined}
       >
-        <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: selectedClassHex }} />
+        <ClassSwatch hex={selectedClassHex} className="size-2" />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           {pad(unit.number)}. {unit.title}
         </span>
@@ -410,7 +420,8 @@ export default function LessonsPage() {
     );
   };
 
-  // "Boʻlimsiz" — tor ustun (tanlangan / kompakt)
+  // "Boʻlimsiz" — tor ustun (tanlangan / kompakt). Haqiqiy boʻlimlar bilan
+  // bir xil naqsh: tanlanganda kartaga koʻtariladi.
   const renderNoUnitNarrow = (isOver = false) => {
     if (effectiveUnitId === NONE) {
       return (
@@ -438,7 +449,7 @@ export default function LessonsPage() {
         onClick={() => setSelectedUnitId(NONE)}
         className={cn("list-row group w-full", isOver && "ring-2 ring-muted-foreground/50 rounded-lg")}
       >
-        <span className="size-2.5 rounded-[4px] shrink-0 bg-muted-foreground/25" />
+        <span className="size-2 rounded-full shrink-0 bg-muted-foreground/40" />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           {t("noUnitTitle")}
         </span>
@@ -655,9 +666,6 @@ export default function LessonsPage() {
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <div className="hidden xl:flex items-center gap-1">
-                <Button variant="ghost" size="icon" title={t("editAria")} className="text-muted-foreground hover:text-foreground">
-                  <Pencil className="size-4" />
-                </Button>
                 <Button variant="ghost" size="icon" title={t("searchAria")} className="text-muted-foreground hover:text-foreground">
                   <Search className="size-4" />
                 </Button>
@@ -665,7 +673,7 @@ export default function LessonsPage() {
                   <ArrowDownUp className="size-4" />
                 </Button>
               </div>
-              {selectedUnitId && lessonsForUnit.length > 0 && (
+              {effectiveUnitId && lessonsForUnit.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLesson}>
                   <Plus className="size-3.5" />
                   <span className="hidden lg:inline">{t("newLesson")}</span>
@@ -696,9 +704,15 @@ export default function LessonsPage() {
                 ) : (
                   lessonsForUnit.map((lesson) => {
                     const lessonUnit = unitsSource.find((u) => u.id === lesson.unitId);
+                    // "Koʻchirish" submenu — joriy boʻlim va "Boʻlimsiz" oʻzi chiqarib tashlanadi.
+                    const moveTargets = [
+                      ...unitsForClass.filter((u) => u.id !== lesson.unitId),
+                      ...(lesson.unitId !== null ? [null] : []),
+                    ];
                     return (
+                    <ContextMenu key={lesson.id}>
+                    <ContextMenuTrigger asChild>
                       <DraggableLesson
-                        key={lesson.id}
                         id={lesson.id}
                         onClick={() => openLesson(lesson.id)}
                         className="list-card group flex items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
@@ -733,48 +747,43 @@ export default function LessonsPage() {
                               )}
                             </div>
                           )}
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              "gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border-transparent",
-                              STATUS_STYLES[lesson.status]
-                            )}
-                          >
-                            <span className="size-1.5 rounded-full bg-current" />
-                            {STATUS_LABELS[lesson.status]}
-                          </Badge>
-                        </div>
-                        <div className="shrink-0 overflow-hidden max-w-0 opacity-0 group-hover:max-w-9 group-hover:opacity-100 transition-all duration-fast ease-standard">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button
-                                title={t("deleteLessonAria")}
-                                className="size-7 rounded-md flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-muted transition-colors"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <Trash2 className="size-3.5" />
-                              </button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>{t("deleteLessonDialogTitle")}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {t("deleteLessonDialogDescription")}
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                                <AlertDialogAction
-                                  className="bg-destructive text-white hover:bg-destructive/90"
-                                  onClick={() => { deleteLesson(lesson.id); toast.success(t("lessonDeletedToast")); }}
-                                >
-                                  {t("delete")}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <LessonStatusPill status={lesson.status} />
                         </div>
                       </DraggableLesson>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuSub>
+                        <ContextMenuSubTrigger className="gap-2 cursor-pointer">
+                          <FolderInput className="size-4" />
+                          {t("moveLesson")}
+                        </ContextMenuSubTrigger>
+                        <ContextMenuSubContent>
+                          {moveTargets.map((target) => (
+                            <ContextMenuItem
+                              key={target?.id ?? NONE}
+                              className="gap-2 cursor-pointer"
+                              onClick={() => setUnitForClass(lesson.id, effectiveClassId!, target?.id ?? null)}
+                            >
+                              <ClassSwatch
+                                hex={target ? selectedClassHex : "var(--muted-foreground)"}
+                                className="size-2"
+                              />
+                              {target ? `${pad(target.number)}. ${target.title}` : t("noUnitTitle")}
+                            </ContextMenuItem>
+                          ))}
+                        </ContextMenuSubContent>
+                      </ContextMenuSub>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem
+                        variant="destructive"
+                        className="gap-2 cursor-pointer"
+                        onClick={() => setDeleteLessonTarget(lesson)}
+                      >
+                        <Trash2 className="size-4" />
+                        {t("delete")}
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                    </ContextMenu>
                     );
                   })
                 )}
@@ -802,6 +811,26 @@ export default function LessonsPage() {
             onClose={() => setUnitModalOpen(false)}
           />
         )}
+
+        <AlertDialog open={!!deleteLessonTarget} onOpenChange={(o) => !o && setDeleteLessonTarget(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("deleteLessonDialogTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("deleteLessonDialogDescription")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-white hover:bg-destructive/90"
+                onClick={handleConfirmDeleteLesson}
+              >
+                {t("delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DashboardColumns>
       </DndContext>
     </div>

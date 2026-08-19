@@ -1349,6 +1349,7 @@
     "lessonsEmptyTitle": "Hali mavzu yoʻq",
     "lessonsEmptyDescription": "Ushbu boʻlimga birinchi mavzuni qoʻshing.",
     "deleteLessonAria": "Oʻchirish",
+    "moveLesson": "Koʻchirish",
     "deleteLessonDialogTitle": "Darsni oʻchirish",
     "deleteLessonDialogDescription": "Bu dars va uning tahrirlagichdagi barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.",
     "lessonDeletedToast": "Dars oʻchirildi"
@@ -1434,7 +1435,7 @@
     "today": "Bugun",
     "nextAria": "Keyingi",
     "noScheduleTitle": "Jadval hali tuzilmagan",
-    "noScheduleDescription": "Planner dars jadvalingiz ustiga quriladi. Avval haftalik jadvalni tuzing — keyin bu yerda darslarni rejalashtirasiz.",
+    "noScheduleDescription": "Rejalashtiruvchi dars jadvalingiz ustiga quriladi. Avval haftalik jadvalni tuzing — keyin bu yerda darslarni rejalashtirasiz.",
     "buildSchedule": "Jadval tuzish",
     "scheduleUpdated": "Jadval yangilandi",
     "daySettingsAria": "Kun sozlamalari",
@@ -3213,6 +3214,23 @@
         "2": {
           "title": "Darslaringiz",
           "body": "Har bir boʻlim ichida alohida darslar yarating. Har bir dars kartasi uning holati va sanasini koʻrsatib turadi."
+        }
+      }
+    },
+    "assignments": {
+      "label": "Topshiriqlar",
+      "steps": {
+        "0": {
+          "title": "Sinflaringiz",
+          "body": "Topshiriqlarni koʻrish uchun biror sinfni tanlang."
+        },
+        "1": {
+          "title": "Topshiriqlar roʻyxati",
+          "body": "Topshiriqlar toifalar boʻyicha guruhlanadi. Har bir karta holati (rejalangan, tugallangan) va muddatini koʻrsatib turadi."
+        },
+        "2": {
+          "title": "Yangi topshiriq",
+          "body": "Testlar bankidan tayyor test tanlang yoki noldan yangi topshiriq — test, taqdimot yoki oddiy baho ustuni — yarating."
         }
       }
     },

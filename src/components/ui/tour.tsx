@@ -1059,12 +1059,25 @@ function TourStep(props: TourStepProps) {
 
       window.addEventListener("resize", onResize);
       window.addEventListener("scroll", onScroll, { passive: true });
+
+      /* Nishon oʻzi CSS orqali kengayib-torayishi mumkin (mas. dashboard
+         ustunlari `grid-template-columns` animatsiyasi bilan qadam bosqichi
+         almashganda qayta boʻlinadi — [[dashboard-columns-primitive]]).
+         Window `resize` bu holatni ushlamaydi, shuning uchun nishonning
+         oʻzini ResizeObserver bilan kuzatamiz — aks holda maska animatsiya
+         boshlanish daqiqasidagi eski oʻlchamda "qotib qoladi". */
+      const resizeObserver = new ResizeObserver(() => {
+        updateMask(store, targetElement, context.spotlightPadding);
+      });
+      resizeObserver.observe(targetElement);
+
       return () => {
         window.removeEventListener("resize", onResize);
         window.removeEventListener("scroll", onScroll);
         if (rafId !== null) {
           cancelAnimationFrame(rafId);
         }
+        resizeObserver.disconnect();
       };
     }
   }, [open, targetElement, isCurrentStep, store, context.spotlightPadding]);

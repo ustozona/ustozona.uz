@@ -98,7 +98,7 @@ export function EventPill({
       )}
       {filled ? (
         <>
-          <ClassSwatch hex={CLASS_COLOR_HEX[color]} className="size-2" />
+          <ClassSwatch hex={CLASS_COLOR_HEX[color]} className="size-1.5" />
           <span style={tints.textStrong} className="min-w-0 truncate text-xs font-semibold">
             {label}
           </span>

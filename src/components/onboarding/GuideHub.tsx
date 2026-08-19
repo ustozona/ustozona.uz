@@ -11,10 +11,11 @@ import {
   Calendar,
   BookOpen,
   FileText,
+  ClipboardList,
   ClipboardCheck,
   BarChart2,
   Target,
-  CircleCheck,
+  Check,
   ChevronRight,
   Award,
   MessagesSquare,
@@ -50,6 +51,7 @@ const TOUR_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   timetable: Calendar,
   planner: BookOpen,
   lessons: FileText,
+  assignments: ClipboardList,
   attendance: ClipboardCheck,
   behavior: Award,
   grades: BarChart2,
@@ -101,37 +103,46 @@ export default function GuideHub() {
             </span>
           </div>
         </div>
-        <div className="flex flex-col gap-0.5 p-2">
-          {tours.map((tour) => {
+        {/* Vertikal "yoʻl" (stepper) — bosqichlar bogʻlovchi chiziq bilan
+            ketma-ket ulanadi (onboarding-mahsulotlar naqshi: Linear/Notion).
+            Chiziq har bir QATORNING OʻZIGA nisbatan chiziladi (globalь
+            hisoblash emas) — shu qatorning doirasi markazidan keyingi
+            qatornikigacha, roʻyxat balandligi qancha oʻzgarmasin ishlaydi. */}
+        <div className="flex flex-col p-2">
+          {tours.map((tour, i) => {
             const Icon = TOUR_ICONS[tour.id] ?? Home;
             const completed = completedTours.includes(tour.id);
             const dismissed = !completed && dismissedTours.includes(tour.id);
+            const isLast = i === tours.length - 1;
             return (
-              <button
-                key={tour.id}
-                type="button"
-                onClick={() => openTour(tour.id, tour.route)}
-                title={dismissed ? t("dismissedTitle") : undefined}
-                className="group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted"
-              >
-                <div
-                  className={cn(
-                    "flex size-7 shrink-0 items-center justify-center rounded-md border transition-colors",
-                    "border-border bg-background text-muted-foreground",
-                    "group-hover:border-foreground/25 group-hover:text-foreground"
-                  )}
-                >
-                  <Icon className="size-3.5" />
-                </div>
-                <span className={cn("flex-1", dismissed && "text-muted-foreground")}>{tour.label}</span>
-                {completed ? (
-                  <CircleCheck className="size-4 shrink-0 text-primary" strokeWidth={2} />
-                ) : dismissed ? (
-                  <MinusCircle className="size-4 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" strokeWidth={1.5} />
-                ) : (
-                  <ChevronRight className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+              <div key={tour.id} className="relative">
+                {!isLast && (
+                  <span aria-hidden="true" className="absolute left-6 top-[22px] h-11 w-px bg-border" />
                 )}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => openTour(tour.id, tour.route)}
+                  title={dismissed ? t("dismissedTitle") : undefined}
+                  className="group relative z-10 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted"
+                >
+                  <div
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-full border transition-colors",
+                      completed
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground group-hover:border-foreground/25 group-hover:text-foreground"
+                    )}
+                  >
+                    {completed ? <Check className="size-3.5" /> : <Icon className="size-3.5" />}
+                  </div>
+                  <span className={cn("flex-1", dismissed && "text-muted-foreground")}>{tour.label}</span>
+                  {dismissed ? (
+                    <MinusCircle className="size-4 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" strokeWidth={1.5} />
+                  ) : !completed ? (
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                  ) : null}
+                </button>
+              </div>
             );
           })}
         </div>

@@ -1349,6 +1349,7 @@
     "lessonsEmptyTitle": "No lessons yet",
     "lessonsEmptyDescription": "Add the first lesson to this unit.",
     "deleteLessonAria": "Delete",
+    "moveLesson": "Move",
     "deleteLessonDialogTitle": "Delete lesson",
     "deleteLessonDialogDescription": "This lesson and all its editor content will be permanently deleted. This action cannot be undone.",
     "lessonDeletedToast": "Lesson deleted"
@@ -3380,6 +3381,23 @@
         "2": {
           "title": "Your lessons",
           "body": "Create individual lessons inside each unit. Every lesson card shows its status and date."
+        }
+      }
+    },
+    "assignments": {
+      "label": "Assignments",
+      "steps": {
+        "0": {
+          "title": "Your classes",
+          "body": "Pick a class to see its assignments."
+        },
+        "1": {
+          "title": "Assignment list",
+          "body": "Assignments are grouped by category. Each card shows its status (scheduled, completed) and due date."
+        },
+        "2": {
+          "title": "New assignment",
+          "body": "Pick a ready-made test from the bank, or create a new assignment from scratch — test, presentation, or a plain grade column."
         }
       }
     },

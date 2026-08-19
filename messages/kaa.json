@@ -1349,6 +1349,7 @@
     "lessonsEmptyTitle": "Ele tema joq",
     "lessonsEmptyDescription": "Usı bólimge birinshi temanı qosıń.",
     "deleteLessonAria": "Óshiriw",
+    "moveLesson": "Kóshiriw",
     "deleteLessonDialogTitle": "Sabaqtı óshiriw",
     "deleteLessonDialogDescription": "Bul sabaq hám onıń redaktordaǵı barlıq mazmunı pútkilley óshiriledi. Bul ámeldi qaytarıp bolmaydı.",
     "lessonDeletedToast": "Sabaq óshirildi"
@@ -3384,6 +3385,23 @@
         "2": {
           "title": "Sabaqlarıńız",
           "body": "Hár bir bólim ishnide bólek sabaqlar jaratıń. Hár bir sabaq kartası onıń jaǵdayın hám sánesin kórsetip turadı."
+        }
+      }
+    },
+    "assignments": {
+      "label": "Tapsırmalar",
+      "steps": {
+        "0": {
+          "title": "Klasslarıńız",
+          "body": "Tapsırmalardı kóriw ushın klasstı tańlań."
+        },
+        "1": {
+          "title": "Tapsırmalar dizimi",
+          "body": "Tapsırmalar kategoriyalar boyınsha toparlanadı. Hár bir karta onıń jaǵdayın (rejelestirilgen, orınlanǵan) hám múddetin kórsetedi."
+        },
+        "2": {
+          "title": "Jańa tapsırma",
+          "body": "Bankten tayar testti tańlań yamasa noldan jańa tapsırma — test, prezentaciya yamasa ápiwayı baha bagʼanı — jaratıń."
         }
       }
     },
