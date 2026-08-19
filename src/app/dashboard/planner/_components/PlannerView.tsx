@@ -40,7 +40,7 @@ import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { Label } from "@/components/ui/label";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -301,8 +301,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
       holda demo namunasi hech qachon koʻrinmas edi. */
   const showMonthPreview = useTourRequest((s) => s.activeStepId === "planner-month-preview");
   useEffect(() => {
-    if (showMonthPreview) setView("month");
-  }, [showMonthPreview]);
+    // Faqat "oyga oʻtish" qadamida oy koʻrinishi kerak — boshqa har qanday
+    // tur qadamiga (jumladan ORQAGA qaytishda) haftaga qaytariladi, aks
+    // holda koʻrinish "oy"da qotib qolib, boshqa qadamlarning nishonlari
+    // (haftalik gridda joylashgan) topilmay qolardi.
+    if (tourDemoActive) setView(showMonthPreview ? "month" : "week");
+  }, [tourDemoActive, showMonthPreview]);
   const plannerDemo = useMemo(() => (isDemoMode ? makePlannerTourDemo() : null), [isDemoMode]);
 
   const classInfoById = (id: string): ClassInfo | undefined =>
@@ -430,9 +434,15 @@ export default function PlannerView({ classId }: { classId?: string }) {
       }
     }
     if (plannerDemo) {
-      const visibleDates = [...allWeekDates, ...monthGrid.filter((d): d is Date => d !== null)];
-      for (const d of visibleDates) {
-        const dateKey = toDateKey(d);
+      // Hafta va oy toʻri kesishadi (joriy hafta koʻpincha koʻrinadigan oy
+      // ichida) — sana boʻyicha dedupe qilinmasa, bitta sana uchun demo
+      // darslar IKKI marta qoʻshilib, bir xil id bilan dublikat React key
+      // hosil qilardi.
+      const visibleDatesByKey = new Map<string, Date>();
+      for (const d of [...allWeekDates, ...monthGrid.filter((d): d is Date => d !== null)]) {
+        visibleDatesByKey.set(toDateKey(d), d);
+      }
+      for (const [dateKey, d] of visibleDatesByKey) {
         const placements = plannerDemo.placementsForDate(dateKey, dateToTimetableDay(d));
         if (placements.length === 0) continue;
         map.set(dateKey, [...(map.get(dateKey) ?? []), ...placements]);
@@ -486,8 +496,11 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const weekTitle = useMemo(() => {
     if (view !== "week" || allWeekDates.length === 0) return null;
     const a = allWeekDates[0], b = allWeekDates[allWeekDates.length - 1];
-    if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()} ${fmt.monthName(a.getMonth())}`;
-    return `${a.getDate()} ${fmt.monthName(a.getMonth())} – ${b.getDate()} ${fmt.monthName(b.getMonth())}`;
+    // Oʻzbek imlosida oy nomlari kichik harf bilan va sanaga chiziqcha
+    // bilan qoʻshib yoziladi ("17–23-avgust", gap boshida emas) —
+    // [[localization-canonical-source]].
+    if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()}-${fmt.monthName(a.getMonth()).toLowerCase()}`;
+    return `${a.getDate()}-${fmt.monthName(a.getMonth()).toLowerCase()} – ${b.getDate()}-${fmt.monthName(b.getMonth()).toLowerCase()}`;
   }, [view, allWeekDates, fmt]);
 
   // ── Bayram ──
@@ -1038,6 +1051,21 @@ export default function PlannerView({ classId }: { classId?: string }) {
     ? { duration: 0 }
     : { duration: PANEL_DURATION_BASE, ease: PANEL_EASE_STANDARD };
 
+  /* Koʻrinish almashtirgichi ikki joyda joylashadi (panel KENGLIGIGA qarab —
+     students/classes sahifalari bilan bir xil naqsh): keng panelda markazda,
+     tor panelda amallar guruhida. Bitta manba — ikki oʻramda CSS almashtiradi. */
+  const viewToggle = (
+    <SegmentedToggle
+      value={view}
+      onValueChange={(v) => setView(v)}
+      variant="pill"
+      options={[
+        { value: "week", label: t("week") },
+        { value: "month", label: t("month") },
+      ]}
+    />
+  );
+
   return (
     <>
     {/* Bitta DndContext — kunlik panel va oy toʻri bir DnD maydonida: darsni
@@ -1095,10 +1123,14 @@ export default function PlannerView({ classId }: { classId?: string }) {
         )}
       </AnimatePresence>
       <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col">
-      <Card className={cn("flex-1", panelCardClass)}>
+      <Card className={cn("@container flex-1", panelCardClass)}>
 
         {/* ── Toolbar ── */}
-        <CardHeader className={cn(panelCardHeaderClass, "grid grid-rows-[auto] items-center gap-0 space-y-0 pt-4! pb-4!")} style={{ gridTemplateColumns: "1fr auto 1fr" }}>
+        <CardHeader className={cn(
+          panelCardHeaderClass,
+          "flex items-center justify-between gap-3 space-y-0 pt-4! pb-4!",
+          "@[46rem]:grid @[46rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
+        )}>
           <div className="flex min-w-0 items-center gap-3">
             <SectionIcon>
               <CalendarIcon />
@@ -1109,7 +1141,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
               ) : (
                 <>
                   {fmt.monthName(anchor.getMonth())}
-                  <span className="font-normal text-muted-foreground">{anchor.getFullYear()}</span>
+                  {/* Oʻzbek imlo standarti: "{Oy} ({Yil}-yil)" — [[localization-canonical-source]]. */}
+                  <span className="font-normal text-muted-foreground">({anchor.getFullYear()}-yil)</span>
                 </>
               )}
               {classId && classInfoById(classId) && (
@@ -1120,20 +1153,19 @@ export default function PlannerView({ classId }: { classId?: string }) {
             </CardTitle>
           </div>
 
-          <ToggleGroup
-            type="single"
-            value={view}
-            onValueChange={(v) => v && setView(v as "week" | "month")}
-            variant="outline"
-            size="default"
-            className="self-center"
-            data-tour="planner-view-toggle"
-          >
-            <ToggleGroupItem value="week" className="px-5 text-sm font-medium">{t("week")}</ToggleGroupItem>
-            <ToggleGroupItem value="month" className="px-5 text-sm font-medium">{t("month")}</ToggleGroupItem>
-          </ToggleGroup>
+          {/* `data-tour` ATAYLAB yo'q — bu tugma hech qanday tur qadamiga
+              bog'lanmagan. Ikki nusxa (keng/tor) bitta belgiga ega bo'lsa,
+              `document.querySelector` doim BIRINCHISINI (keng nusxa) topib
+              olardi — tor rejimda u `display:none` bo'lgani uchun spotlight
+              nol o'lchamli nishonga tushib qolardi. */}
+          <div className="hidden justify-self-center @[46rem]:flex">
+            {viewToggle}
+          </div>
 
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex shrink-0 items-center justify-self-end gap-1">
+            <div className="@[46rem]:hidden">
+              {viewToggle}
+            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -1769,7 +1801,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
           <DialogHeader>
             <DialogTitle>{t("blockDayDialogTitle")}</DialogTitle>
             <DialogDescription>
-              {blockModal && `${blockModal.date.getDate()} ${fmt.monthName(blockModal.date.getMonth())} ${blockModal.date.getFullYear()}`}
+              {/* Kanonik toʻliq sana naqshi: "{yil}-yil {kun}-{oy}" — [[localization-canonical-source]]. */}
+              {blockModal && `${blockModal.date.getFullYear()}-yil ${blockModal.date.getDate()}-${fmt.monthName(blockModal.date.getMonth()).toLowerCase()}`}
             </DialogDescription>
           </DialogHeader>
           <div className="py-1">

@@ -749,6 +749,11 @@
               border-color var(--transition-duration-fast) var(--ease-standard),
               box-shadow var(--transition-duration-fast) var(--ease-standard),
               transform var(--transition-duration-fast) var(--ease-standard);
+  /* Hover VA active BIR XIL chegara rangini ishlatadi (`ClassListPanel`
+     faol qatoridagi `softBorder` — 22% aralashma) — qiymat BITTA joyda
+     eʼlon qilinadi, aks holda ikki qoida orasida qoʻlda qaytarilib,
+     birini oʻzgartirib ikkinchisini unutish xavfi tugʻilardi. */
+  --list-card-border-tint: color-mix(in oklch, var(--card-accent, var(--primary)) 22%, var(--border));
 }
 .list-card:focus-visible {
   outline: none;
@@ -762,18 +767,17 @@
 .list-card:active {
   transform: scale(0.985);
 }
+/* Hover = `ClassListPanel` faol qatori bilan AYNAN bir xil rang retsepti
+   (tint 7% fon + softBorder 22% chegara) va bir xil chegara QALINLIGI (1px —
+   inset "qalinlashtiruvchi" halqa yoʻq). Hover'ni tanlovdan ajratib turadigan
+   narsa rang emas, HARAKAT: koʻtarilish soyasi + ikonka scale(1.08). */
 .list-card:hover:not([data-active="true"]) {
-  border-color: color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border));
-  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 4%, var(--card));
-  /* Qalinroq (~1.5px) chegara taassuroti — border-width EMAS (u padding'ni yeb,
-     kontentni 1px siljitib qoʻyardi). Inset box-shadow border-radius'ga har
-     doim toʻliq mos keladi va box-model'ga sira tegmaydi. */
-  box-shadow: inset 0 0 0 0.5px color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border)),
-              0 4px 14px -4px rgb(0 0 0 / 0.10);
+  border-color: var(--list-card-border-tint);
+  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 7%, var(--card));
+  box-shadow: 0 4px 14px -4px rgb(0 0 0 / 0.10);
 }
 .dark .list-card:hover:not([data-active="true"]) {
-  box-shadow: inset 0 0 0 0.5px color-mix(in oklch, var(--card-accent, var(--primary)) 55%, var(--border)),
-              0 4px 14px -2px rgb(0 0 0 / 0.5);
+  box-shadow: 0 4px 14px -2px rgb(0 0 0 / 0.5);
 }
 .list-card-icon {
   transition: transform var(--transition-duration-base) var(--ease-standard);
@@ -781,16 +785,11 @@
 .list-card:hover:not([data-active="true"]) .list-card-icon {
   transform: scale(1.08);
 }
-/* Active: 3px chap rail. Fon rangi inline `style` bilan beriladi. */
-.list-card[data-active="true"]::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 3px;
-  background-color: var(--card-accent, var(--primary));
-  z-index: 10;
+/* Active: toʻliq chegara (chap rail oʻrniga). Fon rangi inline `style`
+   bilan beriladi. Chegara — `--list-card-border-tint` (hover bilan bitta
+   manba, yuqorida eʼlon qilingan). */
+.list-card[data-active="true"] {
+  border-color: var(--list-card-border-tint);
 }
 
 /* ─────────────────────────────────────────────

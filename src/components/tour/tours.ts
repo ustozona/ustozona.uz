@@ -117,8 +117,17 @@ const TOUR_STRUCTURE: readonly TourStructure[] = [
     route: "/dashboard/lessons",
     steps: [
       { target: '[data-tour="lessons-classes"]', placement: "right", id: "lessons-classes" },
-      { target: '[data-tour="lessons-units"]', placement: "right" },
+      { target: '[data-tour="lessons-units"]', placement: "left" },
       { target: '[data-tour="lessons-list"]', placement: "left" },
+    ],
+  },
+  {
+    id: "assignments",
+    route: "/dashboard/assignments",
+    steps: [
+      { target: '[data-tour="assignments-classes"]', placement: "right" },
+      { target: '[data-tour="assignments-list"]', placement: "left" },
+      { target: '[data-tour="assignments-create"]', placement: "bottom", align: "end" },
     ],
   },
   {
