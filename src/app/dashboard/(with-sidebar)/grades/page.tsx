@@ -46,9 +46,9 @@ export default function GradesPage() {
   const columnsTemplate = `minmax(0,${grow.classes}fr) minmax(0,${grow.content}fr)`;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-6 p-4 md:p-6">
       <TourDemoBanner tourId="grades" active={isDemoMode} />
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
+      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden">
         <DashboardColumn hideBelow="lg" data-tour="grades-classes">
           <ClassListPanel
             page="grades"

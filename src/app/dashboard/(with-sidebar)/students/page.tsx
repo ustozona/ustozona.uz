@@ -54,7 +54,7 @@ import CreateStudentModal, { type NewStudentInput } from "./_components/CreateSt
 import AddStudentModal from "./_components/AddStudentModal";
 import StudentsDataTable from "./_components/StudentsDataTable";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import {
   Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2, X,
   TrendingUp, Phone, MessageCircle, Pen, Download, ChevronDown, MoreHorizontal,
@@ -146,6 +146,22 @@ export default function StudentsPage() {
     setView(v);
     localStorage.setItem(STUDENTS_VIEW_STORAGE_KEY, v);
   };
+  /* Koʻrinish almashtirgichi ikki joyda joylashadi (panel KENGLIGIGA qarab,
+     ekran kengligiga emas — panel yon menyu/profil paneliga qarab mustaqil
+     torayadi): keng panelda markazda, tor panelda amallar guruhida. Bitta
+     manba — ikki oʻramda CSS orqali almashtiriladi. */
+  const viewToggle = (
+    <SegmentedToggle
+      value={view}
+      onValueChange={handleViewChange}
+      variant="pill"
+      iconOnly
+      options={[
+        { value: "card", label: t("viewCardAria"), icon: <LayoutGrid className="size-4" /> },
+        { value: "table", label: t("viewTableAria"), icon: <TableIcon className="size-4" /> },
+      ]}
+    />
+  );
   // Jadval koʻrinishidagi qator belgilash; toʻliq tahrirlash alohida oynada (editTarget).
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
   const [editTarget, setEditTarget] = useState<StudentRow | null>(null);
@@ -374,9 +390,9 @@ export default function StudentsPage() {
   const toolbarBtn = "size-9 shadow-none";
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0">
+    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-6 p-4 md:p-6">
       <TourDemoBanner tourId="students" active={isDemoMode} />
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden p-4 md:p-6">
+      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden">
         {/* ── Ustun 1: Sinflar ── */}
         <DashboardColumn hideBelow="lg" data-tour="students-classes">
           <ClassListPanel
@@ -400,8 +416,17 @@ export default function StudentsPage() {
           ) : (
             <>
           {/* Header / toolbar */}
-          <div className={cn(panelHeaderClass, "grid grid-cols-[1fr_auto_1fr] items-center gap-3")}>
-            <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
+          {/* Tor panelda — oddiy flex (sarlavha qisqaradi, toggle amallar
+              guruhida). Panel yetarlicha kengaygandagina simmetrik 3-ustunli
+              gridga oʻtadi va toggle haqiqiy markazda turadi: simmetrik
+              ustunlar bir-biriga joy bera olmagani uchun, joy tor boʻlsa
+              oʻng guruh sarlavha ustiga toshib ketardi. */}
+          <div className={cn(
+            panelHeaderClass,
+            "flex items-center justify-between gap-3",
+            "@[54rem]:grid @[54rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
+          )}>
+            <div className="flex min-w-0 items-center gap-2.5">
               <SectionIcon><Users /></SectionIcon>
               <CardTitle className="min-w-0 shrink truncate">{t("title")}</CardTitle>
               <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
@@ -417,24 +442,15 @@ export default function StudentsPage() {
               )}
             </div>
 
-            {/* Koʻrinish: karta / jadval — doim markazda, bulk rejimida ham koʻrinadi */}
-            <ToggleGroup
-              type="single"
-              value={view}
-              onValueChange={(v) => v && handleViewChange(v as ViewMode)}
-              variant="outline"
-              size="default"
-              className="hidden shadow-none justify-self-center sm:flex"
-            >
-              <ToggleGroupItem value="card" aria-label={t("viewCardAria")}>
-                <LayoutGrid className="size-4" />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="table" aria-label={t("viewTableAria")}>
-                <TableIcon className="size-4" />
-              </ToggleGroupItem>
-            </ToggleGroup>
+            {/* Markaziy slot — grid ustuni sifatida JOY BAND QILADI, shuning
+                uchun yon guruhlar uning ustiga chiqa olmaydi. */}
+            <div className="hidden justify-self-center @[54rem]:flex">{viewToggle}</div>
 
             <div className="flex shrink-0 items-center gap-1.5 justify-self-end md:gap-2.5">
+              {/* Panel markazga sigʻmaydigan darajada tor boʻlsa — shu yerda.
+                  Ajratgich shart emas: pill oʻz border'iga ega. */}
+              <div className="hidden sm:flex @[54rem]:hidden">{viewToggle}</div>
+
               {/* Qidiruv — popover emas, joyida kengayadigan input (Sinflar bilan bir xil naqsh) */}
               <div className={cn("flex items-center transition-all duration-fast", searchOpen ? "w-44 sm:w-56" : "w-9")}>
                 {searchOpen ? (
@@ -933,7 +949,7 @@ function PreviewCard({
             className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium"
             style={{ backgroundColor: tint(13), color: hex }}
           >
-            <ClassSwatch hex={hex} className="size-2.5" />
+            <ClassSwatch hex={hex} className="size-2" />
             {className}
           </div>
 
@@ -998,18 +1014,20 @@ function PreviewCard({
                 variant="outline"
                 disabled={!student.parentPhone}
                 asChild={!!student.parentPhone}
-                className="h-9 flex-1 rounded-lg shadow-none"
+                className="h-9 min-w-0 flex-1 gap-1.5 rounded-lg px-2 shadow-none"
               >
                 {student.parentPhone ? (
-                  <a href={`tel:${student.parentPhone}`}>
-                    <Phone className="mr-2 size-4" /> {t("call")}
+                  <a href={`tel:${student.parentPhone}`} className="inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap">
+                    <Phone className="size-4 shrink-0" /> <span className="truncate">{t("call")}</span>
                   </a>
                 ) : (
-                  <span><Phone className="mr-2 size-4" /> {t("call")}</span>
+                  <span className="inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap">
+                    <Phone className="size-4 shrink-0" /> <span className="truncate">{t("call")}</span>
+                  </span>
                 )}
               </Button>
-              <Button variant="outline" disabled title={t("telegramSoon")} className="h-9 flex-1 rounded-lg shadow-none">
-                <MessageCircle className="mr-2 size-4" /> {t("chat")}
+              <Button variant="outline" disabled title={t("telegramSoon")} className="h-9 min-w-0 flex-1 gap-1.5 rounded-lg px-2 shadow-none">
+                <MessageCircle className="size-4 shrink-0" /> <span className="truncate">{t("chat")}</span>
               </Button>
             </div>
 

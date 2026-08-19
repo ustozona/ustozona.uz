@@ -8,6 +8,7 @@
    ════════════════════════════════════════════════════════════════════ */
 
 import type { ClassColor } from "@/lib/class-colors";
+import type { ClassIconKey } from "@/lib/class-icons";
 import type { LiveClass } from "@/app/dashboard/classes/page";
 
 export function makeClassesTourDemo(): LiveClass[] {
@@ -16,6 +17,7 @@ export function makeClassesTourDemo(): LiveClass[] {
     name: string,
     color: ClassColor,
     subject: string,
+    icon: ClassIconKey,
     students: number,
     lessons: number,
     coveredLessons: number,
@@ -23,7 +25,7 @@ export function makeClassesTourDemo(): LiveClass[] {
     initials: string[]
   ): LiveClass => ({
     id,
-    info: { id, name, subject, color },
+    info: { id, name, subject, color, icon },
     name,
     color,
     subject,
@@ -35,8 +37,8 @@ export function makeClassesTourDemo(): LiveClass[] {
   });
 
   return [
-    base("demo-cl-1", "Matematika 7-A", "sky" as ClassColor, "Matematika", 24, 18, 11, 9, ["AB", "DC", "EF"]),
-    base("demo-cl-2", "Ona tili 8-B", "green" as ClassColor, "Ona tili", 22, 15, 15, 7, ["GH", "IJ", "KL"]),
-    base("demo-cl-3", "Fizika 9-A", "amber" as ClassColor, "Fizika", 26, 12, 6, 5, ["MN", "OP", "QR"]),
+    base("demo-cl-1", "Matematika 7-A", "sky" as ClassColor, "Matematika", "calculator", 24, 18, 11, 9, ["AB", "DC", "EF"]),
+    base("demo-cl-2", "Ona tili 8-B", "green" as ClassColor, "Ona tili", "languages", 22, 15, 15, 7, ["GH", "IJ", "KL"]),
+    base("demo-cl-3", "Fizika 9-A", "amber" as ClassColor, "Fizika", "atom", 26, 12, 6, 5, ["MN", "OP", "QR"]),
   ];
 }

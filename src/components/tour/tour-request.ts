@@ -30,6 +30,12 @@ type TourRequestState = {
       (masalan planner'da "oy" koʻrinishiga oʻtish). */
   activeStepId: string | null;
   setActiveStepId: (id: string | null) => void;
+  /** Turdan tashqaridagi UI (masalan TourDemoBanner'dagi yopish tugmasi)
+      faol turni tark etishni soʻraydi — TourProvider oʻqib, oʻz
+      `dismiss()` yoʻlini (dismissTour + holatni tozalash) chaqiradi. */
+  dismissRequested: boolean;
+  requestDismiss: () => void;
+  clearDismissRequest: () => void;
 };
 
 export const useTourRequest = create<TourRequestState>((set) => ({
@@ -42,4 +48,7 @@ export const useTourRequest = create<TourRequestState>((set) => ({
   setActiveStepTarget: (target) => set({ activeStepTarget: target }),
   activeStepId: null,
   setActiveStepId: (id) => set({ activeStepId: id }),
+  dismissRequested: false,
+  requestDismiss: () => set({ dismissRequested: true }),
+  clearDismissRequest: () => set({ dismissRequested: false }),
 }));

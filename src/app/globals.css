@@ -663,14 +663,17 @@
   .card-interactive,
   .class-card,
   .list-card,
-  .list-card-icon {
+  .list-card-icon,
+  .list-row,
+  .list-row--dot-ring [data-slot="class-swatch"] {
     transition: none;
   }
   .card-interactive:hover,
   .card-interactive:active,
   .class-card:hover,
   .list-card:active,
-  .list-card:hover:not([data-active="true"]) .list-card-icon {
+  .list-card:hover:not([data-active="true"]) .list-card-icon,
+  .list-row:active {
     transform: none;
   }
 }
@@ -793,7 +796,9 @@
 /* ─────────────────────────────────────────────
    QATOR TILI (list-row) — zich ro'yxatlar uchun.
    Modallar, chap nav panellari, dropdownlar.
-   Morf yo'q. Hover = bg-muted, Active = tint + 3px rail.
+   Morf yo'q. Hover = bg-muted. Active = tint fon + rangli chegara
+   (`softBorder`, inline beriladi) + koʻrsatkich. Koʻrsatkich ikki xil:
+   standart — chekka 3px rail; `--dot-ring` modifikatori — nuqta halqasi.
    ───────────────────────────────────────────── */
 .list-row {
   position: relative;
@@ -806,7 +811,12 @@
   text-align: left;
   cursor: pointer;
   background-color: transparent;
-  transition: background-color var(--transition-duration-fast) var(--ease-standard);
+  /* Chegara BARCHA qatorlarda mavjud (shaffof) — tanlanganda rang beriladi.
+     Faqat active'da qoʻshilsa qator 2px kengayib, matn siljib ketardi. */
+  border: 1px solid transparent;
+  transition: background-color var(--transition-duration-fast) var(--ease-standard),
+              border-color var(--transition-duration-fast) var(--ease-standard),
+              transform var(--transition-duration-fast) var(--ease-standard);
   overflow: hidden;
 }
 .list-row:focus-visible {
@@ -828,6 +838,25 @@
   width: 3px;
   background-color: var(--card-accent, var(--primary));
   z-index: 10;
+}
+.list-row:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Variant D — nuqta halqasi: chekka-rail butunlay olib tashlanadi, tanlangan
+   holat sinf nuqtasining oʻzida (yorugʻ halqa) va tint fonda ifodalanadi.
+   `.list-row`ning standart chekka-rail'iga alternativa — faqat shu klass
+   qoʻshilgan qatorlarda ishlaydi (`ClassSwatch`ning `data-slot` belgisi
+   orqali topiladi). */
+.list-row--dot-ring[data-active="true"]::before {
+  content: none;
+}
+.list-row--dot-ring [data-slot="class-swatch"] {
+  transition: box-shadow var(--transition-duration-fast) var(--ease-standard);
+}
+.list-row--dot-ring[data-active="true"] [data-slot="class-swatch"] {
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--card-accent, var(--primary)) 35%, var(--background));
 }
 
 /* ─────────────────────────────────────────────

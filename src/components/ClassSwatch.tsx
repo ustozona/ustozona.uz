@@ -19,6 +19,7 @@ export function ClassSwatch({
 }) {
   return (
     <span
+      data-slot="class-swatch"
       className={cn("size-3 shrink-0 rounded-full", className)}
       style={{ backgroundColor: hex, ...style }}
     />

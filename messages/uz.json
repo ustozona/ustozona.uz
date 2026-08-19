@@ -3128,17 +3128,13 @@
       "steps": {
         "0": {
           "title": "Hammasi shu yerdan boshlanadi",
-          "body": "Avval yangi sinf yarating: nomi, fani va ajratib turuvchi rangini kiriting. Tizimdagi boshqa barcha boʻlim (jadval, oʻquvchilar, jurnal, davomat) shu sinflarga bogʻlanadi."
+          "body": "Avval yangi sinf yarating: nomi, fani va ajratib turuvchi rangini kiriting (yonidagi strelka orqali Excelʼdan import ham qilsa boʻladi). Tizimdagi boshqa barcha boʻlim (jadval, oʻquvchilar, jurnal, davomat) shu sinflarga bogʻlanadi."
         },
         "1": {
           "title": "Sinf kartochkasi",
           "body": "Har bir kartochkada oʻquvchilar, mavzular va topshiriqlar soni bir qarashda koʻrinadi. Kartochka ustiga bosib toʻliq sinf sahifasiga oʻtasiz."
         },
         "2": {
-          "title": "Koʻrinishni oʻzgartirish",
-          "body": "Sinflaringizni katakcha yoki roʻyxat shaklida koʻrish imkoniyati mavjud — oʻzingizga eng qulay koʻrinishni tanlang."
-        },
-        "3": {
           "title": "Umumiy statistika",
           "body": "Ushbu qismda barcha sinflar, oʻquvchilar, darslar va topshiriqlarning umumiy soni jamlangan. Yangi sinf qoʻshishingiz bilan bu koʻrsatkichlar oʻz-oʻzidan yangilanadi."
         }
@@ -3158,10 +3154,6 @@
         "2": {
           "title": "Oʻquvchi maʼlumotlari",
           "body": "Sahifadan chiqmagan holda oʻquvchining sinfi, bogʻlanish maʼlumotlari va tezkor amallari bilan tanishing. Toʻliq davomat, baholar, eslatmalar va shaxsiy toʻplami bilan tanishish uchun «Profilni koʻrish»ni bosing."
-        },
-        "3": {
-          "title": "Holat boʻyicha filtrlash",
-          "body": "Oʻquvchilarni holatiga qarab (faol, taʼtilda, arxivda) saralang — kerakli oʻquvchilarga eʼtibor qaratish uchun qulay."
         }
       }
     },

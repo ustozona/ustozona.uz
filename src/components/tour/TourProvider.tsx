@@ -123,6 +123,16 @@ export default function TourProvider() {
     setStepIndex(0);
   }, [active, dismissTour]);
 
+  // TourDemoBanner kabi tur tashqarisidagi UI "X" bosilganda shu yerga
+  // soʻrov yuboradi — biz oʻzimizning dismiss() yoʻlimizni chaqiramiz.
+  const dismissRequested = useTourRequest((s) => s.dismissRequested);
+  const clearDismissRequest = useTourRequest((s) => s.clearDismissRequest);
+  React.useEffect(() => {
+    if (!dismissRequested) return;
+    dismiss();
+    clearDismissRequest();
+  }, [dismissRequested, dismiss, clearDismissRequest]);
+
   const next = React.useCallback(() => {
     if (!active) return;
     setStepIndex((i) => {

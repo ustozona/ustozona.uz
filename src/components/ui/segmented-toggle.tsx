@@ -29,12 +29,15 @@ export function SegmentedToggle<T extends string>({
   onValueChange,
   options,
   variant = "grid",
+  iconOnly = false,
   className,
 }: {
   value: T;
   onValueChange: (value: T) => void;
   options: SegmentedToggleOption<T>[];
   variant?: "grid" | "pill";
+  /** Yorliq faqat ekran oʻquvchisi uchun (`sr-only`) — icon-only tugmalar uchun. */
+  iconOnly?: boolean;
   className?: string;
 }) {
   /* Har bir nusxaga oʻz layoutId'si. Bitta sahifada ikkita toggle boʻlsa
@@ -92,7 +95,7 @@ export function SegmentedToggle<T extends string>({
           )}
           <span className="relative z-10 flex items-center gap-1.5">
             {opt.icon}
-            {opt.label}
+            <span className={iconOnly ? "sr-only" : undefined}>{opt.label}</span>
           </span>
           {opt.hint && (
             <span className="relative z-10 text-[11px] opacity-75">

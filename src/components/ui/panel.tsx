@@ -60,7 +60,7 @@ function PanelHeader({
     <div
       data-slot="panel-header"
       className={cn(
-        "grid min-h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 px-5 py-4",
+        "grid min-h-16 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-5 py-4",
         divider && "border-b border-border",
         className
       )}
