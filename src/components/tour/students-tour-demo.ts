@@ -15,10 +15,10 @@ export const STUDENTS_TOUR_DEMO_CLASS_ID = "demo-students-cl-1";
 
 export function makeStudentsTourDemoClasses(): ClassInfo[] {
   return [
-    { id: STUDENTS_TOUR_DEMO_CLASS_ID, name: "Matematika 7-A", subject: "Matematika", color: "sky" as ClassColor },
-    { id: "demo-students-cl-2", name: "Ona tili 8-B", subject: "Ona tili", color: "green" as ClassColor },
-    { id: "demo-students-cl-3", name: "Ingliz tili 6-D", subject: "Ingliz tili", color: "amber" as ClassColor },
-    { id: "demo-students-cl-4", name: "Fizika 9-A", subject: "Fizika", color: "violet" as ClassColor },
+    { id: STUDENTS_TOUR_DEMO_CLASS_ID, name: "7-A", subject: "Matematika", color: "sky" as ClassColor },
+    { id: "demo-students-cl-2", name: "8-B", subject: "Ona tili", color: "green" as ClassColor },
+    { id: "demo-students-cl-3", name: "6-D", subject: "Ingliz tili", color: "amber" as ClassColor },
+    { id: "demo-students-cl-4", name: "9-A", subject: "Fizika", color: "violet" as ClassColor },
   ];
 }
 

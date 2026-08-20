@@ -84,12 +84,12 @@ export function StudentPointCard({
     <button
       type="button"
       onClick={selectionMode ? onToggleSelect : onClick}
-      className={cn(
-        "group relative flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-3 py-4",
-        "cursor-pointer transition-all hover:ring-2 hover:ring-inset hover:ring-primary/30 hover:bg-muted/40",
-        "active:scale-[0.97]",
-        selected && "ring-2 ring-inset ring-primary hover:ring-primary"
-      )}
+      data-active={selected || undefined}
+      className="list-card group relative flex h-32 flex-col items-center justify-center gap-2.5 px-3 cursor-pointer"
+      style={{
+        ["--card-accent" as string]: colorHex,
+        ...(selected ? { backgroundColor: `color-mix(in oklch, ${colorHex} 7%, var(--card))` } : {}),
+      }}
     >
       {onToggleSelect && (
         /* Button ichida button boʻlmasin — span + stopPropagation. */
@@ -101,19 +101,18 @@ export function StudentPointCard({
           aria-hidden
           className={cn(
             "absolute top-2 left-2 z-10 flex size-5 items-center justify-center rounded-full border transition-opacity",
-            selected
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-muted-foreground/40 bg-card hover:border-primary",
+            selected ? "text-white" : "border-muted-foreground/40 bg-card",
             selectionMode || selected
               ? "opacity-100"
               : "opacity-0 group-hover:opacity-100"
           )}
+          style={selected ? { backgroundColor: colorHex, borderColor: colorHex } : undefined}
         >
           {selected && <Check className="size-3" strokeWidth={3} aria-hidden />}
         </span>
       )}
-      <span className="relative inline-flex">
-        <Avatar size="lg" className="size-14" style={{ "--avatar-bg": colorHex } as React.CSSProperties}>
+      <span className="list-card-icon relative inline-flex">
+        <Avatar className="size-14" style={{ "--avatar-bg": colorHex } as React.CSSProperties}>
           <AvatarFallback className="bg-[var(--avatar-bg)] text-sm font-semibold text-white">
             {initials}
           </AvatarFallback>

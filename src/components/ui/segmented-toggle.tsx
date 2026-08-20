@@ -90,7 +90,7 @@ export function SegmentedToggle<T extends string>({
                 "absolute inset-0 z-0 bg-foreground",
                 isPill ? "rounded-lg" : "rounded-md",
               )}
-              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
             />
           )}
           <span className="relative z-10 flex items-center gap-1.5">

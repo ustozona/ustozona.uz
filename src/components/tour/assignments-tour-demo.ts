@@ -15,9 +15,9 @@ export const ASSIGNMENTS_TOUR_DEMO_CLASS_ID = "demo-assignments-cl-1";
 /** Sinflar paneli roʻyxati — boshqa turʼlar bilan bir xil namunaviy sinflar. */
 export function makeAssignmentsTourDemoClasses(): ClassInfo[] {
   return [
-    { id: ASSIGNMENTS_TOUR_DEMO_CLASS_ID, name: "Matematika 7-A", subject: "Matematika", color: "sky" as ClassColor },
-    { id: "demo-assignments-cl-2", name: "Ona tili 8-B", subject: "Ona tili", color: "green" as ClassColor },
-    { id: "demo-assignments-cl-3", name: "Fizika 9-A", subject: "Fizika", color: "amber" as ClassColor },
+    { id: ASSIGNMENTS_TOUR_DEMO_CLASS_ID, name: "7-A", subject: "Matematika", color: "sky" as ClassColor },
+    { id: "demo-assignments-cl-2", name: "8-B", subject: "Ona tili", color: "green" as ClassColor },
+    { id: "demo-assignments-cl-3", name: "9-A", subject: "Fizika", color: "amber" as ClassColor },
   ];
 }
 

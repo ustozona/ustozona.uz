@@ -61,8 +61,8 @@ export function TimetablePickMock() {
         style={{ animation: "tt-pick-pop 2.6s ease-in-out infinite" }}
       >
         <p className="px-2 pb-1 pt-0.5 text-[10px] font-semibold text-muted-foreground">{t("selectClass")}</p>
-        <div className="rounded-md bg-primary/10 px-2 py-1.5 text-xs font-medium text-foreground">Matematika 7-A</div>
-        <div className="px-2 py-1.5 text-xs text-muted-foreground">Ona tili 8-B</div>
+        <div className="rounded-md bg-primary/10 px-2 py-1.5 text-xs font-medium text-foreground">7-A</div>
+        <div className="px-2 py-1.5 text-xs text-muted-foreground">8-B</div>
       </div>
     </div>
   );

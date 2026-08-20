@@ -2489,7 +2489,9 @@
   "YearProgress": {
     "ariaLabel": "Окуу жылынын жүрүшү: {year}",
     "quarterWeek": "{quarter} · {week}/{weeks}-апта",
-    "quarterUntil": "{name} — {date} чейин"
+    "quarterUntil": "{name} — {date} чейин",
+    "quarterEndDate": "{date} чейин",
+    "weekOfYear": "{week}/{weeks}-апта"
   },
   "QueueSection": {
     "title": "Тапшырмалар",

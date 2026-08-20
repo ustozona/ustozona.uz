@@ -37,8 +37,8 @@ export function makeClassesTourDemo(): LiveClass[] {
   });
 
   return [
-    base("demo-cl-1", "Matematika 7-A", "sky" as ClassColor, "Matematika", "calculator", 24, 18, 11, 9, ["AB", "DC", "EF"]),
-    base("demo-cl-2", "Ona tili 8-B", "green" as ClassColor, "Ona tili", "languages", 22, 15, 15, 7, ["GH", "IJ", "KL"]),
-    base("demo-cl-3", "Fizika 9-A", "amber" as ClassColor, "Fizika", "atom", 26, 12, 6, 5, ["MN", "OP", "QR"]),
+    base("demo-cl-1", "7-A", "sky" as ClassColor, "Matematika", "calculator", 24, 18, 11, 9, ["AB", "DC", "EF"]),
+    base("demo-cl-2", "8-B", "green" as ClassColor, "Ona tili", "languages", 22, 15, 15, 7, ["GH", "IJ", "KL"]),
+    base("demo-cl-3", "9-A", "amber" as ClassColor, "Fizika", "atom", 26, 12, 6, 5, ["MN", "OP", "QR"]),
   ];
 }

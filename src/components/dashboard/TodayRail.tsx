@@ -285,7 +285,7 @@ export function TodayRail({ now }: { now: Date }) {
                 </EmptyHeader>
                 {!holiday && dow !== 0 && (
                   <EmptyContent>
-                    <Button asChild variant="link" size="sm" className="h-auto p-0 underline">
+                    <Button asChild variant="ghost" size="sm">
                       <Link href="/dashboard/timetable">{t("openSchedule")}</Link>
                     </Button>
                   </EmptyContent>

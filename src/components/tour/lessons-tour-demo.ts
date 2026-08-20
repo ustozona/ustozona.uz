@@ -18,9 +18,9 @@ export const LESSONS_TOUR_DEMO_UNIT_ID = "demo-lessons-u-1";
 
 export function makeLessonsTourDemoClasses(): ClassInfo[] {
   return [
-    { id: LESSONS_TOUR_DEMO_CLASS_ID, name: "Matematika 7-A", subject: "Matematika", color: "sky" as ClassColor },
-    { id: "demo-lessons-cl-2", name: "Ona tili 8-B", subject: "Ona tili", color: "green" as ClassColor },
-    { id: "demo-lessons-cl-3", name: "Fizika 9-A", subject: "Fizika", color: "amber" as ClassColor },
+    { id: LESSONS_TOUR_DEMO_CLASS_ID, name: "7-A", subject: "Matematika", color: "sky" as ClassColor },
+    { id: "demo-lessons-cl-2", name: "8-B", subject: "Ona tili", color: "green" as ClassColor },
+    { id: "demo-lessons-cl-3", name: "9-A", subject: "Fizika", color: "amber" as ClassColor },
   ];
 }
 

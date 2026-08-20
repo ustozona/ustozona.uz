@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Award, BarChart3, Gift, SquareArrowOutUpRight } from "lucide-react";
+import { Award, BarChart3, Gift, SquareArrowOutUpRight, ThumbsDown, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
@@ -28,6 +27,7 @@ import {
   type BehaviorReward,
   type BehaviorSkill,
 } from "@/lib/behavior-data";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { SkillGrid } from "./AwardDialog";
 import { BehaviorEmoji } from "./BehaviorEmoji";
@@ -141,55 +141,57 @@ export function StudentDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="gap-0 p-0 sm:max-w-3xl" showCloseButton={false}>
-        {/* Header: avatar + ism + balans + profil havolasi */}
+        {/* Header: avatar + ism + balans — butun blok profilga havola (hover'da tashqi-havola ikonkasi chiqadi) */}
         <DialogHeader className="border-b border-border px-6 py-4 text-left">
           <div className="flex items-center gap-3">
-            <Avatar size="lg" className="size-11">
-              <AvatarFallback
-                className="text-sm font-semibold text-white"
-                style={{ backgroundColor: colorHex }}
-              >
-                {student.initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <DialogTitle className="truncate text-left">{student.name}</DialogTitle>
-              <div className="mt-1 flex items-center gap-2.5">
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
-                    balance < 0
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-success/10 text-success"
+            <Link
+              href={`/dashboard/students/${encodeURIComponent(student.id)}?tab=behavior`}
+              className="group -m-1.5 flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1.5 transition-colors hover:bg-muted/60"
+            >
+              <Avatar size="lg" className="size-11 shrink-0">
+                <AvatarFallback
+                  className="text-sm font-semibold text-white"
+                  style={{ backgroundColor: colorHex }}
+                >
+                  {student.initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <DialogTitle className="truncate text-left">{student.name}</DialogTitle>
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 text-xs font-bold tabular-nums",
+                      balance < 0
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-success/10 text-success"
+                    )}
+                  >
+                    {t("balancePoints", { balance })}
+                  </span>
+                  <SquareArrowOutUpRight
+                    className="size-3.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-hidden
+                  />
+                  {streak && streak.count > 0 && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-bold tabular-nums text-foreground">
+                          <BehaviorEmoji
+                            code={streak.paused ? "2744-fe0f" : "1f525"}
+                            className="size-3.5"
+                          />
+                          {streak.count}/{streak.nextThreshold} · {t("streakNext", { bonus: streak.nextBonus })}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {streak.paused ? t("streakPaused") : t("streakActive")}
+                      </TooltipContent>
+                    </Tooltip>
                   )}
-                >
-                  {t("balancePoints", { balance })}
-                </span>
-                {streak && streak.count > 0 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-bold tabular-nums text-foreground">
-                        <BehaviorEmoji
-                          code={streak.paused ? "2744-fe0f" : "1f525"}
-                          className="size-3.5"
-                        />
-                        {streak.count}/{streak.nextThreshold} · {t("streakNext", { bonus: streak.nextBonus })}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {streak.paused ? t("streakPaused") : t("streakActive")}
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                <Link
-                  href={`/dashboard/students/${encodeURIComponent(student.id)}?tab=behavior`}
-                  className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                >
-                  {t("openProfile")}
-                  <SquareArrowOutUpRight className="size-3" aria-hidden />
-                </Link>
+                </div>
               </div>
-            </div>
+            </Link>
             <DialogClose asChild>
               <Button
                 type="button"
@@ -271,6 +273,7 @@ function AwardPanel({
   const positive = skills.filter((s) => s.points > 0);
   const negative = skills.filter((s) => s.points < 0);
   const both = positive.length > 0 && negative.length > 0;
+  const [tab, setTab] = React.useState<SkillType>("positive");
 
   if (!both) {
     return (
@@ -282,18 +285,24 @@ function AwardPanel({
     );
   }
   return (
-    <Tabs defaultValue="positive">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="positive">{t("positive")}</TabsTrigger>
-        <TabsTrigger value="negative">{t("negative")}</TabsTrigger>
-      </TabsList>
-      <TabsContent value="positive" className="mt-4">
-        <SkillGrid skills={positive} onSelect={onAward} onAdd={() => onAddSkill("positive")} />
-      </TabsContent>
-      <TabsContent value="negative" className="mt-4">
-        <SkillGrid skills={negative} onSelect={onAward} onAdd={() => onAddSkill("negative")} />
-      </TabsContent>
-    </Tabs>
+    <div className="space-y-4">
+      <div className="flex justify-center">
+        <SegmentedToggle
+          value={tab}
+          onValueChange={setTab}
+          variant="pill"
+          options={[
+            { value: "positive", label: t("positive"), icon: <ThumbsUp className="size-4" /> },
+            { value: "negative", label: t("negative"), icon: <ThumbsDown className="size-4" /> },
+          ]}
+        />
+      </div>
+      <SkillGrid
+        skills={tab === "positive" ? positive : negative}
+        onSelect={onAward}
+        onAdd={() => onAddSkill(tab)}
+      />
+    </div>
   );
 }
 

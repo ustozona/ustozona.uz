@@ -2362,7 +2362,7 @@
     "dueToday": "Bugun",
     "dueTomorrow": "Ertaga",
     "footerDone": "Bugun: {done}/{total} bajarildi",
-    "emptyTitle": "Hammasi tekshirilgan",
+    "emptyTitle": "Barcha vazifalar bajarildi",
     "emptyDescription": "Navbat boʻsh — yangi vazifa qoʻshing yoki dam oling."
   },
   "TodayRail": {
@@ -2406,7 +2406,9 @@
   "YearProgress": {
     "ariaLabel": "Oʻquv yili jarayoni: {year}",
     "quarterWeek": "{quarter} · {week}/{weeks}-hafta",
-    "quarterUntil": "{name} — {date}gacha"
+    "quarterUntil": "{name} — {date}gacha",
+    "quarterEndDate": "{date}gacha",
+    "weekOfYear": "{week}/{weeks}-hafta"
   },
   "DashboardPage": {
     "unknownClass": "Nomaʼlum sinf",

@@ -274,15 +274,13 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
               type="button"
               onClick={openForClass}
               disabled={selecting}
-              className={cn(
-                "flex flex-col items-center gap-2.5 rounded-xl border border-border px-3 py-4",
-                "cursor-pointer transition-all hover:ring-2 hover:ring-inset hover:ring-primary/30",
-                "active:scale-[0.97]",
-                "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:ring-0 disabled:active:scale-100"
-              )}
-              style={{ backgroundColor: `color-mix(in srgb, ${hex} 8%, var(--card))` }}
+              className="list-card group flex h-32 flex-col items-center justify-center gap-2.5 px-3 cursor-pointer disabled:cursor-not-allowed"
+              style={{
+                ["--card-accent" as string]: hex,
+                backgroundColor: `color-mix(in oklch, ${hex} 7%, var(--card))`,
+              }}
             >
-              <span className="relative inline-flex">
+              <span className="list-card-icon relative inline-flex">
                 <span
                   className="flex size-14 items-center justify-center rounded-full"
                   style={{ backgroundColor: `color-mix(in srgb, ${hex} 18%, var(--card))` }}

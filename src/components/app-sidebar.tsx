@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
@@ -20,9 +21,12 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ScrollFade } from "@/components/ui/scroll-fade";
 import { useChangelogUnseenCount } from "@/hooks/useChangelogSeen";
 import { BrandWordmark } from "@/assets/logo/brand-wordmark";
 import { BrandShield } from "@/assets/logo/brand-shield";
+import { cn } from "@/lib/utils";
 import {
   LayoutGrid,
   Library,
@@ -43,6 +47,7 @@ import {
   Award,
   TrendingUp,
   ListTodo,
+  ChevronDown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -103,6 +108,35 @@ const footerItems: NavItem[] = [
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
 ];
 
+const GROUP_OPEN_KEY_PREFIX = "sidebar-group-open:";
+
+/** Guruh yigʻish holati — localStorage'da qurilma-lokal saqlanadi.
+    SSR bilan mos kelishi uchun sukut boʻyicha ochiq, mount'dan keyin
+    localStorage'dan oʻqiladi (bir martalik "flash" xavfsiz). */
+function useGroupOpen(labelKey: string) {
+  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(GROUP_OPEN_KEY_PREFIX + labelKey);
+      if (stored !== null) setOpen(stored === "1");
+    } catch {
+      // Shaxsiy rejimda localStorage yopiq boʻlishi mumkin — ochiq holat zaxira variant.
+    }
+  }, [labelKey]);
+  const toggle = () => {
+    setOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(GROUP_OPEN_KEY_PREFIX + labelKey, next ? "1" : "0");
+      } catch {
+        // yuqoridagi bilan bir xil — indamay eʼtiborsiz qoldiriladi.
+      }
+      return next;
+    });
+  };
+  return [open, toggle] as const;
+}
+
 function isActivePath(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(href + "/");
@@ -144,6 +178,46 @@ function NavMenuItem({ item, badge }: { item: NavItem; badge?: number }) {
         </SidebarMenuBadge>
       )}
     </SidebarMenuItem>
+  );
+}
+
+/** Yorliqli guruh — bosilganda yigʻiladi/ochiladi (holat localStorage'da).
+    Ikonka rejimida (`state === "collapsed"`) yorliq koʻrinmagani uchun
+    doim ochiq hisoblanadi — foydalanuvchining ilgari yopgan holati
+    ikonka-qatorni yashirmasin. */
+function CollapsibleNavGroup({
+  group,
+  badgeCounts,
+}: {
+  group: NavGroup & { labelKey: string };
+  badgeCounts: Record<NonNullable<NavItem["badgeKey"]>, number>;
+}) {
+  const t = useTranslations("AppSidebar");
+  const { state } = useSidebar();
+  const iconOnly = state === "collapsed";
+  const [open, toggle] = useGroupOpen(group.labelKey);
+  const effectiveOpen = iconOnly ? true : open;
+
+  return (
+    <Collapsible open={effectiveOpen} onOpenChange={iconOnly ? undefined : toggle}>
+      <SidebarGroup className="p-1">
+        <CollapsibleTrigger asChild>
+          <SidebarGroupLabel className="cursor-pointer justify-between hover:text-sidebar-foreground">
+            {t(group.labelKey)}
+            <ChevronDown className={cn("size-3.5 shrink-0 transition-transform duration-fast", !effectiveOpen && "-rotate-90")} />
+          </SidebarGroupLabel>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-0.5">
+              {group.items.map((item) => (
+                <NavMenuItem key={item.href} item={item} badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined} />
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
   );
 }
 
@@ -191,28 +265,34 @@ export function AppSidebar() {
         <SidebarBrandHeader />
       </SidebarHeader>
 
-      <SidebarContent>
-        {navGroups.map((group, i) => (
-          <SidebarGroup key={group.labelKey ?? `group-${i}`}>
-            {group.labelKey && <SidebarGroupLabel>{t(group.labelKey)}</SidebarGroupLabel>}
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => (
-                  <NavMenuItem
-                    key={item.href}
-                    item={item}
-                    badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined}
-                  />
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <SidebarContent className="gap-1">
+          {navGroups.map((group, i) =>
+            group.labelKey ? (
+              <CollapsibleNavGroup key={group.labelKey} group={group as NavGroup & { labelKey: string }} badgeCounts={badgeCounts} />
+            ) : (
+              <SidebarGroup key={`group-${i}`} className="p-1">
+                <SidebarGroupContent>
+                  <SidebarMenu className="gap-0.5">
+                    {group.items.map((item) => (
+                      <NavMenuItem
+                        key={item.href}
+                        item={item}
+                        badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined}
+                      />
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )
+          )}
+        </SidebarContent>
+        <ScrollFade position="bottom" className="from-sidebar" />
+      </div>
 
       <SidebarFooter>
         <SidebarSeparator className="mb-1" />
-        <SidebarMenu>
+        <SidebarMenu className="gap-0.5">
           {footerItems.map((item) => (
             <NavMenuItem
               key={item.href}

@@ -2489,7 +2489,9 @@
   "YearProgress": {
     "ariaLabel": "Oqıw jılınıń barısı: {year}",
     "quarterWeek": "{quarter} · {week}/{weeks}-hápte",
-    "quarterUntil": "{name} — {date} shekem"
+    "quarterUntil": "{name} — {date} shekem",
+    "quarterEndDate": "{date} shekem",
+    "weekOfYear": "{week}/{weeks}-hápte"
   },
   "QueueSection": {
     "title": "Wazıypalar",
