@@ -8,7 +8,7 @@ import {
   DialogContent,
   DialogHeaderBar,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import type { BehaviorSkill } from "@/lib/behavior-data";
 import { AddCard, SkillCard } from "./SkillCard";
 import type { SkillType } from "./SkillFormDialog";
@@ -59,6 +59,7 @@ export function AwardDialog({
   const positive = skills.filter((s) => s.points > 0);
   const negative = skills.filter((s) => s.points < 0);
   const both = positive.length > 0 && negative.length > 0;
+  const [tab, setTab] = React.useState<SkillType>("positive");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,32 +67,26 @@ export function AwardDialog({
         <DialogHeaderBar icon={<Award className="size-[18px]" aria-hidden />} title={title} />
 
         {both ? (
-          <Tabs defaultValue="positive">
-            <TabsList variant="line" className="w-full border-b border-border px-6">
-              <TabsTrigger value="positive">
-                <ThumbsUp />
-                {t("positive")}
-              </TabsTrigger>
-              <TabsTrigger value="negative">
-                <ThumbsDown />
-                {t("negative")}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="positive" className="p-6">
-              <SkillGrid
-                skills={positive}
-                onSelect={onSelect}
-                onAdd={onAddSkill && (() => onAddSkill("positive"))}
+          <>
+            <div className="flex justify-center px-6 py-3">
+              <SegmentedToggle
+                value={tab}
+                onValueChange={setTab}
+                variant="pill"
+                options={[
+                  { value: "positive", label: t("positive"), icon: <ThumbsUp className="size-4" /> },
+                  { value: "negative", label: t("negative"), icon: <ThumbsDown className="size-4" /> },
+                ]}
               />
-            </TabsContent>
-            <TabsContent value="negative" className="p-6">
+            </div>
+            <div className="p-6">
               <SkillGrid
-                skills={negative}
+                skills={tab === "positive" ? positive : negative}
                 onSelect={onSelect}
-                onAdd={onAddSkill && (() => onAddSkill("negative"))}
+                onAdd={onAddSkill && (() => onAddSkill(tab))}
               />
-            </TabsContent>
-          </Tabs>
+            </div>
+          </>
         ) : (
           <div className="p-6">
             <SkillGrid

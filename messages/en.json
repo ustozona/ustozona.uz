@@ -2485,7 +2485,9 @@
   "YearProgress": {
     "ariaLabel": "Academic year progress: {year}",
     "quarterWeek": "{quarter} · week {week}/{weeks}",
-    "quarterUntil": "{name} — until {date}"
+    "quarterUntil": "{name} — until {date}",
+    "quarterEndDate": "until {date}",
+    "weekOfYear": "week {week}/{weeks}"
   },
   "QueueSection": {
     "title": "Tasks",

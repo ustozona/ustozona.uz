@@ -2489,7 +2489,9 @@
   "YearProgress": {
     "ariaLabel": "Прогресс учебного года: {year}",
     "quarterWeek": "{quarter} · неделя {week}/{weeks}",
-    "quarterUntil": "{name} — до {date}"
+    "quarterUntil": "{name} — до {date}",
+    "quarterEndDate": "до {date}",
+    "weekOfYear": "неделя {week}/{weeks}"
   },
   "QueueSection": {
     "title": "Задачи",

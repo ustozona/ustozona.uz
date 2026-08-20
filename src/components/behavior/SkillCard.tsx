@@ -13,7 +13,7 @@ import { BehaviorEmoji } from "./BehaviorEmoji";
    shu kartalarni ishlatadi. */
 
 const tileClass = cn(
-  "group relative flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-3 pt-6 pb-4",
+  "group relative flex h-28 flex-col items-center justify-center gap-2.5 rounded-xl border border-border bg-card px-3",
   "cursor-pointer transition-all hover:ring-2 hover:ring-inset hover:ring-primary/30 hover:bg-muted/40",
   "active:scale-[0.97]"
 );
@@ -108,7 +108,7 @@ export function AddCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-border px-3 pt-6 pb-4",
+        "flex h-28 flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-border px-3",
         "cursor-pointer text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/40 hover:text-foreground",
         className
       )}
@@ -116,7 +116,7 @@ export function AddCard({
       <span className="flex size-9 items-center justify-center">
         <Plus className="size-5" aria-hidden />
       </span>
-      <span className="line-clamp-2 min-h-[2.4em] text-center text-[13px] font-medium leading-tight">
+      <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight">
         {label}
       </span>
     </button>

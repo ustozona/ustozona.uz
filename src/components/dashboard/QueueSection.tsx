@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
-import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { TaskRow } from "@/app/dashboard/(with-sidebar)/tasks/_components/TasksList";
 import {
@@ -200,10 +199,7 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
                   <EmptyMedia>
                     <Illustration name="30" className="h-[clamp(4.5rem,12vh,7rem)] text-black dark:text-white" />
                   </EmptyMedia>
-                  <EmptyTitle className="flex items-center justify-center gap-1.5">
-                    {t("emptyTitle")}
-                    <AppleEmojiSprite emoji="☕" className="size-4.5" />
-                  </EmptyTitle>
+                  <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
                   <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
