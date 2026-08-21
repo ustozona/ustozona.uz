@@ -6,8 +6,10 @@ import { getLocale, getMessages } from "next-intl/server";
 import {
   PRODUCT_HEADER,
   SURFACE_HEADER,
+  TONE_HEADER,
   toProduct,
   toSurface,
+  toTone,
 } from "@/lib/product-scope";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -98,12 +100,14 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const surface = toSurface(requestHeaders.get(SURFACE_HEADER));
   const product = toProduct(requestHeaders.get(PRODUCT_HEADER));
+  const tone = toTone(requestHeaders.get(TONE_HEADER));
 
   return (
     <html
       lang={locale}
       data-surface={surface}
       data-product={product}
+      data-tone={tone}
       suppressHydrationWarning
       className={`${dmSans.variable} ${jetbrainsMono.variable}`}
     >

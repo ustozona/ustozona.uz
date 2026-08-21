@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { productFor, surfaceFor } from "@/lib/product-scope";
+import { productFor, surfaceFor, toneFor } from "@/lib/product-scope";
 
 /* `<html data-product>`/`data-surface` faqat SERVER render'da (layout.tsx,
    `headers()`) qoʻyiladi. Next.js App Router client-side navigatsiyada
@@ -18,6 +18,7 @@ export function ProductScopeSync() {
     const html = document.documentElement;
     html.dataset.product = productFor(pathname);
     html.dataset.surface = surfaceFor(pathname);
+    html.dataset.tone = toneFor(pathname);
   }, [pathname]);
 
   return null;

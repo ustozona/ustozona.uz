@@ -1518,3 +1518,202 @@
 ::view-transition-group(root) {
   animation-duration: var(--magicui-theme-toggle-vt-duration, 400ms);
 }
+/* ═════════════════════════════════════════════
+   SIRT va OHANG — docs/ost-loyihalar-arxitektura.md §A
+   Ikki mustaqil oʻq. Komponent fork qilinmaydi: Tailwind v4
+   da `h-9` → calc(var(--spacing) * 9), `text-sm` → var(--text-sm),
+   yaʼni tokenni qayta belgilash butun daraxtni qayta oʻlchaydi.
+   ═════════════════════════════════════════════ */
+
+/* ── 1-oʻq: sirt (oʻlcham va zichlik) ── */
+
+/* `desk` — standart, qayta belgilanmaydi (14px / 36px) */
+
+/* `stage` — projektor, 5 metrdan oʻqiladi (24px+ / 54px) */
+[data-surface="stage"] {
+  --spacing: 0.375rem; /* 0.25rem → 6px; h-9 = 54px */
+
+  --text-xs: 1rem;
+  --text-sm: 1.25rem;
+  --text-base: 1.5rem;
+  --text-lg: 1.75rem;
+  --text-xl: 2rem;
+  --text-2xl: 2.5rem;
+  --text-3xl: 3rem;
+  --text-4xl: 4rem;
+  --text-5xl: 5rem;
+  --text-6xl: 6rem;
+}
+
+/* `handheld` — telefon, barmoq (17px / 48px) */
+[data-surface="handheld"] {
+  --spacing: 0.333rem; /* h-9 = 48px */
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.375rem;
+}
+
+/* ── 2-oʻq: ohang (xarakter) ── */
+
+/* `serious` — standart, qayta belgilanmaydi */
+
+/* `playful` — sinf ekrani, oʻyin, kviz: yumaloq, toʻyingan, sakraydigan */
+[data-tone="playful"] {
+  --radius: 1.25rem;
+
+  /* Qalin ofset soya — tekis hairline oʻrniga */
+  --tone-shadow: 0 4px 0 var(--tone-shadow-color, oklch(0.7 0.14 70));
+  --tone-shadow-sm: 0 3px 0 var(--tone-shadow-color, oklch(0.7 0.14 70));
+
+  /* Sakraydigan animatsiya */
+  --ease-standard: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-duration-base: 300ms;
+}
+
+/* Tugmalar pill boʻladi — playful ohangda burchak toʻliq yumaloq */
+[data-tone="playful"] [data-slot="button"] {
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+/* ── Doska vidjet tuslari ──
+   Har vidjet oʻz tusiga ega: sinf ekranida ular bir-biridan uzoqdan
+   ajralib turishi kerak. Juftlik: `-bg` (fon), `-fg` (matn), `-edge`
+   (ofset soya). Uchalasi bitta tusning uch quyuqligi. */
+[data-tone="playful"] {
+  --doska-blue-bg: oklch(0.93 0.05 240);
+  --doska-blue-fg: oklch(0.35 0.11 250);
+  --doska-blue-edge: oklch(0.72 0.13 245);
+
+  --doska-amber-bg: oklch(0.94 0.06 80);
+  --doska-amber-fg: oklch(0.38 0.09 60);
+  --doska-amber-edge: oklch(0.76 0.14 70);
+
+  --doska-slate-bg: oklch(0.3 0.02 260);
+  --doska-slate-fg: oklch(0.96 0.01 260);
+  --doska-slate-edge: oklch(0.2 0.02 260);
+
+  /* Svetofor chiroqlari — semantik emas, jismoniy: haqiqiy svetofor rangi */
+  --doska-light-red: oklch(0.62 0.23 27);
+  --doska-light-amber: oklch(0.8 0.16 80);
+  --doska-light-green: oklch(0.68 0.19 145);
+}
+
+/* ── Doska: bo'r rejimi ──
+   Toʻq fon (yashil/qora doska) ustida rangli kartochkalar «yopishtirilgan
+   stikerdek» begona koʻrinadi. Shu sababli toʻq fonda vidjet tuslari
+   qayta belgilanadi: fon deyarli shaffof, matn esa bo'r rangida — yaʼni
+   doskaga yozilgandek.
+
+   ⚠️ Vidjet komponentlari bu haqda BILMAYDI — ular baribir
+   `var(--doska-*-bg)` ni oʻqiydi. Almashuv faqat shu yerda. */
+[data-bg-tone="dark"] {
+  --doska-blue-bg: oklch(1 0 0 / 0.08);
+  --doska-blue-fg: oklch(0.94 0.02 230);
+  --doska-blue-edge: oklch(1 0 0 / 0.14);
+
+  --doska-amber-bg: oklch(1 0 0 / 0.08);
+  --doska-amber-fg: oklch(0.95 0.04 90);
+  --doska-amber-edge: oklch(1 0 0 / 0.14);
+
+  --doska-slate-bg: oklch(1 0 0 / 0.08);
+  --doska-slate-fg: oklch(0.95 0.01 260);
+  --doska-slate-edge: oklch(1 0 0 / 0.14);
+}
+
+/* Doska teksturasi — SVG shovqin, ~200 bayt data-URI (rasm fayli emas). */
+.doska-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+}
+
+/* ── Doska: z-qatlamlar (docs/doska-dizayn-tizimi.md §5) ──
+   Vidjetlar bir-birining ustiga chiqadi; tartib chalkashsa tuzatish
+   qiyin. Oraliq katta — orasiga yangi qatlam qoʻshishda hech narsani
+   qayta raqamlash shart emas. */
+:root {
+  --z-doska-handles: 1000095;
+  --z-doska-bar: 1000100;
+  --z-doska-context: 1000105;
+  --z-doska-top: 1000110;
+  --z-doska-tooltip: 1001000;
+}
+
+/* ── Doska paneli — `stage` sirtidan MUSTASNO ──
+   Panel oʻqituvchi qoʻlida, 50 sm dan boshqariladi; sinf unga
+   qaramaydi. Shuning uchun `stage` override'i (matn 24px, tugma 54px)
+   panel ichida bekor qilinadi va standart `desk` shkalasi tiklanadi.
+   Aks holda panel ekranning yarmini egallaydi. */
+.doska-bar {
+  --spacing: 0.25rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+
+  /* Panel radiusi vidjetnikidan KICHIK — u asbob, kontent emas. */
+  --radius: 0.625rem;
+}
+
+/* ── Doska ikonalari — IERARXIK ranglash ──
+   Solar duotone SVG'ida ikki qatlam bor: `opacity=".5"` li massa va
+   usti detal. Ierarxik rejimda ikkalasi ham BITTA rang oladi, farq
+   faqat shaffoflikda (Apple SF Symbols «hierarchical»).
+
+   ⚠️ Shu sababli bu yerda `opacity` ga TEGILMAYDI. U SVG'ning oʻz
+   atributi boʻlib qolaveradi. Buning amaliy foydasi: yangi ikona
+   qoʻshganda CSS bilan kelishish shart emas, va `opacity` qatlami
+   umuman boʻlmagan ikona ham buzilmaydi — u bir rangli boʻlib chiqadi.
+
+   ⚠️ Oldingi «palitra» rejimi (toʻq kontur + rangli ichki) ATAYLAB
+   olib tashlandi — sabablari src/lib/doska/tint.ts sarlavhasida va
+   docs/doska-dizayn-tizimi.md §3 da. Uni tiklashdan oldin oʻsha
+   yozuvni oʻqing.
+
+   `--doska-icon-tint` har tugmada inline beriladi (tint.ts orqali
+   class-colors.ts palitrasidan), shuning uchun qoida bitta va
+   universal. */
+.doska-icon {
+  fill: currentColor;
+}
+
+/* Tus berilganda ikona oʻsha tusda boʻladi; berilmaganda matn rangida
+   qoladi (uy, toʻliq ekran, menyu tugmalari). */
+[data-icon-tinted] .doska-icon {
+  fill: var(--doska-icon-tint, currentColor);
+}
+
+/* ── Doska brend rangi — yashil ──
+   `data-product` oʻqi FAQAT palitrani almashtiradi, oʻlchamni emas
+   (docs/ost-loyihalar-arxitektura.md §A).
+
+   Yashil `class-colors.ts` dagi `emerald` dan olingan. `--primary`
+   uchun toʻqroq variant kerak — tugma foni sifatida ustidagi oq matn
+   oʻqilishi uchun; `--accent` esa och, yengil yuzalar uchun.
+
+   ⚠️ Bu yashil vidjet tusi sifatida ISHLATILMAYDI (registry.ts izohi):
+   brend rangi faqat harakat va faol holat uchun. */
+[data-product="doska"] {
+  --primary: oklch(0.52 0.13 163);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.94 0.04 163);
+  --accent-foreground: oklch(0.32 0.08 163);
+  --ring: oklch(0.62 0.14 163);
+}
+.dark [data-product="doska"],
+[data-product="doska"].dark {
+  --primary: oklch(0.72 0.16 163);
+  --primary-foreground: oklch(0.18 0.03 163);
+  --accent: oklch(0.3 0.05 163);
+  --accent-foreground: oklch(0.95 0.03 163);
+}
