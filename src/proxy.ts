@@ -3,8 +3,10 @@ import { getSessionCookie } from "better-auth/cookies";
 import {
   PRODUCT_HEADER,
   SURFACE_HEADER,
+  TONE_HEADER,
   productFor,
   surfaceFor,
+  toneFor,
 } from "@/lib/product-scope";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -30,10 +32,21 @@ const AUTH_PAGES = ["/login", "/register"];
 /** Cookie'siz kirilsa `/login` ga yuboriladigan boʻlimlar.
 
     ⚠️ `/baholash`, `/doska`, `/shogird`, `/boshqaruv` ATAYLAB bu roʻyxatda
-    YOʻQ — ular ochiq marketing sahifalari (docs/ost-loyihalar-arxitektura.md,
-    "Marshrut qoidasi": root = marketing, ichkarisi = ilova). Ilova
-    marshrutlari kelajakda `/dashboard/doska`, `/doska/ekran` kabi ichki
-    yoʻllarda yashaydi va ular `/dashboard` orqali allaqachon himoyalangan. */
+    YOʻQ va ochiq qoladi. Sabab mahsulot holatiga qarab ikki xil:
+
+    — Hali tayyor emas (`/baholash`, `/shogird`, `/boshqaruv`) → root'da
+      `ProductPage` turadi, yaʼni ochiq marketing sahifasi.
+    — Tayyor va mehmon rejimi bor (`/doska`) → root'da ILOVANING OʻZI
+      turadi va u ataylab login talab qilmaydi: oʻqituvchi darsga kirdi,
+      projektorni yoqdi, 3 soniyada taymer kerak (R134). Ekran
+      localStorage'da ishlaydi, kirgandan keyin serverga koʻchiriladi.
+
+    Yaʼni mahsulot tayyor boʻlgach root marketingdan ilovaga oʻtadi;
+    marketing tavsifi asosiy landing'ning «Mahsulotlar» boʻlimida qoladi.
+    Ilovaning login talab qiladigan qismlari (masalan sinf roʻyxati bilan
+    ishlaydigan vidjetlar) DAL darajasida himoyalanadi, marshrut bilan
+    emas — chunki bir sahifaning oʻzi ham mehmon, ham kirgan holatda
+    ishlashi kerak. */
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/lessons",
@@ -52,6 +65,7 @@ export function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   headers.set(SURFACE_HEADER, surfaceFor(pathname));
   headers.set(PRODUCT_HEADER, productFor(pathname));
+  headers.set(TONE_HEADER, toneFor(pathname));
   const forward = () => NextResponse.next({ request: { headers } });
 
   const hasSessionCookie = !!getSessionCookie(request);

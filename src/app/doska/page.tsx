@@ -1,23 +1,33 @@
-import { ProductPage } from "@/components/landing/ProductPage";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Ustozona Doska — sinf ekrani, dars taymeri, tasodifiy ism",
+import { DoskaShell } from "@/components/doska/DoskaShell";
+
+/* Sarlavha eski mahsulot sahifasidan saqlab qolindi — «sinf taymeri»,
+   «dars taymeri» kabi soʻrovlar aynan shu sahifaga tushishi kerak. */
+export const metadata: Metadata = {
+  title: "Doska — sinf ekrani, dars taymeri, svetofor",
   description:
-    "Projektorga chiqariladigan sinf ekrani: taymer, svetofor, tasodifiy ism tanlash, guruhlarga boʻlish.",
+    "Taymer, svetofor, soat — projektorga chiqariladigan sinf ekrani. Roʻyxatdan oʻtmasdan, darhol ishlaydi.",
 };
 
+/* ════════════════════════════════════════════════════════════════════
+   /doska — SINF EKRANI.
+
+   Bu yoʻlda ilovaning OʻZI turadi, mahsulot tavsifi emas: Doska
+   ishlaydi, shuning uchun unga «tez orada» sahifasi kerak emas.
+   Mahsulot tavsifi asosiy landing'ning «Mahsulotlar» boʻlimida.
+   Hali tayyor boʻlmagan ost-loyihalar (Baholash, Shogird, Boshqaruv)
+   esa `ProductPage` da qoladi.
+
+   Kirmasdan ochiladi: oʻqituvchi darsga kirdi, projektorni yoqdi,
+   3 soniyada taymer kerak (R134). Ekran localStorage'da saqlanadi;
+   kirgandan keyin serverga koʻchiriladi va sinf roʻyxati ulanadi —
+   bu keyingi bosqich.
+
+   Sirt/ohang bu yerda eʼlon qilinmaydi: `src/proxy.ts` yoʻl boʻyicha
+   `stage` + `doska` + `playful` sarlavhalarini qoʻyadi, root layout
+   ularni `<html>` ga yozadi.
+   ════════════════════════════════════════════════════════════════════ */
 export default function DoskaPage() {
-  return (
-    <ProductPage
-      slug="doska"
-      capabilities={[
-        "Taymer, svetofor (Traffic Light), tasodifiy ism tanlash, guruhlarga boʻlish",
-        "Soʻrovnoma va soʻz buluti — sinfning fikrini bir zumda koʻrish",
-        "Chizish/annotatsiya qatlami",
-        "Kirishsiz ochiladi — projektorni yoqib, 3 soniyada ishlatasiz",
-      ]}
-      differentiator="classroomscreen.com sizning oʻquvchilaringizni bilmaydi — Ustozona Doska biladi. Tasodifiy ism va guruhlar haqiqiy sinf roʻyxatidan olinadi, tasodifiy raqamlardan emas."
-      plannedNote="Rejalashtirilgan: kanvas + vidjetlar tizimi hozir qurilmoqda. Qiziqishingiz bormi — Telegram orqali yozing, tayyor boʻlganda birinchilardan xabardor qilamiz."
-    />
-  );
+  return <DoskaShell />;
 }
