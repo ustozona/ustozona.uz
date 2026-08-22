@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UZ_REGIONS, districtsOf } from "@/lib/uz-regions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -242,6 +243,7 @@ function SchoolFormDialog({
   const [name, setName] = React.useState("");
   const [region, setRegion] = React.useState("");
   const [city, setCity] = React.useState("");
+  const districts = districtsOf(region);
 
   React.useEffect(() => {
     if (school === "new") {
@@ -267,13 +269,58 @@ function SchoolFormDialog({
             <Label htmlFor="school-name">Nomi</Label>
             <Input id="school-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
+          {/* ⚠️ Erkin matn EMAS: "Ustozona Boshqaruv" maktab → tuman →
+              viloyat yigʻmasini beradi, erkin matnda esa "Toshkent" /
+              "Toshkent sh." / "Tashkent" bir joy sifatida yigʻilmaydi.
+              `teachers.school` ustuni aynan shu holga tushgan. */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="school-region">Viloyat</Label>
-            <Input id="school-region" value={region} onChange={(e) => setRegion(e.target.value)} />
+            <Select
+              value={region || undefined}
+              onValueChange={(v) => {
+                setRegion(v);
+                setCity(""); // tuman viloyatga bogʻliq — almashganda tozalanadi
+              }}
+            >
+              <SelectTrigger id="school-region">
+                <SelectValue placeholder="Tanlang" />
+              </SelectTrigger>
+              <SelectContent>
+                {UZ_REGIONS.map((r) => (
+                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="school-city">Shahar</Label>
-            <Input id="school-city" value={city} onChange={(e) => setCity(e.target.value)} />
+            <Label htmlFor="school-city">Tuman / shahar</Label>
+            {districts.length > 0 ? (
+              <Select value={city || undefined} onValueChange={setCity}>
+                <SelectTrigger id="school-city">
+                  <SelectValue placeholder="Tanlang" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <>
+                <Input
+                  id="school-city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  disabled={!region}
+                  placeholder={region ? "Tuman nomini yozing" : "Avval viloyatni tanlang"}
+                />
+                {region ? (
+                  <p className="text-caption text-muted-foreground">
+                    Bu viloyat tumanlari hali roʻyxatga kiritilmagan.
+                  </p>
+                ) : null}
+              </>
+            )}
           </div>
         </div>
         <DialogFooter>
