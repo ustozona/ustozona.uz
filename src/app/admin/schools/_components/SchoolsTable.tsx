@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UZ_REGIONS, districtsOf } from "@/lib/uz-regions";
+import { UZ_REGIONS_SORTED, districtsOf } from "@/lib/uz-regions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,10 +33,8 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  DialogHeaderBar,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -56,7 +54,8 @@ import {
   EmptyDescription,
 } from "@/components/ui/empty";
 import { SectionIcon } from "@/components/ui/section-icon";
-import { School, Plus, MoreHorizontal, Pencil, Trash2, UserPlus } from "lucide-react";
+import { School, Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2 } from "lucide-react";
+import { useCollator } from "@/lib/use-collator";
 import type { AdminSchoolItem, TeacherListItem } from "@/server/dal/admin/schools";
 import {
   createSchoolAction,
@@ -259,12 +258,17 @@ function SchoolFormDialog({
 
   return (
     <Dialog open={!!school} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>{school === "new" ? "Yangi maktab" : "Maktabni tahrirlash"}</DialogTitle>
-          <DialogDescription>Maktab nomi va manzil maʼlumotlari.</DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-3 py-1">
+      {/* Loyiha standarti: `DialogHeaderBar` (ikonka + sarlavha + ghost X).
+          Shu bois `showCloseButton={false}` — aks holda ikkita X chiqadi. */}
+      <DialogContent
+        showCloseButton={false}
+        className="sm:max-w-sm p-0 gap-0 overflow-hidden"
+      >
+        <DialogHeaderBar
+          icon={<Building2 className="size-[18px]" aria-hidden />}
+          title={school === "new" ? "Yangi maktab" : "Maktabni tahrirlash"}
+        />
+        <div className="flex flex-col gap-3 p-5">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="school-name">Nomi</Label>
             <Input id="school-name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -282,11 +286,11 @@ function SchoolFormDialog({
                 setCity(""); // tuman viloyatga bogʻliq — almashganda tozalanadi
               }}
             >
-              <SelectTrigger id="school-region">
+              <SelectTrigger id="school-region" className="w-full">
                 <SelectValue placeholder="Tanlang" />
               </SelectTrigger>
               <SelectContent>
-                {UZ_REGIONS.map((r) => (
+                {UZ_REGIONS_SORTED.map((r) => (
                   <SelectItem key={r} value={r}>{r}</SelectItem>
                 ))}
               </SelectContent>
@@ -294,36 +298,19 @@ function SchoolFormDialog({
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="school-city">Tuman / shahar</Label>
-            {districts.length > 0 ? (
-              <Select value={city || undefined} onValueChange={setCity}>
-                <SelectTrigger id="school-city">
-                  <SelectValue placeholder="Tanlang" />
-                </SelectTrigger>
-                <SelectContent>
-                  {districts.map((d) => (
-                    <SelectItem key={d} value={d}>{d}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <>
-                <Input
-                  id="school-city"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  disabled={!region}
-                  placeholder={region ? "Tuman nomini yozing" : "Avval viloyatni tanlang"}
-                />
-                {region ? (
-                  <p className="text-caption text-muted-foreground">
-                    Bu viloyat tumanlari hali roʻyxatga kiritilmagan.
-                  </p>
-                ) : null}
-              </>
-            )}
+            <Select value={city || undefined} onValueChange={setCity} disabled={!region}>
+              <SelectTrigger id="school-city" className="w-full">
+                <SelectValue placeholder={region ? "Tanlang" : "Avval viloyatni tanlang"} />
+              </SelectTrigger>
+              <SelectContent>
+                {districts.map((d) => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="px-5 pb-5">
           <Button variant="outline" onClick={onClose} disabled={busy}>
             Bekor qilish
           </Button>
@@ -353,24 +340,34 @@ function AssignDialog({
   onAssign: (teacherId: string) => void;
 }) {
   const [teacherId, setTeacherId] = React.useState("");
+  const compare = useCollator();
+  const sortedTeachers = React.useMemo(
+    () => [...teachers].sort((a, b) => compare(a.name, b.name)),
+    [teachers, compare]
+  );
+
   React.useEffect(() => {
     if (school) setTeacherId("");
   }, [school]);
 
   return (
     <Dialog open={!!school} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Oʻqituvchi biriktirish</DialogTitle>
-          <DialogDescription>{school?.name}</DialogDescription>
-        </DialogHeader>
-        <div className="py-1">
+      <DialogContent
+        showCloseButton={false}
+        className="sm:max-w-sm p-0 gap-0 overflow-hidden"
+      >
+        <DialogHeaderBar
+          icon={<UserPlus className="size-[18px]" aria-hidden />}
+          title="Oʻqituvchi biriktirish"
+          description={school?.name}
+        />
+        <div className="p-5">
           <Select value={teacherId} onValueChange={setTeacherId}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Oʻqituvchi tanlang" />
             </SelectTrigger>
             <SelectContent>
-              {teachers.map((t) => (
+              {sortedTeachers.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
                   {t.name} ({t.email}){t.schoolId === school?.id ? " — biriktirilgan" : ""}
                 </SelectItem>
@@ -378,7 +375,7 @@ function AssignDialog({
             </SelectContent>
           </Select>
         </div>
-        <DialogFooter>
+        <DialogFooter className="px-5 pb-5">
           <Button variant="outline" onClick={onClose} disabled={busy}>
             Bekor qilish
           </Button>

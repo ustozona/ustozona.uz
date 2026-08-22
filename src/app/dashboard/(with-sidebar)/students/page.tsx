@@ -55,6 +55,7 @@ import AddStudentModal from "./_components/AddStudentModal";
 import StudentsDataTable from "./_components/StudentsDataTable";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
+import { useCollator } from "@/lib/use-collator";
 import {
   Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2, X,
   TrendingUp, Phone, MessageCircle, Pen, Download, ChevronDown, MoreHorizontal,
@@ -133,6 +134,7 @@ export default function StudentsPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("grade");
+  const compare = useCollator();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTargets, setDeleteTargets] = useState<StudentRow[] | null>(null);
@@ -237,11 +239,11 @@ export default function StudentsPage() {
     const q = search.trim().toLowerCase();
     if (q) list = list.filter((s) => s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q));
     const sorted = [...list];
-    if (sortKey === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortKey === "name") sorted.sort((a, b) => compare(a.name, b.name));
     else if (sortKey === "grade") sorted.sort((a, b) => a.grade - b.grade);
     else sorted.sort((a, b) => a.attendance - b.attendance);
     return sorted;
-  }, [allStudents, isDemoMode, demoStudents, statusFilter, search, sortKey]);
+  }, [allStudents, isDemoMode, demoStudents, statusFilter, search, sortKey, compare]);
 
   const selectedStudent =
     students.find((s) => s.id === selectedStudentId) ?? (isDemoMode ? students[0] ?? null : null);

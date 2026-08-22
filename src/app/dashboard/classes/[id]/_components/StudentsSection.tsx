@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { AddFromRosterDialog } from "@/components/students/AddFromRosterDialog";
 import type { ClassIdentity } from "@/lib/class-id";
+import { useCollator } from "@/lib/use-collator";
 
 /* ── Tiplar va yordamchilar (students sahifasi bilan bir xil mantiq) ── */
 type Status = "active" | "away" | "archived";
@@ -104,6 +105,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const [statusOverride, setStatusOverride] = useState<Record<string, Status>>({});
   const [createOpen, setCreateOpen] = useState(false);
   const [rosterOpen, setRosterOpen] = useState(false);
+  const compare = useCollator();
 
   // Jonli manbalar — Baholar jurnali va Davomat bilan bir xil store
   // (server-backed). Hydration'gacha roʻyxat boʻsh boʻlib turadi.
@@ -180,11 +182,11 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
       ? allStudents.filter((s) => s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q))
       : allStudents;
     list = [...list];
-    if (sortKey === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortKey === "name") list.sort((a, b) => compare(a.name, b.name));
     else if (sortKey === "grade") list.sort((a, b) => a.grade - b.grade);
     else list.sort((a, b) => (a.attendance ?? Infinity) - (b.attendance ?? Infinity));
     return list;
-  }, [allStudents, search, sortKey]);
+  }, [allStudents, search, sortKey, compare]);
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
   const toggleStatus = (id: string, current: Status) =>
