@@ -365,11 +365,51 @@ ikkalasi ikkala ismni koʻradi. Yaʼni §4.1 dagi qoida amalda ishlaydi.
 
 - **UI:** hamkasbni taklif qilish (hozircha admin paneli orqali) · maʼmuriy
   sinfga guruh ulash (`parentClassId` UI'da hali yoʻq)
-- **Prod migratsiyasi** (Supabase) — hali qoʻllanmagan
+- 🔴 **Prod migratsiyasi (Supabase) — TOʻSIQ BOR, pastga qarang**
 - §6 dagi qolgan ikki band: `teachers.school` matn maydonini guruhlashdan
   butunlay chiqarish, client store'da oʻqish-uchun qismni ajratish
 - Qaydlarni ulashish (oʻqish filtrini olib tashlash) — ATAYLAB hali
   qilinmadi: avval bogʻlanishlar haqiqiy maktabda tekshirilsin
+
+---
+
+## 8a. 🔴 Prod migratsiyasi toʻsigʻi — LessonLab koʻrinishlari
+
+**Prodda (Supabase) uchta koʻrinish oʻchirilayotgan ustunlarga tayanadi:**
+
+| Koʻrinish | Nimaga tayanadi |
+|---|---|
+| `v_unified_classes` | `classes.teacher_id` |
+| `v_unified_students` | `students.class_id` |
+| `v_duplicate_candidates` | `classes.teacher_id`, `students.class_id` |
+
+Ustiga `v_teacher_totals` birinchi ikkitasiga tayanadi.
+
+⚠️ **Oqibat:** prodda `ALTER TABLE classes DROP COLUMN teacher_id` xato
+beradi (*"cannot drop column because other objects depend on it"*).
+Migratsiya yarim yoʻlda toʻxtaydi.
+
+⛔ **`DROP ... CASCADE` ISHLATILMASIN** — u koʻrinishlarni jimgina
+oʻchirib yuboradi va LessonLab integratsiyasi (`/admin/users` sanogʻi,
+bot ↔ Ustozona bogʻlanishi) sezdirmasdan buziladi.
+
+**Nega dev'da chiqmadi:** bu koʻrinishlar ham, ular tayanadigan bot
+jadvallari (`bot_classes`, `bot_students`) ham Drizzle migratsiyalarida
+YOʻQ — ular toʻgʻridan-toʻgʻri Supabase'da yaratilgan. Neon'da ular
+umuman mavjud emas, shu bois 0035 u yerda muammosiz oʻtdi.
+
+**Qadamlar (prodga chiqishdan oldin):**
+1. Uchala koʻrinish yangi modelga qayta yozilsin: `uzc.teacher_id` →
+   `class_teachers` orqali, `uzs.class_id` → `enrollments` orqali
+2. Yangi taʼriflar migratsiya fayliga tushsin (hozir ular hech qayerda
+   versiyalanmagan — bu alohida muammo)
+3. `DROP VIEW` → `ALTER TABLE` → `CREATE VIEW` tartibida qoʻllansin
+4. Zaxira: prodda avtomatik zaxira YOʻQ (`docs/backup.md`), shu bois
+   migratsiyadan oldin `pg_dump` qoʻlda olinsin
+
+**Yoʻl-yoʻlakay tuzatildi:** `listTeacherTotals` endi koʻrinish yoʻqligiga
+chidamli (`to_regclass` bilan tekshiradi) — ilgari `/admin/users` lokalda
+HAR DOIM yiqilardi, bu eski xato edi.
 
 ---
 
