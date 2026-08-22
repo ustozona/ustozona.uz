@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/server/db/client";
 import { teachers, workspaceMembers } from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
+import { listWorkspaceRoster } from "@/server/workspace";
 
 /* ⛔ Bu faylda `export type { … }` YOZILMAYDI — `"use server"` modulida
    tip-reeksporti prodda runtime eksportga aylanadi va BARCHA server
@@ -42,4 +43,12 @@ export async function switchWorkspaceAction(input: unknown): Promise<void> {
 
   // Butun dashboard qamrovga bogʻliq — sinflar, oʻquvchilar, jurnal.
   revalidatePath("/dashboard", "layout");
+}
+
+/**
+ * Maydondagi oʻquvchilar roʻyxati — mavjud bolani oʻz guruhiga qoʻshish
+ * uchun. Faqat ism darajasi (§4.1).
+ */
+export async function getWorkspaceRosterAction() {
+  return listWorkspaceRoster();
 }

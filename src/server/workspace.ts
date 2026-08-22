@@ -132,6 +132,51 @@ export async function listMyWorkspaces(): Promise<
 }
 
 /**
+ * Maydondagi butun oʻquvchi roʻyxati — ISM darajasi (`roster` qamrovi).
+ *
+ * Nima uchun kerak: ikkinchi oʻqituvchi 6-A ga oʻz fan guruhini
+ * tuzayotganda 30 bolaning ismi kerak, aks holda ularni QOʻLDA qayta
+ * yozadi — va oʻshanda bir bola ikki yozuvga boʻlinib, butun koʻchish
+ * maʼnosini yoʻqotadi.
+ *
+ * ⚠️ Faqat ism/bosh harf/sinflar qaytadi — baho, davomat, qayd EMAS.
+ * Bu ajratish ataylab: docs/ish-maydoni-arxitektura.md §4.1.
+ */
+export async function listWorkspaceRoster(): Promise<
+  { id: string; name: string; initials: string; classNames: string[] }[]
+> {
+  const ctx = await requireWorkspace();
+
+  const rows = await db
+    .select({
+      id: students.id,
+      name: students.name,
+      initials: students.initials,
+      className: classes.name,
+    })
+    .from(students)
+    .leftJoin(enrollments, eq(enrollments.studentId, students.id))
+    .leftJoin(classes, eq(classes.id, enrollments.classId))
+    .where(and(eq(students.workspaceId, ctx.workspaceId), eq(students.status, "active")));
+
+  const byId = new Map<string, { id: string; name: string; initials: string; classNames: string[] }>();
+  for (const r of rows) {
+    const prev = byId.get(r.id);
+    if (prev) {
+      if (r.className) prev.classNames.push(r.className);
+    } else {
+      byId.set(r.id, {
+        id: r.id,
+        name: r.name,
+        initials: r.initials,
+        classNames: r.className ? [r.className] : [],
+      });
+    }
+  }
+  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, "uz"));
+}
+
+/**
  * Koʻrinadigan sinf/guruh id'lari.
  *
  * `data`   — faqat oʻzi oʻtadigan darslar (`class_teachers`)

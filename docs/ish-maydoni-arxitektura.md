@@ -346,10 +346,25 @@ faqat qoʻshadi (hammasi nullable), 0035 toʻldiradi va keyin oʻchiradi.
 **Yoʻl-yoʻlakay tuzatilgan:** §6 dagi 🔴 `applyStudentNotesBatch` teshigi —
 endi `visibleStudentIds("data")` bilan filtrlanadi.
 
+**UI — qurilgani:**
+- **Maydon almashtirgichi** (`components/workspace-switcher.tsx`) — sidebar
+  sarlavhasida. ⭐ Bitta maydonda UMUMAN koʻrsatilmaydi (§1 qoidasi).
+- **«Roʻyxatdan» tugmasi** (`components/students/AddFromRosterDialog.tsx`) —
+  sinf sahifasida. Mavjud bolani AYNAN oʻsha `id` bilan qoʻshadi, yaʼni
+  server tomonda yangi `students` qatori emas, yangi **yozilish** boʻlib
+  tushadi. Butun koʻp-oʻqituvchi gʻoyasining maʼnosi shu tugmada: busiz
+  ikkinchi oʻqituvchi 30 ismni qayta yozadi va bola ikkiga boʻlinadi.
+  Yakka oʻqituvchiga ham kerak — toʻgarak holati (§4.4).
+
+**Dev'da tekshirilgan stsenariy** (tranzaksiyada, orqaga qaytarilgan):
+X 6-A matematika va 7-B ni oʻtadi, Y faqat 6-A inglizni. Natija — X:
+Bobur+Vali, Y: faqat Bobur (7-B bolasini koʻrmaydi), roʻyxat qamrovida
+ikkalasi ikkala ismni koʻradi. Yaʼni §4.1 dagi qoida amalda ishlaydi.
+
 ### Qolgan ish
 
-- **UI:** maydon almashtirgichi · hamkasbni taklif qilish · maʼmuriy sinfga
-  guruh ulash · oʻquvchi tanlashda `roster` qamrovi
+- **UI:** hamkasbni taklif qilish (hozircha admin paneli orqali) · maʼmuriy
+  sinfga guruh ulash (`parentClassId` UI'da hali yoʻq)
 - **Prod migratsiyasi** (Supabase) — hali qoʻllanmagan
 - §6 dagi qolgan ikki band: `teachers.school` matn maydonini guruhlashdan
   butunlay chiqarish, client store'da oʻqish-uchun qismni ajratish

@@ -40,9 +40,10 @@ import {
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
-  Users, User, Plus, Search, ArrowUpDown, TrendingUp, CalendarCheck, Phone, MessageCircle,
-  ExternalLink,
+  Users, User, Plus, UserPlus, Search, ArrowUpDown, TrendingUp, CalendarCheck, Phone,
+  MessageCircle, ExternalLink,
 } from "lucide-react";
+import { AddFromRosterDialog } from "@/components/students/AddFromRosterDialog";
 import type { ClassIdentity } from "@/lib/class-id";
 
 /* ── Tiplar va yordamchilar (students sahifasi bilan bir xil mantiq) ── */
@@ -102,6 +103,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const [sortKey, setSortKey] = useState<SortKey>("grade");
   const [statusOverride, setStatusOverride] = useState<Record<string, Status>>({});
   const [createOpen, setCreateOpen] = useState(false);
+  const [rosterOpen, setRosterOpen] = useState(false);
 
   // Jonli manbalar — Baholar jurnali va Davomat bilan bir xil store
   // (server-backed). Hydration'gacha roʻyxat boʻsh boʻlib turadi.
@@ -236,6 +238,19 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Mavjud bolani qoʻshish — YANGI yaratmasdan. Ikki holatda
+                kerak: (a) hamkasb allaqachon kiritgan 6-A bolalarini oʻz
+                fan guruhiga olish, (b) oʻz oʻquvchisini toʻgarakka ham
+                qoʻshish. Ikkalasida ham bola BITTA yozuv boʻlib qoladi. */}
+            <Button
+              variant="outline"
+              onClick={() => setRosterOpen(true)}
+              title="Roʻyxatdan qoʻshish"
+            >
+              <UserPlus className="size-4 @[640px]:mr-1" />
+              <span className="hidden @[640px]:inline">Roʻyxatdan</span>
+            </Button>
+
             <Button className="font-semibold" onClick={() => setCreateOpen(true)}>
               <Plus className="size-4 @[640px]:mr-1" />
               <span className="hidden @[640px]:inline">{t("newStudent")}</span>
@@ -337,6 +352,12 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
         defaultClassId={classId}
         onCreate={handleCreate}
         onImport={handleImport}
+      />
+
+      <AddFromRosterDialog
+        open={rosterOpen}
+        onOpenChange={setRosterOpen}
+        classId={classId}
       />
     </div>
   );
