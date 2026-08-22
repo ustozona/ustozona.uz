@@ -110,10 +110,33 @@ async function main() {
       set: { name: DEMO.name, subject: DEMO.subject, updatedAt: new Date() },
     });
 
+  /* ── 1b. Demo oʻqituvchining ish maydoni ─────────────────────────── */
+  // Sinf/oʻquvchi endi MAYDONGA tegishli (docs/ish-maydoni-arxitektura.md).
+  const [membership] = await db
+    .select({ workspaceId: schema.workspaceMembers.workspaceId })
+    .from(schema.workspaceMembers)
+    .where(eq(schema.workspaceMembers.teacherId, userId));
+
+  let workspaceId = membership?.workspaceId;
+  if (!workspaceId) {
+    workspaceId = crypto.randomUUID();
+    await db
+      .insert(schema.workspaces)
+      .values({ id: workspaceId, name: DEMO.name, kind: "personal" });
+    await db
+      .insert(schema.workspaceMembers)
+      .values({ workspaceId, teacherId: userId, role: "owner" });
+    await db
+      .update(schema.teachers)
+      .set({ activeWorkspaceId: workspaceId })
+      .where(eq(schema.teachers.id, userId));
+  }
+
   /* ── 2. Eski domen qatorlari tozalanadi (idempotentlik) ──────────── */
-  // classes CASCADE: students → grades/attendance_records/student_relations,
-  // topics → assignments. Statuses alohida jadval.
-  await db.delete(schema.classes).where(eq(schema.classes.teacherId, userId));
+  // classes CASCADE: enrollments/class_teachers → topics → assignments;
+  // students CASCADE: grades/attendance_records/student_relations.
+  await db.delete(schema.classes).where(eq(schema.classes.workspaceId, workspaceId));
+  await db.delete(schema.students).where(eq(schema.students.workspaceId, workspaceId));
   await db
     .delete(schema.attendanceStatuses)
     .where(eq(schema.attendanceStatuses.teacherId, userId));
@@ -144,7 +167,9 @@ async function main() {
 
   /* ── 3. Jurnal domeni: CLASS_DATA dan ────────────────────────────── */
   const classRows: (typeof schema.classes.$inferInsert)[] = [];
+  const classTeacherRows: (typeof schema.classTeachers.$inferInsert)[] = [];
   const studentRows: (typeof schema.students.$inferInsert)[] = [];
+  const enrollmentRows: (typeof schema.enrollments.$inferInsert)[] = [];
   const topicRows: (typeof schema.topics.$inferInsert)[] = [];
   const assignmentRows: (typeof schema.assignments.$inferInsert)[] = [];
   const gradeRows: (typeof schema.grades.$inferInsert)[] = [];
@@ -155,17 +180,17 @@ async function main() {
     const classId = data.info.id;
     classRows.push({
       id: classId,
-      teacherId: userId,
+      workspaceId,
       name: data.info.name,
       color: data.info.color ?? null,
       time: data.info.time ?? null,
       sortOrder: classIdx,
     });
+    classTeacherRows.push({ classId, teacherId: userId });
     data.students.forEach((s, i) => {
       studentRows.push({
         id: s.id,
-        teacherId: userId,
-        classId,
+        workspaceId,
         name: s.name,
         initials: s.initials,
         status: s.status ?? "active",
@@ -174,8 +199,8 @@ async function main() {
         parentName: s.parentName ?? null,
         parentPhone: s.parentPhone ?? null,
         studentPhone: s.studentPhone ?? null,
-        sortOrder: i,
       });
+      enrollmentRows.push({ classId, studentId: s.id, sortOrder: i });
     });
     data.topics.forEach((t, i) => {
       topicRows.push({
@@ -217,7 +242,13 @@ async function main() {
   });
 
   await insertChunked("classes", classRows, (b) => db.insert(schema.classes).values(b));
+  await insertChunked("class_teachers", classTeacherRows, (b) =>
+    db.insert(schema.classTeachers).values(b)
+  );
   await insertChunked("students", studentRows, (b) => db.insert(schema.students).values(b));
+  await insertChunked("enrollments", enrollmentRows, (b) =>
+    db.insert(schema.enrollments).values(b)
+  );
   await insertChunked("topics", topicRows, (b) => db.insert(schema.topics).values(b));
   await insertChunked("assignments", assignmentRows, (b) =>
     db.insert(schema.assignments).values(b)
@@ -430,8 +461,8 @@ async function main() {
 
   /* ── 6. Yakuniy hisobot ──────────────────────────────────────────── */
   const report: [string, { count: number }[]][] = [
-    ["classes", await db.select({ count: count() }).from(schema.classes).where(eq(schema.classes.teacherId, userId))],
-    ["students", await db.select({ count: count() }).from(schema.students).where(eq(schema.students.teacherId, userId))],
+    ["classes", await db.select({ count: count() }).from(schema.classes).where(eq(schema.classes.workspaceId, workspaceId))],
+    ["students", await db.select({ count: count() }).from(schema.students).where(eq(schema.students.workspaceId, workspaceId))],
     ["topics", await db.select({ count: count() }).from(schema.topics).where(eq(schema.topics.teacherId, userId))],
     ["assignments", await db.select({ count: count() }).from(schema.assignments).where(eq(schema.assignments.teacherId, userId))],
     ["grades", await db.select({ count: count() }).from(schema.grades).where(eq(schema.grades.teacherId, userId))],

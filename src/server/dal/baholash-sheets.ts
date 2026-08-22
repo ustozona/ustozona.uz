@@ -1,8 +1,9 @@
 import "server-only";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { classes, students } from "@/server/db/schema";
+import { classes, enrollments, students } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { assertTeachesClass } from "@/server/workspace";
 import { getSet } from "./assess/sets";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -92,18 +93,20 @@ export async function buildSheetPlan(
      6-A ning ismlari chop etilardi.
 
      Egalik shu yerda tekshiriladi: `classId` mijozdan kelgan qiymat. */
+  await assertTeachesClass(classId);
   const [cls] = await db
     .select({ id: classes.id, name: classes.name })
     .from(classes)
-    .where(and(eq(classes.id, classId), eq(classes.teacherId, teacherId)))
+    .where(eq(classes.id, classId))
     .limit(1);
   if (!cls) throw new Error("Sinf topilmadi");
 
   const rows = await db
     .select({ id: students.id, name: students.name, status: students.status })
-    .from(students)
-    .where(and(eq(students.classId, cls.id), eq(students.teacherId, teacherId)))
-    .orderBy(asc(students.sortOrder), asc(students.createdAt));
+    .from(enrollments)
+    .innerJoin(students, eq(students.id, enrollments.studentId))
+    .where(eq(enrollments.classId, cls.id))
+    .orderBy(asc(enrollments.sortOrder), asc(students.createdAt));
 
   // `archived` — sinfdan chiqqan oʻquvchi, unga varaq chop etilmaydi.
   // `away` esa QOLADI: vaqtincha yoʻq bola qaytib kelib topshirishi

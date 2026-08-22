@@ -1,11 +1,11 @@
 import "server-only";
 import { cache } from "react";
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { auth, type AuthSession } from "./auth";
 import { isSuperAdmin, isSchoolAdmin, isTeacher } from "@/lib/auth-roles";
 import { db } from "./db/client";
-import { teachers, type TeacherRow } from "./db/schema";
+import { teachers, workspaceMembers, type TeacherRow } from "./db/schema";
 
 /* ════════════════════════════════════════════════════════════════════
    SESSIYA — haqiqiy himoya qatlami (proxy.ts faqat UX redirect).
@@ -88,11 +88,14 @@ export const requireAdmin = cache(
   },
 );
 
-/** Maktab admini qamrovi: super_admin → hammasi; school_admin → oʻz maktabi. */
-export type SchoolScope = { all: true } | { all: false; schoolId: string };
+/** Maktab admini qamrovi: super_admin → hammasi; school_admin → oʻz maydoni. */
+export type SchoolScope = { all: true } | { all: false; workspaceId: string };
 
-/** super_admin YOKI school_admin darvozasi — qamrov school_admin uchun
-    `teachers.schoolId`dan olinadi (schoolId yoʻq boʻlsa ForbiddenError). */
+/** super_admin YOKI school_admin darvozasi.
+
+    ⚠️ Qamrov `workspace_members` dan olinadi (ilgari `teachers.schoolId`
+    edi). Sabab: aʼzolik koʻp-koʻpga boʻldi va ruxsatning yagona
+    hokimiyati oʻsha jadval — docs/ish-maydoni-arxitektura.md §4.2. */
 export const requireSchoolAdmin = cache(
   async (): Promise<{ session: AuthSession; actor: AdminActor; scope: SchoolScope }> => {
     const session = await getSession();
@@ -103,8 +106,11 @@ export const requireSchoolAdmin = cache(
     if (isSuperAdmin(session.user)) return { session, actor, scope: { all: true } };
     if (!isSchoolAdmin(session.user)) throw new ForbiddenError();
 
-    const [row] = await db.select().from(teachers).where(eq(teachers.id, id));
-    if (!row?.schoolId) throw new ForbiddenError();
-    return { session, actor, scope: { all: false, schoolId: row.schoolId } };
+    const [row] = await db
+      .select({ workspaceId: workspaceMembers.workspaceId })
+      .from(workspaceMembers)
+      .where(and(eq(workspaceMembers.teacherId, id), eq(workspaceMembers.role, "admin")));
+    if (!row) throw new ForbiddenError();
+    return { session, actor, scope: { all: false, workspaceId: row.workspaceId } };
   },
 );

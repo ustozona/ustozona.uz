@@ -1,6 +1,10 @@
-import { boolean, index, integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp,
+  type AnyPgColumn,
+} from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { teachers } from "./teachers";
+import { workspaces } from "./workspaces";
 
 /* ════════════════════════════════════════════════════════════════════
    SINFLAR va OʻQUVCHILAR — roster yadrosi.
@@ -10,19 +14,41 @@ import { teachers } from "./teachers";
    yangi yozuvlar uchun ilova global-unikal id yaratishi shart
    (crypto.randomUUID) — PK butun jadval boʻyicha yagona.
 
-   Multi-tenant: har soʻrov DAL'da sessiyadagi teacher_id bilan
-   filtrlangani uchun boshqa oʻqituvchining qatori hech qachon
-   qaytmaydi; FK CASCADE'lar oʻqituvchi oʻchirilishida butun daraxtni
-   tozalaydi.
+   ⭐ IJARA BIRLIGI — OʻQITUVCHI EMAS, ISH MAYDONI (2026-08-22).
+   Ilgari `classes.teacherId` / `students.teacherId` bor edi, yaʼni bola
+   oʻqituvchiga tegishli edi. Bu yakka oʻqituvchi quroli uchun toʻgʻri
+   edi, lekin bitta bolani bir nechta oʻqituvchi oʻqitishi kerak
+   boʻlganda buzildi: har oʻqituvchida ALOHIDA "Bobur" paydo boʻlardi.
+
+   Endi: bola maydonga tegishli, oʻqituvchining unga kirishi esa
+   YOZILISH orqali (`enrollments` + `class_teachers`) — "biz bir
+   darsdamiz" fakti. Batafsil: docs/ish-maydoni-arxitektura.md
+
+   ⚠️ Boshqa jadvallardagi `teacherId` (grades, attendance_records,
+   student_notes…) OLIB TASHLANMAYDI — u yerda maʼno boshqa:
+   "bu yozuvni KIM yaratgan" (mualliflik), "kimga tegishli" emas.
    ════════════════════════════════════════════════════════════════════ */
 
 export const classes = pgTable(
   "classes",
   {
     id: text("id").primaryKey(),
-    teacherId: text("teacher_id")
+    workspaceId: text("workspace_id")
       .notNull()
-      .references(() => teachers.id, { onDelete: "cascade" }),
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    /** Maʼmuriy sinf (7-A) — dars guruhi ("7-A Ingliz 1-guruh") unga ulanadi.
+        null = mustaqil: yakka oʻqituvchining sinfi yoki toʻgarak.
+
+        Oʻz-oʻziga ishora ATAYLAB (alohida jadval emas): oʻzbek tilida
+        ikkalasi ham "sinf" deyiladi (asoschi, 2026-08-22), demak
+        foydalanuvchi uchun bitta tushuncha — faqat qaysi oʻquvchilar
+        olinishi farq qiladi.
+
+        `set null` — maʼmuriy sinf oʻchsa dars guruhi qolsin: undagi baho
+        va davomat yoʻqolmasligi kerak. */
+    parentClassId: text("parent_class_id").references((): AnyPgColumn => classes.id, {
+      onDelete: "set null",
+    }),
     /** Koʻrsatiladigan nom ("5-A") — HISOBLANUVCHI: grade+section+label dan
         hosil qilinadi (class-naming.ts). Denormalizatsiya ataylab: nom
         ilova boʻylab ~100 joyda oʻqiladi va qidiruv/eksportda ishlatiladi. */
@@ -60,7 +86,37 @@ export const classes = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("classes_teacher_idx").on(t.teacherId)]
+  (t) => [
+    index("classes_workspace_idx").on(t.workspaceId),
+    index("classes_parent_idx").on(t.parentClassId),
+  ]
+);
+
+/* ────────────────────────────────────────────────────────────────────
+   DARSNI KIM OʻTADI.
+
+   🔴 IMTIYOZ OSHIRISH: koʻrinuvchanlik "men oʻtadigan darsdagi bolalar"
+   qoidasiga tayangani uchun, oʻqituvchi oʻzini istalgan darsga qoʻsha
+   olsa — OʻZIGA OʻZI ruxsat bergan boʻladi. Shu bois bu jadvalga yozish
+   nazorat qilinadigan amal (maktabda: admin; adminsiz maydonda: aʼzolar
+   oʻzaro — ular allaqachon birga ishlashga kelishgan).
+   ──────────────────────────────────────────────────────────────────── */
+
+export const classTeachers = pgTable(
+  "class_teachers",
+  {
+    classId: text("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    teacherId: text("teacher_id")
+      .notNull()
+      .references(() => teachers.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.classId, t.teacherId] }),
+    index("class_teachers_teacher_idx").on(t.teacherId),
+  ]
 );
 
 export const students = pgTable(
@@ -71,12 +127,9 @@ export const students = pgTable(
         insert paytida beriladi — ilova hech qachon qiymat yubormaydi va
         uni oʻzgartirmaydi, shu bois barqaror va takrorlanmas). */
     studentNumber: integer("student_number").generatedAlwaysAsIdentity(),
-    teacherId: text("teacher_id")
+    workspaceId: text("workspace_id")
       .notNull()
-      .references(() => teachers.id, { onDelete: "cascade" }),
-    classId: text("class_id")
-      .notNull()
-      .references(() => classes.id, { onDelete: "cascade" }),
+      .references(() => workspaces.id, { onDelete: "cascade" }),
     /** Sentyabr: oʻquvchi akkaunti ulanganда auth user'ga bogʻlanadi. */
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     name: text("name").notNull(),
@@ -98,16 +151,46 @@ export const students = pgTable(
         to'g'ri ekanini hech kim bilmaydi. Batafsil: LessonLab
         repo'sida `docs/CROSS_PLATFORM.md`. */
     nickname: text("nickname"),
-    /** Roster tartibi (sinf ichida). */
-    sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
+  (t) => [index("students_workspace_idx").on(t.workspaceId)]
+);
+
+/* ────────────────────────────────────────────────────────────────────
+   YOZILISH — bola ↔ sinf/guruh, KOʻP-KOʻPGA.
+
+   Ilgari `students.classId` (yagona FK) edi — bola faqat BITTA sinfda
+   boʻla olardi. Bu ikki holatni imkonsiz qilardi:
+
+   1) Bir bolani ikki oʻqituvchi oʻqitishi (7-A matematika + 7-A ingliz)
+   2) Bir oʻqituvchining ikki guruhida boʻlishi — masalan Eshmat
+      informatika darsida ham, oʻsha domlaning toʻgaragida ham
+
+   `sortOrder` YOZILISHDA (oʻquvchida emas): bola ikki guruhda turlicha
+   tartibda turishi mumkin.
+   ──────────────────────────────────────────────────────────────────── */
+
+export const enrollments = pgTable(
+  "enrollments",
+  {
+    classId: text("class_id")
+      .notNull()
+      .references(() => classes.id, { onDelete: "cascade" }),
+    studentId: text("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    /** Roster tartibi shu guruh ichida. */
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
   (t) => [
-    index("students_teacher_idx").on(t.teacherId),
-    index("students_class_idx").on(t.classId),
+    primaryKey({ columns: [t.classId, t.studentId] }),
+    index("enrollments_student_idx").on(t.studentId),
   ]
 );
 
 export type ClassRow = typeof classes.$inferSelect;
 export type StudentRow = typeof students.$inferSelect;
+export type ClassTeacherRow = typeof classTeachers.$inferSelect;
+export type EnrollmentRow = typeof enrollments.$inferSelect;

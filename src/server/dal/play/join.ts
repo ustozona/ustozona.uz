@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID, randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { quizSessions, sessionParticipants, students } from "@/server/db/schema";
+import { enrollments, quizSessions, sessionParticipants, students } from "@/server/db/schema";
 import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/server/play/session";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -26,10 +26,13 @@ export async function listRosterByCode(joinCode: string): Promise<{ id: string; 
     .where(eq(quizSessions.joinCode, joinCode.toUpperCase()));
   if (!session) throw new UnauthorizedError("Yaroqsiz kod");
 
+  // Mehmon oqimi: oʻqituvchi sessiyasi yoʻq, shu bois qamrov join-kod
+  // orqali kelgan sinfning YOZILISH roʻyxatidan olinadi.
   return db
     .select({ id: students.id, name: students.name })
-    .from(students)
-    .where(eq(students.classId, session.classId));
+    .from(enrollments)
+    .innerJoin(students, eq(students.id, enrollments.studentId))
+    .where(eq(enrollments.classId, session.classId));
 }
 
 export async function joinByCode(
@@ -49,9 +52,11 @@ export async function joinByCode(
 
   if (studentId) {
     const [student] = await db
-      .select({ id: students.id })
-      .from(students)
-      .where(and(eq(students.id, studentId), eq(students.classId, session.classId)));
+      .select({ id: enrollments.studentId })
+      .from(enrollments)
+      .where(
+        and(eq(enrollments.studentId, studentId), eq(enrollments.classId, session.classId))
+      );
     if (!student) throw new ForbiddenError("Oʻquvchi shu sinfda topilmadi");
   }
 

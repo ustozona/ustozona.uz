@@ -4,7 +4,9 @@ import { db } from "@/server/db/client";
 import {
   activitySets,
   assignments,
+  classTeachers,
   classes,
+  enrollments,
   grades,
   students,
   topics,
@@ -15,6 +17,7 @@ import {
   type TopicRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { requireWorkspace, visibleClassIds, visibleStudentIds } from "@/server/workspace";
 import { parseClassName } from "@/lib/class-naming";
 import type {
   Assignment,
@@ -135,10 +138,24 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
 
-  const [classRows, studentRows, topicRows, assignmentRows, gradeRows] =
+  const myClassIds = await visibleClassIds("data");
+
+  const [classRows, rosterRows, topicRows, assignmentRows, gradeRows] =
     await Promise.all([
-      db.select().from(classes).where(eq(classes.teacherId, tid)).orderBy(asc(classes.sortOrder), asc(classes.createdAt)),
-      db.select().from(students).where(eq(students.teacherId, tid)).orderBy(asc(students.sortOrder), asc(students.createdAt)),
+      myClassIds.length
+        ? db.select().from(classes).where(inArray(classes.id, myClassIds)).orderBy(asc(classes.sortOrder), asc(classes.createdAt))
+        : Promise.resolve([]),
+      // Bola endi sinfga YOZILISH orqali bogʻlanadi va bir nechta guruhda
+      // boʻlishi mumkin — shuning uchun bir xil `student` bir nechta
+      // ClassData ichida chiqishi normal.
+      myClassIds.length
+        ? db
+            .select({ classId: enrollments.classId, student: students })
+            .from(enrollments)
+            .innerJoin(students, eq(students.id, enrollments.studentId))
+            .where(inArray(enrollments.classId, myClassIds))
+            .orderBy(asc(enrollments.sortOrder), asc(students.createdAt))
+        : Promise.resolve([]),
       db.select().from(topics).where(eq(topics.teacherId, tid)).orderBy(asc(topics.sortOrder), asc(topics.createdAt)),
       db.select().from(assignments).where(eq(assignments.teacherId, tid)).orderBy(asc(assignments.sortOrder), asc(assignments.createdAt)),
       db.select().from(grades).where(eq(grades.teacherId, tid)),
@@ -148,7 +165,7 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
   for (const c of classRows) {
     map[c.id] = { info: rowToInfo(c), students: [], topics: [], assignments: [], grades: [] };
   }
-  for (const s of studentRows) map[s.classId]?.students.push(rowToStudent(s));
+  for (const r of rosterRows) map[r.classId]?.students.push(rowToStudent(r.student));
   for (const t of topicRows) map[t.classId]?.topics.push(rowToTopic(t));
 
   const classByAssignment = new Map<string, string>();
@@ -165,13 +182,11 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
 
 /* ── Yozish: batch'ni qoʻllash ───────────────────────────────────────── */
 
+/** MUALLIFLIK boʻyicha qamrov — `topics`/`assignments`/`activitySets`
+    uchun `teacherId` "kim yaratgan" degani va shundayligicha qoladi
+    (docs/ish-maydoni-arxitektura.md §3.2). */
 async function ownedIds(
-  table:
-    | typeof classes
-    | typeof students
-    | typeof topics
-    | typeof assignments
-    | typeof activitySets,
+  table: typeof topics | typeof assignments | typeof activitySets,
   tid: string
 ): Promise<Set<string>> {
   const rows = await db.select({ id: table.id }).from(table).where(eq(table.teacherId, tid));
@@ -180,6 +195,7 @@ async function ownedIds(
 
 export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   const teacher = await requireTeacher();
+  const ctx = await requireWorkspace();
   const tid = teacher.id;
   const now = new Date();
 
@@ -190,7 +206,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
       .values(
         part.map((c) => ({
           id: c.id,
-          teacherId: tid,
+          workspaceId: ctx.workspaceId,
           name: c.name,
           color: c.color ?? null,
           time: c.time ?? null,
@@ -220,12 +236,19 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           archivedAt: sql`excluded.archived_at`,
           updatedAt: now,
         },
-        setWhere: eq(classes.teacherId, tid),
+        setWhere: eq(classes.workspaceId, ctx.workspaceId),
       });
+
+    // Yaratuvchi darsni oʻtadi — busiz u oʻzi yaratgan sinfni koʻrmay
+    // qolardi (koʻrinuvchanlik `class_teachers` ga tayanadi).
+    await db
+      .insert(classTeachers)
+      .values(part.map((c) => ({ classId: c.id, teacherId: tid })))
+      .onConflictDoNothing();
   }
 
   /* 2. Bola-qatorlar faqat oʻz sinf/toifa/id'lariga yozilsin. */
-  const ownClasses = await ownedIds(classes, tid);
+  const ownClasses = new Set(await visibleClassIds("data"));
 
   const studentUpserts = batch.studentsUpsert.filter((s) => ownClasses.has(s.classId));
   for (const part of chunks(studentUpserts)) {
@@ -234,8 +257,7 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
       .values(
         part.map((s) => ({
           id: s.id,
-          teacherId: tid,
-          classId: s.classId,
+          workspaceId: ctx.workspaceId,
           name: s.name,
           initials: s.initials,
           status: s.status ?? "active",
@@ -244,13 +266,11 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           parentName: s.parentName ?? null,
           parentPhone: s.parentPhone ?? null,
           studentPhone: s.studentPhone ?? null,
-          sortOrder: s.sortOrder,
         }))
       )
       .onConflictDoUpdate({
         target: students.id,
         set: {
-          classId: sql`excluded.class_id`,
           name: sql`excluded.name`,
           initials: sql`excluded.initials`,
           status: sql`excluded.status`,
@@ -259,10 +279,21 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           parentName: sql`excluded.parent_name`,
           parentPhone: sql`excluded.parent_phone`,
           studentPhone: sql`excluded.student_phone`,
-          sortOrder: sql`excluded.sort_order`,
           updatedAt: now,
         },
-        setWhere: eq(students.teacherId, tid),
+        setWhere: eq(students.workspaceId, ctx.workspaceId),
+      });
+
+    // Sinfga bogʻlanish endi YOZILISH orqali. `sortOrder` shu yerda,
+    // chunki bola ikki guruhda turlicha tartibda turishi mumkin.
+    await db
+      .insert(enrollments)
+      .values(
+        part.map((s) => ({ classId: s.classId, studentId: s.id, sortOrder: s.sortOrder }))
+      )
+      .onConflictDoUpdate({
+        target: [enrollments.classId, enrollments.studentId],
+        set: { sortOrder: sql`excluded.sort_order` },
       });
   }
 
@@ -354,11 +385,12 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
       });
   }
 
-  /* 4. Baholar — oʻquvchi ham, topshiriq ham oʻzimizniki boʻlsin. */
-  const [ownStudents, ownAssignments] = await Promise.all([
-    ownedIds(students, tid),
+  /* 4. Baholar — oʻquvchi qamrovda, topshiriq esa oʻzimiz yaratganidan. */
+  const [studentIds, ownAssignments] = await Promise.all([
+    visibleStudentIds("data"),
     ownedIds(assignments, tid),
   ]);
+  const ownStudents = new Set(studentIds);
   const gradeUpserts = batch.gradesUpsert.filter(
     (g) => ownStudents.has(g.studentId) && ownAssignments.has(g.assignmentId)
   );
@@ -413,9 +445,11 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   for (const part of chunks(batch.studentsDelete)) {
     await db
       .delete(students)
-      .where(and(eq(students.teacherId, tid), inArray(students.id, part)));
+      .where(and(eq(students.workspaceId, ctx.workspaceId), inArray(students.id, part)));
   }
   for (const part of chunks(batch.classesDelete)) {
-    await db.delete(classes).where(and(eq(classes.teacherId, tid), inArray(classes.id, part)));
+    await db
+      .delete(classes)
+      .where(and(eq(classes.workspaceId, ctx.workspaceId), inArray(classes.id, part)));
   }
 }

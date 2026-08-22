@@ -11,6 +11,7 @@ import {
   type AttendanceStatusRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { visibleClassIds, visibleStudentIds } from "@/server/workspace";
 import {
   BUILTIN_STATUSES,
   normalizeScoreImpact,
@@ -144,13 +145,13 @@ export async function applyAttendanceBatch(batch: AttendanceBatch): Promise<void
       );
   }
 
-  /* 2. Yozuvlar — sinf va oʻquvchi oʻzimizniki boʻlsin (PK'da teacherId yoʻq). */
-  const [classRows, studentRows] = await Promise.all([
-    db.select({ id: classes.id }).from(classes).where(eq(classes.teacherId, tid)),
-    db.select({ id: students.id }).from(students).where(eq(students.teacherId, tid)),
+  /* 2. Yozuvlar — dars va oʻquvchi qamrovda boʻlsin (PK'da teacherId yoʻq). */
+  const [classIds, studentIds] = await Promise.all([
+    visibleClassIds("data"),
+    visibleStudentIds("data"),
   ]);
-  const ownClasses = new Set(classRows.map((r) => r.id));
-  const ownStudents = new Set(studentRows.map((r) => r.id));
+  const ownClasses = new Set(classIds);
+  const ownStudents = new Set(studentIds);
 
   const recordUpserts = batch.recordsUpsert.filter(
     (r) => ownClasses.has(r.classId) && ownStudents.has(r.studentId)

@@ -3,6 +3,7 @@ import { eq, inArray } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { activitySets, classes, lessons, quizSessions, units } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { visibleClassIds } from "@/server/workspace";
 import type { LibraryItem } from "@/lib/library-types";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -32,8 +33,11 @@ export async function getLibrary(): Promise<LibraryItem[]> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
 
+  const myClassIds = await visibleClassIds("data");
   const [classRows, setRows, lessonRows, unitRows] = await Promise.all([
-    db.select().from(classes).where(eq(classes.teacherId, tid)),
+    myClassIds.length
+      ? db.select().from(classes).where(inArray(classes.id, myClassIds))
+      : Promise.resolve([]),
     db.select().from(activitySets).where(eq(activitySets.teacherId, tid)),
     db.select().from(lessons).where(eq(lessons.teacherId, tid)),
     db.select().from(units).where(eq(units.teacherId, tid)),

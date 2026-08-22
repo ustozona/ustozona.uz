@@ -4,6 +4,7 @@
 > **Maqsad:** nima bor, nima qoʻshamiz, qaysi tartibda — shularni kelishib olish.
 > **Sana:** 2026-yil 14-iyul (asoschining shu kungi qarorlari kiritilgan).
 > Texnik tafsilotlar alohida faylda: [roadmap-texnik.md](./roadmap-texnik.md) (oʻqish shart emas).
+> **Yangilanish 22-avgust:** 4.1 holati tekshirildi (pastga qarang) va 6-boʻlim — yangilangan ustuvorlik roʻyxati — qoʻshildi. To‘rtinchi oʻlchov kiritildi: 🧲 jalb qilish (funksiya yangi oʻqituvchini roʻyxatdan oʻtishga undaydimi).
 
 **Baholar qanday oʻqiladi:**
 
@@ -151,10 +152,12 @@ Qarorlar (nima qachon qilinadi) — 4-boʻlimda. Bu yerda hamma kandidat bir joy
 | # | Ish | Izoh |
 |---|---|---|
 | 1 | **Prod-tayyorlik** | 🟢 BAJARILDI (14-iyul): www.ustozona.uz ulangan va ishlayapti, demo seed yuritildi, login + Google orqali kirish tekshirildi. Qoldi: telefon-qurilmada bir marta sinash |
-| 2 | **Sertifikatlash** | Davomat+baho+xulqdan avtomatik sertifikat, oʻqituvchi print qiladi |
-| 3 | **Ommaviy dars siljitish** | Kuzgi bayramlargacha tayyor boʻlsin |
-| 4 | **OCR blanka — MVP boshlanadi** | Eng katta ish: blanka generatori + skanerning birinchi ishlaydigan versiyasi. ⚠️ Texnik risk yuqori — 15-avgustga MVP, sayqal sentabrga oʻtishi mumkin. Marketing kampaniyasi shu bilan bogʻlanadi |
+| 2 | **Sertifikatlash** | ⚠️ **22-avgust tekshiruvi: kod topilmadi — hali boshlanmagan** |
+| 3 | **Ommaviy dars siljitish** | ⚠️ **22-avgust tekshiruvi: izi koʻrinmaydi — hali boshlanmagan** |
+| 4 | **OCR blanka — MVP boshlanadi** | 🟢 BAJARILDI — skaner oqimi kod bazasida bor (`src/app/baholash/_components/CardScanner.tsx`, `ScanPanel.tsx` va h.k.) |
 | 5 | **AI dars rejasi — narx/yoʻl tahlili** | Qurish emas: narxlar, turli yoʻllar (oʻz kaliti / server orqali / limitli bepul) hujjati — keyin qaror |
+
+> ⚠️ **22-avgust holati:** 15-avgust muddati oʻtib ketgan, 5 tadan 2 tasi (Sertifikatlash, Ommaviy dars siljitish) hali qoʻlga olinmagan. Shu orada Materiallar kutubxonasi, Test quruvchi, Topshiriq kontenti va Doska kabi **rejada boʻlmagan** ishlar qoʻshilgan (oxirgi 30 commit). Bu diqqat sekin-asta yon tomonga siljigani belgisi — 6-boʻlimga qarang.
 
 ### 4.2. 🌅 Avgust oxiri – sentabr (birinchi navbatda davom etadi)
 
@@ -218,3 +221,161 @@ Qarorlar (nima qachon qilinadi) — 4-boʻlimda. Bu yerda hamma kandidat bir joy
 ---
 
 *Texnik asoslar, fayl-yoʻllar va har bandning "nega shuncha ish" izohi: [roadmap-texnik.md](./roadmap-texnik.md)*
+
+---
+
+## 6. Yangilangan ustuvorlik roʻyxati (2026-08-22)
+
+Oʻquv yiliga oz vaqt qoldi. Sentabrning birinchi haftasi — oʻqituvchi jurnal tizimini yiliga **bir marta** tanlaydigan yagona eshik: agar u qogʻozda boshlasa, oʻrtada Ustozonaga koʻchmaydi (30 ta oʻquvchi, ikki oylik davomat/baho qayta kiritish — hech kim buni qilmaydi). Shuning uchun ustuvorlik "qaysi funksiya yaxshi" emas, **"eshik yopilishidan oldin nima hal qiluvchi"** boʻyicha tuzildi.
+
+**Toʻrtinchi oʻlchov:** 🧲 jalb qilish — funksiya **akkauntsiz** ishlaydimi va yangi oʻqituvchini oʻz sinf roʻyxatini kiritishga undaydimi (Doskaning maqsadi — 5-boʻlim, savol 5: bepul vosita orqali yangi oʻqituvchi jalb qilish).
+
+### 6.0. ⚠️ Real muddat — Maktab admin-lite (bitta haftadan keyin)
+
+Real maktab bir haftadan keyin koʻp-oʻqituvchili tuzilmani talab qiladi — bu **tashqi qattiq muddat**, ichki taqqoslash (6.5) yoki "yangi funksiya yoʻq" qoidasidan (6.1) ustun turadi. Sabab: 6.1 ning maqsadi diqqatni tarqatmaslik edi, lekin bu yerda haqiqiy foydalanuvchi kutyapti — bajarilmasa yoʻqotiladigan narsa "birinchi hafta yoʻli sifat"idan kattaroq.
+
+**Amaliy xulosa:** Maktab admin-lite 6.1 dan **oldin** boshlanadi, 11 kunlik "faqat sinov" oynasi bilan parallel. 6.5 taqqoslashida bu band 2-tierda chiqqan edi (Taqdimot rejimidan past) — bu tashqi muddatga daxlsiz, chunki taqqoslash "qaysi biri koʻproq foyda keltiradi" degan savolga javob bergan, "kimga qachon vaʼda berilgan" ga emas.
+
+#### 6.0.1. Qamrov — "toʻliq maktab" EMAS
+
+Asoschi aniqlashtirdi (22-avgust): hozir toʻliq maktab boshqaruvi kerak emas. Kerak boʻlgani ikkita:
+
+1. Bitta maktabda **2+ oʻqituvchi** ishlay olsin
+2. **Bitta oʻquvchi ustida bir nechta oʻqituvchi** ishlay olsin (matematika va ingliz tili oʻqituvchisi bir sinfni oʻqitadi) — va bir bola ikki marta kiritilib, ikki xil bola boʻlib qolmasin
+
+#### 6.0.2. Texnik yoʻl — `students` jadvaliga TEGILMAYDI
+
+⚠️ Boshida bu "xavfsizlik qatlamini qayta yozish" deb baholangan edi — **notoʻgʻri baho**. `src/server/db/schema/identity.ts` izohi koʻrsatadiki, arxitektura buni allaqachon nazarda tutgan:
+
+> *«bitta bola → N oʻqituvchi qatori (3 oʻqituvchi oʻqitsa — 3 ta alohida `students` qatori)»*
+
+Yaʼni "har oʻqituvchiga alohida `students` qatori" — bu **ataylab tanlangan model**, kamchilik emas. `student_links` (Shogird qatlami) ham shu asosda qurilgan.
+
+**Yetishmayotgan yagona narsa:** maktab darajasidagi *shaxs* yozuvi — "bu N ta qator aslida bitta bola" degan bogʻlovchi.
+
+```
+Maktab: 24-maktab
+   └── Shaxs: Bobur Toshmatov (tugʻilgan sana, ota-ona telefoni)
+         ├── Aziza opaning students qatori  → matematika baholari
+         └── Laylo opaning students qatori  → ingliz tili baholari
+```
+
+Buning amaliy foydasi: `students` jadvali va unga bogʻlangan **12 ta jadval** (grades, attendance, behavior, student_notes, assess, relations…) hamda `teacherId` ishlatadigan **21 ta DAL fayli** oʻz holicha qoladi. Migratsiya = bitta yangi jadval + `students` ga bitta nullable FK.
+
+#### 6.0.3. Koʻrinuvchanlik qoidasi — jahon amaliyoti asosida
+
+Izlanish natijasi (22-avgust): Blackbaud, PowerSchool, Google Classroom, Moodle — hammasida standart holat **oʻqituvchi boshqa sinf/fandagi bahoni koʻrmaydi**. FERPA doirasida sabab huquqiy: kirish faqat "qonuniy taʼlimiy manfaat" boʻlganda, va oʻzi oʻqitmaydigan bola uchun bunday manfaat shubhali deb qaraladi. Davomat esa kengroq koʻrinadi — u maktab darajasidagi fakt.
+
+| Kim | Nima koʻradi |
+|---|---|
+| Fan oʻqituvchisi | Faqat oʻz fanidagi baho/xulq. Umumiy: ism, tugʻilgan sana, ota-ona telefoni |
+| Hamma oʻqituvchi | Davomat — maktab fakti, yashirilmaydi |
+| **Sinf rahbari** | Oʻz sinfi bolalarining hamma fandagi natijasi — ⏸ **1-bosqichga KIRMAYDI** |
+
+**Sinf rahbari** jahon tizimlaridagi *advisor* rolining mahalliy muqobili va haqiqiy ehtiyoj (tabel, ota-ona bilan muloqot). Lekin u tizimga **rol** tushunchasini olib kiradi (kim rahbar, kim tayinlaydi) — asoschi qarori bilan **keyingi bosqichga** qoldirildi, muddatni cho‘zmaslik uchun.
+
+#### 6.0.4. Qaydlar (student_notes) — UMUMIY, baholardan farqli
+
+Baho yopiq (6.0.3), lekin **qayd ochiq** — asoschi qarori 22-avgust. Sabab pedagogik: *«Bobur oxirgi paytda charchagan koʻrinadi»* aynan boshqa oʻqituvchilarga kerak boʻlgan kuzatuv. Qayd baho emas — u **birgalikda bolani tushunish** vositasi.
+
+Mavjud sxema buni allaqachon nazarda tutgan (uchta dalil):
+- `visibility` qiymati **`"teachers"`** — koʻplikda, izohi "faqat oʻqituvchilar"
+- DAL har qayd bilan **muallif ismi va avatarini** oladi (`authorName`, `authorAvatarUrl`) — oʻz qaydini koʻrsatish uchun bu kerak emas edi
+- Tahrir himoyasi alohida: `setWhere: teacherId` — yaʼni **yozish** faqat muallifga, **oʻqish** boshqa masala
+
+Yagona toʻsiq: `src/server/dal/student-notes.ts` oʻqish soʻrovida ham `teacherId` filtri turibdi (32-qator).
+
+| Amal | Kim |
+|---|---|
+| Yozish | Bolani oʻqitadigan har bir oʻqituvchi |
+| Oʻqish | Hammasi — muallif ismi bilan koʻrsatiladi |
+| Tahrirlash / oʻchirish | Faqat muallif |
+
+**`visibility` qiymatlari oʻzgaradi:**
+- ➕ `private` — faqat muallif koʻradi (shaxsiy kuzatuv uchun)
+- ✅ `teachers` — standart holat, hamkasblar koʻradi
+- ➖ `guardians` — **olib tashlanadi**, ota-ona qaydlarni koʻrmaydi (asoschi qarori). Hozir bu qiymat faqat eʼlon qilingan, hech qayerda ishlatilmagan — oʻzgartirish toza
+
+⚠️ **UI talabi:** qayd yozish oynasida *«Bu qaydni boshqa oʻqituvchilar ham koʻradi»* deb **ochiq yozilishi shart**. Aks holda oʻqituvchi bilmay yozadi va ishonch buziladi.
+
+#### 6.0.5. ⚠️ Kelajak uchun: koʻrinuvchanlik QATTIQ YOZILMASIN
+
+Asoschi ogohlantirdi (22-avgust): real oʻqituvchilar kelajakda *«bir-birimizning sinflarimizni, oʻquvchilarni va ularning maʼlumotlarini koʻra olishimiz kerak»* deb soʻrashi mumkin.
+
+Hozirgi tuzilishda bu **qimmatga tushadi**: `teacherId` filtri **21 ta DAL faylida** tarqoq holda yozilgan. Koʻrinuvchanlikni kengaytirish kerak boʻlsa, 21 faylning hammasi qayta ochiladi.
+
+**Qoida (yangi kod uchun majburiy):** "kimning maʼlumotini koʻra olaman" degan savol **bitta joyda** hal qilinsin — soʻrovlarda `eq(teacherId, me)` qattiq yozilmasin, balki qamrovni qaytaruvchi yagona funksiyadan oʻtsin. Bugun u "faqat mening oʻquvchilarim" qaytaradi; ertaga maktab sozlamasiga qarab kengayadi — va oʻzgarish **bitta joyda** boʻladi.
+
+⚠️ Mavjud 21 faylni **hozir refaktor qilinmaydi** — bu aynan 6.0.2 da qochilgan ish. Qoida faqat **yangi** kodga (maktab/shaxs qatlami, qaydlar) qoʻllanadi, toki chuqurroq qazilmasin.
+
+### 6.1. Hozir → 1-sentabr (11 kun) — yangi funksiya YOʻQ
+
+Faqat "birinchi hafta yoʻli"ni sinash va tuzatish: roʻyxatdan oʻtish → sinf yaratish → roʻyxat import → jadval → birinchi davomat, kompyuterda **va** telefonda. `import-roster.ts` dagi familiya/ism almashinish xatosi 10-avgustda tuzatilgan — qayta sinaladi. Bajarilmagan 15-avgust vaʼdalari (Sertifikatlash, Ommaviy dars siljitish) shu oynada emas, 6.2 ga suriladi.
+
+### 6.2. Sentabr — kuzatuv + qarzlarni yopish
+
+| Ish | Sabab |
+|---|---|
+| Haqiqiy oʻqituvchilarni kuzatish | Nima soʻrashyapti — keyingi ustuvorlikni shu belgilaydi |
+| Sertifikatlash | 15-avgust vaʼdasi, ⭐⭐⭐ + 💰💰, ish hajmi Oʻrtacha |
+| Ommaviy dars siljitish | 15-avgust vaʼdasi, ⭐⭐⭐, ish hajmi Oʻrtacha |
+
+### 6.3. Oktabr–noyabr — Doska (jalb qilish vositasi sifatida)
+
+Doska bepul, akkauntsiz vosita sifatida qurilsa, undan keladigan oqim odatda 2–4 oyda yigʻiladi (qidiruv, Telegram, hamkasbdan-hamkasbga) — demak 1-sentabrda chiqarilsa, oqim aynan jurnal eshigi yopilgandan keyin, noyabr-dekabrda kelib qoladi. Shuning uchun Doska sentabrga emas, **kuzning oʻrtasiga** moʻljallanadi, nishoni esa yilning ikkinchi kichik eshigi — yanvar (2-yarim yillik).
+
+Doskaning oʻzi ham ikki tabaqaga boʻlinadi — faqat 🧲 ustuni farq qiladi:
+
+| Vidjet | 🧲 jalb qilish | Sabab |
+|---|---|---|
+| **Tasodifiy ism** (kim javob beradi) | ✅ Ha | Sinf roʻyxatini talab qiladi → roʻyxatdan oʻtishga undaydi. Bizda davomat+xulq bilan ishlaydi, raqobatchida shunchaki rasm |
+| **Guruh tuzuvchi** | ✅ Ha | Xuddi shu sabab; kuchli-kuchsizni aralashtira oladi (xulq balli asosida) |
+| Taymer (koʻrinishlar), soat, geometrik shakllar | ❌ Yoʻq | Sinfni bilishni talab qilmaydi — yil boʻyi ishlatiladi, lekin hech qachon roʻyxatdan oʻtishga olib kelmaydi |
+
+**Xulosa:** oktabr-noyabrda **faqat** jalb qiluvchi ikkita vidjet (+ mehmon rejimi, + oʻlchash: "Doskadan kelgan N kishidan M tasi roʻyxatdan oʻtdi") quriladi. Taymer variantlari va shakllar — "hayratlantirish" qatlami, keyinroq, jalb qilish ishlagani tasdiqlangandan soʻng.
+
+### 6.4. Dekabr va undan keyin
+
+- Topilish yoʻli (SEO, Telegram tarqalishi) — Doskaning oʻzidan ham muhim, aks holda magnit yertoʻlada qoladi
+- Yanvar — ikkinchi eshik, kutilayotgan oqim shu yerga tushadi
+- Taymer koʻrinishlari, shakllar kutubxonasi, qolgan Doska vidjetlari
+
+### 6.5. Qiyosiy taqqoslash orqali chiqqan tartib (2026-08-22, asoschi bilan)
+
+Yuqoridagi 6.1–6.4 "qachon" ni belgilaydi. Bu boʻlim — 6.2/6.3 doirasidagi barcha nomzodlarni bir-biriga qarshi qoʻyib chiqqan **ustuvorlik tartibi** (jurnal-ilovadagi Qiyosiy baholash mexanizmi bilan bir xil usul: yakka baho emas, juft-jufti bilan "qaysi biri muhimroq"). 41 nomzod, 30 taqqoslash, turnir shaklida.
+
+**1-tier (final uchlik, tartib bilan):**
+1. Taqdimot/lecture rejimi — darsni slaydda olib borish, oraliq mini-viktorina
+2. Maktab admin-lite — bir maktabda koʻp oʻqituvchi + admin
+3. Jonli viktorina — Kahoot uslubi, PIN bilan javob
+
+**2-tier:**
+- PDF tabel — ⚠️ **doirasi toraytirildi: faqat yillik**, choraklik emas
+- Virtual doska (toʻliq)
+- Doska: jalb qiluvchi vidjetlar (tasodifiy ism + guruh tuzuvchi — 6.3 ga qarang)
+
+**3-tier:**
+- Ruletka (tasodifiy tanlov — Doskadagi jalb vidjetidan alohida, ruletka umumiy)
+- Sinf ekrani vositalari (Doskaning yengil qismi)
+- Rubrikalar
+- QR-kartali soʻrov
+- Doska: hayrat vidjetlari (taymer koʻrinishlari, geometrik shakllar — 6.3 da "keyinroq" deb belgilangani tasdiqlandi)
+
+**4-tier:**
+- Ommaviy dars siljitish (⚠️ 15-avgust vaʼdasi, hali qilinmagan — past chiqqani bilan 6.2 da alohida sabab bilan saqlanmoqda)
+- Oʻquvchi teglari · Kichik guruhlar · Topshiriq → toʻliq hujjat · Ishonchlilik statistikasi · PDF generatsiya (renderer) · Toʻliq offline rejim
+- Blog/Forum — ⚠️ **allaqachon qurilgan, faqat UI sayqal kerak** — ustuvorlik past, chunki ish kam qoldi
+
+**5-tier (past chiqdi, lekin oʻchirilmagan):**
+- Sertifikatlash (⚠️ 15-avgust vaʼdasi, hali qilinmagan)
+- Ota-ona mini-ilova · Email/SMS xabarnoma · Raqamli ruxsatnoma · Eng past bahoni tashlash · Sabab turlari · Boshqaruv paneli · Audit jurnali · Kechikish daqiqasi · Avto-ogohlantirishlar · Koʻp yil jurnal filtri · Mobil moslashuv · LMS integratsiya · Planner DnD migratsiyasi
+
+**Roʻyxatdan butunlay olib tashlandi (asoschi qarori, 22-avgust):**
+- **Qiyosiy baholash — chuqurlashtirish** — mahsulot roadmapidan chiqdi, shaxsiy loyiha sifatida davom etadi
+- **Bashoratli tahlil** — kerak emas
+- **Formulalar muharriri** — allaqachon rad etilgan edi (jurnal modeli ataylab sodda), taqqoslash bu qarorni oʻzgartirmadi
+
+**Alohida holat, taqqoslashdan tashqarida:**
+- **AI dars rejasi** — kodi tayyor, ishga tushmagan; toʻsiq funksiya emas, **narx qarori** (5-boʻlim, 1-savol)
+
+⚠️ **Bu tartib xom taqqoslash natijasi — ish hajmi va 15-avgust qarzlari bilan solishtirib oʻqilsin.** Masalan Sertifikatlash 5-tierga tushgan, lekin u allaqachon berilgan vaʼda; shu sabab 6.2 uni alohida saqlab qoldi.
