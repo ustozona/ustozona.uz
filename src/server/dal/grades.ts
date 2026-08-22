@@ -199,9 +199,16 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   const tid = teacher.id;
   const now = new Date();
 
-  /* 1. Sinflar (bolalarning FK nishoni — birinchi). */
+  /* 1. Sinflar (bolalarning FK nishoni — birinchi).
+
+     ⚠️ Sinf va uni KIM OʻTISHI bitta tranzaksiyada: koʻrinuvchanlik
+     `class_teachers` ga tayanadi, demak biri yozilib ikkinchisi
+     yozilmasa oʻqituvchi oʻzi yaratgan sinfni koʻrmay qoladi — va uni
+     interfeys orqali tuzatib ham boʻlmaydi (sinf koʻrinmagach unga
+     oʻqituvchi biriktirish tugmasi ham yoʻq). */
   for (const part of chunks(batch.classesUpsert)) {
-    await db
+    await db.transaction(async (tx) => {
+    await tx
       .insert(classes)
       .values(
         part.map((c) => ({
@@ -239,12 +246,11 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
         setWhere: eq(classes.workspaceId, ctx.workspaceId),
       });
 
-    // Yaratuvchi darsni oʻtadi — busiz u oʻzi yaratgan sinfni koʻrmay
-    // qolardi (koʻrinuvchanlik `class_teachers` ga tayanadi).
-    await db
-      .insert(classTeachers)
-      .values(part.map((c) => ({ classId: c.id, teacherId: tid })))
-      .onConflictDoNothing();
+      await tx
+        .insert(classTeachers)
+        .values(part.map((c) => ({ classId: c.id, teacherId: tid })))
+        .onConflictDoNothing();
+    });
   }
 
   /* 2. Bola-qatorlar faqat oʻz sinf/toifa/id'lariga yozilsin. */
@@ -252,7 +258,10 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
 
   const studentUpserts = batch.studentsUpsert.filter((s) => ownClasses.has(s.classId));
   for (const part of chunks(studentUpserts)) {
-    await db
+    // Bola va uning sinfga yozilishi — bitta tranzaksiyada (sinf holati
+    // bilan bir xil sabab: yarim yozuv qolmasin).
+    await db.transaction(async (tx) => {
+    await tx
       .insert(students)
       .values(
         part.map((s) => ({
@@ -284,17 +293,18 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
         setWhere: eq(students.workspaceId, ctx.workspaceId),
       });
 
-    // Sinfga bogʻlanish endi YOZILISH orqali. `sortOrder` shu yerda,
-    // chunki bola ikki guruhda turlicha tartibda turishi mumkin.
-    await db
-      .insert(enrollments)
-      .values(
-        part.map((s) => ({ classId: s.classId, studentId: s.id, sortOrder: s.sortOrder }))
-      )
-      .onConflictDoUpdate({
-        target: [enrollments.classId, enrollments.studentId],
-        set: { sortOrder: sql`excluded.sort_order` },
-      });
+      // Sinfga bogʻlanish endi YOZILISH orqali. `sortOrder` shu yerda,
+      // chunki bola ikki guruhda turlicha tartibda turishi mumkin.
+      await tx
+        .insert(enrollments)
+        .values(
+          part.map((s) => ({ classId: s.classId, studentId: s.id, sortOrder: s.sortOrder }))
+        )
+        .onConflictDoUpdate({
+          target: [enrollments.classId, enrollments.studentId],
+          set: { sortOrder: sql`excluded.sort_order` },
+        });
+    });
   }
 
   const topicUpserts = batch.topicsUpsert.filter((t) => ownClasses.has(t.classId));

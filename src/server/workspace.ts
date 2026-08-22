@@ -76,12 +76,29 @@ export const requireWorkspace = cache(async (): Promise<WorkspaceContext> => {
   return { teacherId: teacher.id, workspaceId: active.workspaceId, role: active.role };
 });
 
+/**
+ * Shaxsiy maydon yaratadi.
+ *
+ * ⚠️ id ATAYLAB deterministik (`ws-<teacherId>`), `randomUUID()` emas.
+ * Sabab — poyga holati: ikki parallel soʻrov ham "aʼzolik yoʻq" deb
+ * topsa, tasodifiy id bilan IKKI maydon yaratilardi va ikkala aʼzolik
+ * ham yozilardi (PK (workspaceId, teacherId) turlicha boʻlgani uchun
+ * konflikt boʻlmasdi) — oʻqituvchi ikkita shaxsiy maydonga ega boʻlib
+ * qolardi. Deterministik id bilan `onConflictDoNothing` haqiqatan
+ * ishlaydi.
+ *
+ * Xuddi shu qoida 0035 migratsiyasida ham ishlatilgan — ikkalasi bir
+ * xil id beradi, demak migratsiya va ilova bir-birini takrorlamaydi.
+ */
 async function createPersonalWorkspace(
   teacherId: string,
   teacherName: string
 ): Promise<WorkspaceContext> {
-  const id = crypto.randomUUID();
-  await db.insert(workspaces).values({ id, name: teacherName, kind: "personal" });
+  const id = `ws-${teacherId}`;
+  await db
+    .insert(workspaces)
+    .values({ id, name: teacherName, kind: "personal" })
+    .onConflictDoNothing();
   await db
     .insert(workspaceMembers)
     .values({ workspaceId: id, teacherId, role: "owner" })
@@ -90,10 +107,17 @@ async function createPersonalWorkspace(
   return { teacherId, workspaceId: id, role: "owner" };
 }
 
-/** Oʻqituvchi aʼzo boʻlgan barcha maydonlar (almashtirgich uchun). */
-export async function listMyWorkspaces() {
+/** Oʻqituvchi aʼzo boʻlgan barcha maydonlar (almashtirgich uchun).
+
+    `isActive` `requireWorkspace()` dan olinadi, `teachers.activeWorkspaceId`
+    dan EMAS: eskirgan tanlov (aʼzolik bekor qilingan maydon) boʻlsa
+    ikkalasi farq qiladi va haqiqiy qamrov birinchisiniki. */
+export async function listMyWorkspaces(): Promise<
+  { id: string; name: string; kind: string; role: string; isActive: boolean }[]
+> {
   const teacher = await requireTeacher();
-  return db
+  const ctx = await requireWorkspace();
+  const rows = await db
     .select({
       id: workspaces.id,
       name: workspaces.name,
@@ -104,6 +128,7 @@ export async function listMyWorkspaces() {
     .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
     .where(eq(workspaceMembers.teacherId, teacher.id))
     .orderBy(workspaces.createdAt);
+  return rows.map((r) => ({ ...r, isActive: r.id === ctx.workspaceId }));
 }
 
 /**

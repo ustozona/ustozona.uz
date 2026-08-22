@@ -25,6 +25,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ScrollFade } from "@/components/ui/scroll-fade";
 import { useChangelogUnseenCount } from "@/hooks/useChangelogSeen";
 import { BrandWordmark } from "@/assets/logo/brand-wordmark";
+import { WorkspaceSwitcher, type WorkspaceOption } from "@/components/workspace-switcher";
 import { BrandShield } from "@/assets/logo/brand-shield";
 import { cn } from "@/lib/utils";
 import {
@@ -249,7 +250,7 @@ function SidebarBrandHeader() {
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({ workspaces = [] }: { workspaces?: WorkspaceOption[] }) {
   const t = useTranslations("AppSidebar");
   const changelogCount = useChangelogUnseenCount();
   const badgeCounts: Record<NonNullable<NavItem["badgeKey"]>, number> = {
@@ -265,6 +266,9 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" data-tour="sidebar-nav">
       <SidebarHeader>
         <SidebarBrandHeader />
+        {/* Bitta maydon boʻlsa oʻzi null qaytaradi — yakka oʻqituvchi
+            "ish maydoni" tushunchasini umuman koʻrmaydi. */}
+        <WorkspaceSwitcher workspaces={workspaces} />
       </SidebarHeader>
 
       <div className="relative flex min-h-0 flex-1 flex-col">
