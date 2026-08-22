@@ -1,7 +1,7 @@
 import "server-only";
 import { and, count, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { teachers, workspaceMembers, workspaces } from "@/server/db/schema";
+import { classes, students, teachers, workspaceMembers, workspaces } from "@/server/db/schema";
 import { requireAdmin, requireSchoolAdmin } from "@/server/session";
 import { writeAuditLog } from "./audit";
 
@@ -153,39 +153,75 @@ export async function deleteSchool(schoolId: string): Promise<void> {
   });
 }
 
-/** Oʻqituvchini maktab maydoniga qoʻshadi yoki undan chiqaradi.
-
-    `schoolId = null` — oʻqituvchini BARCHA maktab maydonlaridan chiqaradi
-    (shaxsiy maydoni tegilmaydi, aks holda oʻz maʼlumotini yoʻqotardi). */
+/**
+ * Oʻqituvchini maktabga biriktiradi yoki undan chiqaradi.
+ *
+ * ⭐ ISHI HAM KOʻCHADI. Asoschi qarori (2026-08-22): oʻqituvchi bir
+ * vaqtda BITTA joyda ishlaydi. Ilgari maktabga qoʻshilganda unga boʻsh
+ * ikkinchi maydon paydo boʻlardi — oʻqituvchi maktabga oʻtib, ilovani
+ * BOʻSH koʻrardi va nima boʻlganini tushunmasdi.
+ *
+ * Endi: 30-maktabga qoʻshilsangiz, sinflaringiz ham 30-maktabga koʻchadi.
+ * Shundan keyin hamkasblar bir xil oʻquvchilar ustida ishlay oladi —
+ * butun maqsad shu.
+ *
+ * `schoolId = null` — maktabdan chiqarish. ⚠️ Sinf va oʻquvchilar
+ * MAKTABDA QOLADI (maktab oʻz yozuvlarini saqlaydi), oʻqituvchi esa
+ * boʻsh shaxsiy maydoniga qaytadi.
+ *
+ * ⚠️ Koʻp-maydonlilik (maktab + repetitorlik) sxemada saqlangan, lekin
+ * hozircha UI'dan berilmaydi — docs/ish-maydoni-arxitektura.md §4.2.
+ */
 export async function assignTeacherToSchool(
   teacherId: string,
   schoolId: string | null,
 ): Promise<void> {
   const { actor } = await requireAdmin();
 
-  const schoolMemberships = await db
-    .select({ workspaceId: workspaceMembers.workspaceId })
-    .from(workspaceMembers)
-    .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
-    .where(and(eq(workspaceMembers.teacherId, teacherId), eq(workspaces.kind, "school")));
+  await db.transaction(async (tx) => {
+    const current = await tx
+      .select({ workspaceId: workspaceMembers.workspaceId, kind: workspaces.kind })
+      .from(workspaceMembers)
+      .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
+      .where(eq(workspaceMembers.teacherId, teacherId));
 
-  for (const m of schoolMemberships) {
-    await db
-      .delete(workspaceMembers)
-      .where(
-        and(
-          eq(workspaceMembers.teacherId, teacherId),
-          eq(workspaceMembers.workspaceId, m.workspaceId)
-        )
-      );
-  }
+    if (schoolId) {
+      // Shaxsiy maydondagi ish maktabga koʻchadi.
+      const personal = current.find((m) => m.kind === "personal");
+      if (personal && personal.workspaceId !== schoolId) {
+        await tx
+          .update(classes)
+          .set({ workspaceId: schoolId })
+          .where(eq(classes.workspaceId, personal.workspaceId));
+        await tx
+          .update(students)
+          .set({ workspaceId: schoolId })
+          .where(eq(students.workspaceId, personal.workspaceId));
+      }
+    }
 
-  if (schoolId) {
-    await db
+    // Yakka aʼzolik: eskilari olib tashlanadi.
+    await tx.delete(workspaceMembers).where(eq(workspaceMembers.teacherId, teacherId));
+
+    const target = schoolId ?? `ws-${teacherId}`;
+    if (!schoolId) {
+      // Maktabdan chiqarilganda shaxsiy maydon tiklanadi (u oʻchirilgan
+      // boʻlishi mumkin emas, lekin ehtiyot uchun idempotent).
+      const [t] = await tx.select().from(teachers).where(eq(teachers.id, teacherId));
+      await tx
+        .insert(workspaces)
+        .values({ id: target, name: t?.name ?? "Shaxsiy", kind: "personal" })
+        .onConflictDoNothing();
+    }
+    await tx
       .insert(workspaceMembers)
-      .values({ workspaceId: schoolId, teacherId, role: "teacher" })
+      .values({ workspaceId: target, teacherId, role: schoolId ? "teacher" : "owner" })
       .onConflictDoNothing();
-  }
+    await tx
+      .update(teachers)
+      .set({ activeWorkspaceId: target })
+      .where(eq(teachers.id, teacherId));
+  });
 
   const [teacher] = await db.select().from(teachers).where(eq(teachers.id, teacherId));
   await writeAuditLog(actor, {
