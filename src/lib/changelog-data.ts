@@ -32,6 +32,14 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "landing-til-tanlash",
+    date: "2026-08-24",
+    type: "yangi",
+    title: "Bosh sahifa endi 7 tilda — oʻzbekcha (lotin va kirill), qoraqalpoqcha, qirgʻizcha, qozoqcha, ruscha, inglizcha",
+    body:
+      "Ustozona bosh sahifasidagi barcha boʻlimlar tarjima qilindi va yuqori burchakka til tanlagich qoʻshildi. Oʻzbek tilining kirill yozuvi ham qoʻshildi — sozlamalarda ham, bosh sahifada ham tanlash mumkin.",
+  },
+  {
     id: "topshiriq-qoralama-royxatda",
     date: "2026-08-16",
     type: "yaxshilandi",

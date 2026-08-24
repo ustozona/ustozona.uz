@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GlowBadge } from "@/components/shadcn-space/badge/glow-badge";
@@ -9,6 +10,15 @@ import { cn } from "@/lib/utils";
 import { Check, Clock } from "lucide-react";
 import { motion } from "motion/react";
 import { CLASS_COLOR_BASE } from "@/lib/class-colors";
+
+type RawPlan = {
+  name: string;
+  status: string;
+  descp: string;
+  price: string;
+  cta: string;
+  features: string[];
+};
 
 type PricingPlan = {
   plan_name: string;
@@ -24,60 +34,10 @@ type PricingPlan = {
   plan_recommended: boolean;
 };
 
-const pricingData: PricingPlan[] = [
-  {
-    plan_name: "Maktab uchun",
-    plan_status: "Tez orada",
-    plan_live: false,
-    plan_descp:
-      "Bir maktabdagi oʻqituvchilarning birlashishi va yagona maʼmuriy oqim.",
-    plan_price: "Tez orada",
-    plan_cta: "Xabardor boʻlish",
-    plan_href: "/register",
-    plan_feature: [
-      "Metodbirlashma uchun umumiy maktab bazasi",
-      "Oʻqituvchilarni yagona guruhga taklif qilish",
-      "Ota-ona va oʻquvchi uchun Telegram mini-ilova",
-      "Maʼmuriyat uchun tezkor hisobotlar",
-    ],
-    plan_recommended: false,
-  },
-  {
-    plan_name: "Ustoz uchun",
-    plan_status: "Mavjud",
-    plan_live: true,
-    plan_descp:
-      "Kundalik ishingiz uchun toʻliq yetarli. Bank kartasi talab qilinmaydi.",
-    plan_price: "0 soʻm",
-    plan_cta: "Roʻyxatdan oʻtish",
-    plan_href: "/register",
-    plan_feature: [
-      "Elektron jurnal va 10+ shkala",
-      "Davomat — bir bosishda",
-      "Avtomatik xulq-atvor bali",
-      "Dars jadvali va rejalashtirish",
-      "Dars muharriri va PDF eksport",
-      "Cheksiz sinf va oʻquvchi",
-    ],
-    plan_recommended: true,
-  },
-  {
-    plan_name: "Pro + AI yordamchi",
-    plan_status: "Tez orada",
-    plan_live: false,
-    plan_descp:
-      "Sunʼiy intellekt va kamera orqali qogʻoz testlarni tekshirish.",
-    plan_price: "Tez orada",
-    plan_cta: "Navbatga yozilish",
-    plan_href: "/register",
-    plan_feature: [
-      "AI yordamida dars rejasi va tahlil",
-      "OCR: qogʻoz testni telefon bilan tekshirish",
-      "Kengaytirilgan oʻzlashtirish hisobotlari",
-      "Ustuvor qoʻllab-quvvatlash",
-    ],
-    plan_recommended: false,
-  },
+const PLAN_META: { live: boolean; recommended: boolean }[] = [
+  { live: false, recommended: false },
+  { live: true, recommended: true },
+  { live: false, recommended: false },
 ];
 
 // Aylanuvchi chegara ranglari — dizayn-tizimi palitrasidan (class-colors),
@@ -85,6 +45,22 @@ const pricingData: PricingPlan[] = [
 const featuredBorderGradient = `conic-gradient(from 0deg, ${CLASS_COLOR_BASE.blue}, ${CLASS_COLOR_BASE.violet}, ${CLASS_COLOR_BASE.teal}, ${CLASS_COLOR_BASE.blue})`;
 
 const Pricing = () => {
+  const t = useTranslations("Landing.pricing");
+  const rawPlans = t.raw("plans") as RawPlan[];
+  // Tarjima massivi uzunligi/tartibi mos kelmasa (index chegaradan chiqsa)
+  // xato ravishda "live/recommended" deb koʻrsatilmasin — xavfsiz standart.
+  const SAFE_META = { live: false, recommended: false };
+  const pricingData: PricingPlan[] = rawPlans.map((p, i) => ({
+    plan_name: p.name,
+    plan_status: p.status,
+    plan_live: (PLAN_META[i] ?? SAFE_META).live,
+    plan_descp: p.descp,
+    plan_price: p.price,
+    plan_cta: p.cta,
+    plan_href: "/register",
+    plan_feature: p.features,
+    plan_recommended: (PLAN_META[i] ?? SAFE_META).recommended,
+  }));
   const pricingCardVariants = {
     hidden: {
       opacity: 0,
@@ -112,16 +88,15 @@ const Pricing = () => {
               variant={"outline"}
               className="py-1 px-3 text-sm font-normal leading-5 w-fit h-7"
             >
-              Narxlar
+              {t("badge")}
             </Badge>
             {/* Heading */}
             <div className="max-w-md sm:max-w-2xl mx-auto text-center flex flex-col gap-3">
               <h2 className="text-foreground text-3xl sm:text-5xl font-medium">
-                Oʻqituvchilar uchun — bepul
+                {t("heading")}
               </h2>
               <p className="text-muted-foreground text-base">
-                Kundalik ishingiz uchun kerak boʻlgan hamma narsa bugun bepul.
-                Sentabrdagi yangiliklarni oldindan ochiq aytamiz.
+                {t("desc")}
               </p>
             </div>
           </div>

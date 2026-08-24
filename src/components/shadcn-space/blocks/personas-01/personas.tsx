@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { Users, Clock3, GraduationCap, Check } from "lucide-react";
 import { LandingGlow } from "@/components/landing/LandingGlow";
 
@@ -11,13 +12,16 @@ import { LandingGlow } from "@/components/landing/LandingGlow";
  * tashlandi — "hammaga moʻljallangan" xabari pozitsiyani yemiradi.
  */
 
-const STATS = [
-  { icon: GraduationCap, label: "5–11-sinf" },
-  { icon: Users, label: "30+ oʻquvchi" },
-  { icon: Clock3, label: "45 daqiqa" },
-];
+const STAT_ICONS = [GraduationCap, Users, Clock3];
 
 const Personas = () => {
+  const t = useTranslations("Landing.personas");
+  const statsRaw = t.raw("stats") as { grades: string; students: string; duration: string };
+  const stats = [statsRaw.grades, statsRaw.students, statsRaw.duration].map((label, i) => ({
+    icon: STAT_ICONS[i],
+    label,
+  }));
+  const cardLines = t.raw("card.lines") as string[];
   return (
     <section className="relative bg-background overflow-hidden">
       <LandingGlow className="right-0 top-1/2 -translate-y-1/2 w-[45%] h-[70%]" />
@@ -34,19 +38,16 @@ const Personas = () => {
               variant="outline"
               className="py-1 px-3 h-auto text-sm font-normal w-fit"
             >
-              Kimlar uchun
+              {t("badge")}
             </Badge>
             <h2 className="text-3xl sm:text-4xl font-semibold text-foreground">
-              Maktab oʻqituvchisi uchun yaratilgan
+              {t("heading")}
             </h2>
             <p className="text-muted-foreground sm:text-lg">
-              Ustozona birinchi navbatda 5–11-sinflarga dars beradigan, har
-              sinfida 30 dan ortiq oʻquvchisi bor ustozlar uchun. 45 daqiqalik
-              darsining har bir soniyasini qogʻozbozlikka emas, taʼlimga
-              sarflashni xohlaydiganlar uchun shaxsiy yordamchi.
+              {t("desc")}
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
-              {STATS.map((s) => (
+              {stats.map((s) => (
                 <span
                   key={s.label}
                   className="flex items-center gap-2 rounded-full border border-border bg-muted/60 pl-2.5 pr-4 py-2"
@@ -75,21 +76,17 @@ const Personas = () => {
             <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-sm flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-foreground">
-                  9-A sinf
+                  {t("card.className")}
                 </span>
                 <span
                   className="rounded-full px-2.5 py-1 text-xs font-medium text-neutral-900"
                   style={{ backgroundColor: "#FBC02D" }}
                 >
-                  32 oʻquvchi
+                  {t("card.badge")}
                 </span>
               </div>
               <div className="flex flex-col gap-3">
-                {[
-                  "Har birining ismi, jadvali va ballari bitta joyda",
-                  "45 daqiqa ichida hammaning davomatini belgilaysiz",
-                  "Xulq va oʻzlashtirish avtomatik hisoblanadi",
-                ].map((line) => (
+                {cardLines.map((line) => (
                   <div key={line} className="flex items-start gap-2.5">
                     <span
                       className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full"

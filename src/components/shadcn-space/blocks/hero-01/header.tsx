@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import {
   NavigationMenu,
@@ -17,25 +18,25 @@ import { Menu, X, Globe, Send, Mail, Phone } from 'lucide-react';
 import Logo from "@/assets/logo/logo";
 import { Button } from "@/components/ui/button";
 import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
-import { PRODUCTS } from "@/lib/landing-nav";
-
-export type NavigationSection = {
-  title: string;
-  href: string;
-};
+import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
+import { PRODUCTS, type NavItem } from "@/lib/landing-nav";
 
 type HeaderProps = {
-  navigationData: NavigationSection[];
+  navigationData: NavItem[];
   className?: string;
 };
 
-const CollaborateButton = ({ className }: { className?: string }) => (
-  <ButtonWithIcon href="/register" size="sm" className={className}>
-    Roʻyxatdan oʻtish
-  </ButtonWithIcon>
-);
+const CollaborateButton = ({ className }: { className?: string }) => {
+  const t = useTranslations("Landing.common");
+  return (
+    <ButtonWithIcon href="/register" size="sm" className={className}>
+      {t("register")}
+    </ButtonWithIcon>
+  );
+};
 
 const Header = ({ navigationData, className }: HeaderProps) => {
+  const t = useTranslations("Landing");
   const pathname = usePathname();
   const [sticky, setSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -147,16 +148,16 @@ const Header = ({ navigationData, className }: HeaderProps) => {
 
                 // "Mahsulotlar" — oddiy havola oʻrniga mega-menyu: hech biri
                 // tayyor boʻlmasa ham, 4 mahsulot bir bosishda koʻrinadi.
-                if (navItem.title === "Mahsulotlar") {
+                if (navItem.key === "products") {
                   return (
-                    <NavigationMenuItem key={navItem.title}>
+                    <NavigationMenuItem key={navItem.key}>
                       <NavigationMenuTrigger
                         className={cn(
                           "h-auto bg-transparent px-2 lg:px-4 py-2 text-sm font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-background data-[state=open]:bg-background data-[state=open]:text-foreground",
                           isActive ? "bg-background text-foreground shadow-xs" : "",
                         )}
                       >
-                        {navItem.title}
+                        {t(`nav.${navItem.key}`)}
                       </NavigationMenuTrigger>
                       <NavigationMenuContent>
                         <ul className="grid w-[320px] gap-1 p-1">
@@ -180,13 +181,13 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                 }
 
                 return (
-                  <NavigationMenuItem key={navItem.title}>
+                  <NavigationMenuItem key={navItem.key}>
                     <NavigationMenuLink
                       href={navItem.href}
                       aria-current={isActive ? "true" : undefined}
                       className={cn("px-2 lg:px-4 py-2 text-sm font-medium rounded-full text-muted-foreground hover:text-foreground hover:bg-background outline outline-transparent hover:outline-border hover:shadow-xs transition tracking-normal", isActive ? "bg-background text-foreground shadow-xs" : "")}
                     >
-                      {navItem.title}
+                      {t(`nav.${navItem.key}`)}
                     </NavigationMenuLink>
                   </NavigationMenuItem>
                 );
@@ -199,12 +200,13 @@ const Header = ({ navigationData, className }: HeaderProps) => {
             foydalanuvchi oʻzi topadi), asosiy tugma esa roʻyxatdan oʻtish
             (sahifaning maqsadi — yangi oʻqituvchi jalb qilish). */}
         <div className="flex items-center gap-2 lg:gap-3">
+          <LanguageSwitcher className="hidden lg:inline-flex" />
           <Button
             asChild
             variant="ghost"
             className="hidden lg:flex rounded-full h-10 px-5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
           >
-            <a href="/login">Kirish</a>
+            <a href="/login">{t("common.login")}</a>
           </Button>
           <CollaborateButton className="hidden lg:flex" />
 
@@ -216,7 +218,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                     width={20}
                     height={20}
                   />
-                  <span className="sr-only">Menu</span>
+                  <span className="sr-only">{t("nav.menu")}</span>
                 </span>
               </SheetTrigger>
 
@@ -237,7 +239,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
 
                 <div className="flex flex-col gap-12 px-6 pb-6 overflow-y-auto">
                   <div className="flex flex-col gap-8">
-                    <SheetTitle className="sr-only">Menu</SheetTitle>
+                    <SheetTitle className="sr-only">{t("nav.menu")}</SheetTitle>
                     <NavigationMenu
                       orientation="vertical"
                       className="items-start flex-none"
@@ -246,7 +248,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                         {navigationData.map((item) => {
                           const isActive = item.href === activeHref;
                           return (
-                            <NavigationMenuItem key={item.title}>
+                            <NavigationMenuItem key={item.key}>
                               <NavigationMenuLink
                                 href={item.href}
                                 aria-current={isActive ? "true" : undefined}
@@ -266,13 +268,15 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                                       : "w-0 opacity-0 group-hover/nav:w-4 group-hover/nav:mr-2 group-hover/nav:opacity-100",
                                   )}
                                 />
-                                {item.title}
+                                {t(`nav.${item.key}`)}
                               </NavigationMenuLink>
                             </NavigationMenuItem>
                           );
                         })}
                       </NavigationMenuList>
                     </NavigationMenu>
+
+                    <LanguageSwitcher />
 
                     <div className="flex flex-col gap-3 w-fit">
                       <CollaborateButton />
@@ -281,7 +285,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                         variant="outline"
                         className="rounded-full h-10 px-5 text-sm font-medium w-fit cursor-pointer"
                       >
-                        <a href="/login">Kirish</a>
+                        <a href="/login">{t("common.login")}</a>
                       </Button>
                     </div>
                   </div>
@@ -289,10 +293,10 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                   <div className="mt-auto flex flex-col gap-4">
                     <div className="flex gap-3">
                       {[
-                        { icon: Send, label: "Telegram" },
-                        { icon: Globe, label: "Web" },
-                        { icon: Mail, label: "Email" },
-                        { icon: Phone, label: "Phone" },
+                        { icon: Send, label: t("social.telegram") },
+                        { icon: Globe, label: t("social.web") },
+                        { icon: Mail, label: t("social.email") },
+                        { icon: Phone, label: t("social.phone") },
                       ].map(({ icon: SocialIcon, label }) => (
                         <a
                           key={label}

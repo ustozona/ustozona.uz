@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Accordion,
   AccordionContent,
@@ -6,52 +8,12 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { PlusIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-const FAQ_DATA = [
-  {
-    question: "Bu rasmiy elektron jurnallar oʻrniga oʻtadimi?",
-    answer:
-      "Yoʻq. Ustozona — sizning shaxsiy ishchi yordamchingiz. Rasmiy tizimlarga kiritish kerak boʻlgan choraklik ballarni, xulq hisobotlarini va davomat statistikasini shu yerda tayyorlab, tayyor raqamlarni koʻchirib qoʻyasiz.",
-  },
-  {
-    question: "Direktorim yoki maktab maʼmuriyati maʼlumotlarimni koʻra oladimi?",
-    answer:
-      "Maʼlumotlaringiz sizniki — maxfiylik sozlamalari asosida boshqa hech kim sizning ruxsatingizsiz ularni koʻra olmaydi. Barchasini faqat oʻzingiz boshqarasiz.",
-  },
-  {
-    question: "Telefonda ishlatsam boʻladimi?",
-    answer:
-      "Platforma hozircha asosan kompyuter va noutbuk brauzerida ishlashga moslashgan. Telefon ekranlari uchun qulay maxsus qism sentabrda ishga tushiriladi.",
-  },
-  {
-    question: "Oʻtgan oʻquv yilidagi maʼlumotlar yangi yilda oʻchib ketadimi?",
-    answer:
-      "Yoʻq. Oʻtgan yillar arxivda saqlanadi. Sinflarni yangi oʻquv yiliga oʻtkazish uchun maxsus sehrgar bor.",
-  },
-  {
-    question: "Dars jadvali oʻzgarib qolsa, avvalgi oylarning jurnali buzilmaydimi?",
-    answer:
-      "Tizim jadval versiyalarini tushunadi. «3-noyabrdan boshlab jadval oʻzgardi» deb kiritsangiz, undan oldingi oylarning baholar tarixi xuddi oʻzidek saqlanib qoladi.",
-  },
-  {
-    question: "Men 100 ballik tizimda baholayman. Dastur menga toʻgʻri keladimi?",
-    answer:
-      "Albatta. Tizimda 10 dan ortiq baholash shkalasi bor — 5 ballik, foizli, harfli va boshqalar. Oʻzingizga mosini sozlab olasiz.",
-  },
-  {
-    question: "Oʻquvchilar soniga chegara bormi?",
-    answer:
-      "Hech qanday chegara yoʻq. Istalgancha sinf va oʻquvchi qoʻshishingiz mumkin.",
-  },
-  {
-    question: "Tizimdan foydalanishni qanday oʻrganaman?",
-    answer:
-      "Birinchi marta kirganingizda interaktiv qoʻllanma sizni qadam-baqadam yetaklaydi. Taklifingiz boʻlsa, fikr-mulohaza doskasiga yozasiz — boshqa ustozlar ovoz beradi, jamoa koʻrib chiqadi.",
-  },
-];
-
 export default function Faq() {
+  const t = useTranslations("Landing.faq");
+  const FAQ_DATA = t.raw("items") as { question: string; answer: string }[];
   return (
     <section>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:py-24 py-8 flex flex-col gap-16">
@@ -60,10 +22,10 @@ export default function Faq() {
             variant="outline"
             className="text-sm h-auto py-1 px-3 border-0 outline outline-border"
           >
-            Koʻp beriladigan savollar
+            {t("badge")}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-medium text-center max-w-lg">
-            Savollaringiz bormi? Bizda javoblar tayyor
+            {t("heading")}
           </h2>
         </div>
         <div>

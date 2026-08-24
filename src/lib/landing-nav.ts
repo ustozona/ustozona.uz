@@ -8,17 +8,19 @@
 
 export type NavItem = {
   title: string;
+  /** `Landing.nav` ichidagi tarjima kaliti — Header/Footer shundan t() qiladi. */
+  key: "top" | "features" | "products" | "pricing" | "faq" | "blog";
   /** Landing ichidagi langar (`#features`) yoki alohida sahifa (`/blog`). */
   href: string;
 };
 
 const SECTIONS: NavItem[] = [
-  { title: "Asosiy", href: "#top" },
-  { title: "Imkoniyatlar", href: "#features" },
-  { title: "Mahsulotlar", href: "#products" },
-  { title: "Narxlar", href: "#pricing" },
-  { title: "FAQ", href: "#faq" },
-  { title: "Blog", href: "/blog" },
+  { title: "Asosiy", key: "top", href: "#top" },
+  { title: "Imkoniyatlar", key: "features", href: "#features" },
+  { title: "Mahsulotlar", key: "products", href: "#products" },
+  { title: "Narxlar", key: "pricing", href: "#pricing" },
+  { title: "FAQ", key: "faq", href: "#faq" },
+  { title: "Blog", key: "blog", href: "/blog" },
 ];
 
 /**
@@ -46,9 +48,9 @@ export const FOOTER_PAGE_LINKS: NavItem[] = PAGE_NAV.filter(
 );
 
 /** Yuridik sahifalar. "Ommaviy oferta" YOʻQ — u pullik shartnoma, bizda toʻlov yoʻq. */
-export const LEGAL_LINKS: NavItem[] = [
-  { title: "Foydalanish shartlari", href: "/terms" },
-  { title: "Maxfiylik siyosati", href: "/privacy" },
+export const LEGAL_LINKS: (Omit<NavItem, "key"> & { key: "terms" | "privacy" })[] = [
+  { title: "Foydalanish shartlari", key: "terms", href: "/terms" },
+  { title: "Maxfiylik siyosati", key: "privacy", href: "/privacy" },
 ];
 
 export const TELEGRAM_URL = "https://t.me/ustozona_tms";

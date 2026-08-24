@@ -1,27 +1,16 @@
 "use client";
+import { useTranslations } from "next-intl";
 import Feature from "@/components/shadcn-space/blocks/feature-01/feature";
 import { ArrowDownUp, BellRing, TrendingUp, Tag } from "lucide-react"
 
-const featureData = [
-    {
-      icon: ArrowDownUp,
-      content: "Jurnal, davomat va jadval bogʻlangan — bir marta kiriting, hamma joyda yangilanadi.",
-    },
-    {
-      icon: BellRing,
-      content: "Topshiriq muddati va baholash kuni haqida oʻz vaqtida eslatma olasiz.",
-    },
-    {
-      icon: TrendingUp,
-      content: "Oʻzlashtirish dinamikasi va sinf oʻrtachasi avtomatik hisoblanadi.",
-    },
-    {
-      icon: Tag,
-      content: "Har sinf va mavzuga oʻz rangi — bir qarashda topasiz va ajratasiz.",
-    },
-];
+const ICONS = [ArrowDownUp, BellRing, TrendingUp, Tag];
 
 const Feature01 = () => {
+  const t = useTranslations("Landing.feature");
+  const items = t.raw("items") as string[];
+  // `ICONS[i] ?? ICONS[0]` — tarjima massivi uzunligi mos kelmasa ikona
+  // undefined boʻlib qolmasin.
+  const featureData = items.map((content, i) => ({ icon: ICONS[i] ?? ICONS[0], content }));
   return (
     <>
       <Feature featureData={featureData} />
