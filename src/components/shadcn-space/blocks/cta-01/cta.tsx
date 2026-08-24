@@ -1,6 +1,7 @@
 "use client";
 import { useRef } from "react";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
 
 type CTAProps = {
@@ -8,6 +9,7 @@ type CTAProps = {
 };
 
 const CTA = ({ className }: CTAProps) => {
+  const t = useTranslations("Landing");
   const ref = useRef(null);
 
   const bottomAnimation = {
@@ -30,18 +32,18 @@ const CTA = ({ className }: CTAProps) => {
             >
               <div className="flex flex-col gap-3 items-center text-center">
                 <h2 className="text-3xl md:text-5xl font-medium text-center">
-                  Hisobotlar va turli xil qogʻozbozliklar oʻrniga
+                  {t("cta.headingLine1")}
                   <br />
-                  eʼtiboringizni darsga qarating!
+                  {t("cta.headingLine2")}
                 </h2>
                 <p className="max-w-2xl mx-auto">
-                  Roʻyxatdan oʻtish bir daqiqa. Sinfingizni qoʻshing va darhol ishlata boshlang.
+                  {t("cta.desc")}
                 </p>
               </div>
               <div className="flex flex-col items-center gap-3">
-                <ButtonWithIcon href="/register">Bepul roʻyxatdan oʻtish</ButtonWithIcon>
+                <ButtonWithIcon href="/register">{t("cta.ctaLabel")}</ButtonWithIcon>
                 <p className="text-sm text-muted-foreground">
-                  Oʻqituvchilar uchun bepul. Bank kartasi talab qilinmaydi.
+                  {t("common.freeNote")}
                 </p>
               </div>
             </motion.div>

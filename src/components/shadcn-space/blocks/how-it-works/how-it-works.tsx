@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { UserPlus, Users, GraduationCap } from "lucide-react";
 import { CLASS_COLOR_BASE, type ClassColor } from "@/lib/class-colors";
 
@@ -12,31 +13,18 @@ type Step = {
   color: ClassColor;
 };
 
-const steps: Step[] = [
-  {
-    icon: UserPlus,
-    title: "Roʻyxatdan oʻting",
-    descp:
-      "Kompyuter yoki noutbukda saytga kiring. Toʻlov ham, bank kartasi ham kerak emas.",
-    color: "blue",
-  },
-  {
-    icon: Users,
-    title: "Sinf va jadvalni qoʻshing",
-    descp:
-      "Oʻzingiz dars beradigan sinflarni sehrgar yordamida kiriting — bir necha daqiqa.",
-    color: "teal",
-  },
-  {
-    icon: GraduationCap,
-    title: "Darsni boshlang",
-    descp:
-      "Davomatni belgilang, baholarni qoʻying — qolgan hamma hisob-kitobni Ustozona qiladi.",
-    color: "orange",
-  },
+const STEP_META: { icon: Step["icon"]; color: ClassColor }[] = [
+  { icon: UserPlus, color: "blue" },
+  { icon: Users, color: "teal" },
+  { icon: GraduationCap, color: "orange" },
 ];
 
 const HowItWorks = () => {
+  const t = useTranslations("Landing.howItWorks");
+  const rawSteps = t.raw("steps") as { title: string; descp: string }[];
+  // `STEP_META[i] ?? STEP_META[0]` — tarjima massivi uzunligi mos kelmasa
+  // ikona/rang undefined boʻlib <step.icon> render qulamasin.
+  const steps: Step[] = rawSteps.map((s, i) => ({ ...s, ...(STEP_META[i] ?? STEP_META[0]) }));
   return (
     <section className="bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:py-20 sm:py-16 py-8">
@@ -46,10 +34,10 @@ const HowItWorks = () => {
               variant="outline"
               className="py-1 px-3 h-auto text-sm font-normal w-fit"
             >
-              Qanday ishlaydi
+              {t("badge")}
             </Badge>
             <h2 className="text-3xl sm:text-5xl font-medium text-foreground max-w-2xl">
-              Uch qadamda ishga tushasiz
+              {t("heading")}
             </h2>
           </div>
 

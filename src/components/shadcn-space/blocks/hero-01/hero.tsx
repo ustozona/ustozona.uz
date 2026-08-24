@@ -1,4 +1,5 @@
 import { Instrument_Serif } from "next/font/google";
+import { useTranslations } from "next-intl";
 import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
 
 const instrumentSerif = Instrument_Serif({
@@ -8,6 +9,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 function HeroSection() {
+  const t = useTranslations("Landing");
   return (
     <section>
       <div className="w-full h-full relative">
@@ -20,29 +22,29 @@ function HeroSection() {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                   </span>
-                  Yangi — endigina ishga tushdi
+                  {t("hero.badge")}
                 </div>
                 <h1 className="lg:text-8xl md:text-7xl text-5xl font-medium leading-14 md:leading-20 lg:leading-24">
-                  Baholar, davomat va jurnallar endi oʻzini oʻzi{" "}
+                  {t("hero.titleLine1")}{" "}
                   <span
                     className={`${instrumentSerif.className} tracking-tight text-primary`}
                   >
-                    hisoblaydi
+                    {t("hero.titleHighlight")}
                   </span>
                 </h1>
                 <p className="text-base font-normal max-w-2xl text-muted-foreground">
-                  Siz jurnalga faqat baho va davomatni kiritasiz — yakuniy baho, xulq-atvor bali va choraklik hisobotlar soniyalar ichida oʻzi tayyor boʻladi.
+                  {t("hero.subtitle")}
                 </p>
               </div>
               <div className="flex items-center flex-col gap-3">
                 <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <ButtonWithIcon href="/register">Roʻyxatdan oʻtish</ButtonWithIcon>
+                  <ButtonWithIcon href="/register">{t("common.register")}</ButtonWithIcon>
                   <ButtonWithIcon href="#features" variant="outline">
-                    Imkoniyatlarni koʻrish
+                    {t("hero.ctaSecondary")}
                   </ButtonWithIcon>
                 </div>
                 <p className="text-sm font-normal text-muted-foreground">
-                  Oʻqituvchilar uchun bepul. Bank kartasi talab qilinmaydi.
+                  {t("common.freeNote")}
                 </p>
               </div>
             </div>

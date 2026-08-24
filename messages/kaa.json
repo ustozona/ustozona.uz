@@ -4008,5 +4008,260 @@
     "newBadge": "Jańa",
     "removeRowAria": "Alıp taslaw",
     "submit": "{count} klastı qosıw"
+  },
+  "Landing": {
+    "common": {
+      "register": "Dizimnen ótiw",
+      "login": "Kiriw",
+      "freeNote": "Muǵallimler ushın biykar. Bank kartası talap etilmeydi."
+    },
+    "nav": {
+      "top": "Bas bet",
+      "features": "Múmkinshilikler",
+      "products": "Ónimler",
+      "pricing": "Bahalar",
+      "faq": "FAQ",
+      "blog": "Blog",
+      "menu": "Menyu"
+    },
+    "legal": {
+      "terms": "Paydalanıw sharayatları",
+      "privacy": " Júmıslıq siyasatı"
+    },
+    "social": {
+      "telegram": "Telegram",
+      "web": "Web",
+      "email": "Email",
+      "phone": "Telefon"
+    },
+    "hero": {
+      "badge": "Jaña — endi ǵana iske tústi",
+      "titleLine1": "Bahalar, qatnasıw hám jurnallar endi óz-ózinen",
+      "titleHighlight": "esaplaydı",
+      "subtitle": "Siz jurnalǵa tek baha hám qatnasıwdı kirgizesiz — juwmaqlawshı baha, minez-qulıq ballı hám shereklik esabatlar sekundlar ishinde tayar boladı.",
+      "ctaSecondary": "Múmkinshiliklerdi kóriw"
+    },
+    "stats": {
+      "badge": "Faktler",
+      "heading": "Muǵallimniń waqtın sposhiw etetuǵın anıq faktler",
+      "items": [
+        {
+          "unit": "basıw",
+          "title": "Qatnasıw",
+          "descp": "Pútkil klass kelgen bolsa — sáne bagananı basasız, tamam."
+        },
+        {
+          "unit": "minut",
+          "title": "Sherek esabatı",
+          "descp": "Juwmaqlawshı baha kategoriya hám salmaqlar tiykarında óz-ózinen esaplanadı."
+        },
+        {
+          "unit": "márte",
+          "title": "Kalkulyator",
+          "descp": "Ortasha balldı qol menen esaplaw isi qalmaydı."
+        },
+        {
+          "unit": "",
+          "title": "Klass hám oqıwshı",
+          "descp": "Hesh qanday sheklew joq — qansha kerek bolsa qosa beriń."
+        }
+      ]
+    },
+    "feature": {
+      "badge": "Nelikten Ustozona?",
+      "heading": "Waqttı qaǵaz jumısına emes, oqıtıwǵa jumsań",
+      "desc": "Hár bir sabaqtıń 5–10 minutı qatnasıwǵa ketedi. Keshikkenlerdi, úy tapsırmasın orınlamaǵanlardı ayrıqsha depterge jazasız. Sherek aqırında bolsa kalkulyator alıp tún ortasına deyin ortasha balldı esaplaysız.",
+      "cta": "Jurnal jaratıw",
+      "cardTitle": "Ustozonada qatnasıw bir basıwda belgilenedi. Keshikkenlerdiń minez-qulıq ballı óz-ózinen tómenleydi, juwmaqlawshı baha bolsa sekundlar ishinde esaplanadı.",
+      "cardTag": "Bir sistema",
+      "cardSubtitle": "Muǵallimniń pútkil jumıs aǵımı",
+      "items": [
+        "Jurnal, qatnasıw hám kesteni baylanısqan — bir márte kirgizesiz, hámme jerde jańalanadı.",
+        "Tapsırma múddeti hám bahalaw kúni haqqında óz waqtında eskertiw alasız.",
+        "Ózlestiriw dinamikası hám klass ortashası avtomat esaplanadı.",
+        "Hár klass hám tema óz reńine iye — bir qaraǵanda tabasız hám ajıratasız."
+      ]
+    },
+    "services": {
+      "badge": "Sistema ishinde",
+      "heading": "Nelerdi ete alasız?",
+      "desc": "Muǵallimniń kúndelik jumısı — jurnal, qatnasıw, minez-qulıq, keste hám sabaq islenbesi — bir sistemada. Atınıń ústine alıp barıń hám kóriń.",
+      "cta": "Ózlestiriwdi kuzatıw",
+      "items": [
+        {
+          "heading": "Elektron jurnal hám bahalaw",
+          "descp": "Kategoriya hám salmaqlardı bir márte sazlaysız («Úy tapsırması 20%, imtixan 50%») — sistema qalǵanın óz-ózinen etedi. Tómen ball qızıl, joqarı ball jasıl bolıp boyaladı: klass jaǵdayı bir qaraǵanda kórinedi."
+        },
+        {
+          "heading": "Qatnasıw — bir basıwda",
+          "descp": "Pútkil klass kelgen bolsa, sáne bagananı basıp «hámmesi keldi» dep bir márte belgileysiz. Hár bir jazıwǵa ayrıqsha pikir qaldırıw múmkin."
+        },
+        {
+          "heading": "Minez-qulıq ballı — óz-ózinen esaplanadı",
+          "descp": "Keshigiw, sabaqtı taslap ketiw hám tapsırmanı keshiktiriw tiykarında oqıwshınıń minez-qulıq ballı avtomat qáliplesip baradı. Eń zerikpeli jumıs óz-ózinen orınlanadı."
+        },
+        {
+          "heading": "Sabaq kestesi hám rejelestiriw",
+          "descp": "Jıl ortasında keste ózgerse, eski aylardıń tariyxı hám bahaları buzılmaydı. Qońıraw kestesi hám sabaqtı súyretip kóshiriw de bar."
+        },
+        {
+          "heading": "Sabaq redaktorı hám PDF",
+          "descp": "Tolıq matn redaktorında sabaq islenbeńizdi jazasız hám bir basıwda A4 formatta baspaǵa tayar PDF etip alasız."
+        }
+      ]
+    },
+    "howItWorks": {
+      "badge": "Qalay isleydi",
+      "heading": "Úsh qadamda iske túsesiz",
+      "steps": [
+        {
+          "title": "Dizimnen ótiń",
+          "descp": "Kompyuter yamasa noutbukta saytqa kiriń. Tólem de, bank kartası da kerek emes."
+        },
+        {
+          "title": "Klass hám kesteni qosıń",
+          "descp": "Óziniz sabaq beretuǵın klasslardı sıykırgershi járdeminde kirgiziń — bir neshe minut."
+        },
+        {
+          "title": "Sabaqtı baslań",
+          "descp": "Qatnasıwdı belgileń, bahalardı qoyıń — qalǵan barlıq esap-kitaptı Ustozona etedi."
+        }
+      ]
+    },
+    "personas": {
+      "badge": "Kimler ushın",
+      "heading": "Mektep muǵallimi ushın jaratılǵan",
+      "desc": "Ustozona birinshi náwbette 5–11-klasslarǵa sabaq beretuǵın, hár klassında 30 dan aslam oqıwshısı bar muǵallimler ushın. 45 minutlıq sabaqtıń hár bir sekundın qaǵaz jumısına emes, tálimge jumsawdı qálegenler ushın shaxsıy járdemshi.",
+      "stats": {
+        "grades": "5–11-klass",
+        "students": "30+ oqıwshı",
+        "duration": "45 minut"
+      },
+      "card": {
+        "className": "9-A klass",
+        "badge": "32 oqıwshı",
+        "lines": [
+          "Hár biriniń atı, kestesi hám ballları bir jerde",
+          "45 minut ishinde hámmesiniń qatnasıwın belgileysiz",
+          "Minez-qulıq hám ózlestiriw avtomat esaplanadı"
+        ]
+      }
+    },
+    "pricing": {
+      "badge": "Bahalar",
+      "heading": "Muǵallimler ushın — biykar",
+      "desc": "Kúndelik jumısıńız ushın kerek bolǵan hámme nárse bүgin biykar. Sentyabrdegi jańalıqlardı aldın-ala ashıq aytamız.",
+      "plans": [
+        {
+          "name": "Mektep ushın",
+          "status": "Jaqında",
+          "descp": "Bir mektepteg muǵallimlerdiń birlesiwi hám jalǵız basqarıw aǵımı.",
+          "price": "Jaqında",
+          "cta": "Xabardar bolıw",
+          "features": [
+            "Metod birlesme ushın ulıwma mektep bazası",
+            "Muǵallimlerdi jalǵız gruppaǵa shaqırıw",
+            "Ata-ana hám oqıwshı ushın Telegram mini-qollanba",
+            "Basqarıw ushın tez esabatlar"
+          ]
+        },
+        {
+          "name": "Ustaz ushın",
+          "status": "Bar",
+          "descp": "Kúndelik jumısıńız ushın tolıq jetkilikli. Bank kartası talap etilmeydi.",
+          "price": "0 sum",
+          "cta": "Dizimnen ótiw",
+          "features": [
+            "Elektron jurnal hám 10+ shkala",
+            "Qatnasıw — bir basıwda",
+            "Avtomat minez-qulıq ballı",
+            "Sabaq kestesi hám rejelestiriw",
+            "Sabaq redaktorı hám PDF eksport",
+            "Sheksiz klass hám oqıwshı"
+          ]
+        },
+        {
+          "name": "Pro + AI járdemshi",
+          "status": "Jaqında",
+          "descp": "Jasalma intellekt hám kamera arqalı qaǵaz testlerdi tekseriw.",
+          "price": "Jaqında",
+          "cta": "Nawbetke jazılıw",
+          "features": [
+            "AI járdeminde sabaq rejesi hám tallaw",
+            "OCR: qaǵaz testti telefon menen tekseriw",
+            "Keńeytirilgen ózlestiriw esabatları",
+            "Ustuwar qollap-quwatlaw"
+          ]
+        }
+      ]
+    },
+    "cta": {
+      "headingLine1": "Esabatlar hám túrli qaǵaz jumısları orınına",
+      "headingLine2": "itibarıńızdı sabaqqa qaratıń!",
+      "desc": "Dizimnen ótiw bir minut. Klassıńızdı qosıń hám dárhal paydalanıp baslań.",
+      "ctaLabel": "Biykar dizimnen ótiw"
+    },
+    "faq": {
+      "badge": "Kóp beriletuǵın soraular",
+      "heading": "Soraularıńız barma? Bizde juwaplar tayar",
+      "items": [
+        {
+          "question": "Bul rasmiy elektron jurnallar orınına ótedime?",
+          "answer": "Yaq. Ustozona — sizniń shaxsıy jumıs járdemshiniz. Rasmiy sistemalarǵa kirgiziw kerek bolǵan sherekli ballardı, minez-qulıq esabatların hám qatnasıw statistikasın usı jerde tayarlap, tayar sanlardı kóshirip qoyasız."
+        },
+        {
+          "question": "Direktorım yamasa mektep basqarması meniń maǵlıwmatlarımdı kóre aladıma?",
+          "answer": "Maǵlıwmatlarıńız sizge tán — júmıslıq sazlawlar tiykarında basqa hesh kim sizdiń ruxsatıńızsız olardı kóre almaydı. Barlıǵın tek óziniz basqarasız."
+        },
+        {
+          "question": "Telefonda paydalansam boladıma?",
+          "answer": "Platforma házirshe tiykarınan kompyuter hám noutbuk brauzerinde islewge sazlanǵan. Telefon ekranları ushın qolaylı arnawlı bólim sentyabrde iske túsedi."
+        },
+        {
+          "question": "Ótken oqıw jılındaǵı maǵlıwmatlar jańa jılda joǵalıp ketedime?",
+          "answer": "Yaq. Ótken jıllar arxivde saqlanadı. Klasslardı jańa oqıw jılına kóshiriw ushın arnawlı sıykırgershi bar."
+        },
+        {
+          "question": "Sabaq kestesi ózgerip qalsa, aldıńǵı aylardıń jurnalı buzılmaydıma?",
+          "answer": "Sistema keste versiyaların tusınadı. «3-noyabrden baslap keste ózgerdi» dep kirgizsegiz, onnan aldınǵı aylardıń bahalar tariyxı bolǵanınday saqlanıp qaladı."
+        },
+        {
+          "question": "Men 100 balllıq sistemada bahalayman. Programma maǵan sáykes keledime?",
+          "answer": "Álbette. Sistemada 10 nan aslam bahalaw shkalası bar — 5 balllıq, procentli, háripli hám basqalar. Ózińizge sáykesin sazlap alasız."
+        },
+        {
+          "question": "Oqıwshılar sanına sheklew barma?",
+          "answer": "Hesh qanday sheklew joq. Qansha kerek bolsa sonsha klass hám oqıwshı qosa alasız."
+        },
+        {
+          "question": "Sistemadan paydalanıwdı qalay úyrenemen?",
+          "answer": "Birinshi márte kirgeniniǵizde interaktiv qollanba sizdi qádem-qádem menen alıp baradı. Usınısıńız bolsa, pikir-usınıs taxtasına jazasız — basqa ustazlar dawıs beredi, komanda kórip shıǵadı."
+        }
+      ]
+    },
+    "footer": {
+      "tagline": "Muǵallimler ushın tálim procesin basqarıw hám sapasın asırıwǵa arnalǵan sanlı platforma.",
+      "pagesTitle": "Betler",
+      "moreInfoTitle": "Qosımsha maǵlıwmat",
+      "contactTitle": "Baylanısıw ushın",
+      "contactNote": "Soraw hám usınıslar ushın Telegram arqalı jazıń.",
+      "telegramAria": "Telegram kanalımız",
+      "copyright": "© {year} Ustozona. Barlıq huqıqlar qorǵalǵan."
+    },
+    "products": {
+      "badge": "Ekosistema",
+      "heading": "Ónimler",
+      "desc": "Ustozona ústine qurılatuǵın baǵdarlar. Birewi isleydi, qalǵanları jolda.",
+      "mainTitle": "Ustozona",
+      "mainStatus": "Isleydi",
+      "mainDesc": "Muǵallim panelı — jurnal, qatnasıw, minez-qulıq, keste, sabaq islenbesi. Búgin paydalanıwıńız múmkin.",
+      "mainCta": "Múmkinshiliklerdi kóriw",
+      "detailCta": "Tolıq maǵlıwmat"
+    },
+    "cookie": {
+      "text": "Sayttan paydalanıw tájiriybesin jaqsılaw ushın cookie fayllarınan paydalanamız. Dawam etiw arqalı buǵan razılıq bildiresiz.",
+      "reject": "Bas tartıw",
+      "accept": "Qabıl etiw"
+    }
   }
 }

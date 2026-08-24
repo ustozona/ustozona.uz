@@ -7,6 +7,7 @@ import type { AppLanguage } from "@/store/useSettingsStore";
     chizilgan <KarakalpakFlag>ga fallback qiladi. */
 export const LANGUAGES: { value: AppLanguage; label: string; flagCode?: string; ready: boolean }[] = [
   { value: "uz", label: "Oʻzbekcha", flagCode: "1f1fa-1f1ff", ready: true },
+  { value: "uz-Cyrl", label: "Ўзбекча (кирилл)", flagCode: "1f1fa-1f1ff", ready: true },
   { value: "kaa", label: "Qoraqalpoqcha", ready: true },
   { value: "ky", label: "Qirgʻizcha", flagCode: "1f1f0-1f1ec", ready: true },
   { value: "kk", label: "Qozoqcha", flagCode: "1f1f0-1f1ff", ready: true },

@@ -3,6 +3,7 @@ import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { LucideIcon, Layers } from "lucide-react";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { LandingGlow } from "@/components/landing/LandingGlow";
 
 type Features = {
@@ -11,6 +12,7 @@ type Features = {
 }[];
 
 const Feature = ({ featureData }: { featureData: Features }) => {
+  const t = useTranslations("Landing.feature");
   return (
     <section className="relative">
       <LandingGlow className="left-1/2 top-24 -translate-x-1/2 w-[70%] h-[40%]" />
@@ -32,19 +34,16 @@ const Feature = ({ featureData }: { featureData: Features }) => {
                   variant={"outline"}
                   className="px-3 py-1 h-auto text-sm font-normal"
                 >
-                  Nega Ustozona?
+                  {t("badge")}
                 </Badge>
                 <h2 className="text-3xl md:text-4xl font-semibold">
-                  Vaqtni qogʻozbozlikka emas, oʻqitishga sarflang
+                  {t("heading")}
                 </h2>
                 <p className="text-lg font-normal text-muted-foreground">
-                  Har bir darsning 5–10 daqiqasi davomatga ketadi. Kechikkanlarni,
-                  uy vazifasi qilmaganlarni alohida daftarga yozasiz. Chorak
-                  yakunida esa kalkulyator koʻtarib tungacha oʻrtacha ballni
-                  hisoblaysiz.
+                  {t("desc")}
                 </p>
               </div>
-              <ButtonWithIcon href="/register">Jurnalni yaratish</ButtonWithIcon>
+              <ButtonWithIcon href="/register">{t("cta")}</ButtonWithIcon>
             </motion.div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
               <motion.div
@@ -69,17 +68,15 @@ const Feature = ({ featureData }: { featureData: Features }) => {
                     {/* Rang MAJBURIY: fon endi brend sarigʻi (#FBC02D) —
                         matn qora (text-neutral-900) boʻlmasa oʻqilmaydi. */}
                     <h3 className="text-2xl sm:text-3xl font-medium leading-snug text-neutral-900">
-                      Ustozonada davomat bir bosishda belgilanadi. Kechikkanlarning
-                      xulq bali oʻzi pasayadi, yakuniy baho esa soniyalar ichida
-                      hisoblanadi.
+                      {t("cardTitle")}
                     </h3>
                   </CardContent>
                   <CardFooter className="border-none w-full px-6 sm:px-10 py-0 flex flex-col items-start gap-0.5">
                     <p className="text-sm font-medium text-neutral-900">
-                      Bitta tizim
+                      {t("cardTag")}
                     </p>
                     <span className="text-xs font-normal text-neutral-900/70 uppercase">
-                      Oʻqituvchining butun ish oqimi
+                      {t("cardSubtitle")}
                     </span>
                   </CardFooter>
                 </Card>

@@ -4004,5 +4004,260 @@
     "newBadge": "New",
     "removeRowAria": "Remove",
     "submit": "Add {count} classes"
+  },
+  "Landing": {
+    "common": {
+      "register": "Sign up",
+      "login": "Log in",
+      "freeNote": "Free for teachers. No bank card required."
+    },
+    "nav": {
+      "top": "Home",
+      "features": "Features",
+      "products": "Products",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "blog": "Blog",
+      "menu": "Menu"
+    },
+    "legal": {
+      "terms": "Terms of use",
+      "privacy": "Privacy policy"
+    },
+    "social": {
+      "telegram": "Telegram",
+      "web": "Web",
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "hero": {
+      "badge": "New — just launched",
+      "titleLine1": "Grades, attendance and gradebooks now calculate",
+      "titleHighlight": "themselves",
+      "subtitle": "You only enter grades and attendance — final marks, behavior scores and quarterly reports are ready in seconds.",
+      "ctaSecondary": "See features"
+    },
+    "stats": {
+      "badge": "Facts",
+      "heading": "Real facts that save a teacher's time",
+      "items": [
+        {
+          "unit": "click",
+          "title": "Attendance",
+          "descp": "Whole class present? Click the date column, done."
+        },
+        {
+          "unit": "minutes",
+          "title": "Quarter report",
+          "descp": "The final grade is calculated automatically from categories and weights."
+        },
+        {
+          "unit": "times",
+          "title": "Calculator",
+          "descp": "No more manually calculating the average score."
+        },
+        {
+          "unit": "",
+          "title": "Classes & students",
+          "descp": "No limits — add as many as you need."
+        }
+      ]
+    },
+    "feature": {
+      "badge": "Why Ustozona?",
+      "heading": "Spend time teaching, not on paperwork",
+      "desc": "5–10 minutes of every lesson go to attendance. You write down latecomers and missed homework in a separate notebook. At the end of the quarter you grab a calculator and count the average until late at night.",
+      "cta": "Create a gradebook",
+      "cardTitle": "In Ustozona attendance is marked with one click. Latecomers' behavior score drops automatically, and the final grade is calculated in seconds.",
+      "cardTag": "One system",
+      "cardSubtitle": "A teacher's entire workflow",
+      "items": [
+        "Gradebook, attendance and timetable are linked — enter once, it updates everywhere.",
+        "You get timely reminders about assignment deadlines and grading days.",
+        "Learning trends and class averages are calculated automatically.",
+        "Every class and topic has its own color — spot and tell them apart at a glance."
+      ]
+    },
+    "services": {
+      "badge": "Inside the system",
+      "heading": "What can you do?",
+      "desc": "A teacher's daily work — gradebook, attendance, behavior, timetable and lesson plans — in one system. Hover over a name to see it.",
+      "cta": "Track progress",
+      "items": [
+        {
+          "heading": "Digital gradebook & grading",
+          "descp": "Set up categories and weights once (\"homework 20%, exam 50%\") — the system does the rest. Low scores turn red, high scores turn green: class status is visible at a glance."
+        },
+        {
+          "heading": "Attendance — in one click",
+          "descp": "If the whole class showed up, click the date column and mark \"everyone present\" once. You can also leave a note on any single entry."
+        },
+        {
+          "heading": "Behavior score — calculates itself",
+          "descp": "The student's behavior score builds up automatically from lateness, absences and late assignments. The most tedious task takes care of itself."
+        },
+        {
+          "heading": "Timetable & planning",
+          "descp": "If the schedule changes mid-year, older months' history and grades stay intact. Bell schedules and drag-and-drop lesson moves are included too."
+        },
+        {
+          "heading": "Lesson editor & PDF",
+          "descp": "Write your lesson plan in a full text editor and export it as a print-ready A4 PDF in one click."
+        }
+      ]
+    },
+    "howItWorks": {
+      "badge": "How it works",
+      "heading": "Get started in three steps",
+      "steps": [
+        {
+          "title": "Sign up",
+          "descp": "Log in from a computer or laptop. No payment, no bank card needed."
+        },
+        {
+          "title": "Add classes & timetable",
+          "descp": "Enter the classes you teach with the wizard — takes a few minutes."
+        },
+        {
+          "title": "Start the lesson",
+          "descp": "Mark attendance, enter grades — Ustozona handles the rest of the math."
+        }
+      ]
+    },
+    "personas": {
+      "badge": "Who it's for",
+      "heading": "Built for school teachers",
+      "desc": "Ustozona is built first of all for teachers of grades 5–11 with more than 30 students per class. A personal assistant for those who want to spend every second of a 45-minute lesson on teaching, not paperwork.",
+      "stats": {
+        "grades": "grades 5–11",
+        "students": "30+ students",
+        "duration": "45 minutes"
+      },
+      "card": {
+        "className": "Class 9-A",
+        "badge": "32 students",
+        "lines": [
+          "Every student's name, schedule and scores in one place",
+          "Mark everyone's attendance within 45 minutes",
+          "Behavior and performance are calculated automatically"
+        ]
+      }
+    },
+    "pricing": {
+      "badge": "Pricing",
+      "heading": "Free for teachers",
+      "desc": "Everything you need for your daily work is free today. We'll announce September's news openly in advance.",
+      "plans": [
+        {
+          "name": "For a school",
+          "status": "Coming soon",
+          "descp": "Bringing together the teachers of one school under a single administrative flow.",
+          "price": "Coming soon",
+          "cta": "Get notified",
+          "features": [
+            "A shared school database for the subject department",
+            "Invite teachers into a single group",
+            "Telegram mini-app for parents and students",
+            "Quick reports for the administration"
+          ]
+        },
+        {
+          "name": "For a teacher",
+          "status": "Available",
+          "descp": "Fully covers your daily work. No bank card required.",
+          "price": "0 soʻm",
+          "cta": "Sign up",
+          "features": [
+            "Digital gradebook with 10+ scales",
+            "Attendance — in one click",
+            "Automatic behavior score",
+            "Timetable & planning",
+            "Lesson editor & PDF export",
+            "Unlimited classes and students"
+          ]
+        },
+        {
+          "name": "Pro + AI assistant",
+          "status": "Coming soon",
+          "descp": "AI- and camera-assisted grading of paper tests.",
+          "price": "Coming soon",
+          "cta": "Join the waitlist",
+          "features": [
+            "AI-assisted lesson planning and analysis",
+            "OCR: grade paper tests with your phone",
+            "Extended performance reports",
+            "Priority support"
+          ]
+        }
+      ]
+    },
+    "cta": {
+      "headingLine1": "Instead of reports and all kinds of paperwork,",
+      "headingLine2": "give your attention to the lesson!",
+      "desc": "Signing up takes a minute. Add your class and start using it right away.",
+      "ctaLabel": "Sign up for free"
+    },
+    "faq": {
+      "badge": "Frequently asked questions",
+      "heading": "Got questions? We have answers",
+      "items": [
+        {
+          "question": "Does this replace official electronic gradebooks?",
+          "answer": "No. Ustozona is your personal work assistant. You prepare quarterly scores, behavior reports and attendance statistics here, then copy the ready numbers into the official systems."
+        },
+        {
+          "question": "Can my principal or school administration see my data?",
+          "answer": "Your data is yours — based on privacy settings, no one else can see it without your permission. You're always in control."
+        },
+        {
+          "question": "Can I use it on my phone?",
+          "answer": "The platform is currently optimized mainly for computer and laptop browsers. A dedicated mobile-friendly view launches in September."
+        },
+        {
+          "question": "Will last year's data disappear in the new school year?",
+          "answer": "No. Past years are kept in the archive. There's a dedicated wizard for moving classes to the new school year."
+        },
+        {
+          "question": "If the timetable changes, will previous months' gradebook break?",
+          "answer": "The system understands timetable versions. If you enter \"the schedule changed starting Nov 3\", the grade history from before that date stays exactly as it was."
+        },
+        {
+          "question": "I grade on a 100-point scale. Does the app fit me?",
+          "answer": "Absolutely. The system has 10+ grading scales — 5-point, percentage, letter and more. Set up the one that fits you."
+        },
+        {
+          "question": "Is there a limit on the number of students?",
+          "answer": "No limit at all. Add as many classes and students as you need."
+        },
+        {
+          "question": "How do I learn to use the system?",
+          "answer": "An interactive guide walks you through it step by step the first time you log in. Got a suggestion? Post it on the feedback board — other teachers vote and the team reviews it."
+        }
+      ]
+    },
+    "footer": {
+      "tagline": "A digital platform for teachers to manage and improve the quality of the learning process.",
+      "pagesTitle": "Pages",
+      "moreInfoTitle": "More information",
+      "contactTitle": "Get in touch",
+      "contactNote": "For questions and suggestions, write to us on Telegram.",
+      "telegramAria": "Our Telegram channel",
+      "copyright": "© {year} Ustozona. All rights reserved."
+    },
+    "products": {
+      "badge": "Ecosystem",
+      "heading": "Products",
+      "desc": "Directions being built on top of Ustozona. One is live, the rest are on the way.",
+      "mainTitle": "Ustozona",
+      "mainStatus": "Live",
+      "mainDesc": "The teacher panel — gradebook, attendance, behavior, timetable, lesson plans. You can use it today.",
+      "mainCta": "See features",
+      "detailCta": "Learn more"
+    },
+    "cookie": {
+      "text": "We use cookies to improve your experience on the site. By continuing, you agree to this.",
+      "reject": "Decline",
+      "accept": "Accept"
+    }
   }
 }

@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import { LandingGlow } from "@/components/landing/LandingGlow";
 import { AnimatedCounter } from "@/components/dashboard/AnimatedCounter";
 
@@ -25,6 +26,7 @@ export type StatItem = {
 };
 
 const AboutUs = ({ stats }: { stats: StatItem[] }) => {
+  const t = useTranslations("Landing.stats");
   const statsRef = useRef(null);
   const isInView = useInView(statsRef, { once: true, margin: "-100px" });
 
@@ -44,10 +46,10 @@ const AboutUs = ({ stats }: { stats: StatItem[] }) => {
               variant="outline"
               className="py-1 px-3 h-auto text-sm font-normal w-fit"
             >
-              Faktlar
+              {t("badge")}
             </Badge>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium text-foreground tracking-tight max-w-2xl text-balance">
-              Oʻqituvchining vaqtini tejaydigan aniq faktlar
+              {t("heading")}
             </h2>
           </motion.div>
 

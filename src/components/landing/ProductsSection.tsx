@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { GlowBadge } from "@/components/shadcn-space/badge/glow-badge";
 import { ArrowUpRight } from "lucide-react";
@@ -10,6 +13,7 @@ import { PRODUCTS } from "@/lib/landing-nav";
  * nima yoʻqligini koʻrsin (docs/marketing-brief.md oltin qoidasi).
  */
 export function ProductsSection() {
+  const t = useTranslations("Landing.products");
   return (
     <section className="bg-background">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 lg:py-20 sm:py-16 py-8">
@@ -19,14 +23,13 @@ export function ProductsSection() {
               variant="outline"
               className="py-1 px-3 h-auto text-sm font-normal border-0 outline outline-border w-fit"
             >
-              Ekotizim
+              {t("badge")}
             </Badge>
             <h2 className="sm:text-5xl text-3xl text-foreground font-semibold">
-              Mahsulotlar
+              {t("heading")}
             </h2>
             <p className="max-w-2xl text-muted-foreground sm:text-lg text-base">
-              Ustozona ustiga quriladigan yoʻnalishlar. Bittasi ishlayapti,
-              qolganlari yoʻlda.
+              {t("desc")}
             </p>
           </div>
 
@@ -38,16 +41,15 @@ export function ProductsSection() {
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-xl font-semibold text-foreground">
-                  Ustozona
+                  {t("mainTitle")}
                 </h3>
-                <GlowBadge tone="success">Ishlayapti</GlowBadge>
+                <GlowBadge tone="success">{t("mainStatus")}</GlowBadge>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Oʻqituvchi paneli — jurnal, davomat, xulq, jadval, dars
-                ishlanmasi. Bugun ishlatishingiz mumkin.
+                {t("mainDesc")}
               </p>
               <span className="mt-auto flex items-center gap-1 text-sm font-medium text-foreground">
-                Imkoniyatlarni koʻrish
+                {t("mainCta")}
                 <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </span>
             </a>
@@ -70,7 +72,7 @@ export function ProductsSection() {
                   {p.tagline}
                 </p>
                 <span className="mt-auto flex items-center gap-1 text-sm font-medium text-foreground">
-                  Batafsil
+                  {t("detailCta")}
                   <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </a>

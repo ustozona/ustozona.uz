@@ -1,10 +1,11 @@
-export const LOCALES = ["uz", "kaa", "ky", "kk", "ru", "en"] as const;
+export const LOCALES = ["uz", "uz-Cyrl", "kaa", "ky", "kk", "ru", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "uz";
 export const LOCALE_COOKIE = "locale";
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   uz: "Oʻzbekcha",
+  "uz-Cyrl": "Ўзбекча",
   kaa: "Qaraqalpaqsha",
   ky: "Кыргызча",
   kk: "Қазақша",
