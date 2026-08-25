@@ -445,7 +445,7 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
             )}
           </Empty>
         ) : view === "grid" ? (
-          <div className="min-h-0 flex-1 overflow-auto" style={{ scrollbarGutter: "stable" }} data-tour="resources-list">
+          <div className="min-h-0 flex-1 scrollbar-hover overflow-auto" style={{ scrollbarGutter: "stable" }} data-tour="resources-list">
             <div className="grid gap-4 p-5 [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">
               {visible.map((item) => (
                 <LibraryCard
@@ -462,7 +462,7 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
         ) : (
           /* `scrollbarGutter` — scroll paydo boʻlganda jadval siljib
              ketmasin va scrollbar `⋮` ustunini bosmasin. */
-          <div className="min-h-0 flex-1 overflow-auto" style={{ scrollbarGutter: "stable" }} data-tour="resources-list">
+          <div className="min-h-0 flex-1 scrollbar-hover overflow-auto" style={{ scrollbarGutter: "stable" }} data-tour="resources-list">
             {/* Ustun kengliklari FOIZDA. Piksel kenglik berilganda butun
                 ortiqcha joy birinchi ustunga qoʻshilib, sarlavha bilan
                 «Tur» orasida katta boʻsh tuynuk hosil boʻlardi. */}

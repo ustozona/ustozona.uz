@@ -41,7 +41,8 @@ export default function ArticleToc({ items }: { items: TocItem[] }) {
     // Radix viewport ichida scrollIntoView ishonchsiz — viewport'ni qoʻlda siljitamiz.
     const vp = el.closest<HTMLElement>("[data-radix-scroll-area-viewport]");
     if (vp) {
-      const top = el.getBoundingClientRect().top - vp.getBoundingClientRect().top + vp.scrollTop - 24;
+      // -80px = sticky header balandligi (3.5rem) + boʻshliq — scroll-mt-20 bilan bir xil.
+      const top = el.getBoundingClientRect().top - vp.getBoundingClientRect().top + vp.scrollTop - 80;
       vp.scrollTo({ top, behavior: "smooth" });
     } else {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -50,7 +51,7 @@ export default function ArticleToc({ items }: { items: TocItem[] }) {
 
   return (
     <aside className="hidden lg:block">
-      <nav className="sticky top-0 self-start">
+      <nav className="sticky top-20 self-start">
         <p className="text-label mb-3 text-muted-foreground">{t("tableOfContents")}</p>
         <ul className="space-y-1 border-l border-border">
           {items.map((it) => (

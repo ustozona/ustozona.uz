@@ -367,7 +367,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
             <MessageSquarePlus className="size-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-52 max-h-[320px] overflow-y-auto">
+        <DropdownMenuContent align="start" className="w-52 max-h-[320px] scrollbar-hover overflow-y-auto">
           {/* Emojili blok — eng koʻp ishlatiladigan, erkin variant. Ataylab
               BIRINCHI va chiziqcha bilan ajratilgan: quyidagilar qatʼiy
               pedagogik turlar, bu esa boshqa toifadagi blok. */}

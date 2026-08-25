@@ -166,7 +166,7 @@ export function QuotesDialog({
           description={t("description")}
         />
 
-        <div className="flex max-h-56 flex-col gap-1 overflow-y-auto scrollbar-thin px-3.5 pt-3 pb-1">
+        <div className="flex max-h-56 flex-col gap-1 scrollbar-hover overflow-y-auto scrollbar-thin px-3.5 pt-3 pb-1">
           {quotes.length === 0 && (
             <p className="py-4 text-center text-sm text-muted-foreground">{t("empty")}</p>
           )}

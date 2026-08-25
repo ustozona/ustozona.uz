@@ -174,7 +174,7 @@ export default function FeedbackForm({
       {category === "savol" && (
         <p className="mt-2 text-xs text-muted-foreground/70">
           {t("helpHintPrefix")}{" "}
-          <Link href="/dashboard/help" className="font-medium text-primary hover:underline">
+          <Link href="/help" className="font-medium text-primary hover:underline">
             {t("helpLink")}
           </Link>{" "}
           {t("helpHintSuffix")}

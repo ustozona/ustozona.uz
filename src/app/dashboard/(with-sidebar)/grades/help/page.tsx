@@ -12,9 +12,9 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-import ArticleToc from "./ArticleToc";
-import ShareActions from "./ShareActions";
-import ArticleClosing from "./ArticleClosing";
+import ArticleToc from "@/components/article/ArticleToc";
+import ShareActions from "@/components/article/ShareActions";
+import ArticleClosing from "@/components/article/ArticleClosing";
 
 const TITLE = "Zamonaviy raqamli jurnal: pedagogik inferensiya va oʻlchov mantiqi";
 

@@ -24,14 +24,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <BrandWordmark shieldClassName="size-7" textClassName="text-sm" gapClassName="gap-2" rollerSize="sm" />
       </Link>
 
-      <article className="mt-8">
+      <article className="readable-scale readable-scale-lg mt-8">
         {post.coverImageUrl && (
           <div className="mb-6 aspect-video w-full overflow-hidden rounded-lg bg-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={post.coverImageUrl} alt="" className="size-full object-cover" />
           </div>
         )}
-        <h1 className="blog-title text-4xl font-bold leading-tight text-foreground md:text-5xl">{post.title}</h1>
+        {/* readable-scale-lg (Minor Third 6-qadam, 48px) — endi serifsiz,
+            oʻlcham/qalinlik `heading-page` orqali beriladi. */}
+        <h1 className="heading-page leading-tight">{post.title}</h1>
         <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
           <span>{post.authorName}</span>
           <span>·</span>

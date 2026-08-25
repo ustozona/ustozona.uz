@@ -114,7 +114,7 @@ export default function RolloverWizard({
           }
         />
 
-        <div className="max-h-[26rem] space-y-1.5 overflow-y-auto p-5">
+        <div className="max-h-[26rem] space-y-1.5 scrollbar-hover overflow-y-auto p-5">
           {activeClasses.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
               {t("noActiveClasses")}

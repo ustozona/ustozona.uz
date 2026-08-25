@@ -43,6 +43,7 @@ import {
   Newspaper,
   MessagesSquare,
   Megaphone,
+  CircleHelp,
   Settings,
   Award,
   TrendingUp,
@@ -104,6 +105,7 @@ const navGroups: NavGroup[] = [
 const footerItems: NavItem[] = [
   { href: "/dashboard/changelog", labelKey: "changelog", icon: Megaphone, badgeKey: "changelog" },
   { href: "/blog", labelKey: "blog", icon: Newspaper },
+  { href: "/help", labelKey: "help", icon: CircleHelp },
   { href: "/dashboard/feedback", labelKey: "feedback", icon: MessagesSquare },
   { href: "/dashboard/settings", labelKey: "settings", icon: Settings },
 ];

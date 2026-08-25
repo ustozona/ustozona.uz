@@ -80,7 +80,7 @@ export default function QuestionCanvas({ question, stageTheme, onChange }: Props
           ) : (
             /* Moslashtirishda javob soni oʻzgaruvchan — sahna balandligi
                qatʼiy, shuning uchun roʻyxat oʻz ichida aylanadi. */
-            <div className="mt-auto flex min-h-0 flex-col gap-2 overflow-y-auto">
+            <div className="mt-auto flex min-h-0 flex-col gap-2 scrollbar-hover overflow-y-auto">
               {question.pairs.map((pair, index) => (
                 <div key={pair.id} className="flex items-center gap-2">
                   <Input

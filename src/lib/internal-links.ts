@@ -23,6 +23,7 @@ export type InternalLink = {
 
 export const INTERNAL_LINKS: InternalLink[] = [
   { label: "Bosh sahifa", href: "/dashboard" },
+  { label: "Yordam markazi", href: "/help", keywords: ["help", "yordam"] },
   { label: "Vazifalar", href: "/dashboard/tasks", keywords: ["tasks", "todo"] },
   { label: "Dars jadvali", href: "/dashboard/timetable", keywords: ["jadval", "raspisanie"] },
   { label: "Sinflar", href: "/dashboard/classes", keywords: ["classes"] },

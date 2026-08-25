@@ -82,7 +82,7 @@ export default function PropertiesPanel({
         <h2 className="text-sm font-semibold">{questionNumber}-savol xossalari</h2>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto">
         <Field icon={<Shapes className="size-4" />} label="Savol turi">
           <QuestionTypePicker value={question.shape} onChange={changeShape} />
         </Field>

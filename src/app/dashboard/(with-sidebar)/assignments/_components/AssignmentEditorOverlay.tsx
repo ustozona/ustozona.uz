@@ -1044,7 +1044,7 @@ export default function AssignmentEditorOverlay({
         {/* Tana: chap mazmun · yigʻiladigan Tafsilotlar paneli · ikonka reyi
             — dars muharriridagi (LessonEditor) tuzilishning aynan oʻzi. */}
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-          <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin p-6">
+          <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto scrollbar-thin p-6">
             <div className="mx-auto flex max-w-2xl flex-col gap-6">
               <div className="flex flex-col gap-1.5">
                 <span className="text-label text-muted-foreground">
@@ -1105,7 +1105,7 @@ export default function AssignmentEditorOverlay({
                 onClose={() => setPanelOpen(false)}
                 closeLabel={t("close")}
               />
-              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto scrollbar-thin px-5 py-5">
+              <div className="flex min-h-0 flex-1 flex-col gap-5 scrollbar-hover overflow-y-auto scrollbar-thin px-5 py-5">
                 {/* SINFLAR — koʻp tanlov (dars muharriridagi naqsh). */}
                 <div className="flex flex-col">
                   <h3 className="text-label mb-2.5">{t("classesLabel")}</h3>
@@ -1157,7 +1157,7 @@ export default function AssignmentEditorOverlay({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="start"
-                      className="max-h-[280px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto"
+                      className="max-h-[280px] w-[var(--radix-dropdown-menu-trigger-width)] scrollbar-hover overflow-y-auto"
                     >
                       {liveClasses.map((c) => {
                         const hex = CLASS_COLOR_HEX[classColor(c)];

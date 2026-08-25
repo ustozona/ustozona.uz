@@ -16,6 +16,7 @@
     "standards": "Standartlar",
     "tasks": "Wazıypalar",
     "changelog": "Jańalanıwlar",
+    "help": "Járdem",
     "feedback": "Pikir-usınıs",
     "settings": "Sazlawlar",
     "assignments": "Tapsırmalar",
@@ -40,10 +41,12 @@
     "behavior": "Minez-qulıq",
     "grades": "Jurnal",
     "gradesHelp": "Járdem",
+    "help": "Járdem",
     "statistics": "Statistika",
     "standards": "Standartlar",
     "tasks": "Wazıypalar",
     "changelog": "Jańalanıwlar",
+    "help": "Járdem",
     "feedback": "Pikir-usınıs",
     "blog": "Blog",
     "settings": "Sazlawlar",
@@ -739,8 +742,8 @@
   "ArticleFeedback": {
     "thanks": "Pikirińiz ushın raxmet!",
     "wasHelpful": "Bul maqala paydalı boldı ma?",
-    "yes": "Awa",
-    "no": "Yaq"
+    "moreQuestions": "Basqa sorawıńız bar ma?",
+    "contactLink": "Osı jerge jazıń"
   },
   "ArticleToc": {
     "tableOfContents": "Mazmunı"

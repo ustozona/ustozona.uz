@@ -95,7 +95,7 @@ function PanelBody({
     <div
       data-slot="panel-body"
       className={cn(
-        "min-h-0 flex-1 overflow-y-auto",
+        "min-h-0 flex-1 scrollbar-hover overflow-y-auto",
         inset ? "px-5 py-5" : "p-0",
         className
       )}

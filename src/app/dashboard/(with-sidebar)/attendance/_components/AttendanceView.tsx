@@ -769,7 +769,7 @@ export default function AttendanceView({
           </CardHeader>
 
           {/* Table */}
-          <CardContent className={cn(panelCardContentClass, "overflow-auto [&_div[data-slot=table-container]]:overflow-visible [&_div[data-slot=table-container]]:h-full")}>
+          <CardContent className={cn(panelCardContentClass, "scrollbar-hover overflow-auto [&_div[data-slot=table-container]]:overflow-visible [&_div[data-slot=table-container]]:h-full")}>
             {monthDays.length === 0 ? (
               <Empty className="h-full w-full">
                 <EmptyHeader>

@@ -32,6 +32,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "help-center-launch",
+    date: "2026-08-26",
+    type: "yangi",
+    title: "Yangi boʻlim: Yordam markazi",
+    body:
+      "Endi ustozona.uz/help sahifasida barcha mavzular boʻyicha qoʻllanma maqolalarni topasiz — chapdan boʻlimni tanlaysiz yoki qidiruvdan foydalanasiz. Har maqola oxirida foydali boʻldimi deb soʻraladi, keyingi mavzuga oʻtish tugmasi ham bor. Hali yozilmagan mavzular \"Tez orada\" deb belgilangan.",
+    href: "/help",
+  },
+  {
+    id: "feedback-slash-internal-links",
+    date: "2026-08-25",
+    type: "yaxshilandi",
+    title: "Fikr-mulohazada ilova ichidagi sahifalarga havola berish oson boʻldi",
+    body:
+      "Xabar yozayotganda \"/\" bossangiz, ilova ichidagi sahifalar roʻyxati chiqadi — tanlasangiz havola oʻzi qoʻshiladi. Rasm biriktirilgan boʻlsa, endi ustiga bosib kattalashtirib koʻrish mumkin.",
+    href: "/dashboard/feedback",
+  },
+  {
     id: "landing-til-tanlash",
     date: "2026-08-24",
     type: "yangi",

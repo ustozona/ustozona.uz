@@ -127,7 +127,7 @@ function SettingsPageInner() {
           {/* Chap nav — faqat md+ */}
           <nav
             aria-label={t("sectionsNavLabel")}
-            className="hidden w-56 shrink-0 flex-col gap-6 overflow-y-auto border-r border-border px-3 py-4 md:flex"
+            className="hidden w-56 shrink-0 flex-col gap-6 scrollbar-hover overflow-y-auto border-r border-border px-3 py-4 md:flex"
           >
             {SECTION_GROUPS.map((g) => (
               <div key={g.id} className="flex flex-col gap-1">

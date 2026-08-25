@@ -45,7 +45,7 @@ export default function QuestionStrip({
           choʻzilgan qator emas). Roʻyxat qisqa boʻlsa tugma yuqorida
           qoladi, pastda ishlatilmagan boʻshliq esa ekran tagida —
           kontent bilan bogʻliqligi buzilmaydi. */}
-      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+      <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto p-3">
         <ul className="flex flex-col gap-3">
           {questions.map((question, index) => {
             const isActive = question.key === activeKey;

@@ -180,7 +180,7 @@ export default function EffectiveDateDialog({
           </DialogClose>
         </div>
 
-        <div className="flex max-h-[70vh] flex-col gap-2 overflow-y-auto scrollbar-thin p-5">
+        <div className="flex max-h-[70vh] flex-col gap-2 scrollbar-hover overflow-y-auto scrollbar-thin p-5">
           {options.map((o) => {
             const selected = kind === o.key;
             return (

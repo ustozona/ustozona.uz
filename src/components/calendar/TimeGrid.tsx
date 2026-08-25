@@ -85,7 +85,10 @@ export function TimeGrid({
           boʻlganda ostidagi kontent xira koʻrinib turadi (frosted glass). */}
       <div
         ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto scrollbar-thin [scrollbar-gutter:stable]"
+        // `scrollbar-hover` oʻzida `thin` + `scrollbar-gutter: stable` bor —
+        // shuning uchun `scrollbar-thin` va `[scrollbar-gutter:stable]` olib
+        // tashlandi (`scrollbar-thin` thumb'ni doim koʻrinadigan qilardi).
+        className="min-h-0 flex-1 scrollbar-hover overflow-y-auto"
       >
         <div
           className="sticky top-0 z-20 grid border-b border-border/60 bg-background/70 backdrop-blur-md"

@@ -533,7 +533,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             )}
           </div>
           {/* Scrollable canvas with A4 sheet */}
-          <div className="flex-1 min-h-0 overflow-y-auto print:h-auto print:overflow-visible">
+          <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto print:h-auto print:overflow-visible">
             <div
               ref={setSheetEl}
               className="a4-print a4-sheet relative bg-card mx-auto my-8 rounded-sm card-elevation p-[16mm]"

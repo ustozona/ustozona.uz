@@ -158,7 +158,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
         </div>
 
         {/* ── Tana ── */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-5">
           {/* Avatar — sinf rangi, ixtiyoriy rasm yuklash */}
           <div className="mb-5 flex items-center gap-4">
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />

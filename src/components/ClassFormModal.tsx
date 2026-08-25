@@ -191,7 +191,7 @@ export function ClassFormModal({
                     </span>
                     <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[180px] max-h-[260px] overflow-y-auto">
+                  <DropdownMenuContent className="w-[180px] max-h-[260px] scrollbar-hover overflow-y-auto">
                     <DropdownMenuRadioGroup value={grade === null ? "" : String(grade)} onValueChange={handleGradeChange}>
                       {/* "Darajasiz" — holat emas, TANLOV: toʻgarak kabi guruhlar. */}
                       <DropdownMenuRadioItem value="">{t("noGrade")}</DropdownMenuRadioItem>

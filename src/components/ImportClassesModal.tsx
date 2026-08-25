@@ -307,7 +307,7 @@ export function ImportClassesModal({ open, onOpenChange, onDone }: Props) {
               )}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+            <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-4">
               <div className="mb-2 grid grid-cols-[1fr_auto_auto] items-center gap-3 px-1">
                 <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   {t("columnClass")}

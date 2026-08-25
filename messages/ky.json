@@ -16,6 +16,7 @@
     "standards": "Стандарттар",
     "tasks": "Тапшырмалар",
     "changelog": "Жаңылануулар",
+    "help": "Жардам",
     "feedback": "Кайтарым байланыш",
     "settings": "Жөндөөлөр",
     "assignments": "Тапшырмалар",
@@ -40,10 +41,12 @@
     "behavior": "Жүрүм-турум",
     "grades": "Журнал",
     "gradesHelp": "Жардам",
+    "help": "Жардам",
     "statistics": "Статистика",
     "standards": "Стандарттар",
     "tasks": "Тапшырмалар",
     "changelog": "Жаңылануулар",
+    "help": "Жардам",
     "feedback": "Кайтарым байланыш",
     "blog": "Блог",
     "settings": "Жөндөөлөр",
@@ -739,8 +742,8 @@
   "ArticleFeedback": {
     "thanks": "Пикириңиз үчүн рахмат!",
     "wasHelpful": "Бул макала пайдалуу болдубу?",
-    "yes": "Ооба",
-    "no": "Жок"
+    "moreQuestions": "Дагы суроо барбы?",
+    "contactLink": "Бул жерге жазыңыз"
   },
   "ArticleToc": {
     "tableOfContents": "Мазмуну"

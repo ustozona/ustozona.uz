@@ -58,7 +58,7 @@ export default function SettingsDialogContent({
         </DialogClose>
       </div>
 
-      <div className="flex max-h-[70vh] flex-col gap-6 overflow-y-auto scrollbar-thin p-6">
+      <div className="flex max-h-[70vh] flex-col gap-6 scrollbar-hover overflow-y-auto scrollbar-thin p-6">
         {children}
       </div>
 

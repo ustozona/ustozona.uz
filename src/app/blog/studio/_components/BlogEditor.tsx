@@ -198,7 +198,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
       </div>
 
       {/* ── Kontent — quti/fon yoʻq, sahifaning oʻzida oqadi ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto">
         <div className="mx-auto max-w-2xl px-4 py-10 md:py-14">
           <textarea
             ref={titleRef}
@@ -209,7 +209,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
             }}
             placeholder="Sarlavha"
             rows={1}
-            className="blog-title w-full resize-none overflow-hidden bg-transparent text-4xl font-bold leading-tight text-foreground outline-none placeholder:text-muted-foreground/40 md:text-5xl"
+            className="w-full resize-none overflow-hidden bg-transparent text-4xl font-bold leading-tight text-foreground outline-none placeholder:text-muted-foreground/40 md:text-5xl"
           />
           <textarea
             ref={subtitleRef}
@@ -220,7 +220,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
             }}
             placeholder="Subtitr qoʻshing..."
             rows={1}
-            className="blog-title mt-2 w-full resize-none overflow-hidden bg-transparent text-xl text-muted-foreground outline-none placeholder:text-muted-foreground/40"
+            className="mt-2 w-full resize-none overflow-hidden bg-transparent text-xl text-muted-foreground outline-none placeholder:text-muted-foreground/40"
           />
 
           <div className="mt-5 flex items-center gap-2.5">

@@ -16,6 +16,7 @@
     "standards": "Standartlar",
     "tasks": "Vazifalar",
     "changelog": "Yangilanishlar",
+    "help": "Yordam",
     "feedback": "Fikr-mulohaza",
     "settings": "Sozlamalar",
     "assignments": "Topshiriqlar",
@@ -40,10 +41,12 @@
     "behavior": "Xulq-atvor",
     "grades": "Jurnal",
     "gradesHelp": "Yordam",
+    "help": "Yordam",
     "statistics": "Statistika",
     "standards": "Standartlar",
     "tasks": "Vazifalar",
     "changelog": "Yangilanishlar",
+    "help": "Yordam",
     "feedback": "Fikr-mulohaza",
     "blog": "Blog",
     "settings": "Sozlamalar",
@@ -739,8 +742,8 @@
   "ArticleFeedback": {
     "thanks": "Fikringiz uchun rahmat!",
     "wasHelpful": "Bu maqola foydali boʻldimi?",
-    "yes": "Ha",
-    "no": "Yoʻq"
+    "moreQuestions": "Yana savolingiz boʻlsa?",
+    "contactLink": "Shu yerga yozing"
   },
   "ArticleToc": {
     "tableOfContents": "Mundarija"

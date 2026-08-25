@@ -222,7 +222,7 @@ export function OverviewPanel({
   );
 
   return (
-    <div ref={scrollRef} className="h-full min-h-0 overflow-y-auto" style={{ overflowAnchor: "none" }}>
+    <div ref={scrollRef} className="h-full min-h-0 scrollbar-hover overflow-y-auto" style={{ overflowAnchor: "none" }}>
       <div className="flex flex-col gap-4 pb-1">
         {/* ── KPI plitkalar ── */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

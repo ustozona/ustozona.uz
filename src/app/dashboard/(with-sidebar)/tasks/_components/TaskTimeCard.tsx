@@ -102,7 +102,7 @@ export function TaskTimeCard({
         align="end"
         sideOffset={6}
         collisionPadding={12}
-        className="max-h-[var(--radix-popover-content-available-height)] w-[280px] overflow-y-auto p-0"
+        className="max-h-[var(--radix-popover-content-available-height)] w-[280px] scrollbar-hover overflow-y-auto p-0"
       >
         <Tabs value={tab} onValueChange={(v) => setTab(v as "date" | "duration")} className="gap-0">
           <div className="p-3 pb-0">

@@ -87,7 +87,7 @@ export default function StudentsDataTable({
   );
 
   return (
-    <div ref={scrollRef} className="absolute inset-0 overflow-auto">
+    <div ref={scrollRef} className="absolute inset-0 scrollbar-hover overflow-auto">
       <table className="w-full min-w-xl caption-bottom text-sm">
         <TableHeader>
           <TableRow className="hover:bg-transparent! border-b-0!">
