@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Kbd } from "@/components/ui/kbd";
 import { ImagePlus, Send, SearchCheck } from "lucide-react";
 import {
@@ -16,6 +15,7 @@ import {
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useCategoryMeta, CATEGORY_ORDER } from "./feedback-meta";
 import { useImageAttachments, AttachmentPreviewList } from "./attachments";
+import { LinkRichInput, type LinkRichInputHandle } from "@/components/feedback/link-rich-input";
 import type { NewFeedbackFormValue } from "./types";
 import { createFeedbackAction } from "@/server/actions/feedback";
 
@@ -92,7 +92,7 @@ export default function FeedbackForm({
   const router = useRouter();
   const [category, setCategory] = useState<FeedbackCategory>("taklif");
   const [body, setBody] = useState("");
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const bodyRef = useRef<LinkRichInputHandle>(null);
   const attachments = useImageAttachments();
   const submitFeedback = useFeedbackSubmit();
   const allItems = useFeedbackStore((s) => s.items);
@@ -134,18 +134,15 @@ export default function FeedbackForm({
       <div className="flex gap-3">
         {leading}
         <div className="min-w-0 flex-1">
-          <Textarea
+          <LinkRichInput
             ref={bodyRef}
             autoFocus={autoFocus}
             value={body}
-            onChange={(e) => setBody(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") onEscape?.();
-            }}
-            onPaste={attachments.onPaste}
+            onChange={setBody}
+            onEscape={onEscape}
+            onPasteFiles={attachments.onPaste}
             placeholder={t(`placeholder.${category}`)}
             rows={rows}
-            className="resize-none border-none bg-transparent p-0 text-sm shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0"
           />
         </div>
       </div>

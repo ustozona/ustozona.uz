@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { initialsOf, type FeedbackReply } from "@/store/useFeedbackStore";
 import { formatFeedbackAgo, formatFeedbackFull, useMonthsShort, useRelativeT } from "./feedback-meta";
 import { QuoteBlock } from "./QuoteBlock";
-import { EmojiText } from "@/components/ui/emoji-text";
+import { RichFeedbackText } from "@/components/feedback/rich-feedback-text";
 import { ReactionChips, QuickReactionBar } from "./ReactionBar";
 
 /* Suhbatdagi bitta javob qatori — top-level va ichki javoblar bir xil. */
@@ -73,7 +73,7 @@ export default function ReplyRow({ reply: r, flashId, onToggleReaction, onReply,
         </div>
         {r.quote && <QuoteBlock quote={r.quote} className="mt-1.5" onJump={onJump} />}
         <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 selection:bg-primary/25">
-          <EmojiText text={r.body} />
+          <RichFeedbackText text={r.body} />
         </p>
         {r.reactions && r.reactions.length > 0 && (
           <div className="mt-2">

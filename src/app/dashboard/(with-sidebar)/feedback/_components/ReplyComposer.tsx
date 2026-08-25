@@ -3,11 +3,11 @@
 import type { RefObject } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Send, X } from "lucide-react";
 import type { ReplyQuote } from "@/store/useFeedbackStore";
 import { QuoteBlock } from "./QuoteBlock";
+import { LinkRichInput, type LinkRichInputHandle } from "@/components/feedback/link-rich-input";
 
 /* Javob kompozeri — har doim oʻqituvchining oʻzi nomidan (rasmiy
    "Ustozona jamoasi" javobi faqat admin panelidan mumkin; umumiy
@@ -17,7 +17,7 @@ type Props = {
   quote?: ReplyQuote;
   draft: string;
   userInitials: string;
-  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  textareaRef: RefObject<LinkRichInputHandle | null>;
   onDraftChange: (v: string) => void;
   /** Iqtibos/ip nishonini bekor qiladi (X yoki birinchi Esc). */
   onClearTarget: () => void;
@@ -52,17 +52,14 @@ export default function ReplyComposer({
               </button>
             </div>
           )}
-          <Textarea
+          <LinkRichInput
             ref={textareaRef}
             value={draft}
-            onChange={(e) => onDraftChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") onClearTarget();
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSubmit();
-            }}
+            onChange={onDraftChange}
+            onSubmitShortcut={onSubmit}
+            onEscape={onClearTarget}
             placeholder={t("placeholderUser")}
             rows={2}
-            className="min-h-0 resize-none border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
           />
           <div className="mt-1.5 flex items-center justify-end gap-2">
             <Button
