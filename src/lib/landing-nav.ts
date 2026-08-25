@@ -75,28 +75,28 @@ export type Product = {
 export const PRODUCTS: Product[] = [
   {
     slug: "baholash",
-    name: "Ustozona Baholash",
+    name: "Ustozona baholash",
     tagline: "Bitta oʻlchov, besh xil yigʻish usuli — testdan qogʻoz OMR gacha.",
     status: "soon",
     statusLabel: "Tez orada",
   },
   {
     slug: "doska",
-    name: "Ustozona Doska",
+    name: "Ustozona doska",
     tagline: "Sinf ekrani: taymer, svetofor, tasodifiy ism, guruhlarga boʻlish.",
     status: "soon",
     statusLabel: "Tez orada",
   },
   {
     slug: "shogird",
-    name: "Shogird",
+    name: "Ustozona shogird",
     tagline: "Ota-ona va oʻquvchi uchun Telegram ilovasi.",
     status: "soon",
     statusLabel: "Tez orada",
   },
   {
     slug: "boshqaruv",
-    name: "Ustozona Boshqaruv",
+    name: "Ustozona boshqaruv",
     tagline: "Maktab maʼmuriyati uchun panel.",
     status: "soon",
     statusLabel: "Tez orada",
