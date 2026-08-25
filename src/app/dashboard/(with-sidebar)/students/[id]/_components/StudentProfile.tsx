@@ -432,7 +432,7 @@ export default function StudentProfile({
         </div>
 
         {/* Boʻlimlar — bitta karta ichida, chiziq bilan ajratilgan (scroll) */}
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto">
           {/* Shaxsiy maʼlumotlar */}
           <div className="border-b border-border p-5">
             <TypographyLabel className="mb-4 block">{t("personalInfo")}</TypographyLabel>

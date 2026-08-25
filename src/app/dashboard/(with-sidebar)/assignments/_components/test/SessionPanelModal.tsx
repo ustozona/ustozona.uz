@@ -111,7 +111,7 @@ export default function SessionPanelModal({ set, classId, onClose }: Props) {
           <Play className="size-4" /> Yangi sessiya boshlash
         </Button>
 
-        <div className="flex max-h-96 flex-col gap-3 overflow-y-auto">
+        <div className="flex max-h-96 flex-col gap-3 scrollbar-hover overflow-y-auto">
           {sessions.length === 0 && (
             <p className="text-sm text-muted-foreground">Hali sessiya yoʻq</p>
           )}

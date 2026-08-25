@@ -16,6 +16,7 @@
     "standards": "Стандарттар",
     "tasks": "Тапсырмалар",
     "changelog": "Жаңартулар",
+    "help": "Көмек",
     "feedback": "Кері байланыс",
     "settings": "Параметрлер",
     "assignments": "Тапсырмалар",
@@ -40,10 +41,12 @@
     "behavior": "Мінез-құлық",
     "grades": "Журнал",
     "gradesHelp": "Көмек",
+    "help": "Көмек",
     "statistics": "Статистика",
     "standards": "Стандарттар",
     "tasks": "Тапсырмалар",
     "changelog": "Жаңартулар",
+    "help": "Көмек",
     "feedback": "Кері байланыс",
     "blog": "Блог",
     "settings": "Параметрлер",
@@ -739,8 +742,8 @@
   "ArticleFeedback": {
     "thanks": "Пікіріңіз үшін рақмет!",
     "wasHelpful": "Бұл мақала пайдалы болды ма?",
-    "yes": "Иә",
-    "no": "Жоқ"
+    "moreQuestions": "Басқа сұрағыңыз бар ма?",
+    "contactLink": "Осы жерге жазыңыз"
   },
   "ArticleToc": {
     "tableOfContents": "Мазмұны"

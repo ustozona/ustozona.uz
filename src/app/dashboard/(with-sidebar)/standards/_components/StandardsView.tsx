@@ -136,7 +136,7 @@ export default function StandardsView({
         )}
 
         {/* Content */}
-        <div data-tour="standards-list" className="flex-1 min-h-0 overflow-y-auto">
+        <div data-tour="standards-list" className="flex-1 min-h-0 scrollbar-hover overflow-y-auto">
           {classSets.length === 0 ? (
             <div className="flex h-full items-center justify-center px-5 py-10">
               <Empty>

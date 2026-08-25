@@ -30,6 +30,10 @@ export type ReplyQuote = {
 
 export type FeedbackReply = {
   id: string;
+  /** Yozuvchi oʻqituvchining id'si (rasmiy javobda yoʻq — "Ustozona
+      jamoasi" shaxssiz). Hozircha faqat saqlanadi, UI'da ishlatilmaydi —
+      keladigan @-mention (kelajakdagi ish) uchun poydevor. */
+  authorId?: string;
   author: string;
   /** Javob egasining profil rasmi (umumiy doskada — HAR BIR yozuvchi
       boshqacha, shu sabab bitta "joriy foydalanuvchi" rasmiga

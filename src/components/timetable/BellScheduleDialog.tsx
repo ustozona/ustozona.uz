@@ -118,7 +118,7 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
         </div>
 
         <div className="grid max-h-[70vh] grid-cols-1">
-          <div className="flex flex-col gap-5 overflow-y-auto scrollbar-thin p-5">
+          <div className="flex flex-col gap-5 scrollbar-hover overflow-y-auto scrollbar-thin p-5">
             <BellWarnings cfg={draft} />
             <div className="space-y-2">
               <Label>{t("schoolProfile")}</Label>

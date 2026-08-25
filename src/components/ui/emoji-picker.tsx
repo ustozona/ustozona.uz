@@ -9,7 +9,7 @@ import { loadEmojiCategories, type EmojiCategory, type EmojiEntry } from "@/lib/
 /* Telegram-uslub, faqat-Apple-sprite emoji tanlagich. frimousse'ga
    TAYANMAYDI — oʻz maʼlumot manbamiz (emoji-datasource-apple,
    has_img_apple filtri) bilan HAR bir koʻrsatilgan emoji uchun sprite
-   kafolatlanadi. Oddiy overflow-y-auto div — sichqoncha gʻildiragi
+   kafolatlanadi. Oddiy scrollbar-hover overflow-y-auto div — sichqoncha gʻildiragi
    ishlaydi (virtualizatsiya yoʻq). Nomlar inglizcha boʻlgani va ilova
    hali haqiqiy koʻp tillilikni qoʻllab-quvvatlamagani (til tanlovi
    kosmetik) uchun matn-yorliqlar butunlay olib tashlangan — faqat
@@ -144,7 +144,7 @@ function EmojiPickerContent({ className }: { className?: string }) {
       )}
 
       {/* Panjara — oddiy scroll konteyner, gʻildirak bilan ishlaydi */}
-      <div ref={scrollRef} className="h-64 overflow-y-auto overscroll-contain p-2">
+      <div ref={scrollRef} className="h-64 scrollbar-hover overflow-y-auto overscroll-contain p-2">
         {!categories ? (
           <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
             Yuklanmoqda…

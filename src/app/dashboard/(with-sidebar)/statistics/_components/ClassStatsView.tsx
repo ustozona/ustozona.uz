@@ -100,7 +100,7 @@ export function ClassStatsView({
   const behaviorStats = eventStats(eventsInRange);
 
   return (
-    <div className="h-full min-h-0 overflow-y-auto">
+    <div className="h-full min-h-0 scrollbar-hover overflow-y-auto">
       <div className="flex flex-col gap-4 pb-1">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard icon={Users} label={t("kpiActiveStudents")} value={activeStudentCount} unit={t("unitPeople")} onClick={onViewStudents} />

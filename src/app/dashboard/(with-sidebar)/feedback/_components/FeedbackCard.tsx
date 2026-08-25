@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { EmojiText } from "@/components/ui/emoji-text";
+import { RichFeedbackText } from "@/components/feedback/rich-feedback-text";
+import type { LinkRichInputHandle } from "@/components/feedback/link-rich-input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible, CollapsibleTrigger, CollapsibleContent,
@@ -103,7 +104,7 @@ export default function FeedbackCard({
   const [replyingTo, setReplyingTo] = useState<{ parentId?: string; quote?: ReplyQuote } | null>(null);
   // Yigʻilgan ichki iplar (default yopiq — YouTube uslubi).
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<LinkRichInputHandle>(null);
   const articleRef = useRef<HTMLElement>(null);
   const flashTimer = useRef<number | undefined>(undefined);
 
@@ -316,20 +317,13 @@ export default function FeedbackCard({
             </div>
 
             {/* ── Tana + reaksiyalar + suhbat (avatarga nisbatan chapdan tekis) ── */}
-            <div className={cn("mt-2", CONTENT_INDENT)}>
+            <div className={cn("mt-3", CONTENT_INDENT)}>
               <div
                 id={`msg-${item.id}`}
                 data-msg-id={`msg-${item.id}`}
                 data-msg-author={item.author}
-                className={cn("group/msg relative", flashId === `msg-${item.id}` && "feedback-jump-flash")}
+                className={cn("group/msg", flashId === `msg-${item.id}` && "feedback-jump-flash")}
               >
-                {/* Hover'da tezkor reaksiya paneli (Slack/Telegram uslubi) */}
-                {!isEditing && (
-                  <QuickReactionBar
-                    onToggle={onToggleReaction}
-                    className="absolute -top-2 right-0 z-10 opacity-0 transition-opacity duration-fast group-hover/msg:opacity-100 focus-within:opacity-100"
-                  />
-                )}
                 {isEditing ? (
                   <div className="space-y-2">
                     <Textarea
@@ -352,8 +346,8 @@ export default function FeedbackCard({
                     </div>
                   </div>
                 ) : (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 selection:bg-primary/25">
-                    <EmojiText text={item.body} />
+                  <p className="max-w-[68ch] whitespace-pre-wrap text-sm leading-relaxed text-foreground selection:bg-primary/25">
+                    <RichFeedbackText text={item.body} />
                   </p>
                 )}
               </div>
@@ -374,8 +368,8 @@ export default function FeedbackCard({
                 </div>
               )}
 
-              {/* Ovoz + Reaksiya chiplari + Javob + Muhokama — bir qatorda (OP) */}
-              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+              {/* Ovoz + Reaksiya chiplari + Javob + Muhokama + tezkor reaksiya — bir qatorda (OP) */}
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
                 <span {...(tourTarget ? { "data-tour": "feedback-upvote" } : {})}>
                   <UpVoteButton
                     voted={isUpvotedByMe(item)}
@@ -402,6 +396,12 @@ export default function FeedbackCard({
                     <ChevronDown className="size-3.5 transition-transform duration-fast ease-standard group-data-[state=open]:rotate-180" />
                   </button>
                 </CollapsibleTrigger>
+                {!isEditing && (
+                  <QuickReactionBar
+                    onToggle={onToggleReaction}
+                    className="ml-auto opacity-0 transition-opacity duration-fast group-hover/msg:opacity-100 focus-within:opacity-100"
+                  />
+                )}
               </div>
 
               {/* ── Suhbat: yassi izoh qatorlari + kompozer ── */}

@@ -237,7 +237,7 @@ export default function OnboardingWizard() {
             indikator markazidan absolyut oʻtadi. Faol qadam halqasi indikatorda
             (ring), butun qator emas. Orqaga qaytish uchun bosiladi, oldinga
             sakrash taqiqlangan (disabled) — odatiy oqim footerdagi tugmalar. */}
-        <StepperNav className="w-60 shrink-0 justify-center gap-0 overflow-y-auto border-r border-border bg-muted/40 px-6 py-8">
+        <StepperNav className="w-60 shrink-0 justify-center gap-0 scrollbar-hover overflow-y-auto border-r border-border bg-muted/40 px-6 py-8">
           {STEPS.map((s, i) => (
             <StepperItem
               key={s.id}
@@ -266,7 +266,7 @@ export default function OnboardingWizard() {
           ))}
         </StepperNav>
 
-        <StepperPanel className="min-w-0 min-h-0 flex-1 overflow-y-auto px-6 py-6">
+        <StepperPanel className="min-w-0 min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-6">
           {/* ── 0: Xush kelibsiz ── */}
           <StepperContent value="welcome">
             <div className="flex flex-col gap-5 text-center animate-in fade-in-50 duration-base">

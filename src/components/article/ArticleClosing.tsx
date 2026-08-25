@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { Confetti, type ConfettiRef } from "@/components/magicui/confetti";
-import ArticleFeedback from "./ArticleFeedback";
+import ArticleFeedback from "@/components/article/ArticleFeedback";
 
 export default function ArticleClosing() {
   const confettiRef = useRef<ConfettiRef>(null);

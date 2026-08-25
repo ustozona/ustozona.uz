@@ -192,7 +192,7 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
       </CardHeader>
       <CardContent className={panelCardContentClass}>
         <div className="flex h-full min-h-0 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin px-5 pb-5 pt-4">
+          <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto scrollbar-thin px-5 pb-5 pt-4">
             {isEmpty ? (
               <Empty className="border-0 p-4 gap-4">
                 <EmptyHeader>

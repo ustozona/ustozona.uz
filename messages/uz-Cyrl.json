@@ -16,6 +16,7 @@
     "standards": "Стандартлар",
     "tasks": "Вазифалар",
     "changelog": "Янгиланишлар",
+    "help": "Ёрдам",
     "feedback": "Фикр-мулоҳаза",
     "settings": "Созламалар",
     "assignments": "Топшириқлар",
@@ -40,10 +41,12 @@
     "behavior": "Хулқ-атвор",
     "grades": "Журнал",
     "gradesHelp": "Ёрдам",
+    "help": "Ёрдам",
     "statistics": "Статистика",
     "standards": "Стандартлар",
     "tasks": "Вазифалар",
     "changelog": "Янгиланишлар",
+    "help": "Ёрдам",
     "feedback": "Фикр-мулоҳаза",
     "blog": "Блог",
     "settings": "Созламалар",
@@ -739,8 +742,8 @@
   "ArticleFeedback": {
     "thanks": "Фикрингиз учун раҳмат!",
     "wasHelpful": "Бу мақола фойдали бўлдими?",
-    "yes": "Ҳа",
-    "no": "Ёъқ"
+    "moreQuestions": "Яна саволингиз бўлса?",
+    "contactLink": "Шу ерга ёзинг"
   },
   "ArticleToc": {
     "tableOfContents": "Мундарижа"

@@ -14,6 +14,11 @@ function ScrollArea({
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
+      // `type="scroll"` — scrollbar faqat scroll qilinganda chiqadi va soʻng
+      // xiraladi. Standart `type="hover"` esa scrollbar emas, BUTUN kontent
+      // maydoni ustida sichqoncha turganda "visible" beradi — kursor deyarli
+      // doim kontent ustida boʻlgani uchun amalda doim koʻrinib qolardi.
+      type="scroll"
       className={cn("relative", className)}
       {...props}
     >
@@ -44,7 +49,11 @@ function ScrollBar({
       data-slot="scroll-area-scrollbar"
       orientation={orientation}
       className={cn(
-        "flex touch-none p-px transition-colors select-none",
+        // Radix `type="hover"` (standart) scroll/hover paytida "visible",
+        // aks holda "hidden" data-state beradi — lekin buni oʻzi
+        // yashirmaydi, shu CSS orqali xira qilamiz (doim koʻrinib
+        // turmasin, faqat scroll/hover paytida chiqsin).
+        "flex touch-none p-px opacity-0 transition-opacity duration-300 select-none data-[state=visible]:opacity-100",
         orientation === "vertical" &&
           "h-full w-2.5 border-l border-l-transparent",
         orientation === "horizontal" &&

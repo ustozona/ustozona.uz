@@ -42,7 +42,7 @@ export const panelCardHeaderClass =
   "flex flex-row items-center shrink-0 space-y-0 border-b border-border min-h-16 px-5 py-4";
 
 export const panelCardContentClass =
-  "flex-1 min-h-0 overflow-y-auto p-0";
+  "flex-1 min-h-0 scrollbar-hover overflow-y-auto p-0";
 
 /** CardFooter — modal footeri bilan bir xil: px-5 py-4, bg-muted/20. */
 export const panelCardFooterClass =

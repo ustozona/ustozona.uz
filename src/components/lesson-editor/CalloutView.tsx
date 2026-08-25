@@ -45,7 +45,7 @@ export default function CalloutView({ node, updateAttributes }: NodeViewProps) {
             <Icon aria-hidden="true" />
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-56 p-1 max-h-[320px] overflow-y-auto">
+        <PopoverContent align="start" className="w-56 p-1 max-h-[320px] scrollbar-hover overflow-y-auto">
           {CALLOUT_TYPES.map(({ type: optType, icon: OptIcon, color: optColor }) => (
             <button
               key={optType}

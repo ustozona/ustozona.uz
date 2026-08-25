@@ -5,6 +5,7 @@ import { feedback, teachers } from "@/server/db/schema";
 import { requireAdmin } from "@/server/session";
 import { notifyTeacher } from "../notify";
 import { writeAuditLog } from "./audit";
+import { feedbackExcerpt as excerpt } from "@/lib/feedback-link-markup";
 import type {
   FeedbackItem,
   FeedbackReply,
@@ -110,7 +111,7 @@ export async function replyToFeedbackAsTeam(
   await notifyTeacher(row.teacherId, {
     kind: "reply",
     title: "Fikringizga Ustozona jamoasi javob berdi",
-    body: body.length > 120 ? `${body.slice(0, 117)}…` : body,
+    body: excerpt(body),
     href: `/dashboard/feedback?item=${feedbackId}`,
   });
 
@@ -118,7 +119,7 @@ export async function replyToFeedbackAsTeam(
     action: "feedback.reply",
     targetType: "feedback",
     targetId: feedbackId,
-    targetLabel: item.body.slice(0, 60),
+    targetLabel: excerpt(item.body, 60),
   });
 }
 
@@ -167,7 +168,7 @@ export async function setFeedbackStatus(
   await notifyTeacher(row.teacherId, {
     kind: "status",
     title: STATUS_NOTIFY_TITLES[status] ?? "Fikringiz holati yangilandi",
-    body: item.body.length > 120 ? `${item.body.slice(0, 117)}…` : item.body,
+    body: excerpt(item.body),
     href: `/dashboard/feedback?item=${feedbackId}`,
     badgeLabel: STATUS_BADGE[status]?.label,
     badgeClassName: STATUS_BADGE[status]?.className,
@@ -177,7 +178,7 @@ export async function setFeedbackStatus(
     action: "feedback.status",
     targetType: "feedback",
     targetId: feedbackId,
-    targetLabel: item.body.slice(0, 60),
+    targetLabel: excerpt(item.body, 60),
     meta: { from: row.status, to: status },
   });
 }

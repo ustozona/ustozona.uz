@@ -502,6 +502,24 @@
   color: var(--muted-foreground);
 }
 
+/* Modulli oʻqish shkalasi (Minor Third, nisbat 1.2, baza 16px) — FAQAT
+   Yordam markazi va blog maqola sahifalarida, kontent ustuniga
+   qoʻyiladigan `.readable-scale` sinfi orqali faollashadi. Yuqoridagi
+   `--typo-*` oʻzgaruvchilarni shu doira ichida qayta belgilaydi;
+   fallback (0.875rem va h.k.) global standart boʻlib qolaveradi —
+   boshqa hech qanday sahifa oʻzgarmaydi. Manba: typescale.com (Minor
+   Third, 1.2). Qadamlar: 16 → 19.2 → 23.04 → 27.65 → 33.18 → 39.81px. */
+.readable-scale {
+  --typo-caption: 0.833rem; /* 13.33px — (-1)-qadam, kirish/lead matn (defaultdan kichik) */
+  --typo-body: 1rem;       /* 16px — 0-qadam, asosiy matn */
+  --typo-small: 1.2rem;    /* 19.2px — 1-qadam */
+  --typo-section: 1.44rem; /* 23.04px — 2-qadam, boʻlim sarlavhasi (h2) */
+  --typo-page: 2.074rem;   /* 33.18px — 4-qadam, maqola sarlavhasi (h1) */
+}
+.readable-scale.readable-scale-lg {
+  --typo-page: 2.986rem;   /* 47.78px — 6-qadam, blog post sarlavhasi */
+}
+
 /* Yorliq (UPPERCASE) — 11px / 500 */
 .text-label {
   font-size: var(--typo-label, 0.6875rem);
@@ -523,6 +541,40 @@
   background: var(--border);
   border-radius: 2px;
 }
+
+/* Native (`overflow-auto`) scrollbar — faqat hover paytida koʻrinadi.
+   Radix ScrollArea (`ui/scroll-area.tsx`, `type="scroll"`) dagi xatti-
+   harakat bilan bir xil maqsad, lekin native scrollbar ishlatiladigan
+   joylar uchun (masalan `SidebarContent`).
+
+   ⛔ KENGLIKNI HOVERDA OʻZGARTIRMANG. `scrollbar-width: none` → `thin`
+   (yoki `::-webkit-scrollbar { width }` ni oʻzgartirish) LAYOUTni surib
+   yuboradi — sidebar tugmalari hoverda "sakraydi". `scrollbar-gutter:
+   stable` ham buni QUTQARMAYDI, chunki gutter kengligi aynan
+   `scrollbar-width`dan hisoblanadi: `none` → 0px, `thin` → ~8px.
+
+   Toʻgʻri yoʻl (GitHub / VS Code naqshi): kenglik DOIM bir xil
+   (`thin` + qatʼiy `::-webkit-scrollbar` width), faqat THUMB RANGI
+   shaffofdan koʻrinadiganga oʻtadi. Shunda scrollbar "overlay" kabi
+   tuyuladi — kontent kengligi hech qachon oʻzgarmaydi. */
+.scrollbar-hover {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  scrollbar-gutter: stable;
+}
+.scrollbar-hover::-webkit-scrollbar { width: 8px; height: 8px; }
+.scrollbar-hover::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-hover::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+.scrollbar-hover:hover,
+.scrollbar-hover:focus-within {
+  scrollbar-color: var(--border) transparent;
+}
+.scrollbar-hover:hover::-webkit-scrollbar-thumb,
+.scrollbar-hover:focus-within::-webkit-scrollbar-thumb { background: var(--border); }
 
 /* ─────────────────────────────────────────────
    Jurnal (Kundalik) — rich text kontenti
@@ -922,17 +974,15 @@
    (`.lesson-prose.blog-prose p`) SHART — pastroqdagi `.lesson-prose p`
    qoidasi bir xil oʻzillik (specificity) bilan keyin kelgani uchun uni
    bosib ketardi. */
-.blog-prose { font-size: 1.25rem; }
-.lesson-prose.blog-prose p { font-size: 1.25rem; line-height: 1.75; margin: 0.85rem 0; }
-.lesson-prose.blog-prose h1 { font-size: 2.25rem; }
-.lesson-prose.blog-prose h2 { font-size: 1.5rem; }
-.lesson-prose.blog-prose h3 { font-size: 1.25rem; }
+/* Qadamlar `.readable-scale` bilan bir xil Minor Third (1.2) shkalasidan:
+   p/h3 = 1-qadam (19.2px), h2 = 3-qadam (27.65px), h1 = 4-qadam (33.18px). */
+.blog-prose { font-size: 1.2rem; }
+.lesson-prose.blog-prose p { font-size: 1.2rem; line-height: 1.75; margin: 0.85rem 0; }
+.lesson-prose.blog-prose h1 { font-size: 2.074rem; }
+.lesson-prose.blog-prose h2 { font-size: 1.728rem; }
+.lesson-prose.blog-prose h3 { font-size: 1.2rem; }
 .blog-prose .ProseMirror { min-height: 40vh; }
 
-/* Blog sarlavhasi — serif (src/app/blog/layout.tsx qamrovi), faqat
-   sarlavha va matn tanasi; badge/tugma/UI xromi DM Sans'da qoladi. */
-.blog-title,
-.blog-prose { font-family: var(--font-blog-serif), Georgia, serif; }
 /* Baza matn oʻlchami 16px → 14px (mutanosib): container'ga font-size
    berilgan — h1/h2/h3/p bundan mustasno (`rem` ROOT'ga bogʻliq, containerga
    emas, shuning uchun ular pastda ALOHIDA qayta hisoblangan), lekin li/
@@ -1081,6 +1131,52 @@
   line-height: var(--callout-title-lh);
   color: var(--foreground);
 }
+
+/* ── Statik callout (Yordam maqolalari) ───────────────────────────────────
+   Dars muharriridagi Obsidian-uslub `.callout` bilan bir xil vizual til
+   (chap rangli hoshiya + tint fon + ikon ustuni) — lekin tahrirlanmaydigan,
+   Tiptap NodeView'siz statik variant (`.lesson-prose` skopidan mustaqil,
+   chunki yordam maqolalari server komponent, editor bundle yuklanmaydi). */
+.static-callout {
+  --cl: var(--info);
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  column-gap: 0.65rem;
+  align-items: start;
+  background: color-mix(in srgb, var(--cl) 6%, var(--card));
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.1rem;
+}
+.static-callout::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0.28rem;
+  background: var(--cl);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+.static-callout-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--cl);
+}
+.static-callout-icon svg { width: 1.05rem; height: 1.05rem; }
+.static-callout-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+  color: var(--foreground);
+}
+.static-callout-body {
+  font-size: var(--typo-body, 0.875rem);
+  line-height: 1.5;
+  color: var(--foreground);
+}
+.static-callout-title + .static-callout-body { margin-top: 0.3rem; }
 .lesson-prose .callout-inner > :nth-child(2) { margin-top: 0.35rem; }
 .lesson-prose .callout-inner > :last-child { margin-bottom: 0; }
 

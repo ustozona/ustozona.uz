@@ -42,7 +42,10 @@ function MessageScrollerViewport({
     <MessageScrollerPrimitive.Viewport
       data-slot="message-scroller-viewport"
       className={cn(
-        "size-full min-h-0 min-w-0 scroll-fade-b scrollbar-thin scrollbar-gutter-stable overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-none",
+        // `scrollbar-hover` — `scrollbar-thin` OʻRNIGA: ikkalasi qarama-qarshi
+        // (thin = doim koʻrinadi, hover = faqat hoverda). `scrollbar-hover`
+        // oʻzida `scrollbar-gutter: stable` ham bor.
+        "size-full min-h-0 min-w-0 scroll-fade-b scrollbar-hover overflow-y-auto overscroll-contain contain-content data-autoscrolling:scrollbar-none",
         className
       )}
       {...props}

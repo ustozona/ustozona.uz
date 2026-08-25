@@ -26,7 +26,7 @@ export function AuthShell({
         showFeatureLoop && "lg:grid-cols-2",
       )}
     >
-      <div className="scrollbar-thin relative flex h-svh min-h-0 flex-col gap-4 overflow-y-auto p-6 md:p-10">
+      <div className="scrollbar-thin relative flex h-svh min-h-0 flex-col gap-4 scrollbar-hover overflow-y-auto p-6 md:p-10">
         {/* Hero'dagi kabi yumshoq gradient — sahifalar bir oilaga oʻxshasin. */}
         <div
           aria-hidden

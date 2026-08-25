@@ -31,7 +31,7 @@ export function BlogGrid({ posts }: { posts: BlogPostSummary[] }) {
               <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("uz-UZ") : ""}</span>
             </div>
 
-            <h3 className="blog-title line-clamp-2 text-lg font-semibold">
+            <h3 className="line-clamp-2 text-lg font-semibold">
               <Link href={`/blog/${post.slug}`}>{post.title}</Link>
             </h3>
             {post.excerpt && <p className="line-clamp-2 text-muted-foreground">{post.excerpt}</p>}

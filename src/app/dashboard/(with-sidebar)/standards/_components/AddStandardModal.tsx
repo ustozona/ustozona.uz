@@ -150,7 +150,7 @@ function LibraryTab({
         </div>
       </div>
 
-      <div className="max-h-[46vh] overflow-y-auto px-6 pb-2 space-y-2">
+      <div className="max-h-[46vh] scrollbar-hover overflow-y-auto px-6 pb-2 space-y-2">
         {filtered.length === 0 ? (
           <div className="py-10 text-center">
             <TypographyMuted>{t("noMatchInLibrary")}</TypographyMuted>
@@ -248,7 +248,7 @@ function CreateTab({
 
   return (
     <div className="flex flex-col">
-      <div className="px-6 py-4 space-y-4 max-h-[46vh] overflow-y-auto">
+      <div className="px-6 py-4 space-y-4 max-h-[46vh] scrollbar-hover overflow-y-auto">
         <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-4">
           <Field label={t("fieldCode")} error={touched ? codeError : ""}>
             <Input

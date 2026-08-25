@@ -58,7 +58,7 @@ export default function TestOptionCard({
         placeholder={`${index + 1}-variant`}
         maxLength={500}
         rows={1}
-        className="max-h-full min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent py-[0.5em] text-left text-[length:inherit] font-medium leading-snug text-foreground [field-sizing:content] placeholder:text-muted-foreground focus-visible:outline-none"
+        className="max-h-full min-w-0 flex-1 resize-none scrollbar-hover overflow-y-auto border-0 bg-transparent py-[0.5em] text-left text-[length:inherit] font-medium leading-snug text-foreground [field-sizing:content] placeholder:text-muted-foreground focus-visible:outline-none"
       />
     </div>
   );

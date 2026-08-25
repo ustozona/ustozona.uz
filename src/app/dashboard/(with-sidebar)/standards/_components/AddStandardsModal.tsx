@@ -157,7 +157,7 @@ function BrowseTab({ classId }: { classId: string }) {
         <span className="text-caption text-muted-foreground">{t("resultsCount", { count: results.length })}</span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-4 space-y-2.5">
+      <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto px-6 pb-4 space-y-2.5">
         {results.length === 0 ? (
           <p className="text-center text-caption text-muted-foreground py-10">{t("noMatchingSets")}</p>
         ) : (
@@ -377,7 +377,7 @@ function MyStandardsTab({ classId }: { classId: string }) {
         <span className="text-caption text-muted-foreground">{t("customSetsCount", { count: customSets.length })}</span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-4 space-y-2.5">
+      <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto px-6 pb-4 space-y-2.5">
         {customSets.length === 0 ? (
           <p className="text-center text-caption text-muted-foreground py-10">
             {t("noCustomSetsYet")}

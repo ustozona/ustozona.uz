@@ -531,7 +531,7 @@ export default function GradesTable({
       </CardHeader>
 
       {/* Jadval */}
-      <CardContent className={cn(panelCardContentClass, "overflow-auto scrollbar-thin [&_div[data-slot=table-container]]:overflow-visible [&_div[data-slot=table-container]]:h-full")}>
+      <CardContent className={cn(panelCardContentClass, "scrollbar-hover overflow-auto scrollbar-thin [&_div[data-slot=table-container]]:overflow-visible [&_div[data-slot=table-container]]:h-full")}>
         {students.length === 0 ? (
           <GradesEmptyState />
         ) : (

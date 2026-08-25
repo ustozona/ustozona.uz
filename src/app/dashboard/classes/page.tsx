@@ -1058,12 +1058,12 @@ function ClassesDataTable({
   // Sarlavha qatorini scroll konteynerga nisbatan qotiradi (statistikadagi
   // ClassesTable bilan bir xil naqsh) — pastga siljitilganda ustunlar
   // koʻrinishda qoladi. Jadval oʻzi emas, uni oʻrab turgan CardContent
-  // (panelCardContentClass, overflow-y-auto) scroll boʻladi — shuning
+  // (panelCardContentClass, scrollbar-hover overflow-y-auto) scroll boʻladi — shuning
   // uchun soya holati shu eng yaqin scroll ota-elementini topib kuzatiladi.
   const [scrolled, setScrolled] = useState(false);
   const tableRef = useRef<HTMLTableElement>(null);
   useEffect(() => {
-    const scrollEl = tableRef.current?.closest<HTMLElement>(".overflow-y-auto");
+    const scrollEl = tableRef.current?.closest<HTMLElement>(".scrollbar-hover overflow-y-auto");
     if (!scrollEl) return;
     const onScroll = () => setScrolled(scrollEl.scrollTop > 0);
     onScroll();

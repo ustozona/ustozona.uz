@@ -141,7 +141,7 @@ export function StudentsTablePanel({
         </div>
 
         <div
-          className="flex-1 min-h-0 overflow-auto"
+          className="flex-1 min-h-0 scrollbar-hover overflow-auto"
           onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}
         >
           <StudentsTable rows={filteredRows} scrolled={scrolled} onSelect={onSelectStudent} hideClassColumn={!!classId} />

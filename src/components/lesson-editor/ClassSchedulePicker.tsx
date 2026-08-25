@@ -153,7 +153,7 @@ export default function ClassSchedulePicker({
 
       {/* Oʻng — sozlamalar paneli */}
       <div className="w-[240px] shrink-0 border-l border-border p-4 flex flex-col gap-4">
-        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-y-auto">
+        <div className="flex-1 min-h-0 flex flex-col gap-3 scrollbar-hover overflow-y-auto">
           {selectedDate && (
             <span className="text-sm font-semibold text-foreground">
               {t("daySelected", { date: `${selectedDate.getDate()}-${MONTHS_UZ_SHORT[selectedDate.getMonth()]}` })}

@@ -68,7 +68,7 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
   ].join(" ");
 
   return (
-    <div className="mx-6 mb-6 mt-2 min-h-0 flex-1 overflow-auto rounded-md border border-border [scrollbar-width:thin]">
+    <div className="mx-6 mb-6 mt-2 min-h-0 flex-1 scrollbar-hover overflow-auto rounded-md border border-border [scrollbar-width:thin]">
       <div className="grid min-h-full min-w-[680px]" style={{ gridTemplateColumns: "6.5rem repeat(6, minmax(0, 1fr))", gridTemplateRows: rowTemplate }}>
         {/* Sarlavha */}
         <div className="sticky top-0 z-20 border-b border-r border-border/60 bg-background/70 py-2.5 text-center text-[13px] font-semibold text-foreground/70 backdrop-blur-md">{fmt.t("hourHeader")}</div>

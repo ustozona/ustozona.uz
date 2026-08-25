@@ -271,7 +271,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
         {/* ── Bosqich: bitta oʻquvchi ── */}
         {step === "single" && (
           <form className="contents" onSubmit={(e) => { e.preventDefault(); submitSingle(); }}>
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+            <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-5">
               <div className="mb-5 flex justify-center">
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
                 <div className="relative shrink-0">
@@ -520,7 +520,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
               </Button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+            <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto px-6 py-4">
               {/* ⇄ ustuni ATAYLAB ikki maydon ORASIDA — oʻchirish tugmasi
                   yonida emas. Ikki sabab: shakl «shu ikkisini almashtir»
                   maʼnosini oʻzi koʻrsatadi (izoh kerak boʻlmaydi), va

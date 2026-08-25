@@ -101,7 +101,7 @@ export default function DetailsPanel({
       />
 
       {/* Body */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-7">
+      <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto px-5 py-5 space-y-7">
         {/* CLASSES (koʻp tanlov) */}
         <div>
           <SectionLabel>{t("classes")}</SectionLabel>
@@ -145,7 +145,7 @@ export default function DetailsPanel({
                 </FieldButton>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[280px] overflow-y-auto">
+            <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[280px] scrollbar-hover overflow-y-auto">
               {liveClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
                 const on = selectedIds.includes(c.id);
@@ -196,7 +196,7 @@ export default function DetailsPanel({
                         <ChevronDown className="size-4 opacity-50 shrink-0" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[260px] overflow-y-auto p-1.5">
+                    <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[260px] scrollbar-hover overflow-y-auto p-1.5">
                       <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-2.5 py-2 rounded-lg">
                         <span className="size-2.5 rounded-full shrink-0 bg-muted-foreground/25" />
                         <span className="flex-1 truncate text-muted-foreground">{t("noUnit")}</span>

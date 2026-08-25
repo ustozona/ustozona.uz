@@ -32,7 +32,7 @@ export default function ThemesPanel({ value, onChange, onClose }: Props) {
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto p-4">
         <ul className="grid grid-cols-2 gap-2">
           {STAGE_THEMES.map((theme) => {
             const isActive = theme.id === value;

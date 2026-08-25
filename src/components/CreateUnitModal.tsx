@@ -104,7 +104,7 @@ export default function CreateUnitModal({
                 />
               </button>
               {pickerOpen && (
-                <div className="mt-1 rounded-md border border-border bg-popover p-1 shadow-md max-h-[200px] overflow-y-auto">
+                <div className="mt-1 rounded-md border border-border bg-popover p-1 shadow-md max-h-[200px] scrollbar-hover overflow-y-auto">
                   <div className="space-y-0.5">
                     {selectableClasses.map((c) => {
                       const hex = CLASS_COLOR_HEX[classColor(c)];

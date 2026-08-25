@@ -285,7 +285,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                   </SheetClose>
                 </div>
 
-                <div className="flex flex-col gap-12 px-6 pb-6 overflow-y-auto">
+                <div className="flex flex-col gap-12 px-6 pb-6 scrollbar-hover overflow-y-auto">
                   <div className="flex flex-col gap-8">
                     <SheetTitle className="sr-only">{t("nav.menu")}</SheetTitle>
                     <NavigationMenu
