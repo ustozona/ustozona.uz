@@ -514,12 +514,47 @@ buzuq versiyasi: ularda qaytariladigan amal, bizda qaytarilmas.
 
 ⛔ **Ikkinchi oʻqituvchi qoʻshilishidan OLDIN tuzatilsin.**
 
+### 10.5a. ✅ Qurilgan — sinf egasi (2026-08-26)
+
+`class_teachers.role` (`owner | teacher`) qoʻshildi, migratsiya
+`0036_sinf_egasi.sql`. Mavjud biriktirishlar `owner` qilindi — bu paytda
+har sinfda aynan bitta oʻqituvchi bor edi (0035 shunday yaratgan,
+hamkasb qoʻshish oqimi esa hali yoʻq edi), demak taxmin xavfsiz.
+
+⚠️ Ustun default'i ATAYLAB `teacher`: keyin qoʻshiladigan hamkasblar
+tasodifan ega boʻlib qolmasin. Ega faqat sinf yaratilayotganda ochiq
+beriladi.
+
+**Qoidalar** (`src/server/dal/class-teachers.ts`):
+
+| Amal | Kim |
+|---|---|
+| Hamkasb biriktirish | Ega yoki maydon admini |
+| Hamkasbni chiqarish | Ega/admin, YOKI hamkasbning oʻzi |
+| Egani chiqarish | ⛔ Hech kim — avval egalik oʻtkazilsin |
+| Egalik oʻtkazish | Ega yoki admin (ClassDojo'da ham School Leader eganing roziligisiz qila oladi) |
+
+⭐ Qoʻshishda **ikki** tekshiruv: chaqiruvchi ega/admin ekani **va**
+qoʻshilayotgan odam shu maydon aʼzosi ekani. Ikkinchisisiz begona
+`teacherId` yuborilib, maydondan tashqaridagi odamga bolalar maʼlumoti
+ochilardi.
+
+**Egasiz sinf qolmaydi:** ega ulashilgan sinfdan chiqsa (store
+sinxronizatsiyasi orqali), eng eski qolgan hamkasb avtomatik ega
+boʻladi. Aks holda sinf yetim qolardi — dars oʻtilaveradi, lekin hech
+kim hamkasb qoʻsha olmaydi va sinfni oʻchira olmaydi, interfeys orqali
+esa tuzatib boʻlmaydi.
+
+**UI:** sinf sahifasi yon ustunidagi «Oʻqituvchilar» kartasi
+(`components/classes/ClassTeachersCard.tsx`). ⭐ Yakka maydonda
+**umuman koʻrsatilmaydi** — almashtirgich bilan bir xil qoida (§1).
+
 ### 10.6. Fors-major roʻyxati
 
 | Holat | Hozir | Kerak |
 |---|---|---|
-| Oʻqituvchi boshqasining sinfini oʻchiradi | 🔴 Oʻchadi, baholar cascade | `assertTeachesClass` (§10.5) |
-| Ega maktabdan ketdi | Sinf yetim, tuzatib boʻlmaydi | Egalik oʻtkazish + admin majburlashi |
+| Oʻqituvchi boshqasining sinfini oʻchiradi | ✅ Tuzatildi — «ajrat yoki oʻchir» (§10.5) | — |
+| Ega maktabdan ketdi | ✅ Egalik oʻtkazish bor; ega chiqsa voris avtomatik (§10.5a) | Admin UI (aʼzoni butun maydondan chiqarish) |
 | Ikki oʻqituvchi bir bolani alohida kiritdi | Ikkita «Bobur» | Birlashtirish, ochiq tasdiq bilan (§7.2) |
 | Yakka oʻqituvchi maktabga qoʻshildi | Qisman bor | «Sinflaringizni olib kelasizmi?» ekrani |
 | Maktabdan chiqarildi | ✅ Aʼzolik oʻchadi, baholari qoladi (mualliflik, §3.2) | — |
