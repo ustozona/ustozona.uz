@@ -1,8 +1,9 @@
 import "server-only";
 import { and, count, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { classes, students, teachers, workspaceMembers, workspaces } from "@/server/db/schema";
+import { teachers, workspaceMembers, workspaces } from "@/server/db/schema";
 import { requireAdmin } from "@/server/session";
+import { moveTeacherToWorkspace } from "../workspace-membership";
 import { writeAuditLog } from "./audit";
 
 /* Admin paneli "Maktablar" boʻlimi.
@@ -163,50 +164,9 @@ export async function assignTeacherToSchool(
 ): Promise<void> {
   const { actor } = await requireAdmin();
 
-  await db.transaction(async (tx) => {
-    const current = await tx
-      .select({ workspaceId: workspaceMembers.workspaceId, kind: workspaces.kind })
-      .from(workspaceMembers)
-      .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
-      .where(eq(workspaceMembers.teacherId, teacherId));
-
-    if (schoolId) {
-      // Shaxsiy maydondagi ish maktabga koʻchadi.
-      const personal = current.find((m) => m.kind === "personal");
-      if (personal && personal.workspaceId !== schoolId) {
-        await tx
-          .update(classes)
-          .set({ workspaceId: schoolId })
-          .where(eq(classes.workspaceId, personal.workspaceId));
-        await tx
-          .update(students)
-          .set({ workspaceId: schoolId })
-          .where(eq(students.workspaceId, personal.workspaceId));
-      }
-    }
-
-    // Yakka aʼzolik: eskilari olib tashlanadi.
-    await tx.delete(workspaceMembers).where(eq(workspaceMembers.teacherId, teacherId));
-
-    const target = schoolId ?? `ws-${teacherId}`;
-    if (!schoolId) {
-      // Maktabdan chiqarilganda shaxsiy maydon tiklanadi (u oʻchirilgan
-      // boʻlishi mumkin emas, lekin ehtiyot uchun idempotent).
-      const [t] = await tx.select().from(teachers).where(eq(teachers.id, teacherId));
-      await tx
-        .insert(workspaces)
-        .values({ id: target, name: t?.name ?? "Shaxsiy", kind: "personal" })
-        .onConflictDoNothing();
-    }
-    await tx
-      .insert(workspaceMembers)
-      .values({ workspaceId: target, teacherId, role: schoolId ? "teacher" : "owner" })
-      .onConflictDoNothing();
-    await tx
-      .update(teachers)
-      .set({ activeWorkspaceId: target })
-      .where(eq(teachers.id, teacherId));
-  });
+  /* Koʻchirish mantigʻi umumiy modulda — oʻqituvchi taklif kodini qabul
+     qilganda ham AYNAN shu bajariladi (dal/workspace-membership.ts). */
+  await moveTeacherToWorkspace(teacherId, schoolId);
 
   const [teacher] = await db.select().from(teachers).where(eq(teachers.id, teacherId));
   await writeAuditLog(actor, {

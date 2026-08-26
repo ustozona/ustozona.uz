@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   ListTodo,
   Link2,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -101,6 +102,18 @@ export const SECTIONS: SectionDef[] = [
     subtitle: "Tugʻilgan kun avto-vazifasi",
     icon: ListTodo,
     Component: dynamic(() => import("./_components/TasksSection")),
+  },
+  {
+    /* Jamoa — «Hisob» guruhida, chunki bu maydon/aʼzolik masalasi,
+       taʼlim jarayoni emas. Yakka oʻqituvchi ham koʻradi: u yerda
+       «Hamkasbni taklif qilish» tugmasi turadi (§1 — «maktab» soʻzi
+       koʻrinmaydi, faqat hamkasb). */
+    id: "jamoa",
+    group: "hisob",
+    label: "Jamoa",
+    subtitle: "Hamkasblar va taklif kodlari",
+    icon: Users,
+    Component: dynamic(() => import("./_components/TeamSection")),
   },
   {
     id: "tarif",
