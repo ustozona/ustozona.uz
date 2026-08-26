@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { toast } from "sonner";
+import { unwrap } from "@/lib/action-result";
 import { Crown, Plus, UserMinus } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -65,8 +66,8 @@ export function ClassTeachersCard({ classId }: { classId: string }) {
   const load = React.useCallback(() => {
     Promise.all([getClassTeachersAction({ classId }), getWorkspaceMembersAction()])
       .then(([t, m]) => {
-        setTeachers(t);
-        setMembers(m);
+        setTeachers(unwrap(t));
+        setMembers(unwrap(m));
       })
       .catch(() => {
         setTeachers([]);
@@ -91,11 +92,11 @@ export function ClassTeachersCard({ classId }: { classId: string }) {
     setPickerOpen(false);
     startTransition(async () => {
       try {
-        await addClassTeacherAction({ classId, teacherId: m.teacherId });
+        unwrap(await addClassTeacherAction({ classId, teacherId: m.teacherId }));
         toast.success(`${m.name} darsga biriktirildi`);
         load();
-      } catch {
-        toast.error("Biriktirib boʻlmadi");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Biriktirib boʻlmadi");
       }
     });
   };
@@ -104,11 +105,11 @@ export function ClassTeachersCard({ classId }: { classId: string }) {
     setRemoving(null);
     startTransition(async () => {
       try {
-        await removeClassTeacherAction({ classId, teacherId: t.teacherId });
+        unwrap(await removeClassTeacherAction({ classId, teacherId: t.teacherId }));
         toast.success(t.isMe ? "Darsdan chiqdingiz" : `${t.name} chiqarildi`);
         load();
-      } catch {
-        toast.error("Chiqarib boʻlmadi");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Chiqarib boʻlmadi");
       }
     });
   };

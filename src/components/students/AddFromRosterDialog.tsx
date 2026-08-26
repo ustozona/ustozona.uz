@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/command";
 import { useGradesStore } from "@/store/useGradesStore";
 import { getWorkspaceRosterAction } from "@/server/actions/workspace";
+import { unwrap } from "@/lib/action-result";
 import type { Student } from "@/lib/grades-data";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -54,8 +55,8 @@ export function AddFromRosterDialog({
     let cancelled = false;
     setRoster(null);
     getWorkspaceRosterAction()
-      .then((rows) => {
-        if (!cancelled) setRoster(rows);
+      .then((r) => {
+        if (!cancelled) setRoster(unwrap(r));
       })
       .catch(() => {
         if (!cancelled) setRoster([]);

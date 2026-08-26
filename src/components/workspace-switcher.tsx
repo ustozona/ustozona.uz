@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Building2, Check, ChevronsUpDown, User } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { switchWorkspaceAction } from "@/server/actions/workspace";
+import { unwrap } from "@/lib/action-result";
 
 export type WorkspaceOption = {
   id: string;
@@ -95,7 +97,11 @@ export function WorkspaceSwitcher({ workspaces }: { workspaces: WorkspaceOption[
                 disabled={pending || w.id === active.id}
                 onSelect={() =>
                   startTransition(async () => {
-                    await switchWorkspaceAction({ workspaceId: w.id });
+                    try {
+                      unwrap(await switchWorkspaceAction({ workspaceId: w.id }));
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : "Almashtirib boʻlmadi");
+                    }
                   })
                 }
               >
