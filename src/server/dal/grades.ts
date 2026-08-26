@@ -17,7 +17,12 @@ import {
   type TopicRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
-import { requireWorkspace, visibleClassIds, visibleStudentIds } from "@/server/workspace";
+import {
+  requireWorkspace,
+  taughtClassIds,
+  visibleClassIds,
+  visibleStudentIds,
+} from "@/server/workspace";
 import { parseClassName } from "@/lib/class-naming";
 import type {
   Assignment,
@@ -48,6 +53,13 @@ import type { GradesBatch } from "@/lib/sync/grades-batch";
    upsert'larda `setWhere`(egasi boshqa boʻlsa update NO-OP),
    delete'larda `eq(teacherId)`, bola-qatorlarda esa ota-id'lar
    oʻqituvchining oʻz toʻplamiga filtrlab olinadi.
+
+   ⚠️ ISTISNO — `students` va `classes` oʻchirilishi. Bu ikki jadval
+   MAYDONGA tegishli, oʻqituvchiga emas, shu bois `eq(teacherId)`
+   naqshi ularga qoʻllanmaydi. Oʻrniga «ajrat yoki oʻchir» mantigʻi
+   ishlaydi: yozuv faqat undan boshqa hech kim foydalanmayotgan
+   boʻlsa oʻchadi (`detachOrDeleteStudents` / `detachOrDeleteClasses`
+   — fayl oxirida, sabab oʻsha yerda yozilgan).
    ════════════════════════════════════════════════════════════════════ */
 
 const CHUNK = 400;
@@ -452,14 +464,114 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   for (const part of chunks(batch.topicsDelete)) {
     await db.delete(topics).where(and(eq(topics.teacherId, tid), inArray(topics.id, part)));
   }
-  for (const part of chunks(batch.studentsDelete)) {
-    await db
-      .delete(students)
-      .where(and(eq(students.workspaceId, ctx.workspaceId), inArray(students.id, part)));
+  /* ⚠️ Oʻquvchi va sinf OʻCHIRISHI — maydon filtri YETARLI EMAS.
+
+     Ilgari bu ikki amal faqat `workspaceId` bilan cheklangan edi. Yakka
+     oʻqituvchi davrida bu zararsiz koʻrinardi (maydon = oʻqituvchining
+     oʻzi), lekin ikkinchi oʻqituvchi qoʻshilishi bilan u maʼlumot
+     yoʻqotish yoʻliga aylanadi: B oʻqituvchining brauzeridagi store
+     diffi A oʻqituvchining sinfini va undagi HAMMA bahoni cascade
+     bilan oʻchirib yuborardi — jimgina, tasdiqsiz, qaytarilmas.
+
+     Toʻgʻri semantika (docs/ish-maydoni-arxitektura.md §10.5):
+     «oʻchirish» — bu MENING roʻyxatimdan olib tashlash. Yozuvning oʻzi
+     faqat undan boshqa hech kim foydalanmayotgan boʻlsa oʻchadi. */
+  await detachOrDeleteStudents(batch.studentsDelete);
+  await detachOrDeleteClasses(batch.classesDelete, tid, ctx.workspaceId);
+}
+
+/**
+ * Oʻquvchini roʻyxatdan olib tashlaydi.
+ *
+ * Bola MAYDONGA tegishli, oʻqituvchiga emas — demak uni butunlay
+ * oʻchirish faqat boshqa hech bir oʻqituvchi uni oʻqitmayotganda
+ * mumkin. Aks holda faqat MENING darslarimdagi yozilishlari uziladi:
+ * hamkasbning jurnalida bola va uning baholari joyida qoladi.
+ */
+async function detachOrDeleteStudents(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+
+  /* ⛔ `taughtClassIds` — `visibleClassIds("data")` EMAS: admin butun
+     maydonni koʻradi, lekin hech kimning bolasini oʻchira olmaydi
+     (docs/ish-maydoni-arxitektura.md §11.6). */
+  const mine = await taughtClassIds();
+  const targets = new Set<string>();
+  if (mine.length > 0) {
+    const rows = await db
+      .selectDistinct({ id: enrollments.studentId })
+      .from(enrollments)
+      .where(inArray(enrollments.classId, mine));
+    for (const r of rows) targets.add(r.id);
   }
-  for (const part of chunks(batch.classesDelete)) {
+  /* Qamrovdan tashqaridagi id jimgina tashlab yuboriladi — client
+     eskirgan holatdan begona id yuborishi mumkin. */
+  const scoped = ids.filter((id) => targets.has(id));
+  if (scoped.length === 0) return;
+
+  for (const part of chunks(scoped)) {
+    if (mine.length > 0) {
+      await db
+        .delete(enrollments)
+        .where(and(inArray(enrollments.studentId, part), inArray(enrollments.classId, mine)));
+    }
+  }
+
+  /* Endi qaysi biri hali ham biror guruhda qolgan — oʻsha saqlanadi. */
+  const stillEnrolled = new Set<string>();
+  for (const part of chunks(scoped)) {
+    const rows = await db
+      .selectDistinct({ id: enrollments.studentId })
+      .from(enrollments)
+      .where(inArray(enrollments.studentId, part));
+    for (const r of rows) stillEnrolled.add(r.id);
+  }
+
+  const orphaned = scoped.filter((id) => !stillEnrolled.has(id));
+  for (const part of chunks(orphaned)) {
+    await db.delete(students).where(inArray(students.id, part));
+  }
+}
+
+/**
+ * Sinfni oʻchiradi yoki undan chiqadi.
+ *
+ * Hamkasb ham shu darsni oʻtayotgan boʻlsa — sinf OʻCHMAYDI, faqat
+ * mening biriktirishim uziladi. Bu ClassDojo'dagi «leave a shared
+ * class» ning aynan oʻzi va bizga ham shu kerak: sinf oʻchsa cascade
+ * hamkasbning baholarini ham olib ketardi.
+ */
+async function detachOrDeleteClasses(
+  ids: string[],
+  tid: string,
+  workspaceId: string
+): Promise<void> {
+  if (ids.length === 0) return;
+
+  /* ⛔ Oʻchirish — admin istisnosiSIZ toʻplam (§11.6). */
+  const mine = new Set(await taughtClassIds());
+  const scoped = ids.filter((id) => mine.has(id));
+  if (scoped.length === 0) return;
+
+  /* Mendan boshqa oʻqituvchisi bor sinflar — ular saqlanadi. */
+  const shared = new Set<string>();
+  for (const part of chunks(scoped)) {
+    const rows = await db
+      .select({ classId: classTeachers.classId, teacherId: classTeachers.teacherId })
+      .from(classTeachers)
+      .where(inArray(classTeachers.classId, part));
+    for (const r of rows) if (r.teacherId !== tid) shared.add(r.classId);
+  }
+
+  for (const part of chunks(scoped)) {
+    await db
+      .delete(classTeachers)
+      .where(and(eq(classTeachers.teacherId, tid), inArray(classTeachers.classId, part)));
+  }
+
+  const solo = scoped.filter((id) => !shared.has(id));
+  for (const part of chunks(solo)) {
     await db
       .delete(classes)
-      .where(and(eq(classes.workspaceId, ctx.workspaceId), inArray(classes.id, part)));
+      .where(and(eq(classes.workspaceId, workspaceId), inArray(classes.id, part)));
   }
 }

@@ -176,16 +176,62 @@ export async function listWorkspaceRoster(): Promise<
   return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, "uz"));
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   MAYDON ADMINI (admin-lite) — direktor, zavuch va ular ruxsat bergan
+   har kim. docs/ish-maydoni-arxitektura.md §11.
+
+   ⚠️ Bu PLATFORMA admini EMAS. `/admin/*` va `super_admin` — Ustozona
+   jamoasining paneli, butunlay boshqa oʻq (§11.1). Ikkisini
+   aralashtirish tarixiy xato edi: eski `requireSchoolAdmin()` global
+   auth roli VA aʼzolikni birga talab qilardi, natijada mijoz oʻzi
+   zavuch tayinlay olmasdi. U olib tashlandi.
+
+   ⭐ Faqat `admin` roli hisobga olinadi, `owner` EMAS. Sabab: `owner`
+   maydonni yaratgan odam (hisob/oʻchirish maʼnosida), bu maʼlumot roli
+   emas. Aks holda jamoa maydonini ochgan oʻqituvchi hamkasblarining
+   baholarini SEZDIRMASDAN koʻra boshlardi — nazorat oshirish ochiq
+   qadam boʻlishi kerak, yon taʼsir emas. Shaxsiy maydonda farq yoʻq:
+   u yerda hamma sinf baribir oʻzining `class_teachers` i orqali
+   koʻrinadi.
+   ════════════════════════════════════════════════════════════════════ */
+
+function hasAdminRole(ctx: WorkspaceContext): boolean {
+  return ctx.role === "admin";
+}
+
+/**
+ * Maydon admini darvozasi — aʼzolarni boshqarish, taklif qilish,
+ * maydon sozlamalari uchun.
+ *
+ * ⛔ Baho/davomat YOZISH uchun ishlatilmaydi: §11.6 qarori boʻyicha
+ * admin v1 da faqat OʻQIYDI. Yozish `assertTeachesClass` dan oʻtadi va
+ * u admin istisnosini tan olmaydi.
+ */
+export async function requireWorkspaceAdmin(): Promise<WorkspaceContext> {
+  const ctx = await requireWorkspace();
+  if (!hasAdminRole(ctx)) throw new ForbiddenError("Bu amal maydon adminiga tegishli");
+  return ctx;
+}
+
 /**
  * Koʻrinadigan sinf/guruh id'lari.
  *
  * `data`   — faqat oʻzi oʻtadigan darslar (`class_teachers`)
  * `roster` — maydondagi barcha sinf
+ *
+ * ⭐ ADMIN ISTISNOSI (§11.6): admin uchun `data` ham butun maydon.
+ * Zavuchning darsi yoʻq, demak umumiy qoida boʻyicha u HECH NARSA
+ * koʻrmasdi — bu admin-lite'ning maʼnosini yoʻqotadi. ClassDojo'da ham
+ * School Leader butun maktabni koʻradi; FERPA buni "legitimate
+ * educational interest" bilan oqlaydi.
+ *
+ * ⚠️ Istisno maydon TURIGA emas, ROLGA qaraydi — yaʼni §1 dagi
+ * `if (kind === "school")` taqigʻi buzilmaydi.
  */
 export async function visibleClassIds(purpose: VisibilityPurpose): Promise<string[]> {
   const ctx = await requireWorkspace();
 
-  if (purpose === "roster") {
+  if (purpose === "roster" || hasAdminRole(ctx)) {
     const rows = await db
       .select({ id: classes.id })
       .from(classes)
@@ -193,14 +239,30 @@ export async function visibleClassIds(purpose: VisibilityPurpose): Promise<strin
     return rows.map((r) => r.id);
   }
 
-  // "data" — dars biriktirilgan boʻlishi shart. Maydon tekshiruvi ham
-  // saqlanadi: aʼzolik bekor qilinsa eski biriktirish ishlamasin.
+  return taughtClassIds(ctx);
+}
+
+/**
+ * Haqiqatan biriktirilgan darslar — ⛔ admin istisnosiSIZ.
+ *
+ * YOZISH va OʻCHIRISH yoʻllari shu yerdan oʻtadi (§11.6). Masalan
+ * `applyGradesBatch` dagi «ajrat yoki oʻchir»: admin butun maydonni
+ * KOʻRADI, lekin hech kimning sinfini oʻchira olmaydi.
+ *
+ * Maydon tekshiruvi ham saqlanadi: aʼzolik bekor qilinsa eski
+ * biriktirish ishlamasin.
+ */
+export async function taughtClassIds(ctx?: WorkspaceContext): Promise<string[]> {
+  const scope = ctx ?? (await requireWorkspace());
   const rows = await db
     .select({ id: classes.id })
     .from(classTeachers)
     .innerJoin(classes, eq(classes.id, classTeachers.classId))
     .where(
-      and(eq(classTeachers.teacherId, ctx.teacherId), eq(classes.workspaceId, ctx.workspaceId))
+      and(
+        eq(classTeachers.teacherId, scope.teacherId),
+        eq(classes.workspaceId, scope.workspaceId)
+      )
     );
   return rows.map((r) => r.id);
 }
@@ -210,11 +272,13 @@ export async function visibleClassIds(purpose: VisibilityPurpose): Promise<strin
  *
  * `roster` — maydondagi barcha bola (ism darajasi)
  * `data`   — faqat oʻzi oʻtadigan darslarga yozilgan bolalar
+ *
+ * Admin uchun ikkalasi ham butun maydon — sabab `visibleClassIds` da.
  */
 export async function visibleStudentIds(purpose: VisibilityPurpose): Promise<string[]> {
   const ctx = await requireWorkspace();
 
-  if (purpose === "roster") {
+  if (purpose === "roster" || hasAdminRole(ctx)) {
     const rows = await db
       .select({ id: students.id })
       .from(students)
@@ -262,13 +326,34 @@ export async function assertTeachesClass(classId: string): Promise<WorkspaceCont
  * DAL'i ilgari clientdan kelgan `studentId` ni tekshiruvsiz yozardi —
  * qaydlar ulashilgach bu "har kim istalgan bolaga qayd yozib qoʻyadi"
  * ga aylanardi.
+ *
+ * ⛔ ADMIN ISTISNOSI SHU YERGA TEGMAYDI (§11.6). `visibleStudentIds`
+ * admin uchun butun maydonni qaytaradi, lekin bu funksiya ATAYLAB
+ * undan foydalanmaydi — u faqat haqiqiy biriktirishni tan oladi.
+ *
+ * ⚠️ Yaʼni oʻqish va yozish darvozalari admin uchun BOSHQACHA javob
+ * beradi. Bu nomuvofiqlik emas, qaror: zavuch baho qoʻymoqchi boʻlsa
+ * oʻzini darsga biriktirsin — va oʻsha qadam koʻrinadigan boʻlsin.
+ * Kim buni "tekislamoqchi" boʻlsa — qoidani buzgan boʻladi.
  */
 export async function assertCanTouchStudent(
   studentId: string,
   purpose: VisibilityPurpose = "data"
 ): Promise<WorkspaceContext> {
   const ctx = await requireWorkspace();
-  const allowed = await visibleStudentIds(purpose);
-  if (!allowed.includes(studentId)) throw new ForbiddenError("Bu oʻquvchiga ruxsat yoʻq");
+
+  if (purpose === "roster") {
+    const allowed = await visibleStudentIds("roster");
+    if (!allowed.includes(studentId)) throw new ForbiddenError("Bu oʻquvchiga ruxsat yoʻq");
+    return ctx;
+  }
+
+  const classIds = await taughtClassIds(ctx);
+  if (classIds.length === 0) throw new ForbiddenError("Bu oʻquvchiga ruxsat yoʻq");
+  const [row] = await db
+    .select({ id: enrollments.studentId })
+    .from(enrollments)
+    .where(and(eq(enrollments.studentId, studentId), inArray(enrollments.classId, classIds)));
+  if (!row) throw new ForbiddenError("Bu oʻquvchiga ruxsat yoʻq");
   return ctx;
 }

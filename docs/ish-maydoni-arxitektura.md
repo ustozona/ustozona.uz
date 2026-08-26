@@ -363,6 +363,10 @@ ikkalasi ikkala ismni koʻradi. Yaʼni §4.1 dagi qoida amalda ishlaydi.
 
 ### Qolgan ish
 
+- 🔴 **BIRINCHI NAVBATDA:** `applyGradesBatch` dagi oʻchirish teshigi
+  (§10.5) — ikkinchi oʻqituvchi qoʻshilishidan oldin
+- **Ulashish modeli:** sinf egasi + taklif oqimi + egalik oʻtkazish (§10.4)
+- **Admin-lite:** rol tizimini birlashtirish, qaror kutilmoqda (§11.5)
 - **UI:** hamkasbni taklif qilish (hozircha admin paneli orqali) · maʼmuriy
   sinfga guruh ulash (`parentClassId` UI'da hali yoʻq)
 - 🔴 **Prod migratsiyasi (Supabase) — TOʻSIQ BOR, pastga qarang**
@@ -420,3 +424,285 @@ HAR DOIM yiqilardi, bu eski xato edi.
 - ⛔ **`grades`/`attendance`/`notes` dagi `teacherId` ni olib tashlash** — ular
   mualliflik, ular toʻgʻri (§3.2).
 - ⛔ **Ikki xil kod yoʻli** ("yakka" va "maktab") — yadro gʻoyaga zid (§1).
+
+---
+
+## 10. Raqobat tahlili — ulashish modeli (2026-08-26)
+
+Manba: ClassDojo Help Center «Shared Classes» va «Roles and Permissions»
+boʻlimlari, Google Classroom Help, iDoceo forumi. Havolalar §10.5 da.
+
+### 10.1. ClassDojo — ulashish birligi SINF, maydon emas
+
+| Qoida | Tafsilot |
+|---|---|
+| Har sinfning bitta **egasi** bor | Sinfni yaratgan oʻqituvchi |
+| Hamkasb qoʻshishni **faqat ega** qiladi | Co-teacher boshqasini taklif qila olmaydi |
+| Co-teacher sinf ichida deyarli hamma narsani qiladi | Ball, ota-ona bilan yozishma |
+| ⚠️ Har qanday oʻzgarish **hammaga** taʼsir qiladi | Biri ballarni nolladi — hamma uchun nollandi |
+| Co-teacher **oʻzi chiqib keta oladi** | «Leave a shared class» |
+| Egalik **oʻtkaziladi** | Eski ega chiqadi yoki co-teacher boʻlib qoladi |
+| Hamkasblar **bir maktabda** boʻlishi shart | Affiliation talab qilinadi |
+
+⭐ **Maktab rahbari alohida qatlam:** Directory orqali *istalgan* sinfga
+hamkasb qoʻshadi, egalikni oʻtkazadi, ketgan xodimni oʻchiradi — **oʻsha
+sinfga ulanmagan boʻlsa ham**. Alohida maqola bor: *«egasi yoʻq holda
+egalikni qanday oʻtkazish»* — yaʼni ular «oʻqituvchi gʻoyib boʻldi»
+holatini ataylab ishlab chiqishgan.
+
+⭐ **Maktabga qoʻshilish momenti:** oʻqituvchi soʻrov yuborganda ekran
+chiqadi — *«shaxsiy sinflaringizni maktabga koʻchiraymi?»*. Ogohlantirish
+ham bor: **avval maktab tasdigʻini ol, keyin sinf yarat — aks holda
+dublikat oʻquvchilar paydo boʻladi.** Oʻqituvchi bir necha maktabga aʼzo
+boʻla oladi (bizdagi koʻp-koʻpga qarori bilan bir xil, §4.2).
+
+### 10.2. Google Classroom — soddaroq
+
+Co-teacher = toʻliq tenglik, faqat **uchta** taqiq: sinfni oʻchirish,
+asosiy oʻqituvchini chiqarish, boshqa oʻqituvchini ovozsiz qilish.
+Yaʼni ular ham asimmetriyani saqlagan, lekin minimal shaklda.
+
+### 10.3. iDoceo / Additio — bizning toifa, yechilmagan
+
+Yakka oʻqituvchi qurollarida haqiqiy co-teacher **yoʻq**. iDoceo
+forumida oʻqituvchilar *«har darsdan keyin sinfni qayta ulashib, eskisini
+oʻchiramizmi?»* deb soʻrashadi. ⭐ Demak bu bizning toifada **ochiq
+maydon** — raqobat ustunligi boʻlishi mumkin.
+
+### 10.4. Bizning model bilan solishtirish
+
+✅ **Arxitekturamiz kuchliroq.** ClassDojo'da co-teacher sinfga ulanadi va
+oʻsha sinfning hamma narsasini koʻradi. Bizda `class_teachers` aynan shu,
+ustiga **ism ↔ maʼlumot ajratmasi** bor (§4.1) — ClassDojo'da bu yoʻq.
+
+🔴 **Lekin uchta narsa yetishmaydi, uchalasi ham ClassDojo'da bor:**
+
+**1. «Ega» tushunchasi yoʻq.** `class_teachers` — yassi toʻplam. Kim kimni
+chiqaradi? Kim sinfni oʻchiradi? Javob yoʻq; ikki hamkasb bir-birini
+chiqarib tashlashi mumkin. §4.1 «nazorat qilinadigan amal» deb yozgan va
+maktabda buni admin qiladi — lekin **adminsiz maydonda nazoratchi yoʻq**,
+hujjat «oʻzaro kelishadi» deb qoldirgan. ClassDojo bu boʻshliqni aynan
+ega bilan toʻldirgan.
+
+**2. Taklif oqimi umuman yoʻq.** Kodda `invite` soʻzi bitta ham yoʻq
+(oʻqituvchi uchun; `student_invites` bor va u tayyor naqsh). Hozircha
+faqat admin panel — yaʼni ikki oʻqituvchi hamkorlikni **boshlay
+olmaydi**.
+
+**3. Ega ketgan holat ishlanmagan.** `class_teachers` da
+`onDelete: "cascade"` — oʻqituvchi oʻchsa biriktirish oʻchadi, sinf hech
+kimga koʻrinmaydi, baholar bazada qoladi, UI orqali tuzatib boʻlmaydi.
+
+### 10.5. 🔴 Yoʻl-yoʻlakay topilgan HAQIQIY xavf
+
+`src/server/dal/grades.ts` (`applyGradesBatch`, ~455–464-qatorlar):
+
+```ts
+.delete(students).where(and(eq(students.workspaceId, ctx.workspaceId), inArray(students.id, part)))
+.delete(classes).where(and(eq(classes.workspaceId, ctx.workspaceId), inArray(classes.id, part)))
+```
+
+Filtr **faqat `workspaceId`** — «men bu darsni oʻtamanmi?» tekshiruvi
+yoʻq. Ikki oʻqituvchili maydonda: **B oʻqituvchining brauzeridagi store
+sinxronizatsiyasi A oʻqituvchining sinfini va undagi hamma bahoni
+oʻchirib yuborishi mumkin** — jimgina, tasdiqsiz, cascade bilan.
+
+Eski modelda xavfsiz edi (`teacherId` filtri = faqat oʻzimniki).
+Maydonga koʻchirilganda filtr kengaydi-yu, himoya kengaymadi. Bu
+ClassDojo'ning *«biri nolladi — hamma uchun nollandi»* ogohlantirishining
+buzuq versiyasi: ularda qaytariladigan amal, bizda qaytarilmas.
+
+⛔ **Ikkinchi oʻqituvchi qoʻshilishidan OLDIN tuzatilsin.**
+
+### 10.6. Fors-major roʻyxati
+
+| Holat | Hozir | Kerak |
+|---|---|---|
+| Oʻqituvchi boshqasining sinfini oʻchiradi | 🔴 Oʻchadi, baholar cascade | `assertTeachesClass` (§10.5) |
+| Ega maktabdan ketdi | Sinf yetim, tuzatib boʻlmaydi | Egalik oʻtkazish + admin majburlashi |
+| Ikki oʻqituvchi bir bolani alohida kiritdi | Ikkita «Bobur» | Birlashtirish, ochiq tasdiq bilan (§7.2) |
+| Yakka oʻqituvchi maktabga qoʻshildi | Qisman bor | «Sinflaringizni olib kelasizmi?» ekrani |
+| Maktabdan chiqarildi | ✅ Aʼzolik oʻchadi, baholari qoladi (mualliflik, §3.2) | — |
+| Oxirgi owner chiqib ketdi | Egasiz maydon | Oxirgi owner chiqa olmasin |
+| Repetitorlik bolasi maktabga sizdi | ✅ Alohida maydon himoya qiladi (§4.2) | — |
+
+### 10.7. Uch stsenariy — bitta tuzilma
+
+Yadro gʻoya (§1) buzilmaydi; farq **faqat kim taklif qiladi**:
+
+| | Yakka | Jamoa (2–5) | Maktab |
+|---|---|---|---|
+| Maydon | Avtomatik, koʻrinmaydi | Bittasi ochadi | Direktor ochadi |
+| Hamkasb qoʻshish | — | **Sinf egasi** | **Admin** ham |
+| Oʻquvchi qoʻshish | Oʻzi | Roʻyxatdan (bor) | Admin bir marta |
+| Koʻrinuvchanlik | Hammasi oʻziniki | `data` = oʻz darsi | shu + admin istisnosi (§11.4) |
+
+⭐ **Bitta yangi ustun** — `class_teachers.role` (`owner | teacher`) —
+uch stsenariyni ham yopadi. Maktabda `workspace_members.role = admin`
+egadan yuqori turadi; bu aynan ClassDojo'ning School Leader'i.
+
+### 10.8. Manbalar
+
+- https://help.classdojo.com/hc/en-us/articles/202027909-Share-Your-Class-with-Another-Staff-Member
+- https://help.classdojo.com/hc/en-us/articles/24932272055181-Accessing-Your-Shared-Class-as-a-Co-teacher
+- https://help.classdojo.com/hc/en-us/articles/207086796-Leave-a-Shared-Class
+- https://help.classdojo.com/hc/en-us/articles/212393706-Transfer-a-Class-to-Another-Teacher
+- https://classdojo.zendesk.com/hc/en-us/articles/360059779572-How-To-Transfer-Class-Ownership-without-the-Class-Admin
+- https://help.classdojo.com/hc/en-us/articles/4418617407245-How-School-Leaders-Admins-Can-Add-Co-Teachers-to-Classes
+- https://help.classdojo.com/hc/en-us/articles/207813176-What-Can-School-Leaders-See-and-Do
+- https://help.classdojo.com/hc/en-us/articles/204365159-Join-Your-School
+- https://help.classdojo.com/hc/en-us/articles/28976231612173-What-Account-Type-is-Right-for-Me
+- https://help.classdojo.com/hc/en-us/articles/37177475180813-Managing-Staff-in-your-Directory-for-School-Leaders-and-Admins
+- https://support.google.com/edu/classroom/answer/6190760
+- https://www.idoceo.net/index.php/en/forum/4-general-questions-comments/3286-shared-class
+
+---
+
+## 11. Admin-lite — kim admin boʻladi, maʼmuriyat qayerga tushadi
+
+> **Holat:** izlanish tugadi; admin qamrovi boʻyicha qaror QABUL
+> QILINDI (§11.6). Qolgan bandlar (§11.5) kodlashni kutmoqda.
+
+### 11.1. ⚠️ Avval terminologiya — bizda IKKI xil «admin» bor
+
+Bu chalkashlik hujjatlarda ham, kodda ham bor. Ajratamiz:
+
+| Nima | Qayerda | Kim |
+|---|---|---|
+| **Platforma admini** | `/admin/*`, `super_admin` roli | ⭐ **Ustozona jamoasi** — maktablar, foydalanuvchilar, audit, fikrlar |
+| **Maktab admini (admin-lite)** | `/dashboard/*` ichida | ⭐ **Mijoz** — direktor/zavuch |
+
+🔴 **`/src/app/admin` — bu BIRINCHISI.** U admin-lite emas va hech qachon
+admin-lite boʻlmaydi. Roadmap'dagi «Maktab admin-lite» — hali
+**qurilmagan**, uning oʻrni `/dashboard` ichida.
+
+Hozircha hamkasb qoʻshish uchun platforma paneli ishlatilayotgani —
+vaqtinchalik yamoq, arxitektura emas.
+
+### 11.2. 🔴 Ikki parallel rol tizimi — hozirgi holat
+
+```
+better-auth user.role   →  teacher | school_admin | super_admin | student | guardian
+workspace_members.role  →  owner | admin | teacher
+```
+
+`requireSchoolAdmin()` (`src/server/session.ts`) **ikkalasini ham**
+talab qiladi: global `school_admin` roli **VA** `workspace_members.role
+= "admin"` qatori.
+
+Oqibatlari:
+- Kimnidir zavuch qilish uchun **ikki joyni** tahrirlash kerak, biri
+  esa faqat platforma admini qoʻlida → mijoz oʻzi qila olmaydi
+- Ikki maktabda admin boʻlgan odam uchun `[row]` **birinchi tasodifiy**
+  qatorni oladi — qaysi maktab ekani aniqlanmagan
+- Bitta haqiqat ikki joyda yashaydi (`workspace-members.ts` izohi
+  «ruxsatning YAGONA HOKIMIYATI» deb yozilgan — amalda emas)
+
+### 11.3. ⭐ ClassDojo qanday hal qilgan — asosiy saboq
+
+Ular **«kimsan»** (account type) va **«nima qila olasan»** (admin
+permission) ni **ajratgan**:
+
+| Account type | Kim | Nima |
+|---|---|---|
+| Teacher | Oʻqituvchi | Sinf yuritadi |
+| **School Staff** | Maktab xodimi | Directory'ni koʻradi, School Story'ga yozadi — **sinfi boʻlishi shart emas** |
+| School Leader | Direktor, oʻrinbosar, dekan | Oʻqituvchi funksiyasi + Directory boshqaruvi |
+
+⭐ **Va eng muhim jumla:** *«Admin permissions can be added to any teacher
+or school staff account with permission from the school's leader»* —
+yaʼni **psixolog, kotib yoki oʻquv boʻlimi xodimi** ham admin huquqini
+ola oladi, buning uchun uni «rahbar» deb atash shart emas. Rahbarlik
+lavozimlariga admin **avtomatik** beriladi.
+
+**Xulosa:** lavozim — bu **yorliq**, ruxsat — bu **bayroq**. Ikkisini
+bogʻlash mumkin (rahbarga avtomatik), lekin ular bir narsa emas.
+
+### 11.4. 🔴 Hal qilinishi kerak — admin nimani KOʻRADI
+
+Bu §4.1 qoidasi bilan **toʻqnashadi**:
+
+> Oʻqituvchi bolaning maʼlumotini koʻradi, **agar** oʻzi oʻqitadigan
+> darsga oʻsha bola yozilgan boʻlsa.
+
+Zavuchning darsi yoʻq. Qoida boʻyicha u **hech narsa koʻrmaydi** — bu
+esa admin-lite'ning maʼnosini yoʻqotadi.
+
+ClassDojo javobi: School Leader **hamma sinfni va oʻquvchi ballarini
+koʻradi**. FERPA buni «legitimate educational interest» bilan oqlaydi.
+
+⚠️ Demak `visibleClassIds` / `visibleStudentIds` ga **ataylab yozilgan
+istisno** kerak: `role === "admin"` boʻlsa `data` qamrovi ham butun
+maydon. Bu §1 dagi `if (kind === "school")` taqigʻini **buzmaydi** —
+chunki shart maydon *turiga* emas, **rolga** qaraydi (yakka maydonda
+admin bitta — oʻzi, natija oʻzgarmaydi).
+
+🔴 Buning yonida **audit shart** (§7.3): admin boshqa oʻqituvchining
+qaydini oʻqiy boshlagach, «kim koʻrdi» savoli real boʻladi.
+
+### 11.5. Taklif — qaror uchun
+
+1. ✅ **BAJARILDI (2026-08-26).** `workspace_members.role` yagona
+   hokimiyat. Global `school_admin` auth roli ruxsat uchun
+   **ishlatilmaydi** — `auth-roles.ts` da eskirgan deb belgilandi
+   (yorliq sifatida `/admin/users` da qoladi).
+
+   ⭐ **Topilma:** `requireSchoolAdmin()` amalda **oʻlik stub** ekan —
+   yagona foydalanuvchisi `getSchoolForCurrentAdmin()` boʻlib, uning
+   oʻzi ham **0 marta** chaqirilgan. Yaʼni ikkinchi rol tizimi hech
+   qachon ishlamagan, faqat ishlaydigandek koʻrinib turgan. Ikkalasi
+   ham oʻchirildi; oʻrniga `requireWorkspaceAdmin()`
+   (`src/server/workspace.ts`) — faol maydon boʻyicha, bitta manbadan.
+
+2. ⭐ **Maʼmuriyat xodimi uchun ALOHIDA account type ixtiro
+   QILINMAYDI.** Bizda u kerak emas: xodim — maydon aʼzosi, uning
+   `class_teachers` qatorlari boʻsh, xolos. «Darsi bor/yoʻq» — rol
+   emas, **fakt**. (ClassDojo'ga School Staff kerak boʻlgan, chunki
+   ularda account type auth darajasida.)
+
+3. Rollar roʻyxati qisqa qolsin:
+   `owner` (maydonni yaratgan) · `admin` (direktor, zavuch va ruxsat
+   berilgan har kim) · `teacher` (oddiy aʼzo).
+   ⛔ `psychologist`, `secretary` kabi lavozim rollari **qoʻshilmaydi** —
+   bu ruxsat emas, yorliq. Kerak boʻlsa keyin `title` matn maydoni.
+
+4. ✅ **BAJARILDI (2026-08-26).** `role === "admin"` uchun `data`
+   qamrovi kengaytirildi (§11.4). ⚠️ Audit yozuvi hali **YOʻQ** —
+   ochiq band (§7.3).
+
+   ⭐ Yon qaror: istisno faqat `admin` ga tegishli, **`owner` ga
+   EMAS**. Sabab: `owner` — maydonni yaratgan odam (hisob maʼnosida),
+   bu maʼlumot roli emas. Aks holda jamoa maydonini ochgan oʻqituvchi
+   hamkasblarining baholarini sezdirmasdan koʻra boshlardi — nazorat
+   oshirish **ochiq qadam** boʻlishi kerak, yon taʼsir emas.
+
+   ⚠️ Yozish darvozalari uchun `taughtClassIds()` ajratildi — u admin
+   istisnosini tan olmaydi. `assertCanTouchStudent` va
+   `applyGradesBatch` dagi oʻchirishlar **shundan** oʻtadi.
+
+5. Admin-lite UI **`/dashboard/settings` ichida** joylashsin, `/admin`
+   da EMAS (§11.1).
+
+### 11.6. ✅ QAROR — admin v1 da FAQAT OʻQIYDI (asoschi, 2026-08-26)
+
+> Admin roli maydon boʻylab **faqat oʻqish** qamrovini beradi. Baho,
+> davomat, xulq yoki qayd **yozish** huquqini bermaydi.
+
+Zavuch biror darsga baho qoʻymoqchi boʻlsa — oʻzini oʻsha darsga
+**biriktirishi** kerak (`class_teachers`), va aynan shu amal audit'ga
+tushadi.
+
+⭐ **Nega bu kuchliroq:** §4.1 dagi imtiyoz oshirish xavfi yoʻqolmaydi —
+u **ochiq va kuzatiladigan** boʻladi. «Zavuch koʻrdi» oddiy hol; «zavuch
+oʻzini darsga qoʻshdi va baho oʻzgartirdi» — koʻrinadigan hodisa.
+Yashirin yoʻl qoldirilsa, aynan shu ikkinchi holat sezilmay oʻtardi.
+
+**Amaliy oqibati kodda:**
+- `visibleClassIds("data")` / `visibleStudentIds("data")` — admin uchun
+  butun maydon (oʻqish yoʻllari shu ikkisidan oʻtadi)
+- `assertTeachesClass` / `assertCanTouchStudent` — ⛔ admin **istisnosi
+  YOʻQ**. Yozish yoʻllari faqat haqiqiy biriktirishni tan oladi.
+
+⚠️ Demak «oʻqish» va «yozish» darvozalari **ataylab boshqacha** javob
+beradi. Bu farq tasodifiy koʻrinmasin uchun shu yerda yozilgan: kim
+buni «nomuvofiqlik» deb tekislamoqchi boʻlsa — qoidani buzgan boʻladi.

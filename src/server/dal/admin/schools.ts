@@ -2,7 +2,7 @@ import "server-only";
 import { and, count, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { classes, students, teachers, workspaceMembers, workspaces } from "@/server/db/schema";
-import { requireAdmin, requireSchoolAdmin } from "@/server/session";
+import { requireAdmin } from "@/server/session";
 import { writeAuditLog } from "./audit";
 
 /* Admin paneli "Maktablar" boʻlimi.
@@ -42,25 +42,10 @@ export async function listSchools(): Promise<AdminSchoolItem[]> {
     .orderBy(workspaces.name);
 }
 
-/** school_admin oʻz maktabini koʻrishi uchun (super_admin barchasini). */
-export async function getSchoolForCurrentAdmin(): Promise<AdminSchoolItem | null> {
-  const { scope } = await requireSchoolAdmin();
-  if (scope.all) return null;
-  const [row] = await db
-    .select({
-      id: workspaces.id,
-      name: workspaces.name,
-      region: workspaces.region,
-      city: workspaces.city,
-      createdAt: workspaces.createdAt,
-      teacherCount: count(workspaceMembers.teacherId),
-    })
-    .from(workspaces)
-    .leftJoin(workspaceMembers, eq(workspaceMembers.workspaceId, workspaces.id))
-    .where(eq(workspaces.id, scope.workspaceId))
-    .groupBy(workspaces.id);
-  return row ?? null;
-}
+/* ⛔ `getSchoolForCurrentAdmin()` OLIB TASHLANDI (2026-08-26) — 0 ta
+   chaqiruvchisi bor edi va notoʻgʻri qatlamda turardi: maktab
+   admin-lite'i `/dashboard` ichida boʻladi, PLATFORMA panelida emas
+   (docs/ish-maydoni-arxitektura.md §11.1). */
 
 export type TeacherListItem = {
   id: string;
