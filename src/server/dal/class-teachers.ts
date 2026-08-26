@@ -199,6 +199,11 @@ async function assertInWorkspace(classId: string): Promise<WorkspaceContext> {
  */
 async function assertCanManageClass(classId: string): Promise<WorkspaceContext> {
   const ctx = await assertInWorkspace(classId);
+  /* ⚠️ Bu yerda `owner` QOʻSHILMAYDI — va bu `requireWorkspaceAdmin`
+     dagi xato bilan bir xil emas. Gap MAYDON egasi haqida: jamoa
+     maydonini ochgan oʻqituvchi hamkasbining sinfini boshqara olmasin.
+     Pastdagi tekshiruv SINF egasini koʻradi — yakka oʻqituvchi oʻz
+     sinfida aynan shu. */
   if (ctx.role === "admin") return ctx;
 
   const [row] = await db
