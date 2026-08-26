@@ -19,6 +19,7 @@ import {
 } from "@/server/dal/workspace-invites";
 import { findDuplicateStudents, mergeStudents } from "@/server/dal/student-merge";
 import { listWorkspaceAudit } from "@/server/dal/workspace-audit";
+import { runAction } from "@/server/action-result";
 
 /* ⛔ Bu faylda `export type { … }` YOZILMAYDI — `"use server"` modulida
    tip-reeksporti prodda runtime eksportga aylanadi va BARCHA server
@@ -28,11 +29,13 @@ import { listWorkspaceAudit } from "@/server/dal/workspace-audit";
 const switchSchema = z.object({ workspaceId: z.string().min(1).max(200) });
 
 /** Faol ish maydonini almashtiradi (aʼzolik tekshiruvi DAL ichida). */
-export async function switchWorkspaceAction(input: unknown): Promise<void> {
-  const { workspaceId } = switchSchema.parse(input);
-  await switchWorkspace(workspaceId);
-  // Butun dashboard qamrovga bogʻliq — sinflar, oʻquvchilar, jurnal.
-  revalidatePath("/dashboard", "layout");
+export async function switchWorkspaceAction(input: unknown) {
+  return runAction(async () => {
+    const { workspaceId } = switchSchema.parse(input);
+    await switchWorkspace(workspaceId);
+    // Butun dashboard qamrovga bogʻliq — sinflar, oʻquvchilar, jurnal.
+    revalidatePath("/dashboard", "layout");
+  });
 }
 
 /**
@@ -40,7 +43,7 @@ export async function switchWorkspaceAction(input: unknown): Promise<void> {
  * uchun. Faqat ism darajasi (§4.1).
  */
 export async function getWorkspaceRosterAction() {
-  return listWorkspaceRoster();
+  return runAction(() => listWorkspaceRoster());
 }
 
 /* ─── Darsni kim oʻtadi (§10.4) ───────────────────────────────────────
@@ -54,30 +57,38 @@ const classTeacherSchema = classIdSchema.extend({
 });
 
 export async function getWorkspaceMembersAction() {
-  return listWorkspaceMembers();
+  return runAction(() => listWorkspaceMembers());
 }
 
 export async function getClassTeachersAction(input: unknown) {
-  const { classId } = classIdSchema.parse(input);
-  return listClassTeachers(classId);
+  return runAction(() => {
+    const { classId } = classIdSchema.parse(input);
+    return listClassTeachers(classId);
+  });
 }
 
-export async function addClassTeacherAction(input: unknown): Promise<void> {
-  const { classId, teacherId } = classTeacherSchema.parse(input);
-  await addClassTeacher(classId, teacherId);
-  revalidatePath("/dashboard", "layout");
+export async function addClassTeacherAction(input: unknown) {
+  return runAction(async () => {
+    const { classId, teacherId } = classTeacherSchema.parse(input);
+    await addClassTeacher(classId, teacherId);
+    revalidatePath("/dashboard", "layout");
+  });
 }
 
-export async function removeClassTeacherAction(input: unknown): Promise<void> {
-  const { classId, teacherId } = classTeacherSchema.parse(input);
-  await removeClassTeacher(classId, teacherId);
-  revalidatePath("/dashboard", "layout");
+export async function removeClassTeacherAction(input: unknown) {
+  return runAction(async () => {
+    const { classId, teacherId } = classTeacherSchema.parse(input);
+    await removeClassTeacher(classId, teacherId);
+    revalidatePath("/dashboard", "layout");
+  });
 }
 
-export async function transferClassOwnershipAction(input: unknown): Promise<void> {
-  const { classId, teacherId } = classTeacherSchema.parse(input);
-  await transferClassOwnership(classId, teacherId);
-  revalidatePath("/dashboard", "layout");
+export async function transferClassOwnershipAction(input: unknown) {
+  return runAction(async () => {
+    const { classId, teacherId } = classTeacherSchema.parse(input);
+    await transferClassOwnership(classId, teacherId);
+    revalidatePath("/dashboard", "layout");
+  });
 }
 
 /* ─── Hamkasbni taklif qilish (§10.4) ─────────────────────────────── */
@@ -86,35 +97,45 @@ const inviteRoleSchema = z.object({ role: z.enum(["admin", "teacher"]) });
 const inviteCodeSchema = z.object({ code: z.string().min(1).max(64) });
 const inviteIdSchema = z.object({ inviteId: z.string().min(1).max(200) });
 
-export async function createWorkspaceInviteAction(input: unknown): Promise<string> {
-  const { role } = inviteRoleSchema.parse(input);
-  return createWorkspaceInvite(role);
+export async function createWorkspaceInviteAction(input: unknown) {
+  return runAction(() => {
+    const { role } = inviteRoleSchema.parse(input);
+    return createWorkspaceInvite(role);
+  });
 }
 
 export async function getWorkspaceInvitesAction() {
-  return listWorkspaceInvites();
+  return runAction(() => listWorkspaceInvites());
 }
 
-export async function revokeWorkspaceInviteAction(input: unknown): Promise<void> {
-  const { inviteId } = inviteIdSchema.parse(input);
-  await revokeWorkspaceInvite(inviteId);
+export async function revokeWorkspaceInviteAction(input: unknown) {
+  return runAction(async () => {
+    const { inviteId } = inviteIdSchema.parse(input);
+    await revokeWorkspaceInvite(inviteId);
+  });
 }
 
 /** Kodni tekshiradi — hech narsani oʻzgartirmaydi (qabul qaytarilmas). */
 export async function previewWorkspaceInviteAction(input: unknown) {
-  const { code } = inviteCodeSchema.parse(input);
-  return previewWorkspaceInvite(code);
+  return runAction(() => {
+    const { code } = inviteCodeSchema.parse(input);
+    return previewWorkspaceInvite(code);
+  });
 }
 
-export async function acceptWorkspaceInviteAction(input: unknown): Promise<void> {
-  const { code } = inviteCodeSchema.parse(input);
-  await acceptWorkspaceInvite(code);
-  revalidatePath("/dashboard", "layout");
+export async function acceptWorkspaceInviteAction(input: unknown) {
+  return runAction(async () => {
+    const { code } = inviteCodeSchema.parse(input);
+    await acceptWorkspaceInvite(code);
+    revalidatePath("/dashboard", "layout");
+  });
 }
 
-export async function leaveWorkspaceAction(): Promise<void> {
-  await leaveWorkspace();
-  revalidatePath("/dashboard", "layout");
+export async function leaveWorkspaceAction() {
+  return runAction(async () => {
+    await leaveWorkspace();
+    revalidatePath("/dashboard", "layout");
+  });
 }
 
 /* ─── Dublikat oʻquvchilar (§7.2) ─────────────────────────────────── */
@@ -125,16 +146,18 @@ const mergeSchema = z.object({
 });
 
 export async function findDuplicateStudentsAction() {
-  return findDuplicateStudents();
+  return runAction(() => findDuplicateStudents());
 }
 
 /** 🔴 QAYTARILMAS — UI ochiq tasdiq soʻragan boʻlishi shart. */
-export async function mergeStudentsAction(input: unknown): Promise<void> {
-  const { survivorId, loserId } = mergeSchema.parse(input);
-  await mergeStudents(survivorId, loserId);
-  revalidatePath("/dashboard", "layout");
+export async function mergeStudentsAction(input: unknown) {
+  return runAction(async () => {
+    const { survivorId, loserId } = mergeSchema.parse(input);
+    await mergeStudents(survivorId, loserId);
+    revalidatePath("/dashboard", "layout");
+  });
 }
 
 export async function getWorkspaceAuditAction() {
-  return listWorkspaceAudit();
+  return runAction(() => listWorkspaceAudit());
 }

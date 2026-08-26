@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { toast } from "sonner";
+import { unwrap } from "@/lib/action-result";
 import { Copy, Crown, LogOut, Plus, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -96,15 +97,15 @@ export default function TeamSection() {
 
   const load = React.useCallback(() => {
     getWorkspaceMembersAction()
-      .then(setMembers)
+      .then((r) => setMembers(unwrap(r)))
       .catch(() => setMembers([]));
     /* Taklif roʻyxati faqat adminga ochiq — oddiy oʻqituvchida bu
        chaqiruv rad etiladi va roʻyxat shunchaki koʻrinmaydi. */
     getWorkspaceInvitesAction()
-      .then(setInvites)
+      .then((r) => setInvites(unwrap(r)))
       .catch(() => setInvites(null));
     getWorkspaceAuditAction()
-      .then(setAudit)
+      .then((r) => setAudit(unwrap(r)))
       .catch(() => setAudit(null));
   }, []);
 
@@ -117,12 +118,12 @@ export default function TeamSection() {
   const createInvite = (role: "admin" | "teacher") => {
     startTransition(async () => {
       try {
-        const created = await createWorkspaceInviteAction({ role });
+        const created = unwrap(await createWorkspaceInviteAction({ role }));
         await navigator.clipboard.writeText(created).catch(() => {});
         toast.success(`Kod: ${created}`, { description: "Nusxalandi — hamkasbingizga bering" });
         load();
-      } catch {
-        toast.error("Kod yaratilmadi");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Kod yaratilmadi");
       }
     });
   };
@@ -130,7 +131,7 @@ export default function TeamSection() {
   const checkCode = () => {
     startTransition(async () => {
       try {
-        setConfirming(await previewWorkspaceInviteAction({ code }));
+        setConfirming(unwrap(await previewWorkspaceInviteAction({ code })));
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Kod notoʻgʻri");
       }
@@ -141,7 +142,7 @@ export default function TeamSection() {
     setConfirming(null);
     startTransition(async () => {
       try {
-        await acceptWorkspaceInviteAction({ code });
+        unwrap(await acceptWorkspaceInviteAction({ code }));
         setCode("");
         toast.success("Jamoaga qoʻshildingiz");
         load();
@@ -155,7 +156,7 @@ export default function TeamSection() {
     setLeaving(false);
     startTransition(async () => {
       try {
-        await leaveWorkspaceAction();
+        unwrap(await leaveWorkspaceAction());
         toast.success("Jamoadan chiqdingiz");
         load();
       } catch (e) {
@@ -251,9 +252,13 @@ export default function TeamSection() {
                   disabled={pending}
                   onClick={() =>
                     startTransition(async () => {
-                      await revokeWorkspaceInviteAction({ inviteId: i.id });
-                      toast.success("Kod bekor qilindi");
-                      load();
+                      try {
+                        unwrap(await revokeWorkspaceInviteAction({ inviteId: i.id }));
+                        toast.success("Kod bekor qilindi");
+                        load();
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Bekor qilinmadi");
+                      }
                     })
                   }
                 >

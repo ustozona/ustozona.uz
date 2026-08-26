@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { toast } from "sonner";
+import { unwrap } from "@/lib/action-result";
 import { Merge } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ export function DuplicateStudentsCard() {
 
   const load = React.useCallback(() => {
     findDuplicateStudentsAction()
-      .then(setGroups)
+      .then((r) => setGroups(unwrap(r)))
       .catch(() => setGroups([]));
   }, []);
 
@@ -63,7 +64,7 @@ export function DuplicateStudentsCard() {
     setConfirming(null);
     startTransition(async () => {
       try {
-        await mergeStudentsAction({ survivorId: survivor.id, loserId: loser.id });
+        unwrap(await mergeStudentsAction({ survivorId: survivor.id, loserId: loser.id }));
         toast.success(`${survivor.name} — yozuvlar birlashtirildi`);
         load();
       } catch (e) {
