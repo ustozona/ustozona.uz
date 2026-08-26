@@ -242,21 +242,41 @@ export async function listWorkspaceRoster(): Promise<
    koʻrinadi.
    ════════════════════════════════════════════════════════════════════ */
 
+/**
+ * MAʼLUMOT QAMROVI kengaytiriladimi — ⚠️ FAQAT `admin`.
+ *
+ * ⛔ `owner` ATAYLAB kirmaydi. Sabab §11.4/§11.6 da: `owner` — maydonni
+ * yaratgan odam (hisob maʼnosida), bu maʼlumot roli emas. Aks holda
+ * jamoa maydonini ochgan oʻqituvchi hamkasblarining baholarini
+ * SEZDIRMASDAN koʻra boshlardi.
+ */
 function hasAdminRole(ctx: WorkspaceContext): boolean {
   return ctx.role === "admin";
 }
 
 /**
- * Maydon admini darvozasi — aʼzolarni boshqarish, taklif qilish,
- * maydon sozlamalari uchun.
+ * BOSHQARUV darvozasi — hamkasb taklif qilish, aʼzolarni koʻrish,
+ * maydon tarixini oʻqish.
  *
- * ⛔ Baho/davomat YOZISH uchun ishlatilmaydi: §11.6 qarori boʻyicha
- * admin v1 da faqat OʻQIYDI. Yozish `assertTeachesClass` dan oʻtadi va
- * u admin istisnosini tan olmaydi.
+ * ⭐ `owner` HAM kiradi — `hasAdminRole` dan farqli. Bu ikkisi boshqa
+ * savolga javob beradi:
+ *
+ *   hasAdminRole()        → «boshqaning MAʼLUMOTINI koʻra oladimi?»
+ *   requireWorkspaceAdmin() → «maydonni BOSHQARA oladimi?»
+ *
+ * 🔴 2026-08-26 da ikkisi bitta funksiyada edi va prodda darhol
+ * bilindi: yakka oʻqituvchining roli `owner`, demak u OʻZ maydoniga
+ * hamkasb taklif qila olmasdi («Kod yaratilmadi»). Maydonni yaratgan
+ * odam uni boshqara olmasligi maʼnosiz.
+ *
+ * ⛔ Baho/davomat YOZISH uchun ishlatilmaydi: §11.6 boʻyicha yozish
+ * `assertTeachesClass` dan oʻtadi va u hech qanday istisno tan olmaydi.
  */
 export async function requireWorkspaceAdmin(): Promise<WorkspaceContext> {
   const ctx = await requireWorkspace();
-  if (!hasAdminRole(ctx)) throw new ForbiddenError("Bu amal maydon adminiga tegishli");
+  if (ctx.role !== "owner" && ctx.role !== "admin") {
+    throw new ForbiddenError("Bu amal maydon egasi yoki adminiga tegishli");
+  }
   return ctx;
 }
 
