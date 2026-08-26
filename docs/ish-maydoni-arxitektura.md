@@ -363,12 +363,12 @@ ikkalasi ikkala ismni koʻradi. Yaʼni §4.1 dagi qoida amalda ishlaydi.
 
 ### Qolgan ish
 
-- 🔴 **BIRINCHI NAVBATDA:** `applyGradesBatch` dagi oʻchirish teshigi
-  (§10.5) — ikkinchi oʻqituvchi qoʻshilishidan oldin
-- **Ulashish modeli:** sinf egasi + taklif oqimi + egalik oʻtkazish (§10.4)
-- **Admin-lite:** rol tizimini birlashtirish, qaror kutilmoqda (§11.5)
-- **UI:** hamkasbni taklif qilish (hozircha admin paneli orqali) · maʼmuriy
-  sinfga guruh ulash (`parentClassId` UI'da hali yoʻq)
+- ✅ `applyGradesBatch` oʻchirish teshigi (§10.5)
+- ✅ Sinf egasi (§10.5a) · ✅ Taklif oqimi (§10.5b) · ✅ Admin roli (§11)
+- 🔴 **Audit:** admin boshqaning maʼlumotini oʻqiganda yozuv YOʻQ (§7.3)
+- 🔴 **Dublikat oʻquvchilarni birlashtirish** — ikki oʻqituvchi bir bolani
+  alohida kiritsa (§7.2). ClassDojo bu haqda ataylab ogohlantiradi.
+- **UI:** maʼmuriy sinfga guruh ulash (`parentClassId` UI'da hali yoʻq)
 - 🔴 **Prod migratsiyasi (Supabase) — TOʻSIQ BOR, pastga qarang**
 - §6 dagi qolgan ikki band: `teachers.school` matn maydonini guruhlashdan
   butunlay chiqarish, client store'da oʻqish-uchun qismni ajratish
@@ -548,6 +548,41 @@ esa tuzatib boʻlmaydi.
 **UI:** sinf sahifasi yon ustunidagi «Oʻqituvchilar» kartasi
 (`components/classes/ClassTeachersCard.tsx`). ⭐ Yakka maydonda
 **umuman koʻrsatilmaydi** — almashtirgich bilan bir xil qoida (§1).
+
+### 10.5b. ✅ Qurilgan — hamkasbni taklif qilish (2026-08-26)
+
+`workspace_invites` jadvali (`0037_hamkasb_taklifi.sql`) va **Sozlamalar
+› Jamoa** boʻlimi.
+
+⭐ **Nega kod, email emas:** bizda xat yuborish infratuzilmasi yoʻq, va
+Oʻzbekiston maktabida hamkasblar baribir bir xonada — kodni ogʻzaki
+yoki Telegram orqali berish tabiiyroq. `student_invites` da ham shu
+naqsh tanlangan.
+
+| Xususiyat | Qaror |
+|---|---|
+| Kod alifbosi | `0/O`, `1/I/L` yoʻq — ogʻzaki aytiladi |
+| Amal muddati | 7 kun |
+| Necha marta | **Bir marta** — ulashilgan havola qayta ishlatilmasin |
+| Bekor qilish | `revokedAt` — qator **oʻchmaydi**, kim taklif qilgani tarixi qoladi |
+| Rol | Taklif YOZILAYOTGANDA tanlanadi, qabul qilishda emas |
+
+🔴 **Poyga himoyasi:** kod AVVAL band qilinadi (`usedAt` shart bilan
+UPDATE), keyin koʻchirish bajariladi. Teskarisi boʻlsa koʻchirish
+tugab, band qilish poygada yutqazsa — kod hali ham "ishlatilmagan"
+boʻlib qolardi.
+
+🔴 **Qabul qilish QAYTARILMAS:** oʻqituvchining sinf va oʻquvchilari
+yangi maydonga koʻchadi, orqaga qaytmaydi (maktab oʻz yozuvlarini
+saqlaydi). Shu bois avval `previewWorkspaceInvite` koʻrsatiladi —
+qayerga, kim taklif qildi, qanday rol — va tasdiq soʻraladi.
+
+⭐ **`moveTeacherToWorkspace` umumiy modulga chiqarildi**
+(`dal/workspace-membership.ts`). Ilgari bu mantiq faqat
+`assignTeacherToSchool` ichida edi; taklif oqimi uni takrorlasa, ikki
+nusxa vaqt oʻtib ajralib ketardi. Tranzaksiyada beshta nozik qadam bor
+(ish koʻchishi · eski aʼzoliklarni tozalash · shaxsiy maydonni tiklash ·
+faol maydonni almashtirish), ular albatta bitta joyda turishi kerak.
 
 ### 10.6. Fors-major roʻyxati
 
