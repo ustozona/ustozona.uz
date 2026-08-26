@@ -20,6 +20,7 @@ import {
 import {
   acceptWorkspaceInviteAction,
   createWorkspaceInviteAction,
+  getWorkspaceAuditAction,
   getWorkspaceInvitesAction,
   getWorkspaceMembersAction,
   leaveWorkspaceAction,
@@ -27,6 +28,7 @@ import {
   revokeWorkspaceInviteAction,
 } from "@/server/actions/workspace";
 import { SettingsCard } from "./SettingsShared";
+import { DuplicateStudentsCard } from "./DuplicateStudentsCard";
 
 /* ════════════════════════════════════════════════════════════════════
    JAMOA — hamkasblar va taklif kodlari (admin-lite kirish nuqtasi).
@@ -64,9 +66,25 @@ const ROLE_LABEL: Record<string, string> = {
   teacher: "Oʻqituvchi",
 };
 
+const AUDIT_LABEL: Record<string, string> = {
+  "student.merge": "oʻquvchi yozuvlarini birlashtirdi",
+  "class_teacher.add": "darsga oʻqituvchi biriktirdi",
+  "class_teacher.remove": "darsdan oʻqituvchi chiqardi",
+  "class.transfer_ownership": "sinf egaligini oʻtkazdi",
+};
+
+type AuditItem = {
+  id: string;
+  actorName: string;
+  action: string;
+  targetLabel: string | null;
+  createdAt: Date;
+};
+
 export default function TeamSection() {
   const [members, setMembers] = React.useState<Member[] | null>(null);
   const [invites, setInvites] = React.useState<Invite[] | null>(null);
+  const [audit, setAudit] = React.useState<AuditItem[] | null>(null);
   const [code, setCode] = React.useState("");
   const [confirming, setConfirming] = React.useState<{
     workspaceName: string;
@@ -85,6 +103,9 @@ export default function TeamSection() {
     getWorkspaceInvitesAction()
       .then(setInvites)
       .catch(() => setInvites(null));
+    getWorkspaceAuditAction()
+      .then(setAudit)
+      .catch(() => setAudit(null));
   }, []);
 
   React.useEffect(load, [load]);
@@ -244,6 +265,9 @@ export default function TeamSection() {
         </SettingsCard>
       ) : null}
 
+      {/* Dublikat yoʻq boʻlsa oʻzi koʻrinmaydi. */}
+      <DuplicateStudentsCard />
+
       <SettingsCard
         title="Taklif kodi bilan qoʻshilish"
         description="Hamkasbingiz bergan kodni kiriting."
@@ -261,6 +285,30 @@ export default function TeamSection() {
           </Button>
         </div>
       </SettingsCard>
+
+      {canInvite && audit && audit.length > 0 ? (
+        <SettingsCard
+          title="Faoliyat tarixi"
+          description="Jamoa aʼzoligi va oʻquvchi yozuvlariga tegishli oxirgi amallar."
+        >
+          <div className="flex flex-col gap-1">
+            {audit.map((a) => (
+              <div key={a.id} className="flex items-baseline gap-2 py-1 text-xs">
+                <span className="text-foreground">{a.actorName}</span>
+                <span className="text-muted-foreground">
+                  {AUDIT_LABEL[a.action] ?? a.action}
+                </span>
+                {a.targetLabel ? (
+                  <span className="truncate text-muted-foreground">— {a.targetLabel}</span>
+                ) : null}
+                <span className="ml-auto shrink-0 text-muted-foreground">
+                  {a.createdAt.toLocaleDateString("uz-UZ")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </SettingsCard>
+      ) : null}
 
       {!isSolo && me?.role !== "owner" ? (
         <SettingsCard

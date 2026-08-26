@@ -6,6 +6,7 @@ export * from "./workspaces";
 export * from "./teachers";
 export * from "./workspace-members";
 export * from "./workspace-invites";
+export * from "./workspace-audit";
 export * from "./classes";
 export * from "./grades";
 export * from "./attendance";

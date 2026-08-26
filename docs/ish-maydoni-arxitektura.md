@@ -365,9 +365,8 @@ ikkalasi ikkala ismni koʻradi. Yaʼni §4.1 dagi qoida amalda ishlaydi.
 
 - ✅ `applyGradesBatch` oʻchirish teshigi (§10.5)
 - ✅ Sinf egasi (§10.5a) · ✅ Taklif oqimi (§10.5b) · ✅ Admin roli (§11)
-- 🔴 **Audit:** admin boshqaning maʼlumotini oʻqiganda yozuv YOʻQ (§7.3)
-- 🔴 **Dublikat oʻquvchilarni birlashtirish** — ikki oʻqituvchi bir bolani
-  alohida kiritsa (§7.2). ClassDojo bu haqda ataylab ogohlantiradi.
+- ✅ Maydon auditi + dublikatlarni birlashtirish (§10.5c)
+- ⚠️ Oʻqish audit qilinmaydi (ataylab — §10.5c). Kerak boʻlsa keyin.
 - **UI:** maʼmuriy sinfga guruh ulash (`parentClassId` UI'da hali yoʻq)
 - 🔴 **Prod migratsiyasi (Supabase) — TOʻSIQ BOR, pastga qarang**
 - §6 dagi qolgan ikki band: `teachers.school` matn maydonini guruhlashdan
@@ -583,6 +582,67 @@ qayerga, kim taklif qildi, qanday rol — va tasdiq soʻraladi.
 nusxa vaqt oʻtib ajralib ketardi. Tranzaksiyada beshta nozik qadam bor
 (ish koʻchishi · eski aʼzoliklarni tozalash · shaxsiy maydonni tiklash ·
 faol maydonni almashtirish), ular albatta bitta joyda turishi kerak.
+
+### 10.5c. ✅ Qurilgan — dublikat oʻquvchilar va maydon auditi (2026-08-26)
+
+**Nega birga:** §7.2 birlashtirish «tarixi yozilib» boʻlishini talab
+qiladi, demak audit undan oldin kerak edi.
+
+#### Maydon auditi
+
+`workspace_audit_logs` (`0038_maydon_auditi.sql`) — ⚠️ `admin_audit_logs`
+dan ATAYLAB alohida:
+
+| | `admin_audit_logs` | `workspace_audit_logs` |
+|---|---|---|
+| Kim yozadi | Ustozona jamoasi | Maydon aʼzolari |
+| Kim oʻqiydi | `super_admin` | Maydonning oʻzi (admin) |
+| Qamrov | Butun tizim | Bitta maydon |
+
+Bitta jadvalga qoʻshilsa, maktab oʻz tarixini koʻrish uchun platforma
+jurnaliga kirishi kerak boʻlardi — bu esa boshqa maktablarni ochib
+qoʻyardi (§11.1).
+
+Yoziladi: hamkasb biriktirish/chiqarish · egalik oʻtkazish · oʻquvchi
+birlashtirish. ⚠️ **Oʻqish audit qilinmaydi** — jurnalning har ochilishi
+yozilsa jadval kunlik minglab qator bilan toʻlardi va foydali signal
+shovqinda koʻmilardi. §11.6 uchun muhimi yozish qadamini koʻrsatish:
+zavuch oʻzini darsga biriktirsa — koʻrinadi.
+
+⚠️ `actorTeacherId` FK'si `set null`, lekin `actorName` **snapshot**:
+oʻqituvchi oʻchsa ham «kim qildi» javobi qoladi.
+
+#### Dublikatlarni birlashtirish
+
+⭐ Taklif oqimi ishga tushgach bu **muammo emas, fakt** boʻladi: Aziza
+opa ham, Laylo opa ham «Bobur Aliyev» ni oʻz maydonida yaratgan;
+jamoaga qoʻshilganda ikkalasi bitta maydonga tushadi.
+
+**Aniqlash — TAXMIN, xulosa emas.** Ism normallashtiriladi (`Oʻ`↔`O'`↔`O\``,
+boʻshliq, registr — aynan shu farqlar ikki oʻqituvchida boshqacha
+teriladi). Lekin haqiqatan ikkita bir xil ismli bola boʻlishi mumkin,
+shu bois natija **taklif** sifatida koʻrsatiladi va hech narsa avtomatik
+birlashtirilmaydi.
+
+**🔴 Birlashtirish — 14 ta jadval.** Yettitasida `studentId` unikal
+kalit ichida; koʻr-koʻrona `UPDATE` konfliktda yiqilardi. Har birida
+ziddiyatli qator AVVAL oʻchiriladi (dublikatniki yutqazadi — nishonda
+aynan shu yozuv allaqachon bor), keyin qolgani koʻchiriladi.
+
+Ikki tuzoq:
+- `roster_links` ustuni **`uz_student_id`**, `student_id` emas — va
+  unikal kalit faqat shu ustundan iborat
+- `student_relations` ikki ustunli — oʻziga oʻzi bogʻlanib qolmasin
+
+⚠️ `STUDENT_TABLES` roʻyxati (`dal/student-merge.ts`) yangi jadval
+qoʻshilganda **yangilanishi shart**. Aks holda birlashtirish jimgina
+maʼlumot qoldiradi: dublikat oʻchadi, unga bogʻlangan qatorlar FK
+cascade bilan yoʻqoladi.
+
+**Tekshirildi:** haqiqiy sxemada, ikkala bola ham AYNAN bitta sinfda
+(eng yomon holat — `enrollments` PK toʻqnashuvi) → yozilish 1 ta qoldi,
+dublikat qaydi koʻchdi, dublikat qatori oʻchdi. Tranzaksiya orqaga
+qaytarildi.
 
 ### 10.6. Fors-major roʻyxati
 

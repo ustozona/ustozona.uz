@@ -4,6 +4,7 @@ import { db } from "@/server/db/client";
 import { classTeachers, classes, teachers, workspaceMembers } from "@/server/db/schema";
 import { ForbiddenError } from "@/server/session";
 import { requireWorkspace, type WorkspaceContext } from "@/server/workspace";
+import { writeWorkspaceAudit } from "./workspace-audit";
 
 /* ════════════════════════════════════════════════════════════════════
    DARSNI KIM OʻTADI — hamkasb qoʻshish, chiqarish, egalik.
@@ -76,6 +77,14 @@ export async function addClassTeacher(classId: string, teacherId: string): Promi
     .insert(classTeachers)
     .values({ classId, teacherId, role: "teacher" })
     .onConflictDoNothing();
+
+  await writeWorkspaceAudit(ctx, {
+    action: "class_teacher.add",
+    targetType: "class",
+    targetId: classId,
+    targetLabel: await classLabel(classId),
+    meta: { teacherId },
+  });
 }
 
 /**
@@ -104,6 +113,14 @@ export async function removeClassTeacher(classId: string, teacherId: string): Pr
   await db
     .delete(classTeachers)
     .where(and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, teacherId)));
+
+  await writeWorkspaceAudit(ctx, {
+    action: "class_teacher.remove",
+    targetType: "class",
+    targetId: classId,
+    targetLabel: await classLabel(classId),
+    meta: { teacherId, self: isSelf },
+  });
 }
 
 /**
@@ -120,7 +137,7 @@ export async function transferClassOwnership(
   classId: string,
   toTeacherId: string
 ): Promise<void> {
-  await assertCanManageClass(classId);
+  const ctx = await assertCanManageClass(classId);
   const rows = await currentTeachers(classId);
   if (!rows.some((r) => r.teacherId === toTeacherId)) {
     throw new ForbiddenError("Yangi ega avval darsga biriktirilsin");
@@ -136,6 +153,20 @@ export async function transferClassOwnership(
       .set({ role: "owner" })
       .where(and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, toTeacherId)));
   });
+
+  await writeWorkspaceAudit(ctx, {
+    action: "class.transfer_ownership",
+    targetType: "class",
+    targetId: classId,
+    targetLabel: await classLabel(classId),
+    meta: { toTeacherId },
+  });
+}
+
+/** Sinf nomi audit yozuvi uchun — nom keyin oʻzgarsa ham tarix oʻqiladi. */
+async function classLabel(classId: string): Promise<string> {
+  const [row] = await db.select({ name: classes.name }).from(classes).where(eq(classes.id, classId));
+  return row?.name ?? classId;
 }
 
 /* ─── ichki yordamchilar ─────────────────────────────────────────── */

@@ -17,6 +17,8 @@ import {
   previewWorkspaceInvite,
   revokeWorkspaceInvite,
 } from "@/server/dal/workspace-invites";
+import { findDuplicateStudents, mergeStudents } from "@/server/dal/student-merge";
+import { listWorkspaceAudit } from "@/server/dal/workspace-audit";
 
 /* ⛔ Bu faylda `export type { … }` YOZILMAYDI — `"use server"` modulida
    tip-reeksporti prodda runtime eksportga aylanadi va BARCHA server
@@ -113,4 +115,26 @@ export async function acceptWorkspaceInviteAction(input: unknown): Promise<void>
 export async function leaveWorkspaceAction(): Promise<void> {
   await leaveWorkspace();
   revalidatePath("/dashboard", "layout");
+}
+
+/* ─── Dublikat oʻquvchilar (§7.2) ─────────────────────────────────── */
+
+const mergeSchema = z.object({
+  survivorId: z.string().min(1).max(200),
+  loserId: z.string().min(1).max(200),
+});
+
+export async function findDuplicateStudentsAction() {
+  return findDuplicateStudents();
+}
+
+/** 🔴 QAYTARILMAS — UI ochiq tasdiq soʻragan boʻlishi shart. */
+export async function mergeStudentsAction(input: unknown): Promise<void> {
+  const { survivorId, loserId } = mergeSchema.parse(input);
+  await mergeStudents(survivorId, loserId);
+  revalidatePath("/dashboard", "layout");
+}
+
+export async function getWorkspaceAuditAction() {
+  return listWorkspaceAudit();
 }
