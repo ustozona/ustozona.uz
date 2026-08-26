@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useCollator } from "@/lib/use-collator";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, GraduationCap, SearchX } from "lucide-react";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -43,16 +44,17 @@ export function ClassesTable({
 }) {
   const t = useTranslations("StatisticsPage");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "attendanceAvg", dir: "asc" });
+  const compare = useCollator();
 
   const sorted = useMemo(() => {
     const dirMul = sort.dir === "asc" ? 1 : -1;
     return [...rows].sort((a, b) => {
-      if (sort.key === "name") return a.name.localeCompare(b.name) * dirMul;
+      if (sort.key === "name") return compare(a.name, b.name) * dirMul;
       const av = a[sort.key] ?? -Infinity;
       const bv = b[sort.key] ?? -Infinity;
       return (av - bv) * dirMul;
     });
-  }, [rows, sort]);
+  }, [rows, sort, compare]);
 
   const toggleSort = (key: SortKey) => {
     setSort((prev) =>

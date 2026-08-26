@@ -3,7 +3,7 @@ import { cache } from "react";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { auth, type AuthSession } from "./auth";
-import { isSuperAdmin, isSchoolAdmin, isTeacher } from "@/lib/auth-roles";
+import { isSuperAdmin, isTeacher } from "@/lib/auth-roles";
 import { db } from "./db/client";
 import { teachers, type TeacherRow } from "./db/schema";
 
@@ -88,23 +88,21 @@ export const requireAdmin = cache(
   },
 );
 
-/** Maktab admini qamrovi: super_admin → hammasi; school_admin → oʻz maktabi. */
-export type SchoolScope = { all: true } | { all: false; schoolId: string };
+/* ⛔ `requireSchoolAdmin()` va `SchoolScope` OLIB TASHLANDI (2026-08-26).
 
-/** super_admin YOKI school_admin darvozasi — qamrov school_admin uchun
-    `teachers.schoolId`dan olinadi (schoolId yoʻq boʻlsa ForbiddenError). */
-export const requireSchoolAdmin = cache(
-  async (): Promise<{ session: AuthSession; actor: AdminActor; scope: SchoolScope }> => {
-    const session = await getSession();
-    if (!session) throw new UnauthorizedError();
-    const { id, email, name } = session.user;
-    const actor: AdminActor = { id, email, name };
+   Ular ikki xil rol tizimini birga talab qilardi: global auth roli
+   `school_admin` VA `workspace_members.role = "admin"`. Ikki oqibati
+   bor edi:
 
-    if (isSuperAdmin(session.user)) return { session, actor, scope: { all: true } };
-    if (!isSchoolAdmin(session.user)) throw new ForbiddenError();
+   1) Mijoz oʻzi zavuch tayinlay olmasdi — global rol faqat Ustozona
+      jamoasining qoʻlida (`/admin/users`)
+   2) `[row]` ikki maktabda admin boʻlgan odam uchun BIRINCHI tasodifiy
+      qatorni olardi — qaysi maktab ekani aniqlanmagan
 
-    const [row] = await db.select().from(teachers).where(eq(teachers.id, id));
-    if (!row?.schoolId) throw new ForbiddenError();
-    return { session, actor, scope: { all: false, schoolId: row.schoolId } };
-  },
-);
+   Amalda hech qayerdan chaqirilmagan edi (yagona foydalanuvchisi
+   `getSchoolForCurrentAdmin()` ning oʻzi ham 0 chaqiruvli edi), shu
+   bois olib tashlash xavfsiz boʻldi.
+
+   Oʻrniga: `requireWorkspaceAdmin()` — `src/server/workspace.ts` da,
+   FAOL maydon boʻyicha va yagona manbadan (`workspace_members.role`).
+   Sabab va qaror: docs/ish-maydoni-arxitektura.md §11. */

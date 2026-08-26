@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useCollator } from "@/lib/use-collator";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -134,6 +135,7 @@ export default function ClassesPage() {
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("name");
+  const compare = useCollator();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<LiveClass | null>(null);
@@ -294,9 +296,9 @@ export default function ClassesPage() {
     return [...list].sort((a, b) => {
       if (sortKey === "students") return b.students - a.students;
       if (sortKey === "lessons") return b.lessons - a.lessons;
-      return a.name.localeCompare(b.name);
+      return compare(a.name, b.name);
     });
-  }, [liveClassesDisplay, search, sortKey]);
+  }, [liveClassesDisplay, search, sortKey, compare]);
 
   const totals = useMemo(() => ({
     classes: liveClassesDisplay.length,

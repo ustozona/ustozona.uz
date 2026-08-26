@@ -3,11 +3,12 @@ import { randomUUID } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
-  activities, activityItems, activitySets, classes, classLinks, responses,
-  rosterLinks, students, syncReports, testLinks, userTelegram,
+  activities, activityItems, activitySets, classTeachers, classes, classLinks,
+  enrollments, responses, rosterLinks, students, syncReports, testLinks, userTelegram,
   type SyncReportDetail, type SyncReportRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { assertTeachesClass, requireWorkspace, visibleClassIds } from "@/server/workspace";
 import {
   dbSource, type LlSource,
 } from "@/server/dal/lessonlab-source";
@@ -179,10 +180,14 @@ export async function importRoster(source: LlSource): Promise<ImportReport> {
     conflicts: [], skipped: [],
   };
 
-  const existing = await db
-    .select({ id: classes.id, name: classes.name })
-    .from(classes)
-    .where(eq(classes.teacherId, teacher.id));
+  const ctx = await requireWorkspace();
+  const myClassIds = await visibleClassIds("data");
+  const existing = myClassIds.length
+    ? await db
+        .select({ id: classes.id, name: classes.name })
+        .from(classes)
+        .where(inArray(classes.id, myClassIds))
+    : [];
   const taken = new Set(existing.map((c) => normalizeName(c.name)));
 
   // ASOSIY idempotentlik darvozasi: allaqachon bogʻlangan bot sinflari.
@@ -223,11 +228,14 @@ export async function importRoster(source: LlSource): Promise<ImportReport> {
     await db.transaction(async (tx) => {
       await tx.insert(classes).values({
         id: classId,
-        teacherId: teacher.id,
+        workspaceId: ctx.workspaceId,
         name: cls.name,
         subject: cls.subject ?? null,
         sortOrder: existing.length + report.classesCreated,
       });
+      // Import qiluvchi darsni oʻtadi — busiz u oʻzi olib kelgan sinfni
+      // koʻrmay qolardi (koʻrinuvchanlik `class_teachers` ga tayanadi).
+      await tx.insert(classTeachers).values({ classId, teacherId: teacher.id });
       await tx.insert(classLinks).values({
         llClassId: cls.id, uzClassId: classId,
         origin: "lessonlab", linkedBy: "shadow",
@@ -237,12 +245,14 @@ export async function importRoster(source: LlSource): Promise<ImportReport> {
 
       const rows = roster.map((s) => ({
         id: randomUUID(),
-        teacherId: teacher.id,
-        classId,
+        workspaceId: ctx.workspaceId,
         name: s.full_name,
         initials: initialsOf(s.full_name),
       }));
       await tx.insert(students).values(rows);
+      await tx.insert(enrollments).values(
+        rows.map((r, i) => ({ classId, studentId: r.id, sortOrder: i }))
+      );
       await tx.insert(rosterLinks).values(
         roster.map((s, i) => ({
           llStudentId: s.id, uzStudentId: rows[i].id,
@@ -465,11 +475,7 @@ export async function importTests(source: LlSource, classId: string): Promise<Im
     conflicts: [], skipped: [],
   };
 
-  const [own] = await db
-    .select({ id: classes.id })
-    .from(classes)
-    .where(and(eq(classes.id, classId), eq(classes.teacherId, teacher.id)));
-  if (!own) throw new Error("Sinf topilmadi yoki sizga tegishli emas");
+  await assertTeachesClass(classId);
 
   const existingSets = await db
     .select({ id: activitySets.id, title: activitySets.title })

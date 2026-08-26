@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useCollator } from "@/lib/use-collator";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, SearchX } from "lucide-react";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -48,12 +49,13 @@ export function StudentsTable({
 }) {
   const t = useTranslations("StatisticsPage");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "absenceTier", dir: "desc" });
+  const compare = useCollator();
 
   const sorted = useMemo(() => {
     const dirMul = sort.dir === "asc" ? 1 : -1;
     return [...rows].sort((a, b) => {
-      if (sort.key === "name") return a.name.localeCompare(b.name) * dirMul;
-      if (sort.key === "className") return a.className.localeCompare(b.className) * dirMul;
+      if (sort.key === "name") return compare(a.name, b.name) * dirMul;
+      if (sort.key === "className") return compare(a.className, b.className) * dirMul;
       if (sort.key === "absenceTier") {
         const av = a.absenceTier ? TIER_RANK[a.absenceTier] : -1;
         const bv = b.absenceTier ? TIER_RANK[b.absenceTier] : -1;
@@ -63,7 +65,7 @@ export function StudentsTable({
       const bv = b[sort.key] ?? -Infinity;
       return (av - bv) * dirMul;
     });
-  }, [rows, sort]);
+  }, [rows, sort, compare]);
 
   const toggleSort = (key: SortKey) => {
     setSort((prev) =>

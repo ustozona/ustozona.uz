@@ -64,10 +64,18 @@ export async function getAdminStats(): Promise<AdminStats> {
       u.name,
       u.email,
       u.created_at                                       AS signed_up_at,
-      (SELECT COUNT(*)::int FROM classes c
-         WHERE c.teacher_id = t.id AND c.archived_at IS NULL)     AS class_count,
-      (SELECT COUNT(*)::int FROM students s
-         WHERE s.teacher_id = t.id)                        AS student_count,
+      /* Sinf/oʻquvchi endi oʻqituvchiga EMAS, ish maydoniga tegishli
+         (docs/ish-maydoni-arxitektura.md). "Oʻqituvchining sinfi" degani
+         endi "u oʻtadigan dars" — class_teachers orqali. Oʻquvchi esa
+         shu darslarga YOZILGAN bola; DISTINCT shart, chunki bitta bola
+         bir oʻqituvchining bir nechta guruhida boʻlishi mumkin
+         (informatika + toʻgarak). */
+      (SELECT COUNT(*)::int FROM class_teachers ct
+         JOIN classes c ON c.id = ct.class_id
+         WHERE ct.teacher_id = t.id AND c.archived_at IS NULL)    AS class_count,
+      (SELECT COUNT(DISTINCT e.student_id)::int FROM class_teachers ct
+         JOIN enrollments e ON e.class_id = ct.class_id
+         WHERE ct.teacher_id = t.id)                       AS student_count,
       (SELECT COUNT(*)::int FROM attendance_records a
          WHERE a.teacher_id = t.id)                         AS attendance_count,
       (SELECT COUNT(*)::int FROM grades g

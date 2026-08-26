@@ -2,6 +2,7 @@ import { eq, and, sql, inArray } from "drizzle-orm";
 import { requireTeacher } from "@/server/session";
 import { db } from "@/server/db/client";
 import { aiUsage, aiDocs, classes } from "@/server/db/schema";
+import { visibleClassIds } from "@/server/workspace";
 import { streamChat, configuredProviders, type AiChatMessage, type StreamChatArgs, type ProviderId } from "@/server/ai/providers";
 import { buildClassContext, buildClassContexts } from "@/server/ai/class-context";
 import uzMessages from "../../../../messages/uz.json";
@@ -146,10 +147,14 @@ export async function POST(req: Request) {
       const ids = body.classIds
         .filter((id): id is string => typeof id === "string")
         .slice(0, 3);
-      const own = await db
-        .select({ id: classes.id, name: classes.name })
-        .from(classes)
-        .where(and(eq(classes.teacherId, userId), inArray(classes.id, ids)));
+      const allowed = new Set(await visibleClassIds("data"));
+      const scoped = ids.filter((id) => allowed.has(id));
+      const own = scoped.length
+        ? await db
+            .select({ id: classes.id, name: classes.name })
+            .from(classes)
+            .where(inArray(classes.id, scoped))
+        : [];
       if (own.length) {
         classTools = {
           declarations: [

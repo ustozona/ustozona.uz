@@ -2,8 +2,9 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { activitySets, classes, quizSessions, type QuizSessionRow } from "@/server/db/schema";
+import { activitySets, quizSessions, type QuizSessionRow } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { assertTeachesClass } from "@/server/workspace";
 
 /* ════════════════════════════════════════════════════════════════════
    SESSIYA HOLAT MASHINASI — docs/ost-loyihalar-arxitektura.md, B boʻlim.
@@ -81,12 +82,11 @@ export async function createSession(input: CreateSessionInput): Promise<QuizSess
     .limit(1);
   if (!own) throw new SessionStateError("Test topilmadi");
 
-  const [ownClass] = await db
-    .select({ id: classes.id })
-    .from(classes)
-    .where(and(eq(classes.id, input.classId), eq(classes.teacherId, teacher.id)))
-    .limit(1);
-  if (!ownClass) throw new SessionStateError("Sinf topilmadi");
+  try {
+    await assertTeachesClass(input.classId);
+  } catch {
+    throw new SessionStateError("Sinf topilmadi");
+  }
 
   const [row] = await db
     .insert(quizSessions)

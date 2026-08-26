@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
-import { AppSidebar } from "@/components/app-sidebar";
+import AppSidebarServer from "@/components/app-sidebar-server";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import DashboardShellWrapper from "@/components/DashboardShellWrapper";
 import WorkspaceBackground from "@/components/WorkspaceBackground";
@@ -89,7 +89,7 @@ export default function DashboardLayout({
           Bu naqsh allaqachon yozilgan va ishlaydi. */}
       <TourProvider />
       <AssignmentEditorHost />
-      <AppSidebar />
+      <AppSidebarServer />
       <SidebarInset className="min-h-0 overflow-hidden">
         <ImpersonationBanner />
         <Header />

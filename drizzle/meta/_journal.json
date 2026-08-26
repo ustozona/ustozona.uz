@@ -239,6 +239,41 @@
       "when": 1786994943334,
       "tag": "0033_tense_maggott",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1787383276394,
+      "tag": "0034_ish_maydoni_qoshish",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1787383320390,
+      "tag": "0035_ish_maydoni_kochirish",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1787742198754,
+      "tag": "0036_sinf_egasi",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1787743673224,
+      "tag": "0037_hamkasb_taklifi",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1787744649671,
+      "tag": "0038_maydon_auditi",
+      "breakpoints": true
     }
   ]
 }

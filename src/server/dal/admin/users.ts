@@ -81,15 +81,45 @@ export type AdminUsersFilter = {
 type TeacherTotals = { teacherId: string; classCount: number; studentCount: number };
 
 async function listTeacherTotals(ids: string[]): Promise<TeacherTotals[]> {
-  const rows = await db.execute<{
-    uz_teacher_id: string;
-    class_count: number | string;
-    student_count: number | string;
-  }>(sql`
-    SELECT uz_teacher_id, class_count, student_count
-    FROM v_teacher_totals
-    WHERE uz_teacher_id IN (${sql.join(ids.map((id) => sql`${id}`), sql`, `)})
-  `);
+  /* ⚠️ `v_teacher_totals` FAQAT prodda (Supabase) mavjud — u LessonLab
+     bot jadvallariga (`bot_classes`, `bot_students`) tayanadi va Drizzle
+     migratsiyalaridan tashqarida yaratilgan. Lokal Neon bazasida bu
+     koʻrinish ham, bot jadvallari ham YOʻQ, shu bois `/admin/users`
+     sahifasi lokalda har doim yiqilardi.
+
+     Koʻrinish bor boʻlsa oʻsha ishlatiladi (ikki platformani dublikatsiz
+     sanaydigan yagona manba). Yoʻq boʻlsa — faqat Ustozona tomonidan
+     sanaymiz: lokalda baribir boshqa maʼlumot yoʻq. */
+  const [probe] = await db.execute<{ exists: string | null }>(
+    sql`SELECT to_regclass('public.v_teacher_totals')::text AS exists`
+  );
+  const idList = sql.join(ids.map((id) => sql`${id}`), sql`, `);
+
+  const rows = probe?.exists
+    ? await db.execute<{
+        uz_teacher_id: string;
+        class_count: number | string;
+        student_count: number | string;
+      }>(sql`
+        SELECT uz_teacher_id, class_count, student_count
+        FROM v_teacher_totals
+        WHERE uz_teacher_id IN (${idList})
+      `)
+    : await db.execute<{
+        uz_teacher_id: string;
+        class_count: number | string;
+        student_count: number | string;
+      }>(sql`
+        SELECT t.id AS uz_teacher_id,
+          (SELECT COUNT(*)::int FROM class_teachers ct
+             JOIN classes c ON c.id = ct.class_id
+             WHERE ct.teacher_id = t.id AND c.archived_at IS NULL) AS class_count,
+          (SELECT COUNT(DISTINCT e.student_id)::int FROM class_teachers ct
+             JOIN enrollments e ON e.class_id = ct.class_id
+             WHERE ct.teacher_id = t.id) AS student_count
+        FROM teachers t
+        WHERE t.id IN (${idList})
+      `);
 
   // ⚠️ postgres-js `count(*)` ni bigint sifatida qaytaradi va u JS'ga
   // STRING bo'lib keladi — `Number()` siz «5» + 1 = «51» bo'lardi

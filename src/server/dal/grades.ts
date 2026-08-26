@@ -4,7 +4,9 @@ import { db } from "@/server/db/client";
 import {
   activitySets,
   assignments,
+  classTeachers,
   classes,
+  enrollments,
   grades,
   students,
   topics,
@@ -15,6 +17,12 @@ import {
   type TopicRow,
 } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import {
+  requireWorkspace,
+  taughtClassIds,
+  visibleClassIds,
+  visibleStudentIds,
+} from "@/server/workspace";
 import { parseClassName } from "@/lib/class-naming";
 import type {
   Assignment,
@@ -45,6 +53,13 @@ import type { GradesBatch } from "@/lib/sync/grades-batch";
    upsert'larda `setWhere`(egasi boshqa boʻlsa update NO-OP),
    delete'larda `eq(teacherId)`, bola-qatorlarda esa ota-id'lar
    oʻqituvchining oʻz toʻplamiga filtrlab olinadi.
+
+   ⚠️ ISTISNO — `students` va `classes` oʻchirilishi. Bu ikki jadval
+   MAYDONGA tegishli, oʻqituvchiga emas, shu bois `eq(teacherId)`
+   naqshi ularga qoʻllanmaydi. Oʻrniga «ajrat yoki oʻchir» mantigʻi
+   ishlaydi: yozuv faqat undan boshqa hech kim foydalanmayotgan
+   boʻlsa oʻchadi (`detachOrDeleteStudents` / `detachOrDeleteClasses`
+   — fayl oxirida, sabab oʻsha yerda yozilgan).
    ════════════════════════════════════════════════════════════════════ */
 
 const CHUNK = 400;
@@ -135,10 +150,24 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
   const teacher = await requireTeacher();
   const tid = teacher.id;
 
-  const [classRows, studentRows, topicRows, assignmentRows, gradeRows] =
+  const myClassIds = await visibleClassIds("data");
+
+  const [classRows, rosterRows, topicRows, assignmentRows, gradeRows] =
     await Promise.all([
-      db.select().from(classes).where(eq(classes.teacherId, tid)).orderBy(asc(classes.sortOrder), asc(classes.createdAt)),
-      db.select().from(students).where(eq(students.teacherId, tid)).orderBy(asc(students.sortOrder), asc(students.createdAt)),
+      myClassIds.length
+        ? db.select().from(classes).where(inArray(classes.id, myClassIds)).orderBy(asc(classes.sortOrder), asc(classes.createdAt))
+        : Promise.resolve([]),
+      // Bola endi sinfga YOZILISH orqali bogʻlanadi va bir nechta guruhda
+      // boʻlishi mumkin — shuning uchun bir xil `student` bir nechta
+      // ClassData ichida chiqishi normal.
+      myClassIds.length
+        ? db
+            .select({ classId: enrollments.classId, student: students })
+            .from(enrollments)
+            .innerJoin(students, eq(students.id, enrollments.studentId))
+            .where(inArray(enrollments.classId, myClassIds))
+            .orderBy(asc(enrollments.sortOrder), asc(students.createdAt))
+        : Promise.resolve([]),
       db.select().from(topics).where(eq(topics.teacherId, tid)).orderBy(asc(topics.sortOrder), asc(topics.createdAt)),
       db.select().from(assignments).where(eq(assignments.teacherId, tid)).orderBy(asc(assignments.sortOrder), asc(assignments.createdAt)),
       db.select().from(grades).where(eq(grades.teacherId, tid)),
@@ -148,7 +177,7 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
   for (const c of classRows) {
     map[c.id] = { info: rowToInfo(c), students: [], topics: [], assignments: [], grades: [] };
   }
-  for (const s of studentRows) map[s.classId]?.students.push(rowToStudent(s));
+  for (const r of rosterRows) map[r.classId]?.students.push(rowToStudent(r.student));
   for (const t of topicRows) map[t.classId]?.topics.push(rowToTopic(t));
 
   const classByAssignment = new Map<string, string>();
@@ -165,13 +194,11 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
 
 /* ── Yozish: batch'ni qoʻllash ───────────────────────────────────────── */
 
+/** MUALLIFLIK boʻyicha qamrov — `topics`/`assignments`/`activitySets`
+    uchun `teacherId` "kim yaratgan" degani va shundayligicha qoladi
+    (docs/ish-maydoni-arxitektura.md §3.2). */
 async function ownedIds(
-  table:
-    | typeof classes
-    | typeof students
-    | typeof topics
-    | typeof assignments
-    | typeof activitySets,
+  table: typeof topics | typeof assignments | typeof activitySets,
   tid: string
 ): Promise<Set<string>> {
   const rows = await db.select({ id: table.id }).from(table).where(eq(table.teacherId, tid));
@@ -180,17 +207,25 @@ async function ownedIds(
 
 export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   const teacher = await requireTeacher();
+  const ctx = await requireWorkspace();
   const tid = teacher.id;
   const now = new Date();
 
-  /* 1. Sinflar (bolalarning FK nishoni — birinchi). */
+  /* 1. Sinflar (bolalarning FK nishoni — birinchi).
+
+     ⚠️ Sinf va uni KIM OʻTISHI bitta tranzaksiyada: koʻrinuvchanlik
+     `class_teachers` ga tayanadi, demak biri yozilib ikkinchisi
+     yozilmasa oʻqituvchi oʻzi yaratgan sinfni koʻrmay qoladi — va uni
+     interfeys orqali tuzatib ham boʻlmaydi (sinf koʻrinmagach unga
+     oʻqituvchi biriktirish tugmasi ham yoʻq). */
   for (const part of chunks(batch.classesUpsert)) {
-    await db
+    await db.transaction(async (tx) => {
+    await tx
       .insert(classes)
       .values(
         part.map((c) => ({
           id: c.id,
-          teacherId: tid,
+          workspaceId: ctx.workspaceId,
           name: c.name,
           color: c.color ?? null,
           time: c.time ?? null,
@@ -220,22 +255,33 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           archivedAt: sql`excluded.archived_at`,
           updatedAt: now,
         },
-        setWhere: eq(classes.teacherId, tid),
+        setWhere: eq(classes.workspaceId, ctx.workspaceId),
       });
+
+      /* Yaratuvchi — EGA. `onConflictDoNothing` muhim: mavjud sinf
+         qayta upsert qilinsa, hamkasbning `teacher` roli ega'ga
+         koʻtarilib ketmasin. */
+      await tx
+        .insert(classTeachers)
+        .values(part.map((c) => ({ classId: c.id, teacherId: tid, role: "owner" })))
+        .onConflictDoNothing();
+    });
   }
 
   /* 2. Bola-qatorlar faqat oʻz sinf/toifa/id'lariga yozilsin. */
-  const ownClasses = await ownedIds(classes, tid);
+  const ownClasses = new Set(await visibleClassIds("data"));
 
   const studentUpserts = batch.studentsUpsert.filter((s) => ownClasses.has(s.classId));
   for (const part of chunks(studentUpserts)) {
-    await db
+    // Bola va uning sinfga yozilishi — bitta tranzaksiyada (sinf holati
+    // bilan bir xil sabab: yarim yozuv qolmasin).
+    await db.transaction(async (tx) => {
+    await tx
       .insert(students)
       .values(
         part.map((s) => ({
           id: s.id,
-          teacherId: tid,
-          classId: s.classId,
+          workspaceId: ctx.workspaceId,
           name: s.name,
           initials: s.initials,
           status: s.status ?? "active",
@@ -244,13 +290,11 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           parentName: s.parentName ?? null,
           parentPhone: s.parentPhone ?? null,
           studentPhone: s.studentPhone ?? null,
-          sortOrder: s.sortOrder,
         }))
       )
       .onConflictDoUpdate({
         target: students.id,
         set: {
-          classId: sql`excluded.class_id`,
           name: sql`excluded.name`,
           initials: sql`excluded.initials`,
           status: sql`excluded.status`,
@@ -259,11 +303,23 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
           parentName: sql`excluded.parent_name`,
           parentPhone: sql`excluded.parent_phone`,
           studentPhone: sql`excluded.student_phone`,
-          sortOrder: sql`excluded.sort_order`,
           updatedAt: now,
         },
-        setWhere: eq(students.teacherId, tid),
+        setWhere: eq(students.workspaceId, ctx.workspaceId),
       });
+
+      // Sinfga bogʻlanish endi YOZILISH orqali. `sortOrder` shu yerda,
+      // chunki bola ikki guruhda turlicha tartibda turishi mumkin.
+      await tx
+        .insert(enrollments)
+        .values(
+          part.map((s) => ({ classId: s.classId, studentId: s.id, sortOrder: s.sortOrder }))
+        )
+        .onConflictDoUpdate({
+          target: [enrollments.classId, enrollments.studentId],
+          set: { sortOrder: sql`excluded.sort_order` },
+        });
+    });
   }
 
   const topicUpserts = batch.topicsUpsert.filter((t) => ownClasses.has(t.classId));
@@ -354,11 +410,12 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
       });
   }
 
-  /* 4. Baholar — oʻquvchi ham, topshiriq ham oʻzimizniki boʻlsin. */
-  const [ownStudents, ownAssignments] = await Promise.all([
-    ownedIds(students, tid),
+  /* 4. Baholar — oʻquvchi qamrovda, topshiriq esa oʻzimiz yaratganidan. */
+  const [studentIds, ownAssignments] = await Promise.all([
+    visibleStudentIds("data"),
     ownedIds(assignments, tid),
   ]);
+  const ownStudents = new Set(studentIds);
   const gradeUpserts = batch.gradesUpsert.filter(
     (g) => ownStudents.has(g.studentId) && ownAssignments.has(g.assignmentId)
   );
@@ -410,12 +467,145 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
   for (const part of chunks(batch.topicsDelete)) {
     await db.delete(topics).where(and(eq(topics.teacherId, tid), inArray(topics.id, part)));
   }
-  for (const part of chunks(batch.studentsDelete)) {
-    await db
-      .delete(students)
-      .where(and(eq(students.teacherId, tid), inArray(students.id, part)));
+  /* ⚠️ Oʻquvchi va sinf OʻCHIRISHI — maydon filtri YETARLI EMAS.
+
+     Ilgari bu ikki amal faqat `workspaceId` bilan cheklangan edi. Yakka
+     oʻqituvchi davrida bu zararsiz koʻrinardi (maydon = oʻqituvchining
+     oʻzi), lekin ikkinchi oʻqituvchi qoʻshilishi bilan u maʼlumot
+     yoʻqotish yoʻliga aylanadi: B oʻqituvchining brauzeridagi store
+     diffi A oʻqituvchining sinfini va undagi HAMMA bahoni cascade
+     bilan oʻchirib yuborardi — jimgina, tasdiqsiz, qaytarilmas.
+
+     Toʻgʻri semantika (docs/ish-maydoni-arxitektura.md §10.5):
+     «oʻchirish» — bu MENING roʻyxatimdan olib tashlash. Yozuvning oʻzi
+     faqat undan boshqa hech kim foydalanmayotgan boʻlsa oʻchadi. */
+  await detachOrDeleteStudents(batch.studentsDelete);
+  await detachOrDeleteClasses(batch.classesDelete, tid, ctx.workspaceId);
+}
+
+/**
+ * Oʻquvchini roʻyxatdan olib tashlaydi.
+ *
+ * Bola MAYDONGA tegishli, oʻqituvchiga emas — demak uni butunlay
+ * oʻchirish faqat boshqa hech bir oʻqituvchi uni oʻqitmayotganda
+ * mumkin. Aks holda faqat MENING darslarimdagi yozilishlari uziladi:
+ * hamkasbning jurnalida bola va uning baholari joyida qoladi.
+ */
+async function detachOrDeleteStudents(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+
+  /* ⛔ `taughtClassIds` — `visibleClassIds("data")` EMAS: admin butun
+     maydonni koʻradi, lekin hech kimning bolasini oʻchira olmaydi
+     (docs/ish-maydoni-arxitektura.md §11.6). */
+  const mine = await taughtClassIds();
+  const targets = new Set<string>();
+  if (mine.length > 0) {
+    const rows = await db
+      .selectDistinct({ id: enrollments.studentId })
+      .from(enrollments)
+      .where(inArray(enrollments.classId, mine));
+    for (const r of rows) targets.add(r.id);
   }
-  for (const part of chunks(batch.classesDelete)) {
-    await db.delete(classes).where(and(eq(classes.teacherId, tid), inArray(classes.id, part)));
+  /* Qamrovdan tashqaridagi id jimgina tashlab yuboriladi — client
+     eskirgan holatdan begona id yuborishi mumkin. */
+  const scoped = ids.filter((id) => targets.has(id));
+  if (scoped.length === 0) return;
+
+  for (const part of chunks(scoped)) {
+    if (mine.length > 0) {
+      await db
+        .delete(enrollments)
+        .where(and(inArray(enrollments.studentId, part), inArray(enrollments.classId, mine)));
+    }
+  }
+
+  /* Endi qaysi biri hali ham biror guruhda qolgan — oʻsha saqlanadi. */
+  const stillEnrolled = new Set<string>();
+  for (const part of chunks(scoped)) {
+    const rows = await db
+      .selectDistinct({ id: enrollments.studentId })
+      .from(enrollments)
+      .where(inArray(enrollments.studentId, part));
+    for (const r of rows) stillEnrolled.add(r.id);
+  }
+
+  const orphaned = scoped.filter((id) => !stillEnrolled.has(id));
+  for (const part of chunks(orphaned)) {
+    await db.delete(students).where(inArray(students.id, part));
+  }
+}
+
+/**
+ * Sinfni oʻchiradi yoki undan chiqadi.
+ *
+ * Hamkasb ham shu darsni oʻtayotgan boʻlsa — sinf OʻCHMAYDI, faqat
+ * mening biriktirishim uziladi. Bu ClassDojo'dagi «leave a shared
+ * class» ning aynan oʻzi va bizga ham shu kerak: sinf oʻchsa cascade
+ * hamkasbning baholarini ham olib ketardi.
+ */
+async function detachOrDeleteClasses(
+  ids: string[],
+  tid: string,
+  workspaceId: string
+): Promise<void> {
+  if (ids.length === 0) return;
+
+  /* ⛔ Oʻchirish — admin istisnosiSIZ toʻplam (§11.6). */
+  const mine = new Set(await taughtClassIds());
+  const scoped = ids.filter((id) => mine.has(id));
+  if (scoped.length === 0) return;
+
+  /* Mendan boshqa oʻqituvchisi bor sinflar — ular saqlanadi.
+     `createdAt` tartibi vorisni tanlash uchun kerak (pastda). */
+  const others = new Map<string, { teacherId: string; role: string }[]>();
+  for (const part of chunks(scoped)) {
+    const rows = await db
+      .select({
+        classId: classTeachers.classId,
+        teacherId: classTeachers.teacherId,
+        role: classTeachers.role,
+      })
+      .from(classTeachers)
+      .where(inArray(classTeachers.classId, part))
+      .orderBy(asc(classTeachers.createdAt));
+    for (const r of rows) {
+      if (r.teacherId === tid) continue;
+      const list = others.get(r.classId);
+      if (list) list.push({ teacherId: r.teacherId, role: r.role });
+      else others.set(r.classId, [{ teacherId: r.teacherId, role: r.role }]);
+    }
+  }
+
+  for (const part of chunks(scoped)) {
+    await db
+      .delete(classTeachers)
+      .where(and(eq(classTeachers.teacherId, tid), inArray(classTeachers.classId, part)));
+  }
+
+  /* ⚠️ EGASIZ SINF QOLMASIN. Ega ulashilgan sinfdan chiqsa, sinf yetim
+     qolardi: qolgan hamkasb dars oʻtaveradi, lekin hech kim hamkasb
+     qoʻsha olmaydi va sinfni oʻchira olmaydi — interfeys orqali
+     tuzatib boʻlmaydigan holat. Shu bois eng eski qolgan hamkasb
+     avtomatik ega boʻladi.
+
+     ⚠️ Faqat ega QOLMAGANDA — aks holda mavjud ega ustiga ikkinchi ega
+     yaratilardi (men oddiy hamkasb sifatida chiqqan holatda). */
+  for (const [classId, list] of others) {
+    if (list.some((t) => t.role === "owner")) continue;
+    const heir = list[0];
+    if (!heir) continue;
+    await db
+      .update(classTeachers)
+      .set({ role: "owner" })
+      .where(
+        and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, heir.teacherId))
+      );
+  }
+
+  const solo = scoped.filter((id) => !others.has(id));
+  for (const part of chunks(solo)) {
+    await db
+      .delete(classes)
+      .where(and(eq(classes.workspaceId, workspaceId), inArray(classes.id, part)));
   }
 }
