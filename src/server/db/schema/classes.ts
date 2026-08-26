@@ -98,8 +98,15 @@ export const classes = pgTable(
    🔴 IMTIYOZ OSHIRISH: koʻrinuvchanlik "men oʻtadigan darsdagi bolalar"
    qoidasiga tayangani uchun, oʻqituvchi oʻzini istalgan darsga qoʻsha
    olsa — OʻZIGA OʻZI ruxsat bergan boʻladi. Shu bois bu jadvalga yozish
-   nazorat qilinadigan amal (maktabda: admin; adminsiz maydonda: aʼzolar
-   oʻzaro — ular allaqachon birga ishlashga kelishgan).
+   nazorat qilinadigan amal (maktabda: admin; adminsiz maydonda: EGA).
+
+   ⭐ EGA (2026-08-26) — ClassDojo/Google Classroom naqshi. Ilgari bu
+   jadval yassi toʻplam edi va "kim kimni chiqaradi, kim sinfni
+   oʻchiradi" savoliga javob yoʻq edi: ikki hamkasb bir-birini chiqarib
+   tashlashi mumkin edi. Adminsiz maydonda nazoratchi ham yoʻq edi —
+   hujjat "oʻzaro kelishadi" deb qoldirgan, bu esa qoida emas.
+
+   Batafsil: docs/ish-maydoni-arxitektura.md §10.4
    ──────────────────────────────────────────────────────────────────── */
 
 export const classTeachers = pgTable(
@@ -111,6 +118,13 @@ export const classTeachers = pgTable(
     teacherId: text("teacher_id")
       .notNull()
       .references(() => teachers.id, { onDelete: "cascade" }),
+    /** owner = sinfni yaratgan; hamkasb qoʻshadi/chiqaradi, sinfni oʻchiradi.
+        teacher = hamkasb; dars oʻtadi, lekin faqat OʻZI chiqa oladi.
+
+        ⚠️ Har sinfda kamida bitta `owner` boʻlishi kerak — aks holda sinf
+        yetim qoladi va uni interfeys orqali tuzatib boʻlmaydi. Egalik
+        oʻtkazish shu sababli alohida amal (§10.6 fors-major). */
+    role: text("role").notNull().default("teacher"), // owner | teacher
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

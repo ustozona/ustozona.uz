@@ -132,6 +132,53 @@ export async function listMyWorkspaces(): Promise<
 }
 
 /**
+ * Faol maydonni almashtiradi.
+ *
+ * ⚠️ Aʼzolik SERVERDA tekshiriladi — `workspaceId` clientdan kelgan
+ * qiymat. Busiz istalgan odam istalgan maydonga "oʻtib" olardi.
+ */
+export async function switchWorkspace(workspaceId: string): Promise<void> {
+  const teacher = await requireTeacher();
+  const [member] = await db
+    .select({ workspaceId: workspaceMembers.workspaceId })
+    .from(workspaceMembers)
+    .where(
+      and(
+        eq(workspaceMembers.teacherId, teacher.id),
+        eq(workspaceMembers.workspaceId, workspaceId)
+      )
+    );
+  if (!member) throw new ForbiddenError("Bu ish maydoniga ruxsat yoʻq");
+
+  await db
+    .update(teachers)
+    .set({ activeWorkspaceId: workspaceId })
+    .where(eq(teachers.id, teacher.id));
+}
+
+/** Maydon aʼzolari — hamkasb tanlash oynasi va admin-lite roʻyxati uchun.
+
+    ⚠️ Faqat ism/email/rol. Bu «kim biz bilan ishlaydi» roʻyxati,
+    maʼlumot qamrovi emas — ikkisini aralashtirmaslik kerak. */
+export async function listWorkspaceMembers(): Promise<
+  { teacherId: string; name: string; email: string; role: string; isMe: boolean }[]
+> {
+  const ctx = await requireWorkspace();
+  const rows = await db
+    .select({
+      teacherId: workspaceMembers.teacherId,
+      role: workspaceMembers.role,
+      name: teachers.name,
+      email: teachers.email,
+    })
+    .from(workspaceMembers)
+    .innerJoin(teachers, eq(teachers.id, workspaceMembers.teacherId))
+    .where(eq(workspaceMembers.workspaceId, ctx.workspaceId))
+    .orderBy(workspaceMembers.createdAt);
+  return rows.map((r) => ({ ...r, isMe: r.teacherId === ctx.teacherId }));
+}
+
+/**
  * Maydondagi butun oʻquvchi roʻyxati — ISM darajasi (`roster` qamrovi).
  *
  * Nima uchun kerak: ikkinchi oʻqituvchi 6-A ga oʻz fan guruhini

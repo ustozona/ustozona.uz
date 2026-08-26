@@ -253,6 +253,13 @@
       "when": 1787383320390,
       "tag": "0035_ish_maydoni_kochirish",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1787742198754,
+      "tag": "0036_sinf_egasi",
+      "breakpoints": true
     }
   ]
 }

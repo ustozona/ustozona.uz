@@ -258,9 +258,12 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
         setWhere: eq(classes.workspaceId, ctx.workspaceId),
       });
 
+      /* Yaratuvchi — EGA. `onConflictDoNothing` muhim: mavjud sinf
+         qayta upsert qilinsa, hamkasbning `teacher` roli ega'ga
+         koʻtarilib ketmasin. */
       await tx
         .insert(classTeachers)
-        .values(part.map((c) => ({ classId: c.id, teacherId: tid })))
+        .values(part.map((c) => ({ classId: c.id, teacherId: tid, role: "owner" })))
         .onConflictDoNothing();
     });
   }
@@ -552,14 +555,25 @@ async function detachOrDeleteClasses(
   const scoped = ids.filter((id) => mine.has(id));
   if (scoped.length === 0) return;
 
-  /* Mendan boshqa oʻqituvchisi bor sinflar — ular saqlanadi. */
-  const shared = new Set<string>();
+  /* Mendan boshqa oʻqituvchisi bor sinflar — ular saqlanadi.
+     `createdAt` tartibi vorisni tanlash uchun kerak (pastda). */
+  const others = new Map<string, { teacherId: string; role: string }[]>();
   for (const part of chunks(scoped)) {
     const rows = await db
-      .select({ classId: classTeachers.classId, teacherId: classTeachers.teacherId })
+      .select({
+        classId: classTeachers.classId,
+        teacherId: classTeachers.teacherId,
+        role: classTeachers.role,
+      })
       .from(classTeachers)
-      .where(inArray(classTeachers.classId, part));
-    for (const r of rows) if (r.teacherId !== tid) shared.add(r.classId);
+      .where(inArray(classTeachers.classId, part))
+      .orderBy(asc(classTeachers.createdAt));
+    for (const r of rows) {
+      if (r.teacherId === tid) continue;
+      const list = others.get(r.classId);
+      if (list) list.push({ teacherId: r.teacherId, role: r.role });
+      else others.set(r.classId, [{ teacherId: r.teacherId, role: r.role }]);
+    }
   }
 
   for (const part of chunks(scoped)) {
@@ -568,7 +582,27 @@ async function detachOrDeleteClasses(
       .where(and(eq(classTeachers.teacherId, tid), inArray(classTeachers.classId, part)));
   }
 
-  const solo = scoped.filter((id) => !shared.has(id));
+  /* ⚠️ EGASIZ SINF QOLMASIN. Ega ulashilgan sinfdan chiqsa, sinf yetim
+     qolardi: qolgan hamkasb dars oʻtaveradi, lekin hech kim hamkasb
+     qoʻsha olmaydi va sinfni oʻchira olmaydi — interfeys orqali
+     tuzatib boʻlmaydigan holat. Shu bois eng eski qolgan hamkasb
+     avtomatik ega boʻladi.
+
+     ⚠️ Faqat ega QOLMAGANDA — aks holda mavjud ega ustiga ikkinchi ega
+     yaratilardi (men oddiy hamkasb sifatida chiqqan holatda). */
+  for (const [classId, list] of others) {
+    if (list.some((t) => t.role === "owner")) continue;
+    const heir = list[0];
+    if (!heir) continue;
+    await db
+      .update(classTeachers)
+      .set({ role: "owner" })
+      .where(
+        and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, heir.teacherId))
+      );
+  }
+
+  const solo = scoped.filter((id) => !others.has(id));
   for (const part of chunks(solo)) {
     await db
       .delete(classes)
