@@ -401,6 +401,17 @@ jadvallari (`bot_classes`, `bot_students`) ham Drizzle migratsiyalarida
 YOʻQ — ular toʻgʻridan-toʻgʻri Supabase'da yaratilgan. Neon'da ular
 umuman mavjud emas, shu bois 0035 u yerda muammosiz oʻtdi.
 
+> ✅ **2026-08-26 — REJA TAYYOR:** `docs/prod-migratsiya-reja.md` +
+> `drizzle/views/lessonlab-yangi.sql` (yangi taʼriflar) va
+> `lessonlab-eski.sql` (qaytarish). Bajarilmagan.
+>
+> Prodda tekshirildi: koʻrinishlar **7 ta**, ulardan **3 tasi** qayta
+> yozilishi kerak (`v_teacher_bridge` ham tekshirildi — xavfsiz).
+>
+> ⭐ Asosiy qaror — **kardinallik**: eski ustunlar skalyar edi, yangi
+> model koʻp-koʻpga. Shartnomani saqlash uchun bitta vakil tanlanadi —
+> sinfga **ega**, bolaga **eng eski yozilish**. Batafsil rejada §2.
+
 **Qadamlar (prodga chiqishdan oldin):**
 1. Uchala koʻrinish yangi modelga qayta yozilsin: `uzc.teacher_id` →
    `class_teachers` orqali, `uzs.class_id` → `enrollments` orqali
