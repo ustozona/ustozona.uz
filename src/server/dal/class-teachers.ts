@@ -197,7 +197,7 @@ async function assertInWorkspace(classId: string): Promise<WorkspaceContext> {
  * bu aynan uning ishi. Baho qoʻymoqchi boʻlsa oʻzini darsga
  * biriktiradi, va oʻsha qadam koʻrinadigan boʻladi.
  */
-async function assertCanManageClass(classId: string): Promise<WorkspaceContext> {
+export async function assertCanManageClass(classId: string): Promise<WorkspaceContext> {
   const ctx = await assertInWorkspace(classId);
   /* ⚠️ Bu yerda `owner` QOʻSHILMAYDI — va bu `requireWorkspaceAdmin`
      dagi xato bilan bir xil emas. Gap MAYDON egasi haqida: jamoa

@@ -21,6 +21,7 @@ import {
   removeWorkspaceMember,
   transferWorkspaceOwnership,
 } from "@/server/dal/workspace-roles";
+import { getClassParentInfo, setClassParent } from "@/server/dal/class-parent";
 import { findDuplicateStudents, mergeStudents } from "@/server/dal/student-merge";
 import { listWorkspaceAudit } from "@/server/dal/workspace-audit";
 import { runAction } from "@/server/action-result";
@@ -188,6 +189,28 @@ export async function removeWorkspaceMemberAction(input: unknown) {
   return runAction(async () => {
     const { teacherId } = memberSchema.parse(input);
     await removeWorkspaceMember(teacherId);
+    revalidatePath("/dashboard", "layout");
+  });
+}
+
+/* ─── Maʼmuriy sinf ↔ dars guruhi (§4.3) ─────────────────────────── */
+
+const setParentSchema = classIdSchema.extend({
+  parentClassId: z.string().min(1).max(200).nullable(),
+});
+
+export async function getClassParentInfoAction(input: unknown) {
+  return runAction(() => {
+    const { classId } = classIdSchema.parse(input);
+    return getClassParentInfo(classId);
+  });
+}
+
+/** Guruhni maʼmuriy sinfga ulaydi; `parentClassId: null` — uzadi. */
+export async function setClassParentAction(input: unknown) {
+  return runAction(async () => {
+    const { classId, parentClassId } = setParentSchema.parse(input);
+    await setClassParent(classId, parentClassId);
     revalidatePath("/dashboard", "layout");
   });
 }

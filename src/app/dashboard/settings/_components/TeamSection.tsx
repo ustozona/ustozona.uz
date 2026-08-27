@@ -83,6 +83,7 @@ const AUDIT_LABEL: Record<string, string> = {
   "workspace.transfer_ownership": "maydon egaligini oʻtkazdi",
   "member.remove": "aʼzoni jamoadan chiqardi",
   "member.leave": "jamoadan chiqdi",
+  "class.set_parent": "guruhni maʼmuriy sinfga ulash oʻzgardi",
 };
 
 type AuditItem = {
