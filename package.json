@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/check-server-actions.mjs",
+    "prebuild": "node scripts/check-server-actions.mjs && node scripts/check-school-grouping.mjs",
     "check:actions": "node scripts/check-server-actions.mjs",
+    "check:school": "node scripts/check-school-grouping.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
