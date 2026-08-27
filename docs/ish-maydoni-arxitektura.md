@@ -655,16 +655,44 @@ cascade bilan yoʻqoladi.
 dublikat qaydi koʻchdi, dublikat qatori oʻchdi. Tranzaksiya orqaga
 qaytarildi.
 
+### 10.5d. ✅ Qurilgan — maydon aʼzoligi (2026-08-27)
+
+**Invariant: har maydonda kamida bitta `owner` bor.** Uni uchta amal
+birga saqlaydi (`src/server/dal/workspace-roles.ts`):
+
+| Amal | Kim | Qoida |
+|---|---|---|
+| `transferWorkspaceOwnership` | faqat `owner` | eski ega `admin` boʻlib qoladi, `teacher` EMAS |
+| `removeWorkspaceMember` | `owner`/`admin` | egani chiqarib boʻlmaydi; adminni faqat ega chiqaradi |
+| `assertCanLeaveWorkspace` | — | `owner` chiqa olmaydi |
+
+⭐ **Nega eski ega `admin` boʻlib qoladi:** oʻtkazish odatda «men
+ketyapman» degani. Odamni bir amalda hamma huquqidan mahrum qilish uni
+oʻz maydonidan qulflab qoʻyardi — chiqishning oʻzi ham admin amali.
+
+⛔ **Nega admin egani chiqara olmaydi:** aks holda admin bitta amal
+bilan maydonni egallab olardi. Egalik faqat egadan **beriladi**,
+tortib olinmaydi.
+
+🔴 **Egasiz maydon tuzatib boʻlmaydigan holat** — egalikni oʻtkazadigan
+odam qolmaydi. Shu bois chiqish toʻsigʻi UI'da EMAS, serverda: tugma
+yashirilgani yetarli emas, amal baribir chaqirilishi mumkin.
+
+Chiqarilgan oʻqituvchi shaxsiy maydoniga BOʻSH qaytadi — sinf,
+oʻquvchi va u qoʻygan baholar maydonda qoladi (§3.2 mualliflik).
+
+Audit: `workspace.transfer_ownership`, `member.remove`, `member.leave`.
+
 ### 10.6. Fors-major roʻyxati
 
 | Holat | Hozir | Kerak |
 |---|---|---|
 | Oʻqituvchi boshqasining sinfini oʻchiradi | ✅ Tuzatildi — «ajrat yoki oʻchir» (§10.5) | — |
-| Ega maktabdan ketdi | ✅ Egalik oʻtkazish bor; ega chiqsa voris avtomatik (§10.5a) | Admin UI (aʼzoni butun maydondan chiqarish) |
+| Ega maktabdan ketdi | ✅ Egalik oʻtkazish bor; ega chiqsa voris avtomatik (§10.5a) | ✅ Qurilgan (§10.5d) |
 | Ikki oʻqituvchi bir bolani alohida kiritdi | Ikkita «Bobur» | Birlashtirish, ochiq tasdiq bilan (§7.2) |
 | Yakka oʻqituvchi maktabga qoʻshildi | Qisman bor | «Sinflaringizni olib kelasizmi?» ekrani |
 | Maktabdan chiqarildi | ✅ Aʼzolik oʻchadi, baholari qoladi (mualliflik, §3.2) | — |
-| Oxirgi owner chiqib ketdi | Egasiz maydon | Oxirgi owner chiqa olmasin |
+| Oxirgi owner chiqib ketdi | ✅ Toʻsiladi (§10.5d) | — |
 | Repetitorlik bolasi maktabga sizdi | ✅ Alohida maydon himoya qiladi (§4.2) | — |
 
 ### 10.7. Uch stsenariy — bitta tuzilma

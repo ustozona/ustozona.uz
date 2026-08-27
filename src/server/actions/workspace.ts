@@ -17,6 +17,10 @@ import {
   previewWorkspaceInvite,
   revokeWorkspaceInvite,
 } from "@/server/dal/workspace-invites";
+import {
+  removeWorkspaceMember,
+  transferWorkspaceOwnership,
+} from "@/server/dal/workspace-roles";
 import { findDuplicateStudents, mergeStudents } from "@/server/dal/student-merge";
 import { listWorkspaceAudit } from "@/server/dal/workspace-audit";
 import { runAction } from "@/server/action-result";
@@ -160,4 +164,30 @@ export async function mergeStudentsAction(input: unknown) {
 
 export async function getWorkspaceAuditAction() {
   return runAction(() => listWorkspaceAudit());
+}
+
+/* ─── Maydon aʼzoligi (§10.6) ─────────────────────────────────────────
+
+   ⛔ Har ikkala amal maydonda «kamida bitta ega» invariantini saqlaydi.
+   Tekshiruv DAL ichida — bu yerda faqat kirish maʼlumoti tozalanadi. */
+
+const memberSchema = z.object({ teacherId: z.string().min(1).max(200) });
+
+/** Egalikni boshqa aʼzoga oʻtkazadi. Eski ega `admin` boʻlib qoladi. */
+export async function transferWorkspaceOwnershipAction(input: unknown) {
+  return runAction(async () => {
+    const { teacherId } = memberSchema.parse(input);
+    await transferWorkspaceOwnership(teacherId);
+    // Rol butun dashboard qamroviga taʼsir qiladi.
+    revalidatePath("/dashboard", "layout");
+  });
+}
+
+/** Aʼzoni maydondan chiqaradi — u shaxsiy maydoniga qaytadi. */
+export async function removeWorkspaceMemberAction(input: unknown) {
+  return runAction(async () => {
+    const { teacherId } = memberSchema.parse(input);
+    await removeWorkspaceMember(teacherId);
+    revalidatePath("/dashboard", "layout");
+  });
 }
