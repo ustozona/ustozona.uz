@@ -18,6 +18,7 @@ export type WorkspaceAuditAction =
   | "class_teacher.add"
   | "class_teacher.remove"
   | "class.transfer_ownership"
+  | "class.set_parent"
   | "invite.create"
   | "invite.accept"
   | "member.remove"

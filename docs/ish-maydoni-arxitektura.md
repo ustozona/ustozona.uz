@@ -223,6 +223,30 @@ kirgach atamalar ajratilishi kerak, aks holda "sinf" soʻzi ikki narsani
 anglatib chalkashlik tugʻdiradi. Yakka oʻqituvchi uchun "Sinf" soʻzi
 saqlanishi mumkin (u bitta darajani koʻradi).
 
+### 4.3a. ✅ Qurilgan — bogʻlash UI (2026-08-27)
+
+`src/server/dal/class-parent.ts` + `src/components/classes/ClassParentCard.tsx`
+(sinf sahifasi, oʻng ustun).
+
+⛔ **Faqat IKKI daraja.** Ota-sinfning oʻzi boshqasiga ulanmaydi, va
+farzandi bor sinf boshqasiga ulanmaydi. Bu tsikl tekshiruvidan soddaroq
+va modelga aynan mos — uchinchi daraja hech qanday savolga javob
+bermaydi.
+
+⭐ **Yakka maydonda panel UMUMAN koʻrsatilmaydi** (`ClassTeachersCard`
+bilan bir xil qoida). Yakka oʻqituvchi uchun «7-A Matematika» shunchaki
+«sinf»; unga «bu qaysi maʼmuriy sinfga tegishli?» deb soʻralsa, javobi
+yoʻq savol boʻlardi.
+
+⚠️ Bogʻlanish baho, davomat va xulqqa TEGMAYDI — ular `classId` ga,
+yaʼni dars guruhiga bogʻlangan. Ota-sinf faqat «bu bolalar bir sinfda»
+faktini yozadi. §4.3 dagi yigʻma hisobotlar (sinf rahbari koʻrinishi,
+yillik koʻchish) shu fakt ustiga keyin quriladi.
+
+Ruxsat — `assertCanManageClass` (sinf egasi yoki maydon admini), yaʼni
+darsga oʻqituvchi biriktirish bilan bir xil hokimiyat.
+Audit: `class.set_parent`.
+
 ### 4.4. Toʻgarak va darajasiz guruhlar
 
 Asoschi holati (22-avgust): *"Eshmat Falonchi domlaning informatika sinfida ham
@@ -367,7 +391,7 @@ ikkalasi ikkala ismni koʻradi. Yaʼni §4.1 dagi qoida amalda ishlaydi.
 - ✅ Sinf egasi (§10.5a) · ✅ Taklif oqimi (§10.5b) · ✅ Admin roli (§11)
 - ✅ Maydon auditi + dublikatlarni birlashtirish (§10.5c)
 - ⚠️ Oʻqish audit qilinmaydi (ataylab — §10.5c). Kerak boʻlsa keyin.
-- **UI:** maʼmuriy sinfga guruh ulash (`parentClassId` UI'da hali yoʻq)
+- ✅ **UI:** maʼmuriy sinfga guruh ulash (`ClassParentCard`, §4.3a)
 - 🔴 **Prod migratsiyasi (Supabase) — TOʻSIQ BOR, pastga qarang**
 - §6 dagi qolgan ikki band: `teachers.school` matn maydonini guruhlashdan
   butunlay chiqarish, client store'da oʻqish-uchun qismni ajratish
