@@ -46,7 +46,6 @@
     "standards": "Стандарттар",
     "tasks": "Тапсырмалар",
     "changelog": "Жаңартулар",
-    "help": "Көмек",
     "feedback": "Кері байланыс",
     "blog": "Блог",
     "settings": "Параметрлер",
@@ -132,7 +131,16 @@
     "noAttentionStudents": "Назар аударуды қажет ететін оқушы табылмады.",
     "noStudentsInClass": "Бұл сыныпта оқушы жоқ.",
     "studentCount": "{count} оқушы",
-    "note": "Ескертпе"
+    "note": "Ескертпе",
+    "orphanTitle": "{count} сабаққа қатысу жазбасы кестеге сәйкес келмейді",
+    "orphanDescription": "Сабақ күндері өзгерді. Жазбалар сақталған, бірақ кестеде көрінбейді.",
+    "orphanReview": "Қарау",
+    "orphanKeep": "Қалдыру",
+    "orphanDialogTitle": "Кестеге сәйкес келмейтін жазбалар",
+    "orphanDialogDescription": "Бұл күндерде қатысу белгіленген, бірақ олар енді сабақ күні емес.",
+    "orphanRecordsOnDate": "{count} жазба",
+    "orphanDelete": "Барлығын жою",
+    "orphanClose": "Жабу"
   },
   "SettingsPage": {
     "title": "Параметрлер",

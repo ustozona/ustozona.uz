@@ -423,22 +423,76 @@ export default function AttendanceView({
 
   useEffect(() => { setOnlyAttention(false); }, [classId]);
 
-  // Yetim yozuvlarni tozalash — ilgari "barcha kunlar" rejimida dars jadvalidan
-  // tashqari sanaga qoʻyilgan yozuvlar endi jadvalda koʻrinmaydi; joriy oʻquv
-  // yili ichida dars kuniga toʻgʻri kelmaydigan yozuvlar oʻchiriladi. Yil
-  // diapazonidan tashqaridagi (oʻtgan yil) yozuvlarga tegilmaydi.
-  useEffect(() => {
-    if (demoMode || !mounted) return;
-    if (!isCalendarConfigured(calendar) || realLessonDays.length === 0) return;
-    if (!storedRecords?.length) return;
+  /* ════════════════════════════════════════════════════════════════
+     YETIM YOZUVLAR — jadvalga mos kelmay qolgan davomat.
+
+     🔴 Ilgari bu yerda effekt turardi va ularni SOʻRAMASDAN oʻchirardi.
+     Oqibati jimgina va ogʻir edi: dars kuni seshanbadan dushanbaga
+     koʻchirilsa, seshanbadagi BUTUN tarix yoʻqolardi — oʻqituvchi buni
+     sezmasdi ham, chunki hech qanday xabar chiqmasdi.
+
+     ⛔ Endi hech narsa oʻchirilmaydi. Yozuvlar joyida qoladi (jadvalda
+     koʻrinmasa ham), oʻqituvchiga esa bir martalik tanlov beriladi:
+     koʻrish · saqlab qoʻyish · oʻchirish. Oʻchirish endi ANIQ amal.
+
+     ⚠️ Yil diapazonidan tashqaridagi (oʻtgan yil) yozuvlar bu yerga
+     umuman kirmaydi — ular yetim emas, shunchaki boshqa yilniki.
+     ════════════════════════════════════════════════════════════════ */
+  const orphanRecords = useMemo<AttendanceRecord[]>(() => {
+    if (demoMode || !mounted) return [];
+    if (!isCalendarConfigured(calendar) || realLessonDays.length === 0) return [];
+    if (!storedRecords?.length) return [];
     const lessonSet = new Set(realLessonDays.map((d) => d.date));
     const end = today < calendar.range.end ? today : calendar.range.end;
-    const orphan = (r: AttendanceRecord) =>
-      r.date >= calendar.range.start && r.date <= end && !lessonSet.has(r.date);
-    if (storedRecords.some(orphan)) {
-      setRecordsRaw(classId, storedRecords.filter((r) => !orphan(r)));
-    }
-  }, [demoMode, mounted, calendar, realLessonDays, storedRecords, today, classId, setRecordsRaw]);
+    return storedRecords.filter(
+      (r) => r.date >= calendar.range.start && r.date <= end && !lessonSet.has(r.date)
+    );
+  }, [demoMode, mounted, calendar, realLessonDays, storedRecords, today]);
+
+  /* Yetimlar toʻplamining barmoq izi. Oʻqituvchi «saqlab qoʻyish» desa
+     banner yopiladi, lekin jadval KEYIN yana oʻzgarsa yangi yetimlar
+     paydo boʻladi — va ular haqida qayta ogohlantirish SHART. Shu bois
+     yopilish sanalar toʻplamiga bogʻlangan, «koʻrdim» bayrogʻiga emas. */
+  const orphanSignature = useMemo(() => {
+    if (orphanRecords.length === 0) return "";
+    const dates = [...new Set(orphanRecords.map((r) => r.date))].sort();
+    return `${orphanRecords.length}|${dates[0]}|${dates[dates.length - 1]}`;
+  }, [orphanRecords]);
+
+  const orphanKey = `attendance-orphan-dismissed:${classId}`;
+  const [orphanDismissed, setOrphanDismissed] = useState("");
+  useEffect(() => {
+    if (demoMode || typeof window === "undefined") return;
+    setOrphanDismissed(localStorage.getItem(orphanKey) ?? "");
+  }, [demoMode, orphanKey]);
+
+  const showOrphanBanner = orphanSignature !== "" && orphanSignature !== orphanDismissed;
+  const [orphanOpen, setOrphanOpen] = useState(false);
+
+  /** Yetim sanalar — har birida nechta yozuv borligi bilan. */
+  const orphanByDate = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const r of orphanRecords) m.set(r.date, (m.get(r.date) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [orphanRecords]);
+
+  const keepOrphans = () => {
+    setOrphanDismissed(orphanSignature);
+    if (typeof window !== "undefined") localStorage.setItem(orphanKey, orphanSignature);
+    setOrphanOpen(false);
+  };
+
+  /* ⚠️ `showBanners` yuqorida, yetim tekshiruvidan OLDIN hisoblanadi —
+     shuning uchun bu yerda kengaytiriladi, u yerda emas. */
+  const anyBanner = showBanners || showOrphanBanner;
+
+  const deleteOrphans = () => {
+    const doomed = new Set(orphanRecords.map((r) => `${r.studentId}:${r.date}`));
+    setRecordsRaw(classId, (storedRecords ?? []).filter(
+      (r) => !doomed.has(`${r.studentId}:${r.date}`)
+    ));
+    setOrphanOpen(false);
+  };
 
   // Oʻquv yili choraklarga boʻlinmay qolsa (masalan davrsiz shablonga
   // oʻtilsa) — "Chorak" rejimida qolib ketmaslik uchun "Oy"ga qaytariladi.
@@ -648,8 +702,8 @@ export default function AttendanceView({
   return (
     <>
       {/* Main panel */}
-      <div className="flex-1 min-w-0 min-h-0 grid gap-3" data-tour="attendance-heatmap" style={{ minHeight: 0, gridTemplateRows: showBanners ? "auto 1fr" : "1fr" }}>
-        {showBanners && (
+      <div className="flex-1 min-w-0 min-h-0 grid gap-3" data-tour="attendance-heatmap" style={{ minHeight: 0, gridTemplateRows: anyBanner ? "auto 1fr" : "1fr" }}>
+        {anyBanner && (
           <div className="grid gap-3">
             {todayOutsideCalendar && !isAlertDismissed && (
               <Alert variant="info" className="pr-10 relative">
@@ -676,6 +730,25 @@ export default function AttendanceView({
               </Alert>
             )}
             {scheduleGapAtStart && <TimetableCoverageBanner />}
+            {/* `info` — yondagi banner bilan bir xil. Bu ogohlantirish,
+                xato emas: hech narsa yoʻqolmagan, tanlov soʻralyapti. */}
+            {showOrphanBanner && (
+              <Alert variant="info">
+                <AlertTriangle className="size-4" aria-hidden />
+                <AlertTitle>{t("orphanTitle", { count: orphanRecords.length })}</AlertTitle>
+                <AlertDescription className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  <span>{t("orphanDescription")}</span>
+                  <span className="flex gap-2">
+                    <Button variant="outline" size="sm" className="h-7" onClick={() => setOrphanOpen(true)}>
+                      {t("orphanReview")}
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7" onClick={keepOrphans}>
+                      {t("orphanKeep")}
+                    </Button>
+                  </span>
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         )}
         <Card className={cn("min-w-0", panelCardClass)} style={{ height: "100%" }}>
@@ -975,6 +1048,39 @@ export default function AttendanceView({
           onSave={(v) => handleNoteSave(notePopup.studentId, notePopup.date, v)}
           onClose={() => setNotePopup(null)} />
       )}
+
+      {/* Yetim yozuvlar — sanalar ochiq koʻrsatiladi. Oʻchirish tugmasi
+          shu yerda, chunki nima oʻchayotganini koʻrmasdan bosilmasin. */}
+      <Dialog open={orphanOpen} onOpenChange={setOrphanOpen}>
+        <DialogContent className="max-w-md">
+          <DialogTitle>{t("orphanDialogTitle")}</DialogTitle>
+          <DialogDescription>{t("orphanDialogDescription")}</DialogDescription>
+          <div className="max-h-64 overflow-y-auto rounded-md border border-border">
+            {orphanByDate.map(([date, n]) => (
+              <div
+                key={date}
+                className="flex items-center justify-between border-b border-border/60 px-3 py-2 text-sm last:border-b-0"
+              >
+                <span className="text-foreground">{date}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t("orphanRecordsOnDate", { count: n })}
+                </span>
+              </div>
+            ))}
+          </div>
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button variant="destructive" onClick={deleteOrphans}>
+              {t("orphanDelete")}
+            </Button>
+            <div className="flex gap-2">
+              <DialogClose asChild>
+                <Button variant="ghost">{t("orphanClose")}</Button>
+              </DialogClose>
+              <Button onClick={keepOrphans}>{t("orphanKeep")}</Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

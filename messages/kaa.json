@@ -46,7 +46,6 @@
     "standards": "Standartlar",
     "tasks": "Wazıypalar",
     "changelog": "Jańalanıwlar",
-    "help": "Járdem",
     "feedback": "Pikir-usınıs",
     "blog": "Blog",
     "settings": "Sazlawlar",
@@ -132,7 +131,16 @@
     "noStudentsInClass": "Bul klaste oqıwshı joq.",
     "studentCount": "{count} oqıwshı",
     "note": "Túsindirme",
-    "cancel": "Biykar etiw"
+    "cancel": "Biykar etiw",
+    "orphanTitle": "{count} dawamat jazıwı sabaq kestesine sáykes kelmeydi",
+    "orphanDescription": "Sabaq kúnleri ózgerdi. Jazıwlar saqlanıp tur, biraq kestede kórinbeydi.",
+    "orphanReview": "Kóriw",
+    "orphanKeep": "Qaldırıw",
+    "orphanDialogTitle": "Kestege sáykes kelmeytuǵın jazıwlar",
+    "orphanDialogDescription": "Bul sánelerde dawamat belgilengen, biraq olar endi sabaq kúni emes.",
+    "orphanRecordsOnDate": "{count} jazıw",
+    "orphanDelete": "Hámmesin óshiriw",
+    "orphanClose": "Jabıw"
   },
   "SettingsPage": {
     "title": "Sazlawlar",

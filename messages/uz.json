@@ -46,7 +46,6 @@
     "standards": "Standartlar",
     "tasks": "Vazifalar",
     "changelog": "Yangilanishlar",
-    "help": "Yordam",
     "feedback": "Fikr-mulohaza",
     "blog": "Blog",
     "settings": "Sozlamalar",
@@ -132,7 +131,16 @@
     "noAttentionStudents": "Diqqat talab qiladigan oʻquvchi topilmadi.",
     "noStudentsInClass": "Bu sinfda oʻquvchi yoʻq.",
     "studentCount": "{count} oʻquvchi",
-    "note": "Izoh"
+    "note": "Izoh",
+    "orphanTitle": "{count} ta davomat yozuvi dars jadvaliga mos kelmaydi",
+    "orphanDescription": "Dars kunlari oʻzgargan. Yozuvlar saqlanib turibdi, lekin jadvalda koʻrinmaydi.",
+    "orphanReview": "Koʻrish",
+    "orphanKeep": "Saqlab qoʻyish",
+    "orphanDialogTitle": "Jadvalga mos kelmaydigan yozuvlar",
+    "orphanDialogDescription": "Quyidagi sanalarda davomat belgilangan, lekin ular endi dars kuni emas.",
+    "orphanRecordsOnDate": "{count} ta yozuv",
+    "orphanDelete": "Hammasini oʻchirish",
+    "orphanClose": "Yopish"
   },
   "SettingsPage": {
     "title": "Sozlamalar",
