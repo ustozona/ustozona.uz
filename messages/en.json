@@ -46,7 +46,6 @@
     "standards": "Standards",
     "tasks": "Tasks",
     "changelog": "Changelog",
-    "help": "Help",
     "feedback": "Feedback",
     "blog": "Blog",
     "settings": "Settings",
@@ -132,7 +131,16 @@
     "noAttentionStudents": "No students need attention.",
     "noStudentsInClass": "This class has no students.",
     "studentCount": "{count} students",
-    "note": "Note"
+    "note": "Note",
+    "orphanTitle": "{count} attendance records no longer match the timetable",
+    "orphanDescription": "The lesson days changed. The records are still saved, but they no longer appear in the table.",
+    "orphanReview": "Review",
+    "orphanKeep": "Keep them",
+    "orphanDialogTitle": "Records that no longer match the timetable",
+    "orphanDialogDescription": "Attendance was marked on these dates, but they are no longer lesson days.",
+    "orphanRecordsOnDate": "{count} records",
+    "orphanDelete": "Delete all",
+    "orphanClose": "Close"
   },
   "SettingsPage": {
     "title": "Settings",

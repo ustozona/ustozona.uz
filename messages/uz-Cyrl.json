@@ -46,7 +46,6 @@
     "standards": "Стандартлар",
     "tasks": "Вазифалар",
     "changelog": "Янгиланишлар",
-    "help": "Ёрдам",
     "feedback": "Фикр-мулоҳаза",
     "blog": "Блог",
     "settings": "Созламалар",
@@ -132,7 +131,16 @@
     "noAttentionStudents": "Диққат талаб қиладиган ўқувчи топилмади.",
     "noStudentsInClass": "Бу синфда ўқувчи ёъқ.",
     "studentCount": "{count} ўқувчи",
-    "note": "Изоҳ"
+    "note": "Изоҳ",
+    "orphanTitle": "{count} та давомат ёзуви дарс жадвалига мос келмайди",
+    "orphanDescription": "Дарс кунлари ўзгарган. Ёзувлар сақланиб турибди, лекин жадвалда кўринмайди.",
+    "orphanReview": "Кўриш",
+    "orphanKeep": "Сақлаб қўйиш",
+    "orphanDialogTitle": "Жадвалга мос келмайдиган ёзувлар",
+    "orphanDialogDescription": "Қуйидаги саналарда давомат белгиланган, лекин улар энди дарс куни эмас.",
+    "orphanRecordsOnDate": "{count} та ёзув",
+    "orphanDelete": "Ҳаммасини ўчириш",
+    "orphanClose": "Ёпиш"
   },
   "SettingsPage": {
     "title": "Созламалар",

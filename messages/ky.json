@@ -46,7 +46,6 @@
     "standards": "Стандарттар",
     "tasks": "Тапшырмалар",
     "changelog": "Жаңылануулар",
-    "help": "Жардам",
     "feedback": "Кайтарым байланыш",
     "blog": "Блог",
     "settings": "Жөндөөлөр",
@@ -132,7 +131,16 @@
     "noAttentionStudents": "Көңүл бурууну талап кылган окуучу табылган жок.",
     "noStudentsInClass": "Бул класста окуучу жок.",
     "studentCount": "{count} окуучу",
-    "note": "Эскертүү"
+    "note": "Эскертүү",
+    "orphanTitle": "{count} катышуу жазуусу сабак жадыбалына дал келбейт",
+    "orphanDescription": "Сабак күндөрү өзгөрдү. Жазуулар сакталып турат, бирок жадыбалда көрүнбөйт.",
+    "orphanReview": "Кароо",
+    "orphanKeep": "Калтыруу",
+    "orphanDialogTitle": "Жадыбалга дал келбеген жазуулар",
+    "orphanDialogDescription": "Бул күндөрдө катышуу белгиленген, бирок алар эми сабак күнү эмес.",
+    "orphanRecordsOnDate": "{count} жазуу",
+    "orphanDelete": "Баарын өчүрүү",
+    "orphanClose": "Жабуу"
   },
   "SettingsPage": {
     "title": "Жөндөөлөр",
