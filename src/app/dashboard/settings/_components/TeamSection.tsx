@@ -103,6 +103,9 @@ export default function TeamSection() {
     workspaceName: string;
     invitedByName: string;
     role: string;
+    movingClasses: { id: string; name: string; subject: string | null }[];
+    movingStudentCount: number;
+    leavingWorkspaceName: string | null;
   } | null>(null);
   const [leaving, setLeaving] = React.useState(false);
   /* Ikkala amal ham qaytarilmas — tasdiqsiz bajarilmaydi. */
@@ -450,12 +453,46 @@ export default function TeamSection() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>«{confirming?.workspaceName}» ga qoʻshilasizmi?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Taklif qildi: {confirming?.invitedByName}. Rol:{" "}
-              {ROLE_LABEL[confirming?.role ?? ""] ?? confirming?.role}.
-              {"\n"}
-              ⚠️ Sinflaringiz va oʻquvchilaringiz shu jamoaga koʻchadi — hamkasblar ular
-              bilan birga ishlay oladi. Bu amalni orqaga qaytarib boʻlmaydi.
+            {/* ⭐ Matn emas, ROʻYXAT: qabul qaytarilmas, demak oʻqituvchi
+                aynan nima koʻchishini koʻrishi kerak (§10.6). */}
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  Taklif qildi: {confirming?.invitedByName}. Rol:{" "}
+                  {ROLE_LABEL[confirming?.role ?? ""] ?? confirming?.role}.
+                </p>
+
+                {confirming && confirming.movingClasses.length > 0 ? (
+                  <div className="rounded-md border border-border p-3">
+                    <p className="mb-2 font-medium text-foreground">
+                      Quyidagilar siz bilan birga koʻchadi:
+                    </p>
+                    <ul className="space-y-0.5">
+                      {confirming.movingClasses.map((c) => (
+                        <li key={c.id}>
+                          {c.name}
+                          {c.subject ? " · " + c.subject : ""}
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2">
+                      … va {confirming.movingStudentCount} oʻquvchi. Hamkasblar ular bilan
+                      birga ishlay oladi.
+                    </p>
+                  </div>
+                ) : (
+                  <p>Koʻchadigan sinf yoʻq — jamoaga boʻsh qoʻshilasiz.</p>
+                )}
+
+                {confirming?.leavingWorkspaceName ? (
+                  <p className="text-destructive">
+                    ⚠️ Siz «{confirming.leavingWorkspaceName}» dan chiqasiz. U yerdagi sinf
+                    va oʻquvchilar oʻsha jamoada QOLADI — ularni koʻra olmaysiz.
+                  </p>
+                ) : null}
+
+                <p>⚠️ Bu amalni orqaga qaytarib boʻlmaydi.</p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
