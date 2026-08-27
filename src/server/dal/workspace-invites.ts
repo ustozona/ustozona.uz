@@ -1,8 +1,15 @@
 import "server-only";
 import { randomInt, randomUUID } from "node:crypto";
-import { and, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, count, desc, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { teachers, workspaceInvites, workspaceMembers, workspaces } from "@/server/db/schema";
+import {
+  classes,
+  students,
+  teachers,
+  workspaceInvites,
+  workspaceMembers,
+  workspaces,
+} from "@/server/db/schema";
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { requireWorkspace, requireWorkspaceAdmin } from "@/server/workspace";
 import { moveTeacherToWorkspace } from "./workspace-membership";
@@ -124,6 +131,12 @@ export type InvitePreview = {
   workspaceName: string;
   invitedByName: string;
   role: string;
+  /** Yangi maydonga KOʻCHADIGAN sinflar (shaxsiy maydondagilar). */
+  movingClasses: { id: string; name: string; subject: string | null }[];
+  /** Ular bilan birga koʻchadigan oʻquvchilar soni. */
+  movingStudentCount: number;
+  /** Hozir jamoada boʻlsa — chiqib ketiladigan maydon nomi, aks holda null. */
+  leavingWorkspaceName: string | null;
 };
 
 /**
@@ -131,9 +144,15 @@ export type InvitePreview = {
  *
  * ⚠️ Hech narsani OʻZGARTIRMAYDI: oʻqituvchi qabul qilishdan oldin
  * qayerga qoʻshilayotganini koʻrishi kerak — qabul qaytarilmas.
+ *
+ * ⭐ Sinf va oʻquvchilar roʻyxati ham qaytadi. «Ishingiz koʻchadi»
+ * degan jumla yetarli emas edi: oʻqituvchi AYNAN nima koʻchishini
+ * koʻrmasa, qaytarib boʻlmaydigan amalni koʻr-koʻrona tasdiqlaydi.
+ * Roʻyxat `moveTeacherToWorkspace` mantigʻini aynan takrorlaydi —
+ * koʻchadigan narsa faqat SHAXSIY maydondagi ish.
  */
 export async function previewWorkspaceInvite(code: string): Promise<InvitePreview> {
-  await requireTeacher();
+  const teacher = await requireTeacher();
   const invite = await findUsableInvite(code);
   const [row] = await db
     .select({ workspaceName: workspaces.name, invitedByName: teachers.name })
@@ -142,7 +161,40 @@ export async function previewWorkspaceInvite(code: string): Promise<InvitePrevie
     .innerJoin(teachers, eq(teachers.id, workspaceInvites.createdBy))
     .where(eq(workspaceInvites.id, invite.id));
   if (!row) throw new ForbiddenError("Taklif topilmadi");
-  return { ...row, role: invite.role };
+
+  const memberships = await db
+    .select({ workspaceId: workspaceMembers.workspaceId, kind: workspaces.kind, name: workspaces.name })
+    .from(workspaceMembers)
+    .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
+    .where(eq(workspaceMembers.teacherId, teacher.id));
+
+  const personal = memberships.find((m) => m.kind === "personal");
+  const school = memberships.find((m) => m.kind !== "personal");
+
+  /* Maktabdan maktabga oʻtishda ish KOʻCHMAYDI — eski maktab oʻz
+     yozuvlarini saqlaydi. Roʻyxat shu holatda boʻsh boʻlishi kerak,
+     aks holda UI yolgʻon vaʼda berardi. */
+  let movingClasses: InvitePreview["movingClasses"] = [];
+  let movingStudentCount = 0;
+  if (personal && personal.workspaceId !== invite.workspaceId) {
+    movingClasses = await db
+      .select({ id: classes.id, name: classes.name, subject: classes.subject })
+      .from(classes)
+      .where(and(eq(classes.workspaceId, personal.workspaceId), isNull(classes.archivedAt)));
+    const [studentRow] = await db
+      .select({ n: count() })
+      .from(students)
+      .where(eq(students.workspaceId, personal.workspaceId));
+    movingStudentCount = Number(studentRow?.n ?? 0);
+  }
+
+  return {
+    ...row,
+    role: invite.role,
+    movingClasses,
+    movingStudentCount,
+    leavingWorkspaceName: school ? school.name : null,
+  };
 }
 
 /**

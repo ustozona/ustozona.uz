@@ -707,6 +707,28 @@ oʻquvchi va u qoʻygan baholar maydonda qoladi (§3.2 mualliflik).
 
 Audit: `workspace.transfer_ownership`, `member.remove`, `member.leave`.
 
+### 10.5e. ✅ Qurilgan — qoʻshilishdan oldingi koʻrinish (2026-08-27)
+
+`previewWorkspaceInvite` endi kim taklif qilganini emas, **nima
+koʻchishini** ham qaytaradi: sinf roʻyxati, oʻquvchilar soni va
+chiqib ketiladigan maydon nomi.
+
+⭐ **Nega roʻyxat, jumla emas:** «Sinflaringiz koʻchadi» ogohlantirishi
+bor edi, lekin qabul QAYTARILMAS. Oʻqituvchi aynan nima koʻchishini
+koʻrmasa, qaytarib boʻlmaydigan amalni koʻr-koʻrona tasdiqlaydi.
+
+⚠️ Roʻyxat `moveTeacherToWorkspace` mantigʻini aynan takrorlaydi —
+koʻchadigan narsa faqat SHAXSIY maydondagi ish. Maktabdan maktabga
+oʻtishda roʻyxat BOʻSH boʻladi va oʻrniga «X dan chiqasiz, u yerdagi
+sinflar oʻsha jamoada qoladi» ogohlantirishi chiqadi. Ikkalasi bir
+joyda hisoblanishi shart: ajratilsa ular vaqt oʻtib bir-biriga zid
+javob berardi.
+
+⛔ **Tanlov berilmadi** («olib kelasizmi?» degan savol emas). Sabab —
+§4.2 dagi qaror: oʻqituvchi bir vaqtda bitta joyda ishlaydi. Sinfni
+shaxsiy maydonda qoldirish imkoniyati oʻsha qarorni buzardi. Ekran
+tanlov emas, **ochiq xabar** beradi.
+
 ### 10.6. Fors-major roʻyxati
 
 | Holat | Hozir | Kerak |
@@ -714,7 +736,7 @@ Audit: `workspace.transfer_ownership`, `member.remove`, `member.leave`.
 | Oʻqituvchi boshqasining sinfini oʻchiradi | ✅ Tuzatildi — «ajrat yoki oʻchir» (§10.5) | — |
 | Ega maktabdan ketdi | ✅ Egalik oʻtkazish bor; ega chiqsa voris avtomatik (§10.5a) | ✅ Qurilgan (§10.5d) |
 | Ikki oʻqituvchi bir bolani alohida kiritdi | Ikkita «Bobur» | Birlashtirish, ochiq tasdiq bilan (§7.2) |
-| Yakka oʻqituvchi maktabga qoʻshildi | Qisman bor | «Sinflaringizni olib kelasizmi?» ekrani |
+| Yakka oʻqituvchi maktabga qoʻshildi | ✅ Qabul oldidan aynan nima koʻchishi roʻyxat bilan koʻrsatiladi (§10.5e) | — |
 | Maktabdan chiqarildi | ✅ Aʼzolik oʻchadi, baholari qoladi (mualliflik, §3.2) | — |
 | Oxirgi owner chiqib ketdi | ✅ Toʻsiladi (§10.5d) | — |
 | Repetitorlik bolasi maktabga sizdi | ✅ Alohida maydon himoya qiladi (§4.2) | — |
