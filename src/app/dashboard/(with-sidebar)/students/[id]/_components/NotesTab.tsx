@@ -70,6 +70,10 @@ export type Note = {
   createdAt: string;
   authorName?: string;
   authorAvatarUrl?: string | null;
+  /** Hamkasb qaydi boʻlsa false — tahrir menyusi umuman chizilmaydi.
+      ⚠️ `disabled` emas, YOʻQ: bosilmaydigan tugma «nega ishlamayapti?»
+      degan savol tugʻdiradi, holbuki javob oddiy — bu qayd meniki emas. */
+  canEdit: boolean;
 };
 
 type Mode = "short" | "full";
@@ -267,6 +271,7 @@ export default function NotesTab({
                 <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                   {n.authorName ?? t("unknownAuthor")} · {n.time}
                 </span>
+                {n.canEdit ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -290,6 +295,7 @@ export default function NotesTab({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                ) : null}
               </div>
             </div>
               ))}

@@ -10,7 +10,21 @@ import type { StudentNotesBatch } from "@/lib/sync/student-notes-batch";
 /* Student notes DAL — useStudentNotesStore'ning server tomoni.
    feedback DAL qoidalari: idempotent upsert + setWhere teacherId. */
 
-export type StudentNotesPayload = { items: StudentNoteEntry[] };
+/**
+ * `items` — oʻqituvchining OʻZ qaydlari (tahrirlanadi).
+ * `foreign` — hamkasblarniki (faqat oʻqiladi).
+ *
+ * ⚠️ `foreign` hozir har doim boʻsh: qaydlarni ulashish hali
+ * yoqilmagan (arxitektura hujjati §8 — avval bogʻlanishlar haqiqiy
+ * maktabda sinaladi). Maydon OLDIN qoʻshildi, chunki client store
+ * ajratilishi aynan shu chegara ustiga qurilgan
+ * (`useStudentNotesStore` boshidagi izoh). Ulashish yoqilganda shu
+ * yerda ikkinchi soʻrov qoʻshiladi — client tomoni tayyor.
+ */
+export type StudentNotesPayload = {
+  items: StudentNoteEntry[];
+  foreign: StudentNoteEntry[];
+};
 
 export async function getStudentNotesPayload(): Promise<StudentNotesPayload> {
   const teacher = await requireTeacher();
@@ -46,6 +60,7 @@ export async function getStudentNotesPayload(): Promise<StudentNotesPayload> {
       authorName: r.authorName,
       authorAvatarUrl: r.authorAvatarUrl,
     })),
+    foreign: [],
   };
 }
 

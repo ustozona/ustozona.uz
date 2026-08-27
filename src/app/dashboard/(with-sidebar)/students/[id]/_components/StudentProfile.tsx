@@ -10,7 +10,11 @@ import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { deriveLessonDays, statusWeights, type AttendanceRecord } from "@/lib/attendance-data";
-import { useStudentNotesStore, formatNoteTime } from "@/store/useStudentNotesStore";
+import {
+  useStudentNotesStore,
+  formatNoteTime,
+  selectStudentNotes,
+} from "@/store/useStudentNotesStore";
 import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -121,6 +125,8 @@ export default function StudentProfile({
   const [tab, setTabState] = useState<TabId>(() => normalizeTab(initialTab));
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const noteEntries = useStudentNotesStore((s) => s.items);
+  /* Hamkasb qaydlari — faqat oʻqish uchun (store izohi). */
+  const foreignNotes = useStudentNotesStore((s) => s.foreign);
   const addNoteEntry = useStudentNotesStore((s) => s.addNote);
   const updateNoteEntry = useStudentNotesStore((s) => s.updateNote);
   const deleteNoteEntry = useStudentNotesStore((s) => s.deleteNote);
@@ -180,20 +186,19 @@ export default function StudentProfile({
 
   const notes = useMemo<Note[]>(
     () =>
-      noteEntries
-        .filter((n) => n.studentId === studentId)
-        .map((n) => ({
-          id: n.id,
-          title: n.title,
-          text: n.text,
-          tags: n.tags,
-          visibility: n.visibility,
-          time: formatNoteTime(n.createdAt),
-          createdAt: n.createdAt,
-          authorName: n.authorName,
-          authorAvatarUrl: n.authorAvatarUrl,
-        })),
-    [noteEntries, studentId]
+      selectStudentNotes({ items: noteEntries, foreign: foreignNotes }, studentId).map((n) => ({
+        id: n.id,
+        title: n.title,
+        text: n.text,
+        tags: n.tags,
+        visibility: n.visibility,
+        time: formatNoteTime(n.createdAt),
+        createdAt: n.createdAt,
+        authorName: n.authorName,
+        authorAvatarUrl: n.authorAvatarUrl,
+        canEdit: n.canEdit,
+      })),
+    [noteEntries, foreignNotes, studentId]
   );
 
   const addNote = useCallback(
