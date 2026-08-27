@@ -6,6 +6,8 @@ import { teachers, workspaceInvites, workspaceMembers, workspaces } from "@/serv
 import { ForbiddenError, requireTeacher } from "@/server/session";
 import { requireWorkspace, requireWorkspaceAdmin } from "@/server/workspace";
 import { moveTeacherToWorkspace } from "./workspace-membership";
+import { assertCanLeaveWorkspace } from "./workspace-roles";
+import { writeWorkspaceAudit } from "./workspace-audit";
 
 /* ════════════════════════════════════════════════════════════════════
    HAMKASBNI TAKLIF QILISH.
@@ -184,6 +186,11 @@ export async function leaveWorkspace(): Promise<void> {
   if (ctx.workspaceId === `ws-${ctx.teacherId}`) {
     throw new ForbiddenError("Shaxsiy maydonni tark etib boʻlmaydi");
   }
+  /* ⛔ Oxirgi ega chiqa olmaydi — maydon egasiz qolardi (dal/workspace-roles.ts). */
+  await assertCanLeaveWorkspace(ctx.role);
+
+  /* Audit chiqishdan OLDIN — chiqqandan keyin ctx boshqa maydonga tegishli boʻladi. */
+  await writeWorkspaceAudit(ctx, { action: "member.leave" });
   /* ⚠️ Sinf va oʻquvchilar maydonda QOLADI — ular maktabniki
      (dal/workspace-membership.ts izohi). */
   await moveTeacherToWorkspace(ctx.teacherId, null);

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { unwrap } from "@/lib/action-result";
-import { Copy, Crown, LogOut, Plus, Shield } from "lucide-react";
+import { Copy, Crown, LogOut, MoreHorizontal, Plus, Shield, UserMinus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   acceptWorkspaceInviteAction,
   createWorkspaceInviteAction,
   getWorkspaceAuditAction,
@@ -26,7 +32,9 @@ import {
   getWorkspaceMembersAction,
   leaveWorkspaceAction,
   previewWorkspaceInviteAction,
+  removeWorkspaceMemberAction,
   revokeWorkspaceInviteAction,
+  transferWorkspaceOwnershipAction,
 } from "@/server/actions/workspace";
 import { SettingsCard } from "./SettingsShared";
 import { DuplicateStudentsCard } from "./DuplicateStudentsCard";
@@ -72,6 +80,9 @@ const AUDIT_LABEL: Record<string, string> = {
   "class_teacher.add": "darsga oʻqituvchi biriktirdi",
   "class_teacher.remove": "darsdan oʻqituvchi chiqardi",
   "class.transfer_ownership": "sinf egaligini oʻtkazdi",
+  "workspace.transfer_ownership": "maydon egaligini oʻtkazdi",
+  "member.remove": "aʼzoni jamoadan chiqardi",
+  "member.leave": "jamoadan chiqdi",
 };
 
 type AuditItem = {
@@ -93,6 +104,9 @@ export default function TeamSection() {
     role: string;
   } | null>(null);
   const [leaving, setLeaving] = React.useState(false);
+  /* Ikkala amal ham qaytarilmas — tasdiqsiz bajarilmaydi. */
+  const [transferTo, setTransferTo] = React.useState<Member | null>(null);
+  const [removeTarget, setRemoveTarget] = React.useState<Member | null>(null);
   const [pending, startTransition] = React.useTransition();
 
   const load = React.useCallback(() => {
@@ -114,6 +128,65 @@ export default function TeamSection() {
   const me = members?.find((m) => m.isMe);
   const canInvite = me?.role === "owner" || me?.role === "admin";
   const isSolo = (members?.length ?? 1) <= 1;
+
+  /* Qatorda qaysi amal koʻrinadi. Qoidalar serverdagi bilan bir xil
+     (dal/workspace-roles.ts) — bu yerdagisi faqat qulaylik uchun:
+     hokimiyat baribir serverda. */
+  const rowActions = (m: Member) => {
+    if (m.isMe || !canInvite) return [];
+    const out: {
+      key: string;
+      label: string;
+      icon: React.ReactNode;
+      destructive?: boolean;
+      run: () => void;
+    }[] = [];
+    if (me?.role === "owner" && m.role !== "owner") {
+      out.push({
+        key: "transfer",
+        label: "Egalikni oʻtkazish",
+        icon: <Crown className="size-4" />,
+        run: () => setTransferTo(m),
+      });
+    }
+    // Egani chiqarib boʻlmaydi; adminni faqat ega chiqaradi.
+    if (m.role !== "owner" && (m.role !== "admin" || me?.role === "owner")) {
+      out.push({
+        key: "remove",
+        label: "Jamoadan chiqarish",
+        icon: <UserMinus className="size-4" />,
+        destructive: true,
+        run: () => setRemoveTarget(m),
+      });
+    }
+    return out;
+  };
+
+  const transfer = (m: Member) => {
+    setTransferTo(null);
+    startTransition(async () => {
+      try {
+        unwrap(await transferWorkspaceOwnershipAction({ teacherId: m.teacherId }));
+        toast.success(`Egalik ${m.name} ga oʻtdi`);
+        load();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Oʻtkazib boʻlmadi");
+      }
+    });
+  };
+
+  const removeMember = (m: Member) => {
+    setRemoveTarget(null);
+    startTransition(async () => {
+      try {
+        unwrap(await removeWorkspaceMemberAction({ teacherId: m.teacherId }));
+        toast.success(`${m.name} jamoadan chiqarildi`);
+        load();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Chiqarib boʻlmadi");
+      }
+    });
+  };
 
   const createInvite = (role: "admin" | "teacher") => {
     startTransition(async () => {
@@ -201,6 +274,33 @@ export default function TeamSection() {
               <span className="shrink-0 text-xs text-muted-foreground">
                 {ROLE_LABEL[m.role] ?? m.role}
               </span>
+              {rowActions(m).length > 0 ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7 shrink-0"
+                      aria-label={m.name + " — amallar"}
+                      disabled={pending}
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {rowActions(m).map((a) => (
+                      <DropdownMenuItem
+                        key={a.key}
+                        variant={a.destructive ? "destructive" : "default"}
+                        onSelect={a.run}
+                      >
+                        {a.icon}
+                        {a.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
             </div>
           ))}
         </div>
@@ -315,6 +415,19 @@ export default function TeamSection() {
         </SettingsCard>
       ) : null}
 
+      {!isSolo && me?.role === "owner" ? (
+        <SettingsCard
+          title="Jamoadan chiqish"
+          description="Maydon egasi toʻgʻridan-toʻgʻri chiqa olmaydi."
+        >
+          <p className="text-caption">
+            Har maydonda kamida bitta ega boʻlishi kerak — aks holda sinf va oʻquvchilarni
+            boshqaradigan odam qolmaydi. Yuqoridagi roʻyxatdan egalikni hamkasbingizga
+            oʻtkazing; shundan keyin bu yerda «Chiqish» tugmasi paydo boʻladi.
+          </p>
+        </SettingsCard>
+      ) : null}
+
       {!isSolo && me?.role !== "owner" ? (
         <SettingsCard
           title="Jamoadan chiqish"
@@ -363,6 +476,44 @@ export default function TeamSection() {
           <AlertDialogFooter>
             <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
             <AlertDialogAction onClick={leave}>Chiqish</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={transferTo !== null} onOpenChange={(v) => !v && setTransferTo(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Egalikni {transferTo?.name} ga oʻtkazasizmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              U maydonning egasi boʻladi: hamkasb taklif qila oladi, aʼzolarni chiqara
+              oladi. Siz «Maʼmuriyat» boʻlib qolasiz — oʻzingizni orqaga qaytara
+              olmaysiz, buni faqat yangi ega qila oladi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction onClick={() => transferTo && transfer(transferTo)}>
+              Oʻtkazish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={removeTarget !== null} onOpenChange={(v) => !v && setRemoveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{removeTarget?.name} jamoadan chiqarilsinmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              U oʻz shaxsiy maydoniga qaytadi va bu yerdagi hech narsani koʻrmaydi.
+              Sinflar, oʻquvchilar va u qoʻygan baholar jamoada QOLADI — hech narsa
+              oʻchmaydi. Kerak boʻlsa uni yangi kod bilan qayta taklif qilasiz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction onClick={() => removeTarget && removeMember(removeTarget)}>
+              Chiqarish
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -19,7 +19,10 @@ export type WorkspaceAuditAction =
   | "class_teacher.remove"
   | "class.transfer_ownership"
   | "invite.create"
-  | "invite.accept";
+  | "invite.accept"
+  | "member.remove"
+  | "member.leave"
+  | "workspace.transfer_ownership";
 
 export async function writeWorkspaceAudit(
   ctx: WorkspaceContext,
