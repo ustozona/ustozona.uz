@@ -313,8 +313,20 @@ Avvalgi tanqidiy koʻrikda topilgan, maqsad modelga bogʻliq boʻlmagan xatolar:
   (`src/server/dal/student-notes.ts`). Clientdan kelgan `studentId`
   tekshiruvsiz yoziladi. Bugun zarari kichik (qaydni faqat muallif oʻqiydi);
   qaydlar ulashilgan kuni — har kim istalgan bolaga qayd yozib qoʻya oladi.
-- 🟠 **`teachers.school` (erkin matn) va `teachers.schoolId` (FK) — ikki manba.**
-  Guruhlashda **hech qachon** matn maydoni ishlatilmasin.
+- ✅ **`teachers.school` (erkin matn) — guruhlashda ishlatilmaydi.**
+  «Ikki manba» muammosi yoʻqoldi: `teachers.schoolId` ustuni endi
+  UMUMAN yoʻq — admin paneldagi `schoolId` `workspaces.id` dan
+  hisoblanadi (`dal/admin/schools.ts`). Matn maydoni faqat profilda
+  koʻrsatiladi, hech qanday shart yoki guruhlash ifodasida
+  qatnashmaydi.
+
+  ⚠️ Buni izoh emas, **darvoza** ushlab turadi:
+  `scripts/check-school-grouping.mjs` (`prebuild`, alohida
+  `npm run check:school` ham bor). Sabab — qoida buzilganda zarari
+  jimgina: xato chiqmaydi, shunchaki bir maktab hisobotda bir necha
+  boʻlib koʻrinadi, eng yomoni ikki begona oʻqituvchi «bir maktabda»
+  deb topilib bir-birining oʻquvchisini koʻrib qolishi mumkin. Bunday
+  xatoni odam emas, mashina ushlashi kerak. **Oʻchirmang.**
 - 🟠 **Client store "meniki/boshqaniki" ni ajratmaydi.** `useStudentNotesStore`
   yassi roʻyxat + butun roʻyxat diffi. Boshqa oʻqituvchi qaydi tushsa:
   tahrir jimgina rad etiladi (UI muvaffaqiyat koʻrsatadi), oʻchirish lokalda
@@ -393,8 +405,8 @@ ikkalasi ikkala ismni koʻradi. Yaʼni §4.1 dagi qoida amalda ishlaydi.
 - ⚠️ Oʻqish audit qilinmaydi (ataylab — §10.5c). Kerak boʻlsa keyin.
 - ✅ **UI:** maʼmuriy sinfga guruh ulash (`ClassParentCard`, §4.3a)
 - 🔴 **Prod migratsiyasi (Supabase) — TOʻSIQ BOR, pastga qarang**
-- §6 dagi qolgan ikki band: `teachers.school` matn maydonini guruhlashdan
-  butunlay chiqarish, client store'da oʻqish-uchun qismni ajratish
+- ✅ §6: `teachers.school` guruhlashdan chiqarilgan (darvoza bilan qulflangan)
+- §6 dan qolgani: client store'da oʻqish-uchun qismni ajratish
 - Qaydlarni ulashish (oʻqish filtrini olib tashlash) — ATAYLAB hali
   qilinmadi: avval bogʻlanishlar haqiqiy maktabda tekshirilsin
 
