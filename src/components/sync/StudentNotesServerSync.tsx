@@ -11,6 +11,10 @@ import { fetchStudentNotesAction, syncStudentNotesAction } from "@/server/action
 
 type StudentNotesState = ReturnType<typeof useStudentNotesStore.getState>;
 
+/* ⛔ Snapshot'ga FAQAT `s.items` olinadi — `s.foreign` ATAYLAB yoʻq.
+   Diff shu snapshot ustida ishlaydi, demak begona qayd hech qachon
+   batch'ga tushmaydi. Bu yerga `foreign` qoʻshilsa, hamkasb qaydi
+   oʻchirilgandek koʻrinib serverga delete yuborilardi. */
 function selectSnapshot(s: StudentNotesState): StudentNotesSnapshot {
   return { items: s.items };
 }

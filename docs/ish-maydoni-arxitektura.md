@@ -327,11 +327,20 @@ Avvalgi tanqidiy koʻrikda topilgan, maqsad modelga bogʻliq boʻlmagan xatolar:
   boʻlib koʻrinadi, eng yomoni ikki begona oʻqituvchi «bir maktabda»
   deb topilib bir-birining oʻquvchisini koʻrib qolishi mumkin. Bunday
   xatoni odam emas, mashina ushlashi kerak. **Oʻchirmang.**
-- 🟠 **Client store "meniki/boshqaniki" ni ajratmaydi.** `useStudentNotesStore`
-  yassi roʻyxat + butun roʻyxat diffi. Boshqa oʻqituvchi qaydi tushsa:
-  tahrir jimgina rad etiladi (UI muvaffaqiyat koʻrsatadi), oʻchirish lokalda
-  ishlaydi-yu serverda yoʻq → sahifa yangilanganda **arvoh yozuv** qaytadi.
-  Server himoyasi yetarli emas — store darajasida oʻqish-uchun qism kerak.
+- ✅ **Client store "meniki/boshqaniki" ni ajratadi** (2026-08-27).
+  `useStudentNotesStore` endi ikki roʻyxat: `items` (meniki — tahrirlanadi,
+  diffga tushadi) va `foreign` (boshqaniki — faqat oʻqiladi, diffga
+  **hech qachon** tushmaydi).
+
+  ⭐ Yechim mudofaada emas, **tuzilmada**: mutatorlar faqat `items`
+  ustida ishlaydi, demak begona qaydni tahrirlash yoki oʻchirish
+  texnik jihatdan imkonsiz. `selectSnapshot` ga ham faqat `items`
+  olinadi — batch'ga begona qayd tushishining yoʻli yoʻq.
+
+  ⚠️ `foreign` hozir har doim boʻsh (ulashish yoqilmagan). Roʻyxat
+  **oldin** qurildi: ulashish yoqilgan kuni bu qatlam qayta
+  yozilmasin. UI'da `canEdit: false` boʻlgan qaydda tahrir menyusi
+  umuman chizilmaydi — `disabled` emas, YOʻQ.
 
 ---
 
@@ -406,7 +415,7 @@ ikkalasi ikkala ismni koʻradi. Yaʼni §4.1 dagi qoida amalda ishlaydi.
 - ✅ **UI:** maʼmuriy sinfga guruh ulash (`ClassParentCard`, §4.3a)
 - 🔴 **Prod migratsiyasi (Supabase) — TOʻSIQ BOR, pastga qarang**
 - ✅ §6: `teachers.school` guruhlashdan chiqarilgan (darvoza bilan qulflangan)
-- §6 dan qolgani: client store'da oʻqish-uchun qismni ajratish
+- ✅ §6: client store ajratildi (`items` / `foreign`)
 - Qaydlarni ulashish (oʻqish filtrini olib tashlash) — ATAYLAB hali
   qilinmadi: avval bogʻlanishlar haqiqiy maktabda tekshirilsin
 
