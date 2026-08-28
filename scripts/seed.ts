@@ -186,7 +186,10 @@ async function main() {
       time: data.info.time ?? null,
       sortOrder: classIdx,
     });
-    classTeacherRows.push({ classId, teacherId: userId });
+    /* `role` ANIQ beriladi: ustunning bazadagi sukut qiymati "teacher"
+       (schema/classes.ts). Berilmasa demo sinflar EGASIZ qolardi va
+       demo hisobda "hamkasb qoʻshish" hech qachon chiqmasdi. */
+    classTeacherRows.push({ classId, teacherId: userId, role: "owner" });
     data.students.forEach((s, i) => {
       studentRows.push({
         id: s.id,
