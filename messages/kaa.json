@@ -1180,6 +1180,18 @@
     "deleteDialogWithStudents": "«{name}» klası, onıń {count} oqıwshısı hám barlıq bahaları pútkilley óshiriledi. Bul ámeldi artqa qaytarıp bolmaydı.",
     "deleteDialogWithoutStudents": "«{name}» klası hám oǵan tiyisli barlıq maǵlıwmatlar pútkilley óshiriledi. Bul ámeldi artqa qaytarıp bolmaydı.",
     "deleteDialogBulk": "{count} klas ({students} oqıwshı) hám olarǵa tiyisli barlıq maǵlıwmatlar pútkilley óshiriledi. Bul ámeldi artqa qaytarıp bolmaydı.",
+    "detachDialogTitle": "Dizimińizden alıp taslansınba?",
+    "detachDialogOne": "«{name}» klası siziń dizimińizden shıǵadı. Klas, oqıwshılar hám bahalar kásipleslerińizde qaladı — hesh nárse óshpeydi.",
+    "detachDialogBulk": "{count} klas siziń dizimińizden shıǵadı. Olardı kásipleslerińiz de ótedi, sonlıqtan klaslar, oqıwshılar hám bahalar saqlanadı.",
+    "detachConfirm": "Alıp taslaw",
+    "detachToast": "«{name}» dizimińizden alıp taslandı",
+    "detachBulkToast": "{count} klas dizimińizden alıp taslandı",
+    "deleteDialogMixed": "{deleted} klas pútkilley óshiriledi. Qalǵan {detached} klasti kásipleslerińiz de ótedi — olar tek siziń dizimińizden shıǵadı.",
+    "deleteMixedToast": "{deleted} klas óshirildi, {detached} klas dizimińizden alıp taslandı",
+    "blockedDialogTitle": "Bul klasti óshirip bolmaydı",
+    "blockedDialogOne": "«{name}» klasın kásiplesińiz de ótedi, al siz onıń iyesisiz. Aldın kásiplesti klastan shıǵarıń yamasa iyelikti oǵan berińiz.",
+    "blockedDialogBulk": "{count} klasti kásipleslerińiz de ótedi, al siz olardıń iyesisiz. Aldın kásiplesterdi klastan shıǵarıń yamasa iyelikti berińiz.",
+    "close": "Jabıw",
     "deleteBulkToast": "{count} klas óshirildi",
     "archiveBulkToast": "{count} klas arxivlendi",
     "selectedCount": "{count} tańlandı",
@@ -1976,6 +1988,9 @@
       "tuzatildi": "Tuwırlandı"
     },
     "routes": {
+      "help": "Járdem orayı",
+      "baholash": "Baholash",
+      "blog": "Blog",
       "assignments": "Tapsırmalar",
       "planner": "Jobalawshı",
       "dashboard": "Bas bet",
@@ -1994,6 +2009,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "jamoa-ish-maydoni": {
+        "title": "Endi mektep bolıp birge islewge boladı — birneshe muǵallim, ulıwma oqıwshılar dizimi",
+        "body": "Sazlawlar › Jámáát bóliminde kásiplesińizge shaqırıw kodın beresiz. Ol qosılǵanda klasları hám oqıwshıları menen birge kóshedi — kelisiwden aldın ne kóshetuǵının dizim menen kóredi. Hár klastıń iyesi bar: sabaqtı kim ótetuǵının ol sheshedi, bir klasta birneshe muǵallim bolıwı múmkin. Balanıń bahası, sabaqqa qatnasıwı hám jazbaları tek onı haqıyqatında oqıtatuǵın muǵallimlerge kórinedi — bir mektepte islewdiń ózi hesh nárseni ashpaydı."
+      },
       "topshiriq-qoralama-royxatda": {
         "title": "Tamamlanbagʻan tapsırma endi dizimde turadı hám joytpaydı",
         "body": "Redaktordı japsangʻız hesh nárse soralmaydı — qaralama Tapsırmalar diziminde karta bolıp turadı, basıp dawam etesiz. Basqa klasta «+» bassangʻız da eski qaralamangʻız óshpeydi, sol ashıladı. Kishireytiw tuymesi hám múyeshtegi belgi kerek bolmay qaldı."

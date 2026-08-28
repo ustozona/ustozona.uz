@@ -5,6 +5,8 @@ import { useCollator } from "@/lib/use-collator";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { unwrap } from "@/lib/action-result";
+import { previewClassDeletionAction } from "@/server/actions/workspace";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -140,6 +142,15 @@ export default function ClassesPage() {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<LiveClass | null>(null);
   const [deleteTargets, setDeleteTargets] = useState<LiveClass[] | null>(null);
+  /* Oʻchirish dialogi ochilganda serverdan soʻraladi: qaysi sinflar
+     haqiqatan oʻchadi, qaysilari faqat roʻyxatdan chiqadi (hamkasb ham
+     oʻsha darsni oʻtsa sinf saqlanadi — dal/class-teachers.ts).
+     `null` = javob hali kelmagan. */
+  const [deletionModes, setDeletionModes] = useState<Map<
+    string,
+    "delete" | "detach" | "blocked"
+  > | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
   // Jadval koʻrinishida qator tanlash — faqat bulk arxivlash/oʻchirish uchun.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -230,9 +241,58 @@ export default function ClassesPage() {
     setEditTarget(null);
   };
 
+  /* ⭐ Dialog javob KELGACH ochiladi, oldin emas.
+     Ilgari u darhol ochilib, javob kelgunicha sukut boʻyicha
+     «butunlay oʻchiriladi, qaytarib boʻlmaydi» deb turardi va keyin
+     matn koʻz oldida almashardi. Yaʼni oʻqituvchi bir lahza yolgʻon
+     ogohlantirishni koʻrardi — tez bosgan odam esa faqat oʻshani
+     koʻrardi. Soʻrov bitta SELECT, kechikishi sezilmaydi.
+
+     Xato boʻlsa (tarmoq uzildi) boʻsh xarita bilan ochiladi: dialog
+     eski, qatʼiy matnini koʻrsatadi — kam vaʼda qilgan ogohlantirish
+     xavfsizroq. */
+  const requestDelete = (targets: LiveClass[]) => {
+    if (targets.length === 0 || deletePending) return;
+    setDeletePending(true);
+    previewClassDeletionAction({ classIds: targets.map((c) => c.id) })
+      .then((r) => setDeletionModes(new Map(unwrap(r).map((x) => [x.classId, x.mode]))))
+      .catch(() => setDeletionModes(new Map()))
+      .finally(() => {
+        setDeletePending(false);
+        setDeleteTargets(targets);
+      });
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteTargets(null);
+    setDeletionModes(null);
+  };
+
+  const modeOf = (id: string) => deletionModes?.get(id) ?? "delete";
+  const detachCount = deleteTargets
+    ? deleteTargets.filter((c) => modeOf(c.id) === "detach").length
+    : 0;
+  /* Egasi men boʻlgan, lekin hamkasbim ham oʻtadigan sinf — server uni
+     uzmaydi (dal/grades.ts). Dialog buni oldindan aytadi, aks holda
+     sinf UI'dan yoʻqolib, keyingi yangilashda qaytib kelardi. */
+  const blockedCount = deleteTargets
+    ? deleteTargets.filter((c) => modeOf(c.id) === "blocked").length
+    : 0;
+  const allBlocked = !!deleteTargets && blockedCount === deleteTargets.length;
+  /* Hammasi ajratish boʻlsa — dialog «oʻchirish» haqida umuman
+     gapirmaydi, tugma ham boshqacha nomlanadi. */
+  const allDetach = !!deleteTargets && detachCount === deleteTargets.length;
+
   const handleDelete = () => {
     if (!deleteTargets || deleteTargets.length === 0) return;
-    const ids = new Set(deleteTargets.map((c) => c.id));
+    /* Toʻsilganlari store'dan ham chiqmaydi: server ularni saqlaydi,
+       demak UI'da yoʻqolishi yolgʻon boʻlardi. */
+    const targets = deleteTargets.filter((c) => modeOf(c.id) !== "blocked");
+    if (targets.length === 0) {
+      closeDeleteDialog();
+      return;
+    }
+    const ids = new Set(targets.map((c) => c.id));
     setClassDataMap((prev) => {
       const next = { ...prev };
       for (const id of ids) delete next[id];
@@ -244,11 +304,20 @@ export default function ClassesPage() {
       return next;
     });
     toast.success(
-      deleteTargets.length === 1
-        ? t("deleteToast", { name: deleteTargets[0].name })
-        : t("deleteBulkToast", { count: deleteTargets.length })
+      allDetach
+        ? targets.length === 1
+          ? t("detachToast", { name: targets[0].name })
+          : t("detachBulkToast", { count: targets.length })
+        : detachCount > 0
+          ? t("deleteMixedToast", {
+              deleted: targets.length - detachCount,
+              detached: detachCount,
+            })
+          : targets.length === 1
+            ? t("deleteToast", { name: targets[0].name })
+            : t("deleteBulkToast", { count: targets.length })
     );
-    setDeleteTargets(null);
+    closeDeleteDialog();
   };
 
   // Arxivlash — sinf pickerlardan yashirin boʻladi, lekin id/tarixi saqlanadi.
@@ -443,7 +512,7 @@ export default function ClassesPage() {
                 <BulkActionButton
                   icon={<TrashIcon className="size-4" />}
                   variant="destructive"
-                  onClick={() => setDeleteTargets(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
+                  onClick={() => requestDelete(filteredAndSorted.filter((c) => selectedIds.has(c.id)))}
                 >
                   {t("delete")}
                 </BulkActionButton>
@@ -518,7 +587,7 @@ export default function ClassesPage() {
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onArchive={() => handleArchive(cls)}
-                          onDelete={() => setDeleteTargets([cls])}
+                          onDelete={() => requestDelete([cls])}
                         />
                       ))}
                       <AddClassCard onClick={() => setIsCreateModalOpen(true)} />
@@ -533,7 +602,7 @@ export default function ClassesPage() {
                           disabled={isDemoMode}
                           onEdit={() => setEditTarget(cls)}
                           onArchive={() => handleArchive(cls)}
-                          onDelete={() => setDeleteTargets([cls])}
+                          onDelete={() => requestDelete([cls])}
                         />
                       ))}
                     </div>
@@ -559,7 +628,7 @@ export default function ClassesPage() {
                       }
                       onEdit={setEditTarget}
                       onArchive={handleArchive}
-                      onDelete={(cls) => setDeleteTargets([cls])}
+                      onDelete={(cls) => requestDelete([cls])}
                     />
                   )}
                 </div>
@@ -656,12 +725,34 @@ export default function ClassesPage() {
         />
       )}
 
-      <AlertDialog open={!!deleteTargets} onOpenChange={(o) => !o && setDeleteTargets(null)}>
+      <AlertDialog open={!!deleteTargets} onOpenChange={(o) => !o && closeDeleteDialog()}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteDialogTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {allBlocked
+                ? t("blockedDialogTitle")
+                : allDetach
+                ? t("detachDialogTitle")
+                : t("deleteDialogTitle")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteTargets && deleteTargets.length > 1
+              {/* ⭐ Toʻrt xil haqiqat, toʻrt xil matn. Ilgari bittasi bor
+                  edi («butunlay oʻchiriladi, qaytarib boʻlmaydi») va u
+                  hamkasbning sinfida yolgʻon boʻlardi. */}
+              {allBlocked
+                ? deleteTargets && deleteTargets.length > 1
+                  ? t("blockedDialogBulk", { count: deleteTargets.length })
+                  : t("blockedDialogOne", { name: deleteTargets?.[0]?.name ?? "" })
+                : allDetach
+                ? deleteTargets && deleteTargets.length > 1
+                  ? t("detachDialogBulk", { count: deleteTargets.length })
+                  : t("detachDialogOne", { name: deleteTargets?.[0]?.name ?? "" })
+                : detachCount > 0 && deleteTargets
+                ? t("deleteDialogMixed", {
+                    deleted: deleteTargets.length - detachCount,
+                    detached: detachCount,
+                  })
+                : deleteTargets && deleteTargets.length > 1
                 ? t("deleteDialogBulk", {
                     count: deleteTargets.length,
                     students: deleteTargets.reduce((s, c) => s + c.students, 0),
@@ -672,13 +763,21 @@ export default function ClassesPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              {t("delete")}
-            </AlertDialogAction>
+            {/* Toʻsilgan holatda tasdiq tugmasi umuman yoʻq: bosiladigan
+                narsa boʻlmasligi kerak, chunki hech narsa boʻlmaydi. */}
+            <AlertDialogCancel>{allBlocked ? t("close") : t("cancel")}</AlertDialogCancel>
+            {allBlocked ? null : (
+              <AlertDialogAction
+                onClick={handleDelete}
+                /* Ajratish qaytariladigan amal (ega qayta biriktiradi) —
+                   qizil tugma uni haqiqatdan xavfliroq koʻrsatardi. */
+                className={
+                  allDetach ? undefined : "bg-destructive text-white hover:bg-destructive/90"
+                }
+              >
+                {allDetach ? t("detachConfirm") : t("delete")}
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

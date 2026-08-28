@@ -7,8 +7,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { TypographyMuted } from "@/components/ui/typography";
 import { panelCardClass } from "@/components/DashboardPage";
-import { ClassTeachersCard } from "@/components/classes/ClassTeachersCard";
-import { ClassParentCard } from "@/components/classes/ClassParentCard";
 import { MONTHS_UZ_SHORT } from "@/lib/localization";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { lessonClassIds } from "@/lib/lessons-data";
@@ -61,12 +59,6 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
           <TypographyMuted className="text-[11px]">{t("lessonDaysLegend")}</TypographyMuted>
         </div>
       </Card>
-
-      {/* Darsni kim oʻtadi — yakka maydonda oʻzi koʻrinmaydi (§1). */}
-      <ClassTeachersCard classId={identity.id} />
-
-      {/* Maʼmuriy sinf — yakka maydonda oʻzi koʻrinmaydi (§4.3). */}
-      <ClassParentCard classId={identity.id} />
 
       {/* Notes */}
       <Card className={panelCardClass}>

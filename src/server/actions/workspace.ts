@@ -6,6 +6,7 @@ import { listWorkspaceMembers, listWorkspaceRoster, switchWorkspace } from "@/se
 import {
   addClassTeacher,
   listClassTeachers,
+  previewClassDeletion,
   removeClassTeacher,
   transferClassOwnership,
 } from "@/server/dal/class-teachers";
@@ -69,6 +70,19 @@ export async function getClassTeachersAction(input: unknown) {
   return runAction(() => {
     const { classId } = classIdSchema.parse(input);
     return listClassTeachers(classId);
+  });
+}
+
+/* Oʻchirish dialogi shu javobga qarab matnini tanlaydi: sinf haqiqatan
+   oʻchadimi yoki faqat biriktirish uziladimi (dal/class-teachers.ts). */
+const classIdsSchema = z.object({
+  classIds: z.array(z.string().min(1).max(200)).max(500),
+});
+
+export async function previewClassDeletionAction(input: unknown) {
+  return runAction(() => {
+    const { classIds } = classIdsSchema.parse(input);
+    return previewClassDeletion(classIds);
   });
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslations, useMessages } from "next-intl";
-import { ArrowUpRight, ChevronDown, ChevronUp, ListFilter, Megaphone } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronUp, FileText, ListFilter, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,13 @@ function TypePill({ type, label }: { type: ChangelogEntry["type"]; label: string
   );
 }
 
-/** Tegishli sahifaga oʻng chetga tekislangan kichik havola-chip. */
+/** Tegishli sahifaga oʻng chetga tekislangan kichik havola-chip.
+
+    Ikonka Fikr-mulohaza matnidagi ichki havola bilan bir xil
+    (`FEEDBACK_LINK_ICON_CLASS`, `FileText`) — ikkalasi ham «ilova
+    ichidagi sahifa» degan bitta narsani bildiradi, demak bir xil
+    koʻrinishi kerak. Chetdagi strelka esa bosilsa boshqa sahifaga
+    oʻtishini qoldiradi. */
 function HrefChip({ href, routeLabels }: { href: string; routeLabels: Record<string, string> }) {
   const label = href.split("/").pop() ?? "";
   return (
@@ -49,6 +55,7 @@ function HrefChip({ href, routeLabels }: { href: string; routeLabels: Record<str
       href={href}
       className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
     >
+      <FileText className="size-3" />
       {routeLabels[href] ?? label}
       <ArrowUpRight className="size-3" />
     </Link>
@@ -244,6 +251,12 @@ export default function ChangelogPage() {
       "/dashboard/lessons": t("routes.lessons"),
       "/dashboard/statistics": t("routes.statistics"),
       "/dashboard/changelog": t("routes.changelog"),
+      /* Dashboard'dan tashqaridagi sahifalar. Ular ham shu yerda
+         boʻlishi SHART: xarita topmasa chip yoʻlning oxirgi boʻlagini
+         koʻrsatadi va oʻqituvchi «help» degan inglizcha soʻzni koʻradi. */
+      "/help": t("routes.help"),
+      "/baholash": t("routes.baholash"),
+      "/blog": t("routes.blog"),
     }),
     [t]
   );

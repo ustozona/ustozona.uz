@@ -558,6 +558,7 @@ async function detachOrDeleteClasses(
   /* Mendan boshqa oʻqituvchisi bor sinflar — ular saqlanadi.
      `createdAt` tartibi vorisni tanlash uchun kerak (pastda). */
   const others = new Map<string, { teacherId: string; role: string }[]>();
+  const myRole = new Map<string, string>();
   for (const part of chunks(scoped)) {
     const rows = await db
       .select({
@@ -569,14 +570,43 @@ async function detachOrDeleteClasses(
       .where(inArray(classTeachers.classId, part))
       .orderBy(asc(classTeachers.createdAt));
     for (const r of rows) {
-      if (r.teacherId === tid) continue;
+      if (r.teacherId === tid) {
+        myRole.set(r.classId, r.role);
+        continue;
+      }
       const list = others.get(r.classId);
       if (list) list.push({ teacherId: r.teacherId, role: r.role });
       else others.set(r.classId, [{ teacherId: r.teacherId, role: r.role }]);
     }
   }
 
-  for (const part of chunks(scoped)) {
+  /* 🔴 EGA BU YOʻL BILAN SINFDAN CHIQIB KETMAYDI.
+     ────────────────────────────────────────────────────────────────
+     Bu funksiyaga buyruq store diff'idan keladi: «prev'da bor edi,
+     next'da yoʻq» (lib/sync/grades-sync.ts). Yaʼni u foydalanuvchining
+     aniq «men bu darsdan chiqaman» qarori EMAS — store'dan sinf
+     yoʻqolishining har qanday sababi shu yoʻlga tushadi.
+
+     Ega uchun oqibati ogʻir edi: uzilish → «egasiz sinf qolmasin»
+     qoidasi ishga tushardi → eng eski hamkasb avtomatik EGA boʻlardi.
+     Natijada sinf jimgina boshqa odamga oʻtib ketardi. 2026-08-27
+     sinovida aynan shu kuzatildi: hamkasb «oʻchirish» ni bosgach
+     eganing brauzerida sinf yoʻqoldi, sync uni uzdi va hamkasb
+     sinfning egasi boʻlib qoldi.
+
+     `removeClassTeacher` (aniq amal) egani chiqarishni allaqachon
+     toʻsadi — bu yoʻl oʻsha tekshiruvni chetlab oʻtardi.
+
+     ⛔ Ega uchun ikki maʼnoli yoʻl qoladi va ikkalasi ham oshkor:
+     egalikni oʻtkazish, yoki avval hamkasbni darsdan chiqarish.
+     Yolgʻiz sinfini oʻchirish esa pastda, `solo` da — u toʻsilmaydi. */
+  const blocked = new Set(
+    scoped.filter((id) => myRole.get(id) === "owner" && others.has(id))
+  );
+  const actionable = scoped.filter((id) => !blocked.has(id));
+  if (actionable.length === 0) return;
+
+  for (const part of chunks(actionable)) {
     await db
       .delete(classTeachers)
       .where(and(eq(classTeachers.teacherId, tid), inArray(classTeachers.classId, part)));
@@ -602,7 +632,7 @@ async function detachOrDeleteClasses(
       );
   }
 
-  const solo = scoped.filter((id) => !others.has(id));
+  const solo = actionable.filter((id) => !others.has(id));
   for (const part of chunks(solo)) {
     await db
       .delete(classes)

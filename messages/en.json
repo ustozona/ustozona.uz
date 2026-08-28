@@ -1180,6 +1180,18 @@
     "deleteDialogWithStudents": "“{name}”, its {count} students, and all their grades will be permanently deleted. This action cannot be undone.",
     "deleteDialogWithoutStudents": "“{name}” and all related data will be permanently deleted. This action cannot be undone.",
     "deleteDialogBulk": "{count} classes ({students} students) and all their related data will be permanently deleted. This action cannot be undone.",
+    "detachDialogTitle": "Remove from your list?",
+    "detachDialogOne": "“{name}” will leave your list. The class, its students and their grades stay with your colleagues — nothing is deleted.",
+    "detachDialogBulk": "{count} classes will leave your list. Your colleagues teach them too, so the classes, students and grades stay.",
+    "detachConfirm": "Remove",
+    "detachToast": "“{name}” removed from your list",
+    "detachBulkToast": "{count} classes removed from your list",
+    "deleteDialogMixed": "{deleted} classes will be permanently deleted. The other {detached} are taught by your colleagues too — those only leave your list.",
+    "deleteMixedToast": "{deleted} classes deleted, {detached} removed from your list",
+    "blockedDialogTitle": "This class can’t be deleted",
+    "blockedDialogOne": "A colleague also teaches “{name}”, and you are its owner. Remove them from the class first, or transfer ownership to them.",
+    "blockedDialogBulk": "Colleagues also teach {count} of these classes, and you are their owner. Remove them from those classes first, or transfer ownership.",
+    "close": "Close",
     "deleteBulkToast": "{count} classes deleted",
     "archiveBulkToast": "{count} classes archived",
     "selectedCount": "{count} selected",
@@ -1976,6 +1988,9 @@
       "tuzatildi": "Fixed"
     },
     "routes": {
+      "help": "Help center",
+      "baholash": "Baholash",
+      "blog": "Blog",
       "assignments": "Assignments",
       "planner": "Planner",
       "dashboard": "Home",
@@ -1994,6 +2009,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "jamoa-ish-maydoni": {
+        "title": "Schools can now work as a team — several teachers, one shared roster",
+        "body": "In Settings › Team you hand a colleague an invite code. When they join, their classes and students come with them — and before accepting they see the full list of what will move. Every class has an owner who decides who teaches it, and a class can have several teachers. A child’s grades, attendance and notes stay visible only to the teachers who actually teach that child — sharing a school opens nothing on its own."
+      },
       "topshiriq-qoralama-royxatda": {
         "title": "An unfinished assignment now waits in the list instead of disappearing",
         "body": "Closing the editor asks nothing — the draft sits in the Assignments list as a card, and one click continues it. Pressing “+” in another class no longer wipes it: your draft opens instead. The minimise button and the corner tab are no longer needed."

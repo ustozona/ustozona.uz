@@ -3,7 +3,7 @@ import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { classTeachers, classes, teachers, workspaceMembers } from "@/server/db/schema";
 import { ForbiddenError } from "@/server/session";
-import { requireWorkspace, type WorkspaceContext } from "@/server/workspace";
+import { requireWorkspace, taughtClassIds, type WorkspaceContext } from "@/server/workspace";
 import { writeWorkspaceAudit } from "./workspace-audit";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -218,4 +218,87 @@ export async function assertCanManageClass(classId: string): Promise<WorkspaceCo
     );
   if (!row) throw new ForbiddenError("Bu amal sinf egasiga tegishli");
   return ctx;
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   OʻCHIRISHDAN OLDINGI KOʻRINISH.
+
+   ⭐ Sabab — interfeys yolgʻon gapirardi. «Oʻchirish» tugmasi sinfni
+   client store'dan olib tashlaydi va darhol «oʻchirildi» deydi; server
+   esa (`dal/grades.ts` → `detachOrDeleteClasses`) sinfda boshqa
+   oʻqituvchi borligini koʻrsa uni OʻCHIRMAYDI — faqat bosgan odamning
+   biriktirishini uzadi. Bosgan odam uchun sinf roʻyxatdan yoʻqolgani
+   uchun farq sezilmasdi: u hamkasbining sinfini yoʻq qildim deb
+   oʻylardi, aslida shunchaki darsdan chiqqan boʻlardi.
+
+   Zarari ikki tomonlama: qaytarilmas deb ogohlantirilgan amal aslida
+   qaytariladigan, haqiqatan qaytarilmas holat esa (ega oʻz yolgʻiz
+   sinfini oʻchirganda) xuddi shu matn bilan koʻrsatilgani uchun
+   ogohlantirish maʼnosini yoʻqotgandi.
+
+   ⚠️ QAROR QOIDASI `detachOrDeleteClasses` BILAN AYNAN BIR XIL
+   boʻlishi shart: «mendan boshqa oʻqituvchisi bor sinf saqlanadi».
+   Ikkisi ajralib ketsa, dialog yana yolgʻon gapira boshlaydi — faqat
+   bu safar teskari tomonga. Biri oʻzgarsa ikkinchisi ham oʻzgarsin.
+   ──────────────────────────────────────────────────────────────────── */
+
+export type ClassDeletionPreview = {
+  classId: string;
+  /**
+   * `delete`  — sinf butunlay oʻchadi (boshqa oʻqituvchisi yoʻq)
+   * `detach`  — sinf qoladi, faqat mening biriktirishim uziladi
+   * `blocked` — men egaman va hamkasbim bor: hech narsa boʻlmaydi
+   */
+  mode: "delete" | "detach" | "blocked";
+  /** Sinfda qoladigan hamkasblar (`detach`/`blocked` da toʻladi). */
+  otherTeachers: string[];
+};
+
+export async function previewClassDeletion(
+  classIds: string[]
+): Promise<ClassDeletionPreview[]> {
+  if (classIds.length === 0) return [];
+  const ctx = await requireWorkspace();
+
+  /* ⛔ `taughtClassIds` — admin istisnosiSIZ, oʻchirish yoʻli bilan bir
+     xil toʻplam (§11.6). Bu roʻyxatdan tashqaridagi id serverda ham
+     hech narsa qilmaydi, demak koʻrinishda ham chiqmasligi kerak. */
+  const mine = new Set(await taughtClassIds(ctx));
+  const scoped = classIds.filter((id) => mine.has(id));
+  if (scoped.length === 0) return [];
+
+  const rows = await db
+    .select({
+      classId: classTeachers.classId,
+      teacherId: classTeachers.teacherId,
+      role: classTeachers.role,
+      name: teachers.name,
+    })
+    .from(classTeachers)
+    .innerJoin(teachers, eq(teachers.id, classTeachers.teacherId))
+    .where(inArray(classTeachers.classId, scoped))
+    .orderBy(asc(classTeachers.createdAt));
+
+  const others = new Map<string, string[]>();
+  const myRole = new Map<string, string>();
+  for (const r of rows) {
+    if (r.teacherId === ctx.teacherId) {
+      myRole.set(r.classId, r.role);
+      continue;
+    }
+    const list = others.get(r.classId);
+    if (list) list.push(r.name);
+    else others.set(r.classId, [r.name]);
+  }
+
+  return scoped.map((classId) => {
+    const list = others.get(classId) ?? [];
+    const mode =
+      list.length === 0
+        ? "delete"
+        : myRole.get(classId) === "owner"
+          ? "blocked"
+          : "detach";
+    return { classId, mode, otherTeachers: list };
+  });
 }
