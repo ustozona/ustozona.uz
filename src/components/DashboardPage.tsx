@@ -37,6 +37,21 @@ export const withSidebarRowPageClass =
 export const panelCardClass =
   "flex flex-col overflow-hidden gap-0 py-0 h-full min-h-0 shadow-none border border-border";
 
+/**
+ * Kontent balandligidagi panel Card — ustunda BIR NECHTA panel yonma-yon
+ * turganda ishlatiladi.
+ *
+ * ⚠️ `panelCardClass` ni bunday joyda ishlatib boʻlmaydi: undagi `h-full`
+ * har bir panelni ustun balandligiga tortadi, ustun esa hammasini
+ * siqadi va `overflow-hidden` kontentni jimgina kesib tashlaydi —
+ * sarlavhalarning yarmi qirqilgan panellar chiqadi. `shrink-0` shu
+ * yerda, chunki bu panellar hech qachon siqilmasligi kerak: ular
+ * kontentiga qarab boʻy oladi, qolgan joyni esa ustundagi asosiy panel
+ * (`panelCardClass` bilan) egallaydi.
+ */
+export const panelCardAutoClass =
+  "flex shrink-0 flex-col overflow-hidden gap-0 py-0 shadow-none border border-border";
+
 /** CardHeader — yagona oʻlchov: px-5 py-4, min-h-16 (68px), border-b. */
 export const panelCardHeaderClass =
   "flex flex-row items-center shrink-0 space-y-0 border-b border-border min-h-16 px-5 py-4";

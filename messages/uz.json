@@ -1180,6 +1180,18 @@
     "deleteDialogWithStudents": "«{name}» sinfi, uning {count} ta oʻquvchisi va barcha baholari butunlay oʻchiriladi. Bu amalni ortga qaytarib boʻlmaydi.",
     "deleteDialogWithoutStudents": "«{name}» sinfi va unga tegishli barcha maʼlumotlar butunlay oʻchiriladi. Bu amalni ortga qaytarib boʻlmaydi.",
     "deleteDialogBulk": "{count} ta sinf ({students} ta oʻquvchi) va ularga tegishli barcha maʼlumotlar butunlay oʻchiriladi. Bu amalni ortga qaytarib boʻlmaydi.",
+    "detachDialogTitle": "Roʻyxatingizdan olib tashlansinmi?",
+    "detachDialogOne": "«{name}» sinfi sizning roʻyxatingizdan chiqadi. Sinf, oʻquvchilar va baholar hamkasblaringizda qoladi — hech narsa oʻchmaydi.",
+    "detachDialogBulk": "{count} ta sinf sizning roʻyxatingizdan chiqadi. Ularni hamkasblaringiz ham oʻtadi, shuning uchun sinflar, oʻquvchilar va baholar oʻchmaydi.",
+    "detachConfirm": "Olib tashlash",
+    "detachToast": "«{name}» roʻyxatingizdan olib tashlandi",
+    "detachBulkToast": "{count} ta sinf roʻyxatingizdan olib tashlandi",
+    "deleteDialogMixed": "{deleted} ta sinf butunlay oʻchiriladi. Qolgan {detached} tasini hamkasblaringiz ham oʻtadi — ular faqat sizning roʻyxatingizdan chiqadi.",
+    "deleteMixedToast": "{deleted} ta sinf oʻchirildi, {detached} tasi roʻyxatingizdan olib tashlandi",
+    "blockedDialogTitle": "Bu sinfni oʻchirib boʻlmaydi",
+    "blockedDialogOne": "«{name}» sinfini hamkasbingiz ham oʻtadi, siz esa uning egasisiz. Avval hamkasbni darsdan chiqaring yoki egalikni unga oʻtkazing.",
+    "blockedDialogBulk": "{count} ta sinfni hamkasblaringiz ham oʻtadi, siz esa ularning egasisiz. Avval hamkasblarni darsdan chiqaring yoki egalikni oʻtkazing.",
+    "close": "Yopish",
     "deleteBulkToast": "{count} ta sinf oʻchirildi",
     "archiveBulkToast": "{count} ta sinf arxivlandi",
     "selectedCount": "{count} ta tanlandi",
@@ -1976,6 +1988,9 @@
       "tuzatildi": "Tuzatildi"
     },
     "routes": {
+      "help": "Yordam markazi",
+      "baholash": "Baholash",
+      "blog": "Blog",
       "assignments": "Topshiriqlar",
       "planner": "Rejalashtiruvchi",
       "dashboard": "Bosh sahifa",
@@ -1994,6 +2009,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "jamoa-ish-maydoni": {
+        "title": "Endi maktab boʻlib birga ishlash mumkin — bir necha oʻqituvchi, bitta oʻquvchilar roʻyxati",
+        "body": "Sozlamalar › Jamoa boʻlimida hamkasbingizga taklif kodi berasiz. U qoʻshilganda sinflari va oʻquvchilari bilan birga keladi — qabul qilishdan oldin nima koʻchishini roʻyxat bilan koʻradi. Har sinfning egasi bor: darsni kim oʻtishini u belgilaydi, bitta sinfga bir necha oʻqituvchi biriktirilishi mumkin. Bola haqidagi baho, davomat va qaydlarni esa faqat oʻsha bolaga dars beradigan oʻqituvchi koʻradi — bir maktabda ishlashning oʻzi hech narsani ochmaydi."
+      },
       "topshiriq-qoralama-royxatda": {
         "title": "Tugallanmagan topshiriq endi roʻyxatda turadi va yoʻqolmaydi",
         "body": "Muharrirni yopsangiz hech nima soʻralmaydi — qoralama Topshiriqlar roʻyxatida karta boʻlib turadi, bosib davom ettirasiz. Boshqa sinfda «+» bossangiz ham eski qoralamangiz oʻchib ketmaydi, oʻsha ochiladi. Kichraytirish tugmasi va burchakdagi yorliq kerak boʻlmay qoldi."

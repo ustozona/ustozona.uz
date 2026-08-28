@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { panelCardClass } from "@/components/DashboardPage";
+import { panelCardAutoClass } from "@/components/DashboardPage";
 import {
   addClassTeacherAction,
   getClassTeachersAction,
@@ -116,7 +116,7 @@ export function ClassTeachersCard({ classId }: { classId: string }) {
 
   return (
     <>
-      <Card className={panelCardClass}>
+      <Card className={panelCardAutoClass}>
         <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3">
           <span className="text-sm font-semibold text-foreground">Oʻqituvchilar</span>
           {canManage && candidates.length > 0 ? (

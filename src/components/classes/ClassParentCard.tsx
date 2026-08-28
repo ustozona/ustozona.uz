@@ -15,7 +15,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { panelCardClass } from "@/components/DashboardPage";
+import { panelCardAutoClass } from "@/components/DashboardPage";
 import {
   getClassParentInfoAction,
   getWorkspaceMembersAction,
@@ -87,7 +87,7 @@ export function ClassParentCard({ classId }: { classId: string }) {
 
   return (
     <>
-      <Card className={panelCardClass}>
+      <Card className={panelCardAutoClass}>
         <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3">
           <span className="text-sm font-semibold text-foreground">
             {isParent ? "Dars guruhlari" : "Maʼmuriy sinf"}

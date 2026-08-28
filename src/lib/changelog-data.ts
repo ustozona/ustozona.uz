@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "jamoa-ish-maydoni",
+    date: "2026-08-26",
+    type: "yangi",
+    title: "Endi maktab boʻlib birga ishlash mumkin — bir necha oʻqituvchi, bitta oʻquvchilar roʻyxati",
+    body:
+      "Sozlamalar › Jamoa boʻlimida hamkasbingizga taklif kodi berasiz. U qoʻshilganda sinflari va oʻquvchilari bilan birga keladi — qabul qilishdan oldin nima koʻchishini roʻyxat bilan koʻradi. Har sinfning egasi bor: darsni kim oʻtishini u belgilaydi, bitta sinfga bir necha oʻqituvchi biriktirilishi mumkin. Bola haqidagi baho, davomat va qaydlarni esa faqat oʻsha bolaga dars beradigan oʻqituvchi koʻradi — bir maktabda ishlashning oʻzi hech narsani ochmaydi.",
+    href: "/dashboard/settings",
+  },
+  {
     id: "help-center-launch",
     date: "2026-08-26",
     type: "yangi",

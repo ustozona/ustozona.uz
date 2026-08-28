@@ -18,6 +18,8 @@ import { useMounted } from "@/lib/use-mounted";
 import { type ClassIdentity } from "@/lib/class-id";
 import { cn } from "@/lib/utils";
 import { OverviewSection } from "./OverviewSection";
+import { ClassTeachersCard } from "@/components/classes/ClassTeachersCard";
+import { ClassParentCard } from "@/components/classes/ClassParentCard";
 import { OverviewSidebar } from "./OverviewSidebar";
 import { LessonsSection } from "./LessonsSection";
 import { StudentsSection } from "./StudentsSection";
@@ -221,7 +223,18 @@ export default function ClassDetail({ identity, initialSection }: Props) {
 
         <div className="min-h-0 flex-1">
         {section === "overview" ? (
-          <OverviewSection identity={identity} />
+          /* ⭐ «Kim dars beradi» va «Maʼmuriy sinf» ATAYLAB shu yerda —
+             oʻng yon ustunda EMAS. Ustun `hidden xl:flex` bilan yopiq:
+             1280px dan tor ekranda (noutbuk, yonma-yon ochilgan ikki
+             oyna) panellar butunlay yoʻqolardi va oʻqituvchi hamkasbini
+             darsga biriktira olmasdi. Bular sinfning asosiy maʼlumoti,
+             kontekstli vidjet emas — oʻng ustunda kalendar va eslatma
+             qoladi, ular haqiqatan yordamchi. */
+          <div className="flex h-full min-h-0 flex-col gap-6">
+            <OverviewSection identity={identity} />
+            <ClassTeachersCard classId={identity.id} />
+            <ClassParentCard classId={identity.id} />
+          </div>
         ) : section === "lessons" ? (
           <LessonsSection identity={identity} />
         ) : section === "students" ? (
