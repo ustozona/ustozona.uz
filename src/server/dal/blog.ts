@@ -30,6 +30,8 @@ export type BlogComment = {
   name: string;
   body: string;
   createdAt: string;
+  /** Hisobga bogʻlanmagan eski (anonim) fikrlarda `null`. */
+  authorAvatarUrl: string | null;
 };
 
 function slugify(title: string): string {
@@ -230,17 +232,33 @@ export async function deletePost(id: string): Promise<void> {
   await db.delete(blogPosts).where(and(eq(blogPosts.id, id), eq(blogPosts.teacherId, teacher.id)));
 }
 
-/** Postga fikrlar — ochiq (auth talab qilinmaydi). */
+/** Postga fikrlar — OʻQISH ochiq (auth talab qilinmaydi).
+ *  Avatar `teachers` dan LEFT JOIN bilan olinadi: hisobga bogʻlanmagan
+ *  eski (anonim) fikrlarda u `null` boʻladi va bosh harflar chiziladi. */
 export async function listComments(postId: string): Promise<BlogComment[]> {
   const rows = await db
-    .select()
+    .select({
+      id: blogComments.id,
+      name: blogComments.name,
+      body: blogComments.body,
+      createdAt: blogComments.createdAt,
+      authorAvatarUrl: teachers.avatarUrl,
+    })
     .from(blogComments)
+    .leftJoin(teachers, eq(teachers.id, blogComments.teacherId))
     .where(eq(blogComments.postId, postId))
     .orderBy(blogComments.createdAt);
   return rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }));
 }
 
-export async function addComment(postId: string, name: string, body: string): Promise<BlogComment> {
+/** Fikr YOZISH — hisob TALAB QILINADI.
+ *
+ *  Ilgari ism erkin matn edi va istalgan odam istalgan nom bilan yozardi:
+ *  na moderatsiya, na javobgarlik, na spamdan himoya. Endi ism va avatar
+ *  hisobdan olinadi — clientdan ism UMUMAN qabul qilinmaydi (u yerdan
+ *  kelgan qiymatga ishonib boʻlmaydi). */
+export async function addComment(postId: string, body: string): Promise<BlogComment> {
+  const teacher = await requireTeacher();
   const [post] = await db
     .select({ id: blogPosts.id })
     .from(blogPosts)
@@ -248,6 +266,19 @@ export async function addComment(postId: string, name: string, body: string): Pr
   if (!post) throw new Error("Post topilmadi");
   const id = crypto.randomUUID();
   const createdAt = new Date();
-  await db.insert(blogComments).values({ id, postId, name, body, createdAt });
-  return { id, name, body, createdAt: createdAt.toISOString() };
+  await db.insert(blogComments).values({
+    id,
+    postId,
+    teacherId: teacher.id,
+    name: teacher.name,
+    body,
+    createdAt,
+  });
+  return {
+    id,
+    name: teacher.name,
+    body,
+    createdAt: createdAt.toISOString(),
+    authorAvatarUrl: teacher.avatarUrl,
+  };
 }

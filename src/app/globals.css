@@ -519,6 +519,8 @@
 .readable-scale.readable-scale-lg {
   --typo-page: 2.986rem;   /* 47.78px — 6-qadam, blog post sarlavhasi */
 }
+/* Telefon varianti pastda, `.blog-prose` qoidalaridan KEYIN — bir xil
+   oʻzillikdagi qoida faqat keyin kelsa ustun chiqadi. */
 
 /* Yorliq (UPPERCASE) — 11px / 500 */
 .text-label {
@@ -976,12 +978,64 @@
    bosib ketardi. */
 /* Qadamlar `.readable-scale` bilan bir xil Minor Third (1.2) shkalasidan:
    p/h3 = 1-qadam (19.2px), h2 = 3-qadam (27.65px), h1 = 4-qadam (33.18px). */
-.blog-prose { font-size: 1.2rem; }
+/* ⚠️ KONTEYNER qoidasi ham QOʻSH SINF bilan yozilishi SHART. Ilgari bu
+   `.blog-prose { font-size: 1.2rem }` edi — bir xil oʻzillik (0,1,0) bilan
+   pastroqdagi `.lesson-prose { font-size: 0.875rem }` KEYIN kelgani uchun
+   uni jimgina bosib ketardi. Natijada blogda konteyner 14px boʻlib qolar,
+   va oʻz font-size'ini eʼlon qilmagan HAMMA element (callout sarlavhasi,
+   `pre`, `li`) tana matnidan (19.2px) kichik chiqardi. */
+.lesson-prose.blog-prose { font-size: 1.2rem; }
 .lesson-prose.blog-prose p { font-size: 1.2rem; line-height: 1.75; margin: 0.85rem 0; }
 .lesson-prose.blog-prose h1 { font-size: 2.074rem; }
 .lesson-prose.blog-prose h2 { font-size: 1.728rem; }
 .lesson-prose.blog-prose h3 { font-size: 1.2rem; }
 .blog-prose .ProseMirror { min-height: 40vh; }
+/* Callout — sarlavha qatori tana matni bilan mutanosib boʻlishi uchun
+   (ikon qutisi ham shu oʻlchamdan oziqlanadi). Obsidian uslubidagi
+   `.callout` sarlavhasi `1em` (meros) orqali oʻz-oʻzidan 1.2rem boʻladi;
+   Emojili blok (`.notion-callout`) esa oʻz oʻlchamini qatʼiy eʼlon
+   qilgani uchun bu yerda qayta beriladi. */
+.lesson-prose.blog-prose .callout { --callout-title-lh: 1.9rem; }
+.lesson-prose.blog-prose .notion-callout { --callout-fs: 1.2rem; --callout-lh: 1.9rem; }
+
+/* ── TELEFON: bir xil shkala, kichikroq NISBAT ────────────────────────────
+   Typescale (typescale.com) da RESPONSIVE boʻlimi bor — «Min-width 767px /
+   Font-size / Scale». Shkalani olganimizda u boʻsh qoldirilgan edi, yaʼni
+   mobil holat hech qachon sozlanmagan: natijada maqola sarlavhasi telefonda
+   ham 47.78px boʻlib qolar, 375px enli ekranda uzun oʻzbekcha soʻz
+   («tayyorgarligimizni») bir qatorga sigʻmasdi.
+
+   ⛔ Bitta sarlavhani sakratib kichraytirish YECHIM EMAS — u zinapoyani
+   sindiradi (maqola sarlavhasi bilan matn ichidagi h1 tenglashib qolishi
+   mumkin). Toʻgʻri usul — Typescale'ning oʻzi taklif qiladigani: BAZA
+   oʻzgarmaydi (16px), NISBAT pasayadi. Shunda katta oʻlchamlar koʻp,
+   kichiklari oz qisqaradi va ierarxiya butun qoladi.
+
+     1.200 (Minor Third)  →  1.125 (Major Second)
+     16 → 18 → 20.25 → 22.78 → 25.63 → 28.83 → 32.44px
+
+   Natija Medium va Substack bilan bir joyda: maqola sarlavhasi telefonda
+   ≈32px, tana matni 18px. Chegara 767px — Typescale'dagi qiymatning oʻzi. */
+@media (max-width: 767px) {
+  .readable-scale {
+    --typo-caption: 0.889rem; /* 14.2px  — (-1)-qadam */
+    --typo-body: 1rem;        /* 16px    — 0-qadam */
+    --typo-small: 1.125rem;   /* 18px    — 1-qadam */
+    --typo-section: 1.266rem; /* 20.3px  — 2-qadam */
+    --typo-page: 1.602rem;    /* 25.6px  — 4-qadam */
+  }
+  .readable-scale.readable-scale-lg {
+    --typo-page: 2.027rem;    /* 32.4px  — 6-qadam, maqola sarlavhasi */
+  }
+  .lesson-prose.blog-prose { font-size: 1.125rem; }
+  .lesson-prose.blog-prose p { font-size: 1.125rem; line-height: 1.7; }
+  .lesson-prose.blog-prose h1 { font-size: 1.602rem; } /* 4-qadam */
+  .lesson-prose.blog-prose h2 { font-size: 1.424rem; } /* 3-qadam */
+  .lesson-prose.blog-prose h3 { font-size: 1.125rem; } /* 1-qadam */
+  /* Callout qatori ham tana bilan mutanosib qoladi */
+  .lesson-prose.blog-prose .callout { --callout-title-lh: 1.8rem; }
+  .lesson-prose.blog-prose .notion-callout { --callout-fs: 1.125rem; --callout-lh: 1.8rem; }
+}
 
 /* Baza matn oʻlchami 16px → 14px (mutanosib): container'ga font-size
    berilgan — h1/h2/h3/p bundan mustasno (`rem` ROOT'ga bogʻliq, containerga
@@ -1022,7 +1076,21 @@
 .lesson-prose ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
 .lesson-prose li { margin: 0.2rem 0; line-height: 1.6; }
 .lesson-prose li > p { margin: 0; }
-.lesson-prose blockquote { border-left: 3px solid var(--border); padding-left: 1rem; color: var(--muted-foreground); margin: 0.8rem 0; }
+/* Iqtibos — chap chekkasi matn ustuni bilan BIR VERTIKALDA boshlanadi.
+   ⛔ `margin-left` (Word'dagi Tab/"Quote" chekinishi) ATAYLAB YOʻQ: u bir
+   marta qoʻshilib, rad etilgan. Sabab — bizda iqtibos yagona blok emas,
+   callout bloklari bilan yonma-yon yashaydi va ular chekkadan boshlanadi;
+   iqtibos surilganda ikki blok turi qoʻshni turganda chap qirra sinib,
+   ustun "titrab" koʻrinardi. Chegara koʻrsatkichi (chap chiziq) oʻzi
+   yetarli ajratuvchi belgi.
+   Yuqori/quyi boʻshliq esa oddiy xatboshiniki (0.4rem) dan kattaroq —
+   iqtibos atrofidagi matndan nafas bilan ajralishi kerak. */
+.lesson-prose blockquote {
+  border-left: 3px solid var(--border);
+  margin: 1.1rem 0;
+  padding-left: 1rem;
+  color: var(--muted-foreground);
+}
 .lesson-prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
 .lesson-prose code { font-family: var(--font-mono), monospace; font-size: 0.875em; background: var(--muted); padding: 0.1em 0.35em; border-radius: 0.3rem; }
 .lesson-prose pre { background: oklch(0.21 0.006 285.9); color: oklch(0.96 0 0); font-family: var(--font-mono), monospace; padding: 1rem 1.1rem; border-radius: 0.6rem; overflow-x: auto; margin: 0.8rem 0; font-size: 0.875em; line-height: 1.5; }
@@ -1031,6 +1099,76 @@
 /* Hujjatga qoʻyilgan rasmlar (blok surat) — emoji sprite'lar bundan mustasno,
    ular matn ichidagi inline belgi, blok-rasm boʻshliqlarini olmasligi kerak. */
 .lesson-prose img:not(.apple-emoji-img) { max-width: 100%; height: auto; border-radius: 0.6rem; margin: 0.8rem 0; }
+
+/* ── Rasm + izoh (`<figure>` / `<figcaption>`) ────────────────────────────
+   Izoh tipografikasi — jahon amaliyoti: u matn oqimidan PASTROQ darajada
+   turishi kerak, shuning uchun bu prozadagi YAGONA joy boʻlib, matn tana
+   matnidan ataylab KICHIK qilinadi (Medium ≈0.67em, NYT ≈0.78em, Notion
+   ≈0.87em — hammasi bir yoʻnalishda). Qolgan uch belgi ham izchil: xira
+   rang, zichroq qator oraligʻi (1.45) va rasm ostida MARKAZLASHTIRISH
+   (Medium/Substack/WordPress standarti).
+
+   `max(0.8em, 0.75rem)` — nisbat konteksga ergashadi (blogda 1.2rem tanadan
+   ≈15px, darsda 0.875rem tanadan ≈12px), lekin 12px dan pastga tushmaydi:
+   sof nisbat dars muharririda izohni oʻqib boʻlmas darajaga olib kelardi. */
+.lesson-prose .editor-figure { margin: 1.2rem 0; }
+/* ⚠️ `width: 100%` EMAS: u kichik rasmni (logotip, kesilgan diagramma)
+   ustun kengligiga majburan choʻzib, rastrni bulanib ketguncha kattalashtirar
+   edi. `max-width` faqat toshib ketishning oldini oladi, oʻz oʻlchamiga
+   tegmaydi; markazlashtirish `margin-inline: auto` bilan. */
+.lesson-prose .editor-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.lesson-prose .editor-figcaption {
+  margin-top: 0.5rem;
+  font-size: max(0.8em, 0.75rem);
+  line-height: 1.45;
+  color: var(--muted-foreground);
+  text-align: center;
+  text-wrap: pretty;
+}
+/* Izohsiz rasm — nashr qilingan sahifada figcaption BUTUNLAY yigʻiladi.
+   Muharrirda ProseMirror boʻsh matn blokiga `<br>` qoʻshadi, shuning uchun
+   `:empty` u yerda mos KELMAYDI va izoh maydoni bosiladigan boʻlib qolaveradi
+   (aynan kerak). Nashr qilingan HTML'da esa element rostdan boʻsh — busiz
+   har bir izohsiz rasm ostida ≈30px tushuntirib boʻlmaydigan boʻshliq
+   qolardi (Placeholder plagini u yerda yoʻq, matn ham chiqmaydi). */
+.lesson-prose .editor-figcaption:empty { display: none; }
+/* MUHARRIRDA esa hech qachon yigʻilmaydi — izohsiz rasmga izoh yozish uchun
+   bosiladigan joy qolishi kerak. Odatda ProseMirror boʻsh matn blokiga
+   `<br class="ProseMirror-trailingBreak">` qoʻshgani uchun yuqoridagi
+   `:empty` bu yerda baribir mos kelmaydi, lekin bu qoida uni kafolatlaydi. */
+.ProseMirror .editor-figcaption:empty {
+  display: block;
+  min-height: 1.45em;
+}
+/* Yuklanayotgan rasm oʻrni (image-paste-extension.ts widget dekoratsiyasi) */
+.lesson-prose .editor-image-uploading {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  border: 2px solid var(--border);
+  border-top-color: var(--muted-foreground);
+  border-radius: 50%;
+  animation: editor-image-uploading-spin 700ms linear infinite;
+}
+@keyframes editor-image-uploading-spin {
+  to { transform: rotate(360deg); }
+}
+/* Boʻsh izoh — xira namuna. `.is-empty` Placeholder kengaytmasidan TASHQI
+   elementga (`<figure>`) tushadi, `data-placeholder` esa figcaption'ning
+   oʻzida (figure-extension.ts renderHTML) — CSS `attr()` faqat oʻz
+   elementidan oʻqiy olgani uchun ikkisi shu yerda juftlashadi. */
+.lesson-prose .editor-figure.is-empty .editor-figcaption::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  opacity: 0.55;
+  pointer-events: none;
+}
 .lesson-prose hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
 
 /* Sahifa chegarasi (PageBreak) — kesik chiziq; chop etishda haqiqiy varaq boʻlinishi. */
@@ -1068,6 +1206,9 @@
    xil qolib ketgan). */
 .lesson-prose .callout {
   --cl: var(--info); /* fallback, odatda inline style bilan qayta yoziladi */
+  /* Sarlavha qatori balandligi — ikon qutisi ham SHU qiymatdan oziqlanadi,
+     shuning uchun u kontekst bilan birga oʻsishi kerak (blog uchun pastda
+     qayta beriladi). */
   --callout-title-lh: 1.5rem;
   position: relative;
   display: grid;
@@ -1117,8 +1258,19 @@
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
-/* Sarlavha — TANADAN KICHIK BOʻLMASIN: ilgari 0.92rem (tanadan kichik) edi,
-   bu ierarxiyani teskari qilardi — qalin boʻlsa ham "kichik" koʻrinardi.
+/* Sarlavha — TANA MATNI BILAN TENG OʻLCHAM, farq faqat QALINLIKDA.
+   Bu callout/admonition uchun jahon standarti: Obsidian (`--callout-title-size`
+   standart holda `inherit`), GitHub Alerts, Docusaurus admonition va Notion
+   callout — hammasida sarlavha tana bilan bir xil oʻlchamda, ajralib turishi
+   uchun faqat qalinlik/rang ishlatiladi. Sarlavha hech qachon tanadan
+   KICHIK boʻlmaydi.
+
+   ⚠️ Ilgari bu yerda qatʼiy `0.9375rem` turardi. Dars muharririda tana
+   0.875rem boʻlgani uchun u toʻgʻri koʻrinardi, lekin BLOGDA tana 1.2rem —
+   natijada sarlavha tanadan KICHIK boʻlib, ierarxiya teskari boʻlib
+   qolgandi. `1em` kontekstdan meros oladi: dars = 0.875rem, blog = 1.2rem —
+   ikkala joyda ham oʻz-oʻzidan toʻgʻri, uchinchi kontekst qoʻshilsa ham.
+
    QALINLIK BU YERDA MAJBURIY EMAS: ilgari `font-weight` shu qoidada qattiq
    yozilgan edi, shuning uchun toolbar'dagi haqiqiy Bold (B) tugmasi
    sarlavha matnida hech narsani oʻzgartirmasdi (CSS ustidan majburan
@@ -1127,7 +1279,7 @@
    (EditorToolbar.tsx), foydalanuvchi esa B tugmasi bilan yoqib/oʻchira
    oladi, xuddi oddiy matndagidek. */
 .lesson-prose .callout-title {
-  font-size: 0.9375rem;
+  font-size: 1em;
   line-height: var(--callout-title-lh);
   color: var(--foreground);
 }
@@ -1296,7 +1448,7 @@
 .lesson-prose .notion-callout-content h1,
 .lesson-prose .notion-callout-content h2,
 .lesson-prose .notion-callout-content h3 {
-  font-size: 0.9375rem;
+  font-size: var(--callout-fs);
   font-weight: 650;
   line-height: var(--callout-lh);
   margin: 0;
@@ -1309,7 +1461,7 @@
    faqat haqiqiy Bold (<strong>) markasi orqali, B tugmasi bilan
    boshqariladi (insertNotionCallout boshlangʻich matnga qoʻyadi). */
 .lesson-prose .notion-callout-title {
-  font-size: 0.9375rem;
+  font-size: var(--callout-fs);
   line-height: var(--callout-lh);
   color: var(--foreground);
 }

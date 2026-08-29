@@ -1,0 +1,2 @@
+ALTER TABLE "blog_comments" ADD COLUMN "teacher_id" text;--> statement-breakpoint
+ALTER TABLE "blog_comments" ADD CONSTRAINT "blog_comments_teacher_id_teachers_id_fk" FOREIGN KEY ("teacher_id") REFERENCES "public"."teachers"("id") ON DELETE set null ON UPDATE no action;

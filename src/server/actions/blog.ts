@@ -44,8 +44,24 @@ const savePostSchema = z.object({
   id: z.string().min(1),
   title: z.string().max(200),
   excerpt: z.string().max(400),
+  /* ⚠️ Bu chegara ATAYLAB kichik — u yerga base64 SIGʻMASLIGI kerak.
+     Sabab: `listPublishedPosts` bu ustunni HAR BIR nashr qilingan post
+     uchun tanlaydi, yaʼni `/blog` indeks sahifasi barcha muqovalarni bir
+     yoʻla yuklaydi. Base64 muqova ruxsat etilsa, oʻnta postli indeks
+     bir necha megabaytlik HTML'ga aylanardi — hujjat ichiga inline
+     boʻlgani uchun uni alohida keshlab ham boʻlmaydi.
+     Muqova SHU SABABLI faqat haqiqiy URL qabul qiladi; saqlagich
+     sozlanmagan boʻlsa BlogEditor yuklashni rad etadi (`onPickCover`). */
   coverImageUrl: z.string().max(2000).nullable(),
-  content: z.string().max(200_000),
+  /* ⚠️ Ilgari 200_000 edi va bu «Saqlashda xatolik» toast'ining ASOSIY
+     sababi boʻlgan: muharrirga qoʻyilgan rasm base64 data-URL sifatida
+     aynan shu `content` ichiga tushardi (1280px/q0.8 surat ≈ 200 000–
+     530 000 belgi), yaʼni deyarli har qanday foto limitdan oshardi va
+     zod `parse` xato tashlardi. Endi rasm normal holatda Supabase
+     Storage'ga chiqadi va bu yerda faqat qisqa URL qoladi — lekin
+     saqlagich sozlanmagan muhitda base64 fallback ishlaydi, shuning
+     uchun chegara unga ham yetadigan qilib qoʻyildi. */
+  content: z.string().max(4_000_000),
 });
 
 export async function savePostAction(input: z.infer<typeof savePostSchema>): Promise<{ ok: true }> {
@@ -75,15 +91,17 @@ export async function fetchCommentsAction(postId: string): Promise<BlogComment[]
   return listComments(z.string().min(1).parse(postId));
 }
 
+/* `name` ATAYLAB yoʻq — ism endi clientdan emas, sessiyadagi hisobdan
+   olinadi (`dal/blog.ts` → addComment). Uni bu yerda qabul qilish
+   istalgan odamga istalgan nom bilan yozish imkonini qaytarardi. */
 const addCommentSchema = z.object({
   postId: z.string().min(1),
-  name: z.string().min(1).max(80),
   body: z.string().min(1).max(2000),
 });
 
 export async function addCommentAction(input: z.infer<typeof addCommentSchema>): Promise<BlogComment> {
-  const { postId, name, body } = addCommentSchema.parse(input);
-  const comment = await addComment(postId, name.trim(), body.trim());
+  const { postId, body } = addCommentSchema.parse(input);
+  const comment = await addComment(postId, body.trim());
   revalidatePath(`/blog`);
   return comment;
 }

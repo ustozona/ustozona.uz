@@ -21,18 +21,22 @@ import { CharacterCount } from "@tiptap/extension-character-count";
 import { TableKit } from "@tiptap/extension-table";
 import { TaskList, TaskItem } from "@tiptap/extension-list";
 import "katex/dist/katex.min.css";
-import { ArrowLeft, ImageIcon, Loader2, X } from "lucide-react";
+import { ArrowLeft, ImageIcon, Loader2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { compressImageFile } from "@/lib/image-compress";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { initialsOf } from "@/store/useFeedbackStore";
 import { Callout, CalloutTitle } from "@/components/lesson-editor/callout-extension";
 import { NotionCallout, NotionCalloutTitle } from "@/components/lesson-editor/notion-callout-extension";
 import { LeadingParagraph } from "@/components/lesson-editor/leading-paragraph-extension";
+import { FigureImage } from "@/components/lesson-editor/figure-extension";
+import { ImagePasteUpload } from "@/components/lesson-editor/image-paste-extension";
 import { AppleEmojiDisplay } from "@/components/lesson-editor/apple-emoji-extension";
 import EditorToolbar from "@/components/lesson-editor/EditorToolbar";
 import BubbleToolbar from "@/components/lesson-editor/BubbleToolbar";
 import { savePostAction, setPostStatusAction } from "@/server/actions/blog";
+import { uploadEditorImageAction } from "@/server/actions/uploads";
 import type { BlogPostFull } from "@/server/dal/blog";
 
 /* Xuddi dars muharriridagi Tiptap toʻplami (EditorToolbar/BubbleToolbar
@@ -53,9 +57,16 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [coverEditorOpen, setCoverEditorOpen] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  /* Qoʻyilgan manzildan rasm yuklanmadi. Eng koʻp uchraydigan sabab —
+     galereya SAHIFASINING havolasi qoʻyilgan (`.../nature-4k`), rasm
+     faylining oʻzi emas (`.../nature.jpg`). Busiz preview shunchaki
+     singan rasm ikonasini koʻrsatar, sababi esa aytilmasdi. */
+  const [coverBroken, setCoverBroken] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const subtitleRef = useRef<HTMLTextAreaElement>(null);
+  const coverFileRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -70,7 +81,12 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight.configure({ multicolor: true }),
+      /* `Image` — FAQAT eski kontent uchun (ilgari saqlangan yalangʻoch
+         `<img>`). Yangi rasmlar `FigureImage` sifatida, izoh maydoni bilan
+         birga qoʻyiladi. */
       Image.configure({ inline: false, allowBase64: true }),
+      FigureImage.configure({ captionPlaceholder: "Rasm izohi (ixtiyoriy)" }),
+      ImagePasteUpload.configure({ uploadFailedMessage: "Rasmni yuklab boʻlmadi" }),
       Callout,
       CalloutTitle,
       NotionCallout,
@@ -122,21 +138,65 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
   const save = (opts?: { silent?: boolean }) => {
     if (!editor) return;
     setSaving(true);
+    /* base64 muqova jimgina tushirib qoldiriladi. U `savePostSchema` dagi
+       2000-belgilik chegaradan oʻtmaydi (indeks sahifasini shishirmasligi
+       uchun ataylab shunday) — tekshirmasak, ilgari base64 yozib qoʻyilgan
+       post BUTUNLAY saqlanmaydigan boʻlib qolardi: har avto-saqlash zod
+       xatosiga urilar, foydalanuvchi esa nima buzilganini bilmasdi. */
+    const cover = coverImageUrl.trim();
     savePostAction({
       id: post.id,
       title,
       excerpt,
-      coverImageUrl: coverImageUrl.trim() || null,
+      coverImageUrl: cover && !cover.startsWith("data:") ? cover : null,
       content: editor.getHTML(),
     })
       .then(() => {
         setSaving(false);
         if (!opts?.silent) toast.success("Saqlandi");
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         setSaving(false);
-        toast.error("Saqlashda xatolik");
+        /* Sababi ham koʻrsatiladi. Ilgari xato jimgina yutilardi va
+           «Saqlashda xatolik» dan nima buzilgani umuman bilinmasdi —
+           rasm limitidan oshgani ham, tarmoq uzilgani ham bir xil
+           koʻrinardi (aynan shu bir kunlik izlanishga sabab boʻlgan). */
+        console.error("[blog] savePostAction:", err);
+        toast.error("Saqlashda xatolik", {
+          description: err instanceof Error ? err.message : undefined,
+        });
       });
+  };
+
+  /** Muqova rasmini yuklash — siqish → saqlagich → URL.
+   *
+   *  ⛔ Hujjat ichidagi rasmdan FARQLI oʻlaroq, muqova base64 fallback'ni
+   *  QABUL QILMAYDI. Sabab: `/blog` indeks sahifasi har bir postning
+   *  muqovasini yuklaydi (`listPublishedPosts`), yaʼni base64 muqova butun
+   *  roʻyxatni megabaytlarga shishirardi. Saqlagich sozlanmagan boʻlsa
+   *  sabab ochiq aytiladi — jimgina ogʻir maʼlumot yozib qoʻyilmaydi. */
+  const onPickCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setCoverUploading(true);
+    try {
+      const dataUrl = await compressImageFile(file);
+      const { url, stored } = await uploadEditorImageAction(dataUrl);
+      if (!stored) {
+        toast.error("Muqova rasmini yuklab boʻlmadi", {
+          description: "Fayl saqlagichi sozlanmagan. Hozircha tashqi rasm havolasini qoʻying.",
+        });
+        return;
+      }
+      setCoverImageUrl(url);
+      setCoverBroken(false);
+      scheduleSave();
+    } catch {
+      toast.error("Muqova rasmini yuklab boʻlmadi");
+    } finally {
+      setCoverUploading(false);
+    }
   };
 
   const togglePublish = async () => {
@@ -243,30 +303,74 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
           </div>
 
           {(coverEditorOpen || coverImageUrl) && (
-            <div className="mt-3 flex items-center gap-2">
-              <input
-                value={coverImageUrl}
-                onChange={(e) => {
-                  setCoverImageUrl(e.target.value);
-                  scheduleSave();
-                }}
-                placeholder="https://..."
-                className="h-8 flex-1 rounded-md border-0 bg-muted px-2.5 text-xs text-foreground outline-none placeholder:text-muted-foreground"
-              />
-              {coverImageUrl && (
-                <button
-                  type="button"
-                  aria-label="Olib tashlash"
-                  className="text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    setCoverImageUrl("");
-                    setCoverEditorOpen(false);
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  value={coverImageUrl}
+                  onChange={(e) => {
+                    setCoverImageUrl(e.target.value);
+                    setCoverBroken(false);
                     scheduleSave();
                   }}
+                  placeholder="https://... .jpg"
+                  className="h-8 flex-1 rounded-md border-0 bg-muted px-2.5 text-xs text-foreground outline-none placeholder:text-muted-foreground"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs"
+                  disabled={coverUploading}
+                  onClick={() => coverFileRef.current?.click()}
                 >
-                  <X className="size-3.5" />
-                </button>
-              )}
+                  {coverUploading ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
+                  Yuklash
+                </Button>
+                <input
+                  ref={coverFileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={onPickCover}
+                />
+                {coverImageUrl && (
+                  <button
+                    type="button"
+                    aria-label="Olib tashlash"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setCoverImageUrl("");
+                      setCoverEditorOpen(false);
+                      scheduleSave();
+                    }}
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                )}
+              </div>
+              {/* Preview — ilgari muqova rasmi FAQAT nashr qilingan sahifada
+                  va /blog roʻyxatida koʻrinardi, muharrirda esa URL qoʻyilgach
+                  hech qanday belgi yoʻq edi (toʻgʻri qoʻyilgan-qoʻyilmaganini
+                  bilishning yagona yoʻli — nashr qilib koʻrish). */}
+              {coverImageUrl &&
+                (coverBroken ? (
+                  <div className="rounded-lg bg-muted px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+                    Bu manzildan rasm yuklanmadi. Koʻpincha sabab — galereya{" "}
+                    <b>sahifasining</b> havolasi qoʻyilgan. Rasm ustiga oʻng tugma bosib{" "}
+                    <b>«Rasm manzilini nusxalash»</b> ni tanlang — u <code>.jpg</code>,{" "}
+                    <code>.png</code> yoki <code>.webp</code> bilan tugaydi. Yoki{" "}
+                    <b>Yuklash</b> tugmasi bilan oʻz faylingizni qoʻying.
+                  </div>
+                ) : (
+                  <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={coverImageUrl}
+                      alt=""
+                      className="size-full object-cover"
+                      onError={() => setCoverBroken(true)}
+                    />
+                  </div>
+                ))}
             </div>
           )}
 
