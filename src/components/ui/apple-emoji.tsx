@@ -14,7 +14,13 @@ import { cn } from "@/lib/utils";
  * yangi qoʻshilgan emojilar (mas. baʼzi bayroqlar) roʻyxatda bor-u, lekin
  * shu CDN'da sprite topilmay boʻsh koʻrinadi.
  */
-const EMOJI_CDN = "https://cdn.jsdelivr.net/npm/emoji-datasource-apple@16.0.0/img/apple/64/";
+export const EMOJI_CDN = "https://cdn.jsdelivr.net/npm/emoji-datasource-apple@16.0.0/img/apple/64/";
+
+/** Unicode belgidan sprite fayl nomi ("🔥" → "1f525"). `AppleEmojiSprite`
+ *  ichidagi bilan bir xil — serializatsiya (Tiptap renderHTML) uchun ajratildi. */
+export function emojiToUnified(char: string): string {
+  return [...char].map((c) => c.codePointAt(0)!.toString(16)).join("-");
+}
 
 export function AppleEmoji({
   code,
@@ -39,9 +45,7 @@ export function AppleEmoji({
   );
 }
 
-function toUnified(char: string): string {
-  return [...char].map((c) => c.codePointAt(0)!.toString(16)).join("-");
-}
+const toUnified = emojiToUnified;
 
 /* Ayrim emoji (mas. ⭐ 2b50) sprite fayli VS16'siz, boshqalari (mas. ☀️
    2600-fe0f) VS16 bilan nomlangan — matnda yozilgan holat har doim toʻgʻri

@@ -1332,6 +1332,22 @@
 .lesson-prose .callout-inner > :nth-child(2) { margin-top: 0.35rem; }
 .lesson-prose .callout-inner > :last-child { margin-bottom: 0; }
 
+/* ── Eski (2026-08-29 tuzatishidan OLDIN saqlangan) callout HTML ───────────
+   Ilgari `renderHTML` faqat `.callout > .callout-title + p` chiqarardi —
+   ikon `<span>` ham, `.callout-inner` oʻrami ham yoʻq. Yuqoridagi grid
+   bunday tuzilmani buzadi (sarlavha 1.5rem'lik ikon ustuniga siqiladi).
+   Bunday post muharrirda ochib qayta saqlansa yangi (toʻliq) HTML'ga
+   oʻtadi; shungacha hech boʻlmasa oʻqilsin — grid bekor qilinadi.
+   Rang (`--cl`) baribir yoʻq → `--info` (koʻk) fallback; ikon yoʻq. */
+.lesson-prose .callout:not(:has(> .callout-inner)) {
+  display: block;
+  padding-left: 1.1rem;
+}
+.lesson-prose .callout:not(:has(> .callout-inner)) > .callout-title {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
 /* Chop etishda fon/hoshiya ranglari brauzer tomonidan standart tashlab
    yuboriladi (siyoh tejash) — A4 PDF asosiy mahsulot boʻlgani uchun bu
    MUHIM tuzatish: aks holda ekranda rangli, chopda "oq varaq + ikonka". */
