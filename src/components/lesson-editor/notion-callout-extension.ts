@@ -2,6 +2,8 @@
 
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
+import { CLASS_COLOR_BASE, makeColorTints, type ClassColor } from "@/lib/class-colors";
+import { EMOJI_CDN, emojiToUnified } from "@/components/ui/apple-emoji";
 import NotionCalloutView from "./NotionCalloutView";
 
 /* Notion uslubidagi callout uchun fon-rang tanlovi — CLASS_COLOR_BASE'ning
@@ -16,6 +18,12 @@ export const NOTION_CALLOUT_COLORS = [
   "pink", "rose",
 ] as const;
 export type NotionCalloutColor = (typeof NOTION_CALLOUT_COLORS)[number];
+
+function normalizeNotionColor(value: string | null | undefined): NotionCalloutColor {
+  return (NOTION_CALLOUT_COLORS as readonly string[]).includes(value ?? "")
+    ? (value as NotionCalloutColor)
+    : "gray";
+}
 
 /** Notion callout sarlavhasi — qalin, bitta qator (Callout'dagi calloutTitle
  *  bilan bir xil naqsh, mustaqil turi bor). */
@@ -63,8 +71,37 @@ export const NotionCallout = Node.create({
     return [{ tag: "div[data-notion-callout]" }];
   },
 
-  renderHTML({ HTMLAttributes }) {
-    return ["div", mergeAttributes(HTMLAttributes, { "data-notion-callout": "", class: "notion-callout" }), 0];
+  /* SAQLANGAN HTML — NodeView (NotionCalloutView) DOM'iga strukturaviy MOS:
+       .notion-callout[style: fon/chegara] > .notion-callout-emoji(img)
+                                           + .notion-callout-content(sarlavha+tana)
+     Fon/chegara `makeColorTints` dan (class-colors YAGONA MANBA) inline
+     beriladi — NodeView ham aynan shu retseptni ishlatadi. Emoji Apple
+     sprite CDN'idan (`AppleEmojiSprite` bilan bir xil manzil); fe0f qayta
+     urinishi — muharrirdagi runtime fallback — bu yerda yoʻq. */
+  renderHTML({ node, HTMLAttributes }) {
+    const color = normalizeNotionColor(node.attrs.color as string);
+    const emoji = (node.attrs.emoji as string) || "💡";
+    const tint = makeColorTints(CLASS_COLOR_BASE[color as ClassColor]);
+    return [
+      "div",
+      mergeAttributes(HTMLAttributes, {
+        "data-notion-callout": "",
+        class: "notion-callout",
+        style: `background-color: ${tint.tint.backgroundColor}; border-color: ${tint.softBorder.borderColor}`,
+      }),
+      [
+        "span",
+        { class: "notion-callout-emoji", "aria-hidden": "true", contenteditable: "false" },
+        ["img", {
+          class: "apple-emoji-img",
+          src: `${EMOJI_CDN}${emojiToUnified(emoji)}.png`,
+          alt: emoji,
+          draggable: "false",
+          loading: "lazy",
+        }],
+      ],
+      ["div", { class: "notion-callout-content" }, 0],
+    ];
   },
 
   addNodeView() {

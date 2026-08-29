@@ -50,11 +50,55 @@ export const CALLOUT_TYPES: { type: CalloutType; icon: LucideIcon; color: string
 /* CALLOUT_KEYS bilan CALLOUT_TYPES bir xil toʻplomni qamrab olishini dev
    vaqtida tekshiradi — ikkalasi ajralib ketsa (mas. yangi tur faqat bittasiga
    qoʻshilsa) konsolda darrov koʻrinadi, jimgina buzilmaydi. */
+/* ── Statik SVG glif — SAQLANGAN HTML (`renderHTML`) uchun ────────────────
+   NodeView (CalloutView) lucide-react komponentini chizadi. Lekin
+   `editor.getHTML()` serializatsiyasi React'siz ishlaydi — blogda (yoki
+   boshqa muharrirdan tashqari joyda) callout shu qatorlardan chiziladi.
+   Har element `[teg, atributlar]` — lucide `IconNode` formati.
+
+   Manba: `lucide-react` (`renderToStaticMarkup` bilan bir marta koʻchirilgan;
+   ikonlar CALLOUT_TYPES'dagi bilan bir xil). Pastdagi dev-guard kalitlar
+   CALLOUT_KEYS bilan mos ekanini tekshiradi. */
+export type CalloutSvgChild = [tag: string, attrs: Record<string, string>];
+export const CALLOUT_ICON_NODE: Record<CalloutType, CalloutSvgChild[]> = {
+  note: [["path", { d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" }], ["path", { d: "m15 5 4 4" }]],
+  abstract: [["circle", { cx: "12", cy: "12", r: "10" }], ["circle", { cx: "12", cy: "12", r: "6" }], ["circle", { cx: "12", cy: "12", r: "2" }]],
+  info: [["circle", { cx: "12", cy: "12", r: "10" }], ["path", { d: "M12 16v-4" }], ["path", { d: "M12 8h.01" }]],
+  tip: [["path", { d: "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" }], ["path", { d: "M9 18h6" }], ["path", { d: "M10 22h4" }]],
+  success: [["path", { d: "M20 6 9 17l-5-5" }]],
+  question: [["circle", { cx: "12", cy: "12", r: "10" }], ["path", { d: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" }], ["path", { d: "M12 17h.01" }]],
+  warning: [["path", { d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" }], ["path", { d: "M12 9v4" }], ["path", { d: "M12 17h.01" }]],
+  failure: [["path", { d: "M18 6 6 18" }], ["path", { d: "m6 6 12 12" }]],
+  danger: [["path", { d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" }], ["path", { d: "M12 8v4" }], ["path", { d: "M12 16h.01" }]],
+  bug: [["path", { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" }], ["path", { d: "M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" }]],
+  example: [["path", { d: "M3 5h.01" }], ["path", { d: "M3 12h.01" }], ["path", { d: "M3 19h.01" }], ["path", { d: "M8 5h13" }], ["path", { d: "M8 12h13" }], ["path", { d: "M8 19h13" }]],
+};
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+/** Callout ikoni — Tiptap DOMOutputSpec. ProseMirror `"NS teg"` sintaksisi
+ *  bilan SVG namespace'i beriladi; bola elementlar NS'ni meros oladi. */
+export function calloutIconSpec(type: CalloutType) {
+  return [
+    `${SVG_NS} svg`,
+    {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "2",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+    },
+    ...CALLOUT_ICON_NODE[type].map(([tag, attrs]) => [tag, attrs]),
+  ];
+}
+
 if (process.env.NODE_ENV !== "production") {
-  const a = new Set(CALLOUT_KEYS);
-  const b = new Set(CALLOUT_TYPES.map((c) => c.type));
-  if (a.size !== b.size || [...a].some((k) => !b.has(k))) {
-    console.error("[callout-extension] CALLOUT_KEYS va CALLOUT_TYPES mos emas!", { a, b });
+  const a = new Set<string>(CALLOUT_KEYS);
+  const b = new Set<string>(CALLOUT_TYPES.map((c) => c.type));
+  const c = new Set<string>(Object.keys(CALLOUT_ICON_NODE));
+  const same = (x: Set<string>, y: Set<string>) => x.size === y.size && [...x].every((k) => y.has(k));
+  if (!same(a, b) || !same(a, c)) {
+    console.error("[callout-extension] CALLOUT_KEYS / CALLOUT_TYPES / CALLOUT_ICON_NODE mos emas!", { a, b, c });
   }
 }
 
@@ -101,8 +145,21 @@ export const Callout = Node.create({
     return [{ tag: "div[data-callout-type]" }];
   },
 
-  renderHTML({ HTMLAttributes }) {
-    return ["div", mergeAttributes(HTMLAttributes, { class: "callout" }), 0];
+  /* SAQLANGAN HTML — NodeView (CalloutView) DOM'iga strukturaviy MOS:
+       .callout[style=--cl] > .callout-icon(svg) + .callout-inner(sarlavha+tana)
+     Shu bois globals.css'dagi grid qoidasi muharrirdan tashqarida (blog) ham
+     ishlaydi. Ilgari bu yerda faqat `<div class="callout">0` bor edi: rang
+     (`--cl`) ham, ikon ham, `.callout-inner` oʻrami ham FAQAT NodeView'da
+     boʻlgani uchun blogda callout rangi koʻk fallback'ga tushib, sarlavha
+     1.5rem'lik ikon ustuniga siqilib qolardi. */
+  renderHTML({ node, HTMLAttributes }) {
+    const type = normalizeCalloutType(node.attrs.type as string);
+    return [
+      "div",
+      mergeAttributes(HTMLAttributes, { class: "callout", style: `--cl: ${CALLOUT_META[type].color}` }),
+      ["span", { class: "callout-icon", "aria-hidden": "true", contenteditable: "false" }, calloutIconSpec(type)],
+      ["div", { class: "callout-inner" }, 0],
+    ];
   },
 
   addNodeView() {
