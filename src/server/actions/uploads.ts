@@ -79,6 +79,17 @@ export async function uploadEditorImageAction(
     const res = await fetch(`${baseUrl}/storage/v1/object/${EDITOR_IMAGE_BUCKET}/${path}`, {
       method: "POST",
       headers: {
+        /* ⛔ IKKALA sarlavha ham SHART — bittasi yetmaydi.
+           Supabase'ning YANGI uslubdagi maxfiy kaliti (`sb_secret_…`) JWT
+           EMAS, shuning uchun Storage uni faqat `Authorization: Bearer`
+           da koʻrsa rad etadi:
+               HTTP 400 · {"error":"Unauthorized",
+                           "message":"Invalid Compact JWS"}
+           `apikey` sarlavhasi bilan esa 200 qaytaradi. Eski uslubdagi
+           JWT `service_role` kaliti ikkalasida ham ishlaydi, shuning
+           uchun ikkovini birga yuborish har ikki formatni qamrab oladi.
+           (2026-08-29 da jonli loyihada oʻlchab tekshirilgan.) */
+        apikey: serviceKey,
         Authorization: `Bearer ${serviceKey}`,
         "Content-Type": mime,
         // Fayl nomi UUID — mazmuni hech qachon oʻzgarmaydi, shuning uchun

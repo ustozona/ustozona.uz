@@ -58,6 +58,11 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
   const [publishing, setPublishing] = useState(false);
   const [coverEditorOpen, setCoverEditorOpen] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
+  /* Qoʻyilgan manzildan rasm yuklanmadi. Eng koʻp uchraydigan sabab —
+     galereya SAHIFASINING havolasi qoʻyilgan (`.../nature-4k`), rasm
+     faylining oʻzi emas (`.../nature.jpg`). Busiz preview shunchaki
+     singan rasm ikonasini koʻrsatar, sababi esa aytilmasdi. */
+  const [coverBroken, setCoverBroken] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const subtitleRef = useRef<HTMLTextAreaElement>(null);
@@ -185,6 +190,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
         return;
       }
       setCoverImageUrl(url);
+      setCoverBroken(false);
       scheduleSave();
     } catch {
       toast.error("Muqova rasmini yuklab boʻlmadi");
@@ -303,9 +309,10 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
                   value={coverImageUrl}
                   onChange={(e) => {
                     setCoverImageUrl(e.target.value);
+                    setCoverBroken(false);
                     scheduleSave();
                   }}
-                  placeholder="https://..."
+                  placeholder="https://... .jpg"
                   className="h-8 flex-1 rounded-md border-0 bg-muted px-2.5 text-xs text-foreground outline-none placeholder:text-muted-foreground"
                 />
                 <Button
@@ -344,12 +351,26 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
                   va /blog roʻyxatida koʻrinardi, muharrirda esa URL qoʻyilgach
                   hech qanday belgi yoʻq edi (toʻgʻri qoʻyilgan-qoʻyilmaganini
                   bilishning yagona yoʻli — nashr qilib koʻrish). */}
-              {coverImageUrl && (
-                <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={coverImageUrl} alt="" className="size-full object-cover" />
-                </div>
-              )}
+              {coverImageUrl &&
+                (coverBroken ? (
+                  <div className="rounded-lg bg-muted px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+                    Bu manzildan rasm yuklanmadi. Koʻpincha sabab — galereya{" "}
+                    <b>sahifasining</b> havolasi qoʻyilgan. Rasm ustiga oʻng tugma bosib{" "}
+                    <b>«Rasm manzilini nusxalash»</b> ni tanlang — u <code>.jpg</code>,{" "}
+                    <code>.png</code> yoki <code>.webp</code> bilan tugaydi. Yoki{" "}
+                    <b>Yuklash</b> tugmasi bilan oʻz faylingizni qoʻying.
+                  </div>
+                ) : (
+                  <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={coverImageUrl}
+                      alt=""
+                      className="size-full object-cover"
+                      onError={() => setCoverBroken(true)}
+                    />
+                  </div>
+                ))}
             </div>
           )}
 
