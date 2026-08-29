@@ -48,6 +48,8 @@ import { Callout, CalloutTitle } from "./callout-extension";
 import { normalizeCalloutType } from "./callout-types";
 import { NotionCallout, NotionCalloutTitle } from "./notion-callout-extension";
 import { LeadingParagraph } from "./leading-paragraph-extension";
+import { FigureImage } from "./figure-extension";
+import { ImagePasteUpload } from "./image-paste-extension";
 import { PageBreak } from "./page-break-extension";
 import { PageBreakMarkers } from "./PageBreakMarkers";
 import { AppleEmojiDisplay } from "./apple-emoji-extension";
@@ -185,7 +187,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight.configure({ multicolor: true }),
+      /* `Image` — FAQAT eski kontent uchun (ilgari saqlangan yalangʻoch
+         `<img>`, jumladan base64). Yangi rasmlar `FigureImage` sifatida,
+         izoh maydoni bilan birga qoʻyiladi. */
       Image.configure({ inline: false, allowBase64: true }),
+      FigureImage.configure({ captionPlaceholder: tToolbar("captionPlaceholder") }),
+      ImagePasteUpload.configure({ uploadFailedMessage: tToolbar("imageUploadFailed") }),
       Callout,
       CalloutTitle,
       NotionCallout,

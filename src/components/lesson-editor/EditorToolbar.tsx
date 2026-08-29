@@ -5,13 +5,14 @@ import { type Editor } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import {
   Undo2, Redo2, Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  Heading1, Heading2, Heading3, List, ListOrdered,
+  Heading1, Heading2, Heading3, Pilcrow, List, ListOrdered,
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Code, Link2, ImageIcon,
   ListTodo, Quote, Minus, Table, ChevronDown, Check,
   ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Trash2, PanelTop,
   SubscriptIcon, SuperscriptIcon, ScissorsLineDashed, Ban, Highlighter, Baseline,
-  MessageSquarePlus,
+  MessageSquarePlus, Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -21,8 +22,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { compressImageFile } from "@/lib/image-compress";
+import { uploadEditorImageAction } from "@/server/actions/uploads";
 import { CALLOUT_TYPES } from "./callout-extension";
-import { CLASS_COLORS, CLASS_COLOR_BASE } from "@/lib/class-colors";
+import { CLASS_COLORS, CLASS_COLOR_BASE, type ClassColor } from "@/lib/class-colors";
 
 export function Btn({
   onClick, active, disabled, title, children,
@@ -49,15 +51,33 @@ export function Btn({
 
 export const Div = () => <Separator orientation="vertical" className="h-5" style={{ height: "1.25rem" }} />;
 
-/* Matn rangi — sinf ranglari palitrasidan (CLASS_COLOR_BASE), yagona rang
-   manbaiga mos boʻlishi uchun; qoʻlda takror OKLCH qiymatlar yoʻq. */
-export const TEXT_COLORS = CLASS_COLORS.map((c) => CLASS_COLOR_BASE[c]);
+/* Muharrir palitrasi — sinf ranglari (CLASS_COLORS) + KULRANG.
+   `gray` `CLASS_COLORS` avto-tanlov hovuzida ATAYLAB yoʻq (u sinf uchun
+   "belgilanmagan" holatni bildiradi), lekin MATN rangi sifatida u alohida
+   maʼnoga ega: Notion/Google Docs/Medium palitralarida neytral kulrang
+   doim bor va eng koʻp ishlatiladigan variantlardan biri (ikkinchi darajali
+   izoh matni). Shu sababli u faqat shu yerda, birinchi oʻringa qoʻshiladi —
+   `CLASS_COLORS` ga tegilmaydi. */
+const EDITOR_COLORS: ClassColor[] = ["gray", ...CLASS_COLORS];
 
-/* Ajratish (highlight) fon ranglari — sinf ranglaridan hosil qilingan pastel
+/* Matn rangi — CLASS_COLOR_BASE dan olinadi, yagona rang manbaiga mos
+   boʻlishi uchun; qoʻlda takror OKLCH qiymatlar yoʻq. */
+export const TEXT_COLORS = EDITOR_COLORS.map((c) => CLASS_COLOR_BASE[c]);
+
+/* Ajratish (highlight) fon ranglari — shu ranglardan hosil qilingan pastel
    tinlar (color-mix orqali oqqa aralashtirilgan), "A" harfsiz doira. */
-export const HIGHLIGHT_COLORS = CLASS_COLORS.map(
+export const HIGHLIGHT_COLORS = EDITOR_COLORS.map(
   (c) => `color-mix(in oklch, ${CLASS_COLOR_BASE[c]} 35%, white)`
 );
+
+/* BubbleToolbar'dagi tez-tanlov doiralari — ATAYLAB alohida roʻyxat.
+   Ilgari u `TEXT_COLORS.slice(0, 5)` edi, yaʼni palitra tartibiga bogʻliq
+   edi: kulrang birinchi oʻringa qoʻyilishi bilan bubble menyudan `lime`
+   jimgina tushib ketdi. Tez-tanlov toʻplami toʻliq palitradan mustaqil
+   qaror — u shu yerda ochiq sanaladi. */
+export const BUBBLE_COLORS: string[] = (
+  ["gray", "red", "orange", "green", "blue"] as ClassColor[]
+).map((c) => CLASS_COLOR_BASE[c]);
 
 /* Tekislash — H1/H2/H3 va roʻyxat bilan bir xil "compact dropdown" uslubi:
    3 alohida tugma toolbar'ni siqib qoʻygani uchun (rasmda koʻrsatilgan
@@ -71,11 +91,27 @@ const ALIGN_TYPES = [
   { value: "justify", label: "alignJustify", icon: AlignJustify },
 ] as const;
 
+/* Blok uslubi — NOMLANGAN dropdown, uchta yolgʻiz H tugmasi emas.
+   Sabab (jahon amaliyoti): Substack «Style…», Google Docs «Normal text»,
+   Notion «Turn into», Zendesk Garden «Paragraph / Heading 1–3» — hammasi
+   oddiy paragrafni ALOHIDA, nomi bilan koʻrsatadi. Bizdagi eski naqshda
+   paragrafga qaytish uchun FAOL H tugmasini qayta bosish kerak edi — buni
+   hech kim topmaydi, va joriy blok turi ham hech qayerda yozilmagan edi.
+   Trigger joriy uslub nomini koʻrsatadi (Docs/Substack naqshi) — bu ayni
+   paytda 3 ta tugmadan koʻra kamroq joy oladi. */
+const BLOCK_TYPES = [
+  { value: "paragraph", label: "paragraph", icon: Pilcrow },
+  { value: "h1", label: "heading1", icon: Heading1 },
+  { value: "h2", label: "heading2", icon: Heading2 },
+  { value: "h3", label: "heading3", icon: Heading3 },
+] as const;
+
 export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const t = useTranslations("LessonEditorToolbar");
   const fileRef = useRef<HTMLInputElement>(null);
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkValue, setLinkValue] = useState("");
+  const [uploading, setUploading] = useState(false);
   // Tiptap v3 useEditor har tranzaksiyada qayta render qilmaydi — toolbar
   // active/disabled holatlari va jadval menyusi yangilanishi uchun obuna.
   const [, force] = useState(0);
@@ -89,6 +125,28 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
 
   const activeAlign = ALIGN_TYPES.find((a) => editor.isActive({ textAlign: a.value })) ?? ALIGN_TYPES[0];
   const AlignTrigger = activeAlign.icon;
+
+  /* Joriy blok uslubi — TOPILMASLIGI ham mumkin. Kod bloki, callout
+     sarlavhasi va shu kabi bloklar bu roʻyxatda yoʻq; ilgari ular
+     "Oddiy matn" ga tushib qolar va yonida belgi (✓) turardi, yaʼni
+     dropdown mavjud emas holatni "allaqachon shunday" deb koʻrsatardi —
+     holbuki "Oddiy matn" ni bosish kod blokini HAQIQATAN aylantiradi.
+     `undefined` boʻlsa trigger neytral nom bilan, belgisiz koʻrinadi. */
+  const activeBlock = editor.isActive("paragraph")
+    ? BLOCK_TYPES[0]
+    : BLOCK_TYPES.find(
+        (b) => b.value !== "paragraph" && editor.isActive("heading", { level: Number(b.value[1]) })
+      );
+  const BlockTrigger = activeBlock?.icon ?? Pilcrow;
+
+  /** Blok uslubini almashtirish. Paragraf — `setParagraph()`, sarlavha —
+   *  `setHeading()` (toggle EMAS: dropdown'da tanlangan uslub aynan
+   *  oʻrnatilishi kerak, aks holda faol turni tanlash uni oʻchirib
+   *  yuborardi). */
+  const setBlockType = (value: (typeof BLOCK_TYPES)[number]["value"]) => {
+    if (value === "paragraph") editor.chain().focus().setParagraph().run();
+    else editor.chain().focus().setHeading({ level: Number(value[1]) as 1 | 2 | 3 }).run();
+  };
 
   /** Callout qoʻshish — sarlavha turga mos nom bilan (haqiqiy, tahrirlanadigan
    *  matn sifatida) boshlanadi, foydalanuvchi keyin oʻzi almashtiradi. Kursor
@@ -170,12 +228,24 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
     setLinkOpen(false);
   };
 
+  /** Rasm qoʻshish: siqish → saqlagichga yuklash → hujjatga URL joylash.
+   *  Yuklash muvaffaqiyatsiz boʻlsa (yoki saqlagich sozlanmagan boʻlsa)
+   *  amal base64 data-URL'ni qaytaradi — muharrir baribir ishlaydi
+   *  (`server/actions/uploads.ts` dagi izohga qarang). */
   const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    const src = await compressImageFile(file);
-    editor.chain().focus().setImage({ src }).run();
+    setUploading(true);
+    try {
+      const dataUrl = await compressImageFile(file);
+      const { url } = await uploadEditorImageAction(dataUrl);
+      editor.chain().focus().setFigureImage({ src: url }).run();
+    } catch {
+      toast.error(t("imageUploadFailed"));
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -187,11 +257,29 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
       </div>
       <Div />
 
-      {/* Struktura: sarlavha */}
+      {/* Struktura: blok uslubi (Oddiy matn / Sarlavha 1–3) */}
       <div className="flex items-center gap-0.5">
-      <Btn title={t("heading1")} active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="size-4" /></Btn>
-      <Btn title={t("heading2")} active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="size-4" /></Btn>
-      <Btn title={t("heading3")} active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="size-4" /></Btn>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" title={t("blockStyle")}
+            className="h-8 px-1.5 rounded-md flex items-center gap-1.5 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors data-[state=open]:bg-muted data-[state=open]:text-foreground">
+            <BlockTrigger className="size-4 shrink-0" />
+            <span className="text-xs font-medium whitespace-nowrap">
+              {activeBlock ? t(activeBlock.label) : t("blockStyle")}
+            </span>
+            <ChevronDown className="size-3 opacity-60" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-44">
+          {BLOCK_TYPES.map(({ value, label, icon: Icon }) => (
+            <DropdownMenuItem key={value} onSelect={() => setBlockType(value)} className="gap-2.5">
+              <Icon className="size-4 text-muted-foreground" />
+              <span className="flex-1">{t(label)}</span>
+              {activeBlock?.value === value && <Check className="size-4 shrink-0" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
       </div>
       <Div />
 
@@ -354,7 +442,9 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
           </div>
         </PopoverContent>
       </Popover>
-      <Btn title={t("insertImage")} onClick={() => fileRef.current?.click()}><ImageIcon className="size-4" /></Btn>
+      <Btn title={t("insertImage")} disabled={uploading} onClick={() => fileRef.current?.click()}>
+        {uploading ? <Loader2 className="size-4 animate-spin" /> : <ImageIcon className="size-4" />}
+      </Btn>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
       {/* Callout qoʻshish menyusi (Obsidian uslubi, lucide ikonlar) */}
       <DropdownMenu>
