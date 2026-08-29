@@ -41,6 +41,14 @@ export const blogComments = pgTable(
     postId: text("post_id")
       .notNull()
       .references(() => blogPosts.id, { onDelete: "cascade" }),
+    /** Fikr egasi. Yangi fikrlar HAR DOIM hisobga bogʻlanadi (Medium,
+     *  Substack, Ghost, Dev.to — hammasida shunday). NULL boʻlishi mumkin,
+     *  chunki bu maydondan OLDIN yozilgan anonim fikrlar bazada qoladi:
+     *  ular `name` bilan koʻrsatiladi. Oʻqituvchi hisobi oʻchirilsa fikr
+     *  yoʻqolmaydi — bogʻ uziladi, matn qolaveradi. */
+    teacherId: text("teacher_id").references(() => teachers.id, { onDelete: "set null" }),
+    /** Yozilgan paytdagi ism — hisob bilan bogʻlangan fikrlarda ham
+     *  saqlanadi (anonim eski qatorlar uchun esa yagona manba). */
     name: text("name").notNull(),
     body: text("body").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

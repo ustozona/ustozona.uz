@@ -91,15 +91,17 @@ export async function fetchCommentsAction(postId: string): Promise<BlogComment[]
   return listComments(z.string().min(1).parse(postId));
 }
 
+/* `name` ATAYLAB yoʻq — ism endi clientdan emas, sessiyadagi hisobdan
+   olinadi (`dal/blog.ts` → addComment). Uni bu yerda qabul qilish
+   istalgan odamga istalgan nom bilan yozish imkonini qaytarardi. */
 const addCommentSchema = z.object({
   postId: z.string().min(1),
-  name: z.string().min(1).max(80),
   body: z.string().min(1).max(2000),
 });
 
 export async function addCommentAction(input: z.infer<typeof addCommentSchema>): Promise<BlogComment> {
-  const { postId, name, body } = addCommentSchema.parse(input);
-  const comment = await addComment(postId, name.trim(), body.trim());
+  const { postId, body } = addCommentSchema.parse(input);
+  const comment = await addComment(postId, body.trim());
   revalidatePath(`/blog`);
   return comment;
 }

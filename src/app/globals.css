@@ -519,6 +519,8 @@
 .readable-scale.readable-scale-lg {
   --typo-page: 2.986rem;   /* 47.78px — 6-qadam, blog post sarlavhasi */
 }
+/* Telefon varianti pastda, `.blog-prose` qoidalaridan KEYIN — bir xil
+   oʻzillikdagi qoida faqat keyin kelsa ustun chiqadi. */
 
 /* Yorliq (UPPERCASE) — 11px / 500 */
 .text-label {
@@ -995,6 +997,45 @@
    qilgani uchun bu yerda qayta beriladi. */
 .lesson-prose.blog-prose .callout { --callout-title-lh: 1.9rem; }
 .lesson-prose.blog-prose .notion-callout { --callout-fs: 1.2rem; --callout-lh: 1.9rem; }
+
+/* ── TELEFON: bir xil shkala, kichikroq NISBAT ────────────────────────────
+   Typescale (typescale.com) da RESPONSIVE boʻlimi bor — «Min-width 767px /
+   Font-size / Scale». Shkalani olganimizda u boʻsh qoldirilgan edi, yaʼni
+   mobil holat hech qachon sozlanmagan: natijada maqola sarlavhasi telefonda
+   ham 47.78px boʻlib qolar, 375px enli ekranda uzun oʻzbekcha soʻz
+   («tayyorgarligimizni») bir qatorga sigʻmasdi.
+
+   ⛔ Bitta sarlavhani sakratib kichraytirish YECHIM EMAS — u zinapoyani
+   sindiradi (maqola sarlavhasi bilan matn ichidagi h1 tenglashib qolishi
+   mumkin). Toʻgʻri usul — Typescale'ning oʻzi taklif qiladigani: BAZA
+   oʻzgarmaydi (16px), NISBAT pasayadi. Shunda katta oʻlchamlar koʻp,
+   kichiklari oz qisqaradi va ierarxiya butun qoladi.
+
+     1.200 (Minor Third)  →  1.125 (Major Second)
+     16 → 18 → 20.25 → 22.78 → 25.63 → 28.83 → 32.44px
+
+   Natija Medium va Substack bilan bir joyda: maqola sarlavhasi telefonda
+   ≈32px, tana matni 18px. Chegara 767px — Typescale'dagi qiymatning oʻzi. */
+@media (max-width: 767px) {
+  .readable-scale {
+    --typo-caption: 0.889rem; /* 14.2px  — (-1)-qadam */
+    --typo-body: 1rem;        /* 16px    — 0-qadam */
+    --typo-small: 1.125rem;   /* 18px    — 1-qadam */
+    --typo-section: 1.266rem; /* 20.3px  — 2-qadam */
+    --typo-page: 1.602rem;    /* 25.6px  — 4-qadam */
+  }
+  .readable-scale.readable-scale-lg {
+    --typo-page: 2.027rem;    /* 32.4px  — 6-qadam, maqola sarlavhasi */
+  }
+  .lesson-prose.blog-prose { font-size: 1.125rem; }
+  .lesson-prose.blog-prose p { font-size: 1.125rem; line-height: 1.7; }
+  .lesson-prose.blog-prose h1 { font-size: 1.602rem; } /* 4-qadam */
+  .lesson-prose.blog-prose h2 { font-size: 1.424rem; } /* 3-qadam */
+  .lesson-prose.blog-prose h3 { font-size: 1.125rem; } /* 1-qadam */
+  /* Callout qatori ham tana bilan mutanosib qoladi */
+  .lesson-prose.blog-prose .callout { --callout-title-lh: 1.8rem; }
+  .lesson-prose.blog-prose .notion-callout { --callout-fs: 1.125rem; --callout-lh: 1.8rem; }
+}
 
 /* Baza matn oʻlchami 16px → 14px (mutanosib): container'ga font-size
    berilgan — h1/h2/h3/p bundan mustasno (`rem` ROOT'ga bogʻliq, containerga
