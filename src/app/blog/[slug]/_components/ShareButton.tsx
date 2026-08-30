@@ -52,9 +52,8 @@ export function ShareButton({ slug, title }: { slug: string; title: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5">
-          <Share2 className="size-3.5" />
-          Ulashish
+        <Button variant="ghost" size="icon-sm" aria-label="Ulashish" title="Ulashish">
+          <Share2 className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

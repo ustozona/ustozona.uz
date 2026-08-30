@@ -49,7 +49,8 @@ export function readingMinutes(html: string): number {
   return Math.max(1, Math.round(seconds / 60));
 }
 
-/** "Taxminiy oʻqish vaqti: 5 daqiqa" */
-export function readingTimeLabelUz(html: string): string {
-  return `Taxminiy oʻqish vaqti: ${readingMinutes(html)} daqiqa`;
+/** "5 daqiqa" — muallif qatorida soat ikonasi yonida (ikona maʼnoni
+ *  koʻtaradi, "taxminiy oʻqish vaqti" degan uzun yorliq shart emas). */
+export function readingTimeShortUz(html: string): string {
+  return `${readingMinutes(html)} daqiqa`;
 }
