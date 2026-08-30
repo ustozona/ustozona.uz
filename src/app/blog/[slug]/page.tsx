@@ -6,6 +6,7 @@ import { initialsOf } from "@/store/useFeedbackStore";
 import { formatFullDateUz } from "@/lib/localization";
 import { readingTimeLabelUz } from "@/lib/reading-time";
 import { viewsLabelUz } from "@/lib/format-count";
+import { trimProseHtml } from "@/lib/prose-html";
 import { getPublishedPostBySlug, getPreviewPostBySlug, listComments } from "@/server/dal/blog";
 import { getSession } from "@/server/session";
 import { BlogHeader } from "../_components/BlogHeader";
@@ -95,7 +96,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               qilinmaydi). */}
           <div
             className="lesson-prose blog-prose mt-8 max-w-none border-t border-border pt-8"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: trimProseHtml(post.content) }}
           />
         </article>
 
