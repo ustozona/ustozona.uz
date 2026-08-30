@@ -252,6 +252,42 @@ yoʻnalishi (Substack/Ghost), maketda tasdiqlangan:
 - page: `canModerate={session.user.id === post.teacherId}` prop
 - Keyinga (o'zgarmadi): reaksiya, sahifalash
 
+## 14. Fikr + karta silliqlash (2026-08-30, `otabek/blog-fikr-karta-silliqlash`)
+
+Nashrdan keyingi UI koʻrik — margin/padding/gap/gutter/tipografika, jahon
+tajribasi va [[design-system]] asosida. Migratsiyasiz.
+
+**Fikrlar (`CommentSection.tsx`):**
+- kompozer ↔ birinchi fikr «yopishib» qolgan edi (`mt-2` + `first:pt-0`,
+  ≈8px). Endi: intro blokdan keyin yagona soch chizigʻi (`border-t`), fikr
+  roʻyxati `divide-y`, har fikr `py-6` — bir tekis vertikal ritm (Ghost).
+- ⋯ tugma qator `items-stretch` boʻlgani uchun **butun fikr balandligiga
+  choʻzilardi** → hover foni ulkan toʻrtburchak, ikon fikr oʻrtasida turardi.
+  Endi umumiy `<Button variant="ghost" size="icon-sm">` + `self-start` —
+  32px kvadrat, avatar bilan bir qatorda (yuqorida).
+- javob girdasi magik qiymatlari (`ml-[2.65rem]`/`ml-[1.85rem]`) →
+  `ml-11` / `ml-7` (avatar 2rem + `gap-3` 0.75rem = 2.75rem).
+
+**Karta (`BlogGrid.tsx`):**
+- muqova endi kartaning toʻliq eniда (`Card` `py-0 gap-0`, kontent alohida
+  `CardContent p-5`) — ilgari `CardContent` ichida `mb-3` + `space-y-3.5`
+  qoʻsh boʻshliq berardi.
+- sana/koʻrish qatori izoh oʻlchamida (`text-xs`, ikon `size-3.5`); sana
+  `formatFullDateUz` (maqola sahifasi bilan bir xil, `29/08/2026` emas).
+- sarlavha `heading-section` (token), `text-balance`, `hover:underline`.
+- muallif = **avatar (`size-6`) + ism**, pastki qatorda `mt-auto` bilan
+  tekislangan. Keyinchalik muallifning ochiq profiliga havola boʻladi —
+  blok shu maqsadda alohida `<div>` ичида.
+- strelka tugmadagi `!`-muhим hacklar olib tashlandi, faqat `group-hover`.
+
+**Keyinга (shu koʻrikда aniqlangan):**
+- `@` teglash (mention) — fikrда boshqa foydalanuvchini eslatish.
+  [[feedback-slash-internal-links]] da `@` doska uchun keyinga surilgan
+  edi (cross-tenant + `authorId` yoʻq); blog fikrида `author_id` bor,
+  tenant chegarasi yoʻq — shu yerда birinchi boʻлиб qilса boʻлади.
+- muallif ochiq profili (`/blog/author/[id]` yoki `/u/[handle]`) — karта
+  va maqола muallif bloki oʻshанда havolага aylanади.
+
 ## 8. Bosqichlar
 
 > QAROR (2026-08-30): 2 ta PR. Koʻrishlar soni — hammaga koʻrinadi.
@@ -276,6 +312,7 @@ yoʻnalishi (Substack/Ghost), maketda tasdiqlangan:
 **PR 3 — keyinga:**
 - `blog_redirects` (slug oʻzgarishi), `scheduled` holati, «koʻrikka
   yuborish» (admin tasdigʻi), fikrlarga reaksiya (❤️), sahifalash
+- fikrда `@` teglash (mention); muallif ochiq profili (§14)
 
 ## 9. Ustozona konteksti
 
