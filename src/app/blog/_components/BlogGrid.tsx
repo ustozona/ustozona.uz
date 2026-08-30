@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowRightIcon, CalendarDaysIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarDaysIcon, EyeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatCountUz } from "@/lib/format-count";
 import type { BlogPostSummary } from "@/server/dal/blog";
 
 /* Dizayn manbai: @ss-blocks/blog-component-15 (ShadCN Studio) — karta
@@ -26,9 +27,15 @@ export function BlogGrid({ posts }: { posts: BlogPostSummary[] }) {
               </div>
             )}
 
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <CalendarDaysIcon className="size-4" />
-              <span>{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("uz-UZ") : ""}</span>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <CalendarDaysIcon className="size-4" />
+                {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString("uz-UZ") : ""}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <EyeIcon className="size-4" />
+                {formatCountUz(post.viewCount)}
+              </span>
             </div>
 
             <h3 className="line-clamp-2 text-lg font-semibold">

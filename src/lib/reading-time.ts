@@ -49,7 +49,7 @@ export function readingMinutes(html: string): number {
   return Math.max(1, Math.round(seconds / 60));
 }
 
-/** "5 daqiqalik oʻqish" */
+/** "Taxminiy oʻqish vaqti: 5 daqiqa" */
 export function readingTimeLabelUz(html: string): string {
-  return `${readingMinutes(html)} daqiqalik oʻqish`;
+  return `Taxminiy oʻqish vaqti: ${readingMinutes(html)} daqiqa`;
 }
