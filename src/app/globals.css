@@ -989,6 +989,14 @@
 .lesson-prose.blog-prose h1 { font-size: 2.074rem; }
 .lesson-prose.blog-prose h2 { font-size: 1.728rem; }
 .lesson-prose.blog-prose h3 { font-size: 1.2rem; }
+/* Nashr koʻrinishi: kontent birinchi/oxirgi elementining tashqi boʻshligʻi
+   olib tashlanadi — ustunning oʻz `pt-8`/`mt-8` va tagidagi hoshiya
+   ajratuvchi vazifasini bajaradi, element margini ustiga qoʻshilib
+   sarlavha bilan matn orasida ortiqcha boʻshliq qoldirmasin.
+   `:not(.ProseMirror)` — muharrir maydonining oʻzida birinchi xatboshi
+   margini tegilmasin (kursor uchun tabiiy boʻshliq). */
+.lesson-prose.blog-prose:not(.ProseMirror) > :first-child { margin-top: 0; }
+.lesson-prose.blog-prose:not(.ProseMirror) > :last-child { margin-bottom: 0; }
 .blog-prose .ProseMirror { min-height: 40vh; }
 /* Callout — sarlavha qatori tana matni bilan mutanosib boʻlishi uchun
    (ikon qutisi ham shu oʻlchamdan oziqlanadi). Obsidian uslubidagi

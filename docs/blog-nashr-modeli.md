@@ -122,8 +122,9 @@ Next.js **`draftMode()`** (cookie asosli, egalik boʻyicha himoyalangan):
 
 ## 10. Ulashish havolasi
 
-Nashr qilingan maqolada **«Ulashish»** tugmasi (muallif qatori yonida yoki
-maqola oxirida):
+Nashr qilingan maqolada ulashish tugmasi muallif qatorining oʻng
+chetida — **faqat ikona** (`Share2`), ghost (hoshiyasiz); matn yorligʻi
+yoʻq (`aria-label="Ulashish"`). Bosilganda menyu ochiladi:
 
 - Asosiy amal: `navigator.clipboard.writeText(canonicalUrl)` → toast
   «Havola nusxalandi». `canonicalUrl` = `https://www.ustozona.uz/blog/{slug}`
@@ -150,18 +151,52 @@ maqola oxirida):
   hajm, ortiqcha murakkablik).
 - Koʻrsatish:
   - **Studio roʻyxati + muharrir** — muallif doim koʻradi («128 koʻrildi»).
-  - **Ommaviy sahifa** — muallif qatorida, ixcham format («1,2 ming»).
-    QAROR (2026-08-30): ommaviyda **har doim koʻrsatiladi**, 1 boʻlsa ham
-    — chegara yoʻq («samimiy va halol»).
+  - **Ommaviy sahifa** — muallif qatorining oʻng chetida **koʻz ikonasi +
+    ixcham son** (`formatCountUz`, masalan «1,2 ming»); hoverда «N koʻrildi»
+    tooltip. QAROR (2026-08-30): **har doim koʻrsatiladi**, 1 boʻlsa ham —
+    chegara yoʻq («samimiy va halol»).
+- Bir martalik tuzatish (2026-08-30): koʻrishlar kodi prodga nashrdan
+  ~1 kun keyin chiqqani uchun «Kutilmalarni…» posti uchun `view_count`
+  Vercel Web Analytics'dagi *Visitors* soni (30) ga qoʻlda tenglashtirildi.
 
 ## 12. Oʻqish-vaqti yorligʻi
 
-`readingTimeLabelUz`: `"X daqiqalik oʻqish"` → **`"Taxminiy oʻqish vaqti:
-X daqiqa"`**.
+QAROR (2026-08-30, «A — ikona + son» varianti, `show_widget` maketda
+tanlangan): muallif qatorida **soat ikonasi + `"X daqiqa"`** — ikona
+maʼnoni koʻtaradi, «Taxminiy oʻqish vaqti:» degan uzun yorliq shart emas
+(hoverда tooltip sifatida qoladi).
 
-- Imlo: «taxminiy» (taxmin ← تخمین), «tahminiy» EMAS.
+- `readingTimeLabelUz` → **`readingTimeShortUz`** (`"X daqiqa"` qaytaradi).
+- «X daqiqalik oʻqish», «Taxminiy oʻqish vaqti: …» — ikkalasi ham RAD
+  ETILDI (gʻaliz / uzun).
 - Hisob-kitob mantigʻi (`readingMinutes`) oʻzgarmaydi.
 - Yagona ishlatilish joyi: `/blog/[slug]/page.tsx`.
+
+## 12a. Muallif qatori tartibi
+
+«Sokin» (Substack/Medium) yoʻnalishi, `show_widget` maketda tasdiqlangan
+(2026-08-30):
+
+```
+[avatar]  Ism                              [koʻz N]  [ulashish ikonasi]
+          sana · [soat] X daqiqa
+```
+
+- Avatar (40px) + ism birinchi qatorда; sana va oʻqish vaqti ikkinchi
+  qatorда xira (`text-xs text-muted-foreground`).
+- Oʻngда: koʻrishlar (koʻz ikonasi + son) va ulashish ikonasi bitta
+  ixcham guruhда (`gap-2`).
+
+## 12b. Maqola boshidagi ortiqcha boʻshliq
+
+Tiptap muharriri `editor.getHTML()` ni xom saqlaydi — matn boshi/oxirida
+qoldirilgan boʻsh xatboshilar (`<p></p>`, `<p><br></p>`) ommaviy sahifada
+sarlavha bilan matn orasида katta boʻshliq qoldirardi.
+
+- `src/lib/prose-html.ts` → `trimProseHtml()` — **render paytida** boshi/
+  oxiridagi boʻsh xatboshilarni olib tashlaydi. Baza tegilmaydi.
+- `globals.css`: `.lesson-prose.blog-prose` birinchi/oxirgi element
+  tashqi margini nolga (`:not(.ProseMirror)` — muharrir maydoni mustasno).
 
 ## 13. Fikrlar qismini qayta qurish
 

@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { draftMode } from "next/headers";
 import type { Metadata } from "next";
+import { ClockIcon, EyeIcon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { initialsOf } from "@/store/useFeedbackStore";
 import { formatFullDateUz } from "@/lib/localization";
-import { readingTimeLabelUz } from "@/lib/reading-time";
-import { viewsLabelUz } from "@/lib/format-count";
+import { readingTimeShortUz } from "@/lib/reading-time";
+import { formatCountUz, viewsLabelUz } from "@/lib/format-count";
+import { trimProseHtml } from "@/lib/prose-html";
 import { getPublishedPostBySlug, getPreviewPostBySlug, listComments } from "@/server/dal/blog";
 import { getSession } from "@/server/session";
 import { BlogHeader } from "../_components/BlogHeader";
@@ -60,9 +62,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <p className="mt-3 text-lg leading-relaxed text-muted-foreground">{post.excerpt}</p>
           )}
 
-          {/* Muallif qatori — avatar + ism birinchi darajada, sana / oʻqish
-              vaqti / koʻrishlar soni ikkinchi qatorda xira. Oʻngda ulashish
-              tugmasi. Sana toʻliq yoziladi (`2026-yil 29-avgust`) —
+          {/* Muallif qatori («Sokin» — Substack/Medium uslubi): avatar +
+              ism birinchi darajada, ostida `sana · N daqiqa oʻqish` xira.
+              Koʻrishlar soni oʻngda, koʻz ikonasi bilan kichik; undan keyin
+              ulashish tugmasi. Sana toʻliq yoziladi (`2026-yil 29-avgust`) —
               `29/08/2026` koʻrinishida qaysi raqam kun ekani noaniq. */}
           <div className="mt-6 flex items-center gap-3">
             <Avatar className="size-10">
@@ -73,20 +76,33 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 {initialsOf(post.authorName)}
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-foreground">{post.authorName}</p>
-              <p className="text-xs text-muted-foreground">
-                {post.publishedAt && <>{formatFullDateUz(post.publishedAt)} · </>}
-                {readingTimeLabelUz(post.content)}
-                {" · "}
-                {viewsLabelUz(post.viewCount)}
+              <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground">
+                {post.publishedAt && (
+                  <>
+                    <span>{formatFullDateUz(post.publishedAt)}</span>
+                    <span aria-hidden>·</span>
+                  </>
+                )}
+                <span className="inline-flex items-center gap-1" title="Taxminiy oʻqish vaqti">
+                  <ClockIcon className="size-3" />
+                  {readingTimeShortUz(post.content)}
+                </span>
               </p>
             </div>
-            {!isPreview && post.status === "published" && (
-              <div className="ml-auto shrink-0">
+            <div className="flex shrink-0 items-center gap-2">
+              <span
+                className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                title={viewsLabelUz(post.viewCount)}
+              >
+                <EyeIcon className="size-3.5" />
+                {formatCountUz(post.viewCount)}
+              </span>
+              {!isPreview && post.status === "published" && (
                 <ShareButton slug={post.slug} title={post.title} />
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Tiptap muharriri chiqargan HTML — dars muharriri bilan bir xil
@@ -95,7 +111,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               qilinmaydi). */}
           <div
             className="lesson-prose blog-prose mt-8 max-w-none border-t border-border pt-8"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: trimProseHtml(post.content) }}
           />
         </article>
 
