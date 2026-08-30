@@ -103,6 +103,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <CommentSection
             postId={post.id}
             initialComments={comments}
+            canModerate={session != null && session.user.id === post.teacherId}
             viewer={
               session
                 ? { name: session.user.name ?? "", avatarUrl: session.user.image ?? null }

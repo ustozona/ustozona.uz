@@ -196,8 +196,26 @@ editedAt: timestamp("edited_at", { withTimezone: true }),
 deletedAt: timestamp("deleted_at", { withTimezone: true }),
 ```
 
-Yumshoq oʻchirish: javobi bor fikr → matn «[oʻchirilgan]», tuzilma qoladi;
-javobi yoʻq → qatordan olib tashlanadi (yoki qattiq delete).
+Yumshoq oʻchirish: javobi bor **root** fikr → matn «[oʻchirilgan]», tuzilma
+qoladi; javobsiz fikr yoki javob → roʻyxatdan tushadi (`deletedAt` bazada
+qoladi).
+
+**QILINDI (2026-08-30, PR — `otabek/blog-fikrlar-qayta`)** — «Sokin»
+yoʻnalishi (Substack/Ghost), maketda tasdiqlangan:
+- migratsiya `0041_blog_fikr_javob_tahrir`: `parent_id` + `edited_at` +
+  `deleted_at` + `blog_comments_parent_idx`
+- DAL: `listComments` tekis roʻyxat + `mine`/`isPostAuthor`/`deleted` flaglari
+  (viewer sessiyadan); `addComment(…, parentId?)` (parent = root, javobsiz);
+  `editComment` (egasi); `deleteComment` (egasi YOKI maqola muallifi)
+- action'lar: `editCommentAction` / `deleteCommentAction`; `addCommentAction`
+  ga `parentId?`; hammasi `revalidatePath("/blog/[slug]", "page")`
+- `src/lib/relative-time.ts` — `relativeTimeUz` (qoʻlda, ICU'ga tayanmaydi);
+  `RelativeTime` komponenti SSR'da toʻliq sana, mount'da nisbiy (hidratsiya)
+- `CommentSection.tsx` toʻliq qayta yozildi: `Composer` (collapse),
+  `Thread` + `CommentRow`, inline tahrir, ⋯ menyu (hover/`max-sm` doim),
+  «Muallif» chipi, «Eng yangi/Eng eski» toggle (2+ root boʻlsa)
+- page: `canModerate={session.user.id === post.teacherId}` prop
+- Keyinga (o'zgarmadi): reaksiya, sahifalash
 
 ## 8. Bosqichlar
 
