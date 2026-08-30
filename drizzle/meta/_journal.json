@@ -288,6 +288,13 @@
       "when": 1788063047935,
       "tag": "0040_blog_nashr_surati_koorishlar",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1788065441948,
+      "tag": "0041_blog_fikr_javob_tahrir",
+      "breakpoints": true
     }
   ]
 }

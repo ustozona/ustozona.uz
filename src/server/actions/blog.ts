@@ -14,6 +14,8 @@ import {
   deletePost,
   listComments,
   addComment,
+  editComment,
+  deleteComment,
   type BlogPostSummary,
   type BlogPostFull,
   type BlogComment,
@@ -110,11 +112,32 @@ export async function fetchCommentsAction(postId: string): Promise<BlogComment[]
 const addCommentSchema = z.object({
   postId: z.string().min(1),
   body: z.string().min(1).max(2000),
+  parentId: z.string().min(1).optional(),
 });
 
 export async function addCommentAction(input: z.infer<typeof addCommentSchema>): Promise<BlogComment> {
-  const { postId, body } = addCommentSchema.parse(input);
-  const comment = await addComment(postId, body.trim());
-  revalidatePath(`/blog`);
+  const { postId, body, parentId } = addCommentSchema.parse(input);
+  const comment = await addComment(postId, body.trim(), parentId);
+  revalidatePath("/blog/[slug]", "page");
   return comment;
+}
+
+const editCommentSchema = z.object({
+  commentId: z.string().min(1),
+  body: z.string().min(1).max(2000),
+});
+
+export async function editCommentAction(
+  input: z.infer<typeof editCommentSchema>,
+): Promise<{ editedAt: string }> {
+  const { commentId, body } = editCommentSchema.parse(input);
+  const result = await editComment(commentId, body.trim());
+  revalidatePath("/blog/[slug]", "page");
+  return result;
+}
+
+export async function deleteCommentAction(commentId: string): Promise<{ ok: true }> {
+  await deleteComment(z.string().min(1).parse(commentId));
+  revalidatePath("/blog/[slug]", "page");
+  return { ok: true };
 }

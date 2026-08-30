@@ -1,4 +1,4 @@
-import { integer, index, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { integer, index, jsonb, pgTable, text, timestamp, uniqueIndex, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { teachers } from "./teachers";
 
 /** Nashr qilingan (muzlatilgan) surat — ommaviy sahifa AYNAN shuni oʻqiydi.
@@ -17,8 +17,8 @@ export type BlogPublishedSnapshot = {
 
    Har post bitta oʻqituvchiga tegishli (teacherId), lekin /blog ochiq —
    hamma mualliflarning nashr qilingan postlari birga koʻrinadi. Fikr
-   bildirish anonim (auth talab qilinmaydi) — moderatsiya keyingi
-   bosqichda qoʻshiladi.
+   yozish hisob talab qiladi; oʻz fikrini tahrirlash/oʻchirish egaga,
+   moderatsiya (oʻchirish) esa maqola muallifiga ochiq.
    ════════════════════════════════════════════════════════════════════ */
 
 export const blogPosts = pgTable(
@@ -66,9 +66,21 @@ export const blogComments = pgTable(
      *  saqlanadi (anonim eski qatorlar uchun esa yagona manba). */
     name: text("name").notNull(),
     body: text("body").notNull(),
+    /** Bir daraja javob (Substack/YouTube uslubi — ichma-ich emas). Root
+     *  fikrda `null`; javob fikrda root fikr id'si. Root oʻchirilsa
+     *  javoblar ham kaskad bilan ketadi. */
+    parentId: text("parent_id").references((): AnyPgColumn => blogComments.id, { onDelete: "cascade" }),
+    /** Tahrirlangan boʻlsa — vaqti. UI'da «· tahrirlangan» belgisi. */
+    editedAt: timestamp("edited_at", { withTimezone: true }),
+    /** Yumshoq oʻchirish: javobi bor fikr tuzilma uchun qoladi (matn
+     *  «[oʻchirilgan]»); javobsiz fikr roʻyxatdan tushadi. */
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("blog_comments_post_idx").on(t.postId)]
+  (t) => [
+    index("blog_comments_post_idx").on(t.postId),
+    index("blog_comments_parent_idx").on(t.parentId),
+  ]
 );
 
 export type BlogPostRow = typeof blogPosts.$inferSelect;

@@ -41,9 +41,18 @@ export type BlogPostFull = BlogPostSummary & {
 
 export type BlogComment = {
   id: string;
+  /** `null` = root fikr; aks holda javob berilgan root fikr id'si. */
+  parentId: string | null;
   name: string;
+  /** Yumshoq oʻchirilgan fikrda `""` (UI «[oʻchirilgan]» koʻrsatadi). */
   body: string;
   createdAt: string;
+  editedAt: string | null;
+  deleted: boolean;
+  /** Koʻruvchi shu fikr egasi — «Tahrirlash / Oʻchirish». */
+  mine: boolean;
+  /** Fikr egasi = maqola muallifi — «Muallif» chipi. */
+  isPostAuthor: boolean;
   /** Hisobga bogʻlanmagan eski (anonim) fikrlarda `null`. */
   authorAvatarUrl: string | null;
 };
@@ -396,43 +405,103 @@ export async function incrementViewCount(id: string): Promise<void> {
     .where(and(eq(blogPosts.id, id), eq(blogPosts.status, "published")));
 }
 
-/** Postga fikrlar — OʻQISH ochiq (auth talab qilinmaydi).
- *  Avatar `teachers` dan LEFT JOIN bilan olinadi: hisobga bogʻlanmagan
- *  eski (anonim) fikrlarda u `null` boʻladi va bosh harflar chiziladi. */
+/** Koʻruvchi shu maqola fikrlarini moderatsiya qila oladimi (= maqola egasi). */
+export async function canModerateComments(postAuthorId: string): Promise<boolean> {
+  const session = await getSession();
+  return session != null && session.user.id === postAuthorId;
+}
+
+/** Postga fikrlar — OʻQISH ochiq (auth talab qilinmaydi). Tekis roʻyxat
+ *  qaytadi (root + javoblar), createdAt boʻyicha oʻsish tartibida; javob
+ *  daraxtini klient quradi. Yumshoq oʻchirilgan fikr faqat javobi bor
+ *  root boʻlsa «tombstone» sifatida qoladi. Avatar `teachers` dan LEFT
+ *  JOIN — anonim eski fikrlarda `null`. */
 export async function listComments(postId: string): Promise<BlogComment[]> {
+  const session = await getSession();
+  const viewerId = session?.user.id ?? null;
+
+  const [post] = await db
+    .select({ teacherId: blogPosts.teacherId })
+    .from(blogPosts)
+    .where(eq(blogPosts.id, postId));
+  const postAuthorId = post?.teacherId ?? null;
+
   const rows = await db
     .select({
       id: blogComments.id,
+      parentId: blogComments.parentId,
+      teacherId: blogComments.teacherId,
       name: blogComments.name,
       body: blogComments.body,
       createdAt: blogComments.createdAt,
+      editedAt: blogComments.editedAt,
+      deletedAt: blogComments.deletedAt,
       authorAvatarUrl: teachers.avatarUrl,
     })
     .from(blogComments)
     .leftJoin(teachers, eq(teachers.id, blogComments.teacherId))
     .where(eq(blogComments.postId, postId))
     .orderBy(blogComments.createdAt);
-  return rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }));
+
+  const liveChildren = new Map<string, number>();
+  for (const r of rows) {
+    if (r.parentId && !r.deletedAt) liveChildren.set(r.parentId, (liveChildren.get(r.parentId) ?? 0) + 1);
+  }
+
+  const out: BlogComment[] = [];
+  for (const r of rows) {
+    const deleted = r.deletedAt != null;
+    if (deleted && !(r.parentId == null && (liveChildren.get(r.id) ?? 0) > 0)) continue;
+    out.push({
+      id: r.id,
+      parentId: r.parentId,
+      name: r.name,
+      body: deleted ? "" : r.body,
+      createdAt: r.createdAt.toISOString(),
+      editedAt: r.editedAt ? r.editedAt.toISOString() : null,
+      deleted,
+      mine: !deleted && viewerId != null && r.teacherId === viewerId,
+      isPostAuthor: r.teacherId != null && r.teacherId === postAuthorId,
+      authorAvatarUrl: r.authorAvatarUrl,
+    });
+  }
+  return out;
 }
 
-/** Fikr YOZISH — hisob TALAB QILINADI.
- *
- *  Ilgari ism erkin matn edi va istalgan odam istalgan nom bilan yozardi:
- *  na moderatsiya, na javobgarlik, na spamdan himoya. Endi ism va avatar
- *  hisobdan olinadi — clientdan ism UMUMAN qabul qilinmaydi (u yerdan
- *  kelgan qiymatga ishonib boʻlmaydi). */
-export async function addComment(postId: string, body: string): Promise<BlogComment> {
+/** Fikr YOZISH — hisob TALAB QILINADI. Ism/avatar hisobdan olinadi
+ *  (clientdan ism qabul qilinmaydi). `parentId` berilsa — bir daraja
+ *  javob: root fikrga (javobning javobi boʻlmaydi). */
+export async function addComment(postId: string, body: string, parentId?: string): Promise<BlogComment> {
   const teacher = await requireTeacher();
   const [post] = await db
-    .select({ id: blogPosts.id })
+    .select({ id: blogPosts.id, teacherId: blogPosts.teacherId })
     .from(blogPosts)
     .where(and(eq(blogPosts.id, postId), eq(blogPosts.status, "published")));
   if (!post) throw new Error("Post topilmadi");
+
+  let parent: string | null = null;
+  if (parentId) {
+    const [p] = await db
+      .select({
+        id: blogComments.id,
+        postId: blogComments.postId,
+        parentId: blogComments.parentId,
+        deletedAt: blogComments.deletedAt,
+      })
+      .from(blogComments)
+      .where(eq(blogComments.id, parentId));
+    if (!p || p.postId !== postId || p.parentId != null || p.deletedAt != null) {
+      throw new Error("Javob berib boʻlmadi");
+    }
+    parent = p.id;
+  }
+
   const id = crypto.randomUUID();
   const createdAt = new Date();
   await db.insert(blogComments).values({
     id,
     postId,
+    parentId: parent,
     teacherId: teacher.id,
     name: teacher.name,
     body,
@@ -440,9 +509,46 @@ export async function addComment(postId: string, body: string): Promise<BlogComm
   });
   return {
     id,
+    parentId: parent,
     name: teacher.name,
     body,
     createdAt: createdAt.toISOString(),
+    editedAt: null,
+    deleted: false,
+    mine: true,
+    isPostAuthor: teacher.id === post.teacherId,
     authorAvatarUrl: teacher.avatarUrl,
   };
+}
+
+/** Oʻz fikrini tahrirlash — faqat egasi. Oʻchirilgan fikr tahrirlanmaydi. */
+export async function editComment(commentId: string, body: string): Promise<{ editedAt: string }> {
+  const teacher = await requireTeacher();
+  const [row] = await db
+    .select({ teacherId: blogComments.teacherId, deletedAt: blogComments.deletedAt })
+    .from(blogComments)
+    .where(eq(blogComments.id, commentId));
+  if (!row || row.deletedAt != null) throw new Error("Fikr topilmadi");
+  if (row.teacherId !== teacher.id) throw new Error("Ruxsat yoʻq");
+  const editedAt = new Date();
+  await db.update(blogComments).set({ body, editedAt }).where(eq(blogComments.id, commentId));
+  return { editedAt: editedAt.toISOString() };
+}
+
+/** Fikrni oʻchirish (yumshoq) — egasi YOKI maqola muallifi. */
+export async function deleteComment(commentId: string): Promise<void> {
+  const teacher = await requireTeacher();
+  const [row] = await db
+    .select({ teacherId: blogComments.teacherId, postId: blogComments.postId })
+    .from(blogComments)
+    .where(eq(blogComments.id, commentId));
+  if (!row) return;
+  if (row.teacherId !== teacher.id) {
+    const [post] = await db
+      .select({ teacherId: blogPosts.teacherId })
+      .from(blogPosts)
+      .where(eq(blogPosts.id, row.postId));
+    if (!post || post.teacherId !== teacher.id) throw new Error("Ruxsat yoʻq");
+  }
+  await db.update(blogComments).set({ deletedAt: new Date() }).where(eq(blogComments.id, commentId));
 }
