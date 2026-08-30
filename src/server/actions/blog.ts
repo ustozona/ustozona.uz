@@ -9,7 +9,8 @@ import {
   getMyPostById,
   createPost,
   savePost,
-  setPostStatus,
+  publishPost,
+  unpublishPost,
   deletePost,
   listComments,
   addComment,
@@ -64,19 +65,31 @@ const savePostSchema = z.object({
   content: z.string().max(4_000_000),
 });
 
+/** Avto-saqlash — FAQAT ishchi ustunlarga. `/blog` (ommaviy) ATAYLAB
+ *  revalidatsiya QILINMAYDI: ommaviy sahifa suratdan oʻqiydi, avto-saqlash
+ *  esa suratga tegmaydi (docs/blog-nashr-modeli.md §4). */
 export async function savePostAction(input: z.infer<typeof savePostSchema>): Promise<{ ok: true }> {
   await savePost(savePostSchema.parse(input));
   revalidatePath("/blog/studio");
-  revalidatePath("/blog");
   return { ok: true };
 }
 
-export async function setPostStatusAction(input: { id: string; status: "draft" | "published" }): Promise<{ ok: true }> {
-  const schema = z.object({ id: z.string().min(1), status: z.enum(["draft", "published"]) });
-  const { id, status } = schema.parse(input);
-  await setPostStatus(id, status);
+/** «Nashr qilish» / «Yangilash» — ishchi nusxani muzlatilgan suratga
+ *  koʻchiradi va ommaviy sahifani yangilaydi. */
+export async function publishPostAction(id: string): Promise<{ ok: true }> {
+  const result = await publishPost(z.string().min(1).parse(id));
   revalidatePath("/blog/studio");
   revalidatePath("/blog");
+  if (result) revalidatePath(`/blog/${result.slug}`);
+  return { ok: true };
+}
+
+/** «Nashrdan olish» — postni arxivga oʻtkazadi, ommaviy sahifa yoʻqoladi. */
+export async function unpublishPostAction(id: string): Promise<{ ok: true }> {
+  const result = await unpublishPost(z.string().min(1).parse(id));
+  revalidatePath("/blog/studio");
+  revalidatePath("/blog");
+  if (result) revalidatePath(`/blog/${result.slug}`);
   return { ok: true };
 }
 

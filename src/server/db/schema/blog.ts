@@ -1,5 +1,16 @@
-import { index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { integer, index, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { teachers } from "./teachers";
+
+/** Nashr qilingan (muzlatilgan) surat — ommaviy sahifa AYNAN shuni oʻqiydi.
+ *  Ishchi ustunlar (title/excerpt/content/...) muharrir yozgani, bu esa
+ *  «Nashr qilish»/«Yangilash» bosilgan paytdagi holat. Ikkisi farq qilsa
+ *  = «saqlanmagan (nashr qilinmagan) oʻzgarishlar bor». */
+export type BlogPublishedSnapshot = {
+  title: string;
+  excerpt: string;
+  content: string;
+  coverImageUrl: string | null;
+};
 
 /* ════════════════════════════════════════════════════════════════════
    BLOG — koʻp-mualliflik maqolalar (Medium/Substack uslubi), MVP.
@@ -23,7 +34,11 @@ export const blogPosts = pgTable(
     coverImageUrl: text("cover_image_url"),
     /** Tiptap HTML — round-trip aynan (lesson-editor bilan bir xil naqsh). */
     content: text("content").notNull().default(""),
-    status: text("status").notNull().default("draft"), // draft | published
+    status: text("status").notNull().default("draft"), // draft | published | archived
+    /** §3 — ommaviy sahifa shundan oʻqiydi. `null` = hali nashr qilinmagan. */
+    publishedSnapshot: jsonb("published_snapshot").$type<BlogPublishedSnapshot>(),
+    /** Ommaviy koʻrishlar soni — klient beacon (`/api/blog/[id]/view`) oshiradi. */
+    viewCount: integer("view_count").notNull().default(0),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

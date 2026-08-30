@@ -21,10 +21,16 @@ import { CharacterCount } from "@tiptap/extension-character-count";
 import { TableKit } from "@tiptap/extension-table";
 import { TaskList, TaskItem } from "@tiptap/extension-list";
 import "katex/dist/katex.min.css";
-import { ArrowLeft, ImageIcon, Loader2, Upload, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, ImageIcon, Loader2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { compressImageFile } from "@/lib/image-compress";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { initialsOf } from "@/store/useFeedbackStore";
 import { Callout, CalloutTitle } from "@/components/lesson-editor/callout-extension";
@@ -35,7 +41,7 @@ import { ImagePasteUpload } from "@/components/lesson-editor/image-paste-extensi
 import { AppleEmojiDisplay } from "@/components/lesson-editor/apple-emoji-extension";
 import EditorToolbar from "@/components/lesson-editor/EditorToolbar";
 import BubbleToolbar from "@/components/lesson-editor/BubbleToolbar";
-import { savePostAction, setPostStatusAction } from "@/server/actions/blog";
+import { publishPostAction, savePostAction, unpublishPostAction } from "@/server/actions/blog";
 import { uploadEditorImageAction } from "@/server/actions/uploads";
 import type { BlogPostFull } from "@/server/dal/blog";
 
@@ -53,8 +59,11 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
   const [excerpt, setExcerpt] = useState(post.excerpt);
   const [coverImageUrl, setCoverImageUrl] = useState(post.coverImageUrl ?? "");
   const [status, setStatus] = useState(post.status);
-  const [slug, setSlug] = useState(post.slug);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  /* «Nashr qilingan, lekin ishchi nusxa suratdan farq qiladi» — serverdan
+     boshlangʻich qiymat, keyin klientda tahrir/nashr boʻyicha yangilanadi. */
+  const [dirty, setDirty] = useState(post.hasUnpublishedChanges);
   const [publishing, setPublishing] = useState(false);
   const [coverEditorOpen, setCoverEditorOpen] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
@@ -108,6 +117,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
     editorProps: { attributes: { class: "lesson-prose blog-prose focus:outline-none" } },
     onUpdate: () => {
       setSaving(true);
+      setDirty(true);
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => save({ silent: true }), 800);
     },
@@ -131,12 +141,15 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
 
   const scheduleSave = () => {
     setSaving(true);
+    setDirty(true);
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => save({ silent: true }), 800);
   };
 
-  const save = (opts?: { silent?: boolean }) => {
-    if (!editor) return;
+  /** Ishchi nusxani saqlaydi. `true` = muvaffaqiyat. Nashr oqimi buni
+   *  kutadi — saqlanmagan matn suratga tushmasligi kerak. */
+  const save = (opts?: { silent?: boolean }): Promise<boolean> => {
+    if (!editor) return Promise.resolve(false);
     setSaving(true);
     /* base64 muqova jimgina tushirib qoldiriladi. U `savePostSchema` dagi
        2000-belgilik chegaradan oʻtmaydi (indeks sahifasini shishirmasligi
@@ -144,7 +157,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
        post BUTUNLAY saqlanmaydigan boʻlib qolardi: har avto-saqlash zod
        xatosiga urilar, foydalanuvchi esa nima buzilganini bilmasdi. */
     const cover = coverImageUrl.trim();
-    savePostAction({
+    return savePostAction({
       id: post.id,
       title,
       excerpt,
@@ -153,10 +166,13 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
     })
       .then(() => {
         setSaving(false);
+        setSaveError(false);
         if (!opts?.silent) toast.success("Saqlandi");
+        return true;
       })
       .catch((err: unknown) => {
         setSaving(false);
+        setSaveError(true);
         /* Sababi ham koʻrsatiladi. Ilgari xato jimgina yutilardi va
            «Saqlashda xatolik» dan nima buzilgani umuman bilinmasdi —
            rasm limitidan oshgani ham, tarmoq uzilgani ham bir xil
@@ -165,6 +181,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
         toast.error("Saqlashda xatolik", {
           description: err instanceof Error ? err.message : undefined,
         });
+        return false;
       });
   };
 
@@ -199,15 +216,38 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
     }
   };
 
-  const togglePublish = async () => {
+  /** «Nashr qilish» (qoralama) / «Yangilash» (nashr qilingan, oʻzgargan) /
+   *  «Qayta nashr qilish» (arxiv) — hammasi bitta amal: ishchi nusxa →
+   *  surat. Avval saqlanadi (kutiladi), xato boʻlsa nashr toʻxtaydi. */
+  const publish = async () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
     setPublishing(true);
-    save({ silent: true });
-    const next = status === "published" ? "draft" : "published";
-    await setPostStatusAction({ id: post.id, status: next });
-    setStatus(next);
-    setPublishing(false);
-    toast.success(next === "published" ? "Nashr qilindi" : "Qoralamaga oʻtkazildi");
-    router.refresh();
+    try {
+      const ok = await save({ silent: true });
+      if (!ok) {
+        toast.error("Avval saqlab boʻlmadi — nashr qilinmadi");
+        return;
+      }
+      await publishPostAction(post.id);
+      setStatus("published");
+      setDirty(false);
+      toast.success("Nashr qilindi");
+      router.refresh();
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const unpublish = async () => {
+    setPublishing(true);
+    try {
+      await unpublishPostAction(post.id);
+      setStatus("archived");
+      toast.success("Nashrdan olindi");
+      router.refresh();
+    } finally {
+      setPublishing(false);
+    }
   };
 
   return (
@@ -220,11 +260,21 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+              saveError ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground",
+            )}
+          >
             {saving ? (
               <>
                 <Loader2 className="size-3 animate-spin" />
                 Saqlanmoqda
+              </>
+            ) : saveError ? (
+              <>
+                <span className="size-1.5 rounded-full bg-destructive" />
+                Saqlanmadi
               </>
             ) : (
               <>
@@ -233,21 +283,50 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
               </>
             )}
           </span>
+          {status === "published" && dirty && (
+            <span className="hidden text-xs text-muted-foreground sm:inline">
+              · nashr qilinmagan oʻzgarishlar
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled={status !== "published"} asChild={status === "published"}>
-            {status === "published" ? (
-              <Link href={`/blog/${slug}`} target="_blank">
-                Koʻrish
-              </Link>
-            ) : (
-              <span>Koʻrish</span>
-            )}
+          {/* Koʻrish — DOIM yoqilgan. Preview marshruti draftMode cookie'ni
+              qoʻyadi va ommaviy sahifani ishchi nusxa bilan koʻrsatadi. */}
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/blog/studio/${post.id}/preview`} target="_blank">
+              Koʻrish
+            </Link>
           </Button>
-          <Button size="sm" disabled={publishing} onClick={togglePublish}>
-            {status === "published" ? "Qoralamaga oʻtkazish" : "Nashr qilish"}
-          </Button>
+
+          {status === "published" && !dirty ? (
+            <Button size="sm" variant="outline" disabled className="gap-1.5">
+              <Check className="size-3.5" />
+              Nashr qilingan
+            </Button>
+          ) : (
+            <Button size="sm" disabled={publishing} onClick={publish}>
+              {status === "draft"
+                ? "Nashr qilish"
+                : status === "archived"
+                  ? "Qayta nashr qilish"
+                  : "Yangilash"}
+            </Button>
+          )}
+
+          {status === "published" && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8" disabled={publishing}>
+                  <ChevronDown className="size-4" />
+                  <span className="sr-only">Boshqa amallar</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={unpublish}>Nashrdan olish</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </header>
 
