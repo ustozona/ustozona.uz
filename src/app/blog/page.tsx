@@ -20,7 +20,7 @@ export default async function BlogIndexPage() {
 
       <div className="mx-auto w-full max-w-5xl px-4 py-10 md:py-14">
         <h1 className="heading-page text-foreground">Blog</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Oʻqituvchilarning maqolalari.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Oʻqituvchilarning maqolalari.</p>
 
         {posts.length === 0 ? (
           <p className="mt-10 text-sm text-muted-foreground">Hozircha maqola yoʻq.</p>

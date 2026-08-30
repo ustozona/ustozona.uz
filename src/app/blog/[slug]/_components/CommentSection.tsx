@@ -130,23 +130,30 @@ export function CommentSection({
         </div>
       )}
 
-      <div className="mt-2">
-        {roots.length === 0 && (
-          <p className="py-6 text-sm text-muted-foreground">Hozircha fikr yoʻq. Birinchi boʻling.</p>
+      {/* Kompozer ↔ birinchi fikr: yagona soch chizigʻi ajratadi, keyin
+          har fikr `divide-y` bilan bir tekis oraliqda (Ghost/Substack
+          naqshi) — ilgari `mt-2` + `first:pt-0` fikrni kompozerga
+          yopishtirib qoʻyardi. */}
+      <div className="mt-6 border-t border-border">
+        {roots.length === 0 ? (
+          <p className="py-8 text-sm text-muted-foreground">Hozircha fikr yoʻq. Birinchi boʻling.</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {roots.map((root) => (
+              <Thread
+                key={root.id}
+                root={root}
+                replies={repliesOf.get(root.id) ?? []}
+                postId={postId}
+                canModerate={canModerate}
+                viewer={viewer}
+                onAdd={applyAdd}
+                onEdit={applyEdit}
+                onDelete={applyDelete}
+              />
+            ))}
+          </div>
         )}
-        {roots.map((root) => (
-          <Thread
-            key={root.id}
-            root={root}
-            replies={repliesOf.get(root.id) ?? []}
-            postId={postId}
-            canModerate={canModerate}
-            viewer={viewer}
-            onAdd={applyAdd}
-            onEdit={applyEdit}
-            onDelete={applyDelete}
-          />
-        ))}
       </div>
     </section>
   );
@@ -174,7 +181,7 @@ function Thread({
   const [replying, setReplying] = useState(false);
 
   return (
-    <div className="border-t border-border py-5 first:border-t-0 first:pt-0">
+    <div className="py-6">
       <CommentRow
         comment={root}
         canModerate={canModerate}
@@ -184,7 +191,7 @@ function Thread({
       />
 
       {replying && viewer && (
-        <div className="ml-[2.65rem] mt-3">
+        <div className="ml-11 mt-3">
           <Composer
             viewer={viewer}
             placeholder="Javob yozing…"
@@ -200,7 +207,7 @@ function Thread({
       )}
 
       {replies.length > 0 && (
-        <div className="ml-[1.85rem] mt-4 flex flex-col gap-4 border-l border-border pl-4">
+        <div className="ml-7 mt-4 flex flex-col gap-5 border-l border-border pl-4">
           {replies.map((r) => (
             <CommentRow
               key={r.id}
@@ -336,17 +343,23 @@ function CommentRow({
       {(canEdit || canDelete) && !editing && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
+            {/* `self-start` — qator `items-stretch` boʻlgani uchun tugma
+                butun fikr balandligiga choʻzilib, hover foni ulkan
+                toʻrtburchak boʻlib koʻrinardi; endi avatar bilan bir
+                qatorda, 32px kvadrat (`icon-sm`, dizayn tizimi). */}
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-sm"
               aria-label="Amallar"
               className={cn(
-                "shrink-0 rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground",
-                "opacity-0 focus-visible:opacity-100 group-hover:opacity-100",
+                "shrink-0 self-start text-muted-foreground",
+                "opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100",
                 "data-[state=open]:opacity-100 max-sm:opacity-100",
               )}
             >
               <MoreHorizontal className="size-4" />
-            </button>
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {canEdit && <DropdownMenuItem onClick={() => setEditing(true)}>Tahrirlash</DropdownMenuItem>}
