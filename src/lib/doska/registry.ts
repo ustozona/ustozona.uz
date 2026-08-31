@@ -91,7 +91,10 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "sticky-note.v1": {
     kind: "sticky-note.v1",
-    label: "Yopishqoq",
+    // ⚠️ Panel tugmasi 52px va yorligʻi `truncate` — 8 belgidan uzun
+    // nom «Yopishq…» boʻlib kesiladi. «Yopishqoq» aynan shunday
+    // kesilgan edi. Yangi vidjet nomini shu chegara bilan tanlang.
+    label: "Eslatma",
     tint: "pink",
     // Deyarli kvadrat — haqiqiy yopishqoq qogʻoz kabi.
     defaultSize: { w: 280, h: 260 },

@@ -26,13 +26,12 @@ export function TextWidget({ widget }: { widget: DoskaWidget }) {
         widget={widget}
         placeholder="Matn yozing…"
         className="font-medium"
-        style={{
-          color: "var(--doska-ink)",
-          // Soat/taymerdan kichikroq koeffitsient: ular bitta qisqa
-          // qiymat chiqaradi, matn esa bir necha soʻz — bir xil
-          // koeffitsientda u qutidan toshib ketardi.
-          fontSize: "clamp(1.25rem, 11cqw, 5rem)",
-        }}
+        style={{ color: "var(--doska-ink)" }}
+        // Yuqori chegara — qisqa sarlavha butun kenglikni egallasin.
+        // Uzun jumla yozilsa `useFitText` uni oʻzi pasaytiradi.
+        widthRatio={0.11}
+        minFont={14}
+        maxFont={80}
       />
     </div>
   );

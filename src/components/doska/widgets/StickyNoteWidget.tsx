@@ -34,7 +34,11 @@ export function StickyNoteWidget({ widget }: { widget: DoskaWidget }) {
         widget={widget}
         placeholder="Eslatma…"
         className="text-left"
-        style={{ fontSize: "clamp(0.9rem, 8cqw, 2.75rem)" }}
+        // Matndan pastroq chegara: eslatma bir necha qatordan iborat
+        // boʻladi, sarlavha kabi bitta yirik satr emas.
+        widthRatio={0.08}
+        minFont={12}
+        maxFont={44}
       />
     </div>
   );

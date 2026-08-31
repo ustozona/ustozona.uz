@@ -5,6 +5,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
+import { useFitText } from "./useFitText";
 
 /* ════════════════════════════════════════════════════════════════════
    TAHRIRLANADIGAN MATN — «Matn» va «Yopishqoq» vidjetlarining ichi.
@@ -26,17 +27,33 @@ export function EditableText({
   placeholder,
   className,
   style,
+  widthRatio,
+  minFont,
+  maxFont,
 }: {
   widget: DoskaWidget;
   placeholder: string;
   className?: string;
   style?: React.CSSProperties;
+  /**
+   * Shriftning yuqori chegarasi — maydon kengligiga nisbatan.
+   * Matn sigʻmasa `useFitText` uni oʻzi pasaytiradi, shuning uchun bu
+   * «eng katta» oʻlcham, «doimiy» emas.
+   */
+  widthRatio: number;
+  minFont: number;
+  maxFont: number;
 }) {
   const editing = useDoskaStore((s) => s.editingId === widget.id);
   const patch = useDoskaStore((s) => s.patchWidgetState);
   const ref = React.useRef<HTMLTextAreaElement>(null);
 
   const text = String(widget.state.text ?? "");
+
+  // ⚠️ Shrift oʻlchami shu hook tomonidan IMPERATIV qoʻyiladi
+  // (`style.fontSize`), shuning uchun uni quyidagi `style` propida
+  // qaytadan bermang — ikkisi bir-biri bilan urishadi.
+  useFitText(ref, { text, widthRatio, min: minFont, max: maxFont });
 
   React.useEffect(() => {
     const el = ref.current;
@@ -73,6 +90,14 @@ export function EditableText({
       className={cn(
         "size-full resize-none border-0 bg-transparent text-center leading-tight outline-none",
         "placeholder:opacity-35",
+        // ⚠️ `overflow-hidden` — `auto` EMAS. Ikki sabab:
+        //   1. Sinf ekranida aylantirish paneli maʼnosiz — oʻquvchi
+        //      doskani skroll qila olmaydi, u faqat qaraydi.
+        //   2. Panel paydo boʻlganda maydon torayadi va matn boshqacha
+        //      sinadi — yaʼni `useFitText` oʻzi oʻlchayotgan narsani
+        //      oʻzgartirib yuboradi va natija beqaror boʻladi.
+        // Matn `useFitText` tufayli baribir sigʻadi.
+        "overflow-hidden",
         // Ramkada `select-none` bor (sudralganda matn belgilanib
         // ketmasligi uchun) va u pastga meros boʻladi — maydon ichida
         // uni QAYTARIB yoqamiz, aks holda yozgan matnini belgilay
@@ -85,11 +110,18 @@ export function EditableText({
         className,
       )}
       style={{
-        // Matnni vertikal markazga qoʻyadi. Textarea flex konteyner
-        // emas, shuning uchun bu faqat yangi brauzerlarda ishlaydi —
-        // eskisida matn tepada qoladi, bu ham toʻgʻri koʻrinadi.
-        // Shu sababli fallback yozilmagan: buzilish yoʻq, farq bor.
-        alignContent: "center",
+        // Matnni vertikal markazga qoʻyadi.
+        //
+        // ⚠️ `safe` SHART. Oddiy `center` da matn qutiga sigʻmay
+        // qolganda uning BOSHI yuqoriga chiqib ketadi va u yerga
+        // aylantirib borib boʻlmaydi — yaʼni oʻqituvchi yozgan
+        // birinchi qatorlar koʻrinmas boʻlib qoladi. `safe` toshgan
+        // holatda tekislashni tepaga qaytaradi.
+        //
+        // Textarea flex konteyner emas, shuning uchun bu faqat yangi
+        // brauzerlarda ishlaydi — eskisida matn tepada qoladi, bu ham
+        // toʻgʻri koʻrinadi. Shu sababli fallback yozilmagan.
+        alignContent: "safe center",
         ...style,
       }}
     />

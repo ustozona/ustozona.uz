@@ -106,9 +106,17 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
         moved: false,
       };
 
-      // Ushlash KANVASDA: sichqoncha vidjetdan yoki oynadan chiqib
-      // ketsa ham hodisalar shu yerga kelaveradi, sudrash uzilmaydi.
-      root.setPointerCapture(e.pointerId);
+      // ⚠️ Pointer ushlash BU YERDA QOʻYILMAYDI — u faqat haqiqiy
+      // sudrash boshlanganda, ostona bosib oʻtilgach qoʻyiladi
+      // (`onPointerMove`).
+      //
+      // Sabab: ushlash faol boʻlganda brauzer `click` va `dblclick`
+      // hodisalarini ushlagan elementga — yaʼni KANVASGA — yoʻnaltiradi,
+      // vidjetga emas. Natijada `onDoubleClick` ichida nishon kanvas
+      // boʻlib chiqar va `closest("[data-doska-widget]")` boʻsh
+      // qaytarardi: matnni ikki marta bosib TAHRIRGA KIRIB BOʻLMASDI.
+      // Vidjet bir marta sudralgandan keyin bu ayniqsa seziladi —
+      // oʻqituvchi eslatmasini koʻchiradi va boshqa yoza olmaydi.
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -120,6 +128,13 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
       if (!session.moved) {
         if (!passedThreshold(dx, dy)) return;
         session.moved = true;
+
+        // Sudrash haqiqatan boshlandi — endi ushlaymiz. Shundan keyin
+        // sichqoncha vidjetdan yoki oyna chetidan chiqib ketsa ham
+        // hodisalar kelaveradi va sudrash uzilmaydi. Oddiy bosishda
+        // esa ushlash umuman qoʻyilmaydi, shuning uchun `dblclick`
+        // vidjetning oʻziga tushadi.
+        root.setPointerCapture(session.pointerId);
       }
 
       const rect = applyDrag(session, dx, dy);
