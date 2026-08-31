@@ -90,6 +90,10 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
       const handle = target.closest<HTMLElement>(`[${ATTR_HANDLE}]`);
       const mode = (handle?.getAttribute(ATTR_HANDLE) as DragMode | null) ?? "move";
 
+      // Tanlash `select()` dan OLDIN oʻqiladi — «qayta tegildi» sharti
+      // shunga tayanadi (`endDrag`).
+      const wasSelected = state.selectedId === widgetId;
+
       state.select(widgetId);
       // Oʻlchayotganda tartib oʻzgarmaydi — vidjet allaqachon tanlangan
       // va uni tepaga chiqarish kutilmagan sakrash beradi.
@@ -104,19 +108,15 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
         origin: { x: widget.x, y: widget.y, w: widget.w, h: widget.h },
         min: widgetMeta(widget.kind).minSize,
         moved: false,
+        wasSelected,
+        editable: widgetMeta(widget.kind).editable === true,
       };
 
       // ⚠️ Pointer ushlash BU YERDA QOʻYILMAYDI — u faqat haqiqiy
       // sudrash boshlanganda, ostona bosib oʻtilgach qoʻyiladi
-      // (`onPointerMove`).
-      //
-      // Sabab: ushlash faol boʻlganda brauzer `click` va `dblclick`
-      // hodisalarini ushlagan elementga — yaʼni KANVASGA — yoʻnaltiradi,
-      // vidjetga emas. Natijada `onDoubleClick` ichida nishon kanvas
-      // boʻlib chiqar va `closest("[data-doska-widget]")` boʻsh
-      // qaytarardi: matnni ikki marta bosib TAHRIRGA KIRIB BOʻLMASDI.
-      // Vidjet bir marta sudralgandan keyin bu ayniqsa seziladi —
-      // oʻqituvchi eslatmasini koʻchiradi va boshqa yoza olmaydi.
+      // (`onPointerMove`). Ushlash faol boʻlsa brauzer keyingi
+      // `pointerup` ni ham kanvasga yoʻnaltiradi va «qayta tegildi»
+      // hisobi buzilardi.
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -132,8 +132,9 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
         // Sudrash haqiqatan boshlandi — endi ushlaymiz. Shundan keyin
         // sichqoncha vidjetdan yoki oyna chetidan chiqib ketsa ham
         // hodisalar kelaveradi va sudrash uzilmaydi. Oddiy bosishda
-        // esa ushlash umuman qoʻyilmaydi, shuning uchun `dblclick`
-        // vidjetning oʻziga tushadi.
+        // esa ushlash umuman qoʻyilmaydi, shuning uchun keyingi
+        // `pointerup` vidjetning oʻziga tushadi va «qayta tegildi»
+        // hisobi (`endDrag`) toʻgʻri ishlaydi.
         root.setPointerCapture(session.pointerId);
       }
 
@@ -150,32 +151,43 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
     const endDrag = (e: PointerEvent) => {
       if (!session || e.pointerId !== session.pointerId) return;
       if (root.hasPointerCapture(e.pointerId)) root.releasePointerCapture(e.pointerId);
+
+      /**
+       * TAHRIRGA KIRISH — tanlangan matnli vidjetga siljishsiz qayta
+       * tegilsa.
+       *
+       * Sichqonchada bu ikki marta bosish (birinchi bosish tanlaydi,
+       * ikkinchisi `wasSelected` ni koʻrib tahrirga kiradi), sensorli
+       * ekranda ikki marta teginish — BITTA yoʻl, ikkalasida ham
+       * ishlaydi. Ilgari faqat `dblclick` bor edi va u sensorli
+       * ekranda ishlamasdi: vidjetdagi `touch-action: none` ikki
+       * marta teginish jestini butunlay toʻsadi, shu bois planshetda
+       * matn vidjetini bir marta qoʻygandan keyin qayta tahrirlab
+       * boʻlmasdi.
+       *
+       * `!moved` — sudrash boʻlmagan; `mode === "move"` — tutqichdan
+       * emas; `editable` — reyestr matn qabul qiladi degan.
+       *
+       * Fokus SHU YERDA, sinxron qoʻyiladi: iOS klaviaturasi faqat
+       * foydalanuvchi jesti ichida ochiladi, React effektiga
+       * qoldirilsa kech boʻlardi. `readOnly` textarea ham fokuslanadi;
+       * `readOnly` ni React keyingi renderda oladi.
+       */
+      if (
+        !session.moved &&
+        session.mode === "move" &&
+        session.wasSelected &&
+        session.editable
+      ) {
+        useDoskaStore.getState().setEditing(session.widgetId);
+        root
+          .querySelector<HTMLTextAreaElement>(
+            `[${ATTR_WIDGET}="${session.widgetId}"] textarea`,
+          )
+          ?.focus();
+      }
+
       session = null;
-    };
-
-    /**
-     * Ikki marta bosish — matnli vidjetni tahrirga ochadi.
-     *
-     * Nega bir marta emas: bitta bosish vidjetni sudraydi. Ikkalasi
-     * ham bitta bosishga bogʻlansa, oʻqituvchi eslatmani koʻchirmoqchi
-     * boʻlganda ichiga kursor tushar, matn tanlashda esa vidjet
-     * siljirdi. Ajratish — Figma, Excalidraw va Keynote'dagi bir xil
-     * kelishuv, yaʼni oʻrganish kerak emas.
-     */
-    const onDoubleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      const owner = target?.closest<HTMLElement>(`[${ATTR_WIDGET}]`);
-      const widgetId = owner?.getAttribute(ATTR_WIDGET);
-      if (!widgetId) return;
-
-      const state = useDoskaStore.getState();
-      const screen = state.deck.screens.find((s) => s.id === state.activeScreenId);
-      const widget = screen?.widgets.find((w) => w.id === widgetId);
-      // Taymerni «tahrirlash» degan holat yoʻq — reyestr hal qiladi.
-      if (!widget || !widgetMeta(widget.kind).editable) return;
-
-      state.select(widgetId);
-      state.setEditing(widgetId);
     };
 
     /** Escape — tahrirdan chiqish, vidjet tanlangancha qoladi. */
@@ -189,7 +201,6 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
     root.addEventListener("pointermove", onPointerMove);
     root.addEventListener("pointerup", endDrag);
     root.addEventListener("pointercancel", endDrag);
-    root.addEventListener("dblclick", onDoubleClick);
     root.addEventListener("keydown", onKeyDown);
 
     return () => {
@@ -197,7 +208,6 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerup", endDrag);
       root.removeEventListener("pointercancel", endDrag);
-      root.removeEventListener("dblclick", onDoubleClick);
       root.removeEventListener("keydown", onKeyDown);
     };
   }, [rootRef]);
