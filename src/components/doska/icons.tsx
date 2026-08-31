@@ -165,6 +165,28 @@ export function IconStickyNote({ className }: IconProps) {
   );
 }
 
+/**
+ * Shakl — OʻZIMIZ CHIZGAN.
+ *
+ * Ikkita figura yonma-yon: aylana (massa) va uchburchak (detal).
+ * Bitta figura chizilsa ikona «uchburchak» degan MAʼNONI oladi va
+ * toʻqqiz shakldan bittasini vaʼda qilib qoʻyadi; ikkitasi esa
+ * «shakllar» degan TURKUMNI bildiradi.
+ *
+ * Ular biroz ustma-ust tushadi — ajratilgan ikki figura 16px da ikki
+ * dogʻga aylanadi, kesishgani esa bitta siluet boʻlib qoladi.
+ */
+export function IconShape({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <circle cx="15" cy="15" r="7" opacity=".5" />
+        <path d="M8.5 2.5 14.6 13.2a1 1 0 0 1-.87 1.5H1.77a1 1 0 0 1-.87-1.5L7.03 2.5a.85.85 0 0 1 1.47 0Z" />
+      </g>
+    </svg>
+  );
+}
+
 /** Fon — solar:gallery-bold-duotone */
 export function IconBackground({ className }: IconProps) {
   return (
@@ -271,6 +293,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconTrafficLight", source: "oʻzimiz:svetofor", Icon: IconTrafficLight },
   { name: "IconText", source: "oʻzimiz:matn", Icon: IconText },
   { name: "IconStickyNote", source: "oʻzimiz:yopishqoq", Icon: IconStickyNote },
+  { name: "IconShape", source: "oʻzimiz:shakl", Icon: IconShape },
   { name: "IconBackground", source: "solar:gallery", Icon: IconBackground },
   { name: "IconTrash", source: "solar:trash-bin-trash", Icon: IconTrash },
   { name: "IconHome", source: "solar:home-2", Icon: IconHome },

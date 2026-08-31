@@ -80,7 +80,9 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   "text.v1": {
     kind: "text.v1",
     label: "Matn",
-    tint: "violet",
+    // ⚠️ `violet` EMAS — u `BackgroundPicker` («Fon») da band. Panelda
+    // ikkita binafsha ikona boʻlsa ular bir vidjetdek koʻrinadi.
+    tint: "indigo",
     // Keng va past — matn vidjeti sarlavha yoki topshiriq uchun, xat
     // uchun emas. Baland boʻlsa oʻqituvchi uni abzas deb toʻldiradi va
     // sinf ekranidan oʻqib boʻlmaydi.
@@ -102,9 +104,30 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     initialState: { text: "" },
     editable: true,
   },
+  "shape.v1": {
+    kind: "shape.v1",
+    label: "Shakl",
+    // Qoʻshnilari: «Eslatma» (pushti) va ajratgichdan keyin «Fon»
+    // (binafsha) — moviy ikkalasidan ham uzoq.
+    tint: "cyan",
+    // Deyarli kvadrat: uchburchak ham, aylana ham buzilmagan holda
+    // chiqsin. Choʻzish oʻqituvchining ixtiyorida.
+    defaultSize: { w: 300, h: 270 },
+    // Uch harflari sigʻishi kerak — bundan kichigida figura harflar
+    // orasida yoʻqoladi.
+    minSize: { w: 110, h: 110 },
+    initialState: { shape: "triangle", labels: true },
+  },
 };
 
-/** Panel tartibi — hozircha hammasi koʻrinadi. */
+/**
+ * Panel tartibi — hozircha hammasi koʻrinadi.
+ *
+ * ⚠️ `shape.v1` bu yerda ATAYLAB YOʻQ. Oddiy tugma bitta vidjet
+ * qoʻshadi, shakl esa toʻqqiz xil — unga tanlash paneli kerak.
+ * Shuning uchun u `WidgetBar` da `ShapePicker` sifatida alohida
+ * chiziladi, xuddi `BackgroundPicker` kabi.
+ */
 export const WIDGET_BAR_ORDER: WidgetKind[] = [
   "clock.v1",
   "timer.v1",

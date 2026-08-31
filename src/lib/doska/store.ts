@@ -132,7 +132,17 @@ type DoskaState = {
   /** localStorage oʻqilganini bildiradi; render mount-gate uchun. */
   hydrated: boolean;
 
-  addWidget: (kind: WidgetKind, at?: { x: number; y: number }) => void;
+  /**
+   * `initial` — reyestrdagi boshlangʻich holat ustiga qoʻyiladi.
+   * Bitta `kind` bir necha koʻrinishda boʻlgan vidjetlar uchun: shakl
+   * paneli aynan qaysi figura qoʻyilayotganini shu orqali aytadi
+   * (`{ shape: "romb" }`), alohida `kind` ixtiro qilmasdan.
+   */
+  addWidget: (
+    kind: WidgetKind,
+    at?: { x: number; y: number },
+    initial?: Record<string, unknown>,
+  ) => void;
   removeWidget: (id: string) => void;
   moveWidget: (id: string, x: number, y: number) => void;
   resizeWidget: (id: string, w: number, h: number, x: number, y: number) => void;
@@ -176,7 +186,7 @@ export const useDoskaStore = create<DoskaState>()(
         editingId: null,
         hydrated: false,
 
-        addWidget: (kind, at) => {
+        addWidget: (kind, at, initial) => {
           const meta = widgetMeta(kind);
           const { deck, activeScreenId } = get();
           const screen = deck.screens.find((s) => s.id === activeScreenId);
@@ -190,7 +200,7 @@ export const useDoskaStore = create<DoskaState>()(
             w: meta.defaultSize.w,
             h: meta.defaultSize.h,
             z: maxZ + 1,
-            state: { ...meta.initialState },
+            state: { ...meta.initialState, ...initial },
           };
 
           set({

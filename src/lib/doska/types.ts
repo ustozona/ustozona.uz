@@ -18,7 +18,8 @@ export type WidgetKind =
   | "timer.v1"
   | "traffic-light.v1"
   | "text.v1"
-  | "sticky-note.v1";
+  | "sticky-note.v1"
+  | "shape.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.
