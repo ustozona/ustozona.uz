@@ -38,7 +38,10 @@ export function TrafficLightWidget({ widget }: { widget: DoskaWidget }) {
             type="button"
             aria-label={light.label}
             aria-pressed={on}
-            onPointerDown={(e) => e.stopPropagation()}
+            // Chiroqni bosish sudrashni boshlamasin. `stopPropagation`
+            // bu yerda ish bermaydi — sabab `lib/doska/interaction.ts`
+            // dagi `ATTR_NO_DRAG` izohida.
+            data-doska-no-drag=""
             onClick={() => patch(widget.id, { active: light.id })}
             className={cn(
               "aspect-square w-[70cqw] rounded-full transition-opacity duration-300",
