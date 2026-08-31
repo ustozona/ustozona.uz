@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 
 import type { DoskaDeck, DoskaScreen, DoskaWidget, WidgetKind } from "./types";
 import { widgetMeta } from "./registry";
@@ -20,6 +20,80 @@ import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
    ════════════════════════════════════════════════════════════════════ */
 
 const STORAGE_KEY = "murabbiyona-doska-v1";
+
+/** Oxirgi oʻzgarishdan keyin diskka yozishni shuncha kutamiz. */
+const SAVE_DELAY_MS = 350;
+
+/* ────────────────────────────────────────────────────────────────────
+   KECHIKTIRILGAN YOZUV.
+
+   ⚠️ `localStorage.setItem` — SINXRON amal: u asosiy oqimni to'xtatadi.
+   Persist esa har `set()` da yozadi, yaʼni tuzatishsiz:
+
+     • har bosilgan harf   → butun deck JSON'ga oʻgiriladi va yoziladi
+     • har `pointermove`   → sekundiga 60–120 marta oʻsha ish
+     • har `bringToFront`  → yana bir marta
+
+   Sinf ekranida bu «matn kechikib chiqadi, vidjet sudralganda
+   tirmalaydi» boʻlib koʻrinadi — va ekran toʻlgani sayin yomonlashadi,
+   chunki yozuv hajmi butun deckka bogʻliq.
+
+   Yechim: oxirgi holatni ushlab turamiz va tinchlangach bir marta
+   yozamiz. Oraliq holatlarni saqlashning maʼnosi ham yoʻq — vidjet
+   sudralayotgan paytdagi 100 ta oraliq koordinata hech kimga kerak
+   emas, faqat qoʻyilgan joyi kerak.
+
+   ⚠️ Kutish paytida sahifa yopilishi mumkin, shuning uchun `pagehide`
+   va `visibilitychange` da kutmasdan yoziladi — aks holda oʻqituvchi
+   yozgan oxirgi jumla yoʻqolardi.
+   ──────────────────────────────────────────────────────────────────── */
+function deferredLocalStorage(delayMs: number): StateStorage {
+  // ⚠️ Birinchi qator ATAYLAB shunday: serverda `localStorage` yoʻq va
+  // bu chaqiruv xato beradi. `createJSONStorage` uni ushlaydi va
+  // saqlashsiz davom etadi — aynan avvalgi `() => localStorage`
+  // xatti-harakati.
+  const store = localStorage;
+
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let pending: { name: string; value: string } | null = null;
+
+  const flush = () => {
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    if (!pending) return;
+    try {
+      store.setItem(pending.name, pending.value);
+    } catch {
+      // Xotira toʻlgan yoki maxfiylik rejimi — ekran baribir
+      // ishlayveradi, faqat saqlanmaydi.
+    }
+    pending = null;
+  };
+
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flush();
+  });
+
+  return {
+    getItem: (name) => store.getItem(name),
+    setItem: (name, value) => {
+      pending = { name, value };
+      if (timer !== null) clearTimeout(timer);
+      timer = setTimeout(flush, delayMs);
+    },
+    removeItem: (name) => {
+      pending = null;
+      if (timer !== null) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      store.removeItem(name);
+    },
+  };
+}
 
 function newId() {
   return crypto.randomUUID();
@@ -43,15 +117,38 @@ type DoskaState = {
   activeScreenId: string;
   /** Tanlangan vidjet — chegara va oʻlcham tutqichlari shunga chiziladi. */
   selectedId: string | null;
+  /**
+   * Matni tahrirlanayotgan vidjet.
+   *
+   * ⚠️ Tanlovdan ALOHIDA holat: tanlangan vidjet sudraladi, tahrirdagi
+   * vidjet esa yozuvni qabul qiladi va sudralmaydi. Ikkisi bitta
+   * maydon boʻlsa, oʻqituvchi matn ichida soʻz belgilamoqchi
+   * boʻlganda vidjet joyidan siljib ketardi.
+   *
+   * Efemer — `partialize` uni saqlamaydi: sahifa yangilanganda
+   * kursor ochiq qolgan vidjet boʻlmasin.
+   */
+  editingId: string | null;
   /** localStorage oʻqilganini bildiradi; render mount-gate uchun. */
   hydrated: boolean;
 
-  addWidget: (kind: WidgetKind, at?: { x: number; y: number }) => void;
+  /**
+   * `initial` — reyestrdagi boshlangʻich holat ustiga qoʻyiladi.
+   * Bitta `kind` bir necha koʻrinishda boʻlgan vidjetlar uchun: shakl
+   * paneli aynan qaysi figura qoʻyilayotganini shu orqali aytadi
+   * (`{ shape: "romb" }`), alohida `kind` ixtiro qilmasdan.
+   */
+  addWidget: (
+    kind: WidgetKind,
+    at?: { x: number; y: number },
+    initial?: Record<string, unknown>,
+  ) => void;
   removeWidget: (id: string) => void;
   moveWidget: (id: string, x: number, y: number) => void;
   resizeWidget: (id: string, w: number, h: number, x: number, y: number) => void;
   patchWidgetState: (id: string, patch: Record<string, unknown>) => void;
   select: (id: string | null) => void;
+  setEditing: (id: string | null) => void;
   bringToFront: (id: string) => void;
 
   setBackground: (backgroundId: string) => void;
@@ -86,9 +183,10 @@ export const useDoskaStore = create<DoskaState>()(
         deck: initialDeck,
         activeScreenId: initialDeck.screens[0].id,
         selectedId: null,
+        editingId: null,
         hydrated: false,
 
-        addWidget: (kind, at) => {
+        addWidget: (kind, at, initial) => {
           const meta = widgetMeta(kind);
           const { deck, activeScreenId } = get();
           const screen = deck.screens.find((s) => s.id === activeScreenId);
@@ -102,12 +200,17 @@ export const useDoskaStore = create<DoskaState>()(
             w: meta.defaultSize.w,
             h: meta.defaultSize.h,
             z: maxZ + 1,
-            state: { ...meta.initialState },
+            state: { ...meta.initialState, ...initial },
           };
 
           set({
             deck: withActiveScreen(deck, activeScreenId, (ws) => [...ws, widget]),
             selectedId: widget.id,
+            // Matn vidjeti darhol yozishga tayyor: oʻqituvchi «Matn»
+            // tugmasini bosdi, demak yozmoqchi. Aks holda u qoʻyilgan
+            // quti bilan yozish orasida ikkinchi qadam paydo boʻladi
+            // va bu dars oʻrtasida sezilarli.
+            editingId: meta.editable ? widget.id : null,
           });
         },
 
@@ -117,6 +220,7 @@ export const useDoskaStore = create<DoskaState>()(
               ws.filter((w) => w.id !== id),
             ),
             selectedId: s.selectedId === id ? null : s.selectedId,
+            editingId: s.editingId === id ? null : s.editingId,
           })),
 
         moveWidget: (id, x, y) =>
@@ -143,6 +247,8 @@ export const useDoskaStore = create<DoskaState>()(
           })),
 
         select: (id) => set({ selectedId: id }),
+
+        setEditing: (id) => set({ editingId: id }),
 
         bringToFront: (id) =>
           set((s) => {
@@ -187,6 +293,7 @@ export const useDoskaStore = create<DoskaState>()(
               deck: { ...s.deck, screens: rest, updatedAt: new Date().toISOString() },
               activeScreenId: s.activeScreenId === id ? rest[0].id : s.activeScreenId,
               selectedId: null,
+              editingId: null,
             };
           }),
 
@@ -201,21 +308,24 @@ export const useDoskaStore = create<DoskaState>()(
               },
               activeScreenId: screen.id,
               selectedId: null,
+              editingId: null,
             };
           }),
 
-        setActiveScreen: (id) => set({ activeScreenId: id, selectedId: null }),
+        setActiveScreen: (id) =>
+          set({ activeScreenId: id, selectedId: null, editingId: null }),
 
         clearScreen: () =>
           set((s) => ({
             deck: withActiveScreen(s.deck, s.activeScreenId, () => []),
             selectedId: null,
+            editingId: null,
           })),
       };
     },
     {
       name: STORAGE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => deferredLocalStorage(SAVE_DELAY_MS)),
       partialize: (s) => ({ deck: s.deck, activeScreenId: s.activeScreenId }),
       onRehydrateStorage: () => (state) => {
         if (state) state.hydrated = true;

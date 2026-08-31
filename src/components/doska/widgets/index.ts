@@ -1,8 +1,18 @@
 import type { ComponentType } from "react";
 
 import type { DoskaWidget, WidgetKind } from "@/lib/doska/types";
-import { IconClock, IconTimer, IconTrafficLight } from "../icons";
+import {
+  IconClock,
+  IconShape,
+  IconStickyNote,
+  IconText,
+  IconTimer,
+  IconTrafficLight,
+} from "../icons";
 import { ClockWidget } from "./ClockWidget";
+import { ShapeWidget } from "./ShapeWidget";
+import { StickyNoteWidget } from "./StickyNoteWidget";
+import { TextWidget } from "./TextWidget";
 import { TimerWidget } from "./TimerWidget";
 import { TrafficLightWidget } from "./TrafficLightWidget";
 
@@ -40,6 +50,9 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "clock.v1": ClockWidget,
   "timer.v1": TimerWidget,
   "traffic-light.v1": TrafficLightWidget,
+  "text.v1": TextWidget,
+  "sticky-note.v1": StickyNoteWidget,
+  "shape.v1": ShapeWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -49,4 +62,7 @@ export const WIDGET_ICONS: Record<
   "clock.v1": IconClock,
   "timer.v1": IconTimer,
   "traffic-light.v1": IconTrafficLight,
+  "text.v1": IconText,
+  "sticky-note.v1": IconStickyNote,
+  "shape.v1": IconShape,
 };

@@ -13,7 +13,13 @@
    ════════════════════════════════════════════════════════════════════ */
 
 /** Hozir qurilgan vidjetlar. Yangi qoʻshilganda shu yerga versiya bilan. */
-export type WidgetKind = "clock.v1" | "timer.v1" | "traffic-light.v1";
+export type WidgetKind =
+  | "clock.v1"
+  | "timer.v1"
+  | "traffic-light.v1"
+  | "text.v1"
+  | "sticky-note.v1"
+  | "shape.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.

@@ -46,8 +46,6 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
   const ss = Math.max(0, remainingSec) % 60;
   const text = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
 
-  const stop = (e: React.PointerEvent) => e.stopPropagation();
-
   return (
     <div
       className="flex size-full flex-col items-center justify-center gap-[3cqw] rounded-[var(--radius)] px-[4cqw]"
@@ -67,7 +65,6 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
       <div className="flex items-center gap-[2cqw]">
         <TimerButton
           label={running ? "Toʻxtatish" : "Boshlash"}
-          onPointerDown={stop}
           onClick={() => patch(widget.id, { running: !running })}
           disabled={finished}
         >
@@ -76,7 +73,6 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
 
         <TimerButton
           label="Tiklash"
-          onPointerDown={stop}
           onClick={() => patch(widget.id, { remainingSec: durationSec, running: false })}
         >
           <RotateCcw className="size-[6cqw] min-h-4 min-w-4" />
@@ -84,7 +80,6 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
 
         <TimerButton
           label="Bir daqiqa qoʻshish"
-          onPointerDown={stop}
           onClick={() =>
             patch(widget.id, {
               durationSec: durationSec + 60,
@@ -104,6 +99,11 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
  * Taymer tugmasi — `<Button>` primitivi EMAS: bu sirt ichida oʻlcham
  * konteyner kengligiga bogʻlangan (`cqw`), tugma esa vidjet fonining
  * ustida turadi. Primitiv bunday kontekstni bilmaydi.
+ *
+ * `data-doska-no-drag` shu yerda, har chaqiruvda emas: taymer tugmasi
+ * boshqaruv ekan, uni bosish hech qachon sudrash boʻlmasligi kerak.
+ * (`stopPropagation` bu ish uchun yaramaydi — sabab
+ * `lib/doska/interaction.ts` dagi `ATTR_NO_DRAG` izohida.)
  */
 function TimerButton({
   children,
@@ -113,6 +113,7 @@ function TimerButton({
   return (
     <button
       type="button"
+      data-doska-no-drag=""
       aria-label={label}
       className="grid place-items-center gap-1 rounded-full bg-current/15 px-[4cqw] py-[2.5cqw] transition-opacity hover:opacity-80 disabled:opacity-40"
       style={{ gridAutoFlow: "column" }}

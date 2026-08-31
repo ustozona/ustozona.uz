@@ -6,6 +6,7 @@ import { useDoskaStore, useActiveScreen } from "@/lib/doska/store";
 import { WIDGET_BAR_ORDER, widgetMeta } from "@/lib/doska/registry";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { BarButton } from "./BarButton";
+import { ShapePicker } from "./ShapePicker";
 import { IconTrash } from "./icons";
 import { WIDGET_ICONS } from "./widgets";
 
@@ -52,6 +53,10 @@ export function WidgetBar() {
           onClick={() => addWidget(kind)}
         />
       ))}
+
+      {/* Shakl reyestr tartibida emas — u bitta emas, toʻqqiz figura
+          qoʻyadi va shuning uchun oʻz tanlash paneliga ega. */}
+      <ShapePicker />
 
       <span className="bg-border mx-1 h-10 w-px self-center" />
 
