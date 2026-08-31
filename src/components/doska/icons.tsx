@@ -111,6 +111,60 @@ export function IconTrafficLight({ className }: IconProps) {
   );
 }
 
+/**
+ * Matn — OʻZIMIZ CHIZGAN.
+ *
+ * Solar'ning matn ikonalari (`solar:text-bold-duotone` va h.k.) harf
+ * shakliga tayanadi — «T», «Aa». Ular lotin alifbosini biladigan
+ * koʻzga tez oʻqiladi, lekin panelda yonidagi «Matn» yorligʻi bilan
+ * ikki marta bir narsani aytadi.
+ *
+ * Shuning uchun harf emas, MATNNING SHAKLI: sarlavha + uch qator.
+ * Bu ikona vidjet nima chiqarishini koʻrsatadi, nomini takrorlamaydi.
+ *
+ * Sarlavha qatori — detal (toʻliq), abzas qatorlari — massa
+ * (`opacity=".5"`). Oxirgi qator kaltaroq: abzas shu bilan tugaydi va
+ * shakl «matn boʻlagi» boʻlib oʻqiladi, panjara emas.
+ */
+export function IconText({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="3" y="10" width="18" height="1.8" rx=".9" opacity=".5" />
+        <rect x="3" y="14.4" width="18" height="1.8" rx=".9" opacity=".5" />
+        <rect x="3" y="18.8" width="11" height="1.8" rx=".9" opacity=".5" />
+        <rect x="3" y="3.6" width="14" height="3.2" rx="1.6" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * Yopishqoq qogʻoz — OʻZIMIZ CHIZGAN.
+ *
+ * Tanib olishni burchakning BUKLANGANI tashiydi: buklanmasa shakl
+ * oddiy kvadratga aylanadi va «fon», «rasm», «ekran» ikonalaridan
+ * farq qilmay qoladi.
+ *
+ * Ikki yoʻl bir-birini toʻldiradi — massa qogʻozning oʻzi
+ * (`opacity=".5"`), detal esa buklangan burchak (toʻliq). Ular tegib
+ * turadi, orasida tirqish yoʻq: shuning uchun burchak «kesilgan» emas,
+ * «koʻtarilgan» boʻlib koʻrinadi.
+ *
+ * Radius 4 — vidjet kartochkasining `--radius` (playful, 20px/24px
+ * miqyosida) nisbatiga yaqin, yaʼni ikona chiqaradigan narsaga oʻxshaydi.
+ */
+export function IconStickyNote({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <path d="M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v5h-3a4 4 0 0 0-4 4v3H8a4 4 0 0 1-4-4V8Z" opacity=".5" />
+        <path d="M20 13h-3a4 4 0 0 0-4 4v3z" />
+      </g>
+    </svg>
+  );
+}
+
 /** Fon — solar:gallery-bold-duotone */
 export function IconBackground({ className }: IconProps) {
   return (
@@ -215,6 +269,8 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconClock", source: "solar:clock-circle", Icon: IconClock },
   { name: "IconTimer", source: "solar:alarm", Icon: IconTimer },
   { name: "IconTrafficLight", source: "oʻzimiz:svetofor", Icon: IconTrafficLight },
+  { name: "IconText", source: "oʻzimiz:matn", Icon: IconText },
+  { name: "IconStickyNote", source: "oʻzimiz:yopishqoq", Icon: IconStickyNote },
   { name: "IconBackground", source: "solar:gallery", Icon: IconBackground },
   { name: "IconTrash", source: "solar:trash-bin-trash", Icon: IconTrash },
   { name: "IconHome", source: "solar:home-2", Icon: IconHome },

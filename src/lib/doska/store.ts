@@ -43,6 +43,18 @@ type DoskaState = {
   activeScreenId: string;
   /** Tanlangan vidjet — chegara va oʻlcham tutqichlari shunga chiziladi. */
   selectedId: string | null;
+  /**
+   * Matni tahrirlanayotgan vidjet.
+   *
+   * ⚠️ Tanlovdan ALOHIDA holat: tanlangan vidjet sudraladi, tahrirdagi
+   * vidjet esa yozuvni qabul qiladi va sudralmaydi. Ikkisi bitta
+   * maydon boʻlsa, oʻqituvchi matn ichida soʻz belgilamoqchi
+   * boʻlganda vidjet joyidan siljib ketardi.
+   *
+   * Efemer — `partialize` uni saqlamaydi: sahifa yangilanganda
+   * kursor ochiq qolgan vidjet boʻlmasin.
+   */
+  editingId: string | null;
   /** localStorage oʻqilganini bildiradi; render mount-gate uchun. */
   hydrated: boolean;
 
@@ -52,6 +64,7 @@ type DoskaState = {
   resizeWidget: (id: string, w: number, h: number, x: number, y: number) => void;
   patchWidgetState: (id: string, patch: Record<string, unknown>) => void;
   select: (id: string | null) => void;
+  setEditing: (id: string | null) => void;
   bringToFront: (id: string) => void;
 
   setBackground: (backgroundId: string) => void;
@@ -86,6 +99,7 @@ export const useDoskaStore = create<DoskaState>()(
         deck: initialDeck,
         activeScreenId: initialDeck.screens[0].id,
         selectedId: null,
+        editingId: null,
         hydrated: false,
 
         addWidget: (kind, at) => {
@@ -108,6 +122,11 @@ export const useDoskaStore = create<DoskaState>()(
           set({
             deck: withActiveScreen(deck, activeScreenId, (ws) => [...ws, widget]),
             selectedId: widget.id,
+            // Matn vidjeti darhol yozishga tayyor: oʻqituvchi «Matn»
+            // tugmasini bosdi, demak yozmoqchi. Aks holda u qoʻyilgan
+            // quti bilan yozish orasida ikkinchi qadam paydo boʻladi
+            // va bu dars oʻrtasida sezilarli.
+            editingId: meta.editable ? widget.id : null,
           });
         },
 
@@ -117,6 +136,7 @@ export const useDoskaStore = create<DoskaState>()(
               ws.filter((w) => w.id !== id),
             ),
             selectedId: s.selectedId === id ? null : s.selectedId,
+            editingId: s.editingId === id ? null : s.editingId,
           })),
 
         moveWidget: (id, x, y) =>
@@ -143,6 +163,8 @@ export const useDoskaStore = create<DoskaState>()(
           })),
 
         select: (id) => set({ selectedId: id }),
+
+        setEditing: (id) => set({ editingId: id }),
 
         bringToFront: (id) =>
           set((s) => {
@@ -187,6 +209,7 @@ export const useDoskaStore = create<DoskaState>()(
               deck: { ...s.deck, screens: rest, updatedAt: new Date().toISOString() },
               activeScreenId: s.activeScreenId === id ? rest[0].id : s.activeScreenId,
               selectedId: null,
+              editingId: null,
             };
           }),
 
@@ -201,15 +224,18 @@ export const useDoskaStore = create<DoskaState>()(
               },
               activeScreenId: screen.id,
               selectedId: null,
+              editingId: null,
             };
           }),
 
-        setActiveScreen: (id) => set({ activeScreenId: id, selectedId: null }),
+        setActiveScreen: (id) =>
+          set({ activeScreenId: id, selectedId: null, editingId: null }),
 
         clearScreen: () =>
           set((s) => ({
             deck: withActiveScreen(s.deck, s.activeScreenId, () => []),
             selectedId: null,
+            editingId: null,
           })),
       };
     },

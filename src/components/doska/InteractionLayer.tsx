@@ -49,22 +49,36 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
-      // Vidjet ichidagi boshqaruv — taymer tugmasi, svetofor chirogʻi,
-      // oʻchirish tugmasi. Sudrash boshlanmaydi, bosish oʻz ishini
-      // qiladi.
-      if (target.closest(`[${ATTR_NO_DRAG}]`)) return;
-
+      const state = useDoskaStore.getState();
       const owner = target.closest<HTMLElement>(`[${ATTR_WIDGET}]`);
+
       if (!owner) {
-        // Boʻsh kanvas bosildi — tanlov bekor qilinadi.
-        if (target === root) useDoskaStore.getState().select(null);
+        // Boʻsh kanvas bosildi — tanlov ham, tahrir ham yopiladi.
+        if (target === root) {
+          state.select(null);
+          state.setEditing(null);
+        }
         return;
       }
 
       const widgetId = owner.getAttribute(ATTR_WIDGET);
       if (!widgetId) return;
 
-      const state = useDoskaStore.getState();
+      // Tahrirdagi vidjetning OʻZI bosildi: kursor qoʻyish va soʻz
+      // belgilash kerak, sudrash emas. Brauzerning oʻz ishiga
+      // aralashmaymiz.
+      if (state.editingId === widgetId) return;
+
+      // Boshqa yer bosildi — ochiq tahrir yopiladi. Bu `ATTR_NO_DRAG`
+      // tekshiruvidan OLDIN: taymer tugmasi bosilganda ham tahrir
+      // yopilishi kerak, aks holda kursor koʻrinmas holda ochiq qolardi.
+      if (state.editingId) state.setEditing(null);
+
+      // Vidjet ichidagi boshqaruv — taymer tugmasi, svetofor chirogʻi,
+      // oʻchirish tugmasi. Sudrash boshlanmaydi, bosish oʻz ishini
+      // qiladi.
+      if (target.closest(`[${ATTR_NO_DRAG}]`)) return;
+
       const screen = state.deck.screens.find((s) => s.id === state.activeScreenId);
       const widget = screen?.widgets.find((w) => w.id === widgetId);
       if (!widget) return;
@@ -120,16 +134,52 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
       session = null;
     };
 
+    /**
+     * Ikki marta bosish — matnli vidjetni tahrirga ochadi.
+     *
+     * Nega bir marta emas: bitta bosish vidjetni sudraydi. Ikkalasi
+     * ham bitta bosishga bogʻlansa, oʻqituvchi eslatmani koʻchirmoqchi
+     * boʻlganda ichiga kursor tushar, matn tanlashda esa vidjet
+     * siljirdi. Ajratish — Figma, Excalidraw va Keynote'dagi bir xil
+     * kelishuv, yaʼni oʻrganish kerak emas.
+     */
+    const onDoubleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      const owner = target?.closest<HTMLElement>(`[${ATTR_WIDGET}]`);
+      const widgetId = owner?.getAttribute(ATTR_WIDGET);
+      if (!widgetId) return;
+
+      const state = useDoskaStore.getState();
+      const screen = state.deck.screens.find((s) => s.id === state.activeScreenId);
+      const widget = screen?.widgets.find((w) => w.id === widgetId);
+      // Taymerni «tahrirlash» degan holat yoʻq — reyestr hal qiladi.
+      if (!widget || !widgetMeta(widget.kind).editable) return;
+
+      state.select(widgetId);
+      state.setEditing(widgetId);
+    };
+
+    /** Escape — tahrirdan chiqish, vidjet tanlangancha qoladi. */
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      const state = useDoskaStore.getState();
+      if (state.editingId) state.setEditing(null);
+    };
+
     root.addEventListener("pointerdown", onPointerDown);
     root.addEventListener("pointermove", onPointerMove);
     root.addEventListener("pointerup", endDrag);
     root.addEventListener("pointercancel", endDrag);
+    root.addEventListener("dblclick", onDoubleClick);
+    root.addEventListener("keydown", onKeyDown);
 
     return () => {
       root.removeEventListener("pointerdown", onPointerDown);
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerup", endDrag);
       root.removeEventListener("pointercancel", endDrag);
+      root.removeEventListener("dblclick", onDoubleClick);
+      root.removeEventListener("keydown", onKeyDown);
     };
   }, [rootRef]);
 }

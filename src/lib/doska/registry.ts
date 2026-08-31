@@ -38,6 +38,18 @@ export type WidgetMeta = {
   minSize: { w: number; h: number };
   /** Vidjetning boshlangʻich holati. */
   initialState: Record<string, unknown>;
+  /**
+   * Vidjet ichida MATN tahrirlanadimi (matn, yopishqoq qogʻoz).
+   *
+   * Ikki joyda ishlatiladi:
+   *   • ekranga qoʻyilganda darhol yozishga tayyor boʻladi — oʻqituvchi
+   *     matn qoʻydi, demak yozmoqchi; ikkinchi marta bosishni kutish
+   *     ortiqcha qadam
+   *   • ikki marta bosilganda tahrirga kiradi (`InteractionLayer`)
+   *
+   * Boshqa vidjetlarda yoʻq: taymerni «tahrirlash» degan holat yoʻq.
+   */
+  editable?: boolean;
 };
 
 export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
@@ -65,6 +77,28 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     minSize: { w: 110, h: 260 },
     initialState: { active: "red" },
   },
+  "text.v1": {
+    kind: "text.v1",
+    label: "Matn",
+    tint: "violet",
+    // Keng va past — matn vidjeti sarlavha yoki topshiriq uchun, xat
+    // uchun emas. Baland boʻlsa oʻqituvchi uni abzas deb toʻldiradi va
+    // sinf ekranidan oʻqib boʻlmaydi.
+    defaultSize: { w: 460, h: 180 },
+    minSize: { w: 160, h: 72 },
+    initialState: { text: "" },
+    editable: true,
+  },
+  "sticky-note.v1": {
+    kind: "sticky-note.v1",
+    label: "Yopishqoq",
+    tint: "pink",
+    // Deyarli kvadrat — haqiqiy yopishqoq qogʻoz kabi.
+    defaultSize: { w: 280, h: 260 },
+    minSize: { w: 140, h: 130 },
+    initialState: { text: "" },
+    editable: true,
+  },
 };
 
 /** Panel tartibi — hozircha hammasi koʻrinadi. */
@@ -72,6 +106,8 @@ export const WIDGET_BAR_ORDER: WidgetKind[] = [
   "clock.v1",
   "timer.v1",
   "traffic-light.v1",
+  "text.v1",
+  "sticky-note.v1",
 ];
 
 export function widgetMeta(kind: WidgetKind): WidgetMeta {

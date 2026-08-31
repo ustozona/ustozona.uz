@@ -1872,6 +1872,19 @@
   --doska-light-red: oklch(0.62 0.23 27);
   --doska-light-amber: oklch(0.8 0.16 80);
   --doska-light-green: oklch(0.68 0.19 145);
+
+  /* Matn vidjeti — IDISHSIZ (docs/doska-dizayn-tizimi.md §3).
+     Oʻqituvchi doskaga yozganda qogʻoz olib kelmaydi — yozadi. Shuning
+     uchun matnning `-bg` va `-edge` si yoʻq, faqat siyoh rangi bor. */
+  --doska-ink: oklch(0.28 0.02 260);
+
+  /* Yopishqoq qogʻoz — svetofor chiroqlari kabi JISMONIY rang.
+     Shu sababli u quyidagi bo'r rejimida QAYTA BELGILANMAYDI: qogʻoz
+     doskaga yopishtirilganda ham qogʻozligicha qoladi, shaffof
+     boʻlib ketmaydi. Aynan shu narsa uni matn vidjetidan ajratadi. */
+  --doska-note-bg: oklch(0.91 0.06 350);
+  --doska-note-fg: oklch(0.36 0.09 350);
+  --doska-note-edge: oklch(0.8 0.1 350);
 }
 
 /* ── Doska: bo'r rejimi ──
@@ -1894,6 +1907,10 @@
   --doska-slate-bg: oklch(1 0 0 / 0.08);
   --doska-slate-fg: oklch(0.95 0.01 260);
   --doska-slate-edge: oklch(1 0 0 / 0.14);
+
+  /* Siyoh → bo'r. Matn vidjeti idishsiz boʻlgani uchun toʻq fonda
+     uning yagona rangi shu — va u oq boʻlmasa matn koʻrinmay qoladi. */
+  --doska-ink: oklch(0.97 0.01 260);
 }
 
 /* Doska teksturasi — SVG shovqin, ~200 bayt data-URI (rasm fayli emas). */
