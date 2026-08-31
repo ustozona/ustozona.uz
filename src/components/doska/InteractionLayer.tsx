@@ -64,20 +64,24 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
       const widgetId = owner.getAttribute(ATTR_WIDGET);
       if (!widgetId) return;
 
-      // Tahrirdagi vidjetning OʻZI bosildi: kursor qoʻyish va soʻz
-      // belgilash kerak, sudrash emas. Brauzerning oʻz ishiga
-      // aralashmaymiz.
-      if (state.editingId === widgetId) return;
+      // Vidjet ichidagi boshqaruv: matn maydoni, taymer tugmasi,
+      // svetofor chirogʻi, oʻchirish tugmasi.
+      const insideControl = target.closest(`[${ATTR_NO_DRAG}]`) !== null;
 
-      // Boshqa yer bosildi — ochiq tahrir yopiladi. Bu `ATTR_NO_DRAG`
-      // tekshiruvidan OLDIN: taymer tugmasi bosilganda ham tahrir
-      // yopilishi kerak, aks holda kursor koʻrinmas holda ochiq qolardi.
+      // Tahrirdagi vidjetning MATN MAYDONI bosildi: kursor qoʻyish va
+      // soʻz belgilash brauzerning ishi, aralashmaymiz.
+      if (state.editingId === widgetId && insideControl) return;
+
+      // ⚠️ Qolgan HAR QANDAY bosish ochiq tahrirni yopadi — tutqichdan
+      // tortish va qogʻoz chekkasidan sudrash ham shunga kiradi.
+      //
+      // Bu tekshiruv tutqich qidiruvidan OLDIN «tahrirdagi vidjetga
+      // umuman tegmaymiz» boʻlib turgan edi va natijada tahrirdagi
+      // vidjetni na koʻchirib, na oʻlchab boʻlmasdi — u tom maʼnoda
+      // qotib qolardi. Ajratuvchi shart aynan `insideControl`.
       if (state.editingId) state.setEditing(null);
 
-      // Vidjet ichidagi boshqaruv — taymer tugmasi, svetofor chirogʻi,
-      // oʻchirish tugmasi. Sudrash boshlanmaydi, bosish oʻz ishini
-      // qiladi.
-      if (target.closest(`[${ATTR_NO_DRAG}]`)) return;
+      if (insideControl) return;
 
       const screen = state.deck.screens.find((s) => s.id === state.activeScreenId);
       const widget = screen?.widgets.find((w) => w.id === widgetId);

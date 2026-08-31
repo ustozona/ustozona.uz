@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 
 import type { DoskaDeck, DoskaScreen, DoskaWidget, WidgetKind } from "./types";
 import { widgetMeta } from "./registry";
@@ -20,6 +20,80 @@ import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
    ════════════════════════════════════════════════════════════════════ */
 
 const STORAGE_KEY = "murabbiyona-doska-v1";
+
+/** Oxirgi oʻzgarishdan keyin diskka yozishni shuncha kutamiz. */
+const SAVE_DELAY_MS = 350;
+
+/* ────────────────────────────────────────────────────────────────────
+   KECHIKTIRILGAN YOZUV.
+
+   ⚠️ `localStorage.setItem` — SINXRON amal: u asosiy oqimni to'xtatadi.
+   Persist esa har `set()` da yozadi, yaʼni tuzatishsiz:
+
+     • har bosilgan harf   → butun deck JSON'ga oʻgiriladi va yoziladi
+     • har `pointermove`   → sekundiga 60–120 marta oʻsha ish
+     • har `bringToFront`  → yana bir marta
+
+   Sinf ekranida bu «matn kechikib chiqadi, vidjet sudralganda
+   tirmalaydi» boʻlib koʻrinadi — va ekran toʻlgani sayin yomonlashadi,
+   chunki yozuv hajmi butun deckka bogʻliq.
+
+   Yechim: oxirgi holatni ushlab turamiz va tinchlangach bir marta
+   yozamiz. Oraliq holatlarni saqlashning maʼnosi ham yoʻq — vidjet
+   sudralayotgan paytdagi 100 ta oraliq koordinata hech kimga kerak
+   emas, faqat qoʻyilgan joyi kerak.
+
+   ⚠️ Kutish paytida sahifa yopilishi mumkin, shuning uchun `pagehide`
+   va `visibilitychange` da kutmasdan yoziladi — aks holda oʻqituvchi
+   yozgan oxirgi jumla yoʻqolardi.
+   ──────────────────────────────────────────────────────────────────── */
+function deferredLocalStorage(delayMs: number): StateStorage {
+  // ⚠️ Birinchi qator ATAYLAB shunday: serverda `localStorage` yoʻq va
+  // bu chaqiruv xato beradi. `createJSONStorage` uni ushlaydi va
+  // saqlashsiz davom etadi — aynan avvalgi `() => localStorage`
+  // xatti-harakati.
+  const store = localStorage;
+
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let pending: { name: string; value: string } | null = null;
+
+  const flush = () => {
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    if (!pending) return;
+    try {
+      store.setItem(pending.name, pending.value);
+    } catch {
+      // Xotira toʻlgan yoki maxfiylik rejimi — ekran baribir
+      // ishlayveradi, faqat saqlanmaydi.
+    }
+    pending = null;
+  };
+
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flush();
+  });
+
+  return {
+    getItem: (name) => store.getItem(name),
+    setItem: (name, value) => {
+      pending = { name, value };
+      if (timer !== null) clearTimeout(timer);
+      timer = setTimeout(flush, delayMs);
+    },
+    removeItem: (name) => {
+      pending = null;
+      if (timer !== null) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      store.removeItem(name);
+    },
+  };
+}
 
 function newId() {
   return crypto.randomUUID();
@@ -241,7 +315,7 @@ export const useDoskaStore = create<DoskaState>()(
     },
     {
       name: STORAGE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => deferredLocalStorage(SAVE_DELAY_MS)),
       partialize: (s) => ({ deck: s.deck, activeScreenId: s.activeScreenId }),
       onRehydrateStorage: () => (state) => {
         if (state) state.hydrated = true;
