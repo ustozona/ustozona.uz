@@ -1383,8 +1383,8 @@
     "undo": "Undo",
     "discardConfirmTitle": "Discard the changes?",
     "discardConfirmDescription": "{count} changes will be lost and the schedule returns to its last applied state.",
-    "pendingChanges": "{count} changes not applied",
-    "applyChanges": "Apply…",
+    "pendingChanges": "{count} changes not saved",
+    "applyChanges": "Save",
     "discardChanges": "Discard",
     "unknownClass": "Unknown class",
     "versionExistsError": "A version already exists for this date",
@@ -3182,28 +3182,27 @@
     "pastMidnightWarning": "Lessons run past midnight — check the start time or number of lessons."
   },
   "EffectiveDateDialog": {
-    "title": "When should these changes take effect?",
-    "description": "You choose once — later edits follow the same rule.",
+    "title": "When should the change take effect?",
+    "description": "Which days these edits apply to.",
+    "pickTitle": "When should the new schedule start?",
+    "pickDescription": "A new schedule version is created from the chosen date.",
     "close": "Close",
     "options": {
-      "date": {
-        "title": "From {date}",
-        "caption": "Past lessons stay on the old schedule."
+      "new": {
+        "title": "From today",
+        "caption": "Earlier lessons stay on the old schedule."
       },
-      "inPlace": {
-        "title": "Right away, on all days",
-        "caption": "Past lessons are shown with the new schedule too."
+      "fix": {
+        "title": "From the start — fix a mistake",
+        "caption": "All lessons are shown with the new schedule."
       }
     },
-    "otherDate": "Another date…",
-    "resetDate": "Back to next Monday",
-    "addNote": "Add a note",
+    "attendanceWarning": "This may affect attendance marks on past lessons.",
+    "effectiveDateLabel": "Start date",
     "dateAlreadyTaken": "A schedule already exists for this date",
     "pastDateWarning": "This is a past date — history from this day onward will also show the new schedule.",
-    "noteLabel": "Note about the changes (optional)",
-    "notePlaceholder": "For example: Class 7-B moved to Friday",
     "cancel": "Cancel",
-    "save": "Apply"
+    "save": "Save"
   },
   "ClassFormModal": {
     "createTitle": "Create new class",

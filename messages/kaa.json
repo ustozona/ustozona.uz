@@ -1383,8 +1383,8 @@
     "undo": "Qaytarıw",
     "discardConfirmTitle": "Ózgerisler biykar etilsinbe?",
     "discardConfirmDescription": "{count} ózgeris óshedi hám keste sońǵı qollanǵan halatına qaytadı.",
-    "pendingChanges": "{count} ózgeris qollanılmadı",
-    "applyChanges": "Qollaw…",
+    "pendingChanges": "{count} ózgeris saqlanbadı",
+    "applyChanges": "Saqlaw",
     "discardChanges": "Biykar etiw",
     "unknownClass": "Belgisiz klas",
     "versionExistsError": "Bul sánede álle qashan versiya bar",
@@ -3186,28 +3186,27 @@
     "pastMidnightWarning": "Sabaqlar yarım túnnen asıp ketpekte — baslanıw waqtı yamasa sabaqlar sanın tekseriń."
   },
   "EffectiveDateDialog": {
-    "title": "Ózgerisler qashannan kúshke kirsin?",
-    "description": "Bir ret tańlaysız — keyingi redaktsiyalar sol tártipte saqlanadı.",
+    "title": "Ózgeris qashannan ámel etsin?",
+    "description": "Bul redaktsiyalar qaysı kúnlerge tiyisli.",
+    "pickTitle": "Taza keste qashannan baslanadı?",
+    "pickDescription": "Tańlanǵan sáneden taza keste versiyası jaratıladı.",
     "close": "Jabıw",
     "options": {
-      "date": {
-        "title": "{date} den baslap",
-        "caption": "Ótken sabaqlar góne kestede qaladı."
+      "new": {
+        "title": "Búginnen",
+        "caption": "Aldınǵı sabaqlar góne kestede qaladı."
       },
-      "inPlace": {
-        "title": "Házirden, barlıq kúnlerge",
-        "caption": "Ótken sabaqlar da taza keste menen kórsetiledi."
+      "fix": {
+        "title": "Basınan — qáteni tuwrılaw",
+        "caption": "Barlıq sabaqlar taza keste boyınsha kórsetiledi."
       }
     },
-    "otherDate": "Basqa sáne…",
-    "resetDate": "Keyingi dúyshembige qaytarıw",
-    "addNote": "Túsindirme qosıw",
+    "attendanceWarning": "Bul ótken sabaqlardaǵı dawamat belgilerine tásir etiwi múmkin.",
+    "effectiveDateLabel": "Baslanıw sánesi",
     "dateAlreadyTaken": "Bul sánege sabaq kestesi dúzilgen",
     "pastDateWarning": "Ótmishegi sáne — usı kúnnen keyingi kúnler tariyxı da taza keste menen kórsetiledi.",
-    "noteLabel": "Ózgerisler haqqında túsindirme (qálegenshe)",
-    "notePlaceholder": "Mısalı: 7-B sabaǵı juma kúnine ótkerildi",
     "cancel": "Biykar etiw",
-    "save": "Qollaw"
+    "save": "Saqlaw"
   },
   "ClassFormModal": {
     "createTitle": "Taza klass jaratıw",

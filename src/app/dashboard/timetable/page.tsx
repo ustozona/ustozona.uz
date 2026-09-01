@@ -46,6 +46,7 @@ import VersionChip, { versionRangeLabel } from "@/components/timetable/VersionCh
 import TimetableCoverageBanner from "@/components/timetable/TimetableCoverageBanner";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
+import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeTimetableTourDemo } from "@/components/tour/timetable-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
@@ -178,6 +179,20 @@ export default function TimetablePage() {
           : "past-locked";
   /** Arxiv (qulflangan) rejim — grid faqat koʻrish uchun */
   const readOnly = mode === "past-locked";
+
+  /** Joriy versiya oraligʻida (effectiveFrom … bugungача) biror sinfда davomat
+      yozuvi bormi — "Boshidan" tanlanганда ogohlantirish shunga qarab. Yil
+      boshi/sozlash paytida (yozuv yoʻq) ogohlantirish koʻrsatilmaydi. */
+  const attendanceRecords = useAttendanceStore((s) => s.recordsByClass);
+  const attendanceAtRisk = useMemo(() => {
+    if (!selectedVersion || selectedVersion.effectiveFrom > today) return false;
+    for (const recs of Object.values(attendanceRecords)) {
+      for (const r of recs) {
+        if (r.date >= selectedVersion.effectiveFrom && r.date < today) return true;
+      }
+    }
+    return false;
+  }, [attendanceRecords, selectedVersion, today]);
 
   /** Mavjud darsni koʻchirayotganda — ushlangan nuqtaning dars boshidan daqiqa-ofseti */
   const grabOffsetRef = useRef<number | null>(null);
@@ -381,14 +396,22 @@ export default function TimetablePage() {
 
   const applyEffectiveChoice = useCallback((choice: EffectiveChoice) => {
     if (!selectedVersion) return;
-    if (choice.kind === "in-place") {
+    // "Bugundan" tanlandi, lekin joriy versiya aynan bugundan boshlangan —
+    // yangi versiya emas, oʻshа versiyaga yoziladi (dublikat sana boʻlmaydi).
+    const asInPlace =
+      choice.kind === "in-place" ||
+      (choice.kind === "new" && choice.effectiveFrom === selectedVersion.effectiveFrom);
+    if (asInPlace) {
       commitDraft(selectedVersion.id, events, bellConfig);
       setDecisionMade(true);
       setSaved(true);
       setSavedSignal((n) => n + 1);
     } else {
-      const id = createVersion({ effectiveFrom: choice.effectiveFrom, note: choice.note, baseId: selectedVersion.id });
+      const id = createVersion({ effectiveFrom: choice.effectiveFrom, baseId: selectedVersion.id });
       if (!id) { toast.error(t("versionExistsError")); return; }
+      // "Bugundan" — yangi versiya joriy boʻlib qoladi; keyingi tahrirlar
+      // shu sessiyada qayta soʻralmasin.
+      if (choice.effectiveFrom <= today) setDecisionMade(true);
       // Yangi versiya qoralamadagi holatni oladi; eski versiya snapshoti oʻzgarmaydi
       commitDraft(id, events, bellConfig);
       toast.success(t("newVersionToast", { date: fmtDayMonthUz(choice.effectiveFrom) }));
@@ -402,7 +425,7 @@ export default function TimetablePage() {
       setSelectedVersionId(pendingSwitchRef.current);
       pendingSwitchRef.current = null;
     }
-  }, [selectedVersion, commitDraft, createVersion, events, bellConfig]);
+  }, [selectedVersion, commitDraft, createVersion, events, bellConfig, today]);
 
   /* ── Qoʻllash paneli ──
      Panel faqat qaror KERAKLIGINI eʼlon qiladi; "qachondan?" tanlovi doim
@@ -1006,12 +1029,12 @@ export default function TimetablePage() {
                 qutisi) — jadval siqilmaydi, grid ichi varaqlansa ham panel
                 joyida qoladi. Rang INVERSIYA (bg-foreground/text-background):
                 loyihaning yuqori-kontrast sirti, BulkActionBar bilan bir til;
-                oq fonda oq panel koʻzdan qochardi. Tugmalar: yashil "qoʻllash"
-                / qizil "bekor" + hoverda yengil koʻtarilish. */}
+                oq fonda oq panel koʻzdan qochardi. Tugmalar: yashil "Saqlash"
+                (hoverda yengil koʻtariladi) + neytral "Bekor qilish". */}
             {awaitingApply && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4">
                 <div className="pointer-events-auto flex w-[min(100%,34rem)] items-center gap-3 rounded-overlay bg-foreground py-2.5 pr-3 pl-3.5 text-background shadow-overlay duration-200 animate-in fade-in slide-in-from-bottom-2">
-                  {/* Ikona qutisi — disket emas: hali qoʻllanmagan, kutayotgan
+                  {/* Ikona qutisi — disket emas: hali saqlanmagan, kutayotgan
                       holat. Inversiya sirtida shaffof oq qatlam. */}
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-background/15 text-background/80">
                     <CircleDot className="size-4" />
@@ -1103,7 +1126,8 @@ export default function TimetablePage() {
         open={effectiveDialogOpen}
         todayKey={today}
         takenDates={versions.map((v) => v.effectiveFrom)}
-        allowInPlace={!dialogExplicit}
+        mode={dialogExplicit ? "pick-date" : "decide"}
+        attendanceAtRisk={attendanceAtRisk}
         onConfirm={applyEffectiveChoice}
         onCancel={cancelEffectiveDialog}
       />

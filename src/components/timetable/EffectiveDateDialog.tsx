@@ -21,43 +21,44 @@ import { Calendar } from "@/components/ui/calendar";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  CalendarClock, CalendarCog, CalendarSearch,
-  ChevronDown, Layers, TriangleAlert, X,
-} from "lucide-react";
+import { CalendarClock, CalendarCog, CalendarSearch, Layers, TriangleAlert, X } from "lucide-react";
 
 /* ════════════════════════════════════════════════════════════════════
-   "QACHONDAN KUCHGA KIRADI?" DIALOGI — qoralama QOʻLLANAYOTGANDA
+   "QACHONDAN AMAL QILSIN?" DIALOGI
 
-   Tahrir paytida EMAS, foydalanuvchi «Qoʻllash…» bosganda ochiladi
-   (qoralama → nashr naqshi): qaror nima oʻzgargani maʼlum boʻlgach,
-   ish oxirida beriladi. Shu sabab bekor qilish qoralamaga TEGMAYDI —
-   dialog shunchaki yopiladi.
+   Ikki kirish nuqtasi, ikki rejim:
 
-   Tanlov MEXANIZM emas, NATIJA boʻyicha ikkiga qisqargan:
-     • sanadan boshlab → yangi versiya, oʻtgan kunlar eski jadvalda;
-     • hamma kunlarga  → versiya yaratilmaydi, oʻtmish ham yangilanadi.
-   Uchinchi (kamroq kerak) yoʻl — «Boshqa sana…» havolasi ostidagi
-   kalendar; u tanlansa birinchi karta oʻsha sanaga aylanadi.
+   • "decide" — paneldan "Saqlash" bosilganda. Oʻqituvchi joriy jadvalni
+     tahrirladi, endi natijani tanlaydi. Ikki sodda yoʻl:
+       – "Bugundan"  → yangi versiya, oldingi kunlar eski jadvalda;
+       – "Boshidan"  → joriy versiya qayta yoziladi (xatoni toʻgʻrilash).
+     HECH BIRI oldindan tanlanmaydi — ikkalasi ham keng tarqalgan holat
+     (ayniqsa yil boshi sozlashida "Boshidan"), oqibati esa farqli.
+     Ogohlantirish faqat oʻsha oraliqda haqiqatan davomat boʻlsa chiqadi.
+     Sana tanlash YOʻQ — "aniq kelajak sana" boshqa niyat, uning uchun
+     versiyalar roʻyxatidagi "Yangi sanadan…" bor.
 
-   Header — ilova standarti (SectionIcon + CardTitle + size-9 yopish),
-   sana tanlagich — standart Calendar (Popover ichida), native <input
-   type=date> emas (u brauzer/OS temasiga ergashib begona koʻrinardi).
+   • "pick-date" — versiyalar roʻyxatidagi "Yangi sanadan dars jadvali
+     tuzish…" dan. Bu yerda kalendar KERAK (kelgusi chorak sanasi). Faqat
+     yangi versiya — "Boshidan" varianti chiqmaydi.
+
+   Header — ilova standarti (SectionIcon + CardTitle + size-9 yopish).
+   Bekor qilish qoralamaga TEGMAYDI — dialog shunchaki yopiladi.
+   Izoh maydoni ATAYLAB yoʻq — hozircha hech qayerda koʻrsatilmaydi;
+   real foydalanuvchi soʻrasa qoʻshiladi.
    ════════════════════════════════════════════════════════════════════ */
 
 export type EffectiveChoice =
-  | { kind: "new"; effectiveFrom: string; note?: string }
+  | { kind: "new"; effectiveFrom: string }
   | { kind: "in-place" };
-
-type OptionKind = "date" | "in-place";
 
 export default function EffectiveDateDialog({
   open,
   todayKey,
   takenDates,
-  allowInPlace = true,
+  mode = "decide",
+  attendanceAtRisk = false,
   onConfirm,
   onCancel,
 }: {
@@ -65,66 +66,50 @@ export default function EffectiveDateDialog({
   todayKey: string;
   /** Mavjud versiyalarning effectiveFrom sanalari — dublikat guard. */
   takenDates: string[];
-  /** false — faqat yangi versiya (masalan, dropdown'dan "Yangi versiya…"). */
-  allowInPlace?: boolean;
+  /** "decide" — Bugundan / Boshidan; "pick-date" — kalendar. */
+  mode?: "decide" | "pick-date";
+  /** Joriy versiya oraligʻida oʻtgan davomat yozuvi bor — "Boshidan"
+      tanlansa ogohlantirish koʻrsatiladi (yil boshi/sozlash paytida — yoʻq). */
+  attendanceAtRisk?: boolean;
   onConfirm: (choice: EffectiveChoice) => void;
   onCancel: () => void;
 }) {
   const t = useTranslations("EffectiveDateDialog");
   const monday = nextMonday(todayKey);
-  const [kind, setKind] = useState<OptionKind>("date");
-  /** Boʻsh boʻlsa — sana kartasi "keyingi dushanba"ni bildiradi. */
+
+  // decide rejimi: hech biri oldindan tanlanmaydi — ikki yoʻlning oqibati
+  // farqli, oʻqituvchi har safar ongli tanlaydi (sessiyada bir marta).
+  const [kind, setKind] = useState<"new" | "fix" | null>(null);
+  // pick-date rejimi: boʻsh → keyingi dushanba
   const [customDate, setCustomDate] = useState("");
-  const [note, setNote] = useState("");
-  const [noteOpen, setNoteOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  // Har ochilishda toza holatdan boshlanadi
   useEffect(() => {
     if (open) {
-      setKind("date");
+      setKind(null);
       setCustomDate("");
-      setNote("");
-      setNoteOpen(false);
       setCalendarOpen(false);
     }
   }, [open]);
 
-  const effectiveFrom = customDate || monday;
-  const dateTaken = takenDates.includes(effectiveFrom);
-  const datePast = effectiveFrom < todayKey;
+  const pickedDate = customDate || monday;
+  const pickedTaken = takenDates.includes(pickedDate);
+  const pickedPast = pickedDate < todayKey;
 
-  const confirmDisabled = kind === "date" && dateTaken;
-
-  const options: {
-    key: OptionKind;
-    icon: React.ReactNode;
-    title: string;
-    caption: string;
-  }[] = [
-    {
-      key: "date",
-      icon: <CalendarClock className="size-4" />,
-      title: t("options.date.title", { date: fmtDayMonthUz(effectiveFrom) }),
-      caption: dateTaken ? t("dateAlreadyTaken") : t("options.date.caption"),
-    },
-    ...(allowInPlace
-      ? [
-          {
-            key: "in-place" as const,
-            icon: <Layers className="size-4" />,
-            title: t("options.inPlace.title"),
-            caption: t("options.inPlace.caption"),
-          },
-        ]
-      : []),
-  ];
+  const confirm = () => {
+    if (mode === "pick-date") {
+      onConfirm({ kind: "new", effectiveFrom: pickedDate });
+      return;
+    }
+    if (kind === "fix") onConfirm({ kind: "in-place" });
+    else if (kind === "new") onConfirm({ kind: "new", effectiveFrom: todayKey });
+  };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-lg gap-0 overflow-hidden p-0 bg-card top-[12vh] translate-y-0"
+        className="max-w-md gap-0 overflow-hidden p-0 bg-card top-[12vh] translate-y-0"
       >
         {/* Standart header — ikona + sarlavha + size-9 yopish tugmasi */}
         <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
@@ -134,10 +119,10 @@ export default function EffectiveDateDialog({
             </SectionIcon>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <DialogTitle asChild>
-                <CardTitle>{t("title")}</CardTitle>
+                <CardTitle>{mode === "pick-date" ? t("pickTitle") : t("title")}</CardTitle>
               </DialogTitle>
               <DialogDescription className="text-caption">
-                {t("description")}
+                {mode === "pick-date" ? t("pickDescription") : t("description")}
               </DialogDescription>
             </div>
           </div>
@@ -148,46 +133,65 @@ export default function EffectiveDateDialog({
         </div>
 
         <div className="flex max-h-[70vh] flex-col gap-2 scrollbar-hover overflow-y-auto scrollbar-thin p-5">
-          {options.map((o) => {
-            const selected = kind === o.key;
-            return (
-              <button
-                key={o.key}
-                type="button"
-                onClick={() => setKind(o.key)}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors",
-                  selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
-                    selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {o.icon}
-                </span>
-                <span className="min-w-0">
-                  <span className="block heading-small">{o.title}</span>
-                  <span className="mt-0.5 block text-caption">{o.caption}</span>
-                </span>
-              </button>
-            );
-          })}
+          {mode === "decide" ? (
+            <>
+              {([
+                {
+                  key: "new" as const,
+                  icon: <CalendarClock className="size-4" />,
+                  title: t("options.new.title"),
+                  caption: t("options.new.caption"),
+                },
+                {
+                  key: "fix" as const,
+                  icon: <Layers className="size-4" />,
+                  title: t("options.fix.title"),
+                  caption: t("options.fix.caption"),
+                },
+              ]).map((o) => {
+                const selected = kind === o.key;
+                return (
+                  <button
+                    key={o.key}
+                    type="button"
+                    onClick={() => setKind(o.key)}
+                    className={cn(
+                      "flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+                      selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                        selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {o.icon}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block heading-small">{o.title}</span>
+                      <span className="mt-0.5 block text-caption">{o.caption}</span>
+                    </span>
+                  </button>
+                );
+              })}
 
-          {/* Ikkilamchi yoʻl — sana kartasining sanasini almashtiradi */}
-          {kind === "date" && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 pt-1">
+              {kind === "fix" && attendanceAtRisk && (
+                <p className="flex items-start gap-1.5 px-1 text-xs text-amber-600 dark:text-amber-500">
+                  <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+                  {t("attendanceWarning")}
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <Label>{t("effectiveDateLabel")}</Label>
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1.5 rounded-md text-caption underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                  >
-                    <CalendarSearch className="size-3.5" />
-                    {t("otherDate")}
-                  </button>
+                  <Button variant="outline" className="w-full justify-start bg-card font-normal shadow-xs">
+                    <CalendarSearch className="mr-2 size-4 shrink-0 text-muted-foreground" />
+                    {fmtDayMonthUz(pickedDate)}
+                  </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                   <Calendar
@@ -197,8 +201,8 @@ export default function EffectiveDateDialog({
                       formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
                       formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
                     }}
-                    selected={dateKeyToDate(effectiveFrom)}
-                    defaultMonth={dateKeyToDate(effectiveFrom)}
+                    selected={dateKeyToDate(pickedDate)}
+                    defaultMonth={dateKeyToDate(pickedDate)}
                     captionLayout="dropdown"
                     startMonth={new Date(2024, 0)}
                     endMonth={new Date(2028, 11)}
@@ -211,50 +215,14 @@ export default function EffectiveDateDialog({
                   />
                 </PopoverContent>
               </Popover>
-              {customDate !== "" && customDate !== monday && (
-                <button
-                  type="button"
-                  onClick={() => setCustomDate("")}
-                  className="text-caption underline-offset-4 hover:underline"
-                >
-                  {t("resetDate")}
-                </button>
+              {pickedTaken && <p className="px-1 text-xs text-destructive">{t("dateAlreadyTaken")}</p>}
+              {!pickedTaken && pickedPast && (
+                <p className="flex items-start gap-1.5 px-1 text-xs text-amber-600 dark:text-amber-500">
+                  <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+                  {t("pastDateWarning")}
+                </p>
               )}
-            </div>
-          )}
-
-          {kind === "date" && !dateTaken && datePast && (
-            <p className="flex items-start gap-1.5 px-1 text-xs text-amber-600 dark:text-amber-500">
-              <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-              {t("pastDateWarning")}
-            </p>
-          )}
-
-          {/* Izoh — modal qoidasi boʻyicha yigʻilgan holda (kamdan-kam kerak) */}
-          {kind === "date" && (
-            <div className="pt-2">
-              {noteOpen ? (
-                <div className="space-y-1.5">
-                  <Label htmlFor="version-note">{t("noteLabel")}</Label>
-                  <Input
-                    id="version-note"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder={t("notePlaceholder")}
-                    autoFocus
-                  />
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setNoteOpen(true)}
-                  className="inline-flex items-center gap-1 rounded-md px-1 text-caption underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                >
-                  <ChevronDown className="size-3.5" />
-                  {t("addNote")}
-                </button>
-              )}
-            </div>
+            </>
           )}
         </div>
 
@@ -263,14 +231,8 @@ export default function EffectiveDateDialog({
             {t("cancel")}
           </Button>
           <Button
-            disabled={confirmDisabled}
-            onClick={() =>
-              onConfirm(
-                kind === "in-place"
-                  ? { kind: "in-place" }
-                  : { kind: "new", effectiveFrom, note: note.trim() || undefined }
-              )
-            }
+            disabled={mode === "pick-date" ? pickedTaken : kind === null}
+            onClick={confirm}
           >
             {t("save")}
           </Button>
