@@ -1378,6 +1378,15 @@
     "lessonDeletedToast": "Сабақ жойылды"
   },
   "TimetablePage": {
+    "pendingSubtitle": "Кестеде әзірге ескі тәртіп қолданылады",
+    "applyFromDate": "{date} бастап қолдану",
+    "applyOptionsAria": "Қолдану нұсқалары",
+    "applyAllDays": "Қазірден, барлық күндерге",
+    "applyOtherDate": "Басқа күннен…",
+    "discardedToast": "{count} өзгеріс болдырылмады",
+    "undo": "Қайтару",
+    "discardConfirmTitle": "Өзгерістер болдырылмасын ба?",
+    "discardConfirmDescription": "{count} өзгеріс өшеді және кесте соңғы қолданылған күйіне оралады.",
     "pendingChanges": "{count} өзгеріс қолданылмады",
     "applyChanges": "Қолдану…",
     "discardChanges": "Болдырмау",

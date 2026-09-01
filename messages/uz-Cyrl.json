@@ -1378,6 +1378,15 @@
     "lessonDeletedToast": "Дарс ўчирилди"
   },
   "TimetablePage": {
+    "pendingSubtitle": "Жадвалда ҳали эски тартиб амал қилади",
+    "applyFromDate": "{date}дан қўллаш",
+    "applyOptionsAria": "Қўллаш вариантлари",
+    "applyAllDays": "Ҳозироқ, ҳамма кунларга",
+    "applyOtherDate": "Бошқа санадан…",
+    "discardedToast": "{count} та ўзгариш бекор қилинди",
+    "undo": "Қайтариш",
+    "discardConfirmTitle": "Ўзгаришлар бекор қилинсинми?",
+    "discardConfirmDescription": "{count} та ўзгариш ўчади ва жадвал охирги қўлланган ҳолатига қайтади.",
     "pendingChanges": "{count} та ўзгариш қўлланмаган",
     "applyChanges": "Қўллаш…",
     "discardChanges": "Бекор қилиш",

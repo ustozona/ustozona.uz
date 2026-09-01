@@ -49,14 +49,14 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeTimetableTourDemo } from "@/components/tour/timetable-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
-import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
+import { resolveVersionForDate, sortVersions, nextMonday } from "@/lib/timetable-versions";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { todayKey as getTodayKey } from "@/lib/date-keys";
 import { minToHHMM, hhmmToMin, snapMin, clamp } from "@/lib/calendar-core/date-math";
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { SavedIndicator } from "@/app/dashboard/settings/_components/SettingsShared";
 import { toast } from "sonner";
-import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Printer, PencilIcon as EditIcon, SlidersHorizontal, Lock, CalendarClock, TriangleAlert } from "lucide-react";
+import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Printer, PencilIcon as EditIcon, SlidersHorizontal, Lock, CalendarClock, TriangleAlert, CircleDot, ChevronDown, Layers, CalendarSearch } from "lucide-react";
 
 /* ─── Types ─── */
 /* TimetableEvent — @/lib/timetable dan (takrorlanuvchi haftalik shablon).
@@ -335,6 +335,35 @@ export default function TimetablePage() {
     setSaved(true);
   }, [selectedVersion]);
 
+  /** Bekor qilishdan oldingi qoralama — "Qaytarish" toast'i uchun. */
+  const discardedRef = useRef<{ events: TimetableEvent[]; bellConfig: BellConfig } | null>(null);
+  const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
+
+  /** Bekor qilish + bir bosishli qaytarish taklifi. */
+  const discardDraft = useCallback(() => {
+    discardedRef.current = { events: events.map((e) => ({ ...e })), bellConfig: cloneBell(bellConfig) };
+    revertDraft();
+    setDiscardConfirmOpen(false);
+    toast(t("discardedToast", { count: pendingCount }), {
+      action: {
+        label: t("undo"),
+        onClick: () => {
+          const snap = discardedRef.current;
+          if (!snap) return;
+          setEvents(snap.events);
+          setBellConfig(snap.bellConfig);
+        },
+      },
+    });
+  }, [events, bellConfig, revertDraft, pendingCount, t]);
+
+  // Koʻp ish yoʻqolayotgan boʻlsa avval tasdiq soʻraladi (5+ oʻzgarish) —
+  // undo toast'i qisqa umr koʻradi, katta ishga yetarli kafolat emas.
+  const requestDiscard = useCallback(() => {
+    if (pendingCount >= 5) setDiscardConfirmOpen(true);
+    else discardDraft();
+  }, [pendingCount, discardDraft]);
+
   const handleSelectVersion = useCallback((id: string) => {
     if (id === selectedVersionId) return;
     if (!saved && selectedVersion) {
@@ -375,12 +404,52 @@ export default function TimetablePage() {
     }
   }, [selectedVersion, commitDraft, createVersion, events, bellConfig]);
 
+  /* ── Qoʻllash paneli: tez yoʻl ──
+     Odatiy holat (keyingi dushanbadan yangi versiya) tugmaning OʻZIDA
+     bajariladi — modal faqat muqobil kerak boʻlganda ochiladi. Agar oʻsha
+     sanaga versiya allaqachon bor boʻlsa, tez yoʻl yopiladi va tugma
+     dialogni ochadi (aks holda "versiya mavjud" xatosi chiqardi). */
+  const quickDate = useMemo(() => nextMonday(today), [today]);
+  const quickAvailable = useMemo(
+    () => !versions.some((v) => v.effectiveFrom === quickDate),
+    [versions, quickDate]
+  );
+  const openApplyDialog = useCallback(() => {
+    setDialogExplicit(false);
+    setEffectiveDialogOpen(true);
+  }, []);
+  const applyPrimary = useCallback(() => {
+    if (quickAvailable) applyEffectiveChoice({ kind: "new", effectiveFrom: quickDate });
+    else openApplyDialog();
+  }, [quickAvailable, quickDate, applyEffectiveChoice, openApplyDialog]);
+
   // Dialogni bekor qilish QORALAMAGA TEGMAYDI — savol bekor qilinadi, ish emas.
   // Versiya almashtirish ham bekor boʻladi: aks holda qoralama koʻrinmay qolardi.
   const cancelEffectiveDialog = useCallback(() => {
     setEffectiveDialogOpen(false);
     pendingSwitchRef.current = null;
   }, []);
+
+  /* Klaviatura — panel koʻringanda: ⌘/Ctrl+S asosiy amal, Esc bekor qilish.
+     Modal/dialog ochiq boʻlsa tegmaymiz (Esc oʻsha yerga tegishli), matn
+     kiritilayotganda ham (Esc input'ni tark etish uchun kerak). */
+  useEffect(() => {
+    if (!awaitingApply) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (effectiveDialogOpen || discardConfirmOpen) return;
+      const el = e.target as HTMLElement | null;
+      if (el?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el?.tagName ?? "")) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        applyPrimary();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        requestDiscard();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [awaitingApply, effectiveDialogOpen, discardConfirmOpen, applyPrimary, requestDiscard]);
 
   const confirmDeleteVersion = useCallback(() => {
     if (!selectedVersion || versions.length <= 1) return;
@@ -842,7 +911,13 @@ export default function TimetablePage() {
           {!isDemoMode && <TimetableCoverageBanner className="mx-6 mb-2 shrink-0" />}
 
           {/* Hafta jadvali (kun × vaqt grid) */}
-          <CardContent className={cn(panelCardContentClass, "relative flex flex-col overflow-hidden")} data-carousel-ignore="true">
+          {/* pb-16: suzuvchi panel oxirgi dars soatini qoplamasin. Absolyut
+              element padding qutisiga bogʻlangani uchun panel joyida qoladi,
+              grid esa qisqaradi. */}
+          <CardContent
+            className={cn(panelCardContentClass, "relative flex flex-col overflow-hidden", awaitingApply && "pb-16")}
+            data-carousel-ignore="true"
+          >
             {snapMode === "free" && eventsDisplay.length === 0 && (
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-6">
                 <Empty className="pointer-events-none w-auto">
@@ -944,26 +1019,57 @@ export default function TimetablePage() {
                 bogʻlanish CardContent'ga — grid ichi varaqlansa ham panel
                 joyida qoladi. */}
             {awaitingApply && (
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center p-4">
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4">
                 {/* Suzuvchi sirt — overlay tokenlari (rounded-overlay/shadow-overlay,
                     bg-popover), dropdown va popover bilan bir tilda. Yumaloq
                     "pill" ATAYLAB emas: pill — tanlov asboblar paneli belgisi,
-                    bu esa qarorni soʻrovchi sirt. */}
-                <div className="pointer-events-auto flex max-w-full items-center gap-3 rounded-overlay border-card border-border bg-popover px-4 py-2.5 shadow-overlay">
-                  <SaveIcon className="size-4 shrink-0 text-primary" />
-                  <p className="truncate text-sm font-medium">
-                    {t("pendingChanges", { count: pendingCount })}
-                  </p>
-                  <div className="ml-2 flex shrink-0 items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={revertDraft}>
+                    bu esa qarorni soʻrovchi sirt. Kirish: pastdan 8px sirpanish
+                    + fade (dropdown/popover bilan bir xil idiom). */}
+                <div className="pointer-events-auto flex w-[min(100%,34rem)] items-center gap-3.5 rounded-overlay border-card border-border bg-popover py-3 pr-3 pl-4 shadow-overlay duration-200 animate-in fade-in slide-in-from-bottom-2">
+                  {/* Ikona qutisi — "saqlash" (disket) emas: hali qoʻllanmagan,
+                      kutib turgan holat. */}
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-muted text-muted-foreground">
+                    <CircleDot className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {t("pendingChanges", { count: pendingCount })}
+                    </p>
+                    <p className="truncate text-caption">{t("pendingSubtitle")}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={requestDiscard}>
                       {t("discardChanges")}
                     </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => { setDialogExplicit(false); setEffectiveDialogOpen(true); }}
-                    >
-                      {t("applyChanges")}
-                    </Button>
+                    {/* Boʻlingan tugma: odatiy qaror tugmada, muqobillar yonida */}
+                    <div className="flex">
+                      <Button size="sm" className="rounded-r-none" onClick={applyPrimary}>
+                        {quickAvailable
+                          ? t("applyFromDate", { date: fmtDayMonthUz(quickDate) })
+                          : t("applyChanges")}
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            aria-label={t("applyOptionsAria")}
+                            className="rounded-l-none border-l border-primary-foreground/25 px-2"
+                          >
+                            <ChevronDown className="size-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => applyEffectiveChoice({ kind: "in-place" })}>
+                            <Layers />
+                            {t("applyAllDays")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={openApplyDialog}>
+                            <CalendarSearch />
+                            {t("applyOtherDate")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1032,6 +1138,24 @@ export default function TimetablePage() {
         onConfirm={applyEffectiveChoice}
         onCancel={cancelEffectiveDialog}
       />
+
+      {/* Koʻp oʻzgarish bekor qilinayotganda tasdiq (5+) */}
+      <AlertDialog open={discardConfirmOpen} onOpenChange={setDiscardConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("discardConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("discardConfirmDescription", { count: pendingCount })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={discardDraft} className="bg-destructive text-white hover:bg-destructive/90">
+              {t("discardChanges")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Arxivni tahrirlashga ochish tasdigʻi */}
       <AlertDialog open={unlockConfirmOpen} onOpenChange={setUnlockConfirmOpen}>

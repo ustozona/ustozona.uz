@@ -1378,6 +1378,15 @@
     "lessonDeletedToast": "Sabaq óshirildi"
   },
   "TimetablePage": {
+    "pendingSubtitle": "Kestede áli góne tártip ámel etedi",
+    "applyFromDate": "{date} den qollaw",
+    "applyOptionsAria": "Qollaw variantları",
+    "applyAllDays": "Házirden, barlıq kúnlerge",
+    "applyOtherDate": "Basqa sáneden…",
+    "discardedToast": "{count} ózgeris biykar etildi",
+    "undo": "Qaytarıw",
+    "discardConfirmTitle": "Ózgerisler biykar etilsinbe?",
+    "discardConfirmDescription": "{count} ózgeris óshedi hám keste sońǵı qollanǵan halatına qaytadı.",
     "pendingChanges": "{count} ózgeris qollanılmadı",
     "applyChanges": "Qollaw…",
     "discardChanges": "Biykar etiw",

@@ -1378,6 +1378,15 @@
     "lessonDeletedToast": "Тема удалена"
   },
   "TimetablePage": {
+    "pendingSubtitle": "Пока действует прежнее расписание",
+    "applyFromDate": "Применить с {date}",
+    "applyOptionsAria": "Варианты применения",
+    "applyAllDays": "Сразу, ко всем дням",
+    "applyOtherDate": "С другой даты…",
+    "discardedToast": "Изменений отменено: {count}",
+    "undo": "Вернуть",
+    "discardConfirmTitle": "Отменить изменения?",
+    "discardConfirmDescription": "Будет потеряно изменений: {count}. Расписание вернётся к последнему применённому виду.",
     "pendingChanges": "Изменений не применено: {count}",
     "applyChanges": "Применить…",
     "discardChanges": "Отменить",

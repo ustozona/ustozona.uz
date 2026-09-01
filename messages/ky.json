@@ -1378,6 +1378,15 @@
     "lessonDeletedToast": "Сабак өчүрүлдү"
   },
   "TimetablePage": {
+    "pendingSubtitle": "Жадвалда азырынча эски тартип колдонулат",
+    "applyFromDate": "{date} тартып колдонуу",
+    "applyOptionsAria": "Колдонуу варианттары",
+    "applyAllDays": "Азыр эле, бардык күндөргө",
+    "applyOtherDate": "Башка датадан…",
+    "discardedToast": "{count} өзгөрүү жокко чыгарылды",
+    "undo": "Кайтаруу",
+    "discardConfirmTitle": "Өзгөрүүлөр жокко чыгарылсынбы?",
+    "discardConfirmDescription": "{count} өзгөрүү өчөт жана жадвал акыркы колдонулган абалына кайтат.",
     "pendingChanges": "{count} өзгөрүү колдонулган жок",
     "applyChanges": "Колдонуу…",
     "discardChanges": "Жокко чыгаруу",
