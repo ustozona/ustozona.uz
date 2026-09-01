@@ -31,15 +31,13 @@ import { Check, CheckCircle2, ChevronDown, Circle, Clock, PlusIcon, TrashIcon } 
    TIMELINE (chiziq+ikonlar, eng yangisi tepada): sana-diapazon, izoh,
    "Joriy/Kelgusi" badge; pastda "Yangi versiya…" va oʻchirish.
 
-   ROʻYXAT QAMROVI — FAQAT FAOL OʻQUV YILI. Bu sohaning universal naqshi:
-   Untis'da "Perioden" yil ICHIDAGI boʻlinmalar (yil almashganda tayanch
-   davrdan boshqasi umuman oʻchiriladi), Edupage/aSc'da "valid from"
-   zanjiri yil konteksti ichida, PowerSchool/Infinite Campus'da esa butun
-   jadval strukturasi yilga bogʻlangan va rollover bilan NUSXALANADI.
-   Bizda eski versiyalar store'da QOLADI (oʻtgan yil davomatini backfill
-   qilishda `resolveVersionForDate` ularni oʻqiydi) — faqat shu roʻyxatdan
-   yashiriladi. Ilgari yil boʻyicha GURUHLASH bor edi; 10+ versiyada u
-   yordam bermay qoldi.
+   ROʻYXAT QAMROVI — FAQAT FAOL OʻQUV YILI. Jadval versiyasi oʻquv yilining
+   ichki boʻlinmasi (sana oraligʻi + oʻsha oraliqdagi jadval), yillar
+   boʻylab kesib oʻtuvchi tarix emas — versiyalar doim yil konteksti
+   ichida koʻriladi. Bizda eski versiyalar store'da QOLADI (oʻtgan yil
+   davomatini backfill qilishda `resolveVersionForDate` ularni oʻqiydi) —
+   faqat shu roʻyxatdan yashiriladi. Ilgari yil boʻyicha GURUHLASH bor
+   edi; 10+ versiyada u yordam bermay qoldi.
    ════════════════════════════════════════════════════════════════════ */
 
 /** Versiya davri matni: "16-sentabrdan" yoki "2-sentabr — 15-sentabr". */
