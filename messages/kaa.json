@@ -4279,6 +4279,7 @@
     "footer": {
       "tagline": "Muǵallimler ushın tálim procesin basqarıw hám sapasın asırıwǵa arnalǵan sanlı platforma.",
       "pagesTitle": "Betler",
+      "productsTitle": "Ishki joybalar",
       "moreInfoTitle": "Qosımsha maǵlıwmat",
       "contactTitle": "Baylanısıw ushın",
       "contactNote": "Soraw hám usınıslar ushın Telegram arqalı jazıń.",
@@ -4288,9 +4289,9 @@
     "products": {
       "badge": "Ekosistema",
       "heading": "Ónimler",
-      "desc": "Ustozona ústine qurılatuǵın baǵdarlar. Birewi isleydi, qalǵanları jolda.",
+      "desc": "Ustozona ústine qurılatuǵın baǵdarlar. Ekewi isleydi, qalǵanları jolda.",
       "mainTitle": "Ustozona",
-      "mainStatus": "Isleydi",
+      "mainStatus": "Bar",
       "mainDesc": "Muǵallim panelı — jurnal, qatnasıw, minez-qulıq, keste, sabaq islenbesi. Búgin paydalanıwıńız múmkin.",
       "mainCta": "Múmkinshiliklerdi kóriw",
       "detailCta": "Tolıq maǵlıwmat"

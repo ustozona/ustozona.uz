@@ -5,6 +5,7 @@ import Logo from "@/assets/logo/logo";
 import { Separator } from "@/components/ui/separator";
 import {
   FOOTER_PAGE_LINKS,
+  FOOTER_PRODUCT_LINKS,
   LEGAL_LINKS,
   TELEGRAM_HANDLE,
   TELEGRAM_URL,
@@ -20,8 +21,18 @@ const Footer = () => {
   const t = useTranslations("Landing");
   // Nomlar va havolalar YAGONA manbadan (lib/landing-nav) — header bilan bir xil.
   const footerSections = [
-    { title: t("footer.pagesTitle"), links: FOOTER_PAGE_LINKS, ns: "nav" as const },
-    { title: t("footer.moreInfoTitle"), links: LEGAL_LINKS, ns: "legal" as const },
+    {
+      title: t("footer.productsTitle"),
+      links: FOOTER_PRODUCT_LINKS.map((p) => ({ key: p.key, href: p.href, label: p.label })),
+    },
+    {
+      title: t("footer.pagesTitle"),
+      links: FOOTER_PAGE_LINKS.map((l) => ({ key: l.key, href: l.href, label: t(`nav.${l.key}`) })),
+    },
+    {
+      title: t("footer.moreInfoTitle"),
+      links: LEGAL_LINKS.map((l) => ({ key: l.key, href: l.href, label: t(`legal.${l.key}`) })),
+    },
   ];
   return (
     <footer className="py-10">
@@ -55,22 +66,20 @@ const Footer = () => {
               </div>
             </div>
 
-            <div className="col-span-1 lg:block hidden"></div>
-
-            {footerSections.map(({ title, links, ns }, index) => (
+            {footerSections.map(({ title, links }, index) => (
               <div key={index} className="col-span-2">
                 <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
                   <p className="text-base font-medium text-foreground">
                     {title}
                   </p>
                   <ul className="flex flex-col gap-3">
-                    {links.map(({ key, href }) => (
+                    {links.map(({ key, href, label }) => (
                       <li key={key}>
                         <a
                           href={href}
                           className="text-base font-normal text-muted-foreground hover:text-foreground"
                         >
-                          {t(`${ns}.${key}`)}
+                          {label}
                         </a>
                       </li>
                     ))}
@@ -79,7 +88,7 @@ const Footer = () => {
               </div>
             ))}
 
-            <div className="col-span-3">
+            <div className="col-span-2">
               <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-100 ease-in-out fill-mode-both">
                 <p className="text-base font-medium text-foreground">
                   {t("footer.contactTitle")}

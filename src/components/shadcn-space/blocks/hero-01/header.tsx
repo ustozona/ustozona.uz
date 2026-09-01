@@ -14,39 +14,26 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { Menu, X, Globe, Send, Mail, Phone, ArrowRight } from 'lucide-react';
-import { IconChartSquare, IconWidget, IconUsersGroup, IconBuildings } from "./product-icons";
+import { PRODUCT_ICONS, PRODUCT_ICON_STYLE } from "./product-icons";
 import Logo from "@/assets/logo/logo";
 import { Button } from "@/components/ui/button";
 import ButtonWithIcon from "@/components/shadcn-space/button/button-01";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { PRODUCTS, type NavItem } from "@/lib/landing-nav";
 
-/** Header dropdown'dagi tile ikonalari — `PRODUCTS` bilan slug orqali bogʻlanadi (indeks emas). */
-const PRODUCT_ICONS: Record<(typeof PRODUCTS)[number]["slug"], typeof IconChartSquare> = {
-  baholash: IconChartSquare,
-  doska: IconWidget,
-  shogird: IconUsersGroup,
-  boshqaruv: IconBuildings,
-};
-
 /**
- * Har mahsulotga oʻz rangi (TYPE_META naqshi — changelog-meta.ts'dagi
- * kabi semantik Tailwind ranglar + dark variant). Bu landing'ning
- * yagona rangli joyi — atayin, mono qoida shu yerda ongli ravishda buziladi.
+ * Ikona + rang xaritasi `product-icons.tsx` da (YAGONA manba — "Mahsulotlar"
+ * boʻlimi ham shundan oʻqiydi). Bu yerda faqat qator-hover uslubi qoladi.
  *
  * Ikonbox statik qoladi — hoverda butun QATOR shu rangga toʻyinadi
  * (`PRODUCT_ROW_HOVER_STYLE`), ikonbox emas (Notion/Slack workspace-list
- * uslubi).
+ * uslubi). Landing'ning yagona rangli joyi — atayin, mono qoida shu yerda
+ * ongli ravishda buziladi.
  */
-const PRODUCT_ICON_STYLE: Record<(typeof PRODUCTS)[number]["slug"], string> = {
-  baholash: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400",
-  doska: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
-  shogird: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
-  boshqaruv: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
-};
 
 /** Qator hoverida — fon + matn + strelka shu mahsulot ranggiga oʻtadi. */
 const PRODUCT_ROW_HOVER_STYLE: Record<(typeof PRODUCTS)[number]["slug"], string> = {
+  blog: "hover:bg-slate-100 dark:hover:bg-slate-500/10 hover:[&_.tile-label]:text-slate-700 dark:hover:[&_.tile-label]:text-slate-200 hover:[&_.tile-arrow]:text-slate-600 dark:hover:[&_.tile-arrow]:text-slate-300",
   baholash: "hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:[&_.tile-label]:text-violet-700 dark:hover:[&_.tile-label]:text-violet-300 hover:[&_.tile-arrow]:text-violet-600 dark:hover:[&_.tile-arrow]:text-violet-400",
   doska: "hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:[&_.tile-label]:text-emerald-700 dark:hover:[&_.tile-label]:text-emerald-300 hover:[&_.tile-arrow]:text-emerald-600 dark:hover:[&_.tile-arrow]:text-emerald-400",
   shogird: "hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:[&_.tile-label]:text-blue-700 dark:hover:[&_.tile-label]:text-blue-300 hover:[&_.tile-arrow]:text-blue-600 dark:hover:[&_.tile-arrow]:text-blue-400",
@@ -199,7 +186,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                               return (
                                 <li key={p.slug}>
                                   <NavigationMenuLink
-                                    href={`/${p.slug}`}
+                                    href={p.href}
                                     className={cn(
                                       "flex-row items-center gap-3 rounded-lg p-2 transition-colors hover:[&_.tile-arrow]:translate-x-0 hover:[&_.tile-arrow]:opacity-100",
                                       PRODUCT_ROW_HOVER_STYLE[p.slug],

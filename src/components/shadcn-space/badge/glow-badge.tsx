@@ -31,23 +31,29 @@ export type GlowBadgeTone = "success" | "pending";
 
 export const GlowBadge = ({
   tone = "success",
+  size = "md",
   children,
   className,
 }: {
   tone?: GlowBadgeTone;
+  /** "sm" — zich joylar (masalan karta sarlavhasi yonida); "md" — asl oʻlcham. */
+  size?: "sm" | "md";
   children: string;
   className?: string;
 }) => {
   const isPending = tone === "pending";
+  const isSm = size === "sm";
+  const iconPx = isSm ? 12 : 14;
 
   return (
     <MotionBadge
       variant="outline"
       className={cn(
         "relative h-auto cursor-default overflow-visible rounded-full",
-        "gap-1.5 px-2.5 py-1.5",
+        isSm ? "gap-1 px-2 py-0.5" : "gap-1.5 px-2.5 py-1.5",
         "bg-background backdrop-blur-md",
-        "text-foreground text-xs font-medium leading-none",
+        "text-foreground font-medium leading-none",
+        isSm ? "text-[11px]" : "text-xs",
         isPending ? "border-amber-300/25" : "border-teal-400/25",
         className,
       )}
@@ -92,18 +98,24 @@ export const GlowBadge = ({
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
-          className="flex h-3.5 w-3.5 shrink-0 items-center justify-center text-amber-300"
+          className={cn(
+            "flex shrink-0 items-center justify-center text-amber-300",
+            isSm ? "h-3 w-3" : "h-3.5 w-3.5",
+          )}
         >
-          <Loader size={14} strokeWidth={2.5} />
+          <Loader size={iconPx} strokeWidth={2.5} />
         </motion.div>
       ) : (
         <motion.span
           initial={{ scale: 0.35, opacity: 0, rotate: -25 }}
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ duration: 0.32, ease: [0.175, 0.885, 0.32, 1.275] }}
-          className="flex h-3.5 w-3.5 shrink-0 items-center justify-center"
+          className={cn(
+            "flex shrink-0 items-center justify-center",
+            isSm ? "h-3 w-3" : "h-3.5 w-3.5",
+          )}
         >
-          <CheckCircle size={14} strokeWidth={2} className="text-teal-400" />
+          <CheckCircle size={iconPx} strokeWidth={2} className="text-teal-400" />
         </motion.span>
       )}
 

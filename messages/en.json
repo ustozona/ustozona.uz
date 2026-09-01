@@ -4275,6 +4275,7 @@
     "footer": {
       "tagline": "A digital platform for teachers to manage and improve the quality of the learning process.",
       "pagesTitle": "Pages",
+      "productsTitle": "Sub-projects",
       "moreInfoTitle": "More information",
       "contactTitle": "Get in touch",
       "contactNote": "For questions and suggestions, write to us on Telegram.",
@@ -4284,9 +4285,9 @@
     "products": {
       "badge": "Ecosystem",
       "heading": "Products",
-      "desc": "Directions being built on top of Ustozona. One is live, the rest are on the way.",
+      "desc": "Directions being built on top of Ustozona. Two are live, the rest are on the way.",
       "mainTitle": "Ustozona",
-      "mainStatus": "Live",
+      "mainStatus": "Available",
       "mainDesc": "The teacher panel — gradebook, attendance, behavior, timetable, lesson plans. You can use it today.",
       "mainCta": "See features",
       "detailCta": "Learn more"

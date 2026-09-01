@@ -88,7 +88,7 @@ export function ProductPage({
               {others.map((p) => (
                 <a
                   key={p.slug}
-                  href={`/${p.slug}`}
+                  href={p.href}
                   className="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 -mx-3 transition-colors hover:bg-muted"
                 >
                   <span className="text-sm font-medium text-foreground">
