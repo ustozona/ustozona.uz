@@ -12,8 +12,8 @@ import { writeWorkspaceAudit } from "./workspace-audit";
    ⭐ NEGA KERAK: taklif oqimi ishga tushgach bu MUAMMO EMAS, FAKT
    boʻladi. Aziza opa ham, Laylo opa ham «Bobur Aliyev» ni oʻz shaxsiy
    maydonida yaratgan; jamoaga qoʻshilganda ikkalasi bitta maydonga
-   koʻchadi va u yerda IKKITA Bobur turadi. ClassDojo bu haqda ataylab
-   ogohlantiradi: «avval maktab tasdigʻini ol, keyin sinf yarat — aks
+   koʻchadi va u yerda IKKITA Bobur turadi. Bu haqda taʼlim tizimlarida
+   ataylab ogohlantiriladi: «avval maktab tasdigʻini ol, keyin sinf yarat — aks
    holda dublikat oʻquvchilar paydo boʻladi».
 
    🔴 BIRLASHTIRISH QAYTARILMAS. Shu bois (docs §7.2):

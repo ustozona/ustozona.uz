@@ -539,8 +539,8 @@ async function detachOrDeleteStudents(ids: string[]): Promise<void> {
  * Sinfni oʻchiradi yoki undan chiqadi.
  *
  * Hamkasb ham shu darsni oʻtayotgan boʻlsa — sinf OʻCHMAYDI, faqat
- * mening biriktirishim uziladi. Bu ClassDojo'dagi «leave a shared
- * class» ning aynan oʻzi va bizga ham shu kerak: sinf oʻchsa cascade
+ * mening biriktirishim uziladi. Bu «umumiy sinfdan chiqish» naqshining
+ * aynan oʻzi va bizga ham shu kerak: sinf oʻchsa cascade
  * hamkasbning baholarini ham olib ketardi.
  */
 async function detachOrDeleteClasses(

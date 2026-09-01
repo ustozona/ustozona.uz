@@ -1378,6 +1378,15 @@
     "lessonDeletedToast": "Dars oʻchirildi"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Jadval yangilandi",
+    "pendingSubtitle": "Jadvalda hali eski tartib amal qiladi",
+    "discardedToast": "{count} ta oʻzgarish bekor qilindi",
+    "undo": "Qaytarish",
+    "discardConfirmTitle": "Oʻzgarishlar bekor qilinsinmi?",
+    "discardConfirmDescription": "{count} ta oʻzgarish oʻchadi va jadval oxirgi qoʻllangan holatiga qaytadi.",
+    "pendingChanges": "{count} ta oʻzgarish saqlanmagan",
+    "applyChanges": "Saqlash",
+    "discardChanges": "Bekor qilish",
     "unknownClass": "Nomaʼlum sinf",
     "versionExistsError": "Bu sanada allaqachon versiya bor",
     "newVersionToast": "Yangi jadval versiyasi — {date}dan",
@@ -3007,35 +3016,25 @@
     "pastMidnightWarning": "Darslar yarim tundan oshib ketmoqda — boshlanish vaqti yoki darslar sonini tekshiring."
   },
   "EffectiveDateDialog": {
-    "title": "Yangi dars jadvali qachondan kuchga kiradi?",
-    "description": "Ungacha boʻlgan dars va baholar tarixi oldingi jadvalda saqlanadi.",
+    "title": "Oʻzgarish qachondan amal qilsin?",
+    "description": "Bu tahrirlar qaysi kunlarga tegsin.",
+    "pickTitle": "Yangi jadval qachondan boshlansin?",
+    "pickDescription": "Tanlangan sanadan yangi jadval versiyasi yaratiladi.",
     "close": "Yopish",
     "options": {
-      "monday": {
-        "title": "Keyingi dushanbadan",
-        "caption": "Yangi jadval '{date}'dan kuchga kiradi. Ungacha darslar eski tartibda boʻladi."
+      "new": {
+        "title": "Bugundan",
+        "caption": "Oldingi darslar eski jadvalda qoladi."
       },
-      "today": {
-        "title": "Bugundan boshlab",
-        "caption": "'{date}'dan boshlanadi. Oʻtgan kunlar tarixiga taʼsir qilmaydi."
-      },
-      "custom": {
-        "title": "Boshqa sanadan…",
-        "caption": "'{date}'dan kuchga kiradi",
-        "pickFromCalendar": "Sanani kalendardan tanlang."
-      },
-      "inPlace": {
-        "title": "Xatoni toʻgʻrilash",
-        "caption": "Yangi jadval yaratilmaydi, oʻzgarishlar barcha kunlarga qoʻllanadi."
+      "fix": {
+        "title": "Boshidan — xatoni toʻgʻrilash",
+        "caption": "Barcha darslar yangi jadval boʻyicha koʻrsatiladi."
       }
     },
+    "attendanceWarning": "Oʻtgan darslardagi davomat belgilariga taʼsir qilishi mumkin.",
+    "effectiveDateLabel": "Boshlanish sanasi",
     "dateAlreadyTaken": "Ushbu sanaga dars jadvali tuzilgan",
-    "effectiveDateLabel": "Kuchga kirish sanasi",
-    "pickDate": "Sanani tanlang",
-    "dateAlreadyTakenFull": "Ushbu sanaga dars jadvali tuzilgan.",
     "pastDateWarning": "Oʻtmishdagi sana — shu kundan keyingi kunlar tarixi ham yangi jadval bilan koʻrsatiladi.",
-    "noteLabel": "Oʻzgarishlar haqida izoh (ixtiyoriy)",
-    "notePlaceholder": "Masalan: 7-B darsi juma kuniga oʻtkazildi",
     "cancel": "Bekor qilish",
     "save": "Saqlash"
   },

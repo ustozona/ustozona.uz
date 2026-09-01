@@ -433,7 +433,7 @@ export default function AssignmentEditorOverlay({
      Maks. ball oʻzgarsa katakdagi XOM ball oʻzgarmaydi, lekin foiz qayta
      hisoblanadi: 10 savollik testda "8" — 80%, maks. ball 100 boʻlsa oʻsha
      "8" endi 8%. Jurnalga qarab buni sezib boʻlmaydi, chunki koʻrinadigan
-     raqam oʻsha-oʻsha. Canvas/PowerSchool shu sabab "Saqlash" tugmasi
+     raqam oʻsha-oʻsha. Taʼlim-boshqaruv tizimlari shu sabab "Saqlash" tugmasi
      qoʻyadi; biz avtosaqlashni saqlaymiz (global sessiya arxitekturasi),
      lekin OQIBATNI aytamiz — tugma faqat "qoʻllaymizmi?" deb soʻrardi,
      nechta baho qayta hisoblanishini aytmasdi. */
@@ -1077,7 +1077,7 @@ export default function AssignmentEditorOverlay({
               {/* Boʻlim ATAYLAB NOMSIZ. «Kontent» — dasturchi soʻzi edi:
                   oʻqituvchi test yoki taqdimotni «kontent» deb oʻylamaydi, va
                   «Materiallar» deb nomlansa sidebar'dagi sahifa bilan
-                  chalkashardi. Nomsiz qoldirish Google Classroom naqshi —
+                  chalkashardi. Nomsiz qoldirish taʼlim platformalari orasida keng tarqalgan naqsh —
                   u ham bu joyni nomlamaydi. */}
               <div className="flex flex-col gap-2.5">{renderContent()}</div>
             </div>

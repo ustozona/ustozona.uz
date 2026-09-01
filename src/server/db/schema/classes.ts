@@ -100,7 +100,7 @@ export const classes = pgTable(
    olsa — OʻZIGA OʻZI ruxsat bergan boʻladi. Shu bois bu jadvalga yozish
    nazorat qilinadigan amal (maktabda: admin; adminsiz maydonda: EGA).
 
-   ⭐ EGA (2026-08-26) — ClassDojo/Google Classroom naqshi. Ilgari bu
+   ⭐ EGA (2026-08-26) — sinf egaligi naqshi. Ilgari bu
    jadval yassi toʻplam edi va "kim kimni chiqaradi, kim sinfni
    oʻchiradi" savoliga javob yoʻq edi: ikki hamkasb bir-birini chiqarib
    tashlashi mumkin edi. Adminsiz maydonda nazoratchi ham yoʻq edi —

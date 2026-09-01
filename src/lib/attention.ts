@@ -69,7 +69,7 @@ export type AttentionSignal = {
   | { kind: "attendance-recovery"; studentId: string; studentName: string; pct: number }
 );
 
-/** Ijobiy signal turlari — Google Classroom "3 oʻquvchining bahosi
+/** Ijobiy signal turlari — "3 oʻquvchining bahosi
     koʻtarildi" naqshi. Alohida roʻyxatda koʻrsatish uchun ajratiladi. */
 export const POSITIVE_KINDS: readonly AttentionSignal["kind"][] = ["grade-rise", "attendance-recovery"];
 

@@ -10,7 +10,7 @@ import type { DraftQuestionValues } from "@/server/actions/assess";
 
 export type DraftQuestion = DraftQuestionValues & { key: string };
 
-/** Test savolida variant soni QATʼIY 4 ta (Kahoot bilan bir xil):
+/** Test savolida variant soni QATʼIY 4 ta:
     qoʻshish/oʻchirish yoʻq, boʻsh qolgan variant saqlashda tushib
     qoladi — yaʼni 2 yoki 3 variantli savol shunchaki boʻsh qoldirish
     orqali olinadi. Sahna balandligi ham shu sababli qatʼiy 2×2. */
@@ -19,7 +19,7 @@ export const MAX_PAIRS = 10;
 
 export const TIME_LIMITS = [5, 10, 20, 30, 60, 90, 120, 240] as const;
 
-/** Sahna mavzusi — 16:9 maydonning foni (Kahoot "Themes" ga mos).
+/** Sahna mavzusi — 16:9 maydonning foni ("Mavzular" ga mos).
     Qiymat `--stage-bg` tokeniga inline yoziladi, shuning uchun yangi
     mavzu qoʻshish = shu roʻyxatga bitta qator. Mavzu toʻplam
     darajasida saqlanadi (`activity_sets.config.stageTheme`).
@@ -64,7 +64,7 @@ function hueOf(oklch: string): number {
 /* Har mavzuda uch qiymat:
    `bg`   — sahna foni;
    `band` — karta pastidagi nom lentasi (fonning toʻqroq/yorugʻroq
-            varianti — Kahoot kartalarida ham aynan shunday);
+            varianti — viktorina-uslub kartalarida ham aynan shunday);
    `onBand` — lenta ustidagi matn rangi.
    Rang aralashtirish qoʻlda yozilgan: `color-mix(var(...))` Turbopack'da
    buziladi (memory: turbopack-css-gotchas).

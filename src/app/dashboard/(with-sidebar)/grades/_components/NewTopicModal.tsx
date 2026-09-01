@@ -141,7 +141,7 @@ export default function NewTopicModal({
 }: Props) {
   const t = useTranslations("NewTopicModal");
   /* Modal joriy sinf jurnalidan ochiladi — kutubxona ham oʻsha sinf bilan
-     doiralanib boshlanadi (Canvas/Google Classroom xuddi shunday: toifalar
+     doiralanib boshlanadi (taʼlim-boshqaruv tizimlarida xuddi shunday: toifalar
      kursga tegishli). "Barcha sinflar" ochiq variant boʻlib qolaveradi. */
   const [filterClassId, setFilterClassId] = useState(
     currentClassId && classDataMap[currentClassId] ? currentClassId : ALL

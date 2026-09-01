@@ -25,7 +25,7 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { ReportPanel } from "./ReportPanel";
 
 /* ════════════════════════════════════════════════════════════════════
-   Sinf-darajali hisobot (ClassDojo "Reports" UX): chapda "Butun sinf" +
+   Sinf-darajali hisobot (sinf hisoboti UX): chapda "Butun sinf" +
    oʻquvchilar roʻyxati (tanlangan davrdagi ijobiy foizi bilan), oʻngda
    tanlanganga donut + davr filtri + timeline — oʻquvchi modalidagi
    hisobot paneli (ReportPanel) qayta ishlatiladi.

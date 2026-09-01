@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { STAGE_THEMES } from "./types";
 
-/* Mavzu paneli — oʻng ustunning ikkinchi rejimi (Kahoot "Themes").
+/* Mavzu paneli — oʻng ustunning ikkinchi rejimi ("Mavzular").
 
    Nega popover emas, PANEL: mavzu tanlash — koʻrish ishi. Foydalanuvchi
    variantni bosadi, 16:9 sahnada natijani koʻradi, keyin boshqasini
@@ -38,7 +38,7 @@ export default function ThemesPanel({ value, onChange, onClose }: Props) {
             const isActive = theme.id === value;
             return (
               <li key={theme.id}>
-                {/* Joriy mavzu — bosilmaydi (Kahoot'da ham qoʻllanilgan
+                {/* Joriy mavzu — bosilmaydi (viktorina-uslub platformalarda ham qoʻllanilgan
                     karta `disabled`). Nom karta USTIDA, pastki
                     lentada — koʻrinish butun kartani egallaydi. */}
                 <button

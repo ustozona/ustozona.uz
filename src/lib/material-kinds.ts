@@ -9,7 +9,7 @@ import type { ClassColor } from "./class-colors";
    tanlovi. Ilgari ikkalasi oʻz ikonkasi va oʻz nomini ishlatardi —
    oʻqituvchi bir joyda koʻrgan belgisini boshqa joyda tanimasdi.
 
-   RANG = TUR. Xarita Wayground'dan olingan va kelgusi turlar uchun ham
+   RANG = TUR. Xarita viktorina-uslub platformalar amaliyotidan olingan va kelgusi turlar uchun ham
    shu yerda band qilinadi, toki yangi tur qoʻshilganda rang tanlash
    bahsi qaytadan boshlanmasin. Sinf rangi bilan chalkashmaydi, chunki
    SHAKL ajratadi (dizayn tizimi, «Class swatch standard»): sinf =
@@ -23,11 +23,11 @@ import type { ClassColor } from "./class-colors";
    - `isContainer` — SAVOL IDISHIMI (topshiriq shakli boʻla oladimi);
    - `attachable`  — hozir amalda ulanadimi (muharriri yozilganmi).
 
-   `isContainer` eng muhimi va u toifa chegarasi. Wayground'ning beshta
-   «turi» aslida bitta obyektning beshta idishi: Assessment = savollar
-   idishsiz, Presentation = savollar slayd ichida, Video = savollar
-   video ichida, Passage = savollar matn ostida, Flashcards = savollar
-   kartochka shaklida. Bizda ham shunday — `activity_sets.container_kind`.
+   `isContainer` eng muhimi va u toifa chegarasi. Beshta «tur» aslida
+   bitta obyektning beshta idishi: Baholash = savollar idishsiz,
+   Taqdimot = savollar slayd ichida, Video = savollar video ichida,
+   Matn = savollar matn ostida, Kartochkalar = savollar kartochka
+   shaklida. Bizda ham shunday — `activity_sets.container_kind`.
 
    DARS esa savol idishi EMAS: u oʻqituvchining dars hujjati, baholanmaydi.
    Bir muddat u shakl tanlash qatorida «tez orada» boʻlib turgan edi —

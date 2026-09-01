@@ -306,8 +306,8 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
             (dizayn tizimi, «Gorizontal gutter — bitta qiymat»). Ichidagi
             boshqaruvlar 36px, demak qator ham header kabi 68px.
 
-            Tanlov boʻlganda butun qator TANLOV PANELIGA almashadi (Gmail,
-            Kahoot naqshi): filtrlarni ham, ommaviy amalni ham bir vaqtda
+            Tanlov boʻlganda butun qator TANLOV PANELIGA almashadi (keng
+            tarqalgan naqsh): filtrlarni ham, ommaviy amalni ham bir vaqtda
             koʻrsatish qatorni haddan tashqari toʻldirardi. */}
         {selectedItems.length > 0 ? (
           <div className="flex items-center gap-3 border-b border-border px-5 py-4">
@@ -333,13 +333,13 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
           <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4" data-tour="resources-tabs">
             {/* TUR = TAB, select emas. «Barcha turlar» yopiq roʻyxatda
                 turgani uchun oʻqituvchi nima filtrlanganini bilmaydi va
-                qaysi tur nechta ekani koʻrinmaydi. Wayground `Created (18)
-                / Draft (2)`, Kahoot `Recent / Drafts` — holat doim ochiq.
+                qaysi tur nechta ekani koʻrinmaydi. Viktorina-uslub
+                platformalarda holat (`Created`/`Draft`, `Recent`/`Drafts`) doim ochiq turadi.
 
                 ⚠️ «Qoralama» — TUR emas, HOLAT, va shu bir qatorda turadi.
                 Ataylab: oʻqituvchi bitta savol beradi — «hozir nimaga
-                qarayman?». Wayground/Kahoot ham Draft'ni kontent tablari
-                yoniga qoʻyadi. Qoralama faqat darsda boʻladi
+                qarayman?». Viktorina-uslub platformalarda ham qoralama
+                kontent tablari yoniga qoʻyiladi. Qoralama faqat darsda boʻladi
                 (`lessons.status`), testda bunday holat yoʻq. */}
             {/* Ikonka — tur ROʻYXATDAGI bilan bir xil (registrdan). Rangsiz —
                 ikonkaning oʻzi turni tanitish uchun yetarli, alohida
@@ -527,8 +527,8 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
       </AlertDialog>
 
       {/* Qator ⋮ menyusidan bitta materialni oʻchirish — bulk tanlovdan
-          MUSTAQIL, checkbox holatini oʻzgartirmaydi (Wayground naqshi:
-          har qator oʻz amaliga ega, tanlov shart emas). */}
+          MUSTAQIL, checkbox holatini oʻzgartirmaydi (har qator oʻz
+          amaliga ega, tanlov shart emas). */}
       <AlertDialog open={deleteTarget !== null} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -559,8 +559,8 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
 /** «Yaratish» — kutubxonadagi yagona kirish nuqtasi.
 
     Nega menyu, tugma emas: turlar roʻyxati `KIND_META` dan chiqadi, yaʼni
-    yangi tur qoʻshilganda menyu oʻz-oʻzidan toʻldiriladi (Wayground
-    `+ Add resource ▾` naqshi).
+    yangi tur qoʻshilganda menyu oʻz-oʻzidan toʻldiriladi (kutubxona
+    materiallariga xos `+ Qoʻshish ▾` naqshi).
 
     ⚠️ Havolalar mavjud tuzish sirtlariga olib boradi (Topshiriqlar /
     Darslar), chunki ikkala muharrir ham SINF talab qiladi: test builder
@@ -577,7 +577,7 @@ function CreateMenu() {
           Yaratish
         </Button>
       </DropdownMenuTrigger>
-      {/* Wayground naqshi: har turda RANGLI ikonka + bir qatorlik izoh.
+      {/* Har turda RANGLI ikonka + bir qatorlik izoh.
           Faqat nom yozilganda oʻqituvchi «Test bilan Dars nima farqi
           bor?» degan savolga menyuni yopmasdan javob ololmaydi. Ikonka
           jadvaldagi plitka BILAN AYNAN bir xil — menyuda koʻrgan yashil
@@ -629,8 +629,8 @@ function ItemBadges({ item }: { item: LibraryItem }) {
       )}
       {/* «N marta» — alohida ustun emas, chip. Ustun boʻlganda darslarda
           har doim «—» turardi: 7 qatordan 7 tasi boʻsh ustun faqat joy
-          yeydi. Wayground ham «3 plays» ni faqat oʻynalgan materialda
-          koʻrsatadi. */}
+          yeydi. Oʻynalish soni ham faqat oʻynalgan materialda
+          koʻrsatiladi. */}
       {item.usedCount !== null && item.usedCount > 0 && (
         <Badge variant="secondary" className="shrink-0 text-[10px]">
           {item.usedCount} marta
@@ -642,8 +642,8 @@ function ItemBadges({ item }: { item: LibraryItem }) {
 
 function RowActions({ onOpen, onDelete }: { onOpen: () => void; onDelete: () => void }) {
   return (
-    /* Asosiy amal KOʻRINADI (hover'da), qolganlari `⋮` da (Wayground
-       naqshi: Play koʻrinadi, Save/Copy/Delete menyuda). Nusxalash hali
+    /* Asosiy amal KOʻRINADI (hover'da), qolganlari `⋮` da (Ochish
+       koʻrinadi, Saqlash/Nusxalash/Oʻchirish menyuda). Nusxalash hali
        yoʻq — bu har turda alohida server amali talab qiladi (v2). */
     <div className="flex items-center justify-end gap-1">
       <Button
@@ -697,7 +697,7 @@ function LibraryRow({
       </TableCell>
 
       {/* Tur endi FAQAT rangli ikonka orqali koʻrsatiladi — alohida matnli
-          badge yoʻq (Wayground naqshi: ikonka yagona tur signali, sarlavha
+          badge yoʻq (ikonka yagona tur signali, sarlavha
           qatori esa faqat holat/statistika chiplariga ajratilgan). */}
       <TableCell className="py-3 pl-3 pr-3">
         <div className="flex items-center gap-3">
@@ -728,7 +728,7 @@ function LibraryRow({
 
 /** Katak koʻrinishi — MUQOVASIZ.
 
-    Kahoot/Wayground kataklari rasm ustiga quriladi; bizda muqova yoʻq va
+    Viktorina-uslub platformalarda kataklar rasm ustiga quriladi; bizda muqova yoʻq va
     yaqin rejada ham koʻzlanmagan. Shuning uchun katak rasm oʻrnini boʻsh
     kulrang kvadrat bilan toʻldirmaydi: tur plitkasi kattaroq chiziladi
     va qolgan joy MATNGA beriladi. Natijada katak «buzuq rasm» emas,

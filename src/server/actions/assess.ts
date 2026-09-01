@@ -191,7 +191,7 @@ export async function deleteSetAction(id: string): Promise<void> {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   TOʻPLAM BUILDER — Kahoot uslubidagi muharrir uchun BITTA amal.
+   TOʻPLAM BUILDER — viktorina-uslub muharrir uchun BITTA amal.
 
    Muharrirda toʻplam HUJJAT: savollar uning ichida yashaydi, alohida
    roʻyxat yoʻq. Shu sababli mijoz butun qoralamani mahalliy holatda

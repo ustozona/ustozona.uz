@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { SHAPE_LABEL, type DraftQuestion } from "./types";
 
-/* Savol turi tanlagichi — select emas, KARTOCHKALI panel (Kahoot naqshi).
+/* Savol turi tanlagichi — select emas, KARTOCHKALI panel.
 
    Nega: savol turi — muharrirning eng katta qarori (butun kanvas
    oʻzgaradi), va turlar soni oʻsib boradi. Kartochka ikonka bilan

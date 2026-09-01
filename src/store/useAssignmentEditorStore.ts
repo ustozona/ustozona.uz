@@ -74,7 +74,7 @@ interface AssignmentEditorState {
   /** Sessiya turibdi, lekin muharrir CHIZILMAYDI — qoralama "parkda".
       Ilgari bu `minimized` edi va pastda suzuvchi yorliq chizilardi;
       yorliq oʻrniga qoralama endi Topshiriqlar roʻyxatida karta boʻlib
-      turadi (Google Classroom "Draft" naqshi). */
+      turadi (qoralama-kartochka naqshi). */
   parked: boolean;
 
   /** Yangi qoralama. Tugallanmagan qoralama bor boʻlsa — u TIKLANADI,

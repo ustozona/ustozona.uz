@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════════════════════════════════
    XULQ (behavior) — domen tiplari, defaultlar va pure helperlar.
 
-   ClassDojo-uslub xulq ballari: ijobiy/salbiy koʻnikmalar, mukofot
+   Koʻnikma-asosli xulq ballari: ijobiy/salbiy koʻnikmalar, mukofot
    doʻkoni. MUHIM: xulq ballari akademik baholar tizimiga (grades)
    MUTLAQO aralashmaydi (docs/grades-v1-spec.md talabi) — bu modul
    useGradesStore'dan faqat read-only roster oladi, teskari bogʻlanish

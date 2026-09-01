@@ -125,7 +125,7 @@ export default function QuestionCanvas({ question, stageTheme, onChange }: Props
           )}
         </div>
 
-        {/* Wayground uslubi — almashtirgich javob kartalariga BEVOSITA
+        {/* Almashtirgich javob kartalariga BEVOSITA
             yopishgan, sahna ustida "muallaq" burchak tugmasi emas. */}
         {question.shape === "mcq" && (
           <div className="flex shrink-0 justify-end">

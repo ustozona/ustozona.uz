@@ -1378,6 +1378,15 @@
     "lessonDeletedToast": "Sabaq óshirildi"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Keste jańalandı",
+    "pendingSubtitle": "Kestede áli góne tártip ámel etedi",
+    "discardedToast": "{count} ózgeris biykar etildi",
+    "undo": "Qaytarıw",
+    "discardConfirmTitle": "Ózgerisler biykar etilsinbe?",
+    "discardConfirmDescription": "{count} ózgeris óshedi hám keste sońǵı qollanǵan halatına qaytadı.",
+    "pendingChanges": "{count} ózgeris saqlanbadı",
+    "applyChanges": "Saqlaw",
+    "discardChanges": "Biykar etiw",
     "unknownClass": "Belgisiz klas",
     "versionExistsError": "Bul sánede álle qashan versiya bar",
     "newVersionToast": "Jańa keste versiyası — {date}den",
@@ -3178,35 +3187,25 @@
     "pastMidnightWarning": "Sabaqlar yarım túnnen asıp ketpekte — baslanıw waqtı yamasa sabaqlar sanın tekseriń."
   },
   "EffectiveDateDialog": {
-    "title": "Taza sabaq kestesi qashannan kúshke kiredi?",
-    "description": "Oǵan shekemgi sabaq hám bahalar tariyxı aldınǵı kestede saqlanadı.",
+    "title": "Ózgeris qashannan ámel etsin?",
+    "description": "Bul redaktsiyalar qaysı kúnlerge tiyisli.",
+    "pickTitle": "Taza keste qashannan baslanadı?",
+    "pickDescription": "Tańlanǵan sáneden taza keste versiyası jaratıladı.",
     "close": "Jabıw",
     "options": {
-      "monday": {
-        "title": "Keyingi dúyshembiden",
-        "caption": "Taza keste '{date}' den kúshke kiredi. Oǵan shekem sabaqlar góne tártipte boladı."
+      "new": {
+        "title": "Búginnen",
+        "caption": "Aldınǵı sabaqlar góne kestede qaladı."
       },
-      "today": {
-        "title": "Búginnen baslap",
-        "caption": "'{date}' den baslanadı. Ótken kúnler tariyxına tásir etpeydi."
-      },
-      "custom": {
-        "title": "Basqa sáneden…",
-        "caption": "'{date}' den kúshke kiredi",
-        "pickFromCalendar": "Sáneni kalendardan tańlań."
-      },
-      "inPlace": {
-        "title": "Qáteni tuwrılaw",
-        "caption": "Taza keste jaratılmaydı, ózgerisler barlıq kúnlerge qollanıladı."
+      "fix": {
+        "title": "Basınan — qáteni tuwrılaw",
+        "caption": "Barlıq sabaqlar taza keste boyınsha kórsetiledi."
       }
     },
+    "attendanceWarning": "Bul ótken sabaqlardaǵı dawamat belgilerine tásir etiwi múmkin.",
+    "effectiveDateLabel": "Baslanıw sánesi",
     "dateAlreadyTaken": "Bul sánege sabaq kestesi dúzilgen",
-    "effectiveDateLabel": "Kúshke kiriw sánesi",
-    "pickDate": "Sáneni tańlań",
-    "dateAlreadyTakenFull": "Bul sánege sabaq kestesi dúzilgen.",
     "pastDateWarning": "Ótmishegi sáne — usı kúnnen keyingi kúnler tariyxı da taza keste menen kórsetiledi.",
-    "noteLabel": "Ózgerisler haqqında túsindirme (qálegenshe)",
-    "notePlaceholder": "Mısalı: 7-B sabaǵı juma kúnine ótkerildi",
     "cancel": "Biykar etiw",
     "save": "Saqlaw"
   },

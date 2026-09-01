@@ -362,7 +362,7 @@ export function EventTimeline({
 
   /* Bir vaqtda birga berilgan (Sinf/tanlangan guruh) eventlarni bitta
      qatorga birlashtiradi — aks holda har oʻquvchi uchun takroriy qator
-     chiqadi (ClassDojo'da uchraydigan taniqli muammo). */
+     chiqadi (koʻnikma-asosli xulq tizimlarida uchraydigan taniqli muammo). */
   type Row = { kind: "single"; event: BehaviorEvent } | { kind: "group"; key: string; events: BehaviorEvent[] };
   const toRows = (list: BehaviorEvent[]): Row[] => {
     const rows: Row[] = [];

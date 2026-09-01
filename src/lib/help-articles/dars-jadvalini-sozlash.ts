@@ -35,7 +35,7 @@ export const ARTICLE_DARS_JADVALINI_SOZLASH: HelpArticle = {
       icon: "target",
       title: "Jadval oʻzgarsa nima boʻladi",
       paragraphs: [
-        "Jadvalga oʻzgartirish kiritganingizda, tizim \"Qачondan kuchga kiradi?\" deb soʻraydi — oʻzgarishni joriy jadvalga darhol qoʻllash yoki tanlangan sanadan boshlab yangi versiya sifatida saqlash mumkin. Bu semestr davomida jadval oʻzgarsa (masalan yangi oʻquvchi kelsa), eski davr yozuvlari buzilmasligini taʼminlaydi.",
+        "Jadvalni tahrirlaganingizda tizim sizni toʻxtatmaydi — oʻzgarishlar qoralamada yigʻiladi va jadval ustida \"Qoʻllash…\" paneli chiqadi. \"Qoʻllash…\" bosilganda ikki yoʻldan birini tanlaysiz: tanlangan sanadan boshlab yangi versiya (oʻtgan darslar eski jadvalda qoladi) yoki hoziroq hamma kunlarga (oʻtgan kunlar ham yangi jadval bilan koʻrsatiladi — xato tuzatilganda shu qulay). Bu semestr davomida jadval oʻzgarsa, eski davr yozuvlari buzilmasligini taʼminlaydi.",
         "Oʻtgan (arxivlangan) versiyalar qulflangan holda saqlanadi — ularni tahrirlash uchun avval ochib olish kerak boʻladi.",
       ],
     },

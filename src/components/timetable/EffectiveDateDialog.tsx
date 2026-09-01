@@ -1,12 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { uz } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { nextMonday } from "@/lib/timetable-versions";
-import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
+import { addDaysKey, dateKeyToDate, dateToKey } from "@/lib/date-keys";
 import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 import {
   Dialog,
@@ -21,38 +21,44 @@ import { Calendar } from "@/components/ui/calendar";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  CalendarClock, CalendarCog, CalendarDays, CalendarSearch,
-  Wrench, TriangleAlert, X,
-} from "lucide-react";
+import { CalendarClock, CalendarCog, CalendarSearch, Layers, TriangleAlert, X } from "lucide-react";
 
 /* ════════════════════════════════════════════════════════════════════
-   "QACHONDAN KUCHGA KIRADI?" DIALOGI
+   "QACHONDAN AMAL QILSIN?" DIALOGI
 
-   Joriy jadval tahrirlanganda ochiladi: oʻzgarish YANGI VERSIYA boʻlib
-   tanlangan sanadan amal qiladimi (tarix saqlanadi), yoki bu XATONI
-   TUZATISH — joriy versiyaning oʻzi oʻzgaradimi (oʻtmish ham shu jadval
-   bilan koʻrinadi). Variant-kartalar radio oʻrnida (PlannerView'dagi
-   tanlov-kartalar uslubi).
+   Ikki kirish nuqtasi, ikki rejim:
 
-   Header — ilova standarti (SectionIcon + CardTitle + size-9 yopish),
-   sana tanlagich — standart Calendar (Popover ichida), native <input
-   type=date> emas (u brauzer/OS temasiga ergashib begona koʻrinardi).
+   • "decide" — paneldan "Saqlash" bosilганда FAQAT oʻzgarish oʻtgan
+     davomatga taʼsir qilishi mumkin boʻlsa ochiladi (aks holda modal
+     yoʻq — oʻzgarish jimgina joriy versiyaga yoziladi). Ikki yoʻl:
+       – "Bugundan"  → yangi versiya, oldingi kunlar eski jadvalda (default
+                       — oʻtgan davomat saqlanadi, xavfsiz);
+       – "Boshidan"  → joriy versiya qayta yoziladi (xatoni toʻgʻrilash),
+                       ogohlantirish bilan.
+     Sana tanlash YOʻQ — "aniq kelajak sana" boshqa niyat, uning uchun
+     versiyalar roʻyxatidagi "Yangi sanadan…" bor.
+
+   • "pick-date" — versiyalar roʻyxatidagi "Yangi sanadan dars jadvali
+     tuzish…" dan. Bu yerda kalendar KERAK (kelgusi chorak sanasi). Faqat
+     yangi versiya — "Boshidan" varianti chiqmaydi.
+
+   Header — ilova standarti (SectionIcon + CardTitle + size-9 yopish).
+   Bekor qilish qoralamaga TEGMAYDI — dialog shunchaki yopiladi.
+   Izoh maydoni ATAYLAB yoʻq — hozircha hech qayerda koʻrsatilmaydi;
+   real foydalanuvchi soʻrasa qoʻshiladi.
    ════════════════════════════════════════════════════════════════════ */
 
 export type EffectiveChoice =
-  | { kind: "new"; effectiveFrom: string; note?: string }
+  | { kind: "new"; effectiveFrom: string }
   | { kind: "in-place" };
-
-type OptionKind = "monday" | "today" | "custom" | "in-place";
 
 export default function EffectiveDateDialog({
   open,
   todayKey,
   takenDates,
-  allowInPlace = true,
+  mode = "decide",
+  attendanceAtRisk = false,
   onConfirm,
   onCancel,
 }: {
@@ -60,104 +66,58 @@ export default function EffectiveDateDialog({
   todayKey: string;
   /** Mavjud versiyalarning effectiveFrom sanalari — dublikat guard. */
   takenDates: string[];
-  /** false — faqat yangi versiya (masalan, dropdown'dan "Yangi versiya…"). */
-  allowInPlace?: boolean;
+  /** "decide" — Bugundan / Boshidan; "pick-date" — kalendar. */
+  mode?: "decide" | "pick-date";
+  /** Joriy versiya oraligʻida oʻtgan davomat yozuvi bor — "Boshidan"
+      tanlansa ogohlantirish koʻrsatiladi (yil boshi/sozlash paytida — yoʻq). */
+  attendanceAtRisk?: boolean;
   onConfirm: (choice: EffectiveChoice) => void;
   onCancel: () => void;
 }) {
   const t = useTranslations("EffectiveDateDialog");
   const monday = nextMonday(todayKey);
-  const [kind, setKind] = useState<OptionKind>("monday");
+
+  // decide rejimi: default "new" (oʻtgan davomatni saqlaydi — xavfsiz);
+  // "Boshidan" ni oʻqituvchi ongli ravishda tanlaydi.
+  const [kind, setKind] = useState<"new" | "fix">("new");
+  // pick-date rejimi: boʻsh → keyingi dushanba
   const [customDate, setCustomDate] = useState("");
-  const [note, setNote] = useState("");
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  // Har ochilishda toza holatdan boshlanadi
   useEffect(() => {
     if (open) {
-      setKind("monday");
+      setKind("new");
       setCustomDate("");
-      setNote("");
       setCalendarOpen(false);
     }
   }, [open]);
 
-  const todayTaken = takenDates.includes(todayKey);
-  const mondayTaken = takenDates.includes(monday);
-  const customTaken = customDate !== "" && takenDates.includes(customDate);
-  const customPast = customDate !== "" && customDate < todayKey;
+  /** Default sana — keyingi dushanba; agar unga versiya allaqachon boʻlsa,
+      keyingi BOʻSH kunga suriladi. Aks holda dialog band sana bilan ochilib,
+      "Saqlash" darhol nofaol boʻlardi (foydalanuvchi tanlamagan sana uchun). */
+  const defaultDate = useMemo(() => {
+    let d = monday;
+    for (let i = 0; i < 366 && takenDates.includes(d); i += 1) d = addDaysKey(d, 1);
+    return d;
+  }, [monday, takenDates]);
 
-  const effectiveFrom =
-    kind === "monday" ? monday : kind === "today" ? todayKey : customDate;
+  const pickedDate = customDate || defaultDate;
+  const pickedTaken = takenDates.includes(pickedDate);
+  const pickedPast = pickedDate < todayKey;
 
-  const confirmDisabled =
-    kind === "custom" ? customDate === "" || customTaken : kind === "monday" && mondayTaken;
-
-  // Caption ichida asosiy maʼlumot — SANA — urgʻulanadi (foreground + 500),
-  // qolgani muted; tez skanerlash uchun.
-  const withDate = (key: string, text: string) => {
-    const date = fmtDayMonthUz(key);
-    const idx = text.indexOf("{date}");
-    if (idx < 0) return text;
-    return (
-      <>
-        {text.slice(0, idx)}
-        <span className="font-medium text-foreground">{date}</span>
-        {text.slice(idx + "{date}".length)}
-      </>
-    );
+  const confirm = () => {
+    if (mode === "pick-date") {
+      onConfirm({ kind: "new", effectiveFrom: pickedDate });
+      return;
+    }
+    onConfirm(kind === "fix" ? { kind: "in-place" } : { kind: "new", effectiveFrom: todayKey });
   };
-
-  const options: {
-    key: OptionKind;
-    icon: React.ReactNode;
-    title: string;
-    caption: React.ReactNode;
-    disabled?: boolean;
-  }[] = [
-    {
-      key: "monday",
-      icon: <CalendarClock className="size-4" />,
-      title: t("options.monday.title"),
-      caption: mondayTaken
-        ? t("dateAlreadyTaken")
-        : withDate(monday, t("options.monday.caption")),
-      disabled: mondayTaken,
-    },
-    {
-      key: "today",
-      icon: <CalendarDays className="size-4" />,
-      title: t("options.today.title"),
-      caption: todayTaken
-        ? t("dateAlreadyTaken")
-        : withDate(todayKey, t("options.today.caption")),
-      disabled: todayTaken,
-    },
-    {
-      key: "custom",
-      icon: <CalendarSearch className="size-4" />,
-      title: t("options.custom.title"),
-      caption: customDate
-        ? withDate(customDate, t("options.custom.caption"))
-        : t("options.custom.pickFromCalendar"),
-    },
-    ...(allowInPlace
-      ? [
-          {
-            key: "in-place" as const,
-            icon: <Wrench className="size-4" />,
-            title: t("options.inPlace.title"),
-            caption: t("options.inPlace.caption"),
-          },
-        ]
-      : []),
-  ];
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-2xl gap-0 overflow-hidden p-0 bg-card top-[8vh] translate-y-0"
+        className="max-w-md gap-0 overflow-hidden p-0 bg-card top-[12vh] translate-y-0"
       >
         {/* Standart header — ikona + sarlavha + size-9 yopish tugmasi */}
         <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
@@ -167,10 +127,10 @@ export default function EffectiveDateDialog({
             </SectionIcon>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <DialogTitle asChild>
-                <CardTitle>{t("title")}</CardTitle>
+                <CardTitle>{mode === "pick-date" ? t("pickTitle") : t("title")}</CardTitle>
               </DialogTitle>
               <DialogDescription className="text-caption">
-                {t("description")}
+                {mode === "pick-date" ? t("pickDescription") : t("description")}
               </DialogDescription>
             </div>
           </div>
@@ -181,50 +141,64 @@ export default function EffectiveDateDialog({
         </div>
 
         <div className="flex max-h-[70vh] flex-col gap-2 scrollbar-hover overflow-y-auto scrollbar-thin p-5">
-          {options.map((o) => {
-            const selected = kind === o.key;
-            return (
-              <button
-                key={o.key}
-                type="button"
-                disabled={o.disabled}
-                onClick={() => setKind(o.key)}
-                className={cn(
-                  "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors",
-                  selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50",
-                  o.disabled && "cursor-not-allowed opacity-50 hover:bg-transparent"
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
-                    selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {o.icon}
-                </span>
-                <span className="min-w-0">
-                  <span className="block heading-small">{o.title}</span>
-                  <span className="mt-0.5 block text-caption">{o.caption}</span>
-                </span>
-              </button>
-            );
-          })}
+          {mode === "decide" ? (
+            <>
+              {([
+                {
+                  key: "new" as const,
+                  icon: <CalendarClock className="size-4" />,
+                  title: t("options.new.title"),
+                  caption: t("options.new.caption"),
+                },
+                {
+                  key: "fix" as const,
+                  icon: <Layers className="size-4" />,
+                  title: t("options.fix.title"),
+                  caption: t("options.fix.caption"),
+                },
+              ]).map((o) => {
+                const selected = kind === o.key;
+                return (
+                  <button
+                    key={o.key}
+                    type="button"
+                    onClick={() => setKind(o.key)}
+                    className={cn(
+                      "flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors",
+                      selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                        selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {o.icon}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block heading-small">{o.title}</span>
+                      <span className="mt-0.5 block text-caption">{o.caption}</span>
+                    </span>
+                  </button>
+                );
+              })}
 
-          {kind === "custom" && (
-            <div className="space-y-1.5 rounded-lg border border-border bg-muted/30 p-3">
+              {kind === "fix" && attendanceAtRisk && (
+                <p className="flex items-start gap-1.5 px-1 text-xs text-amber-600 dark:text-amber-500">
+                  <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+                  {t("attendanceWarning")}
+                </p>
+              )}
+            </>
+          ) : (
+            <>
               <Label>{t("effectiveDateLabel")}</Label>
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start bg-card font-normal shadow-xs",
-                      !customDate && "text-muted-foreground"
-                    )}
-                  >
+                  <Button variant="outline" className="w-full justify-start bg-card font-normal shadow-xs">
                     <CalendarSearch className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                    {customDate ? fmtDayMonthUz(customDate) : t("pickDate")}
+                    {fmtDayMonthUz(pickedDate)}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto overflow-hidden p-0" align="start">
@@ -235,8 +209,8 @@ export default function EffectiveDateDialog({
                       formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
                       formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
                     }}
-                    selected={customDate ? dateKeyToDate(customDate) : undefined}
-                    defaultMonth={customDate ? dateKeyToDate(customDate) : dateKeyToDate(todayKey)}
+                    selected={dateKeyToDate(pickedDate)}
+                    defaultMonth={dateKeyToDate(pickedDate)}
                     captionLayout="dropdown"
                     startMonth={new Date(2024, 0)}
                     endMonth={new Date(2028, 11)}
@@ -249,28 +223,14 @@ export default function EffectiveDateDialog({
                   />
                 </PopoverContent>
               </Popover>
-              {customTaken && (
-                <p className="text-xs text-destructive">{t("dateAlreadyTakenFull")}</p>
-              )}
-              {!customTaken && customPast && (
-                <p className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500">
+              {pickedTaken && <p className="px-1 text-xs text-destructive">{t("dateAlreadyTaken")}</p>}
+              {!pickedTaken && pickedPast && (
+                <p className="flex items-start gap-1.5 px-1 text-xs text-amber-600 dark:text-amber-500">
                   <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
                   {t("pastDateWarning")}
                 </p>
               )}
-            </div>
-          )}
-
-          {kind !== "in-place" && (
-            <div className="space-y-1.5 pt-4">
-              <Label htmlFor="version-note">{t("noteLabel")}</Label>
-              <Input
-                id="version-note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder={t("notePlaceholder")}
-              />
-            </div>
+            </>
           )}
         </div>
 
@@ -278,16 +238,7 @@ export default function EffectiveDateDialog({
           <Button variant="outline" onClick={onCancel}>
             {t("cancel")}
           </Button>
-          <Button
-            disabled={confirmDisabled}
-            onClick={() =>
-              onConfirm(
-                kind === "in-place"
-                  ? { kind: "in-place" }
-                  : { kind: "new", effectiveFrom, note: note.trim() || undefined }
-              )
-            }
-          >
+          <Button disabled={mode === "pick-date" && pickedTaken} onClick={confirm}>
             {t("save")}
           </Button>
         </DialogFooter>
