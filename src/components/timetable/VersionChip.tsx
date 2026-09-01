@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import {
@@ -31,6 +30,16 @@ import { Check, CheckCircle2, ChevronDown, Circle, Clock, PlusIcon, TrashIcon } 
    banner bilan takrorlanmasin deb tooltip'ga koʻchdi. Dropdown — vertikal
    TIMELINE (chiziq+ikonlar, eng yangisi tepada): sana-diapazon, izoh,
    "Joriy/Kelgusi" badge; pastda "Yangi versiya…" va oʻchirish.
+
+   ROʻYXAT QAMROVI — FAQAT FAOL OʻQUV YILI. Bu sohaning universal naqshi:
+   Untis'da "Perioden" yil ICHIDAGI boʻlinmalar (yil almashganda tayanch
+   davrdan boshqasi umuman oʻchiriladi), Edupage/aSc'da "valid from"
+   zanjiri yil konteksti ichida, PowerSchool/Infinite Campus'da esa butun
+   jadval strukturasi yilga bogʻlangan va rollover bilan NUSXALANADI.
+   Bizda eski versiyalar store'da QOLADI (oʻtgan yil davomatini backfill
+   qilishda `resolveVersionForDate` ularni oʻqiydi) — faqat shu roʻyxatdan
+   yashiriladi. Ilgari yil boʻyicha GURUHLASH bor edi; 10+ versiyada u
+   yordam bermay qoldi.
    ════════════════════════════════════════════════════════════════════ */
 
 /** Versiya davri matni: "16-sentabrdan" yoki "2-sentabr — 15-sentabr". */
@@ -49,7 +58,7 @@ export default function VersionChip({
   onCreateNew,
   onDeleteSelected,
   variant = "chip",
-  years,
+  activeYear,
 }: {
   versions: TimetableVersion[];
   selectedId: string | null;
@@ -59,9 +68,10 @@ export default function VersionChip({
   onDeleteSelected: () => void;
   /** "chip" — toolbar tugmasi; "subtitle" — sarlavha ostidagi kichik satr. */
   variant?: "chip" | "subtitle";
-  /** Oʻquv yillari (koʻzgular) — 2+ boʻlsa roʻyxat yil sarlavhalari ostida
-      guruhlanadi (faqat koʻrinish; bitta yilda oʻzgarish yoʻq). */
-  years?: { label: string; range: { start: string; end: string } }[];
+  /** Faol oʻquv yili — roʻyxat shu yil oynasi bilan KESISHUVCHI versiyalar
+      bilan cheklanadi, sarlavha esa yil nomini koʻrsatadi. Berilmasa (yoki
+      filtr natijasi boʻsh chiqsa) hammasi koʻrsatiladi. */
+  activeYear?: { label: string; range: { start: string; end: string } };
 }) {
   const selected = versions.find((v) => v.id === selectedId) ?? null;
   const currentId = resolveVersionForDate(versions, todayKey)?.id ?? null;
@@ -90,10 +100,34 @@ export default function VersionChip({
         ? "text-success"
         : "text-muted-foreground/50";
 
-  const sorted = sortVersions(versions).reverse();
+  // Faol yil oynasi bilan KESISHUVCHI versiyalar. Ataylab `effectiveFrom`
+  // boʻyicha emas: yil boshini qoplab turgan versiya oldingi yil oxirida
+  // yaratilgan boʻlishi mumkin — sodda `>= yil.start` filtri uni yoʻqotib,
+  // roʻyxatni boʻsh qoldirardi. Versiya oynasi = [effectiveFrom … rangeEnd],
+  // rangeEnd null boʻlsa "hozirgacha" (cheksiz).
+  const inYear = (v: TimetableVersion) => {
+    if (!activeYear) return true;
+    // Tanlangan versiya HAR DOIM roʻyxatda: aks holda (masalan yozda, bugun
+    // faol yil oynasidan tashqarida boʻlganda) subtitle uni koʻrsatib turgani
+    // holda roʻyxatda belgisi ham, oʻzi ham boʻlmasdi — "oʻchirish" esa
+    // koʻrinmayotgan versiyaga ishlardi.
+    if (v.id === selectedId) return true;
+    // Hali boshlanmagan versiya HAR DOIM koʻrinadi: kelgusi yil jadvali
+    // koʻpincha oʻsha yil kalendari yaratilishidan OLDIN tuziladi — aks holda
+    // foydalanuvchi endigina tuzgan jadvali roʻyxatdan yoʻqolib qolardi.
+    if (v.effectiveFrom > todayKey) return true;
+    if (v.effectiveFrom > activeYear.range.end) return false;
+    const end = versionRangeEnd(versions, v.id);
+    return end === null || end >= activeYear.range.start;
+  };
 
-  // Bitta versiya bandini render qilish (timeline reli guruh ichida mustaqil:
-  // idx/count — guruh ichidagi tartib, yagona flat roʻyxatda emas).
+  const all = sortVersions(versions).reverse();
+  const scoped = all.filter(inYear);
+  // Himoya: kalendar sozlanmagan/gʻalati oyna boʻlsa boʻsh dropdown chiqmasin.
+  const sorted = scoped.length > 0 ? scoped : all;
+
+  // Bitta versiya bandini render qilish (idx/count — roʻyxat ichidagi tartib;
+  // timeline relining uchlari shunga qarab kesiladi).
   const renderItem = (v: TimetableVersion, idx: number, count: number) => {
     const isCurrent = v.id === currentId;
     const isSelected = v.id === selectedId;
@@ -150,21 +184,6 @@ export default function VersionChip({
     );
   };
 
-  // 2+ oʻquv yili boʻlsa — versiyalarni yil oynasi boʻyicha guruhlaymiz (sorted
-  // eng yangisidan; sana-monoton boʻlgani uchun ketma-ket guruhlash yetarli).
-  const grouped =
-    years && years.length >= 2
-      ? sorted.reduce<{ label: string; items: TimetableVersion[] }[]>((out, v) => {
-          const label =
-            years.find((y) => v.effectiveFrom >= y.range.start && v.effectiveFrom <= y.range.end)?.label ||
-            "Boshqa davr";
-          const last = out[out.length - 1];
-          if (last && last.label === label) last.items.push(v);
-          else out.push({ label, items: [v] });
-          return out;
-        }, [])
-      : null;
-
   // Kelgusi versiya uchun subtitle qatori onboarding ohangida: "kechikish"
   // emas, "hammasi rejadagidek" hissi beriladi.
   const subtitleText = !selected
@@ -207,19 +226,13 @@ export default function VersionChip({
         <TooltipContent>{stateLabel} · versiyalar tarixi</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="start" className="w-72">
-        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-          Dars jadvali tarixi
+        <DropdownMenuLabel className="flex items-baseline justify-between gap-2 text-xs font-normal text-muted-foreground">
+          <span>Dars jadvali tarixi</span>
+          {activeYear && scoped.length > 0 && (
+            <span className="shrink-0">{activeYear.label}</span>
+          )}
         </DropdownMenuLabel>
-        {grouped
-          ? grouped.map((g) => (
-              <React.Fragment key={g.label}>
-                <DropdownMenuLabel className="px-2 pb-0.5 pt-1.5 text-[11px] font-semibold text-foreground/70">
-                  {g.label}
-                </DropdownMenuLabel>
-                {g.items.map((v, i) => renderItem(v, i, g.items.length))}
-              </React.Fragment>
-            ))
-          : sorted.map((v, i) => renderItem(v, i, sorted.length))}
+        {sorted.map((v, i) => renderItem(v, i, sorted.length))}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onCreateNew}>
           <PlusIcon />
