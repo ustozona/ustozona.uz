@@ -838,27 +838,6 @@ export default function TimetablePage() {
             </Alert>
           )}
 
-          {/* Qoʻllanmagan qoralama — "qachondan?" savoli shu yerdan, ish oxirida
-              beriladi (modal tahrir oʻrtasida ochilmaydi) */}
-          {awaitingApply && (
-            <div className="mx-6 mb-2 flex shrink-0 items-center gap-2.5 rounded-lg border border-primary/30 bg-primary/5 px-3.5 py-2 text-xs">
-              <SaveIcon className="size-3.5 shrink-0 text-primary" />
-              <p className="flex-1 leading-snug font-medium">
-                {t("pendingChanges", { count: pendingCount })}
-              </p>
-              <Button variant="ghost" size="sm" className="h-7 shrink-0 text-xs" onClick={revertDraft}>
-                {t("discardChanges")}
-              </Button>
-              <Button
-                size="sm"
-                className="h-7 shrink-0 text-xs"
-                onClick={() => { setDialogExplicit(false); setEffectiveDialogOpen(true); }}
-              >
-                {t("applyChanges")}
-              </Button>
-            </div>
-          )}
-
           {/* Jadval faol oʻquv yili boshini qoplamasa — bir bosishli tuzatish */}
           {!isDemoMode && <TimetableCoverageBanner className="mx-6 mb-2 shrink-0" />}
 
@@ -954,6 +933,35 @@ export default function TimetablePage() {
                 );
               }}
             />
+            )}
+
+            {/* ── Qoʻllanmagan qoralama — suzuvchi panel ──
+                Yuqoridagi bannerlar HOLATNI bildiradi, bu esa AMAL soʻraydi:
+                shuning uchun gridning tepasida emas, ostida — koʻz jadvalni
+                koʻzdan kechirib tugagan va sichqoncha surishdan keyin turgan
+                joyda. Dok qilingan chiziq emas, USTIDAGI qatlam: paydo
+                boʻlganda jadval siqilmaydi (layout sakramaydi). Absolyut
+                bogʻlanish CardContent'ga — grid ichi varaqlansa ham panel
+                joyida qoladi. */}
+            {awaitingApply && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center p-4">
+                <div className="pointer-events-auto flex max-w-full items-center gap-3 rounded-full border border-border bg-popover/95 py-2 pr-2 pl-4 shadow-lg backdrop-blur-sm">
+                  <SaveIcon className="size-3.5 shrink-0 text-primary" />
+                  <p className="truncate text-xs font-medium">
+                    {t("pendingChanges", { count: pendingCount })}
+                  </p>
+                  <Button variant="ghost" size="sm" className="h-8 shrink-0 rounded-full text-xs" onClick={revertDraft}>
+                    {t("discardChanges")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-8 shrink-0 rounded-full text-xs"
+                    onClick={() => { setDialogExplicit(false); setEffectiveDialogOpen(true); }}
+                  >
+                    {t("applyChanges")}
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
