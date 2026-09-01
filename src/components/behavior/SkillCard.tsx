@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { BehaviorReward, BehaviorSkill } from "@/lib/behavior-data";
 import { BehaviorEmoji } from "./BehaviorEmoji";
 
-/* Koʻnikma/mukofot kartalari (ClassDojo karta-grid uslubi): yuqori
+/* Koʻnikma/mukofot kartalari (karta-grid uslubi): yuqori
    oʻngda badge (±N yoki narx), markazda emoji, pastda nom; tavsif
    hover-tooltipda. Ball berish modali ham, Sozlamalar editori ham
    shu kartalarni ishlatadi. */

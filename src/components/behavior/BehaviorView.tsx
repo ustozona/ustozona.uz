@@ -38,7 +38,7 @@ import { BalanceBubble, StudentPointCard } from "./StudentPointCard";
 import { useClassStreaks } from "./useClassStreaks";
 
 /* ════════════════════════════════════════════════════════════════════
-   XULQ koʻrinishi — oʻquvchi kartochkalari toʻri (ClassDojo UX).
+   XULQ koʻrinishi — oʻquvchi kartochkalari toʻri (karta-grid UX).
 
    Birinchi karta = "Sinf" (butun sinfga ball berish); qolganlari
    oʻquvchilar (bubble = balans). Kartani bosish → ball berish modali;

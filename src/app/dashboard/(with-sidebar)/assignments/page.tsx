@@ -155,7 +155,7 @@ export default function AssignmentsPage() {
   const closeSession = useAssignmentEditorStore((s) => s.close);
 
   /* Tugallanmagan qoralama — muharrir yopilganda u yoʻqolmaydi, shu
-     roʻyxatda karta boʻlib turadi (Google Classroom "Draft" naqshi).
+     roʻyxatda karta boʻlib turadi (qoralama-kartochka naqshi).
      Ilgari uning oʻrniga ekran burchagida suzuvchi yorliq bor edi va
      kichraytirish tugmasi kerak boʻlardi. */
   const draftCard =

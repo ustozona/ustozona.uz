@@ -40,7 +40,7 @@ export default function QuestionStrip({
 }: Props) {
   return (
     <div className="flex h-full min-h-0 flex-col border-r border-border bg-muted/30">
-      {/* Kahoot'dagidek — "Qoʻshish" roʻyxat OQIMINING ICHIDA, oxirgi
+      {/* "Qoʻshish" roʻyxat OQIMINING ICHIDA, oxirgi
           savoldan darhol keyin turadi (alohida, butun balandlikka
           choʻzilgan qator emas). Roʻyxat qisqa boʻlsa tugma yuqorida
           qoladi, pastda ishlatilmagan boʻshliq esa ekran tagida —

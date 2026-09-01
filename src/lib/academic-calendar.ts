@@ -51,8 +51,8 @@ export function isCalendarConfigured(cal: AcademicYearCalendar): boolean {
 /* ── Baholash davrlari (chorak / semestr / trimestr) ─────────────────── */
 
 /** Davr shabloni. "none" — davrsiz: jurnal butun oʻquv yilini bitta davr
-    sifatida koʻradi (Google Classroom'dagi "grading periods" ixtiyoriyligi
-    bilan bir xil yondashuv). */
+    sifatida koʻradi (baholash davrlari ixtiyoriyligining keng tarqalgan
+    yondashuvi bilan bir xil). */
 export type PeriodPreset = "quarters" | "semesters" | "trimesters" | "none";
 
 /** Har shablon uchun davrlar soni va oʻzbekcha nom shakli. */

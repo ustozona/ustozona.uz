@@ -10,7 +10,7 @@ import { BehaviorEmoji } from "./BehaviorEmoji";
    (musbat = yashil, manfiy = qizil). Balans mount-gate'gacha null —
    bubble koʻrsatilmaydi (SSR mismatch oldini olish).
 
-   Multi-select (ClassDojo UX): hover'da yuqori chap burchakda doiracha
+   Multi-select (oʻquvchi kartochkasi UX): hover'da yuqori chap burchakda doiracha
    chiqadi; doiracha bosilsa tanlash rejimi boshlanadi. Rejimda karta
    bosish ham tanlovni almashtiradi (ball berish emas). */
 

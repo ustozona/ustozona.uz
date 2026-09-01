@@ -3,8 +3,8 @@
 import { Palette, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/* Oʻng chekka reyl — oʻng ustunning rejimini tanlaydi (Kahoot'dagi
-   vertikal panel: Themes / Properties).
+/* Oʻng chekka reyl — oʻng ustunning rejimini tanlaydi (viktorina-uslub
+   platformalarda keng tarqalgan vertikal panel: Mavzular / Xossalar).
 
    Nega alohida ustun: panel yopilganda ham "qayerga qaytish" koʻrinib
    turishi kerak. Bir tugmani qayta bosish panelni yopadi. */

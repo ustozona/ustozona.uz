@@ -36,7 +36,7 @@ import type { SkillType } from "./SkillFormDialog";
 import { useClassStreaks } from "./useClassStreaks";
 
 /* ════════════════════════════════════════════════════════════════════
-   Bitta-oʻquvchi modali (ClassDojo UX, chap navigatsiyali):
+   Bitta-oʻquvchi modali (chap navigatsiyali kartochka UX):
 
    1. Ball berish (default) — AwardDialog'dagi karta-grid.
    2. Ball sarflash — mukofotlar doʻkoni (balans yetmasa disabled +

@@ -17,8 +17,8 @@ import { writeWorkspaceAudit } from "./workspace-audit";
    Shu bois qoida qatʼiy: qoʻshishni faqat SINF EGASI yoki MAYDON
    ADMINI qiladi. Hech kim oʻzini qoʻsha olmaydi.
 
-   Naqsh manbai — ClassDojo «Shared Classes» (§10.1): ega hamkasb
-   qoʻshadi, hamkasb esa faqat oʻzi chiqa oladi.
+   Naqsh manbai — ega hamkasb + qoʻshilgan hamkasb boʻlinishi (§10.1):
+   ega hamkasb qoʻshadi, hamkasb esa faqat oʻzi chiqa oladi.
    ════════════════════════════════════════════════════════════════════ */
 
 export type ClassTeacherItem = {
@@ -128,7 +128,7 @@ export async function removeClassTeacher(classId: string, teacherId: string): Pr
  *
  * Fors-major yoʻli: oʻqituvchi ishdan boʻshadi, lekin sinf va undagi
  * baholar qolishi kerak. Maydon admini buni EGANING roziligisiz ham
- * qila oladi — ClassDojo'da ham School Leader shunday (§10.1).
+ * qila oladi — maktab-darajali admin uchun ham shunday qoida (§10.1).
  *
  * Eski ega darsda `teacher` boʻlib QOLADI: uni chiqarish alohida
  * qaror, va u tasodifan maʼlumotdan uzilib qolmasin.

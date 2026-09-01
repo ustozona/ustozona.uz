@@ -45,8 +45,8 @@ export type WorkspaceContext = {
  *   ham bu sir emas — kim 7-A da ekani hammaga maʼlum.
  *
  * `data` — BAHO / DAVOMAT / XULQ / QAYD darajasi. Faqat oʻzi oʻtadigan
- *   darsdagi bolalar. Jahon amaliyoti (Blackbaud, PowerSchool, Google
- *   Classroom, Moodle) va FERPA "legitimate educational interest"
+ *   darsdagi bolalar. Jahon taʼlim-boshqaruv tizimlari amaliyoti va
+ *   FERPA "legitimate educational interest"
  *   tamoyili shuni talab qiladi.
  */
 export type VisibilityPurpose = "roster" | "data";
@@ -288,8 +288,8 @@ export async function requireWorkspaceAdmin(): Promise<WorkspaceContext> {
  *
  * ⭐ ADMIN ISTISNOSI (§11.6): admin uchun `data` ham butun maydon.
  * Zavuchning darsi yoʻq, demak umumiy qoida boʻyicha u HECH NARSA
- * koʻrmasdi — bu admin-lite'ning maʼnosini yoʻqotadi. ClassDojo'da ham
- * School Leader butun maktabni koʻradi; FERPA buni "legitimate
+ * koʻrmasdi — bu admin-lite'ning maʼnosini yoʻqotadi. Maktab-darajali
+ * rahbar ham butun maktabni koʻradi; FERPA buni "legitimate
  * educational interest" bilan oqlaydi.
  *
  * ⚠️ Istisno maydon TURIGA emas, ROLGA qaraydi — yaʼni §1 dagi

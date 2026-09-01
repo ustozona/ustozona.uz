@@ -13,7 +13,7 @@ import type { BehaviorSkill } from "@/lib/behavior-data";
 import { AddCard, SkillCard } from "./SkillCard";
 import type { SkillType } from "./SkillFormDialog";
 
-/* Ball berish modali — koʻnikmalar karta-grid (ClassDojo UX).
+/* Ball berish modali — koʻnikmalar karta-grid uslubi.
    Bitta oʻquvchi ham, butun sinf ham shu modal orqali; sarlavha
    kontekstli. Koʻnikma bosilishi bilan ball yoziladi va modal yopiladi
    (tasdiq markaziy kartada). Oxirgi shtrixli karta — Sozlamalarga

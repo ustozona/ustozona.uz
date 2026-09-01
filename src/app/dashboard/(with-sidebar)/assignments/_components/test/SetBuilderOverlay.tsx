@@ -23,7 +23,7 @@ import ThemesPanel from "./builder/ThemesPanel";
 import { newQuestion, type DraftQuestion } from "./builder/types";
 
 /**
- * Toʻplam builder — Kahoot uslubidagi uch ustunli muharrir: chapda
+ * Toʻplam builder — viktorina-uslub uch ustunli muharrir: chapda
  * savollar tasmasi, markazda kanvas, oʻngda xossalar paneli.
  *
  * Toʻplam bu yerda HUJJAT: savollar uning ichida yashaydi. Butun
@@ -329,7 +329,7 @@ export default function SetBuilderOverlay({
         <div
           className="grid min-h-0 flex-1"
           style={{
-            // Oxirgi ustun — doimiy reyl (Kahoot'dagi vertikal panel):
+            // Oxirgi ustun — doimiy reyl (viktorina-uslub vertikal panel):
             // xossalar yopilganda ham rejim tanlash koʻrinib turadi.
             gridTemplateColumns: sidePanelOpen
               ? "13.75rem 1fr 18rem 4rem"
