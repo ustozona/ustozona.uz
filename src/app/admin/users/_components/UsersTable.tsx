@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useAdminNav, pendingClass } from "../../_components/use-admin-nav";
 import {
   Table,
   TableBody,
@@ -154,7 +156,11 @@ export default function UsersTable({
   planOptions: string[];
   filters: Filters;
 }) {
+  /* `router` FAQAT `refresh()` uchun qoldi (mutatsiyadan keyin qayta
+     oʻqish). Filtr/sahifa navigatsiyasi `go()` orqali — u kutishni
+     `pending` bilan koʻrsatadi (_components/use-admin-nav.ts). */
   const router = useRouter();
+  const { pending, go } = useAdminNav();
   const [q, setQ] = React.useState(filters.q);
 
   /* Yozilgan matn URL bilan sinxron turadi. Busiz: «ali» deb yozib, Enter
@@ -176,7 +182,7 @@ export default function UsersTable({
   const [deleteDialog, setDeleteDialog] = React.useState<AdminUserListItem | null>(null);
 
   const applyFilters = (next: Partial<Filters>) => {
-    router.push(filterHref({ ...filters, ...next }));
+    go(filterHref({ ...filters, ...next }));
   };
 
   const run = async (fn: () => Promise<unknown>, okMsg: string) => {
@@ -300,7 +306,7 @@ export default function UsersTable({
 
       {/* Jadval */}
       {data.items.length === 0 ? (
-        <Empty>
+        <Empty className={pendingClass(pending)}>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <Users />
@@ -310,7 +316,7 @@ export default function UsersTable({
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="overflow-x-auto">
+        <div className={cn("overflow-x-auto", pendingClass(pending))}>
           <Table>
             <TableHeader>
               <TableRow>
@@ -488,7 +494,12 @@ export default function UsersTable({
 
       {/* Paginatsiya */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-border px-5 py-3">
+        <div
+          className={cn(
+            "flex items-center justify-between border-t border-border px-5 py-3",
+            pendingClass(pending),
+          )}
+        >
           <span className="text-caption text-muted-foreground">
             {data.page}-sahifa / {totalPages}
           </span>
@@ -497,7 +508,7 @@ export default function UsersTable({
               variant="outline"
               size="sm"
               disabled={data.page <= 1}
-              onClick={() => router.push(filterHref(filters, data.page - 1))}
+              onClick={() => go(filterHref(filters, data.page - 1))}
             >
               <ChevronLeft />
               Oldingi
@@ -506,7 +517,7 @@ export default function UsersTable({
               variant="outline"
               size="sm"
               disabled={data.page >= totalPages}
-              onClick={() => router.push(filterHref(filters, data.page + 1))}
+              onClick={() => go(filterHref(filters, data.page + 1))}
             >
               Keyingi
               <ChevronRight />

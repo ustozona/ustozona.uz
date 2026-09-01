@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useAdminNav, pendingClass } from "../../_components/use-admin-nav";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,7 +59,9 @@ export default function AuditList({
   data: AuditLogPage;
   activeAction: string;
 }) {
-  const router = useRouter();
+  /* Filtr/sahifa navigatsiyasi `useTransition` ichida — kutish
+     koʻrinsin (_components/use-admin-nav.ts dagi izoh). */
+  const { pending, go: navigate } = useAdminNav();
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
 
   const go = (action: string, page = 1) => {
@@ -66,7 +69,7 @@ export default function AuditList({
     if (action) params.set("action", action);
     if (page > 1) params.set("page", String(page));
     const qs = params.toString();
-    router.push(`/admin/audit${qs ? `?${qs}` : ""}`);
+    navigate(`/admin/audit${qs ? `?${qs}` : ""}`);
   };
 
   return (
@@ -100,7 +103,7 @@ export default function AuditList({
       </div>
 
       {data.items.length === 0 ? (
-        <Empty>
+        <Empty className={pendingClass(pending)}>
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <ScrollText />
@@ -112,7 +115,7 @@ export default function AuditList({
           </EmptyHeader>
         </Empty>
       ) : (
-        <ul className="divide-y divide-border">
+        <ul className={cn("divide-y divide-border", pendingClass(pending))}>
           {data.items.map((log) => {
             const meta = log.meta as Record<string, unknown>;
             const hasMeta = meta && Object.keys(meta).length > 0;
@@ -155,7 +158,12 @@ export default function AuditList({
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-border px-5 py-3">
+        <div
+          className={cn(
+            "flex items-center justify-between border-t border-border px-5 py-3",
+            pendingClass(pending),
+          )}
+        >
           <span className="text-caption text-muted-foreground">
             {data.page}-sahifa / {totalPages}
           </span>

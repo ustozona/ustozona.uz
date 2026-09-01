@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useAdminNav, pendingClass } from "../../_components/use-admin-nav";
 import { Button } from "@/components/ui/button";
 import { SectionIcon } from "@/components/ui/section-icon";
 import {
@@ -41,7 +42,9 @@ export default function AdminFeedbackList({
   activeStatus: string;
   activeCategory: string;
 }) {
-  const router = useRouter();
+  /* Filtr/sahifa navigatsiyasi `useTransition` ichida — kutish
+     koʻrinsin (_components/use-admin-nav.ts dagi izoh). */
+  const { pending, go: navigate } = useAdminNav();
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
 
   const go = (status: string, category: string, page = 1) => {
@@ -50,7 +53,7 @@ export default function AdminFeedbackList({
     if (category) params.set("category", category);
     if (page > 1) params.set("page", String(page));
     const qs = params.toString();
-    router.push(`/admin/feedback${qs ? `?${qs}` : ""}`);
+    navigate(`/admin/feedback${qs ? `?${qs}` : ""}`);
   };
 
   return (
@@ -101,7 +104,7 @@ export default function AdminFeedbackList({
         </div>
 
         {data.items.length === 0 ? (
-          <div className="p-4 md:p-5">
+          <div className={cn("p-4 md:p-5", pendingClass(pending))}>
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
@@ -115,7 +118,7 @@ export default function AdminFeedbackList({
             </Empty>
           </div>
         ) : (
-          <div className="space-y-3 bg-muted/25 p-3 md:p-4">
+          <div className={cn("space-y-3 bg-muted/25 p-3 md:p-4", pendingClass(pending))}>
             {data.items.map((row) => (
               <AdminFeedbackCard key={row.id} row={row} />
             ))}
@@ -123,7 +126,12 @@ export default function AdminFeedbackList({
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border px-3 py-3 md:px-4">
+          <div
+            className={cn(
+              "flex items-center justify-between border-t border-border px-3 py-3 md:px-4",
+              pendingClass(pending),
+            )}
+          >
             <span className="text-caption text-muted-foreground">
               {data.page}-sahifa / {totalPages}
             </span>
