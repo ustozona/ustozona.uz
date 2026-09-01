@@ -77,6 +77,18 @@ export default function SchoolsTable({
   const [deleteDialog, setDeleteDialog] = React.useState<AdminSchoolItem | null>(null);
   const [assignDialog, setAssignDialog] = React.useState<AdminSchoolItem | null>(null);
 
+  /* Oʻchirishni toʻsib turgan narsalar — serverdagi darvoza bilan AYNI
+     shart (dal/admin/schools.ts `deleteSchool`). Bu yerdagisi faqat
+     tushuntirish uchun; haqiqiy himoya serverda. */
+  const deleteBlockers = React.useMemo(() => {
+    if (!deleteDialog) return [];
+    const b: string[] = [];
+    if (deleteDialog.teacherCount > 0) b.push(`${deleteDialog.teacherCount} ta oʻqituvchi`);
+    if (deleteDialog.classCount > 0) b.push(`${deleteDialog.classCount} ta sinf`);
+    if (deleteDialog.studentCount > 0) b.push(`${deleteDialog.studentCount} ta oʻquvchi`);
+    return b;
+  }, [deleteDialog]);
+
   const run = async (fn: () => Promise<unknown>, okMsg: string) => {
     setBusy(true);
     try {
@@ -201,26 +213,53 @@ export default function SchoolsTable({
       <AlertDialog open={!!deleteDialog} onOpenChange={(o) => !o && setDeleteDialog(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Maktabni oʻchirasizmi?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {deleteBlockers.length > 0
+                ? "Bu maktabni oʻchirib boʻlmaydi"
+                : "Maktabni oʻchirasizmi?"}
+            </AlertDialogTitle>
+            {/* ⚠️ Ilgari bu yerda «oʻqituvchilar maktabsiz qoladi (hisoblari
+                saqlanadi)» deb yozilgan edi — bu TESKARI maʼlumot: bazada
+                maktab oʻchsa sinf, oʻquvchi, baho va davomat ham cascade
+                boʻylab oʻchadi (dal/admin/schools.ts `deleteSchool` izohi).
+                Endi matn ikkiga boʻlinadi: boʻsh maktab — oddiy oʻchirish,
+                boʻsh emasi — nima toʻsib turganini raqami bilan aytadi. */}
             <AlertDialogDescription>
-              <strong>{deleteDialog?.name}</strong> oʻchiriladi; biriktirilgan oʻqituvchilar
-              maktabsiz qoladi (hisoblari saqlanadi).
+              {deleteBlockers.length > 0 ? (
+                <>
+                  <strong>{deleteDialog?.name}</strong> ichida{" "}
+                  {deleteBlockers.join(", ")} bor. Maktab oʻchirilsa bularning
+                  barcha baho va davomati ham yoʻqoladi — qaytarib boʻlmaydi.
+                  Avval oʻqituvchilarni boshqa maktabga koʻchiring yoki
+                  maktabdan chiqaring.
+                </>
+              ) : (
+                <>
+                  <strong>{deleteDialog?.name}</strong> boʻsh — ichida sinf ham,
+                  oʻquvchi ham, oʻqituvchi ham yoʻq. Oʻchirilsa hech qanday
+                  maʼlumot yoʻqolmaydi.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>Bekor qilish</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={busy}
-              onClick={() =>
-                run(async () => {
-                  await deleteSchoolAction({ schoolId: deleteDialog!.id });
-                  setDeleteDialog(null);
-                }, "Maktab oʻchirildi")
-              }
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              Oʻchirish
-            </AlertDialogAction>
+            <AlertDialogCancel disabled={busy}>
+              {deleteBlockers.length > 0 ? "Yopish" : "Bekor qilish"}
+            </AlertDialogCancel>
+            {deleteBlockers.length === 0 && (
+              <AlertDialogAction
+                disabled={busy}
+                onClick={() =>
+                  run(async () => {
+                    await deleteSchoolAction({ schoolId: deleteDialog!.id });
+                    setDeleteDialog(null);
+                  }, "Maktab oʻchirildi")
+                }
+                className="bg-destructive text-white hover:bg-destructive/90"
+              >
+                Oʻchirish
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

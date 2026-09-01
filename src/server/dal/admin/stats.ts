@@ -1,7 +1,9 @@
 import "server-only";
 import { count, gt, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { user, teachers, classes, students } from "@/server/db/schema";
+// classes/students bu yerda ishlatilmaydi: sinf va oʻquvchi sanogʻi
+// yuqoridagi raw SQL ichida class_teachers/enrollments orqali olinadi.
+import { user, teachers } from "@/server/db/schema";
 import { requireAdmin } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════

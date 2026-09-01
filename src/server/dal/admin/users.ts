@@ -74,7 +74,7 @@ export type AdminUsersFilter = {
 /* ════════════════════════════════════════════════════════════════════
    YAGONA SANOQ — `v_teacher_totals` ko'rinishidan.
 
-   Ko'rinish `supabase/migrations/20260808_v_teacher_totals.sql` da.
+   Ko'rinish `drizzle/views/lessonlab-yangi.sql` da (fayl oxiri).
    Bu yerda faqat o'qiladi: mantiq SQL'da bo'lgani uchun admin paneli,
    hisobotlar va bot bir xil raqamni ko'radi.
    ════════════════════════════════════════════════════════════════════ */
@@ -274,6 +274,74 @@ export async function listUsersForAdmin(
     page,
     pageSize,
   };
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   QULFLANIB QOLISHDAN HIMOYA UCHUN OʻQISHLAR.
+
+   Shartlarning oʻzi `actions/admin/users.ts` da (u yerda amal bilan bir
+   joyda turgani oʻqishga qulay), bazaga murojaat esa shu yerda —
+   loyihada DB klienti faqat DAL qatlamidan chaqiriladi.
+   ════════════════════════════════════════════════════════════════════ */
+
+/** Faol (bloklanmagan) super_admin hisoblari soni. */
+export async function countActiveSuperAdmins(): Promise<number> {
+  await requireAdmin();
+  const [row] = await db.execute<{ n: number }>(sql`
+    SELECT COUNT(*)::int AS n FROM "user"
+    WHERE 'super_admin' = ANY(string_to_array(coalesce(role, 'teacher'), ','))
+      AND coalesce(banned, false) = false
+  `);
+  return Number(row?.n ?? 0);
+}
+
+/** Rol darvozalari uchun minimal snapshot — hisob topilmasa `null`. */
+export async function getUserRoleSnapshot(
+  userId: string,
+): Promise<{ role: string | null; banned: boolean | null } | null> {
+  await requireAdmin();
+  const [row] = await db
+    .select({ role: user.role, banned: user.banned })
+    .from(user)
+    .where(eq(user.id, userId));
+  return row ?? null;
+}
+
+/** Hisobda parol bilan kirish bormi (Google-only boʻlsa `false`). */
+export async function hasPasswordAccount(email: string): Promise<boolean> {
+  await requireAdmin();
+  const [row] = await db.execute<{ n: number }>(sql`
+    SELECT COUNT(*)::int AS n
+    FROM account a JOIN "user" u ON u.id = a.user_id
+    WHERE u.email = ${email} AND a.provider_id = 'credential'
+  `);
+  return Number(row?.n ?? 0) > 0;
+}
+
+/** Test/admin hisobini voronka statistikasidan chiqarish (yoki qaytarish). */
+export async function setExcludeFromMetrics(
+  userId: string,
+  excluded: boolean,
+): Promise<void> {
+  await requireAdmin();
+  await db
+    .update(teachers)
+    .set({ excludeFromMetrics: excluded })
+    .where(eq(teachers.id, userId));
+}
+
+/** Jadval «Tarif» filtri uchun mavjud tariflar roʻyxati.
+
+    ⚠️ Qoʻlda yozilgan roʻyxat EMAS — `teachers.plan` matn ustuni va
+    yangi tarif qoʻshilganda filtr oʻzi bilib oladi. Qoʻlda yozilsa
+    yangi tarif filtrga tushmay qolardi va uni topib boʻlmasdi. */
+export async function listPlanOptions(): Promise<string[]> {
+  await requireAdmin();
+  const rows = await db
+    .selectDistinct({ plan: teachers.plan })
+    .from(teachers)
+    .orderBy(teachers.plan);
+  return rows.map((r) => r.plan).filter(Boolean);
 }
 
 export type AdminUserDetail = AdminUserListItem & {

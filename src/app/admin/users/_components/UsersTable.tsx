@@ -73,6 +73,7 @@ import {
   ChevronRight,
   EyeOff,
   Eye,
+  X,
 } from "lucide-react";
 import { rolesOf } from "@/lib/auth-roles";
 import type { AdminUsersPage, AdminUserListItem } from "@/server/dal/admin/users";
@@ -104,6 +105,20 @@ function fmtDate(d: Date | string | null): string {
   });
 }
 
+/* Blok yorligʻi — MUDDAT bilan. Ilgari faqat «Bloklangan» deb yozilardi,
+   yaʼni «7 kunga» va «muddatsiz» bir xil koʻrinardi: admin blok qachon
+   tugashini bilish uchun bazaga qarashi kerak edi. Muddat bazadan
+   allaqachon olinardi (`banExpires`), shunchaki ekranga chiqmagan. */
+function banLabel(expires: Date | string | null): string {
+  if (!expires) return "Bloklangan · muddatsiz";
+  const until = typeof expires === "string" ? new Date(expires) : expires;
+  const days = Math.ceil((until.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  // Muddati oʻtgan, lekin bayroq hali tushmagan (better-auth uni keyingi
+  // kirishda tozalaydi) — «bloklangan» deb koʻrsatish chalgʻitardi.
+  if (days <= 0) return "Blok muddati tugagan";
+  return `Bloklangan · ${days} kun qoldi`;
+}
+
 function initialsOf(name: string) {
   return name
     .trim()
@@ -131,14 +146,30 @@ function filterHref(f: Filters, page = 1): string {
 export default function UsersTable({
   data,
   currentUserId,
+  planOptions,
   filters,
 }: {
   data: AdminUsersPage;
   currentUserId: string;
+  planOptions: string[];
   filters: Filters;
 }) {
   const router = useRouter();
   const [q, setQ] = React.useState(filters.q);
+
+  /* Yozilgan matn URL bilan sinxron turadi. Busiz: «ali» deb yozib, Enter
+     bosmasdan Rol filtrini oʻzgartirsangiz — sahifa «ali»siz qayta
+     yuklanardi, maydonda esa «ali» qolib turardi. Yaʼni ekran natijaga
+     zid boʻlardi. */
+  React.useEffect(() => setQ(filters.q), [filters.q]);
+
+  const plansWithActive = React.useMemo(
+    () =>
+      filters.plan && !planOptions.includes(filters.plan)
+        ? [...planOptions, filters.plan]
+        : planOptions,
+    [planOptions, filters.plan],
+  );
   const [busy, setBusy] = React.useState(false);
   const [roleDialog, setRoleDialog] = React.useState<AdminUserListItem | null>(null);
   const [banDialog, setBanDialog] = React.useState<AdminUserListItem | null>(null);
@@ -187,8 +218,23 @@ export default function UsersTable({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Ism yoki email…"
-              className="h-9 w-52 pl-8"
+              className="h-9 w-52 pl-8 pr-8"
             />
+            {q && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Qidiruvni tozalash"
+                className="absolute right-0.5 top-1/2 size-8 -translate-y-1/2 text-muted-foreground"
+                onClick={() => {
+                  setQ("");
+                  applyFilters({ q: "" });
+                }}
+              >
+                <X className="size-3.5" />
+              </Button>
+            )}
           </form>
           <Select
             value={filters.role || "all"}
@@ -204,6 +250,38 @@ export default function UsersTable({
               <SelectItem value="super_admin">Super admin</SelectItem>
             </SelectContent>
           </Select>
+          {/* Tarif filtri: server (`?plan=`) va DAL uni allaqachon
+              qoʻllab-quvvatlardi, faqat tanlash joyi qoʻyilmagan edi —
+              yaʼni filtr bor, lekin unga yetib boʻlmasdi.
+
+              ⚠️ `|| filters.plan` SHART. Bitta tarif boʻlsa tanlovni
+              koʻrsatishning maʼnosi yoʻq, LEKIN havolada `?plan=` turgan
+              boʻlsa (eski xatcho'p, yuborilgan havola, yoki oxirgi pullik
+              hisob bepulga oʻtgan) filtr jimgina ishlab, roʻyxatni boʻsh
+              qilardi va uni OʻCHIRADIGAN tugma boʻlmasdi — yuqoridagi
+              xatoning aynan oʻzi, boshqa koʻrinishda. */}
+          {(planOptions.length > 1 || filters.plan) && (
+            <Select
+              value={filters.plan || "all"}
+              onValueChange={(v) => applyFilters({ plan: v === "all" ? "" : v })}
+            >
+              <SelectTrigger className="h-9 w-36" size="sm">
+                <SelectValue placeholder="Tarif" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha tarif</SelectItem>
+                {/* Faol tarif roʻyxatda boʻlmasligi mumkin (havoladagi
+                    `?plan=` bazada endi yoʻq tarifni koʻrsatsa). Uni
+                    qoʻshmasak tanlov boʻsh koʻrinardi va admin qaysi
+                    filtr ishlayotganini bilmasdi. */}
+                {plansWithActive.map((p) => (
+                  <SelectItem key={p} value={p} className="capitalize">
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Select
             value={filters.banned || "all"}
             onValueChange={(v) => applyFilters({ banned: v === "all" ? "" : v })}
@@ -266,7 +344,13 @@ export default function UsersTable({
                               <Badge variant="secondary" className="text-[10px]">Siz</Badge>
                             )}
                             {u.banned && (
-                              <Badge variant="destructive" className="text-[10px]">Bloklangan</Badge>
+                              <Badge
+                                variant="destructive"
+                                className="text-[10px]"
+                                title={u.banReason ?? undefined}
+                              >
+                                {banLabel(u.banExpires)}
+                              </Badge>
                             )}
                             {u.excludeFromMetrics && (
                               <Badge variant="outline" className="text-[10px] gap-1">

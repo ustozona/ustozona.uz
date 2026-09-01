@@ -61,13 +61,27 @@ function realDb(): PostgresJsDatabase<typeof schema> {
     );
   }
 
-  /* `max: 1` — serverless funksiya bir vaqtda bitta soʻrov bajaradi;
-     koʻproq ulanish ochish umumiy hovuzni bekorga band qiladi.
-     `idle_timeout` qisqa: funksiya toʻxtagach ulanish osilib qolmasin. */
+  /* ⚠️ `max` — 1 EMAS. Eski qiymat «serverless funksiya bir vaqtda
+     bitta soʻrov bajaradi» degan taxminga tayanardi. Fluid compute'da
+     bu taxmin YOLGʻON: bitta Node nusxasi bir vaqtning oʻzida koʻp
+     soʻrovni oʻtkazadi, `_db` esa modul sathidagi yagona singleton.
+     Yaʼni `max: 1` da butun nusxaning HAMMA soʻrovi bitta ulanish
+     navbatida ketma-ket turardi — bitta osilgan soʻrov qolganini ham
+     ushlab qolardi.
+
+     5 — pooler'ga yumshoq (Supavisor transaction rejimi, 6543) va bir
+     sahifaning `Promise.all` dagi soʻrovlarini parallel oʻtkazadi.
+
+     `max_lifetime` — ulanishni davriy yangilaydi: NAT yoki pooler
+     jimgina uzgan socket «oʻlik» boʻlib qolmasin. postgres-js da
+     soʻrov uchun timeout YOʻQ (`connect_timeout` faqat ulanishni
+     qamraydi), shuning uchun bunday socketga yozilgan soʻrov cheksiz
+     kutardi va sahifa 300 soniyada Vercel timeout'iga urilardi. */
   const sql = postgres(url, {
     prepare: false,
-    max: 1,
+    max: 5,
     idle_timeout: 20,
+    max_lifetime: 60 * 10,
     connect_timeout: 10,
   });
 

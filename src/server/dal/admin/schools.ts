@@ -1,7 +1,13 @@
 import "server-only";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { teachers, workspaceMembers, workspaces } from "@/server/db/schema";
+import {
+  classes,
+  students,
+  teachers,
+  workspaceMembers,
+  workspaces,
+} from "@/server/db/schema";
 import { requireAdmin } from "@/server/session";
 import { moveTeacherToWorkspace } from "../workspace-membership";
 import { writeAuditLog } from "./audit";
@@ -22,9 +28,17 @@ export type AdminSchoolItem = {
   city: string | null;
   createdAt: Date;
   teacherCount: number;
+  /** Maydonga tegishli sinf soni — oʻchirish oqibatini koʻrsatish uchun. */
+  classCount: number;
+  /** Maydonga tegishli oʻquvchi soni — oʻchirish oqibatini koʻrsatish uchun. */
+  studentCount: number;
 };
 
-/** Maktablar roʻyxati (oʻqituvchi soni bilan) — faqat super_admin. */
+/** Maktablar roʻyxati (oʻqituvchi/sinf/oʻquvchi soni bilan) — faqat super_admin.
+
+    ⚠️ Sinf va oʻquvchi soni ATAYLAB olinadi, garchi roʻyxatda ular
+    koʻrsatilmasa ham: `deleteSchool` oqibati aynan shu raqamlar bilan
+    tushuntiriladi (quyidagi izohga qarang). */
 export async function listSchools(): Promise<AdminSchoolItem[]> {
   await requireAdmin();
   return db
@@ -35,6 +49,14 @@ export async function listSchools(): Promise<AdminSchoolItem[]> {
       city: workspaces.city,
       createdAt: workspaces.createdAt,
       teacherCount: count(workspaceMembers.teacherId),
+      /* Skalyar quyi-soʻrov, JOIN emas: uchta jadvalni birga JOIN qilsa
+         qatorlar koʻpayib ketardi va `count()` bir-birini koʻpaytirardi. */
+      classCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${classes} WHERE ${classes.workspaceId} = ${workspaces.id}
+      )`,
+      studentCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${students} WHERE ${students.workspaceId} = ${workspaces.id}
+      )`,
     })
     .from(workspaces)
     .leftJoin(workspaceMembers, eq(workspaceMembers.workspaceId, workspaces.id))
@@ -126,10 +148,57 @@ export async function updateSchool(
   });
 }
 
+/* ⛔ MAKTABNI OʻCHIRISH — BOʻSH BOʻLSAGINA.
+
+   Bazada `workspaces` dan cascade zanjiri 30+ jadvalga yetadi:
+
+       maktab → sinflar   → topshiriq, davomat, xulq, test, mavzu…
+              → oʻquvchilar → baho, davomat, izoh, aloqador bola…
+
+   Yaʼni bitta `DELETE` butun maktabning bir yillik ishini oʻchiradi.
+   Prodda avtomatik zaxira YOʻQ, demak bu qaytarilmaydi.
+
+   Ilgari bu funksiya hech narsani tekshirmasdi, ekrandagi ogohlantirish
+   esa «oʻqituvchilar maktabsiz qoladi (hisoblari saqlanadi)» deb
+   TESKARISINI aytardi — admin hech narsa yoʻqolmaydi deb oʻylab bosardi.
+
+   Yechim: maktab oldin BOʻSHATILADI (oʻqituvchilar «Maktabdan chiqarish»
+   orqali koʻchiriladi, sinf/oʻquvchi esa oʻsha yerdan olib ketiladi),
+   keyingina oʻchiriladi. Shunda oʻchirish amali maʼlumot yoʻqotmaydi —
+   faqat boʻsh idishni olib tashlaydi. */
 export async function deleteSchool(schoolId: string): Promise<void> {
   const { actor } = await requireAdmin();
   const [row] = await db.select().from(workspaces).where(eq(workspaces.id, schoolId));
   if (!row) throw new Error("Maktab topilmadi");
+
+  const [impact] = await db
+    .select({
+      teacherCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${workspaceMembers}
+        WHERE ${workspaceMembers.workspaceId} = ${schoolId}
+      )`,
+      classCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${classes} WHERE ${classes.workspaceId} = ${schoolId}
+      )`,
+      studentCount: sql<number>`(
+        SELECT COUNT(*)::int FROM ${students} WHERE ${students.workspaceId} = ${schoolId}
+      )`,
+    })
+    .from(workspaces)
+    .where(eq(workspaces.id, schoolId));
+
+  const band: string[] = [];
+  if (impact.teacherCount > 0) band.push(`${impact.teacherCount} ta oʻqituvchi`);
+  if (impact.classCount > 0) band.push(`${impact.classCount} ta sinf`);
+  if (impact.studentCount > 0) band.push(`${impact.studentCount} ta oʻquvchi`);
+  if (band.length > 0) {
+    throw new Error(
+      `«${row.name}» boʻsh emas: ${band.join(", ")}. Oʻchirilsa bularning ` +
+        `barcha baho va davomati ham yoʻqoladi va qaytarib boʻlmaydi. ` +
+        `Avval oʻqituvchilarni boshqa maktabga koʻchiring yoki maktabdan chiqaring.`,
+    );
+  }
+
   await db.delete(workspaces).where(eq(workspaces.id, schoolId));
   await writeAuditLog(actor, {
     action: "school.delete",
