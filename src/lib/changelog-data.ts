@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "blog-qidiruvda-topilishi",
+    date: "2026-09-01",
+    type: "tuzatildi",
+    title: "Maqolalaringiz endi Google va Yandexda topiladi",
+    body:
+      "Shu paytgacha blogdagi maqolalar qidiruv tizimlariga koʻrinmay kelgan: har bir maqola oʻzini bosh sahifaning nusxasi deb tanishtirar edi, shuning uchun Google ularni roʻyxatga olmagan. Tuzatildi — endi har maqola oʻzicha mustaqil sahifa. Bundan tashqari maqola havolasini Telegram yoki ijtimoiy tarmoqqa tashlaganingizda maqolaning oʻz sarlavhasi, tavsifi va muqova rasmi koʻrinadi — avval oʻrniga saytning umumiy tavsifi chiqardi. Yangi maqola nashr qilinganda qidiruv tizimlariga darhol xabar ketadi.",
+    href: "/blog",
+  },
+  {
     id: "blog-video-embed",
     date: "2026-09-01",
     type: "yangi",
