@@ -391,9 +391,17 @@ export async function unpublishPost(id: string): Promise<{ slug: string } | null
   return { slug: row.slug };
 }
 
-export async function deletePost(id: string): Promise<void> {
+/** Qaytadi: oʻchirilgan postning slug'i va u indeksda boʻlgan-boʻlmagani
+ *  — chaqiruvchi qidiruv tizimiga xabar berishi uchun (`server/indexnow.ts`).
+ *  `null` = topilmadi yoki begona post. */
+export async function deletePost(id: string): Promise<{ slug: string; wasPublished: boolean } | null> {
   const teacher = await requireTeacher();
-  await db.delete(blogPosts).where(and(eq(blogPosts.id, id), eq(blogPosts.teacherId, teacher.id)));
+  const [deleted] = await db
+    .delete(blogPosts)
+    .where(and(eq(blogPosts.id, id), eq(blogPosts.teacherId, teacher.id)))
+    .returning({ slug: blogPosts.slug, status: blogPosts.status });
+  if (!deleted) return null;
+  return { slug: deleted.slug, wasPublished: deleted.status === "published" };
 }
 
 /** Ommaviy koʻrish beacon'idan chaqiriladi — auth talab qilinmaydi.

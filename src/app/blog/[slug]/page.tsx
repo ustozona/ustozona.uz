@@ -18,6 +18,17 @@ import { ViewBeacon } from "./_components/ViewBeacon";
 import { VideoEmbedHydrator } from "@/components/video-embed/VideoEmbedHydrator";
 import { abs, SITE_URL } from "@/lib/site-url";
 
+/** OMMAVIY versiyaning oxirgi oʻzgarish vaqti.
+ *
+ *  `updatedAt` toʻgʻridan-toʻgʻri ishlatilmaydi: u qoralama tahrirlanganda
+ *  ham suriladi, ommaviy matn esa suratdan oʻqiladi va oʻzgarmaydi
+ *  (docs/blog-nashr-modeli.md). Nashr qilinmagan oʻzgarish turgan boʻlsa,
+ *  ommaviy nusxa oxirgi marta NASHR paytida oʻzgargan. */
+function publicModifiedAt(post: { updatedAt: string; publishedAt: string | null; hasUnpublishedChanges: boolean }): string {
+  if (post.hasUnpublishedChanges && post.publishedAt) return post.publishedAt;
+  return post.updatedAt;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPublishedPostBySlug(slug);
@@ -29,6 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const url = abs(`/blog/${post.slug}`);
   const description = post.excerpt || undefined;
+  const modifiedTime = publicModifiedAt(post);
 
   return {
     title: post.title,
@@ -46,7 +58,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: post.title,
       description,
       publishedTime: post.publishedAt ?? undefined,
-      modifiedTime: post.updatedAt,
+      modifiedTime,
       authors: [post.authorName],
       images: post.coverImageUrl ? [post.coverImageUrl] : undefined,
     },
@@ -97,7 +109,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               description: post.excerpt || undefined,
               image: post.coverImageUrl || undefined,
               datePublished: post.publishedAt ?? undefined,
-              dateModified: post.updatedAt,
+              dateModified: publicModifiedAt(post),
               author: { "@type": "Person", name: post.authorName },
               publisher: { "@type": "Organization", name: "Ustozona", url: SITE_URL },
               mainEntityOfPage: abs(`/blog/${post.slug}`),

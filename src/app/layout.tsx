@@ -78,6 +78,10 @@ export const metadata: Metadata = {
   },
   verification: {
     yandex: "68a7b34ec38b727a",
+    /* Search Console'da sayt DNS orqali tasdiqlangan boʻlishi mumkin —
+       u holda bu kerak emas. HTML-meta usuli tanlansa, tokenni Vercel
+       env'iga qoʻyish yetarli, kodni oʻzgartirish shart emas. */
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
   },
   robots: {
     index: true,

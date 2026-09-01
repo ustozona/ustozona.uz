@@ -48,14 +48,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...posts.map((post) => ({
       url: abs(`/blog/${post.slug}`),
-      /* `updatedAt` — ishchi nusxa vaqti, `publishedAt` — nashr vaqti.
-         Robotga «qachon oʻzgardi» kerak, shuning uchun kattarogʻi. */
-      lastModified: new Date(
-        Math.max(
-          new Date(post.updatedAt).getTime(),
-          post.publishedAt ? new Date(post.publishedAt).getTime() : 0,
-        ),
-      ),
+      /* `publishPost` har nashrda `updatedAt` ni ham yangilaydi, yaʼni u
+         har doim `publishedAt` dan katta yoki teng. Kamchiligi: qoralama
+         tahrir qilinsa ham suriladi — robot bekorga bir marta qaytadi,
+         lekin hech qachon oʻzgarishni oʻtkazib yubormaydi. Bu tomonga
+         xato qilgan maʼqul. */
+      lastModified: new Date(post.updatedAt),
       changeFrequency: "monthly" as const,
       priority: 0.6,
     })),
