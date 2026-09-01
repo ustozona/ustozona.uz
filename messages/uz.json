@@ -1378,6 +1378,9 @@
     "lessonDeletedToast": "Dars oʻchirildi"
   },
   "TimetablePage": {
+    "pendingChanges": "{count} ta oʻzgarish qoʻllanmagan",
+    "applyChanges": "Qoʻllash…",
+    "discardChanges": "Bekor qilish",
     "unknownClass": "Nomaʼlum sinf",
     "versionExistsError": "Bu sanada allaqachon versiya bor",
     "newVersionToast": "Yangi jadval versiyasi — {date}dan",
@@ -3007,37 +3010,28 @@
     "pastMidnightWarning": "Darslar yarim tundan oshib ketmoqda — boshlanish vaqti yoki darslar sonini tekshiring."
   },
   "EffectiveDateDialog": {
-    "title": "Yangi dars jadvali qachondan kuchga kiradi?",
-    "description": "Ungacha boʻlgan dars va baholar tarixi oldingi jadvalda saqlanadi.",
+    "title": "Oʻzgarishlar qachondan kuchga kirsin?",
+    "description": "Bir marta tanlaysiz — keyingi tahrirlar shu tartibda saqlanadi.",
     "close": "Yopish",
     "options": {
-      "monday": {
-        "title": "Keyingi dushanbadan",
-        "caption": "Yangi jadval '{date}'dan kuchga kiradi. Ungacha darslar eski tartibda boʻladi."
-      },
-      "today": {
-        "title": "Bugundan boshlab",
-        "caption": "'{date}'dan boshlanadi. Oʻtgan kunlar tarixiga taʼsir qilmaydi."
-      },
-      "custom": {
-        "title": "Boshqa sanadan…",
-        "caption": "'{date}'dan kuchga kiradi",
-        "pickFromCalendar": "Sanani kalendardan tanlang."
+      "date": {
+        "title": "{date}dan boshlab",
+        "caption": "Oʻtgan darslar eski jadvalda qoladi."
       },
       "inPlace": {
-        "title": "Xatoni toʻgʻrilash",
-        "caption": "Yangi jadval yaratilmaydi, oʻzgarishlar barcha kunlarga qoʻllanadi."
+        "title": "Hoziroq, hamma kunlarga",
+        "caption": "Oʻtgan darslar ham yangi jadval bilan koʻrsatiladi."
       }
     },
+    "otherDate": "Boshqa sana…",
+    "resetDate": "Keyingi dushanbaga qaytarish",
+    "addNote": "Izoh qoʻshish",
     "dateAlreadyTaken": "Ushbu sanaga dars jadvali tuzilgan",
-    "effectiveDateLabel": "Kuchga kirish sanasi",
-    "pickDate": "Sanani tanlang",
-    "dateAlreadyTakenFull": "Ushbu sanaga dars jadvali tuzilgan.",
     "pastDateWarning": "Oʻtmishdagi sana — shu kundan keyingi kunlar tarixi ham yangi jadval bilan koʻrsatiladi.",
     "noteLabel": "Oʻzgarishlar haqida izoh (ixtiyoriy)",
     "notePlaceholder": "Masalan: 7-B darsi juma kuniga oʻtkazildi",
     "cancel": "Bekor qilish",
-    "save": "Saqlash"
+    "save": "Qoʻllash"
   },
   "ClassFormModal": {
     "createTitle": "Yangi sinf yaratish",

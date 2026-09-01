@@ -260,9 +260,11 @@ export default function TimetablePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVersionId, storeHydrated]);
 
-  /* Commit oqimi: qoralama snapshotdan farq qilsa 600ms debounce, soʻng —
-     joriy versiyada birinchi marta boʻlsa "qachondan?" dialogi, aks holda
-     toʻgʻridan-toʻgʻri commit (arxiv-ochiq va kelgusi versiyalar dialogsiz). */
+  /* Commit oqimi (qoralama → nashr): qoralama snapshotdan farq qilsa 600ms
+     debounce, soʻng avto-commit. Joriy jadvalda esa oʻzgarish avtomatik
+     QOʻLLANMAYDI — "qachondan?" hal qilinmaguncha qoralama kutib turadi va
+     ustida «Qoʻllash…» paneli chiqadi. Arxiv-ochiq va kelgusi versiyalar,
+     shuningdek boʻsh jadvalning birinchi toʻldirilishi — toʻgʻridan-toʻgʻri. */
   useEffect(() => {
     if (!hydrated || !storeHydrated || !selectedVersion) return;
     if (justSwitchedRef.current) { justSwitchedRef.current = false; return; }
@@ -276,11 +278,9 @@ export default function TimetablePage() {
       // tartib" yoʻq, "qachondan?" savoli maʼnosiz; jimgina joriy versiyaga
       // yozamiz va sessiya davomida boshqa soʻramaymiz.
       const firstFill = selectedVersion.events.length === 0;
-      if (mode === "current" && !decisionMade && !firstFill) {
-        setDialogExplicit(false);
-        setEffectiveDialogOpen(true);
-        return;
-      }
+      // Qaror kutilmoqda — qoralama joyida qoladi, panel foydalanuvchini
+      // «Qoʻllash…» ga chaqiradi. Modal bilan ish oʻrtasida toʻsilmaydi.
+      if (mode === "current" && !decisionMade && !firstFill) return;
       if (firstFill && mode === "current") setDecisionMade(true);
       commitDraft(selectedVersion.id, events, bellConfig);
       setSaved(true);
@@ -289,9 +289,34 @@ export default function TimetablePage() {
     return () => clearTimeout(timer);
   }, [events, bellConfig, hydrated, storeHydrated, selectedVersion, mode, decisionMade, commitDraft]);
 
+  /** Qoʻllanmagan oʻzgarishlar soni — panel matni uchun (event qoʻshildi/
+      oʻzgardi/oʻchdi; qoʻngʻiroq jadvali oʻzgarishi bitta deb sanaladi). */
+  const pendingCount = useMemo(() => {
+    if (!selectedVersion) return 0;
+    const before = new Map(selectedVersion.events.map((e) => [e.id, stableStringify(e)]));
+    let n = 0;
+    for (const e of events) {
+      const prev = before.get(e.id);
+      if (prev === undefined || prev !== stableStringify(e)) n += 1;
+      before.delete(e.id);
+    }
+    n += before.size;
+    if (stableStringify(bellConfig) !== stableStringify(selectedVersion.bellConfig)) n += 1;
+    return n;
+  }, [events, bellConfig, selectedVersion]);
+
+  /** Qoralama qoʻllashni kutmoqda — joriy jadvalga tegadi, lekin
+      "qachondan?" hali hal qilinmagan. */
+  const awaitingApply =
+    !saved && mode === "current" && !decisionMade && pendingCount > 0 &&
+    (selectedVersion?.events.length ?? 0) > 0;
+
   // Sahifadan chiqishda kutayotgan (debounce'dagi) oʻzgarish bekor boʻlib qolmasin —
   // unmount paytida joriy qoralamani darhol commit qilamiz. flush closure'ni har
   // renderdan keyin effektda yangilaymiz (render paytida ref yozilmasin deb).
+  // ⚠️ `awaitingApply` holatida ham commit boʻladi (joriy versiyaga, yaʼni
+  // "hamma kunlarga"): ishni yoʻqotgandan koʻra saqlangani afzal. Sana boʻyicha
+  // ajratish kerak boʻlsa, keyin istalgan payt yangi versiya tuzish mumkin.
   const flushRef = useRef<() => void>(() => {});
   useEffect(() => {
     flushRef.current = () => {
@@ -350,14 +375,12 @@ export default function TimetablePage() {
     }
   }, [selectedVersion, commitDraft, createVersion, events, bellConfig]);
 
+  // Dialogni bekor qilish QORALAMAGA TEGMAYDI — savol bekor qilinadi, ish emas.
+  // Versiya almashtirish ham bekor boʻladi: aks holda qoralama koʻrinmay qolardi.
   const cancelEffectiveDialog = useCallback(() => {
-    revertDraft();
     setEffectiveDialogOpen(false);
-    if (pendingSwitchRef.current) {
-      setSelectedVersionId(pendingSwitchRef.current);
-      pendingSwitchRef.current = null;
-    }
-  }, [revertDraft]);
+    pendingSwitchRef.current = null;
+  }, []);
 
   const confirmDeleteVersion = useCallback(() => {
     if (!selectedVersion || versions.length <= 1) return;
@@ -815,6 +838,27 @@ export default function TimetablePage() {
             </Alert>
           )}
 
+          {/* Qoʻllanmagan qoralama — "qachondan?" savoli shu yerdan, ish oxirida
+              beriladi (modal tahrir oʻrtasida ochilmaydi) */}
+          {awaitingApply && (
+            <div className="mx-6 mb-2 flex shrink-0 items-center gap-2.5 rounded-lg border border-primary/30 bg-primary/5 px-3.5 py-2 text-xs">
+              <SaveIcon className="size-3.5 shrink-0 text-primary" />
+              <p className="flex-1 leading-snug font-medium">
+                {t("pendingChanges", { count: pendingCount })}
+              </p>
+              <Button variant="ghost" size="sm" className="h-7 shrink-0 text-xs" onClick={revertDraft}>
+                {t("discardChanges")}
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 shrink-0 text-xs"
+                onClick={() => { setDialogExplicit(false); setEffectiveDialogOpen(true); }}
+              >
+                {t("applyChanges")}
+              </Button>
+            </div>
+          )}
+
           {/* Jadval faol oʻquv yili boshini qoplamasa — bir bosishli tuzatish */}
           {!isDemoMode && <TimetableCoverageBanner className="mx-6 mb-2 shrink-0" />}
 
@@ -973,7 +1017,7 @@ export default function TimetablePage() {
         takenDates={versions.map((v) => v.effectiveFrom)}
         allowInPlace={!dialogExplicit}
         onConfirm={applyEffectiveChoice}
-        onCancel={dialogExplicit ? () => setEffectiveDialogOpen(false) : cancelEffectiveDialog}
+        onCancel={cancelEffectiveDialog}
       />
 
       {/* Arxivni tahrirlashga ochish tasdigʻi */}

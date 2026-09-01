@@ -24,18 +24,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  CalendarClock, CalendarCog, CalendarDays, CalendarSearch,
-  Wrench, TriangleAlert, X,
+  CalendarClock, CalendarCog, CalendarSearch,
+  ChevronDown, Layers, TriangleAlert, X,
 } from "lucide-react";
 
 /* ════════════════════════════════════════════════════════════════════
-   "QACHONDAN KUCHGA KIRADI?" DIALOGI
+   "QACHONDAN KUCHGA KIRADI?" DIALOGI — qoralama QOʻLLANAYOTGANDA
 
-   Joriy jadval tahrirlanganda ochiladi: oʻzgarish YANGI VERSIYA boʻlib
-   tanlangan sanadan amal qiladimi (tarix saqlanadi), yoki bu XATONI
-   TUZATISH — joriy versiyaning oʻzi oʻzgaradimi (oʻtmish ham shu jadval
-   bilan koʻrinadi). Variant-kartalar radio oʻrnida (PlannerView'dagi
-   tanlov-kartalar uslubi).
+   Tahrir paytida EMAS, foydalanuvchi «Qoʻllash…» bosganda ochiladi
+   (qoralama → nashr naqshi): qaror nima oʻzgargani maʼlum boʻlgach,
+   ish oxirida beriladi. Shu sabab bekor qilish qoralamaga TEGMAYDI —
+   dialog shunchaki yopiladi.
+
+   Tanlov MEXANIZM emas, NATIJA boʻyicha ikkiga qisqargan:
+     • sanadan boshlab → yangi versiya, oʻtgan kunlar eski jadvalda;
+     • hamma kunlarga  → versiya yaratilmaydi, oʻtmish ham yangilanadi.
+   Uchinchi (kamroq kerak) yoʻl — «Boshqa sana…» havolasi ostidagi
+   kalendar; u tanlansa birinchi karta oʻsha sanaga aylanadi.
 
    Header — ilova standarti (SectionIcon + CardTitle + size-9 yopish),
    sana tanlagich — standart Calendar (Popover ichida), native <input
@@ -46,7 +51,7 @@ export type EffectiveChoice =
   | { kind: "new"; effectiveFrom: string; note?: string }
   | { kind: "in-place" };
 
-type OptionKind = "monday" | "today" | "custom" | "in-place";
+type OptionKind = "date" | "in-place";
 
 export default function EffectiveDateDialog({
   open,
@@ -67,85 +72,47 @@ export default function EffectiveDateDialog({
 }) {
   const t = useTranslations("EffectiveDateDialog");
   const monday = nextMonday(todayKey);
-  const [kind, setKind] = useState<OptionKind>("monday");
+  const [kind, setKind] = useState<OptionKind>("date");
+  /** Boʻsh boʻlsa — sana kartasi "keyingi dushanba"ni bildiradi. */
   const [customDate, setCustomDate] = useState("");
   const [note, setNote] = useState("");
+  const [noteOpen, setNoteOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Har ochilishda toza holatdan boshlanadi
   useEffect(() => {
     if (open) {
-      setKind("monday");
+      setKind("date");
       setCustomDate("");
       setNote("");
+      setNoteOpen(false);
       setCalendarOpen(false);
     }
   }, [open]);
 
-  const todayTaken = takenDates.includes(todayKey);
-  const mondayTaken = takenDates.includes(monday);
-  const customTaken = customDate !== "" && takenDates.includes(customDate);
-  const customPast = customDate !== "" && customDate < todayKey;
+  const effectiveFrom = customDate || monday;
+  const dateTaken = takenDates.includes(effectiveFrom);
+  const datePast = effectiveFrom < todayKey;
 
-  const effectiveFrom =
-    kind === "monday" ? monday : kind === "today" ? todayKey : customDate;
-
-  const confirmDisabled =
-    kind === "custom" ? customDate === "" || customTaken : kind === "monday" && mondayTaken;
-
-  // Caption ichida asosiy maʼlumot — SANA — urgʻulanadi (foreground + 500),
-  // qolgani muted; tez skanerlash uchun.
-  const withDate = (key: string, text: string) => {
-    const date = fmtDayMonthUz(key);
-    const idx = text.indexOf("{date}");
-    if (idx < 0) return text;
-    return (
-      <>
-        {text.slice(0, idx)}
-        <span className="font-medium text-foreground">{date}</span>
-        {text.slice(idx + "{date}".length)}
-      </>
-    );
-  };
+  const confirmDisabled = kind === "date" && dateTaken;
 
   const options: {
     key: OptionKind;
     icon: React.ReactNode;
     title: string;
-    caption: React.ReactNode;
-    disabled?: boolean;
+    caption: string;
   }[] = [
     {
-      key: "monday",
+      key: "date",
       icon: <CalendarClock className="size-4" />,
-      title: t("options.monday.title"),
-      caption: mondayTaken
-        ? t("dateAlreadyTaken")
-        : withDate(monday, t("options.monday.caption")),
-      disabled: mondayTaken,
-    },
-    {
-      key: "today",
-      icon: <CalendarDays className="size-4" />,
-      title: t("options.today.title"),
-      caption: todayTaken
-        ? t("dateAlreadyTaken")
-        : withDate(todayKey, t("options.today.caption")),
-      disabled: todayTaken,
-    },
-    {
-      key: "custom",
-      icon: <CalendarSearch className="size-4" />,
-      title: t("options.custom.title"),
-      caption: customDate
-        ? withDate(customDate, t("options.custom.caption"))
-        : t("options.custom.pickFromCalendar"),
+      title: t("options.date.title", { date: fmtDayMonthUz(effectiveFrom) }),
+      caption: dateTaken ? t("dateAlreadyTaken") : t("options.date.caption"),
     },
     ...(allowInPlace
       ? [
           {
             key: "in-place" as const,
-            icon: <Wrench className="size-4" />,
+            icon: <Layers className="size-4" />,
             title: t("options.inPlace.title"),
             caption: t("options.inPlace.caption"),
           },
@@ -157,7 +124,7 @@ export default function EffectiveDateDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-2xl gap-0 overflow-hidden p-0 bg-card top-[8vh] translate-y-0"
+        className="max-w-lg gap-0 overflow-hidden p-0 bg-card top-[12vh] translate-y-0"
       >
         {/* Standart header — ikona + sarlavha + size-9 yopish tugmasi */}
         <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
@@ -187,12 +154,10 @@ export default function EffectiveDateDialog({
               <button
                 key={o.key}
                 type="button"
-                disabled={o.disabled}
                 onClick={() => setKind(o.key)}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors",
-                  selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50",
-                  o.disabled && "cursor-not-allowed opacity-50 hover:bg-transparent"
+                  selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
                 )}
               >
                 <span
@@ -211,21 +176,18 @@ export default function EffectiveDateDialog({
             );
           })}
 
-          {kind === "custom" && (
-            <div className="space-y-1.5 rounded-lg border border-border bg-muted/30 p-3">
-              <Label>{t("effectiveDateLabel")}</Label>
+          {/* Ikkilamchi yoʻl — sana kartasining sanasini almashtiradi */}
+          {kind === "date" && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 pt-1">
               <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start bg-card font-normal shadow-xs",
-                      !customDate && "text-muted-foreground"
-                    )}
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 rounded-md text-caption underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
-                    <CalendarSearch className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                    {customDate ? fmtDayMonthUz(customDate) : t("pickDate")}
-                  </Button>
+                    <CalendarSearch className="size-3.5" />
+                    {t("otherDate")}
+                  </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                   <Calendar
@@ -235,8 +197,8 @@ export default function EffectiveDateDialog({
                       formatMonthDropdown: (date) => MONTHS_UZ[date.getMonth()],
                       formatWeekdayName: (date) => DAYS_UZ_SUN_SHORT[date.getDay()],
                     }}
-                    selected={customDate ? dateKeyToDate(customDate) : undefined}
-                    defaultMonth={customDate ? dateKeyToDate(customDate) : dateKeyToDate(todayKey)}
+                    selected={dateKeyToDate(effectiveFrom)}
+                    defaultMonth={dateKeyToDate(effectiveFrom)}
                     captionLayout="dropdown"
                     startMonth={new Date(2024, 0)}
                     endMonth={new Date(2028, 11)}
@@ -249,27 +211,49 @@ export default function EffectiveDateDialog({
                   />
                 </PopoverContent>
               </Popover>
-              {customTaken && (
-                <p className="text-xs text-destructive">{t("dateAlreadyTakenFull")}</p>
-              )}
-              {!customTaken && customPast && (
-                <p className="flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-500">
-                  <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-                  {t("pastDateWarning")}
-                </p>
+              {customDate !== "" && customDate !== monday && (
+                <button
+                  type="button"
+                  onClick={() => setCustomDate("")}
+                  className="text-caption underline-offset-4 hover:underline"
+                >
+                  {t("resetDate")}
+                </button>
               )}
             </div>
           )}
 
-          {kind !== "in-place" && (
-            <div className="space-y-1.5 pt-4">
-              <Label htmlFor="version-note">{t("noteLabel")}</Label>
-              <Input
-                id="version-note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder={t("notePlaceholder")}
-              />
+          {kind === "date" && !dateTaken && datePast && (
+            <p className="flex items-start gap-1.5 px-1 text-xs text-amber-600 dark:text-amber-500">
+              <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+              {t("pastDateWarning")}
+            </p>
+          )}
+
+          {/* Izoh — modal qoidasi boʻyicha yigʻilgan holda (kamdan-kam kerak) */}
+          {kind === "date" && (
+            <div className="pt-2">
+              {noteOpen ? (
+                <div className="space-y-1.5">
+                  <Label htmlFor="version-note">{t("noteLabel")}</Label>
+                  <Input
+                    id="version-note"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={t("notePlaceholder")}
+                    autoFocus
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setNoteOpen(true)}
+                  className="inline-flex items-center gap-1 rounded-md px-1 text-caption underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                >
+                  <ChevronDown className="size-3.5" />
+                  {t("addNote")}
+                </button>
+              )}
             </div>
           )}
         </div>

@@ -1378,6 +1378,9 @@
     "lessonDeletedToast": "Lesson deleted"
   },
   "TimetablePage": {
+    "pendingChanges": "{count} changes not applied",
+    "applyChanges": "Apply…",
+    "discardChanges": "Discard",
     "unknownClass": "Unknown class",
     "versionExistsError": "A version already exists for this date",
     "newVersionToast": "New schedule version — from {date}",
@@ -3174,37 +3177,28 @@
     "pastMidnightWarning": "Lessons run past midnight — check the start time or number of lessons."
   },
   "EffectiveDateDialog": {
-    "title": "When should the new lesson schedule take effect?",
-    "description": "Lesson and grade history before that date will be kept on the previous schedule.",
+    "title": "When should these changes take effect?",
+    "description": "You choose once — later edits follow the same rule.",
     "close": "Close",
     "options": {
-      "monday": {
-        "title": "From next Monday",
-        "caption": "The new schedule takes effect on '{date}'. Until then, lessons follow the old schedule."
-      },
-      "today": {
-        "title": "Starting today",
-        "caption": "Starts on '{date}'. Past days' history is not affected."
-      },
-      "custom": {
-        "title": "From another date…",
-        "caption": "Takes effect on '{date}'",
-        "pickFromCalendar": "Pick a date from the calendar."
+      "date": {
+        "title": "From {date}",
+        "caption": "Past lessons stay on the old schedule."
       },
       "inPlace": {
-        "title": "Fix a mistake",
-        "caption": "No new schedule is created, changes apply to all days."
+        "title": "Right away, on all days",
+        "caption": "Past lessons are shown with the new schedule too."
       }
     },
+    "otherDate": "Another date…",
+    "resetDate": "Back to next Monday",
+    "addNote": "Add a note",
     "dateAlreadyTaken": "A schedule already exists for this date",
-    "effectiveDateLabel": "Effective date",
-    "pickDate": "Pick a date",
-    "dateAlreadyTakenFull": "A schedule already exists for this date.",
     "pastDateWarning": "This is a past date — history from this day onward will also show the new schedule.",
     "noteLabel": "Note about the changes (optional)",
     "notePlaceholder": "For example: Class 7-B moved to Friday",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Apply"
   },
   "ClassFormModal": {
     "createTitle": "Create new class",
