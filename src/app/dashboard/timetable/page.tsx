@@ -10,7 +10,7 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { cn } from "@/lib/utils";
 import { DAYS_UZ } from "@/lib/localization";
 import { useCalendarFormat } from "@/components/calendar/format";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
 import DashboardPageLayout, {
@@ -56,7 +56,7 @@ import { minToHHMM, hhmmToMin, snapMin, clamp } from "@/lib/calendar-core/date-m
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { SavedIndicator } from "@/app/dashboard/settings/_components/SettingsShared";
 import { toast } from "sonner";
-import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Printer, PencilIcon as EditIcon, SlidersHorizontal, Lock, CalendarClock, TriangleAlert, CircleDot } from "lucide-react";
+import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Printer, PencilIcon as EditIcon, SlidersHorizontal, Lock, CalendarClock, TriangleAlert, CircleDot, CheckCheck } from "lucide-react";
 
 /* ─── Types ─── */
 /* TimetableEvent — @/lib/timetable dan (takrorlanuvchi haftalik shablon).
@@ -999,36 +999,53 @@ export default function TimetablePage() {
             />
             )}
 
-          </CardContent>
-
-          {/* ── Qoʻllanmagan qoralama — kartaning footeri ──
-              Yuqoridagi bannerlar HOLATNI bildiradi, bu esa AMAL soʻraydi.
-              Suzuvchi qatlam emas: panel oʻzgarish qoʻllanmaguncha turadi,
-              suzsa jadvalning bir qismini doim yashirardi. Footer joyni bir
-              marta oladi (grid ~52px qisqaradi), keyin barqaror.
-              "Qachondan?" tanlovi doim modalda — panelda faqat bitta aniq
-              tugma. */}
-          {awaitingApply && (
-            <CardFooter className="shrink-0 gap-3 border-t border-border bg-muted/30 px-6 pt-3! pb-3 animate-in fade-in slide-in-from-bottom-1 duration-200">
-              {/* Ikona qutisi — "saqlash" (disket) emas: hali qoʻllanmagan,
-                  kutayotgan holat. */}
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-background text-muted-foreground">
-                <CircleDot className="size-4" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
-                  {t("pendingChanges", { count: pendingCount })}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">{t("pendingSubtitle")}</p>
+            {/* ── Qoʻllanmagan qoralama — suzuvchi panel ──
+                Yuqoridagi bannerlar HOLATNI bildiradi, bu esa AMAL soʻraydi:
+                gridning ostida — koʻz jadvalni koʻzdan kechirib tugagan
+                joyda. Absolyut qatlam CardContent'ga bogʻlangan (padding
+                qutisi) — jadval siqilmaydi, grid ichi varaqlansa ham panel
+                joyida qoladi. Rang INVERSIYA (bg-foreground/text-background):
+                loyihaning yuqori-kontrast sirti, BulkActionBar bilan bir til;
+                oq fonda oq panel koʻzdan qochardi. Tugmalar: yashil "qoʻllash"
+                / qizil "bekor" + hoverda yengil koʻtarilish. */}
+            {awaitingApply && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4">
+                <div className="pointer-events-auto flex w-[min(100%,34rem)] items-center gap-3 rounded-overlay bg-foreground py-2.5 pr-3 pl-3.5 text-background shadow-overlay duration-200 animate-in fade-in slide-in-from-bottom-2">
+                  {/* Ikona qutisi — disket emas: hali qoʻllanmagan, kutayotgan
+                      holat. Inversiya sirtida shaffof oq qatlam. */}
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-background/15 text-background/80">
+                    <CircleDot className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {t("pendingChanges", { count: pendingCount })}
+                    </p>
+                    <p className="truncate text-xs text-background/60">{t("pendingSubtitle")}</p>
+                  </div>
+                  <div className="group shrink-0">
+                    <Button
+                      size="sm"
+                      onClick={requestDiscard}
+                      className="cursor-pointer bg-red-500 text-white transition-transform duration-200 hover:bg-red-500/80 group-hover:-translate-y-1"
+                    >
+                      <XIcon className="size-4" />
+                      {t("discardChanges")}
+                    </Button>
+                  </div>
+                  <div className="group shrink-0">
+                    <Button
+                      size="sm"
+                      onClick={openApplyDialog}
+                      className="cursor-pointer bg-green-500 text-white transition-transform duration-200 hover:bg-green-500/80 group-hover:-translate-y-1"
+                    >
+                      <CheckCheck className="size-4" />
+                      {t("applyChanges")}
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={requestDiscard}>
-                {t("discardChanges")}
-              </Button>
-              <Button size="sm" onClick={openApplyDialog}>
-                {t("applyChanges")}
-              </Button>
-            </CardFooter>
-          )}
+            )}
+          </CardContent>
         </Card>
       </div>
       </div>
