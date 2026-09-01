@@ -10,7 +10,7 @@ import {
   ListTodo, Quote, Minus, Table, ChevronDown, Check,
   ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Trash2, PanelTop,
   SubscriptIcon, SuperscriptIcon, ScissorsLineDashed, Ban, Highlighter, Baseline,
-  MessageSquarePlus, Loader2,
+  MessageSquarePlus, Loader2, Video,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { compressImageFile } from "@/lib/image-compress";
 import { uploadEditorImageAction } from "@/server/actions/uploads";
+import { parseVideoUrl } from "@/lib/video-embed";
 import { CALLOUT_TYPES } from "./callout-extension";
 import { CLASS_COLORS, CLASS_COLOR_BASE, type ClassColor } from "@/lib/class-colors";
 
@@ -110,6 +111,8 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
   const t = useTranslations("LessonEditorToolbar");
   const fileRef = useRef<HTMLInputElement>(null);
   const [linkOpen, setLinkOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
+  const [videoValue, setVideoValue] = useState("");
   const [linkValue, setLinkValue] = useState("");
   const [uploading, setUploading] = useState(false);
   // Tiptap v3 useEditor har tranzaksiyada qayta render qilmaydi — toolbar
@@ -226,6 +229,21 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
     if (!url) { editor.chain().focus().extendMarkRange("link").unsetLink().run(); }
     else { editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run(); }
     setLinkOpen(false);
+  };
+
+  /** Video havolasini blokka aylantiradi. Havola tanilmasa — sabab bilan
+   *  xato koʻrsatiladi va popover OCHIQ qoladi: yopib yuborsak odam nima
+   *  boʻlganini bilmay, xuddi tugma ishlamayotgandek qabul qilardi. */
+  const applyVideo = () => {
+    const url = videoValue.trim();
+    if (!url) return;
+    if (!parseVideoUrl(url)) {
+      toast.error(t("videoNotRecognized"));
+      return;
+    }
+    editor.chain().focus().setVideoEmbed(url).run();
+    setVideoValue("");
+    setVideoOpen(false);
   };
 
   /** Rasm qoʻshish: siqish → saqlagichga yuklash → hujjatga URL joylash.
@@ -446,6 +464,29 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
         {uploading ? <Loader2 className="size-4 animate-spin" /> : <ImageIcon className="size-4" />}
       </Btn>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
+      {/* Video — havola bilan (YouTube / Instagram). Fayl yuklash YOʻQ:
+          video fayllari oʻn megabaytlar, saqlagich narxi va yuklash oqimi
+          alohida masala; maqolaga qoʻyiladigan video amalda allaqachon
+          bir platformada turadi. */}
+      <Popover open={videoOpen} onOpenChange={setVideoOpen}>
+        <PopoverTrigger asChild>
+          <span><Btn title={t("insertVideo")} active={editor.isActive("videoEmbed")} onClick={() => setVideoOpen(true)}><Video className="size-4" /></Btn></span>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="w-80 p-3">
+          <div className="flex items-center gap-2">
+            <Input
+              autoFocus
+              value={videoValue}
+              onChange={(e) => setVideoValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyVideo(); } }}
+              placeholder="https://youtu.be/..."
+              className="h-8"
+            />
+            <Button size="sm" onClick={applyVideo}>{t("videoApply")}</Button>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{t("videoHint")}</p>
+        </PopoverContent>
+      </Popover>
       {/* Callout qoʻshish menyusi (Obsidian uslubi, lucide ikonlar) */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

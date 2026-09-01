@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "blog-video-embed",
+    date: "2026-09-01",
+    type: "yangi",
+    title: "Maqolaga video qoʻyish — YouTube yoki Instagram havolasini tashlasangiz kifoya",
+    body:
+      "Blog muharririda video tugmasi paydo boʻldi: havolani qoʻyasiz, maqola ichida videoning oʻzi koʻrinadi. Boʻsh qatorga havolani shunchaki nusxalab qoʻysangiz ham video oʻzi qoʻyiladi. Oʻquvchi ▶︎ ni bosmaguncha video yuklanmaydi — maqola tez ochilaveradi, kengaytirib toʻliq ekranda ham koʻrish mumkin.",
+    href: "/blog/studio",
+  },
+  {
     id: "jamoa-ish-maydoni",
     date: "2026-08-26",
     type: "yangi",

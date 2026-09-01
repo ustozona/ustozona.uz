@@ -39,6 +39,7 @@ import { LeadingParagraph } from "@/components/lesson-editor/leading-paragraph-e
 import { FigureImage } from "@/components/lesson-editor/figure-extension";
 import { ImagePasteUpload } from "@/components/lesson-editor/image-paste-extension";
 import { AppleEmojiDisplay } from "@/components/lesson-editor/apple-emoji-extension";
+import { VideoEmbed } from "@/components/lesson-editor/video-embed-extension";
 import EditorToolbar from "@/components/lesson-editor/EditorToolbar";
 import BubbleToolbar from "@/components/lesson-editor/BubbleToolbar";
 import { publishPostAction, savePostAction, unpublishPostAction } from "@/server/actions/blog";
@@ -112,6 +113,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
       Typography,
       CharacterCount,
       AppleEmojiDisplay,
+      VideoEmbed,
     ],
     content: post.content,
     editorProps: { attributes: { class: "lesson-prose blog-prose focus:outline-none" } },
