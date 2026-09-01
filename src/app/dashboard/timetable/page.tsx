@@ -153,8 +153,6 @@ export default function TimetablePage() {
   const [dialogExplicit, setDialogExplicit] = useState(false);
   const [unlockConfirmOpen, setUnlockConfirmOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  /** Hal qilinmagan qoralama bilan versiya almashtirilsa — maqsad shu yerda kutadi */
-  const pendingSwitchRef = useRef<string | null>(null);
   /** Versiya endigina almashdi (qoralama snapshotdan qayta qurilmoqda) —
       commit-effect shu renderda hali eski `events`ni koʻradi, uni oʻtkazib
       yubormasa yolgʻon "oʻzgarish bor" deb "qachondan?" dialogini ochib yuboradi. */
@@ -180,19 +178,24 @@ export default function TimetablePage() {
   /** Arxiv (qulflangan) rejim — grid faqat koʻrish uchun */
   const readOnly = mode === "past-locked";
 
-  /** Joriy versiya oraligʻida (effectiveFrom … bugungача) biror sinfда davomat
-      yozuvi bormi — "Boshidan" tanlanганда ogohlantirish shunga qarab. Yil
-      boshi/sozlash paytida (yozuv yoʻq) ogohlantirish koʻrsatilmaydi. */
+  /** Joriy versiya oraligʻida (effectiveFrom … bugungacha) biror sinfda davomat
+      yozuvi bormi — "qachondan?" savoli shunga qarab beriladi. Yil boshi/
+      sozlash paytida (yozuv yoʻq) savol umuman chiqmaydi.
+      ⚠️ Store hydratsiyasi tugamagunча EHTIYOTKOR javob: `true`. Aks holda
+      sahifa ochilgan zahoti qilingan tahrir "davomat yoʻq" deb hisoblanib,
+      oʻtmishni jimgina qayta yozib yuborardi. */
   const attendanceRecords = useAttendanceStore((s) => s.recordsByClass);
+  const attendanceHydrated = useAttendanceStore((s) => s._hasHydrated);
   const attendanceAtRisk = useMemo(() => {
     if (!selectedVersion || selectedVersion.effectiveFrom > today) return false;
+    if (!attendanceHydrated) return true;
     for (const recs of Object.values(attendanceRecords)) {
       for (const r of recs) {
         if (r.date >= selectedVersion.effectiveFrom && r.date < today) return true;
       }
     }
     return false;
-  }, [attendanceRecords, selectedVersion, today]);
+  }, [attendanceRecords, attendanceHydrated, selectedVersion, today]);
 
   /** Mavjud darsni koʻchirayotganda — ushlangan nuqtaning dars boshidan daqiqa-ofseti */
   const grabOffsetRef = useRef<number | null>(null);
@@ -326,17 +329,34 @@ export default function TimetablePage() {
     !saved && mode === "current" && !decisionMade && pendingCount > 0 &&
     (selectedVersion?.events.length ?? 0) > 0;
 
+  /** Qaror soʻralmagan holda qoralamani XAVFSIZ saqlash — modalning default
+      yoʻli ("Bugundan"): bugundan yangi versiya ochiladi, oldingi kunlar eski
+      jadvalda qoladi. Joriy versiya allaqachon bugundan boshlangan boʻlsa
+      (yoki yangi versiya ochib boʻlmasa) oʻsha versiyaning oʻziga yoziladi —
+      bu holda oʻtmish baribir qayta yozilmaydi. */
+  const commitSafely = useCallback(() => {
+    if (!selectedVersion) return;
+    if (selectedVersion.effectiveFrom === today) {
+      commitDraft(selectedVersion.id, events, bellConfig);
+      return;
+    }
+    const id = createVersion({ effectiveFrom: today, baseId: selectedVersion.id });
+    commitDraft(id ?? selectedVersion.id, events, bellConfig);
+    if (id) setSelectedVersionId(id);
+  }, [selectedVersion, today, createVersion, commitDraft, events, bellConfig]);
+
   // Sahifadan chiqishda kutayotgan (debounce'dagi) oʻzgarish bekor boʻlib qolmasin —
   // unmount paytida joriy qoralamani darhol commit qilamiz. flush closure'ni har
   // renderdan keyin effektda yangilaymiz (render paytida ref yozilmasin deb).
-  // ⚠️ `awaitingApply` holatida ham commit boʻladi (joriy versiyaga, yaʼni
-  // "hamma kunlarga"): ishni yoʻqotgandan koʻra saqlangani afzal. Sana boʻyicha
-  // ajratish kerak boʻlsa, keyin istalgan payt yangi versiya tuzish mumkin.
+  // ⚠️ Qaror kutilayotgan boʻlsa (`awaitingApply`) joriy versiyaga YOZILMAYDI —
+  // u "Boshidan" degani boʻlib, oʻtmishni foydalanuvchi tanlamagan holda qayta
+  // yozardi. Oʻrniga xavfsiz default: bugundan yangi versiya.
   const flushRef = useRef<() => void>(() => {});
   useEffect(() => {
     flushRef.current = () => {
       if (!selectedVersion || saved) return;
-      commitDraft(selectedVersion.id, events, bellConfig);
+      if (awaitingApply) commitSafely();
+      else commitDraft(selectedVersion.id, events, bellConfig);
     };
   });
   useEffect(() => () => flushRef.current(), []);
@@ -379,20 +399,19 @@ export default function TimetablePage() {
     else discardDraft();
   }, [pendingCount, discardDraft]);
 
+  // Versiya almashtirish — NAVIGATSIYA amali, savol berish uchun joy emas.
+  // Ilgari bu yerda "qachondan?" modali ochilardi va bekor qilinsa bosilgan
+  // versiya jimgina ochilmay qolardi. Endi qoralama darhol saqlanadi:
+  // qaror kutilayotgan boʻlsa xavfsiz default (bugundan yangi versiya),
+  // aks holda joyida commit. Keyin almashish har doim amalga oshadi.
   const handleSelectVersion = useCallback((id: string) => {
     if (id === selectedVersionId) return;
     if (!saved && selectedVersion) {
-      if (mode === "current" && !decisionMade && attendanceAtRisk && selectedVersion.events.length > 0) {
-        // Davomatga taʼsir qilishi mumkin — avval "qachondan?" savoli, soʻng almashish
-        pendingSwitchRef.current = id;
-        setDialogExplicit(false);
-        setEffectiveDialogOpen(true);
-        return;
-      }
-      commitDraft(selectedVersion.id, events, bellConfig); // kutayotgan commit'ni darhol yakunlash
+      if (awaitingApply) commitSafely();
+      else commitDraft(selectedVersion.id, events, bellConfig);
     }
     setSelectedVersionId(id);
-  }, [selectedVersionId, saved, selectedVersion, mode, decisionMade, attendanceAtRisk, commitDraft, events, bellConfig]);
+  }, [selectedVersionId, saved, selectedVersion, awaitingApply, commitSafely, commitDraft, events, bellConfig]);
 
   const applyEffectiveChoice = useCallback((choice: EffectiveChoice) => {
     if (!selectedVersion) return;
@@ -416,16 +435,9 @@ export default function TimetablePage() {
       // Yangi versiya qoralamadagi holatni oladi; eski versiya snapshoti oʻzgarmaydi
       commitDraft(id, events, bellConfig);
       toast.success(t("newVersionToast", { date: fmtDayMonthUz(choice.effectiveFrom) }));
-      setEffectiveDialogOpen(false);
-      setSelectedVersionId(pendingSwitchRef.current ?? id);
-      pendingSwitchRef.current = null;
-      return;
+      setSelectedVersionId(id);
     }
     setEffectiveDialogOpen(false);
-    if (pendingSwitchRef.current) {
-      setSelectedVersionId(pendingSwitchRef.current);
-      pendingSwitchRef.current = null;
-    }
   }, [selectedVersion, commitDraft, createVersion, events, bellConfig, today]);
 
   /* ── "Saqlash" — paneldan yoki ⌘/Ctrl+S ──
@@ -444,10 +456,8 @@ export default function TimetablePage() {
   }, [attendanceAtRisk, applyEffectiveChoice]);
 
   // Dialogni bekor qilish QORALAMAGA TEGMAYDI — savol bekor qilinadi, ish emas.
-  // Versiya almashtirish ham bekor boʻladi: aks holda qoralama koʻrinmay qolardi.
   const cancelEffectiveDialog = useCallback(() => {
     setEffectiveDialogOpen(false);
-    pendingSwitchRef.current = null;
   }, []);
 
   /* Klaviatura — panel koʻringanda: ⌘/Ctrl+S asosiy amal, Esc bekor qilish.

@@ -1,12 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { uz } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { nextMonday } from "@/lib/timetable-versions";
-import { dateKeyToDate, dateToKey } from "@/lib/date-keys";
+import { addDaysKey, dateKeyToDate, dateToKey } from "@/lib/date-keys";
 import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 import {
   Dialog,
@@ -92,7 +92,16 @@ export default function EffectiveDateDialog({
     }
   }, [open]);
 
-  const pickedDate = customDate || monday;
+  /** Default sana — keyingi dushanba; agar unga versiya allaqachon boʻlsa,
+      keyingi BOʻSH kunga suriladi. Aks holda dialog band sana bilan ochilib,
+      "Saqlash" darhol nofaol boʻlardi (foydalanuvchi tanlamagan sana uchun). */
+  const defaultDate = useMemo(() => {
+    let d = monday;
+    for (let i = 0; i < 366 && takenDates.includes(d); i += 1) d = addDaysKey(d, 1);
+    return d;
+  }, [monday, takenDates]);
+
+  const pickedDate = customDate || defaultDate;
   const pickedTaken = takenDates.includes(pickedDate);
   const pickedPast = pickedDate < todayKey;
 
