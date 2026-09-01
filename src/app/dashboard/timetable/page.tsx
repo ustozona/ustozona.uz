@@ -135,8 +135,8 @@ export default function TimetablePage() {
 
   /* ── Versiyalash holati ── */
   const versions = useTimetableStore((s) => s.versions);
-  // Oʻquv yillari — versiya roʻyxatini yil boʻyicha guruhlash uchun (2+ yilda).
-  const academicYears = useCalendarStore((s) => s.years);
+  // Faol oʻquv yili — versiya roʻyxati shu yil bilan cheklanadi (VersionChip).
+  const activeCalendar = useCalendarStore((s) => s.calendar);
   const storeHydrated = useTimetableStore((s) => s._hasHydrated);
   const commitDraft = useTimetableStore((s) => s.commitDraft);
   const createVersion = useTimetableStore((s) => s.createVersion);
@@ -686,7 +686,7 @@ export default function TimetablePage() {
                     onSelect={handleSelectVersion}
                     onCreateNew={() => { setDialogExplicit(true); setEffectiveDialogOpen(true); }}
                     onDeleteSelected={() => setDeleteConfirmOpen(true)}
-                    years={academicYears.map((y) => ({ label: y.calendar.yearLabel, range: y.calendar.range }))}
+                    activeYear={{ label: activeCalendar.yearLabel, range: activeCalendar.range }}
                   />
                 )}
               </div>

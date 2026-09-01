@@ -105,6 +105,24 @@ Buni `npm run build` oldidan avtomatik tekshiradigan darvoza bor:
 `scripts/check-server-actions.mjs` (`prebuild` orqali ishlaydi, alohida
 `npm run check:actions` ham bor). **O'chirmang.**
 
+# ⛔ Boshqa mahsulot nomlarini yozmang
+
+Raqobatchi yoki boshqa loyiha nomlari (masalan Untis, Edupage,
+PowerSchool, Infinite Campus, ClassDojo, Google Classroom, Canvas,
+Blackbaud) **kod izohlarida, commit va PR matnida, `docs/` da — hech
+qayerda** yozilmaydi.
+
+Sabab: kod va hujjat mustaqil boʻlishi kerak. Tashqi mahsulotga havola
+vaqt oʻtishi bilan yolgʻonga aylanadi, brendni chalkashtiradi va PR
+muhokamasini asosiy mavzudan chetga buradi.
+
+Naqsh yoki gʻoya boshqa joydan olingan boʻlsa — **nomini emas, naqshning
+oʻzini** tasvirlang. «Falon mahsulotda shunday qilingan» emas, «jadval
+versiyasi oʻquv yilining ichki boʻlinmasi» kabi mohiyatni yozing.
+
+Yagona istisno — ataylab raqobat tahliliga bagʻishlangan hujjat
+(`docs/*-raqobat-tahlili.md` kabi); u yerda nom oʻrinli.
+
 # Build tekshiruvi
 
 `npm run build` (to'liq production build) FAQAT push qilishdan oldin, yakuniy tekshiruv sifatida yuritiladi — har kichik iteratsiyadan keyin emas. Oddiy dev-tsikl davomida `npx tsc --noEmit` yetarli (tezroq). Sabab: ba'zi xatolar (masalan `useSearchParams()` Suspense'siz) faqat `next build` prerender bosqichida chiqadi, shuning uchun push oldidan `npm run build` baribir shart.
