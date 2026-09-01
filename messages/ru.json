@@ -1379,10 +1379,6 @@
   },
   "TimetablePage": {
     "pendingSubtitle": "Пока действует прежнее расписание",
-    "applyFromDate": "Применить с {date}",
-    "applyOptionsAria": "Варианты применения",
-    "applyAllDays": "Сразу, ко всем дням",
-    "applyOtherDate": "С другой даты…",
     "discardedToast": "Изменений отменено: {count}",
     "undo": "Вернуть",
     "discardConfirmTitle": "Отменить изменения?",

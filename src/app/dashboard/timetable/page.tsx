@@ -10,7 +10,7 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { cn } from "@/lib/utils";
 import { DAYS_UZ } from "@/lib/localization";
 import { useCalendarFormat } from "@/components/calendar/format";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
 import DashboardPageLayout, {
@@ -49,14 +49,14 @@ import { useCalendarStore } from "@/store/useCalendarStore";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makeTimetableTourDemo } from "@/components/tour/timetable-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
-import { resolveVersionForDate, sortVersions, nextMonday } from "@/lib/timetable-versions";
+import { resolveVersionForDate, sortVersions } from "@/lib/timetable-versions";
 import { fmtDayMonthUz } from "@/lib/academic-calendar";
 import { todayKey as getTodayKey } from "@/lib/date-keys";
 import { minToHHMM, hhmmToMin, snapMin, clamp } from "@/lib/calendar-core/date-math";
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { SavedIndicator } from "@/app/dashboard/settings/_components/SettingsShared";
 import { toast } from "sonner";
-import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Printer, PencilIcon as EditIcon, SlidersHorizontal, Lock, CalendarClock, TriangleAlert, CircleDot, ChevronDown, Layers, CalendarSearch } from "lucide-react";
+import { Clock2Icon, XIcon, TrashIcon, SaveIcon, PlusIcon, GraduationCap, Calendar, CalendarDays, Table, GripVertical, MoreVertical, MoreHorizontal, Printer, PencilIcon as EditIcon, SlidersHorizontal, Lock, CalendarClock, TriangleAlert, CircleDot } from "lucide-react";
 
 /* ─── Types ─── */
 /* TimetableEvent — @/lib/timetable dan (takrorlanuvchi haftalik shablon).
@@ -404,24 +404,16 @@ export default function TimetablePage() {
     }
   }, [selectedVersion, commitDraft, createVersion, events, bellConfig]);
 
-  /* ── Qoʻllash paneli: tez yoʻl ──
-     Odatiy holat (keyingi dushanbadan yangi versiya) tugmaning OʻZIDA
-     bajariladi — modal faqat muqobil kerak boʻlganda ochiladi. Agar oʻsha
-     sanaga versiya allaqachon bor boʻlsa, tez yoʻl yopiladi va tugma
-     dialogni ochadi (aks holda "versiya mavjud" xatosi chiqardi). */
-  const quickDate = useMemo(() => nextMonday(today), [today]);
-  const quickAvailable = useMemo(
-    () => !versions.some((v) => v.effectiveFrom === quickDate),
-    [versions, quickDate]
-  );
+  /* ── Qoʻllash paneli ──
+     Panel faqat qaror KERAKLIGINI eʼlon qiladi; "qachondan?" tanlovi doim
+     modalda beriladi (2 karta: sanadan / hamma kunlarga). Boʻlingan-tugma
+     bilan modalsiz yoʻl sinab koʻrildi — foydalanuvchi uchun tushunarsiz
+     boʻldi: tugmadagi sana bilan menyudagi variant orasidagi farq
+     koʻrinmasdi. Endi bitta aniq "Qoʻllash…" tugmasi. */
   const openApplyDialog = useCallback(() => {
     setDialogExplicit(false);
     setEffectiveDialogOpen(true);
   }, []);
-  const applyPrimary = useCallback(() => {
-    if (quickAvailable) applyEffectiveChoice({ kind: "new", effectiveFrom: quickDate });
-    else openApplyDialog();
-  }, [quickAvailable, quickDate, applyEffectiveChoice, openApplyDialog]);
 
   // Dialogni bekor qilish QORALAMAGA TEGMAYDI — savol bekor qilinadi, ish emas.
   // Versiya almashtirish ham bekor boʻladi: aks holda qoralama koʻrinmay qolardi.
@@ -441,7 +433,7 @@ export default function TimetablePage() {
       if (el?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el?.tagName ?? "")) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        applyPrimary();
+        openApplyDialog();
       } else if (e.key === "Escape") {
         e.preventDefault();
         requestDiscard();
@@ -449,7 +441,7 @@ export default function TimetablePage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [awaitingApply, effectiveDialogOpen, discardConfirmOpen, applyPrimary, requestDiscard]);
+  }, [awaitingApply, effectiveDialogOpen, discardConfirmOpen, openApplyDialog, requestDiscard]);
 
   const confirmDeleteVersion = useCallback(() => {
     if (!selectedVersion || versions.length <= 1) return;
@@ -911,11 +903,8 @@ export default function TimetablePage() {
           {!isDemoMode && <TimetableCoverageBanner className="mx-6 mb-2 shrink-0" />}
 
           {/* Hafta jadvali (kun × vaqt grid) */}
-          {/* pb-16: suzuvchi panel oxirgi dars soatini qoplamasin. Absolyut
-              element padding qutisiga bogʻlangani uchun panel joyida qoladi,
-              grid esa qisqaradi. */}
           <CardContent
-            className={cn(panelCardContentClass, "relative flex flex-col overflow-hidden", awaitingApply && "pb-16")}
+            className={cn(panelCardContentClass, "relative flex flex-col overflow-hidden")}
             data-carousel-ignore="true"
           >
             {snapMode === "free" && eventsDisplay.length === 0 && (
@@ -1010,71 +999,36 @@ export default function TimetablePage() {
             />
             )}
 
-            {/* ── Qoʻllanmagan qoralama — suzuvchi panel ──
-                Yuqoridagi bannerlar HOLATNI bildiradi, bu esa AMAL soʻraydi:
-                shuning uchun gridning tepasida emas, ostida — koʻz jadvalni
-                koʻzdan kechirib tugagan va sichqoncha surishdan keyin turgan
-                joyda. Dok qilingan chiziq emas, USTIDAGI qatlam: paydo
-                boʻlganda jadval siqilmaydi (layout sakramaydi). Absolyut
-                bogʻlanish CardContent'ga — grid ichi varaqlansa ham panel
-                joyida qoladi. */}
-            {awaitingApply && (
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4">
-                {/* Suzuvchi sirt — overlay tokenlari (rounded-overlay/shadow-overlay,
-                    bg-popover), dropdown va popover bilan bir tilda. Yumaloq
-                    "pill" ATAYLAB emas: pill — tanlov asboblar paneli belgisi,
-                    bu esa qarorni soʻrovchi sirt. Kirish: pastdan 8px sirpanish
-                    + fade (dropdown/popover bilan bir xil idiom). */}
-                <div className="pointer-events-auto flex w-[min(100%,34rem)] items-center gap-3.5 rounded-overlay border-card border-border bg-popover py-3 pr-3 pl-4 shadow-overlay duration-200 animate-in fade-in slide-in-from-bottom-2">
-                  {/* Ikona qutisi — "saqlash" (disket) emas: hali qoʻllanmagan,
-                      kutib turgan holat. */}
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-muted text-muted-foreground">
-                    <CircleDot className="size-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {t("pendingChanges", { count: pendingCount })}
-                    </p>
-                    <p className="truncate text-caption">{t("pendingSubtitle")}</p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={requestDiscard}>
-                      {t("discardChanges")}
-                    </Button>
-                    {/* Boʻlingan tugma: odatiy qaror tugmada, muqobillar yonida */}
-                    <div className="flex">
-                      <Button size="sm" className="rounded-r-none" onClick={applyPrimary}>
-                        {quickAvailable
-                          ? t("applyFromDate", { date: fmtDayMonthUz(quickDate) })
-                          : t("applyChanges")}
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            size="sm"
-                            aria-label={t("applyOptionsAria")}
-                            className="rounded-l-none border-l border-primary-foreground/25 px-2"
-                          >
-                            <ChevronDown className="size-3.5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onSelect={() => applyEffectiveChoice({ kind: "in-place" })}>
-                            <Layers />
-                            {t("applyAllDays")}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={openApplyDialog}>
-                            <CalendarSearch />
-                            {t("applyOtherDate")}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </CardContent>
+
+          {/* ── Qoʻllanmagan qoralama — kartaning footeri ──
+              Yuqoridagi bannerlar HOLATNI bildiradi, bu esa AMAL soʻraydi.
+              Suzuvchi qatlam emas: panel oʻzgarish qoʻllanmaguncha turadi,
+              suzsa jadvalning bir qismini doim yashirardi. Footer joyni bir
+              marta oladi (grid ~52px qisqaradi), keyin barqaror.
+              "Qachondan?" tanlovi doim modalda — panelda faqat bitta aniq
+              tugma. */}
+          {awaitingApply && (
+            <CardFooter className="shrink-0 gap-3 border-t border-border bg-muted/30 px-6 pt-3! pb-3 animate-in fade-in slide-in-from-bottom-1 duration-200">
+              {/* Ikona qutisi — "saqlash" (disket) emas: hali qoʻllanmagan,
+                  kutayotgan holat. */}
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-background text-muted-foreground">
+                <CircleDot className="size-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">
+                  {t("pendingChanges", { count: pendingCount })}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">{t("pendingSubtitle")}</p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={requestDiscard}>
+                {t("discardChanges")}
+              </Button>
+              <Button size="sm" onClick={openApplyDialog}>
+                {t("applyChanges")}
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       </div>
       </div>

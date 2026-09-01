@@ -1379,10 +1379,6 @@
   },
   "TimetablePage": {
     "pendingSubtitle": "The old schedule is still in effect",
-    "applyFromDate": "Apply from {date}",
-    "applyOptionsAria": "Apply options",
-    "applyAllDays": "Right away, on all days",
-    "applyOtherDate": "From another date…",
     "discardedToast": "{count} changes discarded",
     "undo": "Undo",
     "discardConfirmTitle": "Discard the changes?",

@@ -1379,10 +1379,6 @@
   },
   "TimetablePage": {
     "pendingSubtitle": "Jadvalda hali eski tartib amal qiladi",
-    "applyFromDate": "{date}dan qoʻllash",
-    "applyOptionsAria": "Qoʻllash variantlari",
-    "applyAllDays": "Hoziroq, hamma kunlarga",
-    "applyOtherDate": "Boshqa sanadan…",
     "discardedToast": "{count} ta oʻzgarish bekor qilindi",
     "undo": "Qaytarish",
     "discardConfirmTitle": "Oʻzgarishlar bekor qilinsinmi?",

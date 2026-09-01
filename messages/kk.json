@@ -1379,10 +1379,6 @@
   },
   "TimetablePage": {
     "pendingSubtitle": "Кестеде әзірге ескі тәртіп қолданылады",
-    "applyFromDate": "{date} бастап қолдану",
-    "applyOptionsAria": "Қолдану нұсқалары",
-    "applyAllDays": "Қазірден, барлық күндерге",
-    "applyOtherDate": "Басқа күннен…",
     "discardedToast": "{count} өзгеріс болдырылмады",
     "undo": "Қайтару",
     "discardConfirmTitle": "Өзгерістер болдырылмасын ба?",
