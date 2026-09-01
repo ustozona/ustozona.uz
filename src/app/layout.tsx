@@ -18,6 +18,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ProductScopeSync } from "@/components/product-scope-sync";
 import { MotionProvider } from "@/components/providers/motion-provider";
+import { SITE_URL } from "@/lib/site-url";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -34,13 +35,12 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const siteUrl = "https://www.ustozona.uz";
-const title = "Ustozona — Oʻqituvchi boshqaruv tizimi";
+const title ="Ustozona — Oʻqituvchi boshqaruv tizimi";
 const description =
   "Ustozona — oʻqituvchilar uchun toʻliq boshqaruv tizimi. Sinflar, oʻquvchilar, darslar, baholar va davomatni bir joyda boshqaring.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: title,
     template: "%s — Ustozona",
@@ -57,12 +57,15 @@ export const metadata: Metadata = {
   ],
   applicationName: "Ustozona",
   authors: [{ name: "Ustozona" }],
-  alternates: {
-    canonical: siteUrl,
-  },
+  /* ⛔ BU YERGA `alternates.canonical` YOZMANG.
+     Next metadatani SAYOZ (shallow) birlashtiradi: bola segment maydonni
+     qayta belgilamasa, ota qiymati meros boʻlib oʻtadi. Ildizda turgan
+     canonical shu sababli HAR BIR sahifaga koʻchgan va butun sayt oʻzini
+     bosh sahifaning nusxasi deb eʼlon qilgan edi (2026-09-01 da prodda
+     ushlandi: 3 ta blog maqolasi ham `href="https://www.ustozona.uz"`).
+     Canonical har doim sahifaning OʻZIDA belgilanadi. */
   openGraph: {
     type: "website",
-    url: siteUrl,
     siteName: "Ustozona",
     title,
     description,

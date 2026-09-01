@@ -4,6 +4,7 @@ export const metadata = {
   title: "Ustozona Boshqaruv — maktab boshqaruv paneli",
   description:
     "Maktab maʼmuriyati uchun panel: oʻqituvchilar faolligi, sinflar va umumiy koʻrinish.",
+  alternates: { canonical: "/boshqaruv" },
 };
 
 export default function BoshqaruvPage() {

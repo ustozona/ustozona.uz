@@ -12,6 +12,18 @@ import CTA from "@/components/shadcn-space/blocks/cta-01/cta";
 import Faq from "@/components/shadcn-space/blocks/faq-01/faq";
 import Footer from "@/components/shadcn-space/blocks/footer-01/footer";
 import { CookieConsent } from "@/components/landing/CookieConsent";
+import type { Metadata } from "next";
+
+/* Sarlavha/tavsif ildizdan meros — bosh sahifa uchun ular aynan toʻgʻri.
+   Canonical esa endi har sahifada oʻzi belgilanadi (layout.tsx dagi
+   izohga qarang), shuning uchun bu yerda ham aniq yoziladi.
+
+   ⚠️ Bu yerga `openGraph` QOʻSHMANG: sayoz birlashish tufayli u ildizdagi
+   butun `openGraph` obyektini (siteName, locale, type, title) almashtirib
+   yuboradi — `og:url` bitta maydon uchun qolgani yoʻqoladi. */
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function LandingPage() {
   return (
