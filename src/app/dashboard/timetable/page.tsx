@@ -945,21 +945,26 @@ export default function TimetablePage() {
                 joyida qoladi. */}
             {awaitingApply && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center p-4">
-                <div className="pointer-events-auto flex max-w-full items-center gap-3 rounded-full border border-border bg-popover/95 py-2 pr-2 pl-4 shadow-lg backdrop-blur-sm">
-                  <SaveIcon className="size-3.5 shrink-0 text-primary" />
-                  <p className="truncate text-xs font-medium">
+                {/* Suzuvchi sirt — overlay tokenlari (rounded-overlay/shadow-overlay,
+                    bg-popover), dropdown va popover bilan bir tilda. Yumaloq
+                    "pill" ATAYLAB emas: pill — tanlov asboblar paneli belgisi,
+                    bu esa qarorni soʻrovchi sirt. */}
+                <div className="pointer-events-auto flex max-w-full items-center gap-3 rounded-overlay border-card border-border bg-popover px-4 py-2.5 shadow-overlay">
+                  <SaveIcon className="size-4 shrink-0 text-primary" />
+                  <p className="truncate text-sm font-medium">
                     {t("pendingChanges", { count: pendingCount })}
                   </p>
-                  <Button variant="ghost" size="sm" className="h-8 shrink-0 rounded-full text-xs" onClick={revertDraft}>
-                    {t("discardChanges")}
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="h-8 shrink-0 rounded-full text-xs"
-                    onClick={() => { setDialogExplicit(false); setEffectiveDialogOpen(true); }}
-                  >
-                    {t("applyChanges")}
-                  </Button>
+                  <div className="ml-2 flex shrink-0 items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={revertDraft}>
+                      {t("discardChanges")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => { setDialogExplicit(false); setEffectiveDialogOpen(true); }}
+                    >
+                      {t("applyChanges")}
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
