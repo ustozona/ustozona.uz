@@ -1022,16 +1022,14 @@ export default function TimetablePage() {
                     </p>
                     <p className="truncate text-xs text-background/60">{t("pendingSubtitle")}</p>
                   </div>
-                  <div className="group shrink-0">
-                    <Button
-                      size="sm"
-                      onClick={requestDiscard}
-                      className="cursor-pointer bg-red-500 text-white transition-transform duration-200 hover:bg-red-500/80 group-hover:-translate-y-1"
-                    >
-                      <XIcon className="size-4" />
-                      {t("discardChanges")}
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    onClick={requestDiscard}
+                    className="shrink-0 cursor-pointer text-background/80 hover:bg-background/10 hover:text-background"
+                    variant="ghost"
+                  >
+                    {t("discardChanges")}
+                  </Button>
                   <div className="group shrink-0">
                     <Button
                       size="sm"
