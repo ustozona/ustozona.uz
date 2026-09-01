@@ -1205,6 +1205,50 @@
   .lesson-prose [data-page-break]::after { display: none; }
 }
 
+/* ── Video embed (havola bilan qoʻyilgan YouTube/Instagram bloki) ──
+
+   Bazada saqlangan shakl — iframe EMAS, fasad placeholderi:
+       <div data-video-embed …><a href=…>URL</a></div>
+   Klientda VideoEmbedHydrator uni React fasadiga almashtiradi. Bu
+   yerdagi qoidalar IKKI holatga xizmat qiladi:
+     1. yuksaltirilgunga qadar (yoki JS oʻchiq) — ichidagi havola koʻrinadi
+     2. chop etishda (dars A4 PDF) — qogʻozda iframe maʼnosiz, havola oʻqiladi */
+.lesson-prose .video-embed { margin: 1.5rem 0; }
+/* Fasad thumbnail’i — quti balandligini TO‘LIQ egallashi kerak.
+   Yuqoridagi umumiy qoida (`.lesson-prose img:not(.apple-emoji-img)`)
+   o‘zilligi bilan Tailwind’ning `size-full` sinfidan kuchli va rasmga
+   `height: auto` + `margin: 0.8rem 0` beradi: `inset-0` bo‘lgan rasm
+   shu marginlar hisobiga 1.6rem pastroq bo‘lib qolar va videoning
+   tepasi/pastida kulrang chiziq ko‘rinardi. Shuning uchun bu yerda
+   ataylab bekor qilinadi (o‘zillik bir xil, lekin qoida KEYIN turadi). */
+.lesson-prose img.video-embed-thumb { height: 100%; margin: 0; border-radius: 0; }
+.lesson-prose .video-embed-link {
+  display: block;
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+/* Yuksaltirilgandan keyin React fasad qoʻyiladi va havola DOMdan
+   chiqib ketadi — bu qoida faqat ehtiyot uchun (bir root ikki marta
+   render qilinsa havola qayta paydo boʻlmasin). */
+.lesson-prose .video-embed .video-embed-frame ~ .video-embed-link { display: none; }
+@media print {
+  .lesson-prose .video-embed-frame { display: none; }
+  .lesson-prose .video-embed::after {
+    content: attr(data-url);
+    display: block;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    word-break: break-all;
+  }
+}
+
 /* ── Callout bloklar (Obsidian uslubi — lucide ikonlar, OKLCH ranglar) ──
    Rang YAGONA MANBASI endi callout-extension.ts (CALLOUT_TYPES.color) —
    CalloutView uni `--cl` inline style sifatida DOM'ga uzatadi. Bu yerda

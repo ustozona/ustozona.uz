@@ -58,6 +58,7 @@ Hajm shkalasi: **S** (≤2 kun) · **M** (3–7 kun) · **L** (1–3 hafta) · *
 | Sinf ekrani vositalari | `/dashboard/screen` fullscreen route: taymer, navbat, kun tartibi; shovqin — Web Audio API | **M** |
 | Blog/Forum | Alohida surface: profil + post (markdown), moderatsiya. Dizayn keyin | **XL** |
 | Boshqaruv paneli | Toʻliq multi-tenancy ierarxiyasi — admin-lite tajribasidan keyin | **XL** |
+| **Muharrir `/` menyu tizimi** (Notion uslubi) | 2026-09-01: video embed (`otabek/blog-video-embed`) panel tugmasi + boʻsh qatorga paste bilan qoʻyiladi (Medium naqshi) — Notion'ning `/` bosib blok TURI tanlanadigan menyusi ATAYLAB kiritilmadi, chunki u yagona bloklik ish emas: `@tiptap/suggestion` asosida yangi umumiy komponent (`SlashMenu` + trigger-extension) kerak, u BlogEditor va LessonEditor'ning ikkalasiga ham ulanadi va mavjud panel tugmalari (rasm, jadval, callout, video) shu menyuga koʻchishi kerak — aks holda ikki xil kirish yoʻli yashab qoladi. `AGENTS.md` markaziy-fayl qoidasiga koʻra alohida sessiya/branch talab qiladi | **M** |
 | Audit jurnali | Drizzle wrapper yoki DB trigger → append-only jadval | **L** |
 | Email xabarnoma | Resend/SES + shablon; PDF tabel bilan juftlik | **M** |
 

@@ -15,6 +15,7 @@ import { CommentSection } from "./_components/CommentSection";
 import { PreviewBanner } from "./_components/PreviewBanner";
 import { ShareButton } from "./_components/ShareButton";
 import { ViewBeacon } from "./_components/ViewBeacon";
+import { VideoEmbedHydrator } from "@/components/video-embed/VideoEmbedHydrator";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -113,6 +114,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             className="lesson-prose blog-prose mt-8 max-w-none border-t border-border pt-8"
             dangerouslySetInnerHTML={{ __html: trimProseHtml(post.content) }}
           />
+
+          {/* Kontent ichidagi video placeholder'lari React fasadiga
+              almashtiriladi (iframe faqat ▶︎ bosilgach yuklanadi).
+              Selektor yagona: .blog-prose shu sahifada bitta. */}
+          <VideoEmbedHydrator selector=".blog-prose" />
         </article>
 
         {canComment ? (

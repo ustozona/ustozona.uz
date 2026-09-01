@@ -53,6 +53,7 @@ import { ImagePasteUpload } from "./image-paste-extension";
 import { PageBreak } from "./page-break-extension";
 import { PageBreakMarkers } from "./PageBreakMarkers";
 import { AppleEmojiDisplay } from "./apple-emoji-extension";
+import { VideoEmbed } from "./video-embed-extension";
 import BubbleToolbar from "./BubbleToolbar";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { useStandardsStore } from "@/store/useStandardsStore";
@@ -213,6 +214,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       CharacterCount,
       PageBreak,
       AppleEmojiDisplay,
+      VideoEmbed,
     ],
     content: lesson?.content ?? "",
     editorProps: { attributes: { class: "lesson-prose focus:outline-none" } },
