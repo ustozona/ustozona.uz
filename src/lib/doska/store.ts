@@ -24,6 +24,14 @@ const STORAGE_KEY = "murabbiyona-doska-v1";
 /** Oxirgi oʻzgarishdan keyin diskka yozishni shuncha kutamiz. */
 const SAVE_DELAY_MS = 350;
 
+/**
+ * Nusxa asl vidjetdan shuncha surilib chiqadi (piksel).
+ *
+ * Aynan ustiga tushsa nusxa koʻrinmaydi va oʻqituvchi tugma ishlamadi
+ * deb oʻylaydi; uzoqqa tashlansa esa uni qidirish kerak boʻladi.
+ */
+const DUPLICATE_OFFSET = 24;
+
 /* ────────────────────────────────────────────────────────────────────
    KECHIKTIRILGAN YOZUV.
 
@@ -156,6 +164,15 @@ type DoskaState = {
     initial?: Record<string, unknown>,
   ) => void;
   removeWidget: (id: string) => void;
+  /**
+   * Tanlangan vidjetning nusxasi — biroz surilgan holda, ustiga.
+   *
+   * Nega kerak: sinf ekranida bir xil vidjet takrorlanadi (ikki guruhga
+   * ikki taymer, uch bosqichga uch eslatma). Nusxasiz oʻqituvchi uni
+   * qaytadan qoʻyib, qaytadan sozlaydi — holat esa `state` da,
+   * yaʼni nusxalash uni bepul olib keladi.
+   */
+  duplicateWidget: (id: string) => void;
   moveWidget: (id: string, x: number, y: number) => void;
   resizeWidget: (id: string, w: number, h: number, x: number, y: number) => void;
   patchWidgetState: (id: string, patch: Record<string, unknown>) => void;
@@ -234,6 +251,35 @@ export const useDoskaStore = create<DoskaState>()(
             selectedId: s.selectedId === id ? null : s.selectedId,
             editingId: s.editingId === id ? null : s.editingId,
           })),
+
+        duplicateWidget: (id) => {
+          const { deck, activeScreenId } = get();
+          const screen = deck.screens.find((s) => s.id === activeScreenId);
+          const source = screen?.widgets.find((w) => w.id === id);
+          if (!source) return;
+
+          const maxZ = screen?.widgets.reduce((m, w) => Math.max(m, w.z), 0) ?? 0;
+          // Surilish `state` NUSXASIDAN keyin: `state` sayoz koʻchiriladi,
+          // chunki vidjet holati oddiy qiymatlardan iborat (raqam, satr,
+          // bayroq). Ichma-ich obyekt paydo boʻlsa shu joy chuqur nusxaga
+          // oʻtishi kerak — aks holda nusxa asl bilan bogʻlanib qoladi.
+          const copy: DoskaWidget = {
+            ...source,
+            id: newId(),
+            x: source.x + DUPLICATE_OFFSET,
+            y: source.y + DUPLICATE_OFFSET,
+            z: maxZ + 1,
+            state: { ...source.state },
+          };
+
+          set({
+            deck: withActiveScreen(deck, activeScreenId, (ws) => [...ws, copy]),
+            selectedId: copy.id,
+            // Nusxa tahrirga OCHILMAYDI, asl vidjetdan farqli: matn
+            // allaqachon yozilgan, oʻqituvchi esa nusxani koʻchirmoqchi.
+            editingId: null,
+          });
+        },
 
         moveWidget: (id, x, y) =>
           set((s) => ({

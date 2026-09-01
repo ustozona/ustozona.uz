@@ -5,15 +5,23 @@
 > [ost-loyihalar-arxitektura.md](./ost-loyihalar-arxitektura.md) §A va
 > [design-system.md](./design-system.md). Bu yerda faqat Doskaga xos qism.
 
-Manba: classroomscreen.com DOM tahlili (R130–R143) + ClassDojo Toolkit.
+Manba: sinf ekrani va sinf boshqaruvi turkumidagi referenslarning DOM
+tahlili (R130–R143; nomlar `ost-loyihalar-arxitektura.md` da).
 **Nusxa emas** — oʻlchov qarorlari va nima uchun ular ishlashi oʻrganildi,
 keyin oʻz tokenlarimizga xaritalandi.
+
+⚠️ Mualliflik chizigʻi. Olinadigan narsa — **oʻlchov, joylashuv va
+xatti-harakat**: ular gʻoya, himoyalanmaydi. Olinmaydigan narsa —
+**asar**: SVG yoʻl maʼlumotlari, ikona fayllari, CSS, brend tusi va
+matn satrlari. Amalda buni tizimning oʻzi taʼminlaydi: ikonalar
+Solar'dan qayta chiziladi (§3), ranglar `class-colors.ts` dan, fonlar
+sof CSS (§4). Referensdan bironta bayt koʻchirilmaydi.
 
 ---
 
 ## 1. Asosiy tamoyil: panel jim, kanvas jonli
 
-Classroomscreen'ning vidjet panelida **fon neytral** — oq, `gray-300`
+Referensning vidjet panelida **fon neytral** — oq, ochiq kulrang
 chegara. Ikonalar esa **rangli** — har biri oʻz tusida, ikki
 shaffoflikda (qalam binafsha, taymer sariq, svetofor qizil).
 
@@ -28,6 +36,49 @@ tashiydi, bezak boʻlmaydi.
 ⚠️ Bu `playful` ohangga zid emas. Ohang **kanvasga** tegishli: yumaloq
 burchak, toʻyingan tus, qalin soya — hammasi vidjetda. Panel esa asbob,
 u koʻrinmasligi kerak.
+
+---
+
+## 1.5. Suzuvchi guruh idishi — `<BarGroup>`
+
+Doskada kanvas butun ekranni egallaydi, boshqaruv esa uning ustida
+suzadi. Yaʼni **har boshqaruv toʻdasi oʻzini fondan ajratishi kerak**:
+oq yuza, chegara, soya, oʻz z-qatlami. Bu naqsh qobiqda toʻrt marta
+takrorlanadi (uy · toʻliq ekran+menyu · vidjet paneli · ekran
+navigatsiyasi), shuning uchun u [`BarGroup.tsx`](../src/components/doska/BarGroup.tsx)
+da bitta komponent.
+
+⚠️ Idish border **bilan ham**, shadow **bilan ham** chiziladi — bu
+`design-system.md` dagi «border YOKI shadow» qoidasidan **ataylab
+chetlashish**. U yerdagi qoida panel varaq ustida turishini nazarda
+tutadi; bu yerda fon ixtiyoriy rangda, och fonda chegara, toʻq fonda
+soya ushlab turadi. Bittasi yetmaydi.
+
+### Ikki tur
+
+| Tur | Ichki tugmalar | Qayerda |
+|---|---|---|
+| `segmented` | tegib turadi, radius idishda, ajratgich `<BarDivider>` | ikonali boshqaruv toʻdasi |
+| `padded` | oʻz radiusini saqlaydi, idish `p-2` beradi | yorliqli vidjet tugmalari |
+
+Sabab oddiy: yorliqli tugma allaqachon 52px kenglikda va tegib tursa
+qator devorga aylanadi; ikonali tugma esa 40px va ajratilsa toʻda
+boʻlib koʻrinmaydi.
+
+### Tooltip
+
+Guruh ichidagi ikonali tugmada yorliq yoʻq — nom **tooltip**da
+(`<BarIconButton>`). `title` atributi ishlatilmaydi: brauzer uni bir
+soniya kutib chiqaradi va uslubga boʻysunmaydi, dars oʻrtasida esa bu
+«tugma nima qilishini bilmadim» degani.
+
+`delayDuration` = 300 ms (nol emas): boshqaruv zich joylashgan va nol
+kechikishda sichqoncha ustidan oʻtganda tooltip'lar ketma-ket chaqnaydi.
+
+⚠️ `DoskaMenu` ning tugmasi `<BarIconButton>` ga OʻRALMAYDI — u
+`PopoverTrigger asChild` ning bolasi, zanjir esa `asChild` → `<Tooltip>`
+(DOM element emas) boʻlib uzilardi. Shuning uchun koʻrinish
+`barIconButtonClass` sifatida ham eksport qilingan.
 
 ---
 
@@ -84,13 +135,68 @@ holda `--spacing` override uni ham kattalashtiradi.
 
 ### Faol rejim indikatori
 
-Classroomscreen faol rejim ostiga **absolute** joylashgan kvadrat
+Referens faol rejim ostiga **absolute** joylashgan kvadrat
 qoʻyadi va uni `transition-all` bilan siljitadi — yaʼni tugmalar
 oʻzgarmaydi, faqat belgi harakatlanadi.
 
 Bu naqsh olinadi: bizda ham chizish/tanlash rejimi qoʻshilganda
 indikator siljisin, sakramasin. `playful` ohangdagi spring egri chizigʻi
 bunga aynan mos.
+
+### Tor holat — panel ekrandan chiqib ketmaydi
+
+Panel oʻqituvchining planshetida ham ochiladi. Kenglik yetmaganda u
+`max-w-[calc(100vw-1.5rem)]` bilan chegaralanadi va **ichida
+gorizontal aylanadi**.
+
+Busiz sigʻmagan tugmalar kanvasdan tashqariga chiqib ketardi: 640px
+ekranda «Fon» va «Tozalash» koʻrinmas edi va ularga yetishning **hech
+qanday yoʻli yoʻq** edi.
+
+`overscroll-x-contain` shart — aylantirish panel oxiriga yetganda
+brauzerning «orqaga» ishorasiga oʻtib ketmasin.
+
+### Yashirish
+
+Panel yonida yigʻish tugmasi turadi; yigʻilganda uning oʻrnida bitta
+ochish tugmasi qoladi. Toʻliq ekran rejimi buni almashtira olmaydi —
+u brauzer qobigʻini olib tashlaydi, panel esa baribir joyida.
+
+⚠️ Holat **store'da emas**, oddiy React holati — yaʼni saqlanmaydi.
+Yashirish dars paytiga tegishli qaror («hozir sinf ekranga qarasin»),
+keyingi darsga emas. Saqlansa oʻqituvchi ertasi kuni doskani ochib
+boshqaruvni topolmaydi va ilova buzilgan deb oʻylaydi.
+
+---
+
+## 2.5. Kontekst asboblar paneli
+
+Tanlangan vidjetning **ustida** suzadi va uning amallarini tutadi:
+nusxalash · oldinga chiqarish · oʻchirish
+([`WidgetToolbar.tsx`](../src/components/doska/WidgetToolbar.tsx)).
+
+Ilgari tanlovda faqat burchakdagi yakka «×» bor edi. Burchak esa bitta
+amalga joy beradi — ikkinchisi qoʻshilganda tutqichlar bilan urishadi.
+Panel esa oʻsib boradi va oʻqituvchining nigohi allaqachon turgan
+joyda turadi.
+
+| Qoida | Sabab |
+|---|---|
+| Vidjet tepasiga yopishganda pastga tushadi | aks holda kanvasdan chiqib ketadi |
+| Har tugmada `data-doska-no-drag` | busiz panelga bosish vidjetni sudrab yuboradi (`interaction.ts`) |
+| Tutqich qatlamining **yonida**, ichida emas | §5 ga qarang |
+
+⚠️ **Panel tutqich qatlamining ICHIGA qoʻyilmaydi.** Tutqich qatlami
+`z-index` bilan oʻz stacking-kontekstini yaratadi; panel oʻsha ichida
+qolsa `--z-doska-context` (1000105) global tartibda hisobga olinmaydi
+va pastdagi vidjetning paneli vidjet panelining (1000100) **ostida**
+qolib ketadi. Ikkalasi `SelectionOverlay` dan yonma-yon qaytariladi.
+
+### Nima qoʻyilmaydi
+
+«Sozlamalar» tugmasi **hozircha yoʻq** — vidjetlarning oʻz sozlama
+oynasi yoʻq, boʻsh oyna ochadigan tugma esa yoʻqidan yomon. U vidjet
+sozlamalari qurilganda qoʻshiladi.
 
 ---
 
@@ -148,7 +254,7 @@ Amalda bu bitta CSS qoida va bitta oʻzgaruvchi:
 #### Nega palitra emas
 
 2026-08 da qisqa vaqt «palitra» rejimi ishlatildi: toʻq kontur + rangli
-ichki (classroomscreen uslubi). U aniqroq koʻrinardi, lekin uch narxi
+ichki (referens uslubi). U aniqroq koʻrinardi, lekin uch narxi
 bor edi va ularning har biri kelajakka tegishli:
 
 1. Toʻq kontur yorqin ichki qatlamga **tegib** turadi — ikkalasi ham
@@ -267,7 +373,7 @@ sudrab belgilaydi.
 ## 4. Fon va bo'r rejimi
 
 Fonlar sof CSS ([backgrounds.ts](../src/lib/doska/backgrounds.ts)) —
-rasm fayli yoʻq. Sabab: classroomscreen 100+ JPG saqlaydi (megabaytlar),
+rasm fayli yoʻq. Sabab: referenslar 100+ JPG saqlaydi (megabaytlar),
 ular projektorda pikselli chiqadi; CSS istalgan oʻlchamda toza.
 
 Har fonning `tone` maydoni bor va u **render qarori**:
@@ -299,7 +405,7 @@ Vidjetlar bir-birining ustiga chiqadi; tartib chalkashsa tuzatish qiyin
 | Yuqori tugmalar | `--z-doska-top` | 1000110 |
 | Tooltip / toast | `--z-doska-tooltip` | 1001000 |
 
-Raqamlar classroomscreen'dan olingan — ular oʻzboshimcha koʻrinadi,
+Raqamlar referensdan olingan — ular oʻzboshimcha koʻrinadi,
 lekin katta oraliq **ataylab**: orasiga yangi qatlam qoʻshish kerak
 boʻlsa, hech narsani qayta raqamlash shart emas.
 
@@ -307,8 +413,8 @@ boʻlsa, hech narsani qayta raqamlash shart emas.
 
 ## 6. Responsive — container query, viewport emas
 
-Classroomscreen `bar-sm/md/lg/xl` degan **maxsus** breakpointlar
-ishlatadi va ular panelning oʻz kengligiga bogʻlangan.
+Referens `bar-sm/md/lg/xl` degan **maxsus** breakpointlar ishlatadi va
+ular panelning oʻz kengligiga bogʻlangan.
 
 Sabab: doska projektorda ham, oʻqituvchining noutbukida ham, planshetda
 ham ochiladi. Viewport breakpoint'i bu uch holatni ajrata olmaydi —
