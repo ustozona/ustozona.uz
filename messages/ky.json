@@ -1378,6 +1378,7 @@
     "lessonDeletedToast": "Сабак өчүрүлдү"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Жадвал жаңырды",
     "pendingSubtitle": "Жадвалда азырынча эски тартип колдонулат",
     "discardedToast": "{count} өзгөрүү жокко чыгарылды",
     "undo": "Кайтаруу",

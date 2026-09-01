@@ -1378,6 +1378,7 @@
     "lessonDeletedToast": "Тема удалена"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Расписание обновлено",
     "pendingSubtitle": "Пока действует прежнее расписание",
     "discardedToast": "Изменений отменено: {count}",
     "undo": "Вернуть",

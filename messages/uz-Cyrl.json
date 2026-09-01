@@ -1378,6 +1378,7 @@
     "lessonDeletedToast": "Дарс ўчирилди"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Жадвал янгиланди",
     "pendingSubtitle": "Жадвалда ҳали эски тартиб амал қилади",
     "discardedToast": "{count} та ўзгариш бекор қилинди",
     "undo": "Қайтариш",

@@ -382,8 +382,8 @@ export default function TimetablePage() {
   const handleSelectVersion = useCallback((id: string) => {
     if (id === selectedVersionId) return;
     if (!saved && selectedVersion) {
-      if (mode === "current" && !decisionMade && selectedVersion.events.length > 0) {
-        // Hal qilinmagan oʻzgarish bor — avval "qachondan?" savoli, soʻng almashish
+      if (mode === "current" && !decisionMade && attendanceAtRisk && selectedVersion.events.length > 0) {
+        // Davomatga taʼsir qilishi mumkin — avval "qachondan?" savoli, soʻng almashish
         pendingSwitchRef.current = id;
         setDialogExplicit(false);
         setEffectiveDialogOpen(true);
@@ -392,7 +392,7 @@ export default function TimetablePage() {
       commitDraft(selectedVersion.id, events, bellConfig); // kutayotgan commit'ni darhol yakunlash
     }
     setSelectedVersionId(id);
-  }, [selectedVersionId, saved, selectedVersion, mode, decisionMade, commitDraft, events, bellConfig]);
+  }, [selectedVersionId, saved, selectedVersion, mode, decisionMade, attendanceAtRisk, commitDraft, events, bellConfig]);
 
   const applyEffectiveChoice = useCallback((choice: EffectiveChoice) => {
     if (!selectedVersion) return;
@@ -406,6 +406,7 @@ export default function TimetablePage() {
       setDecisionMade(true);
       setSaved(true);
       setSavedSignal((n) => n + 1);
+      toast.success(t("scheduleSavedToast"));
     } else {
       const id = createVersion({ effectiveFrom: choice.effectiveFrom, baseId: selectedVersion.id });
       if (!id) { toast.error(t("versionExistsError")); return; }
@@ -427,16 +428,20 @@ export default function TimetablePage() {
     }
   }, [selectedVersion, commitDraft, createVersion, events, bellConfig, today]);
 
-  /* ── Qoʻllash paneli ──
-     Panel faqat qaror KERAKLIGINI eʼlon qiladi; "qachondan?" tanlovi doim
-     modalda beriladi (2 karta: sanadan / hamma kunlarga). Boʻlingan-tugma
-     bilan modalsiz yoʻl sinab koʻrildi — foydalanuvchi uchun tushunarsiz
-     boʻldi: tugmadagi sana bilan menyudagi variant orasidagi farq
-     koʻrinmasdi. Endi bitta aniq "Qoʻllash…" tugmasi. */
-  const openApplyDialog = useCallback(() => {
-    setDialogExplicit(false);
-    setEffectiveDialogOpen(true);
-  }, []);
+  /* ── "Saqlash" — paneldan yoki ⌘/Ctrl+S ──
+     Odatiy holat: shunchaki xatoni tuzatish. Modal CHIQMAYDI — oʻzgarish
+     joriy versiyaga yoziladi (in-place). Modal faqat oʻzgarish oʻtgan
+     davomatga taʼsir qilishi mumkin boʻlgandagина ochiladi ("Bugundan"
+     yangi versiya yoki "Boshidan" qayta yozish tanlovi bilan). Aniq
+     kelajak sana — versiyalar roʻyxatidagi "Yangi sanadan…" da. */
+  const saveChanges = useCallback(() => {
+    if (attendanceAtRisk) {
+      setDialogExplicit(false);
+      setEffectiveDialogOpen(true);
+    } else {
+      applyEffectiveChoice({ kind: "in-place" });
+    }
+  }, [attendanceAtRisk, applyEffectiveChoice]);
 
   // Dialogni bekor qilish QORALAMAGA TEGMAYDI — savol bekor qilinadi, ish emas.
   // Versiya almashtirish ham bekor boʻladi: aks holda qoralama koʻrinmay qolardi.
@@ -456,7 +461,7 @@ export default function TimetablePage() {
       if (el?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el?.tagName ?? "")) return;
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        openApplyDialog();
+        saveChanges();
       } else if (e.key === "Escape") {
         e.preventDefault();
         requestDiscard();
@@ -464,7 +469,7 @@ export default function TimetablePage() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [awaitingApply, effectiveDialogOpen, discardConfirmOpen, openApplyDialog, requestDiscard]);
+  }, [awaitingApply, effectiveDialogOpen, discardConfirmOpen, saveChanges, requestDiscard]);
 
   const confirmDeleteVersion = useCallback(() => {
     if (!selectedVersion || versions.length <= 1) return;
@@ -1056,7 +1061,7 @@ export default function TimetablePage() {
                   <div className="group shrink-0">
                     <Button
                       size="sm"
-                      onClick={openApplyDialog}
+                      onClick={saveChanges}
                       className="cursor-pointer bg-green-500 text-white transition-transform duration-200 hover:bg-green-500/80 group-hover:-translate-y-1"
                     >
                       <CheckCheck className="size-4" />

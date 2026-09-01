@@ -29,13 +29,13 @@ import { CalendarClock, CalendarCog, CalendarSearch, Layers, TriangleAlert, X } 
 
    Ikki kirish nuqtasi, ikki rejim:
 
-   • "decide" — paneldan "Saqlash" bosilganda. Oʻqituvchi joriy jadvalni
-     tahrirladi, endi natijani tanlaydi. Ikki sodda yoʻl:
-       – "Bugundan"  → yangi versiya, oldingi kunlar eski jadvalda;
-       – "Boshidan"  → joriy versiya qayta yoziladi (xatoni toʻgʻrilash).
-     HECH BIRI oldindan tanlanmaydi — ikkalasi ham keng tarqalgan holat
-     (ayniqsa yil boshi sozlashida "Boshidan"), oqibati esa farqli.
-     Ogohlantirish faqat oʻsha oraliqda haqiqatan davomat boʻlsa chiqadi.
+   • "decide" — paneldan "Saqlash" bosilганда FAQAT oʻzgarish oʻtgan
+     davomatga taʼsir qilishi mumkin boʻlsa ochiladi (aks holda modal
+     yoʻq — oʻzgarish jimgina joriy versiyaga yoziladi). Ikki yoʻl:
+       – "Bugundan"  → yangi versiya, oldingi kunlar eski jadvalda (default
+                       — oʻtgan davomat saqlanadi, xavfsiz);
+       – "Boshidan"  → joriy versiya qayta yoziladi (xatoni toʻgʻrilash),
+                       ogohlantirish bilan.
      Sana tanlash YOʻQ — "aniq kelajak sana" boshqa niyat, uning uchun
      versiyalar roʻyxatidagi "Yangi sanadan…" bor.
 
@@ -77,16 +77,16 @@ export default function EffectiveDateDialog({
   const t = useTranslations("EffectiveDateDialog");
   const monday = nextMonday(todayKey);
 
-  // decide rejimi: hech biri oldindan tanlanmaydi — ikki yoʻlning oqibati
-  // farqli, oʻqituvchi har safar ongli tanlaydi (sessiyada bir marta).
-  const [kind, setKind] = useState<"new" | "fix" | null>(null);
+  // decide rejimi: default "new" (oʻtgan davomatni saqlaydi — xavfsiz);
+  // "Boshidan" ni oʻqituvchi ongli ravishda tanlaydi.
+  const [kind, setKind] = useState<"new" | "fix">("new");
   // pick-date rejimi: boʻsh → keyingi dushanba
   const [customDate, setCustomDate] = useState("");
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
-      setKind(null);
+      setKind("new");
       setCustomDate("");
       setCalendarOpen(false);
     }
@@ -101,8 +101,7 @@ export default function EffectiveDateDialog({
       onConfirm({ kind: "new", effectiveFrom: pickedDate });
       return;
     }
-    if (kind === "fix") onConfirm({ kind: "in-place" });
-    else if (kind === "new") onConfirm({ kind: "new", effectiveFrom: todayKey });
+    onConfirm(kind === "fix" ? { kind: "in-place" } : { kind: "new", effectiveFrom: todayKey });
   };
 
   return (
@@ -230,10 +229,7 @@ export default function EffectiveDateDialog({
           <Button variant="outline" onClick={onCancel}>
             {t("cancel")}
           </Button>
-          <Button
-            disabled={mode === "pick-date" ? pickedTaken : kind === null}
-            onClick={confirm}
-          >
+          <Button disabled={mode === "pick-date" && pickedTaken} onClick={confirm}>
             {t("save")}
           </Button>
         </DialogFooter>

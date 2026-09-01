@@ -1378,6 +1378,7 @@
     "lessonDeletedToast": "Сабақ жойылды"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Кесте жаңартылды",
     "pendingSubtitle": "Кестеде әзірге ескі тәртіп қолданылады",
     "discardedToast": "{count} өзгеріс болдырылмады",
     "undo": "Қайтару",

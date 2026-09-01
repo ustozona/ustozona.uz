@@ -1378,6 +1378,7 @@
     "lessonDeletedToast": "Lesson deleted"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Schedule updated",
     "pendingSubtitle": "The old schedule is still in effect",
     "discardedToast": "{count} changes discarded",
     "undo": "Undo",

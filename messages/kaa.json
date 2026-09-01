@@ -1378,6 +1378,7 @@
     "lessonDeletedToast": "Sabaq óshirildi"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Keste jańalandı",
     "pendingSubtitle": "Kestede áli góne tártip ámel etedi",
     "discardedToast": "{count} ózgeris biykar etildi",
     "undo": "Qaytarıw",

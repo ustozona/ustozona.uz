@@ -1378,6 +1378,7 @@
     "lessonDeletedToast": "Dars oʻchirildi"
   },
   "TimetablePage": {
+    "scheduleSavedToast": "Jadval yangilandi",
     "pendingSubtitle": "Jadvalda hali eski tartib amal qiladi",
     "discardedToast": "{count} ta oʻzgarish bekor qilindi",
     "undo": "Qaytarish",
