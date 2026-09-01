@@ -55,7 +55,12 @@ export function EditableText({
   // qaytadan bermang — ikkisi bir-biri bilan urishadi.
   useFitText(ref, { text, widthRatio, min: minFont, max: maxFont });
 
-  React.useEffect(() => {
+  // `useLayoutEffect` — `useEffect` EMAS: fokus DOM oʻzgarishi bilan
+  // bir sinxron qadamda qoʻyilishi kerak, aks holda iOS Safari uni
+  // «foydalanuvchi jestidan tashqarida» deb hisoblab klaviaturani
+  // ochmaydi. (Dispatcher ham `endDrag` ичida sinxron `.focus()`
+  // qiladi; bu yer qoʻshimcha, ikkalasi bir-biriga xalaqit bermaydi.)
+  React.useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
 

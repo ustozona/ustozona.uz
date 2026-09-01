@@ -43,10 +43,25 @@ const SAVE_DELAY_MS = 350;
    sudralayotgan paytdagi 100 ta oraliq koordinata hech kimga kerak
    emas, faqat qoʻyilgan joyi kerak.
 
-   ⚠️ Kutish paytida sahifa yopilishi mumkin, shuning uchun `pagehide`
-   va `visibilitychange` da kutmasdan yoziladi — aks holda oʻqituvchi
-   yozgan oxirgi jumla yoʻqolardi.
+   ⚠️ Kutish paytida sahifa yopilishi mumkin. Kutilayotgan yozuvni
+   darhol tushirish uchun `flushDoskaPersist()` eksport qilinadi;
+   uni `pagehide` / `visibilitychange` ga ULAYDIGAN joy — komponent
+   effekti (`DoskaShell`), chunki faqat oʻshanda toza `removeEventListener`
+   bor. Listenerni shu faylда, factory ichida qoʻyish HMR'da ularni
+   toʻplab ketardi va tozalash yoʻli yoʻq edi.
    ──────────────────────────────────────────────────────────────────── */
+
+/**
+ * Joriy storage instansiyasining «darhol yoz» funksiyasi. HMR yangi
+ * instansiya yaratsa shu koʻrsatkich yangisiga oʻtadi — eskisiga emas.
+ */
+let flushPending: (() => void) | null = null;
+
+/** Kutilayotgan localStorage yozuvini darhol diskка tushiradi. */
+export function flushDoskaPersist(): void {
+  flushPending?.();
+}
+
 function deferredLocalStorage(delayMs: number): StateStorage {
   // ⚠️ Birinchi qator ATAYLAB shunday: serverda `localStorage` yoʻq va
   // bu chaqiruv xato beradi. `createJSONStorage` uni ushlaydi va
@@ -72,10 +87,7 @@ function deferredLocalStorage(delayMs: number): StateStorage {
     pending = null;
   };
 
-  window.addEventListener("pagehide", flush);
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") flush();
-  });
+  flushPending = flush;
 
   return {
     getItem: (name) => store.getItem(name),

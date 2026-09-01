@@ -31,6 +31,18 @@ export type DragSession = {
    * vidjet har bosishda sal siljib ketadi.
    */
   moved: boolean;
+  /**
+   * Bosishdan OLDIN shu vidjet allaqachon tanlangan edimi.
+   *
+   * Tanlangan tahrirlanadigan vidjetga siljishsiz qayta tegilsa
+   * tahrirga kiriladi (`endDrag`). Sichqonchada bu «ikki marta bosish»,
+   * sensorli ekranda «ikki marta teginish» — bitta yoʻl, ikkalasida
+   * ham ishlaydi. `dblclick` sensorli ekranda ishonchsiz va vidjetdagi
+   * `touch-action: none` uni butunlay toʻsadi.
+   */
+  wasSelected: boolean;
+  /** Vidjet matn qabul qiladimi (reyestrdagi `editable`). */
+  editable: boolean;
 };
 
 /** Shu masofadan keyin bosish sudrashga aylanadi (piksel). */

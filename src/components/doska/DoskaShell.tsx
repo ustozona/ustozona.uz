@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
-import { useDoskaStore } from "@/lib/doska/store";
+import { flushDoskaPersist, useDoskaStore } from "@/lib/doska/store";
 import { DoskaCanvas } from "./DoskaCanvas";
 import { WidgetBar } from "./WidgetBar";
 import { DoskaGuestNote } from "./DoskaGuestNote";
@@ -31,6 +31,22 @@ export function DoskaShell() {
 
   const index = deck.screens.findIndex((s) => s.id === activeScreenId);
   const hasPrev = index > 0;
+
+  // Ekran holati kechiktirilib saqlanadi (store.ts). Sahifa yopilishi
+  // yoki tab almashishida kutilayotgan yozuvni darhol tushiramiz —
+  // aks holda oxirgi 350 ms ичidagi oʻzgarish yoʻqolardi. Listener
+  // SHU YERDA: faqat komponent effektida toza `removeEventListener` bor.
+  React.useEffect(() => {
+    const onHidden = () => {
+      if (document.visibilityState === "hidden") flushDoskaPersist();
+    };
+    window.addEventListener("pagehide", flushDoskaPersist);
+    document.addEventListener("visibilitychange", onHidden);
+    return () => {
+      window.removeEventListener("pagehide", flushDoskaPersist);
+      document.removeEventListener("visibilitychange", onHidden);
+    };
+  }, []);
 
   const toggleFullscreen = () => {
     if (document.fullscreenElement) void document.exitFullscreen();
