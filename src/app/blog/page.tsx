@@ -6,6 +6,7 @@ import { BlogHeader } from "./_components/BlogHeader";
 export const metadata: Metadata = {
   title: "Blog",
   description: "Ustozona blogi — oʻqituvchilarning maqolalari.",
+  alternates: { canonical: "/blog" },
 };
 
 export default async function BlogIndexPage() {

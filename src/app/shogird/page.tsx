@@ -4,6 +4,7 @@ export const metadata = {
   title: "Shogird — ota-ona uchun elektron kundalik, Telegram",
   description:
     "Ota-ona va oʻquvchi uchun Telegram ilovasi — baho, davomat va xulqni akkaunt ochmasdan koʻrish.",
+  alternates: { canonical: "/shogird" },
 };
 
 export default function ShogirdPage() {

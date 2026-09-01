@@ -11,6 +11,7 @@ export const metadata = {
   title: "Ustozona Baholash — onlayn test tuzish, sinfda kviz",
   description:
     "Onlayn test tuzish, sinfda interaktiv kviz, qogʻoz test skaneri (OMR) va QR-kartalar — bittasi bahoga, hammasi jurnalga.",
+  alternates: { canonical: "/baholash" },
 };
 
 /* ════════════════════════════════════════════════════════════════════

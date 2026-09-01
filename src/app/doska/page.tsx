@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Doska — sinf ekrani, dars taymeri, svetofor",
   description:
     "Taymer, svetofor, soat — projektorga chiqariladigan sinf ekrani. Roʻyxatdan oʻtmasdan, darhol ishlaydi.",
+  alternates: { canonical: "/doska" },
 };
 
 /* ════════════════════════════════════════════════════════════════════

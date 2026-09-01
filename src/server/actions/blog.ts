@@ -20,6 +20,8 @@ import {
   type BlogPostFull,
   type BlogComment,
 } from "@/server/dal/blog";
+import { pingIndexNow } from "@/server/indexnow";
+import { abs } from "@/lib/site-url";
 
 export async function fetchPublishedPostsAction(): Promise<BlogPostSummary[]> {
   return listPublishedPosts();
@@ -82,7 +84,15 @@ export async function publishPostAction(id: string): Promise<{ ok: true }> {
   const result = await publishPost(z.string().min(1).parse(id));
   revalidatePath("/blog/studio");
   revalidatePath("/blog");
-  if (result) revalidatePath(`/blog/${result.slug}`);
+  /* Sitemap'da `revalidate = 3600` — busiz yangi maqola bir soatgacha
+     roʻyxatga tushmasdi. Nashr qilish aynan uni oʻzgartiradigan amal. */
+  revalidatePath("/sitemap.xml");
+  if (result) {
+    revalidatePath(`/blog/${result.slug}`);
+    /* Yandex/Bing'ga darhol xabar. Xato tashlamaydi — nashr qilish
+       begona servis tufayli yiqilmaydi. */
+    await pingIndexNow([abs(`/blog/${result.slug}`), abs("/blog")]);
+  }
   return { ok: true };
 }
 
@@ -91,14 +101,25 @@ export async function unpublishPostAction(id: string): Promise<{ ok: true }> {
   const result = await unpublishPost(z.string().min(1).parse(id));
   revalidatePath("/blog/studio");
   revalidatePath("/blog");
-  if (result) revalidatePath(`/blog/${result.slug}`);
+  revalidatePath("/sitemap.xml");
+  if (result) {
+    revalidatePath(`/blog/${result.slug}`);
+    /* Oʻchirilgan sahifa uchun ham xuddi shu chaqiruv ishlatiladi:
+       protokolda alohida «delete» yoʻq — robot kelib 404 koʻradi va
+       indeksdan chiqaradi. Aytmasak, oʻlik havola uzoq turib qoladi. */
+    await pingIndexNow([abs(`/blog/${result.slug}`)]);
+  }
   return { ok: true };
 }
 
 export async function deletePostAction(id: string): Promise<{ ok: true }> {
-  await deletePost(z.string().min(1).parse(id));
+  const result = await deletePost(z.string().min(1).parse(id));
   revalidatePath("/blog/studio");
   revalidatePath("/blog");
+  revalidatePath("/sitemap.xml");
+  /* Faqat nashr qilingan post indeksda boʻlgan — qoralamani xabar
+     qilishning maʼnosi yoʻq. */
+  if (result?.wasPublished) await pingIndexNow([abs(`/blog/${result.slug}`)]);
   return { ok: true };
 }
 
