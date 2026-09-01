@@ -45,7 +45,11 @@ export function BarButton({
   return (
     <button
       type="button"
-      title={label}
+      // ⚠️ `title` YOʻQ — yorliq allaqachon tugmaning ostida koʻrinib
+      // turibdi, brauzer tooltipʼi esa oʻsha soʻzni ikkinchi marta,
+      // bir soniya kechikib takrorlardi. Nom kesilgan boʻlsa (52px,
+      // `truncate`) toʻliq matnni `aria-label` tashiydi.
+      aria-label={label}
       className={cn("group flex w-[52px] shrink-0 flex-col items-center gap-1", className)}
       data-icon-tinted={tint ? "" : undefined}
       style={tint ? iconTintStyle(tint) : undefined}

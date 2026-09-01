@@ -6,13 +6,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDoskaStore } from "@/lib/doska/store";
+import { barIconButtonClass } from "./BarGroup";
 import { IconMenu, IconTrash, IconAdd, IconHome, IconUsers } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
    DOSKA MENYUSI — yuqori oʻng burchakdagi ⋮ tugmasi.
 
-   Tuzilma classroomscreen'dan: sarlavha + holat belgisi → amallar
-   roʻyxati → pastda taklif kartochkasi.
+   Tuzilma: sarlavha + holat belgisi → amallar roʻyxati → pastda
+   taklif kartochkasi.
 
    ⚠️ BIZNES MODELI (2026-08-21 qarori):
      • Mehmon — doska toʻliq ishlaydi, ekran shu brauzerda qoladi
@@ -21,9 +22,9 @@ import { IconMenu, IconTrash, IconAdd, IconHome, IconUsers } from "./icons";
 
    Yaʼni bepul qismi ishlatishga toʻsiq qoʻymaydi, pullik qismi esa
    ishni SAQLAB QOLISH va jurnalga ULASH. Pro bandlari yonida yulduzcha
-   belgisi turadi (classroomscreen naqshi) — bosilganda taklif ochiladi,
-   band oʻchirilgan holatda emas: oʻchirilgan tugma sababini
-   tushuntirmaydi (docs/design-system.md modal qoidasi).
+   belgisi turadi — bosilganda taklif ochiladi, band oʻchirilgan
+   holatda emas: oʻchirilgan tugma sababini tushuntirmaydi
+   (docs/design-system.md modal qoidasi).
    ════════════════════════════════════════════════════════════════════ */
 export function DoskaMenu() {
   const deck = useDoskaStore((s) => s.deck);
@@ -38,12 +39,8 @@ export function DoskaMenu() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          title="Menyu"
-          aria-label="Menyu"
-          className="doska-bar bg-background text-foreground/85 hover:text-foreground pointer-events-auto grid size-10 place-items-center rounded-[var(--radius)] border shadow-md transition-colors"
-        >
+        {/* Idish yoʻq — tugma `DoskaShell` dagi guruh ichida turadi. */}
+        <button type="button" aria-label="Menyu" className={barIconButtonClass}>
           <IconMenu className="size-5" />
         </button>
       </PopoverTrigger>
@@ -116,7 +113,7 @@ export function DoskaMenu() {
   );
 }
 
-/** Pro belgisi — sariq doira ichida yulduzcha (classroomscreen naqshi).
+/** Pro belgisi — sariq doira ichida yulduzcha.
     Rang mavjud --warning tokenidan; yangi rang kiritilmaydi. */
 function ProBadge() {
   return (

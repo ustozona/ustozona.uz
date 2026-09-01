@@ -6,6 +6,7 @@ import { useDoskaStore, useActiveScreen } from "@/lib/doska/store";
 import { WIDGET_BAR_ORDER, widgetMeta } from "@/lib/doska/registry";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { BarButton } from "./BarButton";
+import { BarGroup } from "./BarGroup";
 import { ShapePicker } from "./ShapePicker";
 import { IconTrash } from "./icons";
 import { WIDGET_ICONS } from "./widgets";
@@ -30,18 +31,30 @@ export function WidgetBar() {
   const clearScreen = useDoskaStore((s) => s.clearScreen);
   const screen = useActiveScreen();
 
-  const widgets = screen?.widgets ?? [];
+  // ⚠️ `?? []` bu yerda EMAS: har renderda yangi massiv yaratilib,
+  // quyidagi `useMemo` ni har safar qayta hisoblatardi.
+  const widgets = screen?.widgets;
+
   /** Ekranda shu turdagi vidjet bormi — tugma tepasidagi 3px chiziq. */
   const onScreen = React.useMemo(() => {
     const set = new Set<string>();
-    for (const w of widgets) set.add(w.kind);
+    for (const w of widgets ?? []) set.add(w.kind);
     return set;
   }, [widgets]);
 
   return (
-    <div
-      className="doska-bar bg-background flex items-center gap-1 rounded-[var(--radius)] border p-2 shadow-lg"
-      style={{ zIndex: "var(--z-doska-bar)" }}
+    <BarGroup
+      variant="padded"
+      layer="bar"
+      // ⚠️ Panel oʻqituvchining planshetida ham ochiladi. Ilgari u
+      // sigʻmagan tugmalarni kanvasdan tashqariga chiqarib yuborardi:
+      // ekran 640px boʻlsa «Fon» va «Tozalash» koʻrinmay qolardi va
+      // ularga yetishning yoʻli yoʻq edi. Endi panel ekran kengligidan
+      // oshmaydi va ichida gorizontal aylanadi.
+      //
+      // `overscroll-x-contain` — aylantirish panel oxiriga yetganda
+      // brauzerning «orqaga» ishorasiga oʻtib ketmasin.
+      className="max-w-[calc(100vw-1.5rem)] overflow-x-auto overscroll-x-contain"
     >
       {WIDGET_BAR_ORDER.map((kind) => (
         <BarButton
@@ -58,13 +71,13 @@ export function WidgetBar() {
           qoʻyadi va shuning uchun oʻz tanlash paneliga ega. */}
       <ShapePicker />
 
-      <span className="bg-border mx-1 h-10 w-px self-center" />
+      <span className="bg-border mx-1 h-10 w-px shrink-0 self-center" />
 
       <BackgroundPicker />
 
-      {widgets.length > 0 && (
+      {(widgets?.length ?? 0) > 0 && (
         <BarButton label="Tozalash" Icon={IconTrash} tint="rose" onClick={clearScreen} />
       )}
-    </div>
+    </BarGroup>
   );
 }

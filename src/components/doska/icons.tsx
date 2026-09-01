@@ -268,6 +268,84 @@ export function IconArrowLeft({ className }: IconProps) {
   );
 }
 
+/**
+ * Nusxalash — OʻZIMIZ CHIZGAN.
+ *
+ * Ikki varaq bir-biridan surilgan. Orqadagi massa (`opacity=".5"`),
+ * oldingisi detal — u toʻliq chizilgani uchun orqadagining faqat
+ * chap-yuqori «L» boʻlagi koʻrinadi. Aynan shu boʻlak «bitta emas,
+ * ikkita» degan maʼnoni tashiydi.
+ *
+ * Surilish 5px: kamroq boʻlsa 16px da ikki varaq bitta qalin
+ * toʻrtburchakka aylanadi.
+ */
+export function IconCopy({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="3" y="3" width="13" height="13" rx="4" opacity=".5" />
+        <rect x="8" y="8" width="13" height="13" rx="4" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * Oldinga chiqarish — OʻZIMIZ CHIZGAN.
+ *
+ * Taxlam ustidagi varaq: ostda ikki ingichka chiziq (massa), ustida
+ * toʻliq kartochka (detal). Strelka ATAYLAB yoʻq — strelka «koʻchirish»
+ * yoki «yuklash» bilan chalkashadi, taxlam esa aynan qatlam tartibini
+ * bildiradi.
+ */
+export function IconBringForward({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="4" y="14.6" width="16" height="2.6" rx="1.3" opacity=".5" />
+        <rect x="4" y="19" width="16" height="2.6" rx="1.3" opacity=".5" />
+        <rect x="5.5" y="2.4" width="13" height="10" rx="3" />
+      </g>
+    </svg>
+  );
+}
+
+/* ── Chevronlar — OʻZIMIZ CHIZGAN ────────────────────────────────────
+
+   Ikkitasi bitta geometriyadan: uzunligi 10.4, qalinligi 2.8 boʻlgan
+   ikki kapsula «^» yoki «v» hosil qiladi. Chap yelka detal (toʻliq),
+   oʻng yelka massa (`opacity=".5"`) — shunda ular Solar oilasidagi
+   ikki qatlamli tuzilishga mos tushadi.
+
+   ⚠️ Bittasini `rotate-180` bilan ikkinchisiga aylantirmaymiz: burilgan
+   ikonada qatlamlar ham oʻrin almashadi va yorqin yelka ikki tugmada
+   qarama-qarshi tomonda turib qoladi.
+   ──────────────────────────────────────────────────────────────────── */
+
+/** Panelni ochish. */
+export function IconChevronUp({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="3.3" y="10.1" width="10.4" height="2.8" rx="1.4" transform="rotate(-45 8.5 11.5)" />
+        <rect x="10.3" y="10.1" width="10.4" height="2.8" rx="1.4" transform="rotate(45 15.5 11.5)" opacity=".5" />
+      </g>
+    </svg>
+  );
+}
+
+/** Panelni yashirish. */
+export function IconChevronDown({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g>
+        <rect x="3.3" y="11.1" width="10.4" height="2.8" rx="1.4" transform="rotate(45 8.5 12.5)" />
+        <rect x="10.3" y="11.1" width="10.4" height="2.8" rx="1.4" transform="rotate(-45 15.5 12.5)" opacity=".5" />
+      </g>
+    </svg>
+  );
+}
+
 /** Oʻquvchilar — solar:users-group-rounded-bold-duotone */
 export function IconUsers({ className }: IconProps) {
   return (
@@ -304,4 +382,8 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconAdd", source: "solar:add-square", Icon: IconAdd },
   { name: "IconArrowLeft", source: "solar:alt-arrow-left", Icon: IconArrowLeft },
   { name: "IconUsers", source: "solar:users-group-rounded", Icon: IconUsers },
+  { name: "IconCopy", source: "oʻzimiz:nusxalash", Icon: IconCopy },
+  { name: "IconBringForward", source: "oʻzimiz:oldinga", Icon: IconBringForward },
+  { name: "IconChevronUp", source: "oʻzimiz:chevron-yuqori", Icon: IconChevronUp },
+  { name: "IconChevronDown", source: "oʻzimiz:chevron-past", Icon: IconChevronDown },
 ];

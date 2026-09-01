@@ -3,8 +3,8 @@ import type { CSSProperties } from "react";
 /* ════════════════════════════════════════════════════════════════════
    DOSKA FONLARI — sof CSS, rasm YOʻQ.
 
-   Sabab: classroomscreen 100+ JPG fon saqlaydi (bir necha megabayt
-   deploy yuki), ular esa projektorda pikselli chiqadi. CSS fon istalgan
+   Sabab: shu turdagi ilovalar odatda 100+ JPG fon saqlaydi (bir necha
+   megabayt deploy yuki), ular esa projektorda pikselli chiqadi. CSS fon istalgan
    oʻlchamda toza va deploy yukiga hech narsa qoʻshmaydi. Foydalanuvchi
    oʻz rasmini yuklashi keyingi bosqichda — bizning katalogimiz JPG
    bilan ogʻirlashmaydi.
