@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import type { Product } from "@/lib/landing-nav";
 
 /* ════════════════════════════════════════════════════════════════════
    HEADER "OSTLOYIHALAR" DROPDOWN IKONALARI — Solar bold-duotone.
@@ -13,6 +14,42 @@ import { cn } from "@/lib/utils";
    ════════════════════════════════════════════════════════════════════ */
 
 type IconProps = { className?: string };
+
+/** solar:clipboard-list-bold-duotone — Ustozona (asosiy: jurnal, davomat) */
+export function IconClipboard({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("size-5", className)} aria-hidden="true">
+      <g fill="currentColor">
+        <path
+          d="M8.44 3.007C8.16 3.309 8 3.75 8 4.632c0 .881.16 1.322.44 1.624.28.302.69.474 1.51.474h4.1c.82 0 1.23-.172 1.51-.474.28-.302.44-.743.44-1.624 0-.882-.16-1.323-.44-1.625-.28-.302-.69-.474-1.51-.474h-4.1c-.82 0-1.23.172-1.51.474Z"
+        />
+        <path
+          d="M6.5 4.038c-.464.007-.86.03-1.201.104a3.25 3.25 0 0 0-2.457 2.457C2.75 7.354 2.75 8.243 2.75 9.5v7c0 1.257 0 2.146.092 2.901a3.25 3.25 0 0 0 2.457 2.457c.755.092 1.644.092 2.901.092h7.6c1.257 0 2.146 0 2.901-.092a3.25 3.25 0 0 0 2.457-2.457c.092-.755.092-1.644.092-2.901v-7c0-1.257 0-2.146-.092-2.901a3.25 3.25 0 0 0-2.457-2.457c-.34-.074-.737-.097-1.201-.104.001.033.001.066.001.099 0 .95-.14 1.887-.83 2.632-.72.776-1.75 1.001-2.842 1.001h-4.1c-1.092 0-2.122-.225-2.842-1.001-.69-.745-.83-1.681-.83-2.632 0-.033 0-.066.001-.099Z"
+          opacity=".5"
+        />
+        <path d="M7.25 11c0-.414.336-.75.75-.75h.5a.75.75 0 0 1 0 1.5H8a.75.75 0 0 1-.75-.75Zm4 0c0-.414.336-.75.75-.75h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1-.75-.75Zm-4 4c0-.414.336-.75.75-.75h.5a.75.75 0 0 1 0 1.5H8a.75.75 0 0 1-.75-.75Zm4 0c0-.414.336-.75.75-.75h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1-.75-.75Z" />
+      </g>
+    </svg>
+  );
+}
+
+/** solar:notebook-bold-duotone — Blog */
+export function IconNotebook({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("size-5", className)} aria-hidden="true">
+      <g fill="currentColor">
+        <path
+          d="M6 3.25C4.48122 3.25 3.25 4.48122 3.25 6V18C3.25 19.5188 4.48122 20.75 6 20.75H18C19.5188 20.75 20.75 19.5188 20.75 18V6C20.75 4.48122 19.5188 3.25 18 3.25H6Z"
+          opacity=".5"
+        />
+        <path d="M8.25 2.5C8.25 2.08579 7.91421 1.75 7.5 1.75C7.08579 1.75 6.75 2.08579 6.75 2.5V5.5C6.75 5.91421 7.08579 6.25 7.5 6.25C7.91421 6.25 8.25 5.91421 8.25 5.5V2.5Z" />
+        <path d="M8 9.25C7.58579 9.25 7.25 9.58579 7.25 10C7.25 10.4142 7.58579 10.75 8 10.75H16C16.4142 10.75 16.75 10.4142 16.75 10C16.75 9.58579 16.4142 9.25 16 9.25H8Z" />
+        <path d="M8 13.25C7.58579 13.25 7.25 13.5858 7.25 14C7.25 14.4142 7.58579 14.75 8 14.75H13C13.4142 14.75 13.75 14.4142 13.75 14C13.75 13.5858 13.4142 13.25 13 13.25H8Z" />
+        <path d="M17.25 2.5C17.25 2.08579 16.9142 1.75 16.5 1.75C16.0858 1.75 15.75 2.08579 15.75 2.5V5.5C15.75 5.91421 16.0858 6.25 16.5 6.25C16.9142 6.25 17.25 5.91421 17.25 5.5V2.5Z" />
+      </g>
+    </svg>
+  );
+}
 
 /** solar:chart-square-bold-duotone — Baholash */
 export function IconChartSquare({ className }: IconProps) {
@@ -79,3 +116,30 @@ export function IconBuildings({ className }: IconProps) {
     </svg>
   );
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   OST-LOYIHA IKONA + RANG XARITASI — YAGONA manba.
+
+   Header dropdown (`hero-01/header.tsx`) ham, "Mahsulotlar" boʻlimi
+   (`landing/ProductsSection.tsx`) ham shu yerdan oʻqiydi. Ilgari header
+   ichida yozilgan edi va boʻlim bilan ikki xil boʻlish xavfi bor edi.
+
+   Rang: bitta tus + ikki shaffoflik (ochiq fon / toʻq matn) —
+   [[ikona-ranglash-ierarxik]] naqshi.
+   ════════════════════════════════════════════════════════════════════ */
+
+export const PRODUCT_ICONS: Record<Product["slug"], typeof IconChartSquare> = {
+  blog: IconNotebook,
+  baholash: IconChartSquare,
+  doska: IconWidget,
+  shogird: IconUsersGroup,
+  boshqaruv: IconBuildings,
+};
+
+export const PRODUCT_ICON_STYLE: Record<Product["slug"], string> = {
+  blog: "bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300",
+  baholash: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400",
+  doska: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+  shogird: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400",
+  boshqaruv: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+};

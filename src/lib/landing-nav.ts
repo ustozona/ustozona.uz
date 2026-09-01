@@ -9,8 +9,8 @@
 export type NavItem = {
   title: string;
   /** `Landing.nav` ichidagi tarjima kaliti — Header/Footer shundan t() qiladi. */
-  key: "top" | "features" | "products" | "pricing" | "faq" | "blog";
-  /** Landing ichidagi langar (`#features`) yoki alohida sahifa (`/blog`). */
+  key: "top" | "features" | "products" | "pricing" | "faq";
+  /** Landing ichidagi langar (`#features`) yoki alohida sahifa. */
   href: string;
 };
 
@@ -20,7 +20,6 @@ const SECTIONS: NavItem[] = [
   { title: "Mahsulotlar", key: "products", href: "#products" },
   { title: "Narxlar", key: "pricing", href: "#pricing" },
   { title: "FAQ", key: "faq", href: "#faq" },
-  { title: "Blog", key: "blog", href: "/blog" },
 ];
 
 /**
@@ -65,18 +64,29 @@ export const TELEGRAM_HANDLE = "@ustozona_tms";
 export type ProductStatus = "live" | "soon";
 
 export type Product = {
-  slug: "baholash" | "doska" | "shogird" | "boshqaruv";
+  slug: "blog" | "baholash" | "doska" | "shogird" | "boshqaruv";
   name: string;
   tagline: string;
+  /** Odatda `/${slug}`, lekin Blog kabi alohida sahifasi bor boʻlsa boshqacha. */
+  href: string;
   status: ProductStatus;
   statusLabel: string;
 };
 
 export const PRODUCTS: Product[] = [
   {
+    slug: "blog",
+    name: "Ustozona blog",
+    tagline: "Oʻqituvchilarning maqolalari — tajriba, uslub va yangiliklar bir joyda.",
+    href: "/blog",
+    status: "live",
+    statusLabel: "Mavjud",
+  },
+  {
     slug: "baholash",
     name: "Ustozona baholash",
     tagline: "Bitta oʻlchov, besh xil yigʻish usuli — testdan qogʻoz OMR gacha.",
+    href: "/baholash",
     status: "soon",
     statusLabel: "Tez orada",
   },
@@ -84,13 +94,15 @@ export const PRODUCTS: Product[] = [
     slug: "doska",
     name: "Ustozona doska",
     tagline: "Sinf ekrani: taymer, svetofor, tasodifiy ism, guruhlarga boʻlish.",
-    status: "soon",
-    statusLabel: "Tez orada",
+    href: "/doska",
+    status: "live",
+    statusLabel: "Mavjud",
   },
   {
     slug: "shogird",
-    name: "Ustozona shogird",
+    name: "Shogird",
     tagline: "Ota-ona va oʻquvchi uchun Telegram ilovasi.",
+    href: "/shogird",
     status: "soon",
     statusLabel: "Tez orada",
   },
@@ -98,7 +110,15 @@ export const PRODUCTS: Product[] = [
     slug: "boshqaruv",
     name: "Ustozona boshqaruv",
     tagline: "Maktab maʼmuriyati uchun panel.",
+    href: "/boshqaruv",
     status: "soon",
     statusLabel: "Tez orada",
   },
 ];
+
+/** Footer "Ostloyihalar" ustuni — "Mahsulotlar" boʻlimi bilan bir manba. */
+export const FOOTER_PRODUCT_LINKS = PRODUCTS.map((p) => ({
+  key: p.slug,
+  href: p.href,
+  label: p.name,
+}));
