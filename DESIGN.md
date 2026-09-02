@@ -149,6 +149,37 @@ Yangi sahifa/komponent yozgach:
 - [ ] Yangi panel qoʻlda klass emas — `<Panel>` yoki `panelCard*Class`
 - [ ] Dark mode alohida kod bilan emas, token orqali ishlaydi
 
+## 9. Toast (sonner) — 2026-09-02
+
+**Sabab:** avval ikki xil toast tili bor edi — sonner `richColors`
+(har tur toʻliq rangli fon) va alohida `award-toast` (karta yuzasi,
+katta emoji). Ikkalasi ham tokenlarga toʻliq bogʻlanmagan. Jahon
+konvensiyasi (Carbon, Material, Atlassian, Polaris) va §5 (yuza = fon
+RANG bilan emas) asosida yagona tilга keltirildi.
+
+| Element | Qiymat |
+|---|---|
+| Yuza | `--popover` + 1px `--border` + yumshoq elevation (koʻtarilgan qatlam) |
+| Radius | `--radius-xl` (panel bilan bir xil) |
+| Tur belgisi | **faqat** 32px iconbox — turi rangining 13% tinti, glif 16px tur rangida. Rangli fon / `richColors` YOʻQ |
+| Ikon ↔ matn | 12px · padding 16 |
+| Sarlavha | `.toast-title` — 14px / 600 / lh 1.3 |
+| Izoh | `.toast-desc` — 13px / 400 / lh 1.35 muted · ixtiyoriy, 2 qator maks |
+| Amal tugmasi | `.toast-action` / sonner `[data-button]` — **ghost** (border yoʻq, hover `--muted`), h-32, `--radius-md`, 12.5/600. Buzuvchi tasdiqда matn `--destructive`. Outline/primary EMAS |
+| Yopish (X) | ichkarida, oʻngda, vertikal markazда · 24px nishon |
+| Stack | past-oʻrta, 8px oraliq |
+
+**Deviatsiya:** `.toast-title` (14/600) va `.toast-desc` (13/400) §3
+shkalasiga aniq tushmaydi (eng yaqin — `.heading-small` 15/600,
+`.text-caption` 12/400). Toast — zич, vaqtinchalik yuza; sanoat
+standarti 13–14px. Ikki klass `globals.css` toast blokida yagona
+manba sifatida aniqlangan, inline `text-[13px]` ishlatilmaydi.
+
+Amalga oshirish: `src/components/ui/sonner.tsx` (tema + ikon +
+`closeButton`), `src/app/globals.css` `[data-sonner-toaster]` bloki
+(butun vizual), `src/components/behavior/award-toast.tsx` (xuddi shu
+til, emoji + ball nishoni + progress chizigʻi saqlangan).
+
 ## Ochiq savollar / keyingi qadam nomzodlari
 
 (Bu boʻlim faqat kuzatuv uchun — hech narsa avtomatik qoʻllanmaydi.)
