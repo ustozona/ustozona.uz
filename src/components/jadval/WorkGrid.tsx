@@ -9,6 +9,7 @@ import {
   findConflicts,
   findSubject,
   indexDoc,
+  periodsForShift,
   placementsAt,
   slotKey,
   staffShort,
@@ -34,6 +35,12 @@ import type { ArmedCard } from "@/store/useSchoolTimetableStore";
    Katak eni ~30px: matn sigʻmaydi, shuning uchun RANGNING OʻZI
    maʼlumot boʻladi (§12.4) — bu yerda fan rangi katakni toʻldiradi,
    varaqda esa chap qirraga chekinadi.
+
+   ⚠️ Toʻr BITTA SMENANI koʻrsatadi. Smenalarning dars soni har xil
+   boʻlishi mumkin (6 va 7), toʻr esa hamma qator uchun bir xil ustun
+   soniga ega — ikkalasini bitta toʻrga tiqish uzun smenaning oxirgi
+   soatlarini jimgina yashirardi (ular qoldiq va ziddiyat sanogʻida
+   qolgan holda). Smena almashtirgichi sahifa sarlavhasida.
    ════════════════════════════════════════════════════════════════════ */
 
 const CELL_W = 30;
@@ -42,25 +49,48 @@ const ROW_HEAD_W = 62;
 
 export type WorkGridProps = {
   doc: SchoolTimetableDoc;
+  /** Koʻrsatilayotgan smena — ustunlar va qatorlar shundan olinadi. */
+  shift: 1 | 2;
   armed: ArmedCard;
   /** Yoritilgan xodim — tanlanganda qolgan kataklar soʻnadi. */
   litStaffId: string | null;
-  onPlace: (input: { classId: string; day: number; period: number }) => void;
+  /** Tanlangan dars — muharrir panelida koʻrinadi. */
+  selectedId: string | null;
+  onPlace: (input: { classId: string; day: number; period: number; shift: 1 | 2 }) => void;
   onSelect: (placement: Placement) => void;
 };
 
-export default function WorkGrid({ doc, armed, litStaffId, onPlace, onSelect }: WorkGridProps) {
+export default function WorkGrid({
+  doc,
+  shift,
+  armed,
+  litStaffId,
+  selectedId,
+  onPlace,
+  onSelect,
+}: WorkGridProps) {
   const index = useMemo(() => indexDoc(doc), [doc]);
   const clashKeys = useMemo(() => conflictSlotKeys(findConflicts(doc, index)), [doc, index]);
 
-  /* 1-smena periodlari — ish rejimi bitta smenani koʻrsatadi; 2-smena
-     ostiga alohida blok boʻlib tushadi (keyingi bosqich). */
+  /* Ustunlar — KOʻRSATILAYOTGAN smenaning oʻz periodlari. */
   const periods = useMemo(
-    () => Array.from({ length: doc.bell.shift1.lessonCount }, (_, i) => i + 1),
-    [doc.bell.shift1.lessonCount]
+    () => periodsForShift(doc, shift).map((p) => p.index),
+    [doc, shift]
+  );
+  const classes = useMemo(
+    () => doc.classes.filter((c) => c.shift === shift),
+    [doc.classes, shift]
   );
 
   const cols = WORK_DAYS.length * periods.length;
+
+  if (periods.length === 0 || classes.length === 0) {
+    return (
+      <div className="flex min-h-0 flex-1 items-center justify-center rounded-xl border border-border bg-card">
+        <p className="text-caption">Bu smenada sinf yoʻq.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-border bg-card scrollbar-hover [scrollbar-width:thin]">
@@ -97,7 +127,7 @@ export default function WorkGrid({ doc, armed, litStaffId, onPlace, onSelect }: 
         )}
 
         {/* Sinf qatorlari */}
-        {doc.classes.map((cls) => (
+        {classes.map((cls) => (
           <Fragment key={cls.id}>
             <div className="sticky left-0 z-10 flex items-center border-b border-r border-border bg-card px-2 text-[11px] font-semibold">
               {cls.name}
@@ -133,8 +163,9 @@ export default function WorkGrid({ doc, armed, litStaffId, onPlace, onSelect }: 
                     drop={drop}
                     dim={dim}
                     lit={litStaffId != null && here.some((x) => x.staffId === litStaffId)}
-                    lastOfDay={p === periods.length}
-                    onPlace={() => onPlace({ classId: cls.id, day, period: p })}
+                    selectedId={selectedId}
+                    lastOfDay={p === periods[periods.length - 1]}
+                    onPlace={() => onPlace({ classId: cls.id, day, period: p, shift })}
                     onSelect={onSelect}
                   />
                 );
@@ -164,6 +195,7 @@ function WorkCell({
   drop,
   dim,
   lit,
+  selectedId,
   lastOfDay,
   onPlace,
   onSelect,
@@ -174,6 +206,7 @@ function WorkCell({
   drop: DropState | null;
   dim: boolean;
   lit: boolean;
+  selectedId: string | null;
   lastOfDay: boolean;
   onPlace: () => void;
   onSelect: (p: Placement) => void;
@@ -211,13 +244,21 @@ function WorkCell({
             onClick={() => onSelect(p)}
             title={`${subject?.name ?? "—"} · ${staffShort(doc.staff.find((s) => s.id === p.staffId)?.name ?? "")}`}
             style={{ ...(tints?.chipFill ?? {}), ...(tints?.textOnTint ?? {}) }}
+            aria-pressed={selectedId === p.id}
             className={cn(
-              "text-micro flex flex-1 items-center justify-center overflow-hidden",
+              "text-micro relative flex flex-1 items-center justify-center overflow-hidden",
               here.length > 1 && "border-l border-dashed border-border first:border-l-0",
-              lit && "ring-[1.5px] ring-inset ring-primary"
+              lit && "ring-[1.5px] ring-inset ring-primary",
+              selectedId === p.id && "ring-2 ring-inset ring-foreground"
             )}
           >
             {subject?.short ?? "—"}
+            {p.locked && (
+              <span
+                aria-hidden
+                className="absolute right-0 top-0 size-1.5 rounded-bl-sm bg-foreground/45"
+              />
+            )}
           </button>
         );
       })}

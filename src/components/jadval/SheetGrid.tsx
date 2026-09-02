@@ -51,6 +51,8 @@ export type SheetGridProps = {
   density: SheetDensity;
   armed: ArmedCard;
   litStaffId: string | null;
+  /** Tanlangan dars — muharrir panelida koʻrinadi. */
+  selectedId: string | null;
   approved?: boolean;
   onPlace: (input: { classId: string; day: number; period: number; shift: 1 | 2 }) => void;
   onSelect: (placement: Placement) => void;
@@ -61,6 +63,7 @@ export default function SheetGrid({
   density,
   armed,
   litStaffId,
+  selectedId,
   approved = false,
   onPlace,
   onSelect,
@@ -150,6 +153,7 @@ export default function SheetGrid({
                         drop={drop}
                         dim={dim}
                         lit={litStaffId != null && here.some((x) => x.staffId === litStaffId)}
+                        selectedId={selectedId}
                         onPlace={() =>
                           onPlace({ classId: cls.id, day, period: per.index, shift: per.shift })
                         }
@@ -239,6 +243,7 @@ function SheetCell({
   drop,
   dim,
   lit,
+  selectedId,
   onPlace,
   onSelect,
 }: {
@@ -250,6 +255,7 @@ function SheetCell({
   drop: DropState | null;
   dim: boolean;
   lit: boolean;
+  selectedId: string | null;
   onPlace: () => void;
   onSelect: (p: Placement) => void;
 }) {
@@ -292,7 +298,7 @@ function SheetCell({
               onClick={() => onSelect(p)}
               title={subject?.name}
               style={tints?.chipFill}
-              className="flex-1"
+              className={cn("flex-1", selectedId === p.id && "ring-2 ring-inset ring-foreground")}
             />
           );
         }
@@ -303,9 +309,11 @@ function SheetCell({
             type="button"
             onClick={() => onSelect(p)}
             title={`${subject?.name ?? ""} · ${staff?.name ?? ""}`}
+            aria-pressed={selectedId === p.id}
             className={cn(
               "flex min-w-0 flex-1 items-center gap-1 overflow-hidden px-0 text-left",
-              here.length > 1 && "border-l border-dashed border-border first:border-l-0"
+              here.length > 1 && "border-l border-dashed border-border first:border-l-0",
+              selectedId === p.id && "ring-2 ring-inset ring-foreground"
             )}
           >
             <span

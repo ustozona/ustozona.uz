@@ -130,6 +130,12 @@ export const useSchoolTimetableStore = create<SchoolTimetableState>()(
           const idx = indexDoc(s.doc);
           const here = idx.bySlot.get(slotKey(classId, day, shift, period)) ?? [];
 
+          /* ⛔ Qulflangan katak — `remove` va `move` bilan bir xil qoida.
+             Ilgari faqat oʻsha ikkisi tekshirardi va `place` qulfni
+             jimgina bosib oʻtardi: qulf aynan avtomatik/ommaviy
+             yoʻllardan himoya qilishi kerak edi (spec §10.1). */
+          if (here.some((p) => p.locked)) return;
+
           /* Guruh berilmagan boʻlsa — katakdagi barcha darslar
              ALMASHTIRILADI (butun sinf darsi). Guruh berilgan boʻlsa
              faqat oʻsha guruh oʻrni egallanadi. */
@@ -153,13 +159,13 @@ export const useSchoolTimetableStore = create<SchoolTimetableState>()(
           const here = (idx.bySlot.get(slotKey(to.classId, to.day, to.shift, to.period)) ?? []).filter(
             (p) => p.id !== placementId
           );
+          if (here.some((p) => p.locked)) return;
 
           /* Almashish (swap): maqsad katagida bitta dars boʻlsa —
              oʻrinlarini almashtiramiz, oʻchirmaymiz. Zavuchning eng
              tez-tez qiladigan amali shu. */
           if (here.length === 1) {
             const other = here[0];
-            if (other.locked) return;
             const next = s.doc.placements.map((p) => {
               if (p.id === placementId) return { ...p, ...to };
               if (p.id === other.id) {

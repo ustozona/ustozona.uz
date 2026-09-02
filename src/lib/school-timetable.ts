@@ -61,6 +61,16 @@ export type SchoolClass = {
   /** Qaysi smenada oʻqiydi. */
   shift: 1 | 2;
   plan: Record<string, number>;
+  /**
+   * Kim oʻqitadi — `subjectId → staffId`.
+   *
+   * ⚠️ Bu MUSTAQIL maʼlumot, qoʻyilgan darslardan hosila EMAS. Ilgari
+   * xodim varaqdagi mavjud darsdan orqaga hisoblanardi va bu yopiq
+   * halqa hosil qilardi: dars qoʻyilmagan boʻlsa xodim nomaʼlum, xodim
+   * nomaʼlum boʻlsa dars qoʻyib boʻlmaydi. Rejaga yangi fan qoʻshilishi
+   * bilan u qoʻyilmaydigan boʻlib qolardi.
+   */
+  assignments: Record<string, string>;
 };
 
 /** Bitta katakdagi dars. Guruhga boʻlingan darsda `group` 0 va 1 boʻladi. */
@@ -241,11 +251,12 @@ export type DropQuery = {
  *
  * Tartib muhim — birinchi mos kelgan holat gʻolib:
  * 1. sinf boshqa smenada oʻqiydi        → blocked
- * 2. katak band                          → occupied
- * 3. oʻqituvchi shu vaqtda boshqa sinfda → clash
- * 4. shu kuni shu fan allaqachon bor     → caution
- * 5. kunning oxirgi soati                → caution
- * 6. qolgani                             → ok
+ * 2. katak qulflangan                    → blocked
+ * 3. katak band                          → occupied
+ * 4. oʻqituvchi shu vaqtda boshqa sinfda → clash
+ * 5. shu kuni shu fan allaqachon bor     → caution
+ * 6. kunning oxirgi soati                → caution
+ * 7. qolgani                             → ok
  */
 export function dropStateFor(
   doc: SchoolTimetableDoc,
@@ -256,6 +267,10 @@ export function dropStateFor(
   if (!cls || cls.shift !== q.shift) return { state: "blocked", label: "" };
 
   const here = placementsAt(index, q.classId, q.day, q.shift, q.period);
+  /* Qulflangan katak — «band» emas, TEGILMAYDI. Alohida holat, chunki
+     oddiy band katak ustiga qoʻyish mumkin (almashtiradi), qulflangani
+     ustiga esa yoʻq. */
+  if (here.some((p) => p.locked)) return { state: "blocked", label: "qulf" };
   if (here.length > 0) return { state: "occupied", label: "" };
 
   const busy = index.staffAt.get(timeKey(q.day, q.shift, q.period))?.get(q.staffId);
@@ -290,7 +305,7 @@ export type LedgerRow = {
   placed: number;
   /** Qolgani — manfiy boʻlsa rejadan ortiq qoʻyilgan. */
   left: number;
-  /** Shu sinf-fanga biriktirilgan xodim (varaqdan aniqlanadi, boʻlmasa null). */
+  /** Shu sinf-fanga biriktirilgan xodim (`class.assignments`, boʻlmasa null). */
   staffId: string | null;
 };
 
@@ -321,11 +336,22 @@ export function buildLedger(doc: SchoolTimetableDoc): LedgerRow[] {
         planned,
         placed,
         left: planned - placed,
-        staffId: staffBy.get(k) ?? null,
+        staffId: staffForClassSubject(cls, subjectId) ?? staffBy.get(k) ?? null,
       });
     }
   }
   return rows;
+}
+
+/**
+ * Sinfda shu fanni kim oʻqitadi.
+ *
+ * Yagona manba — `class.assignments`. Qoʻyilgan darsga qaramaydi:
+ * aks holda «hali qoʻyilmagan fan = xodimi yoʻq = qoʻyib boʻlmaydi»
+ * degan yopiq halqa qaytadi (`SchoolClass.assignments` izohiga qarang).
+ */
+export function staffForClassSubject(cls: SchoolClass, subjectId: string): string | null {
+  return cls.assignments?.[subjectId] ?? null;
 }
 
 /** Sinf ustuni pastidagi «Jami soat» — qoʻyilgani / rejadagi. */
