@@ -12,6 +12,7 @@ export * from "./grades";
 export * from "./attendance";
 export * from "./relations";
 export * from "./planning";
+export * from "./school-timetable";
 export * from "./standards";
 export * from "./notes";
 export * from "./notifications";

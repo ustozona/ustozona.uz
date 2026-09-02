@@ -57,6 +57,20 @@ Utility klasslar (`globals.css`) — inline uchun; React analoglar
 | `.text-body` | `TypographyP` | 14px / 400 | Asosiy matn (`body` ham 14px) |
 | `.text-caption` | `TypographyMuted` | 12px / 400 muted | Izoh, ikkilamchi maʼlumot |
 | `.text-label` | `TypographyLabel` | 11px / 500 UPPERCASE | Boʻlim yorliqlari (Sinf, Aloqa) |
+| `.text-micro` | — | 10px / 600 tabular | ⚠️ FAQAT zich toʻr kataklari (maktab dars jadvali) |
+
+**`.text-micro` haqida.** Shkalaning eng kichigi `.text-caption` (12px)
+boʻlib qoladi; `.text-micro` — 2026-09-02 da ochilgan bitta istisno.
+Sababi oʻlchovda: maktab dars jadvalida ~33 sinf × 6 kun × 6 soat =
+~1200 katak bitta toʻrda turadi, katak eni ~30px. 12px matn u yerga
+sigʻmaydi, katakni kattalashtirish esa toʻrni ekrandan chiqaradi va
+zavuchning asosiy amali — «kim shu vaqtda band» degan ustun skanini —
+buzadi.
+
+Shuning uchun qoida tor: **`.text-micro` roʻyxat, karta, panel yoki
+formada ishlatilmaydi.** Agar u yerda 10px kerak boʻlib qolsa, muammo
+zichlikda emas — ierarxiyada, va yechim matnni kichraytirish emas.
+Toʻliq asos: [dars-jadvali-spec.md](./dars-jadvali-spec.md) §12.3, §14.
 
 Rang har doim tokendan (`--foreground` / `--muted-foreground`).
 
