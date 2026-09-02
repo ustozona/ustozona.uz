@@ -235,6 +235,15 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
       setDirty(false);
       toast.success("Nashr qilindi");
       router.refresh();
+    } catch (err: unknown) {
+      /* Busiz amal serverda yiqilsa EKRANDA HECH NARSA boʻlmasdi —
+         `finally` tugmani qayta yoqar, xato esa ushlanmagan promise
+         boʻlib konsolga ketardi. «Nashr qilib boʻlmayapti, sababi
+         nomaʼlum» shikoyati aynan shundan. */
+      console.error("[blog] publishPostAction:", err);
+      toast.error("Nashr qilib boʻlmadi", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setPublishing(false);
     }
@@ -247,6 +256,11 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
       setStatus("archived");
       toast.success("Nashrdan olindi");
       router.refresh();
+    } catch (err: unknown) {
+      console.error("[blog] unpublishPostAction:", err);
+      toast.error("Nashrdan olib boʻlmadi", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setPublishing(false);
     }
