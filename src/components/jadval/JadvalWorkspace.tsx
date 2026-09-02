@@ -12,10 +12,24 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { toast } from "sonner";
-import { AlertTriangle, BarChart3, Redo2, Sparkles, Undo2 } from "lucide-react";
+import {
+  AlertTriangle,
+  BarChart3,
+  PackageOpen,
+  Redo2,
+  Smartphone,
+  Sparkles,
+  Undo2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import {
   buildLedger,
@@ -39,6 +53,7 @@ import StaffLoadPanel from "./StaffLoadPanel";
 import StaffPicker from "./StaffPicker";
 import WorkGrid, { type FocusRequest } from "./WorkGrid";
 import { parseDragged, parseSlot } from "./dnd-ids";
+import { useJadvalLayout } from "./use-jadval-layout";
 
 /* ════════════════════════════════════════════════════════════════════
    `/jadval` ISH MAYDONI — zavuch quroli.
@@ -49,24 +64,21 @@ import { parseDragged, parseSlot } from "./dnd-ids";
    (docs/dars-jadvali-spec.md §9).
 
    ── Dars qoʻyishning UCH yoʻli, BITTA mantiq ─────────────────────────
-   1. Sudrash        — @dnd-kit (relsdan katakka, katakdan katakka)
-   2. Bosish         — kartani «olib», keyin katakni bosish
-   3. Klaviatura     — kartani «olib», strelkalar bilan yurib, Enter
+   1. Sudrash · 2. Bosish · 3. Klaviatura — uchalasi ham `Armed`
+   holatiga aylanadi va `commitPlacement` dan oʻtadi (§12.6).
 
-   Uchalasi ham `Armed` holatiga aylanadi va `commitPlacement` dan
-   oʻtadi. 2 va 3 sudrashning kambagʻal oʻrnini bosuvchisi EMAS: ARIA
-   yoʻriqnomalari sudrash uchun aynan shunday muqobil talab qiladi, va
-   jadval tizimlari boʻyicha tadqiqot «koʻrsatma» yondashuvini
-   toʻgʻridan-toʻgʻri manipulyatsiyadan yuqori baholagan (§12.6).
+   ── Uch oʻlcham ──────────────────────────────────────────────────────
+   `useJadvalLayout` uchta sirtni ajratadi. Keng ekranda panellar
+   yonma-yon va oʻlchami sozlanadi; tor ekranda ular `Sheet` ichiga
+   koʻchadi; telefonda esa muharrir umuman ochilmaydi — faqat oʻqish.
 
    ── Joylashuv barqarorligi ───────────────────────────────────────────
-   Sarlavha, inspektor qatori va toʻr — uchtasining balandligi
-   OʻZGARMAYDI. Ziddiyat roʻyxati toʻrni surmaydi, panel boʻlib
-   oʻngdan ochiladi. Sabab: 1200 katakli toʻrda 40px siljish keyingi
-   bosishni notoʻgʻri katakka tushiradi.
+   Sarlavha, inspektor qatori va toʻr — balandligi OʻZGARMAYDI. Yon
+   panellar toʻrni pastga surmaydi, yonidan ochiladi.
    ════════════════════════════════════════════════════════════════════ */
 
 type Mode = "ish" | "varaq";
+type SidePanel = "none" | "clashes" | "load";
 
 export default function JadvalWorkspace() {
   const doc = useSchoolTimetableStore((s) => s.doc);
@@ -84,21 +96,32 @@ export default function JadvalWorkspace() {
   const past = useSchoolTimetableStore((s) => s.past);
   const future = useSchoolTimetableStore((s) => s.future);
 
+  const layout = useJadvalLayout();
+  const isMobile = layout === "mobile";
+  const isWide = layout === "wide";
+
   const [mode, setMode] = useState<Mode>("ish");
   const [density, setDensity] = useState<SheetDensity>("toliq");
   const [litStaffId, setLitStaffId] = useState<string | null>(null);
-  const [showClashes, setShowClashes] = useState(false);
-  const [showLoad, setShowLoad] = useState(false);
+  const [side, setSide] = useState<SidePanel>("none");
+  const [railOpen, setRailOpen] = useState(false);
   const [shift, setShift] = useState<1 | 2>(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [proposal, setProposal] = useState<ConflictProposal | null>(null);
   const [focusRequest, setFocusRequest] = useState<FocusRequest>(null);
 
-  /* Birinchi kirish — demo jadval. Boʻsh toʻr «bu nima?» degan savol
-     qoldiradi, toʻla jadval esa darhol javob beradi. */
+  /* Birinchi kirish — demo jadval. */
   useEffect(() => {
     if (hydrated && doc.classes.length === 0) loadDoc(demoDoc());
   }, [hydrated, doc.classes.length, loadDoc]);
+
+  /* Telefonda faqat varaq — zich toʻr barmoq bilan boshqarilmaydi. */
+  useEffect(() => {
+    if (isMobile) {
+      setMode("varaq");
+      setDensity((d) => (d === "toliq" ? "fan" : d));
+    }
+  }, [isMobile]);
 
   const conflicts = useMemo(() => findConflicts(doc), [doc]);
   const remaining = useMemo(
@@ -143,7 +166,6 @@ export default function JadvalWorkspace() {
     arm(null);
   }
 
-  /** Ziddiyatsiz boʻlsa darhol qoʻyadi; ziddiyat boʻlsa oyna ochadi. */
   const commitPlacement = useCallback(
     (card: Armed, to: { classId: string; day: number; period: number; shift: 1 | 2 }) => {
       if (!card) return;
@@ -194,6 +216,7 @@ export default function JadvalWorkspace() {
   const handlePlace = useCallback(
     (input: { classId: string; day: number; period: number; shift: 1 | 2 }) => {
       commitPlacement(armed, input);
+      setRailOpen(false);
     },
     [armed, commitPlacement]
   );
@@ -255,8 +278,6 @@ export default function JadvalWorkspace() {
         arm(null);
         setSelectedId(null);
       }
-      /* Tanlangan darsni oʻchirish — ATAYLAB klaviatura orqali.
-         Bosish oʻchirmaydi (`handleSelect` izohiga qarang). */
       if ((e.key === "Delete" || e.key === "Backspace") && selectedId && !typing) {
         e.preventDefault();
         handleRemove();
@@ -288,6 +309,81 @@ export default function JadvalWorkspace() {
     );
   }
 
+  /* ── Bloklar ───────────────────────────────────────────────────── */
+
+  const grid =
+    mode === "ish" ? (
+      <WorkGrid
+        doc={doc}
+        shift={shift}
+        armed={armed}
+        litStaffId={litStaffId}
+        selectedId={selectedId}
+        focusRequest={focusRequest}
+        onPlace={handlePlace}
+        onSelect={handleSelect}
+      />
+    ) : (
+      <SheetGrid
+        doc={doc}
+        density={density}
+        armed={armed}
+        litStaffId={litStaffId}
+        selectedId={selectedId}
+        onPlace={handlePlace}
+        onSelect={handleSelect}
+      />
+    );
+
+  const clashesPanel = (
+    <Panel className="h-full">
+      <PanelHeader title="Ziddiyatlar" count={conflicts.length} />
+      <PanelBody className="px-5 pb-5 pt-5">
+        {conflicts.length === 0 ? (
+          <p className="text-body text-success">Ziddiyat yoʻq.</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {conflicts.map((c, i) => {
+              const staff = findStaff(doc, c.staffId);
+              return (
+                <li key={i}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("ish");
+                      setShift(c.shift);
+                      setFocusRequest({
+                        classId: c.classIds[0],
+                        day: c.day,
+                        period: c.period,
+                        nonce: Date.now(),
+                      });
+                      if (!isWide) setSide("none");
+                    }}
+                    className="w-full rounded-md border border-border px-3 py-2 text-left transition-colors duration-fast hover:border-destructive"
+                  >
+                    <span className="heading-small block truncate">
+                      {staff ? staffShort(staff.name) : c.staffId}
+                    </span>
+                    <span className="text-caption block">
+                      {DAY_NAMES[c.day]}, {c.period}-soat ·{" "}
+                      {c.classIds.map((id) => findClass(doc, id)?.name ?? id).join(" va ")}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </PanelBody>
+    </Panel>
+  );
+
+  const sidePanel =
+    side === "clashes" ? clashesPanel : side === "load" ? (
+      <StaffLoadPanel doc={doc} litStaffId={litStaffId} onPick={setLitStaffId} />
+    ) : null;
+
   return (
     <DndContext
       sensors={sensors}
@@ -308,49 +404,55 @@ export default function JadvalWorkspace() {
         },
       }}
     >
-      <div className="flex min-h-svh flex-col gap-6 p-4 md:p-6">
+      <div className="flex h-svh flex-col gap-4 p-3 md:gap-6 md:p-6">
         {/* ── Sarlavha va boshqaruvlar ──────────────────────────── */}
-        <header className="flex flex-wrap items-center gap-x-5 gap-y-3">
+        <header className="flex flex-wrap items-center gap-x-3 gap-y-2 md:gap-x-5 md:gap-y-3">
           <div className="mr-auto min-w-0">
-            <h1 className="heading-page truncate">{doc.schoolName || "Dars jadvali"}</h1>
+            <h1 className="heading-page truncate text-lg md:text-2xl">
+              {doc.schoolName || "Dars jadvali"}
+            </h1>
             <p className="text-caption truncate">
               {doc.periodLabel || "Qoralama"}
               {dirty && " · saqlanmagan"}
             </p>
           </div>
 
-          <div className="flex items-center gap-1">
-            <Button
-              size="icon"
-              variant="ghost"
-              aria-label="Bekor qilish"
-              title="Bekor qilish (Ctrl+Z)"
-              disabled={past.length === 0}
-              onClick={undo}
-            >
-              <Undo2 />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              aria-label="Qaytarish"
-              title="Qaytarish (Ctrl+Shift+Z)"
-              disabled={future.length === 0}
-              onClick={redo}
-            >
-              <Redo2 />
-            </Button>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center gap-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label="Bekor qilish"
+                title="Bekor qilish (Ctrl+Z)"
+                disabled={past.length === 0}
+                onClick={undo}
+              >
+                <Undo2 />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label="Qaytarish"
+                title="Qaytarish (Ctrl+Shift+Z)"
+                disabled={future.length === 0}
+                onClick={redo}
+              >
+                <Redo2 />
+              </Button>
+            </div>
+          )}
 
-          <SegmentedToggle<Mode>
-            variant="pill"
-            value={mode}
-            onValueChange={setMode}
-            options={[
-              { value: "ish", label: "Ish rejimi" },
-              { value: "varaq", label: "Varaq" },
-            ]}
-          />
+          {!isMobile && (
+            <SegmentedToggle<Mode>
+              variant="pill"
+              value={mode}
+              onValueChange={setMode}
+              options={[
+                { value: "ish", label: "Ish rejimi" },
+                { value: "varaq", label: "Varaq" },
+              ]}
+            />
+          )}
 
           {mode === "ish" && twoShift && (
             <SegmentedToggle<"1" | "2">
@@ -369,137 +471,148 @@ export default function JadvalWorkspace() {
               variant="pill"
               value={density}
               onValueChange={setDensity}
-              options={[
-                { value: "butun", label: "Butun" },
-                { value: "fan", label: "Fan" },
-                { value: "toliq", label: "Fan + oʻqituvchi" },
-              ]}
+              options={
+                isMobile
+                  ? [
+                      { value: "butun", label: "Butun" },
+                      { value: "fan", label: "Fan" },
+                    ]
+                  : [
+                      { value: "butun", label: "Butun" },
+                      { value: "fan", label: "Fan" },
+                      { value: "toliq", label: "Fan + oʻqituvchi" },
+                    ]
+              }
             />
           )}
 
-          <StaffPicker staff={staffOptions} value={litStaffId} onChange={setLitStaffId} />
+          {!isMobile && (
+            <StaffPicker staff={staffOptions} value={litStaffId} onChange={setLitStaffId} />
+          )}
 
-          <Button variant="outline" aria-pressed={showLoad} onClick={() => setShowLoad((v) => !v)}>
-            <BarChart3 />
-            Yuklama
-          </Button>
+          {/* Tor ekranda rels tugmasi — panel Sheet ichida ochiladi. */}
+          {!isWide && !isMobile && (
+            <Button variant="outline" onClick={() => setRailOpen(true)}>
+              <PackageOpen />
+              Qoldiq {remaining > 0 && <span className="tabular-nums">{remaining}</span>}
+            </Button>
+          )}
+
+          {!isMobile && (
+            <Button
+              variant="outline"
+              size={isWide ? "default" : "icon"}
+              aria-label="Yuklama"
+              aria-pressed={side === "load"}
+              onClick={() => setSide((s) => (s === "load" ? "none" : "load"))}
+            >
+              <BarChart3 />
+              {isWide && "Yuklama"}
+            </Button>
+          )}
 
           <Button
             variant="outline"
-            aria-pressed={showClashes}
-            onClick={() => setShowClashes((v) => !v)}
+            size={isWide ? "default" : "icon"}
+            aria-label={`${conflicts.length} ziddiyat`}
+            aria-pressed={side === "clashes"}
+            onClick={() => setSide((s) => (s === "clashes" ? "none" : "clashes"))}
             className={cn(conflicts.length > 0 && "border-destructive text-destructive")}
           >
             <AlertTriangle />
-            {conflicts.length} ziddiyat
+            {isWide ? `${conflicts.length} ziddiyat` : conflicts.length}
           </Button>
 
-          <Button variant="outline" disabled title="Premium tarifda">
-            <Sparkles />
-            Avtomatik tuzish
-          </Button>
+          {isWide && (
+            <Button variant="outline" disabled title="Premium tarifda">
+              <Sparkles />
+              Avtomatik tuzish
+            </Button>
+          )}
         </header>
 
-        {/* ── Inspektor — DOIM shu yerda, balandligi oʻzgarmaydi ── */}
-        <InspectorBar
-          doc={doc}
-          armed={armed}
-          selected={selected}
-          conflictCount={conflicts.length}
-          remaining={remaining}
-          onMove={() =>
-            selected &&
-            arm({
-              kind: "move",
-              placementId: selected.id,
-              classId: selected.classId,
-              subjectId: selected.subjectId,
-              staffId: selected.staffId,
-            })
-          }
-          onToggleLock={() => selected && toggleLock(selected.id)}
-          onRemove={handleRemove}
-          onClear={() => {
-            arm(null);
-            setSelectedId(null);
-          }}
-        />
+        {/* Telefonda tahrirlash yoʻqligini YASHIRMAYMIZ. */}
+        {isMobile && (
+          <p className="text-caption flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
+            <Smartphone className="size-4 shrink-0" aria-hidden />
+            Telefonda jadval faqat oʻqiladi. Tahrirlash kompyuterda.
+          </p>
+        )}
 
-        {/* ── Rels + toʻr + panellar ────────────────────────────── */}
-        <div className="flex min-h-0 flex-1 gap-6">
-          <LedgerRail doc={doc} armed={armed} onArm={arm} />
+        {!isMobile && (
+          <InspectorBar
+            doc={doc}
+            armed={armed}
+            selected={selected}
+            conflictCount={conflicts.length}
+            remaining={remaining}
+            onMove={() =>
+              selected &&
+              arm({
+                kind: "move",
+                placementId: selected.id,
+                classId: selected.classId,
+                subjectId: selected.subjectId,
+                staffId: selected.staffId,
+              })
+            }
+            onToggleLock={() => selected && toggleLock(selected.id)}
+            onRemove={handleRemove}
+            onClear={() => {
+              arm(null);
+              setSelectedId(null);
+            }}
+          />
+        )}
 
-          {mode === "ish" ? (
-            <WorkGrid
-              doc={doc}
-              shift={shift}
-              armed={armed}
-              litStaffId={litStaffId}
-              selectedId={selectedId}
-              focusRequest={focusRequest}
-              onPlace={handlePlace}
-              onSelect={handleSelect}
-            />
-          ) : (
-            <SheetGrid
-              doc={doc}
-              density={density}
-              armed={armed}
-              litStaffId={litStaffId}
-              selectedId={selectedId}
-              onPlace={handlePlace}
-              onSelect={handleSelect}
-            />
-          )}
-
-          {showClashes && (
-            <Panel className="w-72 shrink-0">
-              <PanelHeader title="Ziddiyatlar" count={conflicts.length} />
-              <PanelBody className="px-5 pb-5 pt-5">
-                {conflicts.length === 0 ? (
-                  <p className="text-body text-success">Ziddiyat yoʻq.</p>
-                ) : (
-                  <ul className="flex flex-col gap-2">
-                    {conflicts.map((c, i) => {
-                      const staff = findStaff(doc, c.staffId);
-                      return (
-                        <li key={i}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setMode("ish");
-                              setShift(c.shift);
-                              setFocusRequest({
-                                classId: c.classIds[0],
-                                day: c.day,
-                                period: c.period,
-                                nonce: Date.now(),
-                              });
-                            }}
-                            className="w-full rounded-md border border-border px-3 py-2 text-left transition-colors duration-fast hover:border-destructive"
-                          >
-                            <span className="heading-small block truncate">
-                              {staff ? staffShort(staff.name) : c.staffId}
-                            </span>
-                            <span className="text-caption block">
-                              {DAY_NAMES[c.day]}, {c.period}-soat ·{" "}
-                              {c.classIds
-                                .map((id) => findClass(doc, id)?.name ?? id)
-                                .join(" va ")}
-                            </span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </PanelBody>
-            </Panel>
-          )}
-
-          {showLoad && <StaffLoadPanel doc={doc} litStaffId={litStaffId} onPick={setLitStaffId} />}
-        </div>
+        {/* ── Ish maydoni ──────────────────────────────────────── */}
+        {isWide ? (
+          <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1 gap-0">
+            <ResizablePanel defaultSize="20%" minSize="15%" maxSize="32%">
+              <LedgerRail doc={doc} armed={armed} onArm={arm} />
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={side === "none" ? "80%" : "55%"} minSize="35%">
+              {grid}
+            </ResizablePanel>
+            {side !== "none" && (
+              <>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize="25%" minSize="18%" maxSize="40%">
+                  {sidePanel}
+                </ResizablePanel>
+              </>
+            )}
+          </ResizablePanelGroup>
+        ) : (
+          <div className="flex min-h-0 flex-1">{grid}</div>
+        )}
       </div>
+
+      {/* ── Tor ekran: rels va panellar Sheet ichida ──────────────── */}
+      {!isWide && (
+        <>
+          <Sheet open={railOpen} onOpenChange={setRailOpen}>
+            <SheetContent side="left" className="w-80 p-0">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Qoldiq</SheetTitle>
+                <SheetDescription>Qoʻyilmagan soatlar roʻyxati</SheetDescription>
+              </SheetHeader>
+              <LedgerRail doc={doc} armed={armed} onArm={arm} />
+            </SheetContent>
+          </Sheet>
+
+          <Sheet open={side !== "none"} onOpenChange={(o) => !o && setSide("none")}>
+            <SheetContent side="right" className="w-80 p-0">
+              <SheetHeader className="sr-only">
+                <SheetTitle>{side === "load" ? "Yuklama" : "Ziddiyatlar"}</SheetTitle>
+                <SheetDescription>Jadval hisobotlari</SheetDescription>
+              </SheetHeader>
+              {sidePanel}
+            </SheetContent>
+          </Sheet>
+        </>
+      )}
 
       <ConflictDialog
         doc={doc}
@@ -520,8 +633,6 @@ export default function JadvalWorkspace() {
           setProposal(null);
         }}
         onSwap={() => {
-          /* Almashtirish — `move()` maqsad katagida bitta dars boʻlsa
-             oʻrinlarni almashtiradi, oʻchirmaydi. */
           if (proposal && armed?.kind === "move") {
             const other = proposal.blockedBy[0];
             move(armed.placementId, {

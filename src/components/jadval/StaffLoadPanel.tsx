@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Gauge } from "lucide-react";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
 import { SectionIcon } from "@/components/ui/section-icon";
-import { CardTitle } from "@/components/ui/card";
+import { CardDescription, CardTitle } from "@/components/ui/card";
 import { TypographyMuted } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { staffLoads, type SchoolTimetableDoc } from "@/lib/school-timetable";
@@ -37,26 +37,27 @@ export default function StaffLoadPanel({
   const over = loads.filter((l) => l.hours > l.norm).length;
 
   return (
-    <Panel className="w-60 shrink-0">
+    <Panel className="h-full">
       <PanelHeader>
         <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
           <SectionIcon className="shrink-0">
             <Gauge />
           </SectionIcon>
-          <div className="flex min-w-0 items-baseline gap-1.5">
-            <CardTitle className="truncate">Yuklama</CardTitle>
-            {over > 0 && (
-              <TypographyMuted className="shrink-0 text-sm text-destructive">
-                {over} ta oshgan
-              </TypographyMuted>
-            )}
+          <div className="flex min-w-0 flex-col">
+            <div className="flex min-w-0 items-baseline gap-1.5">
+              <CardTitle className="truncate">Yuklama</CardTitle>
+              {over > 0 && (
+                <TypographyMuted className="shrink-0 text-sm text-destructive">
+                  {over} ta oshgan
+                </TypographyMuted>
+              )}
+            </div>
+            <CardDescription className="truncate">Bitta stavka — {norm} soat</CardDescription>
           </div>
         </div>
       </PanelHeader>
 
       <PanelBody className="px-5 pb-5 pt-5">
-        <p className="text-caption mb-4">Haftalik soat. Bitta stavka — {norm} soat.</p>
-
         <div className="flex flex-col gap-2">
           {loads.map((l) => {
             const isOver = l.hours > l.norm;

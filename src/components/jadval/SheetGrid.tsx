@@ -42,10 +42,21 @@ import { CLASH_RING, DIMMED, DROP_CLASS, LIT_RING, SELECTED_RING } from "./cell-
 
 export type SheetDensity = "butun" | "fan" | "toliq";
 
-const DENSITY: Record<SheetDensity, { col: number; row: number; fs: string }> = {
-  butun: { col: 30, row: 22, fs: "" },
-  fan: { col: 62, row: 30, fs: "text-micro" },
-  toliq: { col: 108, row: 42, fs: "text-micro" },
+/**
+ * Uchta NOMLANGAN zichlik rejimi.
+ *
+ * ⚠️ Ustun kengligi mazmunga qarab tanlangan, aksincha emas. Ilgari
+ * «fan» rejimi 62px ustunda toʻliq fan nomini koʻrsatishga urinardi va
+ * natijada hamma katakda «Matemat…», «Geografi…», «Jismoniy…» chiqardi —
+ * kesilgan matn maʼlumot bermaydi, faqat shovqin qiladi.
+ *
+ * Endi: «fan» — 3 harfli KOD (kesilmaydi), «toʻliq» — nom + oʻqituvchi
+ * uchun yetarli keng ustun.
+ */
+const DENSITY: Record<SheetDensity, { col: number; row: number }> = {
+  butun: { col: 36, row: 22 },
+  fan: { col: 56, row: 30 },
+  toliq: { col: 116, row: 44 },
 };
 
 export type SheetGridProps = {
@@ -98,7 +109,8 @@ export default function SheetGrid({
           {doc.classes.map((c) => (
             <div
               key={c.id}
-              className="text-caption sticky top-0 z-20 truncate border-b border-r border-border bg-card px-1 py-1.5 text-center font-bold text-foreground"
+              className="text-micro sticky top-0 z-20 truncate border-b border-r border-border bg-card px-1 py-1.5 text-center font-bold text-foreground"
+              title={c.name}
             >
               {c.name}
             </div>
@@ -301,6 +313,7 @@ function SheetCell({
           );
         }
 
+        /* «Fan» — 3 harfli kod, kesilmaydi. «Toʻliq» — nom + oʻqituvchi. */
         return (
           <button
             key={p.id}
@@ -320,7 +333,9 @@ function SheetCell({
               style={{ backgroundColor: tints?.solid }}
             />
             <span className="flex min-w-0 flex-col justify-center pr-1">
-              <span className="text-micro truncate">{subject?.name ?? "—"}</span>
+              <span className="text-micro truncate">
+                {density === "fan" ? (subject?.short ?? "—") : (subject?.name ?? "—")}
+              </span>
               {density === "toliq" && staff && (
                 <span className="text-micro truncate font-normal text-muted-foreground">
                   {staffShort(staff.name)}

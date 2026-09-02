@@ -306,7 +306,33 @@ export const useSchoolTimetableStore = create<SchoolTimetableState>()(
     },
     {
       name: "ustozona-school-timetable-v1",
-      version: 1,
+      /* ⚠️ VERSIYA — demo maʼlumot yoki model oʻzgarganda OSHIRILADI.
+         Aks holda brauzerdagi eski hujjat qolib ketadi va foydalanuvchi
+         tuzatilgan xatolarni koʻrmaydi. Kuzatilgan holat: demo qayta
+         yozilgandan keyin ham eski nusxa (14 oʻqituvchi, 159 ziddiyat,
+         44 soat qoldiq) ochilaverardi.
+
+         `migrate` eski qoralamani TASHLAMAYDI — faqat yaratilgan
+         demoni yangilaydi. Zavuchning oʻz ishi (`remoteId` bor yoki
+         maktab nomi oʻzgartirilgan) saqlanadi. */
+      version: 2,
+      migrate: (persisted, from) => {
+        const p = (persisted ?? {}) as {
+          doc?: SchoolTimetableDoc;
+          remoteId?: string | null;
+          dirty?: boolean;
+          savedAt?: number | null;
+        };
+        if (from >= 2) return p as never;
+
+        const isUntouchedDemo =
+          p.remoteId == null && p.doc?.schoolName === "30-umumiy oʻrta taʼlim maktabi";
+
+        return {
+          ...p,
+          doc: isUntouchedDemo ? emptyDoc() : p.doc,
+        } as never;
+      },
       /* Tarix saqlanmaydi — u seansga tegishli va hujjatni ikki barobar
          katta qiladi. `armed` ham vaqtinchalik holat. */
       partialize: (s) => ({
