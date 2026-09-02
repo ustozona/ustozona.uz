@@ -11,24 +11,14 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import {
-  AlertTriangle,
-  BarChart3,
-  Lock,
-  LockOpen,
-  Move,
-  Redo2,
-  Sparkles,
-  Trash2,
-  Undo2,
-  X,
-} from "lucide-react";
+import { toast } from "sonner";
+import { AlertTriangle, BarChart3, Redo2, Sparkles, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
-import { classTints } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
 import {
+  buildLedger,
   dropStateFor,
   findClass,
   findConflicts,
@@ -42,10 +32,12 @@ import {
 import { demoDoc } from "@/lib/school-timetable-demo";
 import { useSchoolTimetableStore, type Armed } from "@/store/useSchoolTimetableStore";
 import ConflictDialog, { type ConflictProposal } from "./ConflictDialog";
+import InspectorBar from "./InspectorBar";
 import LedgerRail from "./LedgerRail";
 import SheetGrid, { type SheetDensity } from "./SheetGrid";
 import StaffLoadPanel from "./StaffLoadPanel";
-import WorkGrid from "./WorkGrid";
+import StaffPicker from "./StaffPicker";
+import WorkGrid, { type FocusRequest } from "./WorkGrid";
 import { parseDragged, parseSlot } from "./dnd-ids";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -66,6 +58,12 @@ import { parseDragged, parseSlot } from "./dnd-ids";
    yoʻriqnomalari sudrash uchun aynan shunday muqobil talab qiladi, va
    jadval tizimlari boʻyicha tadqiqot «koʻrsatma» yondashuvini
    toʻgʻridan-toʻgʻri manipulyatsiyadan yuqori baholagan (§12.6).
+
+   ── Joylashuv barqarorligi ───────────────────────────────────────────
+   Sarlavha, inspektor qatori va toʻr — uchtasining balandligi
+   OʻZGARMAYDI. Ziddiyat roʻyxati toʻrni surmaydi, panel boʻlib
+   oʻngdan ochiladi. Sabab: 1200 katakli toʻrda 40px siljish keyingi
+   bosishni notoʻgʻri katakka tushiradi.
    ════════════════════════════════════════════════════════════════════ */
 
 type Mode = "ish" | "varaq";
@@ -94,6 +92,7 @@ export default function JadvalWorkspace() {
   const [shift, setShift] = useState<1 | 2>(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [proposal, setProposal] = useState<ConflictProposal | null>(null);
+  const [focusRequest, setFocusRequest] = useState<FocusRequest>(null);
 
   /* Birinchi kirish — demo jadval. Boʻsh toʻr «bu nima?» degan savol
      qoldiradi, toʻla jadval esa darhol javob beradi. */
@@ -102,6 +101,10 @@ export default function JadvalWorkspace() {
   }, [hydrated, doc.classes.length, loadDoc]);
 
   const conflicts = useMemo(() => findConflicts(doc), [doc]);
+  const remaining = useMemo(
+    () => buildLedger(doc).reduce((a, r) => a + Math.max(0, r.left), 0),
+    [doc]
+  );
   const selected = useMemo(
     () => doc.placements.find((p) => p.id === selectedId) ?? null,
     [doc.placements, selectedId]
@@ -109,6 +112,36 @@ export default function JadvalWorkspace() {
   const twoShift = doc.bell.profile === "double";
 
   /* ── Qoʻyishning yagona yoʻli ──────────────────────────────────── */
+
+  function applyPlacement(
+    card: Armed,
+    to: { classId: string; day: number; period: number; shift: 1 | 2 }
+  ) {
+    if (!card) return;
+    const subject = findSubject(doc, card.subjectId);
+    if (card.kind === "move") {
+      move(card.placementId, to);
+      setSelectedId(card.placementId);
+      toast.success("Dars koʻchirildi", {
+        description: `${subject?.name ?? ""} · ${DAY_NAMES[to.day]}, ${to.period}-soat`,
+      });
+    } else {
+      place({
+        classId: to.classId,
+        day: to.day,
+        period: to.period,
+        shift: to.shift,
+        subjectId: card.subjectId,
+        staffId: card.staffId,
+      });
+      toast.success("Dars qoʻyildi", {
+        description: `${findClass(doc, to.classId)?.name ?? ""} · ${subject?.name ?? ""} · ${
+          DAY_NAMES[to.day]
+        }, ${to.period}-soat`,
+      });
+    }
+    arm(null);
+  }
 
   /** Ziddiyatsiz boʻlsa darhol qoʻyadi; ziddiyat boʻlsa oyna ochadi. */
   const commitPlacement = useCallback(
@@ -125,7 +158,10 @@ export default function JadvalWorkspace() {
         ignorePlacementId: card.kind === "move" ? card.placementId : undefined,
       }).state;
 
-      if (state === "blocked" || state === "occupied") return;
+      if (state === "blocked" || state === "occupied") {
+        toast.error(state === "blocked" ? "Bu katakka qoʻyib boʻlmaydi" : "Katak band");
+        return;
+      }
 
       if (state === "clash") {
         const blockedBy = doc.placements.filter(
@@ -155,27 +191,6 @@ export default function JadvalWorkspace() {
     [doc]
   );
 
-  function applyPlacement(
-    card: Armed,
-    to: { classId: string; day: number; period: number; shift: 1 | 2 }
-  ) {
-    if (!card) return;
-    if (card.kind === "move") {
-      move(card.placementId, to);
-      setSelectedId(card.placementId);
-    } else {
-      place({
-        classId: to.classId,
-        day: to.day,
-        period: to.period,
-        shift: to.shift,
-        subjectId: card.subjectId,
-        staffId: card.staffId,
-      });
-    }
-    arm(null);
-  }
-
   const handlePlace = useCallback(
     (input: { classId: string; day: number; period: number; shift: 1 | 2 }) => {
       commitPlacement(armed, input);
@@ -186,6 +201,19 @@ export default function JadvalWorkspace() {
   const handleSelect = useCallback((p: Placement) => {
     setSelectedId((cur) => (cur === p.id ? null : p.id));
   }, []);
+
+  const handleRemove = useCallback(() => {
+    if (!selectedId) return;
+    const p = doc.placements.find((x) => x.id === selectedId);
+    remove(selectedId);
+    setSelectedId(null);
+    if (p) {
+      toast("Dars oʻchirildi", {
+        description: findSubject(doc, p.subjectId)?.name,
+        action: { label: "Qaytarish", onClick: () => undo() },
+      });
+    }
+  }, [doc, remove, selectedId, undo]);
 
   /* ── Sudrash ───────────────────────────────────────────────────── */
 
@@ -231,8 +259,7 @@ export default function JadvalWorkspace() {
          Bosish oʻchirmaydi (`handleSelect` izohiga qarang). */
       if ((e.key === "Delete" || e.key === "Backspace") && selectedId && !typing) {
         e.preventDefault();
-        remove(selectedId);
-        setSelectedId(null);
+        handleRemove();
       }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
@@ -246,7 +273,7 @@ export default function JadvalWorkspace() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [arm, undo, redo, remove, selectedId]);
+  }, [arm, undo, redo, handleRemove, selectedId]);
 
   const staffOptions = useMemo(
     () => [...doc.staff].sort((a, b) => a.name.localeCompare(b.name, "uz")),
@@ -281,11 +308,11 @@ export default function JadvalWorkspace() {
         },
       }}
     >
-      <div className="flex min-h-svh flex-col gap-4 p-4">
-        {/* ── Stol paneli ───────────────────────────────────────── */}
+      <div className="flex min-h-svh flex-col gap-6 p-4 md:p-6">
+        {/* ── Sarlavha va boshqaruvlar ──────────────────────────── */}
         <header className="flex flex-wrap items-center gap-x-5 gap-y-3">
           <div className="mr-auto min-w-0">
-            <h1 className="heading-page truncate text-lg">{doc.schoolName || "Dars jadvali"}</h1>
+            <h1 className="heading-page truncate">{doc.schoolName || "Dars jadvali"}</h1>
             <p className="text-caption truncate">
               {doc.periodLabel || "Qoralama"}
               {dirty && " · saqlanmagan"}
@@ -315,79 +342,51 @@ export default function JadvalWorkspace() {
             </Button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-label">Rejim</span>
-            <SegmentedToggle<Mode>
-              variant="pill"
-              value={mode}
-              onValueChange={setMode}
-              options={[
-                { value: "ish", label: "Ish rejimi" },
-                { value: "varaq", label: "Varaq" },
-              ]}
-            />
-          </div>
+          <SegmentedToggle<Mode>
+            variant="pill"
+            value={mode}
+            onValueChange={setMode}
+            options={[
+              { value: "ish", label: "Ish rejimi" },
+              { value: "varaq", label: "Varaq" },
+            ]}
+          />
 
           {mode === "ish" && twoShift && (
-            <div className="flex items-center gap-2">
-              <span className="text-label">Smena</span>
-              <SegmentedToggle<"1" | "2">
-                variant="pill"
-                value={String(shift) as "1" | "2"}
-                onValueChange={(v) => setShift(Number(v) as 1 | 2)}
-                options={[
-                  { value: "1", label: "1-smena" },
-                  { value: "2", label: "2-smena" },
-                ]}
-              />
-            </div>
+            <SegmentedToggle<"1" | "2">
+              variant="pill"
+              value={String(shift) as "1" | "2"}
+              onValueChange={(v) => setShift(Number(v) as 1 | 2)}
+              options={[
+                { value: "1", label: "1-smena" },
+                { value: "2", label: "2-smena" },
+              ]}
+            />
           )}
 
           {mode === "varaq" && (
-            <div className="flex items-center gap-2">
-              <span className="text-label">Zichlik</span>
-              <SegmentedToggle<SheetDensity>
-                variant="pill"
-                value={density}
-                onValueChange={setDensity}
-                options={[
-                  { value: "butun", label: "Butun" },
-                  { value: "fan", label: "Fan" },
-                  { value: "toliq", label: "Fan + oʻqituvchi" },
-                ]}
-              />
-            </div>
+            <SegmentedToggle<SheetDensity>
+              variant="pill"
+              value={density}
+              onValueChange={setDensity}
+              options={[
+                { value: "butun", label: "Butun" },
+                { value: "fan", label: "Fan" },
+                { value: "toliq", label: "Fan + oʻqituvchi" },
+              ]}
+            />
           )}
 
-          <label className="flex items-center gap-2">
-            <span className="text-label">Oʻqituvchi</span>
-            <select
-              value={litStaffId ?? ""}
-              onChange={(e) => setLitStaffId(e.target.value || null)}
-              className="h-9 rounded-md border border-border bg-card px-2 text-[12px]"
-            >
-              <option value="">— hammasi —</option>
-              {staffOptions.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <StaffPicker staff={staffOptions} value={litStaffId} onChange={setLitStaffId} />
 
-          <Button
-            variant="outline"
-            size="sm"
-            aria-pressed={showLoad}
-            onClick={() => setShowLoad((v) => !v)}
-          >
+          <Button variant="outline" aria-pressed={showLoad} onClick={() => setShowLoad((v) => !v)}>
             <BarChart3 />
             Yuklama
           </Button>
 
           <Button
             variant="outline"
-            size="sm"
+            aria-pressed={showClashes}
             onClick={() => setShowClashes((v) => !v)}
             className={cn(conflicts.length > 0 && "border-destructive text-destructive")}
           >
@@ -395,120 +394,39 @@ export default function JadvalWorkspace() {
             {conflicts.length} ziddiyat
           </Button>
 
-          <Button variant="outline" size="sm" disabled title="Premium tarifda">
+          <Button variant="outline" disabled title="Premium tarifda">
             <Sparkles />
             Avtomatik tuzish
           </Button>
         </header>
 
-        {/* ── Tanlangan dars ────────────────────────────────────── */}
-        {selected && (
-          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card px-4 py-2">
-            <span
-              aria-hidden
-              className="size-3 shrink-0 rounded-sm"
-              style={{
-                backgroundColor: findSubject(doc, selected.subjectId)
-                  ? classTints(findSubject(doc, selected.subjectId)!.color).solid
-                  : undefined,
-              }}
-            />
-            <span className="text-body font-semibold">
-              {findSubject(doc, selected.subjectId)?.name ?? selected.subjectId}
-            </span>
-            <span className="text-caption">
-              {findClass(doc, selected.classId)?.name} · {DAY_NAMES[selected.day]},{" "}
-              {selected.period}-soat ·{" "}
-              {(() => {
-                const st = findStaff(doc, selected.staffId);
-                return st ? staffShort(st.name) : selected.staffId;
-              })()}
-            </span>
+        {/* ── Inspektor — DOIM shu yerda, balandligi oʻzgarmaydi ── */}
+        <InspectorBar
+          doc={doc}
+          armed={armed}
+          selected={selected}
+          conflictCount={conflicts.length}
+          remaining={remaining}
+          onMove={() =>
+            selected &&
+            arm({
+              kind: "move",
+              placementId: selected.id,
+              classId: selected.classId,
+              subjectId: selected.subjectId,
+              staffId: selected.staffId,
+            })
+          }
+          onToggleLock={() => selected && toggleLock(selected.id)}
+          onRemove={handleRemove}
+          onClear={() => {
+            arm(null);
+            setSelectedId(null);
+          }}
+        />
 
-            <div className="ml-auto flex items-center gap-1">
-              <Button
-                variant={armed?.kind === "move" ? "default" : "ghost"}
-                size="sm"
-                disabled={selected.locked}
-                title="Koʻchirish — soʻng katakni tanlang yoki Enter bosing"
-                onClick={() =>
-                  arm(
-                    armed?.kind === "move"
-                      ? null
-                      : {
-                          kind: "move",
-                          placementId: selected.id,
-                          classId: selected.classId,
-                          subjectId: selected.subjectId,
-                          staffId: selected.staffId,
-                        }
-                  )
-                }
-              >
-                <Move />
-                {armed?.kind === "move" ? "Katakni tanlang" : "Koʻchirish"}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleLock(selected.id)}
-                title={selected.locked ? "Qulfni ochish" : "Qulflash — ustiga qoʻyib boʻlmaydi"}
-              >
-                {selected.locked ? <Lock /> : <LockOpen />}
-                {selected.locked ? "Qulflangan" : "Qulflash"}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={selected.locked}
-                className="text-destructive hover:text-destructive"
-                onClick={() => {
-                  remove(selected.id);
-                  setSelectedId(null);
-                }}
-                title={selected.locked ? "Avval qulfni oching" : "Oʻchirish (Delete)"}
-              >
-                <Trash2 />
-                Oʻchirish
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Tanlovni bekor qilish"
-                onClick={() => setSelectedId(null)}
-              >
-                <X />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {showClashes && conflicts.length > 0 && (
-          <Panel className="border-destructive/50">
-            <PanelHeader>
-              <h2 className="heading-section text-destructive">Hal qilinmagan ziddiyatlar</h2>
-            </PanelHeader>
-            <PanelBody inset>
-              <ul className="flex flex-col gap-1">
-                {conflicts.map((c, i) => {
-                  const staff = findStaff(doc, c.staffId);
-                  const names = c.classIds
-                    .map((id) => findClass(doc, id)?.name ?? id)
-                    .join(" va ");
-                  return (
-                    <li key={i} className="text-body">
-                      <b className="font-semibold">{staff ? staffShort(staff.name) : c.staffId}</b>
-                      {` · ${DAY_NAMES[c.day]}, ${c.period}-soat · ${names}`}
-                    </li>
-                  );
-                })}
-              </ul>
-            </PanelBody>
-          </Panel>
-        )}
-
-        {/* ── Rels + toʻr + yuklama ─────────────────────────────── */}
-        <div className="flex min-h-0 flex-1 gap-4">
+        {/* ── Rels + toʻr + panellar ────────────────────────────── */}
+        <div className="flex min-h-0 flex-1 gap-6">
           <LedgerRail doc={doc} armed={armed} onArm={arm} />
 
           {mode === "ish" ? (
@@ -518,6 +436,7 @@ export default function JadvalWorkspace() {
               armed={armed}
               litStaffId={litStaffId}
               selectedId={selectedId}
+              focusRequest={focusRequest}
               onPlace={handlePlace}
               onSelect={handleSelect}
             />
@@ -533,9 +452,52 @@ export default function JadvalWorkspace() {
             />
           )}
 
-          {showLoad && (
-            <StaffLoadPanel doc={doc} litStaffId={litStaffId} onPick={setLitStaffId} />
+          {showClashes && (
+            <Panel className="w-72 shrink-0">
+              <PanelHeader title="Ziddiyatlar" count={conflicts.length} />
+              <PanelBody className="px-5 pb-5 pt-5">
+                {conflicts.length === 0 ? (
+                  <p className="text-body text-success">Ziddiyat yoʻq.</p>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {conflicts.map((c, i) => {
+                      const staff = findStaff(doc, c.staffId);
+                      return (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMode("ish");
+                              setShift(c.shift);
+                              setFocusRequest({
+                                classId: c.classIds[0],
+                                day: c.day,
+                                period: c.period,
+                                nonce: Date.now(),
+                              });
+                            }}
+                            className="w-full rounded-md border border-border px-3 py-2 text-left transition-colors duration-fast hover:border-destructive"
+                          >
+                            <span className="heading-small block truncate">
+                              {staff ? staffShort(staff.name) : c.staffId}
+                            </span>
+                            <span className="text-caption block">
+                              {DAY_NAMES[c.day]}, {c.period}-soat ·{" "}
+                              {c.classIds
+                                .map((id) => findClass(doc, id)?.name ?? id)
+                                .join(" va ")}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </PanelBody>
+            </Panel>
           )}
+
+          {showLoad && <StaffLoadPanel doc={doc} litStaffId={litStaffId} onPick={setLitStaffId} />}
         </div>
       </div>
 
@@ -569,6 +531,7 @@ export default function JadvalWorkspace() {
               period: other.period,
             });
             arm(null);
+            toast.success("Darslar oʻrin almashdi");
           }
           setProposal(null);
         }}

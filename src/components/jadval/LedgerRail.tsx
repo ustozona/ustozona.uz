@@ -2,7 +2,11 @@
 
 import { useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Check } from "lucide-react";
+import { Check, PackageOpen } from "lucide-react";
+import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
+import { SectionIcon } from "@/components/ui/section-icon";
+import { CardTitle } from "@/components/ui/card";
+import { TypographyMuted } from "@/components/ui/typography";
 import { classTints } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
 import {
@@ -14,6 +18,7 @@ import {
 } from "@/lib/school-timetable";
 import type { Armed } from "@/store/useSchoolTimetableStore";
 import { cardDndId } from "./dnd-ids";
+import { DRAGGING } from "./cell-styles";
 
 /* ════════════════════════════════════════════════════════════════════
    QOLDIQ RELSI — daftar ham, karta manbai ham.
@@ -22,8 +27,8 @@ import { cardDndId } from "./dnd-ids";
    «7-A da fizikadan 2 soat qoldi» — bu ham hisobot, ham qoʻyiladigan
    karta. Zavuchning haqiqiy savoli aynan shu shaklda.
 
-   Ayni paytda bu «Jami soat» ning jonli tomoni: nol boʻlganda jadval
-   oʻquv rejasiga toʻliq mos.
+   Yuza `<Panel>` dan (DESIGN.md §5): qoʻlda `rounded-xl border bg-card`
+   yozilsa, panel tili oʻzgarganda bu joy ortda qolib ketadi.
    ════════════════════════════════════════════════════════════════════ */
 
 export type LedgerRailProps = {
@@ -52,63 +57,68 @@ export default function LedgerRail({ doc, armed, onArm }: LedgerRailProps) {
   }, [rows]);
 
   const total = rows.reduce((s, r) => s + Math.max(0, r.left), 0);
+  const pending = byClass.filter(([, list]) => list.some((r) => r.left !== 0));
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <div className="border-b border-border px-4 py-3">
-        <h2 className="text-label">Qoldiq</h2>
-        <p className="text-caption mt-0.5 leading-snug">
-          Oʻquv rejasidan varaqqa qoʻyilmagan soatlar. Nol boʻlganda jadval toʻliq.
-        </p>
-        <div className="mt-3 flex items-baseline justify-between rounded-md border border-border px-3 py-2">
-          <span className="text-caption">Qoʻyilmagan</span>
-          <span className={cn("font-mono text-lg font-semibold tabular-nums", total === 0 && "text-success")}>
-            {total}
-          </span>
+    <Panel className="w-64 shrink-0">
+      <PanelHeader>
+        <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
+          <SectionIcon className="shrink-0">
+            <PackageOpen />
+          </SectionIcon>
+          <div className="flex min-w-0 items-baseline gap-1.5">
+            <CardTitle className="truncate">Qoldiq</CardTitle>
+            <TypographyMuted className="shrink-0 text-sm tabular-nums">{total}</TypographyMuted>
+          </div>
         </div>
-      </div>
+      </PanelHeader>
 
-      <div className="min-h-0 flex-1 overflow-auto px-4 pb-5 scrollbar-hover [scrollbar-width:thin]">
-        {byClass.map(([classId, list]) => {
-          const cls = doc.classes.find((c) => c.id === classId);
-          const left = list.reduce((s, r) => s + Math.max(0, r.left), 0);
-          return (
-            <section key={classId}>
-              <h3 className="text-label mt-4 flex items-baseline justify-between">
-                <span>{cls?.name ?? classId}</span>
-                <span className={cn(left === 0 && "text-success")}>
-                  {left === 0 ? "toʻliq" : `${left} soat`}
-                </span>
-              </h3>
+      <PanelBody className="px-5 pb-5 pt-5">
+        <p className="text-caption mb-4">
+          Oʻquv rejasidan varaqqa qoʻyilmagan soatlar. Kartani sudrang yoki bosib oling.
+        </p>
 
-              {list
-                .filter((r) => r.left !== 0)
-                .map((r) => (
-                  <LedgerCard
-                    key={`${r.classId}-${r.subjectId}`}
-                    doc={doc}
-                    row={r}
-                    armed={
-                      armed != null &&
-                      armed.kind === "new" &&
-                      armed.classId === r.classId &&
-                      armed.subjectId === r.subjectId
-                    }
-                    onArm={onArm}
-                  />
-                ))}
-
-              {list.every((r) => r.left === 0) && (
-                <p className="text-caption flex items-center gap-1.5 py-1">
-                  <Check className="size-3.5 text-success" aria-hidden />
-                  Reja bajarildi
-                </p>
-              )}
-            </section>
-          );
-        })}
-      </div>
-    </aside>
+        {pending.length === 0 ? (
+          <p className="text-body flex items-center gap-2 text-success">
+            <Check className="size-4 shrink-0" aria-hidden />
+            Reja toʻliq bajarildi
+          </p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {pending.map(([classId, list]) => {
+              const cls = doc.classes.find((c) => c.id === classId);
+              const left = list.reduce((s, r) => s + Math.max(0, r.left), 0);
+              return (
+                <section key={classId}>
+                  <h3 className="text-label mb-2 flex items-baseline justify-between">
+                    <span>{cls?.name ?? classId}</span>
+                    <span className="tabular-nums">{left} soat</span>
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {list
+                      .filter((r) => r.left !== 0)
+                      .map((r) => (
+                        <LedgerCard
+                          key={`${r.classId}-${r.subjectId}`}
+                          doc={doc}
+                          row={r}
+                          armed={
+                            armed != null &&
+                            armed.kind === "new" &&
+                            armed.classId === r.classId &&
+                            armed.subjectId === r.subjectId
+                          }
+                          onArm={onArm}
+                        />
+                      ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
+      </PanelBody>
+    </Panel>
   );
 }
 
@@ -153,10 +163,11 @@ function LedgerCard({
       aria-pressed={armed}
       onClick={() => onArm(armed ? null : card)}
       className={cn(
-        "mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card py-1.5 pr-2 text-left transition-colors duration-fast",
+        /* Zich karta: 12px padding, 12px ichki gap (DESIGN.md §7). */
+        "flex w-full items-center gap-3 rounded-md border border-border bg-card py-3 pr-3 text-left transition-colors duration-fast",
         ready && "cursor-grab hover:border-muted-foreground/40",
         armed && "border-primary",
-        isDragging && "opacity-40",
+        isDragging && DRAGGING,
         !ready && "opacity-50"
       )}
     >
@@ -166,17 +177,12 @@ function LedgerCard({
         style={{ backgroundColor: tints?.solid }}
       />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-[12px] font-semibold">{subject?.name ?? row.subjectId}</span>
-        <span className="truncate text-[10.5px] text-muted-foreground">
+        <span className="heading-small truncate">{subject?.name ?? row.subjectId}</span>
+        <span className="text-caption truncate">
           {staff ? staffShort(staff.name) : "oʻqituvchi belgilanmagan"}
         </span>
       </span>
-      <span
-        className={cn(
-          "font-mono text-[12px] font-semibold tabular-nums",
-          over && "text-destructive"
-        )}
-      >
+      <span className={cn("text-caption font-semibold tabular-nums", over && "text-destructive")}>
         {over ? `+${-row.left}` : `${row.left} s`}
       </span>
     </button>

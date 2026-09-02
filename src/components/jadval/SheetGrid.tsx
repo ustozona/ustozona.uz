@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo } from "react";
 import { classTints } from "@/lib/class-colors";
+import { Panel } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
 import {
@@ -23,6 +24,7 @@ import {
   type SchoolTimetableDoc,
 } from "@/lib/school-timetable";
 import type { Armed } from "@/store/useSchoolTimetableStore";
+import { CLASH_RING, DIMMED, DROP_CLASS, LIT_RING, SELECTED_RING } from "./cell-styles";
 
 /* ════════════════════════════════════════════════════════════════════
    VARAQ REJIMI — devorga osiladigan koʻrinish. Sinflar USTUNDA,
@@ -75,7 +77,8 @@ export default function SheetGrid({
   const d = DENSITY[density];
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-border bg-card p-5 scrollbar-hover [scrollbar-width:thin]">
+    <Panel className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1 overflow-auto p-5 scrollbar-hover [scrollbar-width:thin]">
       <div className="relative inline-block min-w-full">
         <header className="mb-4 text-center">
           <p className="text-label">Tasdiqlayman · maktab direktori</p>
@@ -95,7 +98,7 @@ export default function SheetGrid({
           {doc.classes.map((c) => (
             <div
               key={c.id}
-              className="sticky top-0 z-20 truncate border-b border-r border-border bg-card px-1 py-1.5 text-center text-[11px] font-bold"
+              className="text-caption sticky top-0 z-20 truncate border-b border-r border-border bg-card px-1 py-1.5 text-center font-bold text-foreground"
             >
               {c.name}
             </div>
@@ -115,7 +118,7 @@ export default function SheetGrid({
                   <div className="text-micro flex flex-col items-center justify-center border-b border-r border-border bg-card text-muted-foreground">
                     <span>{per.index}</span>
                     {density !== "butun" && (
-                      <span className="text-[8px] opacity-70">{minToHHMM(per.startMin)}</span>
+                      <span className="text-micro text-muted-foreground">{minToHHMM(per.startMin)}</span>
                     )}
                   </div>
 
@@ -202,7 +205,7 @@ export default function SheetGrid({
             return (
               <div
                 key={c.id}
-                className="flex items-center justify-center truncate border-b border-r border-border bg-card px-1 py-1 text-[9px]"
+                className="text-micro flex items-center justify-center truncate border-b border-r border-border bg-card px-1 py-1 font-normal"
               >
                 {homeroom ? staffShort(homeroom.name) : "—"}
               </div>
@@ -215,26 +218,19 @@ export default function SheetGrid({
         {approved && (
           <div
             aria-hidden
-            className="pointer-events-none absolute right-8 top-4 flex size-28 -rotate-12 flex-col items-center justify-center rounded-full border-2 border-primary text-primary opacity-80"
+            className="pointer-events-none absolute right-8 top-4 flex size-28 -rotate-12 flex-col items-center justify-center rounded-full border-2 border-primary text-primary opacity-80"  /* muhr siyohi — ataylab shaffof */
           >
-            <span className="text-[8px] font-bold uppercase tracking-[0.16em]">Tasdiqlandi</span>
-            <span className="text-[11px] font-bold uppercase tracking-wide">Direktor</span>
+            <span className="text-micro font-bold uppercase tracking-widest">Tasdiqlandi</span>
+            <span className="text-caption font-bold uppercase tracking-wide text-primary">Direktor</span>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </Panel>
   );
 }
 
 /* ─── Katak ─────────────────────────────────────────────────────────── */
-
-const DROP_CLASS: Record<DropState, string> = {
-  ok: "bg-success/12 ring-1 ring-inset ring-success",
-  caution: "bg-warning/15 ring-1 ring-inset ring-warning",
-  clash: "bg-destructive/12 ring-1 ring-inset ring-destructive",
-  blocked: "bg-muted",
-  occupied: "",
-};
 
 function SheetCell({
   doc,
@@ -263,9 +259,9 @@ function SheetCell({
 }) {
   const base = cn(
     "relative border-b border-r border-border transition-opacity duration-fast",
-    dim && "opacity-25",
-    isClash && "ring-[1.5px] ring-inset ring-destructive",
-    lit && "ring-[1.5px] ring-inset ring-primary",
+    dim && DIMMED,
+    isClash && CLASH_RING,
+    lit && LIT_RING,
     drop && drop !== "occupied" && DROP_CLASS[drop]
   );
 
@@ -300,7 +296,7 @@ function SheetCell({
               onClick={() => onSelect(p)}
               title={subject?.name}
               style={tints?.chipFill}
-              className={cn("flex-1", selectedId === p.id && "ring-2 ring-inset ring-foreground")}
+              className={cn("flex-1", selectedId === p.id && SELECTED_RING)}
             />
           );
         }
@@ -315,7 +311,7 @@ function SheetCell({
             className={cn(
               "flex min-w-0 flex-1 items-center gap-1 overflow-hidden px-0 text-left",
               here.length > 1 && "border-l border-dashed border-border first:border-l-0",
-              selectedId === p.id && "ring-2 ring-inset ring-foreground"
+              selectedId === p.id && SELECTED_RING
             )}
           >
             <span
@@ -326,7 +322,7 @@ function SheetCell({
             <span className="flex min-w-0 flex-col justify-center pr-1">
               <span className="text-micro truncate">{subject?.name ?? "—"}</span>
               {density === "toliq" && staff && (
-                <span className="truncate text-[9px] text-muted-foreground">
+                <span className="text-micro truncate font-normal text-muted-foreground">
                   {staffShort(staff.name)}
                 </span>
               )}

@@ -1,6 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
+import { Gauge } from "lucide-react";
+import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
+import { SectionIcon } from "@/components/ui/section-icon";
+import { CardTitle } from "@/components/ui/card";
+import { TypographyMuted } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { staffLoads, type SchoolTimetableDoc } from "@/lib/school-timetable";
 
@@ -25,64 +30,81 @@ export default function StaffLoadPanel({
   onPick: (staffId: string | null) => void;
 }) {
   const loads = useMemo(() => staffLoads(doc), [doc]);
-  const max = loads.length ? Math.max(...loads.map((l) => l.hours), loads[0].norm) : 1;
+  const norm = loads[0]?.norm ?? 18;
+  /* Shkala eng katta yuklama va normadan kattarogʻiga bogʻlanadi —
+     shunda norma chizigʻi doim koʻrinadi. */
+  const max = loads.length ? Math.max(...loads.map((l) => l.hours), norm) : 1;
+  const over = loads.filter((l) => l.hours > l.norm).length;
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <div className="border-b border-border px-4 py-3">
-        <h2 className="text-label">Yuklama</h2>
-        <p className="text-caption mt-0.5 leading-snug">
-          Haftalik soat. Bitta stavka — {loads[0]?.norm ?? 18} soat.
-        </p>
-      </div>
+    <Panel className="w-60 shrink-0">
+      <PanelHeader>
+        <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
+          <SectionIcon className="shrink-0">
+            <Gauge />
+          </SectionIcon>
+          <div className="flex min-w-0 items-baseline gap-1.5">
+            <CardTitle className="truncate">Yuklama</CardTitle>
+            {over > 0 && (
+              <TypographyMuted className="shrink-0 text-sm text-destructive">
+                {over} ta oshgan
+              </TypographyMuted>
+            )}
+          </div>
+        </div>
+      </PanelHeader>
 
-      <div className="min-h-0 flex-1 overflow-auto px-4 py-3 scrollbar-hover [scrollbar-width:thin]">
-        {loads.map((l) => {
-          const over = l.hours > l.norm;
-          const lit = litStaffId === l.staffId;
-          return (
-            <button
-              key={l.staffId}
-              type="button"
-              aria-pressed={lit}
-              onClick={() => onPick(lit ? null : l.staffId)}
-              className={cn(
-                "mb-2 block w-full rounded-md px-1.5 py-1 text-left transition-colors duration-fast",
-                "hover:bg-muted/60",
-                lit && "bg-muted"
-              )}
-            >
-              <span className="flex items-baseline justify-between gap-2">
-                <span className="truncate text-[11.5px] font-medium">{l.name}</span>
-                <span
-                  className={cn(
-                    "shrink-0 font-mono text-[11px] tabular-nums",
-                    over ? "text-destructive" : "text-muted-foreground"
-                  )}
-                >
-                  {l.hours}
+      <PanelBody className="px-5 pb-5 pt-5">
+        <p className="text-caption mb-4">Haftalik soat. Bitta stavka — {norm} soat.</p>
+
+        <div className="flex flex-col gap-2">
+          {loads.map((l) => {
+            const isOver = l.hours > l.norm;
+            const lit = litStaffId === l.staffId;
+            return (
+              <button
+                key={l.staffId}
+                type="button"
+                aria-pressed={lit}
+                onClick={() => onPick(lit ? null : l.staffId)}
+                className={cn(
+                  "block w-full rounded-md px-2 py-2 text-left transition-colors duration-fast",
+                  "hover:bg-muted/60",
+                  lit && "bg-muted"
+                )}
+              >
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="text-caption truncate font-medium text-foreground">{l.name}</span>
+                  <span
+                    className={cn(
+                      "text-caption shrink-0 font-semibold tabular-nums",
+                      isOver && "text-destructive"
+                    )}
+                  >
+                    {l.hours}
+                  </span>
                 </span>
-              </span>
-              {/* Ustun — normaga nisbatan. Norma chizigʻi doim koʻrinadi,
-                  shuning uchun «oshib ketgan» koʻz bilan oʻqiladi. */}
-              <span className="relative mt-1 block h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <span
-                  className={cn(
-                    "absolute inset-y-0 left-0 rounded-full",
-                    over ? "bg-destructive" : "bg-primary/70"
-                  )}
-                  style={{ width: `${Math.min(100, (l.hours / max) * 100)}%` }}
-                />
-                <span
-                  aria-hidden
-                  className="absolute inset-y-0 w-px bg-foreground/40"
-                  style={{ left: `${(l.norm / max) * 100}%` }}
-                />
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </aside>
+                {/* Ustun — normaga nisbatan. Norma chizigʻi doim koʻrinadi,
+                    shuning uchun «oshib ketgan» koʻz bilan oʻqiladi. */}
+                <span className="relative mt-1.5 block h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <span
+                    className={cn(
+                      "absolute inset-y-0 left-0 rounded-full",
+                      isOver ? "bg-destructive" : "bg-primary/70"
+                    )}
+                    style={{ width: `${Math.min(100, (l.hours / max) * 100)}%` }}
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute inset-y-0 w-px bg-foreground/40"
+                    style={{ left: `${(norm / max) * 100}%` }}
+                  />
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </PanelBody>
+    </Panel>
   );
 }

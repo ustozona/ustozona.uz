@@ -1,8 +1,9 @@
 "use client";
 
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { classTints } from "@/lib/class-colors";
+import { Panel } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
 import {
   conflictSlotKeys,
@@ -22,6 +23,17 @@ import {
 } from "@/lib/school-timetable";
 import type { Armed } from "@/store/useSchoolTimetableStore";
 import { placementDndId, slotDndId } from "./dnd-ids";
+import {
+  CLASH_RING,
+  DIMMED,
+  DRAGGING,
+  DROP_CLASS,
+  FOCUS_RING,
+  LIT_RING,
+  OVER_RING_BAD,
+  OVER_RING_OK,
+  SELECTED_RING,
+} from "./cell-styles";
 
 /* ════════════════════════════════════════════════════════════════════
    ISH REJIMI — zich toʻr. Sinflar QATORDA, kun×soat USTUNDA.
@@ -55,6 +67,15 @@ const CELL_H = 27;
 const ROW_HEAD_W = 62;
 const HEAD_H = 26;
 
+/** Tashqaridan «shu katakka boring» soʻrovi (masalan ziddiyat roʻyxatidan).
+    `nonce` — bir xil katakka qayta soʻrov ham ishlashi uchun. */
+export type FocusRequest = {
+  classId: string;
+  day: number;
+  period: number;
+  nonce: number;
+} | null;
+
 export type WorkGridProps = {
   doc: SchoolTimetableDoc;
   /** Koʻrsatilayotgan smena — ustunlar va qatorlar shundan olinadi. */
@@ -64,6 +85,7 @@ export type WorkGridProps = {
   litStaffId: string | null;
   /** Tanlangan dars — muharrir panelida koʻrinadi. */
   selectedId: string | null;
+  focusRequest?: FocusRequest;
   onPlace: (input: { classId: string; day: number; period: number; shift: 1 | 2 }) => void;
   onSelect: (placement: Placement) => void;
 };
@@ -74,6 +96,7 @@ export default function WorkGrid({
   armed,
   litStaffId,
   selectedId,
+  focusRequest,
   onPlace,
   onSelect,
 }: WorkGridProps) {
@@ -138,16 +161,28 @@ export default function WorkGrid({
 
   const handleFocusCell = useCallback((pos: [number, number]) => setActive(pos), []);
 
+  /* Ziddiyat roʻyxatidan katakka oʻtish. Roʻyxat faqat xabar berib
+     qolmasligi kerak — muammoli katakning oʻziga olib borishi shart. */
+  useEffect(() => {
+    if (!focusRequest) return;
+    const r = classes.findIndex((c) => c.id === focusRequest.classId);
+    const di = WORK_DAYS.indexOf(focusRequest.day as (typeof WORK_DAYS)[number]);
+    const pi = periods.indexOf(focusRequest.period);
+    if (r < 0 || di < 0 || pi < 0) return;
+    moveTo(r, di * periods.length + pi);
+  }, [focusRequest, classes, periods, moveTo]);
+
   if (periods.length === 0 || classes.length === 0) {
     return (
-      <div className="flex min-h-0 flex-1 items-center justify-center rounded-xl border border-border bg-card">
+      <Panel className="min-h-0 flex-1 items-center justify-center">
         <p className="text-caption">Bu smenada sinf yoʻq.</p>
-      </div>
+      </Panel>
     );
   }
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-border bg-card scrollbar-hover [scrollbar-width:thin]">
+    <Panel className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1 overflow-auto scrollbar-hover [scrollbar-width:thin]">
       <div
         ref={gridRef}
         role="grid"
@@ -202,7 +237,7 @@ export default function WorkGrid({
           <div role="row" className="contents" key={cls.id}>
             <div
               role="rowheader"
-              className="sticky left-0 z-10 flex items-center border-b border-r border-border bg-card px-2 text-[11px] font-semibold"
+              className="text-caption sticky left-0 z-10 flex items-center border-b border-r border-border bg-card px-2 font-semibold text-foreground"
             >
               {cls.name}
             </div>
@@ -255,20 +290,13 @@ export default function WorkGrid({
             )}
           </div>
         ))}
+        </div>
       </div>
-    </div>
+    </Panel>
   );
 }
 
 /* ─── Katak ─────────────────────────────────────────────────────────── */
-
-const DROP_CLASS: Record<DropState, string> = {
-  ok: "bg-success/12 ring-1 ring-inset ring-success",
-  caution: "bg-warning/15 ring-1 ring-inset ring-warning",
-  clash: "bg-destructive/12 ring-1 ring-inset ring-destructive",
-  blocked: "bg-muted",
-  occupied: "",
-};
 
 type WorkCellProps = {
   slotId: string;
@@ -351,11 +379,11 @@ const WorkCell = memo(function WorkCell({
       className={cn(
         "relative border-b border-border outline-none transition-opacity duration-fast",
         lastOfDay && "border-r",
-        dim && "opacity-25",
-        isClash && "ring-[1.5px] ring-inset ring-destructive",
+        dim && DIMMED,
+        isClash && CLASH_RING,
         drop && drop !== "occupied" && DROP_CLASS[drop],
-        isOver && (canDrop ? "ring-2 ring-inset ring-primary" : "ring-2 ring-inset ring-destructive"),
-        focused && "z-10 ring-2 ring-inset ring-[var(--ring)]",
+        isOver && (canDrop ? OVER_RING_OK : OVER_RING_BAD),
+        focused && cn("z-10", FOCUS_RING),
         canDrop && "cursor-pointer"
       )}
       style={{ height: CELL_H }}
@@ -415,9 +443,9 @@ function Chip({
       className={cn(
         "text-micro relative flex flex-1 select-none items-center justify-center overflow-hidden",
         split && "border-l border-dashed border-border first:border-l-0",
-        lit && "ring-[1.5px] ring-inset ring-primary",
-        selected && "ring-2 ring-inset ring-foreground",
-        isDragging && "opacity-40",
+        lit && LIT_RING,
+        selected && SELECTED_RING,
+        isDragging && DRAGGING,
         placement.locked ? "cursor-default" : "cursor-grab"
       )}
     >
