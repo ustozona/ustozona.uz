@@ -415,3 +415,48 @@ nuqtalar:
 `DESIGN.md` ning «yashovchi kontrakt» tartibi boʻyicha: sabab yoziladi,
 eski qoidaga tayangan joylar yangilanadi, `docs/design-system.md` sinxron
 turadi.
+
+---
+
+## 15. Toʻr texnologiyasi — qaror va sabablar
+
+### 15.1. Nima ishlatilgan
+
+| Qism | Yechim |
+|---|---|
+| Toʻr | Xom CSS Grid. Jadval komponenti kutubxonasi **yoʻq** |
+| Qator semantikasi | `role="row"` + `display: contents` — ARIA uchun qator, toʻr tuzilishi buzilmaydi |
+| Klaviatura | WAI-ARIA `grid` naqshi: roving tabindex, strelkalar |
+| Sudrash | `@dnd-kit` — loyihada allaqachon bor, uy naqshi `PlannerView` da |
+| Ishlash | `memo` + barqaror callback'lar |
+
+### 15.2. Nega jadval kutubxonasi olinmadi
+
+Tijorat planlashtirish komponentlari (rejalashtirish/scheduler paketlari)
+funksiya boʻyicha toʻliq, lekin:
+
+- **oʻz dizayn tizimini olib keladi** va `DESIGN.md` bilan urishadi;
+- ular **vaqt oʻqi** boʻyicha ishlaydi (resurs × uzluksiz vaqt), bizda
+  esa qatʼiy soat kataklari — moslashtirish oʻz toʻrimizni yozishdan
+  qimmatroq;
+- litsenziya narxi mahsulot narximizdan yuqori.
+
+Ulardan **naqsh** olindi, kod emas: qoldiq paneli, qoʻyish holatlari,
+ziddiyat oynasi, resurs gistogrammasi.
+
+### 15.3. ⚠️ Virtualizatsiya — ATAYLAB qoʻshilmadi
+
+33 sinfda toʻr ~1200 katak chizadi. Virtualizatsiya (faqat koʻrinadigan
+qatorlarni chizish) buni yengillashtiradi, lekin:
+
+- sticky sarlavhalarni murakkablashtiradi;
+- ekrandan tashqaridagi kataklar **drop-zona sifatida roʻyxatdan
+  oʻtmaydi** — sudrash chegaraga yetganda tashlash joyi yoʻqoladi;
+- roving tabindex ekrandan tashqaridagi katakka fokus bera olmaydi.
+
+Yaʼni virtualizatsiya yuqoridagi uchta funksiyaning har birini buzadi.
+Shu sabab avval **arzon yoʻl** qoʻllandi: katak `memo` ga olindi va
+callback'lar barqarorlashtirildi.
+
+**Shart:** virtualizatsiya faqat 33 sinfli haqiqiy hujjatda React
+Profiler bilan **oʻlchangandan keyin** kiritiladi. Taxminga koʻra emas.
