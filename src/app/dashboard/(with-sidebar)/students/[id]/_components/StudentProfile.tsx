@@ -15,6 +15,7 @@ import {
   formatNoteTime,
   selectStudentNotes,
 } from "@/store/useStudentNotesStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { MONTHS_UZ, DAYS_UZ_SUN_SHORT } from "@/lib/localization";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,10 @@ export default function StudentProfile({
   const [tab, setTabState] = useState<TabId>(() => normalizeTab(initialTab));
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const noteEntries = useStudentNotesStore((s) => s.items);
+  /* Optimistik (hali serverdan qaytmagan) qayd uchun muallif — join
+     natijasi kelguncha joriy oʻqituvchi sozlamalar store'idan. */
+  const myName = useSettingsStore((s) => s.profile.name);
+  const myAvatarUrl = useSettingsStore((s) => s.profile.avatarUrl);
   /* Hamkasb qaydlari — faqat oʻqish uchun (store izohi). */
   const foreignNotes = useStudentNotesStore((s) => s.foreign);
   const addNoteEntry = useStudentNotesStore((s) => s.addNote);
@@ -194,11 +199,11 @@ export default function StudentProfile({
         visibility: n.visibility,
         time: formatNoteTime(n.createdAt),
         createdAt: n.createdAt,
-        authorName: n.authorName,
-        authorAvatarUrl: n.authorAvatarUrl,
+        authorName: n.authorName ?? (n.canEdit ? myName || undefined : undefined),
+        authorAvatarUrl: n.authorAvatarUrl ?? (n.canEdit ? myAvatarUrl || undefined : undefined),
         canEdit: n.canEdit,
       })),
-    [noteEntries, foreignNotes, studentId]
+    [noteEntries, foreignNotes, studentId, myName, myAvatarUrl]
   );
 
   const addNote = useCallback(
