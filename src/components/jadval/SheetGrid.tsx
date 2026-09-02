@@ -22,7 +22,7 @@ import {
   type Placement,
   type SchoolTimetableDoc,
 } from "@/lib/school-timetable";
-import type { ArmedCard } from "@/store/useSchoolTimetableStore";
+import type { Armed } from "@/store/useSchoolTimetableStore";
 
 /* ════════════════════════════════════════════════════════════════════
    VARAQ REJIMI — devorga osiladigan koʻrinish. Sinflar USTUNDA,
@@ -49,7 +49,7 @@ const DENSITY: Record<SheetDensity, { col: number; row: number; fs: string }> = 
 export type SheetGridProps = {
   doc: SchoolTimetableDoc;
   density: SheetDensity;
-  armed: ArmedCard;
+  armed: Armed;
   litStaffId: string | null;
   /** Tanlangan dars — muharrir panelida koʻrinadi. */
   selectedId: string | null;
@@ -135,6 +135,8 @@ export default function SheetGrid({
                         day,
                         shift: per.shift,
                         period: per.index,
+                        ignorePlacementId:
+                          armed.kind === "move" ? armed.placementId : undefined,
                       }).state;
                     }
 

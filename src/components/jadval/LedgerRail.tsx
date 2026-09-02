@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useDraggable } from "@dnd-kit/core";
 import { Check } from "lucide-react";
 import { classTints } from "@/lib/class-colors";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,8 @@ import {
   type LedgerRow,
   type SchoolTimetableDoc,
 } from "@/lib/school-timetable";
-import type { ArmedCard } from "@/store/useSchoolTimetableStore";
+import type { Armed } from "@/store/useSchoolTimetableStore";
+import { cardDndId } from "./dnd-ids";
 
 /* ════════════════════════════════════════════════════════════════════
    QOLDIQ RELSI — daftar ham, karta manbai ham.
@@ -26,8 +28,8 @@ import type { ArmedCard } from "@/store/useSchoolTimetableStore";
 
 export type LedgerRailProps = {
   doc: SchoolTimetableDoc;
-  armed: ArmedCard;
-  onArm: (card: ArmedCard) => void;
+  armed: Armed;
+  onArm: (card: Armed) => void;
 };
 
 export default function LedgerRail({ doc, armed, onArm }: LedgerRailProps) {
@@ -87,7 +89,10 @@ export default function LedgerRail({ doc, armed, onArm }: LedgerRailProps) {
                     doc={doc}
                     row={r}
                     armed={
-                      armed != null && armed.classId === r.classId && armed.subjectId === r.subjectId
+                      armed != null &&
+                      armed.kind === "new" &&
+                      armed.classId === r.classId &&
+                      armed.subjectId === r.subjectId
                     }
                     onArm={onArm}
                   />
@@ -116,7 +121,7 @@ function LedgerCard({
   doc: SchoolTimetableDoc;
   row: LedgerRow;
   armed: boolean;
-  onArm: (card: ArmedCard) => void;
+  onArm: (card: Armed) => void;
 }) {
   const subject = findSubject(doc, row.subjectId);
   const tints = subject ? classTints(subject.color) : null;
@@ -127,16 +132,31 @@ function LedgerCard({
   const ready = row.staffId != null;
   const over = row.left < 0;
 
+  const card: Armed = ready
+    ? { kind: "new", classId: row.classId, subjectId: row.subjectId, staffId: row.staffId! }
+    : null;
+
+  /* Kartani sudrash — «backlog panel → jadval» naqshi. Klaviatura yoʻli
+     ham qoladi: bosib «olib» keyin toʻrda Enter bilan qoʻyish (§12.6). */
+  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
+    id: cardDndId(row.classId, row.subjectId, row.staffId ?? ""),
+    disabled: !ready,
+  });
+
   return (
     <button
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
       type="button"
       disabled={!ready}
       aria-pressed={armed}
-      onClick={() => onArm(armed ? null : { classId: row.classId, subjectId: row.subjectId, staffId: row.staffId! })}
+      onClick={() => onArm(armed ? null : card)}
       className={cn(
         "mb-1 flex w-full items-center gap-2 rounded-md border border-border bg-card py-1.5 pr-2 text-left transition-colors duration-fast",
-        ready && "hover:border-muted-foreground/40",
+        ready && "cursor-grab hover:border-muted-foreground/40",
         armed && "border-primary",
+        isDragging && "opacity-40",
         !ready && "opacity-50"
       )}
     >

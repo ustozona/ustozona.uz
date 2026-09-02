@@ -39,11 +39,26 @@ type Snapshot = { placements: Placement[] };
 /** Chekli tarix — 1200 katakli hujjatda cheksiz tarix xotirani yeydi. */
 const HISTORY_LIMIT = 60;
 
-export type ArmedCard = {
-  classId: string;
-  subjectId: string;
-  staffId: string;
-} | null;
+/**
+ * «Qoʻlga olingan» dars — toʻr shu boʻyicha qoʻyish holatlarini yoqadi.
+ *
+ * ⭐ Ikki turi bir xil yoʻldan yuradi: yangi soat qoʻyish ham, mavjud
+ * darsni koʻchirish ham «olib → katakka qoʻyish». Shu sabab sudrash,
+ * klaviatura va bosish uchun UCHTA emas, BITTA mantiq bor.
+ */
+export type Armed =
+  | { kind: "new"; classId: string; subjectId: string; staffId: string }
+  | {
+      kind: "move";
+      placementId: string;
+      classId: string;
+      subjectId: string;
+      staffId: string;
+    }
+  | null;
+
+/** @deprecated eski nom — `Armed` ishlating. */
+export type ArmedCard = Armed;
 
 interface SchoolTimetableState {
   doc: SchoolTimetableDoc;
@@ -53,8 +68,8 @@ interface SchoolTimetableState {
   savedAt: number | null;
   _hasHydrated: boolean;
 
-  /** Qoldiq relsidan olingan karta — toʻr shu boʻyicha holat koʻrsatadi. */
-  armed: ArmedCard;
+  /** Qoʻlga olingan dars — toʻr shu boʻyicha holat koʻrsatadi. */
+  armed: Armed;
 
   past: Snapshot[];
   future: Snapshot[];
@@ -63,7 +78,7 @@ interface SchoolTimetableState {
   loadDoc: (doc: SchoolTimetableDoc, remoteId?: string | null) => void;
   patchDoc: (patch: Partial<SchoolTimetableDoc>) => void;
 
-  arm: (card: ArmedCard) => void;
+  arm: (card: Armed) => void;
 
   place: (input: {
     classId: string;

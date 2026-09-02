@@ -244,6 +244,14 @@ export type DropQuery = {
   day: number;
   shift: 1 | 2;
   period: number;
+  /**
+   * Koʻchirilayotgan darsning id'si — tekshiruvda EʼTIBORGA OLINMAYDI.
+   *
+   * Ⓘ Busiz dars oʻz-oʻzi bilan ziddiyatga tushardi: 7-A dagi darsni
+   * sudrayotganda uning eski oʻrni hamon «oʻqituvchi band» deb
+   * hisoblanardi va butun kun qizil boʻlib chiqardi.
+   */
+  ignorePlacementId?: string;
 };
 
 /**
@@ -266,18 +274,27 @@ export function dropStateFor(
   const cls = doc.classes.find((c) => c.id === q.classId);
   if (!cls || cls.shift !== q.shift) return { state: "blocked", label: "" };
 
-  const here = placementsAt(index, q.classId, q.day, q.shift, q.period);
+  const skip = q.ignorePlacementId;
+  const here = placementsAt(index, q.classId, q.day, q.shift, q.period).filter(
+    (p) => p.id !== skip
+  );
   /* Qulflangan katak — «band» emas, TEGILMAYDI. Alohida holat, chunki
      oddiy band katak ustiga qoʻyish mumkin (almashtiradi), qulflangani
      ustiga esa yoʻq. */
   if (here.some((p) => p.locked)) return { state: "blocked", label: "qulf" };
   if (here.length > 0) return { state: "occupied", label: "" };
 
-  const busy = index.staffAt.get(timeKey(q.day, q.shift, q.period))?.get(q.staffId);
-  if (busy && busy.length > 0) return { state: "clash", label: "band" };
+  const busy = (index.staffAt.get(timeKey(q.day, q.shift, q.period))?.get(q.staffId) ?? []).filter(
+    (p) => p.id !== skip
+  );
+  if (busy.length > 0) return { state: "clash", label: "band" };
 
   const sameSubjectToday = doc.placements.some(
-    (p) => p.classId === q.classId && p.day === q.day && p.subjectId === q.subjectId
+    (p) =>
+      p.id !== skip &&
+      p.classId === q.classId &&
+      p.day === q.day &&
+      p.subjectId === q.subjectId
   );
   if (sameSubjectToday) return { state: "caution", label: "takror" };
 
@@ -409,4 +426,44 @@ export function emptyDoc(schoolName = ""): SchoolTimetableDoc {
     classes: [],
     placements: [],
   };
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   XODIM YUKLAMASI — «resurs gistogrammasi».
+
+   Zavuchning ikkinchi hisoboti (birinchisi — «Jami soat»): kimga qancha
+   soat tushdi. Bu tarifikatsiya hujjatining asosi va jahon
+   planlashtirish mahsulotlarida standart panel.
+   ───────────────────────────────────────────────────────────────────── */
+
+/**
+ * Bitta stavkaga toʻgʻri keladigan haftalik soat.
+ *
+ * ⚠️ Qiymat maktabga qarab oʻzgaradi — keyinchalik hujjat sozlamasiga
+ * koʻchadi. Hozircha yagona joyda turibdi, kod boʻylab sochilmasin.
+ */
+export const DEFAULT_WEEKLY_NORM = 18;
+
+export type StaffLoad = {
+  staffId: string;
+  name: string;
+  /** Haftalik soat. Guruhga boʻlingan dars ham TOʻLIQ soat — oʻqituvchi
+      sinfda toʻliq turadi, garchi reja uni bir marta sanasa ham. */
+  hours: number;
+  norm: number;
+  /** Stavka ulushi: 1.0 — toʻliq, 1.5 — yarim stavka ortiqcha. */
+  rate: number;
+};
+
+export function staffLoads(doc: SchoolTimetableDoc, norm = DEFAULT_WEEKLY_NORM): StaffLoad[] {
+  const hours = new Map<string, number>();
+  for (const p of doc.placements) {
+    hours.set(p.staffId, (hours.get(p.staffId) ?? 0) + 1);
+  }
+  return doc.staff
+    .map((s) => {
+      const h = hours.get(s.id) ?? 0;
+      return { staffId: s.id, name: s.name, hours: h, norm, rate: h / norm };
+    })
+    .sort((a, b) => b.hours - a.hours);
 }
