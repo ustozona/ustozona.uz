@@ -211,8 +211,10 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
       setCoverImageUrl(url);
       setCoverBroken(false);
       scheduleSave();
-    } catch {
-      toast.error("Muqova rasmini yuklab boʻlmadi");
+    } catch (err) {
+      toast.error("Muqova rasmini yuklab boʻlmadi", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setCoverUploading(false);
     }

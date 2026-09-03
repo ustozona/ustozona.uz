@@ -64,6 +64,7 @@
     "dompurify": "^3.4.12",
     "drizzle-orm": "^0.45.2",
     "emoji-datasource-apple": "^16.0.0",
+    "heic2any": "^0.0.4",
     "input-otp": "^1.4.2",
     "jsqr": "^1.4.0",
     "katex": "^0.16.47",
