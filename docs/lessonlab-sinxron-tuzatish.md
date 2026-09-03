@@ -13,6 +13,51 @@
 
 ---
 
+## ⚠️ HOLAT YANGILANDI — 2026-09-03
+
+**Quyidagi §4 dagi beshta funksiya PRODGA QOʻLLANDI.**
+
+Sabab kutib boʻlmasligi edi: sentyabr boshida ikkala platformada ham
+oʻquvchi qoʻshish oʻlik turgan. Repo egaligi (§8) boʻyicha javobingizni
+kutish oʻquvchi roʻyxati toʻldirilmay turishini yana bir necha kunga
+choʻzardi.
+
+| Nima | Holat |
+|---|---|
+| `sync_student_from_uz` (+ trigger `enrollments` ga koʻchdi) | ✅ qoʻllandi |
+| `sync_student_from_bot` | ✅ qoʻllandi |
+| `sync_class_from_bot` | ✅ qoʻllandi |
+| `reconcile_teacher_links` | ✅ qoʻllandi |
+| `account_unlink_impact` | ✅ qoʻllandi |
+| LessonLab bot Python kodi (§5) | ✅ tuzatildi, deploy navbatida |
+
+Qoʻllangandan **keyin** qayta tekshirildi (§7 skripti):
+
+```
+1) UZ oquvchi -> botga : OK (jurnal raqami=77)
+2) BOT oquvchi -> UZ   : OK (uch qator=1)
+3) BOT sinf -> UZ      : OK (uch qator=1)
+4) UZ sinf -> botga    : OK (class_links=1)
+5) Akkaunt boglash     : OK
+6) Uzish oqibati       : OK
+7) Nom ozgartirish     : OK (regressiya yoq)
+```
+
+Migratsiya matni:
+`lessonlab-scanner/supabase/migrations/20260903_ish_maydoni_sinxron_tuzatish.sql`
+(sizda kirish yoʻq — §4 dagi matn AYNAN oʻsha).
+
+### ⛔ Shuning uchun soʻrov
+
+Baza **umumiy**. Bu funksiyalarni qayta yozmang — avval chatda
+kelishaylik. §4 dagi SQL'ni «hali qoʻllanmagan» deb qabul qilmang.
+
+Quyidagi qism oʻzgarishsiz qoldirildi — u **qoʻllashdan OLDINGI**
+oʻlchov va tahlil, yaʼni nima uchun shunday qilinganining yozuvi.
+§8 va §9 dagi savollar hamon ochiq va javobingizni kutadi.
+
+---
+
 ## 0. Bu hujjatdagi hamma narsa jonli tekshirilgan
 
 Har bir daʼvo prod bazada (`lxppxnawxmcfebmzdgil`) **haqiqiy INSERT
