@@ -39,6 +39,8 @@ export type BridgeResult =
   | { status: "already"; telegramId: string }
   /** Bu Ustozona akkaunti BOSHQA telegram akkauntga bogʻlangan. */
   | { status: "conflict"; existing: string; incoming: string }
+  /** Bu telegram akkaunt BOSHQA Ustozona akkauntiga bogʻlangan. */
+  | { status: "taken_tg"; telegramId: string }
   | { status: "unavailable" };
 
 /** OAuth tokenidan foydalanib kimlik koʻprigini yozish.
@@ -47,10 +49,14 @@ export type BridgeResult =
     yaʼni AYNAN telegram foydalanuvchi id'si (`bot_users.id`). Shu sababli
     qoʻshimcha endpoint kerak emas.
 
-    ⚠️ Xato YUTILADI (`unavailable`) va import toʻxtamaydi. Sabab: koʻprik
-    — QOʻSHIMCHA foyda, importning shartли qismi emas. Koʻprik yozilmasa
-    oʻqituvchi baribir oʻz sinflarini koʻchirib oladi; uni yiqitish esa
-    ishlaydigan funksiyani buzardi. */
+    ⚠️ TEXNIK xato YUTILADI (`unavailable`) va import toʻxtamaydi.
+    Sabab: koʻprik — QOʻSHIMCHA foyda, importning shartli qismi emas.
+    Koʻprik yozilmasa oʻqituvchi baribir oʻz sinflarini koʻchirib oladi;
+    uni yiqitish esa ishlaydigan funksiyani buzardi.
+
+    ⛔ Lekin `taken_tg` va `conflict` — texnik xato EMAS, egalik nizosi.
+    Ularda chaqiruvchi importni BOSHLAMASLIGI shart
+    (`app/api/lessonlab/callback/route.ts`). */
 export async function bridgeTelegramIdentity(token: string): Promise<BridgeResult> {
   const teacher = await requireTeacher();
 
@@ -72,29 +78,84 @@ export async function bridgeTelegramIdentity(token: string): Promise<BridgeResul
   // qatorni umuman yozmaslik afzal).
   if (!/^[0-9]+$/.test(telegramId)) return { status: "unavailable" };
 
-  const [mine] = await db
-    .select({ telegramId: userTelegram.telegramId })
-    .from(userTelegram)
-    .where(eq(userTelegram.userId, teacher.id));
+  /* ⛔ 1:1 QOIDASI — bu yerda ham AYNAN A/B/C yoʻllaridagidek.
 
-  if (mine) {
-    return mine.telegramId === telegramId
-      ? { status: "already", telegramId }
-      // Jimgina qayta yozMAYMIZ: bu «akkauntimni almashtirdim» ham,
-      // «boshqa odamning akkauntini tortib olmoqchi» ham boʻlishi
-      // mumkin. Qaror foydalanuvchida, kod taxmin qilmaydi.
-      : { status: "conflict", existing: mine.telegramId, incoming: telegramId };
-  }
+     `redeem_uz_link_code()` (bot, Python), `redeemBotCode()` va
+     `completeTgSignup()` uchchalasi bir xil ishlaydi: mavjud
+     bogʻlanish JIMGINA qayta yozilmaydi va band telegram akkaunt
+     `taken_tg` bilan rad etiladi. OAuth yoʻli (D) esa 2026-08-10 gacha
+     istisno edi — `onConflictDoNothing()` yozilmaganini TEKSHIRMASDAN
+     `linked` qaytarardi.
 
+     Oqibati faqat notoʻgʻri xabar emas edi: chaqiruvchi natijani
+     koʻrmay importni davom ettirardi, yaʼni telegram X allaqachon
+     Ustozona akkaunti A ga bogʻlangan boʻlsa ham, uning sinf va
+     oʻquvchilari akkaunt B ga koʻchib oʻtardi. Bu — ikki hisob
+     oʻrtasida maʼlumot aralashuvi.
+
+     Tranzaksiya kerak: tekshiruv bilan yozuv orasida boshqa soʻrov
+     oʻsha telegram id'ni band qilib ulgurishi mumkin. */
   try {
-    await db.insert(userTelegram)
-      .values({ telegramId, userId: teacher.id, username })
-      // Bu telegram akkaunt BOSHQA Ustozona akkauntiga bogʻlangan
-      // boʻlishi mumkin (PK — telegram_id). Bunda ham jim oʻtamiz.
-      .onConflictDoNothing();
+    return await db.transaction(async (tx) => {
+      const [mine] = await tx
+        .select({ telegramId: userTelegram.telegramId })
+        .from(userTelegram)
+        .where(eq(userTelegram.userId, teacher.id));
+
+      if (mine) {
+        return mine.telegramId === telegramId
+          ? ({ status: "already", telegramId } as const)
+          // Jimgina qayta yozMAYMIZ: bu «akkauntimni almashtirdim» ham,
+          // «boshqa odamning akkauntini tortib olmoqchi» ham boʻlishi
+          // mumkin. Qaror foydalanuvchida, kod taxmin qilmaydi.
+          : ({ status: "conflict", existing: mine.telegramId,
+               incoming: telegramId } as const);
+      }
+
+      const [otherOwner] = await tx
+        .select({ userId: userTelegram.userId })
+        .from(userTelegram)
+        .where(eq(userTelegram.telegramId, telegramId))
+        // Qator bor boʻlsa qulflaymiz — parallel callback uni oʻzgartira
+        // olmaydi. Qator yoʻq boʻlsa qulflanadigan narsa ham yoʻq, shu
+        // sababli pastda yozuv natijasi ALOHIDA tekshiriladi.
+        .for("update");
+      if (otherOwner) return { status: "taken_tg", telegramId } as const;
+
+      const written = await tx
+        .insert(userTelegram)
+        .values({ telegramId, userId: teacher.id, username })
+        // Maqsadsiz `DO NOTHING` — telegram_id (PK) ham, user_id
+        // (UNIQUE) ham toʻqnashuv sababi boʻlishi mumkin.
+        .onConflictDoNothing()
+        .returning({ telegramId: userTelegram.telegramId });
+
+      // ⚠️ Yozilmagan boʻlishi ham mumkin — «yozdim» deb aytmaymiz.
+      if (written.length === 0) {
+        const [tgOwner] = await tx
+          .select({ userId: userTelegram.userId })
+          .from(userTelegram)
+          .where(eq(userTelegram.telegramId, telegramId));
+        if (tgOwner) {
+          return tgOwner.userId === teacher.id
+            ? ({ status: "already", telegramId } as const)
+            : ({ status: "taken_tg", telegramId } as const);
+        }
+        // Telegram tomonida ega yoʻq — demak toʻsiq `user_id` unikaligi:
+        // shu orada akkauntimiz BOSHQA telegramga bogʻlanib ulgurgan.
+        const [nowMine] = await tx
+          .select({ telegramId: userTelegram.telegramId })
+          .from(userTelegram)
+          .where(eq(userTelegram.userId, teacher.id));
+        return nowMine
+          ? ({ status: "conflict", existing: nowMine.telegramId,
+               incoming: telegramId } as const)
+          : ({ status: "unavailable" } as const);
+      }
+
+      return { status: "linked", telegramId } as const;
+    });
   } catch {
     return { status: "unavailable" };
   }
-
-  return { status: "linked", telegramId };
 }
