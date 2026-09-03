@@ -171,7 +171,7 @@
     "schoolLabel": "Bilimlendiriw mákemesi / Mektep",
     "schoolPlaceholder": "Mısalı: 24-mektep",
     "subjectLabel": "Pán",
-    "subjectPlaceholder": "Mısalı: Inglis tili",
+    "subjectPlaceholder": "Pándi tańlań",
     "birthDateLabel": "Tuwılǵan sánesi",
     "optional": "(qálewge qaray)",
     "toastImageOnly": "Tek súwret faylın jukleń.",
@@ -2921,8 +2921,6 @@
       "schoolPlaceholder": "Mısalı, 24-mektep",
       "subjectLabel": "Tiykarǵı pán",
       "subjectPlaceholder": "Pándi tańlań",
-      "subjectSearchPlaceholder": "Pán izlew…",
-      "subjectUseCustom": "\"{value}\" — dizimde joq, sonı qollanaman",
       "birthDateLabel": "Tuwılǵan sáne"
     },
     "yearStep": {
@@ -3209,6 +3207,13 @@
     "cancel": "Biykar etiw",
     "save": "Saqlaw"
   },
+  "SubjectPicker": {
+    "placeholder": "Pándi tańlań",
+    "search": "Pán izlew…",
+    "useCustom": "\"{value}\" — dizimde joq, sonı qollanaman",
+    "empty": "Pán tabılmadı",
+    "clear": "Tańlawdı tazalaw"
+  },
   "ClassFormModal": {
     "createTitle": "Taza klass jaratıw",
     "editTitle": "Klasstı redaktorlaw {name}",
@@ -3218,7 +3223,7 @@
     "pickColor": "Reń tańlaw",
     "gradeValue": "{grade}-klass",
     "subject": "Pán",
-    "subjectPlaceholder": "Mısalı, Matematika",
+    "subjectPlaceholder": "Pándi tańlań",
     "cancel": "Biykar etiw",
     "create": "Jaratıw",
     "save": "Saqlaw",

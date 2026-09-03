@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BirthDatePicker } from "@/components/ui/birth-date-picker";
+import { SubjectPicker } from "@/components/SubjectPicker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -178,10 +179,10 @@ export default function ProfileSection() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="profile-subject">{t("subjectLabel")}</Label>
-            <Input
+            <SubjectPicker
               id="profile-subject"
               value={draft.subject}
-              onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
+              onChange={(v) => setDraft({ ...draft, subject: v })}
               placeholder={t("subjectPlaceholder")}
             />
           </div>

@@ -171,7 +171,7 @@
     "schoolLabel": "Institution / School",
     "schoolPlaceholder": "e.g. School No. 24",
     "subjectLabel": "Subject",
-    "subjectPlaceholder": "e.g. English",
+    "subjectPlaceholder": "Choose a subject",
     "birthDateLabel": "Date of birth",
     "optional": "(optional)",
     "toastImageOnly": "Please upload an image file.",
@@ -2917,8 +2917,6 @@
       "schoolPlaceholder": "e.g. School No. 24",
       "subjectLabel": "Main subject",
       "subjectPlaceholder": "Choose a subject",
-      "subjectSearchPlaceholder": "Search subjects…",
-      "subjectUseCustom": "\"{value}\" — not on the list, use it anyway",
       "birthDateLabel": "Date of birth"
     },
     "yearStep": {
@@ -3205,6 +3203,13 @@
     "cancel": "Cancel",
     "save": "Save"
   },
+  "SubjectPicker": {
+    "placeholder": "Choose a subject",
+    "search": "Search subjects…",
+    "useCustom": "\"{value}\" — not on the list, use it anyway",
+    "empty": "No subjects found",
+    "clear": "Clear selection"
+  },
   "ClassFormModal": {
     "createTitle": "Create new class",
     "editTitle": "Edit class{name}",
@@ -3214,7 +3219,7 @@
     "pickColor": "Pick color",
     "gradeValue": "Grade {grade}",
     "subject": "Subject",
-    "subjectPlaceholder": "e.g. Mathematics",
+    "subjectPlaceholder": "Choose a subject",
     "cancel": "Cancel",
     "create": "Create",
     "save": "Save",

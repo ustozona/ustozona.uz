@@ -171,7 +171,7 @@
     "schoolLabel": "Учебное заведение / Школа",
     "schoolPlaceholder": "Например: школа №24",
     "subjectLabel": "Предмет",
-    "subjectPlaceholder": "Например: английский язык",
+    "subjectPlaceholder": "Выберите предмет",
     "birthDateLabel": "Дата рождения",
     "optional": "(необязательно)",
     "toastImageOnly": "Загружайте только файлы изображений.",
@@ -2921,8 +2921,6 @@
       "schoolPlaceholder": "Например, школа №24",
       "subjectLabel": "Основной предмет",
       "subjectPlaceholder": "Выберите предмет",
-      "subjectSearchPlaceholder": "Поиск предмета…",
-      "subjectUseCustom": "«{value}» — нет в списке, использовать так",
       "birthDateLabel": "Дата рождения"
     },
     "yearStep": {
@@ -3209,6 +3207,13 @@
     "cancel": "Отмена",
     "save": "Сохранить"
   },
+  "SubjectPicker": {
+    "placeholder": "Выберите предмет",
+    "search": "Поиск предмета…",
+    "useCustom": "«{value}» — нет в списке, использовать так",
+    "empty": "Предметы не найдены",
+    "clear": "Очистить выбор"
+  },
   "ClassFormModal": {
     "createTitle": "Создать новый класс",
     "editTitle": "Редактировать класс{name}",
@@ -3218,7 +3223,7 @@
     "pickColor": "Выбрать цвет",
     "gradeValue": "{grade} класс",
     "subject": "Предмет",
-    "subjectPlaceholder": "Например, Математика",
+    "subjectPlaceholder": "Выберите предмет",
     "cancel": "Отмена",
     "create": "Создать",
     "save": "Сохранить",

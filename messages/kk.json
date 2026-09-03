@@ -171,7 +171,7 @@
     "schoolLabel": "Білім беру мекемесі / Мектеп",
     "schoolPlaceholder": "Мысалы: 24-мектеп",
     "subjectLabel": "Пән",
-    "subjectPlaceholder": "Мысалы: Ағылшын тілі",
+    "subjectPlaceholder": "Пәнді таңдаңыз",
     "birthDateLabel": "Туған күні",
     "optional": "(міндетті емес)",
     "toastImageOnly": "Тек сурет файлын жүктеңіз.",
@@ -2921,8 +2921,6 @@
       "schoolPlaceholder": "Мысалы, 24-мектеп",
       "subjectLabel": "Негізгі пән",
       "subjectPlaceholder": "Пәнді таңдаңыз",
-      "subjectSearchPlaceholder": "Пән іздеу…",
-      "subjectUseCustom": "«{value}» — тізімде жоқ, осыны қолданамын",
       "birthDateLabel": "Туған күні"
     },
     "yearStep": {
@@ -3209,6 +3207,13 @@
     "cancel": "Болдырмау",
     "save": "Сақтау"
   },
+  "SubjectPicker": {
+    "placeholder": "Пәнді таңдаңыз",
+    "search": "Пән іздеу…",
+    "useCustom": "«{value}» — тізімде жоқ, осыны қолданамын",
+    "empty": "Пән табылмады",
+    "clear": "Таңдауды тазалау"
+  },
   "ClassFormModal": {
     "createTitle": "Жаңа сынып құру",
     "editTitle": "Сыныпты өңдеу{name}",
@@ -3218,7 +3223,7 @@
     "pickColor": "Түс таңдау",
     "gradeValue": "{grade}-сынып",
     "subject": "Пән",
-    "subjectPlaceholder": "Мысалы, Математика",
+    "subjectPlaceholder": "Пәнді таңдаңыз",
     "cancel": "Болдырмау",
     "create": "Құру",
     "save": "Сақтау",

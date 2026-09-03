@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ColorPickerButton } from "@/components/ui/color-picker-button";
+import { SubjectPicker } from "@/components/SubjectPicker";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDownIcon, GraduationCap } from "lucide-react";
@@ -252,9 +253,17 @@ export function ClassFormModal({
               </div>
             )}
 
+            {/* Fan katalogdan tanlanadi — erkin matn emas. Roʻyxatda yoʻq
+                fan (toʻgarak, tayyorlov kursi) uchun erkin nom saqlash
+                yoʻli qoladi. */}
             <div className="space-y-2">
               <Label htmlFor="cfm-subject">{t("subject")}</Label>
-              <Input id="cfm-subject" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t("subjectPlaceholder")} />
+              <SubjectPicker
+                id="cfm-subject"
+                value={subject}
+                onChange={setSubject}
+                placeholder={t("subjectPlaceholder")}
+              />
             </div>
           </div>
         </ScrollArea>
