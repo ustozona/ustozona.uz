@@ -351,6 +351,20 @@ function ImportPanel({ status, hasClasses, classId }:
     }
     if (s === "denied") return "Ruxsat berilmadi — koʻchirish bekor qilindi.";
     if (s === "badstate") return "Havola eskirgan — qaytadan urinib koʻring.";
+    /* Egalik nizosi — «koʻchirib boʻlmadi» deb umumiy xato koʻrsatish
+       notoʻgʻri boʻlardi: nosozlik yoʻq, shunchaki bogʻlanish band.
+       Sababi aytilmasa oʻqituvchi tugmani qayta-qayta bosardi. */
+    if (s === "takentg") {
+      return "Bu Telegram hisobi allaqachon BOSHQA Ustozona hisobiga " +
+             "bogʻlangan — shu sababli hech narsa koʻchirilmadi. Toʻgʻri " +
+             "hisob bilan kiring yoki Sozlamalar > LessonLab boʻlimida " +
+             "bogʻlanishni oʻzgartiring.";
+    }
+    if (s === "otherlink") {
+      return "Bu hisob BOSHQA Telegram hisobiga bogʻlangan — shu sababli " +
+             "hech narsa koʻchirilmadi. Sozlamalar > LessonLab boʻlimida " +
+             "bogʻlanishni tekshiring.";
+    }
     if (s === "notconfigured") return "LessonLab ulanishi hali sozlanmagan.";
     if (s === "failed") return "Koʻchirib boʻlmadi — keyinroq qayta urinib koʻring.";
     return null;
