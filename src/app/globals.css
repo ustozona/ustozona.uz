@@ -522,6 +522,17 @@
 /* Telefon varianti pastda, `.blog-prose` qoidalaridan KEYIN — bir xil
    oʻzillikdagi qoida faqat keyin kelsa ustun chiqadi. */
 
+/* Mikro — 10px / 600 tabular. FAQAT zich toʻr kataklari uchun
+   (maktab dars jadvali: 1200 katak, katak eni ~30px). Oddiy sahifada
+   ishlatilmaydi — 12px (`.text-caption`) eng kichigi boʻlib qoladi.
+   Kelib chiqishi: docs/dars-jadvali-spec.md §14 (ongli deviatsiya). */
+.text-micro {
+  font-size: 0.625rem;
+  line-height: 1.2;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Yorliq (UPPERCASE) — 11px / 500 */
 .text-label {
   font-size: var(--typo-label, 0.6875rem);

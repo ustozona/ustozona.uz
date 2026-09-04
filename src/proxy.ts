@@ -98,6 +98,7 @@ export const config = {
     "/play/:path*",
     "/shogird/:path*",
     "/doska/:path*",
+    "/jadval/:path*",
     "/boshqaruv/:path*",
     "/blog/studio/:path*",
   ],

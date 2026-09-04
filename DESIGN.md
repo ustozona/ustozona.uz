@@ -62,6 +62,16 @@ Utility klasslar (`globals.css`) + React analoglar (`@/components/ui/typography`
 | `.text-body` | 14px / 400 | Asosiy matn |
 | `.text-caption` | 12px / 400 muted | Izoh |
 | `.text-label` | 11px / 500 UPPERCASE | Boʻlim yorligʻi |
+| `.text-micro` | 10px / 600 tabular | **Faqat zich toʻr kataklari** — pastga qarang |
+
+⚠️ **`.text-micro` — ongli deviatsiya (2026-09-02).** Shkalaning eng
+kichigi 12px (`.text-caption`) edi va oddiy sahifada shundayligicha
+qoladi. Istisno maktab dars jadvali uchun ochildi: u yerda 1200 katak
+bitta toʻrda turadi va katak eni ~30px — 12px matn sigʻmaydi, katakni
+kattalashtirish esa toʻrni ekrandan chiqarib yuboradi. Sabab va oʻlchov
+hisobi: [docs/dars-jadvali-spec.md](docs/dars-jadvali-spec.md) §12.3,
+§14. **Boshqa joyda ishlatilmaydi** — roʻyxat yoki kartada 10px matn
+kerak boʻlsa, muammo zichlikda emas, ierarxiyada.
 
 Rang har doim tokendan (`--foreground` / `--muted-foreground`). Yangi
 oʻlcham kerak boʻlsa avval shu jadvalga (va `globals.css`ga) qoʻshiladi —

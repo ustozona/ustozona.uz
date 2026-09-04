@@ -22,7 +22,7 @@ export const PRODUCT_HEADER = "x-ustozona-product";
 export const TONE_HEADER = "x-ustozona-tone";
 
 export type Surface = "desk" | "handheld" | "stage";
-export type Product = "ustozona" | "baholash" | "doska" | "shogird" | "boshqaruv";
+export type Product = "ustozona" | "baholash" | "doska" | "shogird" | "boshqaruv" | "jadval";
 
 /**
  * 3-oʻq — OHANG (xarakter). Sirt oʻlchamni beradi, ohang xarakterni:
@@ -49,6 +49,7 @@ const PRODUCTS = new Set<string>([
   "doska",
   "shogird",
   "boshqaruv",
+  "jadval",
 ]);
 
 /** Yoʻl shu prefiksga tegishlimi (aniq moslik yoki `/` bilan davomi). */
@@ -78,6 +79,7 @@ export function productFor(pathname: string): Product {
   if (under(pathname, "/doska")) return "doska";
   if (under(pathname, "/shogird")) return "shogird";
   if (under(pathname, "/boshqaruv")) return "boshqaruv";
+  if (under(pathname, "/jadval")) return "jadval";
   return DEFAULT_PRODUCT;
 }
 
