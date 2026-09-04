@@ -37,6 +37,23 @@ export async function moveTeacherToWorkspace(
   const target = targetWorkspaceId ?? `ws-${teacherId}`;
 
   await db.transaction(async (tx) => {
+    /* ⛔ Chaqiruvchidan kelgan maydon id'si BAZADA borligi tekshiriladi.
+       `schoolId` admin panelidan, `invite.workspaceId` esa taklif
+       qatoridan keladi — ikkalasi ham maydon oradan oʻchirilgan boʻlsa
+       eskirgan qiymat boʻlishi mumkin. Tekshiruvsiz pastdagi insert
+       23503 (`workspace_members_workspace_id_workspaces_id_fk`) bilan
+       yiqilar, lekin undan OLDIN eski aʼzolik allaqachon oʻchirilgan
+       boʻlar edi — oʻqituvchi umuman maydonsiz qolardi. */
+    if (targetWorkspaceId) {
+      const [exists] = await tx
+        .select({ id: workspaces.id })
+        .from(workspaces)
+        .where(eq(workspaces.id, targetWorkspaceId));
+      if (!exists) {
+        throw new Error(`Ish maydoni topilmadi: ${targetWorkspaceId}`);
+      }
+    }
+
     const current = await tx
       .select({ workspaceId: workspaceMembers.workspaceId, kind: workspaces.kind })
       .from(workspaceMembers)

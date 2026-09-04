@@ -95,15 +95,23 @@ async function createPersonalWorkspace(
   teacherName: string
 ): Promise<WorkspaceContext> {
   const id = `ws-${teacherId}`;
-  await db
-    .insert(workspaces)
-    .values({ id, name: teacherName, kind: "personal" })
-    .onConflictDoNothing();
-  await db
-    .insert(workspaceMembers)
-    .values({ workspaceId: id, teacherId, role: "owner" })
-    .onConflictDoNothing();
-  await db.update(teachers).set({ activeWorkspaceId: id }).where(eq(teachers.id, teacherId));
+  /* ⚠️ UCHALASI BITTA TRANZAKSIYADA. Ilgari uch alohida amal edi va
+     ikkinchisi FK'ni buzardi (23503
+     `workspace_members_workspace_id_workspaces_id_fk`): maydon qatori
+     yozilib ulgurmagan yoki oradan oʻchib ketgan holatda aʼzolik
+     mavjud boʻlmagan `workspace_id` ga yozilardi. Tranzaksiya bilan
+     yarim bajarilgan holat umuman paydo boʻlmaydi. */
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(workspaces)
+      .values({ id, name: teacherName, kind: "personal" })
+      .onConflictDoNothing();
+    await tx
+      .insert(workspaceMembers)
+      .values({ workspaceId: id, teacherId, role: "owner" })
+      .onConflictDoNothing();
+    await tx.update(teachers).set({ activeWorkspaceId: id }).where(eq(teachers.id, teacherId));
+  });
   return { teacherId, workspaceId: id, role: "owner" };
 }
 
