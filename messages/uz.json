@@ -3039,8 +3039,9 @@
   "SubjectPicker": {
     "placeholder": "Fanni tanlang",
     "search": "Fan qidiring…",
-    "useCustom": "\"{value}\" — roʻyxatda yoʻq, shuni ishlataman",
     "empty": "Fan topilmadi",
+    "mySubjects": "Mening fanlarim",
+    "addCustom": "«{value}» fanini qoʻshish",
     "clear": "Tanlovni tozalash"
   },
   "ClassFormModal": {

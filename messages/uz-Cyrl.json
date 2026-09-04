@@ -3039,8 +3039,9 @@
   "SubjectPicker": {
     "placeholder": "Фанни танланг",
     "search": "Фан қидиринг…",
-    "useCustom": "\"{value}\" — рўйхатда йўқ, шуни ишлатаман",
     "empty": "Фан топилмади",
+    "mySubjects": "Менинг фанларим",
+    "addCustom": "«{value}» фанини қўшиш",
     "clear": "Танловни тозалаш"
   },
   "ClassFormModal": {

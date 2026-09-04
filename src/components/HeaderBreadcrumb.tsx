@@ -23,6 +23,7 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { locateStudent } from "@/lib/student-profile";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { subjectLabel } from "@/lib/standards-data";
 import { useClassIdParamValue, setClassIdParam } from "@/hooks/useClassIdParam";
 import { Check, ChevronsUpDown } from "lucide-react";
 
@@ -188,12 +189,12 @@ function ClassSwitcherCrumb({
           {classes.map((c) => (
             <CommandItem
               key={c.id}
-              value={`${c.name} ${c.subject ?? ""}`}
+              value={`${c.name} ${subjectLabel(c.subject)}`}
               onSelect={() => { close(); if (c.id !== classId) go(c.id); }}
             >
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
               <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {c.subject}</span>}
+              {c.subject && <span className="truncate text-muted-foreground">· {subjectLabel(c.subject)}</span>}
               {c.id === classId && <Check className="ml-auto size-4" />}
             </CommandItem>
           ))}
@@ -231,12 +232,12 @@ function StatsClassSwitcherCrumb({
           {classes.map((c) => (
             <CommandItem
               key={c.id}
-              value={`${c.name} ${c.subject ?? ""}`}
+              value={`${c.name} ${subjectLabel(c.subject)}`}
               onSelect={() => { close(); if (c.id !== classId) setClassIdParam(c.id); }}
             >
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
               <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {c.subject}</span>}
+              {c.subject && <span className="truncate text-muted-foreground">· {subjectLabel(c.subject)}</span>}
               {c.id === classId && <Check className="ml-auto size-4" />}
             </CommandItem>
           ))}
@@ -275,7 +276,7 @@ function StudentClassSwitcherCrumb({
           {classes.map((c) => (
             <CommandItem
               key={c.id}
-              value={`${c.name} ${c.subject ?? ""}`}
+              value={`${c.name} ${subjectLabel(c.subject)}`}
               onSelect={() => {
                 close();
                 router.push(`/dashboard/students?classId=${encodeURIComponent(c.id)}`);
@@ -283,7 +284,7 @@ function StudentClassSwitcherCrumb({
             >
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
               <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {c.subject}</span>}
+              {c.subject && <span className="truncate text-muted-foreground">· {subjectLabel(c.subject)}</span>}
               {c.id === classId && <Check className="ml-auto size-4" />}
             </CommandItem>
           ))}

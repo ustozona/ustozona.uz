@@ -3210,8 +3210,9 @@
   "SubjectPicker": {
     "placeholder": "Pándi tańlań",
     "search": "Pán izlew…",
-    "useCustom": "\"{value}\" — dizimde joq, sonı qollanaman",
     "empty": "Pán tabılmadı",
+    "mySubjects": "Meniń pánlerim",
+    "addCustom": "«{value}» pánin qosıw",
     "clear": "Tańlawdı tazalaw"
   },
   "ClassFormModal": {

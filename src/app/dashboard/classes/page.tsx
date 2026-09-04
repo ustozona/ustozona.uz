@@ -55,6 +55,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CLASS_COLOR_HEX, classTints, classColorValue, type ClassColor } from "@/lib/class-colors";
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
+import { subjectLabel } from "@/lib/standards-data";
 import { lessonClassIds } from "@/lib/lessons-data";
 import { classFormInitial, classInfoFromForm, useCreateClass } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -984,7 +985,7 @@ function ClassGridCard({
             {cls.name}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
+            {cls.schedule ?? (subjectLabel(cls.subject) || t("scheduleNotSet"))}
           </p>
         </div>
 
@@ -1233,7 +1234,7 @@ function ClassesDataTable({
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{cls.name}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
+                      {cls.schedule ?? (subjectLabel(cls.subject) || t("scheduleNotSet"))}
                     </p>
                   </div>
                 </div>
@@ -1321,7 +1322,7 @@ function ClassListRow({
           {cls.name}
         </p>
         <p className="text-xs text-muted-foreground mt-1.5">
-          {cls.schedule ?? cls.subject ?? t("scheduleNotSet")}
+          {cls.schedule ?? (subjectLabel(cls.subject) || t("scheduleNotSet"))}
         </p>
       </div>
 

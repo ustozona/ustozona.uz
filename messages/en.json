@@ -3206,8 +3206,9 @@
   "SubjectPicker": {
     "placeholder": "Choose a subject",
     "search": "Search subjects…",
-    "useCustom": "\"{value}\" — not on the list, use it anyway",
     "empty": "No subjects found",
+    "mySubjects": "My subjects",
+    "addCustom": "Add \"{value}\" as a subject",
     "clear": "Clear selection"
   },
   "ClassFormModal": {

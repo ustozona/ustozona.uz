@@ -3210,8 +3210,9 @@
   "SubjectPicker": {
     "placeholder": "Сабакты тандаңыз",
     "search": "Сабак издөө…",
-    "useCustom": "«{value}» — тизмеде жок, ушуну колдонмун",
     "empty": "Сабак табылган жок",
+    "mySubjects": "Менин сабактарым",
+    "addCustom": "«{value}» сабагын кошуу",
     "clear": "Тандоону тазалоо"
   },
   "ClassFormModal": {

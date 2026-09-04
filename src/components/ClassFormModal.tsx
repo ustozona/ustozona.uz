@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ColorPickerButton } from "@/components/ui/color-picker-button";
 import { SubjectPicker } from "@/components/SubjectPicker";
+import { subjectLabel } from "@/lib/standards-data";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDownIcon, GraduationCap } from "lucide-react";
@@ -167,7 +168,7 @@ export function ClassFormModal({
                   {previewName || t("namePreviewExample", { example: "5-A" })}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {subject.trim() || t("previewNoSubject")}
+                  {subjectLabel(subject) || t("previewNoSubject")}
                 </p>
               </div>
 

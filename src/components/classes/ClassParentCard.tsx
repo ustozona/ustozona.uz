@@ -3,6 +3,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { unwrap } from "@/lib/action-result";
+import { subjectLabel } from "@/lib/standards-data";
 import { Link2, Link2Off, Plus } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -46,7 +47,7 @@ type Info = {
 };
 
 function label(c: ClassRef): string {
-  return c.subject ? `${c.name} · ${c.subject}` : c.name;
+  return c.subject ? `${c.name} · ${subjectLabel(c.subject)}` : c.name;
 }
 
 export function ClassParentCard({ classId }: { classId: string }) {
@@ -177,7 +178,7 @@ export function ClassParentCard({ classId }: { classId: string }) {
                 <span className="truncate">{c.name}</span>
                 {c.subject ? (
                   <span className="ml-auto truncate text-xs text-muted-foreground">
-                    {c.subject}
+                    {subjectLabel(c.subject)}
                   </span>
                 ) : null}
               </CommandItem>

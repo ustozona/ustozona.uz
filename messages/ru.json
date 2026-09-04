@@ -3210,8 +3210,9 @@
   "SubjectPicker": {
     "placeholder": "Выберите предмет",
     "search": "Поиск предмета…",
-    "useCustom": "«{value}» — нет в списке, использовать так",
     "empty": "Предметы не найдены",
+    "mySubjects": "Мои предметы",
+    "addCustom": "Добавить предмет «{value}»",
     "clear": "Очистить выбор"
   },
   "ClassFormModal": {

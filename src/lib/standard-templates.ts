@@ -3,7 +3,7 @@
 // shulardan birini tanlab sinfiga biriktiradi (import = nusxa). Kengaytiriladigan.
 
 import type { StandardItem } from "@/lib/standards-data";
-import { STANDARDS_DATA, SUBJECTS } from "@/lib/standards-data";
+import { STANDARDS_DATA, SUBJECTS, SUBJECT_GROUPS_BY_AREA } from "@/lib/standards-data";
 
 export interface SetTemplate {
   id: string;
@@ -133,7 +133,7 @@ export const SET_TEMPLATES: SetTemplate[] = [
 
   // ─── UK National Curriculum (Buyuk Britaniya) ─────────────────────────────
   {
-    id: "uk-computing-ks3", name: "Informatika — UK National Curriculum (KS3)", subject: "Informatika",
+    id: "uk-computing-ks3", name: "Informatika — UK National Curriculum (KS3)", subject: "Informatika va axborot texnologiyalari",
     source: "UK National Curriculum", frameworkCode: "UK.CS.KS3", country: "Buyuk Britaniya", region: "Angliya", grade: "KS3",
     blurb: "Buyuk Britaniya milliy dasturi — Key Stage 3 informatika (algoritm, dasturlash).",
     standards: [
@@ -146,7 +146,7 @@ export const SET_TEMPLATES: SetTemplate[] = [
 
   // ─── OʻzDTS (Oʻzbekiston) ──────────────────────────────────────────────────
   {
-    id: "uzdts-informatika-9", name: "Informatika — DTS (9-sinf)", subject: "Informatika",
+    id: "uzdts-informatika-9", name: "Informatika — DTS (9-sinf)", subject: "Informatika va axborot texnologiyalari",
     source: "OʻzDTS", frameworkCode: "DTS.INF9", country: "Oʻzbekiston", region: "Milliy", grade: "9-sinf",
     blurb: "Davlat taʼlim standarti — 9-sinf informatika (fayllar, xavfsizlik, veb).",
     standards: STANDARDS_DATA,
@@ -163,7 +163,7 @@ export const SET_TEMPLATES: SetTemplate[] = [
     ],
   },
   {
-    id: "uzdts-onatili-5", name: "Ona tili — DTS (5-sinf)", subject: "Ona tili va adabiyot",
+    id: "uzdts-onatili-5", name: "Ona tili — DTS (5-sinf)", subject: "Ona tili",
     source: "OʻzDTS", frameworkCode: "DTS.OT5", country: "Oʻzbekiston", region: "Milliy", grade: "5-sinf",
     blurb: "Davlat taʼlim standarti — 5-sinf ona tili (fonetika, soʻz turkumlari).",
     standards: [
@@ -211,15 +211,14 @@ export const ALL_GRADES = [
 /** Fanlar — maktab fanlarining toʻliq roʻyxati (standards-data SUBJECTS). */
 export const ALL_SUBJECTS = [...SUBJECTS];
 
-/** Fanlar — kategoriyalarga guruhlangan (dropdown uchun). */
-export const SUBJECT_GROUPS: { label: string; items: string[] }[] = [
-  { label: "Tillar", items: ["Ona tili va adabiyot", "Rus tili", "Ingliz tili", "Xorijiy til"] },
-  { label: "Aniq fanlar", items: ["Matematika", "Algebra", "Geometriya", "Informatika"] },
-  { label: "Tabiiy fanlar", items: ["Fizika", "Kimyo", "Biologiya", "Tabiatshunoslik", "Geografiya", "Astronomiya", "Ekologiya"] },
-  { label: "Ijtimoiy fanlar", items: ["Tarix", "Oʻzbekiston tarixi", "Jahon tarixi", "Davlat va huquq asoslari", "Iqtisodiy bilim asoslari"] },
-  { label: "Sanʼat va texnologiya", items: ["Chizmachilik", "Texnologiya", "Mehnat taʼlimi", "Musiqa", "Tasviriy sanʼat"] },
-  { label: "Boshqa", items: ["Tarbiya", "Odobnoma", "Jismoniy tarbiya"] },
-];
+/** Fanlar — yoʻnalish boʻyicha guruhlangan, nom koʻrinishida (standartlar
+    kutubxonasi filtri shablonlarning `subject` nomi bilan ishlaydi).
+    Katalogdan hosil qilinadi — qoʻlda takrorlanmaydi. */
+export const SUBJECT_GROUPS: { label: string; items: string[] }[] =
+  SUBJECT_GROUPS_BY_AREA.map((g) => ({
+    label: g.label,
+    items: g.items.map((s) => s.label),
+  }));
 
 /** Sinf/daraja — guruhlangan (dropdown uchun). */
 export const GRADE_GROUPS: { label: string; items: string[] }[] = [

@@ -3210,8 +3210,9 @@
   "SubjectPicker": {
     "placeholder": "Пәнді таңдаңыз",
     "search": "Пән іздеу…",
-    "useCustom": "«{value}» — тізімде жоқ, осыны қолданамын",
     "empty": "Пән табылмады",
+    "mySubjects": "Менің пәндерім",
+    "addCustom": "«{value}» пәнін қосу",
     "clear": "Таңдауды тазалау"
   },
   "ClassFormModal": {
