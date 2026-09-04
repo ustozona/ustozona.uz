@@ -37,6 +37,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TypographyLabel } from "@/components/ui/typography";
 import { EventCard } from "@/components/calendar/EventCard";
 import { type TimetableEvent } from "@/lib/timetable";
+import { subjectLabel } from "@/lib/standards-data";
 import { type BellConfig, defaultBellConfig, computePeriods, remapEventsForBellChange } from "@/lib/bell-schedule";
 import PeriodGrid, { type TimetableClass } from "@/components/timetable/PeriodGrid";
 import { TimetablePrintSheet } from "@/components/timetable/TimetablePrintSheet";
@@ -78,6 +79,10 @@ const DAY_UZ = DAYS_UZ.slice(0, 6);
 const START_HOUR = 0;
 const END_HOUR = 24;
 const HOUR_H = 180;                // 1 soat balandligi (px) — planner bilan bir xil
+/* Shundan baland kartada fan va vaqt alohida qatorga ajraydi (sarlavha +
+   ikki qator ≈ 12px padding × 2 + 3 qator matn). Pastroqda ikkinchi qator
+   kartadan chiqib ketardi — u yerda `·` bilan bitta qator qoladi. */
+const STACKED_SUBTITLE_MIN_H = 84;
 const SNAP = 15;                   // daqiqada tutilish (snap)
 const DEFAULT_DURATION = 45;       // yangi dars uzunligi (daqiqa)
 const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
@@ -1016,6 +1021,7 @@ export default function TimetablePage() {
                           <EventBlock
                             key={ev.id}
                             name={cls.name}
+                            subject={subjectLabel(cls.subject)}
                             startMin={ev.startMin}
                             endMin={ev.endMin}
                             color={cls.color}
@@ -1217,8 +1223,12 @@ export default function TimetablePage() {
 }
 
 /* ─── Dars bloki (grid ichida) ─── */
-function EventBlock({ name, startMin, endMin, color, top, height, resizable, readOnly = false, onResize, onDragStart, onDragEnd, onClick, onRemove }: {
+function EventBlock({ name, subject, startMin, endMin, color, top, height, resizable, readOnly = false, onResize, onDragStart, onDragEnd, onClick, onRemove }: {
   name: string;
+  /** Fan nomi — bitta sinfda bir necha fan oʻtiladi (masalan «Ona tili» va
+      «Adabiyot» ikkalasi ham 9-A da), faqat sinf nomi bilan kartalar
+      ajratib boʻlmasdi. Jadval (PeriodGrid) koʻrinishi bilan bir xil. */
+  subject?: string;
   startMin: number;
   endMin: number;
   color: ClassColor;
@@ -1263,7 +1273,23 @@ function EventBlock({ name, startMin, endMin, color, top, height, resizable, rea
       title={name}
       /* Soat ikonkasi yoʻq — vaqt qatori barcha event kartalarida bir xil:
          faqat "HH:MM–HH:MM" ([[design-system]] standarti, TodayRail etalon). */
-      subtitle={<span className="truncate tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>}
+      /* Qatorlar balandlikka qarab ochiladi (kalendar yuzalarining umumiy
+         qoidasi): baland kartada fan va vaqt ALOHIDA qatorda, past kartada
+         ular `·` bilan bitta qatorga yigʻiladi. `·` — joy torligining
+         zaxirasi, kenglikdagi standart emas. */
+      subtitle={
+        subject && height >= STACKED_SUBTITLE_MIN_H ? (
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate">{subject}</span>
+            <span className="truncate tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>
+          </span>
+        ) : (
+          <span className="truncate">
+            {subject ? `${subject} · ` : ""}
+            <span className="tabular-nums">{minToHHMM(startMin)} — {minToHHMM(endMin)}</span>
+          </span>
+        )
+      }
       density="auto"
       draggable={!readOnly && !resizing}
       onDragStart={onDragStart}
