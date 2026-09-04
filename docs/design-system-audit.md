@@ -16,6 +16,11 @@ sahifani ol, tekshir, topilmalarni yoz, tuzat, soʻng `✅ Bajarildi` qil.
    + konsentrik: card-ichida-card → tashqi > ichki (`r_tashqi = r_ichki + padding`).
 6. **Ikona** — `lucide-react`, standart oʻlchamlar.
 
+> **Tizim darajasidagi ish alohida:** shkalaning oʻzini tuzatish (tipografika
+> tokenlari, boʻshliq shkalasi, `prebuild` darvozasi) —
+> [dizayn-token-standartlashtirish.md](dizayn-token-standartlashtirish.md).
+> Bu fayl sahifama-sahifa auditni yuritadi.
+
 ## Sahifalar
 
 - [x] ✅ **Oʻquvchilar** — `src/app/dashboard/(with-sidebar)/students/page.tsx`

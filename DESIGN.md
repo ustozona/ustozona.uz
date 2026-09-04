@@ -242,6 +242,12 @@ ular shu ishда oʻzgartirilmadi.
 
 (Bu boʻlim faqat kuzatuv uchun — hech narsa avtomatik qoʻllanmaydi.)
 
+- **Tipografika va boʻshliq shkalasini standartlashtirish** — §3 dagi
+  shkala amalda ishlamayapti (1352 ta xom `text-*`, 181 ta ixtiyoriy
+  `text-[Npx]`), boʻshliq shkalasi esa umuman yoʻq. Oʻlchov, kelishilgan
+  qaror va bosqichlar:
+  [docs/dizayn-token-standartlashtirish.md](docs/dizayn-token-standartlashtirish.md).
+
 - `src/app/globals.css` ichida `.prose-journal` bloki ikki marta aynan
   takrorlangan (527–551 va 553–577-qatorlar atrofida) — tozalash mumkin,
   lekin bu shu ishning doirasidan tashqari (faqat hujjatlashtirish, kod
