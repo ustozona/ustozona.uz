@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { XIcon, Plus, Check } from "lucide-react";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
+import { subjectLabel } from "@/lib/standards-data";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { EventCard } from "@/components/calendar/EventCard";
 
@@ -134,7 +135,12 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
                     key={ev.id}
                     color={cls.color}
                     title={cls.name}
-                    subtitle={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`}
+                    subtitle={[
+                      subjectLabel(cls.subject),
+                      `${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                     density="micro"
                     interactive={!readOnly}
                     onClick={() => { if (!readOnly) onEditEvent(ev); }}
@@ -210,6 +216,7 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
       <PeriodBlock
         color={cls.color}
         name={cls.name}
+        subject={subjectLabel(cls.subject)}
         interactive={!readOnly}
         role={readOnly ? undefined : "button"}
         tabIndex={readOnly ? undefined : 0}
@@ -260,10 +267,13 @@ function PeriodCell({ event, day, period, classes, getClass, readOnly = false, o
   );
 }
 
-/* ─── Toʻyingan blok — jadval katagi (faqat sinf nomi, teksturasiz, tekis rang) ─── */
-function PeriodBlock({ color, name, interactive, actions, role, tabIndex, onClick }: {
+/* ─── Toʻyingan blok — jadval katagi (sinf nomi + fan) ─── */
+function PeriodBlock({ color, name, subject, interactive, actions, role, tabIndex, onClick }: {
   color: ClassColor;
   name: string;
+  /** Fan nomi — bitta sinfda bir necha fan oʻtiladi (masalan «Ona tili» va
+      «Adabiyot» ikkalasi ham 7-A da), nomsiz kataklar ajratib boʻlmasdi. */
+  subject?: string;
   interactive?: boolean;
   actions?: React.ReactNode;
   role?: string;
@@ -280,13 +290,25 @@ function PeriodBlock({ color, name, interactive, actions, role, tabIndex, onClic
          shaffof diagonal tekstura ([[color-system-layers]]). */
       style={tints.gradientSurface}
       className={cn(
-        "group/ev relative flex h-full min-h-[56px] w-full items-center justify-center overflow-hidden rounded-xl p-3 text-center",
+        "group/ev relative flex h-full min-h-[56px] w-full flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl p-3 text-center",
         interactive && cn("cursor-pointer", CLASS_CARD_INTERACTION),
       )}
     >
-      <span title={name} style={tints.textOnSolid} className="relative truncate text-[15px] font-medium leading-tight">
+      <span
+        title={subject ? `${name} · ${subject}` : name}
+        style={tints.textOnSolid}
+        className="relative max-w-full truncate text-[15px] font-medium leading-tight"
+      >
         {name}
       </span>
+      {subject ? (
+        <span
+          style={tints.textOnSolid}
+          className="relative max-w-full truncate text-[11px] leading-tight opacity-75"
+        >
+          {subject}
+        </span>
+      ) : null}
       {actions != null && (
         <div className="absolute right-1 top-1 z-10 opacity-0 transition-opacity focus-within:opacity-100 group-hover/ev:opacity-100 [@media(hover:none)]:opacity-100">
           {actions}
@@ -312,10 +334,10 @@ function ClassPicker({ classes, selectedId, onSelect }: {
           {classes.map((c) => {
             const tints = classTints(c.color);
             return (
-              <CommandItem key={c.id} value={`${c.name} ${c.subject ?? ""}`} onSelect={() => onSelect(c.id)} className="gap-2">
+              <CommandItem key={c.id} value={`${c.name} ${subjectLabel(c.subject)}`} onSelect={() => onSelect(c.id)} className="gap-2">
                 <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: tints.solid }} />
                 <span className="font-medium">{c.name}</span>
-                {c.subject && <span className="truncate text-xs text-muted-foreground">{c.subject}</span>}
+                {c.subject && <span className="truncate text-xs text-muted-foreground">{subjectLabel(c.subject)}</span>}
                 {selectedId === c.id && <Check className="ml-auto size-4" />}
               </CommandItem>
             );

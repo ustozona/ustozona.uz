@@ -3,6 +3,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { unwrap } from "@/lib/action-result";
+import { subjectLabel } from "@/lib/standards-data";
 import { Copy, Crown, LogOut, MoreHorizontal, Plus, Shield, UserMinus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -471,7 +472,7 @@ export default function TeamSection() {
                       {confirming.movingClasses.map((c) => (
                         <li key={c.id}>
                           {c.name}
-                          {c.subject ? " · " + c.subject : ""}
+                          {c.subject ? " · " + subjectLabel(c.subject) : ""}
                         </li>
                       ))}
                     </ul>

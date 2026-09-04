@@ -32,6 +32,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "fan-tanlash-royxatdan",
+    date: "2026-09-04",
+    type: "yaxshilandi",
+    title: "Fan endi qoʻlda yozilmaydi — rasmiy roʻyxatdan tanlanadi",
+    body:
+      "Sinf yaratganda fanni yozish oʻrniga roʻyxatdan tanlaysiz. Roʻyxat oʻquv rejadagi fanlardan tuzilgan va yoʻnalishlarga ajratilgan, shuning uchun «Ona tili» va «Adabiyot» endi alohida turadi — ilgari ikkalasi bitta yozuv edi va dars jadvalida qaysi biri ekanini ajratib boʻlmasdi. Endi jadval katagida sinf nomi bilan birga fan ham koʻrinadi. Roʻyxatda yoʻq fan boʻlsa — toʻgarak, tayyorlov kursi yoki maktabingizdagi maxsus dars — nomini yozib «qoʻshish» tugmasini bosasiz; u saqlanadi va keyingi sinflarda roʻyxatdan tanlanadi.",
+    href: "/dashboard/classes",
+  },
+  {
     id: "blog-qidiruvda-topilishi",
     date: "2026-09-01",
     type: "tuzatildi",

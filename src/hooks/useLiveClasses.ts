@@ -7,6 +7,7 @@ import type { ClassFormValues, ClassSlot } from "@/components/ClassFormModal";
 import { DAYS_UZ, DAYS_UZ_SHORT } from "@/lib/localization";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { displayClassName, withGradeForYear } from "@/lib/class-naming";
+import { normalizeSubject } from "@/lib/standards-data";
 
 /* ════════════════════════════════════════════════════════════════════
    JONLI SINF MANBAI — statik CLASSES / CLASS_DATA oʻrnini bosadi.
@@ -28,7 +29,14 @@ export function liveClassInfos(
   map: Record<string, ClassData>,
   includeArchived = false
 ): ClassInfo[] {
-  const infos = Object.values(map).map((cd) => cd.info);
+  // Fan qiymati katalog `id` boʻlishi kerak. Eski yozuvlarda nom saqlangan
+  // ("Matematika") — oʻqishda jimgina kodga oʻgiriladi, shunda koʻrsatish va
+  // taqqoslash bir xil shaklda ishlaydi. Notanish qiymat oʻzgarmay qoladi.
+  const infos = Object.values(map).map((cd) =>
+    cd.info.subject
+      ? { ...cd.info, subject: normalizeSubject(cd.info.subject) ?? undefined }
+      : cd.info
+  );
   return includeArchived ? infos : infos.filter((c) => !c.archivedAt);
 }
 

@@ -6,6 +6,7 @@ import type { TimetableClass } from "./PeriodGrid";
 import { minToHHMM } from "@/lib/calendar-core/date-math";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { classTints, classStripedSurface } from "@/lib/class-colors";
+import { subjectLabel } from "@/lib/standards-data";
 
 /** Jadval 6 ish kuni (Du..Sha) — ISO kun raqamlari. */
 const WORK_DAYS = [1, 2, 3, 4, 5, 6];
@@ -76,7 +77,7 @@ export function TimetablePrintSheet({
                         </div>
                         {cls.subject && (
                           <div className="relative truncate text-[9.5px]" style={tints.textOnSolidMuted}>
-                            {cls.subject}
+                            {subjectLabel(cls.subject)}
                           </div>
                         )}
                       </div>

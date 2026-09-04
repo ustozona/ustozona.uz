@@ -23,36 +23,101 @@ export const BLOOM_LEVELS = [
 
 export type SubjectId = (typeof SUBJECT_CATALOG)[number]["id"];
 
-export const SUBJECT_CATALOG = [
-  { id: "native_language", label: "Ona tili va adabiyot" },
-  { id: "russian", label: "Rus tili" },
-  { id: "english", label: "Ingliz tili" },
-  { id: "foreign_language", label: "Xorijiy til" },
-  { id: "math", label: "Matematika" },
-  { id: "algebra", label: "Algebra" },
-  { id: "geometry", label: "Geometriya" },
-  { id: "informatics", label: "Informatika" },
-  { id: "physics", label: "Fizika" },
-  { id: "chemistry", label: "Kimyo" },
-  { id: "biology", label: "Biologiya" },
-  { id: "natural_science", label: "Tabiatshunoslik" },
-  { id: "geography", label: "Geografiya" },
-  { id: "astronomy", label: "Astronomiya" },
-  { id: "history", label: "Tarix" },
-  { id: "history_uz", label: "Oʻzbekiston tarixi" },
-  { id: "history_world", label: "Jahon tarixi" },
-  { id: "law_basics", label: "Davlat va huquq asoslari" },
-  { id: "economics", label: "Iqtisodiy bilim asoslari" },
-  { id: "upbringing", label: "Tarbiya" },
-  { id: "ethics", label: "Odobnoma" },
-  { id: "physical_education", label: "Jismoniy tarbiya" },
-  { id: "technical_drawing", label: "Chizmachilik" },
-  { id: "technology", label: "Texnologiya" },
-  { id: "labour", label: "Mehnat taʼlimi" },
-  { id: "music", label: "Musiqa" },
-  { id: "fine_arts", label: "Tasviriy sanʼat" },
-  { id: "ecology", label: "Ekologiya" },
+/** Fan yoʻnalishlari — tayanch oʻquv rejadagi boʻlimlar tartibida. */
+export const SUBJECT_AREAS = [
+  { id: "philology", label: "Filologiya fanlari" },
+  { id: "social", label: "Ijtimoiy fanlar" },
+  { id: "exact", label: "Aniq fanlar" },
+  { id: "natural", label: "Tabiiy va iqtisodiy fanlar" },
+  { id: "applied", label: "Amaliy fanlar" },
 ] as const;
+
+export type SubjectAreaId = (typeof SUBJECT_AREAS)[number]["id"];
+
+/**
+ * Rasmiy fanlar — MMTV 2026-yil 10-apreldagi 133-son buyrugʻi bilan
+ * tasdiqlangan 2026–2027-oʻquv yili tayanch oʻquv rejasi (1-ilova).
+ *
+ * `deprecated: true` — rejadan chiqqan yoki nomi oʻzgargan fan. Katalogdan
+ * OʻCHIRILMAYDI: mavjud sinflar unga bogʻlangan boʻlishi mumkin, va nomi
+ * baribir toʻgʻri koʻrsatilishi kerak. Yangi sinf yaratganda roʻyxatda
+ * koʻrinmaydi.
+ */
+export const SUBJECT_CATALOG = [
+  // I. Filologiya
+  { id: "native_language", label: "Ona tili", area: "philology" },
+  { id: "reading_literacy", label: "Oʻqish savodxonligi", area: "philology" },
+  { id: "literature", label: "Adabiyot", area: "philology" },
+  { id: "russian", label: "Rus tili", area: "philology" },
+  { id: "foreign_language", label: "Chet tili", area: "philology" },
+  { id: "english", label: "Ingliz tili", area: "philology" },
+  // II. Ijtimoiy
+  { id: "history_stories", label: "Tarixdan hikoyalar", area: "social" },
+  { id: "history_ancient", label: "Qadimgi dunyo tarixi", area: "social" },
+  { id: "history_uz", label: "Oʻzbekiston tarixi", area: "social" },
+  { id: "history_world", label: "Jahon tarixi", area: "social" },
+  { id: "law_basics", label: "Davlat va huquq asoslari", area: "social" },
+  { id: "upbringing", label: "Tarbiya", area: "social" },
+  { id: "history", label: "Tarix", area: "social", deprecated: true },
+  { id: "ethics", label: "Odobnoma", area: "social", deprecated: true },
+  // III. Aniq fanlar
+  { id: "math", label: "Matematika", area: "exact" },
+  { id: "algebra", label: "Algebra", area: "exact" },
+  { id: "geometry", label: "Geometriya", area: "exact" },
+  { id: "informatics", label: "Informatika va axborot texnologiyalari", area: "exact" },
+  // IV. Tabiiy va iqtisodiy
+  { id: "physics", label: "Fizika", area: "natural" },
+  { id: "astronomy", label: "Astronomiya", area: "natural" },
+  { id: "chemistry", label: "Kimyo", area: "natural" },
+  { id: "biology", label: "Biologiya", area: "natural" },
+  { id: "geography", label: "Geografiya", area: "natural" },
+  { id: "natural_science", label: "Tabiiy fan (Science)", area: "natural" },
+  { id: "economics", label: "Iqtisodiy bilim asoslari", area: "natural" },
+  { id: "entrepreneurship", label: "Tadbirkorlik asoslari", area: "natural" },
+  // Eslatma: 2026-08 da qayta koʻrib chiqilgan DTS eʼlon qilingan (yuqoridagi
+  // ikki fan «Iqtisodiyot va biznes»ga birlashadi, astronomiya fizikaga
+  // qoʻshiladi) — lekin JORIY ETILMAGAN. Kuchga kirganda qoʻshiladi.
+  { id: "ecology", label: "Ekologiya", area: "natural", deprecated: true },
+  // V. Amaliy fanlar
+  { id: "music", label: "Musiqa madaniyati", area: "applied" },
+  { id: "fine_arts", label: "Tasviriy sanʼat", area: "applied" },
+  { id: "technical_drawing", label: "Chizmachilik", area: "applied" },
+  { id: "technology", label: "Texnologiya", area: "applied" },
+  { id: "physical_education", label: "Jismoniy tarbiya", area: "applied" },
+  {
+    id: "pre_conscription",
+    label: "Chaqiruvga qadar boshlangʻich tayyorgarlik",
+    area: "applied",
+  },
+  { id: "labour", label: "Mehnat taʼlimi", area: "applied", deprecated: true },
+] as const;
+
+/**
+ * Eskirgan yoki qisqartirilgan nomlar → `id`. Faqat OʻQISHDA ishlatiladi:
+ * bazada nom boʻlib saqlangan qiymatni kodga oʻgirish uchun. Bu yerdan
+ * yozuv OLINMAYDI — koʻrsatiladigan nom doim `SUBJECT_CATALOG` dan.
+ */
+const SUBJECT_LABEL_ALIASES: Record<string, SubjectId> = {
+  "ona tili va adabiyot": "native_language",
+  "xorijiy til": "foreign_language",
+  informatika: "informatics",
+  musiqa: "music",
+  tabiatshunoslik: "natural_science",
+  "boshlangich harbiy tayyorgarlik": "pre_conscription",
+};
+
+/**
+ * Qidiruv kaliti. Apostrof shakllari birxillashtiriladi (ʻ ʼ ' ` ’ ‘ → yoʻq)
+ * — oʻqituvchi «Tasviriy san'at» deb yozgan boʻlsa ham katalogdagi
+ * «Tasviriy sanʼat» bilan topishishi kerak.
+ */
+export function subjectKey(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/[ʻʼ‘’'`´]/g, "")
+    .replace(/\s+/g, " ");
+}
 
 /** Fan nomlari roʻyxati — standart shablonlari va eski filtrlar shu shaklda
     ishlaydi (ular hali `label` boʻyicha moslashtiradi). Yangi kod
@@ -60,15 +125,53 @@ export const SUBJECT_CATALOG = [
 export const SUBJECTS = SUBJECT_CATALOG.map((s) => s.label);
 
 const SUBJECT_BY_ID = new Map(SUBJECT_CATALOG.map((s) => [s.id as string, s]));
-const SUBJECT_BY_LABEL = new Map(
-  SUBJECT_CATALOG.map((s) => [s.label.toLowerCase(), s])
-);
+const SUBJECT_BY_LABEL = new Map<string, string>([
+  ...SUBJECT_CATALOG.map((s) => [subjectKey(s.label), s.id as string] as const),
+  ...Object.entries(SUBJECT_LABEL_ALIASES).map(
+    ([label, id]) => [subjectKey(label), id as string] as const
+  ),
+]);
+
+/**
+ * Oʻqituvchi qoʻshgan fan shu prefiks bilan saqlanadi: `custom:Robototexnika`.
+ * Alohida jadval kerak emas — maktabning «oʻz fanlari» roʻyxati mavjud
+ * sinflardan hosil qilinadi, va ishlatilmay qolgani oʻz-oʻzidan yoʻqoladi.
+ * Nom prefiksdan keyin turadi, shuning uchun tarjima qatlami yoʻq — bu
+ * ataylab: rasmiy boʻlmagan fanning rasmiy tarjimasi ham yoʻq.
+ */
+export const CUSTOM_SUBJECT_PREFIX = "custom:";
+
+/** Roʻyxatda koʻrsatiladigan fanlar — eskirganlari chiqarib tashlanadi. */
+export const ACTIVE_SUBJECTS = SUBJECT_CATALOG.filter((s) => !("deprecated" in s));
+
+/** Yoʻnalish boʻyicha guruhlangan faol fanlar — tanlagich roʻyxati uchun. */
+export const SUBJECT_GROUPS_BY_AREA = SUBJECT_AREAS.map((area) => ({
+  id: area.id,
+  label: area.label,
+  items: ACTIVE_SUBJECTS.filter((s) => s.area === area.id).map((s) => ({
+    id: s.id as string,
+    label: s.label,
+  })),
+})).filter((g) => g.items.length > 0);
 
 /** `id` → koʻrsatiladigan nom. Notanish id boʻlsa oʻzini qaytaradi (maʼlumot
     yoʻqolmasin — oʻqituvchi kiritgan erkin fan nomi ham boʻlishi mumkin). */
 export function subjectLabel(id: string | null | undefined): string {
   if (!id) return "";
+  if (id.startsWith(CUSTOM_SUBJECT_PREFIX)) {
+    return id.slice(CUSTOM_SUBJECT_PREFIX.length);
+  }
   return SUBJECT_BY_ID.get(id)?.label ?? id;
+}
+
+/** Oʻqituvchi qoʻshgan fanmi? */
+export function isCustomSubject(id: string | null | undefined): boolean {
+  return !!id && id.startsWith(CUSTOM_SUBJECT_PREFIX);
+}
+
+/** Erkin nomdan maxsus fan kaliti yasaydi. */
+export function customSubjectId(label: string): string {
+  return CUSTOM_SUBJECT_PREFIX + label.trim();
 }
 
 /**
@@ -78,8 +181,7 @@ export function subjectLabel(id: string | null | undefined): string {
  */
 export function subjectIdFromLabel(label: string | null | undefined): SubjectId | null {
   if (!label) return null;
-  const hit = SUBJECT_BY_LABEL.get(label.trim().toLowerCase());
-  return (hit?.id as SubjectId) ?? null;
+  return (SUBJECT_BY_LABEL.get(subjectKey(label)) as SubjectId) ?? null;
 }
 
 /** Xom qiymatni (id yoki eski nom) normallashtiradi — oʻqishda ishlatiladi. */

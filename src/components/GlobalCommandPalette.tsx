@@ -17,6 +17,7 @@ import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { subjectLabel } from "@/lib/standards-data";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import {
@@ -138,12 +139,12 @@ export default function GlobalCommandPalette() {
               {classes.map((c) => (
                 <CommandItem
                   key={c.id}
-                  value={`${c.name} ${c.subject ?? ""}`}
+                  value={`${c.name} ${subjectLabel(c.subject)}`}
                   onSelect={() => go(`/dashboard/classes/${encodeURIComponent(c.id)}`)}
                 >
                   <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
                   {c.name}
-                  {c.subject && <span className="text-muted-foreground">· {c.subject}</span>}
+                  {c.subject && <span className="text-muted-foreground">· {subjectLabel(c.subject)}</span>}
                 </CommandItem>
               ))}
             </CommandGroup>

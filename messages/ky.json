@@ -171,7 +171,7 @@
     "schoolLabel": "Билим берүү мекемеси / Мектеп",
     "schoolPlaceholder": "Мисалы: 24-мектеп",
     "subjectLabel": "Сабак",
-    "subjectPlaceholder": "Мисалы: Англис тили",
+    "subjectPlaceholder": "Сабакты тандаңыз",
     "birthDateLabel": "Туулган күнү",
     "optional": "(милдеттүү эмес)",
     "toastImageOnly": "Сүрөт файлын гана жүктөңүз.",
@@ -2921,8 +2921,6 @@
       "schoolPlaceholder": "Мисалы, 24-мектеп",
       "subjectLabel": "Негизги сабак",
       "subjectPlaceholder": "Сабакты тандаңыз",
-      "subjectSearchPlaceholder": "Сабак издөө…",
-      "subjectUseCustom": "«{value}» — тизмеде жок, ушуну колдонмун",
       "birthDateLabel": "Туулган күнү"
     },
     "yearStep": {
@@ -3209,6 +3207,14 @@
     "cancel": "Жокко чыгаруу",
     "save": "Сактоо"
   },
+  "SubjectPicker": {
+    "placeholder": "Сабакты тандаңыз",
+    "search": "Сабак издөө…",
+    "empty": "Сабак табылган жок",
+    "mySubjects": "Менин сабактарым",
+    "addCustom": "«{value}» сабагын кошуу",
+    "clear": "Тандоону тазалоо"
+  },
   "ClassFormModal": {
     "createTitle": "Жаңы класс түзүү",
     "editTitle": "Классты түзөтүү{name}",
@@ -3218,7 +3224,7 @@
     "pickColor": "Түс тандоо",
     "gradeValue": "{grade}-класс",
     "subject": "Сабак",
-    "subjectPlaceholder": "Мисалы, Математика",
+    "subjectPlaceholder": "Сабакты тандаңыз",
     "cancel": "Жокко чыгаруу",
     "create": "Түзүү",
     "save": "Сактоо",
