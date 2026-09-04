@@ -38,7 +38,7 @@ export function showAwardToast({
     (id) => (
       <div
         role="status"
-        className="card-elevation relative flex w-[400px] max-w-[calc(100vw-2rem)] items-center gap-3 overflow-hidden rounded-xl border border-border bg-popover p-4 text-popover-foreground"
+        className="card-elevation relative flex w-full items-center gap-3 overflow-hidden rounded-xl border border-border bg-popover p-4 text-popover-foreground"
       >
         <span className="relative inline-flex shrink-0">
           <BehaviorEmoji code={emoji} label={skillName} className="size-8" />

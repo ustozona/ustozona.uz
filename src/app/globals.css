@@ -2061,18 +2061,16 @@
    Har selektorda `[data-sonner-toaster]` prefiksi bor: sonner
    uslublarni runtime'da <head>ga inject qiladi, shu prefiks
    bir zinapoya ustunlik berib bizning qiymatni kafolatlaydi.
+   (`--border-radius` va `--width` esa sonnerʼning `[data-sonner-toaster]`
+   default qiymati bilan teng ustunlikda boʻlgani uchun inline `style`
+   propida — `src/components/ui/sonner.tsx`.)
 
    Jahon konvensiyasi (Carbon, Material, Atlassian): 16px glif,
    ikon↔matn 12px, padding 16, sarlavha ~14/600, izoh ~13/400
    muted (2 qator maks), amal tugmasi PAST urgʻu (ghost).
    ───────────────────────────────────────────── */
-[data-sonner-toaster] {
-  --border-radius: var(--radius-xl);
-}
-
 [data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
-  /* oʻng padding X tugmasi uchun joy qoldiradi */
-  padding: 16px 44px 16px 16px;
+  padding: 16px;
   gap: 12px;
   align-items: center;
   background: var(--popover);
@@ -2082,20 +2080,31 @@
     0 1px 3px 0 rgb(0 0 0 / 0.04),
     0 8px 24px -6px rgb(0 0 0 / 0.10);
 }
+/* X tugmasi absolyut — faqat u chindan render boʻlganда oʻngdan joy qoldiramiz
+   (sonner: closeButton && !toast.jsx && type !== 'loading') */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"]:has([data-close-button]) {
+  padding-right: 44px;
+}
 .dark [data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
   box-shadow:
     0 1px 3px 0 rgb(0 0 0 / 0.30),
     0 12px 32px -8px rgb(0 0 0 / 0.55);
 }
 
-/* iconbox — 32px quti, turi rangining 13% tinti, glif 16px */
+/* iconbox — 32px quti, turi rangining tinti (`--popover` ustida OPAQUE —
+   shaffof tint yorugʻ fonda koʻrinmasdi), glif 16px */
 [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] {
   width: 32px;
   height: 32px;
   margin: 0;
   border-radius: var(--radius-md);
-  display: grid;
-  place-items: center;
+  /* sonner `[data-icon]` ga `justify-content: flex-start` beradi — glif
+     qutining chapiga qisilib qoladi. `place-items` uni BEKOR QILMAYDI
+     (u `justify-items`, `justify-content` emas), shuning uchun flex +
+     `justify-content: center` aniq yozilgan. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--muted-foreground);
   background: var(--muted);
 }
@@ -2105,21 +2114,27 @@
   height: 16px;
   margin: 0;
 }
+/* sonner yuklanish loaderi `position:absolute; inset:0` — 32px quti ichida
+   chap-yuqoriga yopishardi; oqimga qaytarib flex markazlashuvga beramiz */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-icon] .sonner-loading-wrapper {
+  position: relative;
+  inset: auto;
+}
 [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] {
   color: var(--success);
-  background: color-mix(in oklch, var(--success) 13%, transparent);
+  background: color-mix(in oklch, var(--success) 18%, var(--popover));
 }
 [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] {
   color: var(--destructive);
-  background: color-mix(in oklch, var(--destructive) 13%, transparent);
+  background: color-mix(in oklch, var(--destructive) 18%, var(--popover));
 }
 [data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] {
   color: var(--warning);
-  background: color-mix(in oklch, var(--warning) 14%, transparent);
+  background: color-mix(in oklch, var(--warning) 22%, var(--popover));
 }
 [data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-icon] {
   color: var(--info);
-  background: color-mix(in oklch, var(--info) 13%, transparent);
+  background: color-mix(in oklch, var(--info) 18%, var(--popover));
 }
 
 /* matn — `.toast-title` / `.toast-desc` xulq toastida ham ishlatiladi */

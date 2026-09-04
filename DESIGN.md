@@ -160,9 +160,10 @@ RANG bilan emas) asosida yagona tilга keltirildi.
 | Element | Qiymat |
 |---|---|
 | Yuza | `--popover` + 1px `--border` + yumshoq elevation (koʻtarilgan qatlam) |
-| Radius | `--radius-xl` (panel bilan bir xil) |
-| Tur belgisi | **faqat** 32px iconbox — turi rangining 13% tinti, glif 16px tur rangida. Rangli fon / `richColors` YOʻQ |
-| Ikon ↔ matn | 12px · padding 16 |
+| Eni | `--width: 384px` (inline `style`, sonner default bilan teng ustunlik) |
+| Radius | `--radius-xl` (inline `style`, xuddi shu sabab) — panel bilan bir xil |
+| Tur belgisi | **faqat** 32px iconbox — turi rangi ~18% (`--popover` ustida **opaque**; shaffof tint yorugʻ fonda koʻrinmasdi), glif 16px tur rangida. Rangli fon / `richColors` YOʻQ |
+| Ikon ↔ matn | 12px · padding 16 (X boʻlsa oʻngdan 44px — `:has([data-close-button])`) |
 | Sarlavha | `.toast-title` — 14px / 600 / lh 1.3 |
 | Izoh | `.toast-desc` — 13px / 400 / lh 1.35 muted · ixtiyoriy, 2 qator maks |
 | Amal tugmasi | `.toast-action` / sonner `[data-button]` — **ghost** (border yoʻq, hover `--muted`), h-32, `--radius-md`, 12.5/600. Buzuvchi tasdiqда matn `--destructive`. Outline/primary EMAS |

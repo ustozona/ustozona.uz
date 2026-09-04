@@ -36,6 +36,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
+          // sonner default `[data-sonner-toaster]` bilan teng ustunlikda —
+          // shu sabab inline (stylesheet qoidasi yutmasdi), DESIGN.md §9
+          "--border-radius": "var(--radius-xl)",
+          "--width": "384px",
         } as React.CSSProperties
       }
       {...props}
