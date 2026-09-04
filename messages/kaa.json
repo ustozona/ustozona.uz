@@ -2496,6 +2496,7 @@
     "customSetsCount": "{count} custom toplam",
     "noCustomSetsYet": "Ele custom toplam joq. Joqarıda at kirgizip «Jaratıw» basıń.",
     "importSuccess": "{count} standart import qılındı",
+    "importDomainsInferred": "{count} maqsettiń mazmun tarawı kodtan boljandı — tekseriń",
     "importNoStandards": "Faylda standart tabılmadı",
     "importReadError": "Fayldı oqıp bolmadı",
     "editAria": "Ózgertiw",
@@ -4305,6 +4306,38 @@
       "text": "Sayttan paydalanıw tájiriybesin jaqsılaw ushın cookie fayllarınan paydalanamız. Dawam etiw arqalı buǵan razılıq bildiresiz.",
       "reject": "Bas tartıw",
       "accept": "Qabıl etiw"
+    }
+  },
+  "StandardTagPicker": {
+    "label": "Ólshenetuǵın standartlar",
+    "add": "Standart",
+    "searchPlaceholder": "Kod yaki tekst boyınsha izlew…",
+    "empty": "Tabılmadı",
+    "noDomain": "Bólimsiz",
+    "remove": "{code} nı alıp taslaw",
+    "orphanHint": "Bul standart toplamnan óshirilgen",
+    "hint": "Bul tapsırma nátiyjesi usı standartlar boyınsha dálil boladı."
+  },
+  "StudentStandards": {
+    "title": "Standartlardı ózlestiriw",
+    "radarHint": "Mazmun tarawları boyınsha ulıwma kórinis",
+    "notAssessed": "Bahalanbaǵan",
+    "needMore": "{have} dálil bar, keminde {need} kerek",
+    "evidence": "{count} dálil"
+  },
+  "StandardsGap": {
+    "title": "Bosliq esabatı",
+    "subtitle": "Sabaq rejesi hám bahalaw arasındaǵı sáykessizlik.",
+    "problemCount": "{count} itibar talap etedi",
+    "draftRestored": "Ju̱mislanbágan qaralama qayta tiklendi — standart biriktirilmedi.",
+    "attach": "Tapsırma",
+    "status": {
+      "untested": "Oqıtıldı, biraq ólshenbedi",
+      "untaught": "Ólshendi, biraq oqıtılmadı"
+    },
+    "hint": {
+      "untested": "Bul standartlardı sabaqta ótkensiz, biraq hesh bir tapsırma olardı tekseremeydi.",
+      "untaught": "Bul standartlar tapsırmalarda ólshenedi, biraq sabaqta ótilgeni belgilenbegen."
     }
   }
 }

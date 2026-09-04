@@ -73,6 +73,9 @@ export const assignmentUpsertSchema = z.object({
       `nullable`: guruhdan chiqarish ham oʻzgarish, "yuborilmadi" degani
       emas. FK yoʻq — guruh mustaqil obyekt emas, kalit. */
   groupId: id.nullable().optional(),
+  /** Oʻlchanadigan standartlar (spec §11.1). `setId` bilan bir xil sabab
+      bilan nullable: bogʻlanishni uzish ham oʻzgarish, "yuborilmadi" emas. */
+  standardIds: z.array(z.string().min(1).max(200)).max(50).nullable().optional(),
   sortOrder: z.number().int().min(0),
 });
 

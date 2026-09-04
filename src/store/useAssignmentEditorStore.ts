@@ -59,7 +59,10 @@ export function isDraftDirty(p: DraftPayload): boolean {
     (p.assignment.instructions ?? "").trim() !== "" ||
     p.classIds.length > 1 ||
     p.assignment.kind !== "manual" ||
-    Boolean(p.assignment.setId)
+    Boolean(p.assignment.setId) ||
+    // Standart teglash ham mazmunli ish — teglab qoʻyib yopilsa
+    // qoralama jimgina yoʻqolmasin.
+    Boolean(p.assignment.standardIds?.length)
   );
 }
 

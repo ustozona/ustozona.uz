@@ -2325,6 +2325,7 @@
     "customSetsCount": "{count} custom toʻplam",
     "noCustomSetsYet": "Hali custom toʻplam yoʻq. Yuqorida nom kiritib «Yaratish» bosing.",
     "importSuccess": "{count} ta standart import qilindi",
+    "importDomainsInferred": "{count} ta maqsadning mazmun sohasi koddan taxmin qilindi — tekshiring",
     "importNoStandards": "Faylda standart topilmadi",
     "importReadError": "Faylni oʻqib boʻlmadi",
     "editAria": "Tahrirlash",
@@ -4134,6 +4135,38 @@
       "text": "Saytdan foydalanish tajribasini yaxshilash uchun cookie fayllaridan foydalanamiz. Davom etish orqali bunga rozilik bildirasiz.",
       "reject": "Rad etish",
       "accept": "Qabul qilish"
+    }
+  },
+  "StandardTagPicker": {
+    "label": "Oʻlchanadigan standartlar",
+    "add": "Standart",
+    "searchPlaceholder": "Kod yoki matn boʻyicha qidirish…",
+    "empty": "Topilmadi",
+    "noDomain": "Boʻlimsiz",
+    "remove": "{code} ni olib tashlash",
+    "orphanHint": "Bu standart toʻplamdan oʻchirilgan",
+    "hint": "Bu topshiriq natijasi shu standartlar boʻyicha dalil boʻladi."
+  },
+  "StudentStandards": {
+    "title": "Standartlar oʻzlashtirishi",
+    "radarHint": "Mazmun sohalari boʻyicha umumiy manzara",
+    "notAssessed": "Baholanmagan",
+    "needMore": "{have} ta dalil bor, kamida {need} ta kerak",
+    "evidence": "{count} ta dalil"
+  },
+  "StandardsGap": {
+    "title": "Boʻshliq hisoboti",
+    "subtitle": "Dars rejasi va baholash oʻrtasidagi nomutanosiblik.",
+    "problemCount": "{count} ta eʼtibor talab qiladi",
+    "draftRestored": "Tugallanmagan qoralama tiklandi — standart biriktirilmadi.",
+    "attach": "Topshiriq",
+    "status": {
+      "untested": "Oʻqitildi, lekin oʻlchanmadi",
+      "untaught": "Oʻlchandi, lekin oʻqitilmadi"
+    },
+    "hint": {
+      "untested": "Bu standartlarni darsda oʻtgansiz, lekin hech bir topshiriq ularni tekshirmaydi — oʻzlashtirish haqida dalil yoʻq.",
+      "untaught": "Bu standartlar topshiriqlarda oʻlchanyapti, lekin darsda oʻtilgani belgilanmagan."
     }
   }
 }

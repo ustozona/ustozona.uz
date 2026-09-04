@@ -103,6 +103,7 @@ import {
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useResponsivePanelWidth } from "@/hooks/useResponsivePanelWidth";
+import StandardTagPicker from "./StandardTagPicker";
 import SetBuilderOverlay from "./test/SetBuilderOverlay";
 import SessionPanelModal from "./test/SessionPanelModal";
 import AttachTestDialog from "./AttachTestDialog";
@@ -275,6 +276,10 @@ export default function AssignmentEditorOverlay({
 
   const selectedIds = isDraft ? draftClassIds : Object.keys(members);
   const selectedClasses = liveClasses.filter((c) => selectedIds.includes(c.id));
+
+  /* Hech sinf tanlanmagan holat uchun barqaror zaxira: har renderda yangi
+     massiv yasalsa StandardTagPicker'ning useMemo'si bekorga qayta ishlaydi. */
+  const fallbackClassIds = useMemo(() => [classId], [classId]);
 
   /* Maks. ball takliflari — butun jurnaldan (bitta sinf emas): oʻqituvchi
      odatda hamma sinfda bir xil maxraj bilan ishlaydi. */
@@ -1073,6 +1078,14 @@ export default function AssignmentEditorOverlay({
                   className="min-h-24 rounded-xl bg-muted/40 px-4 py-3 text-sm shadow-none"
                 />
               </div>
+
+              {/* Standart teglash — oʻzlashtirish zanjirining oʻrta boʻgʻini
+                  (spec §13.5: asosiy kirish nuqtasi aynan muharrir ichida). */}
+              <StandardTagPicker
+                classIds={selectedIds.length ? selectedIds : fallbackClassIds}
+                value={current.standardIds ?? []}
+                onChange={(next) => patch({ standardIds: next.length ? next : undefined })}
+              />
 
               {/* Boʻlim ATAYLAB NOMSIZ. «Kontent» — dasturchi soʻzi edi:
                   oʻqituvchi test yoki taqdimotni «kontent» deb oʻylamaydi, va

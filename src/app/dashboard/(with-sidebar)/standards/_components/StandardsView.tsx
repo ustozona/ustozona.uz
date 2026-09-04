@@ -26,6 +26,7 @@ import {
 import { TypographyMuted } from "@/components/ui/typography";
 import AddStandardModal from "./AddStandardModal";
 import AddStandardsModal from "./AddStandardsModal";
+import GapReportPanel from "./GapReportPanel";
 import { useStandardsStore, type StandardSet } from "@/store/useStandardsStore";
 import { useLessonStore } from "@/store/useLessonStore";
 import { lessonCoverage } from "@/lib/standards-coverage";
@@ -184,6 +185,10 @@ export default function StandardsView({
           )}
         </div>
       </div>
+
+      {/* Boʻshliq hisoboti — «oʻqitildi, lekin oʻlchanmadi» va aksi (§11.3).
+          Koʻrsatadigan narsa boʻlmasa oʻzini umuman chizmaydi. */}
+      <GapReportPanel classId={classId} />
 
       <AddStandardsModal
         open={addOpen}

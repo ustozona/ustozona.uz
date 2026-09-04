@@ -99,6 +99,8 @@ function toAssignmentUpsert(
     setId: a.setId ?? null,
     // Guruh kaliti ham shu qoidada — guruhdan chiqarish oʻzgarish.
     groupId: a.groupId ?? null,
+    // Standart bogʻlanishi ham: teglashni olib tashlash ham oʻzgarish.
+    standardIds: a.standardIds ?? null,
     sortOrder,
   };
 }
