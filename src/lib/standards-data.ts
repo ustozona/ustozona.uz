@@ -111,7 +111,7 @@ const SUBJECT_LABEL_ALIASES: Record<string, SubjectId> = {
  * — oʻqituvchi «Tasviriy san'at» deb yozgan boʻlsa ham katalogdagi
  * «Tasviriy sanʼat» bilan topishishi kerak.
  */
-function subjectKey(raw: string): string {
+export function subjectKey(raw: string): string {
   return raw
     .trim()
     .toLowerCase()

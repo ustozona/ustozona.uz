@@ -18,6 +18,7 @@ import {
   SUBJECT_GROUPS_BY_AREA,
   customSubjectId,
   isCustomSubject,
+  subjectKey,
   subjectLabel,
 } from "@/lib/standards-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
@@ -38,6 +39,17 @@ import { useLiveClasses } from "@/hooks/useLiveClasses";
    saqlanadi va shu maktabning boshqa sinflarida ham roʻyxatda koʻrinadi
    (pastdagi `useCustomSubjects`), yaʼni bir marta yoziladi.
    ════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Roʻyxat filtri. cmdk sukut boʻyicha xom satrni solishtiradi — «san'at» deb
+ * qidirilganda katalogdagi «Tasviriy sanʼat» topilmasdi. Ikkala tomon ham
+ * `subjectKey()` bilan birxillashtiriladi.
+ */
+function subjectFilter(value: string, search: string): number {
+  const q = subjectKey(search);
+  if (!q) return 1;
+  return subjectKey(value).includes(q) ? 1 : 0;
+}
 
 /** Maktabda allaqachon ishlatilgan «oʻz fanlari» — mavjud sinflardan. */
 function useCustomSubjects(current: string): string[] {
@@ -83,11 +95,14 @@ export function SubjectPicker({
   // Yozilgan nom allaqachon roʻyxatda boʻlsa, «qoʻshish» taklif qilinmaydi.
   const alreadyKnown = React.useMemo(() => {
     if (!trimmed) return true;
-    const key = trimmed.toLowerCase();
+    // subjectKey() bilan solishtiriladi — «Tasviriy san'at» va «Tasviriy
+    // sanʼat» bitta fan. Oddiy toLowerCase() ularni ikki xil deb bilib,
+    // rasmiy fanning nusxasini `custom:` sifatida yaratib yuborardi.
+    const key = subjectKey(trimmed);
     return (
       SUBJECT_GROUPS_BY_AREA.some((g) =>
-        g.items.some((s) => s.label.toLowerCase() === key)
-      ) || customSubjects.some((s) => subjectLabel(s).toLowerCase() === key)
+        g.items.some((s) => subjectKey(s.label) === key)
+      ) || customSubjects.some((s) => subjectKey(subjectLabel(s)) === key)
     );
   }, [trimmed, customSubjects]);
 
@@ -127,15 +142,14 @@ export function SubjectPicker({
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
-        <Command>
+        <Command filter={subjectFilter}>
           <CommandInput value={query} onValueChange={setQuery} placeholder={t("search")} />
           <CommandList>
+            {/* Bu yerga «qoʻshish» qoʻyilmaydi: u pastda alohida turadi va
+                cmdk uchun mos element sifatida sanaladi — demak roʻyxat boʻsh
+                boʻlmaydi va CommandEmpty umuman chizilmasdi. */}
             <CommandEmpty>
-              {trimmed ? (
-                <div className="p-1">{addCustom}</div>
-              ) : (
-                <span className="px-2 py-1.5 text-sm">{t("empty")}</span>
-              )}
+              <span className="px-2 py-1.5 text-sm">{t("empty")}</span>
             </CommandEmpty>
 
             {customSubjects.length > 0 ? (
