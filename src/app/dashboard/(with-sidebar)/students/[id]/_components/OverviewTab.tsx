@@ -20,6 +20,7 @@ import {
 import { TypographyLabel, TypographyMuted } from "@/components/ui/typography";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { TrendChart, BloomRadar, AttendanceDonut, AttendanceTracker, ATT_COLORS } from "./charts";
+import StandardsPanel from "./StandardsPanel";
 import { GlowBadge } from "@/components/shadcn-space/badge/glow-badge";
 import {
   GraduationCap, CalendarCheck, CalendarRange, TrendingUp, ClipboardCheck, Layers, ChevronDown, Brain,
@@ -230,10 +231,13 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
           </div>
         </div>
 
-        {/* Blum darajalari — radar. Hali haqiqiy maʼlumot yoʻq (soxta demo
-            qiymatlar) — shuning uchun sarlavha aniq qoladi, faqat tanadagi
-            grafik+legend bulutlanadi; "Tez orada" (GlowBadge, landing
-            pricing-02 bilan bir xil) sarlavha yonida — markazda muallaq emas. */}
+        {/* ⚠️ Blum radari — SOXTA (demo qiymatlar) va ATAYLAB shunday qoladi.
+            Uning oʻrnini bosuvchi HAQIQIY koʻrinish pastdagi
+            `StandardsPanel`: oʻqlar Bloom emas, MAZMUN SOHALARI. Sabab
+            pedagogik, UX emas — umumiy «tahlil qilish» koʻnikmasi fandan
+            ajralgan holda mavjud emas (docs/standards-page-spec.md §13.4).
+            Bu blok standart teglash keng tarqalgach butunlay olib
+            tashlanadi. */}
         <div className="relative flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm lg:col-span-2">
           <div className="mb-2 flex items-center gap-2.5">
             <SectionIcon><Brain /></SectionIcon>
@@ -257,6 +261,14 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
           </div>
         </div>
       </div>
+
+      {/* Standartlar oʻzlashtirishi — radar (soha) + bar roʻyxati (standart).
+          Teglangan topshiriq boʻlmasa panel oʻzini chizmaydi. */}
+      <StandardsPanel
+        classId={location.classId}
+        studentId={profile.id}
+        hex={location.hex}
+      />
 
       {/* Davomat tracker — segment lenta (butun oʻquv yili, kun-ma-kun) */}
       <div className="flex flex-col rounded-xl bg-card p-5 border border-border/50 shadow-sm">

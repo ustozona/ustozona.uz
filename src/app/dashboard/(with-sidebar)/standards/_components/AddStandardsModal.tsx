@@ -122,6 +122,7 @@ function BrowseTab({ classId }: { classId: string }) {
   function addTemplate(tpl: SetTemplate) {
     createSet({
       name: tpl.name, subject: tpl.subject, classIds: [classId], standards: tpl.standards,
+      domains: tpl.domains,
       source: tpl.source, grade: tpl.grade, frameworkCode: tpl.frameworkCode, templateId: tpl.id,
     });
   }
@@ -294,12 +295,18 @@ function MyStandardsTab({ classId }: { classId: string }) {
     if (!file) return;
     setImporting(true);
     try {
-      const { items } = await parseStandardsFile(file);
+      const { items, domains, inferredCount } = await parseStandardsFile(file);
       if (items.length) {
         const setName = name.trim() || file.name.replace(/\.[^.]+$/, "");
-        addCustomSet({ name: setName, subject: subject.trim() || "—", grade: grade.trim() || undefined, standards: items });
+        addCustomSet({ name: setName, subject: subject.trim() || "—", grade: grade.trim() || undefined, standards: items, domains });
         resetForm();
         toast.success(t("importSuccess", { count: items.length }));
+        /* Taxmin jim qoʻllanmaydi (spec §14.8/5): faylda «Boʻlim» ustuni
+           boʻlmagan qatorlarning sohasi koddan chiqarilgan — oʻqituvchi
+           buni bilishi va tuzatishi kerak. */
+        if (inferredCount > 0) {
+          toast.warning(t("importDomainsInferred", { count: inferredCount }));
+        }
       } else {
         toast.warning(t("importNoStandards"));
       }
@@ -312,6 +319,7 @@ function MyStandardsTab({ classId }: { classId: string }) {
   function attachToClass(cs: CustomSet) {
     createSet({
       name: cs.name, subject: cs.subject, classIds: [classId], standards: cs.standards,
+      domains: cs.domains,
       source: "custom", grade: cs.grade, templateId: cs.id,
     });
   }

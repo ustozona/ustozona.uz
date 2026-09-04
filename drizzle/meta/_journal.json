@@ -295,6 +295,13 @@
       "when": 1788065441948,
       "tag": "0041_blog_fikr_javob_tahrir",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1788414896974,
+      "tag": "0042_topshiriq_standartlari",
+      "breakpoints": true
     }
   ]
 }

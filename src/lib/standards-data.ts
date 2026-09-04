@@ -194,6 +194,36 @@ export function normalizeSubject(raw: string | null | undefined): string | null 
 }
 
 /** Bitta standart yozuvi — kutubxonada ham, sinfga biriktirilganda ham shu shakl. */
+/**
+ * Mazmun sohasi (domen) — standartning USTIDAGI qavat.
+ *
+ * OʻzDTS atamasi «fanning mazmun sohasi»; xalqaro ramkalarda strand/domain.
+ * Kodning ichida yashaydi: `IAT5.AD.01` → `AD`, `CCSS…RL.9-10.1` → `RL`.
+ *
+ * ⚠️ Bu ENUM EMAS va boʻlmasligi kerak — har toʻplam oʻz roʻyxatini
+ * olib yuradi. Sabab: informatika sohalari (AD/MB/TX/KT/KY/SI) hech bir
+ * jahon ramkasiga oʻxshamaydi, CEFR-2018 esa anʼanaviy 4 koʻnikmadan
+ * voz kechgan. Qatʼiy tip tizimni bitta ramkaga qulflab qoʻyardi.
+ *
+ * Batafsil: docs/standards-page-spec.md §14.
+ */
+export interface StandardDomain {
+  /** Kod prefiksi bilan bir xil boʻlgani maʼqul, mas. "AD", "R". */
+  id: string;
+  /** Koʻrsatiladigan nom — radar oʻqi va bar guruhi sarlavhasi. */
+  name: string;
+  /**
+   * Radar oʻqlari tartibi. ⚠️ MUALLIF bergan tartib, alfavit EMAS —
+   * radar shakli oʻqlar tartibiga bogʻliq, shuning uchun u maʼlumotning
+   * bir qismi (spec §11.4).
+   */
+  order: number;
+}
+
+/** Profil radari shu oraliqda maʼnoli: kamida 3, koʻpi 8 oʻq (spec §14.4). */
+export const RADAR_MIN_DOMAINS = 3;
+export const RADAR_MAX_DOMAINS = 8;
+
 export interface StandardItem {
   /** Kod, mas. "DT.01" */
   id: string;
@@ -209,6 +239,16 @@ export interface StandardItem {
   foundational?: boolean;
   /** Baholash usuli: obyektiv (quiz) yoki subʼektiv (CJ/rubrika). Default: objective. */
   assessType?: "objective" | "subjective";
+  /**
+   * Mazmun sohasi — `StandardSet.domains[].id` ga havola. IXTIYORIY:
+   * boʻsh boʻlsa standart «Boʻlimsiz» guruhiga tushadi va hamma narsa
+   * (qamrov, oʻzlashtirish, bar roʻyxati) ishlayveradi; faqat profil
+   * radari chizilmaydi.
+   *
+   * Bir dona — koʻplik emas. Standart ikki sohaga tegishli boʻlsa, u
+   * juda keng yozilgan degani va ikkiga boʻlinishi kerak (spec §14.4).
+   */
+  domainId?: string;
 }
 
 /** Tayyor kutubxona — ingliz tili koʻnikma standartlari (Reading, Writing, Listening,

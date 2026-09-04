@@ -2492,6 +2492,7 @@
     "customSetsCount": "{count} custom sets",
     "noCustomSetsYet": "No custom sets yet. Enter a name above and click \"Create\".",
     "importSuccess": "{count} standards imported",
+    "importDomainsInferred": "{count} objectives had their content area guessed from the code — please check",
     "importNoStandards": "No standards found in the file",
     "importReadError": "Could not read the file",
     "editAria": "Edit",
@@ -4301,6 +4302,38 @@
       "text": "We use cookies to improve your experience on the site. By continuing, you agree to this.",
       "reject": "Decline",
       "accept": "Accept"
+    }
+  },
+  "StandardTagPicker": {
+    "label": "Standards measured",
+    "add": "Standard",
+    "searchPlaceholder": "Search by code or text…",
+    "empty": "Nothing found",
+    "noDomain": "No content area",
+    "remove": "Remove {code}",
+    "orphanHint": "This standard was removed from its set",
+    "hint": "Results from this assignment count as evidence for these standards."
+  },
+  "StudentStandards": {
+    "title": "Standards mastery",
+    "radarHint": "Overview by content area",
+    "notAssessed": "Not assessed",
+    "needMore": "{have} evidence points, at least {need} needed",
+    "evidence": "{count} evidence points"
+  },
+  "StandardsGap": {
+    "title": "Gap report",
+    "subtitle": "Mismatch between lesson plan and assessment.",
+    "problemCount": "{count} need attention",
+    "draftRestored": "Unfinished draft restored — the standard was not attached.",
+    "attach": "Assignment",
+    "status": {
+      "untested": "Taught but never measured",
+      "untaught": "Measured but never taught"
+    },
+    "hint": {
+      "untested": "You covered these in lessons, but no assignment measures them — there is no evidence of mastery.",
+      "untaught": "These are measured by assignments, but no lesson is marked as having covered them."
     }
   }
 }

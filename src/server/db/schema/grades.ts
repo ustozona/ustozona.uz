@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   real,
@@ -97,6 +98,11 @@ export const assignments = pgTable(
      * qurilmada jimgina yolgʻiz topshiriqlarga boʻlinib ketardi.
      */
     groupId: text("group_id"),
+    /**
+     * Shu topshiriq oʻlchaydigan standart kodlari (docs/standards-page-spec.md §11.1).
+     * FK yoʻq — standart toʻplami JSONB hujjat; toʻplam oʻchsa topshiriq qoladi.
+     */
+    standardIds: jsonb("standard_ids").$type<string[]>(),
     /** Jurnal ustunlari tartibi — round-trip'da saqlanadi. */
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
