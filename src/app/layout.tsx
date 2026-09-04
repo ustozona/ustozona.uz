@@ -130,7 +130,7 @@ export default async function RootLayout({
               <TooltipProvider>{children}</TooltipProvider>
             </MotionProvider>
             <ProductScopeSync />
-            <Toaster richColors position="bottom-center" />
+            <Toaster position="bottom-center" />
           </ThemeProvider>
         </NextIntlClientProvider>
         <Analytics />
