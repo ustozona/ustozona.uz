@@ -9,6 +9,7 @@ import { TypographyMuted } from "@/components/ui/typography";
 import { panelCardClass } from "@/components/DashboardPage";
 import { MONTHS_UZ_SHORT } from "@/lib/localization";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { lessonClassIds } from "@/lib/lessons-data";
 import { useLessonStore } from "@/store/useLessonStore";
 import type { ClassIdentity } from "@/lib/class-id";
@@ -55,7 +56,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
           modifiersStyles={{ lesson: { fontWeight: 700, color: hex } }}
         />
         <div className="flex items-center gap-1.5 px-2 pb-1 pt-0.5">
-          <span className="size-1.5 rounded-full" style={{ backgroundColor: hex }} />
+          <ClassSwatch hex={hex} className="size-1.5" />
           <TypographyMuted className="text-[11px]">{t("lessonDaysLegend")}</TypographyMuted>
         </div>
       </Card>

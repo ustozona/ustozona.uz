@@ -74,6 +74,7 @@ import {
 } from "@/lib/grades-data";
 import { getScaleBoundaries } from "@/lib/grade-scale";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { ClassSwatch } from "@/components/ClassSwatch";
 
 function buildFormSchema(t: (key: string) => string) {
   return z.object({
@@ -961,12 +962,6 @@ function ClassMultiSelect({
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-function ClassSwatch({ hex }: { hex: string }) {
-  return (
-    <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: hex }} aria-hidden />
   );
 }
 

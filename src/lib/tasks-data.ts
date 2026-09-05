@@ -72,6 +72,36 @@ export function birthdayTaskId(studentId: string, year: number): string {
   return `task:birthday:${studentId}:${year}`;
 }
 
+/* ── Avto-vazifa sarlavhalari ─────────────────────────────────────────
+   Har biri BITTA joyda hosil qilinadi: avto-yarashtiruvchi bajarilmagan
+   vazifalarning eski sarlavhasini ham shu qiymatga yangilaydi, shuning
+   uchun format oʻzgarsa roʻyxat oʻzidan-oʻzi yangilanadi. */
+
+/** Tugʻilgan kun vazifasi — toʻliq gap koʻrinishida:
+    "7-D sinf oʻquvchisi Malika Yoʻldoshevani tugʻilgan kuni bilan
+    tabriklash". Sinf nomaʼlum boʻlsa oldingi boʻlak tushib qoladi. */
+export function birthdayTaskTitle(studentName: string, className?: string | null): string {
+  const who = className ? `${className} sinf oʻquvchisi ${studentName}` : studentName;
+  return `${who}ni tugʻilgan kuni bilan tabriklash`;
+}
+
+/** Dars vazifasi — "9-A — Informatika: Tanishuv darsi".
+
+    Sinf birinchi: roʻyxatda ketma-ket kelgan darslar bir xil mavzu nomiga
+    ega boʻlishi odatiy (masalan bir kunda toʻrt sinfda bitta mavzu), sinf
+    esa ularni birinchi belgidanoq ajratadi. Fan ixtiyoriy — kiritilmagan
+    boʻlsa boʻlagi butunlay tushadi, "—" yoki ":" yolgʻiz qolmaydi. */
+export function lessonTaskTitle(
+  topicTitle: string,
+  className?: string | null,
+  subject?: string | null,
+): string {
+  const topic = topicTitle.trim();
+  const head = [className, subject].filter(Boolean).join(" — ");
+  if (!head) return topic;
+  return topic ? `${head}: ${topic}` : head;
+}
+
 /* ── Yangi manual vazifa ───────────────────────────────────────────── */
 
 export function newManualTask(input: {
@@ -147,6 +177,38 @@ export function formatMinutes(total: number): string {
 /** Vazifaning barcha kunlar boʻyicha jamlangan fokus vaqti (daqiqa). */
 export function totalFocusMinutes(task: Task): number {
   return (task.focus ?? []).reduce((sum, f) => sum + f.minutes, 0);
+}
+
+/** Vazifaning "sarflangan vaqti" (daqiqa) — statistika uchun.
+
+    Fokus taymeri yozgan sessiyalardan tashqari, **oʻtkazilgan dars** ham
+    sarflangan vaqt hisoblanadi: dars-manbali vazifa bajarilgan boʻlsa,
+    darsning oʻz davomiyligi (dueEndMin − dueMin) shu vaqtga kiradi. Aks
+    holda kun boʻyi dars oʻtkazgan oʻqituvchida "sarflangan vaqt" deyarli
+    nolga teng koʻrinardi.
+
+    Dars davomida taymer ham yurgan boʻlsa qoʻshib emas, `max` bilan
+    olamiz — bir xil vaqt ikki marta sanalmasin.
+
+    Faqat **oʻtib boʻlgan** dars sanaladi: dars vazifasi "done" boʻlishi
+    hali oʻtkazilganini anglatmaydi — yarashtiruvchi darsning oʻzi
+    `Completed` boʻlsa kelasi haftadagi sessiyani ham darrov done qilib
+    yaratadi (oyna bugundan +21 kun). Sana bugundan keyin boʻlsa vaqt
+    hali sarflanmagan. Aniqlik — kun darajasida: bugungi, lekin hali
+    boshlanmagan dars ham hisobga kiradi (kun statistikasi uchun maqbul). */
+export function taskElapsedMinutes(task: Task, today: string = todayKeyOf()): number {
+  const focus = totalFocusMinutes(task);
+  const isPastLesson =
+    task.status === "done" &&
+    task.source.kind === "lesson" &&
+    task.dueMin != null &&
+    task.dueEndMin != null &&
+    task.dueDate != null &&
+    task.dueDate <= today;
+  if (isPastLesson) {
+    return Math.max(focus, Math.max(0, task.dueEndMin! - task.dueMin!));
+  }
+  return focus;
 }
 
 /** Bitta pomodoroning shu vazifa uchun amaldagi uzunligi — dars-manbali

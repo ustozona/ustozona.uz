@@ -2,7 +2,8 @@ import type { ClassData } from "@/lib/grades-data";
 import type { Lesson } from "@/lib/lessons-data";
 import { lessonSessions } from "@/lib/lessons-data";
 import { addDaysKey, dateToKey } from "@/lib/date-keys";
-import { birthdayTaskId, gradingTaskId, lessonTaskId, type Task } from "@/lib/tasks-data";
+import { birthdayTaskId, birthdayTaskTitle, gradingTaskId, lessonTaskId, lessonTaskTitle, type Task } from "@/lib/tasks-data";
+import { subjectLabel } from "@/lib/standards-data";
 
 /* ════════════════════════════════════════════════════════════════════
    DARS + BAHOLASH AVTO-VAZIFALARI — pure reconcile (derive-and-reconcile,
@@ -66,13 +67,15 @@ export function reconcileLessonAndGradingTasks(
       const id = lessonTaskId(l.id, s.classId, s.date, s.startMin);
       keepLessonIds.add(id);
       const existing = existingById.get(id);
+      const info = classDataMap[s.classId]?.info;
+      const title = lessonTaskTitle(l.title, info?.name, subjectLabel(info?.subject));
 
       if (!existing) {
         const bornDone = l.status === "Completed";
         if (!bornDone) allDone = false;
         upserts.push({
           id,
-          title: l.title,
+          title,
           status: bornDone ? "done" : "todo",
           priority: "none",
           dueDate: s.date,
@@ -96,8 +99,8 @@ export function reconcileLessonAndGradingTasks(
         upserts.push({ ...existing, status: "done", completedAt: nowIso });
         continue;
       }
-      if (existing.status === "todo" && existing.title !== l.title) {
-        upserts.push({ ...existing, title: l.title });
+      if (existing.status === "todo" && existing.title !== title) {
+        upserts.push({ ...existing, title });
       }
     }
 
@@ -234,11 +237,12 @@ export function reconcileBirthdayTasks(
         const existing = existingById.get(id);
         const leadStart = addDaysKey(occ.dateKey, -settings.birthdayLead);
         const shouldNotifyNow = todayKey >= leadStart && todayKey <= occ.dateKey;
+        const title = birthdayTaskTitle(s.name, cd.info.name);
 
         if (!existing) {
           const task: Task = {
             id,
-            title: `${s.name} — tugʻilgan kun`,
+            title,
             status: "todo",
             priority: "none",
             dueDate: occ.dateKey,
@@ -257,8 +261,19 @@ export function reconcileBirthdayTasks(
           continue;
         }
 
-        if (!existing.notifiedAt && shouldNotifyNow) {
-          upserts.push({ ...existing, notifiedAt: nowIso });
+        // Sarlavha formati oʻzgarganda (yoki oʻquvchi/sinf nomi
+        // tahrirlanganda) mavjud vazifa ham yangilanadi — bajarilmagan
+        // vazifalarda eski matn qolib ketmasin.
+        const needsTitle = existing.status === "todo" && existing.title !== title;
+        const needsNotify = !existing.notifiedAt && shouldNotifyNow;
+        if (needsTitle || needsNotify) {
+          upserts.push({
+            ...existing,
+            ...(needsTitle ? { title } : {}),
+            ...(needsNotify ? { notifiedAt: nowIso } : {}),
+          });
+        }
+        if (needsNotify) {
           notify.push({ taskId: id, studentId: s.id, studentName: s.name, dateKey: occ.dateKey });
         }
       }

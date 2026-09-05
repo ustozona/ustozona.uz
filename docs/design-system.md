@@ -42,6 +42,22 @@ Hosilalar:
 - `classTints(color)` — tayyor inline-style (surface, tint, badge, text, ring, ...).
 - `color-mix(in srgb, ${hex} N%, transparent)` — shaffof ottenka.
 
+#### Sinfni koʻrsatishning ikki kanonik shakli
+
+Sinf rangi/nomi UI'da **faqat shu ikki komponent** orqali chiziladi — qoʻlda
+`<span className="size-2 rounded-full" style={{ backgroundColor: hex }}>`
+yozilmaydi va mahalliy nusxa yaratilmaydi:
+
+| Holat | Komponent |
+|---|---|
+| Sinf nomi qatorning **asosiy** matni (sinflar roʻyxati, tanlovchi, breadcrumb, meta-qator) | `<ClassSwatch hex={…} />` + oddiy matn |
+| Sinf nomi **yorliq** sifatida boshqa mazmun ichida (dars kartasi, jadval qatori, chip) | `<ClassBadge color={…} name={…} />` |
+
+`ClassSwatch` — doira (`rounded-full`), oʻlcham `className` bilan sozlanadi,
+shakl oʻzgarmaydi. `ClassBadge` anatomiyasi (18px qobiq, 11px matn,
+`classTints().badge` foni) komponent ichida qulflangan — chaqiruv joyida
+takrorlanmaydi.
+
 ---
 
 ## 2. Tipografika shkalasi

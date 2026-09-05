@@ -282,7 +282,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         onClick={() => setSelectedUnitId(unit.id)}
         className="list-row group w-full"
       >
-        <span className="size-2.5 rounded-[4px] shrink-0" style={{ backgroundColor: hex }} />
+        <ClassSwatch hex={hex} className="size-2.5" />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           {pad(unit.number)}. {unit.title}
         </span>

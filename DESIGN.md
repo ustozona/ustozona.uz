@@ -44,6 +44,7 @@ Barcha semantik ranglar OKLCH, `:root` (light) / `.dark` da aniqlangan,
 manbalardan foydalaniladi:
 - Baho/davomat rangi → [`src/lib/score-colors.ts`](src/lib/score-colors.ts) (`gradeBadgeClass`, `attendanceBadgeClass`, `scoreBarColor`)
 - Sinf rangi → [`src/lib/class-colors.ts`](src/lib/class-colors.ts) (`CLASS_COLOR_BASE`, OKLCH `-400`, v3.shadcn.com/colors darajasi) → `CLASS_COLOR_HEX`, `classTints()`
+  - Sinfni chizish: nuqta = `<ClassSwatch>`, yorliq = `<ClassBadge>` — qoʻlda span yoki mahalliy nusxa yoʻq (`docs/design-system.md` §1)
 - Toifa (topic) rangi → `TOPIC_COLOR_BASE` (`src/lib/grades-data`), xuddi shu engine ustida
 
 Batafsil jadval: `docs/design-system.md` §1.
