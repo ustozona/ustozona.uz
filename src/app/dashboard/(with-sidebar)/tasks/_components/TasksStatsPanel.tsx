@@ -7,7 +7,7 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { StatCard } from "@/components/StatCard";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AttendanceRing } from "../../statistics/_components/AttendanceRing";
-import { taskPomoLengthMin, totalFocusMinutes, type Task } from "@/lib/tasks-data";
+import { taskElapsedMinutes, taskPomoLengthMin, type Task } from "@/lib/tasks-data";
 
 /** `formatMinutes` "daq."ni qiymat matniga qotirib qoʻygan (bir xil qalin
     shrift); statistika sahifasidagi kabi kichik/xira `unit` sifatida
@@ -43,7 +43,7 @@ export function TasksStatsPanel({
     (sum, task) => sum + (task.estPomos ?? 0) * taskPomoLengthMin(task, pomoMinutes),
     0
   );
-  const elapsedMinutes = [...activeTasks, ...doneTasks].reduce((sum, task) => sum + totalFocusMinutes(task), 0);
+  const elapsedMinutes = [...activeTasks, ...doneTasks].reduce((sum, task) => sum + taskElapsedMinutes(task), 0);
   const completedCount = doneTasks.filter((task) => task.status === "done").length;
   const totalCount = activeTasks.length + completedCount;
   const completedPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : null;

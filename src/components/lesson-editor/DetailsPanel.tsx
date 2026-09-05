@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX, classGradient } from "@/lib/class-colors";
+import { ClassBadge } from "@/components/ClassBadge";
 import { lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
 import { fmtClock, dateKeyToDate } from "@/lib/lesson-schedule";
 import { MONTHS_UZ_SHORT, DAYS_UZ_SUN } from "@/lib/localization";
@@ -30,18 +31,6 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 const dot = (hex: string) => <ClassSwatch hex={hex} className="size-2.5" />;
-
-/** Sinf nomi + rangli fon badge — bir xil coʻlmaz'da ikki marta takrorlangan
- *  color-mix uslubi shu yerga yigʻildi (dropdown chip va jadval chip). */
-const ClassBadge = ({ hex, name }: { hex: string; name: string }) => (
-  <span
-    className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium truncate"
-    style={{ backgroundColor: `color-mix(in srgb, ${hex} 12%, transparent)`, color: `color-mix(in srgb, ${hex} 55%, var(--foreground))` }}
-  >
-    {dot(hex)}
-    <span className="truncate">{name}</span>
-  </span>
-);
 
 const FieldButton = ({ children }: { children: React.ReactNode }) => (
   <span className="flex items-center justify-between gap-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm hover:bg-accent/50 transition-colors text-left">
@@ -137,7 +126,7 @@ export default function DetailsPanel({
                       </Tooltip>
                     ) : (
                       selectedClasses.map((c) => (
-                        <ClassBadge key={c.id} hex={CLASS_COLOR_HEX[classColor(c)]} name={c.name} />
+                        <ClassBadge key={c.id} color={classColor(c)} name={c.name} />
                       ))
                     )}
                   </span>
@@ -272,7 +261,7 @@ export default function DetailsPanel({
                                   {fmtClock(it.startMin)} — {fmtClock(it.endMin)}
                                 </span>
                                 {selectedClasses.length > 1 && cls && (
-                                  <ClassBadge hex={it.hex} name={cls.name} />
+                                  <ClassBadge color={classColor(cls)} name={cls.name} />
                                 )}
                                 <button onClick={() => onRemoveScheduleForClass(it.classId, it.idx)} title={t("removeSchedule")} aria-label={t("removeSchedule")}
                                   className="ml-auto shrink-0 text-muted-foreground/40 hover:text-destructive focus-visible:text-destructive focus-visible:opacity-100 transition-colors opacity-60 group-hover/time:opacity-100">

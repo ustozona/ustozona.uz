@@ -24,6 +24,7 @@ import {
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
 import { EventPill as CalendarEventPill } from "@/components/calendar/EventPill";
 import { ClassBadge } from "@/components/ClassBadge";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { useCalendarFormat } from "@/components/calendar/format";
@@ -1269,7 +1270,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 >
                                   {checked && <Check className="size-3 text-white" strokeWidth={3} />}
                                 </button>
-                                <span className="size-2 shrink-0 rounded-full" style={tints.dot} />
+                                <ClassSwatch hex={tints.solid} className="size-2" />
                                 <span className="truncate">{info.name}</span>
                               </CommandItem>
                             );

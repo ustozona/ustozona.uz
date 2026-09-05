@@ -175,16 +175,20 @@ export function TasksNav({
                       key={cls.id}
                       type="button"
                       onClick={() => onSelectClass(cls.id)}
-                      style={active ? { ["--card-accent" as string]: hex, ...tints.tint } : undefined}
-                      className="list-row-compact w-full disabled:pointer-events-none disabled:opacity-50"
+                      style={active ? {
+                        ["--card-accent" as string]: hex,
+                        ...tints.tint,
+                        ...tints.softBorder,
+                      } : undefined}
+                      className="list-row list-row--dot-ring group w-full disabled:pointer-events-none disabled:opacity-50"
                       data-active={active || undefined}
-                      data-tint={active || undefined}
+                      aria-current={active || undefined}
                     >
-                      <ClassSwatch hex={hex} />
+                      <ClassSwatch hex={hex} className="size-2" />
                       <span
                         className={cn(
                           "flex-1 truncate text-left text-sm transition-colors",
-                          active ? "font-semibold text-foreground" : "text-foreground/70"
+                          active ? "font-semibold text-foreground" : "text-foreground/70 group-hover:text-foreground"
                         )}
                       >
                         {cls.name}

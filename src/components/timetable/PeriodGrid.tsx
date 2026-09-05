@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { classTints, CLASS_CARD_INTERACTION, type ClassColor } from "@/lib/class-colors";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { cn } from "@/lib/utils";
 import type { TimetableEvent } from "@/lib/timetable";
 import type { PeriodRow } from "@/lib/bell-schedule";
@@ -335,7 +336,7 @@ function ClassPicker({ classes, selectedId, onSelect }: {
             const tints = classTints(c.color);
             return (
               <CommandItem key={c.id} value={`${c.name} ${subjectLabel(c.subject)}`} onSelect={() => onSelect(c.id)} className="gap-2">
-                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: tints.solid }} />
+                <ClassSwatch hex={tints.solid} className="size-2.5" />
                 <span className="font-medium">{c.name}</span>
                 {c.subject && <span className="truncate text-xs text-muted-foreground">{subjectLabel(c.subject)}</span>}
                 {selectedId === c.id && <Check className="ml-auto size-4" />}
