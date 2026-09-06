@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useClassIdParam } from "@/hooks/useClassIdParam";
 import ClassListPanel from "@/components/ClassListPanel";
+import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import AttendanceView from "./_components/AttendanceView";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useTourRequest } from "@/components/tour/tour-request";
@@ -26,24 +27,32 @@ export default function AttendancePage() {
   const effectiveClassId = isDemoMode ? ATTENDANCE_TOUR_DEMO_CLASS_ID : (selectedClassId ?? "");
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-6 p-4 md:p-6">
+    <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="attendance" active={isDemoMode} />
-      <div className="flex flex-1 min-w-0 h-full min-h-0 gap-6 overflow-hidden">
-        <div data-tour="attendance-classes" className="hidden lg:block w-[280px] shrink-0 h-full">
+      {/* Qoʻldagi `hidden lg:block w-[280px]` oʻrniga kanonik `DashboardColumns`:
+          mobilда sinf-tanlash yoʻqolmaydi, `ClassListPanel` trigger+Sheet'ga oʻtadi. */}
+      <DashboardColumns
+        template="minmax(0,280px) minmax(0,1fr)"
+        className="lg:h-full lg:overflow-hidden"
+      >
+        <DashboardColumn hideBelow="lg" mobile="self" data-tour="attendance-classes">
           <ClassListPanel
             page="attendance"
             selectedClassId={effectiveClassId}
             onSelect={setSelectedClassId}
             demoClasses={demoClasses ?? undefined}
           />
-        </div>
-        <AttendanceView
-          classId={effectiveClassId}
-          demoMode={isDemoMode}
-          demoRoster={demoRoster ?? undefined}
-          demoClassInfo={demoClasses?.[0]}
-        />
-      </div>
+        </DashboardColumn>
+        {/* `AttendanceView` ildizi `flex-1` beradi — ustun flex konteyner boʻlishi shart. */}
+        <DashboardColumn className="flex flex-col max-lg:min-h-[70svh]">
+          <AttendanceView
+            classId={effectiveClassId}
+            demoMode={isDemoMode}
+            demoRoster={demoRoster ?? undefined}
+            demoClassInfo={demoClasses?.[0]}
+          />
+        </DashboardColumn>
+      </DashboardColumns>
     </div>
   );
 }

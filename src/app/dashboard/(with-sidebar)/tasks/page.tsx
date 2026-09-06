@@ -46,12 +46,22 @@ function useListParam(): [SmartListKey | null, (v: SmartListKey | null) => void]
 export default function TasksPage() {
   const tNav = useTranslations("TasksPage.nav");
   const tList = useTranslations("TasksPage.list");
+  const tDetail = useTranslations("TaskDetail");
 
   const [urlList, setUrlList] = useListParam();
   const [classId, setClassId] = useClassIdParam();
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  /* Mobil: detal ustuni oʻngdan chiquvchi Sheet — vazifa bosilganda ochiladi
+     (trigger tugmasi yoʻq, vazifa tanlanmasa panel maʼnosiz). */
+  const [detailOpen, setDetailOpen] = useState(false);
+  const toggleTaskSelection = (id: string) =>
+    setSelectedTaskId((prev) => {
+      const next = prev === id ? null : id;
+      setDetailOpen(next !== null);
+      return next;
+    });
   const [weekSelectedDate, setWeekSelectedDate] = useState(() => new Date());
   const [dateFilter, setDateFilter] = useState<string | null>(null);
 
@@ -174,13 +184,17 @@ export default function TasksPage() {
   const selectedTask = items.find((t) => t.id === selectedTaskId) ?? null;
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col max-lg:min-h-full lg:h-full">
       <DashboardColumns
         template="minmax(0,25fr) minmax(0,75fr)"
         xlTemplate="minmax(0,25fr) minmax(0,50fr) minmax(0,25fr)"
-        className="h-full overflow-hidden p-4 md:p-6"
+        className="p-4 md:p-6 lg:h-full lg:overflow-hidden"
       >
-        <DashboardColumn hideBelow="lg">
+        {/* Mobil: roʻyxat navigatsiyasi chapdan chiquvchi Sheet'da. */}
+        <DashboardColumn
+          hideBelow="lg"
+          mobile={{ title: tNav("title"), icon: <ListIcon className="size-4" />, side: "left" }}
+        >
           <TasksNav
             listKey={effectiveList}
             classId={classId}
@@ -206,7 +220,7 @@ export default function TasksPage() {
             hydrated={hydrated}
             todayKey={today}
             selectedTaskId={selectedTaskId}
-            onSelectTask={(id) => setSelectedTaskId((prev) => (prev === id ? null : id))}
+            onSelectTask={toggleTaskSelection}
             onToggleStatus={(id) => {
               const task = items.find((x) => x.id === id);
               if (task) setStatus(id, task.status === "done" ? "todo" : "done");
@@ -247,7 +261,16 @@ export default function TasksPage() {
           />
         </DashboardColumn>
 
-        <DashboardColumn hideBelow="xl">
+        <DashboardColumn
+          hideBelow="xl"
+          mobile={{
+            title: tDetail("title"),
+            side: "right",
+            hideTrigger: true,
+            open: detailOpen,
+            onOpenChange: setDetailOpen,
+          }}
+        >
           {selectedTask ? (
             <TaskDetail
               task={selectedTask}
@@ -266,9 +289,10 @@ export default function TasksPage() {
               onDelete={() => {
                 deleteTask(selectedTask.id);
                 setSelectedTaskId(null);
+                setDetailOpen(false);
               }}
               onCancel={() => cancelTask(selectedTask.id)}
-              onClose={() => setSelectedTaskId(null)}
+              onClose={() => { setSelectedTaskId(null); setDetailOpen(false); }}
               pomoMinutes={pomoMinutes}
             />
           ) : (

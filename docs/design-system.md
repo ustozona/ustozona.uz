@@ -168,6 +168,42 @@ shadow-none/px-5/py-4/min-h-16 qotirilgan holda.
   Breakpoint siyosati: chap "Sinflar" paneli = `lg`, oʻng detal/preview paneli = `xl`
   (students preview `lg` da — ustunlar bilan birga chiqadi, hujjatlangan istisno).
 
+  **Mobil bosqichi (2026-09-06).** `hideBelow` yolgʻiz oʻzi ustunni
+  YOʻQOTADI — telefonda sahifa tugik boʻlib qoladi. Shu sabab yon ustunga
+  `mobile` propi beriladi:
+
+  ```tsx
+  {/* Sinf tanlash — panel oʻzi trigger + Sheet koʻrsatadi */}
+  <DashboardColumn hideBelow="lg" mobile="self">
+    <ClassListPanel page="grades" selectedClassId={id} onSelect={select} />
+  </DashboardColumn>
+
+  {/* Detal/preview — qator bosilganda oʻngdan chiqadi, trigger tugmasi yoʻq */}
+  <DashboardColumn
+    hideBelow="lg"
+    mobile={{ title: t("previewPanel"), side: "right", hideTrigger: true,
+              open: previewOpen, onOpenChange: setPreviewOpen }}
+  >
+    <PreviewCard … />
+  </DashboardColumn>
+  ```
+
+  - `mobile="self"` — bola oʻz ixcham koʻrinishini oʻzi beradi.
+  - `mobile={{ title, icon?, side?, id?, hideTrigger?, open?, onOpenChange? }}` —
+    bola `Sheet` ichida; `side` navigatsiya uchun `left`, detal uchun `right`.
+  - `open`/`onOpenChange` — `DashboardColumns`ni render qilgan sahifa
+    provayderdan TASHQARIDA turadi, shuning uchun panelni shu ikki prop
+    orqali boshqaradi. Chuqurroqdagi bolalar uchun `useDashboardColumns()`
+    (`openPanel`/`closePanels`) bor.
+  - Balandlik: `< lg` da ustun `h-auto`; sahifa qobigʻida `h-full` va
+    `overflow-hidden` `lg:` prefiksida yoziladi, vertikal scroll esa
+    `dashboard/layout.tsx` dagi `max-lg:overflow-y-auto` ga oʻtadi.
+    Ustma-ust tushgan panelga `max-lg:min-h-[50–70svh]` beriladi.
+  - JS chegarasi (`useIsBelow`) `hideBelow` bilan bir xil breakpointdan
+    olinadi — aks holda 768–1023px da "oʻlik zona" chiqadi.
+
+  Toʻliq kontrakt va sabab: `DESIGN.md` §10.
+
 ### Brend CTA tugmasi (`variant="brand"` / `BrandCtaButton`)
 
 Marketing/konversiya nuqtalari uchun maxsus sariq tugma — oddiy ish amallarida

@@ -369,10 +369,10 @@ export default function AssignmentsPage() {
   const columnsTemplate = "minmax(0,1fr) minmax(0,3fr)";
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-4 p-4 md:p-6">
+    <div className="flex flex-col flex-1 min-w-0 gap-4 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="assignments" active={isDemoMode} />
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden">
-        <DashboardColumn hideBelow="lg" data-tour="assignments-classes">
+      <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
+        <DashboardColumn hideBelow="lg" mobile="self" data-tour="assignments-classes">
           <ClassListPanel
             page="assignments"
             selectedClassId={effectiveClassId ?? ""}
@@ -381,7 +381,7 @@ export default function AssignmentsPage() {
           />
         </DashboardColumn>
 
-        <div data-tour="assignments-list" className="flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div data-tour="assignments-list" className="flex min-w-0 min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card lg:h-full max-lg:min-h-[60svh]">
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>

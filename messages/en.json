@@ -803,6 +803,7 @@
     "emptyFilteredDescription": "Try adjusting the filter or search.",
     "emptyDescription": "Add your first student or import a ready-made list.",
     "viewProfile": "View profile",
+    "previewPanel": "Student card",
     "edit": "Edit",
     "addNote": "Add note",
     "statusLabel": "Status",
@@ -1393,7 +1394,6 @@
     "exportEmptyError": "Schedule is empty, nothing to export",
     "exportSuccessToast": "Schedule exported",
     "classRemovedToast": "Class removed from schedule",
-    "undo": "Undo",
     "notScheduled": "Not scheduled",
     "classesTitle": "Classes",
     "add": "Add",
@@ -3242,6 +3242,7 @@
       "undo": "Undo"
     },
     "title": "Classes",
+    "selectClass": "Choose a class",
     "addClass": "Add class",
     "add": "Add",
     "emptyTitle": "No classes yet",

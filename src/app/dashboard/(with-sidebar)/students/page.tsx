@@ -132,6 +132,17 @@ export default function StudentsPage() {
   const [selectedClassId, handleSelectClass] = useClassIdParam();
 
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  /* Mobil: preview ustuni Sheet sifatida chiqadi — qator bosilganda ochiladi
+     (trigger tugmasi yoʻq, chunki panel oʻquvchi tanlanmasa maʼnosiz).
+     Desktopда bu holat ishlatilmaydi — ustun oddiy grid track boʻlib qoladi. */
+  const [previewOpen, setPreviewOpen] = useState(false);
+  /** Qatorni bosish — tanlovni almashtiradi va mobilда preview'ni ochadi/yopadi. */
+  const toggleStudentSelection = (id: string) =>
+    setSelectedStudentId((prev) => {
+      const next = prev === id ? null : id;
+      setPreviewOpen(next !== null);
+      return next;
+    });
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("grade");
   const compare = useCollator();
@@ -188,6 +199,7 @@ export default function StudentsPage() {
   // Sinf almashganda preview yopiladi
   useEffect(() => {
     setSelectedStudentId(null);
+    setPreviewOpen(false);
     setSearch("");
     setSelectedRowIds(new Set());
   }, [selectedClassId]);
@@ -392,11 +404,11 @@ export default function StudentsPage() {
   const toolbarBtn = "size-9 shadow-none";
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-6 p-4 md:p-6">
+    <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="students" active={isDemoMode} />
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden">
+      <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
         {/* ── Ustun 1: Sinflar ── */}
-        <DashboardColumn hideBelow="lg" data-tour="students-classes">
+        <DashboardColumn hideBelow="lg" mobile="self" data-tour="students-classes">
           <ClassListPanel
             page="students"
             selectedClassId={selectedClassId ?? (isDemoMode ? STUDENTS_TOUR_DEMO_CLASS_ID : "")}
@@ -406,7 +418,7 @@ export default function StudentsPage() {
         </DashboardColumn>
 
         {/* ── Ustun 2: Oʻquvchilar roʻyxati ── */}
-        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div data-tour="students-list" className="@container flex min-w-0 min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-card lg:h-full max-lg:min-h-[60svh]">
           {noClass ? (
             <Empty className="h-full border-0">
               <EmptyHeader>
@@ -664,7 +676,7 @@ export default function StudentsPage() {
               <StudentsDataTable
                 students={students}
                 selectedStudentId={selectedStudentId}
-                onSelect={(id) => setSelectedStudentId((prev) => (prev === id ? null : id))}
+                onSelect={toggleStudentSelection}
                 selectedIds={selectedRowIds}
                 onToggleSelect={toggleRowSelect}
                 onToggleSelectAll={toggleSelectAllRows}
@@ -685,7 +697,7 @@ export default function StudentsPage() {
                       <ContextMenu key={s.id}>
                         <ContextMenuTrigger asChild>
                           <div
-                            onClick={() => setSelectedStudentId(isSelected ? null : s.id)}
+                            onClick={() => toggleStudentSelection(s.id)}
                             className="list-card group block w-full cursor-pointer p-4 text-left"
                             data-active={isSelected || undefined}
                             style={{
@@ -788,7 +800,17 @@ export default function StudentsPage() {
 
         {/* ── Ustun 3: Preview (oʻquvchi tanlanganda) ── */}
         {selectedStudent && (
-          <DashboardColumn hideBelow="lg" data-tour="students-preview">
+          <DashboardColumn
+            hideBelow="lg"
+            mobile={{
+              title: t("previewPanel"),
+              side: "right",
+              hideTrigger: true,
+              open: previewOpen,
+              onOpenChange: setPreviewOpen,
+            }}
+            data-tour="students-preview"
+          >
             <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
               <PreviewCard
                 key={selectedStudent.id}

@@ -37,6 +37,8 @@ import {
 import { Illustration } from "@/components/ui/illustration";
 import { useClassPanelStats, type Page } from "@/hooks/useClassPanelStats";
 import type { ClassInfo } from "@/lib/grades-data";
+import { useIsBelow } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 type Props = {
   page: Page;
@@ -65,6 +67,18 @@ export default function ClassListPanel({
 
   const stats = useClassPanelStats(page, selectedClassId);
   const showStats = !!(selected && tints && stats);
+
+  /* Mobil (`< lg`): panel ustun sifatida sigʻmaydi — oʻrniga tanlangan sinfni
+     koʻrsatuvchi toʻliq kenglikdagi trigger va chapdan chiquvchi Sheet.
+     Chegara `lg` — `DashboardColumn hideBelow="lg"` bilan bir xil, aks holda
+     768–1023px oraligʻida ikkalasi ham yoʻqoladi. */
+  const isCompact = useIsBelow("lg");
+  const [sheetOpen, setSheetOpen] = useState(false);
+  /** Sinf tanlangach mobil Sheet oʻzini yopadi (sahifada qoʻshimcha ish yoʻq). */
+  const handleSelect = (id: string) => {
+    onSelect(id);
+    setSheetOpen(false);
+  };
 
   // onAddClass berilmasa (koʻp sahifada shunday) — panel oʻzi sinf yaratish
   // modalini boshqaradi, "Sinflar" boʻlimiga sakrash oʻrniga.
@@ -113,8 +127,7 @@ export default function ClassListPanel({
     });
   };
 
-  return (
-    <div className="h-full flex flex-col">
+  const panel = (
       <div className="bg-card rounded-xl border border-border flex flex-col overflow-hidden min-w-0 min-h-0 h-full">
         {/* Header */}
         <div className={cn(panelHeaderClass, "items-center justify-between gap-3")}>
@@ -176,7 +189,7 @@ export default function ClassListPanel({
                   <ContextMenu key={cls.id}>
                     <ContextMenuTrigger asChild>
                       <button
-                        onClick={() => onSelect(cls.id)}
+                        onClick={() => handleSelect(cls.id)}
                         style={isSelected ? {
                           ["--card-accent" as string]: rowTints.solid,
                           ...rowTints.tint,
@@ -279,7 +292,12 @@ export default function ClassListPanel({
           </div>
         )}
       </div>
+  );
 
+  /* Modallar Sheet'dan TASHQARIDA: sinf yaratish/tahrirlash oynasi ochilganda
+     Sheet yopilishi mumkin, modal esa ochiq qolishi shart. */
+  const modals = (
+    <>
       {internalModalOpen && (
         <ClassFormModal
           mode="create"
@@ -327,6 +345,60 @@ export default function ClassListPanel({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </>
+  );
+
+  if (isCompact) {
+    return (
+      <>
+        {/* Trigger — `select` koʻrinishida: tanlangan sinf rangi + nomi.
+            40px balandlik ATAYLAB (toolbar standarti 36px emas): bu mobil
+            barmoq nishoni, DESIGN.md dagi hujjatlangan deviatsiya. */}
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={sheetOpen}
+          className="flex h-10 w-full min-w-0 shrink-0 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm transition-colors hover:bg-muted"
+        >
+          {selected && tints ? (
+            <>
+              <ClassSwatch hex={tints.solid} className="size-2 shrink-0" />
+              <span className="min-w-0 flex-1 truncate text-left font-medium text-foreground">
+                {selected.name}
+              </span>
+            </>
+          ) : (
+            <>
+              <GraduationCap className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate text-left text-muted-foreground">
+                {t("selectClass")}
+              </span>
+            </>
+          )}
+          <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </button>
+
+        {/* Sarlavha faqat skrin-rider uchun va yopish tugmasi yoʻq —
+            `Sidebar`ning mobil Sheet'i bilan bir xil naqsh (qoplama bosiladi). */}
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetContent side="left" showCloseButton={false} className="w-[88vw] gap-0 p-3 sm:max-w-sm">
+            <SheetHeader className="sr-only">
+              <SheetTitle>{t("title")}</SheetTitle>
+            </SheetHeader>
+            {panel}
+          </SheetContent>
+        </Sheet>
+
+        {modals}
+      </>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      {panel}
+      {modals}
     </div>
   );
 }

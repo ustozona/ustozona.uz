@@ -108,12 +108,15 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col max-lg:min-h-full lg:h-full">
       <DashboardPageLayout className="flex-1">
-        <div className={cn(dashboardGridClass, "stagger-children flex-1 min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,45fr)_minmax(0,30fr)_minmax(0,25fr)] lg:grid-rows-[1fr]")}>
+        {/* Mobilда uch ustun ustma-ust tushadi: har biriga oʻqiladigan
+            eng kichik balandlik beriladi (aks holda `min-h-0` ularni nolga
+            siqadi), sahifa esa vertikal scroll qiladi. */}
+        <div className={cn(dashboardGridClass, "stagger-children grid-cols-1 lg:flex-1 lg:min-h-0 lg:grid-cols-[minmax(0,45fr)_minmax(0,30fr)_minmax(0,25fr)] lg:grid-rows-[1fr]")}>
 
           {/* Chap ustun (45%) — Hero + Kelgusi darslar */}
-          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+          <div className={cn(dashboardStackClass, "min-h-0 lg:h-full max-lg:min-h-[70svh]")}>
             <HomeHero
               firstName={firstName}
               greeting={greetingText()}
@@ -132,12 +135,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Oʻrta ustun (30%) — Bugungi darslar (WeekStrip + roʻyxat ⇄ vaqt oʻqi) */}
-          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+          <div className={cn(dashboardStackClass, "min-h-0 lg:h-full max-lg:min-h-[60svh]")}>
             <TodayRail now={currentTime} />
           </div>
 
           {/* Oʻng ustun (25%) — Vazifalar (tekshirish + summativ muddatlar) */}
-          <div className={cn(dashboardStackClass, "h-full min-h-0")}>
+          <div className={cn(dashboardStackClass, "min-h-0 lg:h-full max-lg:min-h-[60svh]")}>
             <QueueSection now={currentTime} demoTasks={queueDemoTasks} />
           </div>
 

@@ -192,6 +192,51 @@ Amalga oshirish: `src/components/ui/sonner.tsx` (tema + ikon +
 (butun vizual), `src/components/behavior/award-toast.tsx` (xuddi shu
 til, emoji + ball nishoni + progress chizigʻi saqlangan).
 
+## 10. Mobil (`< lg`) — `DashboardColumns` Sheet bosqichi — 2026-09-06
+
+**Sabab:** koʻp-ustunli sahifalarda yon ustunlar `hideBelow="lg"` bilan
+shunchaki **yashirilardi**. Natijada telefonda oʻqituvchi oʻrta ustunga
+tushib qolar va sinf tanlay olmasdi — jurnal, davomat, oʻquvchilar,
+standartlar, darslar, topshiriqlar, statistika va xulq sahifalari amalda
+tugik edi. Roadmap (`docs/roadmap-texnik.md` §2.2) bu bosqichni ataylab
+shu primitivга yuklagan.
+
+| Qatlam | Qoida |
+|---|---|
+| Maket | `lg+` — grid, `template` nisbatlari (oʻzgarmadi). `< lg` — bitta ustun |
+| Yon ustun | Yoʻqolmaydi — `DashboardColumn`ning `mobile` propiga koʻra yuzaga chiqadi |
+| `mobile` yoʻq | Avvalgidek `hidden lg:block` — faqat haqiqatan desktop-only kontent uchun |
+| `mobile="self"` | Bola oʻz holicha render boʻladi; ixcham koʻrinishни OʻZI beradi (`ClassListPanel` — trigger + Sheet) |
+| `mobile={{ title }}` | Bola `Sheet` ichida, ustun oʻrnida trigger tugma |
+| Sheet tomoni | Navigatsiya/tanlov — `left`; detal/preview — `right` |
+| Sheet yuzasi | `w-[88vw] max-w-sm`, `p-3` ichki masofa (panel oʻz `rounded-xl` chegarasini saqlaydi), yopish tugmasi yoʻq — qoplama bosiladi (`Sidebar` bilan bir xil naqsh) |
+| Detal paneli | `hideTrigger: true` + `open`/`onOpenChange` — roʻyxatdagi qator bosilganda ochiladi |
+| Scroll | `< lg` da sahifa VERTIKAL scroll qiladi (`dashboard/layout.tsx` → `max-lg:overflow-y-auto`); qobiq klasslarida `h-full`/`overflow-hidden` `lg:` prefiksida |
+| Stacked panel balandligi | `max-lg:min-h-[50–70svh]` — `min-h-0` ularni nolga siqmasin |
+
+⚠️ **JS va CSS chegarasi bitta manbadan.** `useIsBelow(bp)`
+([`src/hooks/use-mobile.ts`](src/hooks/use-mobile.ts)) `hideBelow` bilan
+AYNAN bir xil breakpointни oladi. Ular ajralib qolsa (mas. JS `md`, CSS `lg`)
+768–1023px oraligʻida ustun CSS bilan yashirilib, mobil muqobili hali
+yoqilmagan **oʻlik zona** paydo boʻladi.
+
+**Deviatsiya — 40px barmoq nishoni.** §8 checklistidagi «toolbar 36px»
+qoidasidan mobil trigger tugmalari (`ClassListPanel` selecti va
+`DashboardColumn` trigger'i) ataylab chetga chiqadi: `h-10` (40px). Sabab —
+bular toolbar boshqaruvi emas, sahifaning asosiy mobil navigatsiya nishoni;
+36px barmoq uchun kichik. Desktop toolbar standarti oʻzgarmadi.
+
+Amalga oshirish: [`src/components/DashboardColumns.tsx`](src/components/DashboardColumns.tsx)
+(alohida `"use client"` modul — hooklar kerak; `DashboardPage.tsx` re-eksport
+qiladi, import yoʻli oʻzgarmadi), [`src/components/ClassListPanel.tsx`](src/components/ClassListPanel.tsx),
+[`src/app/dashboard/layout.tsx`](src/app/dashboard/layout.tsx),
+[`src/components/Header.tsx`](src/components/Header.tsx) (mobilда toʻliq-ekran
+toggle, fokus-pill va `QuickFeedback` yashiriladi — 375px ga sigʻishi uchun).
+
+**Tegilmagan:** `settings`, `classes/[id]` va `timetable` sahifalarining
+oʻz mobil naqshlari bor (master-detail, gorizontal chip-nav, stacking) —
+ular shu ishда oʻzgartirilmadi.
+
 ## Ochiq savollar / keyingi qadam nomzodlari
 
 (Bu boʻlim faqat kuzatuv uchun — hech narsa avtomatik qoʻllanmaydi.)

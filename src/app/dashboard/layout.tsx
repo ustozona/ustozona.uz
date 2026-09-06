@@ -93,7 +93,12 @@ export default function DashboardLayout({
       <SidebarInset className="min-h-0 overflow-hidden">
         <ImpersonationBanner />
         <Header />
-        <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden">
+        {/* Scroll siyosati: `lg+` da kontent maydoni mixlangan va scroll
+            panellar ICHIDA qoladi (desktop maketining asosi). `< lg` da
+            panellar ustma-ust tushadi va sigʻmaydi — shu sabab vertikal
+            scroll shu oʻramga oʻtadi, sahifa qobiqlari esa tabiiy balandlik
+            oladi (`DashboardPage.tsx` dagi `max-lg:` qoidalari). */}
+        <div className="relative flex-1 min-w-0 min-h-0 overflow-hidden max-lg:overflow-y-auto">
           <WorkspaceBackground />
           <DashboardShellWrapper>{children}</DashboardShellWrapper>
         </div>
