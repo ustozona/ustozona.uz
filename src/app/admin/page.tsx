@@ -8,6 +8,7 @@ import {
   getSignupTrends,
   type AtRiskTeacher,
 } from "@/server/dal/admin/stats";
+import { AREA_LABELS } from "@/lib/faollik";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import SignupsChart from "./_components/SignupsChart";
 import FunnelStats from "./_components/FunnelStats";
@@ -37,8 +38,11 @@ export const maxDuration = 30;
 const REASON_LABEL: Record<AtRiskTeacher["reason"], string> = {
   no_class: "Sinf yaratmagan",
   no_students: "Oʻquvchi kiritmagan",
-  no_attendance: "Davomat/baho belgilamagan",
-  went_quiet: "Boshlagan, keyin toʻxtagan",
+  // Jadvaldagi holat yorliqlari bilan bir xil tilda — «Kam ishlagan»,
+  // «Toʻxtagan» (UsersTable.tsx dagi STATUS_LABELS).
+  no_activity: "Hech nima qilmagan",
+  tried_once: "Kam ishlagan, davom etmagan",
+  went_quiet: "Ishlagan, keyin toʻxtagan",
 };
 
 function daysAgoLabel(d: Date | null): string {
@@ -127,7 +131,12 @@ async function ActivationSection() {
                   <Badge variant="outline" className="text-[10px]">
                     {REASON_LABEL[r.reason]}
                   </Badge>
+                  {/* Oxirgi ish QAYSI boʻlimda edi — «14 kun oldin faol
+                      boʻlgan» oʻzi nima qilganini aytmasdi, va aynan shu
+                      savol («nima qilyapti bu odam?») roʻyxatni ochishga
+                      sabab boʻladi. */}
                   <span className="text-caption whitespace-nowrap text-muted-foreground">
+                    {r.lastArea ? `${AREA_LABELS[r.lastArea] ?? r.lastArea} · ` : ""}
                     {daysAgoLabel(r.lastActiveAt)}
                   </span>
                 </div>

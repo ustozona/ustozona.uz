@@ -48,7 +48,9 @@ export default function FunnelStats({ funnel }: { funnel: ActivationFunnel }) {
       icon: Activity,
       progress: pct(funnel.activated, funnel.signedUp),
       tone: toneFor(pct(funnel.activated, funnel.signedUp)),
-      sub: "davomat yoki baho kiritgan",
+      /* «Bitta yozuv bor» EMAS: bir kunda kiritilgan 400 ta davomat —
+         ommaviy amal, odat emas. Shuning uchun kamida 3 xil kun. */
+      sub: "kamida 3 xil kunda ishlagan",
     },
     {
       label: "Qaytgan (7+ kun)",
@@ -64,7 +66,7 @@ export default function FunnelStats({ funnel }: { funnel: ActivationFunnel }) {
       icon: TrendingUp,
       progress: pct(funnel.wau, funnel.signedUp),
       tone: toneFor(pct(funnel.wau, funnel.signedUp)),
-      sub: "oxirgi 7 kunda real ish qilgan (WAU)",
+      sub: "oxirgi 7 kunda 12 boʻlimning birida ishlagan",
     },
   ];
 
