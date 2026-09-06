@@ -1,4 +1,11 @@
-import { listPlanOptions, listUsersForAdmin } from "@/server/dal/admin/users";
+import {
+  listPlanOptions,
+  listUsersForAdmin,
+  USER_SORT_KEYS,
+  type ActivationStatus,
+  type UserSortKey,
+} from "@/server/dal/admin/users";
+import { ACTIVITY_AREAS } from "@/lib/faollik";
 import { requireAdmin } from "@/server/session";
 import UsersTable from "./_components/UsersTable";
 
@@ -33,8 +40,42 @@ export default async function AdminUsersPage({
   const banned =
     bannedParam === "1" ? true : bannedParam === "0" ? false : undefined;
 
+  /* ⚠️ URL'dan kelgan qiymatlar OQ ROʻYXAT orqali oʻtkaziladi.
+     `sort` toʻgʻridan-toʻgʻri ORDER BY ga tushadi — tekshirilmagan
+     matn u yerga hech qachon yetib bormasligi kerak. Notoʻgʻri qiymat
+     xato emas, standart tartibga qaytish bilan tugaydi (eski xatcho'p
+     yoki yuborilgan havola sahifani yiqitmasin). */
+  const statusParam = first(sp.status);
+  const status = (["never", "trying", "activated", "quiet"] as const).includes(
+    statusParam as ActivationStatus,
+  )
+    ? (statusParam as ActivationStatus)
+    : undefined;
+
+  const areaParam = first(sp.area);
+  const area = ACTIVITY_AREAS.includes(areaParam as (typeof ACTIVITY_AREAS)[number])
+    ? areaParam
+    : undefined;
+
+  const sortParam = first(sp.sort);
+  const sort = USER_SORT_KEYS.includes(sortParam as UserSortKey)
+    ? (sortParam as UserSortKey)
+    : undefined;
+  const dir = first(sp.dir) === "asc" ? "asc" : "desc";
+
   const [data, planOptions] = await Promise.all([
-    listUsersForAdmin({ search, role, plan, banned, page, pageSize: 25 }),
+    listUsersForAdmin({
+      search,
+      role,
+      plan,
+      banned,
+      status,
+      area,
+      sort,
+      dir,
+      page,
+      pageSize: 25,
+    }),
     listPlanOptions(),
   ]);
 
@@ -44,7 +85,16 @@ export default async function AdminUsersPage({
         data={data}
         currentUserId={actor.id}
         planOptions={planOptions}
-        filters={{ q: search ?? "", role: role ?? "", plan: plan ?? "", banned: bannedParam ?? "" }}
+        filters={{
+          q: search ?? "",
+          role: role ?? "",
+          plan: plan ?? "",
+          banned: bannedParam ?? "",
+          status: status ?? "",
+          area: area ?? "",
+          sort: sort ?? "",
+          dir,
+        }}
       />
     </div>
   );

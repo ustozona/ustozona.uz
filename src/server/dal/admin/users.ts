@@ -1,24 +1,30 @@
 import "server-only";
 import {
   and,
+  asc,
   count,
   desc,
   eq,
   ilike,
   inArray,
+  isNull,
+  isNotNull,
+  gt,
+  lte,
   max,
   or,
   sql,
   type SQL,
+  type SQLWrapper,
 } from "drizzle-orm";
 import { db } from "@/server/db/client";
+import { user, session, teachers } from "@/server/db/schema";
 import {
-  user,
-  session,
-  teachers,
-  attendanceRecords,
-  grades,
-} from "@/server/db/schema";
+  teacherActivitySummary,
+  teacherSessionStats,
+  hasActivityViews,
+} from "@/server/db/views";
+import { ACTIVATED_MIN_DAYS, QUIET_AFTER_DAYS } from "@/lib/faollik";
 import { requireAdmin } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -28,6 +34,32 @@ import { requireAdmin } from "@/server/session";
    custom Drizzle soʻrov; mutatsiyalar esa `auth.api.*` orqali
    (actions/admin/users.ts).
    ════════════════════════════════════════════════════════════════════ */
+
+/* ⚠️ FAOLLIK TAʼRIFI BU YERDA EMAS — `v_teacher_activity_summary` da.
+
+   Ilgari faollik faqat `attendance_records` + `grades` boʻyicha
+   oʻlchanardi. Natijada dars rejalashtirgan, jadval tuzgan, standart
+   yozgan yoki test oʻtkazgan oʻqituvchi «hech qachon ishlamagan» boʻlib
+   koʻrinardi. Lokal bazada oʻlchandi: 8 oʻqituvchidan 6 tasi shu
+   sababli notoʻgʻri «faolsiz» edi.
+
+   Batafsil sabab va 12 boʻlim roʻyxati: drizzle/views/faollik.sql */
+
+/** Oʻqituvchining mahsulot bilan munosabati — bitta qatorda.
+
+    ⭐ TAKRORLANISH BOʻYICHA, TURI BOʻYICHA EMAS. «Faollashgan» degani
+    «davomat qoʻygan» emas, «kamida 3 xil KUNDA ishlagan». Sabab: 400 ta
+    davomat yozuvi bir kunda — bu bitta ommaviy amal, odat emas. Kun
+    boʻyicha oʻlchovni ommaviy amal bilan shishirib boʻlmaydi. */
+export type ActivationStatus =
+  /** Hech qanday ish yozuvi yoʻq. */
+  | "never"
+  /** Ish bor, lekin 3 kundan kam — sinab koʻrgan, odat boʻlmagan. */
+  | "trying"
+  /** ≥3 faol kun va oxirgi 14 kun ichida ishlagan. */
+  | "activated"
+  /** ≥3 faol kun, lekin 14+ kun jim. */
+  | "quiet";
 
 export type AdminUserListItem = {
   id: string;
@@ -43,15 +75,22 @@ export type AdminUserListItem = {
   school: string | null;
   classCount: number;
   studentCount: number;
-  /** Oxirgi kirish (session) — login, ish qilgani emas. */
+  /** Oxirgi kirish (session) — login, ish qilgani EMAS. */
   lastSeen: Date | null;
-  /** Oxirgi real ish (davomat/baho yozuvi) — faollik shu bilan oʻlchanadi. */
+  /** Oxirgi real ish — 12 boʻlimning har biri hisobga olinadi. */
   lastActiveAt: Date | null;
-  attendanceCount: number;
-  gradeCount: number;
-  /** "activated" = davomat/baho bor va oxirgi 14 kun ichida ishlagan; qolgani "at_risk". */
-  activationStatus: "activated" | "at_risk";
-  /** true = admin/test hisob — voronka/"eʼtibor talab qiladi" statistikasidan chiqarilgan. */
+  /** Oxirgi ish QAYSI boʻlimda edi ("davomat", "jadval"…). */
+  lastArea: string | null;
+  /** Ish qilingan alohida kunlar — ommaviy amaldan himoyalangan oʻlchov. */
+  activeDaysTotal: number;
+  activeDays30d: number;
+  /** Nechta boʻlim ishlatilgan (12 dan) — chuqurlik emas, KENGLIK. */
+  areas30d: number;
+  sessions30d: number;
+  /** Median, oʻrtacha EMAS: seans taqsimoti ikki choʻqqili. */
+  medianMinutes30d: number | null;
+  activationStatus: ActivationStatus;
+  /** true = admin/test hisob — voronka statistikasidan chiqarilgan. */
   excludeFromMetrics: boolean;
 };
 
@@ -60,16 +99,50 @@ export type AdminUsersPage = {
   total: number;
   page: number;
   pageSize: number;
+  /** false = `faollik.sql` bazaga hali qoʻllanmagan (quyidagi izohga qarang). */
+  activityAvailable: boolean;
 };
+
+/** Sortlanishi mumkin boʻlgan ustunlar — OQ ROʻYXAT.
+
+    Foydalanuvchi kiritgan matn hech qachon `ORDER BY` ga
+    toʻgʻridan-toʻgʻri tushmaydi; faqat shu kalitlar qabul qilinadi.
+
+    ⛔ Sinf/oʻquvchi soni bu yerda YOʻQ — ular `v_teacher_totals` dan
+    ALOHIDA soʻrov bilan, paginatsiyadan keyin olinadi (LessonLab bilan
+    dublikatsiz sanash uchun). Ular boʻyicha sortlash uchun avval oʻsha
+    koʻrinishni ham asosiy soʻrovga qoʻshish kerak. */
+export const USER_SORT_KEYS = [
+  "created",
+  "name",
+  "last_active",
+  "active_days",
+] as const;
+export type UserSortKey = (typeof USER_SORT_KEYS)[number];
 
 export type AdminUsersFilter = {
   search?: string;
   role?: string; // "super_admin" | "school_admin" | "teacher"
   banned?: boolean;
   plan?: string;
+  status?: ActivationStatus;
+  /** Oxirgi 30 kunda shu boʻlimda ishlaganlar. */
+  area?: string;
+  sort?: UserSortKey;
+  dir?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 };
+
+function statusOf(
+  activeDaysTotal: number,
+  lastActiveAt: Date | null,
+): ActivationStatus {
+  if (!lastActiveAt) return "never";
+  if (activeDaysTotal < ACTIVATED_MIN_DAYS) return "trying";
+  const quietSince = Date.now() - QUIET_AFTER_DAYS * 24 * 60 * 60 * 1000;
+  return lastActiveAt.getTime() >= quietSince ? "activated" : "quiet";
+}
 
 /* ════════════════════════════════════════════════════════════════════
    YAGONA SANOQ — `v_teacher_totals` ko'rinishidan.
@@ -158,9 +231,77 @@ export async function listUsersForAdmin(
   }
   if (params.plan) conditions.push(eq(teachers.plan, params.plan));
 
+  /* ── Faollik koʻrinishiga tayanadigan filtrlar ──────────────────
+     Bular faqat koʻrinish mavjud boʻlgandagina qoʻllanadi; aks holda
+     jimgina eʼtiborsiz qoladi (ekranda ogohlantirish chiqadi). */
+  const activityAvailable = await hasActivityViews();
+  const act = teacherActivitySummary;
+  const quietCutoff = sql`now() - ${`${QUIET_AFTER_DAYS} days`}::interval`;
+
+  if (activityAvailable && params.status) {
+    const enough = sql`coalesce(${act.activeDaysTotal}, 0) >= ${ACTIVATED_MIN_DAYS}`;
+    conditions.push(
+      params.status === "never"
+        ? isNull(act.lastAt)
+        : params.status === "trying"
+          ? and(isNotNull(act.lastAt), sql`not (${enough})`)!
+          : params.status === "activated"
+            ? and(enough, gt(act.lastAt, quietCutoff))!
+            : and(enough, lte(act.lastAt, quietCutoff))!,
+    );
+  }
+
+  if (activityAvailable && params.area) {
+    /* Boʻlim boʻyicha filtr — xulosa emas, xom koʻrinishdan.
+       `EXISTS` shu bois: bitta mos qator topilishi kifoya, oʻqituvchining
+       barcha harakatlarini sanash shart emas. */
+    conditions.push(
+      sql`EXISTS (
+        SELECT 1 FROM v_teacher_activity va
+        WHERE va.teacher_id = ${user.id}
+          AND va.area = ${params.area}
+          AND va.at > now() - interval '30 days'
+      )`,
+    );
+  }
+
   const where = conditions.length ? and(...conditions) : undefined;
 
-  const base = db
+  /* ── Sortlash ──────────────────────────────────────────────────
+     ⚠️ IKKINCHI MEZON (`user.id`) SHART — sort BARQAROR boʻlishi uchun.
+     Busiz bir xil qiymatli qatorlar (masalan hech qachon ishlamagan
+     oʻnlab hisob, hammasida `last_at = NULL`) Postgres xohlagan
+     tartibda chiqadi va sahifalar orasida sakraydi: bitta odam ikkinchi
+     sahifada QAYTA koʻrinib, boshqasi umuman tushib qolardi.
+
+     `NULLS LAST` — «hech qachon ishlamagan»lar oxirida tursin, aks
+     holda kamayish tartibida sahifa boshini boʻsh qatorlar egallardi. */
+  const dir = params.dir === "asc" ? asc : desc;
+  const sortKey: UserSortKey = params.sort ?? "created";
+  const sortColumn: SQLWrapper =
+    sortKey === "name"
+      ? user.name
+      : sortKey === "last_active"
+        ? act.lastAt
+        : sortKey === "active_days"
+          ? act.activeDaysTotal
+          : user.createdAt;
+  /* Koʻrinish yoʻq boʻlsa faollik ustunlari boʻyicha sortlash ham
+     mumkin emas — jimgina roʻyxatdan oʻtish tartibiga qaytamiz. */
+  const usesActivitySort = sortKey === "last_active" || sortKey === "active_days";
+  const orderBy =
+    activityAvailable || !usesActivitySort
+      ? [sql`${dir(sortColumn)} NULLS LAST`, desc(user.id)]
+      : [desc(user.createdAt), desc(user.id)];
+
+  /* ⚠️ JOIN FAQAT KOʻRINISH MAVJUD BOʻLSA — yoʻq jadvalga join
+     qilingan soʻrov butun sahifani yiqitadi. Shu bois ikki tarmoq;
+     `$dynamic()` shart qoʻshishga ruxsat beradi.
+
+     Sanoq soʻrovi ham AYNAN shu join'ni oladi: filtr koʻrinish
+     ustunlari ustida ishlaydi, busiz «87 ta hisob» deb yozilib
+     ekranda 12 ta qator chiqardi. */
+  const rowsQuery = db
     .select({
       id: user.id,
       name: user.name,
@@ -176,23 +317,31 @@ export async function listUsersForAdmin(
       excludeFromMetrics: teachers.excludeFromMetrics,
     })
     .from(user)
-    .leftJoin(teachers, eq(teachers.id, user.id));
+    .leftJoin(teachers, eq(teachers.id, user.id))
+    .$dynamic();
 
-  const [rows, [{ total }]] = await Promise.all([
-    base
+  const countQuery = db
+    .select({ total: count() })
+    .from(user)
+    .leftJoin(teachers, eq(teachers.id, user.id))
+    .$dynamic();
+
+  if (activityAvailable) {
+    rowsQuery.leftJoin(act, eq(act.teacherId, user.id));
+    countQuery.leftJoin(act, eq(act.teacherId, user.id));
+  }
+
+  const [baseRows, [{ total }]] = await Promise.all([
+    rowsQuery
       .where(where)
-      .orderBy(desc(user.createdAt))
+      .orderBy(...orderBy)
       .limit(pageSize)
       .offset((page - 1) * pageSize),
-    db
-      .select({ total: count() })
-      .from(user)
-      .leftJoin(teachers, eq(teachers.id, user.id))
-      .where(where),
+    countQuery.where(where),
   ]);
 
-  const ids = rows.map((r) => r.id);
-  const [totals, lastSeens, attendanceStats, gradeStats] = ids.length
+  const ids = baseRows.map((r) => r.id);
+  const [totals, lastSeens, activity, sessionStats] = ids.length
     ? await Promise.all([
         /* ⛔ SINF/O'QUVCHI SONI — `classes`/`students` dan EMAS.
 
@@ -215,57 +364,61 @@ export async function listUsersForAdmin(
           .from(session)
           .where(inArray(session.userId, ids))
           .groupBy(session.userId),
-        db
-          .select({
-            teacherId: attendanceRecords.teacherId,
-            n: count(),
-            last: max(attendanceRecords.updatedAt),
-          })
-          .from(attendanceRecords)
-          .where(inArray(attendanceRecords.teacherId, ids))
-          .groupBy(attendanceRecords.teacherId),
-        db
-          .select({ teacherId: grades.teacherId, n: count(), last: max(grades.updatedAt) })
-          .from(grades)
-          .where(inArray(grades.teacherId, ids))
-          .groupBy(grades.teacherId),
+        /* Faollik qiymatlari SAHIFA qatorlari uchun alohida olinadi.
+           Join yuqorida faqat filtr/sort uchun kerak edi; qiymatlarni
+           shu yerdan olish ikkala tarmoq (koʻrinish bor/yoʻq) uchun
+           bitta yigʻish kodini saqlab qoladi. */
+        activityAvailable
+          ? db
+              .select({
+                teacherId: act.teacherId,
+                lastAt: act.lastAt,
+                lastArea: act.lastArea,
+                activeDaysTotal: act.activeDaysTotal,
+                activeDays30d: act.activeDays30d,
+                areas30d: act.areas30d,
+              })
+              .from(act)
+              .where(inArray(act.teacherId, ids))
+          : Promise.resolve([]),
+        activityAvailable
+          ? db
+              .select({
+                teacherId: teacherSessionStats.teacherId,
+                sessions30d: teacherSessionStats.sessions30d,
+                medianMinutes30d: teacherSessionStats.medianMinutes30d,
+              })
+              .from(teacherSessionStats)
+              .where(inArray(teacherSessionStats.teacherId, ids))
+          : Promise.resolve([]),
       ])
     : [[], [], [], []];
 
   const classMap = new Map(totals.map((t) => [t.teacherId, t.classCount]));
   const studentMap = new Map(totals.map((t) => [t.teacherId, t.studentCount]));
   const seenMap = new Map(lastSeens.map((s) => [s.userId, s.last]));
-  const attendanceMap = new Map(attendanceStats.map((a) => [a.teacherId, a]));
-  const gradeMap = new Map(gradeStats.map((g) => [g.teacherId, g]));
-
-  const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const actMap = new Map(activity.map((a) => [a.teacherId, a]));
+  const sessMap = new Map(sessionStats.map((s) => [s.teacherId, s]));
 
   return {
-    items: rows.map((r) => {
-      const attendance = attendanceMap.get(r.id);
-      const grade = gradeMap.get(r.id);
-      const attendanceCount = attendance?.n ?? 0;
-      const gradeCount = grade?.n ?? 0;
-      const lastActiveAt =
-        [attendance?.last, grade?.last]
-          .filter((d): d is Date => !!d)
-          .sort((a, b) => b.getTime() - a.getTime())[0] ?? null;
-
-      const activationStatus: AdminUserListItem["activationStatus"] =
-        attendanceCount === 0 && gradeCount === 0
-          ? "at_risk"
-          : lastActiveAt && lastActiveAt.getTime() >= twoWeeksAgo
-            ? "activated"
-            : "at_risk";
+    items: baseRows.map((r) => {
+      const a = actMap.get(r.id);
+      const s = sessMap.get(r.id);
+      const lastActiveAt = a?.lastAt ?? null;
+      const activeDaysTotal = a?.activeDaysTotal ?? 0;
 
       return {
         ...r,
         classCount: classMap.get(r.id) ?? 0,
         studentCount: studentMap.get(r.id) ?? 0,
         lastActiveAt,
-        attendanceCount,
-        gradeCount,
-        activationStatus,
+        lastArea: a?.lastArea ?? null,
+        activeDaysTotal,
+        activeDays30d: a?.activeDays30d ?? 0,
+        areas30d: a?.areas30d ?? 0,
+        sessions30d: s?.sessions30d ?? 0,
+        medianMinutes30d: s?.medianMinutes30d ?? null,
+        activationStatus: statusOf(activeDaysTotal, lastActiveAt),
         lastSeen: seenMap.get(r.id) ?? null,
         excludeFromMetrics: r.excludeFromMetrics ?? false,
       };
@@ -273,6 +426,7 @@ export async function listUsersForAdmin(
     total,
     page,
     pageSize,
+    activityAvailable,
   };
 }
 
@@ -379,7 +533,10 @@ export async function getUserDetailForAdmin(
     .where(eq(user.id, userId));
   if (!row) return null;
 
-  const [totals, sessions, attendanceStat, gradeStat] = await Promise.all([
+  const activityAvailable = await hasActivityViews();
+  const act = teacherActivitySummary;
+
+  const [totals, sessions, activity, sessionStats] = await Promise.all([
     // Ro'yxat bilan AYNI manba — aks holda jadval va tafsilot
     // bir-biriga zid raqam ko'rsatardi (`listTeacherTotals` izohi).
     listTeacherTotals([userId]),
@@ -394,26 +551,23 @@ export async function getUserDetailForAdmin(
       .where(eq(session.userId, userId))
       .orderBy(desc(session.updatedAt))
       .limit(10),
-    db
-      .select({ n: count(), last: max(attendanceRecords.updatedAt) })
-      .from(attendanceRecords)
-      .where(eq(attendanceRecords.teacherId, userId)),
-    db.select({ n: count(), last: max(grades.updatedAt) }).from(grades).where(eq(grades.teacherId, userId)),
+    // Faollik ham roʻyxat bilan AYNI koʻrinishdan — ikki ekran bir xil
+    // raqam koʻrsatishi uchun (avval ular ajralib ketgan edi).
+    activityAvailable
+      ? db.select().from(act).where(eq(act.teacherId, userId))
+      : Promise.resolve([]),
+    activityAvailable
+      ? db
+          .select()
+          .from(teacherSessionStats)
+          .where(eq(teacherSessionStats.teacherId, userId))
+      : Promise.resolve([]),
   ]);
 
-  const attendanceCount = attendanceStat[0]?.n ?? 0;
-  const gradeCount = gradeStat[0]?.n ?? 0;
-  const lastActiveAt =
-    [attendanceStat[0]?.last, gradeStat[0]?.last]
-      .filter((d): d is Date => !!d)
-      .sort((a, b) => b.getTime() - a.getTime())[0] ?? null;
-  const twoWeeksAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
-  const activationStatus: AdminUserListItem["activationStatus"] =
-    attendanceCount === 0 && gradeCount === 0
-      ? "at_risk"
-      : lastActiveAt && lastActiveAt.getTime() >= twoWeeksAgo
-        ? "activated"
-        : "at_risk";
+  const a = activity[0];
+  const s = sessionStats[0];
+  const lastActiveAt = a?.lastAt ?? null;
+  const activeDaysTotal = a?.activeDaysTotal ?? 0;
 
   return {
     ...row,
@@ -421,9 +575,13 @@ export async function getUserDetailForAdmin(
     studentCount: totals[0]?.studentCount ?? 0,
     lastSeen: sessions[0]?.updatedAt ?? null,
     lastActiveAt,
-    attendanceCount,
-    gradeCount,
-    activationStatus,
+    lastArea: a?.lastArea ?? null,
+    activeDaysTotal,
+    activeDays30d: a?.activeDays30d ?? 0,
+    areas30d: a?.areas30d ?? 0,
+    sessions30d: s?.sessions30d ?? 0,
+    medianMinutes30d: s?.medianMinutes30d ?? null,
+    activationStatus: statusOf(activeDaysTotal, lastActiveAt),
     excludeFromMetrics: row.excludeFromMetrics ?? false,
     sessions,
   };

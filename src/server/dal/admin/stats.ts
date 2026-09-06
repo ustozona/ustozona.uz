@@ -4,16 +4,23 @@ import { db } from "@/server/db/client";
 // classes/students bu yerda ishlatilmaydi: sinf va oʻquvchi sanogʻi
 // quyidagi raw SQL ichida class_teachers/enrollments orqali olinadi.
 import { user, teachers } from "@/server/db/schema";
+import { hasActivityViews } from "@/server/db/views";
+import { ACTIVATED_MIN_DAYS } from "@/lib/faollik";
 import { requireAdmin } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════
    ADMIN → PLATFORMA STATISTIKASI (kross-tenant agregatlar).
 
-   Voronka "faol"ni sessiya/kirish orqali EMAS, real ish (davomat/baho/
-   dars) orqali oʻlchaydi — kirish faollik emas. Xuddi shu mantiq
-   scripts/metrics.ts'da (terminal skript) ham bor; bu yerda ekvivalenti
-   admin panelga koʻchirilgan, chunki panelni tekshirish uchun kimdir
-   terminalga kirmasligi kerak.
+   Voronka "faol"ni sessiya/kirish orqali EMAS, real ish orqali
+   oʻlchaydi — kirish faollik emas. Xuddi shu mantiq scripts/metrics.ts'da
+   (terminal skript) ham bor; bu yerda ekvivalenti admin panelga
+   koʻchirilgan, chunki panelni tekshirish uchun kimdir terminalga
+   kirmasligi kerak.
+
+   ⚠️ "Real ish" — 12 BOʻLIM, davomat/baho emas. Ilgari faqat davomat
+   va baho sanalardi va dars rejalashtirgan, jadval tuzgan, standart
+   yozgan yoki test oʻtkazgan oʻqituvchi "hech qachon ishlamagan" boʻlib
+   koʻrinardi. Taʼrif endi drizzle/views/faollik.sql da.
 
    ⚠️ IKKI FUNKSIYAGA AJRATILGAN — ATAYLAB.
 
@@ -40,8 +47,16 @@ export type AtRiskTeacher = {
   id: string;
   name: string;
   email: string;
-  reason: "no_class" | "no_students" | "no_attendance" | "went_quiet";
+  reason:
+    | "no_class"
+    | "no_students"
+    | "no_activity"
+    /** Ishlagan, lekin 3 kundan kam — sinab koʻrgan, odat boʻlmagan. */
+    | "tried_once"
+    | "went_quiet";
   lastActiveAt: Date | null;
+  /** Oxirgi ish qaysi boʻlimda edi — nima qilganini koʻrsatish uchun. */
+  lastArea: string | null;
 };
 
 export type ActivationOverview = {
@@ -63,25 +78,29 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
   const weekAgo = new Date(Date.now() - 7 * DAY_MS);
   const twoWeeksAgo = new Date(Date.now() - 14 * DAY_MS);
 
-  /* Har bir oʻqituvchi uchun bitta qator: roʻyxat maʼlumoti + real
-     faollik (davomat/baho/dars yozuvlaridan eng kechkisi). Sahifa
-     koʻrish/session bu yerda FAOLLIK sifatida hisoblanmaydi.
+  /* Bu sahifaning butun mazmuni — faollik. Koʻrinish yoʻq boʻlsa nollar
+     bilan chizish YOLGʻON boʻlardi, shuning uchun ochiq xato. */
+  if (!(await hasActivityViews())) {
+    throw new Error(
+      "Faollik koʻrinishlari bazada yoʻq. Qoʻllash: drizzle/views/faollik.sql",
+    );
+  }
+
+  /* Har bir oʻqituvchi uchun bitta qator: roʻyxat maʼlumoti + faollik.
+     Sahifa koʻrish/session bu yerda FAOLLIK sifatida hisoblanmaydi.
 
      ⚠️ KORRELYATSIYALANGAN SUBQUERY EMAS — HAR JADVAL BIR MARTA.
 
      Ilgari har ustun `(SELECT … WHERE x.teacher_id = t.id)` shaklida
-     edi va `activity` CTE ham shunday oʻqilardi. Postgres uni inline
-     qilib, HAR oʻqituvchi uchun `attendance_records` ni boshidan
-     skanerlardi (oʻlchandi: 51 loop × 4202 qator). Kichik bazada bu
-     23 ms, lekin xarajat oʻqituvchi × yozuv, yaʼni KVADRATIK — 500
-     oʻqituvchi va 500k davomatda panel ochilmay qoladi.
+     edi. Postgres uni inline qilib, HAR oʻqituvchi uchun
+     `attendance_records` ni boshidan skanerlardi (oʻlchandi: 51 loop ×
+     4202 qator). Kichik bazada bu 23 ms, lekin xarajat oʻqituvchi ×
+     yozuv, yaʼni KVADRATIK — 500 oʻqituvchi va 500k davomatda panel
+     ochilmay qoladi. Endi har jadval bitta GROUP BY bilan yigʻiladi.
 
-     Endi har jadval bitta GROUP BY bilan yigʻiladi va natija bir
-     marta LEFT JOIN qilinadi. Raqamlar bir xilligi prod bazada
-     tekshirildi (51 qator, 33 sinf, 429 oʻquvchi, 4202 davomat).
-
-     `GREATEST` NULL'larni eʼtiborsiz qoldiradi: hammasi boʻsh boʻlsa
-     NULL, aks holda eng kechki sana. */
+     ⚠️ Faollik koʻrinishi 19 ta jadval ustidan UNION qiladi va bu
+     soʻrov HAMMA oʻqituvchi uchun ishlaydi. Hozir hajm kichik; sekinlik
+     sezilsa koʻrinishni MATERIALIZED qilib, kunlik yangilash kerak. */
   const result = await db.execute(sql`
     WITH scoped AS (
       SELECT t.id, u.name, u.email, u.created_at AS signed_up_at
@@ -107,35 +126,31 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
       FROM class_teachers ct
       JOIN enrollments e ON e.class_id = ct.class_id
       GROUP BY ct.teacher_id
-    ),
-    att AS (
-      SELECT teacher_id, COUNT(*)::int AS n, MAX(updated_at) AS last_at
-      FROM attendance_records GROUP BY teacher_id
-    ),
-    grd AS (
-      SELECT teacher_id, COUNT(*)::int AS n, MAX(updated_at) AS last_at
-      FROM grades GROUP BY teacher_id
-    ),
-    les AS (
-      SELECT teacher_id, MAX(updated_at) AS last_at
-      FROM lessons GROUP BY teacher_id
     )
+    /* ⛔ FAOLLIK BU YERDA QAYTA TAʼRIFLANMAYDI — v_teacher_activity_summary.
+
+       ⚠️ Bu izoh JS shablon satri ICHIDA — teskari qoʻshtirnoq (backtick)
+       ishlatmang, u satrni uzib yuboradi va TypeScript xatosi butunlay
+       boshqa qatorni koʻrsatadi.
+
+       Ilgari bu soʻrov davomat/baho/darsni oʻzi sanardi, users.ts esa
+       davomat/bahoni: BITTA odam ikki ekranda ikki xil «oxirgi ish»
+       sanasi bilan koʻrinardi. Endi ikkalasi ham shu koʻrinishdan
+       oʻqiydi (drizzle/views/faollik.sql). */
     SELECT
       s.id,
       s.name,
       s.email,
       s.signed_up_at,
-      COALESCE(cls.class_count, 0) AS class_count,
-      COALESCE(stu.student_count, 0) AS student_count,
-      COALESCE(att.n, 0)            AS attendance_count,
-      COALESCE(grd.n, 0)            AS grade_count,
-      GREATEST(att.last_at, grd.last_at, les.last_at) AS last_active_at
+      COALESCE(cls.class_count, 0)     AS class_count,
+      COALESCE(stu.student_count, 0)   AS student_count,
+      COALESCE(a.active_days_total, 0) AS active_days_total,
+      a.last_area                      AS last_area,
+      a.last_at                        AS last_active_at
     FROM scoped s
     LEFT JOIN cls ON cls.teacher_id = s.id
     LEFT JOIN stu ON stu.teacher_id = s.id
-    LEFT JOIN att ON att.teacher_id = s.id
-    LEFT JOIN grd ON grd.teacher_id = s.id
-    LEFT JOIN les ON les.teacher_id = s.id
+    LEFT JOIN v_teacher_activity_summary a ON a.teacher_id = s.id
   `);
   /* postgres-js `db.execute()` natijani TOʻGʻRIDAN-TOʻGʻRI massiv
      qilib qaytaradi. neon-http esa `{ rows: [...] }` qaytarardi —
@@ -147,8 +162,8 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
     signed_up_at: string | Date;
     class_count: number;
     student_count: number;
-    attendance_count: number;
-    grade_count: number;
+    active_days_total: number;
+    last_area: string | null;
     last_active_at: string | Date | null;
   }>;
 
@@ -164,7 +179,14 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
   const signedUp = rows.length;
   const withClass = rows.filter((r) => r.class_count > 0);
   const withStudents = rows.filter((r) => r.student_count > 0);
-  const activated = rows.filter((r) => r.attendance_count > 0 || r.grade_count > 0);
+
+  /* ⭐ FAOLLASHUV — TAKRORLANISH BOʻYICHA, TURI BOʻYICHA EMAS.
+
+     Ilgari «bitta davomat yozuvi bor» = faollashgan edi. Lekin bir
+     kunda kiritilgan 400 ta yozuv — bitta ommaviy amal, odat emas.
+     Kamida 3 xil KUNDA ishlagan boʻlsa, bu qaytib kelish demak, va
+     uni ommaviy amal bilan shishirib boʻlmaydi. */
+  const activated = rows.filter((r) => r.active_days_total >= ACTIVATED_MIN_DAYS);
   const returned = activated.filter(
     (r) =>
       r.last_active_at !== null &&
@@ -176,7 +198,7 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
 
   const atRisk: AtRiskTeacher[] = rows
     .filter((r) =>
-      r.attendance_count === 0 && r.grade_count === 0
+      r.active_days_total < ACTIVATED_MIN_DAYS
         ? true
         : r.last_active_at === null || r.last_active_at.getTime() < twoWeeksAgo.getTime(),
     )
@@ -184,15 +206,21 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
       id: r.id,
       name: r.name,
       email: r.email,
+      /* Tartib muhim: eng ERTA toʻsiq birinchi aytiladi. Sinfi yoʻq
+         odamga «davomat belgilamagan» deyish foydasiz — u hali
+         belgilay olmaydi ham. */
       reason:
         r.class_count === 0
           ? ("no_class" as const)
           : r.student_count === 0
             ? ("no_students" as const)
-            : r.attendance_count === 0 && r.grade_count === 0
-              ? ("no_attendance" as const)
-              : ("went_quiet" as const),
+            : r.active_days_total === 0
+              ? ("no_activity" as const)
+              : r.active_days_total < ACTIVATED_MIN_DAYS
+                ? ("tried_once" as const)
+                : ("went_quiet" as const),
       lastActiveAt: r.last_active_at,
+      lastArea: r.last_area,
     }))
     .sort((a, b) => (a.lastActiveAt?.getTime() ?? 0) - (b.lastActiveAt?.getTime() ?? 0));
 
