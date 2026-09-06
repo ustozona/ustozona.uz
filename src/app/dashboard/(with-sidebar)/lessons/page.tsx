@@ -458,12 +458,12 @@ export default function LessonsPage() {
   };
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-6 p-4 md:p-6">
+    <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
       <DndContext sensors={dndSensors} onDragEnd={handleLessonDragEnd}>
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden">
+      <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
-      <DashboardColumn hideBelow="lg" data-tour="lessons-classes">
+      <DashboardColumn hideBelow="lg" mobile="self" data-tour="lessons-classes">
         <ClassListPanel
           page="lessons"
           selectedClassId={selectedClassId ?? (isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : "")}
@@ -476,7 +476,7 @@ export default function LessonsPage() {
       {/* ── Column 2: Boʻlimlar ── */}
       <div
         data-tour="lessons-units"
-        className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden"
+        className="min-w-0 min-h-0 bg-card rounded-xl border border-border flex flex-col overflow-hidden lg:h-full max-lg:min-h-[50svh]"
       >
           {noClass ? (
             /* Sinf tanlanmagan — headerʼsiz, markaziy placeholder (2-rasm) */
@@ -645,7 +645,7 @@ export default function LessonsPage() {
         {/* ── Column 3: Mavzular ── */}
         <div
           data-tour="lessons-list"
-          className="min-w-0 min-h-0 h-full bg-card rounded-xl border border-border flex flex-col overflow-hidden"
+          className="min-w-0 min-h-0 bg-card rounded-xl border border-border flex flex-col overflow-hidden lg:h-full max-lg:min-h-[50svh]"
         >
           {!effectiveUnitId ? (
             /* Boʻlim tanlanmagan — headerʼsiz, faqat markaziy placeholder (1-rasm) */

@@ -93,13 +93,13 @@ export default function StatisticsPage() {
   const columnsTemplate = "minmax(0,1fr) minmax(0,3fr)";
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 p-4 md:p-6">
+    <div className="flex flex-col flex-1 min-w-0 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <DashboardColumns
         template={columnsTemplate}
-        className="h-full overflow-hidden"
+        className="lg:h-full lg:overflow-hidden"
         style={{ gap: "1.5rem" }}
       >
-        <DashboardColumn hideBelow="lg">
+        <DashboardColumn hideBelow="lg" mobile="self">
           <ClassListPanel
             page="statistics"
             selectedClassId={selectedClassId ?? ""}
@@ -107,7 +107,7 @@ export default function StatisticsPage() {
           />
         </DashboardColumn>
 
-        <div className="flex flex-col min-w-0 min-h-0 h-full gap-4 md:gap-6">
+        <div className="flex flex-col min-w-0 min-h-0 gap-4 md:gap-6 lg:h-full max-lg:min-h-[60svh]">
           <div className="shrink-0">
             <div className="bg-card rounded-xl border border-border flex items-center gap-3 px-3 py-2.5">
               {/* ── Doira (scope) endi bu yerda EMAS — global header

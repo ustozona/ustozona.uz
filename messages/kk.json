@@ -803,6 +803,7 @@
     "emptyFilteredDescription": "Сүзгіні немесе іздеуді өзгертіп көріңіз.",
     "emptyDescription": "Бірінші оқушыны қосыңыз немесе дайын тізімді импорттаңыз.",
     "viewProfile": "Профильді көру",
+    "previewPanel": "Оқушы картасы",
     "edit": "Өңдеу",
     "addNote": "Ескертпе қосу",
     "statusLabel": "Күйі",
@@ -1393,7 +1394,6 @@
     "exportEmptyError": "Экспорт үшін кесте бос",
     "exportSuccessToast": "Кесте экспортталды",
     "classRemovedToast": "Сынып кестеден алынып тасталды",
-    "undo": "Қайтару",
     "notScheduled": "Кестеге қосылмаған",
     "classesTitle": "Сыныптар",
     "add": "Қосу",
@@ -3246,6 +3246,7 @@
       "undo": "Болдырмау"
     },
     "title": "Сыныптар",
+    "selectClass": "Сынып таңдаңыз",
     "addClass": "Сынып қосу",
     "add": "Қосу",
     "emptyTitle": "Әзірге сыныптар жоқ",

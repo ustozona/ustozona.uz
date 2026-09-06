@@ -803,6 +803,7 @@
     "emptyFilteredDescription": "Филтр ёки қидирувни ўзгартириб кўринг.",
     "emptyDescription": "Биринчи ўқувчини қўшинг ёки тайёр рўйхатни импорт қилинг.",
     "viewProfile": "Профилни кўриш",
+    "previewPanel": "Ўқувчи картаси",
     "edit": "Таҳрирлаш",
     "addNote": "Изоҳ қўшиш",
     "statusLabel": "Ҳолати",
@@ -1393,7 +1394,6 @@
     "exportEmptyError": "Экспорт учун жадвал бўш",
     "exportSuccessToast": "Жадвал экспорт қилинди",
     "classRemovedToast": "Синф жадвалдан олиб ташланди",
-    "undo": "Қайтариш",
     "notScheduled": "Жадвалга қўшилмаган",
     "classesTitle": "Синфлар",
     "add": "Қўшиш",
@@ -3075,6 +3075,7 @@
       "undo": "Бекор қилиш"
     },
     "title": "Синфлар",
+    "selectClass": "Синф танланг",
     "addClass": "Синф қўшиш",
     "add": "Қўшиш",
     "emptyTitle": "Ҳозирча синфлар ёъқ",

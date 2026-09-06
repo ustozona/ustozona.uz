@@ -803,6 +803,7 @@
     "emptyFilteredDescription": "Filtr yoki qidiruvni oʻzgartirib koʻring.",
     "emptyDescription": "Birinchi oʻquvchini qoʻshing yoki tayyor roʻyxatni import qiling.",
     "viewProfile": "Profilni koʻrish",
+    "previewPanel": "Oʻquvchi kartasi",
     "edit": "Tahrirlash",
     "addNote": "Izoh qoʻshish",
     "statusLabel": "Holati",
@@ -1393,7 +1394,6 @@
     "exportEmptyError": "Eksport uchun jadval boʻsh",
     "exportSuccessToast": "Jadval eksport qilindi",
     "classRemovedToast": "Sinf jadvaldan olib tashlandi",
-    "undo": "Qaytarish",
     "notScheduled": "Jadvalga qoʻshilmagan",
     "classesTitle": "Sinflar",
     "add": "Qoʻshish",
@@ -3075,6 +3075,7 @@
       "undo": "Bekor qilish"
     },
     "title": "Sinflar",
+    "selectClass": "Sinf tanlang",
     "addClass": "Sinf qoʻshish",
     "add": "Qoʻshish",
     "emptyTitle": "Hozircha sinflar yoʻq",

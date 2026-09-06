@@ -803,6 +803,7 @@
     "emptyFilteredDescription": "Filtr yamasa izlewdi ózgertip kóriń.",
     "emptyDescription": "Birinshi oqıwshını qosıń yamasa tayın dizimdi import qılıń.",
     "viewProfile": "Profildi kóriw",
+    "previewPanel": "Oqıwshı kartası",
     "edit": "Ózgertiw",
     "addNote": "Túsindirme qosıw",
     "statusLabel": "Jaǵdayı",
@@ -1393,7 +1394,6 @@
     "exportEmptyError": "Eksport ushın keste bos",
     "exportSuccessToast": "Keste eksport qılındı",
     "classRemovedToast": "Klas kesteneden alıp taslandı",
-    "undo": "Qaytarıw",
     "notScheduled": "Kestege qosılmaǵan",
     "classesTitle": "Klaslar",
     "add": "Qosıw",
@@ -3246,6 +3246,7 @@
       "undo": "Biykar etiw"
     },
     "title": "Klasslar",
+    "selectClass": "Klass saylañ",
     "addClass": "Klass qosıw",
     "add": "Qosıw",
     "emptyTitle": "Házirshe klasslar joq",

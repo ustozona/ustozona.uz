@@ -45,10 +45,10 @@ export default function StandardsPage() {
   const columnsTemplate = `minmax(0,${grow.classes}fr) minmax(0,${grow.content}fr)`;
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full min-h-0 gap-6 p-4 md:p-6">
+    <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="standards" active={isDemoMode} />
-      <DashboardColumns template={columnsTemplate} className="h-full overflow-hidden">
-      <DashboardColumn hideBelow="lg" data-tour="standards-classes">
+      <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
+      <DashboardColumn hideBelow="lg" mobile="self" data-tour="standards-classes">
         <ClassListPanel
           page="standards"
           selectedClassId={effectiveClassId ?? ""}
@@ -57,7 +57,7 @@ export default function StandardsPage() {
         />
       </DashboardColumn>
 
-      <div className="flex min-w-0 min-h-0 h-full flex-col">
+      <div className="flex min-w-0 min-h-0 flex-col lg:h-full max-lg:min-h-[60svh]">
         {noClass ? (
           <div className="h-full overflow-hidden rounded-xl border border-border bg-card">
             <Empty className="h-full border-0">
