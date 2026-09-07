@@ -3,10 +3,11 @@ import { count, gt, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 // classes/students bu yerda ishlatilmaydi: sinf va oʻquvchi sanogʻi
 // quyidagi raw SQL ichida class_teachers/enrollments orqali olinadi.
-import { user, teachers } from "@/server/db/schema";
+import { user, session, teachers } from "@/server/db/schema";
 import { hasActivityViews } from "@/server/db/views";
 import { ACTIVATED_MIN_DAYS } from "@/lib/faollik";
 import { requireAdmin } from "@/server/session";
+import { parseUserAgent, type DeviceKind } from "@/lib/user-agent";
 
 /* ════════════════════════════════════════════════════════════════════
    ADMIN → PLATFORMA STATISTIKASI (kross-tenant agregatlar).
@@ -266,4 +267,57 @@ export async function getSignupTrends(): Promise<SignupTrends> {
     signupsByDay,
     planBreakdown: planRows.map((r) => ({ plan: r.plan, n: r.n })),
   };
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   QURILMA TAQSIMOTI — mobil/planshet/kompyuter ulushi.
+
+   ⚠️ MAXRAJ — SEANS, FOYDALANUVCHI EMAS. «Foydalanuvchilarning 40%
+   mobil» degan gap notoʻgʻri boʻlardi: bir odam ikkala qurilmadan ham
+   kiradi. Bu yerdagi savol boshqa — «ilovaga kirishlarning qanchasi
+   telefondan?» — mobil UI'ga qancha kuch sarflash kerakligini aynan
+   shu raqam belgilaydi.
+
+   Oyna: oxirgi 30 kun ichida yangilangan seanslar. Eski seanslarni
+   ham qoʻshsak, allaqachon almashtirilgan qurilmalar raqamni
+   suzdirardi. */
+
+export type DeviceBreakdown = {
+  device: DeviceKind;
+  sessions: number;
+  /** Foizda, butun songa yaxlitlangan. */
+  share: number;
+}[];
+
+export async function getDeviceBreakdown(): Promise<DeviceBreakdown> {
+  await requireAdmin();
+
+  const since30 = new Date(Date.now() - 30 * DAY_MS);
+
+  /* Faqat UA ustuni tortiladi — parsi JS'da (`@/lib/user-agent`).
+     Hajm kichik: 30 kunlik seanslar soni foydalanuvchilar sonidan bir
+     necha barobar, yaʼni mingdan oshmaydi. */
+  const rows = await db
+    .select({ userAgent: session.userAgent })
+    .from(session)
+    .where(gt(session.updatedAt, since30));
+
+  const counts = new Map<DeviceKind, number>();
+  for (const r of rows) {
+    const kind = parseUserAgent(r.userAgent).device;
+    counts.set(kind, (counts.get(kind) ?? 0) + 1);
+  }
+
+  const total = rows.length;
+  const order: DeviceKind[] = ["mobile", "tablet", "desktop", "unknown"];
+  return order
+    .map((device) => {
+      const sessions = counts.get(device) ?? 0;
+      return {
+        device,
+        sessions,
+        share: total ? Math.round((sessions / total) * 100) : 0,
+      };
+    })
+    .filter((d) => d.sessions > 0);
 }

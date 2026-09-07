@@ -10,6 +10,7 @@ import {
   countActiveSuperAdmins,
   getUserRoleSnapshot,
   hasPasswordAccount,
+  listUserSessionsForAdmin,
   setExcludeFromMetrics,
 } from "@/server/dal/admin/users";
 
@@ -236,4 +237,20 @@ export async function stopImpersonatingAction() {
   // requireAdmin ATAYLAB YOʻQ: impersonatsiya sessiyasida rol teacher.
   await auth.api.stopImpersonating({ headers: await headers() });
   return { ok: true as const };
+}
+
+/* Seanslar roʻyxati — jadvaldagi «Qurilmalar» oynasi uchun.
+
+   Oʻqish amali, lekin server action: seanslar faqat oyna ochilganda
+   kerak, sahifaning har yuklanishida emas. Auditga yozilmaydi —
+   `requireAdmin` allaqachon himoya, har oyna ochilishini logga yozish
+   esa audit tasmasini haqiqiy amallardan tozalab tashlardi. */
+const userSessionsSchema = z.object({ userId: z.string().min(1) });
+
+export async function listUserSessionsAction(
+  input: z.infer<typeof userSessionsSchema>,
+) {
+  await requireAdmin();
+  const { userId } = userSessionsSchema.parse(input);
+  return listUserSessionsForAdmin(userId);
 }
