@@ -43,6 +43,25 @@ const YOQILGANMI = process.env.ACTIVATION_EMAILS === "on";
    ACTIVATION_ALLOW_UNVERIFIED=on */
 const FAQAT_TASDIQLANGAN = process.env.ACTIVATION_ALLOW_UNVERIFIED !== "on";
 
+/* Nima boʻlgani. `scheduleStage` xatoni yutadi (trigger asosiy amalni
+   yiqitmasligi kerak), lekin JIM qolmaydi — chaqiruvchi natijani
+   koʻrishi mumkin.
+
+   Bu qoʻlda yuborish skripti uchun muhim: u avval har chaqiruvni
+   «yuborildi» deb sanardi va nol xat ketganda ham muvaffaqiyat
+   koʻrsatardi. */
+export type ActivationResult =
+  | "yuborildi"
+  | "rejalashtirildi"
+  | "darvoza-yopiq"
+  | "obunadan-chiqqan"
+  | "allaqachon-yuborilgan"
+  | "manzil-topilmadi"
+  | "tasdiqlanmagan"
+  | "shablon-yoʻq"
+  | "bosqich-yoʻq"
+  | "xato";
+
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 function fromAddress(): string {
@@ -122,27 +141,27 @@ export async function scheduleStage(
      qoʻlda yuborishda ishlatiladi — ular roʻyxatdan ancha oldin
      oʻtgan, 24 soat kutishning maʼnosi yoʻq. */
   kechikishOverride?: number,
-): Promise<void> {
+): Promise<ActivationResult> {
   try {
-    if (stage === "done") return;
+    if (stage === "done") return "bosqich-yoʻq";
 
     const state = await readState(userId);
-    if (state?.optedOut) return;
+    if (state?.optedOut) return "obunadan-chiqqan";
     /* Bir bosqich ikki marta yuborilmasin. */
-    if (state?.sentLog.some((e) => e.stage === stage)) return;
+    if (state?.sentLog.some((e) => e.stage === stage)) return "allaqachon-yuborilgan";
 
     const soat = kechikishOverride ?? kechikish(stage);
-    if (soat === null) return;
+    if (soat === null) return "bosqich-yoʻq";
 
     const recipient = await getRecipient(userId);
-    if (!recipient) return; // manzil yaroqsiz (masalan telegram.invalid)
-    if (FAQAT_TASDIQLANGAN && !recipient.verified) return;
+    if (!recipient) return "manzil-topilmadi"; // yoʻq foydalanuvchi yoki telegram.invalid
+    if (FAQAT_TASDIQLANGAN && !recipient.verified) return "tasdiqlanmagan";
 
     /* Avvalgi kutayotgan xat boʻlsa — u endi eskirgan. */
     if (state?.scheduledEmailId) await cancelPending(userId);
 
     const xat = qurish(stage, recipient.name, userId);
-    if (!xat) return; // shablon hali yozilmagan (A2/A3/A4 — 3-bosqich)
+    if (!xat) return "shablon-yoʻq"; // A2/A3/A4 — 3-bosqich
 
     /* soat <= 0 — darhol yuborish (sinov xati). Resend'ga oʻtmishdagi
        yoki hozirgi `scheduledAt` berilmasin, u xato qaytaradi. */
@@ -156,7 +175,7 @@ export async function scheduleStage(
         `[activation] ${stage} ${darhol ? "yuborilardi" : "rejalashtirilardi"}: ${recipient.email} → ${darhol ? "darhol" : scheduledFor.toISOString()}`,
       );
       await writeState(userId, { stage, scheduledFor });
-      return;
+      return "darvoza-yopiq";
     }
 
     const { data, error } = await resend.emails.send({
@@ -174,7 +193,7 @@ export async function scheduleStage(
 
     if (error) {
       console.error(`[activation] Resend xatosi (${userId}, ${stage}):`, error);
-      return;
+      return "xato";
     }
 
     await writeState(userId, {
@@ -183,8 +202,10 @@ export async function scheduleStage(
       scheduledFor,
       sentLog: [...(state?.sentLog ?? []), { stage, at: new Date().toISOString() }],
     });
+    return darhol ? "yuborildi" : "rejalashtirildi";
   } catch (err) {
     console.error(`[activation] rejalashtirib boʻlmadi (${userId}, ${stage}):`, err);
+    return "xato";
   }
 }
 

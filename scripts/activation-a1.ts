@@ -94,6 +94,18 @@ async function main() {
     return;
   }
 
+  /* ⛔ ENG MUHIM SATR.
+
+     Dvigatel `src/server/db/client.ts` orqali ishlaydi, u esa DOIM
+     `DATABASE_URL` ni oʻqiydi. Yaʼni `--prod` bilan roʻyxatni prod
+     bazadan olsak ham, dvigatel DEV bazaga qarardi: foydalanuvchini
+     topolmay har chaqiruvda jimgina qaytardi va NOL xat ketardi
+     (skript esa «yuborildi» deb yozardi).
+
+     Klient dangasa — birinchi soʻrovda quriladi, shuning uchun uni
+     import qilishdan OLDIN env'ni almashtirish kifoya. */
+  process.env.DATABASE_URL = url;
+
   /* Dvigatel shu yerda import qilinadi: quruq yurishda Resend
      mijozini umuman yaratmaslik uchun.
 
@@ -104,13 +116,29 @@ async function main() {
      yiqiladi (quruq yurish bu satrga yetmaydi va sogʻlom koʻrinadi). */
   const { scheduleStage } = await import("../src/server/email/activation");
 
-  let n = 0;
+  /* Natija HAR NOMZOD boʻyicha sanaladi — `scheduleStage` xatoni
+     yutadi, shuning uchun chaqiruv sonini muvaffaqiyat deb sanash
+     mumkin emas. */
+  const hisob = new Map<string, number>();
   for (const nomzod of nomzodlar) {
-    await scheduleStage(nomzod.id, "a1", KECHIKISH_SOAT);
-    n++;
+    const natija = await scheduleStage(nomzod.id, "a1", KECHIKISH_SOAT);
+    hisob.set(natija, (hisob.get(natija) ?? 0) + 1);
+    if (natija !== "yuborildi" && natija !== "rejalashtirildi") {
+      console.log(`    ⚠️  ${nomzod.email} → ${natija}`);
+    }
   }
-  console.log(`\n  ${n} ta xat ${KECHIKISH_SOAT} soatga rejalashtirildi.`);
-  console.log("  Bekor qilish kerak boʻlsa — Resend panelidan.\n");
+
+  console.log("\n  Natija:");
+  for (const [natija, son] of [...hisob].sort((a, b) => b[1] - a[1])) {
+    console.log(`    ${natija.padEnd(24)} ${son}`);
+  }
+
+  const ketdi = (hisob.get("yuborildi") ?? 0) + (hisob.get("rejalashtirildi") ?? 0);
+  if (ketdi === 0) {
+    console.log("\n  ⛔ HECH QANDAY XAT KETMADI. Yuqoridagi sababga qarang.\n");
+  } else {
+    console.log(`\n  ${ketdi} ta xat ketdi. Bekor qilish — Resend panelidan.\n`);
+  }
 
   await sql.end();
 }
