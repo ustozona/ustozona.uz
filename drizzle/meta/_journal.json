@@ -309,6 +309,13 @@
       "when": 1788521425510,
       "tag": "0043_maktab_dars_jadvali",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1788764075211,
+      "tag": "0044_email_aktivatsiya",
+      "breakpoints": true
     }
   ]
 }
