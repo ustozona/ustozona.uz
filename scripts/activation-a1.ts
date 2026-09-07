@@ -76,7 +76,13 @@ async function main() {
   }
 
   /* Dvigatel shu yerda import qilinadi: quruq yurishda Resend
-     mijozini umuman yaratmaslik uchun. */
+     mijozini umuman yaratmaslik uchun.
+
+     ⚠️ Bu zanjir `import "server-only"` ga olib boradi. Oʻsha paket
+     `react-server` sharti YOʻQ boʻlsa import paytida XATO OTADI —
+     shuning uchun package.json dagi buyruqda `--conditions=react-server`
+     turibdi. Uni olib tashlamang, aks holda faqat `--yes` yoʻli
+     yiqiladi (quruq yurish bu satrga yetmaydi va sogʻlom koʻrinadi). */
   const { scheduleStage } = await import("../src/server/email/activation");
 
   let n = 0;

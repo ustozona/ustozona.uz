@@ -15,6 +15,20 @@
 
 export const A1_SUBJECT = "Birinchi sinfingizni oching";
 
+/** Foydalanuvchi kiritgan matn HTML'ga qoʻyilishidan oldin qalqonlanadi.
+ *  Ism profildan keladi — ichida `<`, `&` yoki teg boʻlsa xat tuzilishi
+ *  buziladi (tugma va obunani bekor qilish havolasi ham yoʻqolishi
+ *  mumkin). Har yangi shablon foydalanuvchi matnini SHU funksiyadan
+ *  oʻtkazsin. */
+function qalqon(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function a1Html({
   name,
   siteUrl,
@@ -24,8 +38,8 @@ export function a1Html({
   siteUrl: string;
   unsubscribeUrl: string;
 }): string {
-  const salom = name ? `Assalomu alaykum, ${name}!` : "Assalomu alaykum!";
-  const havola = `${siteUrl}/dashboard/classes`;
+  const salom = name ? `Assalomu alaykum, ${qalqon(name)}!` : "Assalomu alaykum!";
+  const havola = `${qalqon(siteUrl)}/dashboard/classes`;
 
   return `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.6;color:#1f2937;max-width:480px;margin:0 auto;padding:8px">
   <p style="margin:0 0 16px">${salom}</p>
@@ -54,7 +68,7 @@ export function a1Html({
 
   <p style="margin:0;color:#6b7280;font-size:13px;border-top:1px solid #e5e7eb;padding-top:16px">
     Bu xat ishni boshlashga yordam berish uchun yuborildi.
-    <a href="${unsubscribeUrl}" style="color:#6b7280">Bunday xatlarni oʻchirish</a>.
+    <a href="${qalqon(unsubscribeUrl)}" style="color:#6b7280">Bunday xatlarni oʻchirish</a>.
   </p>
 </div>`;
 }

@@ -1,7 +1,9 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getMyPreference, setMyPreference } from "@/server/dal/email-activation";
+import { getMyPreference, optOutByUserId, setMyPreference } from "@/server/dal/email-activation";
+import { verifyUnsubscribeToken } from "@/lib/unsubscribe-token";
 
 /* Aktivatsiya xatlari sozlamasi — yupqa qatlam: zod-parse → DAL.
 
@@ -16,4 +18,16 @@ export async function fetchEmailActivationPrefAction(): Promise<{ enabled: boole
 export async function setEmailActivationPrefAction(enabled: boolean): Promise<{ ok: true }> {
   await setMyPreference(z.boolean().parse(enabled));
   return { ok: true };
+}
+
+/** Obunani bekor qilish sahifasidagi tugma — login TALAB QILINMAYDI,
+ *  imzolangan token oʻzi dalil. Faqat POST orqali chaqiriladi:
+ *  GET renderda oʻzgarish qilinmasligi kerak, chunki xatdagi havolani
+ *  pochta darvozasi va havola-skanerlari ham ochadi. */
+export async function unsubscribeByTokenAction(formData: FormData): Promise<void> {
+  const token = formData.get("t");
+  const userId = verifyUnsubscribeToken(typeof token === "string" ? token : null);
+  if (!userId) redirect("/unsubscribe");
+  await optOutByUserId(userId);
+  redirect("/unsubscribe?ok=1");
 }
