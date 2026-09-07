@@ -16,6 +16,7 @@ import {
   type StudentRow,
   type TopicRow,
 } from "@/server/db/schema";
+import { onClassPresent } from "@/server/email/activation";
 import { requireTeacher } from "@/server/session";
 import {
   requireWorkspace,
@@ -484,6 +485,21 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
      faqat undan boshqa hech kim foydalanmayotgan boʻlsa oʻchadi. */
   await detachOrDeleteStudents(batch.studentsDelete);
   await detachOrDeleteClasses(batch.classesDelete, tid, ctx.workspaceId);
+
+  /* Sinf paydo boʻldi — «Birinchi sinfingizni oching» xati endi
+     oʻrinsiz, uni bekor qilamiz.
+
+     Sinf yaratish ALOHIDA AMAL EMAS: u store diffi orqali shu batch
+     ichida keladi. Shuning uchun trigger ham shu yerda turadi —
+     boshqa kirish nuqtasi yoʻq.
+
+     Arxivlangan sinf hisobga olinmaydi: u ishning boshlangani emas,
+     yopilgani. Chaqiruv `await` qilinadi — serverless muhitda javob
+     qaytgach jarayon toʻxtaydi va kutilmagan chaqiruv oxirigacha
+     yetmasligi mumkin. */
+  if (batch.classesUpsert.some((c) => !c.archivedAt)) {
+    await onClassPresent(tid);
+  }
 }
 
 /**

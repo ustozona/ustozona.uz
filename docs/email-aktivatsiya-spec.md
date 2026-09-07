@@ -181,7 +181,9 @@ route, sozlamalardagi toggle, `RESEND_ACTIVATION_FROM`. Xat yuborilmaydi.
 segment. Domen obroʻsini isitish va shablonni sinash. Kamida 3 kun
 kuzatiladi: yetkazildi / ochildi / bosildi / shikoyat.
 
-**3-bosqich — A2, A3, A4 zanjiri.**
+**3-bosqich — A2, A3, A4 zanjiri.** Trigger qismi (sinf ochilganda
+A1 ni bekor qilish) matnlardan AJRATIB, oldinroq qilindi: u maʼlumot
+kutmaydi — bajarilgan ishni soʻrash har qanday holatda xato.
 
 **4-bosqich — V1 tasdiqlash xati**, tasdiqlanmagan 48 ta uchun. Bosganlar
 A-zanjiriga qoʻshiladi.
@@ -259,8 +261,5 @@ Resend panelidan bekor qilishga vaqt qolsin.
 
 - A2/A3/A4 shablonlari (`qurish()` ular uchun `null` qaytaradi, dvigatel
   jimgina tashlab ketadi — xato bermaydi)
-- Sinf yaratilganda `advance()` chaqiruvi. Sinf yaratish alohida amal
-  emas, `applyGradesBatch` ichidagi `classesUpsert` orqali oʻtadi —
-  trigger oʻsha yerga qoʻyiladi (3-bosqich)
 - Yetkazuvchanlik kuzatuvi (Resend webhook: delivered / bounced /
   complained)
