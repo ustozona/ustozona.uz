@@ -316,6 +316,13 @@
       "when": 1788764075211,
       "tag": "0044_email_aktivatsiya",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1788765489793,
+      "tag": "0045_email_activation_rls",
+      "breakpoints": true
     }
   ]
 }
