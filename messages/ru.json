@@ -271,7 +271,13 @@
     "sheetStudents": "Ученики",
     "sheetClasses": "Классы",
     "sheetLessons": "Уроки",
-    "sheetTasks": "Задачи"
+    "sheetTasks": "Задачи",
+    "emailTitle": "Письма-подсказки",
+    "emailDescription": "Письма от Ustozona",
+    "emailToggleTitle": "Письма для начала работы",
+    "emailToggleDescription": "Короткие письма, помогающие начать работу. Письма безопасности (например, сброс пароля) это не затрагивает — они приходят всегда.",
+    "emailToastSaved": "Сохранено",
+    "emailToastError": "Не удалось сохранить"
   },
   "BellSection": {
     "title": "Смены и расписание звонков",

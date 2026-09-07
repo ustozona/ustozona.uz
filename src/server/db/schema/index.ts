@@ -26,3 +26,4 @@ export * from "./identity";
 export * from "./cross-platform";
 export * from "./assess";
 export * from "./blog";
+export * from "./email-activation";

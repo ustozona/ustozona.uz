@@ -271,7 +271,13 @@
     "sheetStudents": "Oʻquvchilar",
     "sheetClasses": "Sinflar",
     "sheetLessons": "Darslar",
-    "sheetTasks": "Topshiriqlar"
+    "sheetTasks": "Topshiriqlar",
+    "emailTitle": "Yordam xatlari",
+    "emailDescription": "Ustozonadan keladigan xatlar",
+    "emailToggleTitle": "Boshlashga yordam beruvchi xatlar",
+    "emailToggleDescription": "Ishni boshlashga yordam beradigan qisqa xatlar. Parolni tiklash kabi xavfsizlik xatlari bunga bogʻliq emas — ular baribir keladi.",
+    "emailToastSaved": "Saqlandi",
+    "emailToastError": "Saqlab boʻlmadi"
   },
   "BellSection": {
     "title": "Smenalar va qoʻngʻiroqlar jadvali",

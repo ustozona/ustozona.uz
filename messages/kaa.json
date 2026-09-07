@@ -271,7 +271,13 @@
     "sheetStudents": "Oqıwshılar",
     "sheetClasses": "Klaslar",
     "sheetLessons": "Sabaqlar",
-    "sheetTasks": "Tapsırmalar"
+    "sheetTasks": "Tapsırmalar",
+    "emailTitle": "Helpful emails",
+    "emailDescription": "Emails from Ustozona",
+    "emailToggleTitle": "Getting-started emails",
+    "emailToggleDescription": "Short emails that help you get started. Security emails such as password reset are not affected — they are always sent.",
+    "emailToastSaved": "Saved",
+    "emailToastError": "Could not save"
   },
   "BellSection": {
     "title": "Smenalar hám qońırawlar kestesi",

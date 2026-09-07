@@ -271,7 +271,13 @@
     "sheetStudents": "Ўқувчилар",
     "sheetClasses": "Синфлар",
     "sheetLessons": "Дарслар",
-    "sheetTasks": "Топшириқлар"
+    "sheetTasks": "Топшириқлар",
+    "emailTitle": "Yordam xatlari",
+    "emailDescription": "Ustozonadan keladigan xatlar",
+    "emailToggleTitle": "Boshlashga yordam beruvchi xatlar",
+    "emailToggleDescription": "Ishni boshlashga yordam beradigan qisqa xatlar. Parolni tiklash kabi xavfsizlik xatlari bunga bogʻliq emas — ular baribir keladi.",
+    "emailToastSaved": "Saqlandi",
+    "emailToastError": "Saqlab boʻlmadi"
   },
   "BellSection": {
     "title": "Сменалар ва қўнғироқлар жадвали",
