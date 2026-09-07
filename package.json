@@ -20,6 +20,7 @@
     "db:seed:jamoa": "tsx --env-file=.env.local scripts/seed-jamoa-test.ts",
     "admin:promote": "tsx --env-file=.env.local scripts/promote-admin.ts",
     "metrics": "tsx --env-file=.env.local scripts/metrics.ts",
+    "metrics:prod": "tsx --env-file=.env.local scripts/metrics.ts --prod",
     "feedback:migrate-status": "tsx --env-file=.env.local scripts/migrate-feedback-status.ts"
   },
   "dependencies": {
