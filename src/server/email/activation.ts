@@ -86,8 +86,30 @@ function replyTo(): string | undefined {
   return process.env.RESEND_ACTIVATION_REPLY_TO || undefined;
 }
 
+const PUBLIC_SITE = "https://www.ustozona.uz";
+
+/* Xatdagi havolalarning manzili.
+
+   ⛔ `BETTER_AUTH_URL` ga TAYANMAYDI. Lokal ishlashda u
+   `http://localhost:3000` boʻladi, xat esa HAQIQIY odamning
+   pochtasiga boradi — 2026-09-07 dagi sinovda aynan shu chiqdi:
+   «Sinf ochish» tugmasi localhost'ga olib bordi. Agar oʻsha holda
+   33 kishiga yuborilganda hammasi ishlamaydigan havola olardi.
+
+   Skript ishlab chiquvchining mashinasidan yurgizilishi mumkin,
+   shuning uchun localhost bu yerda HAR DOIM xato. */
 function siteUrl(): string {
-  return process.env.BETTER_AUTH_URL ?? "https://www.ustozona.uz";
+  const berilgan = process.env.ACTIVATION_SITE_URL ?? process.env.BETTER_AUTH_URL;
+  if (!berilgan) return PUBLIC_SITE;
+
+  const mahalliy = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/i.test(berilgan);
+  if (mahalliy) {
+    console.warn(
+      `[activation] ${berilgan} — xat havolasi uchun mahalliy manzil, ${PUBLIC_SITE} ishlatildi.`,
+    );
+    return PUBLIC_SITE;
+  }
+  return berilgan.replace(/\/+$/, "");
 }
 
 /** Zanjir tartibi va har bosqichning kechikishi (soatda). */

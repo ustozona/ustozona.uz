@@ -41,7 +41,14 @@ export default async function UnsubscribePage({
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-8 px-4">
-      <BrandWordmark shieldClassName="size-[30px]" textClassName="text-base" gapClassName="gap-3" />
+      <BrandWordmark
+        shieldClassName="size-[30px]"
+        textClassName="text-base"
+        gapClassName="gap-3"
+        /* Aylanuvchi soʻz LANDING uchun — bu yerda u «Ustozona baholash»
+           kabi yolgʻon kontekst koʻrsatadi (komponent izohiga qarang). */
+        showRoller={false}
+      />
 
       <div className="w-full max-w-md rounded-xl border border-border/60 p-6 text-center">
         {bajarildi ? (

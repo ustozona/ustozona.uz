@@ -7,27 +7,16 @@
    Uslub qoidalari (barcha aktivatsiya xatlariga tegishli):
      - matn qisqa, 100 soʻzdan oshmasin
      - bitta tugma, bitta manzil
-     - rasm yoʻq (rasm bloklansa xat boʻsh koʻrinadi)
+     - rasm yoʻq (Gmail tashqi rasmni bloklaydi — logo ham HTML bilan
+       chiziladi, _brand.ts ga qarang)
      - inline CSS, jadval-layout yoʻq — oddiy blok yetarli
      - ranglar xatga qotirilgan: pochta mijozi CSS token bilmaydi,
        shuning uchun bu yerda dizayn tizimi tokenlari ISHLATILMAYDI
    ════════════════════════════════════════════════════════════════════ */
 
-export const A1_SUBJECT = "Birinchi sinfingizni oching";
+import { brendSarlavha, qalqon } from "./_brand";
 
-/** Foydalanuvchi kiritgan matn HTML'ga qoʻyilishidan oldin qalqonlanadi.
- *  Ism profildan keladi — ichida `<`, `&` yoki teg boʻlsa xat tuzilishi
- *  buziladi (tugma va obunani bekor qilish havolasi ham yoʻqolishi
- *  mumkin). Har yangi shablon foydalanuvchi matnini SHU funksiyadan
- *  oʻtkazsin. */
-function qalqon(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+export const A1_SUBJECT = "Birinchi sinfingizni oching";
 
 export function a1Html({
   name,
@@ -42,6 +31,8 @@ export function a1Html({
   const havola = `${qalqon(siteUrl)}/dashboard/classes`;
 
   return `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.6;color:#1f2937;max-width:480px;margin:0 auto;padding:8px">
+  ${brendSarlavha()}
+
   <p style="margin:0 0 16px">${salom}</p>
 
   <p style="margin:0 0 16px">
