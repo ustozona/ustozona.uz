@@ -83,15 +83,15 @@ async function main() {
 
   /* Sir tekshiruvi QURUQ YURISHDA HAM koʻrsatiladi — muammoni
      yuborish lahzasida emas, oldindan bilish kerak. */
-  if (PROD && !process.env.PROD_BETTER_AUTH_SECRET) {
+  if (PROD && !process.env.UNSUBSCRIBE_SECRET) {
     console.log(
-      "\n  ⛔ PROD_BETTER_AUTH_SECRET yoʻq.\n" +
-        "     Obunani bekor qilish tokeni BETTER_AUTH_SECRET bilan\n" +
-        "     imzolanadi. Lokal sir prod siridan farq qiladi, demak\n" +
-        "     bu yerda imzolangan havola prodda RAD ETILADI va har\n" +
-        "     xatda «obunani bekor qilish» oʻlik boʻladi.\n" +
-        "     Vercel'dagi BETTER_AUTH_SECRET qiymatini .env.local ga\n" +
-        "     PROD_BETTER_AUTH_SECRET nomi bilan qoʻshing.\n",
+      "\n  ⛔ UNSUBSCRIBE_SECRET yoʻq.\n" +
+        "     Obunani bekor qilish tokeni shu kalit bilan imzolanadi.\n" +
+        "     U yoʻq boʻlsa BETTER_AUTH_SECRET ishlatiladi, u esa\n" +
+        "     lokalda va prodda HAR XIL — natijada har xatdagi\n" +
+        "     «obunani bekor qilish» havolasi prodda rad etiladi.\n" +
+        "     Bir xil qiymat ikkala joyda boʻlishi shart:\n" +
+        "     Vercel (Production) va .env.local.\n",
     );
     if (YES) {
       await sql.end();
@@ -124,17 +124,11 @@ async function main() {
      import qilishdan OLDIN env'ni almashtirish kifoya. */
   process.env.DATABASE_URL = url;
 
-  /* ⛔ IKKINCHI SHUNDAY SATR — sir ham nishon muhitniki boʻlishi kerak.
-
-     Obunani bekor qilish tokeni `BETTER_AUTH_SECRET` bilan imzolanadi.
-     Lokal sir prod siridan farq qiladi, shuning uchun bu yerda
-     imzolangan havola prodda RAD ETILADI — 2026-09-07 da aynan shu
-     tekshirildi va tasdiqlandi.
-
-     Bunga eʼtibor berilmasa, 33 xatning hammasida obunani bekor
-     qilish havolasi oʻlik boʻlardi — Gmail talabi buzilgan, spam
-     shikoyati kafolatlangan. */
-  if (PROD) process.env.BETTER_AUTH_SECRET = process.env.PROD_BETTER_AUTH_SECRET!;
+  /* Sir yuqorida tekshirilgan (`UNSUBSCRIBE_SECRET`). U ikkala
+     muhitda BIR XIL boʻlgani uchun bu yerda almashtirish kerak emas —
+     bazadan farqli oʻlaroq. 2026-09-07 da lokal `BETTER_AUTH_SECRET`
+     bilan imzolangan token prodda rad etilgani tekshirilib
+     tasdiqlangan; alohida kalit aynan shuning uchun kiritildi. */
 
   /* Dvigatel shu yerda import qilinadi: quruq yurishda Resend
      mijozini umuman yaratmaslik uchun.

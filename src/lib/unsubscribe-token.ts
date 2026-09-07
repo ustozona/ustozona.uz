@@ -19,9 +19,29 @@ import { createHmac, timingSafeEqual } from "node:crypto";
    qoidasiga qarang.
    ════════════════════════════════════════════════════════════════════ */
 
+/* ── Qaysi kalit ─────────────────────────────────────────────────────
+   `UNSUBSCRIBE_SECRET` — ALOHIDA, tor vazifali kalit.
+
+   Nega `BETTER_AUTH_SECRET` emas:
+   1) U sessiyalarni imzolaydi. Xat yuborish skripti ishlab chiquvchi
+      mashinasida yurgiziladi va oʻsha kalitni talab qilardi — prod
+      sessiya kalitini kompyuterga koʻchirish demak. Bu kalit sizib
+      ketsa sessiya soxtalashtirilishi mumkin.
+   2) Vercel uni «Sensitive» deb belgilaydi: koʻrib ham, nusxalab ham
+      boʻlmaydi. Yaʼni bu yoʻl texnik jihatdan ham yopiq.
+
+   Bu kalit sizib ketsa eng yomoni — kimdir obunadan chiqarilishi.
+
+   `BETTER_AUTH_SECRET` ga qaytish ATAYLAB qoldirilgan: yangi kalit
+   hali qoʻyilmagan muhitda `/unsubscribe` 500 bermasin. Lekin
+   ommaviy yuborish skripti `UNSUBSCRIBE_SECRET` ni MAJBURIY talab
+   qiladi — aks holda lokal va prod kalitlari farq qilib, xatdagi
+   havola oʻlik boʻlib qolardi. */
 function secret(): string {
-  const s = process.env.BETTER_AUTH_SECRET;
-  if (!s) throw new Error("BETTER_AUTH_SECRET yoʻq — unsubscribe tokenini imzolab boʻlmaydi.");
+  const s = process.env.UNSUBSCRIBE_SECRET ?? process.env.BETTER_AUTH_SECRET;
+  if (!s) {
+    throw new Error("UNSUBSCRIBE_SECRET yoʻq — unsubscribe tokenini imzolab boʻlmaydi.");
+  }
   return s;
 }
 
