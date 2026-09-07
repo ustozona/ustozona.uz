@@ -602,7 +602,6 @@ export async function getUserDetailForAdmin(
 export type AdminUserSession = {
   id: string;
   updatedAt: Date;
-  createdAt: Date;
   ipAddress: string | null;
   userAgent: string | null;
 };
@@ -615,7 +614,6 @@ export async function listUserSessionsForAdmin(
     .select({
       id: session.id,
       updatedAt: session.updatedAt,
-      createdAt: session.createdAt,
       ipAddress: session.ipAddress,
       userAgent: session.userAgent,
     })
