@@ -26,7 +26,9 @@ import { unsubscribeByTokenAction } from "@/server/actions/email-activation";
    ════════════════════════════════════════════════════════════════════ */
 
 export const metadata = {
-  title: "Obunani bekor qilish — Ustozona",
+  /* Root layout `%s — Ustozona` shablonini qoʻshadi — bu yerda
+     brend nomi takrorlanmaydi. */
+  title: "Obunani bekor qilish",
   robots: { index: false, follow: false },
 };
 
