@@ -9,7 +9,8 @@
      - bitta tugma, bitta manzil
      - rasm yoʻq (Gmail tashqi rasmni bloklaydi — logo ham HTML bilan
        chiziladi, _brand.ts ga qarang)
-     - inline CSS, jadval-layout yoʻq — oddiy blok yetarli
+     - inline CSS; joylashuv kerak boʻlsa JADVAL (Gmail inline-block'ni
+       tashlab yuboradi — _brand.ts izohiga qarang)
      - ranglar xatga qotirilgan: pochta mijozi CSS token bilmaydi,
        shuning uchun bu yerda dizayn tizimi tokenlari ISHLATILMAYDI
    ════════════════════════════════════════════════════════════════════ */

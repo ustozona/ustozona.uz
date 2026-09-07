@@ -26,7 +26,7 @@ export function qalqon(s: string): string {
 }
 
 /**
- * Xat boshidagi brend belgisi.
+ * Xat boshidagi brend belgisi: qalqon + «Ustozona», yonma-yon.
  *
  * ⚠️ RASM ISHLATILMAYDI. Gmail va koʻp mijozlar tashqi rasmlarni
  * default holda bloklaydi — logo oʻrnida boʻsh quti qoladi va xat
@@ -35,10 +35,27 @@ export function qalqon(s: string): string {
  *
  * `border-radius` ni tushunmaydigan eski mijozda (Outlook desktop) u
  * oddiy sariq kvadratga aylanadi — brend rangi baribir qoladi.
+ *
+ * ⚠️ JADVAL ISHLATILADI, `display:inline-block` EMAS. 2026-09-07
+ * sinovida Gmail inline-block'ni tashlab yubordi va qalqon bilan
+ * yozuv ustma-ust tushdi. Jadval — pochta HTML'idagi yagona
+ * ishonchli joylashuv vositasi; `vertical-align:middle` ikkisini
+ * markazlari boʻyicha tekislaydi.
+ *
+ * Blok xat kengligi boʻyicha MARKAZDA turadi (matn esa chapda).
+ * Markazlash ikki usul bilan berilgan — oʻrab turgan `text-align`
+ * va jadvalning `margin:0 auto` — chunki mijozlar ikkisidan birini
+ * tashlab yuborishi mumkin.
  */
 export function brendSarlavha(): string {
-  return `<div style="margin:0 0 24px">
-    <span style="display:inline-block;width:26px;height:26px;background:${BREND_SARIQ};border-radius:18% 18% 50% 50% / 18% 18% 45% 45%;vertical-align:middle"></span>
-    <span style="display:inline-block;margin-left:9px;font-size:17px;font-weight:600;color:#1f2937;letter-spacing:-0.2px;vertical-align:middle">Ustozona</span>
-  </div>`;
+  return `<div style="text-align:center;margin:0 0 24px">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;border-collapse:collapse">
+    <tr>
+      <td style="vertical-align:middle;line-height:0;padding:0">
+        <div style="width:26px;height:26px;background:${BREND_SARIQ};border-radius:18% 18% 50% 50% / 18% 18% 45% 45%"></div>
+      </td>
+      <td style="vertical-align:middle;padding:0 0 0 9px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:17px;font-weight:600;color:#1f2937;letter-spacing:-0.2px;line-height:26px">Ustozona</td>
+    </tr>
+  </table>
+</div>`;
 }
