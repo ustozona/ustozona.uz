@@ -9,6 +9,17 @@
 /** Brend sarigʻi — `src/assets/logo/brand-shield.tsx` bilan bir xil. */
 const BREND_SARIQ = "#FBC02D";
 
+/* Aktivatsiya xatlarida beriladigan Telegram aloqasi.
+
+   ⚠️ Bu `landing-nav.ts` dagi `TELEGRAM_HANDLE` (@ustozona_tms) EMAS.
+   U — ommaviy brend kanali (eʼlonlar oqimi). Bu yerda esa odam
+   toʻgʻridan-toʻgʻri yozadigan SHAXSIY aloqa kerak: yordam soʻragan
+   oʻqituvchi kanalga emas, tirik odamga yozishi lozim.
+
+   Handle oʻzgarsa faqat shu satr tahrirlanadi. */
+export const YORDAM_TELEGRAM = "@maxdum";
+export const YORDAM_TELEGRAM_URL = "https://t.me/maxdum";
+
 /**
  * Foydalanuvchi kiritgan matnni HTML'ga qoʻyishdan oldin qalqonlaydi.
  *
