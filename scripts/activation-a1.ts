@@ -81,6 +81,24 @@ async function main() {
     );
   }
 
+  /* Sir tekshiruvi QURUQ YURISHDA HAM koʻrsatiladi — muammoni
+     yuborish lahzasida emas, oldindan bilish kerak. */
+  if (PROD && !process.env.PROD_BETTER_AUTH_SECRET) {
+    console.log(
+      "\n  ⛔ PROD_BETTER_AUTH_SECRET yoʻq.\n" +
+        "     Obunani bekor qilish tokeni BETTER_AUTH_SECRET bilan\n" +
+        "     imzolanadi. Lokal sir prod siridan farq qiladi, demak\n" +
+        "     bu yerda imzolangan havola prodda RAD ETILADI va har\n" +
+        "     xatda «obunani bekor qilish» oʻlik boʻladi.\n" +
+        "     Vercel'dagi BETTER_AUTH_SECRET qiymatini .env.local ga\n" +
+        "     PROD_BETTER_AUTH_SECRET nomi bilan qoʻshing.\n",
+    );
+    if (YES) {
+      await sql.end();
+      process.exit(1);
+    }
+  }
+
   if (!YES) {
     console.log("\n  Quruq yurish tugadi. Haqiqatan yuborish uchun: --yes\n");
     await sql.end();
@@ -105,6 +123,18 @@ async function main() {
      Klient dangasa — birinchi soʻrovda quriladi, shuning uchun uni
      import qilishdan OLDIN env'ni almashtirish kifoya. */
   process.env.DATABASE_URL = url;
+
+  /* ⛔ IKKINCHI SHUNDAY SATR — sir ham nishon muhitniki boʻlishi kerak.
+
+     Obunani bekor qilish tokeni `BETTER_AUTH_SECRET` bilan imzolanadi.
+     Lokal sir prod siridan farq qiladi, shuning uchun bu yerda
+     imzolangan havola prodda RAD ETILADI — 2026-09-07 da aynan shu
+     tekshirildi va tasdiqlandi.
+
+     Bunga eʼtibor berilmasa, 33 xatning hammasida obunani bekor
+     qilish havolasi oʻlik boʻlardi — Gmail talabi buzilgan, spam
+     shikoyati kafolatlangan. */
+  if (PROD) process.env.BETTER_AUTH_SECRET = process.env.PROD_BETTER_AUTH_SECRET!;
 
   /* Dvigatel shu yerda import qilinadi: quruq yurishda Resend
      mijozini umuman yaratmaslik uchun.
