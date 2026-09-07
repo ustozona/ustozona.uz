@@ -586,3 +586,39 @@ export async function getUserDetailForAdmin(
     sessions,
   };
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   SEANSLAR — qaysi qurilmadan kirilgan.
+
+   ⚠️ «Foydalanuvchi mobil» degan yorliq YOʻQ — ataylab. Bitta odam
+   ertalab telefonda, kechqurun noutbukda ishlaydi; uni bitta qurilmaga
+   bogʻlash yolgʻon boʻlardi. Shuning uchun qurilma faqat SEANS
+   darajasida koʻrsatiladi (kim qachon nimadan kirgan), agregat esa
+   `getDeviceBreakdown` da — foydalanuvchi emas, seans boʻyicha ulush.
+
+   User-Agent parsi bazada emas, JS'da (`@/lib/user-agent`): SQL ichida
+   regexp yozilsa taʼrif ikki joyda ikki xil boʻlib ketardi. */
+
+export type AdminUserSession = {
+  id: string;
+  updatedAt: Date;
+  ipAddress: string | null;
+  userAgent: string | null;
+};
+
+export async function listUserSessionsForAdmin(
+  userId: string,
+): Promise<AdminUserSession[]> {
+  await requireAdmin();
+  return db
+    .select({
+      id: session.id,
+      updatedAt: session.updatedAt,
+      ipAddress: session.ipAddress,
+      userAgent: session.userAgent,
+    })
+    .from(session)
+    .where(eq(session.userId, userId))
+    .orderBy(desc(session.updatedAt))
+    .limit(10);
+}

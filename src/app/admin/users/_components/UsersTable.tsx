@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAdminNav, pendingClass } from "../../_components/use-admin-nav";
+import SessionsDialog from "./SessionsDialog";
 import {
   Table,
   TableBody,
@@ -80,6 +81,7 @@ import {
   ArrowDown,
   ArrowUpDown,
   TriangleAlert,
+  MonitorSmartphone,
 } from "lucide-react";
 import { rolesOf } from "@/lib/auth-roles";
 import type {
@@ -316,6 +318,7 @@ export default function UsersTable({
   const [roleDialog, setRoleDialog] = React.useState<AdminUserListItem | null>(null);
   const [banDialog, setBanDialog] = React.useState<AdminUserListItem | null>(null);
   const [deleteDialog, setDeleteDialog] = React.useState<AdminUserListItem | null>(null);
+  const [sessionsDialog, setSessionsDialog] = React.useState<AdminUserListItem | null>(null);
 
   /* Filtr oʻzgarganda 1-sahifaga qaytiladi (`filterHref` standarti).
      Busiz: 4-sahifada turib filtr qoʻysangiz, natija 1 sahifaga sigʻib,
@@ -747,6 +750,10 @@ export default function UsersTable({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-52">
+                          <DropdownMenuItem onSelect={() => setSessionsDialog(u)}>
+                            <MonitorSmartphone />
+                            Seanslar va qurilmalar
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => setRoleDialog(u)}>
                             <ShieldCheck />
                             Rollarni oʻzgartirish
@@ -861,6 +868,9 @@ export default function UsersTable({
           </div>
         </div>
       )}
+
+      {/* Seanslar — qaysi qurilmadan kirilgan */}
+      <SessionsDialog user={sessionsDialog} onClose={() => setSessionsDialog(null)} />
 
       {/* Rol dialogi */}
       <RoleDialog

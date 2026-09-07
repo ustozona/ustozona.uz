@@ -5,11 +5,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Activity } from "lucide-react";
 import {
   getActivationOverview,
+  getDeviceBreakdown,
   getSignupTrends,
   type AtRiskTeacher,
 } from "@/server/dal/admin/stats";
+import { deviceLabel, type DeviceKind } from "@/lib/user-agent";
 import { AREA_LABELS } from "@/lib/faollik";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import SignupsChart from "./_components/SignupsChart";
 import FunnelStats from "./_components/FunnelStats";
 
@@ -47,7 +54,9 @@ const REASON_LABEL: Record<AtRiskTeacher["reason"], string> = {
 
 function daysAgoLabel(d: Date | null): string {
   if (!d) return "hech qachon ishlamagan";
-  const diff = Math.floor((Date.now() - new Date(d).getTime()) / (24 * 60 * 60 * 1000));
+  const diff = Math.floor(
+    (Date.now() - new Date(d).getTime()) / (24 * 60 * 60 * 1000),
+  );
   if (diff <= 0) return "bugun faol boʻlgan";
   if (diff === 1) return "kecha faol boʻlgan";
   return `${diff} kun oldin faol boʻlgan`;
@@ -55,32 +64,92 @@ function daysAgoLabel(d: Date | null): string {
 
 /* ── Yengil oqim: roʻyxatdan oʻtish grafigi + tarif taqsimoti ── */
 
+/* Qurilma taqsimoti — mobil UI'ga qancha kuch berish kerakligini
+   koʻrsatadigan yagona raqam.
+
+   ⚠️ Maxraj — SEANS, foydalanuvchi emas (getDeviceBreakdown izohi).
+   Sarlavhada shu ataylab yozilgan: «foydalanuvchilarning 40% mobil»
+   deb oʻqilib qolmasin. */
+function DeviceBreakdownCard({
+  rows,
+}: {
+  rows: Awaited<ReturnType<typeof getDeviceBreakdown>>;
+}) {
+  const total = rows.reduce((n, r) => n + r.sessions, 0);
+
+  return (
+    <Card className="shadow-none gap-0 p-0">
+      <div className="border-b border-border px-5 py-4">
+        <h2 className="heading-small">Qurilma taqsimoti</h2>
+        <p className="text-caption text-muted-foreground">
+          Oxirgi 30 kun seanslari boʻyicha
+        </p>
+      </div>
+      <div className="flex flex-col gap-3 p-5">
+        {total === 0 && (
+          <p className="text-sm text-muted-foreground">Maʼlumot yoʻq</p>
+        )}
+        {rows.map((r) => (
+          <div key={r.device} className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-sm">
+              <span>{deviceLabel(r.device as DeviceKind)}</span>
+              <span className="font-medium tabular-nums">
+                {r.share}%
+                <span className="ml-2 font-normal text-muted-foreground">
+                  {r.sessions}
+                </span>
+              </span>
+            </div>
+            {/* Oddiy nisbat chizigʻi — grafik kutubxonasi shu bitta
+                koʻrsatkich uchun ortiqcha. */}
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary"
+                style={{ width: `${r.share}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 async function TrendsSection() {
-  const { signupsByDay, planBreakdown } = await getSignupTrends();
+  const [{ signupsByDay, planBreakdown }, devices] = await Promise.all([
+    getSignupTrends(),
+    getDeviceBreakdown(),
+  ]);
 
   return (
     <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
       <SignupsChart data={signupsByDay} />
 
-      <Card className="shadow-none gap-0 p-0">
-        <div className="border-b border-border px-5 py-4">
-          <h2 className="heading-small">Tarif taqsimoti</h2>
-          <p className="text-caption text-muted-foreground">teachers.plan boʻyicha</p>
-        </div>
-        <div className="flex flex-col gap-3 p-5">
-          {planBreakdown.length === 0 && (
-            <p className="text-sm text-muted-foreground">Maʼlumot yoʻq</p>
-          )}
-          {planBreakdown.map((p) => (
-            <div key={p.plan} className="flex items-center justify-between">
-              <Badge variant="outline" className="capitalize">
-                {p.plan}
-              </Badge>
-              <span className="text-sm font-medium tabular-nums">{p.n}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
+      <div className="flex flex-col gap-4">
+        <Card className="shadow-none gap-0 p-0">
+          <div className="border-b border-border px-5 py-4">
+            <h2 className="heading-small">Tarif taqsimoti</h2>
+            <p className="text-caption text-muted-foreground">
+              teachers.plan boʻyicha
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 p-5">
+            {planBreakdown.length === 0 && (
+              <p className="text-sm text-muted-foreground">Maʼlumot yoʻq</p>
+            )}
+            {planBreakdown.map((p) => (
+              <div key={p.plan} className="flex items-center justify-between">
+                <Badge variant="outline" className="capitalize">
+                  {p.plan}
+                </Badge>
+                <span className="text-sm font-medium tabular-nums">{p.n}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <DeviceBreakdownCard rows={devices} />
+      </div>
     </div>
   );
 }
@@ -122,10 +191,17 @@ async function ActivationSection() {
         ) : (
           <ul className="divide-y divide-border">
             {atRisk.map((r) => (
-              <li key={r.id} className="flex items-center justify-between gap-3 px-5 py-3">
+              <li
+                key={r.id}
+                className="flex items-center justify-between gap-3 px-5 py-3"
+              >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{r.name || r.email}</p>
-                  <p className="truncate text-xs text-muted-foreground">{r.email}</p>
+                  <p className="truncate text-sm font-medium">
+                    {r.name || r.email}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {r.email}
+                  </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <Badge variant="outline" className="text-[10px]">
@@ -136,7 +212,9 @@ async function ActivationSection() {
                       savol («nima qilyapti bu odam?») roʻyxatni ochishga
                       sabab boʻladi. */}
                   <span className="text-caption whitespace-nowrap text-muted-foreground">
-                    {r.lastArea ? `${AREA_LABELS[r.lastArea] ?? r.lastArea} · ` : ""}
+                    {r.lastArea
+                      ? `${AREA_LABELS[r.lastArea] ?? r.lastArea} · `
+                      : ""}
                     {daysAgoLabel(r.lastActiveAt)}
                   </span>
                 </div>
