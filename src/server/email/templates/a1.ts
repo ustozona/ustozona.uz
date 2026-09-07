@@ -14,6 +14,9 @@
        tashlab yuboradi — _brand.ts izohiga qarang)
      - ranglar xatga qotirilgan: pochta mijozi CSS token bilmaydi,
        shuning uchun bu yerda dizayn tizimi tokenlari ISHLATILMAYDI
+     - matn ichidagi havolaga TAGCHIZIQ va qalinroq vazn beriladi.
+       Faqat rang bilan ajratib boʻlmaydi: xat bir rangli, havola
+       matn bilan bir xil tusda boʻlsa bosiladigani bilinmaydi
      - imzo JAMOA nomidan, feʼl KOʻPLIKDA. Sabab: javobni jamoadan
        istalgan kishi yozishi mumkin, birlik feʼl esa buni yolgʻonga
        aylantiradi. Toʻqima shaxs nomi ISHLATILMAYDI
@@ -68,7 +71,7 @@ export function a1Html({
        («Sinf ochish») raqobatchi qoʻyilmaydi. -->
   <p style="margin:0 0 24px">
     Savol tugʻilsa yoki yordam kerak boʻlsa — shu xatga javob yozing yoki Telegramda
-    <a href="${qalqon(YORDAM_TELEGRAM_URL)}" style="color:#1f2937">${qalqon(YORDAM_TELEGRAM)}</a>
+    <a href="${qalqon(YORDAM_TELEGRAM_URL)}" style="color:#111827;font-weight:600;text-decoration:underline">${qalqon(YORDAM_TELEGRAM)}</a>
     ga yozing. Aloqadamiz. 🫡
   </p>
 
