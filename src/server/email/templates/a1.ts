@@ -2,11 +2,12 @@
    A1 — «Birinchi sinfingizni oching»
 
    Kimga: roʻyxatdan oʻtgan, lekin 24 soat ichida sinf yaratmagan.
-   Maqsad: BITTA ish — sinf ochish. Boshqa havola yoʻq.
+   Maqsad: BITTA ish — sinf ochish. Yordam kanali (javob + Telegram)
+   matn ichida beriladi, tugma sifatida emas.
 
    Uslub qoidalari (barcha aktivatsiya xatlariga tegishli):
      - matn qisqa, 100 soʻzdan oshmasin
-     - bitta tugma, bitta manzil
+     - bitta TUGMA (yordam kanali matn ichida — tugmaga raqobat yoʻq)
      - rasm yoʻq (Gmail tashqi rasmni bloklaydi — logo ham HTML bilan
        chiziladi, _brand.ts ga qarang)
      - inline CSS; joylashuv kerak boʻlsa JADVAL (Gmail inline-block'ni
@@ -15,6 +16,7 @@
        shuning uchun bu yerda dizayn tizimi tokenlari ISHLATILMAYDI
    ════════════════════════════════════════════════════════════════════ */
 
+import { TELEGRAM_HANDLE, TELEGRAM_URL } from "@/lib/landing-nav";
 import { brendSarlavha, qalqon } from "./_brand";
 
 export const A1_SUBJECT = "Birinchi sinfingizni oching";
@@ -54,8 +56,12 @@ export function a1Html({
     </a>
   </p>
 
+  <!-- Yordam kanali ATAYLAB matn ichida, tugma emas: asosiy tugmaga
+       («Sinf ochish») raqobatchi qoʻyilmaydi. -->
   <p style="margin:0 0 24px">
-    Biror joyda qiynalsangiz — shu xatga javob yozing. Oʻqib chiqaman.
+    Biror joyda qiynalsangiz — shu xatga javob yozing yoki Telegramda
+    <a href="${qalqon(TELEGRAM_URL)}" style="color:#1f2937">${qalqon(TELEGRAM_HANDLE)}</a>
+    ga yozing. Oʻqib chiqaman.
   </p>
 
   <p style="margin:0;color:#6b7280;font-size:13px;border-top:1px solid #e5e7eb;padding-top:16px">
