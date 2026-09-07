@@ -89,14 +89,14 @@ export async function writeState(
 /** Foydalanuvchining email manzili va yuborsa boʻladimi. */
 export async function getRecipient(
   userId: string,
-): Promise<{ email: string; name: string | null } | null> {
+): Promise<{ email: string; name: string | null; verified: boolean } | null> {
   const [row] = await db
-    .select({ email: user.email, name: user.name })
+    .select({ email: user.email, name: user.name, verified: user.emailVerified })
     .from(user)
     .where(eq(user.id, userId))
     .limit(1);
   if (!row || !yuborishMumkinmi(row.email)) return null;
-  return { email: row.email, name: row.name };
+  return { email: row.email, name: row.name, verified: row.verified };
 }
 
 /* ── Foydalanuvchi kirishi (sessiya orqali) ─────────────────────── */

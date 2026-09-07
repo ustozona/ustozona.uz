@@ -7,6 +7,7 @@ import { ac, roles, ADMIN_ROLES } from "@/lib/auth-roles";
 import { db } from "./db/client";
 import * as schema from "./db/schema";
 import { sendResetPasswordEmail } from "./email";
+import { scheduleStage } from "./email/activation";
 
 /* ════════════════════════════════════════════════════════════════════
    BETTER AUTH — runtime konfiguratsiya (yagona haqiqat manbai).
@@ -31,6 +32,22 @@ export const auth = betterAuth({
   // tekshiruvidan 403 yemasligi uchun aniq roʻyxatga olinadi.
   trustedOrigins: ["https://ustozona.uz", "https://www.ustozona.uz"],
   database: drizzleAdapter(db, { provider: "pg", schema }),
+  /* Roʻyxatdan oʻtish → aktivatsiya zanjirining A1 xati 24 soatga
+     rejalashtiriladi. Foydalanuvchi shu vaqt ichida sinf ochsa, xat
+     `advance()` orqali bekor qilinadi (docs/email-aktivatsiya-spec.md).
+
+     ⚠️ Bu hook roʻyxatdan oʻtishni HECH QACHON yiqitmasin —
+     `scheduleStage` xatoni ichida yutadi, lekin `await` ham qilinadi:
+     serversiz muhitda javob qaytgach ish davom etmaydi. */
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (createdUser) => {
+          await scheduleStage(createdUser.id, "a1");
+        },
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,

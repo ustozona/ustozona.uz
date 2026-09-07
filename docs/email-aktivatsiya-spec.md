@@ -208,3 +208,59 @@ Kuzatiladigan koʻrsatkichlar:
 - A/B sinov
 - Telegram kanali (11 kishi ulangan, lekin baza juda kichik)
 - Mahsulot analitikasi
+
+---
+
+## 12. Amalga oshirish qaydlari (kod yozilgandan keyin)
+
+**1-bosqich (bajarildi).** `email_activation` jadvali (migratsiya 0044),
+RLS yoqilgan (0045 — prod naqshi: RLS yoqilgan, siyosatsiz), DAL,
+dvigatel, `/unsubscribe`, sozlamalar toggle'i.
+
+**2-bosqich (bajarildi, YUBORILMAGAN).** A1 shabloni, roʻyxatdan oʻtish
+hooki, auditoriya darvozasi, mavjud kogort skripti.
+
+### Bir bosishli obunani bekor qilish — ikki manzil
+
+Gmail `List-Unsubscribe-Post` ni talab qiladi: foydalanuvchi Gmail
+interfeysidagi tugmani bosganda Gmail **sahifani ochmaydi**, balki
+manzilga **POST** yuboradi. Shuning uchun ikkita manzil bor:
+
+| Manzil | Kim ishlatadi | Metod |
+|---|---|---|
+| `/unsubscribe?t=…` | odam (xat ichidagi havola) | GET, sahifa |
+| `/api/unsubscribe?t=…` | pochta mijozi (sarlavha) | POST, javobsiz |
+
+Token ikkalasida bir xil (HMAC, `BETTER_AUTH_SECRET`). Login talab
+qilinmaydi — havolaning oʻzi dalil.
+
+### Env darvozalari
+
+| Oʻzgaruvchi | Default | Vazifa |
+|---|---|---|
+| `ACTIVATION_EMAILS` | `off` | `on` boʻlmaguncha xat Resend'ga chiqmaydi, konsolga yoziladi |
+| `ACTIVATION_ALLOW_UNVERIFIED` | yoʻq (= faqat tasdiqlangan) | 4-bosqichda `on` qilinadi |
+| `RESEND_ACTIVATION_FROM` | `RESEND_FROM_EMAIL` ga qaytadi | Javob beriladigan manzil |
+
+### Mavjud kogort
+
+Roʻyxatdan oʻtish hooki faqat YANGI foydalanuvchilarga ishlaydi. Undan
+oldin kelganlar uchun bir martalik skript:
+
+```
+npm run activation:a1 -- --prod          # quruq yurish
+npm run activation:a1 -- --prod --yes    # haqiqatan
+```
+
+Xat 1 soatga rejalashtiriladi (darhol emas) — roʻyxat notoʻgʻri chiqsa
+Resend panelidan bekor qilishga vaqt qolsin.
+
+### Hali qilinmagan
+
+- A2/A3/A4 shablonlari (`qurish()` ular uchun `null` qaytaradi, dvigatel
+  jimgina tashlab ketadi — xato bermaydi)
+- Sinf yaratilganda `advance()` chaqiruvi. Sinf yaratish alohida amal
+  emas, `applyGradesBatch` ichidagi `classesUpsert` orqali oʻtadi —
+  trigger oʻsha yerga qoʻyiladi (3-bosqich)
+- Yetkazuvchanlik kuzatuvi (Resend webhook: delivered / bounced /
+  complained)

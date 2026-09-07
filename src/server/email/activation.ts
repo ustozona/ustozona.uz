@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { getRecipient, readState, writeState } from "@/server/dal/email-activation";
 import type { ActivationStage } from "@/server/db/schema/email-activation";
 import { unsubscribeToken } from "@/lib/unsubscribe-token";
+import { A1_SUBJECT, a1Html } from "./templates/a1";
 
 /* ════════════════════════════════════════════════════════════════════
    AKTIVATSIYA DVIGATELI — cron YOʻQ.
@@ -23,10 +24,24 @@ import { unsubscribeToken } from "@/lib/unsubscribe-token";
    ════════════════════════════════════════════════════════════════════ */
 
 /* ── Darvoza ────────────────────────────────────────────────────────
-   1-bosqichda xat YUBORILMAYDI: jadval, sozlama va obunani bekor
-   qilish qurilyapti, xatning oʻzi 2-bosqichda yoqiladi.
-   Yoqish uchun: ACTIVATION_EMAILS=on */
+   Xat FAQAT ACTIVATION_EMAILS=on boʻlganda haqiqatan yuboriladi.
+   Aks holda oqim toʻliq ishlaydi, lekin Resend'ga chiqmaydi —
+   konsolga yoziladi. */
 const YOQILGANMI = process.env.ACTIVATION_EMAILS === "on";
+
+/* ── Auditoriya darvozasi ───────────────────────────────────────────
+   FAQAT tasdiqlangan manzilga yuborish (default — YOQILGAN).
+
+   Sabab yetkazuvchanlik: auditoriyaning 94% Gmail, Gmail esa ommaviy
+   yuboruvchidan spam shikoyati 0.3% dan past boʻlishini talab qiladi.
+   Tasdiqlanmagan manzil hech qachon tekshirilmagan — yuborilsa
+   qaytishlar (bounce) domen obroʻsini tushiradi va undan keyin
+   PAROLNI TIKLASH xatlari ham spamga tushadi.
+
+   Tasdiqlanmaganlar 4-bosqichdagi V1 xati bilan tiklanadi
+   (docs/email-aktivatsiya-spec.md §9). Faqat oʻshanda oʻchiriladi:
+   ACTIVATION_ALLOW_UNVERIFIED=on */
+const FAQAT_TASDIQLANGAN = process.env.ACTIVATION_ALLOW_UNVERIFIED !== "on";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -86,7 +101,14 @@ export async function cancelPending(userId: string): Promise<void> {
  * manzil yaroqsiz boʻlsa, yoki shu bosqich allaqachon yuborilgan
  * boʻlsa — jimgina qaytadi.
  */
-export async function scheduleStage(userId: string, stage: ActivationStage): Promise<void> {
+export async function scheduleStage(
+  userId: string,
+  stage: ActivationStage,
+  /* Zanjir kechikishini bekor qiladi (soatda). Mavjud kogortga
+     qoʻlda yuborishda ishlatiladi — ular roʻyxatdan ancha oldin
+     oʻtgan, 24 soat kutishning maʼnosi yoʻq. */
+  kechikishOverride?: number,
+): Promise<void> {
   try {
     if (stage === "done") return;
 
@@ -95,14 +117,18 @@ export async function scheduleStage(userId: string, stage: ActivationStage): Pro
     /* Bir bosqich ikki marta yuborilmasin. */
     if (state?.sentLog.some((e) => e.stage === stage)) return;
 
-    const soat = kechikish(stage);
+    const soat = kechikishOverride ?? kechikish(stage);
     if (soat === null) return;
 
     const recipient = await getRecipient(userId);
     if (!recipient) return; // manzil yaroqsiz (masalan telegram.invalid)
+    if (FAQAT_TASDIQLANGAN && !recipient.verified) return;
 
     /* Avvalgi kutayotgan xat boʻlsa — u endi eskirgan. */
     if (state?.scheduledEmailId) await cancelPending(userId);
+
+    const xat = qurish(stage, recipient.name, userId);
+    if (!xat) return; // shablon hali yozilmagan (A2/A3/A4 — 3-bosqich)
 
     const scheduledFor = new Date(Date.now() + soat * 60 * 60 * 1000);
 
@@ -119,10 +145,13 @@ export async function scheduleStage(userId: string, stage: ActivationStage): Pro
     const { data, error } = await resend.emails.send({
       from: fromAddress(),
       to: recipient.email,
-      subject: mavzu(stage),
-      html: matn(stage, recipient.name, userId),
+      subject: xat.subject,
+      html: xat.html,
       scheduledAt: scheduledFor.toISOString(),
-      headers: { "List-Unsubscribe": `<${unsubscribeUrl(userId)}>` },
+      headers: {
+        "List-Unsubscribe": `<${unsubscribePostUrl(userId)}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
     });
 
     if (error) {
@@ -155,43 +184,31 @@ export async function advance(userId: string, bajarilgan: ActivationStage): Prom
   await scheduleStage(userId, keyingi);
 }
 
-/* ── Matn (2-bosqichda toʻldiriladi) ────────────────────────────── */
+/* ── Havolalar va shablonlar ────────────────────────────────────── */
 
+/** Odam bosadigan havola — xat ichida. */
 function unsubscribeUrl(userId: string): string {
   return `${siteUrl()}/unsubscribe?t=${encodeURIComponent(unsubscribeToken(userId))}`;
 }
 
-const MAVZULAR: Record<Exclude<ActivationStage, "done">, string> = {
-  a1: "Birinchi sinfingizni oching — Ustozona",
-  a2: "Oʻquvchilar roʻyxatini kiriting — Ustozona",
-  a3: "Bugungi darsga belgi qoʻying — Ustozona",
-  a4: "Ustozona sizni kutyapti",
-};
-
-function mavzu(stage: ActivationStage): string {
-  return stage === "done" ? "" : MAVZULAR[stage];
+/** Pochta mijozi POST qiladigan manzil — `List-Unsubscribe` sarlavhasi
+ *  uchun. Sahifa emas, API route (u faqat GET). */
+function unsubscribePostUrl(userId: string): string {
+  return `${siteUrl()}/api/unsubscribe?t=${encodeURIComponent(unsubscribeToken(userId))}`;
 }
 
-/* Shablonlar 2-bosqichda yoziladi (docs/email-aktivatsiya-spec.md §9).
-   Hozircha minimal, lekin toʻliq ishlaydigan matn — darvoza yopiq
-   boʻlgani uchun hech qayerga chiqmaydi. */
-function matn(stage: ActivationStage, name: string | null, userId: string): string {
-  const salom = name ? `Assalomu alaykum, ${name}!` : "Assalomu alaykum!";
-  return `
-    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-      <p>${salom}</p>
-      <p>${mavzu(stage)}</p>
-      <p style="margin: 24px 0;">
-        <a href="${siteUrl()}/dashboard"
-           style="background:#111827;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;">
-          Ustozonani ochish
-        </a>
-      </p>
-      <p style="color:#6b7280;font-size:13px;">
-        Bunday xatlarni olishni istamasangiz,
-        <a href="${unsubscribeUrl(userId)}">bu yerdan bekor qiling</a>.
-      </p>
-    </div>
-  `;
+/* Shablon registri. A2/A3/A4 3-bosqichda qoʻshiladi — hozir ular
+   uchun shablon yoʻq, shuning uchun `qurish` null qaytaradi va
+   `scheduleStage` ularni jimgina tashlab ketadi. */
+function qurish(
+  stage: ActivationStage,
+  name: string | null,
+  userId: string,
+): { subject: string; html: string } | null {
+  if (stage !== "a1") return null;
+  return {
+    subject: A1_SUBJECT,
+    html: a1Html({ name, siteUrl: siteUrl(), unsubscribeUrl: unsubscribeUrl(userId) }),
+  };
 }
 
