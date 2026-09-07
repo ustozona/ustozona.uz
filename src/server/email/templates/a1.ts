@@ -14,6 +14,10 @@
        tashlab yuboradi — _brand.ts izohiga qarang)
      - ranglar xatga qotirilgan: pochta mijozi CSS token bilmaydi,
        shuning uchun bu yerda dizayn tizimi tokenlari ISHLATILMAYDI
+     - imzo JAMOA nomidan, feʼl KOʻPLIKDA («oʻqiymiz», «oʻqib
+       chiqaman» emas). Sabab: javobni jamoadan istalgan kishi
+       yozishi mumkin, birlik feʼl esa buni yolgʻonga aylantiradi.
+       Toʻqima shaxs nomi («Malika, yordam boʻlimi») ISHLATILMAYDI
    ════════════════════════════════════════════════════════════════════ */
 
 import { TELEGRAM_HANDLE, TELEGRAM_URL } from "@/lib/landing-nav";
@@ -61,8 +65,10 @@ export function a1Html({
   <p style="margin:0 0 24px">
     Biror joyda qiynalsangiz — shu xatga javob yozing yoki Telegramda
     <a href="${qalqon(TELEGRAM_URL)}" style="color:#1f2937">${qalqon(TELEGRAM_HANDLE)}</a>
-    ga yozing. Oʻqib chiqaman.
+    ga yozing. Oʻqiymiz.
   </p>
+
+  <p style="margin:0 0 28px">Ustozona jamoasi</p>
 
   <p style="margin:0;color:#6b7280;font-size:13px;border-top:1px solid #e5e7eb;padding-top:16px">
     Bu xat ishni boshlashga yordam berish uchun yuborildi.
