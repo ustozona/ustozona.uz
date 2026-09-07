@@ -69,6 +69,43 @@ oʻchiradi. Haftada bir marta yurgizish kifoya.
 PR **squash** bilan birlashtirilsa git commit'larni tanimay `-d` ni rad
 etishi mumkin; bu repo merge commit ishlatadi, shuning uchun tegmaydi.
 
+### Bitta papkada ikkita sessiya — `git worktree`
+
+Ikki agent (yoki agent + odam) BITTA ish papkasida parallel ishlasa, git
+buni sezmaydi: papka bitta, HEAD bitta, indeks bitta. Oqibatlari amalda
+kuzatilgan:
+
+- birov `git checkout` qilsa, ikkinchisining branch'i ostidan almashib
+  ketadi (2026-09-05);
+- `git add -A` boshqasining tegmagan faylini commit'ga tortadi;
+- birov ikkinchisining branch'iga commit yozib qoʻyadi — 2026-09-07 da
+  admin ishi aktivatsiya branch'ida paydo boʻldi.
+
+Yechim — har sessiyaga OʻZ papkasi, lekin BITTA git tarixi:
+
+```bash
+git worktree add ../ustozona-<ish> -b <ism>/<tavsif> origin/main
+cd ../ustozona-<ish>
+npm install
+```
+
+Ish tugagach:
+
+```bash
+git worktree remove ../ustozona-<ish>
+```
+
+Branch'lar, remote va commit'lar umumiy qoladi — faqat ishchi fayllar va
+HEAD ajraladi. Bitta branch ikkita worktree'da ochilmaydi: git buni oʻzi
+toʻsadi.
+
+⚠️ Ikki narsa koʻchmaydi: `node_modules` (yangi papkada `npm install`
+kerak) va `.env.local` (gitignore'da — qoʻlda nusxalanadi, aks holda
+baza va kalitlar topilmaydi).
+
+Bitta sessiya ishlayotgan boʻlsa worktree KERAK EMAS — qoʻshimcha papka
+va ikkinchi `node_modules` bekorga joy oladi.
+
 ## ⚠️ 1- va 3-qoidada `main` — QAYSI main
 
 Ish `roziyevbehroz-tech/ustozona.uz` da olib borilishi mumkin, lekin
