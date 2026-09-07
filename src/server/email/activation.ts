@@ -273,3 +273,29 @@ function qurish(
   };
 }
 
+
+/* ── Trigger: sinf mavjud ────────────────────────────────────────── */
+
+/**
+ * Oʻqituvchining sinfi bor — A1 zanjiri shu yerda tugaydi.
+ *
+ * A1 roʻyxatdan oʻtishda 24 soatga rejalashtiriladi. Odam oʻsha
+ * oraliqda sinf ochsa, xat baribir kelardi va bajarilgan ishni
+ * qilishni soʻrardi — obunadan chiqishning eng ishonchli yoʻli.
+ *
+ * ⚠️ Har jurnal batch'ida chaqiriladi (sinf tahriri ham shu yoʻlga
+ * tushadi), shuning uchun ARZON boʻlishi shart: bosqich allaqachon
+ * oʻtgan boʻlsa bitta SELECT bilan qaytadi.
+ *
+ * ⚠️ Xatoni yutadi. Bu yordamchi taʼsir — u jurnal saqlanishini hech
+ * qachon buzmasligi kerak.
+ */
+export async function onClassPresent(userId: string): Promise<void> {
+  try {
+    const state = await readState(userId);
+    if (!state || state.stage !== "a1") return;
+    await advance(userId, "a1");
+  } catch (err) {
+    console.error(`[activation] sinf trigger ishlamadi (${userId}):`, err);
+  }
+}
