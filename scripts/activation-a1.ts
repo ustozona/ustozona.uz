@@ -81,6 +81,24 @@ async function main() {
     );
   }
 
+  /* Sir tekshiruvi QURUQ YURISHDA HAM koʻrsatiladi — muammoni
+     yuborish lahzasida emas, oldindan bilish kerak. */
+  if (PROD && !process.env.UNSUBSCRIBE_SECRET) {
+    console.log(
+      "\n  ⛔ UNSUBSCRIBE_SECRET yoʻq.\n" +
+        "     Obunani bekor qilish tokeni shu kalit bilan imzolanadi.\n" +
+        "     U yoʻq boʻlsa BETTER_AUTH_SECRET ishlatiladi, u esa\n" +
+        "     lokalda va prodda HAR XIL — natijada har xatdagi\n" +
+        "     «obunani bekor qilish» havolasi prodda rad etiladi.\n" +
+        "     Bir xil qiymat ikkala joyda boʻlishi shart:\n" +
+        "     Vercel (Production) va .env.local.\n",
+    );
+    if (YES) {
+      await sql.end();
+      process.exit(1);
+    }
+  }
+
   if (!YES) {
     console.log("\n  Quruq yurish tugadi. Haqiqatan yuborish uchun: --yes\n");
     await sql.end();
@@ -105,6 +123,12 @@ async function main() {
      Klient dangasa — birinchi soʻrovda quriladi, shuning uchun uni
      import qilishdan OLDIN env'ni almashtirish kifoya. */
   process.env.DATABASE_URL = url;
+
+  /* Sir yuqorida tekshirilgan (`UNSUBSCRIBE_SECRET`). U ikkala
+     muhitda BIR XIL boʻlgani uchun bu yerda almashtirish kerak emas —
+     bazadan farqli oʻlaroq. 2026-09-07 da lokal `BETTER_AUTH_SECRET`
+     bilan imzolangan token prodda rad etilgani tekshirilib
+     tasdiqlangan; alohida kalit aynan shuning uchun kiritildi. */
 
   /* Dvigatel shu yerda import qilinadi: quruq yurishda Resend
      mijozini umuman yaratmaslik uchun.
