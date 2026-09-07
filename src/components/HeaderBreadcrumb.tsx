@@ -17,6 +17,7 @@ import {
   Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem,
 } from "@/components/ui/command";
 import { ClassSwatch } from "@/components/ClassSwatch";
+import { cn } from "@/lib/utils";
 import { ROUTE_LABEL_KEYS } from "@/lib/route-labels";
 import { CLASS_SECTIONS } from "@/app/dashboard/classes/[id]/_components/sections";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -138,7 +139,9 @@ function SwitcherCrumb({
           }
           aria-current={isLast ? "page" : undefined}
         >
-          {swatchHex && <ClassSwatch hex={swatchHex} className="shrink-0" />}
+          {/* size-2 — sidebar sinflar roʻyxati bilan bir xil (kompakt qator),
+              ClassSwatch standart size-3 bu yerda bahaybat koʻrinardi. */}
+          {swatchHex && <ClassSwatch hex={swatchHex} className="size-2 shrink-0" />}
           <span className="max-w-[10rem] truncate sm:max-w-[16rem]">{label}</span>
           <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
         </button>
@@ -185,17 +188,22 @@ function ClassSwitcherCrumb({
   return (
     <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
       {(close) => (
-        <CommandGroup heading={t("myClassesHeading")}>
+        <CommandGroup>
           {classes.map((c) => (
             <CommandItem
               key={c.id}
               value={`${c.name} ${subjectLabel(c.subject)}`}
               onSelect={() => { close(); if (c.id !== classId) go(c.id); }}
             >
-              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
+              <Check
+                className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
+                style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
+              />
+              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} className="size-2" />
               <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {subjectLabel(c.subject)}</span>}
-              {c.id === classId && <Check className="ml-auto size-4" />}
+              {c.subject && (
+                <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>
+              )}
             </CommandItem>
           ))}
         </CommandGroup>
@@ -228,17 +236,22 @@ function StatsClassSwitcherCrumb({
   return (
     <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
       {(close) => (
-        <CommandGroup heading={t("myClassesHeading")}>
+        <CommandGroup>
           {classes.map((c) => (
             <CommandItem
               key={c.id}
               value={`${c.name} ${subjectLabel(c.subject)}`}
               onSelect={() => { close(); if (c.id !== classId) setClassIdParam(c.id); }}
             >
-              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
+              <Check
+                className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
+                style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
+              />
+              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} className="size-2" />
               <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {subjectLabel(c.subject)}</span>}
-              {c.id === classId && <Check className="ml-auto size-4" />}
+              {c.subject && (
+                <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>
+              )}
             </CommandItem>
           ))}
         </CommandGroup>
@@ -272,7 +285,7 @@ function StudentClassSwitcherCrumb({
   return (
     <SwitcherCrumb label={label} isLast={isLast} placeholder={t("searchClassPlaceholder")} swatchHex={swatchHex}>
       {(close) => (
-        <CommandGroup heading={t("myClassesHeading")}>
+        <CommandGroup>
           {classes.map((c) => (
             <CommandItem
               key={c.id}
@@ -282,10 +295,15 @@ function StudentClassSwitcherCrumb({
                 router.push(`/dashboard/students?classId=${encodeURIComponent(c.id)}`);
               }}
             >
-              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
+              <Check
+                className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
+                style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
+              />
+              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} className="size-2" />
               <span className="truncate">{c.name}</span>
-              {c.subject && <span className="truncate text-muted-foreground">· {subjectLabel(c.subject)}</span>}
-              {c.id === classId && <Check className="ml-auto size-4" />}
+              {c.subject && (
+                <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>
+              )}
             </CommandItem>
           ))}
         </CommandGroup>
@@ -332,6 +350,10 @@ function StudentSwitcherCrumb({
               value={r.name}
               onSelect={() => { close(); if (r.id !== studentId) go(r.id); }}
             >
+              <Check
+                className={cn("size-4 shrink-0", r.id !== studentId && "opacity-0")}
+                style={{ color: location.hex }}
+              />
               <div
                 className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
                 style={{ backgroundColor: location.hex }}
@@ -339,7 +361,6 @@ function StudentSwitcherCrumb({
                 {r.initials}
               </div>
               <span className="truncate">{r.name}</span>
-              {r.id === studentId && <Check className="ml-auto size-4" />}
             </CommandItem>
           ))}
         </CommandGroup>

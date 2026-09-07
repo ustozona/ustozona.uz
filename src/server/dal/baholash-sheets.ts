@@ -109,8 +109,6 @@ export async function buildSheetPlan(
     .orderBy(asc(enrollments.sortOrder), asc(students.createdAt));
 
   // `archived` — sinfdan chiqqan oʻquvchi, unga varaq chop etilmaydi.
-  // `away` esa QOLADI: vaqtincha yoʻq bola qaytib kelib topshirishi
-  // mumkin, varaqni qayta chop etish esa raqamlarni suradi.
   const active = rows.filter((r) => r.status !== "archived");
 
   return {

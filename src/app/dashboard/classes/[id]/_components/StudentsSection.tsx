@@ -48,7 +48,7 @@ import type { ClassIdentity } from "@/lib/class-id";
 import { useCollator } from "@/lib/use-collator";
 
 /* ── Tiplar va yordamchilar (students sahifasi bilan bir xil mantiq) ── */
-type Status = "active" | "away" | "archived";
+type Status = "active" | "archived";
 type StudentRow = {
   id: string;
   name: string;
@@ -76,12 +76,11 @@ function computeGrade(data: ClassData | undefined, studentId: string): number {
 
 const STATUS_PILL_STYLE: Record<Status, { cls: string; dot: string }> = {
   active: { cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20", dot: "bg-emerald-500" },
-  away: { cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800", dot: "bg-amber-500" },
   archived: { cls: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700", dot: "bg-slate-400" },
 };
 
 function statusPillLabels(t: (key: string) => string): Record<Status, string> {
-  return { active: t("statusActive"), away: t("statusAway"), archived: t("statusArchived") };
+  return { active: t("statusActive"), archived: t("statusArchived") };
 }
 const badgeBase = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
 
@@ -102,7 +101,6 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("grade");
-  const [statusOverride, setStatusOverride] = useState<Record<string, Status>>({});
   const [createOpen, setCreateOpen] = useState(false);
   const [rosterOpen, setRosterOpen] = useState(false);
   const compare = useCollator();
@@ -172,9 +170,9 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
       studentId: `ID-${1001 + i}`,
       grade: computeGrade(data, s.id),
       attendance: weightedRate(records, s.id, statusWeights(attendanceStatuses), lessonDates)?.pct ?? null,
-      status: (statusOverride[s.id] ?? s.status ?? "active") as Status,
+      status: (s.status ?? "active") as Status,
     }));
-  }, [classId, statusOverride, mounted, liveGrades, storedRecords, attendanceStatuses, calendar, versions]);
+  }, [classId, mounted, liveGrades, storedRecords, attendanceStatuses, calendar, versions]);
 
   const students = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -189,8 +187,6 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   }, [allStudents, search, sortKey, compare]);
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
-  const toggleStatus = (id: string, current: Status) =>
-    setStatusOverride((prev) => ({ ...prev, [id]: current === "active" ? "away" : "active" }));
 
   const toolbarBtn = "size-9 shadow-none";
 
@@ -311,15 +307,10 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                             <TrendingUp className="size-3 shrink-0" />
                             {s.grade}%
                           </span>
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
-                            title={s.status === "active" ? t("markAway") : t("markActive")}
-                            className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
-                          >
+                          <span className={cn(badgeBase, "shrink-0", pill.cls)}>
                             <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                             {pill.label}
-                          </button>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -341,7 +332,6 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
               className={identity.name}
               hex={hex}
               tint={tint}
-              onToggleStatus={() => toggleStatus(selectedStudent.id, selectedStudent.status)}
               onViewProfile={() => openProfile(selectedStudent.id)}
             />
           </div>
@@ -367,13 +357,12 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
 
 /* ── Preview kartasi (students sahifasidagi dizayn) ── */
 function PreviewCard({
-  student, className, hex, tint, onToggleStatus, onViewProfile,
+  student, className, hex, tint, onViewProfile,
 }: {
   student: StudentRow;
   className: string;
   hex: string;
   tint: (pct: number) => string;
-  onToggleStatus: () => void;
   onViewProfile: () => void;
 }) {
   const t = useTranslations("StudentsSection");
@@ -404,10 +393,10 @@ function PreviewCard({
         <div className="flex min-h-full flex-col px-6 pb-6">
           <div className="mb-4 space-y-2 text-center">
             <div className="flex justify-center">
-              <button type="button" onClick={onToggleStatus} className={cn(badgeBase, "cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}>
+              <span className={cn(badgeBase, pill.cls)}>
                 <span className={cn("size-1.5 rounded-full", pill.dot)} />
                 {pill.label}
-              </button>
+              </span>
             </div>
             <CardTitle className="text-xl">{student.name}</CardTitle>
             <TypographyMuted className="text-sm">{student.studentId}</TypographyMuted>

@@ -68,7 +68,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Topilmadi",
     "searchClassPlaceholder": "Sinf qidirish…",
-    "myClassesHeading": "Sinflar",
     "searchStudentPlaceholder": "Oʻquvchi qidirish…"
   },
   "HeaderAccountMenu": {
@@ -778,12 +777,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Ism",
+      "lastName": "Familiya",
       "grade": "Oʻrtacha baho",
       "attendance": "Davomat"
     },
     "status": {
       "active": "Oʻqimoqda",
-      "away": "Taʼtilda",
       "archived": "Chiqib ketgan"
     },
     "statusFilterAll": "Hammasi",
@@ -794,12 +793,12 @@
     "searchPlaceholder": "Ism yoki ID boʻyicha qidirish…",
     "filterAria": "Holat boʻyicha filtrlash",
     "filterByStatus": "Holat boʻyicha",
-    "filterChip": "Holat: {label}",
     "sortButton": "Saralash: {label}",
     "sortMenuLabel": "Saralash",
     "sortGrade": "Oʻrtacha baho (pastdan)",
     "sortAttendance": "Davomat (pastdan)",
     "sortName": "Ism (A–Z)",
+    "sortLastName": "Familiya (A–Z)",
     "exportAria": "Eksport",
     "exportToast": "Oʻquvchilar roʻyxati eksport qilindi",
     "newStudent": "Yangi oʻquvchi",
@@ -814,8 +813,11 @@
     "addNote": "Izoh qoʻshish",
     "statusLabel": "Holati",
     "delete": "Oʻchirish",
-    "markAway": "Yoʻq deb belgilash",
+    "markArchived": "Chiqib ketgan deb belgilash",
     "markActive": "Faol deb belgilash",
+    "archiveDialogTitle": "Oʻquvchi chiqib ketganmi?",
+    "archiveDialogDescription": "«{name}» chiqib ketganlar roʻyxatiga oʻtadi va joriy roʻyxatda koʻrinmaydi. Baholari va davomat tarixi saqlanib qoladi — istalgan vaqtda qaytarib qoʻyish mumkin.",
+    "confirmArchive": "Ha, chiqib ketgan",
     "toastCreated": "Oʻquvchi qoʻshildi",
     "toastImported": "{count} ta oʻquvchi qoʻshildi",
     "toastDeleted": "Oʻquvchi oʻchirildi",
@@ -847,6 +849,7 @@
     "viewCardAria": "Karta koʻrinishi",
     "viewTableAria": "Jadval koʻrinishi",
     "tableColName": "Ism sharifi",
+    "tableColSurname": "Familiyasi",
     "tableColId": "ID",
     "tableColGrade": "Baho",
     "tableColAttendance": "Davomat",
@@ -1255,7 +1258,6 @@
     "sortGrade": "Oʻrtacha baho",
     "sortAttendance": "Davomat",
     "statusActive": "Oʻqimoqda",
-    "statusAway": "Taʼtilda",
     "statusArchived": "Chiqib ketgan",
     "toastCreated": "Oʻquvchi qoʻshildi",
     "toastImported": "{count} ta oʻquvchi qoʻshildi",
@@ -1271,7 +1273,7 @@
     "emptyTitle": "Bu sinfda hali oʻquvchi yoʻq",
     "emptyFilteredDescription": "Qidiruvni oʻzgartirib koʻring.",
     "emptyDescription": "Oʻquvchilarni qoʻshing.",
-    "markAway": "Yoʻq deb belgilash",
+    "markArchived": "Chiqib ketgan deb belgilash",
     "markActive": "Faol deb belgilash",
     "fullProfileAria": "Toʻliq profil",
     "viewProfile": "Profilni koʻrish",

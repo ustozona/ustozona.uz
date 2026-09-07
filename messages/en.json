@@ -68,7 +68,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Not found",
     "searchClassPlaceholder": "Search class…",
-    "myClassesHeading": "Classes",
     "searchStudentPlaceholder": "Search student…"
   },
   "HeaderAccountMenu": {
@@ -778,12 +777,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Name",
+      "lastName": "Surname",
       "grade": "Average grade",
       "attendance": "Attendance"
     },
     "status": {
       "active": "Enrolled",
-      "away": "On leave",
       "archived": "Withdrawn"
     },
     "statusFilterAll": "All",
@@ -794,12 +793,12 @@
     "searchPlaceholder": "Search by name or ID…",
     "filterAria": "Filter by status",
     "filterByStatus": "By status",
-    "filterChip": "Status: {label}",
     "sortButton": "Sort: {label}",
     "sortMenuLabel": "Sort",
     "sortGrade": "Average grade (lowest first)",
     "sortAttendance": "Attendance (lowest first)",
     "sortName": "Name (A–Z)",
+    "sortLastName": "Surname (A–Z)",
     "exportAria": "Export",
     "exportToast": "Student list exported",
     "newStudent": "New student",
@@ -814,8 +813,11 @@
     "addNote": "Add note",
     "statusLabel": "Status",
     "delete": "Delete",
-    "markAway": "Mark as away",
+    "markArchived": "Mark as withdrawn",
     "markActive": "Mark as active",
+    "archiveDialogTitle": "Mark student as withdrawn?",
+    "archiveDialogDescription": "{name} moves to the withdrawn list and disappears from the current roster. Grades and attendance history are kept — you can restore them at any time.",
+    "confirmArchive": "Yes, withdrawn",
     "toastCreated": "Student added",
     "toastImported": "{count} students added",
     "toastDeleted": "Student deleted",
@@ -847,6 +849,7 @@
     "viewCardAria": "Card view",
     "viewTableAria": "Table view",
     "tableColName": "Full name",
+    "tableColSurname": "Surname",
     "tableColId": "ID",
     "tableColGrade": "Grade",
     "tableColAttendance": "Attendance",
@@ -1255,7 +1258,6 @@
     "sortGrade": "Average grade",
     "sortAttendance": "Attendance",
     "statusActive": "Enrolled",
-    "statusAway": "On leave",
     "statusArchived": "Left",
     "toastCreated": "Student added",
     "toastImported": "{count} students added",
@@ -1271,7 +1273,7 @@
     "emptyTitle": "No students in this class yet",
     "emptyFilteredDescription": "Try a different search.",
     "emptyDescription": "Add some students.",
-    "markAway": "Mark as on leave",
+    "markArchived": "Mark as withdrawn",
     "markActive": "Mark as active",
     "fullProfileAria": "Full profile",
     "viewProfile": "View profile",

@@ -76,18 +76,29 @@ export default function GradesView({
   // sanasi yoʻq topshiriq (backfill'dan keyin boʻlmasligi kerak) hamma yilda
   // koʻrinadi. Demo/tur namunasi hamda kalendar sozlanmagan holat filtrsiz.
   const viewData = useMemo(() => {
-    if (!classData || demoClassData) return classData;
+    if (!classData) return classData;
+    // Chiqib ketgan oʻquvchi jurnalda koʻrinmaydi (roster read-only — bahosi
+    // saqlanib qoladi, faqat koʻrinish qatlamidan chiqadi; xulq sahifasi bilan
+    // bir xil naqsh, [[student-status-model]]). Demo/tur namunasida filtrsiz.
+    const activeStudents = demoClassData
+      ? classData.students
+      : classData.students.filter((s) => s.status !== "archived");
+    const withActiveStudents =
+      activeStudents.length === classData.students.length
+        ? classData
+        : { ...classData, students: activeStudents };
+    if (demoClassData) return withActiveStudents;
     const { start, end } = yearRange;
-    if (!start || !end) return classData;
-    const visible = classData.assignments.filter(
+    if (!start || !end) return withActiveStudents;
+    const visible = withActiveStudents.assignments.filter(
       (a) => !a.date || (a.date >= start && a.date <= end)
     );
-    if (visible.length === classData.assignments.length) return classData;
+    if (visible.length === withActiveStudents.assignments.length) return withActiveStudents;
     const visibleIds = new Set(visible.map((a) => a.id));
     return {
-      ...classData,
+      ...withActiveStudents,
       assignments: visible,
-      grades: classData.grades.filter((g) => visibleIds.has(g.assignmentId)),
+      grades: withActiveStudents.grades.filter((g) => visibleIds.has(g.assignmentId)),
     };
   }, [classData, demoClassData, yearRange]);
 

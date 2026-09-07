@@ -15,9 +15,9 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { AttendanceRing } from "@/app/dashboard/(with-sidebar)/statistics/_components/AttendanceRing";
-import { ArrowDown, ArrowUpDown, MoreHorizontal, Pen, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUpDown, Check, MoreHorizontal, Pen, Trash2 } from "lucide-react";
 
-type SortKey = "name" | "grade" | "attendance";
+type SortKey = "name" | "lastName" | "grade" | "attendance";
 
 interface StudentsDataTableProps {
   students: StudentRow[];
@@ -28,7 +28,7 @@ interface StudentsDataTableProps {
   onToggleSelectAll: () => void;
   sortKey: SortKey;
   onSortChange: (key: SortKey) => void;
-  onToggleStatus: (id: string, current: Status) => void;
+  onStatusChange: (id: string, next: Status) => void;
   onEdit: (student: StudentRow) => void;
   onDelete: (student: StudentRow) => void;
   hex: string;
@@ -39,12 +39,13 @@ interface StudentsDataTableProps {
  * qatorga hover qilinganda oʻng chetda 3-nuqta menyu (Tahrirlash/Oʻchirish)
  * chiqadi, ustun sarlavhalari (Ism/Davomat/Baho) bosiladigan — Statistika
  * jadvali bilan bir xil naqsh, alohida "Saralash" tugmasi shart emas.
- * Holat pill bosilsa faol/taʼtilda almashadi (karta koʻrinishi bilan parity).
+ * Holat pill — faqat belgi; holat qator menyusidan oʻzgaradi (karta
+ * koʻrinishida kontekst menyu bilan parity), "chiqib ketgan" tasdiq soʻraydi.
  */
 export default function StudentsDataTable({
   students, selectedStudentId, onSelect,
   selectedIds, onToggleSelect, onToggleSelectAll,
-  sortKey, onSortChange, onToggleStatus, onEdit, onDelete, hex,
+  sortKey, onSortChange, onStatusChange, onEdit, onDelete, hex,
 }: StudentsDataTableProps) {
   const t = useTranslations("StudentsPage");
   const allSelected = students.length > 0 && selectedIds.size === students.length;
@@ -69,22 +70,26 @@ export default function StudentsDataTable({
   );
 
   const SortHead = ({
-    label, colKey, className, center,
-  }: { label: string; colKey: SortKey; className?: string; center?: boolean }) => (
-    <TableHead className={cn(stickyHead, className)}>
-      <button
-        type="button"
-        onClick={() => onSortChange(colKey)}
-        className={cn(
-          "inline-flex items-center gap-1.5 font-medium text-foreground hover:text-primary transition-colors",
-          center && "w-full justify-center"
-        )}
-      >
-        {label}
-        {sortKey === colKey ? <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-40" />}
-      </button>
-    </TableHead>
-  );
+    label, colKey, altKey, className, center,
+  }: { label: string; colKey: SortKey; altKey?: SortKey; className?: string; center?: boolean }) => {
+    // altKey berilgan ustun ikki tartib orasida almashadi (ism ⇄ familiya).
+    const active = sortKey === colKey || (altKey !== undefined && sortKey === altKey);
+    return (
+      <TableHead className={cn(stickyHead, className)}>
+        <button
+          type="button"
+          onClick={() => onSortChange(altKey !== undefined && sortKey === colKey ? altKey : colKey)}
+          className={cn(
+            "inline-flex items-center gap-1.5 font-medium text-foreground hover:text-primary transition-colors",
+            center && "w-full justify-center"
+          )}
+        >
+          {label}
+          {active ? <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-40" />}
+        </button>
+      </TableHead>
+    );
+  };
 
   return (
     <div ref={scrollRef} className="absolute inset-0 scrollbar-hover overflow-auto">
@@ -99,7 +104,12 @@ export default function StudentsDataTable({
                 className="cursor-pointer"
               />
             </TableHead>
-            <SortHead label={t("tableColName")} colKey="name" className="min-w-40 py-3 pr-3 pl-0" />
+            <SortHead
+              label={sortKey === "lastName" ? t("tableColSurname") : t("tableColName")}
+              colKey="name"
+              altKey="lastName"
+              className="min-w-40 py-3 pr-3 pl-0"
+            />
             <SortHead label={t("tableColAttendance")} colKey="attendance" className="w-16 px-3 py-3" center />
             <SortHead label={t("tableColGrade")} colKey="grade" className="w-32 px-3 py-3" />
             <TableHead className={cn(stickyHead, "w-32 px-3 py-3")}>{t("tableColStatus")}</TableHead>
@@ -164,16 +174,11 @@ export default function StudentsDataTable({
                   </div>
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap px-3 py-3.5" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    onClick={() => onToggleStatus(s.id, s.status)}
-                    title={s.status === "active" ? t("markAway") : t("markActive")}
-                    className={cn(badgeBase, "cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
-                  >
+                <TableCell className="whitespace-nowrap px-3 py-3.5">
+                  <span className={cn(badgeBase, pill.cls)}>
                     <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                     {t(`status.${s.status}`)}
-                  </button>
+                  </span>
                 </TableCell>
 
                 <TableCell className="px-4 py-3.5">
@@ -194,6 +199,21 @@ export default function StudentsDataTable({
                         <Pen className="size-4 text-muted-foreground" />
                         {t("edit")}
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {(["active", "archived"] as Status[]).map((val) => {
+                        const StatusIcon = STATUS_META[val].icon;
+                        return (
+                          <DropdownMenuItem
+                            key={val}
+                            className="cursor-pointer gap-2"
+                            onClick={(e) => { e.stopPropagation(); onStatusChange(s.id, val); }}
+                          >
+                            <StatusIcon className={cn("size-4", STATUS_META[val].iconColor)} />
+                            <span className="flex-1">{t(`status.${val}`)}</span>
+                            {s.status === val && <Check className="size-4 text-primary" />}
+                          </DropdownMenuItem>
+                        );
+                      })}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"

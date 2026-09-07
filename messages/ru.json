@@ -68,7 +68,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Не найдено",
     "searchClassPlaceholder": "Поиск класса…",
-    "myClassesHeading": "Классы",
     "searchStudentPlaceholder": "Поиск ученика…"
   },
   "HeaderAccountMenu": {
@@ -778,12 +777,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Имя",
+      "lastName": "Фамилия",
       "grade": "Средний балл",
       "attendance": "Посещаемость"
     },
     "status": {
       "active": "Учится",
-      "away": "В отпуске",
       "archived": "Выбыл"
     },
     "statusFilterAll": "Все",
@@ -794,12 +793,12 @@
     "searchPlaceholder": "Поиск по имени или ID…",
     "filterAria": "Фильтр по статусу",
     "filterByStatus": "По статусу",
-    "filterChip": "Статус: {label}",
     "sortButton": "Сортировка: {label}",
     "sortMenuLabel": "Сортировка",
     "sortGrade": "Средний балл (по возрастанию)",
     "sortAttendance": "Посещаемость (по возрастанию)",
     "sortName": "Имя (А–Я)",
+    "sortLastName": "Фамилия (А–Я)",
     "exportAria": "Экспорт",
     "exportToast": "Список учеников экспортирован",
     "newStudent": "Новый ученик",
@@ -814,8 +813,11 @@
     "addNote": "Добавить заметку",
     "statusLabel": "Статус",
     "delete": "Удалить",
-    "markAway": "Отметить как отсутствующего",
+    "markArchived": "Отметить как выбывшего",
     "markActive": "Отметить как активного",
+    "archiveDialogTitle": "Ученик выбыл?",
+    "archiveDialogDescription": "«{name}» перейдёт в список выбывших и исчезнет из текущего списка. Оценки и история посещаемости сохранятся — вернуть можно в любой момент.",
+    "confirmArchive": "Да, выбыл",
     "toastCreated": "Ученик добавлен",
     "toastImported": "Добавлено учеников: {count}",
     "toastDeleted": "Ученик удалён",
@@ -847,6 +849,7 @@
     "viewCardAria": "Карточный вид",
     "viewTableAria": "Табличный вид",
     "tableColName": "ФИО",
+    "tableColSurname": "Фамилия",
     "tableColId": "ID",
     "tableColGrade": "Оценка",
     "tableColAttendance": "Посещаемость",
@@ -1255,7 +1258,6 @@
     "sortGrade": "Средний балл",
     "sortAttendance": "Посещаемость",
     "statusActive": "Учится",
-    "statusAway": "В отпуске",
     "statusArchived": "Выбыл",
     "toastCreated": "Ученик добавлен",
     "toastImported": "Добавлено учеников: {count}",
@@ -1271,7 +1273,7 @@
     "emptyTitle": "В этом классе пока нет учеников",
     "emptyFilteredDescription": "Попробуйте изменить запрос.",
     "emptyDescription": "Добавьте учеников.",
-    "markAway": "Отметить как отсутствующего",
+    "markArchived": "Отметить как выбывшего",
     "markActive": "Отметить как активного",
     "fullProfileAria": "Полный профиль",
     "viewProfile": "Посмотреть профиль",

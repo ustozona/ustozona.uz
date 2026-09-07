@@ -33,7 +33,7 @@ export const studentUpsertSchema = z.object({
   classId: id,
   name: z.string().min(1).max(300),
   initials: z.string().max(10),
-  status: z.enum(["active", "away", "archived"]).optional(),
+  status: z.enum(["active", "archived"]).optional(),
   gender: z.enum(["male", "female"]).optional(),
   birthDate: z.string().max(20).optional(),
   parentName: z.string().max(300).optional(),

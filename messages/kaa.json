@@ -68,7 +68,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Tabılmadı",
     "searchClassPlaceholder": "Klastı izlew…",
-    "myClassesHeading": "Klaslar",
     "searchStudentPlaceholder": "Oqıwshını izlew…"
   },
   "HeaderAccountMenu": {
@@ -778,12 +777,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Atı",
+      "lastName": "Familiyası",
       "grade": "Ortasha baha",
       "attendance": "Dawamat"
     },
     "status": {
       "active": "Oqıp atır",
-      "away": "Demalısta",
       "archived": "Shıǵıp ketken"
     },
     "statusFilterAll": "Hámmesi",
@@ -794,12 +793,12 @@
     "searchPlaceholder": "Atı yamasa ID boyınsha izlew…",
     "filterAria": "Jaǵday boyınsha filtrllew",
     "filterByStatus": "Jaǵday boyınsha",
-    "filterChip": "Jaǵday: {label}",
     "sortButton": "Saralaw: {label}",
     "sortMenuLabel": "Saralaw",
     "sortGrade": "Ortasha baha (pásten)",
     "sortAttendance": "Dawamat (pásten)",
     "sortName": "Atı (A–Z)",
+    "sortLastName": "Familiyası (A–Z)",
     "exportAria": "Eksport",
     "exportToast": "Oqıwshılar dizimi eksport qılındı",
     "newStudent": "Jańa oqıwshı",
@@ -814,8 +813,11 @@
     "addNote": "Túsindirme qosıw",
     "statusLabel": "Jaǵdayı",
     "delete": "Óshiriw",
-    "markAway": "Joq dep belgilew",
+    "markArchived": "Shıqqan dep belgilew",
     "markActive": "Aktiv dep belgilew",
+    "archiveDialogTitle": "Oqıwshı shıǵıp kettime?",
+    "archiveDialogDescription": "«{name}» shıqqanlar dizimine ótedi hám ámeldegi dizimde kórinbeydi. Bahaları hám qatnasıw tariyxı saqlanadı — qálegen waqıtta qaytarıp qoyıw múmkin.",
+    "confirmArchive": "Awa, shıǵıp ketti",
     "toastCreated": "Oqıwshı qosıldı",
     "toastImported": "{count} oqıwshı qosıldı",
     "toastDeleted": "Oqıwshı óshirildi",
@@ -847,6 +849,7 @@
     "viewCardAria": "Kartochka koʻrinisi",
     "viewTableAria": "Kesте koʻrinisi",
     "tableColName": "Толық аты",
+    "tableColSurname": "Familiyası",
     "tableColId": "ID",
     "tableColGrade": "Baha",
     "tableColAttendance": "Qatnasıw",
@@ -1255,7 +1258,6 @@
     "sortGrade": "Ortasha baha",
     "sortAttendance": "Dawamat",
     "statusActive": "Oqıp atır",
-    "statusAway": "Demalısta",
     "statusArchived": "Shıǵıp ketken",
     "toastCreated": "Oqıwshı qosıldı",
     "toastImported": "{count} oqıwshı qosıldı",
@@ -1271,7 +1273,7 @@
     "emptyTitle": "Bul klaste ele oqıwshı joq",
     "emptyFilteredDescription": "Izlewdi ózgertip kóriń.",
     "emptyDescription": "Oqıwshılardı qosıń.",
-    "markAway": "Joq dep belgilew",
+    "markArchived": "Shıqqan dep belgilew",
     "markActive": "Aktiv dep belgilew",
     "fullProfileAria": "Tolıq profil",
     "viewProfile": "Profilin kóriw",

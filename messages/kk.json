@@ -68,7 +68,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Табылмады",
     "searchClassPlaceholder": "Сыныпты іздеу…",
-    "myClassesHeading": "Сыныптар",
     "searchStudentPlaceholder": "Оқушыны іздеу…"
   },
   "HeaderAccountMenu": {
@@ -778,12 +777,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Аты",
+      "lastName": "Тегі",
       "grade": "Орташа баға",
       "attendance": "Қатысу"
     },
     "status": {
       "active": "Оқуда",
-      "away": "Демалыста",
       "archived": "Шығып кеткен"
     },
     "statusFilterAll": "Барлығы",
@@ -794,12 +793,12 @@
     "searchPlaceholder": "Аты немесе ID бойынша іздеу…",
     "filterAria": "Күйі бойынша сүзгілеу",
     "filterByStatus": "Күйі бойынша",
-    "filterChip": "Күйі: {label}",
     "sortButton": "Сұрыптау: {label}",
     "sortMenuLabel": "Сұрыптау",
     "sortGrade": "Орташа баға (төменнен)",
     "sortAttendance": "Қатысу (төменнен)",
     "sortName": "Аты (А–Я)",
+    "sortLastName": "Тегі (А–Я)",
     "exportAria": "Экспорт",
     "exportToast": "Оқушылар тізімі экспортталды",
     "newStudent": "Жаңа оқушы",
@@ -814,8 +813,11 @@
     "addNote": "Ескертпе қосу",
     "statusLabel": "Күйі",
     "delete": "Жою",
-    "markAway": "Жоқ деп белгілеу",
+    "markArchived": "Шыққан деп белгілеу",
     "markActive": "Белсенді деп белгілеу",
+    "archiveDialogTitle": "Оқушы шығып кетті ме?",
+    "archiveDialogDescription": "«{name}» шыққандар тізіміне ауысады және ағымдағы тізімде көрінбейді. Бағалары мен сабаққа қатысу тарихы сақталады — кез келген уақытта қайтаруға болады.",
+    "confirmArchive": "Иә, шығып кетті",
     "toastCreated": "Оқушы қосылды",
     "toastImported": "{count} оқушы қосылды",
     "toastDeleted": "Оқушы жойылды",
@@ -847,6 +849,7 @@
     "viewCardAria": "Карточка көрінісі",
     "viewTableAria": "Кесте көрінісі",
     "tableColName": "Толық аты",
+    "tableColSurname": "Тегі",
     "tableColId": "ID",
     "tableColGrade": "Баға",
     "tableColAttendance": "Қатысу",
@@ -1255,7 +1258,6 @@
     "sortGrade": "Орташа баға",
     "sortAttendance": "Қатысу",
     "statusActive": "Оқуда",
-    "statusAway": "Демалыста",
     "statusArchived": "Шығып кеткен",
     "toastCreated": "Оқушы қосылды",
     "toastImported": "{count} оқушы қосылды",
@@ -1271,7 +1273,7 @@
     "emptyTitle": "Бұл сыныпта әлі оқушы жоқ",
     "emptyFilteredDescription": "Іздеуді өзгертіп көріңіз.",
     "emptyDescription": "Оқушыларды қосыңыз.",
-    "markAway": "Жоқ деп белгілеу",
+    "markArchived": "Шыққан деп белгілеу",
     "markActive": "Белсенді деп белгілеу",
     "fullProfileAria": "Толық профиль",
     "viewProfile": "Профильді көру",
