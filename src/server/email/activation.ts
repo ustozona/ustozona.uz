@@ -53,6 +53,20 @@ function fromAddress(): string {
   );
 }
 
+/* Javoblar tushadigan manzil — `From` dan BOSHQA boʻlishi mumkin va
+   odatda boshqa boʻladi.
+
+   ⚠️ `From` majburiy ravishda ustozona.uz domenida qoladi: DKIM imzosi
+   va SPF yozuvi shu domenga bogʻlangan. Uni gmail.com ga oʻzgartirsak
+   xat Gmail nomidan kelgandek koʻrinadi, lekin Gmail buni tasdiqlamaydi
+   — DMARC'dan oʻtmay spamga tushadi.
+
+   Reply-To esa istalgan manzil boʻlishi mumkin. Shuning uchun domen
+   pochtasini ochmasdan ham javoblarni oʻqish mumkin. */
+function replyTo(): string | undefined {
+  return process.env.RESEND_ACTIVATION_REPLY_TO || undefined;
+}
+
 function siteUrl(): string {
   return process.env.BETTER_AUTH_URL ?? "https://www.ustozona.uz";
 }
@@ -130,13 +144,16 @@ export async function scheduleStage(
     const xat = qurish(stage, recipient.name, userId);
     if (!xat) return; // shablon hali yozilmagan (A2/A3/A4 — 3-bosqich)
 
+    /* soat <= 0 — darhol yuborish (sinov xati). Resend'ga oʻtmishdagi
+       yoki hozirgi `scheduledAt` berilmasin, u xato qaytaradi. */
+    const darhol = soat <= 0;
     const scheduledFor = new Date(Date.now() + soat * 60 * 60 * 1000);
 
     if (!YOQILGANMI || !resend) {
       /* Darvoza yopiq — holatni yozamiz, xat yubormaymiz. Oqim
          toʻliq sinaladi, faqat Resend'ga chiqmaydi. */
       console.log(
-        `[activation] ${stage} rejalashtirilgan boʻlardi: ${recipient.email} → ${scheduledFor.toISOString()}`,
+        `[activation] ${stage} ${darhol ? "yuborilardi" : "rejalashtirilardi"}: ${recipient.email} → ${darhol ? "darhol" : scheduledFor.toISOString()}`,
       );
       await writeState(userId, { stage, scheduledFor });
       return;
@@ -144,10 +161,11 @@ export async function scheduleStage(
 
     const { data, error } = await resend.emails.send({
       from: fromAddress(),
+      replyTo: replyTo(),
       to: recipient.email,
       subject: xat.subject,
       html: xat.html,
-      scheduledAt: scheduledFor.toISOString(),
+      ...(darhol ? {} : { scheduledAt: scheduledFor.toISOString() }),
       headers: {
         "List-Unsubscribe": `<${unsubscribePostUrl(userId)}>`,
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",

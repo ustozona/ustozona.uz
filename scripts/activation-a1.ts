@@ -25,7 +25,17 @@ import postgres from "postgres";
 
 const PROD = process.argv.includes("--prod");
 const YES = process.argv.includes("--yes");
-const KECHIKISH_SOAT = 1;
+
+/* `--only=manzil@example.com` — roʻyxatni bitta odamga qisqartiradi.
+   Birinchi yuborish OʻZINGIZGA boʻlsin: xat Gmail'da qanday
+   koʻrinishini, spamga tushmasligini va «Unsubscribe» tugmasi
+   ishlashini 33 kishiga yuborishdan OLDIN koʻrasiz. */
+const ONLY = process.argv.find((a) => a.startsWith("--only="))?.slice("--only=".length) ?? null;
+
+/* Sinov xati darhol ketsin (0 soat), ommaviy yuborish esa 1 soatga
+   rejalashtirilsin — roʻyxat notoʻgʻri chiqsa bekor qilishga vaqt
+   qolsin. */
+const KECHIKISH_SOAT = ONLY ? 0 : 1;
 
 type Nomzod = { id: string; email: string; name: string | null };
 
@@ -54,12 +64,21 @@ async function main() {
                JOIN class_teachers ct ON ct.class_id = c.id
               WHERE ct.teacher_id = u.id AND c.archived_at IS NULL
            )
+       AND (${ONLY}::text IS NULL OR lower(u.email) = lower(${ONLY}))
      ORDER BY u.created_at
   `) as Nomzod[];
 
+  if (ONLY) console.log(`  Filtr: faqat ${ONLY}\n`);
   console.log(`  Nomzod: ${nomzodlar.length} ta\n`);
   for (const n of nomzodlar) {
     console.log(`    ${(n.name ?? "—").slice(0, 22).padEnd(24)}${n.email}`);
+  }
+
+  if (ONLY && nomzodlar.length === 0) {
+    console.log(
+      "  Bu manzil roʻyxatga tushmadi. Sabablari: email tasdiqlanmagan,\n" +
+        "  allaqachon sinf ochgan, obunadan chiqqan, yoki A1 yuborilib boʻlgan.\n",
+    );
   }
 
   if (!YES) {
