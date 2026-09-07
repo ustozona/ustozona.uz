@@ -29,7 +29,7 @@ export type StudentsTourDemoRow = {
   studentId: string;
   grade: number;
   attendance: number;
-  status: "active" | "away" | "archived";
+  status: "active" | "archived";
   parentName?: string;
   parentPhone?: string;
   studentPhone?: string;
@@ -66,7 +66,7 @@ export function makeStudentsTourDemo(): StudentsTourDemoRow[] {
       studentId: "ID-1003",
       grade: 81,
       attendance: 72,
-      status: "away",
+      status: "active",
     },
     {
       id: "demo-st-4",

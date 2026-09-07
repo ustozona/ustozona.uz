@@ -367,7 +367,12 @@ export default function AttendanceView({
   // Roster va sinf nomi — baholar jurnali bilan bitta manba (server-backed).
   const gradesClass = useGradesStore((s) => s.classDataMap[classId]);
   const versions = useTimetableStore((s) => s.versions);
-  const roster = demoMode ? (demoRoster ?? []) : (gradesClass?.students ?? []);
+  // Chiqib ketgan oʻquvchi davomat roʻyxatida koʻrinmaydi (xulq sahifasi bilan
+  // bir xil naqsh, [[student-status-model]]) — tarixi saqlanadi, faqat
+  // koʻrinishdan chiqadi.
+  const roster = demoMode
+    ? (demoRoster ?? [])
+    : (gradesClass?.students ?? []).filter((s) => s.status !== "archived");
   const className = demoMode ? (demoClassInfo?.name ?? classId) : (gradesClass?.info.name ?? classId);
   const today = todayKey();
 

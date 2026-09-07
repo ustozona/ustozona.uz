@@ -68,7 +68,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Топилмади",
     "searchClassPlaceholder": "Синф қидириш…",
-    "myClassesHeading": "Синфлар",
     "searchStudentPlaceholder": "Ўқувчи қидириш…"
   },
   "HeaderAccountMenu": {
@@ -778,12 +777,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Исм",
+      "lastName": "Фамилия",
       "grade": "Ўртача баҳо",
       "attendance": "Давомат"
     },
     "status": {
       "active": "Ўқимоқда",
-      "away": "Таътилда",
       "archived": "Чиқиб кетган"
     },
     "statusFilterAll": "Ҳаммаси",
@@ -794,12 +793,12 @@
     "searchPlaceholder": "Исм ёки ИД бўйича қидириш…",
     "filterAria": "Ҳолат бўйича филтрлаш",
     "filterByStatus": "Ҳолат бўйича",
-    "filterChip": "Ҳолат: {label}",
     "sortButton": "Саралаш: {label}",
     "sortMenuLabel": "Саралаш",
     "sortGrade": "Ўртача баҳо (пастдан)",
     "sortAttendance": "Давомат (пастдан)",
     "sortName": "Исм (А–З)",
+    "sortLastName": "Фамилия (А–З)",
     "exportAria": "Экспорт",
     "exportToast": "Ўқувчилар рўйхати экспорт қилинди",
     "newStudent": "Янги ўқувчи",
@@ -814,8 +813,11 @@
     "addNote": "Изоҳ қўшиш",
     "statusLabel": "Ҳолати",
     "delete": "Ўчириш",
-    "markAway": "Ёъқ деб белгилаш",
+    "markArchived": "Чиқиб кетган деб белгилаш",
     "markActive": "Фаол деб белгилаш",
+    "archiveDialogTitle": "Ўқувчи чиқиб кетганми?",
+    "archiveDialogDescription": "«{name}» чиқиб кетганлар рўйхатига ўтади ва жорий рўйхатда кўринмайди. Баҳолари ва давомат тарихи сақланиб қолади — исталган вақтда қайтариб қўйиш мумкин.",
+    "confirmArchive": "Ҳа, чиқиб кетган",
     "toastCreated": "Ўқувчи қўшилди",
     "toastImported": "{count} та ўқувчи қўшилди",
     "toastDeleted": "Ўқувчи ўчирилди",
@@ -847,6 +849,7 @@
     "viewCardAria": "Карта кўриниши",
     "viewTableAria": "Жадвал кўриниши",
     "tableColName": "Исм шарифи",
+    "tableColSurname": "Фамилияси",
     "tableColId": "ИД",
     "tableColGrade": "Баҳо",
     "tableColAttendance": "Давомат",
@@ -1255,7 +1258,6 @@
     "sortGrade": "Ўртача баҳо",
     "sortAttendance": "Давомат",
     "statusActive": "Ўқимоқда",
-    "statusAway": "Таътилда",
     "statusArchived": "Чиқиб кетган",
     "toastCreated": "Ўқувчи қўшилди",
     "toastImported": "{count} та ўқувчи қўшилди",
@@ -1271,7 +1273,7 @@
     "emptyTitle": "Бу синфда ҳали ўқувчи ёъқ",
     "emptyFilteredDescription": "Қидирувни ўзгартириб кўринг.",
     "emptyDescription": "Ўқувчиларни қўшинг.",
-    "markAway": "Ёъқ деб белгилаш",
+    "markArchived": "Чиқиб кетган деб белгилаш",
     "markActive": "Фаол деб белгилаш",
     "fullProfileAria": "Тўлиқ профил",
     "viewProfile": "Профилни кўриш",

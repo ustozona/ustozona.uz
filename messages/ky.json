@@ -68,7 +68,6 @@
   "HeaderBreadcrumb": {
     "notFound": "Табылган жок",
     "searchClassPlaceholder": "Класс издөө…",
-    "myClassesHeading": "Класстар",
     "searchStudentPlaceholder": "Окуучу издөө…"
   },
   "HeaderAccountMenu": {
@@ -778,12 +777,12 @@
   "StudentsPage": {
     "sortLabels": {
       "name": "Аты-жөнү",
+      "lastName": "Фамилиясы",
       "grade": "Орточо баа",
       "attendance": "Катышуу"
     },
     "status": {
       "active": "Окуп жатат",
-      "away": "Каникулда",
       "archived": "Чыгып кеткен"
     },
     "statusFilterAll": "Бардыгы",
@@ -794,12 +793,12 @@
     "searchPlaceholder": "Аты-жөнү же ID боюнча издөө…",
     "filterAria": "Статус боюнча чыпкалоо",
     "filterByStatus": "Статус боюнча",
-    "filterChip": "Абалы: {label}",
     "sortButton": "Сорттоо: {label}",
     "sortMenuLabel": "Сорттоо",
     "sortGrade": "Орточо баа (төмөндөн)",
     "sortAttendance": "Катышуу (төмөндөн)",
     "sortName": "Аты-жөнү (А–Я)",
+    "sortLastName": "Фамилиясы (А–Я)",
     "exportAria": "Экспорт",
     "exportToast": "Окуучулардын тизмеси экспорттолду",
     "newStudent": "Жаңы окуучу",
@@ -814,8 +813,11 @@
     "addNote": "Эскертүү кошуу",
     "statusLabel": "Статусу",
     "delete": "Өчүрүү",
-    "markAway": "Жок деп белгилөө",
+    "markArchived": "Чыгып кеткен деп белгилөө",
     "markActive": "Активдүү деп белгилөө",
+    "archiveDialogTitle": "Окуучу чыгып кеттиби?",
+    "archiveDialogDescription": "«{name}» чыгып кеткендердин тизмесине өтөт жана учурдагы тизмеде көрүнбөйт. Баалары жана катышуу тарыхы сакталат — каалаган убакта кайтарууга болот.",
+    "confirmArchive": "Ооба, чыгып кетти",
     "toastCreated": "Окуучу кошулду",
     "toastImported": "{count} окуучу кошулду",
     "toastDeleted": "Окуучу өчүрүлдү",
@@ -847,6 +849,7 @@
     "viewCardAria": "Карточка көрүнүшү",
     "viewTableAria": "Таблица көрүнүшү",
     "tableColName": "Аты-жөнү",
+    "tableColSurname": "Фамилиясы",
     "tableColId": "ID",
     "tableColGrade": "Баа",
     "tableColAttendance": "Катышуу",
@@ -1255,7 +1258,6 @@
     "sortGrade": "Орточо баа",
     "sortAttendance": "Катышуу",
     "statusActive": "Окуп жатат",
-    "statusAway": "Каникулда",
     "statusArchived": "Чыгып кеткен",
     "toastCreated": "Окуучу кошулду",
     "toastImported": "{count} окуучу кошулду",
@@ -1271,7 +1273,7 @@
     "emptyTitle": "Бул класста азырынча окуучу жок",
     "emptyFilteredDescription": "Издөөнү өзгөртүп көрүңүз.",
     "emptyDescription": "Окуучуларды кошуңуз.",
-    "markAway": "Жок деп белгилөө",
+    "markArchived": "Чыгып кеткен деп белгилөө",
     "markActive": "Активдүү деп белгилөө",
     "fullProfileAria": "Толук профиль",
     "viewProfile": "Профилди көрүү",

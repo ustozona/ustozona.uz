@@ -148,7 +148,7 @@ export const students = pgTable(
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     name: text("name").notNull(),
     initials: text("initials").notNull(),
-    status: text("status").notNull().default("active"), // active | away | archived
+    status: text("status").notNull().default("active"), // active | archived
     gender: text("gender"), // male | female
     birthDate: text("birth_date"), // "YYYY-MM-DD" — frontend bilan aynan mos satr
     parentName: text("parent_name"),

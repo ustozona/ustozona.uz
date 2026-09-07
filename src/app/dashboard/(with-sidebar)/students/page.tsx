@@ -59,12 +59,12 @@ import { useCollator } from "@/lib/use-collator";
 import {
   Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2, X,
   TrendingUp, Phone, MessageCircle, Pen, Download, ChevronDown, MoreHorizontal,
-  Eye, NotebookPen, Clock, Archive, GraduationCap, LayoutGrid, Table as TableIcon,
+  Eye, NotebookPen, Archive, GraduationCap, LayoutGrid, Table as TableIcon, Check,
   CalendarCheck, Award,
 } from "lucide-react";
 
 // ─── Tiplar ────────────────────────────────────────────────────────────────
-export type Status = "active" | "away" | "archived";
+export type Status = "active" | "archived";
 export type StudentRow = {
   id: string;
   name: string;
@@ -82,9 +82,11 @@ export type StudentRow = {
   studentPhone?: string;
 };
 
-type SortKey = "name" | "grade" | "attendance";
-type StatusFilter = "all" | "active" | "away" | "archived";
+type SortKey = "name" | "lastName" | "grade" | "attendance";
+type StatusFilter = "all" | "active" | "archived";
 type ViewMode = "card" | "table";
+/** Sukut boʻyicha faqat oʻqiyotganlar koʻrsatiladi. */
+const DEFAULT_STATUS_FILTER: StatusFilter = "active";
 const STUDENTS_VIEW_STORAGE_KEY = "students-view-mode";
 
 // ─── Yordamchilar ────────────────────────────────────────────────────────────
@@ -93,6 +95,12 @@ function makeInitials(firstName: string, lastName: string): string {
   return (
     ((firstName[0] ?? "") + (lastName[0] ?? firstName[1] ?? "")).toUpperCase() || "?"
   );
+}
+
+/** Toʻliq ismdan familiyani ajratadi ("Abdulloh Xasanov" → "Xasanov"). */
+function surnameOf(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  return parts.length > 1 ? parts[parts.length - 1]! : (parts[0] ?? "");
 }
 
 export const STATUS_META: Record<
@@ -105,12 +113,6 @@ export const STATUS_META: Record<
     icon: GraduationCap,
     iconColor: "text-emerald-500",
   },
-  away: {
-    cls: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
-    dot: "bg-amber-500",
-    icon: Clock,
-    iconColor: "text-amber-500",
-  },
   archived: {
     cls: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700",
     dot: "bg-slate-400",
@@ -118,6 +120,14 @@ export const STATUS_META: Record<
     iconColor: "text-slate-400",
   },
 };
+
+/* Holat filtri: kundalik tanlovlar tepada, «Hammasi» — uchinchi.
+   Ikona va rangi holatning oʻzidan olinadi, «hammasi» neytral qoladi. */
+const STATUS_FILTER_ORDER: StatusFilter[] = ["active", "archived", "all"];
+function statusFilterMeta(val: StatusFilter) {
+  if (val === "all") return { Icon: Users, iconColor: "text-muted-foreground" };
+  return { Icon: STATUS_META[val].icon, iconColor: STATUS_META[val].iconColor };
+}
 
 export const badgeBase =
   "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
@@ -144,11 +154,12 @@ export default function StudentsPage() {
       return next;
     });
   const [search, setSearch] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("grade");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
   const compare = useCollator();
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(DEFAULT_STATUS_FILTER);
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTargets, setDeleteTargets] = useState<StudentRow[] | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<StudentRow | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [view, setView] = useState<ViewMode>("card");
   useEffect(() => {
@@ -252,6 +263,8 @@ export default function StudentsPage() {
     if (q) list = list.filter((s) => s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q));
     const sorted = [...list];
     if (sortKey === "name") sorted.sort((a, b) => compare(a.name, b.name));
+    else if (sortKey === "lastName")
+      sorted.sort((a, b) => compare(surnameOf(a.name), surnameOf(b.name)) || compare(a.name, b.name));
     else if (sortKey === "grade") sorted.sort((a, b) => a.grade - b.grade);
     else sorted.sort((a, b) => a.attendance - b.attendance);
     return sorted;
@@ -259,7 +272,7 @@ export default function StudentsPage() {
 
   const selectedStudent =
     students.find((s) => s.id === selectedStudentId) ?? (isDemoMode ? students[0] ?? null : null);
-  const filterActive = statusFilter !== "all" || search.trim().length > 0;
+  const filterActive = statusFilter !== DEFAULT_STATUS_FILTER || search.trim().length > 0;
   const noClass = !selectedClassId && !isDemoMode;
 
   /* Ustun nisbatlari — sinf tanlanmagan → 50/50 (grades/standards bilan bir xil boʻsh holat);
@@ -279,8 +292,13 @@ export default function StudentsPage() {
     }));
   };
 
-  const toggleStatus = (id: string, current: Status) =>
-    setStatus(id, current === "active" ? "away" : "active");
+  /* Holat faqat kontekst menyu (yoki guruhaviy amal) orqali oʻzgaradi.
+     "Chiqib ketgan" — roʻyxatdan tushiruvchi amal, shuning uchun tasdiq
+     soʻraladi; faolga qaytarish darhol bajariladi. */
+  const requestStatus = (id: string, next: Status) => {
+    if (next !== "archived") { setStatus(id, next); return; }
+    setArchiveTarget(students.find((s) => s.id === id) ?? null);
+  };
 
   // Guruhaviy holat oʻzgartirish — jadvalda bir nechta qator belgilanganda
   const handleBulkStatus = (status: Status) => {
@@ -444,16 +462,6 @@ export default function StudentsPage() {
               <SectionIcon><Users /></SectionIcon>
               <CardTitle className="min-w-0 shrink truncate">{t("title")}</CardTitle>
               <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
-              {statusFilter !== "all" && (
-                <button
-                  type="button"
-                  onClick={() => setStatusFilter("all")}
-                  className="hidden shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/15 lg:inline-flex"
-                >
-                  {t("filterChip", { label: t(`status.${statusFilter}`) })}
-                  <X className="size-3" />
-                </button>
-              )}
             </div>
 
             {/* Markaziy slot — grid ustuni sifatida JOY BAND QILADI, shuning
@@ -494,26 +502,32 @@ export default function StudentsPage() {
               {/* Filtr — tor ekranda "···" ga yigʻiladi */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button data-tour="students-filter" variant="ghost" size="icon" aria-label={t("filterAria")} className={cn(toolbarBtn, "hidden sm:inline-flex", statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
+                  <Button data-tour="students-filter" variant="ghost" size="icon" aria-label={t("filterAria")} className={cn(toolbarBtn, "hidden sm:inline-flex", statusFilter !== DEFAULT_STATUS_FILTER && "ring-2 ring-primary ring-offset-2")}>
                     <ListFilter className="size-4" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-56">
                   <p className="mb-2 text-sm font-medium">{t("filterByStatus")}</p>
                   <div className="flex flex-col gap-1">
-                    {(["all", "active", "away", "archived"] as StatusFilter[]).map((val) => (
-                      <button
-                        key={val}
-                        onClick={() => setStatusFilter(val)}
-                        className={cn(
-                          "flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors",
-                          statusFilter === val ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"
-                        )}
-                      >
-                        {val === "all" ? t("statusFilterAll") : t(`status.${val}`)}
-                        {statusFilter === val && <span className="size-1.5 rounded-full bg-primary" />}
-                      </button>
-                    ))}
+                    {STATUS_FILTER_ORDER.map((val) => {
+                      const { Icon, iconColor } = statusFilterMeta(val);
+                      return (
+                        <button
+                          key={val}
+                          onClick={() => setStatusFilter(val)}
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+                            statusFilter === val ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"
+                          )}
+                        >
+                          <Icon className={cn("size-4 shrink-0", iconColor)} />
+                          <span className="flex-1 text-left">
+                            {val === "all" ? t("statusFilterAll") : t(`status.${val}`)}
+                          </span>
+                          {statusFilter === val && <Check className="size-4 shrink-0 text-primary" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 </PopoverContent>
               </Popover>
@@ -535,9 +549,10 @@ export default function StudentsPage() {
                     <DropdownMenuLabel>{t("sortMenuLabel")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+                      <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="lastName">{t("sortLastName")}</DropdownMenuRadioItem>
                       <DropdownMenuRadioItem value="grade">{t("sortGrade")}</DropdownMenuRadioItem>
                       <DropdownMenuRadioItem value="attendance">{t("sortAttendance")}</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -546,26 +561,33 @@ export default function StudentsPage() {
               {/* Tor ekran: Filtr (+ karta koʻrinishida Saralash) shu yerga yigʻiladi */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label={t("moreActionsAria")} className={cn(toolbarBtn, "sm:hidden", statusFilter !== "all" && "ring-2 ring-primary ring-offset-2")}>
+                  <Button variant="ghost" size="icon" aria-label={t("moreActionsAria")} className={cn(toolbarBtn, "sm:hidden", statusFilter !== DEFAULT_STATUS_FILTER && "ring-2 ring-primary ring-offset-2")}>
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>{t("filterByStatus")}</DropdownMenuLabel>
-                  <DropdownMenuRadioGroup value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                    <DropdownMenuRadioItem value="all">{t("statusFilterAll")}</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="active">{t("status.active")}</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="away">{t("status.away")}</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="archived">{t("status.archived")}</DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
+                  {STATUS_FILTER_ORDER.map((val) => {
+                    const { Icon, iconColor } = statusFilterMeta(val);
+                    return (
+                      <DropdownMenuItem key={val} onClick={() => setStatusFilter(val)}>
+                        <Icon className={cn("size-4 shrink-0", iconColor)} />
+                        <span className="flex-1">
+                          {val === "all" ? t("statusFilterAll") : t(`status.${val}`)}
+                        </span>
+                        {statusFilter === val && <Check className="size-4 shrink-0 text-primary" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
                   {view === "card" && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>{t("sortMenuLabel")}</DropdownMenuLabel>
                       <DropdownMenuRadioGroup value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+                        <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="lastName">{t("sortLastName")}</DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="grade">{t("sortGrade")}</DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="attendance">{t("sortAttendance")}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="name">{t("sortName")}</DropdownMenuRadioItem>
                       </DropdownMenuRadioGroup>
                     </>
                   )}
@@ -628,9 +650,6 @@ export default function StudentsPage() {
                     <DropdownMenuItem onClick={() => handleBulkStatus("active")}>
                       <GraduationCap className={cn("size-4", STATUS_META.active.iconColor)} /> {t("status.active")}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBulkStatus("away")}>
-                      <Clock className={cn("size-4", STATUS_META.away.iconColor)} /> {t("status.away")}
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleBulkStatus("archived")}>
                       <Archive className={cn("size-4", STATUS_META.archived.iconColor)} /> {t("status.archived")}
                     </DropdownMenuItem>
@@ -682,7 +701,7 @@ export default function StudentsPage() {
                 onToggleSelectAll={toggleSelectAllRows}
                 sortKey={sortKey}
                 onSortChange={setSortKey}
-                onToggleStatus={toggleStatus}
+                onStatusChange={requestStatus}
                 onEdit={(row) => setEditTarget(row)}
                 onDelete={(row) => setDeleteTargets([row])}
                 hex={selHex}
@@ -733,15 +752,10 @@ export default function StudentsPage() {
                                 <TrendingUp className="size-3 shrink-0" />
                                 {s.grade}%
                               </span>
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); toggleStatus(s.id, s.status); }}
-                                title={s.status === "active" ? t("markAway") : t("markActive")}
-                                className={cn(badgeBase, "shrink-0 cursor-pointer transition-all hover:opacity-80 active:scale-95", pill.cls)}
-                              >
+                              <span className={cn(badgeBase, "shrink-0", pill.cls)}>
                                 <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                                 {t(`status.${s.status}`)}
-                              </button>
+                              </span>
                             </div>
                           </div>
                           </div>
@@ -768,13 +782,10 @@ export default function StudentsPage() {
                             <ContextMenuSubContent>
                               <ContextMenuRadioGroup
                                 value={s.status}
-                                onValueChange={(v) => setStatus(s.id, v as Status)}
+                                onValueChange={(v) => requestStatus(s.id, v as Status)}
                               >
                                 <ContextMenuRadioItem value="active">
                                   <GraduationCap className={cn("size-4 shrink-0", STATUS_META.active.iconColor)} /> {t("status.active")}
-                                </ContextMenuRadioItem>
-                                <ContextMenuRadioItem value="away">
-                                  <Clock className={cn("size-4 shrink-0", STATUS_META.away.iconColor)} /> {t("status.away")}
                                 </ContextMenuRadioItem>
                                 <ContextMenuRadioItem value="archived">
                                   <Archive className={cn("size-4 shrink-0", STATUS_META.archived.iconColor)} /> {t("status.archived")}
@@ -819,7 +830,6 @@ export default function StudentsPage() {
                 classId={selectedClassId ?? ""}
                 hex={selHex}
                 tint={tint}
-                onToggleStatus={() => toggleStatus(selectedStudent.id, selectedStudent.status)}
                 onViewProfile={() => openProfile(selectedStudent.id)}
               />
             </div>
@@ -860,6 +870,28 @@ export default function StudentsPage() {
           />
         );
       })()}
+
+      <AlertDialog open={!!archiveTarget} onOpenChange={(open) => { if (!open) setArchiveTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("archiveDialogTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("archiveDialogDescription", { name: archiveTarget?.name ?? "" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (archiveTarget) setStatus(archiveTarget.id, "archived");
+                setArchiveTarget(null);
+              }}
+            >
+              {t("confirmArchive")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!deleteTargets} onOpenChange={(open) => { if (!open) setDeleteTargets(null); }}>
         <AlertDialogContent>
@@ -907,14 +939,13 @@ const EMPTY_BEHAVIOR_EVENTS: never[] = [];
 
 // ─── Preview kartasi ──────────────────────────────────────────────────────────
 function PreviewCard({
-  student, className, classId, hex, tint, onToggleStatus, onViewProfile,
+  student, className, classId, hex, tint, onViewProfile,
 }: {
   student: StudentRow;
   className: string;
   classId: string;
   hex: string;
   tint: (pct: number) => string;
-  onToggleStatus: () => void;
   onViewProfile: () => void;
 }) {
   const t = useTranslations("StudentsPage");

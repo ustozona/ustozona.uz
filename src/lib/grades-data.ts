@@ -36,7 +36,7 @@ export type Student = {
   studentNumber?: number | null;
   name: string;
   initials: string;
-  status?: "active" | "away" | "archived";
+  status?: "active" | "archived";
   // Profil maʼlumotlari (oʻquvchi yaratish formasidagi maydonlar bilan mos)
   gender?: "male" | "female";
   birthDate?: string;     // yyyy-mm-dd
