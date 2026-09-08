@@ -94,8 +94,3 @@ export function aiCredits(plan: string | null | undefined): AiCredits {
     docs: Math.max(1, Number(env.docs) || def.docs),
   };
 }
-
-/** Admin statistikasi uchun: free taʼrif krediti (asosiy massa shunda). */
-export function aiBaseCredits(): AiCredits {
-  return aiCredits("free");
-}

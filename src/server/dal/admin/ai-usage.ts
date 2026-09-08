@@ -187,6 +187,13 @@ export async function listAiUsers(params: {
   const today = todayTashkent();
   const from = tashkentDaysAgo(days - 1);
   const monthFrom = monthStartTashkent();
+  /* Soʻrov chegarasi — IKKALASINING ERTAROGʻI. 30 kunlik oyna oyning
+     boshini har doim ham qamramaydi: 31 kunlik oyning 31-kunida oyna
+     2-sanadan boshlanadi va 1-sanadagi sarf `monthMessages` dan tushib
+     qolardi — panel oʻqituvchini kredit ichida koʻrsatib turar, route esa
+     allaqachon 429 qaytarayotgan boʻlardi. Shuning uchun WHERE kengroq,
+     oyna koʻrsatkichlari esa `filter` bilan qaytadan toraytiriladi. */
+  const since = from < monthFrom ? from : monthFrom;
 
   const rows = await db
     .select({
@@ -194,9 +201,9 @@ export async function listAiUsers(params: {
       name: user.name,
       email: user.email,
       plan: teachers.plan,
-      messages: sql<number>`sum(${aiUsage.count})::int`,
-      docs: sql<number>`sum(${aiUsage.docCount})::int`,
-      activeDays: sql<number>`count(*)::int`,
+      messages: sql<number>`coalesce(sum(${aiUsage.count}) filter (where ${aiUsage.day} >= ${from}), 0)::int`,
+      docs: sql<number>`coalesce(sum(${aiUsage.docCount}) filter (where ${aiUsage.day} >= ${from}), 0)::int`,
+      activeDays: sql<number>`count(*) filter (where ${aiUsage.day} >= ${from})::int`,
       monthMessages: sql<number>`coalesce(sum(${aiUsage.count}) filter (where ${aiUsage.day} >= ${monthFrom}), 0)::int`,
       todayMessages: sql<number>`coalesce(sum(${aiUsage.count}) filter (where ${aiUsage.day} = ${today}), 0)::int`,
       lastDay: sql<string>`max(${aiUsage.day})`,
@@ -204,9 +211,9 @@ export async function listAiUsers(params: {
     .from(aiUsage)
     .innerJoin(user, eq(user.id, aiUsage.userId))
     .leftJoin(teachers, eq(teachers.id, aiUsage.userId))
-    .where(gte(aiUsage.day, from))
+    .where(gte(aiUsage.day, since))
     .groupBy(aiUsage.userId, user.name, user.email, teachers.plan)
-    .orderBy(desc(sql`sum(${aiUsage.count})`))
+    .orderBy(desc(sql`sum(${aiUsage.count}) filter (where ${aiUsage.day} >= ${from})`))
     .limit(rowLimit);
 
   /* Kredit taʼrifga bogʻliq — SQL'da CASE yozish oʻrniga shu yerda

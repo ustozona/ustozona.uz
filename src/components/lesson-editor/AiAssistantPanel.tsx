@@ -234,8 +234,13 @@ function calloutIconSvg(type: CalloutType): string {
 const renderChatCallout: CalloutRender = (spec, titleHtml, bodyHtml) => {
   const inner = `<div><p class="static-callout-title">${titleHtml}</p><div class="static-callout-body">${bodyHtml}</div></div>`;
   if (spec.kind === "free") {
-    const tint = makeColorTints(CLASS_COLOR_BASE[spec.color as ClassColor]);
-    return `<div class="static-callout" style="background:${escapeAttr(String(tint.tint.backgroundColor ?? ""))}"><div class="static-callout-icon">${escapeAttr(spec.emoji)}</div>${inner}</div>`;
+    /* `--cl` ham beriladi: `.static-callout` uni default `var(--info)` dan
+       oladi va faqat fonni oʻzgartirsak, chap hoshiya tanlangan rangdan
+       qatʼi nazar koʻk boʻlib qolardi — bir blok ikki xil rangda
+       koʻrinardi. */
+    const base = CLASS_COLOR_BASE[spec.color as ClassColor];
+    const tint = makeColorTints(base);
+    return `<div class="static-callout" style="--cl:${escapeAttr(base)};background:${escapeAttr(String(tint.tint.backgroundColor ?? ""))}"><div class="static-callout-icon">${escapeAttr(spec.emoji)}</div>${inner}</div>`;
   }
   return `<div class="static-callout" style="--cl:${escapeAttr(CALLOUT_META[spec.type].color)}"><div class="static-callout-icon">${calloutIconSvg(spec.type)}</div>${inner}</div>`;
 };
