@@ -279,6 +279,14 @@ export default function StudentsPage() {
   const filterActive = statusFilter !== DEFAULT_STATUS_FILTER || search.trim().length > 0;
   const noClass = !selectedClassId && !isDemoMode;
 
+  /* Koʻchirish faqat DARAJALI sinfdan mumkin. Darajasiz guruhda
+     (toʻgarak, qoʻshimcha dars) band umuman koʻrsatilmaydi — u har doim
+     xato bilan tugardi, chunki server `assertSameGrade` da rad etadi.
+     Sinf tanlanmaganda ham yoʻq: qaysi sinfDAN chiqarilishi noaniq. */
+  const canMove = Boolean(
+    selectedClassId && classDataMap[selectedClassId]?.info.grade != null
+  );
+
   /* Ustun nisbatlari — sinf tanlanmagan → 50/50 (grades/standards bilan bir xil boʻsh holat);
      sinf tanlangan, preview yopiq → 25/75; oʻquvchi tanlangan → 25/50/25. */
   const columnsTemplate = selectedStudent
@@ -659,7 +667,7 @@ export default function StudentsPage() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {selectedClassId && (
+                {canMove && (
                   <BulkActionButton
                     icon={<ArrowRightLeft className="size-4" />}
                     onClick={() =>
@@ -722,7 +730,7 @@ export default function StudentsPage() {
                 onStatusChange={requestStatus}
                 onEdit={(row) => setEditTarget(row)}
                 onMove={
-                  selectedClassId
+                  canMove
                     ? (row) => setMoveTargets([{ id: row.id, name: row.name }])
                     : undefined
                 }
@@ -796,7 +804,7 @@ export default function StudentsPage() {
                           {/* Jadval koʻrinishidagi «⋮» menyu bilan parity —
                               sinf tanlanmagan boʻlsa yoʻq, chunki qaysi
                               sinfDAN chiqarilishi noaniq boʻlardi. */}
-                          {selectedClassId && (
+                          {canMove && (
                             <ContextMenuItem
                               onSelect={() => setMoveTargets([{ id: s.id, name: s.name }])}
                             >

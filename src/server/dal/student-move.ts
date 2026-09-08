@@ -54,6 +54,45 @@ export type MoveStudentsResult = {
  * ⛔ Baho/davomat YOZISHga bu kenglik TARQALMAYDI — koʻchirish faqat
  * `enrollments` ga tegadi, oʻquvchining yozuvlariga emas.
  */
+/**
+ * Ikki sinf orasida koʻchirish MANTIQAN mumkinmi.
+ *
+ * Qoida: DARAJA bir xil boʻlishi shart, va darajasiz guruh umuman
+ * qatnashmaydi.
+ *
+ * ⭐ Nega daraja: 7-sinf oʻquvchisini 6-sinfga koʻchirish sinf almashish
+ * emas, bolani bir yil pastga tushirish — bu boshqa qaror va boshqa
+ * hujjat. Roʻyxatni faqat interfeysda filtrlash yetarli emas edi: amal
+ * server action orqali ochiq turadi, yaʼni qoida shu yerda boʻlmasa
+ * tavsiya boʻlib qolardi.
+ *
+ * ⭐ Nega darajasiz guruh (toʻgarak, qoʻshimcha dars) chiqarib
+ * tashlanadi: undan «koʻchirish» maʼnosiz. Bola toʻgarakni tashlab
+ * matematikaga oʻtmaydi — u toʻgarakdan chiqadi, sinfda esa qolaveradi.
+ * Bu QOʻSHISH/CHIQARISH amali, koʻchirish emas.
+ *
+ * ⚠️ `grade` faol oʻquv yiliga proyeksiya qilingan qiymat (rollover uni
+ * joyida yangilaydi, tarixi `gradeByYear` da) — ikkala sinf ham bir xil
+ * yoʻldan oʻtgani uchun solishtirish toʻgʻri.
+ */
+function assertSameGrade(
+  from: { id: string; name: string; grade: number | null },
+  to: { id: string; name: string; grade: number | null }
+): void {
+  if (from.grade == null || to.grade == null) {
+    throw new ForbiddenError(
+      "Darajasiz guruhga (toʻgarak, qoʻshimcha dars) koʻchirib boʻlmaydi — " +
+        "unga oʻquvchi qoʻshiladi, sinfi esa oʻzgarmaydi"
+    );
+  }
+  if (from.grade !== to.grade) {
+    throw new ForbiddenError(
+      `Faqat bir xil darajadagi sinflar orasida koʻchirish mumkin ` +
+        `(${from.name} — ${from.grade}-daraja, ${to.name} — ${to.grade}-daraja)`
+    );
+  }
+}
+
 async function movableClassIds(): Promise<string[]> {
   const ctx = await requireWorkspace();
   if (ctx.role === "admin") {
@@ -78,6 +117,15 @@ export async function moveStudents(input: MoveStudentsInput): Promise<MoveStuden
   if (!allowed.has(fromClassId) || !allowed.has(toClassId)) {
     throw new ForbiddenError("Bu sinflardan biri sizga biriktirilmagan");
   }
+
+  const gradeRows = await db
+    .select({ id: classes.id, name: classes.name, grade: classes.grade })
+    .from(classes)
+    .where(inArray(classes.id, [fromClassId, toClassId]));
+  const from = gradeRows.find((c) => c.id === fromClassId);
+  const to = gradeRows.find((c) => c.id === toClassId);
+  if (!from || !to) throw new ForbiddenError("Sinf topilmadi");
+  assertSameGrade(from, to);
 
   /* Faqat eski sinfda HOZIR oʻqiyotganlar koʻchiriladi. Client eskirgan
      holatdan begona id yuborishi mumkin — jimgina tashlab yuboriladi

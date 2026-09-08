@@ -80,6 +80,35 @@ action'i bilan; muvaffaqiyatdan keyin store qayta yuklanadi.
 - `visibleClassIds("data")` YETARLI EMAS — admin koʻrishi bilan
   oʻzgartirishi bir xil narsa emas (§11.6).
 
+## 3.1. Qaysi sinflar orasida — DARAJA qoidasi
+
+Koʻchirish ixtiyoriy ikki sinf orasida emas:
+
+1. **Daraja bir xil boʻlishi shart.** 7-sinf oʻquvchisini 6-sinfga
+   koʻchirish sinf almashish emas, bolani bir yil pastga tushirish — bu
+   boshqa qaror va boshqa hujjat.
+2. **Darajasiz guruh (`grade = null`) qatnashmaydi** — na manba, na
+   maqsad. Toʻgarak yoki qoʻshimcha darsdan «koʻchirish» maʼnosiz: bola
+   toʻgarakni tashlab matematikaga oʻtmaydi, u toʻgarakdan CHIQADI,
+   sinfda esa qolaveradi. Bu qoʻshish/chiqarish amali.
+
+Qoida **serverda** — `assertSameGrade` (`dal/student-move.ts`).
+Interfeys uni takrorlamaydi, balki bajarib boʻlmaydigan tanlovni
+koʻrsatmaydi: roʻyxat darajaga filtrlanadi, darajasiz sinfda esa menyu
+bandi umuman chiqmaydi (`canMove`).
+
+⚠️ Faqat interfeysda filtrlash YETARLI EMAS edi — amal server action
+orqali ochiq turadi, yaʼni tekshiruv faqat u yerda boʻlsa qoida
+tavsiyaga aylanadi.
+
+`grade` faol oʻquv yiliga proyeksiya qilingan qiymat (rollover uni
+joyida yangilaydi, tarixi `gradeByYear` da) — ikkala sinf ham bir xil
+yoʻldan oʻtgani uchun solishtirish toʻgʻri.
+
+❓ **Ochiq savol — sinfda qoldirish.** Hozirgi qoida qatʼiy, yaʼni
+oʻquvchini pastki darajaga tushirib boʻlmaydi. Bu holat kerak boʻlsa
+alohida amal sifatida qilinadi.
+
 ## 4. Roster oʻqilishi — eng nozik joy
 
 Hozir roster shunchaki `enrollments` ni oʻqiydi. `ended_at` qoʻshilgach

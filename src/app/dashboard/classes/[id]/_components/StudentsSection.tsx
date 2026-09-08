@@ -113,6 +113,11 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const updateClass = useGradesStore((s) => s.updateClass);
   const liveGrades = useGradesStore((s) => s.classDataMap[classId]);
   const storedRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
+  /* Koʻchirish faqat DARAJALI sinfdan. Darajasiz guruhda (toʻgarak,
+     qoʻshimcha dars) band koʻrsatilmaydi — server `assertSameGrade` da
+     baribir rad etadi. */
+  const canMove = liveGrades?.info.grade != null;
+
   const attendanceStatuses = useAttendanceStore((s) => s.statuses);
   const calendar = useCalendarStore((s) => s.calendar);
   const versions = useTimetableStore((s) => s.versions);
@@ -313,6 +318,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                             <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                             {pill.label}
                           </span>
+                          {canMove && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button
@@ -337,6 +343,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
+                          )}
                         </div>
                       </div>
                     </div>

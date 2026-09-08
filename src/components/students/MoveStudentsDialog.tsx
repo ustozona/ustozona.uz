@@ -77,9 +77,21 @@ export function MoveStudentsDialog({
     }
   }, [open]);
 
+  /* Faqat AYNI DARAJADAGI sinflar. Qoida serverda ham bor
+     (`assertSameGrade`) — bu yerdagisi uni takrorlamaydi, balki
+     bajarib boʻlmaydigan tanlovni koʻrsatmaydi.
+
+     Darajasiz guruh (toʻgarak, qoʻshimcha dars) roʻyxatga umuman
+     tushmaydi: `fromGrade` null boʻlsa `targets` boʻsh qoladi. */
+  const fromGrade = fromInfo?.grade ?? null;
   const targets = React.useMemo(
-    () => classes.filter((c) => c.id !== fromClassId && !c.archivedAt),
-    [classes, fromClassId]
+    () =>
+      fromGrade == null
+        ? []
+        : classes.filter(
+            (c) => c.id !== fromClassId && !c.archivedAt && c.grade === fromGrade
+          ),
+    [classes, fromClassId, fromGrade]
   );
   const toInfo = targets.find((c) => c.id === toClassId);
   const many = students.length > 1;
@@ -162,7 +174,9 @@ export function MoveStudentsDialog({
             </Select>
             {targets.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Koʻchirish uchun boshqa sinf yoʻq.
+                {fromGrade == null
+                  ? "Darajasiz guruhdan (toʻgarak, qoʻshimcha dars) koʻchirib boʻlmaydi — unga oʻquvchi qoʻshiladi, sinfi esa oʻzgarmaydi."
+                  : `${fromGrade}-darajada boshqa sinf yoʻq. Koʻchirish faqat bir xil darajadagi sinflar orasida mumkin.`}
               </p>
             )}
           </div>
