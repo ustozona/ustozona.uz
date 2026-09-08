@@ -2,17 +2,21 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowRightLeft } from "lucide-react";
 
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogFooter, DialogHeaderBar,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { ClassSwatch } from "@/components/ClassSwatch";
+import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { classColor } from "@/lib/grades-data";
+import type { ClassInfo } from "@/lib/grades-data";
 import { useLiveClasses, useLiveClassInfo } from "@/hooks/useLiveClasses";
 import { moveStudentsAction } from "@/server/actions/workspace";
 import { reloadGradesFromServer } from "@/components/sync/GradesServerSync";
@@ -22,8 +26,9 @@ import { todayKey } from "@/lib/date-keys";
 /* ════════════════════════════════════════════════════════════════════
    OʻQUVCHINI BOSHQA SINFGA KOʻCHIRISH — yagona oyna.
 
-   Uchta joydan chaqiriladi: sinf roʻyxatidagi «⋮», Oʻquvchilar
-   sahifasi (bittalab va belgilangan guruh), admin paneli.
+   Chaqiruv joylari: sinf roʻyxatidagi «⋮», Oʻquvchilar sahifasi
+   (jadval koʻrinishida «⋮», karta koʻrinishida kontekst menyu, hamda
+   belgilangan guruh uchun ommaviy tugma).
 
    ⭐ KOʻCHIRISH ≠ QOʻSHISH. Qoʻshishda bola ikkala sinfda ham oʻqiydi;
    bu yerda esa eski sinfdan CHIQADI. Oynadagi matn shu farqni ochiq
@@ -32,6 +37,16 @@ import { todayKey } from "@/lib/date-keys";
    Tarix koʻchmaydi: eski sinfdagi baho va davomat oʻsha yerda qoladi
    (docs/oquvchini-kochirish-spec.md §2).
    ════════════════════════════════════════════════════════════════════ */
+
+/** Sinf nomi + rang doirasi — `ClassSwatch` (8px, yagona standart). */
+function ClassLine({ info }: { info: ClassInfo }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <ClassSwatch hex={CLASS_COLOR_HEX[classColor(info)]} />
+      <span className="truncate">{info.name}</span>
+    </span>
+  );
+}
 
 export function MoveStudentsDialog({
   open,
@@ -66,7 +81,7 @@ export function MoveStudentsDialog({
     () => classes.filter((c) => c.id !== fromClassId && !c.archivedAt),
     [classes, fromClassId]
   );
-
+  const toInfo = targets.find((c) => c.id === toClassId);
   const many = students.length > 1;
 
   async function submit() {
@@ -85,11 +100,10 @@ export function MoveStudentsDialog({
          Sabab `reloadGradesFromServer` izohida: sinxron diff'i aks holda
          koʻchirishni teskariga qaytaradi. */
       await reloadGradesFromServer();
-      const target = targets.find((c) => c.id === toClassId);
       toast.success(
         res.moved === 1
-          ? `Oʻquvchi ${target?.name ?? "yangi sinf"} ga koʻchirildi`
-          : `${res.moved} ta oʻquvchi ${target?.name ?? "yangi sinf"} ga koʻchirildi`
+          ? `Oʻquvchi ${toInfo?.name ?? "yangi sinf"} ga koʻchirildi`
+          : `${res.moved} ta oʻquvchi ${toInfo?.name ?? "yangi sinf"} ga koʻchirildi`
       );
       onMoved?.();
       onOpenChange(false);
@@ -102,28 +116,34 @@ export function MoveStudentsDialog({
 
   return (
     <Dialog open={open} onOpenChange={busy ? undefined : onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>
-            {many ? `${students.length} oʻquvchini koʻchirish` : "Boshqa sinfga koʻchirish"}
-          </DialogTitle>
-          <DialogDescription>
-            {many
-              ? "Belgilangan oʻquvchilar eski sinfdan chiqadi."
-              : `${students[0]?.name ?? "Oʻquvchi"} eski sinfdan chiqadi.`}{" "}
-            Eski sinfdagi baho va davomat oʻsha yerda saqlanib qoladi.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent
+        showCloseButton={false}
+        className="gap-0 overflow-hidden p-0 sm:max-w-md"
+      >
+        <DialogHeaderBar
+          icon={<ArrowRightLeft className="size-[18px]" aria-hidden />}
+          title={many ? `${students.length} oʻquvchini koʻchirish` : "Boshqa sinfga koʻchirish"}
+          description={
+            many
+              ? "Belgilanganlar eski sinfdan chiqadi"
+              : `${students[0]?.name ?? "Oʻquvchi"} eski sinfdan chiqadi`
+          }
+        />
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="rounded-md bg-muted px-2 py-1 font-medium">
-              {fromInfo?.name ?? "Joriy sinf"}
-            </span>
-            <ArrowRight className="size-4 text-muted-foreground" />
-            <span className="text-muted-foreground">
-              {targets.find((c) => c.id === toClassId)?.name ?? "…"}
-            </span>
+        <div className="space-y-4 px-6 py-5">
+          {/* Yoʻnalish — qaysi sinfdan qayerga */}
+          <div className="flex items-center gap-2 text-sm font-medium">
+            {fromInfo ? (
+              <ClassLine info={fromInfo} />
+            ) : (
+              <span className="text-muted-foreground">Joriy sinf</span>
+            )}
+            <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            {toInfo ? (
+              <ClassLine info={toInfo} />
+            ) : (
+              <span className="text-muted-foreground">…</span>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -135,35 +155,36 @@ export function MoveStudentsDialog({
               <SelectContent>
                 {targets.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
-                    {c.name}
+                    <ClassLine info={c} />
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {targets.length === 0 && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Koʻchirish uchun boshqa sinf yoʻq.
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="move-date">Koʻchish sanasi</Label>
-            <Input
-              id="move-date"
-              type="date"
+            <Label>Koʻchish sanasi</Label>
+            {/* Native <input type="date"> EMAS — brauzer taqvimi tizim
+                tokenlariga boʻysunmaydi va dark mode'da ajralib qoladi. */}
+            <DateKeyPicker
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={setDate}
+              ariaLabel="Koʻchish sanasi"
+              className="w-full"
             />
-            <p className="text-xs text-muted-foreground">
-              Shu sanagacha boʻlgan yozuvlar eski sinfda, keyingilari yangisida
-              hisoblanadi.
+            <p className="text-sm text-muted-foreground">
+              Eski sinfdagi baho va davomat oʻsha yerda saqlanib qoladi.
             </p>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
+        <DialogFooter className="border-t border-border bg-muted/20 px-6 py-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
             Bekor qilish
           </Button>
           <Button onClick={submit} disabled={busy || !toClassId || students.length === 0}>

@@ -793,6 +793,16 @@ export default function StudentsPage() {
                           <ContextMenuItem onSelect={() => setSelectedStudentId(s.id)}>
                             <NotebookPen className="size-4 shrink-0" /> {t("addNote")}
                           </ContextMenuItem>
+                          {/* Jadval koʻrinishidagi «⋮» menyu bilan parity —
+                              sinf tanlanmagan boʻlsa yoʻq, chunki qaysi
+                              sinfDAN chiqarilishi noaniq boʻlardi. */}
+                          {selectedClassId && (
+                            <ContextMenuItem
+                              onSelect={() => setMoveTargets([{ id: s.id, name: s.name }])}
+                            >
+                              <ArrowRightLeft className="size-4 shrink-0" /> Boshqa sinfga koʻchirish
+                            </ContextMenuItem>
+                          )}
                           <ContextMenuSeparator />
                           <ContextMenuSub>
                             <ContextMenuSubTrigger className="gap-2">
