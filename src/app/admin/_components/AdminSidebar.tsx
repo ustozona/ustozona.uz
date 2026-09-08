@@ -24,6 +24,7 @@ import {
   Building2,
   MessagesSquare,
   ScrollText,
+  Bot,
   Undo2,
   type LucideIcon,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { href: "/admin/users", label: "Foydalanuvchilar", icon: Users },
   { href: "/admin/schools", label: "Maktablar", icon: Building2 },
   { href: "/admin/feedback", label: "Fikrlar", icon: MessagesSquare },
+  { href: "/admin/ai", label: "Ustozona AI", icon: Bot },
   { href: "/admin/audit", label: "Audit jurnali", icon: ScrollText },
 ];
 
