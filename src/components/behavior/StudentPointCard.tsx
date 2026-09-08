@@ -62,6 +62,7 @@ export function StudentPointCard({
   colorHex,
   balance,
   streak,
+  absentLabel,
   onClick,
   selectionMode = false,
   selected = false,
@@ -74,6 +75,12 @@ export function StudentPointCard({
   balance: number | null;
   /** Joriy davomat seriyasi holati — berilmasa chip chiqmaydi. */
   streak?: StreakState;
+  /** Bugun sinfda boʻlmagan boʻlsa — davomat holati yorligʻi ("Kelmadi"/
+      "Sababli"). Karta soʻniq koʻrinadi, lekin BOSILADI: davomat keyin
+      tuzatilishi yoki oʻquvchi masofadan ish topshirishi mumkin —
+      qulflash oʻqituvchini boshi berk koʻchaga olib boradi. Butun sinfga
+      ball berishda bunday oʻquvchi baribir chiqarib tashlanadi. */
+  absentLabel?: string;
   onClick: () => void;
   /** Tanlash rejimi yoqiq — doirachalar doim koʻrinadi. */
   selectionMode?: boolean;
@@ -111,7 +118,9 @@ export function StudentPointCard({
           {selected && <Check className="size-3" strokeWidth={3} aria-hidden />}
         </span>
       )}
-      <span className="list-card-icon relative inline-flex">
+      <span
+        className={cn("list-card-icon relative inline-flex", absentLabel && "opacity-45")}
+      >
         <Avatar className="size-14" style={{ "--avatar-bg": colorHex } as React.CSSProperties}>
           <AvatarFallback className="bg-[var(--avatar-bg)] text-sm font-semibold text-white">
             {initials}
@@ -120,9 +129,19 @@ export function StudentPointCard({
         {balance !== null && balance !== 0 && <BalanceBubble balance={balance} />}
         {streak && <StreakChip streak={streak} />}
       </span>
-      <span className="w-full truncate text-center text-[13px] font-medium leading-tight text-foreground">
+      <span
+        className={cn(
+          "w-full truncate text-center text-[13px] font-medium leading-tight",
+          absentLabel ? "text-muted-foreground" : "text-foreground"
+        )}
+      >
         {name}
       </span>
+      {absentLabel && (
+        <span className="text-caption -mt-1.5 w-full truncate text-center leading-tight">
+          {absentLabel}
+        </span>
+      )}
     </button>
   );
 }

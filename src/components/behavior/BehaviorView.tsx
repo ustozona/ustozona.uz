@@ -24,9 +24,11 @@ import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { classBalance, type BehaviorSkill } from "@/lib/behavior-data";
 import type { ClassInfo, Student } from "@/lib/grades-data";
+import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useMounted } from "@/lib/use-mounted";
+import { todayKey } from "@/lib/date-keys";
 import { AwardDialog } from "./AwardDialog";
 import BehaviorSettingsModal from "./BehaviorSettingsModal";
 import { showAwardToast } from "./award-toast";
@@ -61,6 +63,19 @@ type AwardTarget = {
 };
 
 const EMPTY_EVENTS: never[] = [];
+const EMPTY_RECORDS: never[] = [];
+
+/* Bugun sinfda BOʻLMAGAN hisoblanadigan davomat holatlari.
+
+   Butun sinfga ball berilganda kelmagan oʻquvchi ham ball olardi — u
+   oʻsha kuni darsda boʻlmagani uchun notoʻgʻri. "Kechikdi" sinfda
+   boʻlgan hisoblanadi (kelgan, faqat kech). Belgilanmagan (yozuvi yoʻq)
+   holat ham chiqarilmaydi — davomat hali olinmagan boʻlishi mumkin.
+
+   Kalitlar boʻyicha, `scoreImpact` boʻyicha emas: vazn siyosati
+   sozlamalarda oʻzgartiriladi va u foiz hisobiga tegishli, jismonan
+   sinfda boʻlish-boʻlmaslikka emas. */
+const ABSENT_STATUSES = new Set(["absent", "excused"]);
 
 type Props = {
   classId: string;
@@ -95,6 +110,22 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
   const hex = CLASS_COLOR_HEX[classColor(info)];
 
   const streaks = useClassStreaks(classId);
+
+  /* Bugun sinfda boʻlmaganlar — butun sinfga ball berishdan chiqariladi. */
+  const attendanceRecords =
+    useAttendanceStore((s) => s.recordsByClass[classId]) ?? EMPTY_RECORDS;
+  const attendanceStatuses = useAttendanceStore((s) => s.statuses);
+  const absentToday = React.useMemo(() => {
+    if (!mounted || demoMode) return null;
+    const today = todayKey();
+    const out = new Map<string, string>();
+    for (const r of attendanceRecords) {
+      if (r.date !== today || !ABSENT_STATUSES.has(r.status)) continue;
+      const label = attendanceStatuses.find((st) => st.key === r.status)?.label ?? r.status;
+      out.set(r.studentId, label);
+    }
+    return out;
+  }, [mounted, demoMode, attendanceRecords, attendanceStatuses]);
 
   /* Balanslar — bitta oʻtishda (Σ events − Σ redemptions), mount-gate. */
   const balances = React.useMemo(() => {
@@ -139,12 +170,15 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
       return next;
     });
 
-  const openForClass = () =>
+  const openForClass = () => {
+    const present = students.filter((s) => !absentToday?.has(s.id));
+    if (present.length === 0) return;
     setTarget({
-      studentIds: students.map((s) => s.id),
-      label: t("studentsCount", { count: students.length }),
+      studentIds: present.map((s) => s.id),
+      label: t("studentsCount", { count: present.length }),
       isGroup: true,
     });
+  };
 
   const openForSelection = () => {
     if (!selected || selected.size === 0) return;
@@ -304,6 +338,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
                 colorHex={hex}
                 balance={balances?.get(st.id) ?? (balances ? 0 : null)}
                 streak={streaks?.get(st.id)}
+                absentLabel={absentToday?.get(st.id)}
                 selectionMode={selecting}
                 selected={selected?.has(st.id) ?? false}
                 onToggleSelect={() => toggleSelect(st.id)}
