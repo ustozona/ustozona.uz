@@ -8,9 +8,18 @@ import { cn } from "@/lib/utils";
  * Anatomiyasi (oʻzgarmaydi):
  *   `rounded-full` + `tints.badge` (18%) fon + `tints.text` siyoh +
  *   kanonik `ClassSwatch` doirasi + 11px matn, `leading-none`.
- *   Balandlik 18px, matn 11px/line-height 1 → 7px vertikal havo. Avval
- *   `text-xs` (12px/16px line-height) ishlatilgan edi: 18px qobiqda atigi
- *   2px havo qolib, matn "siqilgan" koʻrinardi.
+ *   Balandlik **20px** (`h-5`), matn 11px/line-height 1 → 9px vertikal
+ *   havo. Masofalar 4pt gridда (`docs/design-system.md` §6.5): gap 4,
+ *   padding 4/8.
+ *
+ *   Avval balandlik 18px, oʻng padding 6px edi — ikkalasi ham 4 ga
+ *   boʻlinmaydi va gridдан tashqarida edi. Eski 18px izohda ikkita tashqi
+ *   mahsulotning yorliq nisbatlariga havola qilib asoslangan edi; havola
+ *   olib tashlandi (AGENTS.md kod izohlarida boshqa mahsulot nomini
+ *   taqiqlaydi), oʻlcham esa gridга qayta chiqarildi.
+ *
+ *   `text-[11px]` ataylab — `text-xs` (12px/16px line-height) qobiqni
+ *   siqib, matnni "bosilgan" koʻrsatardi.
  *
  * Qachon ishlatiladi: sinf nomi mustaqil YORLIQ sifatida turganda — boshqa
  * mazmun (mavzu, vaqt, oʻquvchi) ichida "bu qaysi sinf" degan savolga javob
@@ -20,7 +29,7 @@ import { cn } from "@/lib/utils";
  *
  * ⛔ Bu BOSILADIGAN element emas. Formada tanlangan sinfni koʻrsatuvchi,
  * krestchasi bor, barmoq bilan bosiladigan chip uchun `ClassChip` bor —
- * u kattaroq (12px matn), chunki 18px qobiq bosish nishoni uchun kichik.
+ * u kattaroq (24px, 12px matn), chunki 20px qobiq bosish nishoni uchun kichik.
  * Ikkisi oʻlcham prop'i bilan emas, ALOHIDA NOM bilan ajratilgan: chaqiruv
  * joyida "kattasinimi, kichiginimi?" degan savol umuman tugʻilmaydi.
  *
@@ -40,7 +49,7 @@ export function ClassBadge({
     <span
       style={{ ...tints.badge, ...tints.text }}
       className={cn(
-        "flex h-[18px] min-w-0 items-center gap-1 rounded-full pl-1 pr-1.5 text-[11px] font-semibold leading-none",
+        "flex h-5 min-w-0 items-center gap-1 rounded-full pl-1 pr-2 text-[11px] font-semibold leading-none",
         className,
       )}
     >

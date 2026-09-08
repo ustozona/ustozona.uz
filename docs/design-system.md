@@ -72,10 +72,21 @@ driftga aylanadi.
 doiralarni ajratadi va diametrni yeydi, 8px doira halqadan keyin oʻqilmay
 qoladi. Shu sabab u yerda 12px.
 
-`ClassBadge` (18px qobiq, 11px matn) va `ClassChip` (12px matn, barmoq
-nishoni) oʻlcham prop'i bilan emas, **alohida nom** bilan ajratilgan —
-chaqiruv joyida «kattasinimi, kichiginimi?» degan savol tugʻilmasin. Ikkalasi
-ham rang retseptini `classTints()`dan oladi, qoʻlda `color-mix` yozilmaydi.
+`ClassBadge` (20px qobiq, 11px matn) va `ClassChip` (24px qobiq, 12px matn)
+oʻlcham prop'i bilan emas, **alohida nom** bilan ajratilgan — chaqiruv joyida
+«kattasinimi, kichiginimi?» degan savol tugʻilmasin. Ikkalasi ham rang
+retseptini `classTints()`dan oladi, qoʻlda `color-mix` yozilmaydi.
+
+Anatomiya 4pt gridда (§6.5) va §3 boshqaruv shkalasidan chiqariladi, tanlanmaydi:
+
+| | Balandlik | Nimadan chiqqan |
+|---|---|---|
+| `ClassBadge` | 20px (`h-5`) | 11px matn + 9px havo; gridда |
+| `ClassChip` | 24px (`h-6`) | `min-h-9` (36px) idish − `py-1.5` (12px); **va** 16px qator + `py-1` — ikki hisob bir sonda |
+| Krestcha nishoni | 24×24 | WCAG 2.2 §2.5.8 (AA) minimal nishon |
+
+`LessonStatusPill` `ClassBadge` bilan bir qatorda turadi — balandligi va matni
+oʻsha yerdan koʻchiriladi, alohida tanlanmaydi.
 
 ---
 

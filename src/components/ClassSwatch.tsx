@@ -51,6 +51,11 @@ export function ClassSwatch({
  * Avval toʻrt joyda uch xil retsept bor edi (10px/ring-1, 12px/ring-2,
  * 20px/ring-2 — ikki joyda) — hammasi shu bittaga keladi.
  *
+ * Ustma-ust masofa −4px (`-space-x-1`): 12px doiradan 8px koʻrinib qoladi,
+ * rangni tanish uchun yetarli, va 4pt gridда. `ring-2` (2px) esa ataylab
+ * gridдан tashqarida — halqa/chegara sinfi unga boʻysunmaydi, xuddi
+ * hujjatdagi 1px chegara va 3px `rail` kabi (`docs/design-system.md` §6.4).
+ *
  * @param pad — yetishmagan katakni xira rang bilan toʻldiradi (har doim
  *   `max` ta doira koʻrinsin degan joylar uchun).
  */
@@ -71,7 +76,7 @@ export function ClassSwatchStack({
   return (
     <span
       data-slot="class-swatch-stack"
-      className={cn("flex shrink-0 items-center -space-x-1.5", className)}
+      className={cn("flex shrink-0 items-center -space-x-1", className)}
       aria-hidden
     >
       {cells.map((c, i) => (
