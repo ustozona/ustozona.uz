@@ -751,7 +751,16 @@ export default function GradesTable({
                               {s.initials}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-semibold decoration-muted-foreground/40 underline-offset-4 group-hover/name:underline">
+                          <span
+                            className={cn(
+                              "min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-semibold decoration-muted-foreground/40 underline-offset-4 group-hover/name:underline",
+                              /* Boshqa sinfga koʻchgan — jurnalda faqat eski
+                                 baholari uchun turibdi. Soʻnik koʻrinish uni
+                                 joriy roʻyxatdan ajratadi. */
+                              s.leftAt && "text-muted-foreground"
+                            )}
+                            title={s.leftAt ? `Boshqa sinfga koʻchgan (${s.leftAt})` : undefined}
+                          >
                             {s.name}
                           </span>
                           <ChevronRight className="size-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover/name:translate-x-0 group-hover/name:opacity-100" />

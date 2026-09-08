@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { classes, enrollments, students } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
@@ -105,7 +105,10 @@ export async function buildSheetPlan(
     .select({ id: students.id, name: students.name, status: students.status })
     .from(enrollments)
     .innerJoin(students, eq(students.id, enrollments.studentId))
-    .where(eq(enrollments.classId, cls.id))
+    /* `isNull(endedAt)` — sinfdan chiqib ketgan bolaga varaq chop
+       etilmaydi. Yozilishi yopilgan, lekin jurnalda baholari qolgan
+       (docs/oquvchini-kochirish-spec.md §4). */
+    .where(and(eq(enrollments.classId, cls.id), isNull(enrollments.endedAt)))
     .orderBy(asc(enrollments.sortOrder), asc(students.createdAt));
 
   // `archived` — sinfdan chiqqan oʻquvchi, unga varaq chop etilmaydi.

@@ -55,7 +55,7 @@ export function createServerSync<S, P, D = P>(opts: {
   errorMessage?: string;
   /** Sogʻlik hisobidagi nom (`useSyncHealthStore`). Berilmasa xato xabari. */
   scope?: string;
-}): { stop: () => void; flush: () => Promise<void> } {
+}): { stop: () => void; flush: () => Promise<void>; rebase: () => void } {
   const debounceMs = opts.debounceMs ?? 1500;
   const errorMessage = opts.errorMessage ?? "Oʻzgarishlar serverga saqlanmadi";
   const scope = opts.scope ?? errorMessage;
@@ -134,6 +134,30 @@ export function createServerSync<S, P, D = P>(opts: {
     flush() {
       if (timer) clearTimeout(timer);
       return flush();
+    },
+    /**
+     * Joriy store holatini «serverdagi bilan bir xil» deb belgilaydi —
+     * diff'siz, push'siz.
+     *
+     * ⭐ Nima uchun kerak: baʼzi amallar store orqali emas, OʻZ server
+     * action'i orqali bajariladi (masalan oʻquvchini boshqa sinfga
+     * koʻchirish). Undan keyin store serverdan qayta yuklanadi, va agar
+     * shu yangi holat oddiy oʻzgarish sifatida diff'dan oʻtsa, sync uni
+     * foydalanuvchi tahriri deb oʻylaydi: bola eski sinf roʻyxatidan
+     * chiqqani → `studentsDelete` boʻlib qaytadi va endigina bajarilgan
+     * koʻchirishni bekor qiladi.
+     *
+     * `rebase()` kutilayotgan flush'ni ham bekor qiladi — u eski
+     * `lastSynced` ga tayangan boʻlardi.
+     */
+    rebase() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      lastSynced = opts.select(opts.store.getState());
+      dirty = false;
+      attempt = 0;
     },
   };
 }

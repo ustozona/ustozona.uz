@@ -196,6 +196,25 @@ export const enrollments = pgTable(
       .references(() => students.id, { onDelete: "cascade" }),
     /** Roster tartibi shu guruh ichida. */
     sortOrder: integer("sort_order").notNull().default(0),
+    /** Yozilish boshlangan sana, "YYYY-MM-DD". null = boshidan beri —
+        koʻchirish amali paydo boʻlishidan oldingi barcha yozuvlar shunday. */
+    startedAt: text("started_at"),
+    /** Yozilish YOPILGAN sana, "YYYY-MM-DD". null = ochiq, bola hozir shu
+        guruhda oʻqiydi.
+
+        ⭐ Bola sinfdan chiqqanda qator OʻCHIRILMAYDI — shu sana bilan
+        yopiladi. Ikki sabab (docs/oquvchini-kochirish-spec.md):
+
+        1) Oʻchirish xavfli: `detachOrDeleteStudents` hech qayerda
+           yozilishi qolmagan bolani `students` dan oʻchiradi, cascade esa
+           uning butun bahosi va davomatini olib ketadi.
+        2) Oʻtgan yil jurnali roster'ni shu jadvaldan quradi. Yozilish
+           yoʻqolsa, bolaning eski baholari egasiz qolib koʻrinmay ketadi.
+
+        ⚠️ Roster soʻrovi endi «qaysi paytdagi roʻyxat» degan savolga javob
+        berishi kerak: davomat/yangi topshiriq — faqat ochiq yozilishlar;
+        jurnal — yopilganlar ham (spec §4). */
+    endedAt: text("ended_at"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
