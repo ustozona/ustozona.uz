@@ -870,7 +870,6 @@ export default function AttendanceView({
                 <colgroup>
                   <col style={{ width: 220 }} />
                   {monthDays.map((d) => <col key={d.date} style={{ width: 44 }} />)}
-                  <col style={{ width: 120 }} />
                 </colgroup>
 
                 <TableHeader className="sticky top-0 z-30" style={{ background: HEADER_BG }}>
@@ -904,24 +903,11 @@ export default function AttendanceView({
                     {monthDays.map((d) => (
                       <ColHeader key={d.date} date={d.date} isToday={d.date === today} future={d.date > today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} cellRef={d.date === today ? todayColRef : undefined} />
                     ))}
-
-                    {/* Davomat % — akademik chorak boʻyicha */}
-                    <TableHead className="sticky right-0 z-40 border-b border-l border-border px-2 text-center align-middle text-label whitespace-nowrap" style={{ width: 120, background: HEADER_BG }}>
-                      {viewedQuarter ? t("quarterPercent", { quarter: viewedQuarter.name }) : t("quarterlyPercentFallback")}
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
 
                 <TableBody className="text-sm">
                   {students.map((student) => {
-                    const pr = periodRateOf(student.id);
-                    const chronic = isChronic(student.id);
-                    const danger = isDanger(student.id);
-                    const attention = chronic || danger;
-                    const attReasons = [
-                      danger && t("lowAttendance"),
-                      chronic && t("absentTimesThisMonth", { count: monthRateOf(student.id)?.absents ?? 0 }),
-                    ].filter(Boolean).join(" · ");
                     return (
                       <TableRow key={student.id} className="group hover:bg-muted/30 transition-colors">
                         <TableCell className="sticky left-0 z-10 bg-card group-hover:bg-muted border-b border-r border-border p-3 no-elevation">
@@ -942,15 +928,19 @@ export default function AttendanceView({
                               </TooltipTrigger>
                               <TooltipContent>{t("viewProfile", { name: student.name })}</TooltipContent>
                             </Tooltip>
-                            <span className="text-data-row whitespace-nowrap inline-block pt-px">{student.name}</span>
-                            {attention && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="shrink-0 text-muted-foreground/30 transition-colors group-hover:text-muted-foreground/60"><AlertTriangle className="size-4" /></span>
-                                </TooltipTrigger>
-                                <TooltipContent>{attReasons}</TooltipContent>
-                              </Tooltip>
-                            )}
+                            <HoverCard openDelay={120} closeDelay={60}>
+                              <HoverCardTrigger asChild>
+                                <span className="text-data-row whitespace-nowrap inline-block pt-px cursor-default">{student.name}</span>
+                              </HoverCardTrigger>
+                              <HoverCardContent align="start" className="w-64">
+                                <AttendancePreview
+                                  student={student}
+                                  classLabel={className}
+                                  classHex={classHex}
+                                  summary={quarterSummaryOf(student.id)}
+                                />
+                              </HoverCardContent>
+                            </HoverCard>
                           </div>
                         </TableCell>
 
@@ -966,35 +956,13 @@ export default function AttendanceView({
                           </TableCell>
                         ))}
 
-                        {/* Davomat % — faqat foiz; hoverda oʻquvchi preview */}
-                        <TableCell className="sticky right-0 z-10 bg-card group-hover:bg-muted border-b border-l border-border px-3 text-center no-elevation">
-                          {pr ? (
-                            <HoverCard openDelay={120} closeDelay={60}>
-                              <HoverCardTrigger asChild>
-                                <span className={cn("inline-block cursor-default text-sm font-semibold tabular-nums", danger ? "text-destructive" : "text-foreground")}>
-                                  {pr.pct}%
-                                </span>
-                              </HoverCardTrigger>
-                              <HoverCardContent align="end" className="w-64">
-                                <AttendancePreview
-                                  student={student}
-                                  classLabel={className}
-                                  classHex={classHex}
-                                  summary={quarterSummaryOf(student.id)}
-                                />
-                              </HoverCardContent>
-                            </HoverCard>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
                       </TableRow>
                     );
                   })}
 
                   {students.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={monthDays.length + 2} className="py-10 px-8">
+                      <TableCell colSpan={monthDays.length + 1} className="py-10 px-8">
                         <Alert className="max-w-md mx-auto bg-muted/50 text-left">
                           <div className="flex items-center gap-2 mb-1">
                             <AlertTriangle className="size-4 text-muted-foreground" />
