@@ -146,12 +146,24 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
         i++;
       }
       const bodyHtml = bodyLines.join("\n").trim() ? (marked.parse(bodyLines.join("\n")) as string) : "<p></p>";
-      // Sarlavha `<strong>` bilan — qalinlik endi CSS orqali majburiy emas,
-      // faqat haqiqiy Bold markasi orqali (EditorToolbar.tsx'dagi
-      // insertCallout/insertNotionCallout bilan bir xil andoza).
+      /* Sarlavha `<strong>` bilan — qalinlik endi CSS orqali majburiy emas,
+         faqat haqiqiy Bold markasi orqali (EditorToolbar.tsx'dagi
+         insertCallout/insertNotionCallout bilan bir xil andoza).
+
+         ⚠️ Sarlavha ichidagi markdown ham OʻQILADI (`parseInline`). Ilgari
+         u `escapeAttr` bilan yalangʻoch matn sifatida qoʻyilardi va
+         "> [!question] **Standartni aniqlash**" muharrirda aynan
+         yulduzchalari bilan chiqardi. Tana (`marked.parse`) toʻgʻri
+         ishlagani uchun farq koʻzga tashlanardi: bir blokning tanasi
+         formatlangan, sarlavhasi esa xom matn.
+
+         `parseInline` — `parse` emas: calloutTitle sxemasi `inline*`,
+         yaʼni ichiga <p> tushsa Tiptap uni tashlab yuboradi. Chiqish
+         DOMPurify'dan oʻtadi (mdEditor oxirida). */
+      const titleHtml = marked.parseInline(title) as string;
       const html = freeMatch
-        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="${normalizeNotionColor(freeMatch[2])}"><div data-notion-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`
-        : `<div data-callout-type="${normalizeCalloutType(type)}"><div data-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`;
+        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="${normalizeNotionColor(freeMatch[2])}"><div data-notion-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`
+        : `<div data-callout-type="${normalizeCalloutType(type)}"><div data-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`;
       out.push(mask(html));
       continue;
     }

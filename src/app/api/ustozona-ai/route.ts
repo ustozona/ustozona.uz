@@ -74,8 +74,11 @@ Qoidalar:
        Format: "> [!turkod] Sarlavha" qatori, keyin har qatori "> " bilan boshlanadigan matn.
        ⚠️ TURKOD INGLIZCHA SOʻZ, LEKIN MAʼNOSI BOSHQA. Kodning inglizcha maʼnosiga tayanma — quyidagi izohga tayan. Ayniqsa: bug = uyga vazifa (dasturlash xatosi EMAS), danger = xavfsizlik qoidasi, info = taʼrif.
 ${CALLOUT_TYPE_LIST}
-       Sarlavhani oʻzing yoz — u yorliqni takrorlamasin. Yaʼni "> [!abstract] Maqsad" emas, "> [!abstract] Dars maqsadi" yoki "> [!abstract] Bugun nimani oʻrganamiz".
-       Blok ichida oddiy matndan tashqari roʻyxat, **qalin** va formulalar ham ishlaydi — har qator "> " bilan boshlansa boʻldi.
+       SARLAVHA QOIDALARI (ikkala tur uchun ham bir xil):
+       - Sarlavha QISQA boʻlsin — 2-5 soʻz, gap emas, nuqta qoʻyilmaydi. Butun fikrni sarlavhaga sigʻdirma: u blok tanasiga, keyingi "> " qatorlariga yoziladi.
+       - Sarlavha ALLAQACHON qalin chiqadi — uni ** ** bilan oʻrama. "> [!warning] **Eslatma**" NOTOʻGʻRI, "> [!warning] Eslatma" TOʻGʻRI.
+       - Sarlavha yorliqni takrorlamasin: "> [!abstract] Maqsad" emas, "> [!abstract] Bugun nimani oʻrganamiz".
+       Blok tanasida oddiy matndan tashqari roʻyxat, **qalin** va formulalar ishlaydi — har qator "> " bilan boshlansa boʻldi.
        Masalan:
        > [!abstract] Bugun nimani oʻrganamiz
        > - Fotosintez bosqichlarini ayta oladi
