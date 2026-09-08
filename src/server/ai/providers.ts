@@ -1,20 +1,31 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
 
 /* ════════════════════════════════════════════════════════════════════
    AI PROVAYDER QATLAMI — bitta interfeys, bir nechta provayder.
 
-   Zanjir: AI_PROVIDER_CHAIN (default "gemini,groq") — kaliti bor
-   provayderlar ketma-ket sinaladi. Provayder BIRINCHI DELTA kelgunga
+   Zanjir: AI_PROVIDER_CHAIN (default "gemini,groq,openrouter") — kaliti
+   bor provayderlar ketma-ket sinaladi. Provayder BIRINCHI DELTA kelgunga
    qadar yiqilsa keyingisiga oʻtiladi; delta kelgandan keyin yiqilsa
    xato yuqoriga otiladi (yarim javob ustiga boshqa model yozmasin).
 
-   Tekin tariflar (2026-07): Gemini 2.5 Flash ~250 soʻrov/kun,
-   Groq llama-3.3-70b ~1000 soʻrov/kun. Anthropic — premium (kalit
-   boʻlsagina zanjirga kiradi).
+   Hammasi tekin tarif (2026-09):
+   - Gemini `gemini-flash-latest` — kunlik kvota eng saxovatlisi; tool-calling
+     va hujjat (Files API) rejimi FAQAT shu yerda ishlaydi.
+   - Groq — eng tez javob, kunlik kvotasi katta.
+   - OpenRouter — `:free` modellar; kalit qoʻyilsa uchinchi zaxira boʻladi.
+
+   ⚠️ Model nomlari provayder tomonidan olib tashlanishi mumkin: 2026-09 da
+   Groq `llama-3.3-70b-versatile` ni oʻchirgan va zanjir jimgina yiqilgan
+   (404 → keyingi provayder → hech biri qolmagan). Nomlar env orqali
+   almashtiriladi, kod tahrirlanmaydi: GEMINI_MODEL / GROQ_MODEL /
+   OPENROUTER_MODEL.
    ════════════════════════════════════════════════════════════════════ */
 
 export type AiChatMessage = { role: "user" | "assistant"; content: string };
+
+/** Chiqish tokeni chegarasi. 4096 dars rejasiga (jadval + rubrika + callout)
+    yetmay, javob gap oʻrtasida uzilib qolardi. */
+const MAX_OUTPUT_TOKENS = 16384;
 
 export type StreamChatArgs = {
   system: string;
@@ -34,26 +45,31 @@ export type StreamChatArgs = {
   };
   /** Tool qoʻllamaydigan provayderlar uchun tayyor kontekst bloki. */
   fallbackContext?: string;
-  /** Zanjir tartibini almashtirish (masalan premium: anthropic birinchi). */
+  /** Zanjir tartibini almashtirish. */
   chainOverride?: ProviderId[];
   /** Telemetriya: javob bergan provayder (birinchi delta kelganda chaqiriladi). */
   onProvider?: (id: ProviderId) => void;
 };
 
-export type ProviderId = "gemini" | "groq" | "anthropic";
+export type ProviderId = "gemini" | "groq" | "openrouter";
 
 const PROVIDER_KEYS: Record<ProviderId, string> = {
   gemini: "GEMINI_API_KEY",
   groq: "GROQ_API_KEY",
-  anthropic: "ANTHROPIC_API_KEY",
+  openrouter: "OPENROUTER_API_KEY",
 };
+
+const ALL_PROVIDERS: ProviderId[] = ["gemini", "groq", "openrouter"];
+
+const isProviderId = (s: string): s is ProviderId =>
+  (ALL_PROVIDERS as string[]).includes(s);
 
 /** Zanjirdagi, kaliti sozlangan provayderlar (tartib saqlanadi). */
 export function configuredProviders(): ProviderId[] {
-  const chain = (process.env.AI_PROVIDER_CHAIN || "gemini,groq,anthropic")
+  const chain = (process.env.AI_PROVIDER_CHAIN || ALL_PROVIDERS.join(","))
     .split(",")
     .map((s) => s.trim().toLowerCase())
-    .filter((s): s is ProviderId => s === "gemini" || s === "groq" || s === "anthropic");
+    .filter(isProviderId);
   return chain.filter((p) => !!process.env[PROVIDER_KEYS[p]]);
 }
 
@@ -75,7 +91,7 @@ async function* sseData(res: Response): AsyncGenerator<string> {
   }
 }
 
-/* ── Gemini (tekin, asosiy; tool-calling qoʻllaydi) ── */
+/* ── Gemini (asosiy; tool-calling va hujjat rejimi shu yerda) ── */
 type GeminiPart = Record<string, unknown>;
 type GeminiFnCall = { name: string; args?: Record<string, unknown> };
 
@@ -112,7 +128,7 @@ async function* streamGemini(args: StreamChatArgs): AsyncGenerator<string> {
           ...(args.tools
             ? { tools: [{ functionDeclarations: args.tools.declarations }] }
             : {}),
-          generationConfig: { maxOutputTokens: 4096 },
+          generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS },
         }),
         signal: args.signal,
       }
@@ -161,66 +177,79 @@ async function* streamGemini(args: StreamChatArgs): AsyncGenerator<string> {
   }
 }
 
-/* ── Groq (tekin, fallback; OpenAI-mos endpoint) ── */
-async function* streamGroq(args: StreamChatArgs): AsyncGenerator<string> {
-  const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.GROQ_API_KEY!}`,
-    },
-    body: JSON.stringify({
-      model,
-      stream: true,
-      max_tokens: 4096,
-      messages: [
-        { role: "system", content: args.system + (args.fallbackContext ?? "") },
-        ...args.messages.map((m) => ({ role: m.role, content: m.content })),
-      ],
-    }),
-    signal: args.signal,
-  });
-  if (!res.ok || !res.body) {
-    throw new Error(`Groq ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`);
-  }
-  for await (const data of sseData(res)) {
-    if (!data || data === "[DONE]") continue;
-    try {
-      const json = JSON.parse(data) as {
-        choices?: { delta?: { content?: string } }[];
-      };
-      const text = json.choices?.[0]?.delta?.content;
-      if (text) yield text;
-    } catch {
-      /* eʼtiborsiz */
+/* ── OpenAI-mos chat endpoint — Groq va OpenRouter ikkalasi ham shu shaklda ── */
+function openAiCompatible(opts: {
+  label: string;
+  url: string;
+  apiKey: () => string;
+  model: () => string;
+  headers?: () => Record<string, string>;
+}) {
+  return async function* (args: StreamChatArgs): AsyncGenerator<string> {
+    const res = await fetch(opts.url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${opts.apiKey()}`,
+        ...(opts.headers?.() ?? {}),
+      },
+      body: JSON.stringify({
+        model: opts.model(),
+        stream: true,
+        max_tokens: MAX_OUTPUT_TOKENS,
+        messages: [
+          { role: "system", content: args.system + (args.fallbackContext ?? "") },
+          ...args.messages.map((m) => ({ role: m.role, content: m.content })),
+        ],
+      }),
+      signal: args.signal,
+    });
+    if (!res.ok || !res.body) {
+      throw new Error(
+        `${opts.label} ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`
+      );
     }
-  }
+    for await (const data of sseData(res)) {
+      if (!data || data === "[DONE]") continue;
+      try {
+        const json = JSON.parse(data) as {
+          choices?: { delta?: { content?: string } }[];
+        };
+        const text = json.choices?.[0]?.delta?.content;
+        if (text) yield text;
+      } catch {
+        /* eʼtiborsiz */
+      }
+    }
+  };
 }
 
-/* ── Anthropic (premium; kalit boʻlsagina) ── */
-async function* streamAnthropic(args: StreamChatArgs): AsyncGenerator<string> {
-  const client = new Anthropic();
-  const stream = client.messages.stream(
-    {
-      model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
-      max_tokens: 4096,
-      system: args.system + (args.fallbackContext ?? ""),
-      messages: args.messages.map((m) => ({ role: m.role, content: m.content })),
-    },
-    { signal: args.signal }
-  );
-  for await (const event of stream) {
-    if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-      yield event.delta.text;
-    }
-  }
-}
+/* ── Groq (tez, tekin) ── */
+const streamGroq = openAiCompatible({
+  label: "Groq",
+  url: "https://api.groq.com/openai/v1/chat/completions",
+  apiKey: () => process.env.GROQ_API_KEY!,
+  model: () => process.env.GROQ_MODEL || "openai/gpt-oss-120b",
+});
+
+/* ── OpenRouter (`:free` modellar; kalit qoʻyilsa zanjirga qoʻshiladi).
+   `HTTP-Referer` va `X-Title` ixtiyoriy, lekin OpenRouter tekin tarif
+   limitlarini shular boʻyicha hisoblaydi. ── */
+const streamOpenRouter = openAiCompatible({
+  label: "OpenRouter",
+  url: "https://openrouter.ai/api/v1/chat/completions",
+  apiKey: () => process.env.OPENROUTER_API_KEY!,
+  model: () => process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat-v3-0324:free",
+  headers: () => ({
+    "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://ustozona.uz",
+    "X-Title": "Ustozona",
+  }),
+});
 
 const RUNNERS: Record<ProviderId, (a: StreamChatArgs) => AsyncGenerator<string>> = {
   gemini: streamGemini,
   groq: streamGroq,
-  anthropic: streamAnthropic,
+  openrouter: streamOpenRouter,
 };
 
 /**
@@ -235,7 +264,7 @@ export async function* streamChat(args: StreamChatArgs): AsyncGenerator<string> 
   const providers = args.doc ? base.filter((p) => p === "gemini") : base;
   if (!providers.length) {
     throw new Error(
-      "Ustozona AI sozlanmagan: GEMINI_API_KEY, GROQ_API_KEY yoki ANTHROPIC_API_KEY kerak."
+      "Ustozona AI sozlanmagan: GEMINI_API_KEY, GROQ_API_KEY yoki OPENROUTER_API_KEY kerak."
     );
   }
   let lastError: unknown;

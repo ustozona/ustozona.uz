@@ -21,7 +21,7 @@ const CALLOUT_TYPE_LIST = Object.entries(
 
 /**
  * Ustozona AI — dars muharriridagi AI yordamchi uchun streaming endpoint.
- * Provayder zanjiri (Gemini → Groq → Anthropic) src/server/ai/providers.ts da.
+ * Provayder zanjiri (Gemini → Groq → OpenRouter) src/server/ai/providers.ts da.
  * Soʻrov: { messages: {role,content}[], lesson?: {title, classes, unit, content} }
  * Javob: oddiy matn (text/plain) — boʻlak-boʻlak (streaming).
  * Kunlik kvota: AI_DAILY_LIMIT (default 30) xabar/foydalanuvchi.
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
 
   if (!configuredProviders().length) {
     return new Response(
-      "Ustozona AI sozlanmagan: GEMINI_API_KEY (yoki GROQ_API_KEY / ANTHROPIC_API_KEY) .env.local faylida yoʻq.",
+      "Ustozona AI sozlanmagan: GEMINI_API_KEY (yoki GROQ_API_KEY / OPENROUTER_API_KEY) .env.local faylida yoʻq.",
       { status: 503 }
     );
   }
@@ -139,7 +139,7 @@ export async function POST(req: Request) {
 
   // Sinf statistikasi (anonim agregat) — faqat toggle yoqilganda.
   // Gemini: tool-calling (kerak paytda oʻzi soʻraydi, token tejaladi);
-  // Groq/Anthropic fallback: tayyor blok system promptga qoʻshiladi.
+  // Groq/OpenRouter fallback: tayyor blok system promptga qoʻshiladi.
   let classTools: StreamChatArgs["tools"];
   let classFallbackCtx = "";
   if (body.useClassData && Array.isArray(body.classIds) && body.classIds.length) {
@@ -205,9 +205,12 @@ export async function POST(req: Request) {
     ? `\n\n— Hujjat rejimi —\nSenga "${(body.doc?.name || "hujjat").slice(0, 120)}" nomli hujjat biriktirilgan. Savollarga FAQAT shu hujjat mazmuni asosida javob ber. Javob hujjatda boʻlmasa, ochiq ayt: "Bu maʼlumot yuklangan hujjatda topilmadi" — taxmin qilma. Iloji boricha qaysi boʻlim/sahifaga tayanganingni koʻrsat.`
     : "";
 
-  // Premium: Anthropic (Claude) zanjir boshida; tekin: Gemini → Groq
-  const chainOverride: ProviderId[] | undefined =
-    teacher.plan === "premium" ? ["anthropic", "gemini", "groq"] : undefined;
+  /* Zanjir hamma uchun bir xil: Gemini → Groq → OpenRouter (hammasi tekin
+     tarif). Ilgari premium reja Anthropic'ni zanjir boshiga qoʻyardi, lekin
+     ANTHROPIC_API_KEY hech qachon sozlanmagan — chainOverride jimgina
+     Gemini'ga tushib, premium tekindan farq qilmasdi. Premium uchun alohida
+     model kerak boʻlsa, uni AI_PROVIDER_CHAIN emas, per-request model
+     tanlovi orqali qaytarish kerak. */
 
   // Telemetriya: javob bergan provayderni sanaymiz (fire-and-forget)
   const recordProvider = (id: ProviderId) => {
@@ -227,7 +230,6 @@ export async function POST(req: Request) {
     doc,
     tools: classTools,
     fallbackContext: classFallbackCtx || undefined,
-    chainOverride,
     onProvider: recordProvider,
   });
 

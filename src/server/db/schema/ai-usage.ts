@@ -7,7 +7,7 @@ import { user } from "./auth";
    (default 30 xabar), AI_DOC_DAILY_LIMIT (default 5 fayl). Kun —
    Asia/Tashkent (UTC+5) boʻyicha YYYY-MM-DD.
 
-   `providers` — {gemini: n, groq: n, anthropic: n} — qaysi provayder
+   `providers` — {gemini: n, groq: n, openrouter: n} — qaysi provayder
    qancha ishlatilgani (fallback chastotasini kuzatish uchun).
    ════════════════════════════════════════════════════════════════════ */
 
