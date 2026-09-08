@@ -2,7 +2,7 @@ import type { ClassData } from "@/lib/grades-data";
 import type { Lesson } from "@/lib/lessons-data";
 import { lessonSessions } from "@/lib/lessons-data";
 import { addDaysKey, dateToKey } from "@/lib/date-keys";
-import { birthdayTaskId, birthdayTaskTitle, gradingTaskId, lessonTaskId, lessonTaskTitle, type Task } from "@/lib/tasks-data";
+import { birthdayTaskId, birthdayTaskTitle, gradingTaskId, lessonTaskId, lessonTaskTitle, type Task, type TaskPriority } from "@/lib/tasks-data";
 import { subjectLabel } from "@/lib/standards-data";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -30,6 +30,17 @@ export type ReconcileResult = {
   /** Barcha oynadagi sessiya-vazifalari done boʻlgan darslar — Completed qilinishi kerak. */
   lessonsToComplete: string[];
 };
+
+/* Avto-vazifalar muhimligi — FAQAT vazifa tugʻilganda qoʻyiladi.
+   Dars va baholash kunning oʻzagi (yuqori); tugʻilgan kun tabrigi
+   oʻtkazib yuborilsa dars kabi zarar qilmaydi (oʻrta).
+
+   Sarlavhadan farqli oʻlaroq priority keyingi passlarda sinxronlanmaydi:
+   muhimlik — foydalanuvchining qarori, u qoʻlda oʻzgartirgan qiymat
+   reconciler tomonidan qaytarilmasligi kerak. */
+const LESSON_PRIORITY: TaskPriority = "high";
+const GRADING_PRIORITY: TaskPriority = "high";
+const BIRTHDAY_PRIORITY: TaskPriority = "medium";
 
 function isLive(cd: ClassData | undefined): cd is ClassData {
   return !!cd && !cd.info.archivedAt;
@@ -77,7 +88,7 @@ export function reconcileLessonAndGradingTasks(
           id,
           title,
           status: bornDone ? "done" : "todo",
-          priority: "none",
+          priority: LESSON_PRIORITY,
           dueDate: s.date,
           dueMin: s.startMin,
           dueEndMin: s.endMin,
@@ -136,7 +147,7 @@ export function reconcileLessonAndGradingTasks(
           id,
           title: a.title,
           status: completed ? "done" : "todo",
-          priority: "none",
+          priority: GRADING_PRIORITY,
           dueDate: due,
           dueMin: null,
           classId,
@@ -250,7 +261,7 @@ export function reconcileBirthdayTasks(
             id,
             title,
             status: "todo",
-            priority: "none",
+            priority: BIRTHDAY_PRIORITY,
             dueDate: occ.dateKey,
             dueMin: null,
             classId,
