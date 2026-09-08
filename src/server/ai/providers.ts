@@ -23,9 +23,23 @@ import "server-only";
 
 export type AiChatMessage = { role: "user" | "assistant"; content: string };
 
-/** Chiqish tokeni chegarasi. 4096 dars rejasiga (jadval + rubrika + callout)
-    yetmay, javob gap oʻrtasida uzilib qolardi. */
-const MAX_OUTPUT_TOKENS = 16384;
+/* ⛔ CHIQISH TOKENI CHEGARASI QOʻYILMAYDI.
+
+   Ilgari uch joyda ham 4096 qotirilgan edi va toʻliq dars rejasi (jadval
+   + rubrika + callout) unga sigʻmay, javob gap oʻrtasida uzilardi.
+   Oʻqituvchiga esa aynan toʻliq javob kerak.
+
+   Oʻz raqamimizni qoʻyish (16384 boʻlsa ham) shunchaki taxmin: provayder
+   modelining oʻz maksimumi biznikidan katta (Gemini Flash — 65536).
+   Shuning uchun parametr UMUMAN yuborilmaydi — har provayder oʻz
+   maksimumini qoʻllaydi.
+
+   ⚠️ Yagona haqiqiy chegara — route'dagi `maxDuration = 60`: juda uzun
+   javob 60 soniyada uziladi. Toʻliq javob kelmasa avvalo shuni tekshiring.
+
+   AI_MAX_OUTPUT_TOKENS — favqulodda tormoz (masalan kvota tez tugayotgan
+   boʻlsa). Qoʻyilmasa hech qanday chegara yuborilmaydi. */
+const MAX_OUTPUT_TOKENS = Number(process.env.AI_MAX_OUTPUT_TOKENS) || undefined;
 
 export type StreamChatArgs = {
   system: string;
@@ -128,7 +142,9 @@ async function* streamGemini(args: StreamChatArgs): AsyncGenerator<string> {
           ...(args.tools
             ? { tools: [{ functionDeclarations: args.tools.declarations }] }
             : {}),
-          generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS },
+          ...(MAX_OUTPUT_TOKENS
+            ? { generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS } }
+            : {}),
         }),
         signal: args.signal,
       }
@@ -196,7 +212,7 @@ function openAiCompatible(opts: {
       body: JSON.stringify({
         model: opts.model(),
         stream: true,
-        max_tokens: MAX_OUTPUT_TOKENS,
+        ...(MAX_OUTPUT_TOKENS ? { max_tokens: MAX_OUTPUT_TOKENS } : {}),
         messages: [
           { role: "system", content: args.system + (args.fallbackContext ?? "") },
           ...args.messages.map((m) => ({ role: m.role, content: m.content })),
