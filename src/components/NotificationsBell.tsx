@@ -146,13 +146,20 @@ export default function NotificationsBell() {
     }
   };
 
-  const toggleGroup = (key: string) =>
+  /* Yoyish = koʻrish: guruh ochilganda ichidagi barcha xabarlar oʻqilgan
+     deb belgilanadi. Aks holda yigʻma satr bosilsa ham oʻqilmaganlar soni
+     qotib qolardi — boshqa satrlarning hammasi bosilganda tozalanadi. */
+  const toggleGroup = (key: string, groupItems: NotificationItem[]) => {
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
+    if (!expanded.has(key)) {
+      for (const n of groupItems) if (!n.read) markRead(n.id);
+    }
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -268,7 +275,7 @@ export default function NotificationsBell() {
                     <button
                       type="button"
                       aria-expanded={isOpen}
-                      onClick={() => toggleGroup(row.key)}
+                      onClick={() => toggleGroup(row.key, row.items)}
                       className={cn(
                         "flex w-full items-start gap-2.5 px-4 py-3 text-left transition-colors hover:bg-muted/60",
                         groupUnread && "bg-primary/[0.04]"
