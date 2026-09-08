@@ -105,9 +105,23 @@ tavsiyaga aylanadi.
 joyida yangilaydi, tarixi `gradeByYear` da) — ikkala sinf ham bir xil
 yoʻldan oʻtgani uchun solishtirish toʻgʻri.
 
-❓ **Ochiq savol — sinfda qoldirish.** Hozirgi qoida qatʼiy, yaʼni
-oʻquvchini pastki darajaga tushirib boʻlmaydi. Bu holat kerak boʻlsa
-alohida amal sifatida qilinadi.
+### Nega qatʼiy qoida modeldan kelib chiqadi
+
+Daraja **bolaga emas, SINFGA** tegishli. Yil oʻtkazishda
+`bumpClassToNextYear` (`lib/rollover.ts`) darajani sinf obyektida
+oshiradi — 5-A joyida 6-A boʻladi, id va yozilishlar tegilmaydi. Yaʼni
+butun sinf birgalikda koʻtariladi va oʻquvchi hech qachon yakka oʻzi
+daraja almashtirmaydi.
+
+Koʻchirish esa har doim BITTA oʻquv yili ichida sodir boʻladi. Demak
+yil ichidagi har qanday qonuniy koʻchirish taʼrifan bir xil daraja
+orasida — qoida sunʼiy cheklov emas, modelning oqibati.
+
+**Sinfda qoldirish bu amalga umuman tegishli emas.** U «bu bola sinfi
+bilan birga koʻtarilmasin» degani, yaʼni ROLLOVER paytidagi qaror
+(RolloverWizard), koʻchirish emas. Uni bu yerga tiqishga urinmang: bola
+sinfi bilan koʻtarilib boʻlgach, uni pastki darajaga «qaytarish» tarixni
+buzadi.
 
 ## 4. Roster oʻqilishi — eng nozik joy
 
