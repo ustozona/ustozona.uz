@@ -9,7 +9,7 @@ const id = z.string().min(1).max(200);
 
 export const notificationUpsertSchema = z.object({
   id,
-  kind: z.enum(["reply", "feedback", "status", "system"]),
+  kind: z.enum(["reply", "feedback", "status", "system", "birthday"]),
   title: z.string().min(1).max(300),
   body: z.string().max(2000).nullable(),
   href: z.string().max(500).nullable(),

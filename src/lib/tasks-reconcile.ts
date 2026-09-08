@@ -183,7 +183,13 @@ export function reconcileLessonAndGradingTasks(
 
 export type BirthdaySettings = { birthdayTasks: boolean; birthdayLead: 0 | 1 | 3 };
 
-export type BirthdayNotify = { taskId: string; studentId: string; studentName: string; dateKey: string };
+export type BirthdayNotify = {
+  taskId: string;
+  studentId: string;
+  studentName: string;
+  className: string;
+  dateKey: string;
+};
 
 export type BirthdayReconcileResult = {
   upserts: Task[];
@@ -257,7 +263,8 @@ export function reconcileBirthdayTasks(
             notifiedAt: shouldNotifyNow ? nowIso : null,
           };
           upserts.push(task);
-          if (shouldNotifyNow) notify.push({ taskId: id, studentId: s.id, studentName: s.name, dateKey: occ.dateKey });
+          if (shouldNotifyNow)
+            notify.push({ taskId: id, studentId: s.id, studentName: s.name, className: cd.info.name, dateKey: occ.dateKey });
           continue;
         }
 
@@ -274,16 +281,24 @@ export function reconcileBirthdayTasks(
           });
         }
         if (needsNotify) {
-          notify.push({ taskId: id, studentId: s.id, studentName: s.name, dateKey: occ.dateKey });
+          notify.push({ taskId: id, studentId: s.id, studentName: s.name, className: cd.info.name, dateKey: occ.dateKey });
         }
       }
     }
   }
 
+  /* Pruning FAQAT sinf maʼlumoti haqiqatan yuklangan boʻlsa. Boʻsh
+     `classDataMap` (hidratsiya oraligʻi yoki tarmoq xatosi) bilan
+     pruning qilinsa, bugungi tugʻilgan kun vazifasi oʻchib, keyingi
+     passda `notifiedAt: null` bilan qayta tugʻilar va TAKROR
+     bildirishnoma yuborilardi — 2026-09 da qoʻngʻiroqchada bir
+     oʻquvchi ikki marta shu sababdan chiqqan. */
   const deleteIds: string[] = [];
-  for (const t of items) {
-    if (t.status !== "todo") continue;
-    if (t.source.kind === "birthday" && !keepIds.has(t.id)) deleteIds.push(t.id);
+  if (Object.keys(classDataMap).length > 0) {
+    for (const t of items) {
+      if (t.status !== "todo") continue;
+      if (t.source.kind === "birthday" && !keepIds.has(t.id)) deleteIds.push(t.id);
+    }
   }
 
   return { upserts, deleteIds, notify };
