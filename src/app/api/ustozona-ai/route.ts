@@ -5,6 +5,7 @@ import { aiUsage, aiDocs, classes } from "@/server/db/schema";
 import { visibleClassIds } from "@/server/workspace";
 import { streamChat, configuredProviders, type AiChatMessage, type StreamChatArgs, type ProviderId } from "@/server/ai/providers";
 import { buildClassContext, buildClassContexts } from "@/server/ai/class-context";
+import { aiDailyLimit, todayTashkent } from "@/lib/ai-limits";
 import uzMessages from "../../../../messages/uz.json";
 
 /* Callout turkodlari + yorliqlar — YAGONA MANBADAN (messages/uz.json,
@@ -62,12 +63,7 @@ Qoidalar:
   - "5E modeli": Engage (Jalb qilish) → Explore (Tadqiq qilish) → Explain (Tushuntirish) → Elaborate (Chuqurlashtirish) → Evaluate (Baholash) — har biri alohida bosqich, taxminiy vaqt bilan.
   - "SMART maqsad": har bir maqsadni Specific/Measurable/Achievable/Relevant/Time-bound (Aniq/Oʻlchanadigan/Erishish mumkin/Dolzarb/Muddatli) mezonlariga mos, bitta-ikkita gapda yoz.`;
 
-/** Asia/Tashkent (UTC+5) boʻyicha YYYY-MM-DD. */
-function todayTashkent(): string {
-  return new Date(Date.now() + 5 * 3600_000).toISOString().slice(0, 10);
-}
-
-const DAILY_LIMIT = Math.max(1, Number(process.env.AI_DAILY_LIMIT) || 30);
+const DAILY_LIMIT = aiDailyLimit();
 
 export async function POST(req: Request) {
   let teacher;

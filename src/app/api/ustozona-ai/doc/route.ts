@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { getSession } from "@/server/session";
 import { db } from "@/server/db/client";
 import { aiUsage, aiDocs } from "@/server/db/schema";
+import { aiDocDailyLimit, todayTashkent } from "@/lib/ai-limits";
 
 /**
  * Ustozona AI — darslik/fayl yuklash (NotebookLM-uslubidagi hujjat rejimi).
@@ -17,12 +18,7 @@ const MAX_BYTES = 15 * 1024 * 1024; // 15 MB
 const ALLOWED = new Set(["application/pdf", "text/plain", "text/markdown"]);
 
 const BASE = "https://generativelanguage.googleapis.com";
-const DOC_DAILY_LIMIT = Math.max(1, Number(process.env.AI_DOC_DAILY_LIMIT) || 5);
-
-/** Asia/Tashkent (UTC+5) boʻyicha YYYY-MM-DD. */
-function todayTashkent(): string {
-  return new Date(Date.now() + 5 * 3600_000).toISOString().slice(0, 10);
-}
+const DOC_DAILY_LIMIT = aiDocDailyLimit();
 
 export async function POST(req: Request) {
   const session = await getSession();
