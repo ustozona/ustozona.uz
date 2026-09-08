@@ -56,7 +56,7 @@ export function OverviewSidebar({ identity }: { identity: ClassIdentity }) {
           modifiersStyles={{ lesson: { fontWeight: 700, color: hex } }}
         />
         <div className="flex items-center gap-1.5 px-2 pb-1 pt-0.5">
-          <ClassSwatch hex={hex} className="size-1.5" />
+          <ClassSwatch hex={hex} />
           <TypographyMuted className="text-[11px]">{t("lessonDaysLegend")}</TypographyMuted>
         </div>
       </Card>

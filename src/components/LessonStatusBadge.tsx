@@ -64,7 +64,9 @@ export function LessonStatusBadge({ status, className }: { status: LessonStatus;
   );
 }
 
-/** Mavzu holati — TOʻLIQ badge (ikonka + rangli fon), `ClassBadge` bilan bir qatorda turishga moslangan (h-[18px]). */
+/** Mavzu holati — TOʻLIQ badge (ikonka + rangli fon), `ClassBadge` bilan bir
+    qatorda turishga moslangan: balandlik va matn AYNAN oʻsha yerdan olinadi
+    (`h-5` / 11px). `ClassBadge` oʻlchami oʻzgarsa, bu ham ergashadi. */
 export function LessonStatusPill({ status, className }: { status: LessonStatus; className?: string }) {
   const t = useTranslations("LessonsPage");
   const Icon = STATUS_ICON[status];
@@ -77,7 +79,7 @@ export function LessonStatusPill({ status, className }: { status: LessonStatus; 
   return (
     <Badge
       variant="secondary"
-      className={cn("h-[18px] gap-1 rounded-full border-transparent px-1.5 text-[11px] font-semibold leading-none", STATUS_PILL_CLASS[status], className)}
+      className={cn("h-5 gap-1 rounded-full border-transparent px-2 text-[11px] font-semibold leading-none", STATUS_PILL_CLASS[status], className)}
     >
       <Icon className="size-3" />
       {label[status]}

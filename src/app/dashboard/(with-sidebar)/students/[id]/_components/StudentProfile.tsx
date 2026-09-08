@@ -422,7 +422,7 @@ export default function StudentProfile({
                 </Popover>
               </div>
               <TypographyMuted className="mt-0.5 inline-flex items-center gap-1.5">
-                <ClassSwatch hex={hex} className="size-2.5" />
+                <ClassSwatch hex={hex} />
                 {location.classInfo.name} · {studentCode}
               </TypographyMuted>
             </div>

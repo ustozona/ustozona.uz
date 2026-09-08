@@ -20,7 +20,7 @@ import {
 } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
 import { MATERIAL_KINDS } from "@/lib/material-kinds";
-import { ClassSwatch } from "@/components/ClassSwatch";
+import { ClassSwatch, ClassSwatchStack } from "@/components/ClassSwatch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
@@ -771,15 +771,8 @@ export default function AssignmentsPage() {
                                             <Tooltip>
                                               <TooltipTrigger asChild>
                                                 <span className="hidden shrink-0 cursor-default items-center gap-1.5 rounded-full bg-muted px-2 py-1 sm:inline-flex">
-                                                  <span className="flex items-center -space-x-1">
-                                                    {members.slice(0, 3).map((m) => (
-                                                      <ClassSwatch
-                                                        key={m.id}
-                                                        hex={m.hex}
-                                                        className="size-2.5 ring-1 ring-card"
-                                                      />
-                                                    ))}
-                                                  </span>
+                                                  <ClassSwatchStack
+                                                    hexes={members.map((m) => m.hex)} />
                                                   <span className="text-[10px] font-semibold text-muted-foreground">
                                                     {members.length}
                                                   </span>

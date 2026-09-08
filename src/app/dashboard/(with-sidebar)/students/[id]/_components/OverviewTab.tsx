@@ -22,6 +22,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { TrendChart, BloomRadar, AttendanceDonut, AttendanceTracker, ATT_COLORS } from "./charts";
 import StandardsPanel from "./StandardsPanel";
 import { GlowBadge } from "@/components/shadcn-space/badge/glow-badge";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import {
   GraduationCap, CalendarCheck, CalendarRange, TrendingUp, ClipboardCheck, Layers, ChevronDown, Brain,
   Check, X, Clock, FileText,
@@ -57,7 +58,7 @@ function CategoryBar({ row, mounted }: { row: TopicBreakdown; mounted: boolean }
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-2">
-        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: row.hex }} />
+        <ClassSwatch hex={row.hex} />
         <span className="truncate text-sm font-medium">{row.topic.name}</span>
         <span className="ml-auto text-sm font-semibold tabular-nums">
           {pct === null ? "—" : `${pct}%`}
@@ -250,7 +251,7 @@ export default function OverviewTab({ profile }: { profile: StudentProfile }) {
               <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {bloom.map((l) => (
                   <div key={l.id} className="flex items-center gap-2 text-sm">
-                    <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: location.hex }} />
+                    <ClassSwatch hex={location.hex} />
                     <span className="truncate text-muted-foreground">{l.label}</span>
                     <span className="ml-auto font-semibold tabular-nums">{l.value}%</span>
                   </div>

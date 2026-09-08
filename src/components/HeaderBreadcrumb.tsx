@@ -139,9 +139,7 @@ function SwitcherCrumb({
           }
           aria-current={isLast ? "page" : undefined}
         >
-          {/* size-2 — sidebar sinflar roʻyxati bilan bir xil (kompakt qator),
-              ClassSwatch standart size-3 bu yerda bahaybat koʻrinardi. */}
-          {swatchHex && <ClassSwatch hex={swatchHex} className="size-2 shrink-0" />}
+          {swatchHex && <ClassSwatch hex={swatchHex} />}
           <span className="max-w-[10rem] truncate sm:max-w-[16rem]">{label}</span>
           <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
         </button>
@@ -199,7 +197,7 @@ function ClassSwitcherCrumb({
                 className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
                 style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
               />
-              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} className="size-2" />
+              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
               <span className="truncate">{c.name}</span>
               {c.subject && (
                 <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>
@@ -247,7 +245,7 @@ function StatsClassSwitcherCrumb({
                 className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
                 style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
               />
-              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} className="size-2" />
+              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
               <span className="truncate">{c.name}</span>
               {c.subject && (
                 <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>
@@ -299,7 +297,7 @@ function StudentClassSwitcherCrumb({
                 className={cn("size-4 shrink-0", c.id !== classId && "opacity-0")}
                 style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
               />
-              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} className="size-2" />
+              <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
               <span className="truncate">{c.name}</span>
               {c.subject && (
                 <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>

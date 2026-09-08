@@ -143,7 +143,7 @@ export default function CreateStudentModal({ open, onOpenChange, defaultClassId,
               <DialogTitle className="text-xl">{mode === "edit" ? t("titleEdit") : t("titleCreate")}</DialogTitle>
               {selectedClass && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                  <ClassSwatch hex={classHex} className="size-2.5" />
+                  <ClassSwatch hex={classHex} />
                   {selectedClass.name}
                 </span>
               )}

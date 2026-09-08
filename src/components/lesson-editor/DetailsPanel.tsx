@@ -23,14 +23,14 @@ import { useStandardsStore } from "@/store/useStandardsStore";
 import { BLOOM_LEVELS } from "@/lib/standards-data";
 import { cn } from "@/lib/utils";
 import ClassSchedulePicker from "./ClassSchedulePicker";
-import { ClassSwatch } from "@/components/ClassSwatch";
+import { ClassSwatch, ClassSwatchStack } from "@/components/ClassSwatch";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <h3 className="text-label mb-2.5">{children}</h3>
 );
 
-const dot = (hex: string) => <ClassSwatch hex={hex} className="size-2.5" />;
+const dot = (hex: string) => <ClassSwatch hex={hex} />;
 
 const FieldButton = ({ children }: { children: React.ReactNode }) => (
   <span className="flex items-center justify-between gap-2 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm hover:bg-accent/50 transition-colors text-left">
@@ -108,15 +108,10 @@ export default function DetailsPanel({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="flex items-center gap-2.5 min-w-0">
-                            <span className="flex items-center -space-x-1.5 shrink-0">
-                              {selectedClasses.slice(0, 4).map((c) => (
-                                <ClassSwatch
-                                  key={c.id}
-                                  hex={CLASS_COLOR_HEX[classColor(c)]}
-                                  className="size-5 ring-2 ring-card"
-                                />
-                              ))}
-                            </span>
+                            <ClassSwatchStack
+                              hexes={selectedClasses.map((c) => CLASS_COLOR_HEX[classColor(c)])}
+                              max={4}
+                            />
                             <span className="font-semibold text-foreground">{t("classCount", { count: selectedClasses.length })}</span>
                           </span>
                         </TooltipTrigger>

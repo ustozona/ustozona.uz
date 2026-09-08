@@ -336,7 +336,7 @@ function ClassPicker({ classes, selectedId, onSelect }: {
             const tints = classTints(c.color);
             return (
               <CommandItem key={c.id} value={`${c.name} ${subjectLabel(c.subject)}`} onSelect={() => onSelect(c.id)} className="gap-2">
-                <ClassSwatch hex={tints.solid} className="size-2.5" />
+                <ClassSwatch hex={tints.solid} />
                 <span className="font-medium">{c.name}</span>
                 {c.subject && <span className="truncate text-xs text-muted-foreground">{subjectLabel(c.subject)}</span>}
                 {selectedId === c.id && <Check className="ml-auto size-4" />}

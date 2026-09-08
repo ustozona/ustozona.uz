@@ -74,7 +74,7 @@ import {
 } from "@/lib/grades-data";
 import { getScaleBoundaries } from "@/lib/grade-scale";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
-import { ClassSwatch } from "@/components/ClassSwatch";
+import { ClassSwatch, ClassSwatchStack } from "@/components/ClassSwatch";
 
 function buildFormSchema(t: (key: string) => string) {
   return z.object({
@@ -966,19 +966,7 @@ function ClassMultiSelect({
 }
 
 function AllClassesSwatch({ hexes }: { hexes: string[] }) {
-  const cells = hexes.slice(0, 3);
-  while (cells.length < 3) cells.push("var(--muted-foreground)");
-  return (
-    <span className="flex shrink-0 items-center" aria-hidden>
-      {cells.map((c, i) => (
-        <span
-          key={i}
-          className="size-3 rounded-full ring-2 ring-card"
-          style={{ backgroundColor: c, marginLeft: i === 0 ? 0 : -5 }}
-        />
-      ))}
-    </span>
-  );
+  return <ClassSwatchStack hexes={hexes} pad />;
 }
 
 /**

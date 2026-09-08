@@ -207,7 +207,7 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
               <DialogTitle className="text-lg">{t("title")}</DialogTitle>
               {selectedClass && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                  <ClassSwatch hex={classHex} className="size-2.5" />
+                  <ClassSwatch hex={classHex} />
                   {selectedClass.name}
                 </span>
               )}

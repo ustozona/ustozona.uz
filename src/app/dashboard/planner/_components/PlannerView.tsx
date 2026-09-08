@@ -1270,7 +1270,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 >
                                   {checked && <Check className="size-3 text-white" strokeWidth={3} />}
                                 </button>
-                                <ClassSwatch hex={tints.solid} className="size-2" />
+                                <ClassSwatch hex={tints.solid} />
                                 <span className="truncate">{info.name}</span>
                               </CommandItem>
                             );

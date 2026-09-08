@@ -4,6 +4,7 @@ import { useMemo, useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import type { StudentProfile, AssignmentRow } from "@/lib/student-profile";
 import { TOPIC_COLOR_HEX, topicTints, type TopicColor } from "@/lib/grades-data";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import { cn } from "@/lib/utils";
 import { gradeBadgeClass } from "@/lib/score-colors";
 import { Input } from "@/components/ui/input";
@@ -130,10 +131,7 @@ export default function AssignmentsTab({ profile }: { profile: StudentProfile })
               <DropdownMenuRadioItem value="all">{t("filterAll")}</DropdownMenuRadioItem>
               {topics.map((topic) => (
                 <DropdownMenuRadioItem key={topic.id} value={topic.id}>
-                  <span
-                    className="mr-2 size-2 rounded-full"
-                    style={{ backgroundColor: topicHex(topic.color) }}
-                  />
+                  <ClassSwatch hex={topicHex(topic.color)} className="mr-2" />
                   {topic.name}
                 </DropdownMenuRadioItem>
               ))}

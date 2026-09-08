@@ -199,7 +199,7 @@ export default function ClassListPanel({
                         data-active={isSelected || undefined}
                         aria-current={isSelected || undefined}
                       >
-                        <ClassSwatch hex={rowTints.solid} className="size-2" />
+                        <ClassSwatch hex={rowTints.solid} />
                         <span className={cn(
                           "text-sm truncate flex-1 transition-colors",
                           isSelected ? "font-semibold text-foreground" : "text-foreground/70 group-hover:text-foreground"
@@ -363,7 +363,7 @@ export default function ClassListPanel({
         >
           {selected && tints ? (
             <>
-              <ClassSwatch hex={tints.solid} className="size-2 shrink-0" />
+              <ClassSwatch hex={tints.solid} />
               <span className="min-w-0 flex-1 truncate text-left font-medium text-foreground">
                 {selected.name}
               </span>
