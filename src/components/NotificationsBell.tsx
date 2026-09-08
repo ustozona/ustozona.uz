@@ -177,11 +177,18 @@ function KindIcon({ kind }: { kind: NotificationKind }) {
   );
 }
 
+/* Oʻqilmagan nishoni satrning OʻNG chekkasida, vertikal markazda.
+   Avval u chapda, ikonkadan oldin turardi — oʻqilgan satrlarda oʻsha
+   ustun boʻsh spacer boʻlib qolar va butun roʻyxat chapdan keraksiz
+   choʻzilardi. Oʻngda esa oʻqilgan satr ustunni umuman talab qilmaydi:
+   joy faqat nishon bor satrda band boʻladi (gap-2.5 + size-2), matn
+   boshlanishi ikkala holatda ham bir xil. */
 function UnreadDot({ show }: { show: boolean }) {
+  if (!show) return null;
   return (
     <span
-      className={cn("mt-2 size-1.5 shrink-0 rounded-full", show && "bg-primary")}
-      aria-hidden
+      className="size-2 shrink-0 self-center rounded-full bg-primary"
+      aria-label="Oʻqilmagan"
     />
   );
 }
@@ -337,7 +344,6 @@ export default function NotificationsBell() {
                               !n.read && "bg-primary/[0.04]"
                             )}
                           >
-                            <UnreadDot show={!n.read} />
                             <KindIcon kind={effectiveKind(n)} />
                             <span className="min-w-0 flex-1">
                               <span className="flex items-start justify-between gap-2">
@@ -370,6 +376,7 @@ export default function NotificationsBell() {
                                 {timeAgoUz(n.createdAt)}
                               </span>
                             </span>
+                            <UnreadDot show={!n.read} />
                           </button>
                         </li>
                       );
@@ -388,7 +395,6 @@ export default function NotificationsBell() {
                             groupUnread && "bg-primary/[0.04]"
                           )}
                         >
-                          <UnreadDot show={groupUnread} />
                           <KindIcon kind="birthday" />
                           <span className="min-w-0 flex-1">
                             <span
@@ -403,6 +409,7 @@ export default function NotificationsBell() {
                               {timeAgoUz(row.items[0].createdAt)}
                             </span>
                           </span>
+                          <UnreadDot show={groupUnread} />
                           <ChevronDown
                             className={cn(
                               "mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-fast ease-standard",
@@ -420,7 +427,7 @@ export default function NotificationsBell() {
                                   <button
                                     type="button"
                                     onClick={() => openItem(n.id, n.href)}
-                                    className="flex w-full items-center gap-2.5 py-2 pl-[3.25rem] pr-4 text-left transition-colors hover:bg-muted/60"
+                                    className="flex w-full items-center gap-2.5 py-2 pl-12 pr-4 text-left transition-colors hover:bg-muted/60"
                                   >
                                     <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-medium text-primary">
                                       {initialsOf(name)}
@@ -431,12 +438,7 @@ export default function NotificationsBell() {
                                         <span className="text-muted-foreground"> · {className}</span>
                                       )}
                                     </span>
-                                    {!n.read && (
-                                      <span
-                                        className="size-1.5 shrink-0 rounded-full bg-primary"
-                                        aria-hidden
-                                      />
-                                    )}
+                                    <UnreadDot show={!n.read} />
                                   </button>
                                 </li>
                               );
