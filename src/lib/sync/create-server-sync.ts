@@ -55,7 +55,7 @@ export function createServerSync<S, P, D = P>(opts: {
   errorMessage?: string;
   /** Sogʻlik hisobidagi nom (`useSyncHealthStore`). Berilmasa xato xabari. */
   scope?: string;
-}): { stop: () => void; flush: () => Promise<void> } {
+}): { stop: () => void; flush: () => Promise<void>; rebase: () => void } {
   const debounceMs = opts.debounceMs ?? 1500;
   const errorMessage = opts.errorMessage ?? "Oʻzgarishlar serverga saqlanmadi";
   const scope = opts.scope ?? errorMessage;
@@ -69,6 +69,10 @@ export function createServerSync<S, P, D = P>(opts: {
   let inFlight = false;
   let attempt = 0;
   let stopped = false;
+  /** `rebase()` chaqirilganda oshadi. Uchayotgan push oʻz raqamini
+      eslab qoladi va qaytganda solishtiradi — oraliqda rebase boʻlgan
+      boʻlsa natijasini yozmaydi. Izohi `rebase()` da. */
+  let generation = 0;
 
   function schedule(delay: number) {
     if (timer) clearTimeout(timer);
@@ -96,8 +100,19 @@ export function createServerSync<S, P, D = P>(opts: {
     }
 
     inFlight = true;
+    const pushedAt = generation;
     try {
       await opts.push(payload);
+      /* ⚠️ Push davomida `rebase()` boʻlgan boʻlsa, natija ESKIRGAN:
+         `next` — rebase'dan oldingi surat. Uni `lastSynced` ga yozsak
+         rebase bekor boʻladi va keyingi flush eski suratni yangisi
+         bilan solishtirib, endigina bajarilgan tashqi amalni teskariga
+         qaytaruvchi batch yuboradi. Yangi baza allaqachon toʻgʻri —
+         hech nima qilinmaydi. */
+      if (pushedAt !== generation) {
+        useSyncHealthStore.getState().ok(scope);
+        return;
+      }
       lastSynced = next;
       attempt = 0;
       useSyncHealthStore.getState().ok(scope);
@@ -134,6 +149,35 @@ export function createServerSync<S, P, D = P>(opts: {
     flush() {
       if (timer) clearTimeout(timer);
       return flush();
+    },
+    /**
+     * Joriy store holatini «serverdagi bilan bir xil» deb belgilaydi —
+     * diff'siz, push'siz.
+     *
+     * ⭐ Nima uchun kerak: baʼzi amallar store orqali emas, OʻZ server
+     * action'i orqali bajariladi (masalan oʻquvchini boshqa sinfga
+     * koʻchirish). Undan keyin store serverdan qayta yuklanadi, va agar
+     * shu yangi holat oddiy oʻzgarish sifatida diff'dan oʻtsa, sync uni
+     * foydalanuvchi tahriri deb oʻylaydi: bola eski sinf roʻyxatidan
+     * chiqqani → `studentsDelete` boʻlib qaytadi va endigina bajarilgan
+     * koʻchirishni bekor qiladi.
+     *
+     * `rebase()` kutilayotgan flush'ni ham bekor qiladi — u eski
+     * `lastSynced` ga tayangan boʻlardi — va UCHAYOTGAN push natijasini
+     * ham eskirgan deb belgilaydi (`generation`). Aks holda push qaytib
+     * `lastSynced` ni oʻz eski surati bilan qayta yozardi va rebase
+     * jimgina yoʻqolardi: poyga oynasi kichik, oqibati esa aynan rebase
+     * toʻsishi kerak boʻlgan narsa — amalni bekor qiluvchi batch.
+     */
+    rebase() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      generation += 1;
+      lastSynced = opts.select(opts.store.getState());
+      dirty = false;
+      attempt = 0;
     },
   };
 }

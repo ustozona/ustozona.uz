@@ -24,6 +24,7 @@ import {
 } from "@/server/dal/workspace-roles";
 import { getClassParentInfo, setClassParent } from "@/server/dal/class-parent";
 import { findDuplicateStudents, mergeStudents } from "@/server/dal/student-merge";
+import { moveStudents } from "@/server/dal/student-move";
 import { listWorkspaceAudit } from "@/server/dal/workspace-audit";
 import { runAction } from "@/server/action-result";
 
@@ -226,5 +227,32 @@ export async function setClassParentAction(input: unknown) {
     const { classId, parentClassId } = setParentSchema.parse(input);
     await setClassParent(classId, parentClassId);
     revalidatePath("/dashboard", "layout");
+  });
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   OʻQUVCHINI BOSHQA SINFGA KOʻCHIRISH.
+
+   ⚠️ Snapshot sync'dan (`syncGradesAction`) ATAYLAB tashqarida. Store
+   butun sinf roʻyxatini yuborib «kelmagani oʻchirilsin» tamoyilida
+   ishlaydi — koʻchirish oʻsha yoʻlga tushsa eski yozilish yopilmay,
+   OʻCHIRILADI va §4 dagi tarix yoʻqoladi. Alohida amal, chaqirilgach
+   store qayta yuklanadi.
+   ──────────────────────────────────────────────────────────────────── */
+
+const moveStudentsSchema = z.object({
+  studentIds: z.array(z.string().min(1).max(200)).min(1).max(500),
+  fromClassId: z.string().min(1).max(200),
+  toClassId: z.string().min(1).max(200),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Sana YYYY-MM-DD koʻrinishida boʻlishi kerak"),
+});
+
+export async function moveStudentsAction(input: unknown) {
+  return runAction(async () => {
+    const parsed = moveStudentsSchema.parse(input);
+    const result = await moveStudents(parsed);
+    // Roster ikkala sinfda ham oʻzgardi.
+    revalidatePath("/dashboard", "layout");
+    return result;
   });
 }

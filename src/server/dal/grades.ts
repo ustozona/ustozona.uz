@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { compareUz } from "@/lib/collation";
 import { db } from "@/server/db/client";
 import {
@@ -163,9 +163,16 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
       // Bola endi sinfga YOZILISH orqali bogʻlanadi va bir nechta guruhda
       // boʻlishi mumkin — shuning uchun bir xil `student` bir nechta
       // ClassData ichida chiqishi normal.
+      /* `endedAt` HAM olinadi: chiqib ketgan bola roster'dan tushadi,
+         lekin butunlay yoʻqolmaydi — pastda `formerStudents` ga ajraladi
+         (docs/oquvchini-kochirish-spec.md §4). */
       myClassIds.length
         ? db
-            .select({ classId: enrollments.classId, student: students })
+            .select({
+              classId: enrollments.classId,
+              endedAt: enrollments.endedAt,
+              student: students,
+            })
             .from(enrollments)
             .innerJoin(students, eq(students.id, enrollments.studentId))
             .where(inArray(enrollments.classId, myClassIds))
@@ -180,12 +187,26 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
   for (const c of classRows) {
     map[c.id] = { info: rowToInfo(c), students: [], topics: [], assignments: [], grades: [] };
   }
-  for (const r of rosterRows) map[r.classId]?.students.push(rowToStudent(r.student));
+  for (const r of rosterRows) {
+    const cd = map[r.classId];
+    if (!cd) continue;
+    if (r.endedAt) {
+      /* ⛔ `students` ga TUSHMAYDI — aks holda chiqib ketgan bola davomat
+         roʻyxatida va yangi topshiriqda paydo boʻlardi. Jurnal uni shu
+         maydondan oʻzi qoʻshib koʻrsatadi. */
+      (cd.formerStudents ??= []).push({ ...rowToStudent(r.student), leftAt: r.endedAt });
+    } else {
+      cd.students.push(rowToStudent(r.student));
+    }
+  }
   // Roster STANDART tartibi — ism boʻyicha alifbo (oʻzbek kolatsiyasi).
   // Yozilish `sortOrder` i qoʻlda tartiblash UI si yoʻqligi uchun
   // amalda tasodifiy edi: davomat roʻyxati ism boʻyicha, xulq-atvor
   // toʻri esa boshqa tartibda chiqardi. Yagona manba shu yerda.
-  for (const cd of Object.values(map)) cd.students.sort((a, b) => compareUz(a.name, b.name));
+  for (const cd of Object.values(map)) {
+    cd.students.sort((a, b) => compareUz(a.name, b.name));
+    cd.formerStudents?.sort((a, b) => compareUz(a.name, b.name));
+  }
   for (const t of topicRows) map[t.classId]?.topics.push(rowToTopic(t));
 
   const classByAssignment = new Map<string, string>();
@@ -325,7 +346,22 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
         )
         .onConflictDoUpdate({
           target: [enrollments.classId, enrollments.studentId],
-          set: { sortOrder: sql`excluded.sort_order` },
+          /* `endedAt: null` — YOPILGAN yozilishni qayta OCHADI.
+             Bolani sinfdan koʻchirib, keyin oʻsha sinfga qaytadan
+             qoʻshish aynan shu yoʻldan oʻtadi: qator allaqachon bor,
+             faqat `ended_at` bilan yopilgan. Usiz qoʻshish jimgina
+             muvaffaqiyatsiz boʻlardi — mijozda bola roʻyxatda
+             koʻrinardi, keyingi yuklashda esa yana yoʻqolardi.
+
+             Bu yerda mijoz roʻyxati vakolatli, chunki `students`
+             massivida FAQAT ochiq yozilishlar boʻladi (server
+             chiqib ketganlarni `formerStudents` ga ajratadi) — yaʼni
+             bu upsert'ga tushgan bola «hozir shu sinfda» degani.
+             Eskirgan mijoz ham xavf tugʻdirmaydi: `diffGradesMap`
+             roster'ni faqat OʻZGARGAN sinf uchun yuboradi, yaʼni
+             qayta ochilish uchun kimdir oʻsha roʻyxatni ataylab
+             tahrir qilishi kerak. */
+          set: { sortOrder: sql`excluded.sort_order`, endedAt: sql`NULL` },
         });
     });
   }
@@ -538,19 +574,42 @@ async function detachOrDeleteStudents(ids: string[]): Promise<void> {
 
   for (const part of chunks(scoped)) {
     if (mine.length > 0) {
+      /* ⛔ `isNull(endedAt)` — YOPILGAN yozilishga tegilmaydi. U roster
+         emas, TARIX: boshqa sinfga koʻchgan bolaning eski sinfdagi izi.
+         Roster sinxroni uni «roʻyxatdan chiqarilgan» deb oʻqib
+         oʻchirsa, oʻsha sinfdagi baholari egasiz qolib koʻrinmay
+         ketardi (docs/oquvchini-kochirish-spec.md §4).
+
+         Bu ayni paytda eskirgan mijozdan himoya ham: koʻchirishdan
+         keyin sinxronlanmagan mijoz bolani eski roʻyxatda koʻrib
+         «oʻchirilsin» deb yuborishi mumkin. */
       await db
         .delete(enrollments)
-        .where(and(inArray(enrollments.studentId, part), inArray(enrollments.classId, mine)));
+        .where(
+          and(
+            inArray(enrollments.studentId, part),
+            inArray(enrollments.classId, mine),
+            isNull(enrollments.endedAt)
+          )
+        );
     }
   }
 
-  /* Endi qaysi biri hali ham biror guruhda qolgan — oʻsha saqlanadi. */
+  /* Endi qaysi biri hali ham biror guruhda OʻQIYAPTI — oʻsha saqlanadi.
+
+     ⚠️ `isNull(endedAt)` shu yerda ham SHART. Yopilgan yozilish —
+     tarix, «hali biror joyda oʻqiydi» degani emas. Usiz koʻchirilgan
+     bola oʻchirib boʻlmaydigan holatga tushardi: yuqoridagi delete
+     uning ochiq yozilishini oladi, bu soʻrov esa eski sinfdagi yopiq
+     qatorni koʻrib «hali yozilgan» deb hisoblaydi — natijada
+     `students` qatori qolib ketadi, lekin hech bir roʻyxatda
+     koʻrinmaydi va qayta oʻchirishga ham berilmaydi. */
   const stillEnrolled = new Set<string>();
   for (const part of chunks(scoped)) {
     const rows = await db
       .selectDistinct({ id: enrollments.studentId })
       .from(enrollments)
-      .where(inArray(enrollments.studentId, part));
+      .where(and(inArray(enrollments.studentId, part), isNull(enrollments.endedAt)));
     for (const r of rows) stillEnrolled.add(r.id);
   }
 

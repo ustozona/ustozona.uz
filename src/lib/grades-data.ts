@@ -43,6 +43,11 @@ export type Student = {
   parentName?: string;    // ota yoki onasining ismi sharifi
   parentPhone?: string;
   studentPhone?: string;
+  /** Shu sinfdan CHIQQAN sana ("YYYY-MM-DD"). Faqat `ClassData.formerStudents`
+      ichidagi yozuvlarda toʻladi — joriy roʻyxatdagi bolada har doim
+      `undefined`. Bir bola boshqa sinfda hali oʻqiyotgan boʻlishi mumkin,
+      shuning uchun bu maydon bolaga emas, YOZILISHGA tegishli. */
+  leftAt?: string;
 };
 
 // Topic = baholash turi (Tests, Homework, Projects ...)
@@ -251,7 +256,15 @@ export type Grade = {
 
 export type ClassData = {
   info: ClassInfo;
+  /** JORIY roʻyxat — faqat ochiq yozilishlar. Davomat, yangi topshiriq,
+      statistika va qolgan hamma joy shu maydonni oʻqiydi. */
   students: Student[];
+  /** Shu sinfdan chiqib ketganlar (`leftAt` toʻlgan).
+      ⛔ Roster EMAS — davomat olishda yoki yangi topshiriqda chiqmasligi
+      kerak. Faqat JURNAL uni qoʻshib koʻrsatadi: bolaning eski baholari
+      egasiz qolib koʻrinmay ketmasligi uchun
+      (docs/oquvchini-kochirish-spec.md §4). */
+  formerStudents?: Student[];
   topics: Topic[];
   assignments: Assignment[];
   grades: Grade[];

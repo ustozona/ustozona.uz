@@ -53,6 +53,7 @@ import { toast } from "sonner";
 import CreateStudentModal, { type NewStudentInput } from "./_components/CreateStudentModal";
 import AddStudentModal from "./_components/AddStudentModal";
 import StudentsDataTable from "./_components/StudentsDataTable";
+import { MoveStudentsDialog } from "@/components/students/MoveStudentsDialog";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { useCollator } from "@/lib/use-collator";
@@ -60,7 +61,7 @@ import {
   Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2, X,
   TrendingUp, Phone, MessageCircle, Pen, Download, ChevronDown, MoreHorizontal,
   Eye, NotebookPen, Archive, GraduationCap, LayoutGrid, Table as TableIcon, Check,
-  CalendarCheck, Award,
+  CalendarCheck, Award, ArrowRightLeft,
 } from "lucide-react";
 
 // ─── Tiplar ────────────────────────────────────────────────────────────────
@@ -140,6 +141,9 @@ export default function StudentsPage() {
   const router = useRouter();
   const openProfile = (id: string) => router.push(`/dashboard/students/${encodeURIComponent(id)}`);
   const [selectedClassId, handleSelectClass] = useClassIdParam();
+  /* Koʻchirish oynasi — bittalab ham, belgilangan guruh ham shu holatga
+     tushadi (bir xil oyna, ikki chaqiruv joyi). */
+  const [moveTargets, setMoveTargets] = useState<{ id: string; name: string }[]>([]);
 
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   /* Mobil: preview ustuni Sheet sifatida chiqadi — qator bosilganda ochiladi
@@ -274,6 +278,14 @@ export default function StudentsPage() {
     students.find((s) => s.id === selectedStudentId) ?? (isDemoMode ? students[0] ?? null : null);
   const filterActive = statusFilter !== DEFAULT_STATUS_FILTER || search.trim().length > 0;
   const noClass = !selectedClassId && !isDemoMode;
+
+  /* Koʻchirish faqat DARAJALI sinfdan mumkin. Darajasiz guruhda
+     (toʻgarak, qoʻshimcha dars) band umuman koʻrsatilmaydi — u har doim
+     xato bilan tugardi, chunki server `assertSameGrade` da rad etadi.
+     Sinf tanlanmaganda ham yoʻq: qaysi sinfDAN chiqarilishi noaniq. */
+  const canMove = Boolean(
+    selectedClassId && classDataMap[selectedClassId]?.info.grade != null
+  );
 
   /* Ustun nisbatlari — sinf tanlanmagan → 50/50 (grades/standards bilan bir xil boʻsh holat);
      sinf tanlangan, preview yopiq → 25/75; oʻquvchi tanlangan → 25/50/25. */
@@ -655,6 +667,20 @@ export default function StudentsPage() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                {canMove && (
+                  <BulkActionButton
+                    icon={<ArrowRightLeft className="size-4" />}
+                    onClick={() =>
+                      setMoveTargets(
+                        students
+                          .filter((s) => selectedRowIds.has(s.id))
+                          .map((s) => ({ id: s.id, name: s.name }))
+                      )
+                    }
+                  >
+                    Koʻchirish
+                  </BulkActionButton>
+                )}
                 <BulkActionButton
                   icon={<Trash2 className="size-4" />}
                   variant="destructive"
@@ -703,6 +729,11 @@ export default function StudentsPage() {
                 onSortChange={setSortKey}
                 onStatusChange={requestStatus}
                 onEdit={(row) => setEditTarget(row)}
+                onMove={
+                  canMove
+                    ? (row) => setMoveTargets([{ id: row.id, name: row.name }])
+                    : undefined
+                }
                 onDelete={(row) => setDeleteTargets([row])}
                 hex={selHex}
               />
@@ -770,6 +801,16 @@ export default function StudentsPage() {
                           <ContextMenuItem onSelect={() => setSelectedStudentId(s.id)}>
                             <NotebookPen className="size-4 shrink-0" /> {t("addNote")}
                           </ContextMenuItem>
+                          {/* Jadval koʻrinishidagi «⋮» menyu bilan parity —
+                              sinf tanlanmagan boʻlsa yoʻq, chunki qaysi
+                              sinfDAN chiqarilishi noaniq boʻlardi. */}
+                          {canMove && (
+                            <ContextMenuItem
+                              onSelect={() => setMoveTargets([{ id: s.id, name: s.name }])}
+                            >
+                              <ArrowRightLeft className="size-4 shrink-0" /> Boshqa sinfga koʻchirish
+                            </ContextMenuItem>
+                          )}
                           <ContextMenuSeparator />
                           <ContextMenuSub>
                             <ContextMenuSubTrigger className="gap-2">
@@ -892,6 +933,14 @@ export default function StudentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <MoveStudentsDialog
+        open={moveTargets.length > 0}
+        onOpenChange={(v) => { if (!v) setMoveTargets([]); }}
+        fromClassId={selectedClassId ?? ""}
+        students={moveTargets}
+        onMoved={() => setSelectedRowIds(new Set())}
+      />
 
       <AlertDialog open={!!deleteTargets} onOpenChange={(open) => { if (!open) setDeleteTargets(null); }}>
         <AlertDialogContent>

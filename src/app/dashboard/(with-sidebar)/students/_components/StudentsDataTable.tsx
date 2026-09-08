@@ -15,7 +15,7 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { AttendanceRing } from "@/app/dashboard/(with-sidebar)/statistics/_components/AttendanceRing";
-import { ArrowDown, ArrowUpDown, Check, MoreHorizontal, Pen, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowRightLeft, ArrowUpDown, Check, MoreHorizontal, Pen, Trash2 } from "lucide-react";
 
 type SortKey = "name" | "lastName" | "grade" | "attendance";
 
@@ -30,6 +30,9 @@ interface StudentsDataTableProps {
   onSortChange: (key: SortKey) => void;
   onStatusChange: (id: string, next: Status) => void;
   onEdit: (student: StudentRow) => void;
+  /** Boshqa sinfga koʻchirish. Sinf tanlanmagan boʻlsa berilmaydi —
+      qaysi sinfDAN chiqarilishi noaniq boʻladi. */
+  onMove?: (student: StudentRow) => void;
   onDelete: (student: StudentRow) => void;
   hex: string;
 }
@@ -45,7 +48,7 @@ interface StudentsDataTableProps {
 export default function StudentsDataTable({
   students, selectedStudentId, onSelect,
   selectedIds, onToggleSelect, onToggleSelectAll,
-  sortKey, onSortChange, onStatusChange, onEdit, onDelete, hex,
+  sortKey, onSortChange, onStatusChange, onEdit, onMove, onDelete, hex,
 }: StudentsDataTableProps) {
   const t = useTranslations("StudentsPage");
   const allSelected = students.length > 0 && selectedIds.size === students.length;
@@ -199,6 +202,15 @@ export default function StudentsDataTable({
                         <Pen className="size-4 text-muted-foreground" />
                         {t("edit")}
                       </DropdownMenuItem>
+                      {onMove && (
+                        <DropdownMenuItem
+                          className="cursor-pointer gap-2"
+                          onClick={(e) => { e.stopPropagation(); onMove(s); }}
+                        >
+                          <ArrowRightLeft className="size-4 text-muted-foreground" />
+                          Boshqa sinfga koʻchirish
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       {(["active", "archived"] as Status[]).map((val) => {
                         const StatusIcon = STATUS_META[val].icon;

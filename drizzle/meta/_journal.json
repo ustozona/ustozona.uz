@@ -330,6 +330,13 @@
       "when": 1788786783657,
       "tag": "0046_status_away_olib_tashlandi",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1788872478537,
+      "tag": "0047_yozilish_sana_oraligi",
+      "breakpoints": true
     }
   ]
 }

@@ -36,14 +36,15 @@ import {
 import { Illustration } from "@/components/ui/illustration";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Users, User, Plus, UserPlus, Search, ArrowUpDown, TrendingUp, CalendarCheck, Phone,
-  MessageCircle, ExternalLink,
+  MessageCircle, ExternalLink, MoreHorizontal, ArrowRightLeft,
 } from "lucide-react";
 import { AddFromRosterDialog } from "@/components/students/AddFromRosterDialog";
+import { MoveStudentsDialog } from "@/components/students/MoveStudentsDialog";
 import type { ClassIdentity } from "@/lib/class-id";
 import { useCollator } from "@/lib/use-collator";
 
@@ -103,6 +104,7 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const [sortKey, setSortKey] = useState<SortKey>("grade");
   const [createOpen, setCreateOpen] = useState(false);
   const [rosterOpen, setRosterOpen] = useState(false);
+  const [moveTargets, setMoveTargets] = useState<{ id: string; name: string }[]>([]);
   const compare = useCollator();
 
   // Jonli manbalar — Baholar jurnali va Davomat bilan bir xil store
@@ -111,6 +113,11 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
   const updateClass = useGradesStore((s) => s.updateClass);
   const liveGrades = useGradesStore((s) => s.classDataMap[classId]);
   const storedRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
+  /* Koʻchirish faqat DARAJALI sinfdan. Darajasiz guruhda (toʻgarak,
+     qoʻshimcha dars) band koʻrsatilmaydi — server `assertSameGrade` da
+     baribir rad etadi. */
+  const canMove = liveGrades?.info.grade != null;
+
   const attendanceStatuses = useAttendanceStore((s) => s.statuses);
   const calendar = useCalendarStore((s) => s.calendar);
   const versions = useTimetableStore((s) => s.versions);
@@ -311,6 +318,32 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
                             <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                             {pill.label}
                           </span>
+                          {canMove && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label="Oʻquvchi amallari"
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-black/5 hover:text-foreground group-hover:opacity-100 dark:hover:bg-white/10"
+                              >
+                                <MoreHorizontal className="size-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                className="cursor-pointer gap-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setMoveTargets([{ id: s.id, name: s.name }]);
+                                }}
+                              >
+                                <ArrowRightLeft className="size-4 text-muted-foreground" />
+                                Boshqa sinfga koʻchirish
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -350,6 +383,13 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
         open={rosterOpen}
         onOpenChange={setRosterOpen}
         classId={classId}
+      />
+
+      <MoveStudentsDialog
+        open={moveTargets.length > 0}
+        onOpenChange={(v) => { if (!v) setMoveTargets([]); }}
+        fromClassId={classId}
+        students={moveTargets}
       />
     </div>
   );
