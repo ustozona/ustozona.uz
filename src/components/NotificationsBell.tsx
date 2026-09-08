@@ -16,8 +16,9 @@ import {
   Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription,
 } from "@/components/ui/empty";
 import {
-  Bell, CheckCheck, Cake, ChevronDown, MessageSquare, Lightbulb, Activity, Info, Trash2,
+  Bell, CheckCheck, ChevronDown, MessageSquare, Lightbulb, Activity, Info, Trash2,
 } from "lucide-react";
+import { AppleEmojiSprite } from "@/components/ui/apple-emoji";
 import {
   useNotificationsStore, type NotificationItem, type NotificationKind,
 } from "@/store/useNotificationsStore";
@@ -42,12 +43,14 @@ import {
    holati va server sinxroni oʻzgarmaydi.
    ════════════════════════════════════════════════════════════════════ */
 
-const KIND_ICON: Record<NotificationKind, React.ComponentType<{ className?: string }>> = {
+const KIND_ICON: Record<
+  Exclude<NotificationKind, "birthday">,
+  React.ComponentType<{ className?: string }>
+> = {
   reply: MessageSquare,
   feedback: Lightbulb,
   status: Activity,
   system: Info,
-  birthday: Cake,
 };
 
 const KIND_ICON_TONE: Record<NotificationKind, string> = {
@@ -57,6 +60,20 @@ const KIND_ICON_TONE: Record<NotificationKind, string> = {
   system: "bg-muted text-muted-foreground",
   birthday: "bg-primary/10 text-primary",
 };
+
+/* Tugʻilgan kun — yagona "insoniy" xabar turi: qolganlari tizim hodisasi
+   (javob, holat, fikr), bu esa tabrik. Shuning uchun lucide glifi emas,
+   emoji sprite'i — `StudentRiskCard` dagi bilan bir xil naqsh. Emoji
+   baribir oʻsha 28px iconbox ichida turadi, ya'ni satr anatomiyasi
+   boshqa turlar bilan bir xil qoladi. */
+const BIRTHDAY_EMOJI = "🎂";
+
+/** Eski yozuvlar `kind: "system"` bilan saqlangan — sarlavhasidan
+ *  tanib olamiz, aks holda ular hech qachon yangi koʻrinishga oʻtmasdi. */
+function effectiveKind(n: NotificationItem): NotificationKind {
+  if (n.kind === "birthday") return "birthday";
+  return n.title.endsWith("tugʻilgan kuni") ? "birthday" : n.kind;
+}
 
 type Filter = "all" | "unread";
 
@@ -86,7 +103,7 @@ function dayLabel(key: string): string {
 function groupRows(items: NotificationItem[]): Row[] {
   const byDay = new Map<string, NotificationItem[]>();
   for (const n of items) {
-    if (n.kind !== "birthday") continue;
+    if (effectiveKind(n) !== "birthday") continue;
     const day = dayKeyOf(n.createdAt);
     const bucket = byDay.get(day);
     if (bucket) bucket.push(n);
@@ -96,7 +113,7 @@ function groupRows(items: NotificationItem[]): Row[] {
   const rows: Row[] = [];
   const emitted = new Set<string>();
   for (const n of items) {
-    if (n.kind === "birthday") {
+    if (effectiveKind(n) === "birthday") {
       const day = dayKeyOf(n.createdAt);
       const group = byDay.get(day);
       if (group && group.length > 1) {
@@ -124,10 +141,14 @@ function toSections(rows: Row[]): Section[] {
   return sections;
 }
 
-/** "Ism — tugʻilgan kuni" sarlavhasidan faqat ismni ajratadi. */
-function studentNameOf(item: NotificationItem): string {
+/** Sarlavhadan ism va sinfni ajratadi. Ikki format qoʻllab-quvvatlanadi:
+ *  yangi — "Azizbek Muhiddinovning (7-A) tugʻilgan kuni", eski —
+ *  "Azizbek Muhiddinov — tugʻilgan kuni" (sinfsiz). */
+function studentOf(item: NotificationItem): { name: string; className?: string } {
+  const modern = /^(.+)ning \((.+)\) tugʻilgan kuni$/.exec(item.title);
+  if (modern) return { name: modern[1], className: modern[2] };
   const dash = item.title.indexOf(" — ");
-  return dash > 0 ? item.title.slice(0, dash) : item.title;
+  return { name: dash > 0 ? item.title.slice(0, dash) : item.title };
 }
 
 function initialsOf(name: string): string {
@@ -140,7 +161,6 @@ function initialsOf(name: string): string {
 }
 
 function KindIcon({ kind }: { kind: NotificationKind }) {
-  const Icon = KIND_ICON[kind];
   return (
     <span
       className={cn(
@@ -148,7 +168,11 @@ function KindIcon({ kind }: { kind: NotificationKind }) {
         KIND_ICON_TONE[kind]
       )}
     >
-      <Icon className="size-4" />
+      {kind === "birthday" ? (
+        <AppleEmojiSprite emoji={BIRTHDAY_EMOJI} className="size-4" />
+      ) : (
+        React.createElement(KIND_ICON[kind], { className: "size-4" })
+      )}
     </span>
   );
 }
@@ -314,7 +338,7 @@ export default function NotificationsBell() {
                             )}
                           >
                             <UnreadDot show={!n.read} />
-                            <KindIcon kind={n.kind} />
+                            <KindIcon kind={effectiveKind(n)} />
                             <span className="min-w-0 flex-1">
                               <span className="flex items-start justify-between gap-2">
                                 <span
@@ -390,7 +414,7 @@ export default function NotificationsBell() {
                         {isOpen && (
                           <ul className="border-t border-border/60 bg-muted/30">
                             {row.items.map((n) => {
-                              const name = studentNameOf(n);
+                              const { name, className } = studentOf(n);
                               return (
                                 <li key={n.id}>
                                   <button
@@ -403,8 +427,8 @@ export default function NotificationsBell() {
                                     </span>
                                     <span className="min-w-0 flex-1 truncate text-sm text-foreground">
                                       {name}
-                                      {n.body && (
-                                        <span className="text-muted-foreground"> · {n.body}</span>
+                                      {className && (
+                                        <span className="text-muted-foreground"> · {className}</span>
                                       )}
                                     </span>
                                     {!n.read && (

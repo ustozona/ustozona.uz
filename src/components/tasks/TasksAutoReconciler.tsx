@@ -70,8 +70,8 @@ export default function TasksAutoReconciler() {
             // Barqaror id — vazifa oʻchib qayta tugʻilsa ham xabar takrorlanmaydi.
             id: `ntf-${n.taskId}`,
             kind: "birthday",
-            title: `${n.studentName} — tugʻilgan kuni`,
-            body: `${n.className} sinf`,
+            title: `${n.studentName}ning (${n.className}) tugʻilgan kuni`,
+            body: "Vazifalar sahifasida tabriklangan deb belgilab qoʻying.",
             href: `/dashboard/students/${encodeURIComponent(n.studentId)}`,
           });
         }
