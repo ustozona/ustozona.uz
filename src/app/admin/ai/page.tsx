@@ -87,9 +87,9 @@ async function Overview() {
           tone="warn"
         />
         <StatCard
-          label="Limit sababli rad etilgan"
-          value={s.limitHits}
-          hint={`kunlik limit ${s.dailyLimit} xabar — 429 qaytgan (oʻqituvchi, kun) juftliklari`}
+          label="Krediti tugagan"
+          value={s.creditExhausted}
+          hint={`joriy oyda oylik kreditdan (free: ${s.monthCredit} xabar) oshgan oʻqituvchilar`}
           tone="warn"
         />
       </div>
@@ -188,7 +188,7 @@ async function UsersTable() {
               <th className="text-right">Xabar</th>
               <th className="text-right">Hujjat</th>
               <th className="text-right">Faol kun</th>
-              <th className="text-right">Rad etilgan</th>
+              <th className="text-right">Oy / kredit</th>
               <th className="text-right">Bugun</th>
               <th>Oxirgi</th>
             </tr>
@@ -204,17 +204,19 @@ async function UsersTable() {
                   <div className="text-muted-foreground text-xs">{r.email}</div>
                 </td>
                 <td>
-                  <Badge variant={r.plan === "premium" ? "default" : "secondary"}>
+                  <Badge variant={r.plan === "pro" ? "default" : "secondary"}>
                     {r.plan ?? "free"}
                   </Badge>
                 </td>
                 <td className="text-right">{r.messages}</td>
                 <td className="text-right">{r.docs}</td>
                 <td className="text-right">{r.activeDays}</td>
+                {/* Joriy oy sarfi va taʼrif krediti — kredit tugagan
+                    oʻqituvchi darrov koʻzga tashlansin. */}
                 <td
-                  className={`text-right ${r.limitHits > 0 ? "text-destructive font-medium" : ""}`}
+                  className={`text-right ${r.monthMessages > r.credit ? "text-destructive font-medium" : ""}`}
                 >
-                  {r.limitHits}
+                  {r.monthMessages} / {r.credit}
                 </td>
                 <td className="text-right">{r.todayMessages}</td>
                 <td className="text-muted-foreground text-xs">{r.lastDay}</td>
@@ -234,7 +236,7 @@ export default function AdminAiPage() {
         <h1 className="text-lg font-semibold">Ustozona AI</h1>
         <p className="text-muted-foreground text-sm">
           Soʻnggi {AI_STATS_DAYS} kunlik foydalanish, provayder zanjiri va
-          kunlik limit holati.
+          oylik kredit holati.
         </p>
       </div>
 
