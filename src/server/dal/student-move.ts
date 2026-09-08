@@ -1,9 +1,12 @@
 import "server-only";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { classes, enrollments } from "@/server/db/schema";
+import { academicYears, classes, enrollments } from "@/server/db/schema";
 import { ForbiddenError } from "@/server/session";
-import { requireWorkspace, taughtClassIds } from "@/server/workspace";
+import {
+  requireWorkspace, taughtClassIds, type WorkspaceContext,
+} from "@/server/workspace";
+import { gradeForYear } from "@/lib/class-naming";
 
 /* ════════════════════════════════════════════════════════════════════
    OʻQUVCHINI BOSHQA SINFGA KOʻCHIRISH.
@@ -54,6 +57,17 @@ export type MoveStudentsResult = {
  * ⛔ Baho/davomat YOZISHga bu kenglik TARQALMAYDI — koʻchirish faqat
  * `enrollments` ga tegadi, oʻquvchining yozuvlariga emas.
  */
+async function movableClassIds(ctx: WorkspaceContext): Promise<string[]> {
+  if (ctx.role === "admin") {
+    const rows = await db
+      .select({ id: classes.id })
+      .from(classes)
+      .where(eq(classes.workspaceId, ctx.workspaceId));
+    return rows.map((r) => r.id);
+  }
+  return taughtClassIds(ctx);
+}
+
 /**
  * Ikki sinf orasida koʻchirish MANTIQAN mumkinmi.
  *
@@ -71,9 +85,14 @@ export type MoveStudentsResult = {
  * matematikaga oʻtmaydi — u toʻgarakdan chiqadi, sinfda esa qolaveradi.
  * Bu QOʻSHISH/CHIQARISH amali, koʻchirish emas.
  *
- * ⚠️ `grade` faol oʻquv yiliga proyeksiya qilingan qiymat (rollover uni
- * joyida yangilaydi, tarixi `gradeByYear` da) — ikkala sinf ham bir xil
- * yoʻldan oʻtgani uchun solishtirish toʻgʻri.
+ * ⚠️ Daraja FAOL OʻQUV YILIGA proyeksiya qilinadi (`gradeForYear`), xom
+ * `classes.grade` ustuni emas. Rollover darajani ustunda oshiradi va
+ * eskisini `gradeByYear` ga yozadi, shu bois eski yil faollashtirilganda
+ * sinf oʻsha yildagi darajasi bilan koʻrinadi. Interfeys aynan shu
+ * proyeksiyalangan qiymat boʻyicha filtrlaydi — server xom ustunni
+ * solishtirsa, ikkisi bir-biriga mos kelmay qolardi: oynada bir xil
+ * darajali koʻringan ikki sinf serverda rad etilardi, yaʼni foydalanuvchi
+ * OʻZI taklif qilingan tanlov uchun xato olardi.
  */
 function assertSameGrade(
   from: { id: string; name: string; grade: number | null },
@@ -93,18 +112,6 @@ function assertSameGrade(
   }
 }
 
-async function movableClassIds(): Promise<string[]> {
-  const ctx = await requireWorkspace();
-  if (ctx.role === "admin") {
-    const rows = await db
-      .select({ id: classes.id })
-      .from(classes)
-      .where(eq(classes.workspaceId, ctx.workspaceId));
-    return rows.map((r) => r.id);
-  }
-  return taughtClassIds(ctx);
-}
-
 export async function moveStudents(input: MoveStudentsInput): Promise<MoveStudentsResult> {
   const { studentIds, fromClassId, toClassId, date } = input;
 
@@ -113,17 +120,52 @@ export async function moveStudents(input: MoveStudentsInput): Promise<MoveStuden
   }
   if (studentIds.length === 0) return { moved: 0 };
 
-  const allowed = new Set(await movableClassIds());
+  const ctx = await requireWorkspace();
+  const allowed = new Set(await movableClassIds(ctx));
   if (!allowed.has(fromClassId) || !allowed.has(toClassId)) {
     throw new ForbiddenError("Bu sinflardan biri sizga biriktirilmagan");
   }
 
-  const gradeRows = await db
-    .select({ id: classes.id, name: classes.name, grade: classes.grade })
-    .from(classes)
-    .where(inArray(classes.id, [fromClassId, toClassId]));
-  const from = gradeRows.find((c) => c.id === fromClassId);
-  const to = gradeRows.find((c) => c.id === toClassId);
+  const [gradeRows, [activeYear]] = await Promise.all([
+    db
+      .select({
+        id: classes.id,
+        name: classes.name,
+        grade: classes.grade,
+        gradeByYear: classes.gradeByYear,
+      })
+      .from(classes)
+      .where(inArray(classes.id, [fromClassId, toClassId])),
+    /* Faol oʻquv yili — daraja proyeksiyasi uchun. Yoʻq boʻlsa
+       (kalendar sozlanmagan) `gradeForYear` xom `grade` ga tushadi,
+       yaʼni ilgarigi xatti-harakat saqlanadi. */
+    db
+      .select({ id: academicYears.id })
+      .from(academicYears)
+      .where(and(eq(academicYears.teacherId, ctx.teacherId), eq(academicYears.isActive, true)))
+      .limit(1),
+  ]);
+
+  const projected = (id: string) => {
+    const row = gradeRows.find((c) => c.id === id);
+    if (!row) return null;
+    return {
+      id: row.id,
+      name: row.name,
+      grade: gradeForYear(
+        {
+          id: row.id,
+          name: row.name,
+          grade: row.grade ?? undefined,
+          gradeByYear: row.gradeByYear ?? undefined,
+        },
+        activeYear?.id
+      ),
+    };
+  };
+
+  const from = projected(fromClassId);
+  const to = projected(toClassId);
   if (!from || !to) throw new ForbiddenError("Sinf topilmadi");
   assertSameGrade(from, to);
 
