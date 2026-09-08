@@ -43,7 +43,7 @@ export const ClassCard = React.forwardRef<HTMLDivElement, ClassCardProps>(functi
         style={{ ["--card-accent" as string]: tints.solid, ...(selected ? tints.tint : {}), ...style }}
         {...rest}
       >
-        <ClassSwatch hex={tints.solid} className="size-2.5" />
+        <ClassSwatch hex={tints.solid} />
         <span className="flex-1 truncate text-sm text-foreground/70 transition-colors group-hover/cc:text-foreground group-[[data-active=true]]/cc:font-semibold group-[[data-active=true]]/cc:text-foreground">
           {name}
         </span>

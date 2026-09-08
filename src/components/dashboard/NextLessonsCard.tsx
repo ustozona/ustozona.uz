@@ -167,7 +167,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
                           </h4>
                           <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-foreground">
-                              <ClassSwatch hex={r.classHex} className="size-2.5" />
+                              <ClassSwatch hex={r.classHex} />
                               {r.className}
                             </span>
                             <span className="size-0.5 shrink-0 rounded-full bg-muted-foreground/60" />

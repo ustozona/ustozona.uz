@@ -165,7 +165,7 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
                       )}
                       {meta && (
                         <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-foreground">
-                          <ClassSwatch hex={meta.hex} className="size-2.5" />
+                          <ClassSwatch hex={meta.hex} />
                           {meta.name}
                         </span>
                       )}

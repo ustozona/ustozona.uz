@@ -1356,7 +1356,7 @@ function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
           <div className="space-y-2">
             <Label>{t("classLabel")}</Label>
             <div className="flex items-center gap-2.5 rounded-md border border-input bg-muted/40 px-3 py-2">
-              <ClassSwatch hex={hex} className="size-2.5" />
+              <ClassSwatch hex={hex} />
               <span className="text-sm font-medium">{className}</span>
             </div>
           </div>

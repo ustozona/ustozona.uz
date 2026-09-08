@@ -52,10 +52,11 @@ import {
   type ClassData,
   NO_TOPIC_ID,
 } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { MONTHS_UZ_SHORT, DAYS_UZ_SUN } from "@/lib/localization";
 import { todayKey, dateKeyToDate } from "@/lib/date-keys";
-import { ClassSwatch } from "@/components/ClassSwatch";
+import { ClassSwatch, ClassSwatchStack } from "@/components/ClassSwatch";
+import { ClassChip } from "@/components/ClassChip";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1131,15 +1132,11 @@ export default function AssignmentEditorOverlay({
                         <span className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
                           {selectedClasses.length > 3 ? (
                             <>
-                              <span className="flex items-center -space-x-1.5">
-                                {selectedClasses.slice(0, 4).map((c) => (
-                                  <ClassSwatch
-                                    key={c.id}
-                                    hex={CLASS_COLOR_HEX[classColor(c)]}
-                                    className="size-5 ring-2 ring-card"
-                                  />
-                                ))}
-                              </span>
+                              <ClassSwatchStack
+                                hexes={selectedClasses.map(
+                                  (c) => CLASS_COLOR_HEX[classColor(c)],
+                                )}
+                                max={4} />
                               <span className="text-sm font-medium text-foreground">
                                 {t("classCount", {
                                   count: selectedClasses.length,
@@ -1148,20 +1145,11 @@ export default function AssignmentEditorOverlay({
                             </>
                           ) : (
                             selectedClasses.map((c) => (
-                              <span
+                              <ClassChip
                                 key={c.id}
-                                className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-                                style={{
-                                  backgroundColor: `color-mix(in srgb, ${CLASS_COLOR_HEX[classColor(c)]} 12%, transparent)`,
-                                  color: `color-mix(in srgb, ${CLASS_COLOR_HEX[classColor(c)]} 55%, var(--foreground))`,
-                                }}
-                              >
-                                <ClassSwatch
-                                  hex={CLASS_COLOR_HEX[classColor(c)]}
-                                  className="size-2.5"
-                                />
-                                <span className="truncate">{c.name}</span>
-                              </span>
+                                color={classColor(c)}
+                                name={c.name}
+                              />
                             ))
                           )}
                         </span>
@@ -1196,7 +1184,7 @@ export default function AssignmentEditorOverlay({
                             >
                               {on && <Check className="size-3 text-white" />}
                             </span>
-                            <ClassSwatch hex={hex} className="size-2.5" />
+                            <ClassSwatch hex={hex} />
                             <span className="truncate">{c.name}</span>
                           </DropdownMenuItem>
                         );
@@ -1251,7 +1239,12 @@ export default function AssignmentEditorOverlay({
                     oy/kun bloki, oʻngda hafta kuni + sinf chiplari). Sanasi
                     yoʻq sinf uchun punktir "Sana qoʻshish" tugmasi. */}
                   {(() => {
-                    type Item = { classId: string; name: string; hex: string };
+                    type Item = {
+                      classId: string;
+                      name: string;
+                      color: ClassColor;
+                      hex: string;
+                    };
                     const withoutDate = selectedClasses.filter(
                       (c) => !dateOf(c.id),
                     );
@@ -1267,6 +1260,7 @@ export default function AssignmentEditorOverlay({
                       g.items.push({
                         classId: c.id,
                         name: c.name,
+                        color: classColor(c),
                         hex: CLASS_COLOR_HEX[classColor(c)],
                       });
                     });
@@ -1308,32 +1302,16 @@ export default function AssignmentEditorOverlay({
                                 {selectedClasses.length > 1 && (
                                   <div className="flex flex-wrap items-center gap-1.5">
                                     {g.items.map((it) => (
-                                      <span
+                                      <ClassChip
                                         key={it.classId}
-                                        className="inline-flex min-w-0 shrink items-center gap-1.5 rounded-full py-0.5 pl-2 pr-1 text-xs font-medium"
-                                        style={{
-                                          backgroundColor: `color-mix(in srgb, ${it.hex} 12%, transparent)`,
-                                          color: `color-mix(in srgb, ${it.hex} 55%, var(--foreground))`,
-                                        }}
-                                      >
-                                        <ClassSwatch
-                                          hex={it.hex}
-                                          className="size-2 shrink-0"
-                                        />
-                                        <span className="truncate">
-                                          {it.name}
-                                        </span>
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            setDateFor(it.classId, "")
-                                          }
-                                          aria-label={t("clearDate")}
-                                          className="shrink-0 opacity-60 transition-opacity hover:opacity-100"
-                                        >
-                                          <X className="size-3" />
-                                        </button>
-                                      </span>
+                                        color={it.color}
+                                        name={it.name}
+                                        onRemove={() =>
+                                          setDateFor(it.classId, "")
+                                        }
+                                        removeLabel={t("clearDate")}
+                                        className="shrink"
+                                      />
                                     ))}
                                   </div>
                                 )}

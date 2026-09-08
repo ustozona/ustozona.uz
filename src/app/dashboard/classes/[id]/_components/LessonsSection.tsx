@@ -282,7 +282,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         onClick={() => setSelectedUnitId(unit.id)}
         className="list-row group w-full"
       >
-        <ClassSwatch hex={hex} className="size-2.5" />
+        <ClassSwatch hex={hex} />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           {pad(unit.number)}. {unit.title}
         </span>
@@ -579,7 +579,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                             </h4>
                             {lessonUnit && (
                               <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                                <ClassSwatch hex={hex} className="size-2" />
+                                <ClassSwatch hex={hex} />
                                 <span className="truncate">{pad(lessonUnit.number)}. {lessonUnit.title}</span>
                               </div>
                             )}

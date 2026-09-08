@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { ClassSwatch } from "@/components/ClassSwatch";
 import {
   TOPIC_COLOR_HEX,
   type Assignment,
@@ -179,10 +180,7 @@ export default function ReuseModal({
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <span
-                          className="size-2 rounded-full shrink-0"
-                          style={{ backgroundColor: dotHex }}
-                        />
+                        <ClassSwatch hex={dotHex} />
                         <div className="min-w-0">
                           <TypographySmall className="truncate text-foreground">{it.assignment.title}</TypographySmall>
                           <TypographyMuted className="truncate">

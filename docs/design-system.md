@@ -42,21 +42,40 @@ Hosilalar:
 - `classTints(color)` — tayyor inline-style (surface, tint, badge, text, ring, ...).
 - `color-mix(in srgb, ${hex} N%, transparent)` — shaffof ottenka.
 
-#### Sinfni koʻrsatishning ikki kanonik shakli
+#### Sinfni koʻrsatishning toʻrt kanonik shakli
 
-Sinf rangi/nomi UI'da **faqat shu ikki komponent** orqali chiziladi — qoʻlda
+Sinf rangi/nomi UI'da **faqat shu komponentlar** orqali chiziladi — qoʻlda
 `<span className="size-2 rounded-full" style={{ backgroundColor: hex }}>`
 yozilmaydi va mahalliy nusxa yaratilmaydi:
 
 | Holat | Komponent |
 |---|---|
 | Sinf nomi qatorning **asosiy** matni (sinflar roʻyxati, tanlovchi, breadcrumb, meta-qator) | `<ClassSwatch hex={…} />` + oddiy matn |
-| Sinf nomi **yorliq** sifatida boshqa mazmun ichida (dars kartasi, jadval qatori, chip) | `<ClassBadge color={…} name={…} />` |
+| Sinf nomi **oʻqiladigan yorliq** boshqa mazmun ichida (dars kartasi, jadval qatori) | `<ClassBadge color={…} name={…} />` |
+| Sinf nomi **bosiladigan chip** (formada tanlangan sinf, krestcha bilan) | `<ClassChip color={…} name={…} onRemove={…} />` |
+| **Nechta** sinf — ustma-ust taxlangan doiralar | `<ClassSwatchStack hexes={…} />` |
 
-`ClassSwatch` — doira (`rounded-full`), oʻlcham `className` bilan sozlanadi,
-shakl oʻzgarmaydi. `ClassBadge` anatomiyasi (18px qobiq, 11px matn,
-`classTints().badge` foni) komponent ichida qulflangan — chaqiruv joyida
-takrorlanmaydi.
+**Doira oʻlchami — 8px, yagona.** `ClassSwatch` ichida `size-2` `className`dan
+keyin `cn()` ga beriladi, `cn` esa `tailwind-merge` — shuning uchun chaqiruv
+joyida oʻlchamni oʻzgartirib boʻlmaydi. Bu 2026-09 auditidan keyin qotirildi:
+oʻlcham `className` orqali berilar edi va loyihada 4 xil doira paydo boʻlgan
+edi (6/8/10/12px), hatto **bir xil** kontekstda ham — 14px matnli qator
+kodning turli joyida uchala oʻlchamda ham chizilgan edi. 12px hech qachon
+ataylab tanlanmagan: u shunchaki eski default edi.
+
+Nega bitta oʻlcham yetadi: doira KATTALIK oʻlchamaydi, u «bu qaysi sinf»
+degan savolga RANG bilan javob beradi. Oʻlcham hech qanday maʼlumot
+tashimaydi — faqat chaqiruv joyida qaror talab qiladi, qaror esa vaqt oʻtib
+driftga aylanadi.
+
+`ClassSwatchStack` — istisno emas, **boshqa qoida**: halqa (`ring-2 ring-card`)
+doiralarni ajratadi va diametrni yeydi, 8px doira halqadan keyin oʻqilmay
+qoladi. Shu sabab u yerda 12px.
+
+`ClassBadge` (18px qobiq, 11px matn) va `ClassChip` (12px matn, barmoq
+nishoni) oʻlcham prop'i bilan emas, **alohida nom** bilan ajratilgan —
+chaqiruv joyida «kattasinimi, kichiginimi?» degan savol tugʻilmasin. Ikkalasi
+ham rang retseptini `classTints()`dan oladi, qoʻlda `color-mix` yozilmaydi.
 
 ---
 

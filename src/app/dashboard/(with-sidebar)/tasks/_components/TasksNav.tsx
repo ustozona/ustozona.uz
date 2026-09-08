@@ -184,7 +184,7 @@ export function TasksNav({
                       data-active={active || undefined}
                       aria-current={active || undefined}
                     >
-                      <ClassSwatch hex={hex} className="size-2" />
+                      <ClassSwatch hex={hex} />
                       <span
                         className={cn(
                           "flex-1 truncate text-left text-sm transition-colors",

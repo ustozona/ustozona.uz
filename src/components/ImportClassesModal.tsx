@@ -325,7 +325,7 @@ export function ImportClassesModal({ open, onOpenChange, onDone }: Props) {
                       <div className="relative">
                         <ClassSwatch
                           hex={CLASS_COLOR_HEX[PALETTE[i % PALETTE.length]]}
-                          className="absolute left-3 top-1/2 size-2.5 -translate-y-1/2"
+                          className="absolute left-3 top-1/2 -translate-y-1/2"
                         />
                         <Input
                           value={r.name}

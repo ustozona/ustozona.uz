@@ -378,7 +378,7 @@ export default function LessonsPage() {
         className={cn("list-row group w-full", isOver && "ring-2 rounded-lg")}
         style={isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : undefined}
       >
-        <ClassSwatch hex={selectedClassHex} className="size-2" />
+        <ClassSwatch hex={selectedClassHex} />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           {pad(unit.number)}. {unit.title}
         </span>
@@ -727,7 +727,7 @@ export default function LessonsPage() {
                           </h4>
                           {lessonUnit && (
                             <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                              <ClassSwatch hex={selectedClassHex} className="size-2" />
+                              <ClassSwatch hex={selectedClassHex} />
                               <span className="truncate">{pad(lessonUnit.number)}. {lessonUnit.title}</span>
                             </div>
                           )}
@@ -765,9 +765,7 @@ export default function LessonsPage() {
                               onClick={() => setUnitForClass(lesson.id, effectiveClassId!, target?.id ?? null)}
                             >
                               <ClassSwatch
-                                hex={target ? selectedClassHex : "var(--muted-foreground)"}
-                                className="size-2"
-                              />
+                                hex={target ? selectedClassHex : "var(--muted-foreground)"} />
                               {target ? `${pad(target.number)}. ${target.title}` : t("noUnitTitle")}
                             </ContextMenuItem>
                           ))}
