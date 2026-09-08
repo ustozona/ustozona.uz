@@ -14,7 +14,9 @@ import {
   MessageScrollerProvider, MessageScroller, MessageScrollerViewport, MessageScrollerContent, MessageScrollerItem, MessageScrollerButton,
 } from "@/components/ui/message-scroller";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
-import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType, normalizeNotionColor } from "./callout-types";
+import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType, normalizeNotionColor, type CalloutType } from "./callout-types";
+import { CALLOUT_ICON_NODE, CALLOUT_META } from "./callout-extension";
+import { CLASS_COLOR_BASE, makeColorTints, type ClassColor } from "@/lib/class-colors";
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -33,9 +35,13 @@ const katexHtml = (expr: string, displayMode: boolean) => {
    boʻlishi mumkin) — render va darsga qoʻshishdan oldin DOMPurify bilan tozalanadi. */
 const md = (text: string) => {
   const parts: string[] = [];
-  const masked = text
-    .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) => `@@MATH${parts.push(katexHtml(expr, true)) - 1}@@`)
-    .replace(/\$([^$\n]+?)\$/g, (_, expr: string) => `@@MATH${parts.push(katexHtml(expr, false)) - 1}@@`);
+  const mask = (html: string) => `@@MATH${parts.push(html) - 1}@@`;
+  let masked = text
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_, expr: string) => mask(katexHtml(expr, true)))
+    .replace(/\$([^$\n]+?)\$/g, (_, expr: string) => mask(katexHtml(expr, false)));
+  /* Chat pufakchasida ham callout CHIZILADI (statik variant) — ilgari bu
+     qator yoʻq edi va javobda "[!question] **Sarlavha**" xom matn koʻrinardi. */
+  masked = extractCallouts(masked, mask, renderChatCallout);
   let html = marked.parse(masked) as string;
   html = html.replace(/@@MATH(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
   return DOMPurify.sanitize(html);
@@ -129,7 +135,26 @@ const CALLOUT_TYPES_RE = new RegExp(`^(${CALLOUT_KEYS_RE_SOURCE})$`);
    yaʼni AI xato rang yozsa blok yoʻqolmaydi. */
 const FREE_CALLOUT_RE = /^>\s*\[!free:([^\s|\]]+)(?:\|([a-z]+))?\]\s*(.*)$/;
 
-function extractCallouts(text: string, mask: (html: string) => string): string {
+/* Callout topilganda chaqiriladigan chizuvchi. Ikkita amalga oshirilishi bor:
+   muharrirga qoʻshish uchun Tiptap tugun HTML'i (`renderEditorCallout`) va
+   chat pufakchasi uchun statik HTML (`renderChatCallout`). Ilgari faqat
+   birinchisi bor edi va `md()` (chat) callout'ni umuman tanimasdi — javobda
+   xom "[!question] ..." matni koʻrinardi, darsga qoʻshilgach esa toʻgʻri
+   karta chiqardi: koʻrib turgan narsa bilan qoʻshiladigan narsa bir xil
+   emasdi. */
+type CalloutRender = (
+  spec:
+    | { kind: "type"; type: CalloutType }
+    | { kind: "free"; emoji: string; color: string },
+  titleHtml: string,
+  bodyHtml: string
+) => string;
+
+function extractCallouts(
+  text: string,
+  mask: (html: string) => string,
+  render: CalloutRender
+): string {
   const lines = text.split("\n");
   const out: string[] = [];
   let i = 0;
@@ -161,9 +186,13 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
          yaʼni ichiga <p> tushsa Tiptap uni tashlab yuboradi. Chiqish
          DOMPurify'dan oʻtadi (mdEditor oxirida). */
       const titleHtml = marked.parseInline(title) as string;
-      const html = freeMatch
-        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="${normalizeNotionColor(freeMatch[2])}"><div data-notion-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`
-        : `<div data-callout-type="${normalizeCalloutType(type)}"><div data-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`;
+      const html = render(
+        freeMatch
+          ? { kind: "free", emoji: freeMatch[1], color: normalizeNotionColor(freeMatch[2]) }
+          : { kind: "type", type: normalizeCalloutType(type) },
+        titleHtml,
+        bodyHtml
+      );
       out.push(mask(html));
       continue;
     }
@@ -172,6 +201,44 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
   }
   return out.join("\n");
 }
+
+/* Muharrirga qoʻshish uchun — Tiptap `parseHTML` aynan shu atributlarni
+   qidiradi (Callout / NotionCallout kengaytmalari). */
+const renderEditorCallout: CalloutRender = (spec, titleHtml, bodyHtml) =>
+  spec.kind === "free"
+    ? `<div data-notion-callout data-emoji="${escapeAttr(spec.emoji)}" data-color="${spec.color}"><div data-notion-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`
+    : `<div data-callout-type="${spec.type}"><div data-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`;
+
+/* Chat pufakchasi uchun ikon SVG'i — `calloutIconSpec()` ProseMirror
+   DOMOutputSpec (massiv) qaytaradi, bu yerda esa HTML MATN kerak. Shuning
+   uchun satr AYNI YAGONA MANBADAN (`CALLOUT_ICON_NODE`) yigʻiladi — ikon
+   muharrirdagi bilan bir xil boʻlib qolsin. */
+function calloutIconSvg(type: CalloutType): string {
+  const children = CALLOUT_ICON_NODE[type]
+    .map(
+      ([tag, attrs]) =>
+        `<${tag} ${Object.entries(attrs)
+          .map(([k, v]) => `${k}="${escapeAttr(v)}"`)
+          .join(" ")} />`
+    )
+    .join("");
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${children}</svg>`;
+}
+
+/* Chat pufakchasi uchun — `.static-callout` (globals.css, yordam
+   maqolalarida ishlatiladigan statik variant). Muharrirdagi `.callout`
+   bilan bir xil vizual til (chap rangli hoshiya + tint fon + ikon), lekin
+   Tiptap NodeView'siz va `.lesson-prose` skopiga bogʻlanmagan. Chat paneli
+   tor boʻlgani uchun ataylab shu yengil variant tanlangan: toʻliq muharrir
+   kartasi (tahrirlanadigan sarlavha, drag qoʻli) pufakchada ortiqcha. */
+const renderChatCallout: CalloutRender = (spec, titleHtml, bodyHtml) => {
+  const inner = `<div><p class="static-callout-title">${titleHtml}</p><div class="static-callout-body">${bodyHtml}</div></div>`;
+  if (spec.kind === "free") {
+    const tint = makeColorTints(CLASS_COLOR_BASE[spec.color as ClassColor]);
+    return `<div class="static-callout" style="background:${escapeAttr(String(tint.tint.backgroundColor ?? ""))}"><div class="static-callout-icon">${escapeAttr(spec.emoji)}</div>${inner}</div>`;
+  }
+  return `<div class="static-callout" style="--cl:${escapeAttr(CALLOUT_META[spec.type].color)}"><div class="static-callout-icon">${calloutIconSvg(spec.type)}</div>${inner}</div>`;
+};
 
 /* Vazifa roʻyxati (`- [ ]`) — marked va Tiptap BOSHQA-BOSHQA HTML kutadi.
 
@@ -243,7 +310,7 @@ const mdEditor = (text: string) => {
       mask(`<div data-type="block-math" data-latex="${escapeAttr(expr.trim())}"></div>`))
     .replace(/\$([^$\n]+?)\$/g, (_, expr: string) =>
       mask(`<span data-type="inline-math" data-latex="${escapeAttr(expr.trim())}"></span>`));
-  masked = extractCallouts(masked, mask);
+  masked = extractCallouts(masked, mask, renderEditorCallout);
   let html = marked.parse(masked) as string;
   html = html.replace(/@@TOK(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
   return DOMPurify.sanitize(toTaskLists(html));
