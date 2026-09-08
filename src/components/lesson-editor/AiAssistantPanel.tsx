@@ -157,6 +157,65 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
   return out.join("\n");
 }
 
+/* Vazifa roʻyxati (`- [ ]`) — marked va Tiptap BOSHQA-BOSHQA HTML kutadi.
+
+   marked chiqaradi:   <ul><li><input type="checkbox"> Matn</li></ul>
+   Tiptap TaskList kutadi:
+     <ul data-type="taskList"><li data-type="taskItem" data-checked="false">
+       <p>Matn</p></li></ul>
+
+   ⚠️ Moslashtirilmasa xato CHIQMAYDI — Tiptap `<input>` ni tanimay tashlab
+   yuboradi va vazifa roʻyxati jimgina oddiy nuqtali roʻyxatga aylanadi,
+   katakchasiz. SYSTEM prompt esa AI'ga `- [ ]` ishlatishni aytadi, yaʼni
+   vaʼda qilingan format har safar buzilardi. */
+function toTaskLists(html: string): string {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("ul").forEach((ul) => {
+    const items = Array.from(ul.children).filter((el) => el.tagName === "LI");
+    /* Katakcha ikki joyda boʻlishi mumkin: "zich" roʻyxatda toʻgʻridan-toʻgʻri
+       <li> ichida, "boʻsh qatorli" (loose) roʻyxatda esa marked elementni
+       <p> ga oʻrab qoʻyadi. Faqat birinchisini qidirsak, boʻsh qator bilan
+       yozilgan vazifa roʻyxati oʻgirilmay qolardi. */
+    const boxes = items.map(
+      (li) =>
+        li.querySelector<HTMLInputElement>(':scope > input[type="checkbox"]') ??
+        li.querySelector<HTMLInputElement>(
+          ':scope > p:first-child > input[type="checkbox"]:first-child'
+        )
+    );
+    // Faqat HAMMA element katakchali boʻlsa — aralash roʻyxat oddiy qoladi
+    if (!items.length || boxes.some((b) => !b)) return;
+
+    ul.setAttribute("data-type", "taskList");
+    items.forEach((li, i) => {
+      const box = boxes[i]!;
+      li.setAttribute("data-type", "taskItem");
+      li.setAttribute("data-checked", box.hasAttribute("checked") ? "true" : "false");
+      const host = box.parentElement!;
+      box.remove();
+      // "<input> Matn" dagi ajratuvchi boʻshliq katakcha bilan ketmaydi
+      const lead = host.firstChild;
+      if (lead && lead.nodeType === 3 && /^\s/.test(lead.nodeValue ?? "")) {
+        lead.nodeValue = (lead.nodeValue ?? "").replace(/^\s+/, "");
+      }
+      /* taskItem tanasi blok tugun boʻlishi shart. Ichma-ich roʻyxat
+         (`nested: true`) tanaga tortilmasin — birinchi UL/OL da toʻxtaymiz. */
+      if (!li.querySelector(":scope > p")) {
+        const p = doc.createElement("p");
+        while (
+          li.firstChild &&
+          !(li.firstChild.nodeType === 1 &&
+            /^(UL|OL)$/.test((li.firstChild as Element).tagName))
+        ) {
+          p.appendChild(li.firstChild);
+        }
+        li.insertBefore(p, li.firstChild);
+      }
+    });
+  });
+  return doc.body.innerHTML;
+}
+
 /* Darsga qoʻshish uchun: formulalar Tiptap Mathematics tugunlariga, callout'lar
    esa Tiptap Callout tugunlariga aylantiriladi — shunda muharrirda haqiqiy
    interaktiv elementlar (KaTeX, rangli ikonli karta) sifatida qoʻshiladi. */
@@ -171,7 +230,7 @@ const mdEditor = (text: string) => {
   masked = extractCallouts(masked, mask);
   let html = marked.parse(masked) as string;
   html = html.replace(/@@TOK(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
-  return DOMPurify.sanitize(html);
+  return DOMPurify.sanitize(toTaskLists(html));
 };
 
 type Msg = { role: "user" | "assistant"; content: string };
