@@ -14,7 +14,7 @@ import {
   MessageScrollerProvider, MessageScroller, MessageScrollerViewport, MessageScrollerContent, MessageScrollerItem, MessageScrollerButton,
 } from "@/components/ui/message-scroller";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
-import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType } from "./callout-types";
+import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType, normalizeNotionColor } from "./callout-types";
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -123,7 +123,11 @@ const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;
    sintaksis: qatʼiy tur yoʻq, faqat erkin emoji. Route.ts SYSTEM promptida
    tushuntirilgan. */
 const CALLOUT_TYPES_RE = new RegExp(`^(${CALLOUT_KEYS_RE_SOURCE})$`);
-const FREE_CALLOUT_RE = /^>\s*\[!free:(\S+)\]\s*(.*)$/;
+/* "> [!free:EMOJI] Sarlavha" yoki "> [!free:EMOJI|rang] Sarlavha".
+   Rang ixtiyoriy va ORQAGA MOS: eski (rangsiz) yozuv oldingidek `gray`
+   boʻladi. Nomaʼlum rang `normalizeNotionColor` orqali `gray` ga tushadi,
+   yaʼni AI xato rang yozsa blok yoʻqolmaydi. */
+const FREE_CALLOUT_RE = /^>\s*\[!free:([^\s|\]]+)(?:\|([a-z]+))?\]\s*(.*)$/;
 
 function extractCallouts(text: string, mask: (html: string) => string): string {
   const lines = text.split("\n");
@@ -134,7 +138,7 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
     const m = freeMatch ? null : /^>\s*\[!(\w+)\]\s*(.*)$/.exec(lines[i]);
     const type = m?.[1].toLowerCase();
     if (freeMatch || (m && type && CALLOUT_TYPES_RE.test(type))) {
-      const title = (freeMatch ? freeMatch[2] : m![2]).trim();
+      const title = (freeMatch ? freeMatch[3] : m![2]).trim();
       const bodyLines: string[] = [];
       i++;
       while (i < lines.length && /^>/.test(lines[i])) {
@@ -142,12 +146,24 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
         i++;
       }
       const bodyHtml = bodyLines.join("\n").trim() ? (marked.parse(bodyLines.join("\n")) as string) : "<p></p>";
-      // Sarlavha `<strong>` bilan — qalinlik endi CSS orqali majburiy emas,
-      // faqat haqiqiy Bold markasi orqali (EditorToolbar.tsx'dagi
-      // insertCallout/insertNotionCallout bilan bir xil andoza).
+      /* Sarlavha `<strong>` bilan — qalinlik endi CSS orqali majburiy emas,
+         faqat haqiqiy Bold markasi orqali (EditorToolbar.tsx'dagi
+         insertCallout/insertNotionCallout bilan bir xil andoza).
+
+         ⚠️ Sarlavha ichidagi markdown ham OʻQILADI (`parseInline`). Ilgari
+         u `escapeAttr` bilan yalangʻoch matn sifatida qoʻyilardi va
+         "> [!question] **Standartni aniqlash**" muharrirda aynan
+         yulduzchalari bilan chiqardi. Tana (`marked.parse`) toʻgʻri
+         ishlagani uchun farq koʻzga tashlanardi: bir blokning tanasi
+         formatlangan, sarlavhasi esa xom matn.
+
+         `parseInline` — `parse` emas: calloutTitle sxemasi `inline*`,
+         yaʼni ichiga <p> tushsa Tiptap uni tashlab yuboradi. Chiqish
+         DOMPurify'dan oʻtadi (mdEditor oxirida). */
+      const titleHtml = marked.parseInline(title) as string;
       const html = freeMatch
-        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="gray"><div data-notion-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`
-        : `<div data-callout-type="${normalizeCalloutType(type)}"><div data-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`;
+        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="${normalizeNotionColor(freeMatch[2])}"><div data-notion-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`
+        : `<div data-callout-type="${normalizeCalloutType(type)}"><div data-callout-title><strong>${titleHtml}</strong></div>${bodyHtml}</div>`;
       out.push(mask(html));
       continue;
     }
@@ -155,6 +171,65 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
     i++;
   }
   return out.join("\n");
+}
+
+/* Vazifa roʻyxati (`- [ ]`) — marked va Tiptap BOSHQA-BOSHQA HTML kutadi.
+
+   marked chiqaradi:   <ul><li><input type="checkbox"> Matn</li></ul>
+   Tiptap TaskList kutadi:
+     <ul data-type="taskList"><li data-type="taskItem" data-checked="false">
+       <p>Matn</p></li></ul>
+
+   ⚠️ Moslashtirilmasa xato CHIQMAYDI — Tiptap `<input>` ni tanimay tashlab
+   yuboradi va vazifa roʻyxati jimgina oddiy nuqtali roʻyxatga aylanadi,
+   katakchasiz. SYSTEM prompt esa AI'ga `- [ ]` ishlatishni aytadi, yaʼni
+   vaʼda qilingan format har safar buzilardi. */
+function toTaskLists(html: string): string {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("ul").forEach((ul) => {
+    const items = Array.from(ul.children).filter((el) => el.tagName === "LI");
+    /* Katakcha ikki joyda boʻlishi mumkin: "zich" roʻyxatda toʻgʻridan-toʻgʻri
+       <li> ichida, "boʻsh qatorli" (loose) roʻyxatda esa marked elementni
+       <p> ga oʻrab qoʻyadi. Faqat birinchisini qidirsak, boʻsh qator bilan
+       yozilgan vazifa roʻyxati oʻgirilmay qolardi. */
+    const boxes = items.map(
+      (li) =>
+        li.querySelector<HTMLInputElement>(':scope > input[type="checkbox"]') ??
+        li.querySelector<HTMLInputElement>(
+          ':scope > p:first-child > input[type="checkbox"]:first-child'
+        )
+    );
+    // Faqat HAMMA element katakchali boʻlsa — aralash roʻyxat oddiy qoladi
+    if (!items.length || boxes.some((b) => !b)) return;
+
+    ul.setAttribute("data-type", "taskList");
+    items.forEach((li, i) => {
+      const box = boxes[i]!;
+      li.setAttribute("data-type", "taskItem");
+      li.setAttribute("data-checked", box.hasAttribute("checked") ? "true" : "false");
+      const host = box.parentElement!;
+      box.remove();
+      // "<input> Matn" dagi ajratuvchi boʻshliq katakcha bilan ketmaydi
+      const lead = host.firstChild;
+      if (lead && lead.nodeType === 3 && /^\s/.test(lead.nodeValue ?? "")) {
+        lead.nodeValue = (lead.nodeValue ?? "").replace(/^\s+/, "");
+      }
+      /* taskItem tanasi blok tugun boʻlishi shart. Ichma-ich roʻyxat
+         (`nested: true`) tanaga tortilmasin — birinchi UL/OL da toʻxtaymiz. */
+      if (!li.querySelector(":scope > p")) {
+        const p = doc.createElement("p");
+        while (
+          li.firstChild &&
+          !(li.firstChild.nodeType === 1 &&
+            /^(UL|OL)$/.test((li.firstChild as Element).tagName))
+        ) {
+          p.appendChild(li.firstChild);
+        }
+        li.insertBefore(p, li.firstChild);
+      }
+    });
+  });
+  return doc.body.innerHTML;
 }
 
 /* Darsga qoʻshish uchun: formulalar Tiptap Mathematics tugunlariga, callout'lar
@@ -171,7 +246,7 @@ const mdEditor = (text: string) => {
   masked = extractCallouts(masked, mask);
   let html = marked.parse(masked) as string;
   html = html.replace(/@@TOK(\d+)@@/g, (_, i: string) => parts[Number(i)] ?? "");
-  return DOMPurify.sanitize(html);
+  return DOMPurify.sanitize(toTaskLists(html));
 };
 
 type Msg = { role: "user" | "assistant"; content: string };

@@ -6,6 +6,11 @@ import { visibleClassIds } from "@/server/workspace";
 import { streamChat, configuredProviders, type AiChatMessage, type StreamChatArgs, type ProviderId } from "@/server/ai/providers";
 import { buildClassContext, buildClassContexts } from "@/server/ai/class-context";
 import { aiDailyLimit, todayTashkent } from "@/lib/ai-limits";
+import {
+  CALLOUT_KEYS,
+  AI_CALLOUT_USAGE,
+  NOTION_CALLOUT_COLORS,
+} from "@/components/lesson-editor/callout-types";
 import uzMessages from "../../../../messages/uz.json";
 
 /* Callout turkodlari + yorliqlar — YAGONA MANBADAN (messages/uz.json,
@@ -13,12 +18,25 @@ import uzMessages from "../../../../messages/uz.json";
    takrorlangan edi: muharrir tomonidagi yorliq oʻzgarsa, AI eski nom bilan
    callout yasashda davom etardi. Prompt har doim oʻzbekcha boʻlgani uchun
    uz.json'dan toʻgʻridan-toʻgʻri olinadi (callout-extension.ts "use client"
-   va lucide-react ni ortiqcha ilova qilib yuboradi, bu yerga kerak emas). */
-const CALLOUT_TYPE_LIST = Object.entries(
-  uzMessages.LessonEditorToolbar.calloutTypes as Record<string, string>
-)
-  .map(([code, label]) => `${code} (${label})`)
-  .join(", ");
+   va lucide-react ni ortiqcha ilova qilib yuboradi, bu yerga kerak emas).
+
+   ⚠️ YORLIQNING OʻZI YETARLI EMAS. Turkodlar Obsidian'dan meros va
+   bizdagi pedagogik yorliq bilan ustma-ust tushmaydi — eng yomoni
+   `bug` = «Uyga vazifa». Faqat "kod (yorliq)" berilsa, model inglizcha
+   soʻzga tayanadi va uyga vazifani boshqa turga yozadi. Shuning uchun
+   har turga QACHON ishlatish izohi qoʻshiladi (AI_CALLOUT_USAGE,
+   callout-types.ts — u yerda `Record<CalloutType, …>` bilan yangi tur
+   izohsiz qolmasligi kafolatlangan). */
+const CALLOUT_LABELS = uzMessages.LessonEditorToolbar.calloutTypes as Record<
+  string,
+  string
+>;
+const CALLOUT_TYPE_LIST = CALLOUT_KEYS.map(
+  (code) => `    - ${code} — «${CALLOUT_LABELS[code] ?? code}»: ${AI_CALLOUT_USAGE[code]}`
+).join("\n");
+
+/** Emojili blok fon ranglari — muharrir palitrasi bilan bir xil. */
+const NOTION_COLOR_LIST = NOTION_CALLOUT_COLORS.join(", ");
 
 /**
  * Ustozona AI — dars muharriridagi AI yordamchi uchun streaming endpoint.
@@ -38,21 +56,45 @@ mavjud darsni yaxshilash, savollar va baholash mezonlarini taklif qilish.
 Qoidalar:
 - Faqat oʻzbek tilida (lotin), tabiiy va aniq yoz.
 - Apostrof oʻrniga toʻgʻri belgilardan foydalan: Oʻ/Gʻ uchun ʻ (U+02BB), tutuq belgisi uchun ʼ (U+02BC).
-- Javobni Markdown formatida yoz va dars muharririning HAMMA formatlash imkoniyatlaridan maksimal foydalan (bular darsga "Darsga qoʻshish" bilan toʻgʻridan-toʻgʻri, tayyor koʻrinishda tushadi):
-  - Sarlavhalar (##, ###) — bosqich/boʻlim nomlari uchun.
-  - Roʻyxatlar (- yoki 1.) va vazifa roʻyxati (- [ ]) — qadamlar, topshiriqlar uchun.
-  - **Qalin** — asosiy atama/koʻrsatma; jadval (| ... | ... |, GFM) — mezon/rubrika, taqqoslash, vaqt jadvali kabi tuzilmalar uchun.
-  - Formulalar — $...$ (qator ichi) yoki $$...$$ (alohida qator), LaTeX sintaksisi.
-  - Callout (rangli, ikonli maʼlumot bloki) — ikki turi bor, HAR safar mos joyda ishlatilsin (masalan maqsad/eslatma/misol/diqqatli oʻrin uchun):
-    1) Qatʼiy pedagogik tur (Obsidian uslubi) — "> [!turkod] Sarlavha" qatoridan keyin har qatorda "> " bilan davom etadigan matn. Mumkin boʻlgan turkodlar (aynan shu inglizcha soʻz, boshqasi ishlamaydi):
-       ${CALLOUT_TYPE_LIST}.
+- Javobni Markdown formatida yoz. Javob "Darsga qoʻshish" tugmasi bilan dars muharririga TOʻGʻRIDAN-TOʻGʻRI tushadi, shuning uchun FAQAT quyidagilarni ishlat — roʻyxatda yoʻq narsa muharrirda yoʻqoladi yoki oddiy matnga aylanadi:
+  - Sarlavhalar: ## va ### — bosqich/boʻlim nomlari uchun. Darsning oʻz sarlavhasi alohida maydonda, shuning uchun # ishlatma.
+  - Roʻyxatlar: "- " (nuqtali), "1. " (raqamli), ichma-ich joylash mumkin (2 boʻshliq bilan).
+  - Vazifa roʻyxati: "- [ ] bajarilmagan" va "- [x] bajarilgan" — muharrirda haqiqiy belgilanadigan katakcha boʻladi. Oʻquvchi/oʻqituvchi belgilab boradigan qadamlar uchun aynan shuni ishlat.
+  - Matn ichi: **qalin**, *kursiv*, ~~oʻchirilgan~~, \`kod\`.
+  - Jadval (GFM): "| ustun | ustun |" va ostida "| --- | --- |" — mezon/rubrika, taqqoslash, vaqt jadvali uchun.
+  - Havola: [koʻrinadigan matn](https://...) — FAQAT haqiqatan bilgan manzilingni yoz. Havola oʻylab topma; ishonchli manba boʻlmasa umuman havola qoʻyma.
+  - Kod bloki: uch teskari tirnoq bilan ochib-yopiladi — informatika darsi yoki namunaviy matn uchun.
+  - Ajratuvchi chiziq: alohida qatorda "---" — yirik boʻlimlar orasida, kam ishlat.
+  - Oddiy iqtibos: "> " bilan boshlangan qator (quyidagi callout sintaksisiga tushmasa) — sitata/parcha uchun.
+  - Formulalar: $...$ (qator ichi) yoki $$...$$ (alohida qator), LaTeX sintaksisi. Muharrirda KaTeX bilan chiroyli chiziladi, shuning uchun matematik/kimyoviy ifodani oddiy matn bilan emas, aynan shu bilan yoz.
+  - Emoji: oddiy unicode emoji toʻgʻridan-toʻgʻri matnga yoziladi va muharrirda yagona uslubdagi chiroyli belgi sifatida koʻrinadi. Sarlavhada, roʻyxat boshida yoki callout ichida ishlatsa boʻladi — bosqichlarni koʻzga tashlanadigan qilish uchun foydali (mas. "### 🎯 Maqsad", "### ⏱️ Kirish qismi"). Meʼyorida: bitta sarlavhaga bittadan koʻp emas, jadval ichida va rasmiy hujjat ohangini buzadigan joyda ishlatma.
+  - Callout — rangli, ikonli maʼlumot bloki. Darsning eng muhim joylarini koʻzga tashlantiradi, shuning uchun har javobda mos oʻrinlarda ishlat (lekin ketma-ket 5-6 ta emas: blok koʻpaysa ajralib turishdan toʻxtaydi). Ikki xili bor va ular ARALASHTIRILMAYDI:
+
+    1) PEDAGOGIK TUR — qatʼiy roʻyxatdan tur tanlanadi, ikon va rang shu turdan avtomatik keladi.
+       Format: "> [!turkod] Sarlavha" qatori, keyin har qatori "> " bilan boshlanadigan matn.
+       ⚠️ TURKOD INGLIZCHA SOʻZ, LEKIN MAʼNOSI BOSHQA. Kodning inglizcha maʼnosiga tayanma — quyidagi izohga tayan. Ayniqsa: bug = uyga vazifa (dasturlash xatosi EMAS), danger = xavfsizlik qoidasi, info = taʼrif.
+${CALLOUT_TYPE_LIST}
+       SARLAVHA QOIDALARI (ikkala tur uchun ham bir xil):
+       - Sarlavha QISQA boʻlsin — 2-5 soʻz, gap emas, nuqta qoʻyilmaydi. Butun fikrni sarlavhaga sigʻdirma: u blok tanasiga, keyingi "> " qatorlariga yoziladi.
+       - Sarlavha ALLAQACHON qalin chiqadi — uni ** ** bilan oʻrama. "> [!warning] **Eslatma**" NOTOʻGʻRI, "> [!warning] Eslatma" TOʻGʻRI.
+       - Sarlavha yorliqni takrorlamasin: "> [!abstract] Maqsad" emas, "> [!abstract] Bugun nimani oʻrganamiz".
+       Blok tanasida oddiy matndan tashqari roʻyxat, **qalin** va formulalar ishlaydi — har qator "> " bilan boshlansa boʻldi.
        Masalan:
-       > [!abstract] Dars maqsadi
-       > Oʻquvchi ... qila oladi.
-    2) Erkin "Emojili blok" — qatʼiy tur mos kelmaydigan, ochiq/norasmiy eslatma uchun (masalan qiziqarli fakt, motivatsion soʻz, umumiy maslahat). Format: "> [!free:EMOJI] Sarlavha" — EMOJI oʻrniga MAVZUGA MOS bitta emoji (mas. 💡, 🎯, ⭐, 🔥), keyin xuddi yuqoridagidek "> " bilan davom etadigan matn. Turkodlardan birortasi ham mos kelmasa, shuni ishlat — "note" bilan "free"ni bir-biriga aralashtirma.
+       > [!abstract] Bugun nimani oʻrganamiz
+       > - Fotosintez bosqichlarini ayta oladi
+       > - Tenglamani $6CO_2 + 6H_2O$ koʻrinishida yoza oladi
+
+    2) EMOJILI BLOK — qatʼiy tur yoʻq, emoji va rangni OʻZING tanlaysan. Roʻyxatdagi turlardan birortasi ham mos kelmaganda ishlatiladi: qiziqarli fakt, motivatsion soʻz, umumiy maslahat, mavzuga kirish.
+       Format: "> [!free:EMOJI|rang] Sarlavha", keyin xuddi yuqoridagidek "> " bilan davom etadigan matn.
+       EMOJI — mavzuga mos bitta emoji (mas. 💡, 🎯, ⭐, 🔥, 🔬, 📚).
+       rang — ixtiyoriy, mumkin boʻlganlari: ${NOTION_COLOR_LIST}. Yozilmasa gray boʻladi; rangni mazmunga qarab tanla (mas. qiziqarli fakt — amber, tadqiqot — cyan, ogohlantirmaydigan eslatma — gray).
        Masalan:
-       > [!free:🔥] Qiziqarli fakt
-       > Bilasizmi, ...
+       > [!free:🔥|amber] Qiziqarli fakt
+       > Bir dona bargda milliondan ortiq xloroplast bor.
+       ⚠️ "note" bilan "free"ni aralashtirma: pedagogik maʼnosi bor blok — 1-tur, erkin/norasmiy blok — 2-tur.
+       ⚠️ "> [!free:...]" ichida turkod yozma, "> [!turkod]" ichida esa emoji/rang yozma — ikkala sintaksis alohida.
+- ISHLATMA (muharrir buni qabul qilmaydi va javob buzilib tushadi): HTML teglari (<div>, <br>, <span> va h.k.); rasm qoʻyish (![]() — sen fayl yuklay olmaysan); matn rangi, fon rangi, markazga tekislash, shrift oʻlchami; izohlar (footnote); HTML jadval. Rang va tekislash muharrirdagi tugmalar bilan qoʻlda qoʻyiladi.
+- Formatni bezak uchun emas, MAʼNO uchun ishlat: har bosqich — sarlavha, har qadam — roʻyxat elementi, har mezon — jadval qatori. Bir xil narsani ikki xil formatda takrorlama (masalan sarlavha ostiga yana qalin sarlavha yozma).
 - Aniq, amaliy va oʻqituvchi darhol ishlatadigan koʻrinishda ber. Ortiqcha muqaddimasiz.
 - Oʻquvchilarning ism-familiyasi kabi shaxsiy maʼlumotlarini soʻrama va javobda ishlatma.
 - Dars rejasi soʻralganda (foydalanuvchi aynan qanday soʻz bilan soʻrashidan qatʼi nazar) quyidagi ikkita maʼlumot HAR DOIM, SOʻRALMASDAN hisobga olinadi:
