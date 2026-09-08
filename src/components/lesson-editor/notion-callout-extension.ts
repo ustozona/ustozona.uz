@@ -6,24 +6,16 @@ import { CLASS_COLOR_BASE, makeColorTints, type ClassColor } from "@/lib/class-c
 import { EMOJI_CDN, emojiToUnified } from "@/components/ui/apple-emoji";
 import NotionCalloutView from "./NotionCalloutView";
 
-/* Notion uslubidagi callout uchun fon-rang tanlovi — CLASS_COLOR_BASE'ning
-   TOʻLIQ palitrasi (18 rang), spektr tartibida: `gray` birinchi (neytral
-   standart), keyin qizildan pushtigacha aylana. Yangi rang taʼrifi kerak
-   emas — yagona manba class-colors.ts. */
-export const NOTION_CALLOUT_COLORS = [
-  "gray",
-  "red", "orange", "amber", "yellow", "lime",
-  "green", "emerald", "teal", "cyan", "sky",
-  "blue", "indigo", "violet", "purple", "fuchsia",
-  "pink", "rose",
-] as const;
-export type NotionCalloutColor = (typeof NOTION_CALLOUT_COLORS)[number];
-
-function normalizeNotionColor(value: string | null | undefined): NotionCalloutColor {
-  return (NOTION_CALLOUT_COLORS as readonly string[]).includes(value ?? "")
-    ? (value as NotionCalloutColor)
-    : "gray";
-}
+/* Fon-rang roʻyxati `callout-types.ts` ga koʻchirildi: bu fayl Tiptap va
+   apple-emoji import qiladi, shuning uchun server route (AI prompt) undan
+   rang nomlarini oʻqiy olmasdi. Yagona manba oʻsha yerda, bu yerda faqat
+   re-eksport — tashqi import yoʻllari oʻzgarmasin. */
+export {
+  NOTION_CALLOUT_COLORS,
+  normalizeNotionColor,
+  type NotionCalloutColor,
+} from "./callout-types";
+import { normalizeNotionColor } from "./callout-types";
 
 /** Notion callout sarlavhasi — qalin, bitta qator (Callout'dagi calloutTitle
  *  bilan bir xil naqsh, mustaqil turi bor). */

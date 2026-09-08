@@ -14,7 +14,7 @@ import {
   MessageScrollerProvider, MessageScroller, MessageScrollerViewport, MessageScrollerContent, MessageScrollerItem, MessageScrollerButton,
 } from "@/components/ui/message-scroller";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
-import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType } from "./callout-types";
+import { CALLOUT_KEYS_RE_SOURCE, normalizeCalloutType, normalizeNotionColor } from "./callout-types";
 
 marked.setOptions({ breaks: true, gfm: true });
 
@@ -123,7 +123,11 @@ const escapeAttr = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;
    sintaksis: qatʼiy tur yoʻq, faqat erkin emoji. Route.ts SYSTEM promptida
    tushuntirilgan. */
 const CALLOUT_TYPES_RE = new RegExp(`^(${CALLOUT_KEYS_RE_SOURCE})$`);
-const FREE_CALLOUT_RE = /^>\s*\[!free:(\S+)\]\s*(.*)$/;
+/* "> [!free:EMOJI] Sarlavha" yoki "> [!free:EMOJI|rang] Sarlavha".
+   Rang ixtiyoriy va ORQAGA MOS: eski (rangsiz) yozuv oldingidek `gray`
+   boʻladi. Nomaʼlum rang `normalizeNotionColor` orqali `gray` ga tushadi,
+   yaʼni AI xato rang yozsa blok yoʻqolmaydi. */
+const FREE_CALLOUT_RE = /^>\s*\[!free:([^\s|\]]+)(?:\|([a-z]+))?\]\s*(.*)$/;
 
 function extractCallouts(text: string, mask: (html: string) => string): string {
   const lines = text.split("\n");
@@ -134,7 +138,7 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
     const m = freeMatch ? null : /^>\s*\[!(\w+)\]\s*(.*)$/.exec(lines[i]);
     const type = m?.[1].toLowerCase();
     if (freeMatch || (m && type && CALLOUT_TYPES_RE.test(type))) {
-      const title = (freeMatch ? freeMatch[2] : m![2]).trim();
+      const title = (freeMatch ? freeMatch[3] : m![2]).trim();
       const bodyLines: string[] = [];
       i++;
       while (i < lines.length && /^>/.test(lines[i])) {
@@ -146,7 +150,7 @@ function extractCallouts(text: string, mask: (html: string) => string): string {
       // faqat haqiqiy Bold markasi orqali (EditorToolbar.tsx'dagi
       // insertCallout/insertNotionCallout bilan bir xil andoza).
       const html = freeMatch
-        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="gray"><div data-notion-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`
+        ? `<div data-notion-callout data-emoji="${escapeAttr(freeMatch[1])}" data-color="${normalizeNotionColor(freeMatch[2])}"><div data-notion-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`
         : `<div data-callout-type="${normalizeCalloutType(type)}"><div data-callout-title><strong>${escapeAttr(title)}</strong></div>${bodyHtml}</div>`;
       out.push(mask(html));
       continue;
