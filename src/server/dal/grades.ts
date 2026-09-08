@@ -346,7 +346,22 @@ export async function applyGradesBatch(batch: GradesBatch): Promise<void> {
         )
         .onConflictDoUpdate({
           target: [enrollments.classId, enrollments.studentId],
-          set: { sortOrder: sql`excluded.sort_order` },
+          /* `endedAt: null` — YOPILGAN yozilishni qayta OCHADI.
+             Bolani sinfdan koʻchirib, keyin oʻsha sinfga qaytadan
+             qoʻshish aynan shu yoʻldan oʻtadi: qator allaqachon bor,
+             faqat `ended_at` bilan yopilgan. Usiz qoʻshish jimgina
+             muvaffaqiyatsiz boʻlardi — mijozda bola roʻyxatda
+             koʻrinardi, keyingi yuklashda esa yana yoʻqolardi.
+
+             Bu yerda mijoz roʻyxati vakolatli, chunki `students`
+             massivida FAQAT ochiq yozilishlar boʻladi (server
+             chiqib ketganlarni `formerStudents` ga ajratadi) — yaʼni
+             bu upsert'ga tushgan bola «hozir shu sinfda» degani.
+             Eskirgan mijoz ham xavf tugʻdirmaydi: `diffGradesMap`
+             roster'ni faqat OʻZGARGAN sinf uchun yuboradi, yaʼni
+             qayta ochilish uchun kimdir oʻsha roʻyxatni ataylab
+             tahrir qilishi kerak. */
+          set: { sortOrder: sql`excluded.sort_order`, endedAt: sql`NULL` },
         });
     });
   }
@@ -580,13 +595,21 @@ async function detachOrDeleteStudents(ids: string[]): Promise<void> {
     }
   }
 
-  /* Endi qaysi biri hali ham biror guruhda qolgan — oʻsha saqlanadi. */
+  /* Endi qaysi biri hali ham biror guruhda OʻQIYAPTI — oʻsha saqlanadi.
+
+     ⚠️ `isNull(endedAt)` shu yerda ham SHART. Yopilgan yozilish —
+     tarix, «hali biror joyda oʻqiydi» degani emas. Usiz koʻchirilgan
+     bola oʻchirib boʻlmaydigan holatga tushardi: yuqoridagi delete
+     uning ochiq yozilishini oladi, bu soʻrov esa eski sinfdagi yopiq
+     qatorni koʻrib «hali yozilgan» deb hisoblaydi — natijada
+     `students` qatori qolib ketadi, lekin hech bir roʻyxatda
+     koʻrinmaydi va qayta oʻchirishga ham berilmaydi. */
   const stillEnrolled = new Set<string>();
   for (const part of chunks(scoped)) {
     const rows = await db
       .selectDistinct({ id: enrollments.studentId })
       .from(enrollments)
-      .where(inArray(enrollments.studentId, part));
+      .where(and(inArray(enrollments.studentId, part), isNull(enrollments.endedAt)));
     for (const r of rows) stillEnrolled.add(r.id);
   }
 
