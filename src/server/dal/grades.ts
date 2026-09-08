@@ -1,5 +1,6 @@
 import "server-only";
 import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
+import { compareUz } from "@/lib/collation";
 import { db } from "@/server/db/client";
 import {
   activitySets,
@@ -180,6 +181,11 @@ export async function getGradesPayload(): Promise<Record<string, ClassData>> {
     map[c.id] = { info: rowToInfo(c), students: [], topics: [], assignments: [], grades: [] };
   }
   for (const r of rosterRows) map[r.classId]?.students.push(rowToStudent(r.student));
+  // Roster STANDART tartibi — ism boʻyicha alifbo (oʻzbek kolatsiyasi).
+  // Yozilish `sortOrder` i qoʻlda tartiblash UI si yoʻqligi uchun
+  // amalda tasodifiy edi: davomat roʻyxati ism boʻyicha, xulq-atvor
+  // toʻri esa boshqa tartibda chiqardi. Yagona manba shu yerda.
+  for (const cd of Object.values(map)) cd.students.sort((a, b) => compareUz(a.name, b.name));
   for (const t of topicRows) map[t.classId]?.topics.push(rowToTopic(t));
 
   const classByAssignment = new Map<string, string>();
