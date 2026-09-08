@@ -87,9 +87,9 @@ async function Overview() {
           tone="warn"
         />
         <StatCard
-          label="Limitga tegish"
+          label="Limit sababli rad etilgan"
           value={s.limitHits}
-          hint={`kunlik limit ${s.dailyLimit} xabar`}
+          hint={`kunlik limit ${s.dailyLimit} xabar — 429 qaytgan (oʻqituvchi, kun) juftliklari`}
           tone="warn"
         />
       </div>
@@ -188,7 +188,7 @@ async function UsersTable() {
               <th className="text-right">Xabar</th>
               <th className="text-right">Hujjat</th>
               <th className="text-right">Faol kun</th>
-              <th className="text-right">Limitga tegish</th>
+              <th className="text-right">Rad etilgan</th>
               <th className="text-right">Bugun</th>
               <th>Oxirgi</th>
             </tr>

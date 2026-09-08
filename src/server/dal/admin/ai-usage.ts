@@ -42,7 +42,13 @@ export type AiUsageOverview = {
   providers: AiProviderCount[];
   /** Provayder yozilmagan soʻrovlar — yaʼni javobsiz qolganlar. */
   unanswered: number;
-  /** Limitga tegib toʻxtagan (foydalanuvchi, kun) juftliklari soni. */
+  /** Limitga urilib RAD ETILGAN (foydalanuvchi, kun) juftliklari soni.
+
+      ⚠️ Shart qatʼiy ">", ">=" emas — route ham aynan shunday toʻsadi
+      (`usage.count > DAILY_LIMIT`). Limitga tekis tegib turgan kun hali
+      rad etilmagan: 30-xabar oddiy uzatiladi, 429 faqat 31-sida chiqadi.
+      ">=" bilan bunday kunlar ham "toʻxtatilgan" boʻlib koʻrinar va
+      admin yoʻq muammo uchun limitni koʻtarishga undalardi. */
   limitHits: number;
   trend: AiDailyPoint[];
 };
@@ -51,13 +57,12 @@ export type AiUserRow = {
   userId: string;
   name: string;
   email: string;
-  image: string | null;
   plan: string | null;
   messages: number;
   docs: number;
   /** Nechta kunda ishlatgan — bir kunlik portlash bilan shishmaydi. */
   activeDays: number;
-  /** Shu foydalanuvchi limitga necha marta tegib toʻxtagan. */
+  /** Shu foydalanuvchi necha kun limit sababli rad etilgan (qarang: limitHits). */
   limitHits: number;
   todayMessages: number;
   lastDay: string;
@@ -81,7 +86,7 @@ export async function getAiUsageOverview(
       messages: sql<number>`sum(${aiUsage.count})::int`,
       docs: sql<number>`sum(${aiUsage.docCount})::int`,
       users: sql<number>`count(*)::int`,
-      limitHits: sql<number>`count(*) filter (where ${aiUsage.count} >= ${limit})::int`,
+      limitHits: sql<number>`count(*) filter (where ${aiUsage.count} > ${limit})::int`,
     })
     .from(aiUsage)
     .where(gte(aiUsage.day, from))
@@ -161,12 +166,11 @@ export async function listAiUsers(params: {
       userId: aiUsage.userId,
       name: user.name,
       email: user.email,
-      image: user.image,
       plan: teachers.plan,
       messages: sql<number>`sum(${aiUsage.count})::int`,
       docs: sql<number>`sum(${aiUsage.docCount})::int`,
       activeDays: sql<number>`count(*)::int`,
-      limitHits: sql<number>`count(*) filter (where ${aiUsage.count} >= ${dailyLimit})::int`,
+      limitHits: sql<number>`count(*) filter (where ${aiUsage.count} > ${dailyLimit})::int`,
       todayMessages: sql<number>`coalesce(sum(${aiUsage.count}) filter (where ${aiUsage.day} = ${today}), 0)::int`,
       lastDay: sql<string>`max(${aiUsage.day})`,
     })
@@ -174,7 +178,7 @@ export async function listAiUsers(params: {
     .innerJoin(user, eq(user.id, aiUsage.userId))
     .leftJoin(teachers, eq(teachers.id, aiUsage.userId))
     .where(gte(aiUsage.day, from))
-    .groupBy(aiUsage.userId, user.name, user.email, user.image, teachers.plan)
+    .groupBy(aiUsage.userId, user.name, user.email, teachers.plan)
     .orderBy(desc(sql`sum(${aiUsage.count})`))
     .limit(rowLimit);
 
