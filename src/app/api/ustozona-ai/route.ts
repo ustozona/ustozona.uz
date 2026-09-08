@@ -1,11 +1,13 @@
-import { eq, and, sql, inArray } from "drizzle-orm";
 import { requireTeacher } from "@/server/session";
-import { db } from "@/server/db/client";
-import { aiUsage, aiDocs, classes } from "@/server/db/schema";
+import {
+  consumeAiMessage,
+  recordAiProvider,
+  findAiDoc,
+  listAiClassNames,
+} from "@/server/dal/ai-usage";
 import { visibleClassIds } from "@/server/workspace";
 import { streamChat, configuredProviders, type AiChatMessage, type StreamChatArgs, type ProviderId } from "@/server/ai/providers";
 import { buildClassContext, buildClassContexts } from "@/server/ai/class-context";
-import { aiDailyLimit, todayTashkent } from "@/lib/ai-limits";
 import {
   CALLOUT_KEYS,
   AI_CALLOUT_USAGE,
@@ -43,7 +45,7 @@ const NOTION_COLOR_LIST = NOTION_CALLOUT_COLORS.join(", ");
  * Provayder zanjiri (Gemini → Groq → OpenRouter) src/server/ai/providers.ts da.
  * Soʻrov: { messages: {role,content}[], lesson?: {title, classes, unit, content} }
  * Javob: oddiy matn (text/plain) — boʻlak-boʻlak (streaming).
- * Kunlik kvota: AI_DAILY_LIMIT (default 30) xabar/foydalanuvchi.
+ * Kvota: taʼrifga bogʻliq OYLIK kredit (`src/lib/ai-limits.ts`).
  */
 
 export const runtime = "nodejs";
@@ -105,8 +107,6 @@ ${CALLOUT_TYPE_LIST}
   - "5E modeli": Engage (Jalb qilish) → Explore (Tadqiq qilish) → Explain (Tushuntirish) → Elaborate (Chuqurlashtirish) → Evaluate (Baholash) — har biri alohida bosqich, taxminiy vaqt bilan.
   - "SMART maqsad": har bir maqsadni Specific/Measurable/Achievable/Relevant/Time-bound (Aniq/Oʻlchanadigan/Erishish mumkin/Dolzarb/Muddatli) mezonlariga mos, bitta-ikkita gapda yoz.`;
 
-const DAILY_LIMIT = aiDailyLimit();
-
 export async function POST(req: Request) {
   let teacher;
   try {
@@ -123,19 +123,11 @@ export async function POST(req: Request) {
     );
   }
 
-  // ── Kunlik kvota (atomik: inkrement + qaytgan qiymat tekshiruvi — poyga yoʻq) ──
-  const day = todayTashkent();
-  const [usage] = await db
-    .insert(aiUsage)
-    .values({ id: `${userId}:${day}`, userId, day, count: 1 })
-    .onConflictDoUpdate({
-      target: [aiUsage.userId, aiUsage.day],
-      set: { count: sql`${aiUsage.count} + 1` },
-    })
-    .returning({ count: aiUsage.count });
-  if (usage.count > DAILY_LIMIT) {
+  // ── Oylik kredit (sarflash + tekshirish DAL ichida) ──
+  const quota = await consumeAiMessage(userId, teacher.plan);
+  if (!quota.allowed) {
     return new Response(
-      `Bugungi AI limiti (${DAILY_LIMIT} xabar) tugadi. Ertaga yana urinib koʻring.`,
+      `Bu oyning AI krediti (${quota.credit} xabar) tugadi. Keyingi oy boshida yangilanadi.`,
       { status: 429 }
     );
   }
@@ -187,12 +179,7 @@ export async function POST(req: Request) {
         .slice(0, 3);
       const allowed = new Set(await visibleClassIds("data"));
       const scoped = ids.filter((id) => allowed.has(id));
-      const own = scoped.length
-        ? await db
-            .select({ id: classes.id, name: classes.name })
-            .from(classes)
-            .where(inArray(classes.id, scoped))
-        : [];
+      const own = await listAiClassNames(scoped);
       if (own.length) {
         classTools = {
           declarations: [
@@ -233,10 +220,7 @@ export async function POST(req: Request) {
   // Egalik tekshiruvi: uri aynan shu foydalanuvchi yuklagan fayl boʻlishi shart.
   let doc: { uri: string; mimeType: string } | undefined;
   if (body.doc?.uri) {
-    const [owned] = await db
-      .select({ uri: aiDocs.uri, mimeType: aiDocs.mimeType })
-      .from(aiDocs)
-      .where(and(eq(aiDocs.userId, userId), eq(aiDocs.uri, body.doc.uri)));
+    const owned = await findAiDoc(userId, body.doc.uri);
     if (owned) doc = { uri: owned.uri, mimeType: owned.mimeType };
   }
   const docCtx = doc
@@ -252,12 +236,9 @@ export async function POST(req: Request) {
 
   // Telemetriya: javob bergan provayderni sanaymiz (fire-and-forget)
   const recordProvider = (id: ProviderId) => {
-    db.update(aiUsage)
-      .set({
-        providers: sql`jsonb_set(coalesce(${aiUsage.providers}, '{}'::jsonb), array[${id}::text], to_jsonb(coalesce((${aiUsage.providers}->>${id})::int, 0) + 1))`,
-      })
-      .where(and(eq(aiUsage.userId, userId), eq(aiUsage.day, day)))
-      .catch((err) => console.warn("[ustozona-ai] telemetriya xatosi:", err));
+    recordAiProvider(userId, quota.day, id).catch((err) =>
+      console.warn("[ustozona-ai] telemetriya xatosi:", err)
+    );
   };
 
   const abort = new AbortController();
@@ -300,7 +281,9 @@ export async function POST(req: Request) {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "no-store",
-      "X-AI-Remaining": String(Math.max(0, DAILY_LIMIT - usage.count)),
+      /* Oyning oxirigacha qolgan kredit (panel shuni koʻrsatadi).
+         Nomi orqaga mos saqlandi — klient shu sarlavhani oʻqiydi. */
+      "X-AI-Remaining": String(Math.max(0, quota.credit - quota.used)),
     },
   });
 }

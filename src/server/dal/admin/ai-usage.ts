@@ -3,7 +3,12 @@ import { desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { aiUsage, user, teachers } from "@/server/db/schema";
 import { requireAdmin } from "@/server/session";
-import { aiDailyLimit, tashkentDaysAgo, todayTashkent } from "@/lib/ai-limits";
+import {
+  aiCredits,
+  monthStartTashkent,
+  tashkentDaysAgo,
+  todayTashkent,
+} from "@/lib/ai-limits";
 
 /* ════════════════════════════════════════════════════════════════════
    ADMIN → USTOZONA AI FOYDALANISHI (kross-tenant).
@@ -33,7 +38,8 @@ export type AiDailyPoint = {
 
 export type AiUsageOverview = {
   days: number;
-  dailyLimit: number;
+  /** Free taʼrifning oylik krediti — panelda mezon sifatida koʻrsatiladi. */
+  monthCredit: number;
   /** Bugungi kesim. */
   today: { messages: number; docs: number; users: number };
   /** Oyna boʻyicha jami. */
@@ -42,14 +48,18 @@ export type AiUsageOverview = {
   providers: AiProviderCount[];
   /** Provayder yozilmagan soʻrovlar — yaʼni javobsiz qolganlar. */
   unanswered: number;
-  /** Limitga urilib RAD ETILGAN (foydalanuvchi, kun) juftliklari soni.
+  /** JORIY OYDA krediti tugagan oʻqituvchilar soni.
 
       ⚠️ Shart qatʼiy ">", ">=" emas — route ham aynan shunday toʻsadi
-      (`usage.count > DAILY_LIMIT`). Limitga tekis tegib turgan kun hali
-      rad etilmagan: 30-xabar oddiy uzatiladi, 429 faqat 31-sida chiqadi.
-      ">=" bilan bunday kunlar ham "toʻxtatilgan" boʻlib koʻrinar va
-      admin yoʻq muammo uchun limitni koʻtarishga undalardi. */
-  limitHits: number;
+      (`used <= credit` → ruxsat). Kreditga tekis tegib turgan oʻqituvchi
+      hali rad etilmagan: 300-xabar oddiy uzatiladi, 429 faqat 301-sida
+      chiqadi. ">=" bilan bunday holatlar ham "toʻxtatilgan" boʻlib
+      koʻrinar va admin yoʻq muammo uchun kreditni koʻtarishga undalardi.
+
+      Bu raqam oyna (30 kun) emas, JORIY OY boʻyicha — kredit ham aynan
+      oy chegarasida tiklanadi, boshqa oyna bilan solishtirish yolgʻon
+      chiqardi. */
+  creditExhausted: number;
   trend: AiDailyPoint[];
 };
 
@@ -62,8 +72,10 @@ export type AiUserRow = {
   docs: number;
   /** Nechta kunda ishlatgan — bir kunlik portlash bilan shishmaydi. */
   activeDays: number;
-  /** Shu foydalanuvchi necha kun limit sababli rad etilgan (qarang: limitHits). */
-  limitHits: number;
+  /** Joriy oyda sarflangan xabar (kredit aynan shunga qaraydi). */
+  monthMessages: number;
+  /** Shu oʻqituvchining taʼrifiga tegishli oylik kredit. */
+  credit: number;
   todayMessages: number;
   lastDay: string;
 };
@@ -74,8 +86,8 @@ export async function getAiUsageOverview(
 ): Promise<AiUsageOverview> {
   await requireAdmin();
 
-  const limit = aiDailyLimit();
   const today = todayTashkent();
+  const monthFrom = monthStartTashkent();
   const from = tashkentDaysAgo(days - 1);
 
   /* Kunlik qator — grafik uchun. Bir soʻrovda oyna jamisi ham chiqadi,
@@ -86,7 +98,6 @@ export async function getAiUsageOverview(
       messages: sql<number>`sum(${aiUsage.count})::int`,
       docs: sql<number>`sum(${aiUsage.docCount})::int`,
       users: sql<number>`count(*)::int`,
-      limitHits: sql<number>`count(*) filter (where ${aiUsage.count} > ${limit})::int`,
     })
     .from(aiUsage)
     .where(gte(aiUsage.day, from))
@@ -115,6 +126,22 @@ export async function getAiUsageOverview(
     count: Number(r.count),
   }));
 
+  /* Krediti tugaganlar — JORIY OY yigʻindisi taʼrif kreditidan oshganlar.
+     Kredit env orqali taʼrifga qarab oʻzgaradi, shuning uchun taqqoslash
+     SQL'da emas, bu yerda: `aiCredits()` yagona manba boʻlib qolsin. */
+  const monthRows = await db
+    .select({
+      plan: teachers.plan,
+      used: sql<number>`sum(${aiUsage.count})::int`,
+    })
+    .from(aiUsage)
+    .leftJoin(teachers, eq(teachers.id, aiUsage.userId))
+    .where(gte(aiUsage.day, monthFrom))
+    .groupBy(aiUsage.userId, teachers.plan);
+  const creditExhausted = monthRows.filter(
+    (r) => r.used > aiCredits(r.plan).messages,
+  ).length;
+
   const todayRow = trendRows.find((r) => r.day === today);
   const windowMessages = trendRows.reduce((n, r) => n + r.messages, 0);
   const answered = providers.reduce((n, p) => n + p.count, 0);
@@ -130,7 +157,7 @@ export async function getAiUsageOverview(
 
   return {
     days,
-    dailyLimit: limit,
+    monthCredit: aiCredits("free").messages,
     today: {
       messages: todayRow?.messages ?? 0,
       docs: todayRow?.docs ?? 0,
@@ -143,7 +170,7 @@ export async function getAiUsageOverview(
     },
     providers,
     unanswered: Math.max(0, windowMessages - answered),
-    limitHits: trendRows.reduce((n, r) => n + r.limitHits, 0),
+    creditExhausted,
     trend,
   };
 }
@@ -157,9 +184,16 @@ export async function listAiUsers(params: {
 
   const days = params.days ?? AI_STATS_DAYS;
   const rowLimit = Math.min(200, Math.max(1, params.limit ?? 50));
-  const dailyLimit = aiDailyLimit();
   const today = todayTashkent();
   const from = tashkentDaysAgo(days - 1);
+  const monthFrom = monthStartTashkent();
+  /* Soʻrov chegarasi — IKKALASINING ERTAROGʻI. 30 kunlik oyna oyning
+     boshini har doim ham qamramaydi: 31 kunlik oyning 31-kunida oyna
+     2-sanadan boshlanadi va 1-sanadagi sarf `monthMessages` dan tushib
+     qolardi — panel oʻqituvchini kredit ichida koʻrsatib turar, route esa
+     allaqachon 429 qaytarayotgan boʻlardi. Shuning uchun WHERE kengroq,
+     oyna koʻrsatkichlari esa `filter` bilan qaytadan toraytiriladi. */
+  const since = from < monthFrom ? from : monthFrom;
 
   const rows = await db
     .select({
@@ -167,20 +201,22 @@ export async function listAiUsers(params: {
       name: user.name,
       email: user.email,
       plan: teachers.plan,
-      messages: sql<number>`sum(${aiUsage.count})::int`,
-      docs: sql<number>`sum(${aiUsage.docCount})::int`,
-      activeDays: sql<number>`count(*)::int`,
-      limitHits: sql<number>`count(*) filter (where ${aiUsage.count} > ${dailyLimit})::int`,
+      messages: sql<number>`coalesce(sum(${aiUsage.count}) filter (where ${aiUsage.day} >= ${from}), 0)::int`,
+      docs: sql<number>`coalesce(sum(${aiUsage.docCount}) filter (where ${aiUsage.day} >= ${from}), 0)::int`,
+      activeDays: sql<number>`count(*) filter (where ${aiUsage.day} >= ${from})::int`,
+      monthMessages: sql<number>`coalesce(sum(${aiUsage.count}) filter (where ${aiUsage.day} >= ${monthFrom}), 0)::int`,
       todayMessages: sql<number>`coalesce(sum(${aiUsage.count}) filter (where ${aiUsage.day} = ${today}), 0)::int`,
       lastDay: sql<string>`max(${aiUsage.day})`,
     })
     .from(aiUsage)
     .innerJoin(user, eq(user.id, aiUsage.userId))
     .leftJoin(teachers, eq(teachers.id, aiUsage.userId))
-    .where(gte(aiUsage.day, from))
+    .where(gte(aiUsage.day, since))
     .groupBy(aiUsage.userId, user.name, user.email, teachers.plan)
-    .orderBy(desc(sql`sum(${aiUsage.count})`))
+    .orderBy(desc(sql`sum(${aiUsage.count}) filter (where ${aiUsage.day} >= ${from})`))
     .limit(rowLimit);
 
-  return rows;
+  /* Kredit taʼrifga bogʻliq — SQL'da CASE yozish oʻrniga shu yerda
+     qoʻshiladi (`aiCredits` yagona manba, env bilan oʻzgaradi). */
+  return rows.map((r) => ({ ...r, credit: aiCredits(r.plan).messages }));
 }

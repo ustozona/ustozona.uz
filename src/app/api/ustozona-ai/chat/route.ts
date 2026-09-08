@@ -1,7 +1,5 @@
-import { and, eq } from "drizzle-orm";
 import { getSession } from "@/server/session";
-import { db } from "@/server/db/client";
-import { aiChats } from "@/server/db/schema";
+import { getAiChat, saveAiChat } from "@/server/dal/ai-usage";
 
 /**
  * Ustozona AI — chat tarixi (har foydalanuvchi+dars uchun bitta suhbat).
@@ -23,11 +21,8 @@ export async function GET(req: Request) {
   const lessonId = new URL(req.url).searchParams.get("lessonId");
   if (!lessonId) return new Response("lessonId kerak", { status: 400 });
 
-  const [row] = await db
-    .select({ messages: aiChats.messages })
-    .from(aiChats)
-    .where(and(eq(aiChats.userId, session.user.id), eq(aiChats.lessonId, lessonId)));
-  return Response.json({ messages: row?.messages ?? [] });
+  const messages = await getAiChat(session.user.id, lessonId);
+  return Response.json({ messages });
 }
 
 export async function POST(req: Request) {
@@ -54,13 +49,6 @@ export async function POST(req: Request) {
     .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_CONTENT) }));
 
   const userId = session.user.id;
-  const id = `${userId}:${lessonId.slice(0, 100)}`;
-  await db
-    .insert(aiChats)
-    .values({ id, userId, lessonId: lessonId.slice(0, 100), messages })
-    .onConflictDoUpdate({
-      target: aiChats.id,
-      set: { messages, updatedAt: new Date() },
-    });
+  await saveAiChat(userId, lessonId.slice(0, 100), messages);
   return Response.json({ ok: true });
 }

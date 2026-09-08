@@ -2,10 +2,14 @@ import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from "dr
 import { user } from "./auth";
 
 /* ════════════════════════════════════════════════════════════════════
-   AI KUNLIK KVOTA + TELEMETRIYA — har foydalanuvchi kuniga nechta AI
-   xabar yuborgani va nechta hujjat yuklagani. Limitlar: AI_DAILY_LIMIT
-   (default 30 xabar), AI_DOC_DAILY_LIMIT (default 5 fayl). Kun —
-   Asia/Tashkent (UTC+5) boʻyicha YYYY-MM-DD.
+   AI TELEMETRIYA — har foydalanuvchi kuniga nechta AI xabar yuborgani
+   va nechta hujjat yuklagani. Kun — Asia/Tashkent (UTC+5) boʻyicha
+   YYYY-MM-DD.
+
+   ⚠️ Qator KUNLIK, lekin KVOTA OYLIK: chegara oy boshidan beri
+   yigʻindiga qaraydi (`src/lib/ai-limits.ts` — nega oylik ekani va
+   taʼrif kreditlari oʻsha yerda). Kunlik qatorlar admin panelidagi
+   trend grafigi uchun kerak, shuning uchun saqlanib qolgan.
 
    `providers` — {gemini: n, groq: n, openrouter: n} — qaysi provayder
    qancha ishlatilgani (fallback chastotasini kuzatish uchun).
