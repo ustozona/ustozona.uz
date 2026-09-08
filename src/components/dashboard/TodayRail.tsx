@@ -30,6 +30,7 @@ import { ScrollFade } from "@/components/ui/scroll-fade";
 import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { addDays, startOfWeekMon } from "@/lib/calendar-core/date-math";
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
+import { subjectLabel } from "@/lib/standards-data";
 import { EventCard } from "@/components/calendar/EventCard";
 import { AddTopicButton } from "@/components/calendar/AddTopicButton";
 import { LessonChip } from "@/components/calendar/LessonChip";
@@ -73,6 +74,8 @@ const SUNDAY_PREF_KEY = "today-rail-show-sunday";
 const PX_PER_MIN = 3;
 /** Birinchi darsdan qancha oldin scroll qilib koʻrsatish (daqiqa). */
 const SCROLL_LEAD_MIN = 15;
+/** Fan/vaqt ikki qatorga ajraladigan minimal balandlik — Timetable bilan bir xil qiymat. */
+const STACKED_SUBTITLE_MIN_H = 84;
 
 export function TodayRail({ now }: { now: Date }) {
   const t = useTranslations("TodayRail");
@@ -133,9 +136,11 @@ export function TodayRail({ now }: { now: Date }) {
 
   // ── Sinf meta — jonli roʻyxat, demo idlar uchun zaxira nom/rang ──
   const liveById = useMemo(() => new Map(liveClasses.map((c) => [c.id, c])), [liveClasses]);
-  const metaFor = (classId: string): { name: string; color: ClassColor } => {
+  const metaFor = (classId: string): { name: string; color: ClassColor; subject?: string } => {
     const cls = liveById.get(classId);
-    if (cls) return { name: cls.name, color: classColor(cls) };
+    // Fan nomi — sinf kartochkasidan (katalog id → yorliq). Sinfda fan
+    // belgilanmagan boʻlsa qator faqat vaqtdan iborat qoladi.
+    if (cls) return { name: cls.name, color: classColor(cls), subject: subjectLabel(cls.subject) || undefined };
     return { name: DEMO_CLASS_NAMES[classId] ?? t("unknownClass"), color: autoClassColor(classId) };
   };
 
@@ -365,7 +370,7 @@ function DayGridView({
   events: RailEvent[];
   nowMin: number;
   isToday: boolean;
-  metaFor: (classId: string) => { name: string; color: ClassColor };
+  metaFor: (classId: string) => { name: string; color: ClassColor; subject?: string };
   lessonFor: (ev: RailEvent) => LessonInfo | undefined;
   temporalOf: (ev: RailEvent) => "past" | "current" | "next" | "none";
   /** Boʻsh slotga mavzu yaratish / mavjudini ulash — planner bilan bir xil. */
@@ -449,7 +454,22 @@ function DayGridView({
                edi. Karta ustidagi ortiqcha amal menyusining kanonik oʻrni —
                oʻng-yuqori burchak. */
             titleRowClassName={compact ? "pr-8" : "pr-10"}
-            subtitle={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`}
+            /* Fan + vaqt — Timetable bilan bir xil naqsh: baland kartada
+               ALOHIDA qatorda, past kartada `·` bilan bitta qatorga
+               yigʻiladi ([[EventBlock]] etalon, timetable/page.tsx). */
+            subtitle={
+              meta.subject && height >= STACKED_SUBTITLE_MIN_H ? (
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate">{meta.subject}</span>
+                  <span className="truncate tabular-nums">{fmtMin(ev.startMin)} — {fmtMin(ev.endMin)}</span>
+                </span>
+              ) : (
+                <span className="truncate">
+                  {meta.subject ? `${meta.subject} · ` : ""}
+                  <span className="tabular-nums">{fmtMin(ev.startMin)} — {fmtMin(ev.endMin)}</span>
+                </span>
+              )
+            }
             actions={
               <EventActions
                 classId={ev.classId}
