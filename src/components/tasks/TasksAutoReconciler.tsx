@@ -67,9 +67,11 @@ export default function TasksAutoReconciler() {
         const notify = useNotificationsStore.getState().notify;
         for (const n of birthday.notify) {
           notify({
-            kind: "system",
+            // Barqaror id — vazifa oʻchib qayta tugʻilsa ham xabar takrorlanmaydi.
+            id: `ntf-${n.taskId}`,
+            kind: "birthday",
             title: `${n.studentName} — tugʻilgan kuni`,
-            body: "Vazifalar sahifasida tabriklashni belgilashni unutmang.",
+            body: `${n.className} sinf`,
             href: `/dashboard/students/${encodeURIComponent(n.studentId)}`,
           });
         }

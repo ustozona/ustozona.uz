@@ -19,7 +19,13 @@ function ScrollArea({
       // maydoni ustida sichqoncha turganda "visible" beradi — kursor deyarli
       // doim kontent ustida boʻlgani uchun amalda doim koʻrinib qolardi.
       type="scroll"
-      className={cn("relative", className)}
+      // Root'ga `overflow-hidden` + viewport'ga `max-h-[inherit]`: Radix
+      // root'ga faqat `position:relative` beradi, viewport esa `h-full` —
+      // ota balandligi `auto` boʻlgani uchun u kontent boʻyicha choʻzilib,
+      // `max-h-*` ni root'ga berish HECH NIMANI skroll qilmasdi (kontent
+      // qutidan tashqariga oqardi). Shu ikki klass bilan chaqiruv joyidagi
+      // `<ScrollArea className="max-h-…">` naqshi kutilgandek ishlaydi.
+      className={cn("relative overflow-hidden", className)}
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
@@ -29,7 +35,7 @@ function ScrollArea({
         // max-content kengligiga qadar kengayadi (uzun `nowrap` matn butun
         // sahifani choʻzib yuboradi). Bloc'ga majburlaymiz: kenglik = konteyner,
         // faqat vertikal skroll qoladi (ilovada gorizontal ScrollArea yoʻq).
-        className="size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 [&>div]:!block [&>div]:!min-w-full"
+        className="size-full max-h-[inherit] rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 [&>div]:!block [&>div]:!min-w-full"
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
