@@ -2555,8 +2555,11 @@
     "dueToday": "Today",
     "dueTomorrow": "Tomorrow",
     "footerDone": "Today: {done}/{total} done",
-    "emptyTitle": "All caught up",
-    "emptyDescription": "The queue is empty — add a task or take a break."
+    "emptyTitle": "No tasks yet",
+    "emptyDescription": "Type in the field above to add a task for today.",
+    "emptyWeekTitle": "This week is clear",
+    "emptyWeekDescription": "{count, plural, one {# more task} other {# more tasks}} coming up later.",
+    "quickAddPlaceholder": "Add a task for today"
   },
   "TodayRail": {
     "title": "Today's lessons",

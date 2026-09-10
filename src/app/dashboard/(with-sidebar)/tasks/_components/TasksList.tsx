@@ -464,6 +464,8 @@ function TaskGroup({
             onToggleStatus={() => onToggleStatus(task.id)}
             onClick={() => onSelectTask(task.id)}
             onKeyDown={(e) => {
+              // Ichki checkbox'dan koʻtarilgan tugmalar uning oʻziga qoladi.
+              if (e.target !== e.currentTarget) return;
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 onSelectTask(task.id);

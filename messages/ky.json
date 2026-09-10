@@ -2559,8 +2559,11 @@
     "dueToday": "Бүгүн",
     "dueTomorrow": "Эртең",
     "footerDone": "Бүгүн: {done}/{total} аткарылды",
-    "emptyTitle": "Баары текшерилди",
-    "emptyDescription": "Кезек бош — жаңы тапшырма кошуңуз же эс алыңыз."
+    "emptyTitle": "Азырынча тапшырма жок",
+    "emptyDescription": "Жогорудагы талаага жазып, бүгүнкү тапшырманы кошуңуз.",
+    "emptyWeekTitle": "Бул апта бош",
+    "emptyWeekDescription": "Кийинчерээк дагы {count} тапшырма бар.",
+    "quickAddPlaceholder": "Бүгүнгө тапшырма кошуу"
   },
   "TodayRail": {
     "title": "Бүгүнкү сабактар",

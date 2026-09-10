@@ -2410,8 +2410,11 @@
     "dueToday": "Bugun",
     "dueTomorrow": "Ertaga",
     "footerDone": "Bugun: {done}/{total} bajarildi",
-    "emptyTitle": "Barcha vazifalar bajarildi",
-    "emptyDescription": "Navbat boʻsh — yangi vazifa qoʻshing yoki dam oling."
+    "emptyTitle": "Hozircha vazifa yoʻq",
+    "emptyDescription": "Yuqoridagi maydonga yozib, bugungi vazifani qoʻshing.",
+    "emptyWeekTitle": "Bu hafta boʻsh",
+    "emptyWeekDescription": "Keyinroq yana {count} ta vazifa bor.",
+    "quickAddPlaceholder": "Bugunga vazifa qoʻshish"
   },
   "TodayRail": {
     "title": "Bugungi darslar",

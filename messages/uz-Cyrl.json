@@ -2410,8 +2410,11 @@
     "dueToday": "Бугун",
     "dueTomorrow": "Эртага",
     "footerDone": "Бугун: {done}/{total} бажарилди",
-    "emptyTitle": "Барча вазифалар бажарилди",
-    "emptyDescription": "Навбат бўш — янги вазифа қўшинг ёки дам олинг."
+    "emptyTitle": "Ҳозирча вазифа йўқ",
+    "emptyDescription": "Юқоридаги майдонга ёзиб, бугунги вазифани қўшинг.",
+    "emptyWeekTitle": "Бу ҳафта бўш",
+    "emptyWeekDescription": "Кейинроқ яна {count} та вазифа бор.",
+    "quickAddPlaceholder": "Бугунга вазифа қўшиш"
   },
   "TodayRail": {
     "title": "Бугунги дарслар",
