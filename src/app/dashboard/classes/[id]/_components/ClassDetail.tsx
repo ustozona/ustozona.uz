@@ -4,7 +4,8 @@ import { useMemo, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { BookOpen, ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import { classIcon } from "@/lib/class-icons";
 import { Card } from "@/components/ui/card";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,6 +46,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
 
   const hex = CLASS_COLOR_HEX[identity.color];
   const tints = useMemo(() => classTints(identity.color), [identity.color]);
+  const ClassIcon = classIcon(identity.icon);
 
   /* ── Jonli statistika — Darslar (useLessonStore) va Baholar (useGradesStore)
      bilan bir manbadan. Mount'gacha nol — SSR/hydratsiya mosligi uchun. ── */
@@ -114,7 +116,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
           <div className="shrink-0 border-b border-border px-5 py-4">
             <div className="flex items-center gap-3">
               <div className="size-11 rounded-xl shrink-0 flex items-center justify-center" style={tints.iconBg}>
-                <BookOpen className="size-5" style={tints.iconText} />
+                <ClassIcon className="size-5" style={tints.iconText} />
               </div>
               <div className="min-w-0">
                 <h2 className="text-base font-bold text-foreground leading-tight truncate">{identity.name}</h2>
