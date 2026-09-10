@@ -379,3 +379,23 @@ Yuqoridagi 6.1–6.4 "qachon" ni belgilaydi. Bu boʻlim — 6.2/6.3 doirasidagi 
 - **AI dars rejasi** — kodi tayyor, ishga tushmagan; toʻsiq funksiya emas, **narx qarori** (5-boʻlim, 1-savol)
 
 ⚠️ **Bu tartib xom taqqoslash natijasi — ish hajmi va 15-avgust qarzlari bilan solishtirib oʻqilsin.** Masalan Sertifikatlash 5-tierga tushgan, lekin u allaqachon berilgan vaʼda; shu sabab 6.2 uni alohida saqlab qoldi.
+
+### 6.6. ⏸ Maktab dars jadvali (`/jadval`) — yashirildi, keyinroq qaytiladi (2026-09-10)
+
+**Holat:** vosita yarim tayyor, shuning uchun prodda **yashirilgan** — sahifa faqat super-admin uchun ochiladi, boshqalarga 404, qidiruvga yopiq (`noindex`). Lokal devda ochiq. Darvoza: `src/app/jadval/page.tsx`.
+
+**Nega yashirildi:** jadval faqat brauzerda (`localStorage`) yashaydi. Serverga saqlash ham, yaratilgandan keyin tahrirlash ham yoʻq — zavuch brauzerni tozalasa yoki boshqa kompyuterga oʻtsa, ish yoʻqoladi. Real maktab bunda ishlay olmaydi, «buzilgan» vositani koʻrsatish esa koʻrsatmaslikdan yomonroq.
+
+**Bor (PR #131, `maxdum/jadval-mvp`):**
+- Noldan sozlash sehrgari: maktab → qoʻngʻiroq → sinflar/smena → fanlar va soatlar setkasi (maktabning oʻz tasdiqlangan setkasi qoʻlda kiritiladi, andoza soat YOʻQ) → oʻqituvchilar
+- Avtomatik joylashtirish (eng cheklanganidan boshlab), joylashmaganlar sababi bilan
+- Ziddiyat oynasida «toʻsiqni koʻchirish» takliflari
+- Ish maydoni + A4 chop etish, qaytarish/qayta bajarish
+
+**Qolgan ishlar (qaytishdan oldin, tartib bilan):**
+1. **Serverga saqlash/yuklash** — `school_timetables` (migratsiya `0043`) orqali, maydon boʻyicha, faqat owner/admin; mehmon «Saqlash» bosganda roʻyxatdan oʻtish soʻraladi (docs/dars-jadvali-spec.md §3.1). ⚠️ Avval prod Supabase'da `school_timetables` jadvali borligi tekshiriladi — `db:migrate` prodda ishga tushirilmaydi.
+2. **Yaratilgandan keyin tahrirlash** — sinf, fan, reja soati, oʻqituvchi qoʻshish/oʻzgartirish (hozir faqat sehrgarda).
+3. Brauzerda sinash: A4 chop, qorongʻi mavzu, «Avtomat», takliflarni qaytarish.
+4. Keyinroq: parallel ichida alohida reja, setkani Excel'dan import, oʻqituvchi cheklovlari (boʻsh kun/soat), `docs/dars-jadvali-spec.md` ni yangilash.
+
+**Qaytish sharti:** 1 va 2 tayyor boʻlib, bitta real maktab jadvali boshidan oxirigacha tuzilib, saqlanib, chop etilganda — darvoza olib tashlanadi.

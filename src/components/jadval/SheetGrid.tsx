@@ -90,7 +90,11 @@ export default function SheetGrid({
   return (
     <Panel className="min-h-0 flex-1">
       <div className="min-h-0 flex-1 overflow-auto p-5 scrollbar-hover [scrollbar-width:thin]">
-      <div className="relative inline-block min-w-full">
+      {/* `timetable-print-sheet` — globals.css dagi chop etish qoidasi shu
+          klassni tanlaydi: bosilganda faqat SHU element chiqadi, landscape
+          A4 da (`@media print`, globals.css §PDF/Print). Boshqaruvlar,
+          panellar va fon chop etilmaydi. */}
+      <div className="timetable-print-sheet relative inline-block min-w-full">
         <header className="mb-4 text-center">
           <p className="text-label">Tasdiqlayman · maktab direktori</p>
           <h2 className="heading-section mt-1 uppercase tracking-wider">

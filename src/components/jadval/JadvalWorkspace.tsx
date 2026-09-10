@@ -12,45 +12,48 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { toast } from "sonner";
-import {
-  AlertTriangle,
-  BarChart3,
-  PackageOpen,
-  Redo2,
-  Smartphone,
-  Sparkles,
-  Undo2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SegmentedToggle } from "@/components/ui/segmented-toggle";
+import { Smartphone } from "lucide-react";
+import { autoPlace } from "@/lib/school-timetable-autoplace";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 import {
   buildLedger,
   dropStateFor,
   findClass,
   findConflicts,
   findStaff,
+  emptyDoc,
   findSubject,
   indexDoc,
+  periodsForShift,
   staffShort,
+  WORK_DAYS,
   DAY_NAMES,
   type Placement,
 } from "@/lib/school-timetable";
-import { demoDoc } from "@/lib/school-timetable-demo";
 import { useSchoolTimetableStore, type Armed } from "@/store/useSchoolTimetableStore";
 import ConflictDialog, { type ConflictProposal } from "./ConflictDialog";
 import InspectorBar from "./InspectorBar";
 import LedgerRail from "./LedgerRail";
 import SheetGrid, { type SheetDensity } from "./SheetGrid";
 import StaffLoadPanel from "./StaffLoadPanel";
-import StaffPicker from "./StaffPicker";
+import JadvalHeader, { type Mode, type SidePanel } from "./JadvalHeader";
+import JadvalStartScreen from "./JadvalStartScreen";
 import WorkGrid, { type FocusRequest } from "./WorkGrid";
 import { parseDragged, parseSlot } from "./dnd-ids";
 import { useJadvalLayout } from "./use-jadval-layout";
@@ -77,14 +80,12 @@ import { useJadvalLayout } from "./use-jadval-layout";
    panellar toʻrni pastga surmaydi, yonidan ochiladi.
    ════════════════════════════════════════════════════════════════════ */
 
-type Mode = "ish" | "varaq";
-type SidePanel = "none" | "clashes" | "load";
-
 export default function JadvalWorkspace() {
   const doc = useSchoolTimetableStore((s) => s.doc);
   const hydrated = useSchoolTimetableStore((s) => s._hasHydrated);
   const armed = useSchoolTimetableStore((s) => s.armed);
   const dirty = useSchoolTimetableStore((s) => s.dirty);
+  const savedAt = useSchoolTimetableStore((s) => s.savedAt);
   const arm = useSchoolTimetableStore((s) => s.arm);
   const place = useSchoolTimetableStore((s) => s.place);
   const move = useSchoolTimetableStore((s) => s.move);
@@ -93,6 +94,7 @@ export default function JadvalWorkspace() {
   const undo = useSchoolTimetableStore((s) => s.undo);
   const redo = useSchoolTimetableStore((s) => s.redo);
   const loadDoc = useSchoolTimetableStore((s) => s.loadDoc);
+  const applyPlacements = useSchoolTimetableStore((s) => s.applyPlacements);
   const past = useSchoolTimetableStore((s) => s.past);
   const future = useSchoolTimetableStore((s) => s.future);
 
@@ -109,11 +111,7 @@ export default function JadvalWorkspace() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [proposal, setProposal] = useState<ConflictProposal | null>(null);
   const [focusRequest, setFocusRequest] = useState<FocusRequest>(null);
-
-  /* Birinchi kirish — demo jadval. */
-  useEffect(() => {
-    if (hydrated && doc.classes.length === 0) loadDoc(demoDoc());
-  }, [hydrated, doc.classes.length, loadDoc]);
+  const [resetOpen, setResetOpen] = useState(false);
 
   /* Telefonda faqat varaq — zich toʻr barmoq bilan boshqarilmaydi. */
   useEffect(() => {
@@ -124,15 +122,44 @@ export default function JadvalWorkspace() {
   }, [isMobile]);
 
   const conflicts = useMemo(() => findConflicts(doc), [doc]);
+  const ledger = useMemo(() => buildLedger(doc), [doc]);
   const remaining = useMemo(
-    () => buildLedger(doc).reduce((a, r) => a + Math.max(0, r.left), 0),
-    [doc]
+    () => ledger.reduce((a, r) => a + Math.max(0, r.left), 0),
+    [ledger]
   );
+  /* Relsda koʻrsatiladigan ish bormi. `remaining` yetarli emas: reja
+     ustidan qoʻyilgan soat (`left < 0`) ham relsda turadi, lekin
+     «qoldiq» yigʻindisiga kirmaydi. */
+  const hasLedgerWork = useMemo(() => ledger.some((r) => r.left !== 0), [ledger]);
   const selected = useMemo(
     () => doc.placements.find((p) => p.id === selectedId) ?? null,
     [doc.placements, selectedId]
   );
   const twoShift = doc.bell.profile === "double";
+  const suggestedCount = useMemo(() => {
+    if (!armed) return 0;
+    const index = indexDoc(doc);
+    const cls = doc.classes.find((item) => item.id === armed.classId);
+    if (!cls) return 0;
+    const periods = periodsForShift(doc, cls.shift);
+    return WORK_DAYS.reduce(
+      (sum, day) =>
+        sum +
+        periods.filter((period) => {
+          const state = dropStateFor(doc, index, {
+            classId: cls.id,
+            subjectId: armed.subjectId,
+            staffId: armed.staffId,
+            day,
+            shift: cls.shift,
+            period: period.index,
+            ignorePlacementId: armed.kind === "move" ? armed.placementId : undefined,
+          }).state;
+          return state === "ok" || state === "caution";
+        }).length,
+      0
+    );
+  }, [armed, doc]);
 
   /* ── Qoʻyishning yagona yoʻli ──────────────────────────────────── */
 
@@ -147,6 +174,7 @@ export default function JadvalWorkspace() {
       setSelectedId(card.placementId);
       toast.success("Dars koʻchirildi", {
         description: `${subject?.name ?? ""} · ${DAY_NAMES[to.day]}, ${to.period}-soat`,
+        action: { label: "Qaytarish", onClick: () => undo() },
       });
     } else {
       place({
@@ -161,6 +189,7 @@ export default function JadvalWorkspace() {
         description: `${findClass(doc, to.classId)?.name ?? ""} · ${subject?.name ?? ""} · ${
           DAY_NAMES[to.day]
         }, ${to.period}-soat`,
+        action: { label: "Qaytarish", onClick: () => undo() },
       });
     }
     arm(null);
@@ -238,6 +267,33 @@ export default function JadvalWorkspace() {
     }
   }, [doc, remove, selectedId, undo]);
 
+  /* ── Avtomatik joylashtirish ──────────────────────── */
+
+  const handleAutoPlace = useCallback(() => {
+    const result = autoPlace(doc);
+    if (result.placed === 0) {
+      toast.error("Joylashtiradigan dars topilmadi", {
+        description:
+          result.unplaced[0]?.reason ?? "Qoldiqdagi darslarga oʻqituvchi biriktirilmagan.",
+      });
+      return;
+    }
+
+    applyPlacements(result.placements);
+
+    /* Natija ROSTINI aytadi: nechta qoʻyildi VA nechta qoʻyilmadi.
+       «Tayyor» deb yozib, qoldiqni jimgina qoldirish eng yomon variant —
+       zavuch buni faqat chop etgandan keyin sezardi. */
+    const stuck = result.unplaced.reduce((sum, u) => sum + u.count, 0);
+    toast.success(`${result.placed} dars joylashtirildi`, {
+      description:
+        stuck > 0
+          ? `${stuck} soat qoldi — ${result.unplaced[0].className} ${result.unplaced[0].subjectName} va boshqalar. Qoldiq relsida koʻrinadi.`
+          : "Reja toʻliq bajarildi, ziddiyatsiz.",
+      action: { label: "Qaytarish", onClick: () => undo() },
+    });
+  }, [doc, applyPlacements, undo]);
+
   /* ── Sudrash ───────────────────────────────────────────────────── */
 
   const sensors = useSensors(
@@ -307,6 +363,10 @@ export default function JadvalWorkspace() {
         <p className="text-caption">Jadval yuklanmoqda…</p>
       </div>
     );
+  }
+
+  if (doc.classes.length === 0) {
+    return <JadvalStartScreen onReady={(next) => loadDoc(next)} />;
   }
 
   /* ── Bloklar ───────────────────────────────────────────────────── */
@@ -404,133 +464,36 @@ export default function JadvalWorkspace() {
         },
       }}
     >
-      <div className="flex h-svh flex-col gap-4 p-3 md:gap-6 md:p-6">
-        {/* ── Sarlavha va boshqaruvlar ──────────────────────────── */}
-        <header className="flex flex-wrap items-center gap-x-3 gap-y-2 md:gap-x-5 md:gap-y-3">
-          <div className="mr-auto min-w-0">
-            <h1 className="heading-page truncate text-lg md:text-2xl">
-              {doc.schoolName || "Dars jadvali"}
-            </h1>
-            <p className="text-caption truncate">
-              {doc.periodLabel || "Qoralama"}
-              {dirty && " · saqlanmagan"}
-            </p>
-          </div>
+      <div className="flex h-svh flex-col">
+        <JadvalHeader
+          schoolName={doc.schoolName}
+          periodLabel={doc.periodLabel}
+          layout={layout}
+          mode={mode}
+          onModeChange={setMode}
+          twoShift={twoShift}
+          shift={shift}
+          onShiftChange={setShift}
+          density={density}
+          onDensityChange={setDensity}
+          staff={staffOptions}
+          litStaffId={litStaffId}
+          onLitStaffChange={setLitStaffId}
+          conflictCount={conflicts.length}
+          remaining={remaining}
+          hasLedgerWork={hasLedgerWork}
+          side={side}
+          onSideChange={setSide}
+          onOpenRail={() => setRailOpen(true)}
+          canUndo={past.length > 0}
+          canRedo={future.length > 0}
+          onUndo={undo}
+          onRedo={redo}
+          onReset={() => setResetOpen(true)}
+        />
 
-          {!isMobile && (
-            <div className="flex items-center gap-1">
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="Bekor qilish"
-                title="Bekor qilish (Ctrl+Z)"
-                disabled={past.length === 0}
-                onClick={undo}
-              >
-                <Undo2 />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="Qaytarish"
-                title="Qaytarish (Ctrl+Shift+Z)"
-                disabled={future.length === 0}
-                onClick={redo}
-              >
-                <Redo2 />
-              </Button>
-            </div>
-          )}
-
-          {!isMobile && (
-            <SegmentedToggle<Mode>
-              variant="pill"
-              value={mode}
-              onValueChange={setMode}
-              options={[
-                { value: "ish", label: "Ish rejimi" },
-                { value: "varaq", label: "Varaq" },
-              ]}
-            />
-          )}
-
-          {mode === "ish" && twoShift && (
-            <SegmentedToggle<"1" | "2">
-              variant="pill"
-              value={String(shift) as "1" | "2"}
-              onValueChange={(v) => setShift(Number(v) as 1 | 2)}
-              options={[
-                { value: "1", label: "1-smena" },
-                { value: "2", label: "2-smena" },
-              ]}
-            />
-          )}
-
-          {mode === "varaq" && (
-            <SegmentedToggle<SheetDensity>
-              variant="pill"
-              value={density}
-              onValueChange={setDensity}
-              options={
-                isMobile
-                  ? [
-                      { value: "butun", label: "Butun" },
-                      { value: "fan", label: "Fan" },
-                    ]
-                  : [
-                      { value: "butun", label: "Butun" },
-                      { value: "fan", label: "Fan" },
-                      { value: "toliq", label: "Fan + oʻqituvchi" },
-                    ]
-              }
-            />
-          )}
-
-          {!isMobile && (
-            <StaffPicker staff={staffOptions} value={litStaffId} onChange={setLitStaffId} />
-          )}
-
-          {/* Tor ekranda rels tugmasi — panel Sheet ichida ochiladi. */}
-          {!isWide && !isMobile && (
-            <Button variant="outline" onClick={() => setRailOpen(true)}>
-              <PackageOpen />
-              Qoldiq {remaining > 0 && <span className="tabular-nums">{remaining}</span>}
-            </Button>
-          )}
-
-          {!isMobile && (
-            <Button
-              variant="outline"
-              size={isWide ? "default" : "icon"}
-              aria-label="Yuklama"
-              aria-pressed={side === "load"}
-              onClick={() => setSide((s) => (s === "load" ? "none" : "load"))}
-            >
-              <BarChart3 />
-              {isWide && "Yuklama"}
-            </Button>
-          )}
-
-          <Button
-            variant="outline"
-            size={isWide ? "default" : "icon"}
-            aria-label={`${conflicts.length} ziddiyat`}
-            aria-pressed={side === "clashes"}
-            onClick={() => setSide((s) => (s === "clashes" ? "none" : "clashes"))}
-            className={cn(conflicts.length > 0 && "border-destructive text-destructive")}
-          >
-            <AlertTriangle />
-            {isWide ? `${conflicts.length} ziddiyat` : conflicts.length}
-          </Button>
-
-          {isWide && (
-            <Button variant="outline" disabled title="Premium tarifda">
-              <Sparkles />
-              Avtomatik tuzish
-            </Button>
-          )}
-        </header>
-
+        {/* ── Ish maydoni — naqshli fon SHU YERDA koʻrinadi ──────── */}
+        <div className="flex min-h-0 flex-1 flex-col gap-4 p-3 md:gap-6 md:p-6">
         {/* Telefonda tahrirlash yoʻqligini YASHIRMAYMIZ. */}
         {isMobile && (
           <p className="text-caption flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
@@ -546,6 +509,9 @@ export default function JadvalWorkspace() {
             selected={selected}
             conflictCount={conflicts.length}
             remaining={remaining}
+            suggestedCount={suggestedCount}
+            dirty={dirty}
+            savedAt={savedAt}
             onMove={() =>
               selected &&
               arm({
@@ -567,12 +533,32 @@ export default function JadvalWorkspace() {
 
         {/* ── Ish maydoni ──────────────────────────────────────── */}
         {isWide ? (
-          <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1 gap-0">
-            <ResizablePanel defaultSize="20%" minSize="15%" maxSize="32%">
-              <LedgerRail doc={doc} armed={armed} onArm={arm} />
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={side === "none" ? "80%" : "55%"} minSize="35%">
+          /* `key` — rels paydo boʻlgan/yoʻqolgan payt guruh qayta
+             qurilsin: aks holda react-resizable-panels eski uch panelli
+             joylashuvni ikkitaga choʻzib, oʻlchamlarni chalkashtiradi. */
+          <ResizablePanelGroup
+            key={hasLedgerWork ? "rels" : "relssiz"}
+            orientation="horizontal"
+            className="min-h-0 flex-1 gap-0"
+          >
+            {/* Rels — kartalar manbai. Qoʻyilmagan soat qolmaganda unda
+                koʻrsatadigan narsa yoʻq: 20% enni «Reja toʻliq bajarildi»
+                degan bitta satr uchun band qilib turmaydi, toʻrga
+                boʻshatib beradi. */}
+            {hasLedgerWork && (
+              <>
+                <ResizablePanel defaultSize="20%" minSize="15%" maxSize="32%">
+                  <LedgerRail doc={doc} armed={armed} onArm={arm} onAutoPlace={handleAutoPlace} />
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+              </>
+            )}
+            <ResizablePanel
+              defaultSize={
+                side === "none" ? (hasLedgerWork ? "80%" : "100%") : hasLedgerWork ? "55%" : "75%"
+              }
+              minSize="35%"
+            >
               {grid}
             </ResizablePanel>
             {side !== "none" && (
@@ -587,6 +573,7 @@ export default function JadvalWorkspace() {
         ) : (
           <div className="flex min-h-0 flex-1">{grid}</div>
         )}
+        </div>
       </div>
 
       {/* ── Tor ekran: rels va panellar Sheet ichida ──────────────── */}
@@ -598,7 +585,7 @@ export default function JadvalWorkspace() {
                 <SheetTitle>Qoldiq</SheetTitle>
                 <SheetDescription>Qoʻyilmagan soatlar roʻyxati</SheetDescription>
               </SheetHeader>
-              <LedgerRail doc={doc} armed={armed} onArm={arm} />
+              <LedgerRail doc={doc} armed={armed} onArm={arm} onAutoPlace={handleAutoPlace} />
             </SheetContent>
           </Sheet>
 
@@ -613,6 +600,32 @@ export default function JadvalWorkspace() {
           </Sheet>
         </>
       )}
+
+      {/* Boshidan boshlash — QAYTARIB BOʻLMAYDI: hujjat `localStorage`
+          da yashaydi va tarix ham u bilan ketadi. Shuning uchun toast
+          emas, tasdiq oynasi. */}
+      <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Jadval oʻchirilsinmi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {doc.classes.length} sinf va {doc.placements.length} dars oʻchadi, sozlash
+              ekrani ochiladi. Bu amalni qaytarib boʻlmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                loadDoc(emptyDoc());
+                setResetOpen(false);
+              }}
+            >
+              Oʻchirish va boshlash
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <ConflictDialog
         doc={doc}
@@ -631,6 +644,30 @@ export default function JadvalWorkspace() {
             });
           }
           setProposal(null);
+        }}
+        /* Taklif qoʻllanganda toʻsiq koʻchadi va katak boʻshaydi —
+           soʻng olingan dars OʻSHA katakka qoʻyiladi. Ikki qadam bitta
+           amal boʻlib koʻrinadi, chunki zavuch uchun bu bitta qaror. */
+        onApplySuggestion={(sg) => {
+          if (!proposal) return;
+          move(sg.move.id, {
+            classId: sg.move.classId,
+            day: sg.to.day,
+            shift: sg.move.shift,
+            period: sg.to.period,
+          });
+          if (armed) {
+            applyPlacement(armed, {
+              classId: proposal.classId,
+              day: proposal.day,
+              period: proposal.period,
+              shift: proposal.shift,
+            });
+          }
+          setProposal(null);
+          toast.success("Toʻsiq koʻchirildi va dars qoʻyildi", {
+            action: { label: "Qaytarish", onClick: () => { undo(); undo(); } },
+          });
         }}
         onSwap={() => {
           if (proposal && armed?.kind === "move") {

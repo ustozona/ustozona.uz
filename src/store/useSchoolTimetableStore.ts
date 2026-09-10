@@ -90,6 +90,12 @@ interface SchoolTimetableState {
     group?: number;
   }) => void;
   move: (placementId: string, to: { classId: string; day: number; shift: 1 | 2; period: number }) => void;
+  /**
+   * Butun roʻyxatni bir qadamda almashtiradi — avtomatik joylashtirish
+   * uchun. Tarixga BITTA snapshot yozadi, shuning uchun 400 ta dars ham
+   * bitta «Qaytarish» bilan orqaga qaytadi.
+   */
+  applyPlacements: (next: Placement[]) => void;
   remove: (placementId: string) => void;
   toggleLock: (placementId: string) => void;
 
@@ -164,6 +170,8 @@ export const useSchoolTimetableStore = create<SchoolTimetableState>()(
           push(next);
           set({ armed: null });
         },
+
+        applyPlacements: (next) => push(next),
 
         move: (placementId, to) => {
           const s = get();
@@ -315,7 +323,7 @@ export const useSchoolTimetableStore = create<SchoolTimetableState>()(
          `migrate` eski qoralamani TASHLAMAYDI — faqat yaratilgan
          demoni yangilaydi. Zavuchning oʻz ishi (`remoteId` bor yoki
          maktab nomi oʻzgartirilgan) saqlanadi. */
-      version: 2,
+      version: 3,
       migrate: (persisted, from) => {
         const p = (persisted ?? {}) as {
           doc?: SchoolTimetableDoc;
@@ -323,14 +331,32 @@ export const useSchoolTimetableStore = create<SchoolTimetableState>()(
           dirty?: boolean;
           savedAt?: number | null;
         };
-        if (from >= 2) return p as never;
+        if (from >= 3) return p as never;
 
-        const isUntouchedDemo =
-          p.remoteId == null && p.doc?.schoolName === "30-umumiy oʻrta taʼlim maktabi";
+        /* v3 — DEMO OLIB TASHLANDI (namuna jadval mahsulotdan chiqarildi).
+
+           Muammo: demo tugmasi bosilgan brauzerlarda soxta maktab, 25 ta
+           oʻylab topilgan familiya va 390 ta dars `localStorage` da qolib
+           ketdi. Endi uni yaratgan tugma yoʻq, demak zavuch ekranda
+           koʻrgan jadval NAMUNA ekanini biladigan yoʻl ham yoʻq — va uni
+           tozalab, oʻz maktabidan boshlay olmaydi.
+
+           ⚠️ Tozalash IKKI belgiga tayanadi, bittasiga emas: demo maktab
+           nomi VA demo xodim id'lari (`mat-1`, `ona-2` koʻrinishida —
+           haqiqiy sozlash `stf-` prefiksi bilan yozadi). Faqat nomga
+           qarasak, oʻz maktabi shunday atalgan zavuchning ishi
+           yoʻqolardi. */
+        const demoStaff =
+          p.doc?.staff?.length === 25 &&
+          p.doc.staff.every((x) => /^[a-z]{3}-\d+$/.test(x.id));
+        const isDemo =
+          p.remoteId == null &&
+          p.doc?.schoolName === "30-umumiy oʻrta taʼlim maktabi" &&
+          demoStaff;
 
         return {
           ...p,
-          doc: isUntouchedDemo ? emptyDoc() : p.doc,
+          doc: isDemo ? emptyDoc() : p.doc,
         } as never;
       },
       /* Tarix saqlanmaydi — u seansga tegishli va hujjatni ikki barobar

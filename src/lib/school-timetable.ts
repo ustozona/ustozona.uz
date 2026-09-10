@@ -164,6 +164,34 @@ export function indexDoc(doc: SchoolTimetableDoc): TimetableIndex {
   return { bySlot, staffAt };
 }
 
+/**
+ * Indeksga BITTA dars qoʻshadi — indeksni butunlay qayta qurmasdan.
+ *
+ * Avtomatik joylashtirish uchun kerak: u yuzlab darsni ketma-ket
+ * qoʻyadi va har qadamda `indexDoc` ni chaqirsa hisob kvadratik
+ * boʻlib ketardi (400 dars × 400 element = 160 000 ortiqcha amal).
+ *
+ * ⚠️ `indexDoc` bilan BIR XIL kalitlarni yozadi — ikkalasi ham
+ * `slotKey`/`timeKey` dan foydalanadi, shuning uchun ajralib keta
+ * olmaydi.
+ */
+export function addToIndex(index: TimetableIndex, p: Placement): void {
+  const sk = slotKey(p.classId, p.day, p.shift, p.period);
+  const slot = index.bySlot.get(sk);
+  if (slot) slot.push(p);
+  else index.bySlot.set(sk, [p]);
+
+  const tk = timeKey(p.day, p.shift, p.period);
+  let byStaff = index.staffAt.get(tk);
+  if (!byStaff) {
+    byStaff = new Map();
+    index.staffAt.set(tk, byStaff);
+  }
+  const list = byStaff.get(p.staffId);
+  if (list) list.push(p);
+  else byStaff.set(p.staffId, [p]);
+}
+
 export function placementsAt(
   index: TimetableIndex,
   classId: string,
@@ -408,7 +436,7 @@ export function findClass(doc: SchoolTimetableDoc, id: string): SchoolClass | un
   return doc.classes.find((c) => c.id === id);
 }
 
-/** Xodim familiyasi + ism bosh harfi ("Oripova N.") — katakda shu koʻrinadi. */
+/** Xodim familiyasi + ism bosh harfi ("Familiya I.") — katakda shu koʻrinadi. */
 export function staffShort(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length < 2) return name;

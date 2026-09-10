@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, LockOpen, Move, Trash2, X } from "lucide-react";
+import { Check, CloudCheck, Lock, LockOpen, Move, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { classTints } from "@/lib/class-colors";
@@ -47,6 +47,9 @@ export default function InspectorBar({
   selected,
   conflictCount,
   remaining,
+  suggestedCount,
+  dirty,
+  savedAt,
   onMove,
   onToggleLock,
   onRemove,
@@ -57,6 +60,9 @@ export default function InspectorBar({
   selected: Placement | null;
   conflictCount: number;
   remaining: number;
+  suggestedCount: number;
+  dirty: boolean;
+  savedAt: number | null;
   onMove: () => void;
   onToggleLock: () => void;
   onRemove: () => void;
@@ -85,7 +91,7 @@ export default function InspectorBar({
           {armed.kind === "move" ? "Koʻchirilmoqda" : subject?.name}
         </span>
         <span className="text-caption truncate">
-          {staff ? staffShort(staff.name) : ""} · katakni bosing yoki strelkalar bilan yurib Enter
+          {staff ? staffShort(staff.name) : ""} · {suggestedCount} ta mos vaqt bor · katakni bosing yoki strelkalar bilan yurib Enter
         </span>
 
         <div className="ml-auto flex items-center gap-4">
@@ -156,20 +162,68 @@ export default function InspectorBar({
     );
   }
 
-  /* 3. Boʻsh — hujjat holati. */
+  /* 3. Boʻsh — hujjat holati.
+
+     ⚠️ Hisoblar ilgari `ml-auto` bilan oʻng chetga uloqtirilardi. Keng
+     monitorda bu ikki soʻzni bir metr boʻshliq ajratib turardi va qator
+     umuman oʻqilmasdi. Endi maʼlumot chapda BITTA guruh boʻlib turadi;
+     oʻng chet saqlanish holatiga ajratilgan — u yerda turishi kerak
+     boʻlgan yagona narsa. */
   return (
     <Panel className={shell}>
-      <span className="text-caption">
+      <span className="text-caption shrink-0">
         {doc.classes.length} sinf · {doc.staff.length} oʻqituvchi · {doc.placements.length} dars
       </span>
-      <span className="text-caption ml-auto flex items-center gap-5">
-        <span className={cn(remaining > 0 && "text-warning")}>
+      <span aria-hidden className="h-4 w-px shrink-0 bg-border" />
+      <span className="text-caption flex min-w-0 items-center gap-4">
+        <span className={cn("shrink-0", remaining > 0 && "text-warning")}>
           Qoʻyilmagan: <b className="font-semibold tabular-nums">{remaining}</b>
         </span>
-        <span className={cn(conflictCount > 0 && "text-destructive")}>
+        <span className={cn("shrink-0", conflictCount > 0 && "text-destructive")}>
           Ziddiyat: <b className="font-semibold tabular-nums">{conflictCount}</b>
         </span>
+        {remaining === 0 && conflictCount === 0 && (
+          <span className="text-success flex shrink-0 items-center gap-1.5">
+            <Check className="size-3.5" aria-hidden />
+            Nashrga tayyor
+          </span>
+        )}
       </span>
+
+      <SaveState className="ml-auto" dirty={dirty} savedAt={savedAt} />
     </Panel>
   );
+}
+
+/* ── Saqlanish holati ────────────────────────────────────────────────
+   Zavuch brauzerda ishlaydi va hujjat `localStorage` da turadi —
+   «yozganim yoʻqolmadimi» degan savol shu ishning eng katta xavotiri.
+   Javob doim bitta joyda, oʻzgarmas oʻrinda turadi. */
+function SaveState({
+  dirty,
+  savedAt,
+  className,
+}: {
+  dirty: boolean;
+  savedAt: number | null;
+  className?: string;
+}) {
+  if (dirty) {
+    return (
+      <span className={cn("text-caption flex shrink-0 items-center gap-1.5", className)}>
+        <span aria-hidden className="size-1.5 rounded-full bg-warning" />
+        Saqlanmagan oʻzgarish bor
+      </span>
+    );
+  }
+  return (
+    <span className={cn("text-caption flex shrink-0 items-center gap-1.5", className)}>
+      <CloudCheck className="size-3.5" aria-hidden />
+      {savedAt ? `Saqlandi · ${timeShort(savedAt)}` : "Brauzerda saqlanadi"}
+    </span>
+  );
+}
+
+function timeShort(ts: number): string {
+  return new Date(ts).toLocaleTimeString("uz", { hour: "2-digit", minute: "2-digit" });
 }

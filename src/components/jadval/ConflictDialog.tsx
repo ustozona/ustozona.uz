@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +20,7 @@ import {
   type Placement,
   type SchoolTimetableDoc,
 } from "@/lib/school-timetable";
+import { suggestSwaps, type SwapSuggestion } from "@/lib/school-timetable-autoplace";
 
 /* ════════════════════════════════════════════════════════════════════
    ZIDDIYAT OYNASI — qaror soʻraydi, xabar bermaydi.
@@ -28,8 +31,14 @@ import {
 
    Bizda uch javob bor:
      • Almashtirish — ikkala darsning oʻrni almashadi, ziddiyat yoʻqoladi
+     • Toʻsiqni koʻchirish — dastur aniq boʻsh vaqt TAKLIF qiladi
      • Baribir qoʻyish — zavuch bilib turib qoʻyadi (keyin hal qiladi)
      • Bekor qilish
+
+   ⭐ Taklif bir qadamli va tekshirilgan: toʻsiq boʻlgan darsni oʻz sinfi
+   ichidagi ANIQ boʻsh, ziddiyatsiz katakka koʻchirish. Chuqurroq zanjir
+   (A→B→C) ataylab qidirilmaydi — zavuch bir qarashda tekshira olmaydigan
+   taklifga ishonmaydi.
 
    ⚠️ «Baribir qoʻyish» ATAYLAB bor. Jadval tuzish jarayonida vaqtinchalik
    ziddiyat normal holat — tizim uni taqiqlasa, zavuch mahsulotdan
@@ -56,13 +65,22 @@ export default function ConflictDialog({
   onSwap,
   onForce,
   onCancel,
+  onApplySuggestion,
 }: {
   doc: SchoolTimetableDoc;
   proposal: ConflictProposal | null;
   onSwap: () => void;
   onForce: () => void;
   onCancel: () => void;
+  onApplySuggestion: (suggestion: SwapSuggestion) => void;
 }) {
+  /* ⚠️ Hook shartdan OLDIN — `proposal` null boʻlganda ham chaqirilishi
+     shart, aks holda React hook tartibi buziladi. */
+  const suggestions = useMemo(
+    () => (proposal ? suggestSwaps(doc, proposal.blockedBy) : []),
+    [doc, proposal]
+  );
+
   if (!proposal) return null;
 
   const subject = findSubject(doc, proposal.subjectId);
@@ -97,6 +115,23 @@ export default function ConflictDialog({
             </p>
           )}
         </div>
+
+        {suggestions.length > 0 && (
+          <div className="flex flex-col gap-2 px-1">
+            <p className="text-label">Yoki toʻsiqni koʻchiring</p>
+            {suggestions.map((sg, i) => (
+              <button
+                key={`${sg.move.id}-${sg.to.day}-${sg.to.period}-${i}`}
+                type="button"
+                onClick={() => onApplySuggestion(sg)}
+                className="group flex items-center gap-3 rounded-md border border-border px-3 py-2.5 text-left transition-colors duration-fast hover:border-primary hover:bg-muted/50"
+              >
+                <span className="text-body min-w-0 flex-1 truncate">{sg.label}</span>
+                <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform duration-fast group-hover:translate-x-0.5" aria-hidden />
+              </button>
+            ))}
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="ghost" onClick={onCancel}>
