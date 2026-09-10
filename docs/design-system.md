@@ -54,6 +54,22 @@ yozilmaydi va mahalliy nusxa yaratilmaydi:
 | Sinf nomi **oʻqiladigan yorliq** boshqa mazmun ichida (dars kartasi, jadval qatori) | `<ClassBadge color={…} name={…} />` |
 | Sinf nomi **bosiladigan chip** (formada tanlangan sinf, krestcha bilan) | `<ClassChip color={…} name={…} onRemove={…} />` |
 | **Nechta** sinf — ustma-ust taxlangan doiralar | `<ClassSwatchStack hexes={…} />` |
+| **Sinflar paneli** (`ClassListPanel`) — sinf navigatsiyasi | Sinf ikonkasi `classIcon(key)` 36px tint doirada, `data-slot="class-glyph"` + qator `.list-row--glyph` |
+
+**Deviatsiya (2026-09-10) — sinflar paneli glifi (tint doira).**
+Panel sinfning asosiy navigatsiyasi: oʻqituvchi tanlagan ikonka sinfni
+nuqtadan tezroq tanitadi. Doira 36px (`size-9`, toolbar standarti bilan bir
+xil), `rounded-full` (Karta pasporti v2 iconbox shakli), 18px glif;
+oʻlchami holatlar orasida oʻzgarmaydi: tinch — sinf rangining 18%
+tint foni + rangli glif; tanlangan — doira toʻyinadi, `classTints().gradientTile`
++ oq glif, qator foni tint + 1px chegara toʻliq sinf rangida (inline;
+umumiy `softBorder` 22% och ranglarda koʻrinmasdi). Hover — kulrang `--muted` emas, sinf
+rangining 5% tinti (chegarasiz — tanlangan holatdan ajralib turadi) va
+yagona hover-harakat — doira `scale(1.08)`, `--transition-duration-base`
+(reduced-motion'da oʻchadi). Rail yoʻq — tanlov doiraning oʻzida.
+Qator balandligi 52px (vertikal padding 8px). Mobil
+trigger ham shu ikonkani sinf rangida chizadi. Boshqa zich roʻyxatlar nuqtada
+qoladi.
 
 **Doira oʻlchami — 8px, yagona.** `ClassSwatch` ichida `size-2` `className`dan
 keyin `cn()` ga beriladi, `cn` esa `tailwind-merge` — shuning uchun chaqiruv

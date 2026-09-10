@@ -44,6 +44,7 @@ Barcha semantik ranglar OKLCH, `:root` (light) / `.dark` da aniqlangan,
 manbalardan foydalaniladi:
 - Baho/davomat rangi → [`src/lib/score-colors.ts`](src/lib/score-colors.ts) (`gradeBadgeClass`, `attendanceBadgeClass`, `scoreBarColor`)
 - Sinf rangi → [`src/lib/class-colors.ts`](src/lib/class-colors.ts) (`CLASS_COLOR_BASE`, OKLCH `-400`, v3.shadcn.com/colors darajasi) → `CLASS_COLOR_HEX`, `classTints()`
+  - **Deviatsiya (2026-09-10) — sinflar paneli (`ClassListPanel`):** nuqta oʻrnida sinf ikonkasi 36px tint doirada (`size-9`, `rounded-full`, 18px glif; `.list-row--glyph`). Tinch holatda 18% tint fon + rangli glif, hoverda qator foni sinf rangining 5% tinti, tanlanganda doira toʻyinadi — `gradientTile` + oq glif, qator foni tint + 1px chegara toʻliq sinf rangida; rail yoʻq (§7 dagi «tanlangan = 3px rail» qoidasidan chetlanish), qator 52px. Hover-harakat — faqat doira `scale(1.08)`. Sabab: panel sinfning asosiy navigatsiyasi, foydalanuvchi tanlagan ikonka sinfni nuqtadan tezroq tanitadi; tanlov doira + chegarada yetarli aniq, rail ortiqcha. Boshqa zich roʻyxatlar nuqtada qoladi
   - Sinfni chizish: nuqta = `<ClassSwatch>` (**8px, yagona — oʻlcham sozlanmaydi**), oʻqiladigan yorliq = `<ClassBadge>`, bosiladigan chip = `<ClassChip>`, «nechta sinf» = `<ClassSwatchStack>` — qoʻlda span yoki mahalliy nusxa yoʻq (`docs/design-system.md` §1)
 - Toifa (topic) rangi → `TOPIC_COLOR_BASE` (`src/lib/grades-data`), xuddi shu engine ustida
 

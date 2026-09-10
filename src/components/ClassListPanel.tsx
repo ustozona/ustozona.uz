@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { classColor } from "@/lib/grades-data";
-import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLiveClasses, useLiveClassesHydrated, useCreateClass, classInfoFromForm, classFormInitial } from "@/hooks/useLiveClasses";
 import { classTints } from "@/lib/class-colors";
 import { useGradesStore } from "@/store/useGradesStore";
@@ -182,25 +181,34 @@ export default function ClassListPanel({
                 const isSelected = cls.id === selectedClassId;
                 const color = classColor(cls);
                 const rowTints = classTints(color);
+                const RowIcon = classIcon(cls.icon);
 
                 // Karta pasporti v2: BITTA andoza — tanlov faqat tint fon +
-                // 3px rail + qalinroq matn orqali; geometriya (balandlik,
-                // ikonka) oʻzgarmaydi (morf yoʻq).
+                // 1px sinf rangi chegarasi + toʻla gradient doira + qalinroq
+                // matn orqali (rail yoʻq); geometriya (balandlik, doira)
+                // oʻzgarmaydi (morf yoʻq). Glif doirasi tinch holatda tint
+                // fon + rangli glif (`.list-row--glyph`).
                 return (
                   <ContextMenu key={cls.id}>
                     <ContextMenuTrigger asChild>
                       <button
                         onClick={() => handleSelect(cls.id)}
-                        style={isSelected ? {
+                        style={{
                           ["--card-accent" as string]: rowTints.solid,
-                          ...rowTints.tint,
-                          ...rowTints.softBorder,
-                        } : undefined}
-                        className="list-row list-row--dot-ring group w-full"
+                          // Chegara inline — sinf rangining oʻzi (100%), 1px.
+                          ...(isSelected ? { ...rowTints.tint, border: `1px solid ${rowTints.solid}` } : {}),
+                        }}
+                        className="list-row list-row--glyph group w-full"
                         data-active={isSelected || undefined}
                         aria-current={isSelected || undefined}
                       >
-                        <ClassSwatch hex={rowTints.solid} />
+                        <span
+                          data-slot="class-glyph"
+                          style={isSelected ? rowTints.gradientTile : undefined}
+                          aria-hidden="true"
+                        >
+                          <RowIcon />
+                        </span>
                         <span className={cn(
                           "text-sm truncate flex-1 transition-colors",
                           isSelected ? "font-semibold text-foreground" : "text-foreground/70 group-hover:text-foreground"
@@ -364,7 +372,7 @@ export default function ClassListPanel({
         >
           {selected && tints ? (
             <>
-              <ClassSwatch hex={tints.solid} />
+              <SelectedIcon className="size-4 shrink-0" style={tints.iconText} aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate text-left font-medium text-foreground">
                 {selected.name}
               </span>
