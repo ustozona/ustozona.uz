@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Check, PackageOpen } from "lucide-react";
+import { Check, PackageOpen, Wand2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Panel, PanelBody, PanelHeader } from "@/components/ui/panel";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardDescription, CardTitle } from "@/components/ui/card";
@@ -40,9 +41,11 @@ export type LedgerRailProps = {
   doc: SchoolTimetableDoc;
   armed: Armed;
   onArm: (card: Armed) => void;
+  /** Qolgan darslarni avtomat joylashtirish. */
+  onAutoPlace: () => void;
 };
 
-export default function LedgerRail({ doc, armed, onArm }: LedgerRailProps) {
+export default function LedgerRail({ doc, armed, onArm, onAutoPlace }: LedgerRailProps) {
   const rows = useMemo(() => buildLedger(doc), [doc]);
 
   const byClass = useMemo(() => {
@@ -79,6 +82,22 @@ export default function LedgerRail({ doc, armed, onArm }: LedgerRailProps) {
             <CardDescription className="truncate">Qoʻyilmagan soatlar</CardDescription>
           </div>
         </div>
+
+        {/* Avtomat SHU YERDA — qoldiq relsi uning kirish maʼlumoti ham,
+            natijasi koʻrinadigan joy ham. Qoldiq boʻlmasa tugma ham
+            keraksiz, shuning uchun shartga bogʻlangan. */}
+        {total > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="col-start-3 shrink-0 justify-self-end"
+            title="Qolgan darslarni ziddiyatsiz kataklarga oʻzi qoʻyadi"
+            onClick={onAutoPlace}
+          >
+            <Wand2 />
+            Avtomat
+          </Button>
+        )}
       </PanelHeader>
 
       <PanelBody className="px-5 pb-5 pt-5">

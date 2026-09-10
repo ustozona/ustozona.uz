@@ -52,3 +52,18 @@ export const DIMMED = "opacity-25";
 
 /** Sudralayotgan elementning oʻzi. */
 export const DRAGGING = "opacity-40";
+
+/**
+ * Dars chipining hover holati.
+ *
+ * ⚠️ Ataylab `CLASS_CARD_INTERACTION` EMAS. Dashboardning oʻsha yagona
+ * retsepti `hover:-translate-y-px hover:shadow-md` — u 60 katakli
+ * jadvalda toʻgʻri ishlaydi, lekin bu yerda 500 dan ortiq chip yonma-yon
+ * turadi: sichqoncha toʻr ustidan yurganda kataklar ketma-ket koʻtarilib,
+ * butun sirt titrab koʻrinadi va soya qoʻshni chipni yopadi.
+ *
+ * «Javob beryapman» hissi shu sababli harakat bilan emas, halqa bilan
+ * beriladi — qolgan holat halqalari bilan bir tilda.
+ */
+export const CHIP_HOVER =
+  "transition-shadow duration-fast hover:ring-1 hover:ring-inset hover:ring-foreground/25";

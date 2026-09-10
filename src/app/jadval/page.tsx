@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import JadvalBackground from "@/components/jadval/JadvalBackground";
 import JadvalWorkspace from "@/components/jadval/JadvalWorkspace";
 
 export const metadata: Metadata = {
@@ -24,5 +25,12 @@ export const metadata: Metadata = {
    ════════════════════════════════════════════════════════════════════ */
 
 export default function JadvalPage() {
-  return <JadvalWorkspace />;
+  return (
+    <>
+      {/* Ishchi maydon foni — panellar oq ustida oq boʻlib qolmasligi
+          uchun. Dashboard shell'idagi bilan bir xil naqsh. */}
+      <JadvalBackground />
+      <JadvalWorkspace />
+    </>
+  );
 }

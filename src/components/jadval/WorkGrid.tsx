@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { Plus } from "lucide-react";
 import { classTints } from "@/lib/class-colors";
 import { Panel } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ import {
 import type { Armed } from "@/store/useSchoolTimetableStore";
 import { placementDndId, slotDndId } from "./dnd-ids";
 import {
+  CHIP_HOVER,
   CLASH_RING,
   DIMMED,
   DRAGGING,
@@ -62,10 +64,23 @@ import {
    Koʻchirish → Enter» orqali ketadi (`Armed.kind === "move"`).
    ════════════════════════════════════════════════════════════════════ */
 
+/* ── Katak oʻlchami: QATʼIY emas, ORALIQ ────────────────────────────
+   Ilgari katak 30×27 px qotirilgan edi — eng tor ekranga moʻljallangan
+   oʻlcham. Oqibati katta monitorda koʻrindi: 14 sinf × 36 ustun toʻr
+   panelning yarmini egallab, oʻng va past tomonda yuzlab piksel boʻsh
+   qolardi, katak esa oʻqilmaydigan darajada zich boʻlib turaverardi.
+
+   Endi oʻlcham `minmax(min, max)`: joy boʻlsa katak choʻziladi va
+   oʻqilishi yaxshilanadi, joy yetmasa eng kichik oʻlchamga qaytib
+   gorizontal skrollga oʻtadi. Maksimum bor — 4 sinfli maktabda katak
+   kaftdek boʻlib ketmasligi uchun. */
 const CELL_W = 30;
+const CELL_W_MAX = 52;
 const CELL_H = 27;
+const CELL_H_MAX = 40;
 const ROW_HEAD_W = 62;
 const HEAD_H = 26;
+const SUBHEAD_H = 18;
 
 /** Tashqaridan «shu katakka boring» soʻrovi (masalan ziddiyat roʻyxatidan).
     `nonce` — bir xil katakka qayta soʻrov ham ishlashi uchun. */
@@ -190,18 +205,24 @@ export default function WorkGrid({
         aria-rowcount={classes.length + 2}
         aria-colcount={cols + 1}
         onKeyDown={onKeyDown}
-        className="grid w-max"
-        style={{ gridTemplateColumns: `${ROW_HEAD_W}px repeat(${cols}, ${CELL_W}px)` }}
+        /* `min-w-max`/`min-h-max` — kataklar eng kichik oʻlchamidan
+           siqilmasin (siqilsa skroll paydo boʻladi); `w-full`/`h-full` —
+           joy ortiqcha boʻlsa `minmax` maksimumigacha choʻzilsin. */
+        className="grid h-full min-h-max w-full min-w-max"
+        style={{
+          gridTemplateColumns: `${ROW_HEAD_W}px repeat(${cols}, minmax(${CELL_W}px, ${CELL_W_MAX}px))`,
+          gridTemplateRows: `${HEAD_H}px ${SUBHEAD_H}px repeat(${classes.length}, minmax(${CELL_H}px, ${CELL_H_MAX}px))`,
+        }}
       >
         {/* Kun sarlavhalari. `contents` — qator semantikasi ARIA uchun
             kerak, lekin toʻr tuzilishini buzmasligi shart. */}
         <div role="row" className="contents">
-          <div className="sticky left-0 top-0 z-30 border-b border-r border-border bg-card" />
+          <div className="sticky left-0 top-0 z-30 border-b border-r border-border bg-background/70 backdrop-blur-md" />
           {WORK_DAYS.map((day) => (
             <div
               key={`d${day}`}
               role="columnheader"
-              className="text-label sticky top-0 z-20 truncate border-b border-r border-border bg-card px-1 py-1.5 text-center"
+              className="text-label sticky top-0 z-20 flex items-center justify-center truncate border-b border-r border-border bg-background/70 backdrop-blur-md px-1"
               style={{ gridColumn: `span ${periods.length}` }}
             >
               {DAY_NAMES[day]}
@@ -212,7 +233,7 @@ export default function WorkGrid({
         {/* Soat raqamlari */}
         <div role="row" className="contents">
           <div
-            className="sticky left-0 z-30 border-b border-r border-border bg-card"
+            className="sticky left-0 z-30 border-b border-r border-border bg-background/70 backdrop-blur-md"
             style={{ top: HEAD_H }}
           />
           {WORK_DAYS.map((day) =>
@@ -221,7 +242,13 @@ export default function WorkGrid({
                 key={`p${day}-${p}`}
                 role="columnheader"
                 className={cn(
-                  "text-micro sticky z-20 border-b border-border bg-card py-0.5 text-center text-muted-foreground",
+                  /* ⚠️ Bu qatorda `backdrop-blur` ATAYLAB yoʻq, garchi
+                     ustidagi kun sarlavhasida bor. Sabab — soni: soat
+                     raqamlari 36 ta katak, blur berilsa skrollda 36 ta
+                     `backdrop-filter` qatlami hisoblanadi va maktab
+                     noutbukida toʻr sudralib qoladi. 18px balandlikdagi
+                     raqam chizigʻida blur baribir koʻrinmaydi. */
+                  "text-micro sticky z-20 flex items-center justify-center border-b border-border bg-background text-muted-foreground",
                   p === periods[periods.length - 1] && "border-r"
                 )}
                 style={{ top: HEAD_H }}
@@ -237,7 +264,7 @@ export default function WorkGrid({
           <div role="row" className="contents" key={cls.id}>
             <div
               role="rowheader"
-              className="text-caption sticky left-0 z-10 flex items-center border-b border-r border-border bg-card px-2 font-semibold text-foreground"
+              className="text-caption sticky left-0 z-10 flex items-center border-b border-r border-border bg-card/80 backdrop-blur-md px-2 font-semibold text-foreground"
             >
               {cls.name}
             </div>
@@ -377,7 +404,7 @@ const WorkCell = memo(function WorkCell({
         }
       }}
       className={cn(
-        "relative border-b border-border outline-none transition-opacity duration-fast",
+        "group/cell relative border-b border-border outline-none transition-opacity duration-fast",
         lastOfDay && "border-r",
         dim && DIMMED,
         isClash && CLASH_RING,
@@ -386,15 +413,30 @@ const WorkCell = memo(function WorkCell({
         focused && cn("z-10", FOCUS_RING),
         canDrop && "cursor-pointer"
       )}
-      style={{ height: CELL_H }}
+      /* Balandlik toʻrning qator shablonidan keladi (`minmax`), katakda
+         qotirilmaydi — aks holda toʻr choʻzilmay qolardi. */
     >
-      <div className="flex h-full">
+      {/* Boʻsh katakda hoverda «+» — dashboard jadvalidagi bilan bir xil
+          affordans. Ilgari boʻsh katak butunlay jim edi: yangi odam qayerga
+          bosish mumkinligini faqat urinib koʻrib bilardi.
+          Karta olinganda koʻrsatilmaydi — u paytda katakni holat rangi
+          (`DROP_CLASS`) allaqachon gapirtiradi. */}
+      {here.length === 0 && !dim && drop === null && (
+        <Plus
+          aria-hidden
+          className="pointer-events-none absolute inset-0 m-auto size-3.5 text-muted-foreground opacity-0 transition-opacity duration-fast group-hover/cell:opacity-60"
+        />
+      )}
+
+      {/* `p-0.5` + `gap-0.5` — chip katak chegarasiga tegib turmaydi, shunda
+          radius koʻzga koʻrinadi va ikki guruh chipi ajratgich chiziqsiz
+          ham ajralib turadi. */}
+      <div className="flex h-full gap-0.5 p-0.5">
         {here.map((p) => (
           <Chip
             key={p.id}
             placement={p}
             subject={subjects.get(p.subjectId)}
-            split={here.length > 1}
             lit={lit}
             selected={selectedId === p.id}
             onSelect={onSelect}
@@ -410,14 +452,12 @@ const WorkCell = memo(function WorkCell({
 function Chip({
   placement,
   subject,
-  split,
   lit,
   selected,
   onSelect,
 }: {
   placement: Placement;
   subject: SchoolSubject | undefined;
-  split: boolean;
   lit: boolean;
   selected: boolean;
   onSelect: (p: Placement) => void;
@@ -431,6 +471,7 @@ function Chip({
   return (
     <div
       ref={setNodeRef}
+      aria-label={`${subject?.name ?? placement.subjectId}${placement.locked ? ", qulflangan" : ", koʻchirish uchun sudrang"}`}
       /* ⚠️ Faqat pointer aktivatori. Butun `listeners` + `attributes`
          berilsa @dnd-kit elementga oʻz `tabIndex`/`role` ini yozadi va
          toʻrning roving tabindex'i buziladi. */
@@ -439,10 +480,15 @@ function Chip({
         e.stopPropagation();
         onSelect(placement);
       }}
-      style={{ ...(tints?.chipFill ?? {}), ...(tints?.textOnTint ?? {}) }}
+      /* Yuza dashboard jadvali va plannerning AYNAN oʻsha retsepti:
+         `gradientSurface` (gradient + diagonal tekstura) + `textOnSolid`.
+         Ilgari bu yerda tekis `chipFill` + `textOnTint` ishlatilgan va
+         toʻr Ustozona ekraniga emas, elektron jadvalga oʻxshab qolgandi.
+         Zichlik boshqa — yuza tili bir xil. */
+      style={{ ...(tints?.gradientSurface ?? {}), ...(tints?.textOnSolid ?? {}) }}
       className={cn(
-        "text-micro relative flex flex-1 select-none items-center justify-center overflow-hidden",
-        split && "border-l border-dashed border-border first:border-l-0",
+        "text-micro relative flex flex-1 select-none items-center justify-center overflow-hidden rounded-sm",
+        CHIP_HOVER,
         lit && LIT_RING,
         selected && SELECTED_RING,
         isDragging && DRAGGING,
