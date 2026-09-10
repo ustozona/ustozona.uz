@@ -730,7 +730,8 @@
   .list-card,
   .list-card-icon,
   .list-row,
-  .list-row--dot-ring [data-slot="class-swatch"] {
+  .list-row--dot-ring [data-slot="class-swatch"],
+  .list-row--glyph [data-slot="class-glyph"] {
     transition: none;
   }
   .card-interactive:hover,
@@ -921,6 +922,60 @@
 }
 .list-row--dot-ring[data-active="true"] [data-slot="class-swatch"] {
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--card-accent, var(--primary)) 35%, var(--background));
+}
+
+/* Sinf glifi — tint doira. Nuqta oʻrnida 36px doira (`size-9`, 18px glif —
+   `SectionIcon` default oʻlchami; shakli Karta pasporti v2 iconboxʼi kabi
+   doira) ichida sinf ikonkasi: tinch holatda sinf rangining
+   18% tint foni + rangli glif, tanlanganda doira toʻyinadi — toʻla gradient
+   (`classTints().gradientTile` inline) + oq glif. Rail yoʻq — tanlov doirada,
+   qatorning tint fonida va 1px sinf rangi chegarasida (inline, TSX). Doira
+   oʻlchami holatlar orasida oʻzgarmaydi (morf
+   yoʻq); vertikal padding 8px — qator 52px. `--card-accent` qatorga
+   doim beriladi. */
+.list-row--glyph {
+  padding-block: 0.5rem;
+}
+/* Hover — kulrang `--muted` emas, sinf rangining yengil tinti. Tanlangan
+   holatdan (7% + 1px sinf rangi chegarasi) ochroq va chegarasiz, ikkisi adashmaydi.
+   `.list-row:hover` bilan bir xil specificity, keyinroq eʼlon qilingani uchun ustun. */
+.list-row--glyph:hover:not([data-active="true"]) {
+  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 5%, var(--background));
+}
+.list-row--glyph[data-active="true"]::before {
+  content: none;
+}
+.list-row--glyph [data-slot="class-glyph"] {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px; /* doira — Karta pasporti v2 iconbox shakli */
+  color: var(--card-accent, var(--primary));
+  background-color: color-mix(in oklch, var(--card-accent, var(--primary)) 18%, var(--background));
+  transition: color var(--transition-duration-fast) var(--ease-standard),
+              transform var(--transition-duration-base) var(--ease-standard);
+}
+/* Hover-harakat — BITTA: faqat doira biroz kattalashadi (qator oʻzi
+   siljimaydi, fon rangi oʻzgarishi harakat emas). */
+.list-row--glyph:is(:hover, :focus-visible) [data-slot="class-glyph"] {
+  transform: scale(1.08);
+}
+/* Reduced-motion — shu yerda, hover qoidasidan KEYIN: yuqoridagi umumiy
+   reduced-motion bloki fayl boshida turadi va teng specificity'da yutqazadi. */
+@media (prefers-reduced-motion: reduce) {
+  .list-row--glyph:is(:hover, :focus-visible) [data-slot="class-glyph"] {
+    transform: none;
+  }
+}
+.list-row--glyph [data-slot="class-glyph"] svg {
+  width: 1.125rem; /* 18px — `SectionIcon` default bilan bir xil */
+  height: 1.125rem;
+}
+.list-row--glyph[data-active="true"] [data-slot="class-glyph"] {
+  color: white;
 }
 
 /* ─────────────────────────────────────────────
