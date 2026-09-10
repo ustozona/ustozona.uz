@@ -2559,8 +2559,11 @@
     "dueToday": "Búgin",
     "dueTomorrow": "Erteń",
     "footerDone": "Búgin: {done}/{total} orınlandı",
-    "emptyTitle": "Barlıǵı tekserildi",
-    "emptyDescription": "Gezek bos — jańa wazıypa qosıń yamasa dem alıń."
+    "emptyTitle": "Házirshe wazıypa joq",
+    "emptyDescription": "Joqarıdaǵı maydanǵa jazıp, búgingi wazıypanı qosıń.",
+    "emptyWeekTitle": "Bul hápte bos",
+    "emptyWeekDescription": "Keyinirek jáne {count} wazıypa bar.",
+    "quickAddPlaceholder": "Búginge wazıypa qosıw"
   },
   "TodayRail": {
     "title": "Búgingi sabaqlar",

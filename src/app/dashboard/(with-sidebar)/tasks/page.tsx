@@ -103,6 +103,19 @@ export default function TasksPage() {
   // Sinf yoki roʻyxat almashganda tafsilot paneli yopiladi (students sahifasi naqshi).
   useEffect(() => setSelectedTaskId(null), [classId, effectiveList]);
 
+  // `?task=` — boshqa sahifadan (masalan bosh sahifa vidjetidan) kelganda
+  // vazifa tafsiloti darrov ochiladi. Yuqoridagi tozalash effektidan KEYIN
+  // turishi shart — mount'da u tanlovni oʻchirib yubormasin.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("task");
+    if (!id) return;
+    setSelectedTaskId(id);
+    setDetailOpen(true);
+    url.searchParams.delete("task");
+    window.history.replaceState(null, "", url);
+  }, []);
+
   const handleSelectList = (list: SmartListKey) => {
     setUrlList(list);
     setClassId(null);

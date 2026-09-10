@@ -2559,8 +2559,11 @@
     "dueToday": "Сегодня",
     "dueTomorrow": "Завтра",
     "footerDone": "Сегодня: {done}/{total} выполнено",
-    "emptyTitle": "Всё проверено",
-    "emptyDescription": "Очередь пуста — добавьте задачу или отдохните."
+    "emptyTitle": "Пока нет задач",
+    "emptyDescription": "Введите задачу в поле выше — она добавится на сегодня.",
+    "emptyWeekTitle": "На этой неделе свободно",
+    "emptyWeekDescription": "Позже запланировано задач: {count}.",
+    "quickAddPlaceholder": "Добавить задачу на сегодня"
   },
   "TodayRail": {
     "title": "Уроки на сегодня",

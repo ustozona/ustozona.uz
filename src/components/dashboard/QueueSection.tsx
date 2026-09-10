@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ListTodo } from "lucide-react";
+import { ListTodo, Plus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -28,16 +29,23 @@ import { DEMO_CLASS_NAMES } from "@/components/tour/home-tour-demo";
 import { cn } from "@/lib/utils";
 
 /* ════════════════════════════════════════════════════════════════════
-   ISHLAR NAVBATI — bosh sahifa chap ustuni.
+   VAZIFALAR — bosh sahifa oʻng ustuni.
 
-   Vidjet — tasks store'ning proyeksiyasi (parallel model emas): faqat
-   "grading" (baholash) manbali, hali toʻliq belgilanmagan vazifalar,
-   7 kunlik ufq bilan filtrlanadi. Qatorlar Vazifalar sahifasi bilan bir
-   xil `TaskRow` komponentidan foydalanadi — checkbox shu yerda ham
-   ishlaydi va ikkala joyda ham sinxron. [[stat-tile-canonical]]
+   Vidjet — tasks store'ning proyeksiyasi (parallel model emas): faol
+   vazifalar kechikkan → bugun → 7 kun ichida → muddatsiz guruhlarida.
+   Dars-manbali vazifalar kirmaydi — ular oʻrta ustundagi bugungi darslarda
+   allaqachon koʻrinadi. Qatorlar Vazifalar sahifasi bilan bir xil `TaskRow`
+   komponentidan foydalanadi — checkbox ikkala joyda sinxron.
+
+   Bosh sahifada faqat eng koʻp takrorlanadigan ikki harakat bor: belgilash
+   va tez qoʻshish. Tahrirlash Vazifalar sahifasida qoladi.
+   [[stat-tile-canonical]]
    ════════════════════════════════════════════════════════════════════ */
 
 const MAX_ROWS = 7;
+
+type GroupKey = "overdue" | "today" | "later" | "nodate";
+const GROUP_ORDER: GroupKey[] = ["overdue", "today", "later", "nodate"];
 
 export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol paytida boʻsh navbat oʻrniga koʻrsatiladigan namunaviy vazifalar — store'ga taʼsir qilmaydi. */ demoTasks?: Task[] }) {
   const t = useTranslations("QueueSection");
@@ -46,8 +54,10 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
   const storeItems = useTasksStore((s) => s.items);
   const items = demoTasks ?? storeItems;
   const setStatus = useTasksStore((s) => s.setStatus);
+  const addManualTask = useTasksStore((s) => s.addManualTask);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const liveClasses = useLiveClasses();
+  const [draft, setDraft] = useState("");
 
   const todayKey = dateToKey(now);
   const tomorrowKey = addDaysKey(todayKey, 1);
@@ -65,46 +75,53 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
     return map;
   }, [liveClasses, demoTasks]);
 
-  // ── Baholash navbati: faqat "grading" manbali, hali bajarilmagan,
-  //    7 kunlik ufq ichidagi vazifalar (Vazifalar sahifasidagi "todo" bilan bir xil). ──
-  const queueTasks = useMemo(
-    () =>
-      items.filter(
-        (task) =>
-          task.source.kind === "grading" &&
-          task.status !== "done" &&
-          task.status !== "canceled" &&
-          task.dueDate != null &&
-          task.dueDate <= weekKey
-      ),
-    [items, weekKey]
-  );
-
-  const groups = useMemo(() => {
-    const overdue: Task[] = [];
-    const today: Task[] = [];
-    const later: Task[] = [];
-    for (const task of sortTasks(queueTasks)) {
-      if (task.dueDate! < todayKey) overdue.push(task);
-      else if (task.dueDate === todayKey) today.push(task);
-      else later.push(task);
+  // ── Faol, dars-manbali boʻlmagan vazifalar guruhlarga boʻlinadi. 7 kundan
+  //    keyingilari koʻrsatilmaydi, faqat boʻsh holat matni uchun sanaladi. ──
+  const { groups, beyondCount } = useMemo(() => {
+    const groups: Record<GroupKey, Task[]> = { overdue: [], today: [], later: [], nodate: [] };
+    let beyondCount = 0;
+    for (const task of sortTasks(items)) {
+      if (task.source.kind === "lesson" || task.status === "done" || task.status === "canceled") continue;
+      if (task.dueDate == null) groups.nodate.push(task);
+      else if (task.dueDate < todayKey) groups.overdue.push(task);
+      else if (task.dueDate === todayKey) groups.today.push(task);
+      else if (task.dueDate <= weekKey) groups.later.push(task);
+      else beyondCount++;
     }
-    return { overdue, today, later };
-  }, [queueTasks, todayKey]);
+    return { groups, beyondCount };
+  }, [items, todayKey, weekKey]);
 
-  const total = groups.overdue.length + groups.today.length + groups.later.length;
+  const total = GROUP_ORDER.reduce((sum, key) => sum + groups[key].length, 0);
   const isEmpty = total === 0;
-  const shown = { overdue: 0, today: 0, later: 0 };
+  const shown: Record<GroupKey, number> = { overdue: 0, today: 0, later: 0, nodate: 0 };
   let budget = MAX_ROWS;
-  for (const key of ["overdue", "today", "later"] as const) {
+  for (const key of GROUP_ORDER) {
     const take = Math.min(groups[key].length, budget);
     shown[key] = take;
     budget -= take;
   }
-  const hiddenCount = total - (shown.overdue + shown.today + shown.later);
+  const hiddenCount = total - GROUP_ORDER.reduce((sum, key) => sum + shown[key], 0);
 
-  // ── Kiritilish progress matni ("13/15 kiritildi") — faqat KOʻRSATISH
-  //    uchun, navbat aʼzoligi endi Task.status ("todo") orqali belgilanadi. ──
+  const submitDraft = () => {
+    const title = draft.trim();
+    if (!title || demoTasks) return;
+    addManualTask({ title, dueDate: todayKey });
+    setDraft("");
+  };
+
+  // ── Bosilganda vazifa oʻz manbasiga olib boradi. ──
+  const openTask = (task: Task) => {
+    const { source } = task;
+    if (source.kind === "grading") {
+      router.push(`/dashboard/grades?classId=${encodeURIComponent(source.classId)}`);
+    } else if (source.kind === "birthday") {
+      router.push(`/dashboard/students/${encodeURIComponent(source.studentId)}`);
+    } else {
+      router.push(`/dashboard/tasks?task=${encodeURIComponent(task.id)}`);
+    }
+  };
+
+  // ── Kiritilish progress matni ("13/15 kiritildi") — faqat baholash vazifalarida. ──
   const enteredOf = (task: Task): string | null => {
     if (task.source.kind !== "grading") return null;
     const { classId, assignmentId } = task.source;
@@ -122,27 +139,36 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
   };
 
   // ── Muddat matni + jiddiylik rangi ──
-  const dueLabel = (due: string): { text: string; cls: string } => {
+  const dueLabel = (due: string | null): { text: string; cls: string } | null => {
+    if (due == null) return null;
     if (due < todayKey) return { text: formatDateGroupLabel(due), cls: "text-destructive" };
     if (due === todayKey) return { text: t("dueToday"), cls: "text-warning" };
     if (due === tomorrowKey) return { text: t("dueTomorrow"), cls: "text-warning" };
     return { text: formatDateGroupLabel(due), cls: "text-muted-foreground" };
   };
 
-  const renderGroup = (label: string, tasks: Task[], accent?: "destructive") => {
+  const groupLabel: Record<GroupKey, string> = {
+    overdue: t("groupOverdue"),
+    today: t("groupToday"),
+    later: t("groupLater"),
+    nodate: t("noDue"),
+  };
+
+  const renderGroup = (key: GroupKey) => {
+    const tasks = groups[key].slice(0, shown[key]);
     if (tasks.length === 0) return null;
     return (
-      <div key={label}>
+      <div key={key}>
         <div className="mb-1 flex items-center gap-2 px-1">
           <span
             className={cn(
               "text-xs font-semibold",
-              accent === "destructive" ? "text-destructive" : "text-muted-foreground"
+              key === "overdue" ? "text-destructive" : "text-muted-foreground"
             )}
           >
-            {label}
+            {groupLabel[key]}
           </span>
-          <span className="text-xs tabular-nums text-muted-foreground/60">{tasks.length}</span>
+          <span className="text-xs tabular-nums text-muted-foreground/60">{groups[key].length}</span>
         </div>
         <div className="flex flex-col">
           {tasks.map((task) => {
@@ -152,10 +178,16 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
               <TaskRow
                 key={task.id}
                 task={task}
-                due={dueLabel(task.dueDate!)}
+                due={key === "today" ? null : dueLabel(task.dueDate)}
                 onToggleStatus={() => setStatus(task.id, task.status === "done" ? "todo" : "done")}
-                onClick={() => {
-                  if (task.classId) router.push(`/dashboard/grades?classId=${encodeURIComponent(task.classId)}`);
+                onClick={() => openTask(task)}
+                onKeyDown={(e) => {
+                  // Ichki checkbox'dan koʻtarilgan tugmalar uning oʻziga qoladi.
+                  if (e.target !== e.currentTarget) return;
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openTask(task);
+                  }
                 }}
                 trailing={
                   progress || meta ? (
@@ -189,9 +221,28 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
           </SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>
         </div>
+        <Button asChild variant="ghost" size="sm" className="shrink-0 text-muted-foreground">
+          <Link href="/dashboard/tasks">{t("scopeAll")}</Link>
+        </Button>
       </CardHeader>
       <CardContent className={panelCardContentClass}>
         <div className="flex h-full min-h-0 flex-col">
+          <div className="px-5 pt-4">
+            <div className="relative">
+              <Plus className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submitDraft();
+                  if (e.key === "Escape") setDraft("");
+                }}
+                placeholder={t("quickAddPlaceholder")}
+                aria-label={t("quickAddPlaceholder")}
+                className="pl-9 shadow-none"
+              />
+            </div>
+          </div>
           <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto scrollbar-thin px-5 pb-5 pt-4">
             {isEmpty ? (
               <Empty className="border-0 p-4 gap-4">
@@ -199,15 +250,15 @@ export function QueueSection({ now, demoTasks }: { now: Date; /** Tur faol payti
                   <EmptyMedia>
                     <Illustration name="30" className="h-[clamp(4.5rem,12vh,7rem)] text-black dark:text-white" />
                   </EmptyMedia>
-                  <EmptyTitle>{t("emptyTitle")}</EmptyTitle>
-                  <EmptyDescription>{t("emptyDescription")}</EmptyDescription>
+                  <EmptyTitle>{beyondCount > 0 ? t("emptyWeekTitle") : t("emptyTitle")}</EmptyTitle>
+                  <EmptyDescription>
+                    {beyondCount > 0 ? t("emptyWeekDescription", { count: beyondCount }) : t("emptyDescription")}
+                  </EmptyDescription>
                 </EmptyHeader>
               </Empty>
             ) : (
               <div className="flex flex-col gap-4">
-                {renderGroup(t("groupOverdue"), groups.overdue.slice(0, shown.overdue), "destructive")}
-                {renderGroup(t("groupToday"), groups.today.slice(0, shown.today))}
-                {renderGroup(t("groupLater"), groups.later.slice(0, shown.later))}
+                {GROUP_ORDER.map(renderGroup)}
                 {hiddenCount > 0 && (
                   <Button asChild variant="ghost" size="sm" className="mx-auto text-xs text-muted-foreground">
                     <Link href="/dashboard/tasks">{t("viewAll", { count: hiddenCount })}</Link>
