@@ -25,7 +25,7 @@ import { classTints } from "@/lib/class-colors";
 import { useGradesStore } from "@/store/useGradesStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClassFormModal } from "@/components/ClassFormModal";
-import type { ClassIconKey } from "@/lib/class-icons";
+import { classIcon, type ClassIconKey } from "@/lib/class-icons";
 import {
   Empty,
   EmptyHeader,
@@ -64,6 +64,7 @@ export default function ClassListPanel({
   const updateClass = useGradesStore((s) => s.updateClass);
   const selected = liveClasses.find((c) => c.id === selectedClassId);
   const tints = selected ? classTints(classColor(selected)) : undefined;
+  const SelectedIcon = classIcon(selected?.icon);
 
   const stats = useClassPanelStats(page, selectedClassId);
   const showStats = !!(selected && tints && stats);
@@ -239,7 +240,7 @@ export default function ClassListPanel({
                 className="relative group/icon size-9 rounded-full shrink-0 flex items-center justify-center text-white overflow-hidden"
                 style={tints!.gradientTile}
               >
-                <GraduationCap
+                <SelectedIcon
                   className="relative size-4 transition-opacity duration-fast group-hover/icon:opacity-0"
                   aria-hidden="true"
                 />

@@ -1098,6 +1098,7 @@ function ArchivedClassesSection({
         <div className="mt-3 flex flex-col gap-2">
           {classes.map((cls) => {
             const hex = CLASS_COLOR_HEX[cls.color];
+            const Icon = classIcon(cls.info.icon);
             return (
               <div
                 key={cls.id}
@@ -1107,7 +1108,7 @@ function ArchivedClassesSection({
                   className="flex size-8 shrink-0 items-center justify-center rounded-md"
                   style={{ backgroundColor: `rgba(${hexToRgb(hex)}, 0.12)` }}
                 >
-                  <GraduationCap className="size-4" style={{ color: hex }} />
+                  <Icon className="size-4" style={{ color: hex }} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{cls.name}</p>
@@ -1202,6 +1203,7 @@ function ClassesDataTable({
         {rows.map((cls, i) => {
           const hex = CLASS_COLOR_HEX[cls.color];
           const progress = Math.round((cls.coveredLessons / Math.max(cls.lessons, 1)) * 100);
+          const Icon = classIcon(cls.info.icon);
           return (
             <TableRow
               key={cls.id}
@@ -1229,7 +1231,7 @@ function ClassesDataTable({
                     className="size-9 shrink-0 rounded-full flex items-center justify-center text-white"
                     style={classTints(cls.color).gradientTile}
                   >
-                    <GraduationCap className="size-4" />
+                    <Icon className="size-4" />
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-foreground">{cls.name}</p>
@@ -1301,6 +1303,7 @@ function ClassListRow({
   const hex = CLASS_COLOR_HEX[cls.color];
   const initials = cls.initials;
   const overflow = Math.max(cls.students - initials.length, 0);
+  const Icon = classIcon(cls.info.icon);
 
   return (
     <div
@@ -1313,7 +1316,7 @@ function ClassListRow({
         className="list-card-icon size-11 rounded-full flex items-center justify-center shrink-0 text-white"
         style={classTints(cls.color).gradientTile}
       >
-        <GraduationCap className="size-5" />
+        <Icon className="size-5" />
       </div>
 
       {/* Nom + jadval */}

@@ -29,7 +29,7 @@ export function ClassDetailResolver({
   const hydrated = useGradesStore((s) => s._hasHydrated);
 
   const identity = useMemo<ClassIdentity | null>(
-    () => (info ? { id, name: info.name, color: classColor(info) } : null),
+    () => (info ? { id, name: info.name, color: classColor(info), icon: info.icon } : null),
     [id, info]
   );
 
