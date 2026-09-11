@@ -198,9 +198,9 @@ function ClassSwitcherCrumb({
                 style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
               />
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
-              <span className="truncate">{c.name}</span>
+              <span className="max-w-[65%] shrink-0 truncate" title={c.name}>{c.name}</span>
               {c.subject && (
-                <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>
+                <span className="min-w-0 flex-1 truncate pl-2 text-right text-muted-foreground">{subjectLabel(c.subject)}</span>
               )}
             </CommandItem>
           ))}
@@ -246,9 +246,9 @@ function StatsClassSwitcherCrumb({
                 style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
               />
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
-              <span className="truncate">{c.name}</span>
+              <span className="max-w-[65%] shrink-0 truncate" title={c.name}>{c.name}</span>
               {c.subject && (
-                <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>
+                <span className="min-w-0 flex-1 truncate pl-2 text-right text-muted-foreground">{subjectLabel(c.subject)}</span>
               )}
             </CommandItem>
           ))}
@@ -298,9 +298,9 @@ function StudentClassSwitcherCrumb({
                 style={{ color: CLASS_COLOR_HEX[classColor(c)] }}
               />
               <ClassSwatch hex={CLASS_COLOR_HEX[classColor(c)]} />
-              <span className="truncate">{c.name}</span>
+              <span className="max-w-[65%] shrink-0 truncate" title={c.name}>{c.name}</span>
               {c.subject && (
-                <span className="ml-auto shrink-0 truncate pl-2 text-muted-foreground">{subjectLabel(c.subject)}</span>
+                <span className="min-w-0 flex-1 truncate pl-2 text-right text-muted-foreground">{subjectLabel(c.subject)}</span>
               )}
             </CommandItem>
           ))}
