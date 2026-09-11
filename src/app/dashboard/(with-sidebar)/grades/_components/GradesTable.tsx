@@ -700,7 +700,7 @@ export default function GradesTable({
                 </div>
               </TableCell>
               <TableCell className="sticky left-[260px] z-30 bg-card border-b-2 border-r border-border p-0 w-16 min-w-16 max-w-16 h-16">
-                <FormativeCell percent={classFormative} />
+                <FormativeCell percent={classFormative} hint />
               </TableCell>
               {assignmentAverages.map((aa) => (
                 // Ustun oʻrtachasi — toifa shkalasida EMAS, sinfning yagona
@@ -766,7 +766,7 @@ export default function GradesTable({
                           <ChevronRight className="size-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover/name:translate-x-0 group-hover/name:opacity-100" />
                         </Link>
                       </HoverCardTrigger>
-                      <HoverCardContent align="start" side="right" className="w-72">
+                      <HoverCardContent align="start" side="left" className="w-72">
                         <StudentNamePreview
                           student={s}
                           classLabel={classData.info.name}
@@ -898,8 +898,11 @@ const EMPTY_BG = "color-mix(in srgb, var(--muted) 60%, var(--card))";
  * Formativ ustuni katagi — oxirgi 3 formativ ishning MEDIANI (foiz).
  * Ataylab jurnal shkalasiga oʻgirilmaydi: bu rasmiy baho emas, "hozir qayerda"
  * signali. Foiz koʻrinishi uni "Summativ" ustunidan darrov ajratib turadi.
+ *
+ * `hint` — izoh tooltipi faqat sinf oʻrtachasi katagida; har oʻquvchi qatorida
+ * takrorlanmaydi.
  */
-function FormativeCell({ percent }: { percent: number | null }) {
+function FormativeCell({ percent, hint = false }: { percent: number | null; hint?: boolean }) {
   const t = useTranslations("GradesTable");
   if (percent === null) {
     return (
@@ -909,18 +912,20 @@ function FormativeCell({ percent }: { percent: number | null }) {
     );
   }
   const color = scoreBarColor(percent);
+  const cell = (
+    <div
+      className="h-full w-full flex items-center justify-center cursor-default"
+      style={{ backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)` }}
+    >
+      <span className="font-bold text-base" style={{ color }}>
+        {Math.round(percent)}%
+      </span>
+    </div>
+  );
+  if (!hint) return cell;
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className="h-full w-full flex items-center justify-center cursor-default"
-          style={{ backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)` }}
-        >
-          <span className="font-bold text-base font-mono" style={{ color }}>
-            {Math.round(percent)}%
-          </span>
-        </div>
-      </TooltipTrigger>
+      <TooltipTrigger asChild>{cell}</TooltipTrigger>
       <TooltipContent className="max-w-[220px] text-xs leading-snug">
         {t("formativeColumnHint")}
       </TooltipContent>
