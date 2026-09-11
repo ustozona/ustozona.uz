@@ -32,7 +32,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TypographyLabel } from "@/components/ui/typography";
 import { EventCard } from "@/components/calendar/EventCard";
@@ -820,24 +820,17 @@ export default function TimetablePage() {
             </div>
 
             {/* Markaz: koʻrinish rejimi */}
-            <ToggleGroup
-              type="single"
+            <SegmentedToggle<"free" | "lesson">
+              variant="pill"
               value={snapMode}
-              onValueChange={(v) => v && setSnapMode(v as "free" | "lesson")}
-              variant="outline"
-              size="default"
+              onValueChange={setSnapMode}
               className="shrink-0"
               aria-label={t("viewModeAria")}
-            >
-              <ToggleGroupItem value="free" className="gap-1.5 text-xs" title={t("calendarModeTitle")}>
-                <CalendarDays className="size-4" />
-                <span className="hidden sm:inline">{t("calendarMode")}</span>
-              </ToggleGroupItem>
-              <ToggleGroupItem value="lesson" className="gap-1.5 text-xs" title={t("gridModeTitle")}>
-                <Table className="size-4" />
-                <span className="hidden sm:inline">{t("gridMode")}</span>
-              </ToggleGroupItem>
-            </ToggleGroup>
+              options={[
+                { value: "free", label: t("calendarMode"), icon: <CalendarDays className="size-4" /> },
+                { value: "lesson", label: t("gridMode"), icon: <Table className="size-4" /> },
+              ]}
+            />
 
             {/* Oʻng: avto-saqlash holati + koʻproq amallar */}
             <div className="flex flex-1 items-center justify-end gap-2">

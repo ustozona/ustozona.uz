@@ -31,6 +31,7 @@ export function SegmentedToggle<T extends string>({
   variant = "grid",
   iconOnly = false,
   className,
+  "aria-label": ariaLabel,
 }: {
   value: T;
   onValueChange: (value: T) => void;
@@ -39,6 +40,8 @@ export function SegmentedToggle<T extends string>({
   /** Yorliq faqat ekran oʻquvchisi uchun (`sr-only`) — icon-only tugmalar uchun. */
   iconOnly?: boolean;
   className?: string;
+  /** Guruh nomi ekran oʻquvchisi uchun (koʻrinadigan yorliq yoʻq boʻlsa). */
+  "aria-label"?: string;
 }) {
   /* Har bir nusxaga oʻz layoutId'si. Bitta sahifada ikkita toggle boʻlsa
      va id umumiy boʻlsa, fon ular ORASIDA sirpanib ketardi. */
@@ -51,9 +54,12 @@ export function SegmentedToggle<T extends string>({
       variant={isPill ? undefined : "outline"}
       value={value}
       onValueChange={(v) => v && onValueChange(v as T)}
+      aria-label={ariaLabel}
       className={cn(
+        /* Pill — toolbar boshqaruvi: 36px (`h-9`) va boshqaruv radiusi
+           (`rounded-lg`), yonidagi `size-9` tugmalar bilan bir qatorda. */
         isPill
-          ? "w-fit gap-1 rounded-xl border border-border p-1"
+          ? "h-9 w-fit gap-0.5 rounded-lg border border-border p-0.5"
           : "grid w-full gap-1 rounded-lg data-[variant=outline]:h-auto",
         className,
       )}
@@ -74,7 +80,7 @@ export function SegmentedToggle<T extends string>({
                `!important` kerak emas. */
             "data-[state=on]:bg-transparent data-[state=on]:text-background",
             isPill
-              ? "h-auto rounded-lg px-3 py-1.5"
+              ? "h-full rounded-md px-3 py-0"
               : cn(
                   "px-3 py-2 font-medium data-[variant=outline]:h-auto",
                   opt.hint
@@ -87,8 +93,7 @@ export function SegmentedToggle<T extends string>({
             <motion.span
               layoutId={pillId}
               className={cn(
-                "absolute inset-0 z-0 bg-foreground",
-                isPill ? "rounded-lg" : "rounded-md",
+                "absolute inset-0 z-0 rounded-md bg-foreground",
               )}
               transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
             />

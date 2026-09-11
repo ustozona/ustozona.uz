@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { Input } from "@/components/ui/input";
 import { TypographyLabel } from "@/components/ui/typography";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { SettingsCard, SwitchRow, useDraft, useRegisterDraft } from "./SettingsShared";
 
 export default function TasksSection() {
@@ -48,16 +48,16 @@ export default function TasksSection() {
         {draft.birthdayTasks && (
           <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3">
             <span className="text-sm font-medium text-foreground">{t("leadLabel")}</span>
-            <ToggleGroup
-              type="single"
-              variant="outline"
-              value={String(draft.birthdayLead)}
-              onValueChange={(v) => v && setDraft({ ...draft, birthdayLead: Number(v) as 0 | 1 | 3 })}
-            >
-              <ToggleGroupItem value="0">{t("leadSameDay")}</ToggleGroupItem>
-              <ToggleGroupItem value="1">{t("lead1Day")}</ToggleGroupItem>
-              <ToggleGroupItem value="3">{t("lead3Days")}</ToggleGroupItem>
-            </ToggleGroup>
+            <SegmentedToggle<"0" | "1" | "3">
+              variant="pill"
+              value={String(draft.birthdayLead) as "0" | "1" | "3"}
+              onValueChange={(v) => setDraft({ ...draft, birthdayLead: Number(v) as 0 | 1 | 3 })}
+              options={[
+                { value: "0", label: t("leadSameDay") },
+                { value: "1", label: t("lead1Day") },
+                { value: "3", label: t("lead3Days") },
+              ]}
+            />
           </div>
         )}
       </div>
