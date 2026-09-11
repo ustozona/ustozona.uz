@@ -278,7 +278,7 @@ export default function ClassListPanel({
                   {stats!.items.map((item, i) => (
                     <div key={i} className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
                       <p className="text-xs text-muted-foreground truncate">{item.label}:</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("countSuffix", { value: item.value })}</p>
+                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{typeof item.value === "number" ? t("countSuffix", { value: item.value }) : item.value}</p>
                     </div>
                   ))}
                 </div>
