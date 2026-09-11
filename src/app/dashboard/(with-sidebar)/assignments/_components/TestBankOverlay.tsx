@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Spinner } from "@/components/ui/spinner";
 import { TypographyMuted } from "@/components/ui/typography";
 import {
@@ -331,23 +332,16 @@ export default function TestBankOverlay({
 
       {/* Darajalar */}
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-5 py-3">
-        {tabs.map(({ key, label, Icon }) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTier(key)}
-            aria-pressed={tier === key}
-            className={
-              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors " +
-              (tier === key
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border text-muted-foreground hover:bg-muted hover:text-foreground")
-            }
-          >
-            <Icon className="size-3.5" />
-            {label}
-          </button>
-        ))}
+        <SegmentedToggle<BankTier>
+          variant="pill"
+          value={tier}
+          onValueChange={setTier}
+          options={tabs.map(({ key, label, Icon }) => ({
+            value: key,
+            label,
+            icon: <Icon className="size-4" />,
+          }))}
+        />
       </div>
 
       {/* Filtrlar */}

@@ -13,7 +13,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -182,16 +182,14 @@ export default function BellScheduleDialog({ config, events, onSave, onClose }: 
               ) : (
                 (() => {
                   const shiftSwitcher = (
-                    <ToggleGroup
-                      type="single"
+                    <SegmentedToggle<"shift1" | "shift2">
                       value={activeShift}
-                      onValueChange={(v) => v && setActiveShift(v as "shift1" | "shift2")}
-                      variant="outline"
-                      className="grid w-full grid-cols-2"
-                    >
-                      <ToggleGroupItem value="shift1">{t("shift1")}</ToggleGroupItem>
-                      <ToggleGroupItem value="shift2">{t("shift2")}</ToggleGroupItem>
-                    </ToggleGroup>
+                      onValueChange={setActiveShift}
+                      options={[
+                        { value: "shift1", label: t("shift1") },
+                        { value: "shift2", label: t("shift2") },
+                      ]}
+                    />
                   );
                   return activeShift === "shift1" ? (
                     <ShiftFields

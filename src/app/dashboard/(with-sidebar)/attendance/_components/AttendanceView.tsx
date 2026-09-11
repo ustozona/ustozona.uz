@@ -45,7 +45,7 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { AttendanceDonut, ATT_COLORS } from "@/app/dashboard/(with-sidebar)/students/[id]/_components/charts";
 import type { AttendanceWindow } from "@/lib/student-profile";
 import {
@@ -351,8 +351,9 @@ export default function AttendanceView({
   const [sortField, setSortField] = useState<SortField>("firstName");
   const [notePopup, setNotePopup] = useState<{ studentId: string; date: string } | null>(null);
   // Davr granularligi — "Oy" (bitta oy) yoki "Chorak" (akademik chorak toʻlaligicha,
-  // dars kunlari `quarter.range` boʻyicha; navigatsiya choraklar boʻylab).
-  const [period, setPeriod] = useState<"month" | "quarter">("month");
+  // dars kunlari `quarter.range` boʻyicha; navigatsiya choraklar boʻylab) yoki
+  // "Yil" (faol oʻquv yilining barcha dars kunlari bitta jadvalda).
+  const [period, setPeriod] = useState<"month" | "quarter" | "year">("month");
   const [onlyAttention, setOnlyAttention] = useState(false);
   
   // Bugungi sana yil diapazonidan tashqaridaligi bo'yicha ogohlantirish (bir martalik yopish uchun)
@@ -503,7 +504,10 @@ export default function AttendanceView({
   // oʻtilsa) — "Chorak" rejimida qolib ketmaslik uchun "Oy"ga qaytariladi.
   useEffect(() => {
     if (period === "quarter" && calendar.quarters.length === 0) setPeriod("month");
-  }, [period, calendar.quarters.length]);
+    // Yil rejimi — tanlagich yashiringan boʻlsa (demo/tur yoki yil sozlanmagan)
+    // va ‹ › oʻchiq boʻlsa, foydalanuvchi oyga qaytolmay qolmasin.
+    if (period === "year" && (demoMode || !isCalendarConfigured(calendar))) setPeriod("month");
+  }, [period, calendar, demoMode]);
 
   // Bugungi ustunga avtoscroll — jadval ochilganda (yoki oy/sinf almashganda)
   // bugungi sana koʻrinishda boʻlsa, ustun markazga keltiriladi.
@@ -532,7 +536,9 @@ export default function AttendanceView({
 
   // Koʻrsatiladigan kunlar — har doim dars kunlari. Oy rejimi: koʻrilayotgan
   // oyga tushganlari; chorak rejimi: chorak diapazonidagilari.
-  const monthDays = period === "quarter"
+  const monthDays = period === "year"
+    ? lessonDays
+    : period === "quarter"
     ? (viewedQuarter ? lessonDays.filter((d) => inRange(d.date, viewedQuarter.range)) : [])
     : lessonDays.filter((d) => {
         const [y, m] = d.date.split("-").map(Number);
@@ -568,20 +574,23 @@ export default function AttendanceView({
   // Vaznlar — holat sozlamalaridan (Sozlamalar > Davomat); yagona manba.
   const weights = statusWeights(statuses);
   const monthRateOf = (id: string) => weightedRate(records, id, weights, monthLessonDates);
-  const quarterRateOf = (id: string) => weightedRate(records, id, weights, quarterLessonDates);
-  const periodRateOf = quarterRateOf;
+  // Yil rejimida "xavfli" va hover-card butun yil dars kunlari boʻyicha hisoblanadi.
+  const periodLessonDates = period === "year"
+    ? new Set(lessonDays.map((d) => d.date))
+    : quarterLessonDates;
+  const periodRateOf = (id: string) => weightedRate(records, id, weights, periodLessonDates);
 
-  // Hover-card chart uchun — choraklik holat taqsimoti (profil chart formati)
+  // Hover-card chart uchun — davr (chorak yoki yil) holat taqsimoti (profil chart formati)
   const quarterSummaryOf = (id: string): AttendanceWindow => {
     let present = 0, absent = 0, late = 0, excused = 0;
     for (const r of records) {
-      if (r.studentId !== id || !quarterLessonDates.has(r.date)) continue;
+      if (r.studentId !== id || !periodLessonDates.has(r.date)) continue;
       if (r.status === "present") present++;
       else if (r.status === "absent") absent++;
       else if (r.status === "late") late++;
       else if (r.status === "excused") excused++;
     }
-    return { total: present + absent + late + excused, present, absent, late, excused, pct: quarterRateOf(id)?.pct ?? 0 };
+    return { total: present + absent + late + excused, present, absent, late, excused, pct: periodRateOf(id)?.pct ?? 0 };
   };
 
   // Avatar/preview rangi — joriy sinf palitrasidan (jonli info; yoʻq boʻlsa id boʻyicha avto)
@@ -595,7 +604,22 @@ export default function AttendanceView({
   const SAFE_FLOOR_PCT = 90;
   const periodPcts = baseStudents.map((s) => periodRateOf(s.id)?.pct).filter((p): p is number => p != null);
   const p25 = percentile(periodPcts, 25);
-  const isChronic = (id: string) => (monthRateOf(id)?.absents ?? 0) >= 3; // oyiga ≥3 Kelmadi
+  // Surunkali — oyiga ≥3 Kelmadi. Oy rejimida koʻrilayotgan oy; chorak/yil
+  // rejimida koʻrinayotgan davrdagi ISTALGAN oy (yashirin `month` holati emas).
+  const chronicIds = new Set<string>();
+  if (period !== "month") {
+    const shownDates = new Set(monthDays.map((d) => d.date));
+    const absentsByMonth = new Map<string, number>();
+    for (const r of records) {
+      if (r.status !== "absent" || !shownDates.has(r.date)) continue;
+      const k = `${r.studentId}:${r.date.slice(0, 7)}`;
+      const n = (absentsByMonth.get(k) ?? 0) + 1;
+      absentsByMonth.set(k, n);
+      if (n >= 3) chronicIds.add(r.studentId);
+    }
+  }
+  const isChronic = (id: string) =>
+    period === "month" ? (monthRateOf(id)?.absents ?? 0) >= 3 : chronicIds.has(id);
   const isDanger = (id: string) => {
     const r = periodRateOf(id);
     if (!r) return false;
@@ -675,6 +699,11 @@ export default function AttendanceView({
   };
 
   const goToday = () => {
+    // Yil rejimi: hamma kun bitta jadvalda — faqat bugungi ustunga suriladi.
+    if (period === "year") {
+      todayColRef.current?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+      return;
+    }
     const n = new Date();
     const y = n.getFullYear(), m = n.getMonth() + 1;
     // Chorak rejimi: bugun chorakka tushmasa ham eng yaqin chorakni koʻrsatamiz.
@@ -698,6 +727,54 @@ export default function AttendanceView({
   };
   const goPrev = () => (period === "quarter" ? quarterStep(-1) : prevMonth());
   const goNext = () => (period === "quarter" ? quarterStep(1) : nextMonth());
+
+  // Avtoscroll / «Bugun» nishoni — bugun dars kuni boʻlsa oʻsha ustun, aks
+  // holda bugungacha boʻlgan oxirgi dars kuni (u ham yoʻq boʻlsa — birinchisi).
+  // Aks holda dars boʻlmagan kunda ref boʻsh qolib, «Bugun» hech narsa qilmasdi.
+  const scrollAnchor =
+    [...monthDays].reverse().find((d) => d.date <= today)?.date ?? monthDays[0]?.date;
+
+  // Chorak/yil rejimida kunlar bir necha oyga choʻziladi — ustunlar ustida oy
+  // nomi guruh sarlavhasi sifatida koʻrsatiladi (qaysi kun qaysi oyniki).
+  const monthGroups: { key: string; month: number; span: number }[] = [];
+  if (period !== "month") {
+    for (const d of monthDays) {
+      const key = d.date.slice(0, 7);
+      const last = monthGroups[monthGroups.length - 1];
+      if (last?.key === key) last.span++;
+      else monthGroups.push({ key, month: Number(key.slice(5, 7)), span: 1 });
+    }
+  }
+
+  // "Oʻquvchilar" sarlavhasi (saralash bilan) — oy guruh qatori boʻlsa ikki
+  // qatorni egallaydi.
+  const studentsHead = (
+    <TableHead rowSpan={monthGroups.length > 0 ? 2 : undefined} className="sticky left-0 z-40 border-b border-r border-border p-4 text-center align-middle whitespace-nowrap" style={{ width: 220, background: HEADER_BG }}>
+      <div className="flex items-center justify-center gap-1.5">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost"
+              onClick={() => setSortField((f) => (f === "firstName" ? "lastName" : "firstName"))}
+              className="text-label hover:text-foreground transition-colors cursor-pointer h-auto min-h-0 p-0 hover:bg-transparent">
+              {t("students")}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{sortField === "firstName" ? t("sortByLastName") : t("sortByFirstName")}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost"
+              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+              className="flex flex-col -space-y-1 h-auto min-h-0 w-auto p-0 hover:bg-transparent">
+              <ChevronUp className={cn("size-3", sortDir === "asc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
+              <ChevronDown className={cn("size-3", sortDir === "desc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{sortDir === "asc" ? t("sortDesc") : t("sortAsc")}</TooltipContent>
+        </Tooltip>
+      </div>
+    </TableHead>
+  );
 
   const noteRecord = notePopup ? records.find((r) => r.studentId === notePopup.studentId && r.date === notePopup.date) : null;
   const noteStudent = notePopup ? roster.find((s) => s.id === notePopup.studentId) : null;
@@ -762,20 +839,23 @@ export default function AttendanceView({
             <div className="flex items-center gap-3 shrink-0">
               <SectionIcon><Calendar /></SectionIcon>
               <CardTitle className="flex items-baseline gap-1.5">
-                {period === "quarter" && viewedQuarter ? viewedQuarter.name : MONTH_NAMES[month.month - 1]}
-                <span className="font-normal text-foreground/50">({month.year})</span>
+                {period === "year"
+                  ? t("year")
+                  : period === "quarter" && viewedQuarter ? viewedQuarter.name : MONTH_NAMES[month.month - 1]}
+                <span className="font-normal text-foreground/50">
+                  ({period === "year" ? (calendar.yearLabel || month.year) : month.year})
+                </span>
               </CardTitle>
             </div>
 
             {/* Davr granularligi — Oy | Chorak (demo/turda va choraksiz oʻquv yilida yashirin) — markazda */}
             <div className="flex flex-1 items-center justify-center">
-              {!demoMode && calendar.quarters.length > 0 && (
-                <ToggleGroup
-                  type="single"
+              {!demoMode && isCalendarConfigured(calendar) && (
+                <SegmentedToggle
+                  variant="pill"
                   value={period}
                   onValueChange={(v) => {
-                    if (!v) return;
-                    setPeriod(v as "month" | "quarter");
+                    setPeriod(v);
                     if (v === "quarter") {
                       // Koʻrilayotgan oy chorakka tushmasa (yil tashqarisi) — boʻsh
                       // ekran oʻrniga eng yaqin chorakka sakraymiz.
@@ -785,14 +865,12 @@ export default function AttendanceView({
                       }
                     }
                   }}
-                  variant="outline"
-                  size="default"
-                >
-                  <ToggleGroupItem value="month" className="px-3 text-sm font-medium">{t("month")}</ToggleGroupItem>
-                  <ToggleGroupItem value="quarter" className="px-3 text-sm font-medium">
-                    {t("quarter")}
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                  options={[
+                    { value: "month" as const, label: t("month") },
+                    ...(calendar.quarters.length > 0 ? [{ value: "quarter" as const, label: t("quarter") }] : []),
+                    { value: "year" as const, label: t("year") },
+                  ]}
+                />
               )}
             </div>
 
@@ -812,13 +890,13 @@ export default function AttendanceView({
               )}
 
               <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" onClick={goPrev} className={ctrlBtn}>
+                <Button variant="outline" size="icon" onClick={goPrev} disabled={period === "year"} className={ctrlBtn}>
                   <ChevronLeft className="h-5 w-5" aria-hidden />
                 </Button>
                 <Button variant="outline" onClick={goToday} className="h-9 rounded-md bg-card border-border shadow-none font-semibold px-4">
                   {t("today")}
                 </Button>
-                <Button variant="outline" size="icon" onClick={goNext} className={ctrlBtn}>
+                <Button variant="outline" size="icon" onClick={goNext} disabled={period === "year"} className={ctrlBtn}>
                   <ChevronRight className="h-5 w-5" aria-hidden />
                 </Button>
               </div>
@@ -852,9 +930,13 @@ export default function AttendanceView({
               <Empty className="h-full w-full">
                 <EmptyHeader>
                   <EmptyMedia><Illustration name="22" className="h-32 text-black dark:text-white" /></EmptyMedia>
-                  <EmptyTitle>{period === "quarter" ? t("noQuarterLessonDaysTitle") : t("noMonthLessonDaysTitle")}</EmptyTitle>
+                  <EmptyTitle>
+                    {period === "year" ? t("noYearLessonDaysTitle")
+                      : period === "quarter" ? t("noQuarterLessonDaysTitle") : t("noMonthLessonDaysTitle")}
+                  </EmptyTitle>
                   <EmptyDescription>
-                    {period === "quarter"
+                    {period === "year" ? t("noYearLessonDaysDescription")
+                      : period === "quarter"
                       ? t("noQuarterLessonDaysDescription", { quarter: viewedQuarter?.name ?? t("thisQuarterFallback") })
                       : t("noMonthLessonDaysDescription", { month: MONTH_NAMES[month.month - 1] })}
                   </EmptyDescription>
@@ -873,35 +955,23 @@ export default function AttendanceView({
                 </colgroup>
 
                 <TableHeader className="sticky top-0 z-30" style={{ background: HEADER_BG }}>
+                  {monthGroups.length > 0 && (
+                    <TableRow style={{ height: 28 }}>
+                      {studentsHead}
+                      {monthGroups.map((g) => (
+                        <TableHead key={g.key} colSpan={g.span}
+                          className="h-7 border-b border-r border-border px-2 text-center align-middle whitespace-nowrap text-caption"
+                          style={{ background: HEADER_BG }}>
+                          {g.span >= 3 ? MONTH_NAMES[g.month - 1] : MONTH_NAMES[g.month - 1].slice(0, 3)}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  )}
                   <TableRow style={{ height: 57 }}>
-                    <TableHead className="sticky left-0 z-40 border-b border-r border-border p-4 text-center align-middle whitespace-nowrap" style={{ width: 220, background: HEADER_BG }}>
-                      <div className="flex items-center justify-center gap-1.5">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost"
-                              onClick={() => setSortField((f) => (f === "firstName" ? "lastName" : "firstName"))}
-                              className="text-label hover:text-foreground transition-colors cursor-pointer h-auto min-h-0 p-0 hover:bg-transparent">
-                              {t("students")}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{sortField === "firstName" ? t("sortByLastName") : t("sortByFirstName")}</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost"
-                              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-                              className="flex flex-col -space-y-1 h-auto min-h-0 w-auto p-0 hover:bg-transparent">
-                              <ChevronUp className={cn("size-3", sortDir === "asc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
-                              <ChevronDown className={cn("size-3", sortDir === "desc" ? "text-foreground" : "text-muted-foreground/40")} aria-hidden />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{sortDir === "asc" ? t("sortDesc") : t("sortAsc")}</TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </TableHead>
+                    {monthGroups.length === 0 && studentsHead}
 
                     {monthDays.map((d) => (
-                      <ColHeader key={d.date} date={d.date} isToday={d.date === today} future={d.date > today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} cellRef={d.date === today ? todayColRef : undefined} />
+                      <ColHeader key={d.date} date={d.date} isToday={d.date === today} future={d.date > today} statuses={activeStatuses} onBulk={(s) => handleBulk(d.date, s)} cellRef={d.date === scrollAnchor ? todayColRef : undefined} />
                     ))}
                   </TableRow>
                 </TableHeader>

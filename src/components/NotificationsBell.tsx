@@ -133,7 +133,7 @@ export default function NotificationsBell() {
               onValueChange={setFilter}
               options={FILTER_OPTIONS}
               variant="pill"
-              className="gap-0.5 p-0.5 [&_button]:px-2 [&_button]:py-1 [&_button]:text-xs"
+              className="h-8 [&_button]:px-2 [&_button]:text-xs"
             />
             {unread > 0 && (
               <Tooltip>
