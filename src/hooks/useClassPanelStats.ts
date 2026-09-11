@@ -4,7 +4,10 @@ import { useLessonStore } from '@/store/useLessonStore';
 import { useGradesStore } from '@/store/useGradesStore';
 import { useAttendanceStore } from '@/store/useAttendanceStore';
 import { useBehaviorStore } from '@/store/useBehaviorStore';
-import { studentStats } from '@/lib/attendance-data';
+import { statusWeights } from '@/lib/attendance-data';
+import { isCalendarConfigured } from '@/lib/academic-calendar';
+import { todayKey } from '@/lib/date-keys';
+import { useCalendarStore } from '@/store/useCalendarStore';
 import { classBalance } from '@/lib/behavior-data';
 import { classSummativeAverage } from '@/lib/grades-stats';
 import { useStandardsStore } from '@/store/useStandardsStore';
@@ -19,6 +22,8 @@ export function useClassPanelStats(page: Page, classId: string): {
   const mounted = useMounted();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const attendanceRecords = useAttendanceStore((s) => s.recordsByClass[classId]);
+  const attendanceStatuses = useAttendanceStore((s) => s.statuses);
+  const calendar = useCalendarStore((s) => s.calendar);
   const behaviorEvents = useBehaviorStore((s) => s.eventsByClass[classId]);
   const behaviorRedemptions = useBehaviorStore((s) => s.redemptions);
   const lessonUnits = useLessonStore((s) => s.units);
@@ -82,26 +87,47 @@ export function useClassPanelStats(page: Page, classId: string): {
         // SSR va klient birinchi renderi mos boʻlishi uchun mount'dan keyin.
         if (!mounted) return undefined;
         const roster = classDataMap[classId]?.students ?? [];
-        const records = attendanceRecords ?? [];
         if (roster.length === 0) return undefined;
 
-        // Aggregate stats across all students
+        // FAQAT faol oʻquv yili: yil boshidan bugungacha (kelajak sanadagi
+        // yozuvlar ham, oldingi yillarniki ham hisobga olinmaydi).
+        // Kalendar sozlanmagan boʻlsa — cheklovsiz.
+        const today = todayKey();
+        const configured = isCalendarConfigured(calendar);
+        const end = configured && calendar.range.end < today ? calendar.range.end : today;
+        const rosterIds = new Set(roster.map((s) => s.id));
+        const records = (attendanceRecords ?? []).filter(
+          (r) =>
+            rosterIds.has(r.studentId) &&
+            r.status !== "unmarked" &&
+            r.date <= end &&
+            (!configured || r.date >= calendar.range.start)
+        );
+
+        // Foizlar belgilangan yozuvlar ulushi. «Davomat» — sahifadagi bilan
+        // bir xil vaznli formula (Keldi=1, Kechikdi=0.5, …; sozlamalardan).
+        const weights = statusWeights(attendanceStatuses);
         let present = 0;
         let absent = 0;
-        for (const s of roster) {
-          const st = studentStats(records, s.id);
-          present += st.present;
-          absent += st.absent + st.late + st.excused;
+        let counted = 0;
+        let weightSum = 0;
+        for (const r of records) {
+          if (r.status === "present") present++;
+          else if (r.status === "absent") absent++;
+          const w = weights[r.status];
+          if (w == null) continue;
+          counted++;
+          weightSum += w;
         }
-        const totalPossible = present + absent;
-        const record = totalPossible > 0 ? Math.round((present / totalPossible) * 100) : 0;
-        
+        const pct = (n: number) => (records.length ? Math.round((n / records.length) * 100) : 0);
+        const rate = counted ? Math.round((weightSum / counted) * 100) : 0;
+
         return {
           items: [
-            { value: present, label: "Keldi" },
-            { value: absent, label: "Kelmadi" }
+            { value: `${pct(present)}%`, label: "Keldi" },
+            { value: `${pct(absent)}%`, label: "Kelmadi" }
           ],
-          progress: { value: record, label: "Davomat" }
+          progress: { value: rate, label: "Davomat" }
         };
       }
       case 'standards': {
@@ -164,5 +190,5 @@ export function useClassPanelStats(page: Page, classId: string): {
       default:
         return undefined;
     }
-  }, [page, classId, classDataMap, attendanceRecords, lessonUnits, lessonsAll, standardSets, behaviorEvents, behaviorRedemptions, mounted]);
+  }, [page, classId, classDataMap, attendanceRecords, attendanceStatuses, calendar, lessonUnits, lessonsAll, standardSets, behaviorEvents, behaviorRedemptions, mounted]);
 }
