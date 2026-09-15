@@ -409,14 +409,21 @@ function DayGridView({
 
       {showNowLine && (
         <div
-          className="absolute inset-x-0 z-20 flex items-center"
+          className="absolute inset-x-0 z-20 flex items-start"
           style={{ top: (nowMin - rangeStart) * PX_PER_MIN }}
         >
-          <span className="w-10 shrink-0 -translate-y-1/2 text-right text-[10px] font-semibold tabular-nums text-destructive">
-            {fmtMin(nowMin)}
+          {/* Vaqt — kapsulada, kulrang soat yozuvlaridan ajralib tursin. */}
+          <span className="flex w-10 shrink-0 -translate-y-1/2 justify-end">
+            <span className="rounded-full bg-destructive px-1.5 py-px text-[10px] font-semibold leading-none tabular-nums text-white">
+              {fmtMin(nowMin)}
+            </span>
           </span>
+          {/* Nuqta «nafas oladi» — jonli vaqt belgisi; reduced-motion'da toʻxtaydi. */}
           <div className="relative ml-2 h-px flex-1 bg-destructive">
-            <span className="absolute -left-1 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-destructive" />
+            <span className="absolute -left-1 top-1/2 size-2 -translate-y-1/2">
+              <span className="absolute inset-0 rounded-full bg-destructive/60 motion-safe:animate-ping" />
+              <span className="absolute inset-0 rounded-full bg-destructive" />
+            </span>
           </div>
         </div>
       )}
