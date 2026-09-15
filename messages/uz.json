@@ -4144,7 +4144,16 @@
       "mainStatus": "Mavjud",
       "mainDesc": "Oʻqituvchi paneli — jurnal, davomat, xulq, jadval, dars ishlanmasi. Bugun ishlatishingiz mumkin.",
       "mainCta": "Imkoniyatlarni koʻrish",
-      "detailCta": "Batafsil"
+      "detailCta": "Batafsil",
+      "statusLive": "Mavjud",
+      "statusSoon": "Tez orada",
+      "taglines": {
+        "blog": "Oʻqituvchilarning maqolalari — tajriba, uslub va yangiliklar bir joyda.",
+        "baholash": "Bitta oʻlchov, besh xil yigʻish usuli — testdan qogʻoz OMR gacha.",
+        "doska": "Sinf ekrani: taymer, svetofor, tasodifiy ism, guruhlarga boʻlish.",
+        "shogird": "Ota-ona va oʻquvchi uchun Telegram ilovasi.",
+        "boshqaruv": "Maktab maʼmuriyati uchun panel."
+      }
     },
     "cookie": {
       "text": "Saytdan foydalanish tajribasini yaxshilash uchun cookie fayllaridan foydalanamiz. Davom etish orqali bunga rozilik bildirasiz.",

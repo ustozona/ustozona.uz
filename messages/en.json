@@ -4311,7 +4311,16 @@
       "mainStatus": "Available",
       "mainDesc": "The teacher panel — gradebook, attendance, behavior, timetable, lesson plans. You can use it today.",
       "mainCta": "See features",
-      "detailCta": "Learn more"
+      "detailCta": "Learn more",
+      "statusLive": "Available",
+      "statusSoon": "Coming soon",
+      "taglines": {
+        "blog": "Articles by teachers — experience, methods and news in one place.",
+        "baholash": "One measure, five ways to collect — from online tests to paper OMR.",
+        "doska": "Classroom screen: timer, traffic light, random name, group maker.",
+        "shogird": "A Telegram app for parents and students.",
+        "boshqaruv": "A panel for school administration."
+      }
     },
     "cookie": {
       "text": "We use cookies to improve your experience on the site. By continuing, you agree to this.",

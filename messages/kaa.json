@@ -4315,7 +4315,16 @@
       "mainStatus": "Bar",
       "mainDesc": "Muǵallim panelı — jurnal, qatnasıw, minez-qulıq, keste, sabaq islenbesi. Búgin paydalanıwıńız múmkin.",
       "mainCta": "Múmkinshiliklerdi kóriw",
-      "detailCta": "Tolıq maǵlıwmat"
+      "detailCta": "Tolıq maǵlıwmat",
+      "statusLive": "Bar",
+      "statusSoon": "Tez arada",
+      "taglines": {
+        "blog": "Muǵallimlerdiń maqalaları — tájiriybe, usıl hám jańalıqlar bir jerde.",
+        "baholash": "Bir ólshem, jıynawdıń bes usılı — testten qaǵaz OMR ge shekem.",
+        "doska": "Klass ekranı: taymer, svetofor, tosınnan at, toparlarǵa bóliw.",
+        "shogird": "Ata-ana hám oqıwshı ushın Telegram qosımshası.",
+        "boshqaruv": "Mektep basqarması ushın panel."
+      }
     },
     "cookie": {
       "text": "Sayttan paydalanıw tájiriybesin jaqsılaw ushın cookie fayllarınan paydalanamız. Dawam etiw arqalı buǵan razılıq bildiresiz.",
