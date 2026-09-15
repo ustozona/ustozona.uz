@@ -193,9 +193,9 @@ export function ProductsSection() {
                 key={p.slug}
                 mark={<ProductMark slug={p.slug} />}
                 title={p.name}
-                desc={p.tagline}
+                desc={t(`taglines.${p.slug}`)}
                 statusTone={p.status === "live" ? "success" : "pending"}
-                statusLabel={p.statusLabel}
+                statusLabel={t(p.status === "live" ? "statusLive" : "statusSoon")}
                 href={p.href}
                 ctaLabel={t("detailCta")}
                 ctaHover={CTA_HOVER[p.slug]}
