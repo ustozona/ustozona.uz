@@ -2409,7 +2409,17 @@
       "tasks-stats-panel": {
         "title": "Tasks — stats panel added on the right",
         "body": "When no task is selected, the right panel now shows planned time, planned tasks, time spent, and completion rate at a glance, plus a shortcut to full statistics."
+      },
+      "ish-reja-yuklash": {
+        "title": "Upload your work plan — topics are placed on your lesson days automatically",
+        "body": "No more creating topics one by one. Inside a unit, choose «New lesson» → «Upload Excel» to upload your work plan file, or paste a list of topics — all lessons are created at once. If your timetable is set up, topics are assigned to your upcoming lessons in order, skipping holidays. Units can be added from a list the same way.",
+        "cta": "Learn how to upload a work plan"
       }
+    },
+    "cta": {
+      "help": "Read the guide",
+      "blog": "View on blog",
+      "try": "Try it"
     }
   },
   "StandardsView": {

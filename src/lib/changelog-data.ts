@@ -26,11 +26,26 @@ export type ChangelogEntry = {
   title: string;
   /** 1–3 gap; yoʻq boʻlsa yozuv bir qatorli kompakt koʻrinadi. */
   body?: string;
+  /** Katta yangilik uchun skrinshot (`public/` ichidagi yoʻl). */
+  image?: { src: string; alt: string };
+  /** Tugma matni; yoʻq boʻlsa havola turidan: «Qoʻllanmani oʻqish» / «Blogda koʻrish» / «Sinab koʻrish». */
+  cta?: string;
   /** Tegishli sahifa, masalan "/dashboard/behavior". */
   href?: string;
 };
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
+  {
+    id: "ish-reja-yuklash",
+    date: "2026-09-17",
+    type: "yangi",
+    title: "Ish rejani yuklang — mavzular darslaringizga kunma-kun oʻzi joylanadi",
+    body:
+      "Endi har mavzuni qoʻlda ochish shart emas. Boʻlim ichida «Yangi dars» → «Excel yuklash» orqali ish reja faylini yuklaysiz yoki mavzular roʻyxatini nusxalab qoʻyasiz — barcha darslar birdaniga yaratiladi. Dars jadvalingiz sozlangan boʻlsa, mavzular navbatdagi darslaringizga ketma-ket biriktiriladi, taʼtil kunlari oʻtkazib yuboriladi. Boʻlimlarni ham xuddi shunday roʻyxat bilan qoʻshish mumkin.",
+    image: { src: "/help/bolim-va-darslar/3-excel-jadval.webp", alt: "Excel ish rejasi jadval koʻrinishida: mavzu va soat ustunlari belgilangan" },
+    href: "/help/bolim-va-darslar",
+    cta: "Ish rejani yuklashni oʻrganish",
+  },
   {
     id: "fan-tanlash-royxatdan",
     date: "2026-09-04",
