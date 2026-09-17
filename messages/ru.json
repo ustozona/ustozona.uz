@@ -4363,5 +4363,146 @@
       "untested": "Эти стандарты вы прошли на уроках, но ни одно задание их не проверяет — нет доказательств освоения.",
       "untaught": "Эти стандарты измеряются заданиями, но ни один урок не отмечен как их покрывающий."
     }
+  },
+  "IshRejaImport": {
+    "title": "Новый урок",
+    "classesLabel": "Привязать к классам",
+    "colTopic": "Тема",
+    "topicPlaceholder": "Название темы",
+    "deleteRow": "Удалить строку",
+    "back": "Назад",
+    "next": "Далее",
+    "confirm": "Добавить уроков: {count}",
+    "savedToast": "Добавлено уроков: {count}",
+    "step": {
+      "topics": "Введите темы для «{unit}» или загрузите файл.",
+      "schedule": "Уроки ставятся по очереди в ближайшие свободные уроки расписания.",
+      "choice": "Как добавить уроки в «{unit}»?"
+    },
+    "pastePlaceholder": "1. Добавление, изменение и перемещение текста\n2. Изменение шрифта, размера и цвета\n3. Добавление изображения и рамки",
+    "pasteHint": "По одной теме в строке. Разделители четвертей и нумерация обрабатываются автоматически.",
+    "cancel": "Отмена",
+    "scheduleFrom": "С {date}",
+    "schedulePickDate": "Выберите дату",
+    "presetNext": "Ближайший урок",
+    "presetFirst": "Первый урок",
+    "noSlot": "Нет места",
+    "presetFree": "Первый свободный урок",
+    "listLabel": "Тем: {count}",
+    "listEmpty": "Вставьте список тем или загрузите файл слева — упорядочите здесь",
+    "choice": {
+      "singleTitle": "Один урок",
+      "singleDescription": "Создайте урок в редакторе.",
+      "pasteTitle": "Вставить список",
+      "pasteDescription": "Вставьте список тем из Word/Excel.",
+      "fileTitle": "Загрузить Excel",
+      "fileDescription": "Загрузите файл рабочего плана (.xlsx, .xls)."
+    },
+    "undo": "Отменить",
+    "undoneToast": "Импорт отменён",
+    "duplicateBadge": "Есть",
+    "templateExample1": "Знакомство с компьютером",
+    "templateExample2": "Текстовый редактор",
+    "templateExample3": "Контрольная работа",
+    "statLessons": "Уроков",
+    "statStart": "Начало",
+    "statEnd": "Конец",
+    "statFit": "Учебный год",
+    "statFits": "Помещается",
+    "statMissing": "Не поместилось: {count}",
+    "timelineNew": "{unit} · {count} ур.",
+    "queueStart": "Начало очереди:",
+    "queueHintFree": "Продолжается после предыдущих разделов; каникулы и занятые уроки пропускаются.",
+    "queueHintDate": "Свободные уроки с этого дня; занятые пропускаются.",
+    "showDates": "Показать дату каждого урока ({count})",
+    "saveUndated": "Сохранить без дат"
+  },
+  "UnitImport": {
+    "title": "Новый раздел",
+    "cancel": "Отмена",
+    "confirm": "Создать разделы: {count}",
+    "savedToast": "Создано разделов: {count}",
+    "classesLabel": "Привязать к классам",
+    "classesPlaceholder": "Выберите класс…",
+    "namePlaceholder": "Название раздела",
+    "deleteRow": "Удалить строку",
+    "listLabel": "Разделов: {count}",
+    "description": "Введите, вставьте или загрузите названия разделов из Excel.",
+    "sourcePaste": "Вставить",
+    "pastePlaceholder": "Введение в алгебру\nЛинейные уравнения\nКвадратные уравнения",
+    "pasteHint": "По одному разделу в строке. Нумерация и дубликаты удаляются автоматически.",
+    "listEmpty": "Введите названия разделов или загрузите файл слева — упорядочите здесь",
+    "choiceDescription": "Как добавить разделы?",
+    "back": "Назад",
+    "choice": {
+      "singleTitle": "Один раздел",
+      "singleDescription": "Введите название, классы и описание вручную.",
+      "pasteTitle": "Вставить список",
+      "pasteDescription": "Вставьте список из Word/Excel.",
+      "fileTitle": "Загрузить Excel",
+      "fileDescription": "Загрузите файл .xlsx или .xls."
+    },
+    "undo": "Отменить",
+    "undoneToast": "Импорт отменён",
+    "duplicateBadge": "Есть"
+  },
+  "ImportSource": {
+    "errorEmpty": "В файле не найдены данные",
+    "errorRead": "Не удалось прочитать файл. Выберите .xlsx, .xls или .csv.",
+    "dropTitle": "Выберите файл или перетащите сюда",
+    "replaceFile": "Заменить",
+    "dropHint": {
+      "topics": "Excel или CSV — файл рабочего плана",
+      "units": "Excel или CSV — список разделов"
+    },
+    "pasteLabel": {
+      "topics": "Список тем",
+      "units": "Список разделов"
+    },
+    "sheet": "Лист",
+    "template": "Скачать образец файла",
+    "templateFile": {
+      "topics": "rabochiy-plan-obrazec.xlsx",
+      "units": "razdely-obrazec.xlsx"
+    },
+    "templateName": {
+      "topics": "Тема",
+      "units": "Название раздела"
+    },
+    "templateHours": "Часы",
+    "skipped": "Пропущено строк: {count}",
+    "rowReason": "Строка {row} · {reason}",
+    "reason": {
+      "separator": "разделитель четверти",
+      "total": "строка итога",
+      "number": "только число"
+    },
+    "restore": "Добавить",
+    "expanded": "Тем повторено по часам: {count}",
+    "duplicates": {
+      "topics": "Тем уже в разделе: {count} — пропускаются",
+      "units": "Разделов уже есть: {count} — пропускаются"
+    },
+    "duplicatesSkip": {
+      "topics": "Тем уже в разделе: {count} — пропустить",
+      "units": "Разделов уже есть: {count} — пропустить"
+    },
+    "mapped": {
+      "topics": "Темы взяты из столбца «{name}».",
+      "units": "Разделы взяты из столбца «{name}»."
+    },
+    "mappedWithHours": "Темы взяты из столбца «{name}», часы — из «{hours}».",
+    "showTable": "Не так? Показать в таблице",
+    "tableTitle": "Отметьте столбцы",
+    "closeTable": "Закрыть",
+    "setHeader": "Эта строка — заголовок",
+    "role": {
+      "topics": "Тема",
+      "units": "Название раздела",
+      "hours": "Часы",
+      "none": "Не используется"
+    },
+    "tableHelp": "Нажмите на название столбца, чтобы отметить «Тема» или «Часы». Нажмите номер строки — она станет заголовком. Зачёркнутые строки пропускаются.",
+    "expandHoursShort": "2+ часа → урок на каждый час"
   }
 }

@@ -103,7 +103,7 @@ Qarorlar (nima qachon qilinadi) — 4-boʻlimda. Bu yerda hamma kandidat bir joy
 
 | Funksiya | Bu nima? (misol bilan) | ⭐ | 💥 | 💰 | Ish hajmi |
 |---|---|---|---|---|---|
-| Ommaviy dars siljitish | Bayram tufayli dars oʻtilmadi — bir tugma bilan qolgan rejalar suriladi. | ⭐⭐⭐ | 💥 | 💰 | Oʻrtacha |
+| Ommaviy dars siljitish | Bayram tufayli dars oʻtilmadi yoki oʻrtaga yangi dars qoʻshildi — bir tugma bilan qolgan rejalar keyingi boʻsh darsga suriladi. *17-sentabr: ish reja importidan keyingi qadam sifatida tasdiqlandi.* | ⭐⭐⭐ | 💥 | 💰 | Oʻrtacha |
 | AI dars rejasi | Mavzu + sinf → tizim 45 daqiqalik reja, savollar, tarqatma taklif qiladi. ⚠️ Doimiy xarajat — narx va turli yoʻllar tahlili kerak (qaror 14-iyul). | ⭐⭐ | 💥💥💥 | 💰💰💰 | Koʻp |
 | PDF tabel (report card) | Har oʻquvchiga chiroyli choraklik hisobot — bir bosishda PDF. | ⭐⭐⭐ | 💥💥 | 💰💰💰 | Oʻrtacha |
 | Taqsimot diagrammasi | Sinfda baholar qanday taqsimlanganini ustunlarda koʻrsatadi. *Misol: 7-A testidan keyin grafik shuni koʻrsatadi: 3 kishi "aʼlo", 12 kishi "yaxshi", 8 kishi "qoniqarli", 4 kishi "past". Bir qarashda ayon: sinfning katta qismi oʻrtada, 4 kishiga yordam kerak. Ikki sinfni solishtirsangiz — qaysi sinf mavzuni yaxshiroq olgani darrov koʻrinadi.* | ⭐⭐ | 💥 | 💰 | Oz–Oʻrtacha |

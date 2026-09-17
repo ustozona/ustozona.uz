@@ -4359,5 +4359,146 @@
       "untested": "You covered these in lessons, but no assignment measures them — there is no evidence of mastery.",
       "untaught": "These are measured by assignments, but no lesson is marked as having covered them."
     }
+  },
+  "IshRejaImport": {
+    "title": "New lesson",
+    "classesLabel": "Link to classes",
+    "colTopic": "Topic",
+    "topicPlaceholder": "Topic name",
+    "deleteRow": "Delete row",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Add {count} lessons",
+    "savedToast": "{count} lessons added",
+    "step": {
+      "topics": "Enter topics for «{unit}» or upload a file.",
+      "schedule": "Lessons are queued into the next free periods of the timetable.",
+      "choice": "How would you like to add lessons to «{unit}»?"
+    },
+    "pastePlaceholder": "1. Adding, editing and moving text\n2. Changing font type, size and color\n3. Adding images and borders to a document",
+    "pasteHint": "One topic per line. Term separators and numbering are handled automatically.",
+    "cancel": "Cancel",
+    "scheduleFrom": "From {date}",
+    "schedulePickDate": "Pick a date",
+    "presetNext": "Next lesson",
+    "presetFirst": "First lesson",
+    "noSlot": "No slot",
+    "presetFree": "First free lesson",
+    "listLabel": "{count} topics",
+    "listEmpty": "Paste a topic list or upload a file on the left — reorder it here",
+    "choice": {
+      "singleTitle": "Single lesson",
+      "singleDescription": "Create the lesson in the editor.",
+      "pasteTitle": "Paste",
+      "pasteDescription": "Paste a topic list from Word/Excel.",
+      "fileTitle": "Upload Excel",
+      "fileDescription": "Upload a work plan file (.xlsx, .xls)."
+    },
+    "undo": "Undo",
+    "undoneToast": "Import undone",
+    "duplicateBadge": "Exists",
+    "templateExample1": "Getting to know the computer",
+    "templateExample2": "Text editor",
+    "templateExample3": "Test",
+    "statLessons": "Lessons",
+    "statStart": "Starts",
+    "statEnd": "Ends",
+    "statFit": "School year",
+    "statFits": "Fits",
+    "statMissing": "{count} don't fit",
+    "timelineNew": "{unit} · {count} lessons",
+    "queueStart": "Queue starts:",
+    "queueHintFree": "Continues where previous units end; holidays and taken periods are skipped.",
+    "queueHintDate": "Free periods from this day; taken periods are skipped.",
+    "showDates": "Show each lesson date ({count})",
+    "saveUndated": "Save without dates"
+  },
+  "UnitImport": {
+    "title": "New unit",
+    "cancel": "Cancel",
+    "confirm": "Create {count} units",
+    "savedToast": "{count} units created",
+    "classesLabel": "Link to classes",
+    "classesPlaceholder": "Select a class…",
+    "namePlaceholder": "Unit name",
+    "deleteRow": "Delete row",
+    "listLabel": "{count} units",
+    "description": "Type, paste or upload unit names from Excel.",
+    "sourcePaste": "Paste",
+    "pastePlaceholder": "Introduction to algebra\nLinear equations\nQuadratic equations",
+    "pasteHint": "One unit per line. Numbering and duplicates are removed automatically.",
+    "listEmpty": "Type unit names or upload a file on the left — reorder them here",
+    "choiceDescription": "How would you like to add units?",
+    "back": "Back",
+    "choice": {
+      "singleTitle": "Single unit",
+      "singleDescription": "Enter name, classes and description manually.",
+      "pasteTitle": "Paste",
+      "pasteDescription": "Paste a list from Word/Excel.",
+      "fileTitle": "Upload Excel",
+      "fileDescription": "Upload an .xlsx or .xls file."
+    },
+    "undo": "Undo",
+    "undoneToast": "Import undone",
+    "duplicateBadge": "Exists"
+  },
+  "ImportSource": {
+    "errorEmpty": "No data found in the file",
+    "errorRead": "Couldn't read the file. Choose .xlsx, .xls or .csv.",
+    "dropTitle": "Choose a file or drop it here",
+    "replaceFile": "Replace",
+    "dropHint": {
+      "topics": "Excel or CSV — work plan file",
+      "units": "Excel or CSV — list of units"
+    },
+    "pasteLabel": {
+      "topics": "Topic list",
+      "units": "Unit list"
+    },
+    "sheet": "Sheet",
+    "template": "Download sample file",
+    "templateFile": {
+      "topics": "work-plan-sample.xlsx",
+      "units": "units-sample.xlsx"
+    },
+    "templateName": {
+      "topics": "Topic",
+      "units": "Unit name"
+    },
+    "templateHours": "Hours",
+    "skipped": "{count} rows skipped",
+    "rowReason": "Row {row} · {reason}",
+    "reason": {
+      "separator": "term separator",
+      "total": "total row",
+      "number": "number only"
+    },
+    "restore": "Add",
+    "expanded": "{count} topics repeated by hours",
+    "duplicates": {
+      "topics": "{count} topics already in the unit — skipped",
+      "units": "{count} units already exist — skipped"
+    },
+    "duplicatesSkip": {
+      "topics": "{count} topics already in the unit — skip them",
+      "units": "{count} units already exist — skip them"
+    },
+    "mapped": {
+      "topics": "Topics taken from the «{name}» column.",
+      "units": "Units taken from the «{name}» column."
+    },
+    "mappedWithHours": "Topics taken from «{name}», hours from «{hours}».",
+    "showTable": "Not right? Show in table",
+    "tableTitle": "Assign columns",
+    "closeTable": "Close",
+    "setHeader": "Use this row as header",
+    "role": {
+      "topics": "Topic",
+      "units": "Unit name",
+      "hours": "Hours",
+      "none": "Not used"
+    },
+    "tableHelp": "Click a column name to mark it as «Topic» or «Hours». Click a row number to use that row as the header. Struck-through rows are skipped.",
+    "expandHoursShort": "2+ hours → a lesson per hour"
   }
 }
