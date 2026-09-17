@@ -45,6 +45,7 @@ import BubbleToolbar from "@/components/lesson-editor/BubbleToolbar";
 import { publishPostAction, savePostAction, unpublishPostAction } from "@/server/actions/blog";
 import { uploadEditorImageAction } from "@/server/actions/uploads";
 import type { BlogPostFull } from "@/server/dal/blog";
+import { EXCERPT_RECOMMENDED_MAX } from "@/lib/blog-excerpt";
 
 /* Xuddi dars muharriridagi Tiptap toʻplami (EditorToolbar/BubbleToolbar
    lesson-ga bogʻliq emas — toʻgʻridan-toʻgʻri qayta ishlatildi). AI panel,
@@ -379,6 +380,21 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
             rows={1}
             className="mt-2 w-full resize-none overflow-hidden bg-transparent text-xl text-muted-foreground outline-none placeholder:text-muted-foreground/40"
           />
+          {/* Subtitr uch joyda ishlatiladi: blog kartasi, maqola sarlavhasi
+              osti va Google/ulashish tavsifi. Boʻsh qolsa birinchi abzatsdan
+              avtomatik olinadi (lib/blog-excerpt.ts). Chegara — tavsiya,
+              taʼqiq emas: oshsa hisoblagich ogohlantirish rangiga oʻtadi. */}
+          <p className="text-caption mt-1 flex items-center justify-between gap-3 text-muted-foreground">
+            <span>Kartada va Google natijasida koʻrinadi. Boʻsh qolsa, birinchi abzatsdan olinadi.</span>
+            <span
+              className={cn(
+                "shrink-0 tabular-nums",
+                excerpt.length > EXCERPT_RECOMMENDED_MAX && "text-warning",
+              )}
+            >
+              {excerpt.length}/{EXCERPT_RECOMMENDED_MAX}
+            </span>
+          </p>
 
           <div className="mt-5 flex items-center gap-2.5">
             <Avatar className="size-7">
