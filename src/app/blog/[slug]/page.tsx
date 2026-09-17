@@ -134,7 +134,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
       {/* Oʻqish uchun blog tuzilishi: ← tugmasi, sarlavha, subtitr, muallif
           qatori va matn — HAMMASI bitta markaziy ustunda (~680px), chap
-          chegarasi bir xil. Muqova ustundan biroz kengroq. Yon panel yoʻq —
+          chegarasi bir xil, muqova ham shu kenglikda. Yon panel yoʻq —
           meta (sana, oʻqish vaqti, koʻrishlar, ulashish) muallif qatorida. */}
       <BlogHero className="pb-6 md:pb-8">
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
@@ -193,8 +193,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       {/* Tana — ramka chiziqlarisiz: oʻqish sahifasida faqat matn va fon. */}
       <main className="mx-auto w-full max-w-7xl">
         <div className="px-6 pt-8 pb-10 lg:pb-14">
+          {/* Muqova matn kengligida (max-w-2xl) — rasmlarni oddiy mualliflar
+              yuklaydi, sifati har xil: kichik rasm keng joyda xira va
+              choʻzilgan koʻrinadi. Sarlavha, muallif qatori, muqova va matn
+              bitta chiziqda turadi. */}
           {post.coverImageUrl && (
-            <div className="mx-auto mb-10 aspect-video w-full max-w-4xl overflow-hidden rounded-lg border border-border bg-muted">
+            <div className="mx-auto mb-10 aspect-video w-full max-w-2xl overflow-hidden rounded-lg border border-border bg-muted">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={post.coverImageUrl} alt="" className="size-full object-cover" />
             </div>
