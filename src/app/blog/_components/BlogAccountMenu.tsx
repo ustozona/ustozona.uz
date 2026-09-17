@@ -40,7 +40,7 @@ export function BlogAccountMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="rounded-full transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className="flex rounded-full transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         aria-label="Hisob menyusi"
       >
         {avatar}
