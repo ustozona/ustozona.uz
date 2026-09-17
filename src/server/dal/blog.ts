@@ -1,5 +1,6 @@
 import "server-only";
 import { and, desc, eq, sql } from "drizzle-orm";
+import { resolveExcerpt } from "@/lib/blog-excerpt";
 import { db } from "@/server/db/client";
 import { blogComments, blogPosts, teachers } from "@/server/db/schema";
 import type { BlogPublishedSnapshot } from "@/server/db/schema/blog";
@@ -150,7 +151,7 @@ export async function listPublishedPosts(): Promise<BlogPostSummary[]> {
       id: r.id,
       slug: r.slug,
       title: pub.title,
-      excerpt: pub.excerpt,
+      excerpt: resolveExcerpt(pub.excerpt, pub.content),
       coverImageUrl: pub.coverImageUrl,
       status: r.status,
       publishedAt: r.publishedAt?.toISOString() ?? null,

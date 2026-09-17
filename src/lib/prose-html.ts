@@ -30,3 +30,26 @@ export function trimProseHtml(html: string): string {
   } while (out !== prev);
   return out;
 }
+
+/** Kontent sarlavha (`h1`–`h3`) bilan boshlanib, uning matni maqola
+ *  nomiga teng boʻlsa — shu sarlavhani olib tashlaydi.
+ *
+ *  Sahifa sarlavhasi allaqachon tepada katta qilib chiqadi; muallif
+ *  (yoki boshqa joydan koʻchirilgan matn) nomni kontentga ham qoʻygan
+ *  boʻlsa, u ketma-ket ikki marta koʻrinardi. Faqat RENDER paytida —
+ *  bazadagi qiymat tegilmaydi. Taqqoslash registr, boʻshliq va apostrof
+ *  shakliga befarq. */
+export function stripDuplicateTitle(html: string, title: string): string {
+  const match = html.match(/^\s*<h([1-3])\b[^>]*>([\s\S]*?)<\/h\1>/i);
+  if (!match) return html;
+  const norm = (s: string) =>
+    s
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;|&#160;/gi, " ")
+      .replace(/[ʻʼ'`‘’]/g, "'")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLocaleLowerCase("uz");
+  if (norm(match[2]) !== norm(title)) return html;
+  return trimProseHtml(html.slice(match[0].length));
+}
