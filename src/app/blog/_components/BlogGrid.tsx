@@ -132,7 +132,7 @@ export function BlogHero({ children, className }: { children: React.ReactNode; c
 export function BlogFooter() {
   return (
     <footer className="border-t border-border bg-background">
-      <div className="text-caption mx-auto w-full max-w-7xl p-6 text-muted-foreground xl:px-0">
+      <div className="text-caption mx-auto w-full max-w-7xl p-6 text-center text-muted-foreground xl:px-0">
         © {new Date().getFullYear()} Ustozona. Barcha huquqlar himoyalangan.
       </div>
     </footer>

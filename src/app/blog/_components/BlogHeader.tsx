@@ -14,7 +14,7 @@ import { BLOG_NAV } from "./blog-nav";
 /* Blog sarlavhasi — uch holatli moslashuvchan tuzilish:
 
    · Desktop (`lg`+): logo · navigatsiya (oʻrtada) · qidiruv ikonkasi +
-     «Yozish» (toʻldirilgan — sahifadagi yagona asosiy harakat) + avatar.
+     «Yozish» (ghost — qidiruv ikonkasi bilan bir uslubda) + avatar.
      Mehmon: qidiruv + «Kirish» + «Bepul boshlash».
    · Planshet (`sm`–`lg`): navigatsiya ☰ menyuga oʻtadi; «Yozish»/«Bepul
      boshlash» va avatar joyida qoladi.
@@ -91,7 +91,7 @@ export async function BlogHeader() {
           {viewer ? (
             <>
               <form action={handleWrite} className="hidden sm:block">
-                <Button type="submit" size="sm" className="h-9">
+                <Button type="submit" variant="ghost" size="sm" className="h-9 text-muted-foreground hover:text-foreground">
                   <PenLine className="size-4" />
                   Yozish
                 </Button>
