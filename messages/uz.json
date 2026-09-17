@@ -2003,9 +2003,9 @@
     "compactGroupShow": "koʻrsatish",
     "showPrevious": "Oldingi yangilanishlarni koʻrsatish",
     "types": {
-      "yangi": "Yangi",
-      "yaxshilandi": "Yaxshilandi",
-      "tuzatildi": "Tuzatildi"
+      "yangi": "Yangilik",
+      "yaxshilandi": "Sayqallandi",
+      "tuzatildi": "Sozlandi"
     },
     "routes": {
       "help": "Yordam markazi",
@@ -2243,6 +2243,11 @@
         "title": "Vazifalar — oʻng panelda statistika qoʻshildi",
         "body": "Hech qanday vazifa tanlanmaganda oʻng panel endi boʻsh turmaydi: rejadagi vaqt, rejadagi vazifalar, sarflangan vaqt va bajarilganlar foizi bir qarashda koʻrinadi. Toʻliq statistikaga oʻtish tugmasi ham shu yerda."
       }
+    },
+    "cta": {
+      "help": "Qoʻllanmani oʻqish",
+      "blog": "Blogda koʻrish",
+      "try": "Sinab koʻrish"
     }
   },
   "StandardsView": {

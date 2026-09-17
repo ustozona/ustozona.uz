@@ -2413,7 +2413,17 @@
       "tasks-stats-panel": {
         "title": "Tapsırmalar — oń panelge statistika qosıldı",
         "body": "Hesh qanday tapsırma tańlanbaǵanda oń panel endi bos turmaydı: jobalanǵan waqıt, jobalanǵan tapsırmalar, ısletilgen waqıt hám orınlanǵanlar procenti kórinedi. Tolıq statistikaǵa ótiw túymesi de sol jerde."
+      },
+      "ish-reja-yuklash": {
+        "title": "Jumıs rejesin júkleń — temalar sabaqlarıńızǵa kúnbe-kún ózi jaylasadı",
+        "body": "Endi hár bir temanı qolda ashıw shárt emes. Bólim ishinde «Jańa sabaq» → «Excel júklew» arqalı jumıs rejesi faylın júkleysiz yamasa temalar dizimin kóshirip qoyasız — barlıq sabaqlar birden jaratıladı. Sabaq kestesi sazlanǵan bolsa, temalar kezektegi sabaqlarıńızǵa izbe-iz biriktiriledi, dem alıs kúnleri ótkerip jiberiledi. Bólimlerdi de tap usınday dizim menen qosıw múmkin.",
+        "cta": "Jumıs rejesin júklewdi úyreniw"
       }
+    },
+    "cta": {
+      "help": "Qollanbanı oqıw",
+      "blog": "Blogta kóriw",
+      "try": "Sınap kóriw"
     }
   },
   "StandardsView": {

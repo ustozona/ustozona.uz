@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { createElement, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslations, useMessages } from "next-intl";
-import { ArrowUpRight, ChevronDown, ChevronUp, FileText, ListFilter, Megaphone } from "lucide-react";
+import {
+  BookOpen, CalendarDays, FileText, LayoutGrid, ListFilter, Megaphone,
+  MessageSquare, Newspaper, NotebookText, Settings, type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ImageZoom } from "@/components/kibo-ui/image-zoom";
 import { TypographyMuted } from "@/components/ui/typography";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
@@ -27,9 +31,6 @@ type TypeFilter = ChangelogType | "all";
 
 /** Dastlab koʻrsatiladigan yozuvlar soni — qolgani tugma bilan ochiladi. */
 const INITIAL_VISIBLE = 20;
-/** Bir sanada shuncha yoki koʻproq kompakt yozuv boʻlsa, ular bitta
-    yigʻiladigan qatorga jamlanadi (referens: "N minor updates · hide"). */
-const COLLAPSE_THRESHOLD = 2;
 
 function TypePill({ type, label }: { type: ChangelogEntry["type"]; label: string }) {
   const meta = TYPE_META[type];
@@ -41,225 +42,80 @@ function TypePill({ type, label }: { type: ChangelogEntry["type"]; label: string
   );
 }
 
-/** Tegishli sahifaga oʻng chetga tekislangan kichik havola-chip.
+/** Havola tugmasidagi ikonka — yoʻl boshiga qarab. */
+const ROUTE_ICONS: [string, LucideIcon][] = [
+  ["/help", BookOpen],
+  ["/blog", Newspaper],
+  ["/dashboard/classes", LayoutGrid],
+  ["/dashboard/lessons", NotebookText],
+  ["/dashboard/timetable", CalendarDays],
+  ["/dashboard/settings", Settings],
+  ["/dashboard/feedback", MessageSquare],
+];
 
-    Ikonka Fikr-mulohaza matnidagi ichki havola bilan bir xil
-    (`FEEDBACK_LINK_ICON_CLASS`, `FileText`) — ikkalasi ham «ilova
-    ichidagi sahifa» degan bitta narsani bildiradi, demak bir xil
-    koʻrinishi kerak. Chetdagi strelka esa bosilsa boshqa sahifaga
-    oʻtishini qoldiradi. */
-function HrefChip({ href, routeLabels }: { href: string; routeLabels: Record<string, string> }) {
-  const label = href.split("/").pop() ?? "";
+function RouteIcon({ href, className }: { href: string; className?: string }) {
+  return createElement(ROUTE_ICONS.find(([p]) => href.startsWith(p))?.[1] ?? FileText, { className });
+}
+
+/** Rasm joyida silliq kattalashadi (Fikr-mulohazadagi bilan bir xil ImageZoom). */
+function EntryImage({ image }: { image: { src: string; alt: string } }) {
   return (
-    <Link
-      href={href}
-      className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
-    >
-      <FileText className="size-3" />
-      {routeLabels[href] ?? label}
-      <ArrowUpRight className="size-3" />
-    </Link>
+    <ImageZoom className="w-full shrink-0 md:w-60">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={image.src} alt={image.alt} loading="lazy" className="w-full rounded-xl border border-border md:rounded-lg" />
+    </ImageZoom>
   );
 }
 
-function FullEntryRow({
-  entry,
-  typeLabel,
-  routeLabels,
-}: {
-  entry: ChangelogEntry;
-  typeLabel: string;
-  routeLabels: Record<string, string>;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0 space-y-1.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <TypePill type={entry.type} label={typeLabel} />
-          <span className="text-sm font-medium text-foreground">{entry.title}</span>
-        </div>
-        <p className="text-sm leading-relaxed text-muted-foreground">{entry.body}</p>
-      </div>
-      {entry.href && <HrefChip href={entry.href} routeLabels={routeLabels} />}
-    </div>
-  );
-}
+/** `cta` yozilmagan boʻlsa — havola turiga qarab harakat nomi (`Changelog.cta.*` kaliti). */
+const defaultCtaKey = (href: string) =>
+  href.startsWith("/help") ? "help" : href.startsWith("/blog") ? "blog" : "try";
 
-function CompactEntryRow({
-  entry,
-  typeLabel,
-  routeLabels,
-}: {
-  entry: ChangelogEntry;
-  typeLabel: string;
-  routeLabels: Record<string, string>;
-}) {
+function EntryContent({ entry, typeLabel }: { entry: ChangelogEntry; typeLabel: string }) {
+  const t = useTranslations("Changelog.cta");
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex min-w-0 items-center gap-2">
+    <div className="space-y-2">
+      {/* Telefonda chap ustun yoʻq — tur va sana sarlavha ustida */}
+      <div className="flex items-center gap-2 md:hidden">
         <TypePill type={entry.type} label={typeLabel} />
-        <span className="truncate text-sm font-medium text-foreground">{entry.title}</span>
+        <time dateTime={entry.date} className="text-xs text-muted-foreground">{fmtChangelogDateUz(entry.date)}</time>
       </div>
-      {entry.href && <HrefChip href={entry.href} routeLabels={routeLabels} />}
-    </div>
-  );
-}
-
-/** Guruhlangan yozuvlar uchun subdued qator — bir jumla ichida tur+sarlavha,
-    rangli badge yoʻq, faqat turga mos rangli nuqta (guruh oʻzi allaqachon
-    "mayda" signalini beradi, lekin tur farqi yoʻqolib ketmasligi kerak). */
-function MutedCompactRow({
-  entry,
-  typeLabel,
-  routeLabels,
-}: {
-  entry: ChangelogEntry;
-  typeLabel: string;
-  routeLabels: Record<string, string>;
-}) {
-  const meta = TYPE_META[entry.type];
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <p className="min-w-0 truncate text-sm text-muted-foreground">
-        <span className={cn("mr-1.5 inline-block size-1.5 rounded-full align-middle", meta.iconColor.replace("text-", "bg-"))} />
-        <span className="font-medium text-foreground">{typeLabel}:</span>{" "}
-        {entry.title}
-        {!/[.!?]$/.test(entry.title) && "."}
-      </p>
+      
+      <div>
+        <h2 className="heading-small text-pretty pt-0.5 text-foreground">
+          {entry.title}
+        </h2>
+      </div>
+      {/* Telefonda rasm toʻliq kenglikda matn ustida; desktopda matn yonida kichik, bosilsa kattalashadi */}
+      <div className={cn(entry.image && "flex flex-col gap-3 md:flex-row-reverse md:items-start md:gap-4")}>
+        {entry.image && <EntryImage image={entry.image} />}
+        {entry.body && <p className="text-body min-w-0 flex-1 text-pretty leading-relaxed text-muted-foreground">{entry.body}</p>}
+      </div>
       {entry.href && (
-        <Link
-          href={entry.href}
-          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
-        >
-          {routeLabels[entry.href] ?? entry.href.split("/").pop()}
-          <ArrowUpRight className="size-3" />
-        </Link>
+        <Button asChild variant="ghost" size="sm" className="-ml-2.5 w-fit gap-1.5 text-muted-foreground hover:text-foreground">
+          <Link href={entry.href}>
+            <RouteIcon href={entry.href} className="size-4" />
+            {entry.cta ?? t(defaultCtaKey(entry.href))}
+          </Link>
+        </Button>
       )}
     </div>
   );
 }
-
-/** Ketma-ket kompakt yozuvlarni "N ta kichik yangilanish" qatoriga jamlaydi. */
-function CompactGroup({
-  entries,
-  typeLabels,
-  routeLabels,
-  compactCountLabel,
-  hideLabel,
-  showLabel,
-}: {
-  entries: ChangelogEntry[];
-  typeLabels: Record<ChangelogEntry["type"], string>;
-  routeLabels: Record<string, string>;
-  compactCountLabel: string;
-  hideLabel: string;
-  showLabel: string;
-}) {
-  // EMStudio uslubi: kompakt guruh dastlab OCHIQ (foydalanuvchi darhol koʻradi),
-  // "yashirish" bilan yigʻish mumkin — yigʻilganini eslatish uchun soʻz + ikonka.
-  const [open, setOpen] = useState(true);
-  if (entries.length < COLLAPSE_THRESHOLD) {
-    return (
-      <div className="space-y-3">
-        {entries.map((e) => (
-          <CompactEntryRow key={e.id} entry={e} typeLabel={typeLabels[e.type]} routeLabels={routeLabels} />
-        ))}
-      </div>
-    );
-  }
-  return (
-    <div className="rounded-xl bg-muted/40 px-3.5 py-3">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-2 text-left text-sm text-muted-foreground"
-      >
-        <span className="inline-flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-muted-foreground/50" />
-          {compactCountLabel}
-        </span>
-        <span className="inline-flex items-center gap-1 text-xs transition-colors hover:text-foreground">
-          {open ? hideLabel : showLabel}
-          {open ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
-        </span>
-      </button>
-      {open && (
-        <div className="mt-3 flex flex-col gap-2.5 border-t border-border/70 pt-3">
-          {entries.map((e) => (
-            <MutedCompactRow key={e.id} entry={e} typeLabel={typeLabels[e.type]} routeLabels={routeLabels} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** Yozuvlarni tartibni saqlagan holda bloklarga ajratadi: toʻliq (body bor)
-    yozuvlar oʻz holicha, ketma-ket kompakt yozuvlar bitta guruh sifatida. */
-type Block =
-  | { kind: "full"; entry: ChangelogEntry }
-  | { kind: "compact"; entries: ChangelogEntry[] };
 
 /** Tanlangan tildagi tarjima boʻlsa, uz-standart title/body ustidan yozadi
     (`Changelog.entries.<id>`); tarjima yoʻq boʻlsa uz matni koʻrinadi. */
 function localizeEntry(
   entry: ChangelogEntry,
-  dict?: Record<string, { title?: string; body?: string }>
+  dict?: Record<string, { title?: string; body?: string; cta?: string }>
 ): ChangelogEntry {
   const tr = dict?.[entry.id];
   if (!tr) return entry;
-  return { ...entry, title: tr.title ?? entry.title, body: tr.body ?? entry.body };
-}
-
-function toBlocks(items: ChangelogEntry[]): Block[] {
-  const blocks: Block[] = [];
-  let run: ChangelogEntry[] = [];
-  const flush = () => {
-    if (run.length) blocks.push({ kind: "compact", entries: run });
-    run = [];
-  };
-  for (const entry of items) {
-    if (entry.body) {
-      flush();
-      blocks.push({ kind: "full", entry });
-    } else {
-      run.push(entry);
-    }
-  }
-  flush();
-  return blocks;
+  return { ...entry, title: tr.title ?? entry.title, body: tr.body ?? entry.body, cta: tr.cta ?? entry.cta };
 }
 
 export default function ChangelogPage() {
   const t = useTranslations("Changelog");
-
-  const routeLabels: Record<string, string> = useMemo(
-    () => ({
-      "/dashboard": t("routes.dashboard"),
-      "/dashboard/classes": t("routes.classes"),
-      "/dashboard/assignments": t("routes.assignments"),
-      "/dashboard/grades": t("routes.grades"),
-      "/dashboard/students": t("routes.students"),
-      "/dashboard/timetable": t("routes.timetable"),
-      "/dashboard/planner": t("routes.planner"),
-      "/dashboard/tasks": t("routes.tasks"),
-      "/dashboard/attendance": t("routes.attendance"),
-      "/dashboard/behavior": t("routes.behavior"),
-      "/dashboard/standards": t("routes.standards"),
-      "/dashboard/settings": t("routes.settings"),
-      "/dashboard/feedback": t("routes.feedback"),
-      "/dashboard/lessons": t("routes.lessons"),
-      "/dashboard/statistics": t("routes.statistics"),
-      "/dashboard/changelog": t("routes.changelog"),
-      /* Dashboard'dan tashqaridagi sahifalar. Ular ham shu yerda
-         boʻlishi SHART: xarita topmasa chip yoʻlning oxirgi boʻlagini
-         koʻrsatadi va oʻqituvchi «help» degan inglizcha soʻzni koʻradi. */
-      "/help": t("routes.help"),
-      "/baholash": t("routes.baholash"),
-      "/blog": t("routes.blog"),
-    }),
-    [t]
-  );
 
   const typeLabels: Record<ChangelogType, string> = useMemo(
     () => ({
@@ -275,7 +131,7 @@ export default function ChangelogPage() {
     markChangelogSeen();
   }, []);
 
-  const messages = useMessages() as { Changelog?: { entries?: Record<string, { title?: string; body?: string }> } };
+  const messages = useMessages() as { Changelog?: { entries?: Record<string, { title?: string; body?: string; cta?: string }> } };
   const entryTranslations = messages?.Changelog?.entries;
 
   const groups = useMemo(() => {
@@ -315,36 +171,12 @@ export default function ChangelogPage() {
     );
   }, [filteredGroups]);
 
-  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
-  const toggleDate = (date: string) =>
-    setCollapsedDates((prev) => {
-      const next = new Set(prev);
-      if (next.has(date)) next.delete(date);
-      else next.add(date);
-      return next;
-    });
-
+  const filteredEntries = useMemo(() => filteredGroups.flatMap((g) => g.items), [filteredGroups]);
   const [expanded, setExpanded] = useState(false);
-  const totalEntries = useMemo(
-    () => filteredGroups.reduce((sum, g) => sum + g.items.length, 0),
-    [filteredGroups]
-  );
-
-  // Dastlab INITIAL_VISIBLE ta yozuv (guruh chegarasini saqlagan holda kesiladi)
-  const visibleGroups = useMemo(() => {
-    if (expanded || totalEntries <= INITIAL_VISIBLE) return filteredGroups;
-    const out: typeof filteredGroups = [];
-    let remaining = INITIAL_VISIBLE;
-    for (const g of filteredGroups) {
-      if (remaining <= 0) break;
-      out.push({ date: g.date, items: g.items.slice(0, remaining) });
-      remaining -= g.items.length;
-    }
-    return out;
-  }, [filteredGroups, expanded, totalEntries]);
+  const visibleEntries = expanded ? filteredEntries : filteredEntries.slice(0, INITIAL_VISIBLE);
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col p-4 md:p-6">
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col p-4 md:p-6">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
         {/* Sarlavha — qotib turadi, faqat pastdagi roʻyxat scroll boʻladi */}
         <div className="shrink-0 border-b border-border p-4 md:p-6">
@@ -420,74 +252,42 @@ export default function ChangelogPage() {
         </div>
 
         <ScrollArea className="min-h-0 flex-1">
-          <div className="p-4 md:p-6">
-            {visibleGroups.map((group, gi) => (
-              <div key={group.date} className="relative flex gap-4">
-                {/* Timeline rail: nuqta + vertikal chiziq (VersionChip uslubi) */}
-                <div aria-hidden className="relative flex w-4 shrink-0 justify-center">
-                  {visibleGroups.length > 1 && (
-                    <span
-                      className={cn(
-                        "absolute w-px bg-border",
-                        gi === 0
-                          ? "top-3 bottom-0"
-                          : gi === visibleGroups.length - 1
-                            ? "top-0 h-3"
-                            : "inset-y-0"
-                      )}
-                    />
-                  )}
-                  <span className="absolute top-1.5 size-2.5 rounded-full border-2 border-primary bg-card" />
-                </div>
-
-                <div className={cn("min-w-0 flex-1", gi === visibleGroups.length - 1 ? "pb-0" : "pb-7")}>
-                  <button
-                    type="button"
-                    onClick={() => toggleDate(group.date)}
-                    className="flex w-full items-baseline gap-2 text-left"
-                  >
-                    <span className="text-sm font-semibold text-foreground">
-                      {fmtChangelogDateUz(group.date)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t("updatesCount", { count: group.items.length })}
-                    </span>
-                    {collapsedDates.has(group.date) ? (
-                      <ChevronDown className="size-3.5 text-muted-foreground" />
-                    ) : (
-                      <ChevronUp className="size-3.5 text-muted-foreground" />
+          <div className="p-4 md:p-8">
+            {visibleEntries.map((entry, i) => (
+              <div key={entry.id} className="flex gap-4 md:gap-0">
+                {/* Chap ustun: tur, ostida sana (bir kunning keyingi yozuvlarida sana takrorlanmaydi, nuqta kichik) */}
+                <div className="hidden w-32 shrink-0 md:block">
+                  <div className="sticky top-0 flex flex-col items-center gap-1 pr-4 pt-0.5 text-center">
+                    <TypePill type={entry.type} label={typeLabels[entry.type]} />
+                    {visibleEntries[i - 1]?.date !== entry.date && (
+                      <time dateTime={entry.date} className="text-xs text-muted-foreground">
+                        {fmtChangelogDateUz(entry.date)}
+                      </time>
                     )}
-                  </button>
-                  {!collapsedDates.has(group.date) && (
-                    <div className="mt-2.5 space-y-4">
-                      {toBlocks(group.items).map((block, bi) =>
-                        block.kind === "full" ? (
-                          <FullEntryRow
-                            key={block.entry.id}
-                            entry={block.entry}
-                            typeLabel={typeLabels[block.entry.type]}
-                            routeLabels={routeLabels}
-                          />
-                        ) : (
-                          <CompactGroup
-                            key={`compact-${bi}`}
-                            entries={block.entries}
-                            typeLabels={typeLabels}
-                            routeLabels={routeLabels}
-                            compactCountLabel={t("compactGroup", { count: block.entries.length })}
-                            hideLabel={t("compactGroupHide")}
-                            showLabel={t("compactGroupShow")}
-                          />
-                        )
-                      )}
-                    </div>
-                  )}
+                  </div>
+                </div>
+                {/* Vaqt chizigʻi: uzluksiz vertikal chiziq + sana roʻparasida nuqta */}
+                <div aria-hidden className="relative hidden w-px shrink-0 md:block">
+                  <span
+                    className={cn(
+                      "absolute left-0 w-px bg-border",
+                      i === 0 ? "top-3" : "top-0",
+                      i === visibleEntries.length - 1 ? "h-3" : "bottom-0"
+                    )}
+                  />
+                  <span className={cn(
+                      "absolute left-0 top-3 -translate-x-1/2 -translate-y-1/2 rounded-full",
+                      visibleEntries[i - 1]?.date === entry.date ? "size-1.5 bg-muted-foreground/60" : "size-2.5 bg-foreground"
+                    )} />
+                </div>
+                <div className={cn("min-w-0 flex-1 pt-0.5 md:pl-8", i < visibleEntries.length - 1 && "pb-8")}>
+                  <EntryContent entry={entry} typeLabel={typeLabels[entry.type]} />
                 </div>
               </div>
             ))}
 
-            {!expanded && totalEntries > INITIAL_VISIBLE && (
-              <div className="mt-4 flex justify-center">
+            {!expanded && filteredEntries.length > INITIAL_VISIBLE && (
+              <div className="flex justify-center pb-8">
                 <Button variant="ghost" size="sm" onClick={() => setExpanded(true)}>
                   {t("showPrevious")}
                 </Button>
