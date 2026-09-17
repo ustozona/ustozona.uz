@@ -4192,5 +4192,146 @@
       "untested": "Bu standartlarni darsda oʻtgansiz, lekin hech bir topshiriq ularni tekshirmaydi — oʻzlashtirish haqida dalil yoʻq.",
       "untaught": "Bu standartlar topshiriqlarda oʻlchanyapti, lekin darsda oʻtilgani belgilanmagan."
     }
+  },
+  "IshRejaImport": {
+    "title": "Yangi dars",
+    "classesLabel": "Sinflarga bogʻlash",
+    "colTopic": "Mavzu",
+    "topicPlaceholder": "Mavzu nomi",
+    "deleteRow": "Qatorni oʻchirish",
+    "back": "Orqaga",
+    "next": "Keyingi",
+    "confirm": "{count} ta dars qoʻshish",
+    "savedToast": "{count} ta dars qoʻshildi",
+    "step": {
+      "topics": "«{unit}» boʻlimiga mavzularni kiriting yoki fayldan yuklang.",
+      "schedule": "Darslar dars jadvalidagi navbatdagi boʻsh soatlarga ketma-ket qoʻyiladi.",
+      "choice": "«{unit}» boʻlimiga darslarni qanday qoʻshmoqchisiz?"
+    },
+    "pastePlaceholder": "1. Matn qoʻshish, oʻzgartirish va koʻchirish\n2. Shrift turi, oʻlchami va rangini oʻzgartirish\n3. Hujjatga tasvir va hoshiya qoʻshish",
+    "pasteHint": "Har qatorda bitta mavzu. Chorak ajratkichlari va tartib raqamlari avtomatik ajratiladi.",
+    "cancel": "Bekor qilish",
+    "scheduleFrom": "{date} dan",
+    "schedulePickDate": "Sanani tanlang",
+    "presetNext": "Eng yaqin dars",
+    "presetFirst": "Birinchi dars",
+    "noSlot": "Sigʻmadi",
+    "presetFree": "Birinchi boʻsh dars",
+    "listLabel": "{count} ta mavzu",
+    "listEmpty": "Chapga mavzular roʻyxatini joylashtiring yoki fayl yuklang — shu yerda tartiblaysiz",
+    "choice": {
+      "singleTitle": "Bitta dars",
+      "singleDescription": "Darsni muharrirda yarating.",
+      "pasteTitle": "Nusxa koʻchirish",
+      "pasteDescription": "Mavzular roʻyxatini Word/Excelʼdan joylashtiring.",
+      "fileTitle": "Excel yuklash",
+      "fileDescription": "Ish reja faylini (.xlsx, .xls) yuklang."
+    },
+    "undo": "Bekor qilish",
+    "undoneToast": "Import bekor qilindi",
+    "duplicateBadge": "Bor",
+    "templateExample1": "Kompyuter bilan tanishuv",
+    "templateExample2": "Matn muharriri",
+    "templateExample3": "Nazorat ishi",
+    "statLessons": "Darslar",
+    "statStart": "Boshlanadi",
+    "statEnd": "Tugaydi",
+    "statFit": "Oʻquv yili",
+    "statFits": "Sigʻdi",
+    "statMissing": "{count} ta sigʻmadi",
+    "timelineNew": "{unit} · {count} dars",
+    "queueStart": "Navbat boshlanishi:",
+    "queueHintFree": "Oldingi boʻlimlar tugagan joydan davom etadi; taʼtil va band soatlar oʻtkaziladi.",
+    "queueHintDate": "Shu kundan boshlab boʻsh dars soatlariga; band soatlar oʻtkaziladi.",
+    "showDates": "Har bir dars sanasini koʻrish ({count})",
+    "saveUndated": "Sanasiz saqlash"
+  },
+  "UnitImport": {
+    "title": "Yangi boʻlim",
+    "cancel": "Bekor qilish",
+    "confirm": "{count} ta boʻlim yaratish",
+    "savedToast": "{count} ta boʻlim yaratildi",
+    "classesLabel": "Sinflarga bogʻlash",
+    "classesPlaceholder": "Sinf tanlang…",
+    "namePlaceholder": "Boʻlim nomi",
+    "deleteRow": "Qatorni oʻchirish",
+    "listLabel": "{count} ta boʻlim",
+    "description": "Boʻlim nomlarini yozing, joylashtiring yoki Excelʼdan yuklang.",
+    "sourcePaste": "Nusxa koʻchirish",
+    "pastePlaceholder": "Algebraga kirish\nChiziqli tenglamalar\nKvadrat tenglamalar",
+    "pasteHint": "Har qatorda bitta boʻlim. Tartib raqamlari va takrorlar avtomatik tozalanadi.",
+    "listEmpty": "Chapga boʻlim nomlarini yozing yoki fayl yuklang — shu yerda tartiblaysiz",
+    "choiceDescription": "Boʻlimlarni qanday qoʻshmoqchisiz?",
+    "back": "Orqaga",
+    "choice": {
+      "singleTitle": "Bitta boʻlim",
+      "singleDescription": "Nom, sinflar va tavsifni qoʻlda kiriting.",
+      "pasteTitle": "Nusxa koʻchirish",
+      "pasteDescription": "Roʻyxatni Word/Excelʼdan joylashtiring.",
+      "fileTitle": "Excel yuklash",
+      "fileDescription": ".xlsx yoki .xls faylni yuklang."
+    },
+    "undo": "Bekor qilish",
+    "undoneToast": "Import bekor qilindi",
+    "duplicateBadge": "Bor"
+  },
+  "ImportSource": {
+    "errorEmpty": "Faylda maʼlumot topilmadi",
+    "errorRead": "Faylni oʻqib boʻlmadi. .xlsx, .xls yoki .csv tanlang.",
+    "dropTitle": "Faylni tanlang yoki shu yerga tashlang",
+    "replaceFile": "Almashtirish",
+    "dropHint": {
+      "topics": "Excel yoki CSV — ish reja fayli",
+      "units": "Excel yoki CSV — boʻlimlar roʻyxati"
+    },
+    "pasteLabel": {
+      "topics": "Mavzular roʻyxati",
+      "units": "Boʻlimlar roʻyxati"
+    },
+    "sheet": "Varaq",
+    "template": "Namuna faylni yuklab olish",
+    "templateFile": {
+      "topics": "ish-reja-namuna.xlsx",
+      "units": "bolimlar-namuna.xlsx"
+    },
+    "templateName": {
+      "topics": "Mavzu",
+      "units": "Boʻlim nomi"
+    },
+    "templateHours": "Soat",
+    "skipped": "{count} ta qator oʻtkazib yuborildi",
+    "rowReason": "{row}-qator · {reason}",
+    "reason": {
+      "separator": "chorak/yarim yil ajratkichi",
+      "total": "jami qatori",
+      "number": "faqat raqam"
+    },
+    "restore": "Qoʻshish",
+    "expanded": "{count} ta mavzu soatiga koʻra takrorlandi",
+    "duplicates": {
+      "topics": "{count} ta mavzu boʻlimda bor — oʻtkaziladi",
+      "units": "{count} ta boʻlim allaqachon bor — oʻtkaziladi"
+    },
+    "duplicatesSkip": {
+      "topics": "{count} ta mavzu boʻlimda bor — oʻtkazib yuborish",
+      "units": "{count} ta boʻlim allaqachon bor — oʻtkazib yuborish"
+    },
+    "mapped": {
+      "topics": "Mavzular «{name}» ustunidan olindi.",
+      "units": "Boʻlimlar «{name}» ustunidan olindi."
+    },
+    "mappedWithHours": "Mavzular «{name}» ustunidan, soatlar «{hours}» ustunidan olindi.",
+    "showTable": "Notoʻgʻrimi? Jadvalda koʻrsatish",
+    "tableTitle": "Ustunlarni belgilang",
+    "closeTable": "Yopish",
+    "setHeader": "Shu qator — sarlavha",
+    "role": {
+      "topics": "Mavzu",
+      "units": "Boʻlim nomi",
+      "hours": "Soat",
+      "none": "Ishlatilmaydi"
+    },
+    "tableHelp": "Ustun nomini bosib «Mavzu» yoki «Soat» deb belgilang. Qator raqamini bossangiz — shu qator sarlavha boʻladi. Chizilgan qatorlar oʻtkaziladi.",
+    "expandHoursShort": "2+ soat → har soatga dars"
   }
 }

@@ -31,6 +31,8 @@ import ClassListPanel from "@/components/ClassListPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
+import IshRejaImportModal from "@/components/IshRejaImportModal";
+import UnitImportModal from "@/components/UnitImportModal";
 import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput } from "lucide-react";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
@@ -215,6 +217,8 @@ export default function LessonsPage() {
 
   const [classModalOpen, setClassModalOpen] = useState(false);
   const [unitModalOpen, setUnitModalOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [unitImportOpen, setUnitImportOpen] = useState(false);
 
   // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
@@ -228,9 +232,10 @@ export default function LessonsPage() {
     setUnitForClass(lessonId, effectiveClassId, targetUnitId);
   };
 
+  // «Boʻlim qoʻshish» — nusxa koʻchirish / Excel oynasi (batafsil oyna — uning ichidan).
   const handleCreateUnit = () => {
     if (!selectedClassId) return;
-    setUnitModalOpen(true);
+    setUnitImportOpen(true);
   };
   const handleUnitSubmit = (values: { name: string; classIds: string[]; description: string }) => {
     let createdId: string | null = null;
@@ -240,6 +245,12 @@ export default function LessonsPage() {
     });
     setUnitModalOpen(false);
     if (createdId) setSelectedUnitId(createdId);
+  };
+
+  // «Yangi dars» — faqat boʻlim ichidan: bitta dars / nusxa koʻchirish / Excel yuklash.
+  const handleNewLessonChoice = () => {
+    if (!selectedUnitId || selectedUnitId === NONE || !selectedClassId) return;
+    setImportOpen(true);
   };
 
   const handleNewLesson = () => {
@@ -673,8 +684,8 @@ export default function LessonsPage() {
                   <ArrowDownUp className="size-4" />
                 </Button>
               </div>
-              {effectiveUnitId && lessonsForUnit.length > 0 && (
-                <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLesson}>
+              {effectiveUnitId && effectiveUnitId !== NONE && lessonsForUnit.length > 0 && (
+                <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLessonChoice}>
                   <Plus className="size-3.5" />
                   <span className="hidden lg:inline">{t("newLesson")}</span>
                 </Button>
@@ -694,12 +705,14 @@ export default function LessonsPage() {
                       <EmptyTitle>{t("lessonsEmptyTitle")}</EmptyTitle>
                       <EmptyDescription>{t("lessonsEmptyDescription")}</EmptyDescription>
                     </EmptyHeader>
-                    <EmptyContent>
-                      <Button className="gap-2 h-9" onClick={handleNewLesson}>
-                        <Plus className="size-4" />
-                        {t("newLesson")}
-                      </Button>
-                    </EmptyContent>
+                    {effectiveUnitId !== NONE && (
+                      <EmptyContent>
+                        <Button className="gap-2 h-9" onClick={handleNewLessonChoice}>
+                          <Plus className="size-4" />
+                          {t("newLesson")}
+                        </Button>
+                      </EmptyContent>
+                    )}
                   </Empty>
                 ) : (
                   lessonsForUnit.map((lesson) => {
@@ -800,6 +813,22 @@ export default function LessonsPage() {
               setClassModalOpen(false);
             }}
             onClose={() => setClassModalOpen(false)}
+          />
+        )}
+        {importOpen && selectedClassId && selectedUnitId && selectedUnitId !== NONE && (
+          <IshRejaImportModal
+            classId={selectedClassId}
+            unitId={selectedUnitId}
+            onSingle={() => { setImportOpen(false); handleNewLesson(); }}
+            onClose={() => setImportOpen(false)}
+          />
+        )}
+        {unitImportOpen && selectedClassId && (
+          <UnitImportModal
+            classId={selectedClassId}
+            onDetailed={() => { setUnitImportOpen(false); setUnitModalOpen(true); }}
+            onCreated={(id) => { setUnitImportOpen(false); if (id) setSelectedUnitId(id); }}
+            onClose={() => setUnitImportOpen(false)}
           />
         )}
         {unitModalOpen && (
