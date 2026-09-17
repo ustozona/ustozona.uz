@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, ArrowRight } from "lucide-react";
@@ -83,6 +84,24 @@ export default async function HelpArticlePage({
                     {p}
                   </p>
                 ))}
+                {s.image && (
+                  <figure className="pt-2">
+                    {/* Bosilsa — asl oʻlchamda yangi oynada */}
+                    <a href={s.image.src} target="_blank" rel="noopener" className="block overflow-hidden rounded-xl border border-border bg-muted/40 transition-shadow hover:shadow-md">
+                      <Image
+                        src={s.image.src}
+                        alt={s.image.alt}
+                        width={s.image.width}
+                        height={s.image.height}
+                        sizes="(max-width: 768px) 100vw, 680px"
+                        className="h-auto w-full"
+                      />
+                    </a>
+                    {s.image.caption && (
+                      <figcaption className="mt-2 text-center text-caption">{s.image.caption}</figcaption>
+                    )}
+                  </figure>
+                )}
                 {s.callout && (
                   <Callout type={s.callout.type} title={s.callout.title}>
                     {s.callout.text}

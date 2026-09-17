@@ -13,6 +13,7 @@ export const ARTICLE_BOLIM_VA_DARSLAR: HelpArticle = {
       short: "Boʻlim qoʻshish",
       icon: "layoutGrid",
       title: "Boʻlim qoʻshish",
+      image: { src: "/help/bolim-va-darslar/2-bolim-royxat.webp", alt: "Yangi boʻlim oynasi: chapda boʻlimlar roʻyxati matni, oʻngda tartiblanadigan roʻyxat", caption: "Chapda yozgan roʻyxatingiz oʻngda darhol tayyor boʻlimlarga aylanadi.", width: 1600, height: 1107 },
       paragraphs: [
         "Boʻlimlar ustunidagi \"Boʻlim qoʻshish\" tugmasini bosing. Uchta yoʻldan birini tanlaysiz: \"Bitta boʻlim\" — nom, sinflar va tavsifni qoʻlda kiritasiz; \"Nusxa koʻchirish\" — boʻlimlar roʻyxatini Word yoki Excelʼdan joylashtirasiz; \"Excel yuklash\" — roʻyxat boʻlgan faylni yuklaysiz.",
         "Roʻyxat yoki fayl tanlanganda oyna ikki qismga boʻlinadi: chapda matn yoki fayl, oʻngda tayyor roʻyxat. Chapda yozganingiz oʻngda darhol paydo boʻladi. Oʻngda ⠿ belgisidan ushlab tartibni oʻzgartirasiz, nomni tuzatasiz yoki keraksizini oʻchirasiz.",
@@ -24,6 +25,7 @@ export const ARTICLE_BOLIM_VA_DARSLAR: HelpArticle = {
       short: "Dars qoʻshish",
       icon: "fileText",
       title: "Boʻlimga darslar qoʻshish",
+      image: { src: "/help/bolim-va-darslar/1-bolim-tanlov.webp", alt: "Qoʻshish usulini tanlash oynasi: bitta, nusxa koʻchirish, Excel yuklash", caption: "Boʻlim va dars qoʻshish bir xil uch yoʻl bilan boshlanadi.", width: 1456, height: 838 },
       paragraphs: [
         "Darslar faqat boʻlim ichida yaratiladi. Boʻlimni tanlang va \"Yangi dars\"ni bosing. Bu yerda ham uchta yoʻl bor: \"Bitta dars\" — dars muharririni ochadi; \"Nusxa koʻchirish\" — mavzular roʻyxatini joylashtirasiz; \"Excel yuklash\" — ish reja faylini yuklaysiz. Har bir mavzu alohida dars boʻladi.",
         "Nusxa koʻchirganda har qatorga bitta mavzu yozing. Tartib raqamlari (\"1.\", \"12-dars\") va \"1-chorak\", \"2-yarim yillik\" kabi ajratkich qatorlar avtomatik olib tashlanadi.",
@@ -39,6 +41,7 @@ export const ARTICLE_BOLIM_VA_DARSLAR: HelpArticle = {
       short: "Excel fayl",
       icon: "clipboardList",
       title: "Excel ish rejasini yuklash",
+      image: { src: "/help/bolim-va-darslar/3-excel-jadval.webp", alt: "Excel ish rejasi jadval koʻrinishida: Mavzu ustuni yashil, Soat ustuni sariq, 1-CHORAK qatori chizilgan", caption: "Ustun nomini bosib belgilaysiz; chizilgan qatorlar oʻtkazib yuboriladi.", width: 1600, height: 1107 },
       paragraphs: [
         "Fayl .xlsx, .xls yoki .csv boʻlishi mumkin. Tizim barcha varaqlardan \"Mavzu\" (boʻlimlarda \"Boʻlim\") sarlavhali ustunni topadi, \"Soat\" ustuni boʻlsa uni ham oladi. Natija yashil xabarda koʻrinadi: \"Mavzular «Mavzu nomi» ustunidan, soatlar «Soat» ustunidan olindi\".",
         "Ustun notoʻgʻri tanlangan boʻlsa, \"Jadvalda koʻrsatish\"ni bosing. Faylning boshi jadval boʻlib ochiladi: mavzu ustuni yashil, soat ustuni sariq rangda. Ustun nomini bosib uni \"Mavzu\" yoki \"Soat\" deb belgilaysiz, qator raqamini bosib shu qatorni sarlavha qilasiz. Chizib qoʻyilgan qatorlar oʻtkazib yuboriladi. Faylda bir nechta varaq boʻlsa, fayl nomi ostida varaq tanlanadi.",
@@ -51,6 +54,7 @@ export const ARTICLE_BOLIM_VA_DARSLAR: HelpArticle = {
       short: "Jadvalga joylash",
       icon: "calendar",
       title: "Darslarni dars jadvaliga joylash",
+      image: { src: "/help/bolim-va-darslar/4-jadvalga-joylash.webp", alt: "Jadvalga joylash bosqichi: darslar soni, boshlanish va tugash sanasi, oʻquv yili chizigʻi", caption: "13 ta dars 23-sentabrdan 16-dekabrgacha joylanadi va oʻquv yiliga sigʻadi.", width: 1600, height: 663 },
       paragraphs: [
         "Mavzular tayyor boʻlgach \"Keyingi\"ni bosing. Darslar sinfning dars jadvalidagi navbatdagi boʻsh soatlarga ketma-ket qoʻyiladi: roʻyxatdagi 1-mavzu birinchi boʻsh darsga, 2-mavzu keyingisiga va hokazo. Taʼtil kunlari va boshqa darslar band qilgan soatlar oʻtkazib yuboriladi.",
         "Tepada toʻrtta raqam turadi: darslar soni, boshlanish va tugash sanasi, hamma darslar oʻquv yiliga sigʻdimi. Ostida oʻquv yili chizigʻi bor: kulrang — sinfdagi mavjud boʻlimlar, yashil — yangi qoʻshilayotgan boʻlim, chiziqli joylar — taʼtillar, qizil chiziq — bugun. Bir nechta sinf tanlangan boʻlsa, har sinf alohida qatorda koʻrinadi.",
@@ -67,6 +71,7 @@ export const ARTICLE_BOLIM_VA_DARSLAR: HelpArticle = {
       short: "Bekor qilish",
       icon: "target",
       title: "Importni bekor qilish",
+      image: { src: "/help/bolim-va-darslar/5-bekor-qilish.webp", alt: "«13 ta dars qoʻshildi» xabari va Bekor qilish tugmasi", width: 1568, height: 620 },
       paragraphs: [
         "Saqlagandan keyin ekran pastida \"… ta dars qoʻshildi\" xabari bir necha soniya turadi. Undagi \"Bekor qilish\" tugmasi shu importda yaratilgan hamma narsani — darslarni, ularning jadvaldagi joylarini va boshqa sinflarda yaratilgan boʻlimlarni — bir bosishda olib tashlaydi. Boʻlim importi ham xuddi shunday bekor qilinadi.",
       ],

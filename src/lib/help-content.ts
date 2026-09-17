@@ -22,6 +22,8 @@ export type HelpArticleSection = {
   icon: HelpIconName;
   title: string;
   paragraphs: string[];
+  /** Ixtiyoriy — ekran surati (`public/help/...`), paragraflardan keyin chiqadi. */
+  image?: { src: string; alt: string; caption?: string; width: number; height: number };
   /** Ixtiyoriy — Notion/Obsidian uslubidagi eslatma quti, boʻlim oxirida chiqadi. */
   callout?: { type: "note" | "tip" | "info" | "warning"; title?: string; text: string };
 };
