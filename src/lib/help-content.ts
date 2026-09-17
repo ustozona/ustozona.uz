@@ -86,7 +86,10 @@ export const HELP_CATEGORIES: HelpCategory[] = [
     slug: "darslar",
     label: "Darslar",
     icon: "fileText",
-    articles: [{ slug: "dars-muharriri", title: "Dars muharriridan foydalanish" }],
+    articles: [
+      { slug: "bolim-va-darslar", title: "Boʻlim va darslarni qoʻshish" },
+      { slug: "dars-muharriri", title: "Dars muharriridan foydalanish" },
+    ],
   },
   {
     slug: "topshiriqlar",
@@ -144,11 +147,13 @@ export const HELP_CATEGORIES: HelpCategory[] = [
 import { ARTICLE_OQUV_YILINI_SOZLASH } from "./help-articles/oquv-yilini-sozlash";
 import { ARTICLE_BIRINCHI_SINF } from "./help-articles/birinchi-sinf";
 import { ARTICLE_DARS_JADVALINI_SOZLASH } from "./help-articles/dars-jadvalini-sozlash";
+import { ARTICLE_BOLIM_VA_DARSLAR } from "./help-articles/bolim-va-darslar";
 
 const ALL_ARTICLES: HelpArticle[] = [
   ARTICLE_OQUV_YILINI_SOZLASH,
   ARTICLE_BIRINCHI_SINF,
   ARTICLE_DARS_JADVALINI_SOZLASH,
+  ARTICLE_BOLIM_VA_DARSLAR,
 ];
 
 export const HELP_ARTICLES: Record<string, HelpArticle> = Object.fromEntries(
