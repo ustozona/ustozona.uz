@@ -69,7 +69,7 @@ export default function UpVoteButton({ voted, count, onToggle }: Props) {
             whileTap={{ scale: 0.9 }}
             transition={{ type: "spring", stiffness: 380, damping: 22 }}
             className={cn(
-              "relative overflow-hidden inline-flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold tabular-nums cursor-pointer select-none transition-colors duration-fast",
+              "relative overflow-hidden inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold tabular-nums cursor-pointer select-none transition-colors duration-fast",
               voted
                 ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary/20"
                 : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"

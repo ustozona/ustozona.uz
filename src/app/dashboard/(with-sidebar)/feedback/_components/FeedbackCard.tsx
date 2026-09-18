@@ -240,7 +240,7 @@ export default function FeedbackCard({
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={quoteSelection}
-                className="flex items-center gap-1.5 rounded-lg bg-foreground px-2.5 py-1.5 text-xs font-semibold text-background shadow-lg transition-transform hover:scale-105 active:scale-95"
+                className="flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-semibold text-background shadow-lg transition-transform hover:scale-105 active:scale-95"
               >
                 <Quote className="size-3.5" />
                 {t("quoteReplyButton")}
@@ -406,7 +406,7 @@ export default function FeedbackCard({
 
               {/* ── Suhbat: yassi izoh qatorlari + kompozer ── */}
               <CollapsibleContent className="data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-1">
-                <div className="mt-3.5 space-y-4 border-t border-border/60 pt-4">
+                <div className="mt-3 space-y-4 border-t border-border/60 pt-4">
                   {topLevel.map((tr) => {
                     const kids = childrenOf.get(tr.id) ?? [];
                     const expanded = expandedThreads.has(tr.id);

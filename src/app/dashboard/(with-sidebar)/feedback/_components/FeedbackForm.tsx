@@ -159,7 +159,7 @@ export default function FeedbackForm({
               type="button"
               onClick={() => setCategory(key)}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors",
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
                 active ? meta.pill : "border-border text-muted-foreground hover:bg-muted"
               )}
             >

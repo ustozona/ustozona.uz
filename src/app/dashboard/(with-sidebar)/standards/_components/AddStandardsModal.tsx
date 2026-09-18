@@ -145,7 +145,7 @@ function BrowseTab({ classId }: { classId: string }) {
               <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("browseSearchPlaceholder")} className="pl-9 bg-background" />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <FilterSelect label={t("country")} value={country} onChange={setCountry} options={ALL_COUNTRIES} nonEmpty={NONEMPTY_COUNTRIES} allLabel={t("allCountries")} />
             <FilterSelect label={t("subject")} value={subject} onChange={setSubject} options={ALL_SUBJECTS} nonEmpty={NONEMPTY_SUBJECTS} allLabel={t("allSubjects")} />
             <FilterSelect label={t("grade")} value={grade} onChange={setGrade} options={ALL_GRADES} nonEmpty={NONEMPTY_GRADES} allLabel={t("allGrades")} />
@@ -158,7 +158,7 @@ function BrowseTab({ classId }: { classId: string }) {
         <span className="text-caption text-muted-foreground">{t("resultsCount", { count: results.length })}</span>
       </div>
 
-      <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto px-6 pb-4 space-y-2.5">
+      <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto px-6 pb-4 space-y-3">
         {results.length === 0 ? (
           <p className="text-center text-caption text-muted-foreground py-10">{t("noMatchingSets")}</p>
         ) : (
@@ -167,7 +167,7 @@ function BrowseTab({ classId }: { classId: string }) {
             return (
               <Collapsible key={tpl.id} className="rounded-xl border border-border overflow-hidden">
                 <div className="flex items-center gap-2 p-3 hover:bg-muted/40 transition-colors">
-                  <CollapsibleTrigger className="group/t flex flex-1 items-center gap-2.5 text-left min-w-0 cursor-pointer">
+                  <CollapsibleTrigger className="group/t flex flex-1 items-center gap-2 text-left min-w-0 cursor-pointer">
                     <ChevronRight className="size-4 text-muted-foreground shrink-0 transition-transform duration-fast ease-standard group-data-[state=open]/t:rotate-90" aria-hidden />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -187,7 +187,7 @@ function BrowseTab({ classId }: { classId: string }) {
                 <CollapsibleContent>
                   <ul className="divide-y divide-border border-t border-border">
                     {tpl.standards.map((std) => (
-                      <li key={std.id} className="flex items-start gap-3 px-4 py-2.5">
+                      <li key={std.id} className="flex items-start gap-3 px-4 py-3">
                         <span className="font-mono text-xs font-semibold text-foreground/70 shrink-0 w-24">{std.id}</span>
                         <span className="text-body text-foreground/90 leading-relaxed">{std.desc}</span>
                       </li>
@@ -333,7 +333,7 @@ function MyStandardsTab({ classId }: { classId: string }) {
             <span className="text-label">{t("name")}</span>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("namePlaceholder")} className="bg-background" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <span className="text-label">{t("subject")}</span>
               <Select value={subject} onValueChange={setSubject}>
@@ -385,7 +385,7 @@ function MyStandardsTab({ classId }: { classId: string }) {
         <span className="text-caption text-muted-foreground">{t("customSetsCount", { count: customSets.length })}</span>
       </div>
 
-      <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto px-6 pb-4 space-y-2.5">
+      <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto px-6 pb-4 space-y-3">
         {customSets.length === 0 ? (
           <p className="text-center text-caption text-muted-foreground py-10">
             {t("noCustomSetsYet")}
@@ -440,7 +440,7 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
   return (
     <Collapsible className="rounded-xl border border-border overflow-hidden">
       <div className="group/cs flex items-center gap-2 p-3 hover:bg-muted/40 transition-colors">
-        <CollapsibleTrigger className="group/t flex flex-1 items-center gap-2.5 text-left min-w-0 cursor-pointer">
+        <CollapsibleTrigger className="group/t flex flex-1 items-center gap-2 text-left min-w-0 cursor-pointer">
           <ChevronRight className="size-4 text-muted-foreground shrink-0 transition-transform duration-fast ease-standard group-data-[state=open]/t:rotate-90" aria-hidden />
           <div className="min-w-0">
             <span className="text-sm font-semibold truncate">{cs.name}</span>
@@ -489,7 +489,7 @@ function CustomSetRow({ cs, added, onAttach, onEdit, onDelete, onAddStandard, on
               {cs.standards.map((std) => {
                 const bl = BLOOM_LEVELS.find((b) => b.id === std.bloom);
                 return (
-                  <li key={std.id} className="group/std flex items-center gap-3 px-4 py-2.5">
+                  <li key={std.id} className="group/std flex items-center gap-3 px-4 py-3">
                     <span className="font-mono text-xs font-semibold text-foreground/70 shrink-0 w-24">{std.id}</span>
                     <div className="flex-1 min-w-0 space-y-1">
                       {bl && <Badge variant="secondary" className={cn("shadow-none", bl.color)}>{bl.label}</Badge>}

@@ -25,7 +25,7 @@ export default async function MyBlogPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 md:py-14">
-      <div className="flex items-center justify-between gap-2.5">
+      <div className="flex items-center justify-between gap-2">
         <Link href="/blog" className="inline-flex">
           <BrandWordmark shieldClassName="size-7" textClassName="text-sm" gapClassName="gap-2" rollerSize="sm" />
         </Link>
@@ -34,7 +34,7 @@ export default async function MyBlogPage() {
         </Link>
       </div>
 
-      <div className="mt-8 flex items-center justify-between gap-2.5">
+      <div className="mt-8 flex items-center justify-between gap-2">
         <div>
           <h1 className="heading-page text-foreground">Mening maqolalarim</h1>
           <TypographyMuted className="text-sm">Yozing, saqlang va nashr qiling.</TypographyMuted>

@@ -71,7 +71,7 @@ const DavomatPreview = () => (
   <Frame>
     <div className="flex items-center justify-between">
       <span className="text-sm font-semibold text-foreground">14-oktabr</span>
-      <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+      <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
         Hammasi keldi
       </span>
     </div>
@@ -97,7 +97,7 @@ const XulqPreview = () => (
   <Frame>
     <div className="flex items-center justify-between">
       <span className="text-sm font-semibold text-foreground">Xulq bali</span>
-      <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+      <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
         avtomatik
       </span>
     </div>

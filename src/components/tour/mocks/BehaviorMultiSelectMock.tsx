@@ -27,7 +27,7 @@ export function BehaviorMultiSelectMock() {
         }
       `}</style>
 
-      <div className="grid grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => {
           const active = SELECTED.includes(i);
           return (

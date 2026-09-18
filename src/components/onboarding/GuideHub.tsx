@@ -125,7 +125,7 @@ export default function GuideHub() {
                   type="button"
                   onClick={() => openTour(tour.id, tour.route)}
                   title={dismissed ? t("dismissedTitle") : undefined}
-                  className="group relative z-10 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted"
+                  className="group relative z-10 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted"
                 >
                   <div
                     className={cn(

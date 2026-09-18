@@ -181,7 +181,7 @@ export function SkillFormDialog({
           />
 
           <div className="flex justify-center bg-muted/40 pt-5 pb-3">
-            <div className="relative flex w-28 flex-col items-center gap-2 rounded-xl border border-border bg-card px-2.5 pt-5 pb-3">
+            <div className="relative flex w-28 flex-col items-center gap-2 rounded-xl border border-border bg-card px-3 pt-5 pb-3">
               <span
                 className={cn(
                   "absolute top-1.5 right-2 text-xs font-bold tabular-nums",

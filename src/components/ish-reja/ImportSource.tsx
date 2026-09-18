@@ -225,7 +225,7 @@ export function SourcePane({ src, placeholder }: {
         showTable || !confident ? (
           <MappingTable src={src} onClose={confident ? () => setShowTable(false) : undefined} />
         ) : (
-          <div className="flex items-start gap-2 rounded-lg bg-success/10 px-3 py-2.5 text-sm text-success">
+          <div className="flex items-start gap-2 rounded-lg bg-success/10 px-3 py-3 text-sm text-success">
             <CircleCheck className="mt-0.5 size-4 shrink-0" />
             <p className="leading-relaxed">
               {src.kind === "topics" && src.mapping.hoursCol >= 0

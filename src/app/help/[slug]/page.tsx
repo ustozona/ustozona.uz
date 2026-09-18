@@ -78,7 +78,7 @@ export default async function HelpArticlePage({
           {article.sections.map((s) => (
             <section key={s.id} id={s.id} className="scroll-mt-20 space-y-3">
               <h2 className="heading-section">{s.title}</h2>
-              <div className="space-y-3.5">
+              <div className="space-y-3">
                 {s.paragraphs.map((p, i) => (
                   <p key={i} className="text-body leading-7">
                     {p}

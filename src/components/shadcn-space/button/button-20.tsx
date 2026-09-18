@@ -89,7 +89,7 @@ export default function AnimatedLikeButton({ liked, count, onToggle }: Props) {
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.9 }}
         transition={{ type: "spring", stiffness: 380, damping: 22 }}
-        className="relative overflow-hidden inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-2.5 text-xs font-semibold tabular-nums select-none cursor-pointer transition-colors duration-fast hover:bg-muted"
+        className="relative overflow-hidden inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-semibold tabular-nums select-none cursor-pointer transition-colors duration-fast hover:bg-muted"
       >
         {/* Ripple */}
         <AnimatePresence initial={false}>

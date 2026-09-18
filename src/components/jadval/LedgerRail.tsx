@@ -70,7 +70,7 @@ export default function LedgerRail({ doc, armed, onArm, onAutoPlace }: LedgerRai
   return (
     <Panel className="h-full">
       <PanelHeader>
-        <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
+        <div className="flex min-w-0 items-center gap-3 justify-self-start">
           <SectionIcon className="shrink-0">
             <PackageOpen />
           </SectionIcon>

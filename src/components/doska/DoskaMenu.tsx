@@ -95,7 +95,7 @@ export function DoskaMenu() {
 
         {/* ── Taklif ── */}
         <div className="p-3 pt-1">
-          <div className="bg-accent flex flex-col gap-1.5 rounded-[calc(var(--radius)/1.4)] p-3.5">
+          <div className="bg-accent flex flex-col gap-1.5 rounded-[calc(var(--radius)/1.4)] p-3">
             <p className="text-accent-foreground text-sm font-medium">
               Ishingizni saqlab qoʻying
             </p>
@@ -128,7 +128,7 @@ function ProBadge() {
 }
 
 const ITEM_CLASS =
-  "hover:bg-muted flex w-full items-center gap-2.5 px-4 py-2 text-sm transition-colors";
+  "hover:bg-muted flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors";
 
 function MenuItem({
   Icon,

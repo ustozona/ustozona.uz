@@ -92,7 +92,7 @@ function EntryContent({ entry, typeLabel }: { entry: ChangelogEntry; typeLabel: 
         {entry.body && <p className="text-body min-w-0 flex-1 text-pretty leading-relaxed text-muted-foreground">{entry.body}</p>}
       </div>
       {entry.href && (
-        <Button asChild variant="ghost" size="sm" className="-ml-2.5 w-fit gap-1.5 text-muted-foreground hover:text-foreground">
+        <Button asChild variant="ghost" size="sm" className="-ml-2 w-fit gap-1.5 text-muted-foreground hover:text-foreground">
           <Link href={entry.href}>
             <RouteIcon href={entry.href} className="size-4" />
             {entry.cta ?? t(defaultCtaKey(entry.href))}

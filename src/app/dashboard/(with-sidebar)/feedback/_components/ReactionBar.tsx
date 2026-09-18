@@ -44,7 +44,7 @@ export function ReactionChips({
             type="button"
             onClick={() => onToggle(r.emoji)}
             aria-pressed={r.mine}
-            className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-2.5 text-xs font-semibold tabular-nums transition-all duration-fast hover:-translate-y-0.5 hover:bg-muted active:scale-90"
+            className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-semibold tabular-nums transition-all duration-fast hover:-translate-y-0.5 hover:bg-muted active:scale-90"
           >
             <AppleEmoji emoji={r.emoji} className="size-4" />
             {r.count}

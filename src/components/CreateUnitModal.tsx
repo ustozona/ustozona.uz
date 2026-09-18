@@ -104,7 +104,7 @@ export default function CreateUnitModal({
                           tabIndex={0}
                           onClick={() => toggleClass(c.id)}
                           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleClass(c.id); } }}
-                          className="flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm text-left cursor-pointer hover:bg-muted transition-colors outline-none focus-visible:bg-muted"
+                          className="flex items-center gap-2 w-full rounded-md px-2 py-2 text-sm text-left cursor-pointer hover:bg-muted transition-colors outline-none focus-visible:bg-muted"
                         >
                           <Checkbox checked={checked} className="pointer-events-none" />
                           <ClassSwatch hex={hex} />

@@ -179,7 +179,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
                         <Badge
                           variant="secondary"
                           className={cn(
-                            "shrink-0 gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border-transparent",
+                            "shrink-0 gap-1 rounded-full px-3 py-1 text-xs font-semibold border-transparent",
                             STATUS_PILL_CLASS[r.status]
                           )}
                         >

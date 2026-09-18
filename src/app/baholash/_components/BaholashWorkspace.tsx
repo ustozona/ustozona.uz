@@ -373,7 +373,7 @@ function ImportPanel({ status, hasClasses, classId }:
   const details = status?.details ?? [];
 
   return (
-    <div className="rounded-xl border border-border bg-muted/40 px-4 py-3.5">
+    <div className="rounded-xl border border-border bg-muted/40 px-4 py-3">
       <div className="flex flex-wrap items-center gap-3">
         <Info className="size-4 shrink-0 text-muted-foreground" />
         <p className="flex-1 text-sm text-muted-foreground">
@@ -448,7 +448,7 @@ function ImportPanel({ status, hasClasses, classId }:
 
 function EmptyNote({ text, action }: { text: string; action?: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3.5">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3">
       <Info className="size-4 shrink-0 text-muted-foreground" />
       <p className="flex-1 text-sm text-muted-foreground">{text}</p>
       {action}

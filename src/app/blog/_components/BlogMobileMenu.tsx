@@ -36,7 +36,7 @@ export function BlogMobileMenu({
       </SheetTrigger>
       <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-sm">
         <div className="flex h-14 shrink-0 items-center border-b border-border px-6">
-          <BrandWordmark shieldClassName="size-[26px]" textClassName="text-base" gapClassName="gap-2.5" word="blog" />
+          <BrandWordmark shieldClassName="size-[26px]" textClassName="text-base" gapClassName="gap-2" word="blog" />
         </div>
         <SheetTitle className="sr-only">Blog menyusi</SheetTitle>
         <SheetDescription className="sr-only">Navigatsiya va hisob</SheetDescription>
@@ -48,7 +48,7 @@ export function BlogMobileMenu({
               href={item.href}
               onClick={close}
               className={cn(
-                "rounded-md px-3 py-2.5 text-base transition-colors hover:bg-muted",
+                "rounded-md px-3 py-3 text-base transition-colors hover:bg-muted",
                 i === 0 ? "font-medium text-foreground" : "text-muted-foreground",
               )}
             >
@@ -59,7 +59,7 @@ export function BlogMobileMenu({
 
         {viewer && (
           <div className="flex flex-col border-t border-border p-3">
-            <div className="flex items-center gap-3 px-3 py-2.5">
+            <div className="flex items-center gap-3 px-3 py-3">
               <Avatar className="size-9 border border-border">
                 {viewer.avatarUrl && (
                   <AvatarImage src={viewer.avatarUrl} alt={viewer.name} referrerPolicy="no-referrer" />
@@ -76,7 +76,7 @@ export function BlogMobileMenu({
             <Link
               href="/blog/studio"
               onClick={close}
-              className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex items-center gap-3 rounded-md px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <NotebookPen className="size-4" />
               Mening maqolalarim
@@ -84,7 +84,7 @@ export function BlogMobileMenu({
             <Link
               href="/dashboard"
               onClick={close}
-              className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex items-center gap-3 rounded-md px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <LayoutDashboard className="size-4" />
               Boshqaruv paneli
@@ -95,7 +95,7 @@ export function BlogMobileMenu({
                 await authClient.signOut();
                 window.location.reload();
               }}
-              className="flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm text-destructive transition-colors hover:bg-muted"
+              className="flex items-center gap-3 rounded-md px-3 py-3 text-left text-sm text-destructive transition-colors hover:bg-muted"
             >
               <LogOut className="size-4" />
               Chiqish

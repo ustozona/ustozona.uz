@@ -980,7 +980,7 @@ function ScaleBoundaryPreview({ kind }: { kind: GradingScale }) {
 
   if (!boundaries) {
     return (
-      <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2.5">
+      <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-3">
         <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
         <TypographyMuted className="text-xs leading-snug">
           {t("scalePreviewFormulaNotice")}

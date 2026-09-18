@@ -327,7 +327,7 @@ export function TodayRail({ now }: { now: Date }) {
                 </div>
                 {/* Iqtibos ataylab bu yerda emas — u bosh sahifa hero'sida
                     koʻrsatiladi (bir kunda ikki joyda takrorlanmasligi uchun). */}
-                <p className="mt-2.5 text-xs text-muted-foreground">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {tomorrow.count > 0 && tomorrow.firstMin != null
                     ? t("tomorrowInfo", { count: tomorrow.count, time: fmtMin(tomorrow.firstMin) })
                     : t("tomorrowFree")}

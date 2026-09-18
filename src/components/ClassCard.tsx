@@ -57,7 +57,7 @@ export const ClassCard = React.forwardRef<HTMLDivElement, ClassCardProps>(functi
     <div
       ref={ref}
       className={cn(
-        "list-card group/cc flex w-full cursor-pointer items-center gap-3 p-4 text-left @max-[400px]:gap-2.5 @max-[400px]:p-3",
+        "list-card group/cc flex w-full cursor-pointer items-center gap-3 p-4 text-left @max-[400px]:gap-2 @max-[400px]:p-3",
         className,
       )}
       data-active={selected || undefined}

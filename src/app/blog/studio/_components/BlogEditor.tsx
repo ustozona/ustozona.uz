@@ -281,7 +281,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
           </Button>
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
               saveError ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground",
             )}
           >
@@ -396,7 +396,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
             </span>
           </p>
 
-          <div className="mt-5 flex items-center gap-2.5">
+          <div className="mt-5 flex items-center gap-3">
             <Avatar className="size-7">
               {post.authorAvatarUrl && <AvatarImage src={post.authorAvatarUrl} alt={post.authorName} />}
               <AvatarFallback className="bg-muted text-xs font-semibold text-muted-foreground">
@@ -426,7 +426,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
                     scheduleSave();
                   }}
                   placeholder="https://... .jpg"
-                  className="h-8 flex-1 rounded-md border-0 bg-muted px-2.5 text-xs text-foreground outline-none placeholder:text-muted-foreground"
+                  className="h-8 flex-1 rounded-md border-0 bg-muted px-3 text-xs text-foreground outline-none placeholder:text-muted-foreground"
                 />
                 <Button
                   variant="outline"
@@ -466,7 +466,7 @@ export function BlogEditor({ post }: { post: BlogPostFull }) {
                   bilishning yagona yoʻli — nashr qilib koʻrish). */}
               {coverImageUrl &&
                 (coverBroken ? (
-                  <div className="rounded-lg bg-muted px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+                  <div className="rounded-lg bg-muted px-3 py-3 text-xs leading-relaxed text-muted-foreground">
                     Bu manzildan rasm yuklanmadi. Koʻpincha sabab — galereya{" "}
                     <b>sahifasining</b> havolasi qoʻyilgan. Rasm ustiga oʻng tugma bosib{" "}
                     <b>«Rasm manzilini nusxalash»</b> ni tanlang — u <code>.jpg</code>,{" "}

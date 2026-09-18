@@ -202,7 +202,7 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
           </div>
 
           <CollapsibleContent className="data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-1">
-            <div className="mt-3.5 space-y-3 border-t border-border/60 pt-4">
+            <div className="mt-3 space-y-3 border-t border-border/60 pt-4">
               {item.replies.map((r) => (
                 <div key={r.id} className="flex items-start gap-3">
                   <Avatar size="default" className="mt-0.5 shrink-0">

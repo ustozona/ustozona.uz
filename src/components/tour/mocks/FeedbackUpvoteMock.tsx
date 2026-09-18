@@ -25,7 +25,7 @@ export function FeedbackUpvoteMock() {
         }
       `}</style>
 
-      <div className="w-full rounded-lg border border-border bg-background px-3 py-2.5 shadow-sm">
+      <div className="w-full rounded-lg border border-border bg-background px-3 py-3 shadow-sm">
         <div className="h-1.5 w-3/4 rounded-full bg-muted" />
         <div className="mt-1.5 h-1.5 w-1/2 rounded-full bg-muted" />
       </div>

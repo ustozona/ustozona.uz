@@ -61,7 +61,7 @@ export function FeatureLoop({
               animate={{ y: i * 84, opacity: isActive ? 1 : 0.4, scale: isActive ? 1 : 0.94 }}
               exit={{ y: -74, opacity: 0, scale: 0.85 }}
               transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute left-0 top-0 flex w-full items-center gap-3.5 rounded-xl border p-4 text-left"
+              className="absolute left-0 top-0 flex w-full items-center gap-3 rounded-xl border p-4 text-left"
               style={{
                 borderColor: isActive ? tints.ring.borderColor : "var(--border)",
                 backgroundColor: isActive ? tints.surface.backgroundColor : "var(--card)",

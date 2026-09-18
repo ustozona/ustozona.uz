@@ -295,7 +295,7 @@ export default function CardScanner({ questionCount, nameByRef, onFinish, onClos
             .map(([no, answer]) => (
               <span
                 key={no}
-                className="rounded-full bg-emerald-500/90 px-2.5 py-1 text-xs font-semibold text-black"
+                className="rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-black"
               >
                 {nameByRef.get(no) ?? `#${no}`} · {answer}
               </span>
