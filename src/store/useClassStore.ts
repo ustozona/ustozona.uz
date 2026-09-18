@@ -13,6 +13,8 @@ import type { JournalScale } from '@/lib/grade-scale';
 import { DEFAULT_JOURNAL_SCALE } from '@/lib/grade-scale';
 
 export interface ClassState {
+  /** Oxirgi tanlangan sinf — sahifalar URL'da `?classId=` boʻlmaganda shundan
+      boshlaydi. Boʻsh satr = hali hech qanday sinf tanlanmagan. */
   selectedClassId: string;
   setSelectedClassId: (id: string) => void;
 
@@ -27,7 +29,10 @@ export interface ClassState {
 
 export const useClassStore = create<ClassState>()(
     (set) => ({
-      selectedClassId: '9-a',
+      // ⚠️ Bu yerda HECH QANDAY sinf id'si qattiq yozilmaydi. Ilgari '9-a'
+      // turardi: yangi oʻqituvchida (yoki oʻsha id'li sinfi yoʻq oʻqituvchida)
+      // ilova mavjud boʻlmagan sinf tanlanganday koʻrsatardi.
+      selectedClassId: '',
       setSelectedClassId: (id) => set({ selectedClassId: id }),
 
       journalScale: DEFAULT_JOURNAL_SCALE,

@@ -47,10 +47,11 @@ function useBreadcrumbs(): Crumb[] {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
-  // Statistika sahifasi ?classId=ni router.replace EMAS, xom
-  // history.replaceState orqali yozadi (useClassIdParam) — useSearchParams()
-  // buni sezmaydi, shuning uchun alohida jonli hook orqali oʻqiladi.
-  const statsClassId = useClassIdParamValue(pathname);
+  // `?classId=` router.replace EMAS, xom history.replaceState orqali yoziladi
+  // (useClassIdParam) — useSearchParams() buni sezmaydi, shuning uchun alohida
+  // jonli hook orqali oʻqiladi. Sinf boʻgʻini ham, oʻquvchi boʻgʻinining guruh
+  // konteksti ham shundan oladi.
+  const classIdParam = useClassIdParamValue(pathname);
 
   return React.useMemo(() => {
     const segments = pathname.split("/").filter(Boolean); // ["dashboard", ...]
@@ -70,7 +71,7 @@ function useBreadcrumbs(): Crumb[] {
 
       if (prevSegment === "students" && segments[i]) {
         const studentId = decodeURIComponent(segments[i]);
-        const location = locateStudent(classDataMap, studentId);
+        const location = locateStudent(classDataMap, studentId, classIdParam);
         if (location) {
           crumbs.push({
             kind: "student-class-switcher",
@@ -101,13 +102,13 @@ function useBreadcrumbs(): Crumb[] {
     // Statistika/O'quvchilar sahifasida ?classId= sinf tanlovi — yo'l bo'g'ini
     // emas, shuning uchun query-parametrdan alohida o'qiladi (sinf detali
     // sahifasidagi kabi qidiriladigan switcher sifatida).
-    if ((pathname === "/dashboard/statistics" || pathname === "/dashboard/students") && statsClassId) {
-      const name = classDataMap[statsClassId]?.info?.name ?? statsClassId;
-      crumbs.push({ kind: "stats-class-switcher", href: `${pathname}?classId=${statsClassId}`, label: name, classId: statsClassId });
+    if ((pathname === "/dashboard/statistics" || pathname === "/dashboard/students") && classIdParam) {
+      const name = classDataMap[classIdParam]?.info?.name ?? classIdParam;
+      crumbs.push({ kind: "stats-class-switcher", href: `${pathname}?classId=${classIdParam}`, label: name, classId: classIdParam });
     }
 
     return crumbs;
-  }, [pathname, searchParams, classDataMap, tSections, statsClassId]);
+  }, [pathname, searchParams, classDataMap, tSections, classIdParam]);
 }
 
 /* ── Umumiy: qidiruvli tanlovchi boʻgʻin (Popover+Command, StudentProfile
@@ -321,17 +322,23 @@ function StudentSwitcherCrumb({
 }) {
   const t = useTranslations("HeaderBreadcrumb");
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const classDataMap = useGradesStore((s) => s.classDataMap);
+  const classIdParam = useClassIdParamValue(pathname);
   const location = React.useMemo(
-    () => locateStudent(classDataMap, studentId),
-    [classDataMap, studentId]
+    () => locateStudent(classDataMap, studentId, classIdParam),
+    [classDataMap, studentId, classIdParam]
   );
 
   const go = (id: string) => {
+    const params = new URLSearchParams();
     const tab = searchParams.get("tab");
-    const q = tab ? `?tab=${tab}` : "";
-    router.push(`/dashboard/students/${encodeURIComponent(id)}${q}`);
+    if (tab) params.set("tab", tab);
+    // Guruh konteksti qoʻshni oʻquvchiga ham koʻchadi — roʻyxat oʻsha guruhdan.
+    if (classIdParam) params.set("classId", classIdParam);
+    const q = params.toString();
+    router.push(`/dashboard/students/${encodeURIComponent(id)}${q ? `?${q}` : ""}`);
   };
 
   if (!location) {

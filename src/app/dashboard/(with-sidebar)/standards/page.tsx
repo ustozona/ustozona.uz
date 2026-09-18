@@ -21,7 +21,9 @@ export default function StandardsPage() {
   const t = useTranslations("StandardsPage");
   // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni 50%).
   // Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
-  const [selectedClassId, handleSelectClass] = useClassIdParam();
+  // Yon menyudan «toza» kirilganda (URL'da `?classId=` yoʻq) oxirgi
+  // tanlangan sinfdan davom etadi — har safar qaytadan tanlash shart emas.
+  const [selectedClassId, handleSelectClass] = useClassIdParam({ fallbackToStore: true });
 
   // Boʻsh hisobda "standartlar" turi ishga tushsa — namunaviy sinf + toʻplam
   // koʻrsatiladi (grades/attendance turi bilan bir xil naqsh).

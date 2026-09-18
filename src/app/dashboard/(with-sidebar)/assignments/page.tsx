@@ -87,7 +87,9 @@ export default function AssignmentsPage() {
 
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
-  const [selectedClassId, handleSelectClass] = useClassIdParam();
+  // Yon menyudan «toza» kirilganda (URL'da `?classId=` yoʻq) oxirgi
+  // tanlangan sinfdan davom etadi — har safar qaytadan tanlash shart emas.
+  const [selectedClassId, handleSelectClass] = useClassIdParam({ fallbackToStore: true });
   const [deleteTarget, setDeleteTarget] = useState<Assignment | null>(null);
   /* Muharrir GLOBAL (AssignmentEditorHost) — sahifa faqat sessiya ochadi. */
   const openDraft = useAssignmentEditorStore((s) => s.openDraft);

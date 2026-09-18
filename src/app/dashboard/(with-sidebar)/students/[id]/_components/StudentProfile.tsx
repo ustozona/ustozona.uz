@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { getStudentProfile, locateStudent } from "@/lib/student-profile";
+import { useUrlParam, setUrlParam } from "@/hooks/useClassIdParam";
+import { useBackOrPush } from "@/hooks/useBackOrPush";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
@@ -95,13 +97,25 @@ export default function StudentProfile({
 }) {
   const t = useTranslations("StudentProfile");
   const router = useRouter();
+  const backOrPush = useBackOrPush();
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const updateClass = useGradesStore((s) => s.updateClass);
   const hydrated = useGradesStore((s) => s._hasHydrated);
 
+  // Qaysi guruh kontekstida koʻrilayapti — oʻquvchilar roʻyxatidan kelgan
+  // `?classId=`. Oʻquvchi 2+ guruhda boʻlishi mumkin, param boʻlmasa esa
+  // birinchi topilgani olinadi ([[student-profile]] izohiga qarang).
+  // `contextHydrated` SHART: param bir kadr kechikib oʻqiladi va usiz
+  // oʻquvchi tasodifiy guruhda topilardi — davomat, roʻyxat va oldingi/keyingi
+  // oʻquvchi bir zumga notoʻgʻri guruhdan koʻrinib, keyin almashardi.
+  const [contextClassId, , contextHydrated] = useUrlParam("classId");
+
   // Davomat — jonli manba (Davomat sahifasi bilan bir xil: recordsByClass +
   // real dars kunlari + vaznlar). classId oʻquvchi joylashuvidan aniqlanadi.
-  const classId = useMemo(() => locateStudent(classDataMap, studentId)?.classId, [classDataMap, studentId]);
+  const classId = useMemo(
+    () => locateStudent(classDataMap, studentId, contextClassId)?.classId,
+    [classDataMap, studentId, contextClassId]
+  );
   const attendanceRecords = useAttendanceStore((s) => (classId ? s.recordsByClass[classId] : undefined)) ?? EMPTY_RECORDS;
   const attendanceStatuses = useAttendanceStore((s) => s.statuses);
   const calendar = useCalendarStore((s) => s.calendar);
@@ -114,12 +128,13 @@ export default function StudentProfile({
 
   const profile = useMemo(
     () =>
-      getStudentProfile(classDataMap, studentId, {
-        records: attendanceRecords,
-        lessonDays,
-        weights: attendanceWeights,
-      }),
-    [classDataMap, studentId, attendanceRecords, lessonDays, attendanceWeights]
+      getStudentProfile(
+        classDataMap,
+        studentId,
+        { records: attendanceRecords, lessonDays, weights: attendanceWeights },
+        contextClassId
+      ),
+    [classDataMap, studentId, attendanceRecords, lessonDays, attendanceWeights, contextClassId]
   );
 
   // Active tab URL'da (`?tab=`) saqlanadi — oʻquvchilar orasida oʻtganda saqlanib qoladi
@@ -157,21 +172,25 @@ export default function StudentProfile({
 
   const setTab = useCallback((next: TabId) => {
     setTabState(next);
-    // Yengil URL sinxronizatsiyasi (yangilashda/almashishda saqlanadi)
-    const url = next === "overview"
-      ? window.location.pathname
-      : `${window.location.pathname}?tab=${next}`;
-    window.history.replaceState(null, "", url);
+    // Yengil URL sinxronizatsiyasi (yangilashda/almashishda saqlanadi).
+    // Ataylab `setUrlParam`: ilgari URL pathname'dan qayta qurilardi va
+    // guruh konteksti (`?classId=`) tab almashtirilishi bilan yoʻqolardi.
+    setUrlParam("tab", next === "overview" ? null : next);
   }, []);
 
   const go = useCallback(
     (id: string | null) => {
       if (id) {
-        const q = tab === "overview" ? "" : `?tab=${tab}`;
-        router.push(`/dashboard/students/${encodeURIComponent(id)}${q}`);
+        const params = new URLSearchParams();
+        if (tab !== "overview") params.set("tab", tab);
+        // Guruh konteksti qoʻshni oʻquvchiga ham koʻchadi — `prevId`/`nextId`
+        // oʻsha guruh roʻyxatidan olingan.
+        if (contextClassId) params.set("classId", contextClassId);
+        const q = params.toString();
+        router.push(`/dashboard/students/${encodeURIComponent(id)}${q ? `?${q}` : ""}`);
       }
     },
-    [router, tab]
+    [router, tab, contextClassId]
   );
 
   const prevId = profile?.location.prevId ?? null;
@@ -218,8 +237,9 @@ export default function StudentProfile({
   );
   const deleteNote = useCallback((id: string) => deleteNoteEntry(id), [deleteNoteEntry]);
 
-  // ── Server hydration tugamagan — hali "topilmadi" deb boʻlmaydi ──
-  if (!profile && !hydrated) {
+  // ── Hydration tugamagan — hali "topilmadi" deb ham, profilni koʻrsatib ham
+  //    boʻlmaydi (yuqoridagi `contextHydrated` izohiga qarang) ──
+  if (!contextHydrated || (!profile && !hydrated)) {
     return (
       <div className="flex flex-1 min-h-0 gap-6 p-6">
         <Skeleton className="w-72 shrink-0 rounded-2xl" />
@@ -238,7 +258,7 @@ export default function StudentProfile({
           <EmptyDescription>{t("notFoundDescription")}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button onClick={() => router.push("/dashboard/students")} variant="outline" className="shadow-none">
+          <Button onClick={() => backOrPush("/dashboard/students")} variant="outline" className="shadow-none">
             <ArrowLeft className="size-4" /> {t("backToStudents")}
           </Button>
         </EmptyContent>
