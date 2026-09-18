@@ -1,7 +1,11 @@
 "use client";
 
-import { Award, Copy, ListChecks, Shapes, Timer, Trash2, X } from "lucide-react";
+import { Award, Copy, LayoutTemplate, ListChecks, Shapes, Timer, Trash2, Video, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SLIDE_LAYOUT_META, slideLayoutOf } from "@/lib/slide-layouts";
+import { parseVideoUrl } from "@/lib/video-embed";
+import SlideLayoutPicker from "./SlideLayoutPicker";
 import {
   Select,
   SelectContent,
@@ -88,6 +92,32 @@ export default function PropertiesPanel({
         <Field icon={<Shapes className="size-4" />} label="Savol turi">
           <QuestionTypePicker value={question.shape} onChange={changeShape} />
         </Field>
+
+        {question.shape === "slide" && (
+          <Field icon={<LayoutTemplate className="size-4" />} label="Maket">
+            <SlideLayoutPicker
+              value={slideLayoutOf(question.slideLayout)}
+              onChange={(slideLayout) => onChange({ slideLayout })}
+            />
+          </Field>
+        )}
+
+        {question.shape === "slide" && SLIDE_LAYOUT_META[slideLayoutOf(question.slideLayout)].fields.video && (
+          <Field icon={<Video className="size-4" />} label="Video (YouTube havolasi)">
+            <Input
+              value={question.videoUrl ?? ""}
+              onChange={(e) => onChange({ videoUrl: e.target.value })}
+              placeholder="https://youtu.be/…"
+              maxLength={500}
+            />
+            {question.videoUrl?.trim() && !parseVideoUrl(question.videoUrl.trim()) && (
+              <p className="text-caption text-destructive">Havola tanilmadi — YouTube havolasini qoʻying.</p>
+            )}
+            {question.videoUrl?.trim() && question.imageUrl && (
+              <p className="text-caption text-muted-foreground">Video bor — rasm oʻrniga video koʻrsatiladi.</p>
+            )}
+          </Field>
+        )}
 
         {/* Slayd baholanmaydi va vaqtga bogʻlanmaydi — vaqt va ball maydonlari yoʻq. */}
         {question.shape !== "slide" && (

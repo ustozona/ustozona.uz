@@ -18,6 +18,8 @@ import {
   submitResponseAction,
 } from "@/server/actions/play";
 import type { PlaySessionContent } from "@/server/dal/play/content";
+import { SlideView } from "@/components/slides/SlideView";
+import { stageThemeBg } from "@/lib/stage-themes";
 
 /* Ishtirokchi ekrani — `data-surface="handheld"` (proxy.ts orqali
    avtomatik teglangan, 17px/48px shkala). Akkauntsiz: token
@@ -287,13 +289,23 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
           <p className="text-sm text-muted-foreground">
             {stepIndex + 1} / {content.steps.length}
           </p>
-          <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
-            {step.title && (
-              <h1 className="text-headline">{step.title}</h1>
-            )}
-            {step.body && (
-              <p className="whitespace-pre-wrap text-base leading-relaxed">{step.body}</p>
-            )}
+          {/* Muharrir va Doska bilan bir xil renderer — slayd hamma joyda
+              bir xil koʻrinadi. Telefonda 16:9 sahna ekran eniga choʻziladi. */}
+          <div className="flex flex-1 items-center">
+            <div
+              className="quiz-stage"
+              style={{ "--stage-bg": stageThemeBg(content.stageTheme ?? "") } as React.CSSProperties}
+            >
+              <SlideView
+                slide={{
+                  layout: step.layout,
+                  title: step.title,
+                  body: step.body,
+                  imageUrl: step.imageUrl,
+                  videoUrl: step.videoUrl,
+                }}
+              />
+            </div>
           </div>
           <PushButton onClick={() => advanceStep(content)}>
             {stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}

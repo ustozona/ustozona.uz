@@ -162,3 +162,73 @@
   pointer-events: none;
 }
 
+
+/* ── Taqdimot slaydi (docs/taqdimot-spec.md) ──
+   Slayd sahnaning ICHIDA oq (karta rangidagi) panel: sahna foni ramka
+   boʻlib qoladi. Rangli fonga toʻgʻridan-toʻgʻri matn yozilsa har
+   mavzuda kontrast boshqacha chiqardi; karta foni esa dark mode'da ham
+   tokendan keladi. Oʻlchamlar `cqw` da — muharrir, telefon va Doska
+   vidjetida bir xil nisbatda kattalashadi. */
+.slide-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2cqw;
+  padding: 3cqw 4cqw;
+  overflow: hidden;
+  border-radius: calc(var(--surface-card-radius) * 0.9);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.slide-h-xl {
+  font-size: clamp(1.25rem, 6.2cqw, 4rem);
+  line-height: 1.1;
+  font-weight: 600;
+}
+
+.slide-h {
+  font-size: clamp(1rem, 4.2cqw, 2.75rem);
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+.slide-text {
+  font-size: clamp(0.8125rem, 2.6cqw, 1.75rem);
+  line-height: 1.45;
+}
+
+.slide-text-lg {
+  font-size: clamp(0.9375rem, 3.6cqw, 2.25rem);
+  line-height: 1.35;
+}
+
+.slide-caption {
+  font-size: clamp(0.75rem, 2.2cqw, 1.375rem);
+  line-height: 1.4;
+}
+
+/* Tahrirlanadigan matn maydoni — koʻrinishi oʻqish holatidagi bilan
+   aynan bir xil boʻlishi kerak (WYSIWYG): fon, chegara, oʻlcham yoʻq. */
+.slide-edit {
+  width: 100%;
+  resize: none;
+  background: transparent;
+  border: 0;
+  outline: none;
+  field-sizing: content;
+  color: inherit;
+  font: inherit;
+}
+
+.slide-edit::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.7;
+}
+
+/* Sahnani istalgan oʻlchamdagi idishga 16:9 holida sigʻdirish
+   (Doska vidjeti, telefon ekrani). Idish `container-type: size`. */
+.slide-fit {
+  width: min(100cqw, calc(100cqh * 16 / 9));
+}

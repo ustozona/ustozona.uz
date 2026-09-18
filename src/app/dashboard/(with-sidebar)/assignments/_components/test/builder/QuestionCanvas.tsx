@@ -1,7 +1,12 @@
 "use client";
 
-import type * as React from "react";
+import { useState, type CSSProperties } from "react";
+import { toast } from "sonner";
 import { ArrowRight, LayoutGrid, Rows3, Plus, Trash2 } from "lucide-react";
+import { SlideView } from "@/components/slides/SlideView";
+import { compressImageFile } from "@/lib/image-compress";
+import { slideLayoutOf } from "@/lib/slide-layouts";
+import { uploadEditorImageAction } from "@/server/actions/uploads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +26,61 @@ type Props = {
 };
 
 export default function QuestionCanvas({ question, stageTheme, onChange }: Props) {
+  if (question.shape === "slide") {
+    return <SlideCanvas question={question} stageTheme={stageTheme} onChange={onChange} />;
+  }
+  return <QuizCanvas question={question} stageTheme={stageTheme} onChange={onChange} />;
+}
+
+/* Slayd — oʻsha 16:9 sahna, ichida umumiy `SlideView` tahrir rejimida.
+   Oʻquvchi ekrani va Doska ham aynan shu rendererni chizadi, shuning
+   uchun muharrirda koʻrilgan slayd proyektorda ham shunday chiqadi. */
+function SlideCanvas({ question, stageTheme, onChange }: Props) {
+  const [uploading, setUploading] = useState(false);
+
+  async function pickImage(file: File) {
+    setUploading(true);
+    try {
+      const dataUrl = await compressImageFile(file);
+      const { url } = await uploadEditorImageAction(dataUrl);
+      onChange({ imageUrl: url });
+    } catch {
+      toast.error("Rasmni yuklab boʻlmadi");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="quiz-stage-frame h-full w-full bg-muted/20 p-4">
+      <div className="quiz-stage-column">
+        <div
+          className="quiz-stage"
+          style={{ "--stage-bg": stageThemeBg(stageTheme) } as CSSProperties}
+        >
+          <SlideView
+            slide={{
+              layout: slideLayoutOf(question.slideLayout),
+              title: question.title,
+              body: question.stem,
+              imageUrl: question.imageUrl,
+              videoUrl: question.videoUrl,
+            }}
+            edit={{
+              onTitle: (title) => onChange({ title }),
+              onBody: (stem) => onChange({ stem }),
+              onPickImage: pickImage,
+              onRemoveImage: () => onChange({ imageUrl: undefined }),
+              uploading,
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuizCanvas({ question, stageTheme, onChange }: Props) {
   function patchOption(id: string, patch: Partial<DraftQuestion["options"][number]>) {
     onChange({
       options: question.options.map((o) => (o.id === id ? { ...o, ...patch } : o)),
@@ -48,31 +108,18 @@ export default function QuestionCanvas({ question, stageTheme, onChange }: Props
       <div className="quiz-stage-column">
         <div
           className="quiz-stage"
-          style={{ "--stage-bg": stageThemeBg(stageTheme) } as React.CSSProperties}
+          style={{ "--stage-bg": stageThemeBg(stageTheme) } as CSSProperties}
         >
-          {question.shape === "slide" && (
-            <Input
-              value={question.title}
-              onChange={(e) => onChange({ title: e.target.value })}
-              placeholder="Slayd sarlavhasi"
-              maxLength={200}
-              className="h-auto border-0 bg-card py-3 text-center text-xl font-semibold shadow-sm"
-            />
-          )}
           <Textarea
             value={question.stem}
             onChange={(e) => onChange({ stem: e.target.value })}
-            placeholder={
-              question.shape === "slide"
-                ? "Slayd matni — tushuntirish, qoida, misol…"
-                : "Savolni shu yerga yozing…"
-            }
+            placeholder="Savolni shu yerga yozing…"
             rows={2}
             maxLength={2000}
             className="quiz-stage-stem h-auto min-h-0 w-full resize-none border-0 bg-card text-center font-semibold shadow-sm md:text-[length:inherit]"
           />
 
-          {question.shape === "slide" ? null : question.shape === "mcq" ? (
+          {question.shape === "mcq" ? (
             <div
               className={cn(
                 "quiz-stage-answers",

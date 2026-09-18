@@ -22,6 +22,7 @@ import {
   type SetPublishState,
 } from "@/server/dal/assess/sets";
 import type { ActivityBankRow, ActivityRow, ActivitySetRow } from "@/server/db/schema";
+import { SLIDE_LAYOUTS, slideLayoutOf } from "@/lib/slide-layouts";
 
 /* MCQ savol muharriri — yupqa qatlam: zod-parse → DAL. */
 
@@ -218,6 +219,17 @@ const draftQuestionSchema = z.object({
   multiSelect: z.boolean(),
   /** Javob kartalari joylashuvi: 2x2 katak yoki vertikal roʻyxat. */
   answerLayout: z.enum(["grid", "list"]).default("grid"),
+  /* ── Faqat slayd (docs/taqdimot-spec.md) ── */
+  slideLayout: z.enum(SLIDE_LAYOUTS).optional(),
+  /** Storage URL; saqlagichsiz muhitda base64 zaxira (uploads.ts) — shuning
+      uchun chegara keng. */
+  imageUrl: z.string().max(3_000_000).optional(),
+  /** Video havolasi (YouTube) — fayl emas. */
+  videoUrl: z.string().max(500).optional(),
+  /** Slaydda KOʻRINADIGAN sarlavha — boʻsh boʻlishi mumkin. `title` esa
+      roʻyxat yorligʻi (majburiy, zaxira bilan toʻldiriladi); ikkalasi
+      aralashsa boʻsh sarlavhali slaydda «3-savol» chiqib qolardi. */
+  slideHeading: z.string().max(200).optional(),
 });
 
 export type DraftQuestionValues = z.infer<typeof draftQuestionSchema>;
@@ -264,7 +276,15 @@ function draftItems(q: DraftQuestionValues) {
 }
 
 function draftConfig(q: DraftQuestionValues) {
-  if (q.shape === "slide") return { body: q.stem };
+  if (q.shape === "slide") {
+    return {
+      heading: q.slideHeading ?? q.title,
+      body: q.stem,
+      layout: slideLayoutOf(q.slideLayout),
+      ...(q.imageUrl ? { imageUrl: q.imageUrl } : {}),
+      ...(q.videoUrl ? { videoUrl: q.videoUrl } : {}),
+    };
+  }
   return {
     timeLimitSec: q.timeLimitSec,
     pointsMode: q.pointsMode,
@@ -293,10 +313,22 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
     };
 
     if (activity.shape === "slide") {
+      const slide = activity.config as {
+        heading?: string;
+        body?: string;
+        layout?: string;
+        imageUrl?: string;
+        videoUrl?: string;
+      };
       questions.push({
         ...base,
         shape: "slide",
-        stem: (activity.config as { body?: string }).body ?? "",
+        // Eski slaydlarda `heading` yoʻq — roʻyxat nomiga qaytiladi.
+        title: slide.heading ?? activity.title,
+        stem: slide.body ?? "",
+        slideLayout: slideLayoutOf(slide.layout),
+        imageUrl: slide.imageUrl,
+        videoUrl: slide.videoUrl,
         options: [],
         pairs: [],
         multiSelect: false,

@@ -12,6 +12,9 @@ import {
   type SetDraft,
 } from "@/server/actions/assess";
 import type { ActivitySetRow } from "@/server/db/schema";
+import { SlideView } from "@/components/slides/SlideView";
+import { slideLayoutOf } from "@/lib/slide-layouts";
+import { stageThemeBg } from "@/lib/stage-themes";
 
 export type Team = { name: string; score: number };
 
@@ -258,17 +261,33 @@ function Player({
       <div className="flex min-h-0 flex-1 flex-col justify-center gap-[2.5cqw] overflow-y-auto">
         {!step && <p className="text-center opacity-70">Toʻplam boʻsh</p>}
 
+        {/* Slayd — muharrir va oʻquvchi ekrani bilan bir xil renderer,
+            vidjet oʻlchamiga 16:9 holida sigʻdiriladi. */}
         {step?.shape === "slide" && (
-          <>
-            {step.title && (
-              <h2 className="text-[max(18px,4.5cqw)] font-semibold leading-tight">{step.title}</h2>
-            )}
-            {step.stem && (
-              <p className="whitespace-pre-wrap text-[max(14px,2.8cqw)] leading-relaxed">
-                {step.stem}
-              </p>
-            )}
-          </>
+          <div className="grid min-h-0 flex-1 place-items-center" style={{ containerType: "size" }}>
+            <div className="slide-fit">
+              <div
+                className="quiz-stage"
+                style={
+                  {
+                    "--stage-bg": stageThemeBg(
+                      (draft.set.config as { stageTheme?: string }).stageTheme ?? "",
+                    ),
+                  } as React.CSSProperties
+                }
+              >
+                <SlideView
+                  slide={{
+                    layout: slideLayoutOf(step.slideLayout),
+                    title: step.title,
+                    body: step.stem,
+                    imageUrl: step.imageUrl,
+                    videoUrl: step.videoUrl,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {step?.shape === "mcq" && (

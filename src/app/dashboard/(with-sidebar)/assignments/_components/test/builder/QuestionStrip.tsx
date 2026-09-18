@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SLIDE_LAYOUT_META, slideLayoutOf } from "@/lib/slide-layouts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,20 +77,32 @@ export default function QuestionStrip({
                     <span className="line-clamp-2 text-micro font-medium leading-tight text-foreground">
                       {questionLabel(question, index)}
                     </span>
-                    <div className="flex flex-1 items-center justify-center gap-1.5 text-muted-foreground">
-                      <span className="flex size-4 items-center justify-center rounded-full bg-background text-micro font-semibold">
-                        {question.timeLimitSec}
-                      </span>
-                      <ImageIcon className="size-3.5 opacity-50" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-0.5">
-                      {(question.shape === "mcq"
-                        ? question.options.slice(0, 4)
-                        : question.pairs.slice(0, 4)
-                      ).map((slot) => (
-                        <span key={slot.id} className="h-1.5 rounded-sm bg-background" />
-                      ))}
-                    </div>
+                    {question.shape === "slide" ? (
+                      /* Slaydda vaqt va javob yoʻq — maket nomi koʻrsatiladi. */
+                      <div className="flex flex-1 items-end justify-center gap-1 text-muted-foreground">
+                        {question.imageUrl && <ImageIcon className="size-3.5 opacity-50" />}
+                        <span className="truncate text-micro">
+                          {SLIDE_LAYOUT_META[slideLayoutOf(question.slideLayout)].label}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex flex-1 items-center justify-center gap-1.5 text-muted-foreground">
+                          <span className="flex size-4 items-center justify-center rounded-full bg-background text-micro font-semibold">
+                            {question.timeLimitSec}
+                          </span>
+                          <ImageIcon className="size-3.5 opacity-50" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-0.5">
+                          {(question.shape === "mcq"
+                            ? question.options.slice(0, 4)
+                            : question.pairs.slice(0, 4)
+                          ).map((slot) => (
+                            <span key={slot.id} className="h-1.5 rounded-sm bg-background" />
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </button>
 

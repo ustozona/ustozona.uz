@@ -62,7 +62,8 @@ export default function SetBuilderOverlay({
   const [title, setTitle] = useState(() => (setId ? "" : initialTitle ?? ""));
   const [stageTheme, setStageTheme] = useState("violet");
   const [questions, setQuestions] = useState<DraftQuestion[]>(() =>
-    setId ? [] : [newQuestion(firstShape)]
+    // Taqdimot sarlavha slaydidan boshlanadi — birinchi ekran mavzu nomi.
+    setId ? [] : [firstShape === "slide" ? { ...newQuestion("slide"), slideLayout: "title" } : newQuestion(firstShape)]
   );
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [panel, setPanel] = useState<BuilderPanel>("properties");
@@ -161,7 +162,7 @@ export default function SetBuilderOverlay({
     return questions.map((q, index) => ({
       activityId: q.activityId,
       shape: q.shape,
-      title: (q.title.trim() || q.stem.trim() || `${index + 1}-savol`).slice(0, 200),
+      title: (q.title.trim() || q.stem.trim() || `${index + 1}-${q.shape === "slide" ? "slayd" : "savol"}`).slice(0, 200),
       stem: q.stem.trim(),
       options: q.options.filter((o) => o.text.trim()).map((o) => ({ ...o, text: o.text.trim() })),
       pairs: q.pairs
@@ -171,6 +172,14 @@ export default function SetBuilderOverlay({
       pointsMode: q.pointsMode,
       multiSelect: q.multiSelect,
       answerLayout: q.answerLayout,
+      ...(q.shape === "slide"
+        ? {
+            slideLayout: q.slideLayout,
+            slideHeading: q.title.trim(),
+            imageUrl: q.imageUrl,
+            videoUrl: q.videoUrl?.trim() || undefined,
+          }
+        : {}),
     }));
   }
 

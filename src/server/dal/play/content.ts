@@ -3,6 +3,7 @@ import { asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { activities, activityItems, activitySets } from "@/server/db/schema";
 import { requireParticipant } from "@/server/play/session";
+import { slideLayoutOf, type SlideLayout } from "@/lib/slide-layouts";
 
 /* ════════════════════════════════════════════════════════════════════
    ISHTIROKCHI KONTENTI — `isCorrect` HECH QACHON mijozga yuborilmaydi
@@ -44,8 +45,11 @@ export type PairsStep = {
 export type SlideStep = {
   kind: "slide";
   activityId: string;
+  layout: SlideLayout;
   title: string;
   body: string;
+  imageUrl?: string;
+  videoUrl?: string;
 };
 
 export type PlayStep = McqStep | PairsStep | SlideStep;
@@ -54,6 +58,8 @@ export type PlaySessionContent = {
   sessionId: string;
   mode: string;
   currentIndex: number;
+  /** Toʻplam sahna mavzusi (`activity_sets.config.stageTheme`) — slayd foni. */
+  stageTheme?: string;
   steps: PlayStep[];
 };
 
@@ -109,12 +115,21 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
     const items = itemsByActivity.get(activityId) ?? [];
     // Slaydda element yoʻq — shu sababli boʻsh-element tekshiruvidan OLDIN.
     if (shape === "slide") {
-      const config = (configByActivity.get(activityId) ?? {}) as { body?: string };
+      const config = (configByActivity.get(activityId) ?? {}) as {
+        heading?: string;
+        body?: string;
+        layout?: string;
+        imageUrl?: string;
+        videoUrl?: string;
+      };
       steps.push({
         kind: "slide",
         activityId,
-        title: titleByActivity.get(activityId) ?? "",
+        layout: slideLayoutOf(config.layout),
+        title: config.heading ?? titleByActivity.get(activityId) ?? "",
         body: config.body ?? "",
+        imageUrl: config.imageUrl,
+        videoUrl: config.videoUrl,
       });
       continue;
     }
@@ -150,5 +165,12 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
     }
   }
 
-  return { sessionId: session.id, mode: session.mode, currentIndex: session.currentIndex, steps };
+  const stageTheme = (set?.config as { stageTheme?: string } | undefined)?.stageTheme;
+  return {
+    sessionId: session.id,
+    mode: session.mode,
+    currentIndex: session.currentIndex,
+    stageTheme,
+    steps,
+  };
 }
