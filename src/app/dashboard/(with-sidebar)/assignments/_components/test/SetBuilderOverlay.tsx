@@ -24,6 +24,7 @@ import { newQuestion, type DraftQuestion } from "./builder/types";
 import { toast } from "sonner";
 import { uploadEditorImageAction } from "@/server/actions/uploads";
 import { MAX_PDF_PAGES, pdfToImages } from "@/lib/pdf-to-images";
+import { MAX_PPTX_SLIDES, pptxToSlides } from "@/lib/pptx-to-slides";
 
 /**
  * Toʻplam builder — viktorina-uslub uch ustunli muharrir: chapda
@@ -137,46 +138,90 @@ export default function SetBuilderOverlay({
     setActiveKey(created.key);
   }
 
-  /* ── PDF IMPORT (docs/taqdimot-spec.md, 2-qavat) ──
-     Har sahifa «Katta media» slaydiga aylanadi (sarlavhasiz — matn
-     rasmning oʻzida). Slaydlar joriy elementdan KEYIN qoʻyiladi: oʻqituvchi
-     sarlavha slaydini tuzib, keyin tayyor taqdimotini ulaydi. Import
-     qilingan slaydlar orasiga savol qoʻshish — bizning asosiy afzalligimiz. */
-  const pdfInputRef = useRef<HTMLInputElement>(null);
-  const [pdfProgress, setPdfProgress] = useState<{ done: number; total: number } | null>(null);
+  /* ── TAQDIMOT IMPORTI (docs/taqdimot-spec.md, 2-qavat) ──
+     Bitta tugma, ikki yoʻl — fayl turiga qarab:
+       • PDF  → har sahifa rasm, «Katta media» slaydi (koʻrinish aniq,
+                matn tahrirlanmaydi);
+       • PPTX → sarlavha, matn va asosiy rasm ajratilib maketga
+                joylanadi (matn tahrirlanadi, jadval/diagramma koʻchmaydi).
+     Slaydlar joriy elementdan KEYIN qoʻyiladi: oʻqituvchi sarlavha
+     slaydini tuzib, keyin tayyor taqdimotini ulaydi. Import qilingan
+     slaydlar orasiga savol qoʻshish — bizning asosiy afzalligimiz. */
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
 
-  async function importPdf(file: File) {
-    setPdfProgress({ done: 0, total: 0 });
-    try {
-      const { images, totalPages } = await pdfToImages(file, (done, total) =>
-        // Render — ishning yarmi, yuklash — ikkinchi yarmi.
-        setPdfProgress({ done, total: total * 2 }),
-      );
-      const total = images.length * 2;
-      const slides: DraftQuestion[] = [];
-      let notStored = false;
-      for (let i = 0; i < images.length; i++) {
-        const { url, stored } = await uploadEditorImageAction(images[i]);
-        if (!stored) notStored = true;
-        slides.push({ ...newQuestion("slide"), slideLayout: "media", imageUrl: url });
-        setPdfProgress({ done: images.length + i + 1, total });
-      }
-      setQuestions((prev) => {
-        // Yangi toʻplamdagi boʻsh boshlangʻich element saqlanib qolmasin.
-        const blank = (q: DraftQuestion) =>
-          !q.title.trim() && !q.stem.trim() && !q.imageUrl &&
-          !q.options.some((o) => o.text.trim()) && !q.pairs.some((p) => p.left.trim());
-        const base = prev.length === 1 && blank(prev[0]) ? [] : prev;
-        const at = base.findIndex((q) => q.key === activeKey);
-        const insertAt = at < 0 ? base.length : at + 1;
-        return [...base.slice(0, insertAt), ...slides, ...base.slice(insertAt)];
+  /** Tayyor slaydlarni joriy elementdan keyin qoʻyadi. */
+  function insertSlides(slides: DraftQuestion[]) {
+    setQuestions((prev) => {
+      // Yangi toʻplamdagi boʻsh boshlangʻich element saqlanib qolmasin.
+      const blank = (q: DraftQuestion) =>
+        !q.title.trim() && !q.stem.trim() && !q.imageUrl &&
+        !q.options.some((o) => o.text.trim()) && !q.pairs.some((p) => p.left.trim());
+      const base = prev.length === 1 && blank(prev[0]) ? [] : prev;
+      const at = base.findIndex((q) => q.key === activeKey);
+      const insertAt = at < 0 ? base.length : at + 1;
+      return [...base.slice(0, insertAt), ...slides, ...base.slice(insertAt)];
+    });
+    if (slides[0]) setActiveKey(slides[0].key);
+  }
+
+  async function importPresentation(file: File) {
+    const isPptx = /\.pptx$/i.test(file.name);
+    const isPdf = /\.pdf$/i.test(file.name) || file.type === "application/pdf";
+    if (!isPptx && !isPdf) {
+      toast.error("Bu fayl turi qoʻllab-quvvatlanmaydi", {
+        description: "PDF yoki PPTX yuklang. Eski .ppt faylni PowerPointda PPTX yoki PDF qilib saqlang.",
       });
-      if (slides[0]) setActiveKey(slides[0].key);
+      return;
+    }
+
+    setImportProgress({ done: 0, total: 0 });
+    let notStored = false;
+    const upload = async (dataUrl: string) => {
+      const { url, stored } = await uploadEditorImageAction(dataUrl);
+      if (!stored) notStored = true;
+      return url;
+    };
+
+    try {
+      // Tahlil — ishning yarmi, rasmlarni yuklash — ikkinchi yarmi.
+      const half = (done: number, total: number) => setImportProgress({ done, total: total * 2 });
+      const slides: DraftQuestion[] = [];
+      let notes: string[] = [];
+
+      if (isPdf) {
+        const { images, totalPages } = await pdfToImages(file, half);
+        for (let i = 0; i < images.length; i++) {
+          slides.push({ ...newQuestion("slide"), slideLayout: "media", imageUrl: await upload(images[i]) });
+          setImportProgress({ done: images.length + i + 1, total: images.length * 2 });
+        }
+        if (totalPages > MAX_PDF_PAGES) {
+          notes = [`PDF da ${totalPages} sahifa bor — birinchi ${MAX_PDF_PAGES} tasi olindi.`];
+        }
+      } else {
+        const { slides: parsed, lossy, totalSlides } = await pptxToSlides(file, half);
+        for (let i = 0; i < parsed.length; i++) {
+          const p = parsed[i];
+          slides.push({
+            ...newQuestion("slide"),
+            slideLayout: p.layout,
+            title: p.title,
+            stem: p.body,
+            imageUrl: p.imageDataUrl ? await upload(p.imageDataUrl) : undefined,
+          });
+          setImportProgress({ done: parsed.length + i + 1, total: parsed.length * 2 });
+        }
+        if (totalSlides > MAX_PPTX_SLIDES) {
+          notes.push(`Faylda ${totalSlides} slayd bor — birinchi ${MAX_PPTX_SLIDES} tasi olindi.`);
+        }
+        if (lossy) {
+          notes.push("Jadval, diagramma va qoʻshimcha rasmlar koʻchmadi — aynan koʻrinish kerak boʻlsa, PDF qilib import qiling.");
+        }
+      }
+
+      insertSlides(slides);
       toast.success(`${slides.length} ta slayd qoʻshildi`, {
-        description:
-          totalPages > MAX_PDF_PAGES
-            ? `PDF da ${totalPages} sahifa bor — birinchi ${MAX_PDF_PAGES} tasi olindi.`
-            : "Endi slaydlar orasiga savol qoʻshishingiz mumkin.",
+        description: notes.length ? notes.join(" ") : "Endi slaydlar orasiga savol qoʻshishingiz mumkin.",
       });
       if (notStored) {
         toast.warning("Rasmlar saqlagichga yuklanmadi", {
@@ -184,11 +229,11 @@ export default function SetBuilderOverlay({
         });
       }
     } catch {
-      toast.error("PDF ni oʻqib boʻlmadi", {
+      toast.error("Faylni oʻqib boʻlmadi", {
         description: "Fayl buzilmaganini va parol bilan himoyalanmaganini tekshiring.",
       });
     } finally {
-      setPdfProgress(null);
+      setImportProgress(null);
     }
   }
 
@@ -359,10 +404,10 @@ export default function SetBuilderOverlay({
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {error && <span className="max-w-xs truncate text-sm text-destructive">{error}</span>}
-          {pdfProgress && (
+          {importProgress && (
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" />
-              PDF: {pdfProgress.total ? Math.round((pdfProgress.done / pdfProgress.total) * 100) : 0}%
+              Import: {importProgress.total ? Math.round((importProgress.done / importProgress.total) * 100) : 0}%
             </span>
           )}
           {!error && autosaving && (
@@ -417,7 +462,7 @@ export default function SetBuilderOverlay({
             activeKey={activeKey}
             onSelect={setActiveKey}
             onAdd={addQuestion}
-            onImportPdf={() => pdfInputRef.current?.click()}
+            onImport={() => importInputRef.current?.click()}
             onDuplicate={duplicateQuestion}
             onRemove={removeQuestion}
           />
@@ -462,14 +507,14 @@ export default function SetBuilderOverlay({
     </div>
 
     <input
-      ref={pdfInputRef}
+      ref={importInputRef}
       type="file"
-      accept="application/pdf"
+      accept=".pdf,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation"
       className="hidden"
       onChange={(e) => {
         const file = e.target.files?.[0];
         e.target.value = "";
-        if (file && !pdfProgress) void importPdf(file);
+        if (file && !importProgress) void importPresentation(file);
       }}
     />
 

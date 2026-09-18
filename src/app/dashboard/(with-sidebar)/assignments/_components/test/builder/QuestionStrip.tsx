@@ -30,8 +30,8 @@ type Props = {
   activeKey: string | null;
   onSelect: (key: string) => void;
   onAdd: (shape: DraftQuestion["shape"]) => void;
-  /** Tayyor taqdimotni PDF dan slaydlarga aylantirish. */
-  onImportPdf: () => void;
+  /** Tayyor taqdimotni (PDF yoki PPTX) slaydlarga aylantirish. */
+  onImport: () => void;
   onDuplicate: (key: string) => void;
   onRemove: (key: string) => void;
 };
@@ -41,7 +41,7 @@ export default function QuestionStrip({
   activeKey,
   onSelect,
   onAdd,
-  onImportPdf,
+  onImport,
   onDuplicate,
   onRemove,
 }: Props) {
@@ -155,8 +155,9 @@ export default function QuestionStrip({
                   <Presentation className="size-4" /> Slayd
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={onImportPdf}>
-                  <FileUp className="size-4" /> PDF dan slaydlar
+                <DropdownMenuItem onSelect={onImport}>
+                  <FileUp className="size-4" /> Taqdimotni import qilish
+                  <span className="ml-auto text-caption text-muted-foreground">PDF, PPTX</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

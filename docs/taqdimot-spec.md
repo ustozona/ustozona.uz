@@ -68,10 +68,16 @@ slaydlar. Litsenziya qoʻshishdan oldin tekshiriladi.
   `uploadEditorImageAction` orqali saqlagichga chiqadi va «Katta media»
   slaydi boʻladi. Chegara — 60 sahifa (`MAX_PDF_PAGES`, `lib/pdf-to-images.ts`).
   pdf.js faqat import bosilganda dinamik yuklanadi.
+- ✅ 2-qavat, PPTX: oʻsha tugma («Taqdimotni import qilish», PDF/PPTX).
+  `pptxtojson` (MIT) brauzerda; har slayddan sarlavha (joy egasi nomi
+  yoki eng tepadagi matn), qolgan matn qatorlari va ENG KATTA rasm
+  olinib maketga joylanadi (`lib/pptx-to-slides.ts`, `pickLayout`).
+  Erkin joylashuv, shrift, animatsiya ataylab tashlanadi. Jadval,
+  diagramma, formula va qoʻshimcha rasmlar koʻchmaydi — oʻqituvchiga
+  aytiladi va PDF yoʻli tavsiya qilinadi. Eski `.ppt` qabul qilinmaydi.
 
 ## Keyingi qavatlar (hali qilinmagan)
 
-- Import: PPTX → tahrirlanadigan slaydlar (PDF qilindi).
 - Slayd ichidagi yangi savol turlari (soʻrovnoma, soʻz buluti, ochiq
   javob) — alohida bosqich.
 - Erkin kanvas — Doska dvigateli ustida, maketlar yetmay qolsa.
