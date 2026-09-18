@@ -63,7 +63,15 @@ export async function submitResponse(input: SubmitResponseInput) {
   const live = session.mode === "live";
   const liveConfig = session.renderConfig as { revealed?: boolean; liveTopic?: string };
   if (live && previousAttempts > 0) throw new ForbiddenError("Javob allaqachon yuborilgan");
-  if (live && liveConfig.revealed) throw new ForbiddenError("Javob vaqti tugadi");
+  // Soʻrovnoma va soʻz bulutida «toʻgʻri javob» yoʻq — natija ochilgandan
+  // keyin ham javob qabul qilinadi (kechikkan oʻquvchi ham fikr bildiradi).
+  if (live && liveConfig.revealed && activity.grading !== "none") {
+    throw new ForbiddenError("Javob vaqti tugadi");
+  }
+  if (activity.shape === "wordcloud") {
+    const text = typeof input.answer.text === "string" ? input.answer.text.trim() : "";
+    if (!text || text.length > 40) throw new ForbiddenError("Javob 1–40 belgi boʻlsin");
+  }
 
   const { isCorrect, score } = scoreResponse({
     shape: activity.shape,

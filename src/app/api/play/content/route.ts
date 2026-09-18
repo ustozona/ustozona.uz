@@ -37,7 +37,11 @@ export async function GET(request: Request) {
     /* Slaydlar oʻyin qobigʻiga YUBORILMAYDI: qobiq savol oʻyini, u faqat
        mcq/pairs qadamini taniydi va notanish `slide` da buzilishi mumkin.
        Taqdimot slaydlari Ustozona ekranida (PlayView) va Doskada koʻrinadi. */
-    const content = { ...full, steps: full.steps.filter((step) => step.kind !== "slide") };
+    // Soʻrovnoma va soʻz buluti ham — qobiqda ularning ekrani yoʻq.
+    const content = {
+      ...full,
+      steps: full.steps.filter((step) => step.kind === "mcq" || step.kind === "pairs"),
+    };
     return corsJson(request, { ok: true, content });
   } catch (err) {
     return corsJson(request, errorBody(err), { status: errorStatus(err) });

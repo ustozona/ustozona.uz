@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, GitCompareArrows, ListChecks, Presentation } from "lucide-react";
+import { ChartBar, ChevronDown, Cloud, GitCompareArrows, ListChecks, Presentation } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { SHAPE_LABEL, type DraftQuestion } from "./types";
@@ -26,6 +26,14 @@ const TYPES: ReadonlyArray<{
     items: [
       { id: "mcq", icon: ListChecks },
       { id: "pairs", icon: GitCompareArrows },
+    ],
+  },
+  {
+    /* Toʻgʻri javobi yoʻq — sinf fikrini yigʻadi, baholanmaydi. */
+    group: "Fikr yigʻish",
+    items: [
+      { id: "poll", icon: ChartBar },
+      { id: "wordcloud", icon: Cloud },
     ],
   },
   {

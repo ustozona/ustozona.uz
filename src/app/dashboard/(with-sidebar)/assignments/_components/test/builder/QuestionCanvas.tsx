@@ -120,7 +120,14 @@ function QuizCanvas({ question, stageTheme, onChange }: Props) {
             className="quiz-stage-stem h-auto min-h-0 w-full resize-none border-0 bg-card text-center font-semibold shadow-sm md:text-[length:inherit]"
           />
 
-          {question.shape === "mcq" ? (
+          {question.shape === "wordcloud" ? (
+            /* Soʻz buluti — oʻquvchi bitta qisqa soʻz yozadi; doskada eng koʻp
+               yozilgan soʻzlar kattaroq chiqadi. Muharrirda kiritish yoʻq. */
+            <div className="mt-auto flex h-[30cqw] flex-col items-center justify-center gap-[1cqw] rounded-choice border-choice border-dashed border-border bg-card/70 text-muted-foreground">
+              <span className="quiz-stage-stem font-semibold">Soʻz buluti</span>
+              <span className="text-sm">Oʻquvchilar bitta qisqa soʻz yozadi (40 belgigacha)</span>
+            </div>
+          ) : question.shape === "mcq" || question.shape === "poll" ? (
             <div
               className={cn(
                 "quiz-stage-answers",
@@ -134,7 +141,9 @@ function QuizCanvas({ question, stageTheme, onChange }: Props) {
                   text={option.text}
                   onTextChange={(value) => patchOption(option.id, { text: value })}
                   isCorrect={option.isCorrect}
-                  onToggleCorrect={() => toggleCorrect(option.id)}
+                  onToggleCorrect={
+                    question.shape === "poll" ? undefined : () => toggleCorrect(option.id)
+                  }
                 />
               ))}
             </div>

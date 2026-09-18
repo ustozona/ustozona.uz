@@ -28,10 +28,16 @@ export default function TestOptionCard({
   text: string;
   onTextChange: (value: string) => void;
   isCorrect: boolean;
-  onToggleCorrect: () => void;
+  /** Yoʻq boʻlsa (soʻrovnoma) — katakcha oʻrnida harf: toʻgʻri javob tushunchasi yoʻq. */
+  onToggleCorrect?: () => void;
 }) {
   return (
     <div className="quiz-stage-answer flex items-center gap-[0.75em] rounded-choice border-choice border-border bg-card px-[0.75em]">
+      {!onToggleCorrect ? (
+        <span className="flex size-[1.85em] shrink-0 items-center justify-center rounded-[0.5em] bg-muted font-mono text-muted-foreground">
+          {String.fromCharCode(65 + index)}
+        </span>
+      ) : (
       <button
         type="button"
         onClick={onToggleCorrect}
@@ -47,6 +53,7 @@ export default function TestOptionCard({
       >
         <Check className="size-[1.05em]" strokeWidth={3} />
       </button>
+      )}
 
       {/* `rows={1}` + `field-sizing: content` — bitta qatorli matn
           checkboxga nisbatan vertikal markazda turadi,

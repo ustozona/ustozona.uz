@@ -9,6 +9,8 @@ import {
   ListChecks,
   Plus,
   Presentation,
+  ChartBar,
+  Cloud,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -99,7 +101,7 @@ export default function QuestionStrip({
                           <ImageIcon className="size-3.5 opacity-50" />
                         </div>
                         <div className="grid grid-cols-2 gap-0.5">
-                          {(question.shape === "mcq"
+                          {(question.shape === "mcq" || question.shape === "poll"
                             ? question.options.slice(0, 4)
                             : question.pairs.slice(0, 4)
                           ).map((slot) => (
@@ -150,6 +152,12 @@ export default function QuestionStrip({
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => onAdd("pairs")}>
                   <GitCompareArrows className="size-4" /> Moslashtirish
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onAdd("poll")}>
+                  <ChartBar className="size-4" /> Soʻrovnoma
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onAdd("wordcloud")}>
+                  <Cloud className="size-4" /> Soʻz buluti
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => onAdd("slide")}>
                   <Presentation className="size-4" /> Slayd

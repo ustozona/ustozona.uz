@@ -90,7 +90,7 @@ export async function liveResults(sessionId: string): Promise<LiveResults> {
   const allCorrect = new Map<string, Map<string, boolean>>();
 
   for (const row of rows) {
-    const item = (items[row.activityId] ??= { answered: 0, correct: 0, byOption: {} });
+    const item = (items[row.activityId] ??= { answered: 0, correct: 0, byOption: {}, words: {} });
     const who = seen.get(row.activityId) ?? new Set<string>();
     seen.set(row.activityId, who);
     if (!who.has(row.participantId)) {
@@ -101,9 +101,12 @@ export async function liveResults(sessionId: string): Promise<LiveResults> {
     allCorrect.set(row.activityId, verdicts);
     verdicts.set(row.participantId, (verdicts.get(row.participantId) ?? true) && row.isCorrect === true);
 
-    const answer = row.answer as { optionId?: string; optionIds?: string[] };
+    const answer = row.answer as { optionId?: string; optionIds?: string[]; text?: string };
     const chosen = answer.optionIds ?? (answer.optionId ? [answer.optionId] : []);
     for (const id of chosen) item.byOption[id] = (item.byOption[id] ?? 0) + 1;
+    // Soʻz buluti: «Toshkent» va «toshkent » bitta soʻz boʻlib sanaladi.
+    const word = typeof answer.text === "string" ? answer.text.trim().toLocaleLowerCase("uz") : "";
+    if (word) item.words[word] = (item.words[word] ?? 0) + 1;
   }
   for (const [activityId, verdicts] of allCorrect) {
     items[activityId].correct = [...verdicts.values()].filter(Boolean).length;

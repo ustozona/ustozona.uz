@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { SLIDE_LAYOUT_META, slideLayoutOf } from "@/lib/slide-layouts";
 import { parseVideoUrl } from "@/lib/video-embed";
 import SlideLayoutPicker from "./SlideLayoutPicker";
+import { isUngradedShape } from "./types";
 import { STAGE_THEMES } from "@/lib/stage-themes";
 import { cn } from "@/lib/utils";
 import {
@@ -160,7 +161,7 @@ export default function PropertiesPanel({
         )}
 
         {/* Slayd baholanmaydi va vaqtga bogʻlanmaydi — vaqt va ball maydonlari yoʻq. */}
-        {question.shape !== "slide" && (
+        {!isUngradedShape(question.shape) && (
         <>
         <Field icon={<Timer className="size-4" />} label="Vaqt limiti">
           <Select

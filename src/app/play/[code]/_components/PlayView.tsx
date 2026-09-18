@@ -72,6 +72,8 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
   /** activityId → javob natijasi (true/false; moslashtirishda null — tugatdi). */
   const [liveAnswers, setLiveAnswers] = useState<Record<string, boolean | null>>({});
   const [liveStepSeen, setLiveStepSeen] = useState<number | null>(null);
+  /** Soʻz buluti maydoni. */
+  const [wordText, setWordText] = useState("");
 
   useEffect(() => {
     if (phase !== "playing" || !live) return;
@@ -103,6 +105,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     setSelectedOption(null);
     setMatchedLeftIds(new Set());
     setPickedLeftId(null);
+    setWordText("");
   }
 
   /** Qobiqqa oʻtish. `true` qaytsa — sahifa almashdi, davom etmang.
@@ -217,6 +220,28 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     }
   }
 
+  /** Soʻrovnoma yoki soʻz buluti — baholanmaydi, ball qoʻshilmaydi. */
+  async function handleOpinionSubmit(answer: Record<string, unknown>) {
+    if (!content) return;
+    const step = content.steps[stepIndex];
+    if (step.kind !== "poll" && step.kind !== "wordcloud") return;
+    setSubmitting(true);
+    try {
+      const token = localStorage.getItem(tokenKey(joinCode))!;
+      await submitResponseAction({ token, itemId: step.itemId, answer });
+      setError(null);
+      if (live) setLiveAnswers((prev) => ({ ...prev, [step.activityId]: null }));
+      else {
+        setWordText("");
+        advanceStep(content);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Yuborishda xatolik");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   async function handlePairPick(rightItemId: string) {
     if (!content || !pickedLeftId || submitting) return;
     const token = localStorage.getItem(tokenKey(joinCode));
@@ -307,7 +332,9 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
 
     const liveAnswer = live ? liveAnswers[step.activityId] : undefined;
     const liveDone = live && step.activityId in liveAnswers;
-    const liveLocked = live && (liveDone || Boolean(liveState?.revealed));
+    // Soʻrovnoma/soʻz bulutida «toʻgʻri javob» yoʻq — natija ochilgach ham javob mumkin.
+    const graded = step.kind === "mcq" || step.kind === "pairs";
+    const liveLocked = live && (liveDone || (graded && Boolean(liveState?.revealed)));
     const liveNote = !live ? null : liveDone ? (
       liveState?.revealed ? (
         liveAnswer === null ? (
@@ -320,7 +347,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
       ) : (
         <p className="text-center text-muted-foreground">Javobingiz qabul qilindi — kuting</p>
       )
-    ) : liveState?.revealed ? (
+    ) : liveState?.revealed && graded ? (
       <p className="text-center text-muted-foreground">Javob vaqti tugadi</p>
     ) : null;
 
@@ -390,6 +417,78 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
           ) : (
             <PushButton onClick={() => advanceStep(content)}>
               {stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
+            </PushButton>
+          )}
+        </div>
+      );
+    }
+
+    // Soʻrovnoma — variant tanlanadi, toʻgʻri/notoʻgʻri koʻrsatilmaydi.
+    if (step.kind === "poll") {
+      return (
+        <div className="flex h-screen flex-col gap-6 p-6">
+          <p className="text-sm text-muted-foreground">
+            {stepIndex + 1} / {content.steps.length} · Soʻrovnoma
+          </p>
+          <h1 className="text-xl font-semibold leading-snug">{step.stem}</h1>
+          <div className="flex flex-1 flex-col gap-3">
+            {step.options.map((option) => (
+              <PushButton
+                key={option.id}
+                pressed={selectedOption === option.id}
+                surface={
+                  selectedOption === option.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card text-card-foreground"
+                }
+                className="justify-start text-left"
+                disabled={liveLocked}
+                onClick={() => setSelectedOption(option.id)}
+              >
+                {option.text}
+              </PushButton>
+            ))}
+          </div>
+          {error && <p className="text-center text-sm text-destructive">{error}</p>}
+          {liveNote ?? (
+            <PushButton
+              disabled={!selectedOption || submitting}
+              onClick={() => selectedOption && handleOpinionSubmit({ optionId: selectedOption })}
+            >
+              Yuborish
+            </PushButton>
+          )}
+        </div>
+      );
+    }
+
+    // Soʻz buluti — bitta qisqa soʻz; doskada koʻp yozilgani kattaroq chiqadi.
+    if (step.kind === "wordcloud") {
+      const text = wordText.trim();
+      return (
+        <div className="flex h-screen flex-col gap-6 p-6">
+          <p className="text-sm text-muted-foreground">
+            {stepIndex + 1} / {content.steps.length} · Soʻz buluti
+          </p>
+          <h1 className="text-xl font-semibold leading-snug">{step.stem}</h1>
+          <div className="flex flex-1 flex-col justify-center gap-2">
+            <input
+              value={wordText}
+              onChange={(e) => setWordText(e.target.value)}
+              maxLength={40}
+              disabled={liveLocked}
+              placeholder="Bitta soʻz yoki qisqa ibora"
+              className="h-14 rounded-xl border-2 border-border bg-card px-4 text-lg outline-none focus:border-primary"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && text && !submitting) void handleOpinionSubmit({ text });
+              }}
+            />
+            <p className="text-right text-xs text-muted-foreground">{wordText.length}/40</p>
+          </div>
+          {error && <p className="text-center text-sm text-destructive">{error}</p>}
+          {liveNote ?? (
+            <PushButton disabled={!text || submitting} onClick={() => handleOpinionSubmit({ text })}>
+              Yuborish
             </PushButton>
           )}
         </div>

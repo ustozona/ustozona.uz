@@ -43,7 +43,14 @@ export const SHAPE_LABEL: Record<DraftQuestion["shape"], string> = {
   mcq: "Test savoli",
   pairs: "Moslashtirish",
   slide: "Slayd",
+  poll: "Soʻrovnoma",
+  wordcloud: "Soʻz buluti",
 };
+
+/** Baholanmaydigan turlar — vaqt, ball va «toʻgʻri javob» yoʻq. */
+export function isUngradedShape(shape: DraftQuestion["shape"]): boolean {
+  return shape === "slide" || shape === "poll" || shape === "wordcloud";
+}
 
 export function newOption(): DraftQuestion["options"][number] {
   return { id: crypto.randomUUID(), text: "", isCorrect: false };
@@ -64,7 +71,7 @@ export function newQuestion(shape: DraftQuestion["shape"]): DraftQuestion {
     shape,
     title: "",
     stem: "",
-    options: shape === "mcq" ? newOptions() : [],
+    options: shape === "mcq" || shape === "poll" ? newOptions() : [],
     pairs: shape === "pairs" ? [newPair(), newPair()] : [],
     timeLimitSec: 20,
     pointsMode: "standard",

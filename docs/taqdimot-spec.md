@@ -115,8 +115,17 @@ xabar WebSocket orqali yetdi.
   diagramma, formula va qoʻshimcha rasmlar koʻchmaydi — oʻqituvchiga
   aytiladi va PDF yoʻli tavsiya qilinadi. Eski `.ppt` qabul qilinmaydi.
 
+- ✅ Fikr yigʻish turlari: **soʻrovnoma** (`poll`) va **soʻz buluti**
+  (`wordcloud`). Ikkalasi `grading = "none"`: javob `activity_items`
+  qatoriga bogʻlanadi, lekin maks. ball, aniqlik va yakunlash foizidan
+  chiqariladi (`dal/assess/graded-items.ts` — yagona manba; aks holda
+  10 savol + 2 soʻrovnomali testda hammasini topgan bola 83% olardi).
+  Doskada natija faqat «Natijani koʻrsatish» dan keyin chiqadi (erta
+  koʻrinsa sinf koʻpchilikka ergashadi); ochilgandan keyin ham javob
+  qabul qilinadi (toʻgʻri javob yoʻq). Soʻz: 1–40 belgi, kichik harfga
+  keltirib sanaladi. Tashqi oʻyin qobigʻiga faqat mcq/pairs boradi.
+
 ## Keyingi qavatlar (hali qilinmagan)
 
-- Slayd ichidagi yangi savol turlari (soʻrovnoma, soʻz buluti, ochiq
-  javob) — alohida bosqich.
+- Ochiq javob (erkin matn, oʻqituvchi qoʻlda baholaydi) — alohida bosqich.
 - Erkin kanvas — Doska dvigateli ustida, maketlar yetmay qolsa.

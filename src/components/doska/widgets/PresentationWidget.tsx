@@ -474,6 +474,69 @@ function Player({
           </>
         )}
 
+        {/* SOʻROVNOMA — natija oʻqituvchi «Natijani koʻrsatish» ni bosgandagina
+            chiqadi: ustunlar erta koʻrinsa oʻquvchilar koʻpchilikka ergashadi. */}
+        {step?.shape === "poll" && (
+          <>
+            <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
+              {step.stem}
+            </h2>
+            {live && (
+              <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
+                {results?.items[step.activityId ?? ""]?.answered ?? 0} / {results?.joined ?? 0} javob berdi
+              </p>
+            )}
+            <div className="flex flex-col gap-[1.2cqw]">
+              {step.options.map((option, i) => {
+                const item = live ? results?.items[step.activityId ?? ""] : undefined;
+                const count = item?.byOption[option.id] ?? 0;
+                const share = item && item.answered > 0 ? count / item.answered : 0;
+                const show = live && revealed;
+                return (
+                  <div
+                    key={option.id}
+                    className="relative flex items-center gap-[1.5cqw] overflow-hidden rounded-xl border-2 border-current/20 px-[2cqw] py-[1.2cqw] text-[max(13px,2.4cqw)] font-medium"
+                  >
+                    {show && (
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-0 left-0 bg-current/15 transition-[width] duration-700"
+                        style={{ width: `${Math.round(share * 100)}%` }}
+                      />
+                    )}
+                    <span className="relative font-mono opacity-60">{String.fromCharCode(65 + i)}</span>
+                    <span className="relative min-w-0 flex-1">{option.text}</span>
+                    {show && (
+                      <span className="relative font-mono">{Math.round(share * 100)}%</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* SOʻZ BULUTI — eng koʻp yozilgan soʻz eng katta. */}
+        {step?.shape === "wordcloud" && (
+          <>
+            <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
+              {step.stem}
+            </h2>
+            {live ? (
+              <>
+                <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
+                  {results?.items[step.activityId ?? ""]?.answered ?? 0} / {results?.joined ?? 0} javob berdi
+                </p>
+                {revealed && <WordCloud words={results?.items[step.activityId ?? ""]?.words ?? {}} />}
+              </>
+            ) : (
+              <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
+                Soʻz bulutini yigʻish uchun jonli sessiya oching
+              </p>
+            )}
+          </>
+        )}
+
         {step?.shape === "pairs" && (
           <>
             <h2 className="text-center text-[max(16px,3.2cqw)] font-semibold">{step.title}</h2>
@@ -523,8 +586,14 @@ function Player({
           {fullscreen ? "Ekrandan chiqish" : "Toʻliq ekran"}
         </NavButton>
         <div className="flex-1" />
-        {step && step.shape !== "slide" && (
-          <NavButton onClick={onReveal}>{revealed ? "Yashirish" : "Javobni ochish"}</NavButton>
+        {step && step.shape !== "slide" && (live || (step.shape !== "poll" && step.shape !== "wordcloud")) && (
+          <NavButton onClick={onReveal}>
+            {revealed
+              ? "Yashirish"
+              : step.shape === "poll" || step.shape === "wordcloud"
+                ? "Natijani koʻrsatish"
+                : "Javobni ochish"}
+          </NavButton>
         )}
         <NavButton disabled={current <= 0} onClick={() => onGo(current - 1)}>
           ‹ Oldingi
@@ -534,6 +603,41 @@ function Player({
         </NavButton>
       </div>
     </Panel>
+  );
+}
+
+/** Soʻz buluti — chastotaga qarab oʻlcham; koʻpi bilan 40 soʻz. */
+function WordCloud({ words }: { words: Record<string, number> }) {
+  const entries = Object.entries(words)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 40);
+  if (entries.length === 0) {
+    return <p className="text-center text-[max(12px,1.8cqw)] opacity-60">Hali javob yoʻq</p>;
+  }
+  const max = entries[0][1];
+  // Barqaror aralashtirish: eng kattasi markazda turishi uchun juft/toq tartib.
+  const arranged = entries.flatMap((e, i) => (i % 2 === 0 ? [e] : [])).reverse().concat(
+    entries.filter((_, i) => i % 2 === 1),
+  );
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-x-[2cqw] gap-y-[1cqw] px-[2cqw]">
+      {arranged.map(([word, count]) => {
+        const weight = max > 1 ? (count - 1) / (max - 1) : 1;
+        return (
+          <span
+            key={word}
+            className="font-semibold leading-tight transition-all duration-500"
+            style={{
+              fontSize: `max(13px, ${(2.2 + weight * 5).toFixed(2)}cqw)`,
+              opacity: 0.55 + weight * 0.45,
+            }}
+            title={`${count} marta`}
+          >
+            {word}
+          </span>
+        );
+      })}
+    </div>
   );
 }
 

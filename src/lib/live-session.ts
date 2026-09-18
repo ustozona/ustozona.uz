@@ -30,8 +30,10 @@ export type LiveItemResult = {
   answered: number;
   /** Toʻgʻri javob berganlar. */
   correct: number;
-  /** mcq: variant id → tanlaganlar soni. */
+  /** mcq/soʻrovnoma: variant id → tanlaganlar soni. */
   byOption: Record<string, number>;
+  /** Soʻz buluti: kichik harfdagi soʻz → necha kishi yozdi. */
+  words: Record<string, number>;
 };
 
 export type LiveResults = {

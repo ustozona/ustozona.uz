@@ -54,7 +54,24 @@ export type SlideStep = {
   bg?: string;
 };
 
-export type PlayStep = McqStep | PairsStep | SlideStep;
+/** Soʻrovnoma — variantlar, toʻgʻri javobi yoʻq. */
+export type PollStep = {
+  kind: "poll";
+  itemId: string;
+  activityId: string;
+  stem: string;
+  options: { id: string; text: string }[];
+};
+
+/** Soʻz buluti — qisqa matnli javob. */
+export type WordcloudStep = {
+  kind: "wordcloud";
+  itemId: string;
+  activityId: string;
+  stem: string;
+};
+
+export type PlayStep = McqStep | PairsStep | SlideStep | PollStep | WordcloudStep;
 
 export type PlaySessionContent = {
   sessionId: string;
@@ -154,6 +171,20 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
         options: content.options.map((o) => ({ id: o.id, text: o.text })),
         pointsMultiplier,
       });
+    } else if (shape === "poll" || shape === "wordcloud") {
+      const item = items[0];
+      const content = item.content as { stem?: string; options?: { id: string; text: string }[] };
+      steps.push(
+        shape === "poll"
+          ? {
+              kind: "poll",
+              itemId: item.id,
+              activityId,
+              stem: content.stem ?? "",
+              options: (content.options ?? []).map((o) => ({ id: o.id, text: o.text })),
+            }
+          : { kind: "wordcloud", itemId: item.id, activityId, stem: content.stem ?? "" },
+      );
     } else if (shape === "pairs") {
       const left = items.map((item) => ({
         itemId: item.id,

@@ -78,6 +78,8 @@ export function scoreResponse(input: ScoreInput): ScoreResult {
     case "text":
     case "draw":
     case "slide":
+    case "poll":
+    case "wordcloud":
       return { isCorrect: null, score: null };
   }
 }

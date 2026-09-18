@@ -208,7 +208,7 @@ const draftQuestionSchema = z.object({
   /** Mavjud savol — yangilanadi. Boʻsh boʻlsa yangi `activity` yaratiladi. */
   activityId: z.string().min(1).optional(),
   /** `slide` — taqdimot slaydi: savol emas, matni `stem` da keladi. */
-  shape: z.enum(["mcq", "pairs", "slide"]),
+  shape: z.enum(["mcq", "pairs", "slide", "poll", "wordcloud"]),
   title: z.string().min(1).max(200),
   stem: z.string().max(2000),
   options: z.array(mcqOptionSchema),
@@ -257,6 +257,14 @@ export type SetDraft = {
 function validateDraftQuestion(q: DraftQuestionValues, index: number) {
   const label = `${index + 1}-savol`;
   if (q.shape === "slide") return; // boʻsh slayd ham joiz — sarlavha yetadi
+  if (q.shape === "wordcloud") {
+    if (!q.stem.trim()) throw new Error(`${label}: savol matni kerak`);
+    return;
+  }
+  if (q.shape === "poll") {
+    if (q.options.length < 2) throw new Error(`${label}: kamida 2 ta variant kerak`);
+    return;
+  }
   if (q.shape === "mcq") {
     if (q.options.length < 2) throw new Error(`${label}: kamida 2 ta variant kerak`);
     const correct = q.options.filter((o) => o.isCorrect).length;
@@ -272,6 +280,12 @@ function validateDraftQuestion(q: DraftQuestionValues, index: number) {
 /** Qoralama savolni DAL kutayotgan `items` shakliga oʻgiradi. */
 function draftItems(q: DraftQuestionValues) {
   if (q.shape === "slide") return []; // slaydda baholanadigan element yoʻq
+  // Soʻrovnoma va soʻz buluti ham element oladi — javob elementga
+  // bogʻlanadi; lekin `grading = "none"`, sanoqqa kirmaydi (graded-items.ts).
+  if (q.shape === "poll") {
+    return [{ content: { stem: q.stem, options: q.options.map((o) => ({ ...o, isCorrect: false })) } }];
+  }
+  if (q.shape === "wordcloud") return [{ content: { stem: q.stem } }];
   return q.shape === "mcq"
     ? [{ content: { stem: q.stem, options: q.options } }]
     : q.pairs.map((p) => ({ content: { left: p.left, right: p.right } }));
@@ -341,6 +355,21 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
       continue;
     }
 
+    if (activity.shape === "poll" || activity.shape === "wordcloud") {
+      const content = activity.items[0]?.content as
+        | { stem?: string; options?: McqFormValues["options"] }
+        | undefined;
+      questions.push({
+        ...base,
+        shape: activity.shape,
+        stem: content?.stem ?? "",
+        options: content?.options ?? [],
+        pairs: [],
+        multiSelect: false,
+      });
+      continue;
+    }
+
     if (activity.shape === "pairs") {
       questions.push({
         ...base,
@@ -388,7 +417,10 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
     parsed.questions.map(async (q) => {
       const payload = {
         title: q.title,
-        grading: q.shape === "slide" ? ("none" as const) : ("exact" as const),
+        grading:
+          q.shape === "slide" || q.shape === "poll" || q.shape === "wordcloud"
+            ? ("none" as const)
+            : ("exact" as const),
         config: draftConfig(q),
         items: draftItems(q),
       };
