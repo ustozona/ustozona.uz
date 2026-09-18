@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
+import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
@@ -404,7 +405,8 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     notePendingReplace();
     router.replace(`/lessons/${newId}`);
   };
-  const performDelete = () => {
+  const performDelete = async () => {
+    if (!(await commitLessonsDelete({ lessonIds: [lessonId] }))) return;
     deleteLesson(lessonId);
     toast.success(t("toast.deleted"));
     closeEditor();

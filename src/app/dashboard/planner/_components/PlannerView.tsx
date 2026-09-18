@@ -9,6 +9,7 @@ import { fmtMin, type TimetableEvent } from "@/lib/timetable";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useLessonStore } from "@/store/useLessonStore";
+import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
@@ -615,9 +616,10 @@ export default function PlannerView({ classId }: { classId?: string }) {
     setEditTarget(null);
     toast.success(t("savedToast"));
   }
-  function handleDelete() {
+  async function handleDelete() {
     if (!editLesson) return;
     const snap: Lesson = { ...editLesson }; // toʻliq snapshot (content/standards/scheduleByClass ham)
+    if (!(await commitLessonsDelete({ lessonIds: [snap.id] }))) return;
     deleteLessonAction(snap.id);
     setEditTarget(null);
     toast(t("lessonDeletedToast"), {

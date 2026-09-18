@@ -12,6 +12,7 @@ import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { useLessonStore } from "@/store/useLessonStore";
+import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonSessions, unitIdForClass, type Lesson } from "@/lib/lessons-data";
 import { YearTimeline, mergeRanges, type TimelineBar, type TimelineLane } from "@/components/ish-reja/YearTimeline";
 import { useTimetableStore } from "@/store/useTimetableStore";
@@ -229,8 +230,12 @@ export default function IshRejaImportModal({ classId, unitId, onSingle, onClose 
         label: t("undo"),
         onClick: () => {
           const st = useLessonStore.getState();
-          createdLessons.forEach((id) => st.deleteLesson(id));
-          createdUnits.forEach((id) => st.deleteUnit(id, { withLessons: false }));
+          void (async () => {
+            const ok = await commitLessonsDelete({ unitIds: createdUnits, lessonIds: createdLessons });
+            if (!ok) return;
+            createdLessons.forEach((id) => st.deleteLesson(id));
+            createdUnits.forEach((id) => st.deleteUnit(id, { withLessons: false }));
+          })();
           toast(t("undoneToast"));
         },
       },

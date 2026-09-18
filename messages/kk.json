@@ -1345,8 +1345,16 @@
     "statusScheduled": "Жоспарланған",
     "statusUnscheduled": "Жоспарсыз",
     "statusDraft": "Шимайқағаз",
-    "unitDeletedToast": "«{unit}» жойылды",
+    "unitDeletedToast": "«{unit}» жойылды",
     "undo": "Болдырмау",
+    "selectModeStart": "Таңдау",
+    "selectModeExit": "Таңдауды болдырмау",
+    "selectAria": "Белгілеу",
+    "selectedCount": "{count} таңдалды",
+    "bulkDeleteTitle": "Таңдалғандар өшірілсін бе?",
+    "bulkDeleteDescription": "{units} бөлім және {lessons} сабақ өшіріледі. Бұл әрекетті хабарлама арқылы бірден қайтаруға болады.",
+    "bulkDeleteSessions": "Кестедегі {sessions} жазба да алынып тасталады.",
+    "bulkDeletedToast": "{units} бөлім және {lessons} сабақ өшірілді",
     "newLessonToast": "Жаңа сабақ құрылды",
     "editUnit": "Өңдеу",
     "deleteUnit": "Жою",
@@ -3306,7 +3314,8 @@
     "submit": "Бөлім құру"
   },
   "LessonsServerSync": {
-    "saveError": "Сабақтар серверге сақталмады"
+    "saveError": "Сабақтар серверге сақталмады",
+    "deleteError": "Өшіру серверде орындалмады — қайталап көріңіз"
   },
   "SettingsDialogContent": {
     "close": "Жабу"

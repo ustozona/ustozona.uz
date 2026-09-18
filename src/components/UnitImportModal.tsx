@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeaderBar, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useLessonStore } from "@/store/useLessonStore";
+import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { ClassMultiPicker } from "@/components/ish-reja/ClassMultiPicker";
 import { NameReviewList } from "@/components/ish-reja/NameReviewList";
 import { ImportSummary, SourcePane, TemplateButton, useImportSource } from "@/components/ish-reja/ImportSource";
@@ -63,7 +64,10 @@ export default function UnitImportModal({ classId, onDetailed, onCreated, onClos
         label: t("undo"),
         onClick: () => {
           const st = useLessonStore.getState();
-          created.forEach((id) => st.deleteUnit(id, { withLessons: false }));
+          void (async () => {
+            if (!(await commitLessonsDelete({ unitIds: created }))) return;
+            created.forEach((id) => st.deleteUnit(id, { withLessons: false }));
+          })();
           toast(t("undoneToast"));
         },
       },

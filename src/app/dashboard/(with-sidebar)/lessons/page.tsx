@@ -19,6 +19,7 @@ import { classColor } from "@/lib/grades-data";
 import { useLiveClasses, useCreateClass } from "@/hooks/useLiveClasses";
 import { useClassIdParam, useUrlParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
+import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { LessonStatusPill } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
@@ -33,7 +34,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput } from "lucide-react";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks, X } from "lucide-react";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
   ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuSeparator,
@@ -134,7 +135,7 @@ export default function LessonsPage() {
     updateUnit(editUnitTarget.id, { title: editUnitTitle.trim(), description: editUnitDesc.trim() });
     setEditUnitTarget(null);
   };
-  const handleConfirmDeleteUnit = () => {
+  const handleConfirmDeleteUnit = async () => {
     if (!deleteUnitTarget) return;
     const unit = deleteUnitTarget;
     // Undo uchun: oʻchadigan darslar TOʻLIQ nusxada, saqlanadiganlar esa
@@ -442,6 +443,110 @@ export default function LessonsPage() {
     );
   };
 
+  /* ── OMMAVIY TANLASH ────────────────────────────────────────────────
+     Bitta rejim ikkala ustunni ham qamraydi: boʻlim ham, dars ham bir
+     vaqtda belgilanadi va bitta amalda oʻchadi. Ikki alohida rejim
+     («boʻlimlarni tanlash» / «darslarni tanlash») foydalanuvchiga
+     ortiqcha savol beradi — u «shularni oʻchir» deb oʻylaydi, turini
+     emas. */
+  const [selectMode, setSelectMode] = useState(false);
+  const [pickedUnitIds, setPickedUnitIds] = useState<Set<string>>(new Set());
+  const [pickedLessonIds, setPickedLessonIds] = useState<Set<string>>(new Set());
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setPickedUnitIds(new Set());
+    setPickedLessonIds(new Set());
+  };
+  // Sinf yoki boʻlim almashsa tanlov qoldigʻi ergashib yurmasin.
+  useEffect(() => { exitSelectMode(); }, [effectiveClassId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const togglePick = (kind: "unit" | "lesson", id: string) => {
+    const [set, apply] = kind === "unit"
+      ? [pickedUnitIds, setPickedUnitIds] as const
+      : [pickedLessonIds, setPickedLessonIds] as const;
+    const next = new Set(set);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    apply(next);
+  };
+
+  /* Tanlanganlarning toʻliq taʼsiri: belgilangan darslar + belgilangan
+     boʻlimlar bilan birga ketadigan darslar. Boʻlimi belgilanmagan
+     BOSHQA sinfda ham turgan dars saqlanadi — faqat bogʻlanish uziladi. */
+  const bulkImpact = useMemo(() => {
+    const unitSet = pickedUnitIds;
+    const cascaded = lessonsSource.filter((l) => {
+      const uids = lessonUnitIds(l);
+      return uids.length > 0 && uids.some((u) => unitSet.has(u)) && uids.every((u) => unitSet.has(u));
+    });
+    const ids = new Set([...pickedLessonIds, ...cascaded.map((l) => l.id)]);
+    const removed = lessonsSource.filter((l) => ids.has(l.id));
+    return {
+      units: unitSet.size,
+      lessons: removed.length,
+      sessions: removed.reduce((n, l) => n + lessonSessions(l).length, 0),
+      removed,
+      lessonIds: [...ids],
+    };
+  }, [pickedUnitIds, pickedLessonIds, lessonsSource]);
+
+  const pickedCount = pickedUnitIds.size + pickedLessonIds.size;
+
+  const handleBulkDelete = async () => {
+    const unitIds = [...pickedUnitIds];
+    const { lessonIds, removed } = bulkImpact;
+    const removedUnits = unitsSource.filter((u) => pickedUnitIds.has(u.id));
+    setBulkBusy(true);
+    const ok = await commitLessonsDelete({ unitIds, lessonIds });
+    setBulkBusy(false);
+    if (!ok) return;
+    lessonIds.forEach((id) => deleteLesson(id));
+    // Darslar allaqachon oʻchdi — bu yerda boʻlim faqat qolganlardan uziladi.
+    unitIds.forEach((id) => deleteUnit(id, { withLessons: false }));
+    if (effectiveUnitId && pickedUnitIds.has(effectiveUnitId)) setSelectedUnitId(null);
+    setBulkConfirmOpen(false);
+    exitSelectMode();
+    toast.success(t("bulkDeletedToast", { units: removedUnits.length, lessons: removed.length }), {
+      action: {
+        label: t("undo"),
+        onClick: () => {
+          // Avval darslar (snapshot oʻz unitIdʼsini olib keladi), keyin boʻlimlar.
+          removed.forEach((l) => restoreLesson(l));
+          removedUnits.forEach((u) => restoreUnit(u, []));
+        },
+      },
+    });
+  };
+
+  /* Tanlash rejimida karta oʻz amalini bajarmaydi: ustiga shaffof tugma
+     qoʻyiladi va bosish belgilashga aylanadi. Shu yoʻl render
+     funksiyalariga umuman tegmaydi — ular bitta joyda qoladi. */
+  const pickWrap = (kind: "unit" | "lesson", id: string, node: ReactNode) => {
+    if (!selectMode) return node;
+    const picked = kind === "unit" ? pickedUnitIds.has(id) : pickedLessonIds.has(id);
+    return (
+      <div key={id} className="flex items-center gap-2.5">
+        <Checkbox
+          checked={picked}
+          onCheckedChange={() => togglePick(kind, id)}
+          aria-label={t("selectAria")}
+          className="shrink-0"
+        />
+        <div className="relative min-w-0 flex-1">
+          {node}
+          <button
+            type="button"
+            aria-label={t("selectAria")}
+            onClick={() => togglePick(kind, id)}
+            className="absolute inset-0 rounded-xl"
+          />
+        </div>
+      </div>
+    );
+  };
+
   // "Boʻlimsiz" — keng ustun
   const renderNoUnitWide = (isOver = false) => {
     const { total, pct } = unitProgress(null);
@@ -550,12 +655,25 @@ export default function LessonsPage() {
               <SectionIcon><Layers /></SectionIcon>
               <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
             </div>
-            {unitsForClass.length > 0 && (
-              <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
-                <Plus className="size-4" />
-                <span>{t("addUnit")}</span>
-              </Button>
-            )}
+            <div className="flex items-center gap-1 shrink-0">
+              {(unitsForClass.length > 0 || lessonsForUnit.length > 0) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
+                  onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
+                >
+                  {selectMode ? <X className="size-4" /> : <ListChecks className="size-4" />}
+                  <span>{selectMode ? t("selectModeExit") : t("selectModeStart")}</span>
+                </Button>
+              )}
+              {unitsForClass.length > 0 && !selectMode && (
+                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
+                  <Plus className="size-4" />
+                  <span>{t("addUnit")}</span>
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* List */}
@@ -568,7 +686,7 @@ export default function LessonsPage() {
                   <>
                     {unitsForClass.map((unit) => (
                       <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
-                        {(isOver) => (unit.id === effectiveUnitId ? renderUnitSelected(unit, isOver) : renderUnitCompact(unit, isOver))}
+                        {(isOver) => pickWrap("unit", unit.id, unit.id === effectiveUnitId ? renderUnitSelected(unit, isOver) : renderUnitCompact(unit, isOver))}
                       </UnitDropZone>
                     ))}
                     <UnitDropZone id="unit-none">{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
@@ -579,7 +697,7 @@ export default function LessonsPage() {
                   <>
                     {unitsForClass.map((unit) => (
                       <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
-                        {(isOver) => renderUnitWide(unit, isOver)}
+                        {(isOver) => pickWrap("unit", unit.id, renderUnitWide(unit, isOver))}
                       </UnitDropZone>
                     ))}
                     <UnitDropZone id="unit-none">{(isOver) => renderNoUnitWide(isOver)}</UnitDropZone>
@@ -701,7 +819,7 @@ export default function LessonsPage() {
                 <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive text-white hover:bg-destructive/90"
-                  onClick={handleConfirmDeleteUnit}
+                  onClick={() => void handleConfirmDeleteUnit()}
                 >
                   {t("delete")}
                 </AlertDialogAction>
@@ -781,7 +899,7 @@ export default function LessonsPage() {
                       ...unitsForClass.filter((u) => u.id !== lesson.unitId),
                       ...(lesson.unitId !== null ? [null] : []),
                     ];
-                    return (
+                    return pickWrap("lesson", lesson.id,
                     <ContextMenu key={lesson.id}>
                     <ContextMenuTrigger asChild>
                       <DraggableLesson
@@ -898,6 +1016,53 @@ export default function LessonsPage() {
           />
         )}
 
+        {/* Tanlov paneli — faqat biror narsa belgilanganda koʻrinadi. */}
+        {selectMode && pickedCount > 0 && (
+          <div
+            className="fixed bottom-6 z-40 flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2.5 shadow-lg"
+            style={{ left: "50%", transform: "translateX(-50%)" }}
+          >
+            <span className="text-sm font-medium text-foreground whitespace-nowrap">
+              {t("selectedCount", { count: pickedCount })}
+            </span>
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => setBulkConfirmOpen(true)}
+            >
+              <Trash2 className="size-3.5" />
+              {t("delete")}
+            </Button>
+            <Button size="sm" variant="ghost" className="h-8" onClick={exitSelectMode}>
+              {t("cancel")}
+            </Button>
+          </div>
+        )}
+
+        <AlertDialog open={bulkConfirmOpen} onOpenChange={(o) => !o && setBulkConfirmOpen(false)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("bulkDeleteTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("bulkDeleteDescription", { units: bulkImpact.units, lessons: bulkImpact.lessons })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            {bulkImpact.sessions > 0 && (
+              <TypographyMuted>{t("bulkDeleteSessions", { sessions: bulkImpact.sessions })}</TypographyMuted>
+            )}
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={bulkBusy}>{t("cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-white hover:bg-destructive/90"
+                disabled={bulkBusy}
+                onClick={(e) => { e.preventDefault(); void handleBulkDelete(); }}
+              >
+                {t("delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <AlertDialog open={!!deleteLessonTarget} onOpenChange={(o) => !o && setDeleteLessonTarget(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -910,7 +1075,7 @@ export default function LessonsPage() {
               <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-white hover:bg-destructive/90"
-                onClick={handleConfirmDeleteLesson}
+                onClick={() => void handleConfirmDeleteLesson()}
               >
                 {t("delete")}
               </AlertDialogAction>

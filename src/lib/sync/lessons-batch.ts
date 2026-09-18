@@ -55,3 +55,28 @@ export function isEmptyLessonsBatch(b: LessonsBatch): boolean {
     b.lessonsDelete.length === 0
   );
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   OʻCHIRISH BUYRUGʻI — batch'dan ATAYLAB alohida.
+
+   Yuqoridagi `lessonsDelete`/`unitsDelete` maydonlari ikki suratning
+   FARQIDAN tugʻiladi: «avval bu id bor edi, endi yoʻq — demak
+   oʻchirilgan». Bu taxmin tahrir uchun yetarli, lekin oʻchirish uchun
+   xavfli: paket serverga yetib bormasa (refresh, uzilish, xato) hech
+   kim sezmaydi va qator bazada qolib ketadi. Kuzatilgani: oʻchirilgan
+   darslar plannerda va Materiallarda «tirilib» qaytardi.
+
+   Shuning uchun oʻchirish endi AYTIB bajariladi: chaqiruvchi shu
+   buyruqni yuboradi va javobini KUTADI. Tasdiq kelmasa interfeys
+   oʻchganini koʻrsatmaydi — xato chiqaradi.
+
+   Buyruq idempotent: allaqachon oʻchgan id xato bermaydi, shuning
+   uchun qayta yuborish xavfsiz.
+   ════════════════════════════════════════════════════════════════════ */
+
+export const lessonsDeleteSchema = z.object({
+  unitIds: z.array(id).max(2000).default([]),
+  lessonIds: z.array(id).max(5000).default([]),
+});
+
+export type LessonsDeleteCommand = z.infer<typeof lessonsDeleteSchema>;

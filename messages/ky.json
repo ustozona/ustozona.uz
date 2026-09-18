@@ -1345,8 +1345,16 @@
     "statusScheduled": "Пландаштырылган",
     "statusUnscheduled": "Плансыз",
     "statusDraft": "Каралама",
-    "unitDeletedToast": "«{unit}» өчүрүлдү",
+    "unitDeletedToast": "«{unit}» өчүрүлдү",
     "undo": "Жокко чыгаруу",
+    "selectModeStart": "Тандоо",
+    "selectModeExit": "Тандоону жокко чыгаруу",
+    "selectAria": "Белгилөө",
+    "selectedCount": "{count} тандалды",
+    "bulkDeleteTitle": "Тандалгандар өчүрүлсүнбү?",
+    "bulkDeleteDescription": "{units} бөлүм жана {lessons} сабак өчүрүлөт. Бул аракетти билдирүү аркылуу дароо кайтарууга болот.",
+    "bulkDeleteSessions": "Тайпадагы {sessions} жазуу дагы алынып салынат.",
+    "bulkDeletedToast": "{units} бөлүм жана {lessons} сабак өчүрүлдү",
     "newLessonToast": "Жаңы сабак түзүлдү",
     "editUnit": "Түзөтүү",
     "deleteUnit": "Өчүрүү",
@@ -3306,7 +3314,8 @@
     "submit": "Бөлүм түзүү"
   },
   "LessonsServerSync": {
-    "saveError": "Сабактар серверге сакталган жок"
+    "saveError": "Сабактар серверге сакталган жок",
+    "deleteError": "Өчүрүү серверде аткарылган жок — кайра аракет кылыңыз"
   },
   "SettingsDialogContent": {
     "close": "Жабуу"

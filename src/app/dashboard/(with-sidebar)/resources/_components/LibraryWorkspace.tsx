@@ -41,7 +41,7 @@ import { MaterialKindTile } from "@/components/materials/MaterialKindTile";
 import { timeAgoUz } from "@/lib/localization";
 import { deleteSetAction } from "@/server/actions/assess";
 import { useLessonStore } from "@/store/useLessonStore";
-import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
+import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import type { LibraryItem, LibraryKind } from "@/lib/library-types";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
@@ -192,18 +192,14 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
   }
 
   /**
-   * Ommaviy oʻchirish — ikki turda ikki xil yoʻl:
-   * test server amali (`deleteSetAction`), dars esa client store orqali
-   * (`useLessonStore` diff'i sinxronizatsiyani oʻzi yuboradi).
+   * Ommaviy oʻchirish — ikkala tur ham SERVER buyrugʻi bilan:
+   * test `deleteSetAction`, dars `commitLessonsDelete`. Ikkalasi ham
+   * javobini kutadi, shuning uchun `router.refresh()` dan keyin «tirilib»
+   * qaytish holati yoʻq.
    *
-   * ⚠️ Ikkita tuzoq shu yerda yopiladi:
-   * 1. Store hali gidratlanmagan boʻlsa `deleteLesson` BOʻSH roʻyxatda
-   *    ishlaydi va hech narsa oʻchmaydi — diff yoʻqolgan id koʻrmaydi.
-   *    Shuning uchun gidratsiya kutilmaguncha dars oʻchirilmaydi.
-   * 2. Sinxronizatsiya kechiktirilgan (debounce). `router.refresh()` ni
-   *    darhol chaqirsak, server hali oʻchmagan darsni qaytaradi va u
-   *    roʻyxatda «tirilib» qoladi. `flushLessonsNow()` push'ni majburan
-   *    yuboradi va shundan keyingina qayta oʻqiladi.
+   * ⚠️ Gidratsiya baribir kutiladi: store boʻsh boʻlsa buyruq
+   * bajarilsa-da, mahalliy roʻyxatdan oʻchirish hech narsa topmaydi va
+   * ekran serverdan kelgunicha eski holatni koʻrsatib turardi.
    */
   async function performDelete(targets: LibraryItem[]) {
     const tests = targets.filter((i) => i.kind === "test");
@@ -218,8 +214,10 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
     try {
       await Promise.all(tests.map((i) => deleteSetAction(i.id)));
       if (lessons.length > 0) {
+        // Aniq buyruq: server tasdiqlamasa xato otiladi va storeʻga tegilmaydi.
+        const ok = await commitLessonsDelete({ lessonIds: lessons.map((i) => i.id) });
+        if (!ok) return;
         lessons.forEach((i) => deleteLesson(i.id));
-        await flushLessonsNow();
       }
       toast.success(targets.length > 1 ? `${targets.length} ta material oʻchirildi` : "Material oʻchirildi");
       setSelected(new Set());

@@ -11,6 +11,14 @@ import {
    LESSONS DIFF — {units, lessons} (prev, next) → batch | null.
    grades-sync bilan bir xil: id boʻyicha, reference yoki pozitsiya
    oʻzgargan element upsert; yoʻqolgan id delete.
+
+   ⚠️ «Yoʻqolgan id delete» endi ASOSIY mexanizm EMAS, zaxira.
+   Oʻchirish `commitLessonsDelete` orqali aniq buyruq bilan, javobi
+   kutilgan holda bajariladi (`lessons-batch.ts` dagi izoh). Bu yerdagi
+   delete esa oʻsha buyruqdan keyin qoladigan takroriy, idempotent
+   urinish: biror oʻchirish yoʻli darvozani chetlab oʻtsa ham qator
+   bazada qolib ketmaydi. Uni asosiy yoʻl deb ISHONMANG — paket
+   yetib bormasa hech kim sezmaydi, 2026-09-18 dagi nosozlik shundan.
    ════════════════════════════════════════════════════════════════════ */
 
 export type LessonsSnapshot = { units: Unit[]; lessons: Lesson[] };

@@ -1345,8 +1345,16 @@
     "statusScheduled": "Rejalashtirilgan",
     "statusUnscheduled": "Rejasiz",
     "statusDraft": "Qoralama",
-    "unitDeletedToast": "«{unit}» oʻchirildi",
+    "unitDeletedToast": "«{unit}» oʻchirildi",
     "undo": "Bekor qilish",
+    "selectModeStart": "Tanlash",
+    "selectModeExit": "Tanlashni bekor qilish",
+    "selectAria": "Belgilash",
+    "selectedCount": "{count} ta tanlandi",
+    "bulkDeleteTitle": "Tanlanganlar oʻchirilsinmi?",
+    "bulkDeleteDescription": "{units} ta boʻlim va {lessons} ta dars oʻchiriladi. Bu amalni toast orqali darhol qaytarish mumkin.",
+    "bulkDeleteSessions": "Jadvaldagi {sessions} ta yozuv ham olib tashlanadi.",
+    "bulkDeletedToast": "{units} ta boʻlim va {lessons} ta dars oʻchirildi",
     "newLessonToast": "Yangi dars yaratildi",
     "editUnit": "Tahrirlash",
     "deleteUnit": "Oʻchirish",
@@ -3130,7 +3138,8 @@
     "submit": "Boʻlim yaratish"
   },
   "LessonsServerSync": {
-    "saveError": "Darslar serverga saqlanmadi"
+    "saveError": "Darslar serverga saqlanmadi",
+    "deleteError": "Oʻchirish serverda bajarilmadi — qayta urinib koʻring"
   },
   "SettingsDialogContent": {
     "close": "Yopish"

@@ -6,6 +6,7 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
 import { diffLessons, type LessonsSnapshot } from "@/lib/sync/lessons-sync";
+import { setLessonsDeleteErrorMessage } from "@/lib/sync/lessons-delete";
 import { fetchLessonsAction, syncLessonsAction } from "@/server/actions/lessons";
 
 /* Lessons store ↔ server koʻprigi (renderi yoʻq). */
@@ -25,6 +26,9 @@ function selectSnapshot(s: LessonState): LessonsSnapshot {
 export default function LessonsServerSync() {
   const t = useTranslations("LessonsServerSync");
   const hydrated = useHydrateStore(useLessonStore, fetchLessonsAction);
+
+  // Oʻchirish buyrugʻining xato matni — `commitLessonsDelete` hook ishlatolmaydi.
+  React.useEffect(() => { setLessonsDeleteErrorMessage(t("deleteError")); }, [t]);
 
   React.useEffect(() => {
     if (!hydrated) return;

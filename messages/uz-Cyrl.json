@@ -1345,8 +1345,16 @@
     "statusScheduled": "Режалаштирилган",
     "statusUnscheduled": "Режасиз",
     "statusDraft": "Қоралама",
-    "unitDeletedToast": "«{unit}» ўчирилди",
+    "unitDeletedToast": "«{unit}» ўчирилди",
     "undo": "Бекор қилиш",
+    "selectModeStart": "Танлаш",
+    "selectModeExit": "Танлашни бекор қилиш",
+    "selectAria": "Белгилаш",
+    "selectedCount": "{count} та танланди",
+    "bulkDeleteTitle": "Танланганлар ўчирилсинми?",
+    "bulkDeleteDescription": "{units} та бўлим ва {lessons} та дарс ўчирилади. Бу амални тост орқали дарҳол қайтариш мумкин.",
+    "bulkDeleteSessions": "Жадвалдаги {sessions} та ёзув ҳам олиб ташланади.",
+    "bulkDeletedToast": "{units} та бўлим ва {lessons} та дарс ўчирилди",
     "newLessonToast": "Янги дарс яратилди",
     "editUnit": "Таҳрирлаш",
     "deleteUnit": "Ўчириш",
@@ -3135,7 +3143,8 @@
     "submit": "Бўлим яратиш"
   },
   "LessonsServerSync": {
-    "saveError": "Дарслар серверга сақланмади"
+    "saveError": "Дарслар серверга сақланмади",
+    "deleteError": "Ўчириш серверда бажарилмади — қайта уриниб кўринг"
   },
   "SettingsDialogContent": {
     "close": "Ёпиш"

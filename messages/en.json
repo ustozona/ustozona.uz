@@ -1345,8 +1345,16 @@
     "statusScheduled": "Scheduled",
     "statusUnscheduled": "Unscheduled",
     "statusDraft": "Draft",
-    "unitDeletedToast": "\"{unit}\" was deleted",
+    "unitDeletedToast": "\"{unit}\" was deleted",
     "undo": "Undo",
+    "selectModeStart": "Select",
+    "selectModeExit": "Cancel selection",
+    "selectAria": "Select",
+    "selectedCount": "{count, plural, one {# selected} other {# selected}}",
+    "bulkDeleteTitle": "Delete the selected items?",
+    "bulkDeleteDescription": "{units, plural, one {# unit} other {# units}} and {lessons, plural, one {# lesson} other {# lessons}} will be deleted. You can undo this right away from the toast.",
+    "bulkDeleteSessions": "{sessions, plural, one {# timetable slot} other {# timetable slots}} will be removed as well.",
+    "bulkDeletedToast": "Deleted {units, plural, one {# unit} other {# units}} and {lessons, plural, one {# lesson} other {# lessons}}",
     "newLessonToast": "New lesson created",
     "editUnit": "Edit",
     "deleteUnit": "Delete",
@@ -3302,7 +3310,8 @@
     "submit": "Create unit"
   },
   "LessonsServerSync": {
-    "saveError": "Lessons weren't saved to the server"
+    "saveError": "Lessons weren't saved to the server",
+    "deleteError": "The deletion did not go through on the server — please try again"
   },
   "SettingsDialogContent": {
     "close": "Close"
