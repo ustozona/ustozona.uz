@@ -28,6 +28,12 @@ export default function LessonsServerSync() {
 
   React.useEffect(() => {
     if (!hydrated) return;
+    // Hydration'dan keyin bir marta: aʼzo boʻlmagan sinfga osilib qolgan
+    // jadval yozuvlari tozalanadi (plannerda koʻrinib, hech qaysi dars
+    // roʻyxatida boʻlmagan «yetim» sessiyalar). Tozalash store'ni
+    // oʻzgartiradi, sync esa uni oddiy tahrir sifatida serverga yozadi.
+    const pruned = useLessonStore.getState().pruneOrphanSessions();
+    if (pruned) console.info(`[lessons] ${pruned} ta yetim jadval yozuvi tozalandi`);
     const sync = createServerSync({
       store: useLessonStore,
       select: selectSnapshot,

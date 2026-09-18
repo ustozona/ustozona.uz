@@ -426,7 +426,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const placedByDate = useMemo(() => {
     const map = new Map<string, Placement[]>();
     for (const l of visLessons) {
+      const members = new Set(lessonClassIds(l));
       for (const s of lessonSessions(l)) {
+        // Aʼzolik qoʻriqchisi: dars shu sinfdan chiqarilgan boʻlsa, uning
+        // eski jadval yozuvi plannerda qolmasin — bunday yozuv hech qaysi
+        // dars roʻyxatida koʻrinmaydi, yaʼni uni olib tashlab ham boʻlmaydi.
+        if (!members.has(s.classId)) continue;
         if (classId && s.classId !== classId) continue; // sinf-detali filtri
         if (!classId && classFilter && !classFilter.has(s.classId)) continue; // sinflar filtri
         const arr = map.get(s.date) ?? [];
