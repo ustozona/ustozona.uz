@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "taqdimot-doskada",
+    date: "2026-09-18",
+    type: "yangi",
+    title: "Taqdimot: slaydlar va savollar bitta joyda — sinfda doskada, uyda telefonda",
+    body:
+      "Jurnalda topshiriq yaratayotganda «Avtomatik» → «Taqdimot» ni tanlaysiz va slaydlar orasiga savollar qoʻyasiz. Darsda uni Doskadagi «Taqdimot» vidjeti orqali katta ekranda birma-bir koʻrsatasiz: bolalarga qurilma shart emas, toʻgʻri javobni bir bosishda ochasiz, xohlasangiz sinfni jamoalarga boʻlib ball berasiz. Taqdimotni dars rejasiga biriktirsangiz, dars kuni Bosh sahifadagi dars kartasidan darhol boshlanadi. Uyga berilgan test yoki taqdimot esa belgilangan muddat tugagach javob qabul qilmaydi.",
+    href: "/dashboard/grades",
+  },
+  {
     id: "darslarni-belgilab-ochirish",
     date: "2026-09-18",
     type: "yangi",

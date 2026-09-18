@@ -2044,6 +2044,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "taqdimot-doskada": {
+        "title": "Presentations: slides and questions in one place — on the board in class, on phones at home",
+        "body": "When creating an assignment in the Gradebook, choose «Automatic» → «Presentation» and place questions between your slides. In class, show it one step at a time on the big screen with the Board's «Presentation» widget: students don't need devices, you reveal the correct answer with one tap, and you can split the class into teams and award points. Attach the presentation to a lesson plan and on lesson day it starts straight from the lesson card on the Home page. Tests and presentations given as homework stop accepting answers once the deadline passes."
+      },
       "jamoa-ish-maydoni": {
         "title": "Schools can now work as a team — several teachers, one shared roster",
         "body": "In Settings › Team you hand a colleague an invite code. When they join, their classes and students come with them — and before accepting they see the full list of what will move. Every class has an owner who decides who teaches it, and a class can have several teachers. A child’s grades, attendance and notes stay visible only to the teachers who actually teach that child — sharing a school opens nothing on its own."
