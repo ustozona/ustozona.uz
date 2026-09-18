@@ -325,7 +325,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
                   <BalanceBubble balance={classTotal} />
                 )}
               </span>
-              <span className="w-full truncate text-center text-[13px] font-semibold leading-tight text-foreground">
+              <span className="w-full truncate text-center text-sm font-semibold leading-tight text-foreground">
                 {t("wholeClass")}
               </span>
             </button>

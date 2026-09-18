@@ -129,8 +129,12 @@ sigʻmaydi, katakni kattalashtirish esa toʻrni ekrandan chiqaradi va
 zavuchning asosiy amali — «kim shu vaqtda band» degan ustun skanini —
 buzadi.
 
+Ikkinchi ruxsat (2026-09-18): **20px dan kichik idish ichidagi belgi** —
+hisoblagich nishoni, kichik avatar initsiali, 16px doiradagi raqam.
+10px — ekrandagi matnning pastki chegarasi, undan kichigi yozilmaydi.
+
 Shuning uchun qoida tor: **`.text-micro` roʻyxat, karta, panel yoki
-formada ishlatilmaydi.** Agar u yerda 10px kerak boʻlib qolsa, muammo
+formadagi oddiy matn uchun ishlatilmaydi.** Agar u yerda 10px kerak boʻlib qolsa, muammo
 zichlikda emas — ierarxiyada, va yechim matnni kichraytirish emas.
 Toʻliq asos: [dars-jadvali-spec.md](./dars-jadvali-spec.md) §12.3, §14.
 

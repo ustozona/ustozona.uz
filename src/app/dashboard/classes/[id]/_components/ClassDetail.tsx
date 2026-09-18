@@ -171,7 +171,7 @@ export default function ClassDetail({ identity, initialSection }: Props) {
                     <div className="min-w-0 flex-1">
                       <p
                         className={cn(
-                          "text-[13px] font-medium leading-tight truncate transition-colors",
+                          "text-sm font-medium leading-tight truncate transition-colors",
                           isActive ? "text-foreground" : "text-foreground/70 group-hover:text-foreground"
                         )}
                       >

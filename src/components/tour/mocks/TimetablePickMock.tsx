@@ -44,7 +44,7 @@ export function TimetablePickMock() {
                   style={{ animation: "tt-pick-tap 2.6s ease-in-out infinite" }}
                 />
                 <span
-                  className="absolute inset-0.5 flex items-center justify-center rounded-[4px] border border-primary/40 bg-primary/15 px-1 text-[9px] font-medium leading-tight text-foreground"
+                  className="absolute inset-0.5 flex items-center justify-center rounded-[4px] border border-primary/40 bg-primary/15 px-1 text-micro font-medium leading-tight text-foreground"
                   style={{ animation: "tt-pick-settle 2.6s ease-in-out infinite" }}
                 >
                   Matematika

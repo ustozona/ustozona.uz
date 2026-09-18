@@ -113,7 +113,7 @@ export default function NotificationsBell() {
               {unread > 0 && (
                 <span
                   aria-live="polite"
-                  className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-1 text-[8px] font-bold leading-none text-white"
+                  className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-destructive px-1 text-micro leading-none text-white"
                 >
                   {unread > 9 ? "9+" : unread}
                 </span>

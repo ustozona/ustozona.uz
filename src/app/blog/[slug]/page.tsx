@@ -279,7 +279,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                         {r.authorAvatarUrl && (
                           <AvatarImage src={r.authorAvatarUrl} alt={r.authorName} referrerPolicy="no-referrer" />
                         )}
-                        <AvatarFallback className="bg-muted text-[9px] font-semibold text-muted-foreground">
+                        <AvatarFallback className="bg-muted text-micro font-semibold text-muted-foreground">
                           {initialsOf(r.authorName)}
                         </AvatarFallback>
                       </Avatar>
