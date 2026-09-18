@@ -356,7 +356,7 @@ function StepperTrigger({ asChild = false, className, children, tabIndex, ...pro
       data-loading={isLoading}
       className={cn(
         "inline-flex cursor-pointer items-center p-0 outline-none disabled:pointer-events-none disabled:opacity-60",
-        "gap-2.5 rounded-full",
+        "gap-2 rounded-full",
         className
       )}
       onClick={() => stepper.goTo(step.id)}

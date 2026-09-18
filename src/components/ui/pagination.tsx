@@ -73,6 +73,7 @@ function PaginationPrevious({
     <PaginationLink
       aria-label="Go to previous page"
       size="default"
+      // design-tokens-ignore: chevron ikonali tugma — optik kompensatsiya
       className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
       {...props}
     >
@@ -90,6 +91,7 @@ function PaginationNext({
     <PaginationLink
       aria-label="Go to next page"
       size="default"
+      // design-tokens-ignore: chevron ikonali tugma — optik kompensatsiya
       className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
       {...props}
     >

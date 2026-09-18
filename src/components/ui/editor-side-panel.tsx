@@ -23,7 +23,7 @@ export function EditorSidePanelHeader({
 }) {
   return (
     <div className="grid min-h-16 shrink-0 grid-cols-[1fr_auto] items-center gap-3 border-b border-border px-5 py-4">
-      <div className="flex min-w-0 items-center gap-2.5">
+      <div className="flex min-w-0 items-center gap-3">
         <SectionIcon className="shrink-0">{icon}</SectionIcon>
         <CardTitle className="truncate">{title}</CardTitle>
       </div>
