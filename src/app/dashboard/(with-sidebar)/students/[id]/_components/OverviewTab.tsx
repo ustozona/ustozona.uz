@@ -70,7 +70,7 @@ function CategoryBar({ row, mounted }: { row: TopicBreakdown; mounted: boolean }
         className="**:data-[slot=progress-indicator]:duration-1000"
         style={{ backgroundColor: `color-mix(in srgb, ${row.hex} 16%, transparent)` }}
       />
-      <TypographyMuted className="text-[11px]">
+      <TypographyMuted className="text-tag">
         {row.count === 0
           ? t("categoryShareUngraded", { weight: row.topic.weightPercent })
           : t("categoryShareGraded", { weight: row.topic.weightPercent, count: row.count })}

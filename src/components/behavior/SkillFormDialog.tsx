@@ -168,7 +168,7 @@ export function SkillFormDialog({
                 {skill ? t("editTitle") : t("newTitle")}
                 <span
                   className={cn(
-                    "rounded-full px-1.5 py-px text-[11px] font-medium",
+                    "rounded-full px-1.5 py-px text-tag font-medium",
                     type === "positive"
                       ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30"
                       : "bg-destructive/10 text-destructive"

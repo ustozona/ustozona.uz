@@ -178,7 +178,7 @@ function StudentNamePreview({
         </Avatar>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">{student.name}</p>
-          <Badge variant="secondary" className="mt-1 text-[10px]">
+          <Badge size="sm" variant="secondary" className="mt-1">
             {classLabel}
           </Badge>
         </div>
@@ -186,11 +186,11 @@ function StudentNamePreview({
       <Separator />
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("masteryLabel")}</p>
+          <p className="text-micro font-normal uppercase tracking-wide text-muted-foreground">{t("masteryLabel")}</p>
           <p className="mt-0.5 text-sm font-semibold text-foreground">{levelDisplay}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("dynamicsLabel")}</p>
+          <p className="text-micro font-normal uppercase tracking-wide text-muted-foreground">{t("dynamicsLabel")}</p>
           <p
             className="mt-0.5 inline-flex items-center gap-1 text-sm font-semibold"
             style={{ color: trendColor }}
@@ -510,7 +510,7 @@ export default function GradesTable({
                   {t("assignment")}
                 </DropdownMenuItem>
                 {archiveNotice && (
-                  <div className="px-2 pb-1.5 pt-0.5 text-[11px] leading-snug text-muted-foreground">
+                  <div className="px-2 pb-1.5 pt-0.5 text-tag leading-snug text-muted-foreground">
                     {archiveNotice}
                   </div>
                 )}
@@ -587,7 +587,7 @@ export default function GradesTable({
                         >
                           <div
                             title={a.title}
-                            className="font-semibold text-[11px] whitespace-nowrap flex-1 flex items-start justify-center text-foreground max-h-[150px] overflow-hidden text-ellipsis"
+                            className="font-semibold text-tag whitespace-nowrap flex-1 flex items-start justify-center text-foreground max-h-[150px] overflow-hidden text-ellipsis"
                             style={{
                               writingMode: "vertical-rl",
                               transform: "rotate(180deg)",
@@ -1008,7 +1008,7 @@ function ColHeader({
     >
       <div className="flex flex-col items-center justify-end h-full pb-2">
         <div
-          className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider"
+          className="text-label font-bold uppercase text-muted-foreground tracking-wider"
           style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
         >
           {label}
@@ -1071,7 +1071,7 @@ function GradeCell({
       <span className="text-base font-bold tabular-nums leading-none text-foreground">
         {grade.score}
       </span>
-      <span className="absolute bottom-1 right-1.5 text-[10px] text-muted-foreground tabular-nums leading-none">
+      <span className="absolute bottom-1 right-1.5 text-micro font-normal text-muted-foreground tabular-nums leading-none">
         /{maxScore}
       </span>
     </div>

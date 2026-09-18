@@ -100,9 +100,9 @@ export function NotificationCard({
             {item.title}
           </span>
           {item.badgeLabel && (
-            <Badge
+            <Badge size="sm"
               variant="outline"
-              className={cn("shrink-0 px-1.5 py-0 text-[10px] font-medium", item.badgeClassName)}
+              className={cn("shrink-0 px-1.5 py-0 font-medium", item.badgeClassName)}
             >
               {item.badgeLabel}
             </Badge>

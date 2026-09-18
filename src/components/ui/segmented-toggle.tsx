@@ -103,7 +103,7 @@ export function SegmentedToggle<T extends string>({
             <span className={iconOnly ? "sr-only" : undefined}>{opt.label}</span>
           </span>
           {opt.hint && (
-            <span className="relative z-10 text-[11px] opacity-75">
+            <span className="relative z-10 text-tag opacity-75">
               {opt.hint}
             </span>
           )}

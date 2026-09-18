@@ -121,6 +121,7 @@ analoglar (`@/components/ui/typography`, `CardTitle`) — semantik JSX uchun.
 | `text-body` | `TypographyP` | 14 / 1.5 / 400 | Asosiy matn (`body` ham 14px) |
 | `text-caption` | `TypographyMuted` | 12 / 1.4 / 400 | Izoh, ikkilamchi maʼlumot |
 | `text-label` | `TypographyLabel` | 11 / 1.4 / 500 UPPERCASE | Boʻlim yorliqlari (Sinf, Aloqa) |
+| `text-tag` | — | 11 / 1.4 / vazn joyida | Badge, chip, pill, ixcham meta |
 | `text-micro` | — | 10 / 1.2 / 600 tabular | ⚠️ FAQAT zich toʻr kataklari (maktab dars jadvali) |
 
 Rol utility boʻlgani uchun yonidagi `font-medium`, `leading-relaxed`, rang

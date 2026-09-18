@@ -54,7 +54,7 @@ export function LessonStatusBadge({ status, className }: { status: LessonStatus;
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 bg-background/85 px-1.5 py-0.5 text-[10px] font-semibold text-foreground/75 shadow-sm backdrop-blur-sm",
+        "inline-flex items-center gap-1 bg-background/85 px-1.5 py-0.5 text-micro font-semibold text-foreground/75 shadow-sm backdrop-blur-sm",
         className
       )}
     >
@@ -79,7 +79,7 @@ export function LessonStatusPill({ status, className }: { status: LessonStatus; 
   return (
     <Badge
       variant="secondary"
-      className={cn("h-5 gap-1 rounded-full border-transparent px-2 text-[11px] font-semibold leading-none", STATUS_PILL_CLASS[status], className)}
+      className={cn("h-5 gap-1 rounded-full border-transparent px-2 text-tag font-semibold leading-none", STATUS_PILL_CLASS[status], className)}
     >
       <Icon className="size-3" />
       {label[status]}

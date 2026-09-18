@@ -261,7 +261,7 @@ export function AttendanceDonut({ summary }: { summary: AttendanceWindow }) {
                     <tspan
                       x={viewBox.cx}
                       y={(viewBox.cy ?? 0) + 24}
-                      className="fill-muted-foreground text-[11px] font-medium uppercase tracking-wider"
+                      className="fill-muted-foreground text-label font-medium uppercase tracking-wider"
                     >
                       {t("attendanceLabel")}
                     </tspan>

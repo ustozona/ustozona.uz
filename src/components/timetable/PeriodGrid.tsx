@@ -84,13 +84,13 @@ export default function PeriodGrid({ periods, events, classes, getClass, profile
           return (
             <Fragment key={`${p.shift}-${p.index}`}>
               {showShiftSep && (
-                <div className="col-span-full border-b border-border bg-muted/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <div className="col-span-full border-b border-border bg-muted/40 px-3 py-1 text-label font-semibold uppercase tracking-wide text-muted-foreground">
                   {fmt.t("secondShift")}
                 </div>
               )}
               <div className="flex flex-col items-center justify-center border-b border-r border-border bg-card/60 px-2 py-2 text-center">
                 <span className="text-xs font-semibold text-foreground">{fmt.t("periodLabel", { index: p.index })}</span>
-                <span className="text-[10px] tabular-nums text-muted-foreground">{minToHHMM(p.startMin)} — {minToHHMM(p.endMin)}</span>
+                <span className="text-micro font-normal tabular-nums text-muted-foreground">{minToHHMM(p.startMin)} — {minToHHMM(p.endMin)}</span>
               </div>
               {WORK_DAYS.map((day, ci) => {
                 const ev = events.find((e) => e.day === day && e.startMin === p.startMin);
@@ -305,7 +305,7 @@ function PeriodBlock({ color, name, subject, interactive, actions, role, tabInde
       {subject ? (
         <span
           style={tints.textOnSolid}
-          className="relative max-w-full truncate text-[11px] leading-tight opacity-75"
+          className="relative max-w-full truncate text-tag leading-tight opacity-75"
         >
           {subject}
         </span>

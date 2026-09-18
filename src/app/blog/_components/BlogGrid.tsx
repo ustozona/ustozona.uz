@@ -85,7 +85,7 @@ function AuthorRow({ post }: { post: BlogPostSummary }) {
         {post.authorAvatarUrl && (
           <AvatarImage src={post.authorAvatarUrl} alt={post.authorName} referrerPolicy="no-referrer" />
         )}
-        <AvatarFallback className="bg-muted text-[10px] font-semibold text-muted-foreground">
+        <AvatarFallback className="bg-muted text-micro font-semibold text-muted-foreground">
           {initialsOf(post.authorName)}
         </AvatarFallback>
       </Avatar>

@@ -625,7 +625,7 @@ function ItemBadges({ item }: { item: LibraryItem }) {
   return (
     <>
       {item.isDraft && (
-        <Badge variant="outline" className="shrink-0 text-[10px] text-warning">
+        <Badge size="sm" variant="outline" className="shrink-0 text-warning">
           Qoralama
         </Badge>
       )}
@@ -634,7 +634,7 @@ function ItemBadges({ item }: { item: LibraryItem }) {
           yeydi. Oʻynalish soni ham faqat oʻynalgan materialda
           koʻrsatiladi. */}
       {item.usedCount !== null && item.usedCount > 0 && (
-        <Badge variant="secondary" className="shrink-0 text-[10px]">
+        <Badge size="sm" variant="secondary" className="shrink-0">
           {item.usedCount} marta
         </Badge>
       )}

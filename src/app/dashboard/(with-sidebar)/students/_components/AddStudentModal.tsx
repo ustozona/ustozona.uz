@@ -527,9 +527,9 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
                   ikkita mayda ikonka yonma-yon turmaydi — notoʻgʻri
                   bosilsa qator oʻchib ketardi. */}
               <div className="mb-2 grid grid-cols-[1fr_auto_1fr_auto] items-center gap-3 px-1">
-                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("columnFirstName")}</span>
+                <span className="text-label font-medium uppercase tracking-wider text-muted-foreground">{t("columnFirstName")}</span>
                 <span className="w-9" />
-                <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{t("columnLastName")}</span>
+                <span className="text-label font-medium uppercase tracking-wider text-muted-foreground">{t("columnLastName")}</span>
                 <span className="w-9" />
               </div>
               <div className="space-y-2">

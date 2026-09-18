@@ -69,7 +69,8 @@ utility'si rolni ustidan yozadi. React analoglar:
 | `text-body` | 14px / 1.5 / 400 | Ilova asosiy matni | — |
 | `text-caption` | 12px / 1.4 / 400 | Izoh, meta, vaqt | — |
 | `text-label` | 11px / 1.4 / 500 UPPERCASE | Boʻlim yorligʻi | — |
-| `text-micro` | 10px / 1.2 / 600 tabular | **Faqat zich toʻr katagi va kichik idish belgisi** — pastga qarang | — |
+| `text-tag` | 11px / 1.4 / vazn joyida | Badge, chip, pill, ixcham meta (`ClassBadge`) | — |
+| `text-micro` | 10px / 1.2 / 600 tabular | **Faqat zich toʻr katagi va kichik idish belgisi** (`<Badge size="sm">`) — pastga qarang | — |
 
 Eski `.heading-*` nomlar alias boʻlib ishlaydi; yangi kodda rol nomi.
 `text-caption` va `text-label` hozircha muted rangni oʻzi beradi (meros) —

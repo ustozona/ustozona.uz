@@ -68,7 +68,7 @@ export function BackgroundPicker() {
                     />
                   )}
                 </span>
-                <span className="text-muted-foreground text-[11px] leading-tight">
+                <span className="text-muted-foreground text-tag leading-tight">
                   {bg.label}
                 </span>
               </button>

@@ -428,7 +428,7 @@ export default function StudentProfile({
                             value={r.name}
                             onSelect={() => { setSwitcherOpen(false); if (r.id !== studentId) go(r.id); }}
                           >
-                            <div className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white" style={{ backgroundColor: hex }}>
+                            <div className="flex size-7 shrink-0 items-center justify-center rounded-full text-tag font-semibold text-white" style={{ backgroundColor: hex }}>
                               {r.initials}
                             </div>
                             <span className="truncate">{r.name}</span>
@@ -718,7 +718,7 @@ export default function StudentProfile({
                       {t.count !== undefined && (
                         <span
                           className={cn(
-                            "rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums",
+                            "rounded-full px-1.5 py-0.5 text-tag font-semibold tabular-nums",
                             isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
                           )}
                         >

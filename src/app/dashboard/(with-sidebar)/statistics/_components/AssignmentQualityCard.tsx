@@ -24,12 +24,12 @@ export function AssignmentQualityCard({ rows }: { rows: AssignmentQuality[] }) {
               <div className="flex items-center gap-1.5">
                 <span className="truncate text-foreground/90">{r.title}</span>
                 {r.ceiling && (
-                  <span className="shrink-0 rounded-full bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">
+                  <span className="shrink-0 rounded-full bg-info/15 px-1.5 py-0.5 text-micro font-medium text-info">
                     {t("ceilingChip")}
                   </span>
                 )}
                 {r.floor && (
-                  <span className="shrink-0 rounded-full bg-destructive/15 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
+                  <span className="shrink-0 rounded-full bg-destructive/15 px-1.5 py-0.5 text-micro font-medium text-destructive">
                     {t("floorChip")}
                   </span>
                 )}

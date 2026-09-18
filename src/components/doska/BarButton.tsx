@@ -71,7 +71,7 @@ export function BarButton({
         {children ?? (Icon ? <Icon className="size-7" /> : null)}
       </span>
 
-      <span className="text-muted-foreground group-hover:text-foreground w-full truncate text-center text-[11px] leading-tight font-medium transition-colors">
+      <span className="text-muted-foreground group-hover:text-foreground w-full truncate text-center text-tag leading-tight font-medium transition-colors">
         {label}
       </span>
     </button>

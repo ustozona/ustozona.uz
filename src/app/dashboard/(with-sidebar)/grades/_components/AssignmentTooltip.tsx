@@ -60,7 +60,7 @@ export default function AssignmentTooltip({
             {assignment.title}
           </TypographySmall>
           {kindLabel && (
-            <Badge variant="secondary" className="shrink-0 text-[10px] font-medium">
+            <Badge size="sm" variant="secondary" className="shrink-0 font-medium">
               {kindLabel}
             </Badge>
           )}

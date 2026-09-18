@@ -133,7 +133,7 @@ export function ClassReportDialog({
                   {students.slice(0, 3).map((st) => (
                     <Avatar key={st.id} className="size-7">
                       <AvatarFallback
-                        className="text-[10px] font-semibold text-white"
+                        className="text-micro font-semibold text-white"
                         style={{ backgroundColor: colorHex }}
                       >
                         {st.initials}
@@ -141,7 +141,7 @@ export function ClassReportDialog({
                     </Avatar>
                   ))}
                   {students.length > 3 && (
-                    <AvatarGroupCount className="size-7 text-[10px] font-semibold tabular-nums">
+                    <AvatarGroupCount className="size-7 text-micro font-semibold tabular-nums">
                       +{students.length - 3}
                     </AvatarGroupCount>
                   )}
@@ -160,7 +160,7 @@ export function ClassReportDialog({
                   >
                     <Avatar className="size-7 shrink-0">
                       <AvatarFallback
-                        className="text-[10px] font-semibold text-white"
+                        className="text-micro font-semibold text-white"
                         style={{ backgroundColor: colorHex }}
                       >
                         {st.initials}

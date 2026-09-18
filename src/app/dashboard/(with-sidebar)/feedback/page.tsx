@@ -338,7 +338,7 @@ export default function FeedbackPage() {
                     >
                       <ListFilter className="size-4" />
                       {filterCount > 0 && (
-                        <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold tabular-nums text-primary-foreground">
+                        <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-micro font-semibold tabular-nums text-primary-foreground">
                           {filterCount}
                         </span>
                       )}

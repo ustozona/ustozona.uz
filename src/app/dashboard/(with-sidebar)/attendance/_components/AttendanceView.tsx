@@ -104,7 +104,7 @@ function AttendancePreview({
         </Avatar>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-foreground">{student.name}</p>
-          <Badge variant="secondary" className="mt-1 text-[10px]">{classLabel}</Badge>
+          <Badge size="sm" variant="secondary" className="mt-1">{classLabel}</Badge>
         </div>
       </div>
       <Separator />

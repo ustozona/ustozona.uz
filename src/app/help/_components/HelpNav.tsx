@@ -69,7 +69,7 @@ export function HelpNav() {
                     )}
                   />
                 ) : (
-                  <span className="shrink-0 text-[10px] font-normal uppercase tracking-wide text-muted-foreground/50">
+                  <span className="shrink-0 text-micro font-normal uppercase tracking-wide text-muted-foreground/50">
                     Tez orada
                   </span>
                 )}
@@ -83,7 +83,7 @@ export function HelpNav() {
                       return (
                         <li key={a.slug} className="flex items-center justify-between gap-2 rounded-md py-1 text-sm text-muted-foreground/50">
                           <span className="truncate">{a.title}</span>
-                          <span className="shrink-0 text-[10px] uppercase tracking-wide">Tez orada</span>
+                          <span className="shrink-0 text-micro font-normal uppercase tracking-wide">Tez orada</span>
                         </li>
                       );
                     }

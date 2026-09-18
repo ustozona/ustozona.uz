@@ -163,12 +163,12 @@ export default function VersionChip({
               {versionRangeLabel(versions, v)}
             </span>
             {isCurrent && (
-              <Badge className="h-5 bg-green-50 px-1.5 text-[10px] text-green-700 dark:bg-green-950 dark:text-green-300">
+              <Badge size="sm" className="h-5 bg-green-50 px-1.5 text-green-700 dark:bg-green-950 dark:text-green-300">
                 Joriy
               </Badge>
             )}
             {isFuture && (
-              <Badge className="h-5 bg-amber-50 px-1.5 text-[10px] text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              <Badge size="sm" className="h-5 bg-amber-50 px-1.5 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
                 Kelgusi
               </Badge>
             )}

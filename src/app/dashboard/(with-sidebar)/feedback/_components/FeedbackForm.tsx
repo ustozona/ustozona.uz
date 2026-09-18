@@ -184,7 +184,7 @@ export default function FeedbackForm({
       {/* Shunga oʻxshash fikrlar — dublikatni kamaytirish */}
       {similar.length > 0 && (
         <div className="mt-3 space-y-1.5 rounded-lg border border-border bg-muted/30 p-2">
-          <div className="flex items-center gap-1.5 px-1 text-[11px] font-semibold text-muted-foreground">
+          <div className="flex items-center gap-1.5 px-1 text-tag font-semibold text-muted-foreground">
             <SearchCheck className="size-3.5" />
             {t("similarTitle")}
           </div>

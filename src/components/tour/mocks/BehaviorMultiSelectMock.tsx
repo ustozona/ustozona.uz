@@ -33,7 +33,7 @@ export function BehaviorMultiSelectMock() {
           return (
             <div key={i} className="relative flex flex-col items-center gap-1">
               <span
-                className="relative flex size-9 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+                className="relative flex size-9 items-center justify-center rounded-full text-micro font-semibold text-white"
                 style={{ backgroundColor: "color-mix(in oklab, var(--primary) 55%, var(--muted-foreground))" }}
               >
                 {String.fromCharCode(65 + i)}

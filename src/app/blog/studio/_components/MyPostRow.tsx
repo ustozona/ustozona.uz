@@ -65,9 +65,9 @@ export function MyPostRow({ post }: { post: BlogPostSummary }) {
           {post.title}
         </Link>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <Badge
+          <Badge size="sm"
             variant={published ? "default" : "outline"}
-            className="h-5 px-1.5 text-[10px]"
+            className="h-5 px-1.5"
           >
             {published ? "Nashr qilingan" : archived ? "Arxivlangan" : "Qoralama"}
           </Badge>

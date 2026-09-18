@@ -39,7 +39,7 @@ export function AttendanceRing({
       trackMix={16}
     >
       {showLabel && (
-        <span className="text-[11px] font-semibold tabular-nums text-foreground">
+        <span className="text-tag font-semibold tabular-nums text-foreground">
           {Math.round(pct)}
           {showUnit && "%"}
         </span>

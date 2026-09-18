@@ -34,7 +34,7 @@ export default function BuilderRail({ panel, onSelect }: Props) {
             aria-pressed={isActive}
             onClick={() => onSelect(isActive ? null : item.id)}
             className={cn(
-              "flex w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium transition-colors",
+              "flex w-full flex-col items-center gap-1 rounded-lg px-1 py-2 text-micro font-medium transition-colors",
               isActive
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"

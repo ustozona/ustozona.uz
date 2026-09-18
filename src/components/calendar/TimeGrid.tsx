@@ -119,7 +119,7 @@ export function TimeGrid({
               </div>
             ) : (
               <div key={h} className={cn("relative", h > 0 && "border-t border-border")} style={{ height: pxPerHour }}>
-                <span className="absolute left-1/2 top-1 -translate-x-1/2 text-[11px] font-medium tabular-nums text-muted-foreground">
+                <span className="absolute left-1/2 top-1 -translate-x-1/2 text-tag font-medium tabular-nums text-muted-foreground">
                   {minToHHMM((startHour + h) * 60)}
                 </span>
               </div>

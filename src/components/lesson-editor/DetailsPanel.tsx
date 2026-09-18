@@ -242,11 +242,11 @@ export default function DetailsPanel({
                   return (
                     <div key={g.date} className="flex items-stretch gap-3 rounded-xl border border-border bg-card overflow-hidden">
                       <div className="flex flex-col items-center justify-center px-3 py-2 shrink-0 bg-muted/50" title={d.toLocaleDateString()}>
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{MONTHS_UZ_SHORT[d.getMonth()]}</span>
+                        <span className="text-micro font-bold uppercase tracking-wide text-muted-foreground">{MONTHS_UZ_SHORT[d.getMonth()]}</span>
                         <span className="text-lg font-bold leading-none text-foreground">{d.getDate()}</span>
                       </div>
                       <div className="flex-1 min-w-0 py-2 pr-2">
-                        <span className="block text-[11px] font-medium text-muted-foreground truncate">{DAYS_UZ_SUN[d.getDay()]}</span>
+                        <span className="block text-tag font-medium text-muted-foreground truncate">{DAYS_UZ_SUN[d.getDay()]}</span>
                         <div className="mt-1.5 space-y-1.5">
                           {g.items.map((it) => {
                             const cls = selectedClasses.find((c) => c.id === it.classId);

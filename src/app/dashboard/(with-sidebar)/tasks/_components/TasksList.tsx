@@ -131,7 +131,7 @@ export const TaskRow = forwardRef<
             {(task.tags ?? []).slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className={cn("shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium", TAG_PILL_CLASS)}
+                className={cn("shrink-0 rounded-full border px-2 py-0.5 text-tag font-medium", TAG_PILL_CLASS)}
               >
                 {tag}
               </span>
@@ -439,7 +439,7 @@ function TaskGroup({
       {label && (
         <div
           className={cn(
-            "px-2 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider",
+            "px-2 pb-1 pt-2 text-label font-medium uppercase tracking-wider",
             overdue ? "text-destructive" : "text-muted-foreground"
           )}
         >

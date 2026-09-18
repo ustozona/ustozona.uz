@@ -128,18 +128,18 @@ export default function ClassDetail({ identity, initialSection }: Props) {
             <div className="flex items-center gap-8 mt-5 px-1 mb-2">
               <div>
                 <p className="text-2xl font-bold leading-none tabular-nums text-foreground">{stats.students}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("studentsUnit")}</p>
+                <p className="text-label text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("studentsUnit")}</p>
               </div>
               <div>
                 <p className="text-2xl font-bold leading-none tabular-nums text-foreground">{stats.lessons}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("lessonsUnit")}</p>
+                <p className="text-label text-muted-foreground mt-1.5 uppercase tracking-wider font-semibold">{t("lessonsUnit")}</p>
               </div>
             </div>
 
             {/* Progress */}
             <div className="mt-5 space-y-2 px-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground font-medium uppercase tracking-wider text-[10px]">{t("masteredLabel")}</span>
+                <span className="text-muted-foreground font-medium uppercase tracking-wider text-micro">{t("masteredLabel")}</span>
                 <span className="font-bold tabular-nums text-foreground">{stats.progress}%</span>
               </div>
               <div className="h-1.5 bg-muted rounded-full overflow-hidden">

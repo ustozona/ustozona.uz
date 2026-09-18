@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
  *   olib tashlandi (AGENTS.md kod izohlarida boshqa mahsulot nomini
  *   taqiqlaydi), oʻlcham esa gridга qayta chiqarildi.
  *
- *   `text-[11px]` ataylab — `text-xs` (12px/16px line-height) qobiqni
+ *   `text-tag` ataylab — `text-xs` (12px/16px line-height) qobiqni
  *   siqib, matnni "bosilgan" koʻrsatardi.
  *
  * Qachon ishlatiladi: sinf nomi mustaqil YORLIQ sifatida turganda — boshqa
@@ -49,7 +49,7 @@ export function ClassBadge({
     <span
       style={{ ...tints.badge, ...tints.text }}
       className={cn(
-        "flex h-5 min-w-0 items-center gap-1 rounded-full pl-1 pr-2 text-[11px] font-semibold leading-none",
+        "flex h-5 min-w-0 items-center gap-1 rounded-full pl-1 pr-2 text-tag font-semibold leading-none",
         className,
       )}
     >

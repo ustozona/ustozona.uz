@@ -116,7 +116,7 @@ export function TypographyMuted({ className, ...props }: BaseProps<"p">) {
 export function TypographyLabel({ className, ...props }: BaseProps<"span">) {
   return (
     <span
-      className={cn("text-[11px] font-medium uppercase tracking-wider text-muted-foreground", className)}
+      className={cn("text-label font-medium uppercase tracking-wider text-muted-foreground", className)}
       {...props}
     />
   );

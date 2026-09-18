@@ -183,7 +183,7 @@ function ScreenCounter({ current }: { current: number }) {
       <span className="bg-border h-px w-3 rounded-full" aria-hidden="true" />
       <span
         aria-hidden="true"
-        className="border-border text-muted-foreground min-w-6 rounded border px-1 text-center font-mono text-[11px] leading-4 font-medium"
+        className="border-border text-muted-foreground min-w-6 rounded border px-1 text-center font-mono text-tag leading-4 font-medium"
       >
         {current}
       </span>

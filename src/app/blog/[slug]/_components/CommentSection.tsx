@@ -286,7 +286,7 @@ function CommentRow({
         <div className="flex items-center gap-1.5">
           <span className="text-sm font-medium text-foreground">{comment.name}</span>
           {comment.isPostAuthor && (
-            <span className="rounded border border-border px-1.5 py-px text-[10px] font-medium text-muted-foreground">
+            <span className="rounded border border-border px-1.5 py-px text-micro font-medium text-muted-foreground">
               Muallif
             </span>
           )}

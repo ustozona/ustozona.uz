@@ -687,11 +687,11 @@ function TemplateCard({ template }: { template: (typeof DEFAULT_TOPIC_TEMPLATES)
       </div>
       <div className="flex items-center justify-end gap-2">
         {isFormative ? (
-          <Badge variant="outline" className="gap-1 border-dashed text-[10px] text-muted-foreground">
+          <Badge size="sm" variant="outline" className="gap-1 border-dashed text-muted-foreground">
             <Ban className="size-3" /> {t("formativeBadge")}
           </Badge>
         ) : (
-          <Badge variant="secondary" className="gap-1 tabular-nums text-[10px]">
+          <Badge size="sm" variant="secondary" className="gap-1 tabular-nums">
             {t("summativeBadge")} {template.weightPercent}%
             <WeightDonut percent={template.weightPercent} compact />
           </Badge>
@@ -774,11 +774,11 @@ function GroupCard({
       <div className="flex items-center justify-between gap-2">
         <ClassesBadge group={group} totalClasses={totalClasses} classDataMap={classDataMap} />
         {isFormative ? (
-          <Badge variant="outline" className="gap-1 border-dashed text-[10px] text-muted-foreground">
+          <Badge size="sm" variant="outline" className="gap-1 border-dashed text-muted-foreground">
             <Ban className="size-3" /> {t("formativeBadge")}
           </Badge>
         ) : (
-          <Badge variant="secondary" className="gap-1 tabular-nums text-[10px]">
+          <Badge size="sm" variant="secondary" className="gap-1 tabular-nums">
             {t("summativeBadge")} {weightLabel}
             {uniform && <WeightDonut percent={minW} compact />}
           </Badge>
@@ -801,7 +801,7 @@ function ClassesBadge({
   const n = group.classIds.length;
   if (n === totalClasses) {
     return (
-      <Badge variant="outline" className="shrink-0 text-[10px] font-normal text-muted-foreground">
+      <Badge size="sm" variant="outline" className="shrink-0 font-normal text-muted-foreground">
         {t("allClasses")}
       </Badge>
     );
@@ -811,7 +811,7 @@ function ClassesBadge({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Badge variant="outline" className="shrink-0 text-[10px] font-normal text-muted-foreground">
+        <Badge size="sm" variant="outline" className="shrink-0 font-normal text-muted-foreground">
           {label}
         </Badge>
       </TooltipTrigger>
@@ -840,7 +840,7 @@ function WeightDonut({ percent, compact }: { percent: number; compact?: boolean 
           transform="rotate(-90 6 6)"
         />
       </svg>
-      {!compact && <span className="text-[10px] font-bold tabular-nums text-foreground">{percent}%</span>}
+      {!compact && <span className="text-micro font-bold tabular-nums text-foreground">{percent}%</span>}
     </span>
   );
 }

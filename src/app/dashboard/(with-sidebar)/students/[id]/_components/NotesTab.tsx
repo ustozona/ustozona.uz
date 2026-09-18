@@ -338,7 +338,7 @@ export default function NotesTab({
               <span className="flex items-center gap-2">
                 <Mic className="size-4" /> {t("modeAudio")}
               </span>
-              <Badge variant="secondary" className="text-[10px]">{t("soon")}</Badge>
+              <Badge size="sm" variant="secondary">{t("soon")}</Badge>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -54,7 +54,7 @@ export function ShapePicker() {
               <span className="group-hover:border-foreground/30 group-hover:bg-muted/50 grid h-12 w-full place-items-center rounded-md border transition-colors">
                 <ShapeGlyph id={id} />
               </span>
-              <span className="text-muted-foreground group-hover:text-foreground text-center text-[11px] leading-tight transition-colors">
+              <span className="text-muted-foreground group-hover:text-foreground text-center text-tag leading-tight transition-colors">
                 {SHAPES[id].label}
               </span>
             </button>

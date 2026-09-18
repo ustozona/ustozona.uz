@@ -6,7 +6,7 @@ import { extendTailwindMerge } from "tailwind-merge"
    text-foreground")` rolni butunlay tashlab yuborardi. Shu yerda
    font-size guruhiga qoʻshiladi. Yangi rol qoʻshilsa — bu roʻyxatga ham. */
 const TEXT_ROLES = [
-  "micro", "label", "caption", "body", "reading",
+  "micro", "tag", "label", "caption", "body", "reading",
   "title-sm", "title", "headline",
 ]
 

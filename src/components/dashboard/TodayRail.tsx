@@ -400,7 +400,7 @@ function DayGridView({
           className="absolute inset-x-0 flex items-start"
           style={{ top: (m - rangeStart) * PX_PER_MIN }}
         >
-          <span className="w-10 shrink-0 -translate-y-1/2 text-right text-[10px] tabular-nums text-muted-foreground/70">
+          <span className="w-10 shrink-0 -translate-y-1/2 text-right text-micro font-normal tabular-nums text-muted-foreground/70">
             {hourLabel(m)}
           </span>
           <div className="ml-2 h-px flex-1 bg-border/60" />
@@ -414,7 +414,7 @@ function DayGridView({
         >
           {/* Vaqt — kapsulada, kulrang soat yozuvlaridan ajralib tursin. */}
           <span className="flex w-10 shrink-0 -translate-y-1/2 justify-end">
-            <span className="rounded-full bg-destructive px-1.5 py-px text-[10px] font-semibold leading-none tabular-nums text-white">
+            <span className="rounded-full bg-destructive px-1.5 py-px text-micro font-semibold leading-none tabular-nums text-white">
               {fmtMin(nowMin)}
             </span>
           </span>

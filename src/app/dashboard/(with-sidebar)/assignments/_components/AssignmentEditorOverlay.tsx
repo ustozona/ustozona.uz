@@ -1276,7 +1276,7 @@ export default function AssignmentEditorOverlay({
                               className="flex items-stretch gap-3 overflow-hidden rounded-xl border border-border bg-card"
                             >
                               <div className="flex shrink-0 flex-col items-center justify-center bg-muted/50 px-3 py-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                <span className="text-micro font-bold uppercase tracking-wide text-muted-foreground">
                                   {MONTHS_UZ_SHORT[d.getMonth()]}
                                 </span>
                                 <span className="text-lg font-bold leading-none text-foreground">

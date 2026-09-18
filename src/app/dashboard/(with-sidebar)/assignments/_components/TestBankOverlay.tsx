@@ -623,15 +623,15 @@ function BankCard({
       </button>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+        <Badge size="sm" variant="outline" className="text-muted-foreground">
           {t("questionCount", { count: test.questionCount })}
         </Badge>
         {/* `null` = fansiz/sinfsiz — bu HAQIQIY holat, shuning uchun
             boʻsh qoldirilmay ochiq yoziladi. */}
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+        <Badge size="sm" variant="outline" className="text-muted-foreground">
           {test.subject ?? t("subjectNone")}
         </Badge>
-        <Badge variant="outline" className="text-[10px] text-muted-foreground">
+        <Badge size="sm" variant="outline" className="text-muted-foreground">
           {test.grade ?? t("gradeNone")}
         </Badge>
       </div>
