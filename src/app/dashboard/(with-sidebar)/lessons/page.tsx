@@ -34,7 +34,8 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks, X } from "lucide-react";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks } from "lucide-react";
+import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
   ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuSeparator,
@@ -348,6 +349,10 @@ export default function LessonsPage() {
           <Pencil className="size-4" />
           {t("editUnit")}
         </ContextMenuItem>
+        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startUnitPick(unit.id)}>
+          <ListChecks className="size-4" />
+          {t("selectMenuItem")}
+        </ContextMenuItem>
         <ContextMenuItem
           variant="destructive"
           className="gap-2 cursor-pointer"
@@ -365,16 +370,21 @@ export default function LessonsPage() {
     const { total, pct } = unitProgress(unit.id);
     return withUnitMenu(unit,
       <button
-        onClick={() => setSelectedUnitId(unit.id)}
+        onClick={() => (unitPickMode
+          ? toggleIn(selectedUnitIds, setSelectedUnitIds, unit.id)
+          : setSelectedUnitId(unit.id))}
         className={cn(
           "list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer",
           isOver && "ring-2"
         )}
-        style={{ ["--card-accent" as string]: selectedClassHex, ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
+        data-active={unitPickMode && selectedUnitIds.has(unit.id) ? "true" : undefined}
+        style={{ ["--card-accent" as string]: selectedClassHex, ...(unitPickMode && selectedUnitIds.has(unit.id) ? selectedClassTints.tint : {}), ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
+        {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
         <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
           <Layers className="size-5" />
         </div>
+        )}
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
             {pad(unit.number)}. {unit.title}
@@ -403,7 +413,9 @@ export default function LessonsPage() {
     const { total } = unitProgress(unit.id);
     return withUnitMenu(unit,
       <button
-        onClick={() => setSelectedUnitId(null)}
+        onClick={() => (unitPickMode
+          ? toggleIn(selectedUnitIds, setSelectedUnitIds, unit.id)
+          : setSelectedUnitId(null))}
         className={cn(
           "list-card w-full flex items-center text-left gap-3 p-4 cursor-pointer",
           isOver && "ring-2"
@@ -411,9 +423,11 @@ export default function LessonsPage() {
         data-active="true"
         style={{ ["--card-accent" as string]: selectedClassHex, ...selectedClassTints.tint, ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
+        {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
         <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
           <Layers className="size-5" />
         </div>
+        )}
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{pad(unit.number)}. {unit.title}</h4>
           <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>
@@ -430,11 +444,15 @@ export default function LessonsPage() {
     const { total } = unitProgress(unit.id);
     return withUnitMenu(unit,
       <button
-        onClick={() => setSelectedUnitId(unit.id)}
+        onClick={() => (unitPickMode
+          ? toggleIn(selectedUnitIds, setSelectedUnitIds, unit.id)
+          : setSelectedUnitId(unit.id))}
         className={cn("list-row group w-full", isOver && "ring-2 rounded-lg")}
         style={isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : undefined}
       >
-        <ClassSwatch hex={selectedClassHex} />
+        {unitPickMode
+          ? <Checkbox checked={selectedUnitIds.has(unit.id)} aria-label={t("selectAria")} className="pointer-events-none shrink-0" />
+          : <ClassSwatch hex={selectedClassHex} />}
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           {pad(unit.number)}. {unit.title}
         </span>
@@ -443,72 +461,83 @@ export default function LessonsPage() {
     );
   };
 
-  /* ── OMMAVIY TANLASH ────────────────────────────────────────────────
-     Bitta rejim ikkala ustunni ham qamraydi: boʻlim ham, dars ham bir
-     vaqtda belgilanadi va bitta amalda oʻchadi. Ikki alohida rejim
-     («boʻlimlarni tanlash» / «darslarni tanlash») foydalanuvchiga
-     ortiqcha savol beradi — u «shularni oʻchir» deb oʻylaydi, turini
-     emas. */
-  const [selectMode, setSelectMode] = useState(false);
-  const [pickedUnitIds, setPickedUnitIds] = useState<Set<string>>(new Set());
-  const [pickedLessonIds, setPickedLessonIds] = useState<Set<string>>(new Set());
-  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false);
+  /* ── GURUHAVIY TANLASH ─────────────────────────────────────
+     Loyihaning yagona nashqi (sinflar, oʻquvchilar, materiallar): qatorda
+     doimiy katakcha + tanlov boʻlsa `BulkActionBar` suzib chiqadi.
+     Alohida «tanlash rejimi» tugmasi YOʻQ — boshqa sahifalarda ham yoʻq.
+
+     Ikkala ustun OZ tanlovini yuritadi: boʻlim va dars boshqa-boshqa
+     obyekt, va ularni bitta roʻyxatga qoʻshib oʻchirish «nimani
+     oʻchiryapman?» degan savolni tugʻdiradi. Shu sabab ikkita mustaqil
+     Set va ikkita panel. */
+  const [selectedUnitIds, setSelectedUnitIds] = useState<Set<string>>(new Set());
+  const [selectedLessonIds, setSelectedLessonIds] = useState<Set<string>>(new Set());
+  /** Qaysi panel tasdiq soʻrayapti. */
+  const [bulkTarget, setBulkTarget] = useState<"units" | "lessons" | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
 
-  const exitSelectMode = () => {
-    setSelectMode(false);
-    setPickedUnitIds(new Set());
-    setPickedLessonIds(new Set());
-  };
-  // Sinf yoki boʻlim almashsa tanlov qoldigʻi ergashib yurmasin.
-  useEffect(() => { exitSelectMode(); }, [effectiveClassId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Sinf almashsa tanlov qoldigʻi ergashib yurmasin.
+  useEffect(() => {
+    setUnitPickMode(false);
+    setLessonPickMode(false);
+    setSelectedUnitIds(new Set());
+    setSelectedLessonIds(new Set());
+  }, [effectiveClassId]);
+  // Boʻlim almashsa faqat DARS tanlovi tozalanadi (roʻyxat butunlay boshqa).
+  useEffect(() => { setLessonPickMode(false); setSelectedLessonIds(new Set()); }, [effectiveUnitId]);
 
-  const togglePick = (kind: "unit" | "lesson", id: string) => {
-    const [set, apply] = kind === "unit"
-      ? [pickedUnitIds, setPickedUnitIds] as const
-      : [pickedLessonIds, setPickedLessonIds] as const;
+  const toggleIn = (
+    set: Set<string>,
+    apply: (v: Set<string>) => void,
+    id: string
+  ) => {
     const next = new Set(set);
     if (next.has(id)) next.delete(id); else next.add(id);
     apply(next);
   };
 
-  /* Tanlanganlarning toʻliq taʼsiri: belgilangan darslar + belgilangan
-     boʻlimlar bilan birga ketadigan darslar. Boʻlimi belgilanmagan
-     BOSHQA sinfda ham turgan dars saqlanadi — faqat bogʻlanish uziladi. */
-  const bulkImpact = useMemo(() => {
-    const unitSet = pickedUnitIds;
+  const allUnitsSelected = unitsForClass.length > 0 && selectedUnitIds.size === unitsForClass.length;
+  const allLessonsSelected = lessonsForUnit.length > 0 && selectedLessonIds.size === lessonsForUnit.length;
+
+  /* Tanlangan boʻlimlarning toʻliq taʼsiri. Boʻlimi tanlanmagan BOSHQA
+     joyda ham turgan dars saqlanadi — undan faqat bogʻlanish uziladi. */
+  const unitsBulkImpact = useMemo(() => {
     const cascaded = lessonsSource.filter((l) => {
       const uids = lessonUnitIds(l);
-      return uids.length > 0 && uids.some((u) => unitSet.has(u)) && uids.every((u) => unitSet.has(u));
+      return uids.length > 0 && uids.every((u) => selectedUnitIds.has(u));
     });
-    const ids = new Set([...pickedLessonIds, ...cascaded.map((l) => l.id)]);
-    const removed = lessonsSource.filter((l) => ids.has(l.id));
     return {
-      units: unitSet.size,
+      units: selectedUnitIds.size,
+      lessons: cascaded.length,
+      sessions: cascaded.reduce((n, l) => n + lessonSessions(l).length, 0),
+      removed: cascaded,
+    };
+  }, [selectedUnitIds, lessonsSource]);
+
+  const lessonsBulkImpact = useMemo(() => {
+    const removed = lessonsSource.filter((l) => selectedLessonIds.has(l.id));
+    return {
       lessons: removed.length,
       sessions: removed.reduce((n, l) => n + lessonSessions(l).length, 0),
       removed,
-      lessonIds: [...ids],
     };
-  }, [pickedUnitIds, pickedLessonIds, lessonsSource]);
+  }, [selectedLessonIds, lessonsSource]);
 
-  const pickedCount = pickedUnitIds.size + pickedLessonIds.size;
-
-  const handleBulkDelete = async () => {
-    const unitIds = [...pickedUnitIds];
-    const { lessonIds, removed } = bulkImpact;
-    const removedUnits = unitsSource.filter((u) => pickedUnitIds.has(u.id));
+  const handleBulkDeleteUnits = async () => {
+    const unitIds = [...selectedUnitIds];
+    const { removed } = unitsBulkImpact;
+    const removedUnits = unitsSource.filter((u) => selectedUnitIds.has(u.id));
     setBulkBusy(true);
-    const ok = await commitLessonsDelete({ unitIds, lessonIds });
+    const ok = await commitLessonsDelete({ unitIds, lessonIds: removed.map((l) => l.id) });
     setBulkBusy(false);
     if (!ok) return;
-    lessonIds.forEach((id) => deleteLesson(id));
+    removed.forEach((l) => deleteLesson(l.id));
     // Darslar allaqachon oʻchdi — bu yerda boʻlim faqat qolganlardan uziladi.
     unitIds.forEach((id) => deleteUnit(id, { withLessons: false }));
-    if (effectiveUnitId && pickedUnitIds.has(effectiveUnitId)) setSelectedUnitId(null);
-    setBulkConfirmOpen(false);
-    exitSelectMode();
-    toast.success(t("bulkDeletedToast", { units: removedUnits.length, lessons: removed.length }), {
+    if (effectiveUnitId && selectedUnitIds.has(effectiveUnitId)) setSelectedUnitId(null);
+    setBulkTarget(null);
+    endUnitPick();
+    toast.success(t("bulkUnitsDeletedToast", { units: removedUnits.length, lessons: removed.length }), {
       action: {
         label: t("undo"),
         onClick: () => {
@@ -520,32 +549,51 @@ export default function LessonsPage() {
     });
   };
 
-  /* Tanlash rejimida karta oʻz amalini bajarmaydi: ustiga shaffof tugma
-     qoʻyiladi va bosish belgilashga aylanadi. Shu yoʻl render
-     funksiyalariga umuman tegmaydi — ular bitta joyda qoladi. */
-  const pickWrap = (kind: "unit" | "lesson", id: string, node: ReactNode) => {
-    if (!selectMode) return node;
-    const picked = kind === "unit" ? pickedUnitIds.has(id) : pickedLessonIds.has(id);
-    return (
-      <div key={id} className="flex items-center gap-2.5">
-        <Checkbox
-          checked={picked}
-          onCheckedChange={() => togglePick(kind, id)}
-          aria-label={t("selectAria")}
-          className="shrink-0"
-        />
-        <div className="relative min-w-0 flex-1">
-          {node}
-          <button
-            type="button"
-            aria-label={t("selectAria")}
-            onClick={() => togglePick(kind, id)}
-            className="absolute inset-0 rounded-xl"
-          />
-        </div>
-      </div>
-    );
+  const handleBulkDeleteLessons = async () => {
+    const { removed } = lessonsBulkImpact;
+    setBulkBusy(true);
+    const ok = await commitLessonsDelete({ lessonIds: removed.map((l) => l.id) });
+    setBulkBusy(false);
+    if (!ok) return;
+    removed.forEach((l) => deleteLesson(l.id));
+    setBulkTarget(null);
+    endLessonPick();
+    toast.success(t("bulkLessonsDeletedToast", { lessons: removed.length }), {
+      action: {
+        label: t("undo"),
+        onClick: () => removed.forEach((l) => restoreLesson(l)),
+      },
+    });
   };
+
+  /* Tanlash rejimi kartaning OʻZ doirasini egallaydi: 44px glif katakchaga
+     almashadi. Shu sabab tinch holatda roʻyxatda hech qanday qoʻshimcha
+     belgi yoʻq — na chetda boʻsh yoʻlak, na doimiy katakcha ustuni.
+
+     Kirish nuqtasi ikkita, natija bitta: kontekst menyudagi «Tanlash»
+     (bilganlar uchun tez) va sarlavhadagi ikonka (topilishi uchun). Faqat
+     oʻng tugmaga tayanib boʻlmaydi — koʻpchilik uni bosib koʻrmaydi. */
+  const [unitPickMode, setUnitPickMode] = useState(false);
+  const [lessonPickMode, setLessonPickMode] = useState(false);
+
+  const startUnitPick = (id?: string) => {
+    setUnitPickMode(true);
+    if (id) setSelectedUnitIds(new Set([id]));
+  };
+  const startLessonPick = (id?: string) => {
+    setLessonPickMode(true);
+    if (id) setSelectedLessonIds(new Set([id]));
+  };
+  const endUnitPick = () => { setUnitPickMode(false); setSelectedUnitIds(new Set()); };
+  const endLessonPick = () => { setLessonPickMode(false); setSelectedLessonIds(new Set()); };
+
+  /** Glif oʻrnidagi katakcha. `pointer-events-none` — bosishni kartaning
+      oʻzi qabul qiladi (karta `<button>`, ichiga tugma qoʻyib boʻlmaydi). */
+  const pickCircle = (checked: boolean) => (
+    <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center border border-border bg-card">
+      <Checkbox checked={checked} aria-label={t("selectAria")} className="pointer-events-none" />
+    </div>
+  );
 
   // "Boʻlimsiz" — keng ustun
   const renderNoUnitWide = (isOver = false) => {
@@ -656,18 +704,19 @@ export default function LessonsPage() {
               <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {(unitsForClass.length > 0 || lessonsForUnit.length > 0) && (
+              {unitsForClass.length > 0 && (
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="gap-1.5 text-muted-foreground hover:text-foreground"
-                  onClick={() => (selectMode ? exitSelectMode() : setSelectMode(true))}
+                  size="icon"
+                  title={t("selectMenuItem")}
+                  aria-pressed={unitPickMode}
+                  className={cn("text-muted-foreground hover:text-foreground", unitPickMode && "text-foreground bg-muted")}
+                  onClick={() => (unitPickMode ? endUnitPick() : startUnitPick())}
                 >
-                  {selectMode ? <X className="size-4" /> : <ListChecks className="size-4" />}
-                  <span>{selectMode ? t("selectModeExit") : t("selectModeStart")}</span>
+                  <ListChecks className="size-4" />
                 </Button>
               )}
-              {unitsForClass.length > 0 && !selectMode && (
+              {unitsForClass.length > 0 && (
                 <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
                   <Plus className="size-4" />
                   <span>{t("addUnit")}</span>
@@ -679,6 +728,24 @@ export default function LessonsPage() {
           {/* List */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
             <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+            {unitPickMode && (
+              <BulkActionBar>
+                <BulkActionCount>{t("selectedCount", { count: selectedUnitIds.size })}</BulkActionCount>
+                <BulkActionDivider />
+                {!allUnitsSelected && (
+                  <BulkActionButton onClick={() => setSelectedUnitIds(new Set(unitsForClass.map((u) => u.id)))}>
+                    {t("selectAll")}
+                  </BulkActionButton>
+                )}
+                {selectedUnitIds.size > 0 && (
+                  <BulkActionButton icon={<Trash2 className="size-4" />} variant="destructive" onClick={() => setBulkTarget("units")}>
+                    {t("delete")}
+                  </BulkActionButton>
+                )}
+                <BulkActionDivider />
+                <BulkActionButton onClick={endUnitPick}>{t("cancel")}</BulkActionButton>
+              </BulkActionBar>
+            )}
             <ScrollArea className="h-full w-full">
               <div className="px-3 pt-4 pb-5 space-y-1.5">
                 {detailMode ? (
@@ -686,7 +753,7 @@ export default function LessonsPage() {
                   <>
                     {unitsForClass.map((unit) => (
                       <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
-                        {(isOver) => pickWrap("unit", unit.id, unit.id === effectiveUnitId ? renderUnitSelected(unit, isOver) : renderUnitCompact(unit, isOver))}
+                        {(isOver) => (unit.id === effectiveUnitId ? renderUnitSelected(unit, isOver) : renderUnitCompact(unit, isOver))}
                       </UnitDropZone>
                     ))}
                     <UnitDropZone id="unit-none">{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
@@ -697,7 +764,7 @@ export default function LessonsPage() {
                   <>
                     {unitsForClass.map((unit) => (
                       <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
-                        {(isOver) => pickWrap("unit", unit.id, renderUnitWide(unit, isOver))}
+                        {(isOver) => renderUnitWide(unit, isOver)}
                       </UnitDropZone>
                     ))}
                     <UnitDropZone id="unit-none">{(isOver) => renderNoUnitWide(isOver)}</UnitDropZone>
@@ -860,6 +927,18 @@ export default function LessonsPage() {
                 <Button variant="ghost" size="icon" title={t("sortAria")} className="text-muted-foreground hover:text-foreground">
                   <ArrowDownUp className="size-4" />
                 </Button>
+                {lessonsForUnit.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={t("selectMenuItem")}
+                    aria-pressed={lessonPickMode}
+                    className={cn("text-muted-foreground hover:text-foreground", lessonPickMode && "text-foreground bg-muted")}
+                    onClick={() => (lessonPickMode ? endLessonPick() : startLessonPick())}
+                  >
+                    <ListChecks className="size-4" />
+                  </Button>
+                )}
               </div>
               {effectiveUnitId && effectiveUnitId !== NONE && lessonsForUnit.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLessonChoice}>
@@ -873,6 +952,24 @@ export default function LessonsPage() {
           {/* List */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
             <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+            {lessonPickMode && (
+              <BulkActionBar>
+                <BulkActionCount>{t("selectedCount", { count: selectedLessonIds.size })}</BulkActionCount>
+                <BulkActionDivider />
+                {!allLessonsSelected && (
+                  <BulkActionButton onClick={() => setSelectedLessonIds(new Set(lessonsForUnit.map((l) => l.id)))}>
+                    {t("selectAll")}
+                  </BulkActionButton>
+                )}
+                {selectedLessonIds.size > 0 && (
+                  <BulkActionButton icon={<Trash2 className="size-4" />} variant="destructive" onClick={() => setBulkTarget("lessons")}>
+                    {t("delete")}
+                  </BulkActionButton>
+                )}
+                <BulkActionDivider />
+                <BulkActionButton onClick={endLessonPick}>{t("cancel")}</BulkActionButton>
+              </BulkActionBar>
+            )}
             <ScrollArea className="h-full w-full">
               <div className="px-4 pt-4 pb-5 space-y-3">
                 {lessonsForUnit.length === 0 ? (
@@ -899,18 +996,23 @@ export default function LessonsPage() {
                       ...unitsForClass.filter((u) => u.id !== lesson.unitId),
                       ...(lesson.unitId !== null ? [null] : []),
                     ];
-                    return pickWrap("lesson", lesson.id,
+                    return (
                     <ContextMenu key={lesson.id}>
                     <ContextMenuTrigger asChild>
                       <DraggableLesson
                         id={lesson.id}
-                        onClick={() => openLesson(lesson.id)}
+                        onClick={() => (lessonPickMode
+                          ? toggleIn(selectedLessonIds, setSelectedLessonIds, lesson.id)
+                          : openLesson(lesson.id))}
                         className="list-card group flex items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
-                        style={{ ["--card-accent" as string]: selectedClassHex }}
+                        data-active={lessonPickMode && selectedLessonIds.has(lesson.id) ? "true" : undefined}
+                        style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
+                        {lessonPickMode ? pickCircle(selectedLessonIds.has(lesson.id)) : (
                         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
                           <FileText className="size-5" />
                         </div>
+                        )}
                         <div className="min-w-0 flex-1">
                           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
                             {pad(lesson.number)}. {lesson.title}
@@ -942,6 +1044,11 @@ export default function LessonsPage() {
                       </DraggableLesson>
                     </ContextMenuTrigger>
                     <ContextMenuContent>
+                      <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startLessonPick(lesson.id)}>
+                        <ListChecks className="size-4" />
+                        {t("selectMenuItem")}
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
                       <ContextMenuSub>
                         <ContextMenuSubTrigger className="gap-2 cursor-pointer">
                           <FolderInput className="size-4" />
@@ -1016,46 +1123,34 @@ export default function LessonsPage() {
           />
         )}
 
-        {/* Tanlov paneli — faqat biror narsa belgilanganda koʻrinadi. */}
-        {selectMode && pickedCount > 0 && (
-          <div
-            className="fixed bottom-6 z-40 flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2.5 shadow-lg"
-            style={{ left: "50%", transform: "translateX(-50%)" }}
-          >
-            <span className="text-sm font-medium text-foreground whitespace-nowrap">
-              {t("selectedCount", { count: pickedCount })}
-            </span>
-            <Button
-              size="sm"
-              className="h-8 gap-1.5 bg-destructive text-white hover:bg-destructive/90"
-              onClick={() => setBulkConfirmOpen(true)}
-            >
-              <Trash2 className="size-3.5" />
-              {t("delete")}
-            </Button>
-            <Button size="sm" variant="ghost" className="h-8" onClick={exitSelectMode}>
-              {t("cancel")}
-            </Button>
-          </div>
-        )}
-
-        <AlertDialog open={bulkConfirmOpen} onOpenChange={(o) => !o && setBulkConfirmOpen(false)}>
+        <AlertDialog open={bulkTarget !== null} onOpenChange={(o) => !o && setBulkTarget(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t("bulkDeleteTitle")}</AlertDialogTitle>
+              <AlertDialogTitle>
+                {bulkTarget === "units" ? t("bulkDeleteUnitsTitle") : t("bulkDeleteLessonsTitle")}
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                {t("bulkDeleteDescription", { units: bulkImpact.units, lessons: bulkImpact.lessons })}
+                {bulkTarget === "units"
+                  ? t("bulkDeleteUnitsDescription", { units: unitsBulkImpact.units, lessons: unitsBulkImpact.lessons })
+                  : t("bulkDeleteLessonsDescription", { lessons: lessonsBulkImpact.lessons })}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            {bulkImpact.sessions > 0 && (
-              <TypographyMuted>{t("bulkDeleteSessions", { sessions: bulkImpact.sessions })}</TypographyMuted>
+            {(bulkTarget === "units" ? unitsBulkImpact.sessions : lessonsBulkImpact.sessions) > 0 && (
+              <TypographyMuted>
+                {t("bulkDeleteSessions", {
+                  sessions: bulkTarget === "units" ? unitsBulkImpact.sessions : lessonsBulkImpact.sessions,
+                })}
+              </TypographyMuted>
             )}
             <AlertDialogFooter>
               <AlertDialogCancel disabled={bulkBusy}>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-white hover:bg-destructive/90"
                 disabled={bulkBusy}
-                onClick={(e) => { e.preventDefault(); void handleBulkDelete(); }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  void (bulkTarget === "units" ? handleBulkDeleteUnits() : handleBulkDeleteLessons());
+                }}
               >
                 {t("delete")}
               </AlertDialogAction>

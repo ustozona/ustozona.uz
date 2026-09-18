@@ -41,7 +41,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     type: "yangi",
     title: "Boʻlim va darslarni belgilab, bir yoʻla oʻchirish",
     body:
-      "Darslar sahifasida «Tanlash» tugmasi paydo boʻldi. Bosasiz — boʻlimlar va darslar yonida katakcha chiqadi, keraklilarini belgilab bitta amalda oʻchirasiz. Oʻchirishdan oldin nechta boʻlim, nechta dars va jadvaldan nechta yozuv ketishi aytiladi; xato belgilagan boʻlsangiz xabarnomadagi «Bekor qilish» hammasini joyiga qaytaradi. Ilgari darslarni bittalab oʻchirish kerak edi.",
+      "Roʻyxat tepasidagi belgilash tugmasini bosasiz — yoki kartani oʻng tugma bilan bosib «Tanlash» ni tanlaysiz — va kartalardagi doira katakchaga aylanadi. Keraklilarini belgilab, pastda chiqqan panel orqali bir yoʻla oʻchirasiz. Boʻlimlar va darslar alohida tanlanadi, shuning uchun nimani oʻchirayotganingiz doim aniq. Oʻchirishdan oldin nechta dars va jadvaldan nechta yozuv ketishi aytiladi; xato belgilagan boʻlsangiz xabarnomadagi «Bekor qilish» hammasini joyiga qaytaradi. Ilgari darslarni bittalab oʻchirish kerak edi.",
     href: "/dashboard/lessons",
   },
   {
