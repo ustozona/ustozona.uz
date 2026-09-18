@@ -61,12 +61,22 @@ daraxt bir zumda kattalashadi. Lekin:
 
 - `text-[10px]`, `p-[13px]` kabi **ixtiyoriy qiymatlar bu tizimga
   boʻysunmaydi** — projektorda ham 10px qoladi;
-- `.heading-*`, `.text-caption` va boshqa shkala klasslari `--typo-*`
-  dan oʻqiydi, `--text-*` dan emas — **ular ham sirt bilan
-  kattalashmaydi**.
+- shkala klasslari (`.heading-*`, `.text-caption` …) esa boʻysunadi:
+  `src/styles/surfaces.css` sirt uchun `--typo-*` ni ham qayta
+  belgilaydi. Faqat `.text-micro` qatʼiy 0.625rem edi.
 
-Yaʼni muammo endi faqat estetika emas: ixtiyoriy qiymat va alohida
-klass tizimi **funksional xato** — sinf ekranida matn mayda qoladi.
+Yaʼni muammo endi faqat estetika emas: ixtiyoriy qiymat **funksional
+xato** — sinf ekranida matn mayda qoladi.
+
+### Yana bir topilma — rollar eʼtiborsiz qoldirardi
+
+Eski shkala klasslari CSS qatlamidan tashqarida edi va har qanday
+Tailwind utility'sidan kuchli chiqardi. Natijada ~32 joyda yozilgan
+`text-label font-semibold`, `text-body leading-relaxed`,
+`text-caption text-foreground` **jimgina ishlamasdi**. Bundan tashqari
+`cn()` (tailwind-merge) `text-caption` ni rang deb oʻylab, yonida rang
+utility'si boʻlsa rolni butunlay tashlab yuborardi. Ikkalasi 2-bosqichda
+(PR #155) tuzatildi.
 
 ---
 
@@ -216,8 +226,8 @@ Istisnolar fayl ichida izoh bilan: `// design-tokens-ignore: <sabab>`
 
 | | Nima | Fayllar | Xavf |
 |---|---|---|---|
-| 1 | Darvoza — **faqat hisoblagich**, bazaviy son bilan | `scripts/`, `package.json` | yoʻq — koʻrinish oʻzgarmaydi |
-| 2 | Rollar `@theme` ga; eski klasslar alias; sirt bloklari rollarni ham qamraydi | `globals.css`, `DESIGN.md` §3 | past — qiymatlar hozirgisi bilan bir xil |
+| 1 ✅ #154 | Darvoza — **faqat hisoblagich**, bazaviy son bilan | `scripts/`, `package.json` | yoʻq — koʻrinish oʻzgarmaydi |
+| 2 ✅ #155 | Rollar `@theme` ga; eski klasslar alias; `cn()` tuzatildi | `globals.css`, `utils.ts`, `DESIGN.md` §3 | past — qiymatlar bir xil, ~32 joyda override endi ishlaydi |
 | 3 | `DESIGN.md` §3.5 «Boʻshliq shkalasi» — rol jadvali | `DESIGN.md`, `docs/design-system.md` | yoʻq |
 | 4 | Pastki chegara (10 joy) + 13px (13 joy) | 9 + ~8 fayl | past, koʻrinadi |
 | 5 | Namuna koʻchish: `EventCard` | `calendar/EventCard.tsx` | past |
