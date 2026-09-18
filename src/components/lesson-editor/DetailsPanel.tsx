@@ -27,7 +27,7 @@ import { ClassSwatch, ClassSwatchStack } from "@/components/ClassSwatch";
 import { EditorSidePanelHeader } from "@/components/ui/editor-side-panel";
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <h3 className="text-label mb-2.5">{children}</h3>
+  <h3 className="text-label mb-2">{children}</h3>
 );
 
 const dot = (hex: string) => <ClassSwatch hex={hex} />;
@@ -100,14 +100,14 @@ export default function DetailsPanel({
                 <FieldButton>
                   <span className="flex items-center gap-1.5 flex-wrap min-w-0">
                     {selectedClasses.length === 0 ? (
-                      <span className="flex items-center gap-2.5 text-muted-foreground">
+                      <span className="flex items-center gap-2 text-muted-foreground">
                         <Ban className="size-4 shrink-0" /> {t("noClassSelected")}
                       </span>
                     ) : selectedClasses.length > 4 ? (
                       /* Yigʻiq koʻrinish — ustma-ust ClassSwatch stack + soni */
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="flex items-center gap-2.5 min-w-0">
+                          <span className="flex items-center gap-2 min-w-0">
                             <ClassSwatchStack
                               hexes={selectedClasses.map((c) => CLASS_COLOR_HEX[classColor(c)])}
                               max={4}
@@ -134,7 +134,7 @@ export default function DetailsPanel({
                 const hex = CLASS_COLOR_HEX[classColor(c)];
                 const on = selectedIds.includes(c.id);
                 return (
-                  <DropdownMenuItem key={c.id} onSelect={(e) => { e.preventDefault(); toggleClass(c.id); }} className="gap-2.5">
+                  <DropdownMenuItem key={c.id} onSelect={(e) => { e.preventDefault(); toggleClass(c.id); }} className="gap-2">
                     <span className={`size-4 rounded border flex items-center justify-center shrink-0 ${on ? "border-transparent" : "border-border"}`}
                       style={on ? { backgroundColor: hex } : undefined}>
                       {on && <Check className="size-3 text-white" />}
@@ -156,7 +156,7 @@ export default function DetailsPanel({
               {t("selectClassFirst")}
             </p>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {selectedClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
                 const unitsForClass = units.filter((u) => u.classId === c.id).sort((a, b) => a.number - b.number);
@@ -181,7 +181,7 @@ export default function DetailsPanel({
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[260px] scrollbar-hover overflow-y-auto p-1.5">
-                      <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-2.5 py-2 rounded-lg">
+                      <DropdownMenuItem onSelect={() => onSetUnitForClass(c.id, null)} className="gap-2 py-2 rounded-lg">
                         <span className="size-2.5 rounded-full shrink-0 bg-muted-foreground/25" />
                         <span className="flex-1 truncate text-muted-foreground">{t("noUnit")}</span>
                         {!unit && <Check className="size-4 shrink-0" />}
@@ -191,7 +191,7 @@ export default function DetailsPanel({
                       ) : unitsForClass.map((u) => {
                         const on = u.id === curUnitId;
                         return (
-                          <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-2.5 py-2 rounded-lg">
+                          <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-2 py-2 rounded-lg">
                             {dot(hex)}
                             <span className="flex-1 truncate">{String(u.number).padStart(2, "0")}. {u.title}</span>
                             {on && <Check className="size-4 shrink-0" />}
@@ -275,7 +275,7 @@ export default function DetailsPanel({
                 <Popover open={schedOpen} onOpenChange={setSchedOpen}>
                   <PopoverTrigger asChild>
                     <button type="button"
-                      className="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
+                      className="w-full flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
                       <CalendarDays className="size-4" />
                       {allItems.length ? t("addMoreDate") : t("addDate")}
                     </button>
@@ -298,7 +298,7 @@ export default function DetailsPanel({
           <SectionLabel>{t("standards")}</SectionLabel>
 
           {attachedStandards.length > 0 && (
-            <div className="flex flex-col gap-2 mb-2.5">
+            <div className="flex flex-col gap-2 mb-2">
               {attachedStandards.map((std) => (
                 <HoverCard key={std.id} openDelay={150}>
                   <HoverCardTrigger asChild>
@@ -321,7 +321,7 @@ export default function DetailsPanel({
                     </div>
                   </HoverCardTrigger>
                   <HoverCardContent side="left" align="center" sideOffset={12} className="w-72">
-                    <div className="flex items-center gap-2.5 mb-3">
+                    <div className="flex items-center gap-3 mb-3">
                       <span className="size-9 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
                         <Target className="size-4" />
                       </span>
@@ -356,7 +356,7 @@ export default function DetailsPanel({
             <Popover open={stdOpen} onOpenChange={setStdOpen}>
               <PopoverTrigger asChild>
                 <button type="button"
-                  className="w-full flex items-center justify-center gap-2 rounded-full border border-dashed border-border py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
+                  className="w-full flex items-center justify-center gap-2 rounded-full border border-dashed border-border py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
                   <Plus className="size-4" />
                   {t("addStandard")}
                 </button>
@@ -376,7 +376,7 @@ export default function DetailsPanel({
                             key={std.id}
                             value={`${std.id} ${std.desc}`}
                             onSelect={() => toggleStandard(std.id)}
-                            className="items-start gap-2.5"
+                            className="items-start gap-2"
                           >
                             <Target className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                             <div className="min-w-0">

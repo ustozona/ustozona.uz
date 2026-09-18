@@ -644,7 +644,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                             <Badge
                               variant="secondary"
                               className={cn(
-                                "gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border-transparent",
+                                "gap-1 rounded-full px-3 py-1 text-xs font-semibold border-transparent",
                                 STATUS_STYLES[lesson.status]
                               )}
                             >

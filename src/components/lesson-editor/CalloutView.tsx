@@ -55,7 +55,7 @@ export default function CalloutView({ node, updateAttributes }: NodeViewProps) {
                 setTypeOpen(false);
               }}
               className={cn(
-                "w-full flex items-center gap-2.5 rounded-sm px-2 py-1.5 text-sm text-left",
+                "w-full flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-left",
                 "hover:bg-accent hover:text-accent-foreground transition-colors"
               )}
             >

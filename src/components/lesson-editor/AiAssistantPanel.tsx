@@ -498,7 +498,7 @@ export default function AiAssistantPanel({
                   )}
                   <div className={cn("min-w-0 max-w-[85%]", m.role === "user" && "order-1")}>
                     {m.role === "user" ? (
-                      <div className="rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-3.5 py-2 text-sm whitespace-pre-wrap break-words">{m.content}</div>
+                      <div className="rounded-2xl rounded-tr-sm bg-primary text-primary-foreground px-4 py-2 text-sm whitespace-pre-wrap break-words">{m.content}</div>
                     ) : (
                       <>
                         {m.content ? (
@@ -538,7 +538,7 @@ export default function AiAssistantPanel({
               onClick={() => setUseClassData((v) => !v)}
               title={t("classDataHint")}
               className={cn(
-                "inline-flex items-center gap-1.5 text-xs font-medium border rounded-full px-2.5 py-1 transition-colors",
+                "inline-flex items-center gap-1.5 text-xs font-medium border rounded-full px-3 py-1 transition-colors",
                 useClassData
                   ? "border-ring bg-primary/10 text-foreground"
                   : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -550,7 +550,7 @@ export default function AiAssistantPanel({
             </button>
           )}
           {doc ? (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium border border-ring bg-primary/10 text-foreground rounded-full px-2.5 py-1 max-w-[220px]">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium border border-ring bg-primary/10 text-foreground rounded-full px-3 py-1 max-w-[220px]">
               <FileText className="size-3.5 shrink-0" />
               <span className="truncate">{doc.name}</span>
               <button onClick={() => setDoc(null)} title={t("removeDocument")} className="shrink-0 text-muted-foreground hover:text-foreground">
@@ -562,7 +562,7 @@ export default function AiAssistantPanel({
               onClick={() => fileRef.current?.click()}
               disabled={uploadingDoc}
               title={t("docHint")}
-              className="inline-flex items-center gap-1.5 text-xs font-medium border border-border rounded-full px-2.5 py-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-xs font-medium border border-border rounded-full px-3 py-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
             >
               {uploadingDoc ? <Loader2 className="size-3.5 animate-spin" /> : <Paperclip className="size-3.5" />}
               {uploadingDoc ? t("uploadingDoc") : t("attachDocument")}
@@ -583,9 +583,9 @@ export default function AiAssistantPanel({
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder={t("composerPlaceholder")}
             rows={2}
-            className="block w-full resize-none field-sizing-content max-h-[40vh] min-h-[3.5rem] bg-transparent px-3.5 pt-2.5 pb-12 text-sm leading-relaxed outline-none placeholder:text-muted-foreground"
+            className="block w-full resize-none field-sizing-content max-h-[40vh] min-h-[3.5rem] bg-transparent px-4 pt-3 pb-12 text-sm leading-relaxed outline-none placeholder:text-muted-foreground"
           />
-          <div className="absolute right-2.5 bottom-2.5">
+          <div className="absolute right-2.5 bottom-2">
             {streaming ? (
               <button onClick={stop} title={t("stop")} className="size-9 rounded-xl bg-muted text-foreground flex items-center justify-center hover:bg-muted/70 transition-colors">
                 <Square className="size-4 fill-current" />

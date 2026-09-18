@@ -143,7 +143,7 @@ function SettingsPageInner() {
                       aria-current={active ? "page" : undefined}
                       onClick={() => select(s.id)}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors [&_svg]:size-4 [&_svg]:shrink-0",
+                        "flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors [&_svg]:size-4 [&_svg]:shrink-0",
                         active
                           ? "bg-accent font-medium text-foreground"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"

@@ -394,7 +394,7 @@ export default function ClassesPage() {
             "flex items-center justify-between gap-3 min-h-16 px-5 pt-4! pb-4!",
             "@[52rem]:grid @[52rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
           )}>
-            <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex min-w-0 items-center gap-3">
               <SectionIcon><GraduationCap /></SectionIcon>
               <CardTitle>{t("title")}</CardTitle>
             </div>
@@ -463,7 +463,7 @@ export default function ClassesPage() {
               <div className="flex items-center" data-tour="classes-add">
                 <Button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="gap-1.5 rounded-r-none pr-2.5"
+                  className="gap-1.5 rounded-r-none pr-3"
                 >
                   <PlusIcon className="size-4" />
                   {t("newClass")}
@@ -849,7 +849,7 @@ function ClassCardSkeleton({ index }: { index: number }) {
           <Skeleton className="h-3 w-28" />
           <Skeleton className="h-6 w-14 rounded-full mt-1" />
         </div>
-        <div className="flex w-full gap-3 border-t border-border pt-3.5">
+        <div className="flex w-full gap-3 border-t border-border pt-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex flex-1 flex-col gap-1.5">
               <Skeleton className="size-[18px] rounded" />
@@ -990,7 +990,7 @@ function ClassGridCard({
         </div>
 
         {/* Statistika — ikonali 3 ustun, vertikal ajratgichlar bilan */}
-        <div className="flex w-full border-t border-border pt-3.5">
+        <div className="flex w-full border-t border-border pt-3">
           <div className="flex flex-1 flex-col items-center text-center gap-1.5 pr-3 border-r border-border">
             <Users className="size-[18px] text-muted-foreground" />
             <span className="text-xs font-semibold">{t("studentsCount", { count: cls.students })}</span>
@@ -1102,7 +1102,7 @@ function ArchivedClassesSection({
             return (
               <div
                 key={cls.id}
-                className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-2.5"
+                className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3"
               >
                 <div
                   className="flex size-8 shrink-0 items-center justify-center rounded-md"
@@ -1216,7 +1216,7 @@ function ClassesDataTable({
               onClick={disabled ? undefined : () => router.push(`/dashboard/classes/${cls.id}`)}
             >
               {!disabled && (
-                <TableCell className="px-4 py-3.5">
+                <TableCell className="px-4 py-3">
                   <Checkbox
                     checked={selectedIds.has(cls.id)}
                     onCheckedChange={() => onToggleSelect(cls.id)}
@@ -1225,7 +1225,7 @@ function ClassesDataTable({
                   />
                 </TableCell>
               )}
-              <TableCell className={cn("whitespace-nowrap py-3.5 pr-3", disabled ? "pl-4" : "pl-0")}>
+              <TableCell className={cn("whitespace-nowrap py-3 pr-3", disabled ? "pl-4" : "pl-0")}>
                 <div className="flex items-center gap-3">
                   <div
                     className="size-9 shrink-0 rounded-full flex items-center justify-center text-white"
@@ -1242,16 +1242,16 @@ function ClassesDataTable({
                 </div>
               </TableCell>
 
-              <TableCell className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
+              <TableCell className="whitespace-nowrap px-3 py-3 text-sm tabular-nums text-muted-foreground">
                 {t("studentsCount", { count: cls.students })}
               </TableCell>
 
-              <TableCell className="whitespace-nowrap px-3 py-3.5 text-sm tabular-nums text-muted-foreground">
+              <TableCell className="whitespace-nowrap px-3 py-3 text-sm tabular-nums text-muted-foreground">
                 {t("lessonsCount", { count: cls.lessons })}
               </TableCell>
 
-              <TableCell className="whitespace-nowrap px-3 py-3.5">
-                <div className="flex items-center gap-2.5">
+              <TableCell className="whitespace-nowrap px-3 py-3">
+                <div className="flex items-center gap-2">
                   <Progress
                     value={progress}
                     indicatorColor={hex}
@@ -1263,7 +1263,7 @@ function ClassesDataTable({
               </TableCell>
 
               {!disabled && (
-                <TableCell className="whitespace-nowrap px-4 py-3.5">
+                <TableCell className="whitespace-nowrap px-4 py-3">
                   <div className="flex items-center justify-end">
                     <ClassCardMenu
                       onEdit={() => onEdit(cls)}

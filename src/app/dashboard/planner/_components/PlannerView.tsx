@@ -846,7 +846,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
 
     return (
       <Card className={cn("h-full", panelCardClass)}>
-        <CardHeader className={cn(panelCardHeaderClass, "gap-2.5 pt-4! pb-4!")}>
+        <CardHeader className={cn(panelCardHeaderClass, "gap-3 pt-4! pb-4!")}>
           <SectionIcon>
             <CalendarIcon />
           </SectionIcon>
@@ -1894,7 +1894,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                       return (
                         <button key={l.id} type="button" onClick={() => setLmLessonId(sel ? "" : l.id)}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors",
+                            "flex items-center gap-2 rounded-lg border px-3 py-2 text-left transition-colors",
                             sel ? "border-primary bg-primary/5" : "border-border bg-background hover:border-foreground/30"
                           )}>
                           <span style={tints.dot} className="size-2 shrink-0 rounded-[4px]" />

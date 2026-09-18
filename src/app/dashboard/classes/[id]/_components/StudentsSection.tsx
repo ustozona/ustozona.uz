@@ -83,7 +83,7 @@ const STATUS_PILL_STYLE: Record<Status, { cls: string; dot: string }> = {
 function statusPillLabels(t: (key: string) => string): Record<Status, string> {
   return { active: t("statusActive"), archived: t("statusArchived") };
 }
-const badgeBase = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
+const badgeBase = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
 
 function makeInitials(firstName: string, lastName: string): string {
   const a = firstName.trim()[0] ?? "";
@@ -205,12 +205,12 @@ export function StudentsSection({ identity }: { identity: ClassIdentity }) {
         style={{ flexGrow: selectedStudent ? 3 : 5, flexBasis: 0 }}
       >
         {/* Header / toolbar */}
-        <div className="flex min-h-16 shrink-0 items-center gap-2.5 border-b border-border px-5 py-4">
+        <div className="flex min-h-16 shrink-0 items-center gap-3 border-b border-border px-5 py-4">
           <SectionIcon><Users /></SectionIcon>
           <CardTitle className="truncate">{t("title")}</CardTitle>
           <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2.5">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2">
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="icon" className={cn(toolbarBtn, search.trim() && "ring-2 ring-primary ring-offset-2")}>
@@ -457,7 +457,7 @@ function PreviewCard({
 
           <div>
             <TypographyLabel className="mb-3 block">{t("contactLabel")}</TypographyLabel>
-            <div className="flex flex-col items-start gap-2.5 rounded-lg border border-dashed border-border p-4">
+            <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-border p-4">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <User className="size-4" />
                 <TypographyMuted>{t("noContact")}</TypographyMuted>
