@@ -48,6 +48,10 @@ export type LiveSessionInfo = {
   topic: string;
 };
 
+/** Oʻqituvchi ekrani uchun realtime ulanish sozlamasi — serverdan, faqat
+    autentifikatsiyadan keyin beriladi (`server/realtime/config.ts`). */
+export type RealtimeConfig = { url: string; key: string };
+
 /** Oʻquvchi soʻrov oraligʻi va oʻqituvchi ekranining zaxira soʻrov oraligʻi. */
 export const STUDENT_POLL_MS = 1500;
 export const TEACHER_FALLBACK_POLL_MS = 2500;

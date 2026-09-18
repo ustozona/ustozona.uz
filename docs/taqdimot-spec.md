@@ -89,8 +89,13 @@ javob qabul qilinmaydi (aks holda doskadagi ustunlar maʼnosiz). Doska
 natijasi ismlarsiz (proyektorga chiqadi). Sessiya ketayotganda toʻplamni
 almashtirib boʻlmaydi.
 
-**Sozlama (ochiq, brauzerga chiqadi):** `NEXT_PUBLIC_SUPABASE_URL`,
-`NEXT_PUBLIC_SUPABASE_ANON_KEY` (`.env.local.example`). Protokol
+**Sozlama — faqat serverda:** `SUPABASE_URL` (mavjud) va
+`SUPABASE_ANON_KEY`, `NEXT_PUBLIC_` prefiksiz (`server/realtime/config.ts`).
+Kalit ommaviy JS paketiga qotirilmaydi: uni tizimga kirgan oʻqituvchiga
+jonli sessiya ekrani ochilganda `liveRealtimeConfigAction` beradi va u
+Doska holatiga (localStorage) yozilmaydi. ⚠️ WebSocket brauzerdan
+ulangani uchun kalit oʻqituvchi brauzeriga baribir yetadi — bu anon
+kalit (RLS'ni chetlab oʻtmaydi), kanalda esa maʼlumot yoʻq. Protokol
 2026-09-18 da prod loyihada sinaldi: join `ok`, REST broadcast `202`,
 xabar WebSocket orqali yetdi.
 

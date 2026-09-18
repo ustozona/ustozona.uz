@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { RealtimeConfig } from "@/lib/live-session";
 
 /* ════════════════════════════════════════════════════════════════════
    REALTIME TURTKI TINGLOVCHISI — oʻqituvchi ekrani uchun (R284).
@@ -13,24 +14,30 @@ import { useEffect, useRef, useState } from "react";
    soʻraydi. Kalit sozlanmagan yoki ulanish uzilgan boʻlsa `connected =
    false` qaytadi va chaqiruvchi zaxira soʻrovga (polling) oʻtadi.
 
-   Kerakli ochiq sozlamalar (Vercel env, `NEXT_PUBLIC_` — brauzerga
-   chiqadi, maxfiy emas):
-     NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+   Ulanish sozlamasi (`config`) `NEXT_PUBLIC_` env'dan EMAS — uni
+   tizimga kirgan oʻqituvchiga server amali beradi
+   (`liveRealtimeConfigAction`, `server/realtime/config.ts`). Shu sababli
+   kalit ommaviy JS paketiga qotirilmaydi.
    ════════════════════════════════════════════════════════════════════ */
 
 const HEARTBEAT_MS = 25_000;
 const MAX_BACKOFF_MS = 30_000;
 
-export function useLiveNudge(topic: string | null, onNudge: () => void): { connected: boolean } {
+export function useLiveNudge(
+  topic: string | null,
+  config: RealtimeConfig | null,
+  onNudge: () => void,
+): { connected: boolean } {
   const [connected, setConnected] = useState(false);
   const onNudgeRef = useRef(onNudge);
   useEffect(() => {
     onNudgeRef.current = onNudge;
   });
 
+  const base = config?.url;
+  const key = config?.key;
+
   useEffect(() => {
-    const base = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/+$/, "");
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!topic || !base || !key) return;
 
     const url = `${base.replace(/^http/, "ws")}/realtime/v1/websocket?apikey=${encodeURIComponent(key)}&vsn=1.0.0`;
@@ -91,7 +98,7 @@ export function useLiveNudge(topic: string | null, onNudge: () => void): { conne
       socket?.close();
       setConnected(false);
     };
-  }, [topic]);
+  }, [topic, base, key]);
 
   return { connected };
 }

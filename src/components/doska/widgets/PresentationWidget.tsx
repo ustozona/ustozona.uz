@@ -19,10 +19,12 @@ import {
   TEACHER_FALLBACK_POLL_MS,
   type LiveResults,
   type LiveSessionInfo,
+  type RealtimeConfig,
 } from "@/lib/live-session";
 import {
   endLiveSessionAction,
   listLiveClassesAction,
+  liveRealtimeConfigAction,
   liveResultsAction,
   setLiveStepAction,
   startLiveSessionAction,
@@ -545,7 +547,21 @@ function useLiveResults(live: LiveSessionInfo | null): LiveResults | null {
     liveResultsAction(sessionId).then(setResults).catch(() => {});
   }, [sessionId]);
 
-  const { connected } = useLiveNudge(live?.topic ?? null, refresh);
+  /* Ulanish sozlamasi serverdan, faqat sessiya ochiq paytda soʻraladi va
+     vidjet holatiga (localStorage) YOZILMAYDI — xotirada qoladi xolos. */
+  const [realtime, setRealtime] = React.useState<RealtimeConfig | null>(null);
+  React.useEffect(() => {
+    if (!sessionId) return;
+    let cancelled = false;
+    liveRealtimeConfigAction()
+      .then((cfg) => !cancelled && setRealtime(cfg))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
+
+  const { connected } = useLiveNudge(live?.topic ?? null, realtime, refresh);
 
   React.useEffect(() => {
     if (!sessionId) return;

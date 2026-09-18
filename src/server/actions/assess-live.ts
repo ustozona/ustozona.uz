@@ -8,7 +8,9 @@ import {
   setLiveStep,
   startLiveSession,
 } from "@/server/dal/assess/live";
-import type { LiveResults, LiveSessionInfo } from "@/lib/live-session";
+import { requireTeacher } from "@/server/session";
+import { realtimeConfig } from "@/server/realtime/config";
+import type { LiveResults, LiveSessionInfo, RealtimeConfig } from "@/lib/live-session";
 
 /* Jonli sessiya — oʻqituvchi (Doska) amallari. Yupqa qatlam: zod → DAL.
    Tiplar `lib/live-session.ts` da (bu faylda tip eksporti TAQIQ — AGENTS.md). */
@@ -42,6 +44,13 @@ export async function liveResultsAction(sessionId: string): Promise<LiveResults>
 
 export async function endLiveSessionAction(sessionId: string): Promise<void> {
   await closeSession(z.string().min(1).parse(sessionId));
+}
+
+/** Realtime ulanish sozlamasi — faqat tizimga kirgan oʻqituvchiga.
+    JS paketiga qotirilmaydi (`server/realtime/config.ts` izohi). */
+export async function liveRealtimeConfigAction(): Promise<RealtimeConfig | null> {
+  await requireTeacher();
+  return realtimeConfig();
 }
 
 export async function listLiveClassesAction(): Promise<{ id: string; name: string }[]> {
