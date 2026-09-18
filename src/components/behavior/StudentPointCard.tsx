@@ -131,7 +131,7 @@ export function StudentPointCard({
       </span>
       <span
         className={cn(
-          "w-full truncate text-center text-[13px] font-medium leading-tight",
+          "w-full truncate text-center text-sm font-medium leading-tight",
           absentLabel ? "text-muted-foreground" : "text-foreground"
         )}
       >

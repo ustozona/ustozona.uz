@@ -193,7 +193,7 @@ export function SkillFormDialog({
               <BehaviorEmoji code={emoji} className="size-8" />
               <span
                 className={cn(
-                  "line-clamp-2 text-center text-[13px] font-medium leading-tight",
+                  "line-clamp-2 text-center text-sm font-medium leading-tight",
                   name.trim() ? "text-foreground" : "text-muted-foreground"
                 )}
               >

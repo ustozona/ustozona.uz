@@ -76,7 +76,7 @@ function AutoRuleTile({
           >
             {badge}
           </span>
-          <span className="absolute top-2 left-2.5 rounded bg-muted px-1 py-px text-[9px] font-medium tracking-wide text-muted-foreground uppercase">
+          <span className="absolute top-2 left-2.5 rounded bg-muted px-1 py-px text-micro font-medium tracking-wide text-muted-foreground uppercase">
             {t("autoBadge")}
           </span>
           <BehaviorEmoji
@@ -84,7 +84,7 @@ function AutoRuleTile({
             label={title}
             className="size-9 transition-transform duration-fast group-hover:scale-110"
           />
-          <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight text-foreground">
+          <span className="line-clamp-2 text-center text-sm font-medium leading-tight text-foreground">
             {title}
           </span>
         </button>

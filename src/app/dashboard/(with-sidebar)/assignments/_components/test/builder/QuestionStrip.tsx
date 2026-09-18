@@ -76,7 +76,7 @@ export default function QuestionStrip({
                       {questionLabel(question, index)}
                     </span>
                     <div className="flex flex-1 items-center justify-center gap-1.5 text-muted-foreground">
-                      <span className="flex size-4 items-center justify-center rounded-full bg-background text-[8px] font-semibold">
+                      <span className="flex size-4 items-center justify-center rounded-full bg-background text-micro font-semibold">
                         {question.timeLimitSec}
                       </span>
                       <ImageIcon className="size-3.5 opacity-50" />

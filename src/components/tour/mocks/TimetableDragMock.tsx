@@ -41,7 +41,7 @@ export function TimetableDragMock() {
           <div key={i} className="relative h-8 rounded-md border border-border/70 bg-muted/40">
             {i === TARGET_INDEX && (
               <span
-                className="absolute inset-0.5 flex items-center justify-center rounded-[4px] border border-primary/40 bg-primary/15 px-1 text-[9px] font-medium leading-tight text-foreground"
+                className="absolute inset-0.5 flex items-center justify-center rounded-[4px] border border-primary/40 bg-primary/15 px-1 text-micro font-medium leading-tight text-foreground"
                 style={{ animation: "tt-drag-settle 2.6s ease-in-out infinite" }}
               >
                 Matematika

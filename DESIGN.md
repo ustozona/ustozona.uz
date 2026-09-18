@@ -69,7 +69,7 @@ utility'si rolni ustidan yozadi. React analoglar:
 | `text-body` | 14px / 1.5 / 400 | Ilova asosiy matni | — |
 | `text-caption` | 12px / 1.4 / 400 | Izoh, meta, vaqt | — |
 | `text-label` | 11px / 1.4 / 500 UPPERCASE | Boʻlim yorligʻi | — |
-| `text-micro` | 10px / 1.2 / 600 tabular | **Faqat zich toʻr kataklari** — pastga qarang | — |
+| `text-micro` | 10px / 1.2 / 600 tabular | **Faqat zich toʻr katagi va kichik idish belgisi** — pastga qarang | — |
 
 Eski `.heading-*` nomlar alias boʻlib ishlaydi; yangi kodda rol nomi.
 `text-caption` va `text-label` hozircha muted rangni oʻzi beradi (meros) —
@@ -86,8 +86,11 @@ qoladi. Istisno maktab dars jadvali uchun ochildi: u yerda 1200 katak
 bitta toʻrda turadi va katak eni ~30px — 12px matn sigʻmaydi, katakni
 kattalashtirish esa toʻrni ekrandan chiqarib yuboradi. Sabab va oʻlchov
 hisobi: [docs/dars-jadvali-spec.md](docs/dars-jadvali-spec.md) §12.3,
-§14. **Boshqa joyda ishlatilmaydi** — roʻyxat yoki kartada 10px matn
-kerak boʻlsa, muammo zichlikda emas, ierarxiyada.
+§14. Ikkinchi ruxsat (2026-09-18): **20px dan kichik idish ichidagi belgi** —
+hisoblagich nishoni, kichik avatar initsiali, 16px doiradagi raqam. U yerda
+12px sigʻmaydi, 10px dan kichigi esa pastki chegaradan past (ilgari 8–9px
+yozilgan edi). **Boshqa joyda ishlatilmaydi** — roʻyxat yoki kartada 10px
+matn kerak boʻlsa, muammo zichlikda emas, ierarxiyada.
 
 Rang har doim tokendan (`--foreground` / `--muted-foreground`). Yangi
 oʻlcham kerak boʻlsa avval shu jadvalga (va `globals.css`ga) qoʻshiladi —

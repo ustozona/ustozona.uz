@@ -92,7 +92,7 @@ export default function DoskaIconsPage() {
                 <SampleIcon className="size-7" />
               </span>
               <span className="text-center text-[10px] text-neutral-500">{color}</span>
-              <span className="text-center font-mono text-[9px] leading-tight text-neutral-400">
+              <span className="text-center font-mono text-micro leading-tight text-neutral-400">
                 {iconTint(color).replace("oklch(", "").replace(")", "")}
               </span>
             </div>

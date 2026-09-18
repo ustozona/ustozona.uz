@@ -79,7 +79,7 @@ export function AuthFeatureLoop({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] font-semibold leading-tight">{f.title}</p>
-                <p className="text-[13px] text-muted-foreground mt-1">{f.desc}</p>
+                <p className="text-xs text-muted-foreground mt-1">{f.desc}</p>
                 <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-muted">
                   <motion.div
                     className="h-full rounded-full"

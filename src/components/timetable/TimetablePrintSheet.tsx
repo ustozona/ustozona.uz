@@ -1,4 +1,5 @@
 "use client";
+// design-tokens-ignore-file: chop etish varagʻi — qogʻoz uchun ataylab qatʼiy oʻlcham, ekran shkalasi va sirt qoʻllanmaydi
 
 import type { TimetableEvent } from "@/lib/timetable";
 import type { PeriodRow } from "@/lib/bell-schedule";

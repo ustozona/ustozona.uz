@@ -50,7 +50,7 @@ export function SkillCard({
         {formatPoints(skill.points)}
       </span>
       <BehaviorEmoji code={skill.emoji} label={skill.name} className={tileEmojiClass} />
-      <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight text-foreground">
+      <span className="line-clamp-2 text-center text-sm font-medium leading-tight text-foreground">
         {skill.name}
       </span>
     </button>
@@ -86,7 +86,7 @@ export function RewardCard({
         {t("pointsSuffix", { cost: reward.cost })}
       </span>
       <BehaviorEmoji code={reward.emoji} label={reward.name} className={tileEmojiClass} />
-      <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight text-foreground">
+      <span className="line-clamp-2 text-center text-sm font-medium leading-tight text-foreground">
         {reward.name}
       </span>
     </button>
@@ -116,7 +116,7 @@ export function AddCard({
       <span className="flex size-9 items-center justify-center">
         <Plus className="size-5" aria-hidden />
       </span>
-      <span className="line-clamp-2 text-center text-[13px] font-medium leading-tight">
+      <span className="line-clamp-2 text-center text-sm font-medium leading-tight">
         {label}
       </span>
     </button>

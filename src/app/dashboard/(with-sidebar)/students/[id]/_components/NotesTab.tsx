@@ -403,7 +403,7 @@ export default function NotesTab({
                   </Button>
                   <Badge
                     variant="secondary"
-                    className="absolute -right-2 -top-2 px-1 py-0 text-[9px] leading-4"
+                    className="absolute -right-2 -top-2 px-1 py-0 text-micro leading-4"
                   >
                     {t("soon")}
                   </Badge>

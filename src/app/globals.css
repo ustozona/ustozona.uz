@@ -463,7 +463,8 @@
    ───────────────────────────────────────────── */
 @theme inline {
   /* Mikro — 10px / 600. FAQAT zich toʻr kataklari (dars jadvali: 1200
-     katak, eni ~30px). Kelib chiqishi: docs/dars-jadvali-spec.md §14. */
+     katak, eni ~30px) va 20px dan kichik idish belgisi (hisoblagich,
+     initsial). Pastki chegara — undan kichik matn yoʻq. DESIGN.md §3. */
   --text-micro: var(--typo-micro, 0.625rem);
   --text-micro--line-height: 1.2;
   --text-micro--font-weight: 600;

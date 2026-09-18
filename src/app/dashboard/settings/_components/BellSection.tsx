@@ -215,7 +215,7 @@ function ShiftAgenda({ cfg, slots, endMin }: {
                 backgroundColor: SKY.badge.backgroundColor,
               }}
             >
-              <span className="text-[13px] font-medium" style={SKY.textStrong}>
+              <span className="text-sm font-medium" style={SKY.textStrong}>
                 {t("lessonHourLabel", { index: s.index })}
               </span>
               <span className="text-xs opacity-80" style={SKY.textStrong}>

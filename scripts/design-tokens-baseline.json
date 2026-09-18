@@ -32,8 +32,7 @@
     "space-off-grid": 2
   },
   "src/app/blog/[slug]/page.tsx": {
-    "text-px": 2,
-    "text-under-10": 1
+    "text-px": 1
   },
   "src/app/blog/_components/BlogAccountMenu.tsx": {
     "space-off-grid": 1
@@ -74,8 +73,7 @@
     "text-px": 1
   },
   "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/QuestionStrip.tsx": {
-    "text-px": 3,
-    "text-under-10": 1,
+    "text-px": 2,
     "space-off-grid": 1
   },
   "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/ThemesPanel.tsx": {
@@ -210,8 +208,7 @@
     "space-off-grid": 1
   },
   "src/app/dashboard/(with-sidebar)/students/[id]/_components/NotesTab.tsx": {
-    "text-px": 2,
-    "text-under-10": 1,
+    "text-px": 1,
     "space-off-grid": 3
   },
   "src/app/dashboard/(with-sidebar)/students/[id]/_components/OverviewTab.tsx": {
@@ -268,7 +265,7 @@
     "font-bold": 1
   },
   "src/app/dashboard/classes/[id]/_components/ClassDetail.tsx": {
-    "text-px": 4,
+    "text-px": 3,
     "font-bold": 4
   },
   "src/app/dashboard/classes/[id]/_components/LessonsSection.tsx": {
@@ -301,7 +298,7 @@
     "space-off-grid": 4
   },
   "src/app/dashboard/settings/_components/BellSection.tsx": {
-    "text-px": 2,
+    "text-px": 1,
     "space-off-grid": 1
   },
   "src/app/dashboard/settings/_components/RolloverWizard.tsx": {
@@ -314,12 +311,10 @@
     "space-off-grid": 1
   },
   "src/app/dashboard/timetable/page.tsx": {
-    "text-px": 1,
     "space-off-grid": 9
   },
   "src/app/doska/ikonalar/page.tsx": {
-    "text-px": 3,
-    "text-under-10": 1
+    "text-px": 2
   },
   "src/app/help/[slug]/page.tsx": {
     "space-off-grid": 1
@@ -380,10 +375,7 @@
     "space-off-grid": 2
   },
   "src/components/NotificationsBell.tsx": {
-    "text-px": 1,
-    "text-under-10": 1,
-    "space-off-grid": 3,
-    "font-bold": 1
+    "space-off-grid": 3
   },
   "src/components/StatCard.tsx": {
     "text-px": 2,
@@ -398,8 +390,6 @@
     "space-off-grid": 1
   },
   "src/components/behavior/AutoPointsEditor.tsx": {
-    "text-px": 2,
-    "text-under-10": 1,
     "space-off-grid": 1,
     "font-bold": 1
   },
@@ -408,7 +398,6 @@
     "font-bold": 1
   },
   "src/components/behavior/BehaviorView.tsx": {
-    "text-px": 1,
     "space-off-grid": 1
   },
   "src/components/behavior/ClassReportDialog.tsx": {
@@ -424,12 +413,11 @@
     "space-off-grid": 3
   },
   "src/components/behavior/SkillCard.tsx": {
-    "text-px": 3,
     "space-off-grid": 2,
     "font-bold": 2
   },
   "src/components/behavior/SkillFormDialog.tsx": {
-    "text-px": 2,
+    "text-px": 1,
     "space-off-grid": 1,
     "font-bold": 1
   },
@@ -438,7 +426,7 @@
     "font-bold": 2
   },
   "src/components/behavior/StudentPointCard.tsx": {
-    "text-px": 3,
+    "text-px": 2,
     "space-off-grid": 1,
     "font-bold": 2
   },
@@ -565,7 +553,7 @@
     "space-off-grid": 2
   },
   "src/components/onboarding/AuthFeatureLoop.tsx": {
-    "text-px": 2,
+    "text-px": 1,
     "space-off-grid": 2
   },
   "src/components/onboarding/FeatureLoop.tsx": {
@@ -620,13 +608,8 @@
     "font-bold": 1
   },
   "src/components/timetable/PeriodGrid.tsx": {
-    "text-px": 5,
+    "text-px": 4,
     "space-off-grid": 2
-  },
-  "src/components/timetable/TimetablePrintSheet.tsx": {
-    "text-px": 6,
-    "text-under-10": 2,
-    "font-bold": 3
   },
   "src/components/timetable/VersionChip.tsx": {
     "text-px": 2,
@@ -640,13 +623,10 @@
     "space-off-grid": 1
   },
   "src/components/tour/mocks/TimetableDragMock.tsx": {
-    "text-px": 1,
-    "text-under-10": 1,
     "space-off-grid": 3
   },
   "src/components/tour/mocks/TimetablePickMock.tsx": {
-    "text-px": 2,
-    "text-under-10": 1
+    "text-px": 1
   },
   "src/components/ui/attachment.tsx": {
     "space-off-grid": 2

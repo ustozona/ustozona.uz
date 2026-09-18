@@ -983,7 +983,7 @@ export default function TimetablePage() {
               gutterVariant="centered"
               lines="quarter"
               gutterHeader={
-                <div className="py-2.5 text-center text-[13px] font-semibold text-foreground/70">{t("time")}</div>
+                <div className="py-2.5 text-center text-sm font-semibold text-foreground/70">{t("time")}</div>
               }
               className="mx-6 mb-6 mt-2 h-auto min-h-0 flex-1 rounded-md border border-border [scrollbar-width:thin]"
               columns={DAY_UZ.map((_, col): TimeGridColumn => {
