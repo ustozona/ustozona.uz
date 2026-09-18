@@ -68,7 +68,7 @@ function PanelHeader({
     >
       {children ?? (
         <>
-          <div className="flex min-w-0 items-center gap-2.5 justify-self-start">
+          <div className="flex min-w-0 items-center gap-3 justify-self-start">
             {icon && <SectionIcon className="shrink-0">{icon}</SectionIcon>}
             <div className="flex min-w-0 items-baseline gap-1.5">
               <CardTitle className="truncate">{title}</CardTitle>
