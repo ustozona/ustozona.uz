@@ -105,7 +105,10 @@ export default function StudentProfile({
   // Qaysi guruh kontekstida koʻrilayapti — oʻquvchilar roʻyxatidan kelgan
   // `?classId=`. Oʻquvchi 2+ guruhda boʻlishi mumkin, param boʻlmasa esa
   // birinchi topilgani olinadi ([[student-profile]] izohiga qarang).
-  const [contextClassId] = useUrlParam("classId");
+  // `contextHydrated` SHART: param bir kadr kechikib oʻqiladi va usiz
+  // oʻquvchi tasodifiy guruhda topilardi — davomat, roʻyxat va oldingi/keyingi
+  // oʻquvchi bir zumga notoʻgʻri guruhdan koʻrinib, keyin almashardi.
+  const [contextClassId, , contextHydrated] = useUrlParam("classId");
 
   // Davomat — jonli manba (Davomat sahifasi bilan bir xil: recordsByClass +
   // real dars kunlari + vaznlar). classId oʻquvchi joylashuvidan aniqlanadi.
@@ -234,8 +237,9 @@ export default function StudentProfile({
   );
   const deleteNote = useCallback((id: string) => deleteNoteEntry(id), [deleteNoteEntry]);
 
-  // ── Server hydration tugamagan — hali "topilmadi" deb boʻlmaydi ──
-  if (!profile && !hydrated) {
+  // ── Hydration tugamagan — hali "topilmadi" deb ham, profilni koʻrsatib ham
+  //    boʻlmaydi (yuqoridagi `contextHydrated` izohiga qarang) ──
+  if (!contextHydrated || (!profile && !hydrated)) {
     return (
       <div className="flex flex-1 min-h-0 gap-6 p-6">
         <Skeleton className="w-72 shrink-0 rounded-2xl" />

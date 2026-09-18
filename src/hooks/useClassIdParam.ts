@@ -60,6 +60,11 @@ export function setClassIdParam(id: string | null) {
     bilmasligi kerak, aks holda URL'dan endi kelayotgan qiymatni oʻchirib
     yuboradi (darslar sahifasidagi `prevClassIdRef` naqshiga qarang).
 
+    Uchinchi qiymat — `hydrated`: URL oʻqilganmi. Param'siz natija NOTOʻGʻRI
+    boʻladigan joylarda shart (oʻquvchi profili: param yetib kelgunicha
+    oʻquvchi tasodifiy guruhda topilib, davomat ham oʻsha guruhdan oʻqilardi).
+    Bunday joylar `hydrated` boʻlgunicha yuklanish holatini koʻrsatsin.
+
     `watchKey` — Next router orqali sahifa almashganda qayta oʻqish uchun
     (masalan `usePathname()` natijasi). Hech qachon qayta mount boʻlmaydigan
     komponentlarga kerak: router navigatsiyasi na `popstate`, na bizning
@@ -67,12 +72,14 @@ export function setClassIdParam(id: string | null) {
 export function useUrlParam(
   key: string,
   watchKey?: string
-): [string | null, (value: string | null) => void] {
+): [string | null, (value: string | null) => void, boolean] {
   const [value, setValue] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const read = () => setValue(new URLSearchParams(window.location.search).get(key));
     read();
+    setHydrated(true);
     window.addEventListener(CLASS_ID_PARAM_EVENT, read);
     window.addEventListener("popstate", read);
     return () => {
@@ -89,7 +96,7 @@ export function useUrlParam(
     [key]
   );
 
-  return [value, set];
+  return [value, set, hydrated];
 }
 
 export function useClassIdParam(
