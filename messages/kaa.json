@@ -1345,8 +1345,19 @@
     "statusScheduled": "Rejelestirilgen",
     "statusUnscheduled": "Rejesiz",
     "statusDraft": "Qaralama",
-    "unitDeletedToast": "«{unit}» óshirildi",
-    "undo": "Biykar etiw",
+    "unitDeletedToast": "«{unit}» óshirildi",
+    "undo": "Biykar etiw",
+    "selectAria": "Belgilew",
+    "selectMenuItem": "Tańlaw",
+    "selectAll": "Barlıģın tańlaw",
+    "bulkDeleteUnitsTitle": "Tańlanģan bólimler óshirilsinbe?",
+    "bulkDeleteUnitsDescription": "{units} ta bólim hám olardıń ishindegi {lessons} ta sabaq óshiriledi. Ámeldi xabarnamadaģı «Biykarlaw» arqalı derhal qaytarıw múmkin.",
+    "bulkDeleteLessonsTitle": "Tańlanģan sabaqlar óshirilsinbe?",
+    "bulkDeleteLessonsDescription": "{lessons} ta sabaq óshiriledi. Ámeldi xabarnamadaģı «Biykarlaw» arqalı derhal qaytarıw múmkin.",
+    "bulkUnitsDeletedToast": "{units} ta bólim hám {lessons} ta sabaq óshirildi",
+    "bulkLessonsDeletedToast": "{lessons} ta sabaq óshirildi",
+    "selectedCount": "{count} ta tańlandı",
+    "bulkDeleteSessions": "Kestedegi {sessions} ta jazıw da alıp taslanadı.",
     "newLessonToast": "Jańa sabaq jaratıldı",
     "editUnit": "Ózgertiw",
     "deleteUnit": "Óshiriw",
@@ -3306,7 +3317,8 @@
     "submit": "Bólim jaratıw"
   },
   "LessonsServerSync": {
-    "saveError": "Sabaqlar serverge saqlanbadı"
+    "saveError": "Sabaqlar serverge saqlanbadı",
+    "deleteError": "Óshiriw serverde orınlanbadı — qaytadan urınıp kóriń"
   },
   "SettingsDialogContent": {
     "close": "Jabıw"

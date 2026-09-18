@@ -14,6 +14,7 @@ import { CardTitle } from "@/components/ui/card";
 import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLessonStore } from "@/store/useLessonStore";
+import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
@@ -114,7 +115,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
     updateUnit(editUnitTarget.id, { title: editUnitTitle.trim(), description: editUnitDesc.trim() });
     setEditUnitTarget(null);
   };
-  const handleConfirmDeleteUnit = () => {
+  const handleConfirmDeleteUnit = async () => {
     if (!deleteUnitTarget) return;
     const unit = deleteUnitTarget;
     // Undo uchun: oʻchadigan darslar TOʻLIQ nusxada, saqlanadiganlar esa
@@ -531,7 +532,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
               <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive text-white hover:bg-destructive/90"
-                onClick={handleConfirmDeleteUnit}
+                onClick={() => void handleConfirmDeleteUnit()}
               >
                 {t("delete")}
               </AlertDialogAction>
@@ -673,7 +674,11 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                                   <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                                   <AlertDialogAction
                                     className="bg-destructive text-white hover:bg-destructive/90"
-                                    onClick={() => { deleteLesson(lesson.id); toast.success(t("lessonDeletedToast")); }}
+                                    onClick={() => void (async () => {
+                                    if (!(await commitLessonsDelete({ lessonIds: [lesson.id] }))) return;
+                                    deleteLesson(lesson.id);
+                                    toast.success(t("lessonDeletedToast"));
+                                  })()}
                                   >
                                     {t("delete")}
                                   </AlertDialogAction>

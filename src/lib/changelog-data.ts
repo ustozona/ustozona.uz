@@ -36,6 +36,24 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "darslarni-belgilab-ochirish",
+    date: "2026-09-18",
+    type: "yangi",
+    title: "Boʻlim va darslarni belgilab, bir yoʻla oʻchirish",
+    body:
+      "Roʻyxat tepasidagi belgilash tugmasini bosasiz — yoki kartani oʻng tugma bilan bosib «Tanlash» ni tanlaysiz — va kartalardagi doira katakchaga aylanadi. Keraklilarini belgilab, pastda chiqqan panel orqali bir yoʻla oʻchirasiz. Boʻlimlar va darslar alohida tanlanadi, shuning uchun nimani oʻchirayotganingiz doim aniq. Oʻchirishdan oldin nechta dars va jadvaldan nechta yozuv ketishi aytiladi; xato belgilagan boʻlsangiz xabarnomadagi «Bekor qilish» hammasini joyiga qaytaradi. Ilgari darslarni bittalab oʻchirish kerak edi.",
+    href: "/dashboard/lessons",
+  },
+  {
+    id: "ochirish-ishonchli",
+    date: "2026-09-18",
+    type: "tuzatildi",
+    title: "Oʻchirgan darsingiz endi qaytib kelmaydi",
+    body:
+      "Boʻlim yoki darsni oʻchirganingizdan keyin u sahifani yangilaganingizda yana paydo boʻlib qolishi mumkin edi: oʻchirish serverga yetib bormay qolardi va bu haqda hech qanday xabar chiqmasdi. Natijada Rejalashtiruvchida oʻchirilgan darslar kunlarga biriktirilgan holda turaverardi, Materiallar boʻlimida esa ular hamon roʻyxatda edi. Endi oʻchirish serverdan tasdiq oladi — tasdiq kelmasa sizga xato koʻrsatiladi va dars oʻchgan qilib koʻrsatilmaydi.",
+    href: "/dashboard/lessons",
+  },
+  {
     id: "ish-reja-yuklash",
     date: "2026-09-17",
     type: "yangi",

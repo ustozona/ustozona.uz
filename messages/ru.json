@@ -1345,8 +1345,19 @@
     "statusScheduled": "Запланирован",
     "statusUnscheduled": "Не запланирован",
     "statusDraft": "Черновик",
-    "unitDeletedToast": "«{unit}» удалён",
-    "undo": "Отменить",
+    "unitDeletedToast": "«{unit}» удалён",
+    "undo": "Отменить",
+    "selectAria": "Отметить",
+    "selectMenuItem": "Выбрать",
+    "selectAll": "Выбрать все",
+    "bulkDeleteUnitsTitle": "Удалить выбранные разделы?",
+    "bulkDeleteUnitsDescription": "Будет удалено {units, plural, one {# раздел} few {# раздела} other {# разделов}} и {lessons, plural, one {# урок} few {# урока} other {# уроков}} внутри них. Действие можно сразу отменить в уведомлении.",
+    "bulkDeleteLessonsTitle": "Удалить выбранные уроки?",
+    "bulkDeleteLessonsDescription": "Будет удалено {lessons, plural, one {# урок} few {# урока} other {# уроков}}. Действие можно сразу отменить в уведомлении.",
+    "bulkUnitsDeletedToast": "Удалено {units, plural, one {# раздел} few {# раздела} other {# разделов}} и {lessons, plural, one {# урок} few {# урока} other {# уроков}}",
+    "bulkLessonsDeletedToast": "Удалено {lessons, plural, one {# урок} few {# урока} other {# уроков}}",
+    "selectedCount": "{count, plural, one {выбран #} few {выбрано #} other {выбрано #}}",
+    "bulkDeleteSessions": "Также будет снято {sessions, plural, one {# запись} few {# записи} other {# записей}} из расписания.",
     "newLessonToast": "Создан новый урок",
     "editUnit": "Изменить",
     "deleteUnit": "Удалить",
@@ -3306,7 +3317,8 @@
     "submit": "Создать раздел"
   },
   "LessonsServerSync": {
-    "saveError": "Уроки не были сохранены на сервере"
+    "saveError": "Уроки не были сохранены на сервере",
+    "deleteError": "Удаление не выполнено на сервере — попробуйте ещё раз"
   },
   "SettingsDialogContent": {
     "close": "Закрыть"
