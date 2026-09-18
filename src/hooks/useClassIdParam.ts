@@ -32,12 +32,60 @@ const CLASS_ID_PARAM_EVENT = "classid-param-change";
 /** `?classId=` yozish — komponent holatidan mustaqil (breadcrumb kabi
     boshqa daraxtdagi yozuvchilar uchun ham ishlatiladi). `useClassIdParam`
     hook'i shu funksiyani chaqiradi, faqat ustiga React holatini qoʻshadi. */
-export function setClassIdParam(id: string | null) {
+export function setUrlParam(key: string, value: string | null) {
   const url = new URL(window.location.href);
-  if (id) url.searchParams.set("classId", id);
-  else url.searchParams.delete("classId");
+  if (value) url.searchParams.set(key, value);
+  else url.searchParams.delete(key);
   window.history.replaceState(null, "", url);
   window.dispatchEvent(new Event(CLASS_ID_PARAM_EVENT));
+}
+
+export function setClassIdParam(id: string | null) {
+  setUrlParam("classId", id);
+}
+
+/** Ixtiyoriy query param'ni React holati sifatida oʻqish/yozish —
+    `useClassIdParam` bilan bir xil mexanizm (replaceState + umumiy event),
+    lekin sinfga bogʻlanmagan. Sahifa ichidagi «ikkinchi daraja» tanlovlar
+    (boʻlim, tab, davr) shu orqali URL'da yashaydi va sahifa unmount boʻlib
+    qayta ochilganda tiklanadi.
+
+    ⚠️ Mount'da URL bir kadr kechikib oʻqiladi (`useClassIdParam` kabi) —
+    dastlabki renderda qiymat `null` boʻladi. Shuning uchun mount'da
+    ishlaydigan tozalash effektlari «tanlanmagan» holatni haqiqiy deb
+    bilmasligi kerak, aks holda URL'dan endi kelayotgan qiymatni oʻchirib
+    yuboradi (darslar sahifasidagi `prevClassIdRef` naqshiga qarang).
+
+    `watchKey` — Next router orqali sahifa almashganda qayta oʻqish uchun
+    (masalan `usePathname()` natijasi). Hech qachon qayta mount boʻlmaydigan
+    komponentlarga kerak: router navigatsiyasi na `popstate`, na bizning
+    umumiy event'imizni chiqaradi. */
+export function useUrlParam(
+  key: string,
+  watchKey?: string
+): [string | null, (value: string | null) => void] {
+  const [value, setValue] = useState<string | null>(null);
+
+  useEffect(() => {
+    const read = () => setValue(new URLSearchParams(window.location.search).get(key));
+    read();
+    window.addEventListener(CLASS_ID_PARAM_EVENT, read);
+    window.addEventListener("popstate", read);
+    return () => {
+      window.removeEventListener(CLASS_ID_PARAM_EVENT, read);
+      window.removeEventListener("popstate", read);
+    };
+  }, [key, watchKey]);
+
+  const set = useCallback(
+    (next: string | null) => {
+      setValue(next);
+      setUrlParam(key, next);
+    },
+    [key]
+  );
+
+  return [value, set];
 }
 
 export function useClassIdParam(
@@ -78,16 +126,5 @@ export function useClassIdParam(
     ham qayta oʻqilishi uchun (masalan `usePathname()` natijasi) — chunki bu
     komponent layout darajasida doimiy, hech qachon qayta mount boʻlmaydi. */
 export function useClassIdParamValue(watchKey?: string): string | null {
-  const [id, setId] = useState<string | null>(null);
-  useEffect(() => {
-    const read = () => setId(new URLSearchParams(window.location.search).get("classId"));
-    read();
-    window.addEventListener(CLASS_ID_PARAM_EVENT, read);
-    window.addEventListener("popstate", read);
-    return () => {
-      window.removeEventListener(CLASS_ID_PARAM_EVENT, read);
-      window.removeEventListener("popstate", read);
-    };
-  }, [watchKey]);
-  return id;
+  return useUrlParam("classId", watchKey)[0];
 }

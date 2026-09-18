@@ -20,6 +20,7 @@ import { ProductScopeSync } from "@/components/product-scope-sync";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { SITE_URL } from "@/lib/site-url";
 import "./globals.css";
+import { AppHistoryTracker } from "@/components/AppHistoryTracker";
 
 const dmSans = DM_Sans({
   variable: "--font-sans",
@@ -127,7 +128,10 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <MotionProvider>
-              <TooltipProvider>{children}</TooltipProvider>
+              <TooltipProvider>
+                <AppHistoryTracker />
+                {children}
+              </TooltipProvider>
             </MotionProvider>
             <ProductScopeSync />
             <Toaster position="bottom-center" />

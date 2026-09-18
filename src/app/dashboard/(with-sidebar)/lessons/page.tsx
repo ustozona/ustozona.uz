@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useMemo, useEffect, type ReactNode } from "react";
+import { useState, useMemo, useEffect, useRef, type ReactNode } from "react";
 import { useComposedRefs } from "@/lib/compose-refs";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -17,7 +17,7 @@ import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClasses, useCreateClass } from "@/hooks/useLiveClasses";
-import { useClassIdParam } from "@/hooks/useClassIdParam";
+import { useClassIdParam, useUrlParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
 import { lessonClassIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { LessonStatusPill } from "@/components/LessonStatusBadge";
@@ -108,7 +108,10 @@ export default function LessonsPage() {
   const restoreUnit = useLessonStore((s) => s.restoreUnit);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
-  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  // Boʻlim tanlovi — sinf kabi `?unit=` URL param'ida. Ilgari oddiy
+  // `useState` edi va dars muharririga kirib chiqqanda (sahifa unmount
+  // boʻladi) yoʻqolardi: sinf tiklanib, boʻlim nolga tushardi.
+  const [selectedUnitId, setSelectedUnitId] = useUrlParam("unit");
   const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
   const [editUnitTitle, setEditUnitTitle] = useState("");
@@ -143,7 +146,17 @@ export default function LessonsPage() {
     toast.success(t("lessonDeletedToast"));
   };
 
-  useEffect(() => { setSelectedUnitId(null); }, [selectedClassId]);
+  // Sinf ALMASHSA boʻlim tanlovi bekor qilinadi (boshqa sinfning boʻlimi
+  // qolib ketmasin). Ataylab oldingi qiymat bilan solishtiriladi: mount'da
+  // `selectedClassId` bir kadr `null` boʻlib turadi, oddiy effekt esa shuni
+  // «almashuv» deb bilib URL'dan endigina tiklangan `?unit=` ni oʻchirardi.
+  // Shart `prev` haqiqiy sinf boʻlgandagina bajariladi.
+  const prevClassIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const prev = prevClassIdRef.current;
+    prevClassIdRef.current = selectedClassId;
+    if (prev && prev !== selectedClassId) setSelectedUnitId(null);
+  }, [selectedClassId, setSelectedUnitId]);
 
   // Tur (product tour) — hech qanday sinf qoʻshilmagan boʻlsa, "Darslar" turʼi
   // boʻsh panellarni namunaviy sinf/boʻlim/dars bilan toʻldiradi (faqat vizual,
