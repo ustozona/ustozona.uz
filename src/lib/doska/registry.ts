@@ -128,7 +128,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     // Proyektor uchun katta: savol va toʻrt variant uzoqdan oʻqilsin.
     defaultSize: { w: 880, h: 520 },
     minSize: { w: 420, h: 280 },
-    initialState: { setId: null, index: 0, revealed: false },
+    initialState: { setId: null, index: 0, revealed: false, teams: null },
   },
 };
 

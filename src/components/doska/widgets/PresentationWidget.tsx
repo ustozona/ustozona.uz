@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { classColorValue, type ClassColor } from "@/lib/class-colors";
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import {
@@ -11,6 +12,12 @@ import {
   type SetDraft,
 } from "@/server/actions/assess";
 import type { ActivitySetRow } from "@/server/db/schema";
+
+export type Team = { name: string; score: number };
+
+/** Jamoa tuslari — sinf rangi dvigatelidan, yangi palitra ixtiro qilinmaydi. */
+const TEAM_TINTS: ClassColor[] = ["blue", "rose", "amber", "green"];
+const MAX_TEAMS = TEAM_TINTS.length;
 
 /**
  * TAQDIMOT — toʻplamni doskada birma-bir koʻrsatish (R276, R280).
@@ -22,6 +29,12 @@ import type { ActivitySetRow } from "@/server/db/schema";
  * sababli bu yerdan `responses` ga hech narsa yozilmaydi: jurnalga
  * tushadigan yoʻl — PIN/QR sessiyasi yoki QR-kartalar.
  *
+ * JAMOA BALLARI (R280) — ixtiyoriy qatlam: sinf 2–4 jamoaga boʻlinadi,
+ * toʻgʻri javob bergan jamoaga oʻqituvchi bir bosishda ball qoʻshadi.
+ * Ball faqat shu vidjet holatida — jurnalga tushmaydi, chunki javob
+ * aniq oʻquvchiga bogʻlanmagan. Toʻplam almashtirilsa jamoalar qoladi:
+ * bitta dars davomida bir nechta taqdimot oʻynalishi mumkin.
+ *
  * Holatda faqat `setId`, joriy qadam va javob ochilganmi — mazmunning
  * oʻzi saqlanmaydi, har ochilishda toʻplamdan oʻqiladi (toʻplam tahrir
  * qilinsa doska eskirgan nusxani koʻrsatmasin).
@@ -31,6 +44,8 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
   const setId = (widget.state.setId as string | null) ?? null;
   const index = Number(widget.state.index ?? 0);
   const revealed = Boolean(widget.state.revealed);
+  const teams = (widget.state.teams as Team[] | null | undefined) ?? null;
+  const setTeams = (next: Team[] | null) => patch(widget.id, { teams: next });
 
   if (!setId) {
     return (
@@ -46,7 +61,57 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
       onGo={(next) => patch(widget.id, { index: next, revealed: false })}
       onReveal={() => patch(widget.id, { revealed: !revealed })}
       onChange={() => patch(widget.id, { setId: null, index: 0, revealed: false })}
+      teams={teams}
+      onTeamsChange={setTeams}
     />
+  );
+}
+
+function TeamBar({ teams, onChange }: { teams: Team[]; onChange: (next: Team[] | null) => void }) {
+  const update = (i: number, delta: number) =>
+    onChange(teams.map((t, j) => (j === i ? { ...t, score: Math.max(0, t.score + delta) } : t)));
+  return (
+    <div className="flex shrink-0 flex-wrap items-center gap-[1cqw]">
+      {teams.map((team, i) => {
+        const color = classColorValue(TEAM_TINTS[i]);
+        return (
+          <div
+            key={i}
+            className="flex items-center overflow-hidden rounded-lg text-[max(12px,1.8cqw)] font-semibold text-white"
+            style={{ background: color }}
+          >
+            <button
+              type="button"
+              data-doska-no-drag=""
+              aria-label={`${team.name}: ball qoʻshish`}
+              onClick={() => update(i, 1)}
+              className="flex items-center gap-2 px-3 py-1.5 hover:bg-black/10"
+            >
+              <span>{team.name}</span>
+              <span className="font-mono">{team.score}</span>
+            </button>
+            <button
+              type="button"
+              data-doska-no-drag=""
+              aria-label={`${team.name}: ball ayirish`}
+              onClick={() => update(i, -1)}
+              className="border-l border-white/30 px-2 py-1.5 hover:bg-black/10"
+            >
+              −
+            </button>
+          </div>
+        );
+      })}
+      {teams.length < MAX_TEAMS && (
+        <NavButton onClick={() => onChange([...teams, { name: `${teams.length + 1}-jamoa`, score: 0 }])}>
+          + Jamoa
+        </NavButton>
+      )}
+      {teams.length > 2 && (
+        <NavButton onClick={() => onChange(teams.slice(0, -1))}>− Jamoa</NavButton>
+      )}
+      <NavButton onClick={() => onChange(teams.map((t) => ({ ...t, score: 0 })))}>Nolga</NavButton>
+    </div>
   );
 }
 
@@ -129,6 +194,8 @@ function Player({
   onGo,
   onReveal,
   onChange,
+  teams,
+  onTeamsChange,
 }: {
   setId: string;
   index: number;
@@ -136,6 +203,8 @@ function Player({
   onGo: (next: number) => void;
   onReveal: () => void;
   onChange: () => void;
+  teams: Team[] | null;
+  onTeamsChange: (next: Team[] | null) => void;
 }) {
   const [draft, setDraft] = React.useState<SetDraft | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -251,8 +320,19 @@ function Player({
         )}
       </div>
 
+      {teams && <TeamBar teams={teams} onChange={onTeamsChange} />}
+
       <div className="flex shrink-0 items-center gap-2">
         <NavButton onClick={onChange}>Almashtirish</NavButton>
+        <NavButton
+          onClick={() =>
+            onTeamsChange(
+              teams ? null : [{ name: "1-jamoa", score: 0 }, { name: "2-jamoa", score: 0 }],
+            )
+          }
+        >
+          {teams ? "Jamoalarni yopish" : "Jamoalar"}
+        </NavButton>
         <div className="flex-1" />
         {step && step.shape !== "slide" && (
           <NavButton onClick={onReveal}>{revealed ? "Yashirish" : "Javobni ochish"}</NavButton>
