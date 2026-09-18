@@ -118,6 +118,18 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     minSize: { w: 110, h: 110 },
     initialState: { shape: "triangle", labels: true },
   },
+  "presentation.v1": {
+    kind: "presentation.v1",
+    // 8 belgidan oshmasin (panel yorligʻi `truncate`).
+    label: "Taqdimot",
+    // Material turlaridagi taqdimot rangi (`material-kinds.ts`) bilan
+    // bir xil — oʻqituvchi jurnalda koʻrgan belgini shu yerda taniydi.
+    tint: "orange",
+    // Proyektor uchun katta: savol va toʻrt variant uzoqdan oʻqilsin.
+    defaultSize: { w: 880, h: 520 },
+    minSize: { w: 420, h: 280 },
+    initialState: { setId: null, index: 0, revealed: false },
+  },
 };
 
 /**
@@ -134,6 +146,7 @@ export const WIDGET_BAR_ORDER: WidgetKind[] = [
   "traffic-light.v1",
   "text.v1",
   "sticky-note.v1",
+  "presentation.v1",
 ];
 
 export function widgetMeta(kind: WidgetKind): WidgetMeta {

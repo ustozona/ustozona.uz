@@ -355,6 +355,15 @@ export function IconUsers({ className }: IconProps) {
   );
 }
 
+/** Taqdimot — solar:presentation-graph uslubida (oʻzimiz, soddalashtirilgan) */
+export function IconPresentation({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><rect x="3" y="3" width="18" height="13" rx="2" opacity=".5"/><path fillRule="evenodd" d="M12 15.25C12.4142 15.25 12.75 15.5858 12.75 16V18.2L15.4 20.4C15.72 20.66 15.76 21.13 15.5 21.45C15.24 21.77 14.77 21.81 14.45 21.55L12 19.52L9.55 21.55C9.23 21.81 8.76 21.77 8.5 21.45C8.24 21.13 8.28 20.66 8.6 20.4L11.25 18.2V16C11.25 15.5858 11.5858 15.25 12 15.25Z" clipRule="evenodd"/><path d="M1.25 3C1.25 2.5858 1.5858 2.25 2 2.25H22C22.4142 2.25 22.75 2.5858 22.75 3C22.75 3.4142 22.4142 3.75 22 3.75H2C1.5858 3.75 1.25 3.4142 1.25 3Z"/><path d="M8 11.5L10.5 9L12.5 10.5L16 7" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></g>
+    </svg>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════
    IKONALAR ROʻYXATI — `/doska/ikonalar` nazorat sahifasi uchun.
 
@@ -372,6 +381,7 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconText", source: "oʻzimiz:matn", Icon: IconText },
   { name: "IconStickyNote", source: "oʻzimiz:yopishqoq", Icon: IconStickyNote },
   { name: "IconShape", source: "oʻzimiz:shakl", Icon: IconShape },
+  { name: "IconPresentation", source: "oʻzimiz:taqdimot", Icon: IconPresentation },
   { name: "IconBackground", source: "solar:gallery", Icon: IconBackground },
   { name: "IconTrash", source: "solar:trash-bin-trash", Icon: IconTrash },
   { name: "IconHome", source: "solar:home-2", Icon: IconHome },

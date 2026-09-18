@@ -19,7 +19,8 @@ export type WidgetKind =
   | "traffic-light.v1"
   | "text.v1"
   | "sticky-note.v1"
-  | "shape.v1";
+  | "shape.v1"
+  | "presentation.v1";
 
 /**
  * Vidjetning ekrandagi oʻrni va oʻz holati.
