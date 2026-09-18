@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -39,6 +39,7 @@ import {
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { lessonClassIds, lessonSessions, type Lesson } from "@/lib/lessons-data";
+import { canGoBackInApp, notePendingReplace } from "@/lib/app-history";
 import EditorToolbar from "./EditorToolbar";
 import DetailsPanel from "./DetailsPanel";
 import AiAssistantPanel from "./AiAssistantPanel";
@@ -128,6 +129,24 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const updateLesson = useLessonStore((s) => s.updateLesson);
   const addLesson = useLessonStore((s) => s.addLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
+
+  /** Muharrirni yopish — [[app-history]] izohiga qarang. Ilova ichida
+      qaytadigan yozuv boʻlsa `back()`: roʻyxat sahifasi tanlangan sinfi va
+      boʻlimi (`?classId=`, `?unit=`) bilan qanday qoldirilgan boʻlsa shundoq
+      tiklanadi. Aks holda — roʻyxatga oʻtiladi, lekin baribir kontekst bilan:
+      darsning sinfi param sifatida beriladi, boʻlmasa roʻyxat boʻsh ochilardi. */
+  const closeEditor = useCallback(() => {
+    if (canGoBackInApp()) {
+      router.back();
+      return;
+    }
+    const classId = lesson ? lessonClassIds(lesson)[0] : undefined;
+    router.push(
+      classId
+        ? `/dashboard/lessons?classId=${encodeURIComponent(classId)}`
+        : "/dashboard/lessons"
+    );
+  }, [router, lesson]);
   const setLessonClasses = useLessonStore((s) => s.setLessonClasses);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
@@ -326,7 +345,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           <EmptyDescription>{t("notFoundDescription")}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button variant="outline" onClick={() => router.push("/dashboard/lessons")}>
+          <Button variant="outline" onClick={closeEditor}>
             {t("backToLessons")}
           </Button>
         </EmptyContent>
@@ -381,12 +400,16 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       classCount: lessonClassIds(lesson).length,
     });
     toast.success(t("toast.duplicated"));
-    router.push(`/lessons/${newId}`);
+    // Ataylab `replace`: nusxa asl darsning tarix yozuvini EGALLAYDI. `push`
+    // boʻlsa nusxani yopganda `back()` roʻyxatga emas, asl darsning muharririga
+    // qaytarardi — «yopish» hech nimani yopmaganday koʻrinardi.
+    notePendingReplace();
+    router.replace(`/lessons/${newId}`);
   };
   const performDelete = () => {
     deleteLesson(lessonId);
     toast.success(t("toast.deleted"));
-    router.push("/dashboard/lessons");
+    closeEditor();
   };
   const updatedLabel = lesson?.updatedAt ? formatFeedbackAgo(lesson.updatedAt, relativeT) : null;
 
@@ -520,7 +543,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button variant="ghost" size="icon" aria-label={t("close")} onClick={() => router.push("/dashboard/lessons")}>
+          <Button variant="ghost" size="icon" aria-label={t("close")} onClick={closeEditor}>
             <X className="size-5" />
           </Button>
         </div>
