@@ -118,14 +118,25 @@ qadamlar oʻz-oʻzidan kattalashadi; ixtiyoriy `p-[13px]` esa yoʻq.
 | Sahifa yuqori/quyi chegarasi | `gap-8` (32) va undan katta |
 | Chip / badge | `px-2 py-0.5` |
 
-**Ruxsat:** `0 · 0.5 · 1 · 1.5 · 2 · 3 · 4 · 5 · 6 · 8 · 10 · 12 · 16`.
-**Taqiq:** `2.5 · 3.5 · 4.5 · 7 · 9 · 11` va ixtiyoriy `[Npx]` —
+**Ruxsat:** 4 ga karrali har qadam (`0 · 1 · 2 · 3 · 4 · 5 · 6 · 7 · 8 · 9 …`) va zich joyda `0.5 · 1.5`. Rol jadvalidagilar — birinchi tanlov; `7 · 9 · 11` kabilar geometriyadan chiqqanda (inputdagi ikona oʻrni `pl-9`).
+**Taqiq:** `2.5 · 3.5 · 4.5` va ixtiyoriy `[Npx]` —
 `npm run check:tokens` ushlaydi (`space-off-grid`, `space-arbitrary`).
 
 Tanlab boʻlmasa: **yaqinroq, lekin guruhni ajratadigan** qadam. `2.5`
 (10px) odatda `gap-2` (qator ichidagi elementlar) yoki `gap-3` (alohida
 bloklar) — qaysi biri, yuqoridagi rol hal qiladi. Qoida: guruh
 **ichidagi** boʻshliq guruhlar **orasidagi**dan doim kichik.
+
+Eski kodni tozalash lugʻati (bir xil holat — bir xil qaror):
+
+| Avval | Holat | Keyin |
+|---|---|---|
+| `px-2.5` | pill/chip (`rounded-full`, `py-1`), kichik tugma | `px-3` |
+| `gap-2.5` | iconbox/avatar (32px+) ↔ matn bloki | `gap-3` |
+| `gap-2.5` | tugma/badge guruhi, kichik ikona ↔ yorliq, nav qatori | `gap-2` |
+| `gap-2.5` | vertikal karta roʻyxati | `gap-3` |
+| `py-2.5`, `py-3.5` | roʻyxat qatori, jadval katagi | `py-3` |
+| `pt-2.5` | `border-t` dan keyingi footer | `pt-3` |
 
 Asos va oʻlchov: [docs/dizayn-token-standartlashtirish.md](docs/dizayn-token-standartlashtirish.md).
 

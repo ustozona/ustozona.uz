@@ -181,7 +181,7 @@ yozilmaydi.
 
 4px toʻri. Ruxsat: `0 · 0.5(2) · 1(4) · 1.5(6) · 2(8) · 3(12) · 4(16) ·
 5(20) · 6(24) · 8(32) · 10(40) · 12(48) · 16(64)`.
-Taqiq: `2.5 · 3.5 · 4.5 · 7 · 9 · 11` va ixtiyoriy `[Npx]`.
+Taqiq: `2.5 · 3.5 · 4.5` va ixtiyoriy `[Npx]`.
 
 `2.5` (265 ta) eng katta koʻchish: koʻpi ikona↔matn va chip ichi —
 `gap-2` yoki `gap-3` ga ketadi. Qaysi biri — rol jadvalidan.

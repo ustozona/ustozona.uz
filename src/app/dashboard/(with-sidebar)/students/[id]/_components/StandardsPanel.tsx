@@ -91,7 +91,7 @@ export default function StandardsPanel({
 
   return (
     <div className="flex flex-col rounded-xl border border-border/50 bg-card p-5 shadow-sm">
-      <div className="mb-3 flex items-center gap-2.5">
+      <div className="mb-3 flex items-center gap-3">
         <SectionIcon><Target /></SectionIcon>
         <CardTitle>{t("title")}</CardTitle>
       </div>
@@ -106,7 +106,7 @@ export default function StandardsPanel({
           </div>
         )}
 
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-3">
           {rows.map((r) => (
             <StandardRow key={r.standardId} row={r} hex={hex} />
           ))}

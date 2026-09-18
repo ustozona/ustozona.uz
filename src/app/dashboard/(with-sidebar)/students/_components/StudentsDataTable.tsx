@@ -134,7 +134,7 @@ export default function StudentsDataTable({
                 )}
                 onClick={() => onSelect(s.id)}
               >
-                <TableCell className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                   <Checkbox
                     checked={selectedIds.has(s.id)}
                     onCheckedChange={() => onToggleSelect(s.id)}
@@ -142,7 +142,7 @@ export default function StudentsDataTable({
                   />
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap py-3.5 pr-3 pl-0">
+                <TableCell className="whitespace-nowrap py-3 pr-3 pl-0">
                   <div className="flex min-w-0 items-center gap-3">
                     <div
                       className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold text-white"
@@ -159,14 +159,14 @@ export default function StudentsDataTable({
                   </div>
                 </TableCell>
 
-                <TableCell className="px-3 py-3.5">
+                <TableCell className="px-3 py-3">
                   <div className="flex justify-center">
                     <AttendanceRing pct={s.attendance} />
                   </div>
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap px-3 py-3.5">
-                  <div className="flex items-center gap-2.5">
+                <TableCell className="whitespace-nowrap px-3 py-3">
+                  <div className="flex items-center gap-3">
                     <Progress
                       value={s.grade}
                       indicatorColor={scoreColor}
@@ -177,14 +177,14 @@ export default function StudentsDataTable({
                   </div>
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap px-3 py-3.5">
+                <TableCell className="whitespace-nowrap px-3 py-3">
                   <span className={cn(badgeBase, pill.cls)}>
                     <span className={cn("size-1.5 shrink-0 rounded-full", pill.dot)} />
                     {t(`status.${s.status}`)}
                   </span>
                 </TableCell>
 
-                <TableCell className="px-4 py-3.5">
+                <TableCell className="px-4 py-3">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button

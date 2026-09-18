@@ -168,7 +168,7 @@ toolbar tugmalari va inputlari bir qatorda 36px balandlikda boʻladi.
 ### Boʻshliq shkalasi
 
 4px toʻri, qiymat roldan keladi — rollar jadvali: `DESIGN.md` §3.5.
-Taqiqlangan qadamlar (`2.5 · 3.5 · 4.5 · 7 · 9 · 11`, ixtiyoriy `[Npx]`)
+Taqiqlangan qadamlar (`2.5 · 3.5 · 4.5`, ixtiyoriy `[Npx]`)
 build oldidan `npm run check:tokens` bilan ushlanadi.
 
 ---
