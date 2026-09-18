@@ -54,17 +54,31 @@ Batafsil jadval: `docs/design-system.md` §1.
 
 ## 3. Tipografika
 
-Utility klasslar (`globals.css`) + React analoglar (`@/components/ui/typography`, `CardTitle`):
+Rollar — Tailwind tokeni (`globals.css` `@theme`). Bitta klass oʻlcham,
+qator balandligi, vazn va harf oraligʻini birga beradi; variant ishlaydi
+(`md:text-title`); yonidagi `font-medium`, `leading-relaxed` yoki rang
+utility'si rolni ustidan yozadi. React analoglar:
+`@/components/ui/typography`, `CardTitle`.
 
-| Klass | Oʻlcham / vazn | Ishlatish |
-|---|---|---|
-| `.heading-page` | 24px / 700 | Sahifa sarlavhasi |
-| `.heading-section` | 18px / 600 | Panel sarlavhasi (`CardTitle`) |
-| `.heading-small` | 15px / 600 | Karta ichidagi ism |
-| `.text-body` | 14px / 400 | Asosiy matn |
-| `.text-caption` | 12px / 400 muted | Izoh |
-| `.text-label` | 11px / 500 UPPERCASE | Boʻlim yorligʻi |
-| `.text-micro` | 10px / 600 tabular | **Faqat zich toʻr kataklari** — pastga qarang |
+| Rol | Oʻlcham / qator / vazn | Ishlatish | Eski nom |
+|---|---|---|---|
+| `text-headline` | 24px / 1.2 / 700 | Sahifa sarlavhasi | `.heading-page` |
+| `text-title` | 18px / 1.3 / 600 | Panel sarlavhasi (`CardTitle`) | `.heading-section` |
+| `text-title-sm` | 15px / 1.3 / 600 | Karta ichidagi ism | `.heading-small` |
+| `text-reading` | 16px / 1.6 / 400 | Uzun oʻqiladigan matn (blog, yordam, jurnal) | — |
+| `text-body` | 14px / 1.5 / 400 | Ilova asosiy matni | — |
+| `text-caption` | 12px / 1.4 / 400 | Izoh, meta, vaqt | — |
+| `text-label` | 11px / 1.4 / 500 UPPERCASE | Boʻlim yorligʻi | — |
+| `text-micro` | 10px / 1.2 / 600 tabular | **Faqat zich toʻr kataklari** — pastga qarang | — |
+
+Eski `.heading-*` nomlar alias boʻlib ishlaydi; yangi kodda rol nomi.
+`text-caption` va `text-label` hozircha muted rangni oʻzi beradi (meros) —
+yangi kodda rangni alohida yozing: `text-caption text-muted-foreground`.
+Oʻlcham `--typo-*` dan oʻqiladi — sirt (`surfaces.css`) va
+`.readable-scale` rollarni shu orqali qayta oʻlchaydi.
+
+⚠️ Yangi rol qoʻshilsa — `src/lib/utils.ts` dagi `TEXT_ROLES` ga ham,
+aks holda `cn()` uni rang deb oʻylab tashlab yuboradi.
 
 ⚠️ **`.text-micro` — ongli deviatsiya (2026-09-02).** Shkalaning eng
 kichigi 12px (`.text-caption`) edi va oddiy sahifada shundayligicha
@@ -77,7 +91,8 @@ kerak boʻlsa, muammo zichlikda emas, ierarxiyada.
 
 Rang har doim tokendan (`--foreground` / `--muted-foreground`). Yangi
 oʻlcham kerak boʻlsa avval shu jadvalga (va `globals.css`ga) qoʻshiladi —
-inline `text-[13px]` yozilmaydi.
+inline `text-[13px]` yozilmaydi — `npm run check:tokens` buni build
+oldidan ushlaydi.
 
 ---
 

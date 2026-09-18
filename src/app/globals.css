@@ -453,53 +453,76 @@
 
 /* ─────────────────────────────────────────────
    Tipografika shkalasi — YAGONA MANBA
-   Utility klasslar (Tailwind v4 / shadcn uslubi). Inline ishlatish uchun
-   qulay; React komponentlari (Typography*) shu qiymatlarga mos. Doimo
-   tokenlardan (--foreground / --muted-foreground) foydalaning, xom rang yoʻq.
-   Hujjat: docs/design-system.md
+   Rollar Tailwind tokeni: `text-caption` bitta klass bilan oʻlcham,
+   qator balandligi, vazn va harf oraligʻini BIRGA beradi, variantlar
+   ishlaydi (`md:text-title`), va utility boʻlgani uchun yonidagi
+   `font-medium` / `leading-relaxed` / `text-foreground` uni USTIDAN
+   yozadi. Oʻlcham `--typo-*` dan oʻqiladi — sirt (surfaces.css) va
+   `.readable-scale` shu orqali qayta oʻlchaydi.
+   Hujjat: DESIGN.md §3, docs/dizayn-token-standartlashtirish.md
    ───────────────────────────────────────────── */
+@theme inline {
+  /* Mikro — 10px / 600. FAQAT zich toʻr kataklari (dars jadvali: 1200
+     katak, eni ~30px). Kelib chiqishi: docs/dars-jadvali-spec.md §14. */
+  --text-micro: var(--typo-micro, 0.625rem);
+  --text-micro--line-height: 1.2;
+  --text-micro--font-weight: 600;
 
-/* Sahifa sarlavhasi — 24px / 700 */
-.heading-page {
-  font-size: var(--typo-page, 1.5rem);
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--foreground);
+  /* Yorliq — 11px / 500, UPPERCASE (pastdagi components qatlami) */
+  --text-label: var(--typo-label, 0.6875rem);
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: 500;
+  --text-label--letter-spacing: 0.05em;
+
+  /* Izoh, meta — 12px / 400 */
+  --text-caption: var(--typo-caption, 0.75rem);
+  --text-caption--line-height: 1.4;
+  --text-caption--font-weight: 400;
+
+  /* Ilova asosiy matni — 14px / 400 */
+  --text-body: var(--typo-body, 0.875rem);
+  --text-body--line-height: 1.5;
+  --text-body--font-weight: 400;
+
+  /* Uzun oʻqiladigan matn — 16px / 400 */
+  --text-reading: var(--typo-reading, 1rem);
+  --text-reading--line-height: 1.6;
+  --text-reading--font-weight: 400;
+
+  /* Karta sarlavhasi, ism — 15px / 600 */
+  --text-title-sm: var(--typo-small, 0.9375rem);
+  --text-title-sm--line-height: 1.3;
+  --text-title-sm--font-weight: 600;
+  --text-title-sm--letter-spacing: -0.01em;
+
+  /* Panel / boʻlim sarlavhasi — 18px / 600 (CardTitle bilan bir xil) */
+  --text-title: var(--typo-section, 1.125rem);
+  --text-title--line-height: 1.3;
+  --text-title--font-weight: 600;
+  --text-title--letter-spacing: -0.015em;
+
+  /* Sahifa sarlavhasi — 24px / 700 */
+  --text-headline: var(--typo-page, 1.5rem);
+  --text-headline--line-height: 1.2;
+  --text-headline--font-weight: 700;
+  --text-headline--letter-spacing: -0.02em;
 }
 
-/* Boʻlim / panel sarlavhasi — 18px / 600 (CardTitle bilan bir xil) */
-.heading-section {
-  font-size: var(--typo-section, 1.125rem);
-  line-height: 1.3;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  color: var(--foreground);
-}
+/* Rolga kirmaydigan qoʻshimchalar va eski nomlar. `components`
+   qatlamida — shuning uchun istalgan utility (`text-foreground`,
+   `normal-case`, `font-medium`) ularni ustidan yozadi.
+   Rang rolning qismi emas; `.text-caption` dagi muted rang — koʻchish
+   davridagi meros, yangi kodda `text-caption text-muted-foreground`. */
+@layer components {
+  .text-micro { font-variant-numeric: tabular-nums; }
+  .text-label { text-transform: uppercase; color: var(--muted-foreground); }
+  .text-caption { color: var(--muted-foreground); }
+  .text-body { color: var(--foreground); }
 
-/* Kichik sarlavha (karta ichidagi ism va h.k.) — 15px / 600 */
-.heading-small {
-  font-size: var(--typo-small, 0.9375rem);
-  line-height: 1.3;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--foreground);
-}
-
-/* Asosiy matn — 14px / 400 */
-.text-body {
-  font-size: var(--typo-body, 0.875rem);
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--foreground);
-}
-
-/* Kichik izoh / muted — 12px / 400 */
-.text-caption {
-  font-size: var(--typo-caption, 0.75rem);
-  line-height: 1.4;
-  font-weight: 400;
-  color: var(--muted-foreground);
+  /* Eski nomlar → rollar. Yangi kodda rol nomini ishlating. */
+  .heading-page { @apply text-headline; color: var(--foreground); }
+  .heading-section { @apply text-title; color: var(--foreground); }
+  .heading-small { @apply text-title-sm; color: var(--foreground); }
 }
 
 /* Modulli oʻqish shkalasi (Minor Third, nisbat 1.2, baza 16px) — FAQAT
@@ -521,27 +544,6 @@
 }
 /* Telefon varianti pastda, `.blog-prose` qoidalaridan KEYIN — bir xil
    oʻzillikdagi qoida faqat keyin kelsa ustun chiqadi. */
-
-/* Mikro — 10px / 600 tabular. FAQAT zich toʻr kataklari uchun
-   (maktab dars jadvali: 1200 katak, katak eni ~30px). Oddiy sahifada
-   ishlatilmaydi — 12px (`.text-caption`) eng kichigi boʻlib qoladi.
-   Kelib chiqishi: docs/dars-jadvali-spec.md §14 (ongli deviatsiya). */
-.text-micro {
-  font-size: 0.625rem;
-  line-height: 1.2;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Yorliq (UPPERCASE) — 11px / 500 */
-.text-label {
-  font-size: var(--typo-label, 0.6875rem);
-  line-height: 1.4;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
-}
 
 /* Scrollbar */
 .scrollbar-thin {
