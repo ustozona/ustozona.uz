@@ -253,7 +253,7 @@ export default function NotesTab({
                     <span
                       key={tag}
                       className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
+                        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold",
                         TAG_META.pill
                       )}
                     >
@@ -263,7 +263,7 @@ export default function NotesTab({
                   ))}
                 </div>
               )}
-              <div className="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-2.5">
+              <div className="mt-3 flex items-center gap-1.5 border-t border-border/60 pt-3">
                 <Avatar size="sm">
                   <AvatarImage src={n.authorAvatarUrl ?? undefined} alt={n.authorName ?? ""} />
                   <AvatarFallback>{(n.authorName ?? "?").slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -370,7 +370,7 @@ export default function NotesTab({
                 <span
                   key={tag}
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium",
+                    "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium",
                     TAG_META.pill
                   )}
                 >

@@ -131,7 +131,7 @@ function statusFilterMeta(val: StatusFilter) {
 }
 
 export const badgeBase =
-  "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
+  "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap";
 
 // ─── Sahifa ──────────────────────────────────────────────────────────────────
 export default function StudentsPage() {
@@ -478,7 +478,7 @@ export default function StudentsPage() {
             "flex items-center justify-between gap-3",
             "@[54rem]:grid @[54rem]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
           )}>
-            <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex min-w-0 items-center gap-3">
               <SectionIcon><Users /></SectionIcon>
               <CardTitle className="min-w-0 shrink truncate">{t("title")}</CardTitle>
               <TypographyMuted className="hidden shrink-0 text-sm md:inline">({students.length})</TypographyMuted>
@@ -488,7 +488,7 @@ export default function StudentsPage() {
                 uchun yon guruhlar uning ustiga chiqa olmaydi. */}
             <div className="hidden justify-self-center @[54rem]:flex">{viewToggle}</div>
 
-            <div className="flex shrink-0 items-center gap-1.5 justify-self-end md:gap-2.5">
+            <div className="flex shrink-0 items-center gap-1.5 justify-self-end md:gap-2">
               {/* Panel markazga sigʻmaydigan darajada tor boʻlsa — shu yerda.
                   Ajratgich shart emas: pill oʻz border'iga ega. */}
               <div className="hidden sm:flex @[54rem]:hidden">{viewToggle}</div>
@@ -536,7 +536,7 @@ export default function StudentsPage() {
                           key={val}
                           onClick={() => setStatusFilter(val)}
                           className={cn(
-                            "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+                            "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
                             statusFilter === val ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"
                           )}
                         >
@@ -619,7 +619,7 @@ export default function StudentsPage() {
                 <Button
                   onClick={() => setAddOpen(true)}
                   className={cn(
-                    "rounded-r-none px-2.5 font-semibold",
+                    "rounded-r-none px-3 font-semibold",
                     !selectedStudent && "@[420px]:px-3 @[560px]:px-4"
                   )}
                 >
@@ -1058,7 +1058,7 @@ function PreviewCard({
 
           {/* 4. Sinf — kvadrat-radiusli rangli belgi + nom */}
           <div
-            className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium"
             style={{ backgroundColor: tint(13), color: hex }}
           >
             <ClassSwatch hex={hex} />

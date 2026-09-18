@@ -203,10 +203,10 @@ export default function AddStudentModal({ open, onOpenChange, defaultClassId, on
         <div className="flex shrink-0 items-center gap-3 border-b border-border px-6 py-5">
           <SectionIcon><Users /></SectionIcon>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <DialogTitle className="text-lg">{t("title")}</DialogTitle>
               {selectedClass && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                   <ClassSwatch hex={classHex} />
                   {selectedClass.name}
                 </span>

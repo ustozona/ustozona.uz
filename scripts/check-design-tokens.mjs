@@ -31,9 +31,10 @@ import { globSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 const BASELINE = "scripts/design-tokens-baseline.json";
 
 /* Boʻshliq xossalari (Tailwind). Taqiqlangan qadamlar 4px toʻridan
-   tashqarida: 2.5=10px, 3.5=14px, 4.5=18px, 7/9/11 — rol jadvalida yoʻq. */
+   tashqarida: 2.5=10px, 3.5=14px, 4.5=18px. 7/9/11 (28/36/44px) toʻrda —
+   masalan `pl-9` inputdagi ikona oʻrni, geometriyadan chiqqan qiymat. */
 const SPACE = "(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])";
-const OFF_GRID = "(?:2\\.5|3\\.5|4\\.5|7|9|11)";
+const OFF_GRID = "(?:2\\.5|3\\.5|4\\.5)";
 const B = "(?<![\\w-])"; // oldida harf yoki «-» boʻlmasin (top-7, -mt-… ichidagi mt)
 const E = "(?![\\w.])";
 

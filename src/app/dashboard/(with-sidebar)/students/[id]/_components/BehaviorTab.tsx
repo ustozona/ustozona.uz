@@ -125,7 +125,7 @@ export default function BehaviorTab({
             ) : (
               <div className="divide-y divide-border/60">
                 {[...myRedemptions].reverse().map((r) => (
-                  <div key={r.id} className="flex items-center gap-3 py-2.5">
+                  <div key={r.id} className="flex items-center gap-3 py-3">
                     <BehaviorEmoji code={r.emoji} label={r.name} className="size-7 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">{r.name}</p>
