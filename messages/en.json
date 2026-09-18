@@ -2612,6 +2612,7 @@
     "showSunday": "Show Sunday",
     "hideSunday": "Hide Sunday",
     "attendanceAction": "Attendance",
+    "startPresentation": "Start presentation",
     "gradesAction": "Gradebook"
   },
   "AttentionSection": {
@@ -3062,6 +3063,14 @@
     "standards": "Standards",
     "addStandard": "Add standard",
     "removeStandard": "Remove",
+    "materials": "Presentations & tests",
+    "addMaterial": "Attach a presentation or test",
+    "searchMaterial": "Search…",
+    "noMaterials": "No presentations or tests yet",
+    "removeMaterial": "Detach",
+    "kindDeck": "Presentation",
+    "kindTest": "Test",
+    "materialsHint": "Ready on the Dashboard and Board on lesson day",
     "taught": "Taught",
     "selectClassFirst": "Select a class first",
     "searchStandard": "Search standards…",

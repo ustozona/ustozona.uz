@@ -67,6 +67,8 @@ export function DoskaShell() {
     };
   }, []);
 
+  useOpenSetFromUrl();
+
   const toggleFullscreen = () => {
     if (document.fullscreenElement) void document.exitFullscreen();
     else void document.documentElement.requestFullscreen();
@@ -190,4 +192,40 @@ function ScreenCounter({ current }: { current: number }) {
       <span className="bg-border h-px w-3 rounded-full" aria-hidden="true" />
     </span>
   );
+}
+
+/**
+ * `/doska?setId=…` — Dashboard'dagi dars kartasidan «Taqdimotni boshlash»
+ * (R278: oʻqituvchi dars paytida turgan joyidan boshlaydi, 6-qaror:
+ * proyektor ekrani — Doska).
+ *
+ * Joriy ekranda Taqdimot vidjeti boʻlsa, uning toʻplami almashtiriladi
+ * (ikkinchi nusxa tugʻilmaydi); boʻlmasa yangisi qoʻyiladi. Soʻng parametr
+ * manzildan olib tashlanadi — aks holda sahifa yangilanganda oʻqituvchi
+ * oʻtib boʻlgan taqdimot yana boshidan ochilardi.
+ *
+ * `useSearchParams` ATAYLAB yoʻq: u Suspense'siz prerender'da buzadi,
+ * bu yerda esa parametr faqat bir marta, mount'dan keyin kerak.
+ */
+function useOpenSetFromUrl() {
+  const hydrated = useDoskaStore((s) => s.hydrated);
+  const done = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!hydrated || done.current) return;
+    done.current = true;
+    const url = new URL(window.location.href);
+    const setId = url.searchParams.get("setId");
+    if (!setId) return;
+
+    const { deck, activeScreenId, addWidget, patchWidgetState } = useDoskaStore.getState();
+    const screen = deck.screens.find((s) => s.id === activeScreenId);
+    const existing = screen?.widgets.find((w) => w.kind === "presentation.v1");
+    const state = { setId, index: 0, revealed: false };
+    if (existing) patchWidgetState(existing.id, state);
+    else addWidget("presentation.v1", undefined, state);
+
+    url.searchParams.delete("setId");
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+  }, [hydrated]);
 }

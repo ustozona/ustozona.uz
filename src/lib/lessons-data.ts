@@ -34,6 +34,11 @@ export type Lesson = {
   assignmentClassIds?: string[];
   /** Bogʻlangan standartlar (ID/yorliqlar) */
   standards?: string[];
+  /** Darsda oʻtkaziladigan taqdimot/testlar — `activity_sets.id` (R276).
+   *  Dars kuni Dashboard kartasida «▶ Boshlash» va Doska'dagi Taqdimot
+   *  vidjetida tayyor turadi. Toʻplamning oʻzi emas, faqat havola:
+   *  `lessons.data` JSONB ichida, migratsiyasiz. */
+  setIds?: string[];
   /** ── Koʻp-sinf (Model A: bitta dars, koʻp sinf) ──
    *  Dars biriktirilgan barcha sinflar. Boʻsh/aniqlanmagan boʻlsa `classId` (legacy)
    *  yagona aʼzolik sifatida ishlatiladi. Manba: shu maydon (mavjud boʻlsa). */

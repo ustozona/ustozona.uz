@@ -695,6 +695,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                     onAddScheduleForClass={(classId, date, s, e) => addScheduleForClass(lessonId, classId, date, s, e)}
                     onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
                     onSetStandards={(standards) => updateLesson(lessonId, { standards })}
+                    onSetSetIds={(setIds) => updateLesson(lessonId, { setIds })}
                   />
                 </div>
               </motion.aside>
@@ -736,6 +737,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   onAddScheduleForClass={(classId, date, s, e) => addScheduleForClass(lessonId, classId, date, s, e)}
                   onRemoveScheduleForClass={(classId, idx) => removeScheduleForClass(lessonId, classId, idx)}
                   onSetStandards={(standards) => updateLesson(lessonId, { standards })}
+                  onSetSetIds={(setIds) => updateLesson(lessonId, { setIds })}
                 />
               </SheetContent>
             </Sheet>

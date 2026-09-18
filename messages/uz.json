@@ -2462,6 +2462,7 @@
     "showSunday": "Yakshanbani koʻrsatish",
     "hideSunday": "Yakshanbani yashirish",
     "attendanceAction": "Davomat",
+    "startPresentation": "Taqdimotni boshlash",
     "gradesAction": "Jurnal"
   },
   "HomeHero": {
@@ -2890,6 +2891,14 @@
     "standards": "Standartlar",
     "addStandard": "Standart qoʻshish",
     "removeStandard": "O'chirish",
+    "materials": "Taqdimot va testlar",
+    "addMaterial": "Taqdimot yoki test biriktirish",
+    "searchMaterial": "Qidirish…",
+    "noMaterials": "Hali taqdimot yoki test yoʻq",
+    "removeMaterial": "Ajratish",
+    "kindDeck": "Taqdimot",
+    "kindTest": "Test",
+    "materialsHint": "Dars kuni Dashboard va Doskada tayyor turadi",
     "taught": "O'tilgan",
     "selectClassFirst": "Avval sinf tanlang",
     "searchStandard": "Standart qidirish…",

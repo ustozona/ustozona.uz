@@ -2616,6 +2616,7 @@
     "showSunday": "Показать воскресенье",
     "hideSunday": "Скрыть воскресенье",
     "attendanceAction": "Посещаемость",
+    "startPresentation": "Начать презентацию",
     "gradesAction": "Журнал"
   },
   "AttentionSection": {
@@ -3066,6 +3067,14 @@
     "standards": "Стандарты",
     "addStandard": "Добавить стандарт",
     "removeStandard": "Удалить",
+    "materials": "Презентации и тесты",
+    "addMaterial": "Прикрепить презентацию или тест",
+    "searchMaterial": "Поиск…",
+    "noMaterials": "Пока нет презентаций или тестов",
+    "removeMaterial": "Открепить",
+    "kindDeck": "Презентация",
+    "kindTest": "Тест",
+    "materialsHint": "В день урока готово на главной и на доске",
     "taught": "Пройдено",
     "selectClassFirst": "Сначала выберите класс",
     "searchStandard": "Поиск стандарта…",

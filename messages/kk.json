@@ -2616,6 +2616,7 @@
     "showSunday": "Жексенбіні көрсету",
     "hideSunday": "Жексенбіні жасыру",
     "attendanceAction": "Қатысу",
+    "startPresentation": "Презентацияны бастау",
     "gradesAction": "Журнал"
   },
   "AttentionSection": {
@@ -3066,6 +3067,14 @@
     "standards": "Стандарттар",
     "addStandard": "Стандарт қосу",
     "removeStandard": "Алып тастау",
+    "materials": "Презентациялар мен тесттер",
+    "addMaterial": "Презентация немесе тест тіркеу",
+    "searchMaterial": "Іздеу…",
+    "noMaterials": "Әзірге презентация не тест жоқ",
+    "removeMaterial": "Ажырату",
+    "kindDeck": "Презентация",
+    "kindTest": "Тест",
+    "materialsHint": "Сабақ күні басты бетте және тақтада дайын тұрады",
     "taught": "Өтілген",
     "selectClassFirst": "Алдымен сыныпты таңдаңыз",
     "searchStandard": "Стандартты іздеу…",

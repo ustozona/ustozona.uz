@@ -2616,6 +2616,7 @@
     "showSunday": "Ekshembini kórsetiw",
     "hideSunday": "Ekshembini jasırıw",
     "attendanceAction": "Qatnasıw",
+    "startPresentation": "Prezentaciyanı baslaw",
     "gradesAction": "Jurnal"
   },
   "AttentionSection": {
@@ -3066,6 +3067,14 @@
     "standards": "Standartlar",
     "addStandard": "Standart qosıw",
     "removeStandard": "Alıp taslaw",
+    "materials": "Prezentaciya hám testler",
+    "addMaterial": "Prezentaciya yamasa test biriktiriw",
+    "searchMaterial": "Izlew…",
+    "noMaterials": "Házirshe prezentaciya yamasa test joq",
+    "removeMaterial": "Ajıratıw",
+    "kindDeck": "Prezentaciya",
+    "kindTest": "Test",
+    "materialsHint": "Sabaq kúni Dashboard hám Doskada tayar turadı",
     "taught": "Ótilgen",
     "selectClassFirst": "Áwwel klass tańlań",
     "searchStandard": "Standart izlew…",

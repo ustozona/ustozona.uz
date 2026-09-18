@@ -2467,6 +2467,7 @@
     "showSunday": "Якшанбани кўрсатиш",
     "hideSunday": "Якшанбани яшириш",
     "attendanceAction": "Давомат",
+    "startPresentation": "Тақдимотни бошлаш",
     "gradesAction": "Журнал"
   },
   "HomeHero": {
@@ -2895,6 +2896,14 @@
     "standards": "Стандартлар",
     "addStandard": "Стандарт қўшиш",
     "removeStandard": "Ўчириш",
+    "materials": "Тақдимот ва тестлар",
+    "addMaterial": "Тақдимот ёки тест бириктириш",
+    "searchMaterial": "Қидириш…",
+    "noMaterials": "Ҳали тақдимот ёки тест йўқ",
+    "removeMaterial": "Ажратиш",
+    "kindDeck": "Тақдимот",
+    "kindTest": "Тест",
+    "materialsHint": "Дарс куни Dashboard ва Доскада тайёр туради",
     "taught": "Ўтилган",
     "selectClassFirst": "Аввал синф танланг",
     "searchStandard": "Стандарт қидириш…",
