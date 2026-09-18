@@ -138,8 +138,10 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
               onClick={(e) => e.stopPropagation()}
               style={filled ? tints.textOnSolid : tints.textOnTint}
               className={cn(
-                "group/title flex min-w-0 items-center gap-1 font-bold leading-tight underline-offset-[3px] hover:underline focus-visible:underline focus-visible:outline-none",
-                resolvedDensity === "micro" ? "text-xs" : "text-sm",
+                "group/title flex min-w-0 items-center gap-1 underline-offset-[3px] hover:underline focus-visible:underline focus-visible:outline-none",
+                // TIPOGRAFIKA — rol orqali (DESIGN.md §3): sarlavha 15/600, eng past
+                // blokda 12/600. Qoʻlda oʻlcham/vazn yozilmaydi.
+                resolvedDensity === "micro" ? "text-caption font-semibold" : "text-title-sm",
                 titleClassName,
               )}
             >
@@ -151,8 +153,10 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
               title={title}
               style={filled ? tints.textOnSolid : tints.textOnTint}
               className={cn(
-                "min-w-0 truncate font-bold leading-tight",
-                resolvedDensity === "micro" ? "text-xs" : "text-sm",
+                "min-w-0 truncate",
+                // TIPOGRAFIKA — rol orqali (DESIGN.md §3): sarlavha 15/600, eng past
+                // blokda 12/600. Qoʻlda oʻlcham/vazn yozilmaydi.
+                resolvedDensity === "micro" ? "text-caption font-semibold" : "text-title-sm",
                 titleClassName,
               )}
             >
@@ -163,7 +167,7 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
           {resolvedDensity === "compact" && subtitle != null && (
             <span
               style={filled ? tints.textOnSolidMuted : tints.textOnTintMuted}
-              className="shrink-0 truncate text-xs"
+              className="shrink-0 truncate text-caption"
             >
               {subtitle}
             </span>
@@ -172,7 +176,7 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
         {resolvedDensity === "cozy" && subtitle != null && (
           <span
             style={filled ? tints.textOnSolidMuted : tints.textOnTintMuted}
-            className="relative flex min-w-0 items-center gap-1.5 truncate text-xs"
+            className="relative flex min-w-0 items-center gap-1.5 truncate text-caption"
           >
             {subtitle}
           </span>
