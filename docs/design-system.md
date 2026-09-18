@@ -108,18 +108,24 @@ oʻsha yerdan koʻchiriladi, alohida tanlanmaydi.
 
 ## 2. Tipografika shkalasi
 
-Utility klasslar (`globals.css`) — inline uchun; React analoglar
-(`@/components/ui/typography`, `CardTitle`) — semantik JSX uchun. Ikkalasi mos.
+Rollar — Tailwind tokeni (`globals.css` `@theme inline`): bitta klass
+oʻlcham, qator balandligi, vazn va harf oraligʻini birga beradi. React
+analoglar (`@/components/ui/typography`, `CardTitle`) — semantik JSX uchun.
 
-| Klass | React | Oʻlcham / vazn | Ishlatish |
+| Rol | React | Oʻlcham / qator / vazn | Ishlatish |
 |---|---|---|---|
-| `.heading-page` | `TypographyH1` | 24px / 700 | Sahifa sarlavhasi |
-| `.heading-section` | `CardTitle` | 18px / 600 | Panel / boʻlim sarlavhasi |
-| `.heading-small` | — | 15px / 600 | Karta ichidagi ism, kichik sarlavha |
-| `.text-body` | `TypographyP` | 14px / 400 | Asosiy matn (`body` ham 14px) |
-| `.text-caption` | `TypographyMuted` | 12px / 400 muted | Izoh, ikkilamchi maʼlumot |
-| `.text-label` | `TypographyLabel` | 11px / 500 UPPERCASE | Boʻlim yorliqlari (Sinf, Aloqa) |
-| `.text-micro` | — | 10px / 600 tabular | ⚠️ FAQAT zich toʻr kataklari (maktab dars jadvali) |
+| `text-headline` (eski `.heading-page`) | `TypographyH1` | 24 / 1.2 / 700 | Sahifa sarlavhasi |
+| `text-title` (eski `.heading-section`) | `CardTitle` | 18 / 1.3 / 600 | Panel / boʻlim sarlavhasi |
+| `text-title-sm` (eski `.heading-small`) | — | 15 / 1.3 / 600 | Karta ichidagi ism, kichik sarlavha |
+| `text-reading` | — | 16 / 1.6 / 400 | Uzun oʻqiladigan matn |
+| `text-body` | `TypographyP` | 14 / 1.5 / 400 | Asosiy matn (`body` ham 14px) |
+| `text-caption` | `TypographyMuted` | 12 / 1.4 / 400 | Izoh, ikkilamchi maʼlumot |
+| `text-label` | `TypographyLabel` | 11 / 1.4 / 500 UPPERCASE | Boʻlim yorliqlari (Sinf, Aloqa) |
+| `text-micro` | — | 10 / 1.2 / 600 tabular | ⚠️ FAQAT zich toʻr kataklari (maktab dars jadvali) |
+
+Rol utility boʻlgani uchun yonidagi `font-medium`, `leading-relaxed`, rang
+klassi uni ustidan yozadi. Yangi rol qoʻshilsa — `src/lib/utils.ts` dagi
+`TEXT_ROLES` ga ham (aks holda `cn()` uni rang deb tashlab yuboradi).
 
 **`.text-micro` haqida.** Shkalaning eng kichigi `.text-caption` (12px)
 boʻlib qoladi; `.text-micro` — 2026-09-02 da ochilgan bitta istisno.
@@ -158,6 +164,12 @@ toolbar tugmalari va inputlari bir qatorda 36px balandlikda boʻladi.
 
 > Uslub (boxed: border + `card-elevation` vs ghost) kontekstga qarab tanlanadi —
 > lekin **oʻlcham** hamma joyda yuqoridagidek. (Students = boxed, Lessons = ghost.)
+
+### Boʻshliq shkalasi
+
+4px toʻri, qiymat roldan keladi — rollar jadvali: `DESIGN.md` §3.5.
+Taqiqlangan qadamlar (`2.5 · 3.5 · 4.5 · 7 · 9 · 11`, ixtiyoriy `[Npx]`)
+build oldidan `npm run check:tokens` bilan ushlanadi.
 
 ---
 
