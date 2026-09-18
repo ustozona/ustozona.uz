@@ -1320,7 +1320,7 @@
     "cancel": "Bekor qilish",
     "save": "Saqlash",
     "deleteUnitDialogTitle": "Boʻlimni oʻchirish",
-    "deleteUnitDialogDescription": "«{unit}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni keyinroq bekor qilishingiz mumkin.",
+    "deleteUnitDialogDescription": "«{unit}» boʻlimi va undagi darslar oʻchiriladi — jadvalga joylangan darslar ham olib tashlanadi. Bu amalni keyinroq bekor qilishingiz mumkin.",
     "delete": "Oʻchirish",
     "noUnitSelectedTitle": "Boʻlim tanlanmagan",
     "noUnitSelectedDescription": "Mavzularni koʻrish uchun boʻlim tanlang.",
@@ -1336,7 +1336,9 @@
     "deleteLessonAria": "Oʻchirish",
     "deleteLessonDialogTitle": "Mavzuni oʻchirish",
     "deleteLessonDialogDescription": "Bu mavzu va uning tahrirlagichdagi barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.",
-    "lessonDeletedToast": "Mavzu oʻchirildi"
+    "lessonDeletedToast": "Mavzu oʻchirildi",
+    "deleteUnitKeepLessons": "Darslar oʻchmasin — «Boʻlimsiz» ga oʻtsin",
+    "deleteUnitImpact": "Boʻlimda {lessons} ta dars bor, ulardan jadvalga {sessions} ta yozuv joylangan."
   },
   "LessonsPage": {
     "statusCompleted": "Tugallandi",
@@ -1372,7 +1374,7 @@
     "cancel": "Bekor qilish",
     "save": "Saqlash",
     "deleteUnitDialogTitle": "Boʻlimni oʻchirish",
-    "deleteUnitDialogDescription": "«{unit}» boʻlimi oʻchiriladi. Undagi darslar oʻchmaydi — faqat boʻlimsiz boʻlib qoladi. Bu amalni keyinroq bekor qilishingiz mumkin.",
+    "deleteUnitDialogDescription": "«{unit}» boʻlimi va undagi darslar oʻchiriladi — jadvalga joylangan darslar ham olib tashlanadi. Bu amalni keyinroq bekor qilishingiz mumkin.",
     "delete": "Oʻchirish",
     "noUnitSelectedTitle": "Boʻlim tanlanmagan",
     "noUnitSelectedDescription": "Mavzularni koʻrish uchun boʻlim tanlang.",
@@ -1387,7 +1389,9 @@
     "moveLesson": "Koʻchirish",
     "deleteLessonDialogTitle": "Darsni oʻchirish",
     "deleteLessonDialogDescription": "Bu dars va uning tahrirlagichdagi barcha mazmuni butunlay oʻchiriladi. Bu amalni qaytarib boʻlmaydi.",
-    "lessonDeletedToast": "Dars oʻchirildi"
+    "lessonDeletedToast": "Dars oʻchirildi",
+    "deleteUnitKeepLessons": "Darslar oʻchmasin — «Boʻlimsiz» ga oʻtsin",
+    "deleteUnitImpact": "Boʻlimda {lessons} ta dars bor, ulardan jadvalga {sessions} ta yozuv joylangan."
   },
   "TimetablePage": {
     "scheduleSavedToast": "Jadval yangilandi",

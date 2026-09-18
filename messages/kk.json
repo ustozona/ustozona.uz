@@ -1320,7 +1320,7 @@
     "cancel": "Болдырмау",
     "save": "Сақтау",
     "deleteUnitDialogTitle": "Бөлімді жою",
-    "deleteUnitDialogDescription": "«{unit}» бөлімі жойылады. Ондағы сабақтар жойылмайды — тек бөлімсіз болып қалады. Бұл әрекетті кейінірек болдырмауға болады.",
+    "deleteUnitDialogDescription": "«{unit}» бөлімі және ондағы сабақтар жойылады — кестеге қойылған сабақтар да алынады. Бұл әрекетті кейін болдырмауға болады.",
     "delete": "Жою",
     "noUnitSelectedTitle": "Бөлім таңдалмаған",
     "noUnitSelectedDescription": "Тақырыптарды көру үшін бөлімді таңдаңыз.",
@@ -1336,7 +1336,9 @@
     "deleteLessonAria": "Жою",
     "deleteLessonDialogTitle": "Тақырыпты жою",
     "deleteLessonDialogDescription": "Бұл тақырып және оның өңдегіштегі барлық мазмұны толығымен жойылады. Бұл әрекетті қайтару мүмкін емес.",
-    "lessonDeletedToast": "Тақырып жойылды"
+    "lessonDeletedToast": "Тақырып жойылды",
+    "deleteUnitKeepLessons": "Сабақтар сақталсын — «Бөлімсіз» ге өтсін",
+    "deleteUnitImpact": "Бөлімде {lessons} сабақ бар, олардың {sessions} жазбасы кестеге қойылған."
   },
   "LessonsPage": {
     "statusCompleted": "Аяқталды",
@@ -1372,7 +1374,7 @@
     "cancel": "Болдырмау",
     "save": "Сақтау",
     "deleteUnitDialogTitle": "Бөлімді жою",
-    "deleteUnitDialogDescription": "«{unit}» бөлімі жойылады. Ондағы сабақтар жойылмайды — тек бөлімсіз болып қалады. Бұл әрекетті кейінірек болдырмауға болады.",
+    "deleteUnitDialogDescription": "«{unit}» бөлімі және ондағы сабақтар жойылады — кестеге қойылған сабақтар да алынады. Бұл әрекетті кейін болдырмауға болады.",
     "delete": "Жою",
     "noUnitSelectedTitle": "Бөлім таңдалмаған",
     "noUnitSelectedDescription": "Тақырыптарды көру үшін бөлімді таңдаңыз.",
@@ -1387,7 +1389,9 @@
     "moveLesson": "Жылжыту",
     "deleteLessonDialogTitle": "Сабақты жою",
     "deleteLessonDialogDescription": "Бұл сабақ және оның өңдегіштегі барлық мазмұны толығымен жойылады. Бұл әрекетті қайтару мүмкін емес.",
-    "lessonDeletedToast": "Сабақ жойылды"
+    "lessonDeletedToast": "Сабақ жойылды",
+    "deleteUnitKeepLessons": "Сабақтар сақталсын — «Бөлімсіз» ге өтсін",
+    "deleteUnitImpact": "Бөлімде {lessons} сабақ бар, олардың {sessions} жазбасы кестеге қойылған."
   },
   "TimetablePage": {
     "scheduleSavedToast": "Кесте жаңартылды",
