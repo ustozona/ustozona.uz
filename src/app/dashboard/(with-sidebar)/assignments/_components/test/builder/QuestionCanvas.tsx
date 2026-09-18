@@ -56,7 +56,7 @@ export default function QuestionCanvas({ question, stageTheme, onChange }: Props
               onChange={(e) => onChange({ title: e.target.value })}
               placeholder="Slayd sarlavhasi"
               maxLength={200}
-              className="h-auto border-0 bg-card py-3 text-center text-xl font-bold shadow-sm"
+              className="h-auto border-0 bg-card py-3 text-center text-xl font-semibold shadow-sm"
             />
           )}
           <Textarea

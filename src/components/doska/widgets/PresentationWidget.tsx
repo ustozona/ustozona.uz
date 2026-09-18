@@ -261,7 +261,7 @@ function Player({
         {step?.shape === "slide" && (
           <>
             {step.title && (
-              <h2 className="text-[max(18px,4.5cqw)] font-bold leading-tight">{step.title}</h2>
+              <h2 className="text-[max(18px,4.5cqw)] font-semibold leading-tight">{step.title}</h2>
             )}
             {step.stem && (
               <p className="whitespace-pre-wrap text-[max(14px,2.8cqw)] leading-relaxed">
@@ -273,7 +273,7 @@ function Player({
 
         {step?.shape === "mcq" && (
           <>
-            <h2 className="text-center text-[max(16px,3.6cqw)] font-bold leading-snug">
+            <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
               {step.stem}
             </h2>
             <div className="grid grid-cols-2 gap-[1.5cqw]">
@@ -297,7 +297,7 @@ function Player({
 
         {step?.shape === "pairs" && (
           <>
-            <h2 className="text-center text-[max(16px,3.2cqw)] font-bold">{step.title}</h2>
+            <h2 className="text-center text-[max(16px,3.2cqw)] font-semibold">{step.title}</h2>
             <div className="flex flex-col gap-[1cqw] text-[max(13px,2.4cqw)]">
               {step.pairs.map((pair) => (
                 <div key={pair.id} className="grid grid-cols-[1fr_auto_1fr] items-center gap-[1.5cqw]">

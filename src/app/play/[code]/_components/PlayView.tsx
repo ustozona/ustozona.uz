@@ -289,7 +289,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
           </p>
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
             {step.title && (
-              <h1 className="text-2xl font-bold leading-snug">{step.title}</h1>
+              <h1 className="text-headline">{step.title}</h1>
             )}
             {step.body && (
               <p className="whitespace-pre-wrap text-base leading-relaxed">{step.body}</p>
