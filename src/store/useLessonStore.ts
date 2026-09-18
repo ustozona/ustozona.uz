@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession } from "@/lib/lessons-data";
+import { lessonClassIds, lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession } from "@/lib/lessons-data";
 
 /* ════════════════════════════════════════════════════════════════════
    MAVZU BANKI — server-backed store (6-bosqich migratsiyasi)
@@ -101,6 +101,9 @@ interface LessonState {
   unscheduleSession: (id: string, classId: string, date: string, startMin: number) => void;
   /** Oʻchirilgan darsni TOʻLIQ (content/standards/scheduleByClass bilan) qaytarish. */
   restoreLesson: (lesson: Lesson) => void;
+  /** Aʼzo BOʻLMAGAN sinflarga tegishli jadval yozuvlarini tozalash. Nechta
+      yozuv olib tashlangani qaytadi (0 = holat izchil, store tegilmaydi). */
+  pruneOrphanSessions: () => number;
 
   /* ── Koʻp-sinf (Model A) ── */
   /** Darsning aʼzo sinflarini oʻrnatish; boʻlim/jadval xaritalari tozalanadi (endi yoʻq sinflar uchun). */
@@ -212,6 +215,40 @@ export const useLessonStore = create<LessonState>()(
       restoreLesson: (lesson) => set((s) => (
         s.lessons.some((l) => l.id === lesson.id) ? s : { lessons: [...s.lessons, lesson] }
       )),
+
+      /* Aʼzolik (`classIds`) — yagona haqiqat: dars roʻyxatlari, «Ulash»
+         nomzodlari, boʻlim filtri — hammasi shundan oʻqiydi. `scheduleByClass`
+         da aʼzo boʻlmagan sinf qolib ketsa, dars HECH QAYSI roʻyxatda
+         koʻrinmaydi, lekin plannerda kunga ulangan holda turaveradi —
+         foydalanuvchi uni oʻchira olmaydi (2026-09-18 kuzatuvi). Bu yerda
+         shunday yozuvlar bir marta, hydration'dan keyin tozalanadi. */
+      pruneOrphanSessions: () => {
+        let removed = 0;
+        const lessons = get().lessons.map((l) => {
+          const map = l.scheduleByClass;
+          if (!map) return l;
+          const members = new Set(lessonClassIds(l));
+          const orphanKeys = Object.keys(map).filter((cid) => !members.has(cid));
+          if (!orphanKeys.length) return l;
+          const next = { ...map };
+          for (const cid of orphanKeys) {
+            removed += next[cid]?.length ?? 0;
+            delete next[cid];
+          }
+          // Xarita boʻshab qolsa `lessonSessions()` legacy maydonlardan
+          // sessiya SINTEZ qiladi — aʼzo boʻlmagan sinf shu yoʻl bilan
+          // plannerga qaytib chiqmasin.
+          const legacyOrphan = !anySessions(next) && !!l.classId && !members.has(l.classId);
+          return {
+            ...l,
+            scheduleByClass: next,
+            ...(legacyOrphan ? legacyScheduleFields(undefined) : {}),
+            status: (anySessions(next) ? l.status : "Unscheduled") as LessonStatus,
+          };
+        });
+        if (removed) set({ lessons });
+        return removed;
+      },
 
       /* ── Koʻp-sinf (Model A) ──
          classIds[0] = "asosiy" sinf; legacy maydonlar (classId/unitId/scheduledDate/
