@@ -15,6 +15,19 @@ import type { ActivitySetRow } from "@/server/db/schema";
 import { SlideView } from "@/components/slides/SlideView";
 import { slideLayoutOf } from "@/lib/slide-layouts";
 import { stageThemeBg } from "@/lib/stage-themes";
+import {
+  TEACHER_FALLBACK_POLL_MS,
+  type LiveResults,
+  type LiveSessionInfo,
+} from "@/lib/live-session";
+import {
+  endLiveSessionAction,
+  listLiveClassesAction,
+  liveResultsAction,
+  setLiveStepAction,
+  startLiveSessionAction,
+} from "@/server/actions/assess-live";
+import { useLiveNudge } from "@/hooks/useLiveNudge";
 
 export type Team = { name: string; score: number };
 
@@ -38,6 +51,12 @@ const MAX_TEAMS = TEAM_TINTS.length;
  * aniq oʻquvchiga bogʻlanmagan. Toʻplam almashtirilsa jamoalar qoladi:
  * bitta dars davomida bir nechta taqdimot oʻynalishi mumkin.
  *
+ * JONLI SESSIYA (R284) — ixtiyoriy: oʻquvchilar oʻz qurilmasidan PIN/QR
+ * bilan qoʻshiladi, qadamni shu vidjet boshqaradi (`current_index`),
+ * javoblar doskada jonli ustun boʻlib oʻsadi va jurnalga tushishi mumkin.
+ * Sessiya maʼlumoti (`live`) vidjet holatida — sahifa yangilansa ham
+ * sessiya yoʻqolmaydi.
+ *
  * Holatda faqat `setId`, joriy qadam va javob ochilganmi — mazmunning
  * oʻzi saqlanmaydi, har ochilishda toʻplamdan oʻqiladi (toʻplam tahrir
  * qilinsa doska eskirgan nusxani koʻrsatmasin).
@@ -49,6 +68,16 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
   const revealed = Boolean(widget.state.revealed);
   const teams = (widget.state.teams as Team[] | null | undefined) ?? null;
   const setTeams = (next: Team[] | null) => patch(widget.id, { teams: next });
+  const live = (widget.state.live as LiveSessionInfo | null | undefined) ?? null;
+  const showJoin = Boolean(widget.state.showJoin);
+  const deckClassId = useDoskaStore((s) => s.deck.classId);
+
+  // Jonli sessiyada har oʻtish serverga ham yoziladi — oʻquvchi qurilmalari
+  // shuni soʻrab oladi. Xato jim: doska baribir oʻtadi, keyingi bosishda
+  // server yana yetib oladi.
+  const syncLive = (next: number, nextRevealed: boolean) => {
+    if (live) void setLiveStepAction({ sessionId: live.sessionId, index: next, revealed: nextRevealed }).catch(() => {});
+  };
 
   if (!setId) {
     return (
@@ -61,11 +90,29 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
       setId={setId}
       index={index}
       revealed={revealed}
-      onGo={(next) => patch(widget.id, { index: next, revealed: false })}
-      onReveal={() => patch(widget.id, { revealed: !revealed })}
+      onGo={(next) => {
+        patch(widget.id, { index: next, revealed: false, showJoin: false });
+        syncLive(next, false);
+      }}
+      onReveal={() => {
+        patch(widget.id, { revealed: !revealed });
+        syncLive(index, !revealed);
+      }}
       onChange={() => patch(widget.id, { setId: null, index: 0, revealed: false })}
       teams={teams}
       onTeamsChange={setTeams}
+      live={live}
+      showJoin={showJoin}
+      onToggleJoin={() => patch(widget.id, { showJoin: !showJoin })}
+      preferredClassId={(widget.state.classId as string | undefined) ?? deckClassId}
+      onStartLive={async (classId) => {
+        const info = await startLiveSessionAction({ setId, classId });
+        patch(widget.id, { live: info, index: 0, revealed: false, showJoin: true, classId });
+      }}
+      onEndLive={async () => {
+        if (live) await endLiveSessionAction(live.sessionId).catch(() => {});
+        patch(widget.id, { live: null, showJoin: false });
+      }}
     />
   );
 }
@@ -211,6 +258,12 @@ function Player({
   onChange,
   teams,
   onTeamsChange,
+  live,
+  showJoin,
+  onToggleJoin,
+  preferredClassId,
+  onStartLive,
+  onEndLive,
 }: {
   setId: string;
   index: number;
@@ -220,7 +273,14 @@ function Player({
   onChange: () => void;
   teams: Team[] | null;
   onTeamsChange: (next: Team[] | null) => void;
+  live: LiveSessionInfo | null;
+  showJoin: boolean;
+  onToggleJoin: () => void;
+  preferredClassId?: string;
+  onStartLive: (classId: string) => Promise<void>;
+  onEndLive: () => Promise<void>;
 }) {
+  const results = useLiveResults(live);
   const [draft, setDraft] = React.useState<SetDraft | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -315,12 +375,25 @@ function Player({
     <Panel ref={rootRef} className="gap-[2cqw] p-[3cqw]">
       <div className="flex shrink-0 items-center gap-2 text-[max(12px,1.6cqw)] opacity-70">
         <span className="min-w-0 flex-1 truncate">{draft.set.title}</span>
+        {live && (
+          <button
+            type="button"
+            data-doska-no-drag=""
+            onClick={onToggleJoin}
+            className="rounded-md bg-black/5 px-2 py-0.5 font-mono hover:bg-black/10 dark:bg-white/10"
+          >
+            PIN {live.joinCode} · {results?.joined ?? 0} qoʻshildi
+          </button>
+        )}
         <span className="font-mono">
           {total === 0 ? 0 : current + 1} / {total}
         </span>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col justify-center gap-[2.5cqw] overflow-y-auto">
+      <div className="relative flex min-h-0 flex-1 flex-col justify-center gap-[2.5cqw] overflow-y-auto">
+        {live && showJoin && (
+          <JoinOverlay code={live.joinCode} joined={results?.joined ?? 0} onClose={onToggleJoin} />
+        )}
         {!step && <p className="text-center opacity-70">Toʻplam boʻsh</p>}
 
         {/* Slayd — muharrir va oʻquvchi ekrani bilan bir xil renderer,
@@ -359,21 +432,42 @@ function Player({
             <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
               {step.stem}
             </h2>
+            {live && (
+              <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
+                {results?.items[step.activityId ?? ""]?.answered ?? 0} / {results?.joined ?? 0} javob berdi
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-[1.5cqw]">
-              {step.options.map((option, i) => (
-                <div
-                  key={option.id}
-                  className={cn(
-                    "flex items-center gap-[1.5cqw] rounded-xl border-2 px-[2cqw] py-[1.5cqw] text-[max(13px,2.4cqw)] font-medium transition-opacity",
-                    revealed && option.isCorrect && "border-[var(--doska-light-green)]",
-                    revealed && !option.isCorrect && "opacity-35",
-                    !revealed && "border-current/20",
-                  )}
-                >
-                  <span className="font-mono opacity-60">{String.fromCharCode(65 + i)}</span>
-                  <span className="min-w-0">{option.text}</span>
-                </div>
-              ))}
+              {step.options.map((option, i) => {
+                const item = live ? results?.items[step.activityId ?? ""] : undefined;
+                const count = item?.byOption[option.id] ?? 0;
+                const share = item && item.answered > 0 ? count / item.answered : 0;
+                return (
+                  <div
+                    key={option.id}
+                    className={cn(
+                      "relative flex items-center gap-[1.5cqw] overflow-hidden rounded-xl border-2 px-[2cqw] py-[1.5cqw] text-[max(13px,2.4cqw)] font-medium transition-opacity",
+                      revealed && option.isCorrect && "border-[var(--doska-light-green)]",
+                      revealed && !option.isCorrect && "opacity-35",
+                      !revealed && "border-current/20",
+                    )}
+                  >
+                    {/* Jonli ustun — javoblar ulushi (oʻqituvchi ochmaguncha
+                        ham koʻrinadi: sinf fikri qanday boʻlinayotgani darsning
+                        oʻzi uchun maʼlumot). */}
+                    {live && (
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-0 left-0 bg-current/10 transition-[width] duration-500"
+                        style={{ width: `${Math.round(share * 100)}%` }}
+                      />
+                    )}
+                    <span className="relative font-mono opacity-60">{String.fromCharCode(65 + i)}</span>
+                    <span className="relative min-w-0 flex-1">{option.text}</span>
+                    {live && <span className="relative font-mono opacity-70">{count}</span>}
+                  </div>
+                );
+              })}
             </div>
           </>
         )}
@@ -406,7 +500,14 @@ function Player({
       {teams && <TeamBar teams={teams} onChange={onTeamsChange} />}
 
       <div className="flex shrink-0 items-center gap-2">
-        <NavButton onClick={onChange}>Almashtirish</NavButton>
+        {/* Jonli sessiya ketayotganda toʻplamni almashtirib boʻlmaydi —
+            oʻquvchilar boshqa toʻplamning qadamlariga ergashib qolardi. */}
+        {!live && <NavButton onClick={onChange}>Almashtirish</NavButton>}
+        {live ? (
+          <NavButton onClick={() => void onEndLive()}>Sessiyani tugatish</NavButton>
+        ) : (
+          <LiveStarter preferredClassId={preferredClassId} onStart={onStartLive} />
+        )}
         <NavButton
           onClick={() =>
             onTeamsChange(
@@ -431,6 +532,137 @@ function Player({
         </NavButton>
       </div>
     </Panel>
+  );
+}
+
+/** Jonli natija — realtime turtki kelganda darhol, aks holda zaxira soʻrov bilan. */
+function useLiveResults(live: LiveSessionInfo | null): LiveResults | null {
+  const [results, setResults] = React.useState<LiveResults | null>(null);
+  const sessionId = live?.sessionId ?? null;
+
+  const refresh = React.useCallback(() => {
+    if (!sessionId) return;
+    liveResultsAction(sessionId).then(setResults).catch(() => {});
+  }, [sessionId]);
+
+  const { connected } = useLiveNudge(live?.topic ?? null, refresh);
+
+  React.useEffect(() => {
+    if (!sessionId) return;
+    refresh();
+    // Realtime ulangan boʻlsa soʻrov faqat sugʻurta (turtki yoʻqolsa ham).
+    const timer = setInterval(refresh, connected ? 15_000 : TEACHER_FALLBACK_POLL_MS);
+    return () => clearInterval(timer);
+  }, [sessionId, connected, refresh]);
+
+  return sessionId ? results : null;
+}
+
+/** Sinf tanlab jonli sessiyani boshlash. */
+function LiveStarter({
+  preferredClassId,
+  onStart,
+}: {
+  preferredClassId?: string;
+  onStart: (classId: string) => Promise<void>;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [classes, setClasses] = React.useState<{ id: string; name: string }[] | null>(null);
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function start(classId: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      await onStart(classId);
+      setOpen(false);
+    } catch {
+      setError("Sessiyani boshlab boʻlmadi");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function toggle() {
+    const next = !open;
+    setOpen(next);
+    if (next && classes === null) {
+      listLiveClassesAction()
+        .then(setClasses)
+        .catch(() => setError("Hisobingizga kiring"));
+    }
+  }
+
+  return (
+    <div className="relative">
+      <NavButton onClick={toggle}>Jonli sessiya</NavButton>
+      {open && (
+        <div
+          data-doska-no-drag=""
+          className="absolute bottom-full left-0 z-10 mb-2 flex max-h-64 w-56 flex-col gap-1 overflow-y-auto rounded-lg bg-card p-2 text-card-foreground shadow-lg"
+        >
+          <p className="px-2 py-1 text-caption text-muted-foreground">Qaysi sinf qoʻshiladi?</p>
+          {error && <p className="px-2 text-caption text-destructive">{error}</p>}
+          {classes === null && !error && <p className="px-2 text-sm opacity-70">Yuklanmoqda…</p>}
+          {classes?.length === 0 && <p className="px-2 text-sm opacity-70">Sinf topilmadi</p>}
+          {classes?.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              disabled={busy}
+              onClick={() => void start(c.id)}
+              className={cn(
+                "rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50",
+                c.id === preferredClassId && "font-semibold",
+              )}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Qoʻshilish oynasi — katta QR, PIN va havola; sinf ekranda koʻrib kiradi. */
+function JoinOverlay({ code, joined, onClose }: { code: string; joined: number; onClose: () => void }) {
+  const [svg, setSvg] = React.useState<string | null>(null);
+  const url = typeof window === "undefined" ? "" : `${window.location.origin}/play/${code}`;
+
+  React.useEffect(() => {
+    let cancelled = false;
+    import("qrcode")
+      .then((QR) => QR.toString(url, { type: "svg", margin: 1 }))
+      .then((out) => !cancelled && setSvg(out))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  return (
+    <div
+      className="absolute inset-0 z-10 flex items-center justify-center gap-[4cqw] rounded-xl p-[3cqw]"
+      style={{ background: "var(--doska-slate-bg)" }}
+    >
+      {svg && (
+        <div
+          className="aspect-square h-full max-h-[40cqw] rounded-xl bg-white p-[1cqw]"
+          // QR kutubxonasi toza SVG qaytaradi, foydalanuvchi matni yoʻq.
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+      )}
+      <div className="flex flex-col gap-[1.5cqw]">
+        <p className="text-[max(13px,2.2cqw)] opacity-70">{url.replace(/^https?:\/\//, "").replace(/\/play\/.*$/, "/play")} ga kiring</p>
+        <p className="font-mono text-[max(28px,8cqw)] font-semibold leading-none tracking-widest">{code}</p>
+        <p className="text-[max(13px,2.4cqw)]">{joined} oʻquvchi qoʻshildi</p>
+        <div>
+          <NavButton onClick={onClose}>Boshlash</NavButton>
+        </div>
+      </div>
+    </div>
   );
 }
 

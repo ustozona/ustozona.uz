@@ -6,6 +6,7 @@ import { activities, activityItems, responses, sessionParticipants } from "@/ser
 import { requireParticipant, ForbiddenError } from "@/server/play/session";
 import { scoreResponse } from "@/lib/assess/score";
 import { isSessionPastDue } from "@/lib/assess/session-due";
+import { nudgeTopic } from "@/server/realtime/broadcast";
 
 /* ════════════════════════════════════════════════════════════════════
    JAVOB QABUL QILISH — bitta joy, besh yetkazish usuli (jonli, oʻz
@@ -56,6 +57,14 @@ export async function submitResponse(input: SubmitResponseInput) {
     );
   const attemptNo = previousAttempts + 1;
 
+  /* JONLI SESSIYA (R284): har savolga BITTA javob va faqat javob ochilguncha.
+     Aks holda doskadagi ustunlar bir oʻquvchini ikki marta sanardi, toʻgʻri
+     javobni koʻrgandan keyin «tuzatish» esa natijani maʼnosiz qilardi. */
+  const live = session.mode === "live";
+  const liveConfig = session.renderConfig as { revealed?: boolean; liveTopic?: string };
+  if (live && previousAttempts > 0) throw new ForbiddenError("Javob allaqachon yuborilgan");
+  if (live && liveConfig.revealed) throw new ForbiddenError("Javob vaqti tugadi");
+
   const { isCorrect, score } = scoreResponse({
     shape: activity.shape,
     grading: activity.grading,
@@ -94,6 +103,10 @@ export async function submitResponse(input: SubmitResponseInput) {
     .update(sessionParticipants)
     .set({ lastSeenAt: new Date() })
     .where(eq(sessionParticipants.id, participant.id));
+
+  // Oʻqituvchi ekraniga «yangi javob» turtkisi — kutilmaydi va hech qachon
+  // xato tashlamaydi (server/realtime/broadcast.ts).
+  if (live && liveConfig.liveTopic) void nudgeTopic(liveConfig.liveTopic);
 
   return row;
 }

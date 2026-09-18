@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import {
   gameShellUrlAction,
+  getLiveStateAction,
   getSessionContentAction,
   joinSessionAction,
   listRosterByCodeAction,
@@ -20,6 +21,7 @@ import {
 import type { PlaySessionContent } from "@/server/dal/play/content";
 import { SlideView } from "@/components/slides/SlideView";
 import { stageThemeBg } from "@/lib/stage-themes";
+import { STUDENT_POLL_MS, type LiveState } from "@/lib/live-session";
 
 /* Ishtirokchi ekrani — `data-surface="handheld"` (proxy.ts orqali
    avtomatik teglangan, 17px/48px shkala). Akkauntsiz: token
@@ -60,6 +62,48 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [matchedLeftIds, setMatchedLeftIds] = useState<Set<string>>(new Set());
   const [pickedLeftId, setPickedLeftId] = useState<string | null>(null);
+
+  /* ── JONLI REJIM (R284) ──
+     Qadamni oʻqituvchi boshqaradi: qurilma har ~1,5 s da joriy qadamni
+     soʻraydi. «Keyingisi» tugmasi yoʻq; javobdan keyin oʻquvchi kutadi,
+     oʻqituvchi javobni ochganda natijasini koʻradi. */
+  const live = content?.mode === "live";
+  const [liveState, setLiveState] = useState<LiveState | null>(null);
+  /** activityId → javob natijasi (true/false; moslashtirishda null — tugatdi). */
+  const [liveAnswers, setLiveAnswers] = useState<Record<string, boolean | null>>({});
+  const [liveStepSeen, setLiveStepSeen] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (phase !== "playing" || !live) return;
+    const token = localStorage.getItem(tokenKey(joinCode));
+    if (!token) return;
+    let cancelled = false;
+    const tick = () =>
+      getLiveStateAction(token)
+        .then((state) => {
+          if (cancelled) return;
+          setLiveState(state);
+          if (state.ended) setPhase("done");
+        })
+        .catch(() => {});
+    void tick();
+    const timer = setInterval(tick, STUDENT_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [phase, live, joinCode]);
+
+  // Oʻqituvchi qadamni almashtirsa — tanlovlar tozalanadi (render paytida,
+  // effektsiz: holat oldingi qadam raqami bilan solishtiriladi).
+  const liveIndex = liveState && content ? Math.min(liveState.index, content.steps.length - 1) : null;
+  if (live && liveIndex !== null && liveIndex !== liveStepSeen) {
+    setLiveStepSeen(liveIndex);
+    setStepIndex(liveIndex);
+    setSelectedOption(null);
+    setMatchedLeftIds(new Set());
+    setPickedLeftId(null);
+  }
 
   /** Qobiqqa oʻtish. `true` qaytsa — sahifa almashdi, davom etmang.
 
@@ -164,7 +208,8 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
         setCorrectCount((n) => n + 1);
         setPoints((p) => p + 100 * step.pointsMultiplier);
       }
-      advanceStep(content);
+      if (live) setLiveAnswers((prev) => ({ ...prev, [step.activityId]: Boolean(isCorrect) }));
+      else advanceStep(content);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Yuborishda xatolik");
     } finally {
@@ -195,7 +240,8 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
       setPickedLeftId(null);
       const step = content.steps[stepIndex];
       if (step.kind === "pairs" && nextMatched.size >= step.left.length) {
-        advanceStep(content);
+        if (live) setLiveAnswers((prev) => ({ ...prev, [step.activityId]: null }));
+        else advanceStep(content);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Yuborishda xatolik");
@@ -251,6 +297,33 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     }
     const step = content.steps[stepIndex];
 
+    if (live && !liveState) {
+      return (
+        <div className="flex h-screen items-center justify-center p-6 text-center text-muted-foreground">
+          Oʻqituvchi boshlashini kuting…
+        </div>
+      );
+    }
+
+    const liveAnswer = live ? liveAnswers[step.activityId] : undefined;
+    const liveDone = live && step.activityId in liveAnswers;
+    const liveLocked = live && (liveDone || Boolean(liveState?.revealed));
+    const liveNote = !live ? null : liveDone ? (
+      liveState?.revealed ? (
+        liveAnswer === null ? (
+          <p className="text-center text-lg font-semibold">Javob ochildi — doskaga qarang</p>
+        ) : liveAnswer ? (
+          <p className="text-center text-2xl font-semibold text-success">✓ Toʻgʻri!</p>
+        ) : (
+          <p className="text-center text-2xl font-semibold text-destructive">✗ Notoʻgʻri</p>
+        )
+      ) : (
+        <p className="text-center text-muted-foreground">Javobingiz qabul qilindi — kuting</p>
+      )
+    ) : liveState?.revealed ? (
+      <p className="text-center text-muted-foreground">Javob vaqti tugadi</p>
+    ) : null;
+
     if (step.kind === "mcq") {
       return (
         <div className="flex h-screen flex-col gap-6 p-6">
@@ -269,15 +342,18 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
                     : "bg-card text-card-foreground"
                 }
                 className="justify-start text-left"
+                disabled={liveLocked}
                 onClick={() => setSelectedOption(option.id)}
               >
                 {option.text}
               </PushButton>
             ))}
           </div>
-          <PushButton disabled={!selectedOption || submitting} onClick={handleMcqNext}>
-            {stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
-          </PushButton>
+          {liveNote ?? (
+            <PushButton disabled={!selectedOption || submitting} onClick={handleMcqNext}>
+              {live ? "Javob berish" : stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
+            </PushButton>
+          )}
         </div>
       );
     }
@@ -307,9 +383,15 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
               />
             </div>
           </div>
-          <PushButton onClick={() => advanceStep(content)}>
-            {stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
-          </PushButton>
+          {live ? (
+            <p className="text-center text-sm text-muted-foreground">
+              Keyingi slaydga oʻqituvchi oʻtkazadi
+            </p>
+          ) : (
+            <PushButton onClick={() => advanceStep(content)}>
+              {stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
+            </PushButton>
+          )}
         </div>
       );
     }
@@ -350,7 +432,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
                 <button
                   key={r.itemId}
                   type="button"
-                  disabled={matched || !pickedLeftId || submitting}
+                  disabled={matched || !pickedLeftId || submitting || liveLocked}
                   onClick={() => handlePairPick(r.itemId)}
                   className={`h-14 rounded-xl border-2 px-3 text-left text-sm font-medium transition-colors ${
                     matched
@@ -364,6 +446,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
             })}
           </div>
         </div>
+        {liveNote}
       </div>
     );
   }

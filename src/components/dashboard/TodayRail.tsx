@@ -593,7 +593,7 @@ function EventActions({
         {setId && (
           <>
             <DropdownMenuItem asChild>
-              <Link href={`/doska?setId=${encodeURIComponent(setId)}`}>
+              <Link href={`/doska?setId=${encodeURIComponent(setId)}&classId=${encodeURIComponent(classId)}`}>
                 <Presentation />
                 {t("startPresentation")}
               </Link>

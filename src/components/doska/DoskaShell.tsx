@@ -221,11 +221,14 @@ function useOpenSetFromUrl() {
     const { deck, activeScreenId, addWidget, patchWidgetState } = useDoskaStore.getState();
     const screen = deck.screens.find((s) => s.id === activeScreenId);
     const existing = screen?.widgets.find((w) => w.kind === "presentation.v1");
-    const state = { setId, index: 0, revealed: false };
+    // Dars kartasidan kelgan sinf — jonli sessiyada oldindan tanlangan boʻladi.
+    const classId = url.searchParams.get("classId") ?? undefined;
+    const state = { setId, index: 0, revealed: false, ...(classId ? { classId } : {}) };
     if (existing) patchWidgetState(existing.id, state);
     else addWidget("presentation.v1", undefined, state);
 
     url.searchParams.delete("setId");
+    url.searchParams.delete("classId");
     window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
   }, [hydrated]);
 }

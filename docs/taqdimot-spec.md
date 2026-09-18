@@ -61,6 +61,39 @@ slaydlar. Litsenziya qoʻshishdan oldin tekshiriladi.
    xohlasa oʻz fonini oladi (`config.bg`, oʻsha mavzular roʻyxatidan).
    Boʻsh — umumiy fon.
 
+## Jonli sessiya (R284, 2026-09-18)
+
+**Stsenariy:** oʻqituvchi oʻz kompyuteridan Doskada taqdimotni ochadi,
+ekran HDMI bilan e-doskaga chiqadi; 20 ta kompyuterdan oʻquvchilar PIN/QR
+bilan kiradi. Qadamni oʻqituvchi boshqaradi — hamma ekran birga oʻtadi.
+
+**R284 — Aralash model (foydalanuvchi tasdiqlagan).** Hamma qurilma
+realtime'ga ulansa har sinf 21 ulanish egallaydi va bepul rejadagi 200
+ulanishga bir vaqtda ~9 sinf sigʻadi. Shuning uchun:
+
+- **Oʻquvchi qurilmasi** joriy qadamni har 1,5 s da soʻraydi
+  (`getLiveStateAction` — faqat token va sessiya qatori).
+- **Oʻqituvchi ekrani** Supabase Realtime **broadcast** kanalini tinglaydi.
+  Javob yoki qoʻshilish boʻlganda server kanalga **maʼlumotsiz turtki**
+  yuboradi (`server/realtime/broadcast.ts`, REST); ekran natijani egalik
+  tekshiruvi bor `liveResultsAction` bilan oʻzi soʻraydi. Kanal nomi
+  tasodifiy va faqat oʻqituvchiga beriladi.
+- Realtime sozlanmagan yoki uzilgan boʻlsa oʻqituvchi ekrani ham 2,5 s
+  soʻrovga oʻtadi — hech narsa buzilmaydi.
+
+Natija: har sinf **1 ulanish** → bepul rejada ~200 sinf bir vaqtda.
+Keyin oʻquvchilarni ham realtime'ga oʻtkazish bitta joyni oʻzgartiradi.
+
+**Qoidalar:** jonli sessiyada har savolga bitta javob; javob ochilgach
+javob qabul qilinmaydi (aks holda doskadagi ustunlar maʼnosiz). Doska
+natijasi ismlarsiz (proyektorga chiqadi). Sessiya ketayotganda toʻplamni
+almashtirib boʻlmaydi.
+
+**Sozlama (ochiq, brauzerga chiqadi):** `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` (`.env.local.example`). Protokol
+2026-09-18 da prod loyihada sinaldi: join `ok`, REST broadcast `202`,
+xabar WebSocket orqali yetdi.
+
 ## Holat
 
 - ✅ 1-qavat — maketlar (`SlideView`, `SlideLayoutPicker`).
