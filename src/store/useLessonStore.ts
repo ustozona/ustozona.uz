@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Unit, Lesson, LessonStatus, LessonSession } from "@/lib/lessons-data";
+import { lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession } from "@/lib/lessons-data";
 
 /* ════════════════════════════════════════════════════════════════════
    MAVZU BANKI — server-backed store (6-bosqich migratsiyasi)
@@ -80,7 +80,10 @@ interface LessonState {
 
   addUnit: (data: { classId: string; title: string; description?: string }) => string;
   updateUnit: (id: string, patch: Partial<Omit<Unit, "id">>) => void;
-  deleteUnit: (id: string) => void;
+  /** Boʻlimni oʻchirish. `withLessons` (standart: rost) — ichidagi darslar
+      ham oʻchadi (jadvaldagi sessiyalari bilan). `false` — darslar saqlanib,
+      «Boʻlimsiz» ga oʻtadi. */
+  deleteUnit: (id: string, opts?: { withLessons?: boolean }) => void;
   /** Oʻchirilgan boʻlimni (va unga tegishli boʻlgan darslar boʻlim-bogʻlanishini) qaytarish — undo uchun. */
   restoreUnit: (unit: Unit, lessonIds: string[]) => void;
 
@@ -124,10 +127,23 @@ export const useLessonStore = create<LessonState>()(
         return id;
       },
       updateUnit: (id, patch) => set((s) => ({ units: s.units.map((u) => (u.id === id ? { ...u, ...patch } : u)) })),
-      deleteUnit: (id) => set((s) => ({
-        units: s.units.filter((u) => u.id !== id),
-        lessons: s.lessons.map((l) => (l.unitId === id ? { ...l, unitId: null } : l)),
-      })),
+      deleteUnit: (id, opts) => set((s) => {
+        const withLessons = opts?.withLessons ?? true;
+        const lessons: Lesson[] = [];
+        for (const l of s.lessons) {
+          if (!lessonUnitIds(l).includes(id)) { lessons.push(l); continue; }
+          // Dars BOSHQA boʻlimga ham tegishli (koʻp-sinf) boʻlsa oʻchmaydi —
+          // faqat shu boʻlim bogʻlanishi uziladi, aks holda boshqa sinfning
+          // rejasi ham qoʻshimcha yoʻqotishga uchrardi.
+          const linkedElsewhere = lessonUnitIds(l).some((uid) => uid !== id);
+          if (withLessons && !linkedElsewhere) continue;
+          const unitByClass = l.unitByClass
+            ? Object.fromEntries(Object.entries(l.unitByClass).map(([cid, uid]) => [cid, uid === id ? null : uid]))
+            : l.unitByClass;
+          lessons.push({ ...l, unitId: l.unitId === id ? null : l.unitId, unitByClass });
+        }
+        return { units: s.units.filter((u) => u.id !== id), lessons };
+      }),
       restoreUnit: (unit, lessonIds) => set((s) => ({
         units: s.units.some((u) => u.id === unit.id) ? s.units : [...s.units, unit],
         lessons: s.lessons.map((l) => (lessonIds.includes(l.id) ? { ...l, unitId: unit.id } : l)),

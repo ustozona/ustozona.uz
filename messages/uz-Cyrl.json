@@ -1320,7 +1320,7 @@
     "cancel": "Бекор қилиш",
     "save": "Сақлаш",
     "deleteUnitDialogTitle": "Бўлимни ўчириш",
-    "deleteUnitDialogDescription": "«{unit}» бўлими ўчирилади. Ундаги дарслар ўчмайди — фақат бўлимсиз бўлиб қолади. Бу амални кейинроқ бекор қилишингиз мумкин.",
+    "deleteUnitDialogDescription": "«{unit}» бўлими ва ундаги дарслар ўчирилади — жадвалга жойланган дарслар ҳам олиб ташланади. Бу амални кейинроқ бекор қилишингиз мумкин.",
     "delete": "Ўчириш",
     "noUnitSelectedTitle": "Бўлим танланмаган",
     "noUnitSelectedDescription": "Мавзуларни кўриш учун бўлим танланг.",
@@ -1336,7 +1336,9 @@
     "deleteLessonAria": "Ўчириш",
     "deleteLessonDialogTitle": "Мавзуни ўчириш",
     "deleteLessonDialogDescription": "Бу мавзу ва унинг таҳрирлагичдаги барча мазмуни бутунлай ўчирилади. Бу амални қайтариб бўлмайди.",
-    "lessonDeletedToast": "Мавзу ўчирилди"
+    "lessonDeletedToast": "Мавзу ўчирилди",
+    "deleteUnitKeepLessons": "Дарслар ўчмасин — «Бўлимсиз» га ўтсин",
+    "deleteUnitImpact": "Бўлимда {lessons} та дарс бор, улардан жадвалга {sessions} та ёзув жойланган."
   },
   "LessonsPage": {
     "statusCompleted": "Тугалланди",
@@ -1372,7 +1374,7 @@
     "cancel": "Бекор қилиш",
     "save": "Сақлаш",
     "deleteUnitDialogTitle": "Бўлимни ўчириш",
-    "deleteUnitDialogDescription": "«{unit}» бўлими ўчирилади. Ундаги дарслар ўчмайди — фақат бўлимсиз бўлиб қолади. Бу амални кейинроқ бекор қилишингиз мумкин.",
+    "deleteUnitDialogDescription": "«{unit}» бўлими ва ундаги дарслар ўчирилади — жадвалга жойланган дарслар ҳам олиб ташланади. Бу амални кейинроқ бекор қилишингиз мумкин.",
     "delete": "Ўчириш",
     "noUnitSelectedTitle": "Бўлим танланмаган",
     "noUnitSelectedDescription": "Мавзуларни кўриш учун бўлим танланг.",
@@ -1387,7 +1389,9 @@
     "moveLesson": "Кўчириш",
     "deleteLessonDialogTitle": "Дарсни ўчириш",
     "deleteLessonDialogDescription": "Бу дарс ва унинг таҳрирлагичдаги барча мазмуни бутунлай ўчирилади. Бу амални қайтариб бўлмайди.",
-    "lessonDeletedToast": "Дарс ўчирилди"
+    "lessonDeletedToast": "Дарс ўчирилди",
+    "deleteUnitKeepLessons": "Дарслар ўчмасин — «Бўлимсиз» га ўтсин",
+    "deleteUnitImpact": "Бўлимда {lessons} та дарс бор, улардан жадвалга {sessions} та ёзув жойланган."
   },
   "TimetablePage": {
     "scheduleSavedToast": "Жадвал янгиланди",

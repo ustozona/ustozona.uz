@@ -230,7 +230,7 @@ export default function IshRejaImportModal({ classId, unitId, onSingle, onClose 
         onClick: () => {
           const st = useLessonStore.getState();
           createdLessons.forEach((id) => st.deleteLesson(id));
-          createdUnits.forEach((id) => st.deleteUnit(id));
+          createdUnits.forEach((id) => st.deleteUnit(id, { withLessons: false }));
           toast(t("undoneToast"));
         },
       },

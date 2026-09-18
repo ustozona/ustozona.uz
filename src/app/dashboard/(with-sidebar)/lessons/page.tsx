@@ -19,7 +19,7 @@ import { classColor } from "@/lib/grades-data";
 import { useLiveClasses, useCreateClass } from "@/hooks/useLiveClasses";
 import { useClassIdParam, useUrlParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
-import { lessonClassIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
+import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { LessonStatusPill } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
@@ -42,6 +42,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TypographyMuted } from "@/components/ui/typography";
@@ -108,6 +109,7 @@ export default function LessonsPage() {
   const updateUnit = useLessonStore((s) => s.updateUnit);
   const deleteUnit = useLessonStore((s) => s.deleteUnit);
   const restoreUnit = useLessonStore((s) => s.restoreUnit);
+  const restoreLesson = useLessonStore((s) => s.restoreLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   // Boʻlim tanlovi — sinf kabi `?unit=` URL param'ida. Ilgari oddiy
@@ -116,6 +118,8 @@ export default function LessonsPage() {
   const [selectedUnitId, setSelectedUnitId] = useUrlParam("unit");
   const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
+  // Standart: boʻlim bilan darslar ham oʻchadi (kutilgan «papka» semantikasi).
+  const [keepLessonsOnUnitDelete, setKeepLessonsOnUnitDelete] = useState(false);
   const [editUnitTitle, setEditUnitTitle] = useState("");
   const [editUnitDesc, setEditUnitDesc] = useState("");
   const [deleteLessonTarget, setDeleteLessonTarget] = useState<Lesson | null>(null);
@@ -133,14 +137,39 @@ export default function LessonsPage() {
   const handleConfirmDeleteUnit = () => {
     if (!deleteUnitTarget) return;
     const unit = deleteUnitTarget;
-    const lessonIds = lessons.filter((l) => l.unitId === unit.id).map((l) => l.id);
-    deleteUnit(unit.id);
+    // Undo uchun: oʻchadigan darslar TOʻLIQ nusxada, saqlanadiganlar esa
+    // faqat id boʻyicha (ularga boʻlim bogʻlanishi qaytariladi).
+    const affected = lessons.filter((l) => lessonUnitIds(l).includes(unit.id));
+    const removed = keepLessonsOnUnitDelete
+      ? []
+      : affected.filter((l) => !lessonUnitIds(l).some((uid) => uid !== unit.id));
+    const removedIds = new Set(removed.map((l) => l.id));
+    const detachedIds = affected.filter((l) => !removedIds.has(l.id)).map((l) => l.id);
+    deleteUnit(unit.id, { withLessons: !keepLessonsOnUnitDelete });
     if (unit.id === selectedUnitId) setSelectedUnitId(null);
     setDeleteUnitTarget(null);
     toast.success(t("unitDeletedToast", { unit: `${pad(unit.number)}. ${unit.title}` }), {
-      action: { label: t("undo"), onClick: () => restoreUnit(unit, lessonIds) },
+      action: {
+        label: t("undo"),
+        onClick: () => {
+          removed.forEach((l) => restoreLesson(l));
+          restoreUnit(unit, [...detachedIds, ...removedIds]);
+        },
+      },
     });
   };
+  // Oʻchirish dialogida koʻrsatiladigan taʼsir: nechta dars va ulardan
+  // jadvalga joylangan nechta yozuv yoʻqoladi (koʻrsatmasdan oʻchirish
+  // «yashirin yoʻqotish» beradi — kechagi yetim sessiyalar shundan chiqqan).
+  const deleteUnitImpact = useMemo(() => {
+    if (!deleteUnitTarget) return { lessons: 0, sessions: 0 };
+    const affected = lessons.filter((l) => lessonUnitIds(l).includes(deleteUnitTarget.id));
+    return {
+      lessons: affected.length,
+      sessions: affected.reduce((n, l) => n + lessonSessions(l).length, 0),
+    };
+  }, [deleteUnitTarget, lessons]);
+
   const handleConfirmDeleteLesson = () => {
     if (!deleteLessonTarget) return;
     deleteLesson(deleteLessonTarget.id);
@@ -645,7 +674,10 @@ export default function LessonsPage() {
             </DialogContent>
           </Dialog>
 
-          <AlertDialog open={!!deleteUnitTarget} onOpenChange={(o) => !o && setDeleteUnitTarget(null)}>
+          <AlertDialog
+            open={!!deleteUnitTarget}
+            onOpenChange={(o) => { if (!o) { setDeleteUnitTarget(null); setKeepLessonsOnUnitDelete(false); } }}
+          >
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>{t("deleteUnitDialogTitle")}</AlertDialogTitle>
@@ -653,6 +685,18 @@ export default function LessonsPage() {
                   {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${pad(deleteUnitTarget.number)}. ${deleteUnitTarget.title}` })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
+              {deleteUnitImpact.lessons > 0 && (
+                <div className="space-y-3">
+                  <TypographyMuted>{t("deleteUnitImpact", deleteUnitImpact)}</TypographyMuted>
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={keepLessonsOnUnitDelete}
+                      onCheckedChange={(v) => setKeepLessonsOnUnitDelete(v === true)}
+                    />
+                    {t("deleteUnitKeepLessons")}
+                  </label>
+                </div>
+              )}
               <AlertDialogFooter>
                 <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction

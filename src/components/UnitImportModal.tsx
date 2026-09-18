@@ -63,7 +63,7 @@ export default function UnitImportModal({ classId, onDetailed, onCreated, onClos
         label: t("undo"),
         onClick: () => {
           const st = useLessonStore.getState();
-          created.forEach((id) => st.deleteUnit(id));
+          created.forEach((id) => st.deleteUnit(id, { withLessons: false }));
           toast(t("undoneToast"));
         },
       },

@@ -1320,7 +1320,7 @@
     "cancel": "Biykar etiw",
     "save": "Saqlaw",
     "deleteUnitDialogTitle": "Bólimdi óshiriw",
-    "deleteUnitDialogDescription": "«{unit}» bólimi óshiriledi. Ondaǵı sabaqlar óshpeydi — tek bólimsiz bolıp qaladı. Bul ámeldi keyinirek biykar qılıwıńız múmkin.",
+    "deleteUnitDialogDescription": "«{unit}» bólimi hám ondaǵı sabaqlar óshiriledi — kestege qoyılǵan sabaqlar da alıp taslanadı. Bul ámeldi keyinirek biykar etiwińiz múmkin.",
     "delete": "Óshiriw",
     "noUnitSelectedTitle": "Bólim tańlanbaǵan",
     "noUnitSelectedDescription": "Temalardı kóriw ushın bólim tańlań.",
@@ -1336,7 +1336,9 @@
     "deleteLessonAria": "Óshiriw",
     "deleteLessonDialogTitle": "Temanı óshiriw",
     "deleteLessonDialogDescription": "Bul tema hám onıń redaktordaǵı barlıq mazmunı pútkilley óshiriledi. Bul ámeldi qaytarıp bolmaydı.",
-    "lessonDeletedToast": "Tema óshirildi"
+    "lessonDeletedToast": "Tema óshirildi",
+    "deleteUnitKeepLessons": "Sabaqlar óshpesin — «Bólimsiz» ge ótsin",
+    "deleteUnitImpact": "Bólimde {lessons} sabaq bar, olardan kestege {sessions} jazıw qoyılǵan."
   },
   "LessonsPage": {
     "statusCompleted": "Tawısıldı",
@@ -1372,7 +1374,7 @@
     "cancel": "Biykar etiw",
     "save": "Saqlaw",
     "deleteUnitDialogTitle": "Bólimdi óshiriw",
-    "deleteUnitDialogDescription": "«{unit}» bólimi óshiriledi. Ondaǵı sabaqlar óshpeydi — tek bólimsiz bolıp qaladı. Bul ámeldi keyinirek biykar qılıwıńız múmkin.",
+    "deleteUnitDialogDescription": "«{unit}» bólimi hám ondaǵı sabaqlar óshiriledi — kestege qoyılǵan sabaqlar da alıp taslanadı. Bul ámeldi keyinirek biykar etiwińiz múmkin.",
     "delete": "Óshiriw",
     "noUnitSelectedTitle": "Bólim tańlanbaǵan",
     "noUnitSelectedDescription": "Temalardı kóriw ushın bólim tańlań.",
@@ -1387,7 +1389,9 @@
     "moveLesson": "Kóshiriw",
     "deleteLessonDialogTitle": "Sabaqtı óshiriw",
     "deleteLessonDialogDescription": "Bul sabaq hám onıń redaktordaǵı barlıq mazmunı pútkilley óshiriledi. Bul ámeldi qaytarıp bolmaydı.",
-    "lessonDeletedToast": "Sabaq óshirildi"
+    "lessonDeletedToast": "Sabaq óshirildi",
+    "deleteUnitKeepLessons": "Sabaqlar óshpesin — «Bólimsiz» ge ótsin",
+    "deleteUnitImpact": "Bólimde {lessons} sabaq bar, olardan kestege {sessions} jazıw qoyılǵan."
   },
   "TimetablePage": {
     "scheduleSavedToast": "Keste jańalandı",

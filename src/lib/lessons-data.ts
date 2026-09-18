@@ -86,6 +86,17 @@ export function unitIdForClass(l: Lesson, classId: string): string | null {
   return null;
 }
 
+/** Dars TEGISHLI boʻlgan barcha boʻlim idʼlari (har sinf boʻyicha + legacy).
+    Boʻlim oʻchirilganda qaysi darslar taʼsirlanishini aniqlash uchun yagona
+    manba: faqat `unitId` ga qaralsa koʻp-sinfli darslar eʼtibordan chetda
+    qolib, oʻchirilgan boʻlimga «osilib» qolardi. */
+export function lessonUnitIds(l: Lesson): string[] {
+  const out = new Set<string>();
+  if (l.unitId) out.add(l.unitId);
+  for (const uid of Object.values(l.unitByClass ?? {})) if (uid) out.add(uid);
+  return [...out];
+}
+
 export const UNITS: Unit[] = [
   { id: "u1", classId: "6-a", number: 1, title: "Salomlashish va tanishuv (Greetings)", description: "Kundalik muloqotda salomlashish, oʻzini tanishtirish va xushmuomalalik iboralari." },
   { id: "u2", classId: "6-a", number: 2, title: "Oila va doʻstlar (Family & Friends)", description: "Oila aʼzolari, egalik olmoshlari va kishilarni tasvirlash uchun soʻz boyligi." },

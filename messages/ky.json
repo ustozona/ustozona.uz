@@ -1320,7 +1320,7 @@
     "cancel": "Жокко чыгаруу",
     "save": "Сактоо",
     "deleteUnitDialogTitle": "Бөлүмдү өчүрүү",
-    "deleteUnitDialogDescription": "«{unit}» бөлүмү өчүрүлөт. Андагы сабактар өчүрүлбөйт — бөлүмсүз гана болуп калат. Бул аракетти кийинчерээк жокко чыгара аласыз.",
+    "deleteUnitDialogDescription": "«{unit}» бөлүмү жана андагы сабактар өчүрүлөт — тайпалоого коюлган сабактар да алынып салынат. Бул аракетти кийин жокко чыгарсаңыз болот.",
     "delete": "Өчүрүү",
     "noUnitSelectedTitle": "Бөлүм тандалган жок",
     "noUnitSelectedDescription": "Темаларды көрүү үчүн бөлүм тандаңыз.",
@@ -1336,7 +1336,9 @@
     "deleteLessonAria": "Өчүрүү",
     "deleteLessonDialogTitle": "Теманы өчүрүү",
     "deleteLessonDialogDescription": "Бул тема жана анын редактордогу бардык мазмуну биротоло өчүрүлөт. Бул аракетти артка кайтарууга болбойт.",
-    "lessonDeletedToast": "Тема өчүрүлдү"
+    "lessonDeletedToast": "Тема өчүрүлдү",
+    "deleteUnitKeepLessons": "Сабактар өчпөсүн — «Бөлүмсүз» гө өтсүн",
+    "deleteUnitImpact": "Бөлүмдө {lessons} сабак бар, алардын {sessions} жазуусу тайпалоого коюлган."
   },
   "LessonsPage": {
     "statusCompleted": "Аяктады",
@@ -1372,7 +1374,7 @@
     "cancel": "Жокко чыгаруу",
     "save": "Сактоо",
     "deleteUnitDialogTitle": "Бөлүмдү өчүрүү",
-    "deleteUnitDialogDescription": "«{unit}» бөлүмү өчүрүлөт. Андагы сабактар өчүрүлбөйт — бөлүмсүз гана болуп калат. Бул аракетти кийинчерээк жокко чыгара аласыз.",
+    "deleteUnitDialogDescription": "«{unit}» бөлүмү жана андагы сабактар өчүрүлөт — тайпалоого коюлган сабактар да алынып салынат. Бул аракетти кийин жокко чыгарсаңыз болот.",
     "delete": "Өчүрүү",
     "noUnitSelectedTitle": "Бөлүм тандалган жок",
     "noUnitSelectedDescription": "Темаларды көрүү үчүн бөлүм тандаңыз.",
@@ -1387,7 +1389,9 @@
     "moveLesson": "Жылдыруу",
     "deleteLessonDialogTitle": "Сабакты өчүрүү",
     "deleteLessonDialogDescription": "Бул сабак жана анын редактордогу бардык мазмуну биротоло өчүрүлөт. Бул аракетти артка кайтарууга болбойт.",
-    "lessonDeletedToast": "Сабак өчүрүлдү"
+    "lessonDeletedToast": "Сабак өчүрүлдү",
+    "deleteUnitKeepLessons": "Сабактар өчпөсүн — «Бөлүмсүз» гө өтсүн",
+    "deleteUnitImpact": "Бөлүмдө {lessons} сабак бар, алардын {sessions} жазуусу тайпалоого коюлган."
   },
   "TimetablePage": {
     "scheduleSavedToast": "Жадвал жаңырды",

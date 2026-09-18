@@ -1320,7 +1320,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "deleteUnitDialogTitle": "Delete unit",
-    "deleteUnitDialogDescription": "“{unit}” will be deleted. Its lessons won't be deleted — they'll just become unassigned. You can undo this shortly after.",
+    "deleteUnitDialogDescription": "“{unit}” and the lessons inside it will be deleted — scheduled lessons are removed from the timetable too. You can undo this shortly after.",
     "delete": "Delete",
     "noUnitSelectedTitle": "No unit selected",
     "noUnitSelectedDescription": "Select a unit to view its lessons.",
@@ -1336,7 +1336,9 @@
     "deleteLessonAria": "Delete",
     "deleteLessonDialogTitle": "Delete lesson",
     "deleteLessonDialogDescription": "This lesson and all of its content in the editor will be permanently deleted. This action cannot be undone.",
-    "lessonDeletedToast": "Lesson deleted"
+    "lessonDeletedToast": "Lesson deleted",
+    "deleteUnitKeepLessons": "Keep the lessons — move them to “No unit”",
+    "deleteUnitImpact": "This unit holds {lessons, plural, one {# lesson} other {# lessons}} with {sessions, plural, one {# slot} other {# slots}} on the timetable."
   },
   "LessonsPage": {
     "statusCompleted": "Completed",
@@ -1372,7 +1374,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "deleteUnitDialogTitle": "Delete unit",
-    "deleteUnitDialogDescription": "\"{unit}\" will be deleted. Its lessons won't be removed — they'll just become unassigned. You can undo this shortly after.",
+    "deleteUnitDialogDescription": "“{unit}” and the lessons inside it will be deleted — scheduled lessons are removed from the timetable too. You can undo this shortly after.",
     "delete": "Delete",
     "noUnitSelectedTitle": "No unit selected",
     "noUnitSelectedDescription": "Select a unit to view its lessons.",
@@ -1387,7 +1389,9 @@
     "moveLesson": "Move",
     "deleteLessonDialogTitle": "Delete lesson",
     "deleteLessonDialogDescription": "This lesson and all its editor content will be permanently deleted. This action cannot be undone.",
-    "lessonDeletedToast": "Lesson deleted"
+    "lessonDeletedToast": "Lesson deleted",
+    "deleteUnitKeepLessons": "Keep the lessons — move them to “No unit”",
+    "deleteUnitImpact": "This unit holds {lessons, plural, one {# lesson} other {# lessons}} with {sessions, plural, one {# slot} other {# slots}} on the timetable."
   },
   "TimetablePage": {
     "scheduleSavedToast": "Schedule updated",

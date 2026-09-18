@@ -1320,7 +1320,7 @@
     "cancel": "Отмена",
     "save": "Сохранить",
     "deleteUnitDialogTitle": "Удалить раздел",
-    "deleteUnitDialogDescription": "Раздел «{unit}» будет удалён. Его уроки не удалятся — они просто останутся без раздела. Это действие можно будет отменить сразу после.",
+    "deleteUnitDialogDescription": "Раздел «{unit}» и уроки внутри него будут удалены — запланированные уроки исчезнут и из расписания. Это действие можно отменить сразу после.",
     "delete": "Удалить",
     "noUnitSelectedTitle": "Раздел не выбран",
     "noUnitSelectedDescription": "Выберите раздел, чтобы посмотреть уроки.",
@@ -1336,7 +1336,9 @@
     "deleteLessonAria": "Удалить",
     "deleteLessonDialogTitle": "Удалить тему",
     "deleteLessonDialogDescription": "Эта тема и всё её содержимое в редакторе будут безвозвратно удалены. Это действие нельзя отменить.",
-    "lessonDeletedToast": "Тема удалена"
+    "lessonDeletedToast": "Тема удалена",
+    "deleteUnitKeepLessons": "Сохранить уроки — перенести в «Без раздела»",
+    "deleteUnitImpact": "В разделе {lessons, plural, one {# урок} few {# урока} other {# уроков}}, из них в расписании {sessions, plural, one {# запись} few {# записи} other {# записей}}."
   },
   "LessonsPage": {
     "statusCompleted": "Завершён",
@@ -1372,7 +1374,7 @@
     "cancel": "Отмена",
     "save": "Сохранить",
     "deleteUnitDialogTitle": "Удалить раздел",
-    "deleteUnitDialogDescription": "Раздел «{unit}» будет удалён. Уроки в нём не удалятся — они просто останутся без раздела. Это действие можно отменить сразу после.",
+    "deleteUnitDialogDescription": "Раздел «{unit}» и уроки внутри него будут удалены — запланированные уроки исчезнут и из расписания. Это действие можно отменить сразу после.",
     "delete": "Удалить",
     "noUnitSelectedTitle": "Раздел не выбран",
     "noUnitSelectedDescription": "Выберите раздел, чтобы увидеть его темы.",
@@ -1387,7 +1389,9 @@
     "moveLesson": "Переместить",
     "deleteLessonDialogTitle": "Удалить тему",
     "deleteLessonDialogDescription": "Эта тема и всё её содержимое в редакторе будут удалены безвозвратно. Это действие нельзя отменить.",
-    "lessonDeletedToast": "Тема удалена"
+    "lessonDeletedToast": "Тема удалена",
+    "deleteUnitKeepLessons": "Сохранить уроки — перенести в «Без раздела»",
+    "deleteUnitImpact": "В разделе {lessons, plural, one {# урок} few {# урока} other {# уроков}}, из них в расписании {sessions, plural, one {# запись} few {# записи} other {# записей}}."
   },
   "TimetablePage": {
     "scheduleSavedToast": "Расписание обновлено",
