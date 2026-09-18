@@ -21,6 +21,9 @@ import QuestionStrip from "./builder/QuestionStrip";
 import BuilderRail, { type BuilderPanel } from "./builder/BuilderRail";
 import ThemesPanel from "./builder/ThemesPanel";
 import { newQuestion, type DraftQuestion } from "./builder/types";
+import { toast } from "sonner";
+import { uploadEditorImageAction } from "@/server/actions/uploads";
+import { MAX_PDF_PAGES, pdfToImages } from "@/lib/pdf-to-images";
 
 /**
  * Toʻplam builder — viktorina-uslub uch ustunli muharrir: chapda
@@ -132,6 +135,61 @@ export default function SetBuilderOverlay({
     const created = newQuestion(shape);
     setQuestions((prev) => [...prev, created]);
     setActiveKey(created.key);
+  }
+
+  /* ── PDF IMPORT (docs/taqdimot-spec.md, 2-qavat) ──
+     Har sahifa «Katta media» slaydiga aylanadi (sarlavhasiz — matn
+     rasmning oʻzida). Slaydlar joriy elementdan KEYIN qoʻyiladi: oʻqituvchi
+     sarlavha slaydini tuzib, keyin tayyor taqdimotini ulaydi. Import
+     qilingan slaydlar orasiga savol qoʻshish — bizning asosiy afzalligimiz. */
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [pdfProgress, setPdfProgress] = useState<{ done: number; total: number } | null>(null);
+
+  async function importPdf(file: File) {
+    setPdfProgress({ done: 0, total: 0 });
+    try {
+      const { images, totalPages } = await pdfToImages(file, (done, total) =>
+        // Render — ishning yarmi, yuklash — ikkinchi yarmi.
+        setPdfProgress({ done, total: total * 2 }),
+      );
+      const total = images.length * 2;
+      const slides: DraftQuestion[] = [];
+      let notStored = false;
+      for (let i = 0; i < images.length; i++) {
+        const { url, stored } = await uploadEditorImageAction(images[i]);
+        if (!stored) notStored = true;
+        slides.push({ ...newQuestion("slide"), slideLayout: "media", imageUrl: url });
+        setPdfProgress({ done: images.length + i + 1, total });
+      }
+      setQuestions((prev) => {
+        // Yangi toʻplamdagi boʻsh boshlangʻich element saqlanib qolmasin.
+        const blank = (q: DraftQuestion) =>
+          !q.title.trim() && !q.stem.trim() && !q.imageUrl &&
+          !q.options.some((o) => o.text.trim()) && !q.pairs.some((p) => p.left.trim());
+        const base = prev.length === 1 && blank(prev[0]) ? [] : prev;
+        const at = base.findIndex((q) => q.key === activeKey);
+        const insertAt = at < 0 ? base.length : at + 1;
+        return [...base.slice(0, insertAt), ...slides, ...base.slice(insertAt)];
+      });
+      if (slides[0]) setActiveKey(slides[0].key);
+      toast.success(`${slides.length} ta slayd qoʻshildi`, {
+        description:
+          totalPages > MAX_PDF_PAGES
+            ? `PDF da ${totalPages} sahifa bor — birinchi ${MAX_PDF_PAGES} tasi olindi.`
+            : "Endi slaydlar orasiga savol qoʻshishingiz mumkin.",
+      });
+      if (notStored) {
+        toast.warning("Rasmlar saqlagichga yuklanmadi", {
+          description: "Koʻp sahifali taqdimot saqlanmasligi mumkin — administratorga xabar bering.",
+        });
+      }
+    } catch {
+      toast.error("PDF ni oʻqib boʻlmadi", {
+        description: "Fayl buzilmaganini va parol bilan himoyalanmaganini tekshiring.",
+      });
+    } finally {
+      setPdfProgress(null);
+    }
   }
 
   function duplicateQuestion(key: string) {
@@ -301,6 +359,12 @@ export default function SetBuilderOverlay({
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {error && <span className="max-w-xs truncate text-sm text-destructive">{error}</span>}
+          {pdfProgress && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin" />
+              PDF: {pdfProgress.total ? Math.round((pdfProgress.done / pdfProgress.total) * 100) : 0}%
+            </span>
+          )}
           {!error && autosaving && (
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" /> {t("saving")}
@@ -353,6 +417,7 @@ export default function SetBuilderOverlay({
             activeKey={activeKey}
             onSelect={setActiveKey}
             onAdd={addQuestion}
+            onImportPdf={() => pdfInputRef.current?.click()}
             onDuplicate={duplicateQuestion}
             onRemove={removeQuestion}
           />
@@ -395,6 +460,18 @@ export default function SetBuilderOverlay({
         </div>
       )}
     </div>
+
+    <input
+      ref={pdfInputRef}
+      type="file"
+      accept="application/pdf"
+      className="hidden"
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        e.target.value = "";
+        if (file && !pdfProgress) void importPdf(file);
+      }}
+    />
 
     {/* Kichraytirilgan yorliq — bosilsa quruvchi oʻsha holatida qaytadi.
         z-[49]: quruvchining oʻzidan (48) baland, shuning uchun ostidagi

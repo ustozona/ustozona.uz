@@ -3,6 +3,7 @@
 import {
   ChevronDown,
   Copy,
+  FileUp,
   GitCompareArrows,
   Image as ImageIcon,
   ListChecks,
@@ -16,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -28,6 +30,8 @@ type Props = {
   activeKey: string | null;
   onSelect: (key: string) => void;
   onAdd: (shape: DraftQuestion["shape"]) => void;
+  /** Tayyor taqdimotni PDF dan slaydlarga aylantirish. */
+  onImportPdf: () => void;
   onDuplicate: (key: string) => void;
   onRemove: (key: string) => void;
 };
@@ -37,6 +41,7 @@ export default function QuestionStrip({
   activeKey,
   onSelect,
   onAdd,
+  onImportPdf,
   onDuplicate,
   onRemove,
 }: Props) {
@@ -148,6 +153,10 @@ export default function QuestionStrip({
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => onAdd("slide")}>
                   <Presentation className="size-4" /> Slayd
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={onImportPdf}>
+                  <FileUp className="size-4" /> PDF dan slaydlar
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

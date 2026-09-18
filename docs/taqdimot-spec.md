@@ -60,9 +60,18 @@ slaydlar. Litsenziya qoʻshishdan oldin tekshiriladi.
 5. **Fon** — hozircha toʻplam darajasidagi sahna mavzusi (`stageTheme`).
    Slayd boʻyicha alohida fon — keyinroq.
 
+## Holat
+
+- ✅ 1-qavat — maketlar (`SlideView`, `SlideLayoutPicker`).
+- ✅ 2-qavat, PDF: muharrirdagi «+» → «PDF dan slaydlar». Brauzerda
+  `pdfjs-dist` (Apache-2.0) bilan har sahifa 1600px JPEG ga aylanadi,
+  `uploadEditorImageAction` orqali saqlagichga chiqadi va «Katta media»
+  slaydi boʻladi. Chegara — ${MAX_PDF_PAGES} (`lib/pdf-to-images.ts`, 60).
+  pdf.js faqat import bosilganda dinamik yuklanadi.
+
 ## Keyingi qavatlar (hali qilinmagan)
 
-- Import: PDF → rasm slaydlar; soʻng PPTX.
+- Import: PPTX → tahrirlanadigan slaydlar (PDF qilindi).
 - Slayd ichidagi yangi savol turlari (soʻrovnoma, soʻz buluti, ochiq
   javob) — alohida bosqich.
 - Erkin kanvas — Doska dvigateli ustida, maketlar yetmay qolsa.
