@@ -118,14 +118,26 @@ function TeamBar({ teams, onChange }: { teams: Team[]; onChange: (next: Team[] |
   );
 }
 
-function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
+function Panel({
+  children,
+  className,
+  ref,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  ref?: React.Ref<HTMLDivElement>;
+}) {
   return (
     <div
+      ref={ref}
       className={cn("flex size-full flex-col rounded-[var(--radius)]", className)}
       style={{
         background: "var(--doska-slate-bg)",
         color: "var(--doska-slate-fg)",
         boxShadow: "0 4px 0 var(--doska-slate-edge)",
+        // `cqw` panelning oʻziga nisbatan — toʻliq ekranda ham matn
+        // ekran oʻlchamiga moslashadi (aks holda vidjet oʻlchamida qolardi).
+        containerType: "inline-size",
       }}
     >
       {children}
@@ -211,6 +223,56 @@ function Player({
 }) {
   const [draft, setDraft] = React.useState<SetDraft | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const [fullscreen, setFullscreen] = React.useState(false);
+
+  React.useEffect(() => {
+    const sync = () => setFullscreen(document.fullscreenElement === rootRef.current);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void document.exitFullscreen();
+    else void rootRef.current?.requestFullscreen();
+  };
+
+  /* PROYEKTOR BOSHQARUVI — klaviatura va slayd pulti. Pult tugmalari
+     PageDown/PageUp yuboradi, shuning uchun ular ham ushlanadi.
+     Tugmalar faqat vidjet toʻliq ekranda boʻlsa yoki fokus uning
+     ichida boʻlsa ishlaydi — aks holda Doska'dagi boshqa vidjetga
+     yozilayotgan matnni «oʻgʻirlab» ketardi. Oxirgi holat ref orqali
+     oʻqiladi: effekt har qadamda qayta ulanmaydi. */
+  const keysRef = React.useRef<{ next: () => void; prev: () => void; reveal: () => void }>(null);
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const root = rootRef.current;
+      const keys = keysRef.current;
+      if (!root || !keys) return;
+      const active =
+        document.fullscreenElement === root || root.contains(document.activeElement);
+      if (!active || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (["ArrowRight", "PageDown", " "].includes(e.key)) keys.next();
+      else if (["ArrowLeft", "PageUp"].includes(e.key)) keys.prev();
+      else if (e.key === "Enter") keys.reveal();
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Tugmalar har doim joriy qadamga qarab ishlashi uchun — har renderdan keyin.
+  React.useEffect(() => {
+    const total = draft?.questions.length ?? 0;
+    const current = Math.min(Math.max(index, 0), Math.max(total - 1, 0));
+    const step = draft?.questions[current];
+    keysRef.current = {
+      next: () => current < total - 1 && onGo(current + 1),
+      prev: () => current > 0 && onGo(current - 1),
+      reveal: () => step && step.shape !== "slide" && onReveal(),
+    };
+  });
 
   React.useEffect(() => {
     let cancelled = false;
@@ -250,7 +312,7 @@ function Player({
   const step = steps[current];
 
   return (
-    <Panel className="gap-[2cqw] p-[3cqw]">
+    <Panel ref={rootRef} className="gap-[2cqw] p-[3cqw]">
       <div className="flex shrink-0 items-center gap-2 text-[max(12px,1.6cqw)] opacity-70">
         <span className="min-w-0 flex-1 truncate">{draft.set.title}</span>
         <span className="font-mono">
@@ -351,6 +413,9 @@ function Player({
           }
         >
           {teams ? "Jamoalarni yopish" : "Jamoalar"}
+        </NavButton>
+        <NavButton onClick={toggleFullscreen}>
+          {fullscreen ? "Ekrandan chiqish" : "Toʻliq ekran"}
         </NavButton>
         <div className="flex-1" />
         {step && step.shape !== "slide" && (
