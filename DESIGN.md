@@ -96,6 +96,38 @@ oldidan ushlaydi.
 
 ---
 
+## 3.5 Boʻshliq shkalasi
+
+**4px toʻri.** Qiymatni emas, **rolni** tanlaysiz — qiymat roldan keladi.
+`--spacing` sirtga boʻysunadi (projektor, telefon), shuning uchun
+qadamlar oʻz-oʻzidan kattalashadi; ixtiyoriy `p-[13px]` esa yoʻq.
+
+| Rol | Qiymat |
+|---|---|
+| Karta ichidagi matn qatorlari (sarlavha ↔ izoh) | `gap-0.5` (2) |
+| Yonma-yon belgilar, badge ichi | `gap-1` (4) |
+| Ikona ↔ matn | `gap-1.5` (6) · 20px+ ikonada `gap-2` |
+| Bir qatordagi boshqaruvlar · zich karta paddingi | `gap-2` · `p-2` (8) |
+| Karta ichidagi bloklar · karta paddingi | `gap-3` · `p-3` (12) |
+| Panel ichidagi bloklar · panel paddingi · panel ↔ panel | `gap-4` · `p-4` (16) |
+| Keng panel paddingi, dialog | `p-5` (20) |
+| Sahifa boʻlimlari · hero | `gap-6` · `p-6` (24) |
+| Sahifa yuqori/quyi chegarasi | `gap-8` (32) va undan katta |
+| Chip / badge | `px-2 py-0.5` |
+
+**Ruxsat:** `0 · 0.5 · 1 · 1.5 · 2 · 3 · 4 · 5 · 6 · 8 · 10 · 12 · 16`.
+**Taqiq:** `2.5 · 3.5 · 4.5 · 7 · 9 · 11` va ixtiyoriy `[Npx]` —
+`npm run check:tokens` ushlaydi (`space-off-grid`, `space-arbitrary`).
+
+Tanlab boʻlmasa: **yaqinroq, lekin guruhni ajratadigan** qadam. `2.5`
+(10px) odatda `gap-2` (qator ichidagi elementlar) yoki `gap-3` (alohida
+bloklar) — qaysi biri, yuqoridagi rol hal qiladi. Qoida: guruh
+**ichidagi** boʻshliq guruhlar **orasidagi**dan doim kichik.
+
+Asos va oʻlchov: [docs/dizayn-token-standartlashtirish.md](docs/dizayn-token-standartlashtirish.md).
+
+---
+
 ## 4. Radius shkalasi (proporsional, tasodifiy emas)
 
 `--radius: 0.625rem` (10px) asosidan hosila: sm 6 · md 8 · lg 10 · xl 14 ·
