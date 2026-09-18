@@ -279,6 +279,7 @@ export default function SetBuilderOverlay({
         ? {
             slideLayout: q.slideLayout,
             slideHeading: q.title.trim(),
+            slideBg: q.slideBg,
             imageUrl: q.imageUrl,
             videoUrl: q.videoUrl?.trim() || undefined,
           }

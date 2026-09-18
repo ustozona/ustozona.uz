@@ -230,6 +230,8 @@ const draftQuestionSchema = z.object({
       roʻyxat yorligʻi (majburiy, zaxira bilan toʻldiriladi); ikkalasi
       aralashsa boʻsh sarlavhali slaydda «3-savol» chiqib qolardi. */
   slideHeading: z.string().max(200).optional(),
+  /** Shu slaydning oʻz foni (sahna mavzusi id). Boʻsh — toʻplam foni. */
+  slideBg: z.string().max(40).optional(),
 });
 
 export type DraftQuestionValues = z.infer<typeof draftQuestionSchema>;
@@ -279,6 +281,7 @@ function draftConfig(q: DraftQuestionValues) {
   if (q.shape === "slide") {
     return {
       heading: q.slideHeading ?? q.title,
+      ...(q.slideBg ? { bg: q.slideBg } : {}),
       body: q.stem,
       layout: slideLayoutOf(q.slideLayout),
       ...(q.imageUrl ? { imageUrl: q.imageUrl } : {}),
@@ -315,6 +318,7 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
     if (activity.shape === "slide") {
       const slide = activity.config as {
         heading?: string;
+        bg?: string;
         body?: string;
         layout?: string;
         imageUrl?: string;
@@ -327,6 +331,7 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
         title: slide.heading ?? activity.title,
         stem: slide.body ?? "",
         slideLayout: slideLayoutOf(slide.layout),
+        slideBg: slide.bg,
         imageUrl: slide.imageUrl,
         videoUrl: slide.videoUrl,
         options: [],

@@ -50,6 +50,8 @@ export type SlideStep = {
   body: string;
   imageUrl?: string;
   videoUrl?: string;
+  /** Slaydning oʻz foni; yoʻq boʻlsa toʻplam foni (`stageTheme`). */
+  bg?: string;
 };
 
 export type PlayStep = McqStep | PairsStep | SlideStep;
@@ -117,6 +119,7 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
     if (shape === "slide") {
       const config = (configByActivity.get(activityId) ?? {}) as {
         heading?: string;
+        bg?: string;
         body?: string;
         layout?: string;
         imageUrl?: string;
@@ -130,6 +133,7 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
         body: config.body ?? "",
         imageUrl: config.imageUrl,
         videoUrl: config.videoUrl,
+        bg: config.bg,
       });
       continue;
     }

@@ -294,7 +294,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
           <div className="flex flex-1 items-center">
             <div
               className="quiz-stage"
-              style={{ "--stage-bg": stageThemeBg(content.stageTheme ?? "") } as React.CSSProperties}
+              style={{ "--stage-bg": stageThemeBg(step.bg ?? content.stageTheme ?? "") } as React.CSSProperties}
             >
               <SlideView
                 slide={{

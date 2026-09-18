@@ -333,7 +333,9 @@ function Player({
                 style={
                   {
                     "--stage-bg": stageThemeBg(
-                      (draft.set.config as { stageTheme?: string }).stageTheme ?? "",
+                      step.slideBg ??
+                        (draft.set.config as { stageTheme?: string }).stageTheme ??
+                        "",
                     ),
                   } as React.CSSProperties
                 }

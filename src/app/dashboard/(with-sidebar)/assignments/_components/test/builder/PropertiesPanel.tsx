@@ -1,11 +1,13 @@
 "use client";
 
-import { Award, Copy, LayoutTemplate, ListChecks, Shapes, Timer, Trash2, Video, X } from "lucide-react";
+import { Award, Copy, LayoutTemplate, ListChecks, Palette, Shapes, Timer, Trash2, Video, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SLIDE_LAYOUT_META, slideLayoutOf } from "@/lib/slide-layouts";
 import { parseVideoUrl } from "@/lib/video-embed";
 import SlideLayoutPicker from "./SlideLayoutPicker";
+import { STAGE_THEMES } from "@/lib/stage-themes";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -99,6 +101,44 @@ export default function PropertiesPanel({
               value={slideLayoutOf(question.slideLayout)}
               onChange={(slideLayout) => onChange({ slideLayout })}
             />
+          </Field>
+        )}
+
+        {question.shape === "slide" && (
+          <Field icon={<Palette className="size-4" />} label="Slayd foni">
+            {/* Boʻsh tanlov — toʻplamning umumiy foni (reyldagi «Mavzu»). Faqat
+                ajralib turishi kerak boʻlgan slayd (boʻlim boshi, xulosa) uchun
+                alohida fon tanlanadi. */}
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                aria-pressed={!question.slideBg}
+                onClick={() => onChange({ slideBg: undefined })}
+                className={cn(
+                  "h-7 rounded-full border px-3 text-caption transition-colors",
+                  !question.slideBg ? "border-primary bg-accent" : "border-border hover:bg-muted",
+                )}
+              >
+                Umumiy
+              </button>
+              {STAGE_THEMES.map((theme) => (
+                <button
+                  key={theme.id}
+                  type="button"
+                  title={theme.label}
+                  aria-label={theme.label}
+                  aria-pressed={question.slideBg === theme.id}
+                  onClick={() => onChange({ slideBg: theme.id })}
+                  className={cn(
+                    "size-7 rounded-full transition-shadow",
+                    question.slideBg === theme.id
+                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                      : "hover:ring-2 hover:ring-primary/40",
+                  )}
+                  style={{ background: theme.bg }}
+                />
+              ))}
+            </div>
           </Field>
         )}
 

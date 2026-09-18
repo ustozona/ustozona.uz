@@ -57,8 +57,9 @@ slaydlar. Litsenziya qoʻshishdan oldin tekshiriladi.
 4. **Rasm** — mavjud `uploadEditorImageAction` (Supabase Storage,
    saqlagichsiz muhitda base64 zaxira). **Video** — faqat havola
    (YouTube), mavjud `VideoEmbedFacade` bilan; fayl yuklanmaydi.
-5. **Fon** — hozircha toʻplam darajasidagi sahna mavzusi (`stageTheme`).
-   Slayd boʻyicha alohida fon — keyinroq.
+5. **Fon** — toʻplam darajasidagi sahna mavzusi (`stageTheme`); slayd
+   xohlasa oʻz fonini oladi (`config.bg`, oʻsha mavzular roʻyxatidan).
+   Boʻsh — umumiy fon.
 
 ## Holat
 

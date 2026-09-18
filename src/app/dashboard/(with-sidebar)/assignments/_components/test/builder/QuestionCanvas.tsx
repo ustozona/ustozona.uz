@@ -37,6 +37,7 @@ export default function QuestionCanvas({ question, stageTheme, onChange }: Props
    uchun muharrirda koʻrilgan slayd proyektorda ham shunday chiqadi. */
 function SlideCanvas({ question, stageTheme, onChange }: Props) {
   const [uploading, setUploading] = useState(false);
+  const bg = question.slideBg ?? stageTheme;
 
   async function pickImage(file: File) {
     setUploading(true);
@@ -56,7 +57,7 @@ function SlideCanvas({ question, stageTheme, onChange }: Props) {
       <div className="quiz-stage-column">
         <div
           className="quiz-stage"
-          style={{ "--stage-bg": stageThemeBg(stageTheme) } as CSSProperties}
+          style={{ "--stage-bg": stageThemeBg(bg) } as CSSProperties}
         >
           <SlideView
             slide={{
