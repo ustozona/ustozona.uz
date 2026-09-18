@@ -66,7 +66,7 @@ slaydlar. Litsenziya qoʻshishdan oldin tekshiriladi.
 - ✅ 2-qavat, PDF: muharrirdagi «+» → «PDF dan slaydlar». Brauzerda
   `pdfjs-dist` (Apache-2.0) bilan har sahifa 1600px JPEG ga aylanadi,
   `uploadEditorImageAction` orqali saqlagichga chiqadi va «Katta media»
-  slaydi boʻladi. Chegara — ${MAX_PDF_PAGES} (`lib/pdf-to-images.ts`, 60).
+  slaydi boʻladi. Chegara — 60 sahifa (`MAX_PDF_PAGES`, `lib/pdf-to-images.ts`).
   pdf.js faqat import bosilganda dinamik yuklanadi.
 
 ## Keyingi qavatlar (hali qilinmagan)
