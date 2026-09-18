@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/check-server-actions.mjs && node scripts/check-school-grouping.mjs && node scripts/check-migrations.mjs",
+    "prebuild": "node scripts/check-server-actions.mjs && node scripts/check-school-grouping.mjs && node scripts/check-migrations.mjs && node scripts/check-design-tokens.mjs",
     "check:actions": "node scripts/check-server-actions.mjs",
     "check:school": "node scripts/check-school-grouping.mjs",
     "check:migrations": "node scripts/check-migrations.mjs",
+    "check:tokens": "node scripts/check-design-tokens.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

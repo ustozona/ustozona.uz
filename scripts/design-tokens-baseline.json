@@ -1,0 +1,719 @@
+{
+  "src/app/admin/ai/page.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/app/admin/feedback/_components/AdminFeedbackCard.tsx": {
+    "text-px": 2,
+    "space-off-grid": 1,
+    "space-arbitrary": 1
+  },
+  "src/app/admin/feedback/_components/AdminFeedbackList.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/admin/page.tsx": {
+    "text-px": 1
+  },
+  "src/app/admin/users/_components/UsersTable.tsx": {
+    "text-px": 6,
+    "space-off-grid": 3
+  },
+  "src/app/baholash/_components/BaholashWorkspace.tsx": {
+    "text-px": 3,
+    "space-off-grid": 2
+  },
+  "src/app/baholash/_components/CardScanner.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/baholash/_components/ScanPanel.tsx": {
+    "text-px": 2
+  },
+  "src/app/blog/[slug]/_components/CommentSection.tsx": {
+    "text-px": 1,
+    "space-off-grid": 2
+  },
+  "src/app/blog/[slug]/page.tsx": {
+    "text-px": 2,
+    "text-under-10": 1
+  },
+  "src/app/blog/_components/BlogAccountMenu.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/blog/_components/BlogGrid.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/app/blog/_components/BlogMobileMenu.tsx": {
+    "space-off-grid": 6
+  },
+  "src/app/blog/studio/_components/BlogEditor.tsx": {
+    "space-off-grid": 4,
+    "font-bold": 1
+  },
+  "src/app/blog/studio/_components/MyPostRow.tsx": {
+    "text-px": 1
+  },
+  "src/app/blog/studio/page.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/AssignmentEditorOverlay.tsx": {
+    "text-px": 1,
+    "space-off-grid": 9,
+    "font-bold": 2
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/AttachTestDialog.tsx": {
+    "text-px": 2
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/TestBankOverlay.tsx": {
+    "text-px": 3,
+    "space-off-grid": 5
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/test/SetBuilderOverlay.tsx": {
+    "space-off-grid": 3
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/BuilderRail.tsx": {
+    "text-px": 1
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/QuestionStrip.tsx": {
+    "text-px": 3,
+    "text-under-10": 1,
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/ThemesPanel.tsx": {
+    "text-px": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/assignments/page.tsx": {
+    "text-px": 4,
+    "space-off-grid": 7
+  },
+  "src/app/dashboard/(with-sidebar)/attendance/_components/AttendanceView.tsx": {
+    "text-px": 1,
+    "font-bold": 4
+  },
+  "src/app/dashboard/(with-sidebar)/changelog/page.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/feedback/_components/FeedbackCard.tsx": {
+    "text-px": 1,
+    "space-off-grid": 3,
+    "space-arbitrary": 1
+  },
+  "src/app/dashboard/(with-sidebar)/feedback/_components/FeedbackForm.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/feedback/_components/FeedbackViewTabs.tsx": {
+    "text-px": 1
+  },
+  "src/app/dashboard/(with-sidebar)/feedback/_components/QuoteBlock.tsx": {
+    "text-px": 2
+  },
+  "src/app/dashboard/(with-sidebar)/feedback/_components/ReactionBar.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/feedback/_components/ReplyRow.tsx": {
+    "text-px": 2
+  },
+  "src/app/dashboard/(with-sidebar)/feedback/page.tsx": {
+    "text-px": 1,
+    "space-off-grid": 4
+  },
+  "src/app/dashboard/(with-sidebar)/grades/_components/AssignmentTooltip.tsx": {
+    "text-px": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/grades/_components/GradesTable.tsx": {
+    "text-px": 7,
+    "font-bold": 6
+  },
+  "src/app/dashboard/(with-sidebar)/grades/_components/NewTopicModal.tsx": {
+    "text-px": 7,
+    "space-off-grid": 2,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/grades/_components/ReuseModal.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/grades/help/page.tsx": {
+    "space-off-grid": 1,
+    "space-arbitrary": 1
+  },
+  "src/app/dashboard/(with-sidebar)/lessons/page.tsx": {
+    "font-bold": 3
+  },
+  "src/app/dashboard/(with-sidebar)/resources/_components/LibraryWorkspace.tsx": {
+    "text-px": 2,
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/standards/_components/AddStandardModal.tsx": {
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/standards/_components/AddStandardsModal.tsx": {
+    "space-off-grid": 9
+  },
+  "src/app/dashboard/(with-sidebar)/standards/_components/GapReportPanel.tsx": {
+    "space-off-grid": 3
+  },
+  "src/app/dashboard/(with-sidebar)/standards/_components/StandardsView.tsx": {
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/AbsenceTierList.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/AssignmentQualityCard.tsx": {
+    "text-px": 2,
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/AttendanceRing.tsx": {
+    "text-px": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/ClassesTable.tsx": {
+    "text-px": 1,
+    "space-off-grid": 7
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/CompletionDonutChart.tsx": {
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/DeadlinesCard.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/GenderDonutChart.tsx": {
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/OverviewPanel.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/StudentsTable.tsx": {
+    "text-px": 2,
+    "space-off-grid": 8
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/StudentsTablePanel.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/_components/TopicMasteryCard.tsx": {
+    "text-px": 2,
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/statistics/page.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/AssignmentsTab.tsx": {
+    "space-off-grid": 6
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/BehaviorTab.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/NotesTab.tsx": {
+    "text-px": 2,
+    "text-under-10": 1,
+    "space-off-grid": 3
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/OverviewTab.tsx": {
+    "text-px": 1,
+    "space-off-grid": 5,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/RelativesSection.tsx": {
+    "text-px": 3
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/StandardsPanel.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/StudentProfile.tsx": {
+    "text-px": 2,
+    "font-bold": 2
+  },
+  "src/app/dashboard/(with-sidebar)/students/[id]/_components/charts.tsx": {
+    "text-px": 1,
+    "space-arbitrary": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/(with-sidebar)/students/_components/AddStudentModal.tsx": {
+    "text-px": 2,
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/students/_components/CreateStudentModal.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/students/_components/StudentsDataTable.tsx": {
+    "space-off-grid": 7
+  },
+  "src/app/dashboard/(with-sidebar)/students/page.tsx": {
+    "space-off-grid": 8,
+    "space-arbitrary": 1
+  },
+  "src/app/dashboard/(with-sidebar)/tasks/_components/TaskDetail.tsx": {
+    "space-off-grid": 3
+  },
+  "src/app/dashboard/(with-sidebar)/tasks/_components/TaskTimeCard.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/(with-sidebar)/tasks/_components/TasksList.tsx": {
+    "text-px": 2,
+    "space-off-grid": 4
+  },
+  "src/app/dashboard/(with-sidebar)/tasks/_components/TasksNav.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/(with-sidebar)/tasks/_components/TasksStatsPanel.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/app/dashboard/classes/[id]/_components/ClassDetail.tsx": {
+    "text-px": 4,
+    "font-bold": 4
+  },
+  "src/app/dashboard/classes/[id]/_components/LessonsSection.tsx": {
+    "space-off-grid": 1,
+    "font-bold": 3
+  },
+  "src/app/dashboard/classes/[id]/_components/OverviewSection.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/classes/[id]/_components/OverviewSidebar.tsx": {
+    "text-px": 1
+  },
+  "src/app/dashboard/classes/[id]/_components/StudentsSection.tsx": {
+    "space-off-grid": 5
+  },
+  "src/app/dashboard/classes/page.tsx": {
+    "text-px": 3,
+    "space-off-grid": 12,
+    "font-bold": 3
+  },
+  "src/app/dashboard/planner/_components/PlannerView.tsx": {
+    "text-px": 7,
+    "space-off-grid": 3,
+    "font-bold": 4
+  },
+  "src/app/dashboard/settings/_components/AcademicYearSection.tsx": {
+    "space-off-grid": 2
+  },
+  "src/app/dashboard/settings/_components/AttendanceSection.tsx": {
+    "space-off-grid": 4
+  },
+  "src/app/dashboard/settings/_components/BellSection.tsx": {
+    "text-px": 2,
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/settings/_components/RolloverWizard.tsx": {
+    "space-off-grid": 5
+  },
+  "src/app/dashboard/settings/_components/YearStrip.tsx": {
+    "text-px": 5
+  },
+  "src/app/dashboard/settings/page.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/dashboard/timetable/page.tsx": {
+    "text-px": 1,
+    "space-off-grid": 9
+  },
+  "src/app/doska/ikonalar/page.tsx": {
+    "text-px": 3,
+    "text-under-10": 1
+  },
+  "src/app/help/[slug]/page.tsx": {
+    "space-off-grid": 1
+  },
+  "src/app/help/_components/HelpNav.tsx": {
+    "text-px": 2,
+    "space-off-grid": 1,
+    "space-arbitrary": 1
+  },
+  "src/app/play/[code]/_components/PlayView.tsx": {
+    "font-bold": 3
+  },
+  "src/components/AssignmentStatusChip.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/BulkActionBar.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ClassBadge.tsx": {
+    "text-px": 2
+  },
+  "src/components/ClassCard.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/components/ClassFormModal.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ClassListPanel.tsx": {
+    "font-bold": 2
+  },
+  "src/components/CreateUnitModal.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/DashboardSectionCard.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/GlobalCommandPalette.tsx": {
+    "text-px": 1
+  },
+  "src/components/HeaderAccountMenu.tsx": {
+    "text-px": 1,
+    "space-off-grid": 2
+  },
+  "src/components/HeaderBreadcrumb.tsx": {
+    "text-px": 1
+  },
+  "src/components/ImportClassesModal.tsx": {
+    "text-px": 2
+  },
+  "src/components/IshRejaImportModal.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/LessonStatusBadge.tsx": {
+    "text-px": 2
+  },
+  "src/components/LinkLessonDialog.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/NotificationsBell.tsx": {
+    "text-px": 1,
+    "text-under-10": 1,
+    "space-off-grid": 3,
+    "font-bold": 1
+  },
+  "src/components/StatCard.tsx": {
+    "text-px": 2,
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/components/StatTile.tsx": {
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/components/article/ShareActions.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/behavior/AutoPointsEditor.tsx": {
+    "text-px": 2,
+    "text-under-10": 1,
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/components/behavior/BehaviorDonut.tsx": {
+    "text-px": 1,
+    "font-bold": 1
+  },
+  "src/components/behavior/BehaviorView.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/components/behavior/ClassReportDialog.tsx": {
+    "text-px": 3,
+    "space-off-grid": 1
+  },
+  "src/components/behavior/EventTimeline.tsx": {
+    "text-px": 3,
+    "space-off-grid": 5,
+    "font-bold": 2
+  },
+  "src/components/behavior/ReportPanel.tsx": {
+    "space-off-grid": 3
+  },
+  "src/components/behavior/SkillCard.tsx": {
+    "text-px": 3,
+    "space-off-grid": 2,
+    "font-bold": 2
+  },
+  "src/components/behavior/SkillFormDialog.tsx": {
+    "text-px": 2,
+    "space-off-grid": 1,
+    "font-bold": 1
+  },
+  "src/components/behavior/StudentDialog.tsx": {
+    "space-off-grid": 2,
+    "font-bold": 2
+  },
+  "src/components/behavior/StudentPointCard.tsx": {
+    "text-px": 3,
+    "space-off-grid": 1,
+    "font-bold": 2
+  },
+  "src/components/behavior/award-toast.tsx": {
+    "text-px": 1,
+    "font-bold": 1
+  },
+  "src/components/calendar/EventCard.tsx": {
+    "font-bold": 2
+  },
+  "src/components/calendar/EventPill.tsx": {
+    "text-px": 1
+  },
+  "src/components/calendar/TimeGrid.tsx": {
+    "text-px": 1
+  },
+  "src/components/dashboard/AttentionSection.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/dashboard/NextLessonsCard.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/components/dashboard/QueueSection.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/components/dashboard/QuotesDialog.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/dashboard/TodayRail.tsx": {
+    "text-px": 2,
+    "space-off-grid": 1
+  },
+  "src/components/dashboard/WeekStrip.tsx": {
+    "text-px": 1
+  },
+  "src/components/doska/BackgroundPicker.tsx": {
+    "text-px": 1
+  },
+  "src/components/doska/BarButton.tsx": {
+    "text-px": 1
+  },
+  "src/components/doska/DoskaMenu.tsx": {
+    "text-px": 1,
+    "space-off-grid": 2
+  },
+  "src/components/doska/DoskaShell.tsx": {
+    "text-px": 1,
+    "space-arbitrary": 1
+  },
+  "src/components/doska/ShapePicker.tsx": {
+    "text-px": 1
+  },
+  "src/components/feature73.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/ish-reja/ClassMultiPicker.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ish-reja/ImportSource.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ish-reja/NameReviewList.tsx": {
+    "text-px": 1
+  },
+  "src/components/ish-reja/YearTimeline.tsx": {
+    "text-px": 2
+  },
+  "src/components/jadval/ConflictDialog.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/jadval/JadvalStartScreen.tsx": {
+    "space-off-grid": 3
+  },
+  "src/components/jadval/LedgerRail.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/jadval/SheetGrid.tsx": {
+    "font-bold": 3
+  },
+  "src/components/jadval/StaffLoadPanel.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/landing/LanguageSwitcher.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/landing/ProductPage.tsx": {
+    "space-off-grid": 4
+  },
+  "src/components/landing/ProductsSection.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/lesson-editor/AiAssistantPanel.tsx": {
+    "space-off-grid": 6,
+    "font-bold": 1
+  },
+  "src/components/lesson-editor/CalloutView.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/lesson-editor/DetailsPanel.tsx": {
+    "text-px": 2,
+    "space-off-grid": 13,
+    "font-bold": 2
+  },
+  "src/components/lesson-editor/EditorToolbar.tsx": {
+    "space-off-grid": 12
+  },
+  "src/components/lesson-editor/LessonEditor.tsx": {
+    "space-off-grid": 2,
+    "font-bold": 1
+  },
+  "src/components/lesson-editor/PageBreakMarkers.tsx": {
+    "text-px": 1
+  },
+  "src/components/login-form.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/materials/MaterialKindPicker.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/notifications/NotificationCard.tsx": {
+    "text-px": 1,
+    "space-off-grid": 2
+  },
+  "src/components/onboarding/AuthFeatureLoop.tsx": {
+    "text-px": 2,
+    "space-off-grid": 2
+  },
+  "src/components/onboarding/FeatureLoop.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/onboarding/GuideHub.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/onboarding/OnboardingWizard.tsx": {
+    "font-bold": 1
+  },
+  "src/components/shadcn-space/badge/glow-badge.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/components/shadcn-space/blocks/hero-01/header.tsx": {
+    "space-off-grid": 3
+  },
+  "src/components/shadcn-space/blocks/newsletter-01/newsletter.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/shadcn-space/blocks/personas-01/personas.tsx": {
+    "space-off-grid": 3
+  },
+  "src/components/shadcn-space/blocks/services-02/previews.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/shadcn-space/blocks/two-factor-authentication-01/two-factor-auth.tsx": {
+    "font-bold": 1
+  },
+  "src/components/shadcn-space/button/button-20.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/shadcn-space/button/button-21.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/shadcn-space/context-menu/context-menu-01.tsx": {
+    "space-off-grid": 3
+  },
+  "src/components/shadcn-space/file-upload/file-upload-01.tsx": {
+    "font-bold": 1
+  },
+  "src/components/shadcn-space/sonner/sonner-05.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/components/signup-form.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/tasks/FocusTimerPill.tsx": {
+    "text-px": 1,
+    "font-bold": 1
+  },
+  "src/components/timetable/PeriodGrid.tsx": {
+    "text-px": 5,
+    "space-off-grid": 2
+  },
+  "src/components/timetable/TimetablePrintSheet.tsx": {
+    "text-px": 6,
+    "text-under-10": 2,
+    "font-bold": 3
+  },
+  "src/components/timetable/VersionChip.tsx": {
+    "text-px": 2,
+    "space-off-grid": 1
+  },
+  "src/components/tour/mocks/BehaviorMultiSelectMock.tsx": {
+    "text-px": 1,
+    "space-off-grid": 1
+  },
+  "src/components/tour/mocks/FeedbackUpvoteMock.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/tour/mocks/TimetableDragMock.tsx": {
+    "text-px": 1,
+    "text-under-10": 1,
+    "space-off-grid": 3
+  },
+  "src/components/tour/mocks/TimetablePickMock.tsx": {
+    "text-px": 2,
+    "text-under-10": 1
+  },
+  "src/components/ui/attachment.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/ui/breadcrumb.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/button.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/calendar.tsx": {
+    "text-px": 2
+  },
+  "src/components/ui/chart.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/editor-side-panel.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/emoji-picker.tsx": {
+    "text-px": 1
+  },
+  "src/components/ui/field.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/form-blocks.tsx": {
+    "font-bold": 1
+  },
+  "src/components/ui/input-group.tsx": {
+    "space-off-grid": 4
+  },
+  "src/components/ui/item.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/message.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/navigation-menu.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/pagination.tsx": {
+    "space-off-grid": 4
+  },
+  "src/components/ui/panel.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/password-input.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/segmented-toggle.tsx": {
+    "text-px": 1
+  },
+  "src/components/ui/sidebar.tsx": {
+    "space-off-grid": 2
+  },
+  "src/components/ui/stepper.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/tabs.tsx": {
+    "space-arbitrary": 1
+  },
+  "src/components/ui/toggle.tsx": {
+    "space-off-grid": 1
+  },
+  "src/components/ui/typography.tsx": {
+    "text-px": 1,
+    "space-arbitrary": 2,
+    "font-bold": 1
+  }
+}
