@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { enrollments, quizSessions, sessionParticipants, students } from "@/server/db/schema";
 import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/server/play/session";
-import { isSessionPastDue } from "@/server/dal/assess/sessions";
+import { isSessionPastDue } from "@/lib/assess/session-due";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻSHILISH — akkauntsiz ishtirokchi PIN/havola/QR bilan kiradi.

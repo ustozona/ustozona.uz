@@ -62,11 +62,6 @@ export type CreateSessionInput = {
   dueAt?: Date;
 };
 
-/** Sessiya muddati oʻtganmi. Muddatsiz sessiya hech qachon oʻtmaydi. */
-export function isSessionPastDue(session: { dueAt: Date | null }, now = new Date()): boolean {
-  return !!session.dueAt && session.dueAt.getTime() < now.getTime();
-}
-
 export async function createSession(input: CreateSessionInput): Promise<QuizSessionRow> {
   const teacher = await requireTeacher();
 

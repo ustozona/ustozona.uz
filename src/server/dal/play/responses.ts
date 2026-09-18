@@ -5,7 +5,7 @@ import { db } from "@/server/db/client";
 import { activities, activityItems, responses, sessionParticipants } from "@/server/db/schema";
 import { requireParticipant, ForbiddenError } from "@/server/play/session";
 import { scoreResponse } from "@/lib/assess/score";
-import { isSessionPastDue } from "@/server/dal/assess/sessions";
+import { isSessionPastDue } from "@/lib/assess/session-due";
 
 /* ════════════════════════════════════════════════════════════════════
    JAVOB QABUL QILISH — bitta joy, besh yetkazish usuli (jonli, oʻz
