@@ -46,7 +46,7 @@ export function BlogAccountMenu({
         {avatar}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
-        <div className="flex items-center gap-2.5 px-2 py-2">
+        <div className="flex items-center gap-2 px-2 py-2">
           {avatar}
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium">{name}</span>

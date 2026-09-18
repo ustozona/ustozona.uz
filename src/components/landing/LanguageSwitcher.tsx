@@ -80,7 +80,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       <DropdownMenuContent align="end" className="w-56">
         {LOCALES.map((l) => (
           <div key={l} className="contents">
-            <DropdownMenuItem data-locale={l} onClick={handleLocaleSelect} className="gap-2.5">
+            <DropdownMenuItem data-locale={l} onClick={handleLocaleSelect} className="gap-2">
               <LocaleFlag locale={l} className="size-[22px]" />
               <span className={cn(l === locale && "font-medium")}>{LOCALE_LABELS[l]}</span>
               {l === locale && <Check className="ml-auto size-4" />}

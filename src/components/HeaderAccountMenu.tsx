@@ -97,7 +97,7 @@ export default function HeaderAccountMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem asChild className="cursor-pointer">
-          <Link href="/dashboard/settings?section=profil" className="flex items-center gap-2.5 py-2">
+          <Link href="/dashboard/settings?section=profil" className="flex items-center gap-3 py-2">
             <Avatar size="sm">
               {hydrated && profile.avatarUrl && <AvatarImage src={profile.avatarUrl} alt={name} />}
               <AvatarFallback style={avatarHex ? { background: avatarHex, color: "white" } : undefined}>
@@ -156,7 +156,7 @@ export default function HeaderAccountMenu() {
                 key={l.value}
                 disabled={!l.ready}
                 onSelect={() => handleLanguageChange(l.value)}
-                className="gap-2.5"
+                className="gap-2"
               >
                 {l.flagCode ? (
                   <AppleEmoji code={l.flagCode} label={l.label} className="size-4 rounded-[3px]" />

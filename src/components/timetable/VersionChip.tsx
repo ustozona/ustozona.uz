@@ -141,7 +141,7 @@ export default function VersionChip({
       <DropdownMenuItem
         key={v.id}
         onSelect={() => onSelect(v.id)}
-        className="items-stretch gap-2.5 py-0"
+        className="items-stretch gap-2 py-0"
       >
         {/* Timeline reli: nuqta + vertikal chiziq */}
         <span aria-hidden className="relative flex w-3 shrink-0 justify-center self-stretch">

@@ -534,7 +534,7 @@ export default function UsersTable({
           Eski taʼrifga qaytish aynan tuzatilayotgan xatoni koʻrinmas
           holda tiklardi (drizzle/views/faollik.sql). */}
       {!data.activityAvailable && (
-        <div className="flex items-start gap-2.5 border-b border-border bg-destructive/5 px-5 py-3">
+        <div className="flex items-start gap-2 border-b border-border bg-destructive/5 px-5 py-3">
           <TriangleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
           <p className="text-sm text-muted-foreground">
             Faollik koʻrinishlari bazaga qoʻllanmagan — «Faollik» va «Oxirgi
@@ -600,7 +600,7 @@ export default function UsersTable({
                 return (
                   <TableRow key={u.id} className={u.banned ? "opacity-60" : undefined}>
                     <TableCell className="pl-5">
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-3">
                         <Avatar size="sm">
                           {u.image && <AvatarImage src={u.image} alt={u.name} />}
                           <AvatarFallback>{initialsOf(u.name) || "F"}</AvatarFallback>
@@ -974,7 +974,7 @@ function RoleDialog({
             // aks holda admin paneldan oʻzini qulflab qoʻyadi.
             const lockSelf = isSelf && r === "super_admin";
             return (
-              <Label key={r} className="flex items-center gap-2.5 text-sm font-normal">
+              <Label key={r} className="flex items-center gap-2 text-sm font-normal">
                 <Checkbox
                   checked={selected.includes(r)}
                   disabled={lockSelf}

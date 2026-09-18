@@ -92,7 +92,7 @@ export function StudentPointCard({
       type="button"
       onClick={selectionMode ? onToggleSelect : onClick}
       data-active={selected || undefined}
-      className="list-card group relative flex h-32 flex-col items-center justify-center gap-2.5 px-3 cursor-pointer"
+      className="list-card group relative flex h-32 flex-col items-center justify-center gap-3 px-3 cursor-pointer"
       style={{
         ["--card-accent" as string]: colorHex,
         ...(selected ? { backgroundColor: `color-mix(in oklch, ${colorHex} 7%, var(--card))` } : {}),

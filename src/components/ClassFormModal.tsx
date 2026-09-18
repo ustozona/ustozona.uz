@@ -110,7 +110,7 @@ export function ClassFormModal({
             {/* IDENTIFIKATOR BLOKI — ikonka + hisoblangan nom + rang. Ikonkaning
                 OʻZI tanlagich tugmasi (Notion/Linear naqshi), shu bois alohida
                 "ikonka tanlash" tugmasi kerak emas. */}
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-3.5 py-3">
+            <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
               <Popover open={isIconPickerOpen} onOpenChange={setIsIconPickerOpen}>
                 <PopoverTrigger asChild>
                   {/* hover: faqat fon toʻqroq boʻladi. Fon inline `style` emas, CSS

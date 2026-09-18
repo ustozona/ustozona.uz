@@ -386,7 +386,7 @@ export default function IshRejaImportModal({ classId, unitId, onSingle, onClose 
               <button
                 type="button"
                 onClick={() => setShowDates((v) => !v)}
-                className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors duration-fast ease-standard hover:bg-muted/50"
+                className="flex w-full items-center gap-2 px-3 py-3 text-left text-sm transition-colors duration-fast ease-standard hover:bg-muted/50"
               >
                 <ChevronDown className={cn("size-4 text-muted-foreground transition-transform duration-fast", showDates && "rotate-180")} />
                 {t("showDates", { count: validRows.length })}

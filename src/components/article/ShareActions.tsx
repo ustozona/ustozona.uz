@@ -108,7 +108,7 @@ export default function ShareActions({ title }: { title: string }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
           {NETWORKS.map((n) => (
-            <DropdownMenuItem key={n.name} onClick={() => share(n.url)} className="gap-2.5">
+            <DropdownMenuItem key={n.name} onClick={() => share(n.url)} className="gap-2">
               <BrandIcon path={n.path} className="size-4" />
               {n.name}
             </DropdownMenuItem>

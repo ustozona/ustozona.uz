@@ -81,7 +81,7 @@ export function NotificationCard({
       type="button"
       onClick={() => onOpen(item.id, item.href)}
       className={cn(
-        "flex w-full items-start gap-2.5 rounded-md border p-2.5 text-left transition-colors",
+        "flex w-full items-start gap-2 rounded-md border p-3 text-left transition-colors",
         item.read
           ? "border-border bg-card hover:bg-muted/60"
           : "border-primary/40 bg-card hover:bg-primary/[0.06]"

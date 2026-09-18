@@ -50,7 +50,7 @@ const Personas = () => {
               {stats.map((s) => (
                 <span
                   key={s.label}
-                  className="flex items-center gap-2 rounded-full border border-border bg-muted/60 pl-2.5 pr-4 py-2"
+                  className="flex items-center gap-2 rounded-full border border-border bg-muted/60 pl-3 pr-4 py-2"
                 >
                   <span
                     className="flex size-7 items-center justify-center rounded-full"
@@ -79,7 +79,7 @@ const Personas = () => {
                   {t("card.className")}
                 </span>
                 <span
-                  className="rounded-full px-2.5 py-1 text-xs font-medium text-neutral-900"
+                  className="rounded-full px-3 py-1 text-xs font-medium text-neutral-900"
                   style={{ backgroundColor: "#FBC02D" }}
                 >
                   {t("card.badge")}
@@ -87,7 +87,7 @@ const Personas = () => {
               </div>
               <div className="flex flex-col gap-3">
                 {cardLines.map((line) => (
-                  <div key={line} className="flex items-start gap-2.5">
+                  <div key={line} className="flex items-start gap-2">
                     <span
                       className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full"
                       style={{ backgroundColor: "var(--success)" }}

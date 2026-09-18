@@ -50,9 +50,9 @@ export function ProductPage({
             <h2 className="text-xl font-semibold text-foreground">
               Nima rejalashtirilgan
             </h2>
-            <ul className="flex flex-col gap-2.5">
+            <ul className="flex flex-col gap-3">
               {capabilities.map((c) => (
-                <li key={c} className="flex items-start gap-2.5 text-base text-muted-foreground">
+                <li key={c} className="flex items-start gap-2 text-base text-muted-foreground">
                   <Check className="mt-1 size-4 shrink-0 text-muted-foreground" />
                   {c}
                 </li>
@@ -69,7 +69,7 @@ export function ProductPage({
           </div>
 
           {/* Holat bloki — majburiy, ochiq */}
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3.5 mb-10">
+          <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3 mb-10">
             <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <p className="text-sm leading-relaxed text-muted-foreground">
               <strong className="text-foreground">Bu hali tayyor emas.</strong>{" "}
@@ -89,7 +89,7 @@ export function ProductPage({
                 <a
                   key={p.slug}
                   href={p.href}
-                  className="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 -mx-3 transition-colors hover:bg-muted"
+                  className="group flex items-center justify-between gap-3 rounded-lg px-3 py-3 -mx-3 transition-colors hover:bg-muted"
                 >
                   <span className="text-sm font-medium text-foreground">
                     {p.name}

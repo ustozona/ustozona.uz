@@ -76,7 +76,7 @@ export default function GapReportPanel({ classId }: { classId: string }) {
 
   return (
     <div className="flex flex-col rounded-xl border border-border bg-card p-5">
-      <div className="mb-1 flex items-center gap-2.5">
+      <div className="mb-1 flex items-center gap-3">
         <SectionIcon><ScanSearch /></SectionIcon>
         <CardTitle>{t("title")}</CardTitle>
         <Badge variant="secondary" className="ml-auto shadow-none">
@@ -95,7 +95,7 @@ export default function GapReportPanel({ classId }: { classId: string }) {
               <button
                 type="button"
                 onClick={() => setExpanded(open ? null : status)}
-                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left"
+                className="flex w-full items-center gap-2 px-3 py-3 text-left"
               >
                 <AlertTriangle
                   className={cn(

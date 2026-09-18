@@ -194,7 +194,7 @@ export default function ReuseModal({
                       </div>
                       <span
                         className={cn(
-                          "shrink-0 rounded-md px-2.5 py-1 text-xs font-medium",
+                          "shrink-0 rounded-md px-3 py-1 text-xs font-medium",
                           isSelected
                             ? "bg-foreground text-background"
                             : "bg-muted text-foreground"

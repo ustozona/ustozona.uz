@@ -24,7 +24,7 @@ export function DashboardSectionCard({
   return (
     <div className={cn("flex flex-col rounded-xl bg-card p-5 border border-border", className)}>
       {(title || action) && (
-        <div className="mb-4 flex items-center gap-2.5">
+        <div className="mb-4 flex items-center gap-3">
           {Icon && (
             <SectionIcon>
               <Icon />

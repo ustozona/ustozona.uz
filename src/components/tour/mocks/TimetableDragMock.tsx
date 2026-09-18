@@ -29,8 +29,8 @@ export function TimetableDragMock() {
 
       {/* Sinflar paneli */}
       <div className="w-32 shrink-0 rounded-lg border border-border bg-background p-3">
-        <p className="mb-2.5 text-xs font-semibold text-muted-foreground">Sinflar</p>
-        <div className="rounded-md border border-primary/40 bg-primary/10 px-2.5 py-2 text-xs font-medium text-foreground">
+        <p className="mb-2 text-xs font-semibold text-muted-foreground">Sinflar</p>
+        <div className="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-foreground">
           7-A
         </div>
       </div>
@@ -53,7 +53,7 @@ export function TimetableDragMock() {
 
       {/* Koʻchayotgan ghost karta */}
       <div
-        className="pointer-events-none absolute left-3 top-11 rounded-md bg-primary/80 px-2.5 py-2 text-xs font-medium text-primary-foreground shadow-md"
+        className="pointer-events-none absolute left-3 top-11 rounded-md bg-primary/80 px-3 py-2 text-xs font-medium text-primary-foreground shadow-md"
         style={{ animation: "tt-drag-ghost 2.6s ease-in-out infinite" }}
       >
         7-A

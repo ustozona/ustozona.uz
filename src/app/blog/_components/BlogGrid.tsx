@@ -80,7 +80,7 @@ function Cover({ post, className }: { post: BlogPostSummary; className?: string 
 
 function AuthorRow({ post }: { post: BlogPostSummary }) {
   return (
-    <div className="mt-auto flex items-center gap-2.5 pt-4">
+    <div className="mt-auto flex items-center gap-3 pt-4">
       <Avatar className="size-7 shrink-0 border border-border">
         {post.authorAvatarUrl && (
           <AvatarImage src={post.authorAvatarUrl} alt={post.authorName} referrerPolicy="no-referrer" />

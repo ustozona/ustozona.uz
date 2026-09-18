@@ -25,8 +25,8 @@ export default function Newsletter() {
                         </div>
                         <InputGroup className="bg-background! rounded-full overflow-hidden max-w-xl mx-auto flex items-center gap-6 w-full h-auto animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300 ease-in-out fill-mode-both">
                             <InputGroupInput type="email" placeholder="Elektron pochta" className="ps-8" />
-                            <InputGroupAddon align="inline-end" className="py-2 pe-2.5">
-                                <InputGroupButton variant="secondary" className="bg-primary flex gap-2 lg:gap-3 justify-between items-center rounded-full w-fit ps-5 h-auto border-0 text-primary-foreground text-sm font-medium py-3.5 px-6 me-1 hover:bg-primary/80 [&>svg:not([class*='size-'])]:size-4">
+                            <InputGroupAddon align="inline-end" className="py-2 pe-3">
+                                <InputGroupButton variant="secondary" className="bg-primary flex gap-2 lg:gap-3 justify-between items-center rounded-full w-fit ps-5 h-auto border-0 text-primary-foreground text-sm font-medium py-3 px-6 me-1 hover:bg-primary/80 [&>svg:not([class*='size-'])]:size-4">
                                     Obuna boʻlish
                                     <Icon
                                         icon="lucide:arrow-right"

@@ -308,7 +308,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
               type="button"
               onClick={openForClass}
               disabled={selecting}
-              className="list-card group flex h-32 flex-col items-center justify-center gap-2.5 px-3 cursor-pointer disabled:cursor-not-allowed"
+              className="list-card group flex h-32 flex-col items-center justify-center gap-3 px-3 cursor-pointer disabled:cursor-not-allowed"
               style={{
                 ["--card-accent" as string]: hex,
                 backgroundColor: `color-mix(in oklch, ${hex} 7%, var(--card))`,

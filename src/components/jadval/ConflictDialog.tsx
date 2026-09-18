@@ -124,7 +124,7 @@ export default function ConflictDialog({
                 key={`${sg.move.id}-${sg.to.day}-${sg.to.period}-${i}`}
                 type="button"
                 onClick={() => onApplySuggestion(sg)}
-                className="group flex items-center gap-3 rounded-md border border-border px-3 py-2.5 text-left transition-colors duration-fast hover:border-primary hover:bg-muted/50"
+                className="group flex items-center gap-3 rounded-md border border-border px-3 py-3 text-left transition-colors duration-fast hover:border-primary hover:bg-muted/50"
               >
                 <span className="text-body min-w-0 flex-1 truncate">{sg.label}</span>
                 <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform duration-fast group-hover:translate-x-0.5" aria-hidden />

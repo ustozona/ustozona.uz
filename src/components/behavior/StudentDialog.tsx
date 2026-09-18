@@ -218,7 +218,7 @@ export function StudentDialog({
                   type="button"
                   onClick={() => setPanel(item.id)}
                   className={cn(
-                    "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+                    "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
                     active
                       ? "bg-muted text-foreground"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -377,7 +377,7 @@ function ShopPanel({
           <p className="text-sm font-medium text-foreground">{t("freeSpendTitle")}</p>
           <TypographyMuted className="text-xs">{t("freeSpendDescription")}</TypographyMuted>
         </div>
-        <div className="flex flex-wrap items-end gap-2.5">
+        <div className="flex flex-wrap items-end gap-2">
           <div className="space-y-1.5">
             <Label htmlFor="bh-free-amount" className="text-xs">
               {t("amountLabel")}

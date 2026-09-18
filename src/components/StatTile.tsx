@@ -26,7 +26,7 @@ export function StatTile({
       onClick={onClick}
       disabled={!interactive}
       className={cn(
-        "group/tile text-left rounded-xl border bg-muted/30 px-3.5 py-3 flex flex-col gap-1 transition-colors",
+        "group/tile text-left rounded-xl border bg-muted/30 px-4 py-3 flex flex-col gap-1 transition-colors",
         interactive && "hover:bg-muted/60 cursor-pointer",
         active ? "border-primary/40 bg-primary/5" : "border-border/60",
         !interactive && "cursor-default"

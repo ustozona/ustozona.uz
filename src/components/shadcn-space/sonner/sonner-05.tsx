@@ -8,7 +8,7 @@ import { ExternalLink, GitBranch, Settings } from 'lucide-react'
 const ToastComponent = () => {
   const showToast = () => {
     toast.custom(() => (
-      <div className="bg-popover/95 backdrop-blur-md text-popover-foreground border-border rounded-2xl flex w-89 flex-col gap-3.5 border p-4 shadow-xl transition-all duration-300">
+      <div className="bg-popover/95 backdrop-blur-md text-popover-foreground border-border rounded-2xl flex w-89 flex-col gap-3 border p-4 shadow-xl transition-all duration-300">
         <div className="flex items-center gap-3">
           <div className="rounded-lg flex size-10 shrink-0 items-center justify-center bg-primary text-primary-foreground">
             <GitBranch className="size-5" aria-hidden="true" />

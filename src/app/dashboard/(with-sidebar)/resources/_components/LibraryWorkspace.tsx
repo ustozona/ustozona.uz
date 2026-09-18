@@ -586,7 +586,7 @@ function CreateMenu() {
           belgisini roʻyxatda darhol taniydi. */}
       <DropdownMenuContent align="end" className="w-72 p-1.5">
         {LIBRARY_KINDS.map((key) => (
-          <DropdownMenuItem key={key} asChild className="gap-3 py-2.5">
+          <DropdownMenuItem key={key} asChild className="gap-3 py-3">
             <a href={KIND_ROUTE[key].create}>
               <MaterialKindTile kind={key} className="size-8 [&_svg]:size-4" />
               <span className="flex min-w-0 flex-col gap-0.5">

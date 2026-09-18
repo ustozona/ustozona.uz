@@ -21,7 +21,7 @@ export function BulkActionBar({ children, className }: { children: React.ReactNo
         className
       )}
     >
-      <div className="pointer-events-auto flex flex-wrap items-center gap-0.5 rounded-full bg-foreground py-1.5 pl-3.5 pr-1.5 text-background shadow-lg animate-in fade-in-0 slide-in-from-bottom-2 duration-fast">
+      <div className="pointer-events-auto flex flex-wrap items-center gap-0.5 rounded-full bg-foreground py-1.5 pl-4 pr-1.5 text-background shadow-lg animate-in fade-in-0 slide-in-from-bottom-2 duration-fast">
         {children}
       </div>
     </div>

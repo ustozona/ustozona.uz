@@ -59,7 +59,7 @@ export function MaterialKindPicker({
             disabled={!ready}
             onClick={() => onPick(kind)}
             className={cn(
-              "relative overflow-hidden rounded-card border bg-card p-3.5 text-left transition-colors",
+              "relative overflow-hidden rounded-card border bg-card p-3 text-left transition-colors",
               ready
                 ? "cursor-pointer border-border hover:bg-muted/40"
                 : "cursor-not-allowed border-dashed border-border"

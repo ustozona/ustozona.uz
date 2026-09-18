@@ -145,9 +145,9 @@ const Header = ({ navigationData, className }: HeaderProps) => {
     >
       <div
         className={cn(
-          "w-full max-w-6xl flex items-center h-fit justify-between gap-3.5 lg:gap-6 transition-all duration-500",
+          "w-full max-w-6xl flex items-center h-fit justify-between gap-3 lg:gap-6 transition-all duration-500",
           sticky
-            ? "p-2.5 bg-background/60 backdrop-blur-lg border border-border/40 shadow-2xl shadow-primary/5 rounded-full"
+            ? "p-3 bg-background/60 backdrop-blur-lg border border-border/40 shadow-2xl shadow-primary/5 rounded-full"
             : "bg-transparent border-transparent",
         )}
       >
@@ -266,7 +266,7 @@ const Header = ({ navigationData, className }: HeaderProps) => {
                     <Logo className="gap-2" />
                   </a>
                   <SheetClose id="mobile-menu-close">
-                    <span className="rounded-full border border-border p-2.5 block">
+                    <span className="rounded-full border border-border p-3 block">
                       <X width={16} height={16} />
                     </span>
                   </SheetClose>

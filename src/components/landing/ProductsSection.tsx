@@ -63,7 +63,7 @@ function CardCta({
     <a
       href={href}
       className={cn(
-        "mt-auto -ml-2.5 inline-flex h-8 w-fit items-center gap-1.5 rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors duration-fast ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "mt-auto -ml-2 inline-flex h-8 w-fit items-center gap-1.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors duration-fast ease-standard focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         hover,
       )}
     >

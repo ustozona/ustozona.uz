@@ -125,7 +125,7 @@ export default function NotificationsBell() {
       </Tooltip>
 
       <PopoverContent align="end" className="w-96 max-w-[calc(100vw-1.5rem)] p-0 shadow-lg">
-        <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
+        <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
           <h3 className="heading-small">Bildirishnomalar</h3>
           <div className="flex items-center gap-1">
             <SegmentedToggle
@@ -171,7 +171,7 @@ export default function NotificationsBell() {
           </Empty>
         ) : (
           <ScrollArea className="max-h-[min(380px,calc(var(--radix-popover-content-available-height)-6rem))] bg-muted/30">
-            <div className="space-y-3 px-2.5 py-2.5">
+            <div className="space-y-3 px-3 py-3">
               {sections.map((section) => (
                 <section key={section.dayKey}>
                   <h4 className="px-1 pb-1.5 text-label">{section.label}</h4>

@@ -263,7 +263,7 @@ export default function JadvalStartScreen({
                   {grades.map((grade) => {
                     const count = setup.sections?.[grade] ?? 1;
                     return (
-                      <div key={grade} className="flex flex-wrap items-center gap-3 px-3 py-2.5">
+                      <div key={grade} className="flex flex-wrap items-center gap-3 px-3 py-3">
                         <span className="heading-small w-16 shrink-0">{grade}-sinf</span>
                         <span className="text-caption min-w-0 flex-1 truncate">
                           {sectionLetters(count)
@@ -324,7 +324,7 @@ export default function JadvalStartScreen({
                       key={n}
                       type="button"
                       onClick={() => addSubject(n)}
-                      className="text-caption rounded-full border border-dashed border-border px-2.5 py-1 transition-colors duration-fast hover:border-primary hover:text-foreground"
+                      className="text-caption rounded-full border border-dashed border-border px-3 py-1 transition-colors duration-fast hover:border-primary hover:text-foreground"
                     >
                       + {n}
                     </button>
@@ -414,7 +414,7 @@ export default function JadvalStartScreen({
               title="Kim oʻqitadi?"
               hint="Ismlarni vergul bilan yozing — ular sinflar orasida navbat bilan taqsimlanadi. Bu qadamni oʻtkazib yuborsangiz ham boʻladi."
             >
-              <div className="scrollbar-hover flex max-h-[42vh] flex-col gap-2.5 overflow-y-auto pr-1">
+              <div className="scrollbar-hover flex max-h-[42vh] flex-col gap-3 overflow-y-auto pr-1">
                 {taughtSubjects.map((s) => {
                   const min = minStaffCount(draftDoc, s.id);
                   const given = (names[s.id] ?? "").split(",").filter((x) => x.trim()).length;

@@ -55,7 +55,7 @@ export function ClassMultiPicker({ label, placeholder, value, lockedId, onChange
                   type="button"
                   disabled={c.id === lockedId}
                   onClick={() => toggle(c.id)}
-                  className="flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm transition-colors duration-fast ease-standard hover:bg-muted disabled:cursor-default disabled:hover:bg-transparent"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors duration-fast ease-standard hover:bg-muted disabled:cursor-default disabled:hover:bg-transparent"
                 >
                   {/* Checkbox emas: Radix Checkbox — button, button ichida boʻlolmaydi */}
                   <span

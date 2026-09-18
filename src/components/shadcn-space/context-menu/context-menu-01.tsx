@@ -68,7 +68,7 @@ export const ContextMenu = ({ items, className, children }: ContextMenuProps) =>
               backgroundSize: "18px 18px",
             }}
           />
-          <div className="relative z-10 flex flex-col items-center gap-2.5">
+          <div className="relative z-10 flex flex-col items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background shadow-sm">
               <Mouse className="h-5 w-5 text-muted-foreground" />
             </div>
@@ -102,7 +102,7 @@ export const ContextMenu = ({ items, className, children }: ContextMenuProps) =>
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       className={cn(
-                        "flex w-full cursor-pointer items-center justify-between rounded-xl px-2.5 py-2 text-left text-sm font-medium transition-colors",
+                        "flex w-full cursor-pointer items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors",
                         item.danger
                           ? "text-red-500 hover:bg-red-500/10"
                           : "text-foreground hover:bg-muted dark:hover:bg-muted/50"
@@ -113,7 +113,7 @@ export const ContextMenu = ({ items, className, children }: ContextMenuProps) =>
                         setIsVisible(false);
                       }}
                     >
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-2">
                         <span
                           className={cn(
                             "flex h-7 w-7 items-center justify-center rounded-lg",

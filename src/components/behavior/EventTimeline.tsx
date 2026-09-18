@@ -155,10 +155,10 @@ function StudentHoverBody({ info, classHex }: { info: StudentHoverInfo; classHex
       </div>
       <Separator />
       <div className="flex items-center gap-1.5">
-        <span className="rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-success">
+        <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-semibold tabular-nums text-success">
           {t("hoverEarned", { count: info.earned })}
         </span>
-        <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-semibold tabular-nums text-destructive">
+        <span className="rounded-full bg-destructive/10 px-3 py-1 text-xs font-semibold tabular-nums text-destructive">
           {t("hoverLost", { count: info.lost })}
         </span>
       </div>
@@ -247,7 +247,7 @@ function DeleteReasonField({
             type="button"
             onClick={() => onChange(value === r ? "" : r)}
             className={cn(
-              "rounded-full border px-2.5 py-1 text-xs transition-colors",
+              "rounded-full border px-3 py-1 text-xs transition-colors",
               value === r
                 ? "border-primary bg-primary/10 text-primary"
                 : "border-border text-muted-foreground hover:bg-muted"
@@ -444,7 +444,7 @@ export function EventTimeline({
                 return (
                   <div
                     key={key}
-                    className="group/row rounded-xl border border-border/60 bg-card px-3.5 py-3 shadow-sm"
+                    className="group/row rounded-xl border border-border/60 bg-card px-4 py-3 shadow-sm"
                   >
                     <div className="flex items-start gap-3">
                       <span className="relative mt-0.5 inline-flex shrink-0">
@@ -570,7 +570,7 @@ export function EventTimeline({
               }
 
               return (
-                <div key={key} className="group flex items-center gap-3 py-2.5">
+                <div key={key} className="group flex items-center gap-3 py-3">
                   <span className="relative inline-flex shrink-0">
                     <BehaviorEmoji code={e.emoji} label={e.name} className="size-8" />
                     <span
