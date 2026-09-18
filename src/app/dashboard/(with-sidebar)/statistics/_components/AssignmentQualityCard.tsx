@@ -19,7 +19,7 @@ export function AssignmentQualityCard({ rows }: { rows: AssignmentQuality[] }) {
     <div>
       <div className="flex flex-col divide-y divide-border/60">
         {rows.map((r) => (
-          <div key={r.assignmentId} className="flex items-center gap-2.5 py-2.5 text-sm">
+          <div key={r.assignmentId} className="flex items-center gap-2 py-3 text-sm">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="truncate text-foreground/90">{r.title}</span>

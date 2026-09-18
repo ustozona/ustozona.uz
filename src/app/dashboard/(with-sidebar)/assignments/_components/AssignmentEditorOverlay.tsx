@@ -129,7 +129,7 @@ const FieldRow = ({
   children: ReactNode;
 }) => (
   <div className="flex flex-col">
-    <h3 className="text-label mb-2.5">{label}</h3>
+    <h3 className="text-label mb-2">{label}</h3>
     <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
       <span
         className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground"
@@ -756,7 +756,7 @@ export default function AssignmentEditorOverlay({
   function renderContent() {
     if (attachedSetId) {
       return (
-        <div className="flex items-center gap-3 rounded-xl border border-border p-3.5">
+        <div className="flex items-center gap-3 rounded-xl border border-border p-3">
           <button
             type="button"
             onClick={handleEditAttachedTest}
@@ -974,7 +974,7 @@ export default function AssignmentEditorOverlay({
             {syncFailing && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex shrink-0 cursor-default items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning">
+                  <span className="inline-flex shrink-0 cursor-default items-center gap-1.5 rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
                     <CloudOff className="size-3.5" />
                     <span className="hidden sm:inline">{t("syncFailing")}</span>
                   </span>
@@ -1093,7 +1093,7 @@ export default function AssignmentEditorOverlay({
                   «Materiallar» deb nomlansa sidebar'dagi sahifa bilan
                   chalkashardi. Nomsiz qoldirish taʼlim platformalari orasida keng tarqalgan naqsh —
                   u ham bu joyni nomlamaydi. */}
-              <div className="flex flex-col gap-2.5">{renderContent()}</div>
+              <div className="flex flex-col gap-3">{renderContent()}</div>
             </div>
           </div>
 
@@ -1122,7 +1122,7 @@ export default function AssignmentEditorOverlay({
               <div className="flex min-h-0 flex-1 flex-col gap-5 scrollbar-hover overflow-y-auto scrollbar-thin px-5 py-5">
                 {/* SINFLAR — koʻp tanlov (dars muharriridagi naqsh). */}
                 <div className="flex flex-col">
-                  <h3 className="text-label mb-2.5">{t("classesLabel")}</h3>
+                  <h3 className="text-label mb-2">{t("classesLabel")}</h3>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
@@ -1173,7 +1173,7 @@ export default function AssignmentEditorOverlay({
                               e.preventDefault();
                               toggleClass(c.id);
                             }}
-                            className="gap-2.5"
+                            className="gap-2"
                           >
                             <span
                               className={cn(
@@ -1232,7 +1232,7 @@ export default function AssignmentEditorOverlay({
                   topshiriq DARS kunida turadi, alohida topshirish muddati
                   tushunchasi ortiqcha edi. */}
                 <div className="flex flex-col">
-                  <h3 className="text-label mb-2.5">{t("dateLabel")}</h3>
+                  <h3 className="text-label mb-2">{t("dateLabel")}</h3>
 
                   {/* Sana kartalari — dars muharriridagi JADVAL bilan bir xil: bir
                     sanada boʻlgan sinflar BITTA kartada guruhlanadi (chapda
@@ -1341,7 +1341,7 @@ export default function AssignmentEditorOverlay({
                                 ? `${c.name} — ${t("addDate")}`
                                 : t("addDate")
                             }
-                            className="w-full justify-center gap-2 rounded-lg border border-dashed border-border bg-transparent py-2.5 text-sm font-normal text-muted-foreground shadow-none hover:bg-accent/40 hover:text-foreground"
+                            className="w-full justify-center gap-2 rounded-lg border border-dashed border-border bg-transparent py-2 text-sm font-normal text-muted-foreground shadow-none hover:bg-accent/40 hover:text-foreground"
                             ariaLabel={`${c.name} — ${t("addDate")}`}
                           />
                         ))}
@@ -1421,7 +1421,7 @@ export default function AssignmentEditorOverlay({
                         onClick={() => pickMaxScore(score)}
                         aria-pressed={current.maxScore === score}
                         className={cn(
-                          "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                          "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                           current.maxScore === score
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",

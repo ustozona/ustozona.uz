@@ -15,7 +15,7 @@ export function TopicMasteryCard({ rows }: { rows: TopicMasteryRow[] }) {
       {rows.length === 0 ? (
         <StatEmpty icon={Layers} title={t("notEnoughData")} />
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {rows.map((r) => (
             <div key={r.topicId} className="space-y-1">
               <div className="flex items-center justify-between text-xs gap-2">

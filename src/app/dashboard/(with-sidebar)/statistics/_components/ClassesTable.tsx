@@ -115,7 +115,7 @@ export function ClassesTable({
                     className="group cursor-pointer"
                     onClick={() => onSelect(r.classId)}
                   >
-                    <TableCell className="whitespace-nowrap py-3.5 pl-4 pr-3">
+                    <TableCell className="whitespace-nowrap py-3 pl-4 pr-3">
                       <div className="flex items-center gap-3">
                         <div
                           className="size-11 shrink-0 rounded-full flex items-center justify-center text-white"
@@ -127,21 +127,21 @@ export function ClassesTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap w-32 px-3 py-3.5">
+                    <TableCell className="whitespace-nowrap w-32 px-3 py-3">
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <span className="font-semibold text-foreground tabular-nums">{r.studentCount}</span>
                         {t("unitPeople")}
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap w-20 px-3 py-3.5">
+                    <TableCell className="whitespace-nowrap w-20 px-3 py-3">
                       <div className="flex justify-center">
                         <AttendanceRing pct={r.attendanceAvg} />
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap w-52 px-3 py-3.5">
-                      <div className="flex items-center gap-2.5">
+                    <TableCell className="whitespace-nowrap w-52 px-3 py-3">
+                      <div className="flex items-center gap-2">
                         <Progress
                           value={r.summativeAvg ?? 0}
                           indicatorColor={scoreColor}
@@ -160,7 +160,7 @@ export function ClassesTable({
                       </div>
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap w-24 px-3 py-3.5 text-center">
+                    <TableCell className="whitespace-nowrap w-24 px-3 py-3 text-center">
                       {r.behaviorPositivePct !== null ? (
                         <span className="text-sm font-semibold tabular-nums" style={{ color: scoreBarColor(r.behaviorPositivePct) }}>
                           {Math.round(r.behaviorPositivePct)}%
@@ -170,7 +170,7 @@ export function ClassesTable({
                       )}
                     </TableCell>
 
-                    <TableCell className="whitespace-nowrap px-4 py-3.5">
+                    <TableCell className="whitespace-nowrap px-4 py-3">
                       <ChevronRight className="size-4 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
                     </TableCell>
                   </TableRow>

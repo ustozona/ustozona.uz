@@ -391,7 +391,7 @@ export default function SetBuilderOverlay({
       <button
         type="button"
         onClick={() => setMinimized(false)}
-        className="fixed bottom-4 left-4 z-[49] flex max-w-xs items-center gap-2.5 rounded-xl border border-border bg-card px-3.5 py-2.5 shadow-lg transition-colors hover:bg-muted/50"
+        className="fixed bottom-4 left-4 z-[49] flex max-w-xs items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-lg transition-colors hover:bg-muted/50"
       >
         <SectionIcon className="size-8 shrink-0">
           <FileCheck2 />

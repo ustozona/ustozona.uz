@@ -95,7 +95,7 @@ export function StudentsTablePanel({
     <div className="h-full min-h-0">
       <DashboardSectionCard className="h-full min-h-0 flex flex-col">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             <SectionIcon>
               <Users />
             </SectionIcon>

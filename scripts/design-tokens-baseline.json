@@ -55,33 +55,26 @@
   },
   "src/app/dashboard/(with-sidebar)/assignments/_components/AssignmentEditorOverlay.tsx": {
     "text-px": 1,
-    "space-off-grid": 9,
     "font-bold": 2
   },
   "src/app/dashboard/(with-sidebar)/assignments/_components/AttachTestDialog.tsx": {
     "text-px": 2
   },
   "src/app/dashboard/(with-sidebar)/assignments/_components/TestBankOverlay.tsx": {
-    "text-px": 3,
-    "space-off-grid": 5
-  },
-  "src/app/dashboard/(with-sidebar)/assignments/_components/test/SetBuilderOverlay.tsx": {
-    "space-off-grid": 3
+    "text-px": 3
   },
   "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/BuilderRail.tsx": {
     "text-px": 1
   },
   "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/QuestionStrip.tsx": {
-    "text-px": 2,
-    "space-off-grid": 1
+    "text-px": 2
   },
   "src/app/dashboard/(with-sidebar)/assignments/_components/test/builder/ThemesPanel.tsx": {
     "text-px": 1,
     "font-bold": 1
   },
   "src/app/dashboard/(with-sidebar)/assignments/page.tsx": {
-    "text-px": 4,
-    "space-off-grid": 7
+    "text-px": 4
   },
   "src/app/dashboard/(with-sidebar)/attendance/_components/AttendanceView.tsx": {
     "text-px": 1,
@@ -156,47 +149,28 @@
     "font-bold": 1
   },
   "src/app/dashboard/(with-sidebar)/statistics/_components/AbsenceTierList.tsx": {
-    "text-px": 1,
-    "space-off-grid": 1
+    "text-px": 1
   },
   "src/app/dashboard/(with-sidebar)/statistics/_components/AssignmentQualityCard.tsx": {
-    "text-px": 2,
-    "space-off-grid": 2
+    "text-px": 2
   },
   "src/app/dashboard/(with-sidebar)/statistics/_components/AttendanceRing.tsx": {
     "text-px": 1
   },
   "src/app/dashboard/(with-sidebar)/statistics/_components/ClassesTable.tsx": {
-    "text-px": 1,
-    "space-off-grid": 7
+    "text-px": 1
   },
   "src/app/dashboard/(with-sidebar)/statistics/_components/CompletionDonutChart.tsx": {
-    "space-off-grid": 1,
     "font-bold": 1
-  },
-  "src/app/dashboard/(with-sidebar)/statistics/_components/DeadlinesCard.tsx": {
-    "space-off-grid": 1
   },
   "src/app/dashboard/(with-sidebar)/statistics/_components/GenderDonutChart.tsx": {
-    "space-off-grid": 1,
     "font-bold": 1
   },
-  "src/app/dashboard/(with-sidebar)/statistics/_components/OverviewPanel.tsx": {
-    "space-off-grid": 1
-  },
   "src/app/dashboard/(with-sidebar)/statistics/_components/StudentsTable.tsx": {
-    "text-px": 2,
-    "space-off-grid": 8
-  },
-  "src/app/dashboard/(with-sidebar)/statistics/_components/StudentsTablePanel.tsx": {
-    "space-off-grid": 1
+    "text-px": 2
   },
   "src/app/dashboard/(with-sidebar)/statistics/_components/TopicMasteryCard.tsx": {
-    "text-px": 2,
-    "space-off-grid": 1
-  },
-  "src/app/dashboard/(with-sidebar)/statistics/page.tsx": {
-    "space-off-grid": 1
+    "text-px": 2
   },
   "src/app/dashboard/(with-sidebar)/students/[id]/_components/NotesTab.tsx": {
     "text-px": 1
@@ -223,23 +197,14 @@
   "src/app/dashboard/(with-sidebar)/students/page.tsx": {
     "space-arbitrary": 1
   },
-  "src/app/dashboard/(with-sidebar)/tasks/_components/TaskDetail.tsx": {
-    "space-off-grid": 3
-  },
-  "src/app/dashboard/(with-sidebar)/tasks/_components/TaskTimeCard.tsx": {
-    "space-off-grid": 2
-  },
   "src/app/dashboard/(with-sidebar)/tasks/_components/TasksList.tsx": {
-    "text-px": 2,
-    "space-off-grid": 4
+    "text-px": 2
   },
   "src/app/dashboard/(with-sidebar)/tasks/_components/TasksNav.tsx": {
-    "text-px": 1,
-    "space-off-grid": 1
+    "text-px": 1
   },
   "src/app/dashboard/(with-sidebar)/tasks/_components/TasksStatsPanel.tsx": {
     "text-px": 1,
-    "space-off-grid": 1,
     "font-bold": 1
   },
   "src/app/dashboard/classes/[id]/_components/ClassDetail.tsx": {

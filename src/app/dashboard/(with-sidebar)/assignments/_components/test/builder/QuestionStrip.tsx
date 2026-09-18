@@ -55,7 +55,7 @@ export default function QuestionStrip({
                   type="button"
                   onClick={() => onSelect(question.key)}
                   className={cn(
-                    "flex w-full flex-col gap-2 rounded-lg border bg-card p-2.5 text-left transition-colors",
+                    "flex w-full flex-col gap-2 rounded-lg border bg-card p-3 text-left transition-colors",
                     isActive
                       ? "border-primary ring-1 ring-primary"
                       : "border-border hover:border-primary/40"
