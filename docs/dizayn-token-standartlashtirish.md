@@ -228,8 +228,8 @@ Istisnolar fayl ichida izoh bilan: `// design-tokens-ignore: <sabab>`
 |---|---|---|---|
 | 1 ✅ #154 | Darvoza — **faqat hisoblagich**, bazaviy son bilan | `scripts/`, `package.json` | yoʻq — koʻrinish oʻzgarmaydi |
 | 2 ✅ #155 | Rollar `@theme` ga; eski klasslar alias; `cn()` tuzatildi | `globals.css`, `utils.ts`, `DESIGN.md` §3 | past — qiymatlar bir xil, ~32 joyda override endi ishlaydi |
-| 3 | `DESIGN.md` §3.5 «Boʻshliq shkalasi» — rol jadvali | `DESIGN.md`, `docs/design-system.md` | yoʻq |
-| 4 ✅ | Pastki chegara (10 joy) + 13px (13 joy) | 9 + ~8 fayl | past, koʻrinadi |
+| 3 ✅ | `DESIGN.md` §3.5 «Boʻshliq shkalasi» — rol jadvali | `DESIGN.md`, `docs/design-system.md` | yoʻq |
+| 4 | Pastki chegara (10 joy) + 13px (13 joy) | 9 + ~8 fayl | past, koʻrinadi |
 | 5 | Namuna koʻchish: `EventCard` | `calendar/EventCard.tsx` | past |
 | 6+ | Tegilgan fayl tozalanadi — alohida koʻchish sprinti yoʻq | — | — |
 
