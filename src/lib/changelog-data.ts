@@ -39,9 +39,9 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     id: "taqdimot-doskada",
     date: "2026-09-18",
     type: "yangi",
-    title: "Taqdimot: slaydlar va savollar bitta joyda — sinfda doskada, uyda telefonda",
+    title: "Interaktiv taqdimot: slaydlar, savollar va jonli dars — bitta joyda",
     body:
-      "Jurnalda topshiriq yaratayotganda «Avtomatik» → «Taqdimot» ni tanlaysiz va slaydlar orasiga savollar qoʻyasiz. Darsda uni Doskadagi «Taqdimot» vidjeti orqali katta ekranda birma-bir koʻrsatasiz: bolalarga qurilma shart emas, toʻgʻri javobni bir bosishda ochasiz, xohlasangiz sinfni jamoalarga boʻlib ball berasiz. Taqdimotni dars rejasiga biriktirsangiz, dars kuni Bosh sahifadagi dars kartasidan darhol boshlanadi. Uyga berilgan test yoki taqdimot esa belgilangan muddat tugagach javob qabul qilmaydi.",
+      "Jurnalda topshiriq yaratayotganda «Avtomatik» → «Taqdimot» ni tanlaysiz. Slaydni tayyor maketdan tuzasiz (sarlavha, roʻyxat, rasm, video, iqtibos) yoki mavjud PowerPoint va PDF faylingizni import qilasiz, slaydlar orasiga esa test, soʻrovnoma, soʻz buluti va ochiq javob qoʻyasiz. Darsda Doskadan «Jonli sessiya» ni boshlaysiz: oʻquvchilar QR yoki PIN bilan kiradi, siz slaydni almashtirsangiz hamma ekran birga oʻtadi, javoblar esa doskada jonli ustun boʻlib oʻsadi. Qurilma boʻlmasa ham boʻladi — javobni doskada ochib, sinfni jamoalarga boʻlib ball berasiz. Ochiq javoblarni keyin 0, ½ yoki 1 bilan baholaysiz va natijani jurnalga koʻchirasiz.",
     href: "/dashboard/grades",
   },
   {

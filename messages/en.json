@@ -2045,8 +2045,8 @@
     },
     "entries": {
       "taqdimot-doskada": {
-        "title": "Presentations: slides and questions in one place — on the board in class, on phones at home",
-        "body": "When creating an assignment in the Gradebook, choose «Automatic» → «Presentation» and place questions between your slides. In class, show it one step at a time on the big screen with the Board's «Presentation» widget: students don't need devices, you reveal the correct answer with one tap, and you can split the class into teams and award points. Attach the presentation to a lesson plan and on lesson day it starts straight from the lesson card on the Home page. Tests and presentations given as homework stop accepting answers once the deadline passes."
+        "title": "Interactive presentations: slides, questions and live lessons — in one place",
+        "body": "When creating an assignment in the Gradebook, choose «Automatic» → «Presentation». Build slides from ready layouts (title, list, image, video, quote) or import your existing PowerPoint and PDF files, then place tests, polls, word clouds and open questions between them. In class, start a «Live session» from the Board: students join with a QR code or PIN, every screen moves with you when you change the slide, and answers grow as live bars on the board. It works without devices too — reveal the answer on the board and award points to teams. Grade open answers later with 0, ½ or 1 and send the results to the Gradebook."
       },
       "jamoa-ish-maydoni": {
         "title": "Schools can now work as a team — several teachers, one shared roster",

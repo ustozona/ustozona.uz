@@ -2045,8 +2045,8 @@
     },
     "entries": {
       "taqdimot-doskada": {
-        "title": "Taqdimot: slaydlar va savollar bitta joyda — sinfda doskada, uyda telefonda",
-        "body": "Jurnalda topshiriq yaratayotganda «Avtomatik» → «Taqdimot» ni tanlaysiz va slaydlar orasiga savollar qoʻyasiz. Darsda uni Doskadagi «Taqdimot» vidjeti orqali katta ekranda birma-bir koʻrsatasiz: bolalarga qurilma shart emas, toʻgʻri javobni bir bosishda ochasiz, xohlasangiz sinfni jamoalarga boʻlib ball berasiz. Taqdimotni dars rejasiga biriktirsangiz, dars kuni Bosh sahifadagi dars kartasidan darhol boshlanadi. Uyga berilgan test yoki taqdimot esa belgilangan muddat tugagach javob qabul qilmaydi."
+        "title": "Interaktiv taqdimot: slaydlar, savollar va jonli dars — bitta joyda",
+        "body": "Jurnalda topshiriq yaratayotganda «Avtomatik» → «Taqdimot» ni tanlaysiz. Slaydni tayyor maketdan tuzasiz (sarlavha, roʻyxat, rasm, video, iqtibos) yoki mavjud PowerPoint va PDF faylingizni import qilasiz, slaydlar orasiga esa test, soʻrovnoma, soʻz buluti va ochiq javob qoʻyasiz. Darsda Doskadan «Jonli sessiya» ni boshlaysiz: oʻquvchilar QR yoki PIN bilan kiradi, siz slaydni almashtirsangiz hamma ekran birga oʻtadi, javoblar esa doskada jonli ustun boʻlib oʻsadi. Qurilma boʻlmasa ham boʻladi — javobni doskada ochib, sinfni jamoalarga boʻlib ball berasiz. Ochiq javoblarni keyin 0, ½ yoki 1 bilan baholaysiz va natijani jurnalga koʻchirasiz."
       },
       "jamoa-ish-maydoni": {
         "title": "Endi maktab boʻlib birga ishlash mumkin — bir necha oʻqituvchi, bitta oʻquvchilar roʻyxati",
