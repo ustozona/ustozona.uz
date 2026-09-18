@@ -79,7 +79,9 @@ export default function PropertiesPanel({
   return (
     <div className="flex h-full min-h-0 flex-col border-l border-border bg-card">
       <div className="flex min-h-16 shrink-0 items-center border-b border-border px-4">
-        <h2 className="text-sm font-semibold">{questionNumber}-savol xossalari</h2>
+        <h2 className="text-sm font-semibold">
+          {question.shape === "slide" ? `${questionNumber}-slayd` : `${questionNumber}-savol xossalari`}
+        </h2>
       </div>
 
       <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto">
@@ -87,6 +89,9 @@ export default function PropertiesPanel({
           <QuestionTypePicker value={question.shape} onChange={changeShape} />
         </Field>
 
+        {/* Slayd baholanmaydi va vaqtga bogʻlanmaydi — vaqt va ball maydonlari yoʻq. */}
+        {question.shape !== "slide" && (
+        <>
         <Field icon={<Timer className="size-4" />} label="Vaqt limiti">
           <Select
             value={String(question.timeLimitSec)}
@@ -125,6 +130,8 @@ export default function PropertiesPanel({
             </SelectContent>
           </Select>
         </Field>
+        </>
+        )}
 
         {question.shape === "mcq" && (
           <Field icon={<ListChecks className="size-4" />} label="Javob variantlari">

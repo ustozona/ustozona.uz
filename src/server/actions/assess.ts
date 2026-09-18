@@ -206,7 +206,8 @@ export async function deleteSetAction(id: string): Promise<void> {
 const draftQuestionSchema = z.object({
   /** Mavjud savol — yangilanadi. Boʻsh boʻlsa yangi `activity` yaratiladi. */
   activityId: z.string().min(1).optional(),
-  shape: z.enum(["mcq", "pairs"]),
+  /** `slide` — taqdimot slaydi: savol emas, matni `stem` da keladi. */
+  shape: z.enum(["mcq", "pairs", "slide"]),
   title: z.string().min(1).max(200),
   stem: z.string().max(2000),
   options: z.array(mcqOptionSchema),
@@ -241,6 +242,7 @@ export type SetDraft = {
 
 function validateDraftQuestion(q: DraftQuestionValues, index: number) {
   const label = `${index + 1}-savol`;
+  if (q.shape === "slide") return; // boʻsh slayd ham joiz — sarlavha yetadi
   if (q.shape === "mcq") {
     if (q.options.length < 2) throw new Error(`${label}: kamida 2 ta variant kerak`);
     const correct = q.options.filter((o) => o.isCorrect).length;
@@ -255,12 +257,14 @@ function validateDraftQuestion(q: DraftQuestionValues, index: number) {
 
 /** Qoralama savolni DAL kutayotgan `items` shakliga oʻgiradi. */
 function draftItems(q: DraftQuestionValues) {
+  if (q.shape === "slide") return []; // slaydda baholanadigan element yoʻq
   return q.shape === "mcq"
     ? [{ content: { stem: q.stem, options: q.options } }]
     : q.pairs.map((p) => ({ content: { left: p.left, right: p.right } }));
 }
 
 function draftConfig(q: DraftQuestionValues) {
+  if (q.shape === "slide") return { body: q.stem };
   return {
     timeLimitSec: q.timeLimitSec,
     pointsMode: q.pointsMode,
@@ -287,6 +291,18 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
       pointsMode: config.pointsMode ?? ("standard" as const),
       answerLayout: config.answerLayout ?? ("grid" as const),
     };
+
+    if (activity.shape === "slide") {
+      questions.push({
+        ...base,
+        shape: "slide",
+        stem: (activity.config as { body?: string }).body ?? "",
+        options: [],
+        pairs: [],
+        multiSelect: false,
+      });
+      continue;
+    }
 
     if (activity.shape === "pairs") {
       questions.push({
@@ -335,7 +351,7 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
     parsed.questions.map(async (q) => {
       const payload = {
         title: q.title,
-        grading: "exact" as const,
+        grading: q.shape === "slide" ? ("none" as const) : ("exact" as const),
         config: draftConfig(q),
         items: draftItems(q),
       };
@@ -353,6 +369,12 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
   const setPayload = {
     title: parsed.title,
     purpose: parsed.purpose,
+    /* Idish turi TANLANMAYDI, HISOBLANADI (R276): bitta slayd boʻlsa
+       toʻplam taqdimot. Aks holda «taqdimot deb belgilangan, slaydi yoʻq»
+       degan ikki xil haqiqat tugʻilardi. */
+    containerKind: parsed.questions.some((q) => q.shape === "slide")
+      ? ("deck" as const)
+      : ("none" as const),
     items: saved.map((a) => ({ activityId: a.id, role: "check" as const })),
     config: {
       ...(previous?.config ?? {}),

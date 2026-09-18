@@ -233,7 +233,11 @@ export default function AssignmentEditorOverlay({
      toʻliq-ekran qavatini qoʻshardi va faqat savol muharriri yopilganda
      koʻrinardi ("qayerdaman?" ekrani). Sinf testlari roʻyxatining uyi —
      Topshiriqlar sahifasi. */
-  const [builder, setBuilder] = useState<{ setId?: string } | null>(null);
+  const [builder, setBuilder] = useState<{
+    setId?: string;
+    /** Yangi toʻplamning birinchi elementi — taqdimot slayd bilan boshlanadi. */
+    firstShape?: "mcq" | "slide";
+  } | null>(null);
   const [sessionSet, setSessionSet] = useState<ActivitySetRow | null>(null);
   const [sessionLoading, setSessionLoading] = useState(false);
 
@@ -401,6 +405,13 @@ export default function AssignmentEditorOverlay({
     setBuilder({});
   }
 
+  /** Yangi taqdimot — xuddi shu toʻplam muharriri, faqat birinchi element
+      slayd (R276: taqdimot = toʻplam + slaydlar, alohida muharrir yoʻq). */
+  function handleAttachDeck() {
+    setAttachOpen(false);
+    setBuilder({ firstShape: "slide" });
+  }
+
   /** Mavjud toʻplam tanlandi — halqa darhol bogʻlanadi. */
   function handlePickExistingSet(set: { id: string; title: string }) {
     setAttachOpen(false);
@@ -424,12 +435,18 @@ export default function AssignmentEditorOverlay({
       toʻplam nomini olamiz: oʻqituvchi bir nomni ikki marta yozmasin.
       Xabar avtosaqlashda ham keladi, shuning uchun oʻzgarish boʻlmasa
       tegmaymiz — aks holda har ikki soniyada bekorga sync yuborilardi. */
-  function handleSetSaved(set: { id: string; title: string }) {
+  function handleSetSaved(set: {
+    id: string;
+    title: string;
+    containerKind?: string;
+  }) {
     const needsTitle = !current.title.trim();
-    if (current.setId === set.id && current.kind === "test" && !needsTitle)
+    /* Tur toʻplamdan HISOBLANADI: slaydi bor toʻplam — taqdimot. */
+    const kind = set.containerKind === "deck" ? "deck" : "test";
+    if (current.setId === set.id && current.kind === kind && !needsTitle)
       return;
     patch({
-      kind: "test",
+      kind,
       setId: set.id,
       ...(needsTitle ? { title: set.title } : {}),
     });
@@ -946,7 +963,10 @@ export default function AssignmentEditorOverlay({
 
         {autoGrading && showKinds && (
           <MaterialKindPicker
-            onPick={(kind) => kind === "test" && handleAttachTest()}
+            onPick={(kind) => {
+              if (kind === "test") handleAttachTest();
+              else if (kind === "deck") handleAttachDeck();
+            }}
           />
         )}
       </div>
@@ -1470,6 +1490,7 @@ export default function AssignmentEditorOverlay({
           <SetBuilderOverlay
             classId={classId}
             setId={builder.setId}
+            firstShape={builder.firstShape}
             initialTitle={
               builder.setId ? undefined : current.title.trim() || undefined
             }
@@ -1482,6 +1503,7 @@ export default function AssignmentEditorOverlay({
           <SessionPanelModal
             set={sessionSet}
             classId={classId}
+            dueDate={current.dueDate}
             onClose={() => setSessionSet(null)}
           />
         )}

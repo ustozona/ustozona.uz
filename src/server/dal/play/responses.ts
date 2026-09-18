@@ -5,6 +5,7 @@ import { db } from "@/server/db/client";
 import { activities, activityItems, responses, sessionParticipants } from "@/server/db/schema";
 import { requireParticipant, ForbiddenError } from "@/server/play/session";
 import { scoreResponse } from "@/lib/assess/score";
+import { isSessionPastDue } from "@/server/dal/assess/sessions";
 
 /* ════════════════════════════════════════════════════════════════════
    JAVOB QABUL QILISH — bitta joy, besh yetkazish usuli (jonli, oʻz
@@ -30,6 +31,9 @@ export async function submitResponse(input: SubmitResponseInput) {
   }
   if (session.state !== "running") {
     throw new ForbiddenError("Sessiya javob qabul qilmayapti");
+  }
+  if (isSessionPastDue(session)) {
+    throw new ForbiddenError("Topshiriq muddati tugagan");
   }
 
   const [item] = await db

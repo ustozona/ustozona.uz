@@ -7,6 +7,7 @@ import {
   Image as ImageIcon,
   ListChecks,
   Plus,
+  Presentation,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -131,6 +132,9 @@ export default function QuestionStrip({
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => onAdd("pairs")}>
                   <GitCompareArrows className="size-4" /> Moslashtirish
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onAdd("slide")}>
+                  <Presentation className="size-4" /> Slayd
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

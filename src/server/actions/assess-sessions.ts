@@ -29,12 +29,17 @@ const startSchema = z.object({
   setId: z.string().min(1),
   classId: z.string().min(1),
   title: z.string().max(200).optional(),
+  /** Topshiriqning «Muddat» sanasi (YYYY-MM-DD) — uyga vazifa. */
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
-/** Sessiya yaratadi VA darhol ochadi (`running`) — v1 UI uchun bitta qadam. */
+/** Sessiya yaratadi VA darhol ochadi (`running`) — v1 UI uchun bitta qadam.
+    `dueDate` berilsa, sessiya shu kunning oxirigacha (Toshkent vaqti)
+    ochiq: oʻquvchi xohlagan vaqtda, oʻz tezligida topshiradi. */
 export async function startSessionAction(input: z.infer<typeof startSchema>): Promise<QuizSessionRow> {
-  const parsed = startSchema.parse(input);
-  const created = await createSession({ ...parsed, mode: "selfpaced" });
+  const { dueDate, ...parsed } = startSchema.parse(input);
+  const dueAt = dueDate ? new Date(`${dueDate}T23:59:59.999+05:00`) : undefined;
+  const created = await createSession({ ...parsed, mode: "selfpaced", dueAt });
   return openSession(created.id);
 }
 

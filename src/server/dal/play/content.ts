@@ -40,7 +40,15 @@ export type PairsStep = {
   pointsMultiplier: PointsMultiplier;
 };
 
-export type PlayStep = McqStep | PairsStep;
+/** Taqdimot slaydi — javob kutilmaydi, oʻquvchi oʻqib keyingisiga oʻtadi. */
+export type SlideStep = {
+  kind: "slide";
+  activityId: string;
+  title: string;
+  body: string;
+};
+
+export type PlayStep = McqStep | PairsStep | SlideStep;
 
 export type PlaySessionContent = {
   sessionId: string;
@@ -86,6 +94,7 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
       : [];
 
   const shapeByActivity = new Map(activityRows.map((a) => [a.id, a.shape]));
+  const titleByActivity = new Map(activityRows.map((a) => [a.id, a.title]));
   const configByActivity = new Map(activityRows.map((a) => [a.id, a.config]));
   const itemsByActivity = new Map<string, typeof itemRows>();
   for (const item of itemRows) {
@@ -98,6 +107,17 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
   for (const activityId of activityIds) {
     const shape = shapeByActivity.get(activityId);
     const items = itemsByActivity.get(activityId) ?? [];
+    // Slaydda element yoʻq — shu sababli boʻsh-element tekshiruvidan OLDIN.
+    if (shape === "slide") {
+      const config = (configByActivity.get(activityId) ?? {}) as { body?: string };
+      steps.push({
+        kind: "slide",
+        activityId,
+        title: titleByActivity.get(activityId) ?? "",
+        body: config.body ?? "",
+      });
+      continue;
+    }
     if (items.length === 0) continue;
     const pointsMultiplier = pointsMultiplierOf(configByActivity.get(activityId) ?? {});
 

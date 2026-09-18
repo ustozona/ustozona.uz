@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, GitCompareArrows, ListChecks } from "lucide-react";
+import { ChevronDown, GitCompareArrows, ListChecks, Presentation } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { SHAPE_LABEL, type DraftQuestion } from "./types";
@@ -27,6 +27,12 @@ const TYPES: ReadonlyArray<{
       { id: "mcq", icon: ListChecks },
       { id: "pairs", icon: GitCompareArrows },
     ],
+  },
+  {
+    /* Slayd savol emas — baholanmaydi. Bitta slayd qoʻshilishi bilan
+       toʻplam taqdimotga aylanadi (`container_kind` hisoblanadi, R276). */
+    group: "Maʼlumot berish",
+    items: [{ id: "slide", icon: Presentation }],
   },
 ];
 

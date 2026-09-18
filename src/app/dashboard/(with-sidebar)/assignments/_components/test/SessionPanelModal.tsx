@@ -43,10 +43,16 @@ type Props = {
    * qoidada ishlaydi — bu panel ham unga tenglashtirildi.
    */
   classId: string;
+  /**
+   * Topshiriqning «Muddat» sanasi (YYYY-MM-DD). Berilsa, yangi sessiya
+   * uyga vazifa boʻladi: shu kun oxirigacha ochiq, keyin qoʻshilish ham,
+   * javob ham serverda rad etiladi. Jurnaldan tashqari eshiklar bermaydi.
+   */
+  dueDate?: string;
   onClose: () => void;
 };
 
-export default function SessionPanelModal({ set, classId, onClose }: Props) {
+export default function SessionPanelModal({ set, classId, dueDate, onClose }: Props) {
   const [sessions, setSessions] = useState<QuizSessionRow[]>([]);
   const [reports, setReports] = useState<Record<string, SessionReport>>({});
   const [publishTopicId, setPublishTopicId] = useState<Record<string, string>>({});
@@ -61,7 +67,12 @@ export default function SessionPanelModal({ set, classId, onClose }: Props) {
   async function handleStart() {
     setBusy("start");
     try {
-      const session = await startSessionAction({ setId: set.id, classId, title: set.title });
+      const session = await startSessionAction({
+        setId: set.id,
+        classId,
+        title: set.title,
+        dueDate,
+      });
       setSessions((prev) => [session, ...prev]);
     } finally {
       setBusy(null);
@@ -129,6 +140,14 @@ export default function SessionPanelModal({ set, classId, onClose }: Props) {
                     >
                       {session.joinCode} <Copy className="size-3" />
                     </button>
+                  )}
+                  {session.dueAt && (
+                    <span className="text-xs text-muted-foreground">
+                      Muddat:{" "}
+                      {new Date(session.dueAt).toLocaleDateString("uz-UZ", {
+                        timeZone: "Asia/Tashkent",
+                      })}
+                    </span>
                   )}
                   <div className="flex-1" />
                   {session.state === "running" && (

@@ -35,6 +35,7 @@ export default function SetBuilderOverlay({
   classId,
   setId,
   initialTitle,
+  firstShape = "mcq",
   onClose,
   onSaved,
 }: {
@@ -44,6 +45,8 @@ export default function SetBuilderOverlay({
   /** Yangi toʻplam uchun boshlangʻich nom — topshiriq nomi bilan bir
       xil boʻlishi kerak (foydalanuvchi ikki marta yozmasin). */
   initialTitle?: string;
+  /** Yangi toʻplamning birinchi elementi: test savoli yoki slayd (taqdimot). */
+  firstShape?: DraftQuestion["shape"];
   onClose: () => void;
   onSaved: (set: ActivitySetRow) => void;
 }) {
@@ -59,7 +62,7 @@ export default function SetBuilderOverlay({
   const [title, setTitle] = useState(() => (setId ? "" : initialTitle ?? ""));
   const [stageTheme, setStageTheme] = useState("violet");
   const [questions, setQuestions] = useState<DraftQuestion[]>(() =>
-    setId ? [] : [newQuestion("mcq")]
+    setId ? [] : [newQuestion(firstShape)]
   );
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [panel, setPanel] = useState<BuilderPanel>("properties");

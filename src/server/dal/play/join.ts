@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { enrollments, quizSessions, sessionParticipants, students } from "@/server/db/schema";
 import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/server/play/session";
+import { isSessionPastDue } from "@/server/dal/assess/sessions";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻSHILISH — akkauntsiz ishtirokchi PIN/havola/QR bilan kiradi.
@@ -48,6 +49,9 @@ export async function joinByCode(
   if (!session) throw new UnauthorizedError("Yaroqsiz kod");
   if (session.state !== "running" && session.state !== "scheduled") {
     throw new ForbiddenError("Sessiya hozir qoʻshilish uchun ochiq emas");
+  }
+  if (isSessionPastDue(session)) {
+    throw new ForbiddenError("Topshiriq muddati tugagan");
   }
 
   if (studentId) {

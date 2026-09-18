@@ -104,6 +104,7 @@ export const POINTS_LABEL: Record<DraftQuestion["pointsMode"], string> = {
 export const SHAPE_LABEL: Record<DraftQuestion["shape"], string> = {
   mcq: "Test savoli",
   pairs: "Moslashtirish",
+  slide: "Slayd",
 };
 
 export function newOption(): DraftQuestion["options"][number] {

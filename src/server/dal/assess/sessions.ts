@@ -57,7 +57,15 @@ export type CreateSessionInput = {
   mode: "live" | "selfpaced" | "paper" | "qrcards" | "lecture";
   title?: string;
   scheduledAt?: Date;
+  /** Uyga vazifa muddati — shundan keyin qoʻshilish ham, javob ham rad
+      etiladi (`play/join.ts`, `play/responses.ts`). */
+  dueAt?: Date;
 };
+
+/** Sessiya muddati oʻtganmi. Muddatsiz sessiya hech qachon oʻtmaydi. */
+export function isSessionPastDue(session: { dueAt: Date | null }, now = new Date()): boolean {
+  return !!session.dueAt && session.dueAt.getTime() < now.getTime();
+}
 
 export async function createSession(input: CreateSessionInput): Promise<QuizSessionRow> {
   const teacher = await requireTeacher();
@@ -99,6 +107,7 @@ export async function createSession(input: CreateSessionInput): Promise<QuizSess
       title: input.title ?? null,
       state: input.scheduledAt ? "scheduled" : "draft",
       scheduledAt: input.scheduledAt ?? null,
+      dueAt: input.dueAt ?? null,
       joinCode: generateJoinCode(),
     })
     .returning();

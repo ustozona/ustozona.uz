@@ -50,16 +50,29 @@ export default function QuestionCanvas({ question, stageTheme, onChange }: Props
           className="quiz-stage"
           style={{ "--stage-bg": stageThemeBg(stageTheme) } as React.CSSProperties}
         >
+          {question.shape === "slide" && (
+            <Input
+              value={question.title}
+              onChange={(e) => onChange({ title: e.target.value })}
+              placeholder="Slayd sarlavhasi"
+              maxLength={200}
+              className="h-auto border-0 bg-card py-3 text-center text-xl font-bold shadow-sm"
+            />
+          )}
           <Textarea
             value={question.stem}
             onChange={(e) => onChange({ stem: e.target.value })}
-            placeholder="Savolni shu yerga yozing…"
+            placeholder={
+              question.shape === "slide"
+                ? "Slayd matni — tushuntirish, qoida, misol…"
+                : "Savolni shu yerga yozing…"
+            }
             rows={2}
             maxLength={2000}
             className="quiz-stage-stem h-auto min-h-0 w-full resize-none border-0 bg-card text-center font-semibold shadow-sm md:text-[length:inherit]"
           />
 
-          {question.shape === "mcq" ? (
+          {question.shape === "slide" ? null : question.shape === "mcq" ? (
             <div
               className={cn(
                 "quiz-stage-answers",

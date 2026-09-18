@@ -280,6 +280,28 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
       );
     }
 
+    // Taqdimot slaydi — javob yoʻq, serverga hech narsa yozilmaydi.
+    if (step.kind === "slide") {
+      return (
+        <div className="flex h-screen flex-col gap-6 p-6">
+          <p className="text-sm text-muted-foreground">
+            {stepIndex + 1} / {content.steps.length}
+          </p>
+          <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
+            {step.title && (
+              <h1 className="text-2xl font-bold leading-snug">{step.title}</h1>
+            )}
+            {step.body && (
+              <p className="whitespace-pre-wrap text-base leading-relaxed">{step.body}</p>
+            )}
+          </div>
+          <PushButton onClick={() => advanceStep(content)}>
+            {stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
+          </PushButton>
+        </div>
+      );
+    }
+
     // pairs — tegib moslashtirish: chapdan bittani tanlang, keyin oʻngdagi juftini bosing.
     return (
       <div className="flex h-screen flex-col gap-6 p-6">

@@ -77,6 +77,7 @@ export function scoreResponse(input: ScoreInput): ScoreResult {
       return scoreHottext(input.content as HottextContent, input.answer);
     case "text":
     case "draw":
+    case "slide":
       return { isCorrect: null, score: null };
   }
 }
