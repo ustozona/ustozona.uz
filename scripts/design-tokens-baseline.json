@@ -376,9 +376,6 @@
     "text-px": 1,
     "font-bold": 1
   },
-  "src/components/calendar/EventCard.tsx": {
-    "font-bold": 2
-  },
   "src/components/calendar/EventPill.tsx": {
     "text-px": 1
   },
