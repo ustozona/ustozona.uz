@@ -136,27 +136,46 @@ export type StudentProfile = {
 
 // ─── Joylashuv: studentId → sinf + roʻyxat ───────────────────────────────────
 
+function buildLocation(
+  classId: string,
+  data: ClassData,
+  index: number
+): StudentLocation {
+  const roster: RosterEntry[] = data.students.map((s) => ({
+    id: s.id,
+    name: s.name,
+    initials: s.initials,
+  }));
+  return {
+    classId,
+    classInfo: data.info,
+    hex: CLASS_COLOR_HEX[classColor(data.info)],
+    index,
+    roster,
+    prevId: index > 0 ? roster[index - 1].id : null,
+    nextId: index < roster.length - 1 ? roster[index + 1].id : null,
+  };
+}
+
+/** `preferredClassId` — oʻquvchi 2+ guruhda boʻlishi mumkin ([[multi-teacher-shared-student]]),
+    shuning uchun QAYSI guruh kontekstida koʻrilayotgani chaqiruvchidan keladi
+    (odatda `?classId=`). Berilmasa yoki oʻquvchi u yerda boʻlmasa — birinchi
+    topilgan guruh olinadi; u holda `prevId`/`nextId` va roʻyxat oʻquvchi
+    kelgan guruhga emas, tasodifiy guruhga tegishli boʻlib qolishi mumkin. */
 export function locateStudent(
   classDataMap: Record<string, ClassData>,
-  studentId: string
+  studentId: string,
+  preferredClassId?: string | null
 ): StudentLocation | null {
+  if (preferredClassId) {
+    const data = classDataMap[preferredClassId];
+    const index = data?.students.findIndex((s) => s.id === studentId) ?? -1;
+    if (data && index !== -1) return buildLocation(preferredClassId, data, index);
+  }
   for (const [classId, data] of Object.entries(classDataMap)) {
     const index = data.students.findIndex((s) => s.id === studentId);
     if (index === -1) continue;
-    const roster: RosterEntry[] = data.students.map((s) => ({
-      id: s.id,
-      name: s.name,
-      initials: s.initials,
-    }));
-    return {
-      classId,
-      classInfo: data.info,
-      hex: CLASS_COLOR_HEX[classColor(data.info)],
-      index,
-      roster,
-      prevId: index > 0 ? roster[index - 1].id : null,
-      nextId: index < roster.length - 1 ? roster[index + 1].id : null,
-    };
+    return buildLocation(classId, data, index);
   }
   return null;
 }
@@ -435,9 +454,10 @@ export type AttendanceInput = {
 export function getStudentProfile(
   classDataMap: Record<string, ClassData>,
   studentId: string,
-  attendanceInput: AttendanceInput
+  attendanceInput: AttendanceInput,
+  preferredClassId?: string | null
 ): StudentProfile | null {
-  const location = locateStudent(classDataMap, studentId);
+  const location = locateStudent(classDataMap, studentId, preferredClassId);
   if (!location) return null;
   const data = classDataMap[location.classId];
   const student = data.students[location.index];

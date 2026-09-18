@@ -22,7 +22,9 @@ export default function GradesPage() {
   // Sinf tanlash — `?classId=` URL param (refresh/deep-link chidamli).
   // null = hech narsa tanlanmagan (Sinflar ustuni 50%). Tanlanganda URL +
   // store default yangilanadi (boshqa sahifalar bilan sinxron).
-  const [selectedClassId, handleSelectClass] = useClassIdParam();
+  // Yon menyudan «toza» kirilganda (URL'da `?classId=` yoʻq) oxirgi
+  // tanlangan sinfdan davom etadi — har safar qaytadan tanlash shart emas.
+  const [selectedClassId, handleSelectClass] = useClassIdParam({ fallbackToStore: true });
 
   // Boʻsh hisobda "jurnal" turi ishga tushsa — namunaviy sinf + toʻliq
   // jurnal koʻrsatiladi (students/lessons turi bilan bir xil naqsh).

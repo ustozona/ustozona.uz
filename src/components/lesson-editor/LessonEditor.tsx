@@ -39,7 +39,8 @@ import {
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { lessonClassIds, lessonSessions, type Lesson } from "@/lib/lessons-data";
-import { canGoBackInApp, notePendingReplace } from "@/lib/app-history";
+import { notePendingReplace } from "@/lib/app-history";
+import { useBackOrPush } from "@/hooks/useBackOrPush";
 import EditorToolbar from "./EditorToolbar";
 import DetailsPanel from "./DetailsPanel";
 import AiAssistantPanel from "./AiAssistantPanel";
@@ -135,18 +136,15 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
       boʻlimi (`?classId=`, `?unit=`) bilan qanday qoldirilgan boʻlsa shundoq
       tiklanadi. Aks holda — roʻyxatga oʻtiladi, lekin baribir kontekst bilan:
       darsning sinfi param sifatida beriladi, boʻlmasa roʻyxat boʻsh ochilardi. */
+  const backOrPush = useBackOrPush();
   const closeEditor = useCallback(() => {
-    if (canGoBackInApp()) {
-      router.back();
-      return;
-    }
     const classId = lesson ? lessonClassIds(lesson)[0] : undefined;
-    router.push(
+    backOrPush(
       classId
         ? `/dashboard/lessons?classId=${encodeURIComponent(classId)}`
         : "/dashboard/lessons"
     );
-  }, [router, lesson]);
+  }, [backOrPush, lesson]);
   const setLessonClasses = useLessonStore((s) => s.setLessonClasses);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);

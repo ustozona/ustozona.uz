@@ -19,10 +19,14 @@ import { useClassStore } from "@/store/useClassStore";
    store'lardagi mount-gate kabi), bu maqbul.
 
    fallbackToStore:
-     false (default) — URL boʻsh boʻlsa `null` (hech narsa tanlanmagan;
-       grades/students/lessons/standards 50/50 boʻsh holatidan boshlanadi).
-     true — URL boʻsh boʻlsa store default'iga qaytadi (attendance kabi doim
-       bitta sinf ochiq turishi kerak boʻlgan sahifalar uchun).
+     true — URL boʻsh boʻlsa oxirgi tanlangan sinfdan (store) davom etadi.
+       Sinfga bogʻlangan ish maydonlari shuni ishlatadi: yon menyudan kirganda
+       oʻqituvchi har safar qaytadan sinf tanlashi kerak boʻlmasin.
+     false (default) — URL boʻsh boʻlsa `null`. Sinf «kontekst» emas, balki
+       FILTR boʻlgan sahifalar uchun: vazifalarda `classId` sahifa rejimini
+       almashtiradi (sinf koʻrinishi ⇄ «Bugun» roʻyxati), statistikada esa
+       tanlangan sinfni qayta bosish uni bekor qiladi — store'ga qaytish
+       bekor qilishni umuman imkonsiz qilardi.
    ════════════════════════════════════════════════════════════════════ */
 /** `history.replaceState` Next router'dan oʻtmaydi — `useSearchParams()`
     buni sezmaydi. Boshqa daraxtdagi (masalan header breadcrumb) tinglovchilar
@@ -105,7 +109,10 @@ export function useClassIdParam(
     return () => window.removeEventListener(CLASS_ID_PARAM_EVENT, read);
   }, []);
 
-  const classId = urlId || (fallbackToStore ? storeClassId : null);
+  // `storeClassId` boʻsh satr boʻlishi mumkin («tanlanmagan») — uni `null`ga
+  // normallashtiramiz, aks holda chaqiruvchilar boʻsh satrni haqiqiy sinf id'si
+  // deb qabul qilishardi.
+  const classId = urlId || (fallbackToStore ? storeClassId || null : null);
 
   const setClassId = useCallback(
     (id: string | null) => {

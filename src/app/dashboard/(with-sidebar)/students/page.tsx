@@ -136,11 +136,19 @@ export const badgeBase =
 // ─── Sahifa ──────────────────────────────────────────────────────────────────
 export default function StudentsPage() {
   const t = useTranslations("StudentsPage");
-  // Sinf tanlash — lokal holat. null = hech narsa tanlanmagan (Sinflar ustuni keng).
-  // Tanlangach store ham yangilanadi (boshqa sahifalar bilan sinxron).
   const router = useRouter();
-  const openProfile = (id: string) => router.push(`/dashboard/students/${encodeURIComponent(id)}`);
-  const [selectedClassId, handleSelectClass] = useClassIdParam();
+  // Sinf tanlash — `?classId=` URL param'i. Yon menyudan «toza» kirilganda
+  // (param yoʻq) oxirgi tanlangan sinfdan davom etadi: har safar qaytadan
+  // tanlash shart emas. Tanlangach store ham yangilanadi (boshqa sahifalar
+  // bilan sinxron). null = hali hech qanday sinf tanlanmagan (Sinflar ustuni keng).
+  const [selectedClassId, handleSelectClass] = useClassIdParam({ fallbackToStore: true });
+  // Profil qaysi guruh kontekstida ochilayotganini biladi: oʻquvchi 2+ guruhda
+  // boʻlishi mumkin va `prevId`/`nextId`, roʻyxat, davomat oʻshanga bogʻliq.
+  const openProfile = (id: string) =>
+    router.push(
+      `/dashboard/students/${encodeURIComponent(id)}` +
+        (selectedClassId ? `?classId=${encodeURIComponent(selectedClassId)}` : "")
+    );
   /* Koʻchirish oynasi — bittalab ham, belgilangan guruh ham shu holatga
      tushadi (bir xil oyna, ikki chaqiruv joyi). */
   const [moveTargets, setMoveTargets] = useState<{ id: string; name: string }[]>([]);
