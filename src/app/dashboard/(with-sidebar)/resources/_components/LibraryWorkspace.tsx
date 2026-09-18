@@ -223,11 +223,15 @@ export default function LibraryWorkspace({ items: realItems }: { items: LibraryI
       setSelected(new Set());
       setConfirmOpen(false);
       setDeleteTarget(null);
-      router.refresh();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Oʻchirib boʻlmadi");
     } finally {
       setBusy(false);
+      /* `finally` da, chunki amal YARIM bajarilgan boʻlishi mumkin:
+         testlar oʻchib, darslar buyrugʻi rad etilishi (yoki teskarisi)
+         mumkin. Muvaffaqiyat yoʻlida qayta oʻqib, xato yoʻlida
+         oʻqimasak — allaqachon oʻchgan material roʻyxatda turaverardi. */
+      router.refresh();
     }
   }
 

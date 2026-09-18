@@ -230,13 +230,17 @@ export default function IshRejaImportModal({ classId, unitId, onSingle, onClose 
         label: t("undo"),
         onClick: () => {
           const st = useLessonStore.getState();
+          /* Xabar IIFE ICHIDA: oʻchirish serverda bajarilmasa
+             «bekor qilindi» deyish yolgʻon boʻladi — yozuvlar joyida
+             qoladi, foydalanuvchi esa aksincha ishonadi. Xato holatida
+             `commitLessonsDelete` oʻz xabarini koʻrsatadi. */
           void (async () => {
             const ok = await commitLessonsDelete({ unitIds: createdUnits, lessonIds: createdLessons });
             if (!ok) return;
             createdLessons.forEach((id) => st.deleteLesson(id));
             createdUnits.forEach((id) => st.deleteUnit(id, { withLessons: false }));
+            toast(t("undoneToast"));
           })();
-          toast(t("undoneToast"));
         },
       },
     });
