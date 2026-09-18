@@ -17,7 +17,7 @@ const ToastComponent = () => {
             <p className="text-sm font-semibold tracking-tight">Repository Synced</p>
             <p className="text-muted-foreground/80 text-xs font-medium">github.com/shadcn-space/pro</p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-teal-400/10 px-2 py-0.5 text-[10px] text-teal-400 font-semibold border border-teal-400/20 uppercase tracking-wider">
+          <span className="inline-flex items-center gap-1 rounded-full bg-teal-400/10 px-2 py-0.5 text-micro text-teal-400 font-semibold border border-teal-400/20 uppercase tracking-wider">
             <span className="size-1 rounded-full bg-teal-400 animate-pulse" />
             Active
           </span>

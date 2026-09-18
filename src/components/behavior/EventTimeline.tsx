@@ -52,7 +52,7 @@ function AutoChip({ source }: { source: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="ml-1.5 inline-flex shrink-0 items-center rounded-full border border-border bg-muted/60 px-1.5 py-px align-middle text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="ml-1.5 inline-flex shrink-0 items-center rounded-full border border-border bg-muted/60 px-1.5 py-px align-middle text-micro font-medium uppercase tracking-wide text-muted-foreground">
           {t("autoBadge")}
         </span>
       </TooltipTrigger>
@@ -452,7 +452,7 @@ export function EventTimeline({
                         <span
                           className={cn(
                             "absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-card px-0.5",
-                            "text-[10px] font-bold tabular-nums leading-none",
+                            "text-micro font-bold tabular-nums leading-none",
                             positive
                               ? "bg-success text-success-foreground"
                               : "bg-destructive text-destructive-foreground"
@@ -576,7 +576,7 @@ export function EventTimeline({
                     <span
                       className={cn(
                         "absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-card px-0.5",
-                        "text-[10px] font-bold tabular-nums leading-none",
+                        "text-micro font-bold tabular-nums leading-none",
                         positive
                           ? "bg-success text-success-foreground"
                           : "bg-destructive text-destructive-foreground"

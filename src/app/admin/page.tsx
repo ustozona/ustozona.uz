@@ -204,7 +204,7 @@ async function ActivationSection() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge size="sm" variant="outline">
                     {REASON_LABEL[r.reason]}
                   </Badge>
                   {/* Oxirgi ish QAYSI boʻlimda edi — «14 kun oldin faol

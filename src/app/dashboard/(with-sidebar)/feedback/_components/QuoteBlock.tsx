@@ -22,8 +22,8 @@ export function QuoteBlock({
   const t = useTranslations("FeedbackQuoteBlock");
   const inner = (
     <>
-      <p className="text-[11px] font-semibold text-primary/90">{quote.author}</p>
-      <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground">{quote.excerpt}</p>
+      <p className="text-tag font-semibold text-primary/90">{quote.author}</p>
+      <p className="line-clamp-2 text-tag leading-snug text-muted-foreground">{quote.excerpt}</p>
     </>
   );
 

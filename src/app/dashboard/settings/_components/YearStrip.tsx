@@ -87,7 +87,7 @@ export default function YearStrip({
               }}
             >
               <span
-                className="truncate px-1 text-[10px] font-semibold"
+                className="truncate px-1 text-micro font-semibold"
                 style={{ color: `color-mix(in oklch, ${base} 65%, var(--foreground))` }}
               >
                 {q.name}
@@ -129,11 +129,11 @@ export default function YearStrip({
 
       {/* Oy yorliqlari */}
       <div className="relative h-4">
-        <span className="absolute top-0 left-0 text-[10px] text-muted-foreground">{startMonthLabel}</span>
+        <span className="absolute top-0 left-0 text-micro font-normal text-muted-foreground">{startMonthLabel}</span>
         {monthTicks.map((t) => (
           <span
             key={t.key}
-            className="absolute top-0 -translate-x-1/2 text-[10px] text-muted-foreground"
+            className="absolute top-0 -translate-x-1/2 text-micro font-normal text-muted-foreground"
             style={{ left: `${t.leftPct}%` }}
           >
             {t.label}
@@ -141,7 +141,7 @@ export default function YearStrip({
         ))}
         {showToday && (
           <span
-            className="absolute top-0 -translate-x-1/2 rounded-full bg-primary/10 px-1.5 text-[10px] font-medium text-primary"
+            className="absolute top-0 -translate-x-1/2 rounded-full bg-primary/10 px-1.5 text-micro font-medium text-primary"
             style={{ left: `${pct(today)}%` }}
           >
             {t("todayLabel")}
@@ -153,7 +153,7 @@ export default function YearStrip({
       {holidays.length > 0 && (
         <div className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-[3px] border border-border" style={hatch} />
-          <span className="text-[11px] text-muted-foreground">{t("holidayLegend")}</span>
+          <span className="text-tag text-muted-foreground">{t("holidayLegend")}</span>
         </div>
       )}
     </div>

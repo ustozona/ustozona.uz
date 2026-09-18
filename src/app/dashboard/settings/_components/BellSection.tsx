@@ -126,7 +126,7 @@ function LegendItem({ className, style, label }: { className?: string; style?: R
   return (
     <span className="flex items-center gap-1.5">
       <span className={`size-2.5 rounded-[3px] border ${className ?? ""}`} style={style} />
-      <span className="text-[11px] text-muted-foreground">{label}</span>
+      <span className="text-tag text-muted-foreground">{label}</span>
     </span>
   );
 }

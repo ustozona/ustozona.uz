@@ -72,7 +72,7 @@ export default function RelativesSection({
         <CollapsibleTrigger className="group/col -ml-1 flex items-center gap-1.5 rounded-md px-1 py-0.5 text-left transition-colors hover:text-foreground">
           <TypographyLabel className="cursor-pointer">{t("title")}</TypographyLabel>
           {relatives.length > 0 && (
-            <Badge variant="secondary" className="px-1.5 py-0 text-[11px] tabular-nums">
+            <Badge variant="secondary" className="px-1.5 py-0 text-tag tabular-nums">
               {relatives.length}
             </Badge>
           )}
@@ -115,7 +115,7 @@ export default function RelativesSection({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{r.name}</p>
                   <div className="mt-0.5 flex items-center gap-1.5">
-                    <Badge variant="secondary" className="px-1.5 py-0 text-[11px]">
+                    <Badge variant="secondary" className="px-1.5 py-0 text-tag">
                       {kinshipLabel(classDataMap, studentId, r.id)}
                     </Badge>
                     <span className="text-xs text-muted-foreground">{r.className}</span>
@@ -165,7 +165,7 @@ export default function RelativesSection({
                     setPickerOpen(false);
                   }}
                 >
-                  <AvatarDot hex={s.hex} initials={s.initials} className="size-7 text-[11px]" />
+                  <AvatarDot hex={s.hex} initials={s.initials} className="size-7 text-tag" />
                   <span className="truncate">{s.name}</span>
                   <span className="ml-auto text-xs text-muted-foreground">{s.className}</span>
                 </CommandItem>

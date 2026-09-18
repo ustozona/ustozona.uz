@@ -469,6 +469,11 @@
   --text-micro--line-height: 1.2;
   --text-micro--font-weight: 600;
 
+  /* Teg — 11px, vaznsiz (joyida tanlanadi). Badge, chip, pill, ixcham
+     meta. `ClassBadge` va `LessonStatusPill` shu oʻlchamda. */
+  --text-tag: var(--typo-tag, 0.6875rem);
+  --text-tag--line-height: 1.4;
+
   /* Yorliq — 11px / 500, UPPERCASE (pastdagi components qatlami) */
   --text-label: var(--typo-label, 0.6875rem);
   --text-label--line-height: 1.4;

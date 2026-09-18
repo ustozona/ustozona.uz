@@ -203,7 +203,7 @@ export function TasksNav({
 
         {allTags.length > 0 && (
           <div className="flex flex-col gap-2">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="text-label font-medium uppercase tracking-wider text-muted-foreground">
               {t("tagsLabel")}
             </div>
             <div className="flex flex-wrap items-center gap-1.5">

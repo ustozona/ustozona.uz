@@ -165,7 +165,7 @@ export default function HeaderAccountMenu() {
                 )}
                 <span className="flex-1">{l.label}</span>
                 {!l.ready && (
-                  <Badge variant="secondary" className="text-[10px] font-normal">
+                  <Badge size="sm" variant="secondary" className="font-normal">
                     {t("comingSoon")}
                   </Badge>
                 )}

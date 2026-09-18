@@ -175,11 +175,11 @@ export function StudentsTable({
 
                   <TableCell className="whitespace-nowrap w-28 px-3 py-3 text-center">
                     {r.absenceTier === "chronic" ? (
-                      <span className="inline-flex rounded-full bg-destructive/15 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
+                      <span className="inline-flex rounded-full bg-destructive/15 px-1.5 py-0.5 text-micro font-semibold text-destructive">
                         {t("tierChronic")}
                       </span>
                     ) : r.absenceTier === "watch" ? (
-                      <span className="inline-flex rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-semibold text-warning">
+                      <span className="inline-flex rounded-full bg-warning/15 px-1.5 py-0.5 text-micro font-semibold text-warning">
                         {t("tierWatch")}
                       </span>
                     ) : (

@@ -164,7 +164,7 @@ function EmojiPickerContent({ className }: { className?: string }) {
         ) : (
           categories.map((cat) => (
             <div key={cat.key} data-cat={cat.key} className="scroll-mt-1">
-              <p className="sticky top-0 z-10 bg-popover/95 px-1 py-1 text-[11px] font-semibold text-muted-foreground backdrop-blur">
+              <p className="sticky top-0 z-10 bg-popover/95 px-1 py-1 text-tag font-semibold text-muted-foreground backdrop-blur">
                 {cat.label}
               </p>
               <div className="grid grid-cols-7 gap-0.5">

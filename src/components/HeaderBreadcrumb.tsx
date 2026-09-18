@@ -360,7 +360,7 @@ function StudentSwitcherCrumb({
                 style={{ color: location.hex }}
               />
               <div
-                className="flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+                className="flex size-7 shrink-0 items-center justify-center rounded-full text-tag font-semibold text-white"
                 style={{ backgroundColor: location.hex }}
               >
                 {r.initials}

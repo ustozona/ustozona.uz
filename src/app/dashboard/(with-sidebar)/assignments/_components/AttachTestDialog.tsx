@@ -156,16 +156,16 @@ export default function AttachTestDialog({
                             )}
                           </div>
                           {group.key === "library" && origin && (
-                            <Badge
+                            <Badge size="sm"
                               variant="outline"
-                              className="shrink-0 text-[10px] text-muted-foreground"
+                              className="shrink-0 text-muted-foreground"
                             >
                               {origin}
                             </Badge>
                           )}
-                          <Badge
+                          <Badge size="sm"
                             variant="outline"
-                            className="shrink-0 text-[10px] text-muted-foreground"
+                            className="shrink-0 text-muted-foreground"
                           >
                             {t("questionCount", { count: row.itemCount })}
                           </Badge>

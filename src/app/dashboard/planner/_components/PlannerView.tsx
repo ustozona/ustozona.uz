@@ -1236,7 +1236,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                   >
                     <ListFilter className="size-4" />
                     {classFilter && (
-                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold tabular-nums text-primary-foreground">
+                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-micro font-bold tabular-nums text-primary-foreground">
                         {classFilter.size}
                       </span>
                     )}
@@ -1459,21 +1459,21 @@ export default function PlannerView({ classId }: { classId?: string }) {
                         </div>
                         {isBlocked && (
                           <div className="mt-1 flex justify-center">
-                            <span className="max-w-full truncate rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive">
+                            <span className="max-w-full truncate rounded bg-destructive/10 px-1.5 py-0.5 text-micro font-semibold text-destructive">
                               {blockedMap.get(key)}
                             </span>
                           </div>
                         )}
                         {!isBlocked && holiday && (
                           <div className="mt-1 flex justify-center">
-                            <span className="max-w-full truncate rounded bg-foreground/5 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                            <span className="max-w-full truncate rounded bg-foreground/5 px-1.5 py-0.5 text-micro font-semibold text-muted-foreground">
                               {holiday.name}
                             </span>
                           </div>
                         )}
                         {versionChanged && (
                           <div className="mt-1 flex justify-center">
-                            <span className="max-w-full truncate rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                            <span className="max-w-full truncate rounded bg-primary/10 px-1.5 py-0.5 text-micro font-semibold text-primary">
                               {t("scheduleUpdated")}
                             </span>
                           </div>
@@ -1648,7 +1648,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 className="h-full transition-all hover:brightness-95"
                                 actions={<LessonStatusBadge status={l.status} />}
                               >
-                                <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-[11px]">
+                                <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-tag">
                                   {minToHHMM(start)} — {minToHHMM(end)}
                                 </span>
                               </EventCard>
@@ -1750,12 +1750,12 @@ export default function PlannerView({ classId }: { classId?: string }) {
                           </button>
                           <div className="flex min-w-0 items-center gap-1">
                             {isBlocked && blockLbl && (
-                              <span className="max-w-[80px] truncate rounded bg-destructive/10 px-1 py-0.5 text-[11px] font-semibold text-destructive">
+                              <span className="max-w-[80px] truncate rounded bg-destructive/10 px-1 py-0.5 text-tag font-semibold text-destructive">
                                 {blockLbl}
                               </span>
                             )}
                             {!isBlocked && holiday && (
-                              <span className="max-w-[80px] truncate rounded bg-foreground/5 px-1 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                              <span className="max-w-[80px] truncate rounded bg-foreground/5 px-1 py-0.5 text-tag font-semibold text-muted-foreground">
                                 {holiday.name}
                               </span>
                             )}

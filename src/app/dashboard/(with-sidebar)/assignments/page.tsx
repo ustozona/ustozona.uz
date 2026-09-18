@@ -463,7 +463,7 @@ export default function AssignmentsPage() {
                                   {t("draftCardHint")}
                                 </TypographyMuted>
                               </div>
-                              <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
+                              <Badge size="sm" variant="outline" className="shrink-0 text-muted-foreground">
                                 {t("status_draft")}
                               </Badge>
                             </button>
@@ -525,9 +525,9 @@ export default function AssignmentsPage() {
                                         </h4>
                                       </div>
                                     </button>
-                                    <Badge
+                                    <Badge size="sm"
                                       variant="outline"
-                                      className="shrink-0 text-[10px] text-muted-foreground"
+                                      className="shrink-0 text-muted-foreground"
                                     >
                                       {t("questionCount", { count: set.itemCount })}
                                     </Badge>
@@ -775,7 +775,7 @@ export default function AssignmentsPage() {
                                                 <span className="hidden shrink-0 cursor-default items-center gap-1.5 rounded-full bg-muted px-2 py-1 sm:inline-flex">
                                                   <ClassSwatchStack
                                                     hexes={members.map((m) => m.hex)} />
-                                                  <span className="text-[10px] font-semibold text-muted-foreground">
+                                                  <span className="text-micro font-semibold text-muted-foreground">
                                                     {members.length}
                                                   </span>
                                                 </span>

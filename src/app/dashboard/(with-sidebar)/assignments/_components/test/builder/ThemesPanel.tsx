@@ -55,7 +55,7 @@ export default function ThemesPanel({ value, onChange, onClose }: Props) {
                 >
                   <span
                     className={cn(
-                      "relative z-[1] block truncate px-1.5 py-1 text-center text-[11px] font-bold",
+                      "relative z-[1] block truncate px-1.5 py-1 text-center text-tag font-bold",
                       theme.onBand === "light" ? "text-white" : "text-black/80"
                     )}
                     style={{ background: theme.band }}

@@ -57,7 +57,7 @@ export default function ReplyRow({ reply: r, flashId, onToggleReaction, onReply,
           {r.isOfficial && (
             <>
               <Star className="size-3.5 shrink-0 fill-amber-400 text-amber-400" />
-              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-micro font-semibold text-primary">
                 {t("official")}
               </span>
             </>
@@ -85,7 +85,7 @@ export default function ReplyRow({ reply: r, flashId, onToggleReaction, onReply,
           <button
             type="button"
             onClick={onReply}
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1 text-tag font-semibold text-muted-foreground transition-colors hover:text-foreground"
           >
             <CornerUpLeft className="size-3" />
             {t("reply")}

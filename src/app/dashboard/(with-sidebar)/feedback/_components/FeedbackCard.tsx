@@ -428,7 +428,7 @@ export default function FeedbackCard({
                               <button
                                 type="button"
                                 onClick={() => toggleThread(tr.id)}
-                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary/90 transition-colors hover:text-primary"
+                                className="inline-flex items-center gap-1 text-tag font-semibold text-primary/90 transition-colors hover:text-primary"
                               >
                                 <ChevronRight className={cn("size-3.5 transition-transform duration-fast ease-standard", expanded && "rotate-90")} />
                                 {expanded ? t("hideReplies") : t("showReplies", { count: kids.length })}

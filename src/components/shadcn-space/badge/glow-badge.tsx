@@ -53,7 +53,7 @@ export const GlowBadge = ({
         isSm ? "gap-1 px-2 py-0.5" : "gap-1.5 px-3 py-1.5",
         "bg-background backdrop-blur-md",
         "text-foreground font-medium leading-none",
-        isSm ? "text-[11px]" : "text-xs",
+        isSm ? "text-tag" : "text-xs",
         isPending ? "border-amber-300/25" : "border-teal-400/25",
         className,
       )}

@@ -37,7 +37,7 @@ export function AbsenceTierList({ summaries, students }: { summaries: StudentPer
             <TypographyMuted className="tabular-nums text-xs">{s.attendancePct}%</TypographyMuted>
             <span
               className={cn(
-                "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                "shrink-0 rounded-full px-2 py-0.5 text-micro font-semibold",
                 s.absenceTier === "chronic" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"
               )}
             >

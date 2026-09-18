@@ -609,19 +609,18 @@ export default function UsersTable({
                           <div className="flex items-center gap-1.5">
                             <span className="truncate text-sm font-medium">{u.name}</span>
                             {isSelf && (
-                              <Badge variant="secondary" className="text-[10px]">Siz</Badge>
+                              <Badge size="sm" variant="secondary">Siz</Badge>
                             )}
                             {u.banned && (
-                              <Badge
+                              <Badge size="sm"
                                 variant="destructive"
-                                className="text-[10px]"
                                 title={u.banReason ?? undefined}
                               >
                                 {banLabel(u.banExpires)}
                               </Badge>
                             )}
                             {u.excludeFromMetrics && (
-                              <Badge variant="outline" className="text-[10px] gap-1">
+                              <Badge size="sm" variant="outline" className="gap-1">
                                 <EyeOff className="size-2.5" />
                                 Test hisob
                               </Badge>
@@ -638,10 +637,10 @@ export default function UsersTable({
                     <TableCell>
                       <div className="flex flex-col items-start gap-1">
                         {userRoles.map((r) => (
-                          <Badge
+                          <Badge size="sm"
                             key={r}
                             variant={r === "super_admin" ? "default" : "secondary"}
-                            className="text-[10px] whitespace-nowrap"
+                            className="whitespace-nowrap"
                           >
                             {ROLE_LABELS[r] ?? r}
                           </Badge>
@@ -649,16 +648,16 @@ export default function UsersTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
+                      <Badge size="sm"
                         variant={STATUS_VARIANT[u.activationStatus]}
-                        className="text-[10px] whitespace-nowrap"
+                        className="whitespace-nowrap"
                         title={STATUS_HINTS[u.activationStatus]}
                       >
                         {STATUS_LABELS[u.activationStatus]}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-[10px] capitalize">
+                      <Badge size="sm" variant="outline" className="capitalize">
                         {u.plan ?? "—"}
                       </Badge>
                     </TableCell>

@@ -60,7 +60,7 @@ export function DoskaMenu() {
               aria-label="Ekran nomi"
               className="focus-visible:ring-ring/50 -mx-1.5 min-w-0 flex-1 rounded-md px-1.5 py-0.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
             />
-            <span className="bg-warning/15 text-warning-foreground shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
+            <span className="bg-warning/15 text-warning-foreground shrink-0 rounded-full px-2 py-0.5 text-tag font-medium">
               Saqlanmagan
             </span>
           </div>

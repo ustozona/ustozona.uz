@@ -204,16 +204,16 @@ export default function BaholashWorkspace({
                       ko'rsatiladi. Yashirmaslik kerak: o'qituvchi bir xil
                       nomli ikki testni ajrata olishi shart. */}
                   {set.classId !== classId && (
-                    <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                    <Badge size="sm" variant="outline" className="text-muted-foreground">
                       {set.classId === null
                         ? "materiallardan"
                         : `${classNameById.get(set.classId) ?? "boshqa sinf"}dan`}
                     </Badge>
                   )}
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                  <Badge size="sm" variant="outline" className="text-muted-foreground">
                     {set.purpose === "summative" ? "Summativ" : "Formativ"}
                   </Badge>
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                  <Badge size="sm" variant="outline" className="text-muted-foreground">
                     {set.itemCount} savol
                   </Badge>
                   <div className="flex gap-1.5">

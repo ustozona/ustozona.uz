@@ -68,7 +68,7 @@ export function NameReviewList({ rows, onChange, label, placeholder, deleteLabel
               className={cn("h-9", badge?.(r) && "pr-14")}
             />
             {badge?.(r) && (
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded bg-muted px-1.5 py-0.5 text-[11px] text-muted-foreground">
+              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded bg-muted px-1.5 py-0.5 text-tag text-muted-foreground">
                 {badge(r)}
               </span>
             )}

@@ -45,7 +45,7 @@ export function showAwardToast({
           <span
             className={cn(
               "absolute -top-1.5 -right-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-popover px-1",
-              "text-[10px] font-bold tabular-nums",
+              "text-micro font-bold tabular-nums",
               positive
                 ? "bg-success text-success-foreground"
                 : "bg-destructive text-destructive-foreground"

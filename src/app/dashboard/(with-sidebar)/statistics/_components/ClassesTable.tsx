@@ -152,7 +152,7 @@ export function ClassesTable({
                           {r.summativeAvg !== null ? `${Math.round(r.summativeAvg)}%` : "—"}
                         </span>
                         {delta !== null && !stable && (
-                          <span className={cn("flex items-center shrink-0 text-[10px]", delta > 0 ? "text-success" : "text-destructive")}>
+                          <span className={cn("flex items-center shrink-0 text-micro font-normal", delta > 0 ? "text-success" : "text-destructive")}>
                             {delta > 0 ? <ArrowUp className="size-2.5" /> : <ArrowDown className="size-2.5" />}
                             {Math.round(Math.abs(delta))}pp
                           </span>

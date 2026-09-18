@@ -65,7 +65,7 @@ export default function DoskaIconsPage() {
                   <Icon className={`${cls} text-foreground/85`} />
                 </div>
                 <span
-                  className="text-muted-foreground w-full truncate text-center text-[10px]"
+                  className="text-muted-foreground w-full truncate text-center text-micro font-normal"
                   title={`${name} · ${source}`}
                 >
                   {source.replace("solar:", "")}
@@ -91,7 +91,7 @@ export default function DoskaIconsPage() {
               >
                 <SampleIcon className="size-7" />
               </span>
-              <span className="text-center text-[10px] text-neutral-500">{color}</span>
+              <span className="text-center text-micro font-normal text-neutral-500">{color}</span>
               <span className="text-center font-mono text-micro leading-tight text-neutral-400">
                 {iconTint(color).replace("oklch(", "").replace(")", "")}
               </span>

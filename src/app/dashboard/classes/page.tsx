@@ -964,7 +964,7 @@ function ClassGridCard({
               </div>
               {/* Foiz badge */}
               <span
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border bg-card px-1.5 py-0.5 text-[11px] font-semibold leading-none tabular-nums shadow-sm"
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full border bg-card px-1.5 py-0.5 text-tag font-semibold leading-none tabular-nums shadow-sm"
                 style={{ color: hex }}
               >
                 {progress}%
@@ -1340,14 +1340,14 @@ function ClassListRow({
       <div className="hidden lg:flex -space-x-2 shrink-0">
         {initials.map((init, i) => (
           <Avatar key={i} className="size-8 ring-2 ring-background">
-            <AvatarFallback className="text-[10px] font-semibold text-white" style={{ backgroundColor: hex }}>
+            <AvatarFallback className="text-micro font-semibold text-white" style={{ backgroundColor: hex }}>
               {init}
             </AvatarFallback>
           </Avatar>
         ))}
         {overflow > 0 && (
           <Avatar className="size-8 ring-2 ring-background">
-            <AvatarFallback className="bg-muted text-[10px] font-semibold text-muted-foreground">
+            <AvatarFallback className="bg-muted text-micro font-semibold text-muted-foreground">
               +{overflow}
             </AvatarFallback>
           </Avatar>

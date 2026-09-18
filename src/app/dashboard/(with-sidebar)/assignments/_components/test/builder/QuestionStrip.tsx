@@ -63,7 +63,7 @@ export default function QuestionStrip({
                 >
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-semibold text-muted-foreground">{index + 1}</span>
-                    <span className="truncate text-[11px] text-muted-foreground">
+                    <span className="truncate text-tag text-muted-foreground">
                       {SHAPE_LABEL[question.shape]}
                     </span>
                   </div>
@@ -72,7 +72,7 @@ export default function QuestionStrip({
                       xil tartib (savol tepada, javoblar pastda), shuning
                       uchun tasmaga qarab kompozitsiyani baholash mumkin. */}
                   <div className="flex aspect-video flex-col gap-1 rounded-md bg-muted/60 p-1.5">
-                    <span className="line-clamp-2 text-[10px] font-medium leading-tight text-foreground">
+                    <span className="line-clamp-2 text-micro font-medium leading-tight text-foreground">
                       {questionLabel(question, index)}
                     </span>
                     <div className="flex flex-1 items-center justify-center gap-1.5 text-muted-foreground">

@@ -221,7 +221,7 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
                       {r.isOfficial && (
                         <>
                           <Star className="size-3.5 shrink-0 fill-amber-400 text-amber-400" />
-                          <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                          <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-micro font-semibold text-primary">
                             Rasmiy
                           </span>
                         </>
@@ -260,7 +260,7 @@ export default function AdminFeedbackCard({ row }: { row: AdminFeedbackItem }) {
                       disabled={pending}
                     />
                     <div className="mt-1.5 flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5 text-tag font-medium text-muted-foreground">
                         <ShieldCheck className="size-3.5" />
                         Ustozona jamoasi nomidan
                       </span>

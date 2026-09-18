@@ -42,7 +42,7 @@ export function YearTimeline({ start, end, today, holidays, lanes }: {
   return (
     <div className={cn("grid items-center gap-x-3 gap-y-1.5", showNames ? "grid-cols-[48px_1fr]" : "grid-cols-1")}>
       {showNames && <span />}
-      <div className="relative h-4 text-[11px] text-muted-foreground">
+      <div className="relative h-4 text-tag text-muted-foreground">
         {months.map((m) => (
           <span key={m.key} className="absolute top-0 -translate-x-0 capitalize" style={{ left: pct(m.key) }}>{m.label}</span>
         ))}
@@ -63,7 +63,7 @@ export function YearTimeline({ start, end, today, holidays, lanes }: {
                 key={b.key}
                 title={b.label}
                 className={cn(
-                  "absolute inset-y-1 truncate rounded px-1.5 text-[11px] leading-6",
+                  "absolute inset-y-1 truncate rounded px-1.5 text-tag leading-6",
                   b.isNew ? "z-10 bg-success/25 font-medium text-success ring-1 ring-success" : "bg-muted-foreground/20 text-muted-foreground",
                 )}
                 style={{ left: pct(b.start), width: span(b.start, b.end) }}
