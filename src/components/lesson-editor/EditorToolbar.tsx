@@ -290,7 +290,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-44">
           {BLOCK_TYPES.map(({ value, label, icon: Icon }) => (
-            <DropdownMenuItem key={value} onSelect={() => setBlockType(value)} className="gap-2.5">
+            <DropdownMenuItem key={value} onSelect={() => setBlockType(value)} className="gap-2">
               <Icon className="size-4 text-muted-foreground" />
               <span className="flex-1">{t(label)}</span>
               {activeBlock?.value === value && <Check className="size-4 shrink-0" />}
@@ -401,7 +401,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-40">
           {ALIGN_TYPES.map(({ value, label, icon: Icon }) => (
-            <DropdownMenuItem key={value} onSelect={() => editor.chain().focus().setTextAlign(value).run()} className="gap-2.5">
+            <DropdownMenuItem key={value} onSelect={() => editor.chain().focus().setTextAlign(value).run()} className="gap-2">
               <Icon className="size-4 text-muted-foreground" />
               <span className="flex-1">{t(label)}</span>
               {editor.isActive({ textAlign: value }) && <Check className="size-4 shrink-0" />}
@@ -427,16 +427,16 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-52">
-            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowBefore().run()} className="gap-2.5"><ArrowUp className="size-4 text-muted-foreground" /> {t("table.rowAbove")}</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowAfter().run()} className="gap-2.5"><ArrowDown className="size-4 text-muted-foreground" /> {t("table.rowBelow")}</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnBefore().run()} className="gap-2.5"><ArrowLeft className="size-4 text-muted-foreground" /> {t("table.columnLeft")}</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnAfter().run()} className="gap-2.5"><ArrowRight className="size-4 text-muted-foreground" /> {t("table.columnRight")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowBefore().run()} className="gap-2"><ArrowUp className="size-4 text-muted-foreground" /> {t("table.rowAbove")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addRowAfter().run()} className="gap-2"><ArrowDown className="size-4 text-muted-foreground" /> {t("table.rowBelow")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnBefore().run()} className="gap-2"><ArrowLeft className="size-4 text-muted-foreground" /> {t("table.columnLeft")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().addColumnAfter().run()} className="gap-2"><ArrowRight className="size-4 text-muted-foreground" /> {t("table.columnRight")}</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => editor.chain().focus().toggleHeaderRow().run()} className="gap-2.5"><PanelTop className="size-4 text-muted-foreground" /> {t("table.headerRow")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().toggleHeaderRow().run()} className="gap-2"><PanelTop className="size-4 text-muted-foreground" /> {t("table.headerRow")}</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteRow().run()} className="gap-2.5"><Trash2 className="size-4 text-muted-foreground" /> {t("table.deleteRow")}</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteColumn().run()} className="gap-2.5"><Trash2 className="size-4 text-muted-foreground" /> {t("table.deleteColumn")}</DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteTable().run()} className="gap-2.5 text-destructive focus:text-destructive"><Trash2 className="size-4" /> {t("table.deleteTable")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteRow().run()} className="gap-2"><Trash2 className="size-4 text-muted-foreground" /> {t("table.deleteRow")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteColumn().run()} className="gap-2"><Trash2 className="size-4 text-muted-foreground" /> {t("table.deleteColumn")}</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => editor.chain().focus().deleteTable().run()} className="gap-2 text-destructive focus:text-destructive"><Trash2 className="size-4" /> {t("table.deleteTable")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
@@ -502,7 +502,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
           {/* Emojili blok — eng koʻp ishlatiladigan, erkin variant. Ataylab
               BIRINCHI va chiziqcha bilan ajratilgan: quyidagilar qatʼiy
               pedagogik turlar, bu esa boshqa toifadagi blok. */}
-          <DropdownMenuItem onSelect={insertNotionCallout} className="gap-2.5">
+          <DropdownMenuItem onSelect={insertNotionCallout} className="gap-2">
             <span className="size-4 shrink-0 flex items-center justify-center text-sm leading-none">💡</span>
             {t("insertNotionCallout")}
           </DropdownMenuItem>
@@ -511,7 +511,7 @@ export default function EditorToolbar({ editor }: { editor: Editor | null }) {
             <DropdownMenuItem
               key={type}
               onSelect={() => insertCallout(type)}
-              className="gap-2.5"
+              className="gap-2"
             >
               <Icon className="size-4 shrink-0" style={{ color }} />
               {t(`calloutTypes.${type}`)}

@@ -57,7 +57,7 @@ export function OverviewSection({ identity }: { identity: ClassIdentity }) {
     <Card className={panelCardClass}>
       {/* Header */}
       <div className="shrink-0 border-b border-border min-h-16 px-5 py-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           <SectionIcon>
             <BookOpen />
           </SectionIcon>

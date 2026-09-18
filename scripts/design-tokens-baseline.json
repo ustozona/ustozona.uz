@@ -212,49 +212,24 @@
     "font-bold": 4
   },
   "src/app/dashboard/classes/[id]/_components/LessonsSection.tsx": {
-    "space-off-grid": 1,
     "font-bold": 3
-  },
-  "src/app/dashboard/classes/[id]/_components/OverviewSection.tsx": {
-    "space-off-grid": 1
   },
   "src/app/dashboard/classes/[id]/_components/OverviewSidebar.tsx": {
     "text-px": 1
   },
-  "src/app/dashboard/classes/[id]/_components/StudentsSection.tsx": {
-    "space-off-grid": 4
-  },
   "src/app/dashboard/classes/page.tsx": {
     "text-px": 3,
-    "space-off-grid": 12,
     "font-bold": 3
   },
   "src/app/dashboard/planner/_components/PlannerView.tsx": {
     "text-px": 7,
-    "space-off-grid": 2,
     "font-bold": 4
   },
-  "src/app/dashboard/settings/_components/AcademicYearSection.tsx": {
-    "space-off-grid": 2
-  },
-  "src/app/dashboard/settings/_components/AttendanceSection.tsx": {
-    "space-off-grid": 4
-  },
   "src/app/dashboard/settings/_components/BellSection.tsx": {
-    "text-px": 1,
-    "space-off-grid": 1
-  },
-  "src/app/dashboard/settings/_components/RolloverWizard.tsx": {
-    "space-off-grid": 5
+    "text-px": 1
   },
   "src/app/dashboard/settings/_components/YearStrip.tsx": {
     "text-px": 5
-  },
-  "src/app/dashboard/settings/page.tsx": {
-    "space-off-grid": 1
-  },
-  "src/app/dashboard/timetable/page.tsx": {
-    "space-off-grid": 7
   },
   "src/app/doska/ikonalar/page.tsx": {
     "text-px": 2
@@ -456,22 +431,13 @@
     "space-off-grid": 2
   },
   "src/components/lesson-editor/AiAssistantPanel.tsx": {
-    "space-off-grid": 6,
     "font-bold": 1
-  },
-  "src/components/lesson-editor/CalloutView.tsx": {
-    "space-off-grid": 1
   },
   "src/components/lesson-editor/DetailsPanel.tsx": {
     "text-px": 2,
-    "space-off-grid": 12,
     "font-bold": 2
   },
-  "src/components/lesson-editor/EditorToolbar.tsx": {
-    "space-off-grid": 12
-  },
   "src/components/lesson-editor/LessonEditor.tsx": {
-    "space-off-grid": 2,
     "font-bold": 1
   },
   "src/components/lesson-editor/PageBreakMarkers.tsx": {

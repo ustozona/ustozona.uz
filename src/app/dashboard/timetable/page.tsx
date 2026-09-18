@@ -897,7 +897,7 @@ export default function TimetablePage() {
 
           {/* Versiya holati banneri — arxiv (qulflangan/ochilgan) va kelgusi versiyalar */}
           {mode === "past-locked" && (
-            <div className="mx-6 mb-2 flex items-center gap-2.5 rounded-lg border border-border bg-muted/60 px-3.5 py-2 text-xs text-muted-foreground shrink-0">
+            <div className="mx-6 mb-2 flex items-center gap-2 rounded-lg border border-border bg-muted/60 px-4 py-2 text-xs text-muted-foreground shrink-0">
               <Lock className="size-3.5 shrink-0" />
               <p className="flex-1 leading-snug">
                 {t("archiveBanner", { range: selectedRangeLabel })}
@@ -983,7 +983,7 @@ export default function TimetablePage() {
               gutterVariant="centered"
               lines="quarter"
               gutterHeader={
-                <div className="py-2.5 text-center text-sm font-semibold text-foreground/70">{t("time")}</div>
+                <div className="py-3 text-center text-sm font-semibold text-foreground/70">{t("time")}</div>
               }
               className="mx-6 mb-6 mt-2 h-auto min-h-0 flex-1 rounded-md border border-border [scrollbar-width:thin]"
               columns={DAY_UZ.map((_, col): TimeGridColumn => {
@@ -991,7 +991,7 @@ export default function TimetablePage() {
                 return {
                   key: String(day),
                   header: fmt.dayName(day),
-                  headerProps: { className: "min-w-0 truncate py-2.5 text-center text-sm font-medium text-foreground/80" },
+                  headerProps: { className: "min-w-0 truncate py-3 text-center text-sm font-medium text-foreground/80" },
                   columnProps: {
                     onDragOver: (e) => { if (readOnly || isDemoMode) return; e.preventDefault(); e.dataTransfer.dropEffect = grabOffsetRef.current != null ? "move" : "copy"; if (dragOverDay !== day) setDragOverDay(day); },
                     onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverDay(prev => (prev === day ? null : prev)); },
@@ -1047,7 +1047,7 @@ export default function TimetablePage() {
                 (hoverda yengil koʻtariladi) + neytral "Bekor qilish". */}
             {awaitingApply && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-4 pb-4">
-                <div className="pointer-events-auto flex w-[min(100%,34rem)] items-center gap-3 rounded-overlay bg-foreground py-2.5 pr-3 pl-3.5 text-background shadow-overlay duration-200 animate-in fade-in slide-in-from-bottom-2">
+                <div className="pointer-events-auto flex w-[min(100%,34rem)] items-center gap-3 rounded-overlay bg-foreground py-3 pr-3 pl-4 text-background shadow-overlay duration-200 animate-in fade-in slide-in-from-bottom-2">
                   {/* Ikona qutisi — disket emas: hali saqlanmagan, kutayotgan
                       holat. Inversiya sirtida shaffof oq qatlam. */}
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-control bg-background/15 text-background/80">
@@ -1348,7 +1348,7 @@ function EditDialog({ event, className, color, onSave, onDelete, onClose }: {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t("classLabel")}</Label>
-            <div className="flex items-center gap-2.5 rounded-md border border-input bg-muted/40 px-3 py-2">
+            <div className="flex items-center gap-2 rounded-md border border-input bg-muted/40 px-3 py-2">
               <ClassSwatch hex={hex} />
               <span className="text-sm font-medium">{className}</span>
             </div>

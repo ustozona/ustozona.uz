@@ -142,7 +142,7 @@ function ShiftCard({ label, icon: Icon, cfg }: {
 
   return (
     <div className="space-y-4 p-5">
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
           <Icon className="size-4 text-muted-foreground" />
         </div>

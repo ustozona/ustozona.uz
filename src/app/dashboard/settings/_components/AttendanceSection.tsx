@@ -61,8 +61,8 @@ export default function AttendanceSection() {
                 const w = IMPACT_WEIGHT[l.impact];
                 return (
                   <TableRow key={l.impact} className="bg-card hover:bg-card">
-                    <TableCell className="px-4 py-2.5">
-                      <span className="flex items-center gap-2.5">
+                    <TableCell className="px-4 py-3">
+                      <span className="flex items-center gap-2">
                         <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted">
                           <SignIcon
                             impact={l.impact}
@@ -74,10 +74,10 @@ export default function AttendanceSection() {
                         </span>
                       </span>
                     </TableCell>
-                    <TableCell className="px-2 py-2.5 text-center text-sm font-semibold tabular-nums text-foreground">
+                    <TableCell className="px-2 py-3 text-center text-sm font-semibold tabular-nums text-foreground">
                       {w == null ? "—" : `×${w}`}
                     </TableCell>
-                    <TableCell className="px-4 py-2.5 text-caption">{l.text}</TableCell>
+                    <TableCell className="px-4 py-3 text-caption">{l.text}</TableCell>
                   </TableRow>
                 );
               })}

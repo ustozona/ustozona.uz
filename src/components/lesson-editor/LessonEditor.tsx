@@ -435,7 +435,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
             <FileText className="size-5 text-foreground" />
           </SectionIcon>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <h1
                 className="text-base font-semibold text-foreground truncate min-w-0"
                 title={(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
@@ -623,7 +623,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   aria-label={t("zoomReset")}
                   disabled={zoom === 100}
                   onClick={() => setZoom(100)}
-                  className="h-9 rounded-full px-2.5 text-xs font-semibold tabular-nums"
+                  className="h-9 rounded-full px-3 text-xs font-semibold tabular-nums"
                 >
                   {zoom}%
                 </Button>
