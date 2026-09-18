@@ -275,6 +275,7 @@ export default function SetBuilderOverlay({
       pointsMode: q.pointsMode,
       multiSelect: q.multiSelect,
       answerLayout: q.answerLayout,
+      ...(q.shape === "text" ? { sampleAnswer: q.sampleAnswer } : {}),
       ...(q.shape === "slide"
         ? {
             slideLayout: q.slideLayout,

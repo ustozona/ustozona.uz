@@ -537,6 +537,33 @@ function Player({
           </>
         )}
 
+        {/* OCHIQ JAVOB — «Natijani koʻrsatish» da javoblar ISMSIZ chiqadi;
+            baholash sessiya panelida, ismlar bilan, proyektorsiz. */}
+        {step?.shape === "text" && (
+          <>
+            <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
+              {step.stem}
+            </h2>
+            {live && (
+              <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
+                {results?.items[step.activityId ?? ""]?.answered ?? 0} / {results?.joined ?? 0} javob berdi
+              </p>
+            )}
+            {live && revealed && (
+              <div className="grid grid-cols-2 gap-[1cqw] lg:grid-cols-3">
+                {(results?.items[step.activityId ?? ""]?.texts ?? []).map((t, i) => (
+                  <p
+                    key={i}
+                    className="line-clamp-4 rounded-lg border-2 border-current/15 p-[1.2cqw] text-[max(12px,1.8cqw)] leading-snug"
+                  >
+                    {t}
+                  </p>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
         {step?.shape === "pairs" && (
           <>
             <h2 className="text-center text-[max(16px,3.2cqw)] font-semibold">{step.title}</h2>
@@ -586,11 +613,13 @@ function Player({
           {fullscreen ? "Ekrandan chiqish" : "Toʻliq ekran"}
         </NavButton>
         <div className="flex-1" />
-        {step && step.shape !== "slide" && (live || (step.shape !== "poll" && step.shape !== "wordcloud")) && (
+        {step &&
+          step.shape !== "slide" &&
+          (live || (step.shape !== "poll" && step.shape !== "wordcloud" && step.shape !== "text")) && (
           <NavButton onClick={onReveal}>
             {revealed
               ? "Yashirish"
-              : step.shape === "poll" || step.shape === "wordcloud"
+              : step.shape === "poll" || step.shape === "wordcloud" || step.shape === "text"
                 ? "Natijani koʻrsatish"
                 : "Javobni ochish"}
           </NavButton>

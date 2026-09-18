@@ -71,7 +71,15 @@ export type WordcloudStep = {
   stem: string;
 };
 
-export type PlayStep = McqStep | PairsStep | SlideStep | PollStep | WordcloudStep;
+/** Ochiq javob — erkin matn, oʻqituvchi keyin qoʻlda baholaydi. */
+export type TextStep = {
+  kind: "text";
+  itemId: string;
+  activityId: string;
+  stem: string;
+};
+
+export type PlayStep = McqStep | PairsStep | SlideStep | PollStep | WordcloudStep | TextStep;
 
 export type PlaySessionContent = {
   sessionId: string;
@@ -171,6 +179,10 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
         options: content.options.map((o) => ({ id: o.id, text: o.text })),
         pointsMultiplier,
       });
+    } else if (shape === "text") {
+      const item = items[0];
+      const content = item.content as { stem?: string };
+      steps.push({ kind: "text", itemId: item.id, activityId, stem: content.stem ?? "" });
     } else if (shape === "poll" || shape === "wordcloud") {
       const item = items[0];
       const content = item.content as { stem?: string; options?: { id: string; text: string }[] };

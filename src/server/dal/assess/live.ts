@@ -2,7 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { classes, quizSessions, responses, sessionParticipants } from "@/server/db/schema";
+import { activities, classes, quizSessions, responses, sessionParticipants } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import { taughtClassIds } from "@/server/workspace";
 import { createSession, openSession, SessionStateError } from "./sessions";
@@ -78,9 +78,12 @@ export async function liveResults(sessionId: string): Promise<LiveResults> {
         activityId: responses.activityId,
         answer: responses.answer,
         isCorrect: responses.isCorrect,
+        shape: activities.shape,
       })
       .from(responses)
-      .where(eq(responses.sessionId, sessionId)),
+      .innerJoin(activities, eq(activities.id, responses.activityId))
+      .where(eq(responses.sessionId, sessionId))
+      .orderBy(responses.answeredAt),
   ]);
 
   const items: LiveResults["items"] = {};
@@ -90,7 +93,7 @@ export async function liveResults(sessionId: string): Promise<LiveResults> {
   const allCorrect = new Map<string, Map<string, boolean>>();
 
   for (const row of rows) {
-    const item = (items[row.activityId] ??= { answered: 0, correct: 0, byOption: {}, words: {} });
+    const item = (items[row.activityId] ??= { answered: 0, correct: 0, byOption: {}, words: {}, texts: [] });
     const who = seen.get(row.activityId) ?? new Set<string>();
     seen.set(row.activityId, who);
     if (!who.has(row.participantId)) {
@@ -104,9 +107,16 @@ export async function liveResults(sessionId: string): Promise<LiveResults> {
     const answer = row.answer as { optionId?: string; optionIds?: string[]; text?: string };
     const chosen = answer.optionIds ?? (answer.optionId ? [answer.optionId] : []);
     for (const id of chosen) item.byOption[id] = (item.byOption[id] ?? 0) + 1;
-    // Soʻz buluti: «Toshkent» va «toshkent » bitta soʻz boʻlib sanaladi.
-    const word = typeof answer.text === "string" ? answer.text.trim().toLocaleLowerCase("uz") : "";
-    if (word) item.words[word] = (item.words[word] ?? 0) + 1;
+    const text = typeof answer.text === "string" ? answer.text.trim() : "";
+    if (text && row.shape === "wordcloud") {
+      // «Toshkent» va «toshkent » bitta soʻz boʻlib sanaladi.
+      const word = text.toLocaleLowerCase("uz");
+      item.words[word] = (item.words[word] ?? 0) + 1;
+    } else if (text && row.shape === "text") {
+      // Oxirgi 60 tasi — doska hammasini sigʻdirmaydi.
+      item.texts.push(text);
+      if (item.texts.length > 60) item.texts.shift();
+    }
   }
   for (const [activityId, verdicts] of allCorrect) {
     items[activityId].correct = [...verdicts.values()].filter(Boolean).length;

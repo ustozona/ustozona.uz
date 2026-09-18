@@ -208,7 +208,7 @@ const draftQuestionSchema = z.object({
   /** Mavjud savol — yangilanadi. Boʻsh boʻlsa yangi `activity` yaratiladi. */
   activityId: z.string().min(1).optional(),
   /** `slide` — taqdimot slaydi: savol emas, matni `stem` da keladi. */
-  shape: z.enum(["mcq", "pairs", "slide", "poll", "wordcloud"]),
+  shape: z.enum(["mcq", "pairs", "slide", "poll", "wordcloud", "text"]),
   title: z.string().min(1).max(200),
   stem: z.string().max(2000),
   options: z.array(mcqOptionSchema),
@@ -232,6 +232,8 @@ const draftQuestionSchema = z.object({
   slideHeading: z.string().max(200).optional(),
   /** Shu slaydning oʻz foni (sahna mavzusi id). Boʻsh — toʻplam foni. */
   slideBg: z.string().max(40).optional(),
+  /** Ochiq javob: namuna javob — faqat oʻqituvchi baholayotganda koʻrinadi. */
+  sampleAnswer: z.string().max(2000).optional(),
 });
 
 export type DraftQuestionValues = z.infer<typeof draftQuestionSchema>;
@@ -257,7 +259,7 @@ export type SetDraft = {
 function validateDraftQuestion(q: DraftQuestionValues, index: number) {
   const label = `${index + 1}-savol`;
   if (q.shape === "slide") return; // boʻsh slayd ham joiz — sarlavha yetadi
-  if (q.shape === "wordcloud") {
+  if (q.shape === "wordcloud" || q.shape === "text") {
     if (!q.stem.trim()) throw new Error(`${label}: savol matni kerak`);
     return;
   }
@@ -286,12 +288,22 @@ function draftItems(q: DraftQuestionValues) {
     return [{ content: { stem: q.stem, options: q.options.map((o) => ({ ...o, isCorrect: false })) } }];
   }
   if (q.shape === "wordcloud") return [{ content: { stem: q.stem } }];
+  // Ochiq javob — oʻqituvchi qoʻlda baholaydi (`grading = "manual"`), shuning
+  // uchun u maks. ballga KIRADI (graded-items.ts faqat "none" ni chiqaradi).
+  if (q.shape === "text") return [{ content: { stem: q.stem } }];
   return q.shape === "mcq"
     ? [{ content: { stem: q.stem, options: q.options } }]
     : q.pairs.map((p) => ({ content: { left: p.left, right: p.right } }));
 }
 
 function draftConfig(q: DraftQuestionValues) {
+  if (q.shape === "text") {
+    return {
+      timeLimitSec: q.timeLimitSec,
+      pointsMode: q.pointsMode,
+      ...(q.sampleAnswer?.trim() ? { sample: q.sampleAnswer.trim() } : {}),
+    };
+  }
   if (q.shape === "slide") {
     return {
       heading: q.slideHeading ?? q.title,
@@ -351,6 +363,20 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
         options: [],
         pairs: [],
         multiSelect: false,
+      });
+      continue;
+    }
+
+    if (activity.shape === "text") {
+      const content = activity.items[0]?.content as { stem?: string } | undefined;
+      questions.push({
+        ...base,
+        shape: "text",
+        stem: content?.stem ?? "",
+        options: [],
+        pairs: [],
+        multiSelect: false,
+        sampleAnswer: (activity.config as { sample?: string }).sample,
       });
       continue;
     }
@@ -420,7 +446,9 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
         grading:
           q.shape === "slide" || q.shape === "poll" || q.shape === "wordcloud"
             ? ("none" as const)
-            : ("exact" as const),
+            : q.shape === "text"
+              ? ("manual" as const)
+              : ("exact" as const),
         config: draftConfig(q),
         items: draftItems(q),
       };

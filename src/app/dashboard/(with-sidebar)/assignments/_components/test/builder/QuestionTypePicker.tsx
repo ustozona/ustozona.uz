@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChartBar, ChevronDown, Cloud, GitCompareArrows, ListChecks, Presentation } from "lucide-react";
+import { ChartBar, ChevronDown, Cloud, GitCompareArrows, ListChecks, PenLine, Presentation } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { SHAPE_LABEL, type DraftQuestion } from "./types";
@@ -26,6 +26,7 @@ const TYPES: ReadonlyArray<{
     items: [
       { id: "mcq", icon: ListChecks },
       { id: "pairs", icon: GitCompareArrows },
+      { id: "text", icon: PenLine },
     ],
   },
   {

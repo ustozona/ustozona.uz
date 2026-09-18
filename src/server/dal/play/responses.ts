@@ -68,6 +68,10 @@ export async function submitResponse(input: SubmitResponseInput) {
   if (live && liveConfig.revealed && activity.grading !== "none") {
     throw new ForbiddenError("Javob vaqti tugadi");
   }
+  if (activity.shape === "text") {
+    const text = typeof input.answer.text === "string" ? input.answer.text.trim() : "";
+    if (!text || text.length > 2000) throw new ForbiddenError("Javob 1–2000 belgi boʻlsin");
+  }
   if (activity.shape === "wordcloud") {
     const text = typeof input.answer.text === "string" ? input.answer.text.trim() : "";
     if (!text || text.length > 40) throw new ForbiddenError("Javob 1–40 belgi boʻlsin");

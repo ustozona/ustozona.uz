@@ -45,6 +45,7 @@ export const SHAPE_LABEL: Record<DraftQuestion["shape"], string> = {
   slide: "Slayd",
   poll: "Soʻrovnoma",
   wordcloud: "Soʻz buluti",
+  text: "Ochiq javob",
 };
 
 /** Baholanmaydigan turlar — vaqt, ball va «toʻgʻri javob» yoʻq. */

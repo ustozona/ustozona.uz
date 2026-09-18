@@ -224,7 +224,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
   async function handleOpinionSubmit(answer: Record<string, unknown>) {
     if (!content) return;
     const step = content.steps[stepIndex];
-    if (step.kind !== "poll" && step.kind !== "wordcloud") return;
+    if (step.kind !== "poll" && step.kind !== "wordcloud" && step.kind !== "text") return;
     setSubmitting(true);
     try {
       const token = localStorage.getItem(tokenKey(joinCode))!;
@@ -333,7 +333,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     const liveAnswer = live ? liveAnswers[step.activityId] : undefined;
     const liveDone = live && step.activityId in liveAnswers;
     // Soʻrovnoma/soʻz bulutida «toʻgʻri javob» yoʻq — natija ochilgach ham javob mumkin.
-    const graded = step.kind === "mcq" || step.kind === "pairs";
+    const graded = step.kind === "mcq" || step.kind === "pairs" || step.kind === "text";
     const liveLocked = live && (liveDone || (graded && Boolean(liveState?.revealed)));
     const liveNote = !live ? null : liveDone ? (
       liveState?.revealed ? (
@@ -484,6 +484,36 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
               }}
             />
             <p className="text-right text-xs text-muted-foreground">{wordText.length}/40</p>
+          </div>
+          {error && <p className="text-center text-sm text-destructive">{error}</p>}
+          {liveNote ?? (
+            <PushButton disabled={!text || submitting} onClick={() => handleOpinionSubmit({ text })}>
+              Yuborish
+            </PushButton>
+          )}
+        </div>
+      );
+    }
+
+    // Ochiq javob — erkin matn; bahoni oʻqituvchi keyin qoʻyadi.
+    if (step.kind === "text") {
+      const text = wordText.trim();
+      return (
+        <div className="flex h-screen flex-col gap-6 p-6">
+          <p className="text-sm text-muted-foreground">
+            {stepIndex + 1} / {content.steps.length} · Ochiq javob
+          </p>
+          <h1 className="text-xl font-semibold leading-snug">{step.stem}</h1>
+          <div className="flex flex-1 flex-col gap-2">
+            <textarea
+              value={wordText}
+              onChange={(e) => setWordText(e.target.value)}
+              maxLength={2000}
+              disabled={liveLocked}
+              placeholder="Javobingizni yozing…"
+              className="min-h-40 flex-1 resize-none rounded-xl border-2 border-border bg-card p-4 text-base outline-none focus:border-primary"
+            />
+            <p className="text-right text-xs text-muted-foreground">{wordText.length}/2000</p>
           </div>
           {error && <p className="text-center text-sm text-destructive">{error}</p>}
           {liveNote ?? (

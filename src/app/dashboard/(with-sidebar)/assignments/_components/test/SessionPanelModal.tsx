@@ -20,6 +20,8 @@ import {
 import { useGradesStore } from "@/store/useGradesStore";
 import {
   closeSessionAction,
+  gradeOpenAnswerAction,
+  listOpenAnswersAction,
   listSessionsAction,
   publishSessionAction,
   sessionReportAction,
@@ -27,6 +29,8 @@ import {
 } from "@/server/actions/assess-sessions";
 import type { QuizSessionRow, ActivitySetRow } from "@/server/db/schema";
 import type { SessionReport } from "@/server/dal/assess/results";
+import type { OpenAnswer } from "@/lib/live-session";
+import { cn } from "@/lib/utils";
 
 /* Host (oʻqituvchi) sessiya paneli — sessiya boshlash/yopish, natija,
    jurnalga koʻchirish (docs/ost-loyihalar-arxitektura.md, B boʻlim). */
@@ -164,6 +168,7 @@ export default function SessionPanelModal({ set, classId, dueDate, onClose }: Pr
 
                 {session.state === "completed" && (
                   <div className="flex flex-col gap-2">
+                    <OpenAnswersBlock sessionId={session.id} />
                     {report ? (
                       <p className="text-xs text-muted-foreground">
                         Aniqlik: {Math.round(report.accuracy * 100)}% ·{" "}
@@ -218,5 +223,91 @@ export default function SessionPanelModal({ set, classId, dueDate, onClose }: Pr
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/* ── OCHIQ JAVOBLAR — qoʻlda baholash ─────────────────────────────────
+   Yopilgan sessiyada ochiq javob boʻlsagina chiqadi. Baholanmaganlari
+   jurnalga 0 boʻlib tushadi — shuning uchun ularning soni «Jurnalga»
+   tugmasidan OLDIN, koʻzga tashlanadigan joyda turadi. */
+const SCORE_STEPS: { value: 0 | 0.5 | 1; label: string }[] = [
+  { value: 0, label: "0" },
+  { value: 0.5, label: "½" },
+  { value: 1, label: "1" },
+];
+
+function OpenAnswersBlock({ sessionId }: { sessionId: string }) {
+  const [answers, setAnswers] = useState<OpenAnswer[] | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    listOpenAnswersAction(sessionId).then(setAnswers).catch(() => setAnswers([]));
+  }, [sessionId]);
+
+  if (!answers || answers.length === 0) return null;
+  const pending = answers.filter((a) => a.score === null).length;
+
+  async function grade(responseId: string, score: 0 | 0.5 | 1) {
+    setAnswers((prev) => prev?.map((a) => (a.responseId === responseId ? { ...a, score } : a)) ?? prev);
+    try {
+      await gradeOpenAnswerAction({ responseId, score });
+    } catch {
+      // Qaytarib qoʻyamiz — server qabul qilmadi.
+      setAnswers((prev) => prev?.map((a) => (a.responseId === responseId ? { ...a, score: null } : a)) ?? prev);
+    }
+  }
+
+  // Savol boʻyicha guruhlash — bir savolga kelgan javoblar yonma-yon oʻqiladi.
+  const groups = new Map<string, OpenAnswer[]>();
+  for (const a of answers) groups.set(a.activityId, [...(groups.get(a.activityId) ?? []), a]);
+
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-border p-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center justify-between gap-2 text-left text-sm font-medium"
+      >
+        <span>Ochiq javoblar · {answers.length} ta</span>
+        <span className={cn("text-xs", pending ? "text-warning" : "text-muted-foreground")}>
+          {pending ? `${pending} ta baholanmagan` : "Hammasi baholandi"}
+        </span>
+      </button>
+      {open && (
+        <div className="flex max-h-72 flex-col gap-3 overflow-y-auto">
+          {[...groups.values()].map((list) => (
+            <div key={list[0].activityId} className="flex flex-col gap-2">
+              <p className="text-sm font-semibold">{list[0].question}</p>
+              {list[0].sample && (
+                <p className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
+                  Namuna: {list[0].sample}
+                </p>
+              )}
+              {list.map((a) => (
+                <div key={a.responseId} className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground">{a.studentName}</p>
+                    <p className="whitespace-pre-wrap break-words text-sm">{a.text}</p>
+                  </div>
+                  <div className="flex shrink-0 gap-1">
+                    {SCORE_STEPS.map((step) => (
+                      <Button
+                        key={step.value}
+                        size="sm"
+                        variant={a.score === step.value ? "default" : "outline"}
+                        className="h-7 w-8 px-0"
+                        onClick={() => void grade(a.responseId, step.value)}
+                      >
+                        {step.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

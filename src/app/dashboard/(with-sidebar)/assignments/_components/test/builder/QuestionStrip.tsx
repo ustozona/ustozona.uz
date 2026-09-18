@@ -11,6 +11,7 @@ import {
   Presentation,
   ChartBar,
   Cloud,
+  PenLine,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -152,6 +153,9 @@ export default function QuestionStrip({
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => onAdd("pairs")}>
                   <GitCompareArrows className="size-4" /> Moslashtirish
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onAdd("text")}>
+                  <PenLine className="size-4" /> Ochiq javob
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => onAdd("poll")}>
                   <ChartBar className="size-4" /> Soʻrovnoma

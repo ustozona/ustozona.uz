@@ -120,7 +120,14 @@ function QuizCanvas({ question, stageTheme, onChange }: Props) {
             className="quiz-stage-stem h-auto min-h-0 w-full resize-none border-0 bg-card text-center font-semibold shadow-sm md:text-[length:inherit]"
           />
 
-          {question.shape === "wordcloud" ? (
+          {question.shape === "text" ? (
+            /* Ochiq javob — oʻquvchi erkin matn yozadi, oʻqituvchi keyin
+               sessiya panelida qoʻlda baholaydi (0 / ½ / 1). */
+            <div className="mt-auto flex h-[30cqw] flex-col items-start justify-start gap-[1cqw] rounded-choice border-choice border-dashed border-border bg-card/70 p-[2cqw] text-muted-foreground">
+              <span className="quiz-stage-stem p-0 font-semibold">Oʻquvchi javobi shu yerga yoziladi…</span>
+              <span className="text-sm">Erkin matn, 2000 belgigacha. Sessiyadan keyin qoʻlda baholaysiz.</span>
+            </div>
+          ) : question.shape === "wordcloud" ? (
             /* Soʻz buluti — oʻquvchi bitta qisqa soʻz yozadi; doskada eng koʻp
                yozilgan soʻzlar kattaroq chiqadi. Muharrirda kiritish yoʻq. */
             <div className="mt-auto flex h-[30cqw] flex-col items-center justify-center gap-[1cqw] rounded-choice border-choice border-dashed border-border bg-card/70 text-muted-foreground">

@@ -34,6 +34,20 @@ export type LiveItemResult = {
   byOption: Record<string, number>;
   /** Soʻz buluti: kichik harfdagi soʻz → necha kishi yozdi. */
   words: Record<string, number>;
+  /** Ochiq javob matnlari — ISMSIZ, oxirgi 60 tasi (doskaga chiqadi). */
+  texts: string[];
+};
+
+/** Ochiq javob — oʻqituvchi baholash roʻyxatidagi bitta qator. */
+export type OpenAnswer = {
+  responseId: string;
+  activityId: string;
+  question: string;
+  sample?: string;
+  studentName: string;
+  text: string;
+  /** 0..1; null — hali baholanmagan. */
+  score: number | null;
 };
 
 export type LiveResults = {

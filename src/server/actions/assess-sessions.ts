@@ -11,6 +11,8 @@ import {
 import { publishSessionToGrades, type PublishResult } from "@/server/dal/assess/publish";
 import { sessionReport, type SessionReport } from "@/server/dal/assess/results";
 import type { QuizSessionRow } from "@/server/db/schema";
+import { gradeOpenAnswer, listOpenAnswers } from "@/server/dal/assess/open-answers";
+import type { OpenAnswer } from "@/lib/live-session";
 
 /* Host (oʻqituvchi) sessiya boshqaruvi — yupqa qatlam: zod-parse → DAL. */
 
@@ -61,4 +63,19 @@ export async function publishSessionAction(
 ): Promise<PublishResult> {
   const parsed = publishSchema.parse(input);
   return publishSessionToGrades(parsed.sessionId, parsed.topicId);
+}
+
+/** Ochiq javoblar — qoʻlda baholash roʻyxati. */
+export async function listOpenAnswersAction(sessionId: string): Promise<OpenAnswer[]> {
+  return listOpenAnswers(z.string().min(1).parse(sessionId));
+}
+
+const gradeSchema = z.object({
+  responseId: z.string().min(1),
+  score: z.union([z.literal(0), z.literal(0.5), z.literal(1)]),
+});
+
+export async function gradeOpenAnswerAction(input: z.infer<typeof gradeSchema>): Promise<void> {
+  const { responseId, score } = gradeSchema.parse(input);
+  await gradeOpenAnswer(responseId, score);
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { Award, Copy, LayoutTemplate, ListChecks, Palette, Shapes, Timer, Trash2, Video, X } from "lucide-react";
+import { Award, BookCheck, Copy, LayoutTemplate, ListChecks, Palette, Shapes, Timer, Trash2, Video, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SLIDE_LAYOUT_META, slideLayoutOf } from "@/lib/slide-layouts";
@@ -95,6 +96,19 @@ export default function PropertiesPanel({
         <Field icon={<Shapes className="size-4" />} label="Savol turi">
           <QuestionTypePicker value={question.shape} onChange={changeShape} />
         </Field>
+
+        {question.shape === "text" && (
+          <Field icon={<BookCheck className="size-4" />} label="Namuna javob (ixtiyoriy)">
+            {/* Oʻquvchiga koʻrinmaydi — faqat baholayotganda yoningizda turadi. */}
+            <Textarea
+              value={question.sampleAnswer ?? ""}
+              onChange={(e) => onChange({ sampleAnswer: e.target.value })}
+              placeholder="Kutilgan javob yoki baholash mezoni"
+              maxLength={2000}
+              className="min-h-20 text-sm"
+            />
+          </Field>
+        )}
 
         {question.shape === "slide" && (
           <Field icon={<LayoutTemplate className="size-4" />} label="Maket">

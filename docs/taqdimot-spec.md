@@ -125,7 +125,16 @@ xabar WebSocket orqali yetdi.
   qabul qilinadi (toʻgʻri javob yoʻq). Soʻz: 1–40 belgi, kichik harfga
   keltirib sanaladi. Tashqi oʻyin qobigʻiga faqat mcq/pairs boradi.
 
+- ✅ **Ochiq javob** (`text`, `grading = "manual"`): oʻquvchi erkin matn
+  yozadi (1–2000 belgi). U **maks. ballga kiradi** — `graded-items.ts`
+  faqat `"none"` ni chiqaradi. Oʻqituvchi yopilgan sessiya panelida har
+  javobga 0 / ½ / 1 qoʻyadi (`responses.score`, `isCorrect` faqat 1 da;
+  `dal/assess/open-answers.ts`, egalik + `manual` tekshiruvi — avtomatik
+  test javobini bu yoʻl bilan oʻzgartirib boʻlmaydi). Baholanmagani
+  jurnalga 0 boʻlib tushadi — soni «Jurnalga» tugmasidan oldin koʻrinadi.
+  Namuna javob (`config.sample`) faqat baholashda. Doskada «Natijani
+  koʻrsatish» da javoblar ismsiz (oxirgi 60 ta).
+
 ## Keyingi qavatlar (hali qilinmagan)
 
-- Ochiq javob (erkin matn, oʻqituvchi qoʻlda baholaydi) — alohida bosqich.
 - Erkin kanvas — Doska dvigateli ustida, maketlar yetmay qolsa.
