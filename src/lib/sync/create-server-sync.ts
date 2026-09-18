@@ -138,9 +138,47 @@ export function createServerSync<S, P, D = P>(opts: {
     schedule(debounceMs);
   });
 
+  /* ── Sahifa yopilishi / refresh ──────────────────────────────────────
+     `stop()` faqat React unmount'da (ilova ichidagi navigatsiya) ishlaydi.
+     Brauzer refresh yoki tab yopilishida esa komponent unmount boʻlmaydi:
+     kutilayotgan debounce oynasi (1.5s) jimgina yoʻqoladi va oʻzgarish
+     serverga YETIB BORMAYDI. Kuzatilgan oqibat (2026-09-18): oʻchirilgan
+     boʻlimlar refreshdan keyin «tirilib» qaytardi, chunki ularning
+     oʻchirilishi aynan shu oynada qolib ketgan edi.
+
+     Ikki qatlam:
+     1. `visibilitychange → hidden` / `pagehide` — kutilayotgani DARHOL
+        yuboriladi (tab almashtirish ham shu yerga tushadi, yaʼni koʻp
+        holatda yopilishdan oldin allaqachon saqlangan boʻladi).
+     2. `beforeunload` — hali yuborilmagan oʻzgarish boʻlsa brauzerning
+        oʻz «sahifani tark etasizmi?» soʻrovi chiqadi. Soʻrovsiz ketish
+        maʼlumot yoʻqotish demak; oyna kichik (≤1.5s), shuning uchun
+        oddiy ishda foydalanuvchi buni koʻrmaydi. */
+  const flushOnHide = () => {
+    if (document.visibilityState === "hidden") void flush();
+  };
+  const flushNow = () => { void flush(); };
+  const guardUnload = (e: BeforeUnloadEvent) => {
+    if (!dirty && !inFlight) return;
+    void flush();
+    e.preventDefault();
+  };
+  if (typeof window !== "undefined") {
+    document.addEventListener("visibilitychange", flushOnHide);
+    window.addEventListener("pagehide", flushNow);
+    window.addEventListener("beforeunload", guardUnload);
+  }
+  function removeUnloadListeners() {
+    if (typeof window === "undefined") return;
+    document.removeEventListener("visibilitychange", flushOnHide);
+    window.removeEventListener("pagehide", flushNow);
+    window.removeEventListener("beforeunload", guardUnload);
+  }
+
   return {
     stop() {
       unsubscribe();
+      removeUnloadListeners();
       if (timer) clearTimeout(timer);
       // Unmount paytida kutilayotgan oʻzgarishlar yoʻqolmasin — oxirgi flush.
       void flush();
