@@ -184,7 +184,7 @@ export function TaskDetail({
     <Panel>
       {/* Focus To-Do sarlavha qatori: [ustuvorlik-rangli checkbox] [▶] [sarlavha] [bayroq] */}
       <PanelHeader divider>
-        <div className="col-span-3 flex min-w-0 items-center gap-2.5">
+        <div className="col-span-3 flex min-w-0 items-center gap-2">
           <Checkbox
             checked={done}
             onCheckedChange={onToggleStatus}
@@ -239,7 +239,7 @@ export function TaskDetail({
               <span
                 key={tag}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium",
+                  "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium",
                   TAG_PILL_CLASS
                 )}
               >
@@ -842,7 +842,7 @@ function MetaRow({
 }) {
   return (
     <div className="flex min-h-11 items-center justify-between gap-3 py-1">
-      <span className="flex shrink-0 items-center gap-2.5 text-sm text-muted-foreground">
+      <span className="flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
         {icon}
         {label}
       </span>

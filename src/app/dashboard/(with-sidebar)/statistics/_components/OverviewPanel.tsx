@@ -314,7 +314,7 @@ export function OverviewPanel({
         {/* ── Sinflar taqqoslash jadvali (avvalgi mustaqil "Sinflar" tabidan) ── */}
         <DashboardSectionCard>
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               <SectionIcon>
                 <TableIcon />
               </SectionIcon>

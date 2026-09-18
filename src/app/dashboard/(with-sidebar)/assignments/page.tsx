@@ -395,7 +395,7 @@ export default function AssignmentsPage() {
           ) : (
             <>
               <div className={panelHeaderClass + " items-center justify-between gap-3"}>
-                <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <SectionIcon>
                     <ClipboardList />
                   </SectionIcon>
@@ -450,7 +450,7 @@ export default function AssignmentsPage() {
                             <button
                               type="button"
                               onClick={restoreSession}
-                              className="list-card flex w-full items-center gap-3 border-dashed py-3 pl-4 pr-3.5 text-left"
+                              className="list-card flex w-full items-center gap-3 border-dashed py-3 pl-4 pr-4 text-left"
                             >
                               <div className="list-card-icon flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                                 <PenLine className="size-4" />
@@ -488,7 +488,7 @@ export default function AssignmentsPage() {
                           eng tepada, chunki oʻqituvchi aynan ularni
                           qidirib keladi (endigina tuzgan). */}
                       {orphanSets.length > 0 && (
-                        <div className="flex flex-col gap-2.5">
+                        <div className="flex flex-col gap-3">
                           <div className="flex items-center gap-2">
                             <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                               <FileCheck2 className="size-3.5" />
@@ -510,7 +510,7 @@ export default function AssignmentsPage() {
                             {orphanSets.map((set) => (
                               <ContextMenu key={set.id}>
                                 <ContextMenuTrigger asChild>
-                                  <div className="list-card group flex items-center gap-2 pr-2.5">
+                                  <div className="list-card group flex items-center gap-2 pr-2">
                                     <button
                                       type="button"
                                       onClick={() => setBuilderSetId(set.id)}
@@ -618,7 +618,7 @@ export default function AssignmentsPage() {
                               suriladi. */}
                           <AccordionTrigger
                             className={cn(
-                              "items-center justify-start gap-2.5 rounded-none px-4 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180",
+                              "items-center justify-start gap-2 rounded-none px-4 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180",
                               !group.color && "bg-muted/50 text-muted-foreground",
                             )}
                             style={
@@ -722,7 +722,7 @@ export default function AssignmentsPage() {
                                             `.list-card` neytral `--primary`ga
                                             tushib qolardi. */}
                                         <div
-                                          className="list-card group flex items-center gap-2 pr-2.5"
+                                          className="list-card group flex items-center gap-2 pr-2"
                                           style={
                                             group.color
                                               ? { ["--card-accent" as string]: TOPIC_COLOR_HEX[group.color] }
@@ -797,7 +797,7 @@ export default function AssignmentsPage() {
                                               `bg-muted` boʻlib qoladi. */}
                                           <span
                                             className={cn(
-                                              "hidden shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold sm:inline-flex",
+                                              "hidden shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold sm:inline-flex",
                                               !kindTints && "bg-muted text-muted-foreground",
                                             )}
                                             style={kindTints ? { ...kindTints.badge, ...kindTints.textStrong } : undefined}

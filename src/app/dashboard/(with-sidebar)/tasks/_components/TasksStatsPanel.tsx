@@ -109,7 +109,7 @@ export function TasksStatsPanel({
               uchtasi xom miqdor (vaqt/soni), ularda "jami"ga nisbat yoʻq —
               halqa yolgʻon signal berardi. */}
           <div className="flex flex-col gap-4 rounded-xl border border-border/60 bg-card p-5">
-            <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex min-w-0 items-center gap-3">
               <SectionIcon className="rounded-full bg-success/10 text-success">
                 <CheckCircle2 />
               </SectionIcon>

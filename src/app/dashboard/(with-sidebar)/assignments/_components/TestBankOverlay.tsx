@@ -391,7 +391,7 @@ export default function TestBankOverlay({
           Bitta sinf boʻlsa umuman koʻrsatilmaydi: tanlashga narsa yoʻq
           va qator faqat ekranni band qilardi. */}
       {allClasses.length > 1 && (
-        <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-border px-5 py-2.5">
+        <div className="flex shrink-0 flex-wrap items-center gap-1.5 border-b border-border px-5 py-3">
           <TypographyMuted className="mr-1 shrink-0 text-xs font-medium">
             {t("targetClasses")}
           </TypographyMuted>
@@ -411,7 +411,7 @@ export default function TestBankOverlay({
                   )
                 }
                 className={
-                  "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors " +
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors " +
                   (on
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:bg-muted hover:text-foreground") +
@@ -468,7 +468,7 @@ export default function TestBankOverlay({
           </Empty>
         ) : (
           <ScrollArea className="h-full w-full">
-            <div className="grid grid-cols-1 gap-2.5 p-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 xl:grid-cols-3">
               {tests.map((test) => (
                 <BankCard
                   key={test.id}
@@ -601,7 +601,7 @@ function BankCard({
   const Icon = TIER_ICON[test.tier];
 
   return (
-    <div className="list-card flex flex-col gap-2.5 p-3.5">
+    <div className="list-card flex flex-col gap-3 p-3">
       {/* Sarlavha bosilsa savollar koʻrinadi — ustoz begona odam
           tuzgan testni koʻrmasdan sinfiga bermaydi. */}
       <button

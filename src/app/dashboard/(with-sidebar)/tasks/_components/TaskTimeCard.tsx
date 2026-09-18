@@ -156,7 +156,7 @@ export function TaskTimeCard({
               className="mx-auto p-0"
             />
 
-            <div className="mt-2 flex items-center justify-between gap-2 rounded-md border border-border px-2.5 py-1.5">
+            <div className="mt-2 flex items-center justify-between gap-2 rounded-md border border-border px-3 py-1.5">
               <span className="shrink-0 text-sm text-muted-foreground">{t("timeLabel")}</span>
               <div className="flex items-center gap-1">
                 <CompactTimePill min={startMin} onChange={setStartMin} placeholder={t("noTime")} />
@@ -200,7 +200,7 @@ export function TaskTimeCard({
               minDate={dueDate ?? undefined}
             />
 
-            <div className="flex items-center justify-between rounded-md border border-border px-2.5 py-2">
+            <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
               <span className="text-sm">{t("allDay")}</span>
               <Switch
                 checked={startMin == null && endMin == null}
