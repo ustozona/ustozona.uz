@@ -19,10 +19,15 @@
 
 .push-btn {
   border-radius: var(--choice-radius);
+  /* Qalinlik sahna shriftidan (lib/stage-fonts.ts), sahnadan tashqarida 600. */
+  font-weight: var(--stage-w-button, 600);
   box-shadow: 0 var(--push-edge) 0 0 var(--push-edge-color);
+  /* Sahna harakat egri chizigʻi (--stage-ease, quiz-stage.css). Bosish
+     tez boʻlishi uchun 0.25 s — egri boshida keskin, barmoq kechikishni
+     sezmaydi. */
   transition:
-    transform 0.06s ease,
-    box-shadow 0.06s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.12s ease;
   /* Tez ketma-ket bosishda matn belgilanib qolmasin. */
   user-select: none;
@@ -38,6 +43,15 @@
   box-shadow: 0 1px 0 0 var(--push-edge-color);
 }
 
+/* Sichqonchali qurilmada (Doska, kompyuter sinfi) ustiga kelganda
+   yarim bosiladi — telefonda hover yoʻq, u yerda faqat `:active`. */
+@media (hover: hover) {
+  .push-btn:hover:not(:disabled):not(:active):not([data-pressed="true"]) {
+    transform: translateY(calc(var(--push-travel) / 2));
+    box-shadow: 0 calc(var(--push-edge) - var(--push-travel) / 2) 0 0 var(--push-edge-color);
+  }
+}
+
 .push-btn:disabled {
   opacity: 0.5;
   box-shadow: 0 var(--push-edge) 0 0 var(--push-edge-color);
@@ -51,7 +65,8 @@
     transition: background-color 0.12s ease;
   }
   .push-btn:active:not(:disabled),
-  .push-btn[data-pressed="true"]:not(:disabled) {
+  .push-btn[data-pressed="true"]:not(:disabled),
+  .push-btn:hover:not(:disabled) {
     transform: none;
   }
 }

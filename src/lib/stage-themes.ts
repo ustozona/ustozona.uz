@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { CLASS_COLORS, CLASS_COLOR_BASE, type ClassColor } from "@/lib/class-colors";
 
 /* Sahna mavzulari — test muharriri, oʻquvchi ekrani (/play) va Doska
@@ -43,7 +44,9 @@ function hueOf(oklch: string): number {
    `bg`   — sahna foni;
    `band` — karta pastidagi nom lentasi (fonning toʻqroq/yorugʻroq
             varianti — viktorina-uslub kartalarida ham aynan shunday);
-   `onBand` — lenta ustidagi matn rangi.
+   `onBand` — lenta ustidagi matn rangi;
+   `accent` — slayd urgʻusi (sarlavha chizigʻi, roʻyxat nuqtalari): oq
+            karta ustida oʻqiladigan toʻq ton, fon bilan bir oila.
    Rang aralashtirish qoʻlda yozilgan: `color-mix(var(...))` Turbopack'da
    buziladi (memory: turbopack-css-gotchas).
 
@@ -57,6 +60,7 @@ export const STAGE_THEMES: ReadonlyArray<{
   bg: string;
   band: string;
   onBand: "light" | "dark";
+  accent: string;
 }> = CLASS_COLORS.map((color) => {
   const h = hueOf(CLASS_COLOR_BASE[color]);
   return {
@@ -66,9 +70,16 @@ export const STAGE_THEMES: ReadonlyArray<{
     bg: `linear-gradient(160deg, oklch(0.72 0.16 ${h}), oklch(0.5 0.18 ${h}))`,
     band: `oklch(0.38 0.14 ${h})`,
     onBand: "light",
+    accent: `oklch(0.5 0.18 ${h})`,
   };
 });
 
 export function stageThemeBg(id: string): string {
   return (STAGE_THEMES.find((t) => t.id === id) ?? STAGE_THEMES[0]).bg;
+}
+
+/** Sahna ildiziga qoʻyiladigan mavzu oʻzgaruvchilari: fon va urgʻu. */
+export function stageThemeVars(id: string): CSSProperties {
+  const theme = STAGE_THEMES.find((t) => t.id === id) ?? STAGE_THEMES[0];
+  return { "--stage-bg": theme.bg, "--stage-accent": theme.accent } as CSSProperties;
 }

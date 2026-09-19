@@ -22,6 +22,11 @@ export type LiveState = {
   revealed: boolean;
   /** Sessiya tugaganmi — oʻquvchi yakuniy ekranga oʻtadi. */
   ended: boolean;
+  /** Javobi ochilgan faoliyat — oʻquvchi ekrani faqat shu savolni boʻyaydi. */
+  revealedActivityId?: string;
+  /** Ochilgan test savolining toʻgʻri variantlari. Javob OCHILGUNCHA
+      hech qachon yuborilmaydi (aks holda telefondan koʻchirib olinardi). */
+  correctOptionIds?: string[];
 };
 
 /** Bitta faoliyat (savol) boʻyicha jonli natija. */

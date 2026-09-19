@@ -86,7 +86,7 @@
     "space-arbitrary": 1
   },
   "src/app/play/[code]/_components/PlayView.tsx": {
-    "font-bold": 3
+    "font-bold": 1
   },
   "src/components/ClassCard.tsx": {
     "text-px": 1

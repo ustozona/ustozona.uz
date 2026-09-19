@@ -1,41 +1,65 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowRight, LayoutGrid, Rows3, Plus, Trash2 } from "lucide-react";
 import { SlideView } from "@/components/slides/SlideView";
 import { compressImageFile } from "@/lib/image-compress";
 import { slideLayoutOf } from "@/lib/slide-layouts";
+import { stageFontVars } from "@/lib/stage-fonts";
+import { STAGE_FONT_CLASS } from "@/components/stage/stage-font-faces";
 import { uploadEditorImageAction } from "@/server/actions/uploads";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { MAX_PAIRS, newPair, stageThemeBg, type DraftQuestion } from "./types";
+import { MAX_PAIRS, newPair, stageThemeVars, type DraftQuestion } from "./types";
 import TestOptionCard from "./TestOptionCard";
+import { ChoiceShape, choiceVars } from "@/components/stage/StageParts";
 
-/* Markaziy kanvas — savol matni va javob kartalari. Javob kartalari
-   HAR DOIM neytral (`TestOptionCard`) — bu oʻquvchi qurilmasida
-   koʻradigan oddiy roʻyxat bilan bir xil, uslub tanlash sozlamasi yoʻq. */
+/* Markaziy kanvas — savol matni va javob kartalari. Kartalar oʻquvchi
+   telefoni va Doska bilan BIR XIL sahna tilida (`--stage-choice-N`
+   rang + shakl, oq karta, shisha joy) — muharrirda koʻrilgani
+   proyektorda ham shunday chiqadi. */
 
 type Props = {
   question: DraftQuestion;
   /** Sahna foni — toʻplam darajasidagi sozlama (reyldagi "Mavzu"). */
   stageTheme: string;
+  /** Sahna shrifti — toʻplam darajasida, "Mavzu" panelida tanlanadi. */
+  stageFont: string;
+  /** Sahna uslubi — klassik / zamonaviy (lib/stage-styles.ts). */
+  stageStyle: string;
   onChange: (patch: Partial<DraftQuestion>) => void;
 };
 
-export default function QuestionCanvas({ question, stageTheme, onChange }: Props) {
+export default function QuestionCanvas({ question, stageTheme, stageFont, stageStyle, onChange }: Props) {
   if (question.shape === "slide") {
-    return <SlideCanvas question={question} stageTheme={stageTheme} onChange={onChange} />;
+    return (
+      <SlideCanvas
+        question={question}
+        stageTheme={stageTheme}
+        stageFont={stageFont}
+        stageStyle={stageStyle}
+        onChange={onChange}
+      />
+    );
   }
-  return <QuizCanvas question={question} stageTheme={stageTheme} onChange={onChange} />;
+  return (
+    <QuizCanvas
+      question={question}
+      stageTheme={stageTheme}
+      stageFont={stageFont}
+      stageStyle={stageStyle}
+      onChange={onChange}
+    />
+  );
 }
 
 /* Slayd — oʻsha 16:9 sahna, ichida umumiy `SlideView` tahrir rejimida.
    Oʻquvchi ekrani va Doska ham aynan shu rendererni chizadi, shuning
    uchun muharrirda koʻrilgan slayd proyektorda ham shunday chiqadi. */
-function SlideCanvas({ question, stageTheme, onChange }: Props) {
+function SlideCanvas({ question, stageTheme, stageFont, onChange }: Props) {
   const [uploading, setUploading] = useState(false);
   const bg = question.slideBg ?? stageTheme;
 
@@ -56,8 +80,8 @@ function SlideCanvas({ question, stageTheme, onChange }: Props) {
     <div className="quiz-stage-frame h-full w-full bg-muted/20 p-4">
       <div className="quiz-stage-column">
         <div
-          className="quiz-stage"
-          style={{ "--stage-bg": stageThemeBg(bg) } as CSSProperties}
+          className={cn("quiz-stage stage-font", STAGE_FONT_CLASS)}
+          style={{ ...stageThemeVars(bg), ...stageFontVars(stageFont) }}
         >
           <SlideView
             slide={{
@@ -81,7 +105,7 @@ function SlideCanvas({ question, stageTheme, onChange }: Props) {
   );
 }
 
-function QuizCanvas({ question, stageTheme, onChange }: Props) {
+function QuizCanvas({ question, stageTheme, stageFont, stageStyle, onChange }: Props) {
   function patchOption(id: string, patch: Partial<DraftQuestion["options"][number]>) {
     onChange({
       options: question.options.map((o) => (o.id === id ? { ...o, ...patch } : o)),
@@ -108,8 +132,9 @@ function QuizCanvas({ question, stageTheme, onChange }: Props) {
     <div className="quiz-stage-frame h-full w-full bg-muted/20 p-4">
       <div className="quiz-stage-column">
         <div
-          className="quiz-stage"
-          style={{ "--stage-bg": stageThemeBg(stageTheme) } as CSSProperties}
+          className={cn("quiz-stage stage-font", STAGE_FONT_CLASS)}
+          data-stage-style={stageStyle}
+          style={{ ...stageThemeVars(stageTheme), ...stageFontVars(stageFont) }}
         >
           <Textarea
             value={question.stem}
@@ -117,22 +142,22 @@ function QuizCanvas({ question, stageTheme, onChange }: Props) {
             placeholder="Savolni shu yerga yozing…"
             rows={2}
             maxLength={2000}
-            className="quiz-stage-stem h-auto min-h-0 w-full resize-none border-0 bg-card text-center font-semibold shadow-sm md:text-[length:inherit]"
+            className="quiz-stage-stem h-auto min-h-0 w-full resize-none border-0 bg-card text-center shadow-sm md:text-[length:inherit]"
           />
 
           {question.shape === "text" ? (
             /* Ochiq javob — oʻquvchi erkin matn yozadi, oʻqituvchi keyin
                sessiya panelida qoʻlda baholaydi (0 / ½ / 1). */
-            <div className="mt-auto flex h-[30cqw] flex-col items-start justify-start gap-[1cqw] rounded-choice border-choice border-dashed border-border bg-card/70 p-[2cqw] text-muted-foreground">
-              <span className="quiz-stage-stem p-0 font-semibold">Oʻquvchi javobi shu yerga yoziladi…</span>
-              <span className="text-sm">Erkin matn, 2000 belgigacha. Sessiyadan keyin qoʻlda baholaysiz.</span>
+            <div className="mt-auto flex h-[30cqw] flex-col items-start justify-start gap-[1cqw] rounded-choice border-2 border-dashed border-white/60 bg-white/15 p-[2cqw] text-white">
+              <span className="quiz-stage-stem p-0">Oʻquvchi javobi shu yerga yoziladi…</span>
+              <span className="text-sm text-white/85">Erkin matn, 2000 belgigacha. Sessiyadan keyin qoʻlda baholaysiz.</span>
             </div>
           ) : question.shape === "wordcloud" ? (
             /* Soʻz buluti — oʻquvchi bitta qisqa soʻz yozadi; doskada eng koʻp
                yozilgan soʻzlar kattaroq chiqadi. Muharrirda kiritish yoʻq. */
-            <div className="mt-auto flex h-[30cqw] flex-col items-center justify-center gap-[1cqw] rounded-choice border-choice border-dashed border-border bg-card/70 text-muted-foreground">
-              <span className="quiz-stage-stem font-semibold">Soʻz buluti</span>
-              <span className="text-sm">Oʻquvchilar bitta qisqa soʻz yozadi (40 belgigacha)</span>
+            <div className="mt-auto flex h-[30cqw] flex-col items-center justify-center gap-[1cqw] rounded-choice border-2 border-dashed border-white/60 bg-white/15 text-white">
+              <span className="quiz-stage-stem">Soʻz buluti</span>
+              <span className="text-sm text-white/85">Oʻquvchilar bitta qisqa soʻz yozadi (40 belgigacha)</span>
             </div>
           ) : question.shape === "mcq" || question.shape === "poll" ? (
             <div
@@ -159,26 +184,38 @@ function QuizCanvas({ question, stageTheme, onChange }: Props) {
                qatʼiy, shuning uchun roʻyxat oʻz ichida aylanadi. */
             <div className="mt-auto flex min-h-0 flex-col gap-2 scrollbar-hover overflow-y-auto">
               {question.pairs.map((pair, index) => (
+                /* Doska'dagi koʻrinish bilan bir xil: chap — variant rangidagi
+                   plitka (shakl bilan), oʻng — oq karta (javob ochilganda chiqadi). */
                 <div key={pair.id} className="flex items-center gap-2">
-                  <Input
-                    value={pair.left}
-                    onChange={(e) => patchPair(pair.id, { left: e.target.value })}
-                    placeholder={`${index + 1}-chap`}
-                    maxLength={300}
-                    className="h-11 flex-1"
-                  />
-                  <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+                  <div
+                    className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-choice px-3 text-white"
+                    style={{
+                      ...choiceVars(index),
+                      background: "var(--choice)",
+                      boxShadow: "0 0.2rem 0 0 var(--stage-choice-edge)",
+                    }}
+                  >
+                    <ChoiceShape index={index} className="size-4 shrink-0" />
+                    <input
+                      value={pair.left}
+                      onChange={(e) => patchPair(pair.id, { left: e.target.value })}
+                      placeholder={`${index + 1}-chap`}
+                      maxLength={300}
+                      className="h-full min-w-0 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/70"
+                    />
+                  </div>
+                  <ArrowRight className="size-4 shrink-0 text-white" />
                   <Input
                     value={pair.right}
                     onChange={(e) => patchPair(pair.id, { right: e.target.value })}
                     placeholder={`${index + 1}-oʻng`}
                     maxLength={300}
-                    className="h-11 flex-1"
+                    className="h-11 flex-1 border-0 bg-card font-medium text-foreground shadow-sm"
                   />
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="shrink-0"
+                    className="shrink-0 text-white hover:bg-white/15 hover:text-white"
                     aria-label="Juftlikni oʻchirish"
                     disabled={question.pairs.length <= 2}
                     onClick={() => onChange({ pairs: question.pairs.filter((p) => p.id !== pair.id) })}

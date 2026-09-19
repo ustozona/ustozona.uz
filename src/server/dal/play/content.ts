@@ -87,6 +87,10 @@ export type PlaySessionContent = {
   currentIndex: number;
   /** Toʻplam sahna mavzusi (`activity_sets.config.stageTheme`) — slayd foni. */
   stageTheme?: string;
+  /** Toʻplam sahna shrifti (`activity_sets.config.stageFont`). */
+  stageFont?: string;
+  /** Toʻplam sahna uslubi (`activity_sets.config.stageStyle`). */
+  stageStyle?: string;
   steps: PlayStep[];
 };
 
@@ -176,7 +180,14 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
         itemId: item.id,
         activityId,
         stem: content.stem,
-        options: content.options.map((o) => ({ id: o.id, text: o.text })),
+        /* Oʻz tezligidagi rejimda variantlar har oʻquvchiga aralashtiriladi:
+           rang/tartib («men qizilni bosdim») javobni bildirmasin. Jonli
+           rejimda EMAS — u yerda telefon rangi proyektordagi bilan mos
+           boʻlishi kerak. */
+        options: (session.mode === "live" ? content.options : shuffled(content.options)).map((o) => ({
+          id: o.id,
+          text: o.text,
+        })),
         pointsMultiplier,
       });
     } else if (shape === "text") {
@@ -212,12 +223,18 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
     }
   }
 
-  const stageTheme = (set?.config as { stageTheme?: string } | undefined)?.stageTheme;
+  const setConfig = set?.config as
+    | { stageTheme?: string; stageFont?: string; stageStyle?: string }
+    | undefined;
+  const stageTheme = setConfig?.stageTheme;
+  const stageFont = setConfig?.stageFont;
   return {
     sessionId: session.id,
     mode: session.mode,
     currentIndex: session.currentIndex,
     stageTheme,
+    stageFont,
+    stageStyle: setConfig?.stageStyle,
     steps,
   };
 }

@@ -19,7 +19,8 @@ import {
    shu komponentni chizadi — aks holda uch joyda uch xil slayd chiqardi.
 
    Komponent sahnaning ICHINI chizadi: ota-element `.quiz-stage` boʻlishi
-   kerak (16:9, `container-type: inline-size`, `--stage-bg`). Oʻlchamlar
+   kerak (16:9, `container-type: inline-size`, `--stage-bg` va urgʻu
+   `--stage-accent` — `stageThemeVars()`). Oʻlchamlar
    `cqw` da, shuning uchun sahna qaysi oʻlchamda boʻlmasin nisbat bir xil.
 
    `edit` berilsa — matnlar joyida tahrirlanadi (WYSIWYG), rasm oʻrni
@@ -85,6 +86,7 @@ export function SlideView({ slide, edit }: { slide: SlideContent; edit?: SlideEd
         >
           <div className="flex min-h-0 min-w-0 flex-col gap-[2cqw]">
             {title("slide-h")}
+            <span aria-hidden className="slide-accent-bar" />
             {edit ? (
               body("slide-text")
             ) : (
@@ -94,7 +96,7 @@ export function SlideView({ slide, edit }: { slide: SlideContent; edit?: SlideEd
                     <span
                       aria-hidden
                       className="mt-[0.55em] size-[0.45em] shrink-0 rounded-full"
-                      style={{ background: "var(--stage-bg)" }}
+                      style={{ background: "var(--stage-accent)" }}
                     />
                     <span className="min-w-0">{item}</span>
                   </li>
@@ -137,7 +139,7 @@ export function SlideView({ slide, edit }: { slide: SlideContent; edit?: SlideEd
     case "quote":
       return (
         <div className="slide-panel items-center justify-center gap-[3cqw] text-center">
-          <Quote aria-hidden className="size-[7cqw] opacity-25" />
+          <Quote aria-hidden className="size-[7cqw]" style={{ color: "var(--stage-accent)" }} />
           {body("slide-text-lg text-center italic")}
           {(edit || slide.title) && (
             <div className="slide-caption flex items-center gap-[1cqw] text-muted-foreground">
@@ -153,6 +155,7 @@ export function SlideView({ slide, edit }: { slide: SlideContent; edit?: SlideEd
       return (
         <div className="slide-panel">
           {title("slide-h")}
+          <span aria-hidden className="slide-accent-bar" />
           {body("slide-text whitespace-pre-wrap")}
         </div>
       );

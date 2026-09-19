@@ -1,6 +1,8 @@
 "use server";
 
 import { z } from "zod";
+import { STAGE_FONT_IDS } from "@/lib/stage-fonts";
+import { STAGE_STYLE_IDS } from "@/lib/stage-styles";
 import { createBank, listBanks } from "@/server/dal/assess/banks";
 import {
   createActivity,
@@ -246,6 +248,10 @@ const saveSetDraftSchema = z.object({
   purpose: z.enum(["formative", "summative"]),
   /** Sahna foni — muharrirdagi 16:9 maydon va jonli ekran uchun. */
   stageTheme: z.string().min(1).max(40).default("neutral"),
+  /** Sahna shrifti — faqat tekshirilgan roʻyxatdan (lib/stage-fonts.ts). */
+  stageFont: z.enum(STAGE_FONT_IDS).optional(),
+  /** Sahna uslubi — tayyor koʻrinish (lib/stage-styles.ts). */
+  stageStyle: z.enum(STAGE_STYLE_IDS).optional(),
   questions: z.array(draftQuestionSchema).min(1),
 });
 
@@ -482,6 +488,8 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
     config: {
       ...(previous?.config ?? {}),
       stageTheme: parsed.stageTheme,
+      ...(parsed.stageFont ? { stageFont: parsed.stageFont } : {}),
+      ...(parsed.stageStyle ? { stageStyle: parsed.stageStyle } : {}),
     },
   };
 

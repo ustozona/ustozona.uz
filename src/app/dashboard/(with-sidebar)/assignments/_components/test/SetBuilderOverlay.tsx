@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { stageFontOf, type StageFontId } from "@/lib/stage-fonts";
+import { stageStyleOf, type StageStyleId } from "@/lib/stage-styles";
 import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { Check, Loader2, Minus, X } from "lucide-react";
@@ -65,6 +67,8 @@ export default function SetBuilderOverlay({
   const setIdRef = useRef(setId);
   const [title, setTitle] = useState(() => (setId ? "" : initialTitle ?? ""));
   const [stageTheme, setStageTheme] = useState("violet");
+  const [stageFont, setStageFont] = useState<StageFontId>(stageFontOf(null).id);
+  const [stageStyle, setStageStyle] = useState<StageStyleId>(stageStyleOf(null).id);
   const [questions, setQuestions] = useState<DraftQuestion[]>(() =>
     // Taqdimot sarlavha slaydidan boshlanadi — birinchi ekran mavzu nomi.
     setId ? [] : [firstShape === "slide" ? { ...newQuestion("slide"), slideLayout: "title" } : newQuestion(firstShape)]
@@ -100,9 +104,11 @@ export default function SetBuilderOverlay({
         return;
       }
       const loaded: DraftQuestion[] = draft.questions.map((q) => ({ ...q, key: crypto.randomUUID() }));
-      const config = draft.set.config as { stageTheme?: string };
+      const config = draft.set.config as { stageTheme?: string; stageFont?: string; stageStyle?: string };
       setTitle(draft.set.title);
       setStageTheme(config.stageTheme ?? "violet");
+      setStageFont(stageFontOf(config.stageFont).id);
+      setStageStyle(stageStyleOf(config.stageStyle).id);
       setQuestions(loaded.length > 0 ? loaded : [newQuestion("mcq")]);
       setLoading(false);
     });
@@ -346,6 +352,8 @@ export default function SetBuilderOverlay({
         title: cleanTitle,
         purpose: "summative",
         stageTheme,
+        stageFont,
+        stageStyle,
         questions: buildPayload(),
       });
       setIdRef.current = draft.set.id;
@@ -373,7 +381,7 @@ export default function SetBuilderOverlay({
     setSaving(true);
     try {
       const draft = await persist(cleanTitle);
-      savedSnapshotRef.current = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme });
+      savedSnapshotRef.current = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme, stageFont, stageStyle });
       onSaved(draft.set);
       onClose();
     } catch (e) {
@@ -391,7 +399,7 @@ export default function SetBuilderOverlay({
     if (loading) return;
     const cleanTitle = title.trim();
     if (!cleanTitle) return;
-    const sig = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme });
+    const sig = JSON.stringify({ title: cleanTitle, questions: buildPayload(), stageTheme, stageFont, stageStyle });
     if (sig === savedSnapshotRef.current) return;
     const timer = setTimeout(async () => {
       setAutosaving(true);
@@ -413,7 +421,7 @@ export default function SetBuilderOverlay({
     }, 2000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, questions, stageTheme, loading]);
+  }, [title, questions, stageTheme, stageFont, stageStyle, loading]);
 
   /* Yopishni soʻraydi: nom hali kiritilmagan boʻlsa avtosaqlash ishlamagan
      boʻladi — shu bitta holatda "chindan ham tashlaymizmi?" soʻraladi. */
@@ -517,6 +525,8 @@ export default function SetBuilderOverlay({
             <QuestionCanvas
               question={active}
               stageTheme={stageTheme}
+              stageFont={stageFont}
+              stageStyle={stageStyle}
               onChange={patchActive}
             />
           ) : (
@@ -529,6 +539,10 @@ export default function SetBuilderOverlay({
             <ThemesPanel
               value={stageTheme}
               onChange={setStageTheme}
+              font={stageFont}
+              onFontChange={setStageFont}
+              stageStyle={stageStyle}
+              onStageStyleChange={setStageStyle}
               onClose={() => setPanel(null)}
             />
           )}

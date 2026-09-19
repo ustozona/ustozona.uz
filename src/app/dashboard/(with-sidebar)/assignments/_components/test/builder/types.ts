@@ -30,6 +30,7 @@ export {
   STAGE_THEME_GROUPS,
   STAGE_THEMES,
   stageThemeBg,
+  stageThemeVars,
   type StageThemeGroup,
 } from "@/lib/stage-themes";
 
