@@ -261,6 +261,7 @@ export function ClassFormModal({
               <Label htmlFor="cfm-subject">{t("subject")}</Label>
               <SubjectPicker
                 id="cfm-subject"
+                suggestProfileSubject
                 value={subject}
                 onChange={setSubject}
                 placeholder={t("subjectPlaceholder")}

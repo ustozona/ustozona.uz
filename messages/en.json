@@ -3265,6 +3265,7 @@
     "search": "Search subjects…",
     "empty": "No subjects found",
     "mySubjects": "My subjects",
+    "suggested": "Recommended",
     "addCustom": "Add \"{value}\" as a subject",
     "clear": "Clear selection"
   },

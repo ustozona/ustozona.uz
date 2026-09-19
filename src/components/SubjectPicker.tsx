@@ -22,6 +22,7 @@ import {
   subjectLabel,
 } from "@/lib/standards-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 /* ════════════════════════════════════════════════════════════════════
    FAN TANLAGICH — fan tanlanadigan HAR joyda shu komponent
@@ -72,6 +73,7 @@ export function SubjectPicker({
   id,
   placeholder,
   className,
+  suggestProfileSubject = false,
 }: {
   /** Katalog `id` yoki `custom:<nom>`. */
   value: string;
@@ -79,11 +81,17 @@ export function SubjectPicker({
   id?: string;
   placeholder?: string;
   className?: string;
+  /** Oʻqituvchi profilidagi fanni roʻyxat boshida «Tavsiya» sifatida koʻrsatish. */
+  suggestProfileSubject?: boolean;
 }) {
   const t = useTranslations("SubjectPicker");
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const customSubjects = useCustomSubjects(value);
+  const profileSubject = useSettingsStore((s) => s.profile.subject);
+  // Tavsiya etilgan fan pastdagi guruhlarda takrorlanmaydi — cmdk bir xil
+  // `value` li ikki elementni bitta deb biladi.
+  const suggested = suggestProfileSubject && subjectLabel(profileSubject) ? profileSubject : "";
 
   const pick = (next: string) => {
     onChange(next);
@@ -152,9 +160,17 @@ export function SubjectPicker({
               <span className="px-2 py-1.5 text-sm">{t("empty")}</span>
             </CommandEmpty>
 
-            {customSubjects.length > 0 ? (
+            {suggested ? (
+              <CommandGroup heading={t("suggested")}>
+                <CommandItem value={subjectLabel(suggested)} onSelect={() => pick(suggested)}>
+                  {subjectLabel(suggested)}
+                </CommandItem>
+              </CommandGroup>
+            ) : null}
+
+            {customSubjects.filter((s) => s !== suggested).length > 0 ? (
               <CommandGroup heading={t("mySubjects")}>
-                {customSubjects.map((s) => (
+                {customSubjects.filter((s) => s !== suggested).map((s) => (
                   <CommandItem key={s} value={subjectLabel(s)} onSelect={() => pick(s)}>
                     {subjectLabel(s)}
                   </CommandItem>
@@ -164,7 +180,7 @@ export function SubjectPicker({
 
             {SUBJECT_GROUPS_BY_AREA.map((g) => (
               <CommandGroup key={g.id} heading={g.label}>
-                {g.items.map((s) => (
+                {g.items.filter((s) => s.id !== suggested).map((s) => (
                   <CommandItem key={s.id} value={s.label} onSelect={() => pick(s.id)}>
                     {s.label}
                   </CommandItem>
