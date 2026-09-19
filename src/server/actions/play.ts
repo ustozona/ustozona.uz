@@ -39,10 +39,10 @@ const submitSchema = z.object({
 
 export async function submitResponseAction(
   input: z.infer<typeof submitSchema>
-): Promise<{ isCorrect: boolean | null }> {
+): Promise<{ isCorrect: boolean | null; correctOptionIds?: string[] }> {
   const parsed = submitSchema.parse(input) as SubmitResponseInput;
-  const row = await submitResponse(parsed);
-  return { isCorrect: row?.isCorrect ?? null };
+  const { row, correctOptionIds } = await submitResponse(parsed);
+  return { isCorrect: row?.isCorrect ?? null, correctOptionIds };
 }
 
 /** Oʻyin qobigʻining toʻliq havolasi — qobiq boshqa domenda turadi,

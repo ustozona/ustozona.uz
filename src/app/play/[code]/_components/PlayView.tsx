@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import PushButton from "@/app/play/_components/PushButton";
 import {
@@ -20,8 +20,19 @@ import {
 } from "@/server/actions/play";
 import type { PlaySessionContent } from "@/server/dal/play/content";
 import { SlideView } from "@/components/slides/SlideView";
-import { stageThemeBg } from "@/lib/stage-themes";
+import { stageThemeVars } from "@/lib/stage-themes";
+import { stageFontVars } from "@/lib/stage-fonts";
+import { STAGE_FONT_CLASS } from "@/components/stage/stage-font-faces";
 import { STUDENT_POLL_MS, type LiveState } from "@/lib/live-session";
+import {
+  ChoiceGrid,
+  ChoiceTile,
+  ResultBanner,
+  StageCounter,
+  StageProgress,
+  type ChoiceState,
+} from "@/components/stage/StageParts";
+import { cn } from "@/lib/utils";
 
 /* Ishtirokchi ekrani — `data-surface="handheld"` (proxy.ts orqali
    avtomatik teglangan, 17px/48px shkala). Akkauntsiz: token
@@ -68,12 +79,63 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
      soʻraydi. «Keyingisi» tugmasi yoʻq; javobdan keyin oʻquvchi kutadi,
      oʻqituvchi javobni ochganda natijasini koʻradi. */
   const live = content?.mode === "live";
+
+  /* Sahna shrifti butun oʻyin ekraniga (qoʻshilish, savollar, natija,
+     portal ichidagi menyular ham) — shuning uchun har `return` shoxini
+     oʻramasdan `body` ga qoʻyiladi va sahifadan chiqqanda olib tashlanadi. */
+  const stageFont = content?.stageFont;
+  useEffect(() => {
+    const body = document.body;
+    const classes = ["stage-font", ...STAGE_FONT_CLASS.split(" ")];
+    const vars = Object.entries(stageFontVars(stageFont));
+    body.classList.add(...classes);
+    for (const [k, v] of vars) body.style.setProperty(k, String(v));
+    return () => {
+      body.classList.remove(...classes);
+      for (const [k] of vars) body.style.removeProperty(k);
+    };
+  }, [stageFont]);
   const [liveState, setLiveState] = useState<LiveState | null>(null);
+
+  /* KLAVIATURA 1–6 — kompyuter sinfida variantni raqam bilan tanlash
+     (plitkadagi raqam). Faqat test va soʻrovnoma ekranida, javob
+     qulflanmagan boʻlsa; matn maydonida yozilayotgan raqam ushlanmaydi.
+     Tinglovchi bir marta ulanadi, joriy holat ref orqali oʻqiladi. */
+  const digitKeyRef = useRef<((e: KeyboardEvent) => void) | null>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => digitKeyRef.current?.(e);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   /** activityId → javob natijasi (true/false; moslashtirishda null — tugatdi). */
   const [liveAnswers, setLiveAnswers] = useState<Record<string, boolean | null>>({});
   const [liveStepSeen, setLiveStepSeen] = useState<number | null>(null);
   /** Soʻz buluti maydoni. */
   const [wordText, setWordText] = useState("");
+  /** Oʻz tezligidagi rejim: javob yuborilgach shu savolning natija ekrani. */
+  const [reveal, setReveal] = useState<{
+    activityId: string;
+    correctIds: string[];
+    isCorrect: boolean | null;
+  } | null>(null);
+
+  useEffect(() => {
+    digitKeyRef.current = (e) => {
+      if (phase !== "playing" || !content || submitting) return;
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const step = content.steps[stepIndex];
+      if (!step || (step.kind !== "mcq" && step.kind !== "poll")) return;
+      const n = Number(e.key);
+      if (!Number.isInteger(n) || n < 1 || n > Math.min(6, step.options.length)) return;
+      const answered = live
+        ? step.activityId in liveAnswers || (step.kind === "mcq" && Boolean(liveState?.revealed))
+        : reveal?.activityId === step.activityId;
+      if (answered) return;
+      e.preventDefault();
+      setSelectedOption(step.options[n - 1].id);
+    };
+  });
 
   useEffect(() => {
     if (phase !== "playing" || !live) return;
@@ -195,6 +257,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
 
   function advanceStep(c: PlaySessionContent) {
     setSelectedOption(null);
+    setReveal(null);
     setMatchedLeftIds(new Set());
     setPickedLeftId(null);
     if (stepIndex + 1 < c.steps.length) {
@@ -211,7 +274,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     setSubmitting(true);
     try {
       const token = localStorage.getItem(tokenKey(joinCode))!;
-      const { isCorrect } = await submitResponseAction({
+      const { isCorrect, correctOptionIds } = await submitResponseAction({
         token,
         itemId: step.itemId,
         answer: { optionId: selectedOption },
@@ -223,7 +286,9 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
       }
       setError(null);
       if (live) setLiveAnswers((prev) => ({ ...prev, [step.activityId]: Boolean(isCorrect) }));
-      else advanceStep(content);
+      // Oʻz tezligida — darhol keyingisiga EMAS, natija ekraniga: toʻgʻri
+      // variant yashil, xato tanlov qizil, keyin «Keyingisi».
+      else setReveal({ activityId: step.activityId, correctIds: correctOptionIds ?? [], isCorrect });
     } catch (e) {
       if (handleLiveDuplicate(e, step.activityId)) return;
       setError(e instanceof Error ? e.message : "Yuborishda xatolik");
@@ -351,68 +416,123 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     const liveNote = !live ? null : liveDone ? (
       liveState?.revealed ? (
         liveAnswer === null ? (
-          <p className="text-center text-lg font-semibold">Javob ochildi — doskaga qarang</p>
+          <ResultBanner kind="info" inline>
+            Javob ochildi — doskaga qarang
+          </ResultBanner>
         ) : liveAnswer ? (
-          <p className="text-center text-2xl font-semibold text-success">✓ Toʻgʻri!</p>
+          <ResultBanner kind="correct" inline>
+            Toʻgʻri!
+          </ResultBanner>
         ) : (
-          <p className="text-center text-2xl font-semibold text-destructive">✗ Notoʻgʻri</p>
+          <ResultBanner kind="wrong" inline>
+            Notoʻgʻri
+          </ResultBanner>
         )
       ) : (
-        <p className="text-center text-muted-foreground">Javobingiz qabul qilindi — kuting</p>
+        <p className="text-center text-white/85">Javobingiz qabul qilindi — kuting</p>
       )
     ) : liveState?.revealed && graded ? (
-      <p className="text-center text-muted-foreground">Javob vaqti tugadi</p>
+      <ResultBanner kind="timeout" inline>
+        Javob vaqti tugadi
+      </ResultBanner>
     ) : null;
 
+    const errorNote = error && (
+      <p className="rounded-lg bg-white/90 px-3 py-2 text-center text-sm text-destructive">{error}</p>
+    );
+    const screen = (label: string | null, children: React.ReactNode) => (
+      <div
+        className="stage-screen flex flex-col gap-5 p-5"
+        data-stage-style={content.stageStyle ?? "classic"}
+        style={stageThemeVars(content.stageTheme ?? "")}
+      >
+        <div className="flex flex-col gap-2">
+          <StageProgress total={content.steps.length} current={stepIndex} />
+          {label && <p className="text-sm text-white/80">{label}</p>}
+        </div>
+        {children}
+      </div>
+    );
+
+    /* Toʻgʻri variantlar — javob ochilganda plitkalar boʻyaladi: toʻgʻri
+       yashil ✓, oʻquvchi tanlagan xato qizil ✗, qolganlari xira. Jonli
+       rejimda oʻqituvchi ochgandagina keladi (getLiveState), oʻz tezligida
+       — javob yuborilgach (submitResponse). */
+    const revealIds: string[] | null =
+      step.kind !== "mcq"
+        ? null
+        : live
+          ? liveState?.revealed && liveState.revealedActivityId === step.activityId
+            ? (liveState.correctOptionIds ?? [])
+            : null
+          : reveal?.activityId === step.activityId
+            ? reveal.correctIds
+            : null;
+    const tileState = (optionId: string): ChoiceState => {
+      if (revealIds) {
+        if (revealIds.includes(optionId)) return "correct";
+        return optionId === selectedOption ? "wrong" : "ghost";
+      }
+      if (!selectedOption) return "idle";
+      return optionId === selectedOption ? "selected" : "dim";
+    };
+
     if (step.kind === "mcq") {
-      return (
-        <div className="flex h-screen flex-col gap-6 p-6">
-          <p className="text-sm text-muted-foreground">
-            {stepIndex + 1} / {content.steps.length}
-          </p>
-          <h1 className="text-xl font-semibold leading-snug">{step.stem}</h1>
-          <div className="flex flex-1 flex-col gap-3">
-            {step.options.map((option) => (
-              <PushButton
+      const selfReveal = !live && reveal?.activityId === step.activityId ? reveal : null;
+      // «+ball» — zamonaviy uslubda toʻgʻri plitkada, faqat oʻzi toʻgʻri topgan boʻlsa.
+      const earned =
+        content.stageStyle === "modern" && (live ? liveAnswer === true : selfReveal?.isCorrect)
+          ? 100 * step.pointsMultiplier
+          : 0;
+      return screen(
+        null,
+        <>
+          <StageCounter current={stepIndex} total={content.steps.length} />
+          <h1 className="stage-stem-pill text-xl">{step.stem}</h1>
+          <ChoiceGrid count={step.options.length} layout={step.answerLayout}>
+            {step.options.map((option, i) => (
+              <ChoiceTile
                 key={option.id}
-                pressed={selectedOption === option.id}
-                surface={
-                  selectedOption === option.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-card-foreground"
-                }
-                className="justify-start text-left"
-                disabled={liveLocked}
+                index={i}
+                state={tileState(option.id)}
+                points={earned && tileState(option.id) === "correct" ? earned : undefined}
+                disabled={liveLocked || Boolean(selfReveal) || submitting}
                 onClick={() => setSelectedOption(option.id)}
               >
                 {option.text}
-              </PushButton>
+              </ChoiceTile>
             ))}
-          </div>
-          {error && <p className="text-center text-sm text-destructive">{error}</p>}
-          {liveNote ?? (
-            <PushButton disabled={!selectedOption || submitting} onClick={handleMcqNext}>
-              {live ? "Javob berish" : stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
-            </PushButton>
+          </ChoiceGrid>
+          {errorNote}
+          {selfReveal ? (
+            <>
+              <ResultBanner kind={selfReveal.isCorrect ? "correct" : "wrong"} inline>
+                {selfReveal.isCorrect ? "Toʻgʻri!" : "Notoʻgʻri"}
+              </ResultBanner>
+              <PushButton onClick={() => advanceStep(content)}>
+                {stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
+              </PushButton>
+            </>
+          ) : (
+            (liveNote ?? (
+              <PushButton disabled={!selectedOption || submitting} onClick={handleMcqNext}>
+                {live ? "Javob berish" : "Javobni tekshirish"}
+              </PushButton>
+            ))
           )}
-        </div>
+        </>,
       );
     }
 
     // Taqdimot slaydi — javob yoʻq, serverga hech narsa yozilmaydi.
     if (step.kind === "slide") {
-      return (
-        <div className="flex h-screen flex-col gap-6 p-6">
-          <p className="text-sm text-muted-foreground">
-            {stepIndex + 1} / {content.steps.length}
-          </p>
+      return screen(
+        null,
+        <>
           {/* Muharrir va Doska bilan bir xil renderer — slayd hamma joyda
               bir xil koʻrinadi. Telefonda 16:9 sahna ekran eniga choʻziladi. */}
           <div className="flex flex-1 items-center">
-            <div
-              className="quiz-stage"
-              style={{ "--stage-bg": stageThemeBg(step.bg ?? content.stageTheme ?? "") } as React.CSSProperties}
-            >
+            <div className="quiz-stage" style={stageThemeVars(step.bg ?? content.stageTheme ?? "")}>
               <SlideView
                 slide={{
                   layout: step.layout,
@@ -425,45 +545,37 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
             </div>
           </div>
           {live ? (
-            <p className="text-center text-sm text-muted-foreground">
-              Keyingi slaydga oʻqituvchi oʻtkazadi
-            </p>
+            <p className="text-center text-sm text-white/80">Keyingi slaydga oʻqituvchi oʻtkazadi</p>
           ) : (
             <PushButton onClick={() => advanceStep(content)}>
               {stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
             </PushButton>
           )}
-        </div>
+        </>,
       );
     }
 
     // Soʻrovnoma — variant tanlanadi, toʻgʻri/notoʻgʻri koʻrsatilmaydi.
     if (step.kind === "poll") {
-      return (
-        <div className="flex h-screen flex-col gap-6 p-6">
-          <p className="text-sm text-muted-foreground">
-            {stepIndex + 1} / {content.steps.length} · Soʻrovnoma
-          </p>
-          <h1 className="text-xl font-semibold leading-snug">{step.stem}</h1>
-          <div className="flex flex-1 flex-col gap-3">
-            {step.options.map((option) => (
-              <PushButton
+      return screen(
+        "Soʻrovnoma",
+        <>
+          <StageCounter current={stepIndex} total={content.steps.length} />
+          <h1 className="stage-stem-pill text-xl">{step.stem}</h1>
+          <ChoiceGrid count={step.options.length} layout={step.answerLayout}>
+            {step.options.map((option, i) => (
+              <ChoiceTile
                 key={option.id}
-                pressed={selectedOption === option.id}
-                surface={
-                  selectedOption === option.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-card-foreground"
-                }
-                className="justify-start text-left"
-                disabled={liveLocked}
+                index={i}
+                state={tileState(option.id)}
+                disabled={liveLocked || submitting}
                 onClick={() => setSelectedOption(option.id)}
               >
                 {option.text}
-              </PushButton>
+              </ChoiceTile>
             ))}
-          </div>
-          {error && <p className="text-center text-sm text-destructive">{error}</p>}
+          </ChoiceGrid>
+          {errorNote}
           {liveNote ?? (
             <PushButton
               disabled={!selectedOption || submitting}
@@ -472,19 +584,18 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
               Yuborish
             </PushButton>
           )}
-        </div>
+        </>,
       );
     }
 
     // Soʻz buluti — bitta qisqa soʻz; doskada koʻp yozilgani kattaroq chiqadi.
     if (step.kind === "wordcloud") {
       const text = wordText.trim();
-      return (
-        <div className="flex h-screen flex-col gap-6 p-6">
-          <p className="text-sm text-muted-foreground">
-            {stepIndex + 1} / {content.steps.length} · Soʻz buluti
-          </p>
-          <h1 className="text-xl font-semibold leading-snug">{step.stem}</h1>
+      return screen(
+        "Soʻz buluti",
+        <>
+          <StageCounter current={stepIndex} total={content.steps.length} />
+          <h1 className="stage-stem-pill text-xl">{step.stem}</h1>
           <div className="flex flex-1 flex-col justify-center gap-2">
             <input
               value={wordText}
@@ -492,32 +603,31 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
               maxLength={40}
               disabled={liveLocked}
               placeholder="Bitta soʻz yoki qisqa ibora"
-              className="h-14 rounded-xl border-2 border-border bg-card px-4 text-lg outline-none focus:border-primary"
+              className="h-14 rounded-xl border-2 border-transparent bg-card px-4 text-lg text-foreground outline-none focus:border-white"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && text && !submitting) void handleOpinionSubmit({ text });
               }}
             />
-            <p className="text-right text-xs text-muted-foreground">{wordText.length}/40</p>
+            <p className="text-right text-xs text-white/80">{wordText.length}/40</p>
           </div>
-          {error && <p className="text-center text-sm text-destructive">{error}</p>}
+          {errorNote}
           {liveNote ?? (
             <PushButton disabled={!text || submitting} onClick={() => handleOpinionSubmit({ text })}>
               Yuborish
             </PushButton>
           )}
-        </div>
+        </>,
       );
     }
 
     // Ochiq javob — erkin matn; bahoni oʻqituvchi keyin qoʻyadi.
     if (step.kind === "text") {
       const text = wordText.trim();
-      return (
-        <div className="flex h-screen flex-col gap-6 p-6">
-          <p className="text-sm text-muted-foreground">
-            {stepIndex + 1} / {content.steps.length} · Ochiq javob
-          </p>
-          <h1 className="text-xl font-semibold leading-snug">{step.stem}</h1>
+      return screen(
+        "Ochiq javob",
+        <>
+          <StageCounter current={stepIndex} total={content.steps.length} />
+          <h1 className="stage-stem-pill text-xl">{step.stem}</h1>
           <div className="flex flex-1 flex-col gap-2">
             <textarea
               value={wordText}
@@ -525,27 +635,26 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
               maxLength={2000}
               disabled={liveLocked}
               placeholder="Javobingizni yozing…"
-              className="min-h-40 flex-1 resize-none rounded-xl border-2 border-border bg-card p-4 text-base outline-none focus:border-primary"
+              className="min-h-40 flex-1 resize-none rounded-xl border-2 border-transparent bg-card p-4 text-base text-foreground outline-none focus:border-white"
             />
-            <p className="text-right text-xs text-muted-foreground">{wordText.length}/2000</p>
+            <p className="text-right text-xs text-white/80">{wordText.length}/2000</p>
           </div>
-          {error && <p className="text-center text-sm text-destructive">{error}</p>}
+          {errorNote}
           {liveNote ?? (
             <PushButton disabled={!text || submitting} onClick={() => handleOpinionSubmit({ text })}>
               Yuborish
             </PushButton>
           )}
-        </div>
+        </>,
       );
     }
 
     // pairs — tegib moslashtirish: chapdan bittani tanlang, keyin oʻngdagi juftini bosing.
-    return (
-      <div className="flex h-screen flex-col gap-6 p-6">
-        <p className="text-sm text-muted-foreground">
-          {stepIndex + 1} / {content.steps.length} · Moslashtiring
-        </p>
-        <div className="grid flex-1 grid-cols-2 gap-3">
+    const pairCard = "min-h-14 rounded-xl px-3 py-2 text-left text-sm font-semibold transition-colors";
+    return screen(
+      "Moslashtiring",
+      <>
+        <div className="grid flex-1 grid-cols-2 content-start gap-3">
           <div className="flex flex-col gap-2">
             {step.left.map((l) => {
               const matched = matchedLeftIds.has(l.itemId);
@@ -555,13 +664,14 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
                   type="button"
                   disabled={matched}
                   onClick={() => setPickedLeftId(l.itemId)}
-                  className={`h-14 rounded-xl border-2 px-3 text-left text-sm font-medium transition-colors ${
+                  className={cn(
+                    pairCard,
                     matched
-                      ? "border-transparent bg-muted text-muted-foreground line-through"
+                      ? "bg-white/15 text-white/60 line-through"
                       : pickedLeftId === l.itemId
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:bg-muted"
-                  }`}
+                        ? "bg-card text-foreground ring-4 ring-white"
+                        : "bg-card/90 text-foreground hover:bg-card",
+                  )}
                 >
                   {l.text}
                 </button>
@@ -577,11 +687,12 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
                   type="button"
                   disabled={matched || !pickedLeftId || submitting || liveLocked}
                   onClick={() => handlePairPick(r.itemId)}
-                  className={`h-14 rounded-xl border-2 px-3 text-left text-sm font-medium transition-colors ${
+                  className={cn(
+                    pairCard,
                     matched
-                      ? "border-transparent bg-muted text-muted-foreground line-through"
-                      : "border-border hover:bg-muted disabled:opacity-40"
-                  }`}
+                      ? "bg-white/15 text-white/60 line-through"
+                      : "bg-card/90 text-foreground hover:bg-card disabled:opacity-60",
+                  )}
                 >
                   {r.text}
                 </button>
@@ -589,17 +700,21 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
             })}
           </div>
         </div>
-        {error && <p className="text-center text-sm text-destructive">{error}</p>}
+        {errorNote}
         {liveNote}
-      </div>
+      </>,
     );
   }
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-3 p-6 text-center">
-      <h1 className="text-2xl font-bold">Tabriklaymiz!</h1>
-      <p className="text-3xl font-bold text-primary">{points} ball</p>
-      <p className="text-lg text-muted-foreground">
+    <div
+      className="stage-screen flex flex-col items-center justify-center gap-3 p-6 text-center"
+      data-stage-style={content?.stageStyle ?? "classic"}
+      style={stageThemeVars(content?.stageTheme ?? "")}
+    >
+      <h1 className="text-3xl font-semibold">Tabriklaymiz!</h1>
+      <p className="stage-stem-pill text-3xl">{points} ball</p>
+      <p className="text-lg text-white/85">
         {correctCount} / {answeredCount} toʻgʻri
       </p>
     </div>

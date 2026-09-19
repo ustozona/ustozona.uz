@@ -20,7 +20,14 @@ import type { LiveResults, LiveSessionInfo } from "@/lib/live-session";
    chiqmaydi (kanalda maʼlumot yoʻq, lekin baribir sir tutiladi).
    ════════════════════════════════════════════════════════════════════ */
 
-type LiveConfig = { liveTopic?: string; revealed?: boolean; lockedActivityIds?: string[] };
+type LiveConfig = {
+  liveTopic?: string;
+  revealed?: boolean;
+  lockedActivityIds?: string[];
+  /** Javobi hozir ochiq turgan faoliyat — oʻquvchi ekrani toʻgʻri
+      variantni FAQAT shu savol uchun oladi (play/live.ts). */
+  revealedActivityId?: string;
+};
 
 async function loadOwnedLive(sessionId: string) {
   const teacher = await requireTeacher();
@@ -68,7 +75,12 @@ export async function setLiveStep(
     .update(quizSessions)
     .set({
       currentIndex: Math.max(0, index),
-      renderConfig: { ...config, revealed, lockedActivityIds: [...locked] },
+      renderConfig: {
+        ...config,
+        revealed,
+        lockedActivityIds: [...locked],
+        revealedActivityId: revealed ? activityId : undefined,
+      },
       updatedAt: new Date(),
     })
     .where(eq(quizSessions.id, sessionId));

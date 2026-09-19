@@ -1,7 +1,7 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { quizSessions, sessionParticipants } from "@/server/db/schema";
+import { activities, activityItems, quizSessions, sessionParticipants } from "@/server/db/schema";
 import { hashParticipantToken, UnauthorizedError } from "@/server/play/session";
 import type { LiveState } from "@/lib/live-session";
 
@@ -22,10 +22,33 @@ export async function getLiveState(token: string): Promise<LiveState> {
     .where(eq(sessionParticipants.tokenHash, hashParticipantToken(token)));
   if (!row) throw new UnauthorizedError("Yaroqsiz ishtirokchi tokeni");
   const { session } = row;
-  const config = session.renderConfig as { revealed?: boolean };
-  return {
+  const config = session.renderConfig as { revealed?: boolean; revealedActivityId?: string };
+  const revealed = Boolean(config.revealed);
+  const state: LiveState = {
     index: session.currentIndex,
-    revealed: Boolean(config.revealed),
+    revealed,
     ended: session.state === "completed",
   };
+  /* Toʻgʻri variant FAQAT javob ochilgandan keyin va faqat ochilgan savol
+     uchun — qoʻshimcha soʻrov ham shu holatdagina ketadi (odatda 1,5 s lik
+     soʻrov bitta jadval qatori bilan cheklanadi). */
+  if (revealed && config.revealedActivityId) {
+    state.revealedActivityId = config.revealedActivityId;
+    state.correctOptionIds = await correctOptionIdsOf(config.revealedActivityId);
+  }
+  return state;
+}
+
+/** Test (mcq) faoliyatining toʻgʻri variantlari; boshqa tur — boʻsh roʻyxat. */
+export async function correctOptionIdsOf(activityId: string): Promise<string[]> {
+  const [row] = await db
+    .select({ shape: activities.shape, content: activityItems.content })
+    .from(activities)
+    .innerJoin(activityItems, eq(activityItems.activityId, activities.id))
+    .where(eq(activities.id, activityId))
+    .orderBy(asc(activityItems.ordinal))
+    .limit(1);
+  if (!row || row.shape !== "mcq") return [];
+  const options = (row.content as { options?: { id: string; isCorrect?: boolean }[] }).options ?? [];
+  return options.filter((o) => o.isCorrect).map((o) => o.id);
 }

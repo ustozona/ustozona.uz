@@ -2044,6 +2044,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "sahna-uslubi": {
+        "title": "A new look for presentations and quizzes: fonts, styles and coloured answers",
+        "body": "In the editor's «Theme» panel, choose a font (Nunito, Rubik, Montserrat, Onest) and a stage style — «Classic» or «Modern» — and both students' phones and the Board use it. Answer options are now coloured, with a shape and a number, so in a computer lab students can answer with the 1–6 keys. When the answer is revealed, the correct one turns green and a wrong pick turns red, while the Board shows question progress and a timer bar. In homework, students see their result right after each question."
+      },
       "taqdimot-doskada": {
         "title": "Interactive presentations: slides, questions and live lessons — in one place",
         "body": "When creating an assignment in the Gradebook, choose «Automatic» → «Presentation». Build slides from ready layouts (title, list, image, video, quote) or import your existing PowerPoint and PDF files, then place tests, polls, word clouds and open questions between them. In class, start a «Live session» from the Board: students join with a QR code or PIN, every screen moves with you when you change the slide, and answers grow as live bars on the board. It works without devices too — reveal the answer on the board and award points to teams. Grade open answers later with 0, ½ or 1 and send the results to the Gradebook."

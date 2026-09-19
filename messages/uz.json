@@ -2044,6 +2044,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "sahna-uslubi": {
+        "title": "Taqdimot va testlar uchun yangi koʻrinish: shrift, uslub va rangli javoblar",
+        "body": "Muharrirdagi «Mavzu» panelida shriftni (Nunito, Rubik, Montserrat, Onest) va sahna uslubini — «Klassik» yoki «Zamonaviy» — tanlaysiz: oʻquvchi telefoni ham, Doska ham shu koʻrinishda chiqadi. Javob variantlari endi rangli, shaklli va raqamli — kompyuter sinfida oʻquvchilar 1–6 tugmalari bilan javob beradi. Javob ochilganda toʻgʻrisi yashil, xato tanlov qizil boʻlib chiqadi, Doskada esa savollar progressi va vaqt chizigʻi koʻrinadi. Uyga vazifada oʻquvchi har savoldan keyin natijasini darhol koʻradi."
+      },
       "taqdimot-doskada": {
         "title": "Interaktiv taqdimot: slaydlar, savollar va jonli dars — bitta joyda",
         "body": "Jurnalda topshiriq yaratayotganda «Avtomatik» → «Taqdimot» ni tanlaysiz. Slaydni tayyor maketdan tuzasiz (sarlavha, roʻyxat, rasm, video, iqtibos) yoki mavjud PowerPoint va PDF faylingizni import qilasiz, slaydlar orasiga esa test, soʻrovnoma, soʻz buluti va ochiq javob qoʻyasiz. Darsda Doskadan «Jonli sessiya» ni boshlaysiz: oʻquvchilar QR yoki PIN bilan kiradi, siz slaydni almashtirsangiz hamma ekran birga oʻtadi, javoblar esa doskada jonli ustun boʻlib oʻsadi. Qurilma boʻlmasa ham boʻladi — javobni doskada ochib, sinfni jamoalarga boʻlib ball berasiz. Ochiq javoblarni keyin 0, ½ yoki 1 bilan baholaysiz va natijani jurnalga koʻchirasiz."

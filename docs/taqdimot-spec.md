@@ -135,6 +135,45 @@ xabar WebSocket orqali yetdi.
   Namuna javob (`config.sample`) faqat baholashda. Doskada «Natijani
   koʻrsatish» da javoblar ismsiz (oxirgi 60 ta).
 
+## Sahna dizayn tizimi (R285–R288, 2026-09-19)
+
+Sahna — muharrir kanvasi, oʻquvchi ekrani (`/play`) va Doska taqdimot
+vidjeti — dashboard dizayn tizimidan **alohida qatlam**: yirik, oʻyinli,
+masofadan oʻqiladigan. Referens platformalardan naqsh olinadi, kod emas.
+
+- **R285 — Shrift toʻplam boʻyicha, yopiq roʻyxatdan.** Nunito (standart),
+  Rubik, Montserrat, Onest. Har biri 7 tilda tekshirilgan (lotin ʻ ʼ,
+  oʻzbek/rus kirillchasi, qozoq/qirgʻiz Ә Ғ Қ Ң Ө Ұ Ү Һ І, qoraqalpoq
+  Ǵ Ń); kirillchasi yoʻq shriftlar qabul qilinmaydi. Qalinlik
+  (sarlavha/tugma/matn) shrift boʻyicha oldindan sozlangan — oʻqituvchi
+  faqat shriftni tanlaydi. `next/font` preload'siz: brauzer faqat
+  tanlanganini yuklaydi. `lib/stage-fonts.ts`.
+- **R286 — Uslub tayyor preset, alohida toggle emas.** `classic` (2×2 tor,
+  oq savol lentasi, qiya natija lentasi, qolgan javoblar xira) va
+  `modern` (keng ekranda bir qator baland plitkalar, qorongʻi savol
+  kartasi + «1/16», gradient plitka, ortiqcha javob yashirinadi, pastki
+  natija chizigʻi, «+ball»). Farq faqat CSS da (`[data-stage-style]`),
+  komponentlar bitta (`components/stage/StageParts.tsx`).
+- **R287 — Javob rangi mavzuga bogʻliq emas.** 6 slot: rang + shakl
+  (▲ ◆ ● ■ ⬟ ★) + raqam; hamma slotda oq matn. Shakl — rangni ajrata
+  olmaydigan koʻz uchun; raqam — kompyuter sinfida 1–6 tugmasi.
+  Oʻz tezligidagi rejimda variantlar har oʻquvchiga aralashtiriladi, shu
+  sababli «men qizilni bosdim» javobni bildirmaydi (ilgarigi «rangsiz
+  karta» qarori shu bilan almashtirildi). Jonli rejimda tartib
+  proyektordagi bilan bir xil.
+- **R288 — Toʻgʻri variant telefonga faqat ochilganda.** Jonli rejimda
+  `getLiveState` `correctOptionIds` ni faqat `revealed` boʻlib, ochilgan
+  faoliyat (`revealedActivityId`) uchun qaytaradi; oʻz tezligida — javob
+  yuborilgach (`submitResponse`). Ochilganda: toʻgʻri yashil ✓, tanlangan
+  xato qizil ✗. Taymer faqat Doska'da; jonli sessiyada vaqt tugasa javob
+  oʻzi ochiladi, qurilmasiz rejimda oʻqituvchi ochadi.
+
+Muharrirdagi «Vertikal koʻrinish» (`answerLayout = list`) ikkala uslubda
+javoblarni bitta ustunga qoʻyadi — uzun matnli variantlar uchun.
+
+Keyinga qoldirilgan: tezlik bonusi, seriya, kuchaytirgichlar, avatarlar —
+alohida oʻyin qatlami; oʻyin bali jurnal bahosiga taʼsir qilmaydi (R33).
+
 ## Keyingi qavatlar (hali qilinmagan)
 
 - Erkin kanvas — Doska dvigateli ustida, maketlar yetmay qolsa.

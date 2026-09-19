@@ -43,7 +43,7 @@ export default function PushButton({
       data-pressed={pressed ? "true" : undefined}
       aria-pressed={pressed}
       className={cn(
-        "push-btn inline-flex min-h-14 items-center justify-center gap-2 px-5 py-3 text-base font-semibold",
+        "push-btn inline-flex min-h-14 items-center justify-center gap-2 px-5 py-3 text-base",
         "outline-none focus-visible:ring-4 focus-visible:ring-ring/40",
         surface ?? "bg-primary text-primary-foreground",
         !surface && "text-primary-foreground",

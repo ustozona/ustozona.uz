@@ -64,6 +64,7 @@
    toʻxtashi kerak, aks holda oraliq `cqw` qiymati kichikroq (masalan
    22px) qolib ketadi va Kahoot bilan mos kelmaydi. */
 .quiz-stage-stem {
+  font-weight: var(--stage-w-heading, 600);
   font-size: clamp(0.875rem, 3.2cqw, 1.5rem);
   line-height: 1.26;
   padding: 2cqw 3cqw;
@@ -185,21 +186,23 @@
 .slide-h-xl {
   font-size: clamp(1.25rem, 6.2cqw, 4rem);
   line-height: 1.1;
-  font-weight: 600;
+  font-weight: var(--stage-w-heading, 600);
 }
 
 .slide-h {
   font-size: clamp(1rem, 4.2cqw, 2.75rem);
   line-height: 1.15;
-  font-weight: 600;
+  font-weight: var(--stage-w-heading, 600);
 }
 
 .slide-text {
+  font-weight: var(--stage-w-text, 400);
   font-size: clamp(0.8125rem, 2.6cqw, 1.75rem);
   line-height: 1.45;
 }
 
 .slide-text-lg {
+  font-weight: var(--stage-w-text, 400);
   font-size: clamp(0.9375rem, 3.6cqw, 2.25rem);
   line-height: 1.35;
 }
@@ -231,4 +234,650 @@
    (Doska vidjeti, telefon ekrani). Idish `container-type: size`. */
 .slide-fit {
   width: min(100cqw, calc(100cqh * 16 / 9));
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SAHNA DIZAYN TIZIMI — dashboard tilidan ALOHIDA qatlam.
+
+   Shrift: `.stage-font` + `--stage-font` (oʻqituvchi tanlaydi,
+   lib/stage-fonts.ts). Qalinliklar `--stage-w-heading/button/text` —
+   shrift boʻyicha oldindan sozlangan, qoʻlda berilmaydi.
+
+   Tugmalar ikki xil:
+   - PRESS (`.push-btn`, push-button.css) — asosiy harakat, oʻquvchi
+     bosadigan hamma narsa: javob, «Yuborish». Tagida qirra, bosilganda
+     pastga tushadi.
+   - LIFT (`.lift-btn`) — ikkinchi darajali, oʻqituvchi boshqaruvi
+     (Doska navigatsiyasi). Sichqoncha kelganda koʻtariladi.
+   Ikkalasi bitta egri chiziqda: --stage-ease.
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --stage-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stage-font {
+  font-family: var(--stage-font), var(--font-sans), sans-serif;
+}
+
+.lift-btn {
+  /* `color-mix(var())` emas — Turbopack'da buziladi; oklch alfa xavfsiz. */
+  --lift-shadow: oklch(0 0 0 / 0.3);
+  font-weight: var(--stage-w-button, 500);
+  transition:
+    transform 0.4s var(--stage-ease),
+    box-shadow 0.4s var(--stage-ease),
+    background-color 0.4s var(--stage-ease);
+}
+
+.dark .lift-btn {
+  --lift-shadow: oklch(1 0 0 / 0.25);
+}
+
+@media (hover: hover) {
+  .lift-btn:hover:not(:disabled) {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 0 -2px var(--lift-shadow);
+  }
+}
+
+.lift-btn:focus-visible:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 0 -2px var(--lift-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lift-btn {
+    transition-duration: 0.01ms;
+  }
+  .lift-btn:hover,
+  .lift-btn:focus-visible {
+    transform: none;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   JAVOB RANGLARI — 6 slot, har biri rang + shakl (▲ ◆ ● ■ ⬟ ★).
+
+   Rang MAVZUGA BOGʻLIQ EMAS: oʻquvchi «koʻk = 2-variant» ni bir marta
+   oʻrganadi va proyektorga qarab telefonidan tez topadi. Shakl — rangni
+   ajrata olmaydigan koʻz uchun (erkaklarning ~8 %), rang yolgʻiz hech
+   qachon maʼno tashimaydi. Matn hamma slotda oq (qaror 2026-09-19:
+   sariq ham toʻq, oq matn bilan — boshqa slotlar bilan bir xil).
+
+   `color-mix(var())` ishlatilmaydi (Turbopack gotcha) — qirra qora alfa.
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --stage-choice-1: oklch(0.58 0.22 22);
+  --stage-choice-2: oklch(0.52 0.18 258);
+  --stage-choice-3: oklch(0.7 0.15 78);
+  --stage-choice-4: oklch(0.55 0.17 142);
+  --stage-choice-5: oklch(0.58 0.11 195);
+  --stage-choice-6: oklch(0.52 0.17 305);
+  --stage-on-choice: oklch(1 0 0);
+  --stage-choice-edge: oklch(0 0 0 / 0.25);
+  --stage-correct: oklch(0.66 0.19 140);
+  --stage-wrong: oklch(0.6 0.22 20);
+  --stage-neutral: oklch(0.32 0.06 285);
+}
+
+.stage-choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  min-width: 0;
+  min-height: 0;
+  padding: 0.6em 0.9em;
+  border: 0;
+  border-radius: var(--choice-radius, 0.75rem);
+  background: var(--choice);
+  color: var(--stage-on-choice);
+  font: inherit;
+  font-weight: var(--stage-w-button, 700);
+  line-height: 1.25;
+  text-align: left;
+  box-shadow: 0 0.28em 0 0 var(--stage-choice-edge);
+  transition:
+    background-color 0.35s var(--stage-ease),
+    color 0.35s var(--stage-ease),
+    opacity 0.35s var(--stage-ease),
+    transform 0.25s var(--stage-ease),
+    box-shadow 0.25s var(--stage-ease);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+button.stage-choice {
+  cursor: pointer;
+}
+
+button.stage-choice:active:not(:disabled) {
+  transform: translateY(0.22em);
+  box-shadow: 0 0.06em 0 0 var(--stage-choice-edge);
+}
+
+@media (hover: hover) {
+  button.stage-choice:hover:not(:disabled):not(:active) {
+    transform: translateY(0.1em);
+    box-shadow: 0 0.18em 0 0 var(--stage-choice-edge);
+  }
+}
+
+button.stage-choice:disabled {
+  cursor: default;
+}
+
+.stage-choice[data-state="selected"] {
+  outline: 0.18em solid var(--stage-on-choice);
+  outline-offset: 0.12em;
+}
+
+.stage-choice[data-state="dim"] {
+  opacity: 0.45;
+}
+
+.stage-choice[data-state="correct"] {
+  background: var(--stage-correct);
+}
+
+.stage-choice[data-state="wrong"] {
+  background: var(--stage-wrong);
+}
+
+/* «Arvoh» — ochilgandan keyin tanlanmagan notoʻgʻri variant: fon rangida
+   xira, qirrasiz, e'tiborni toʻgʻri javobga qoldiradi. */
+.stage-choice[data-state="ghost"] {
+  background: oklch(1 0 0 / 0.14);
+  color: oklch(1 0 0 / 0.6);
+  box-shadow: none;
+}
+
+.stage-choice-shape {
+  width: 1.15em;
+  height: 1.15em;
+  flex: none;
+}
+
+.stage-choice-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stage-choice-count {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage-choice-badge {
+  position: absolute;
+  top: -0.5em;
+  right: -0.5em;
+  display: grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  border: 0.14em solid oklch(1 0 0);
+  border-radius: 999px;
+  background: var(--stage-correct);
+  color: oklch(1 0 0);
+  animation: stage-pop 0.35s var(--stage-ease) both;
+}
+
+.stage-choice-badge[data-kind="wrong"] {
+  background: var(--stage-wrong);
+}
+
+/* Jonli natija ustuni — tile ichida, ochilgandan keyin. */
+.stage-choice-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: oklch(1 0 0 / 0.18);
+  transition: width 0.6s var(--stage-ease);
+  pointer-events: none;
+}
+
+/* ── Sahna ramkasi: shisha karta, savol lentasi ── */
+.stage-glass {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1.6cqw;
+  min-height: 0;
+  padding: 2cqw;
+  overflow: hidden;
+  border: 1px solid oklch(1 0 0 / 0.32);
+  border-radius: calc(var(--surface-card-radius) * 1.1);
+  background: oklch(1 0 0 / 0.16);
+  backdrop-filter: blur(8px);
+  color: oklch(1 0 0);
+}
+
+.stage-stem-pill {
+  align-self: center;
+  max-width: 100%;
+  padding: 0.5em 1em;
+  border-radius: calc(var(--surface-card-radius) * 0.8);
+  background: oklch(1 0 0 / 0.9);
+  color: oklch(0.22 0.03 285);
+  font-weight: var(--stage-w-heading, 700);
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Telefon ekrani — butun sahifa sahna fonida. */
+.stage-screen {
+  min-height: 100dvh;
+  /* Qiya lenta chetdan chiqadi — gorizontal aylantirish paydo boʻlmasin. */
+  overflow-x: clip;
+  background: var(--stage-bg);
+  color: oklch(1 0 0);
+}
+
+/* ── Natija lentasi — karta ustidan qiya oʻtadi ── */
+.stage-banner {
+  --banner: var(--stage-neutral);
+  position: absolute;
+  top: 36%;
+  left: -3%;
+  right: -3%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  padding: 0.45em 1em;
+  background: var(--banner);
+  color: oklch(1 0 0);
+  font-size: clamp(1.25rem, 4.6cqw, 3rem);
+  font-weight: var(--stage-w-heading, 800);
+  box-shadow: 0 0.2em 0 oklch(0 0 0 / 0.2);
+  transform: rotate(-3deg);
+  animation: stage-banner-in 0.5s var(--stage-ease) both;
+  pointer-events: none;
+}
+
+.stage-banner[data-kind="correct"] {
+  --banner: var(--stage-correct);
+}
+
+.stage-banner[data-kind="wrong"] {
+  --banner: var(--stage-wrong);
+}
+
+.stage-banner-icon {
+  display: grid;
+  place-items: center;
+  width: 1.3em;
+  height: 1.3em;
+  border: 0.1em solid oklch(1 0 0);
+  border-radius: 999px;
+  background: oklch(1 0 0 / 0.2);
+}
+
+/* Telefonda lenta oqimda turadi (kartasiz ekran). */
+.stage-banner.is-inline {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  margin-inline: -1.25rem;
+  font-size: 1.5rem;
+}
+
+@keyframes stage-banner-in {
+  from {
+    opacity: 0;
+    transform: rotate(-3deg) scaleX(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-3deg) scaleX(1);
+  }
+}
+
+@keyframes stage-pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* ── Segmentli progress ── */
+.stage-progress {
+  display: flex;
+  gap: max(3px, 0.5cqw);
+}
+
+.stage-progress > span {
+  flex: 1;
+  height: max(4px, 0.45cqw);
+  border-radius: 999px;
+  background: oklch(1 0 0 / 0.35);
+  transition: background-color 0.3s var(--stage-ease);
+}
+
+.stage-progress > span[data-done="true"] {
+  background: oklch(1 0 0);
+}
+
+/* ── Taymer chizigʻi ── */
+.stage-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.stage-timer-track {
+  flex: 1;
+  height: max(6px, 0.8cqw);
+  overflow: hidden;
+  border-radius: 999px;
+  background: oklch(1 0 0 / 0.25);
+}
+
+.stage-timer-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: oklch(1 0 0);
+  transform-origin: left;
+  transition: transform 0.2s linear, background-color 0.3s;
+}
+
+.stage-timer[data-low="true"] .stage-timer-fill {
+  background: var(--stage-wrong);
+}
+
+.stage-timer-num {
+  min-width: 2ch;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--stage-w-button, 700);
+  text-align: right;
+}
+
+/* ── Slayd urgʻusi — mavzu tonining toʻq varianti (stage-themes.ts) ── */
+.slide-accent-bar {
+  width: 9cqw;
+  height: 0.7cqw;
+  flex: none;
+  border-radius: 999px;
+  background: var(--stage-accent, currentColor);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-banner,
+  .stage-choice-badge {
+    animation: none;
+  }
+  .stage-choice,
+  .stage-timer-fill {
+    transition-duration: 0.01ms;
+  }
+  button.stage-choice:active:not(:disabled),
+  button.stage-choice:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   JAVOBLAR TOʻRI + SAHNA USLUBLARI (lib/stage-styles.ts).
+
+   `data-stage-style` sahna ildizida (Doska `.quiz-stage`, telefon
+   `.stage-screen`, muharrir). Komponentlar bitta — uslub faqat shu yerda.
+   `--row` — keng ekranda bir qatordagi plitka soni (≤4 → hammasi,
+   5–6 → 3 tadan), inline beriladi (`ChoiceGrid`).
+   ════════════════════════════════════════════════════════════════════ */
+
+.stage-choices {
+  --gap: 1.4cqw;
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: var(--gap);
+  min-height: 0;
+}
+
+.stage-screen .stage-choices {
+  --gap: 0.75rem;
+  grid-template-columns: 1fr;
+  grid-auto-rows: minmax(4rem, auto);
+  align-content: start;
+  font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .stage-screen .stage-choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Plitkadagi raqam — 1–6 klaviatura tugmasi (kompyuter sinfi). */
+.stage-choice {
+  padding-right: 2.4em;
+}
+
+.stage-choice-key {
+  position: absolute;
+  top: 0.45em;
+  right: 0.45em;
+  display: grid;
+  place-items: center;
+  width: 1.55em;
+  height: 1.55em;
+  border: 1px solid oklch(0 0 0 / 0.2);
+  border-radius: 0.35em;
+  background: oklch(0 0 0 / 0.14);
+  font-size: 0.7em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.stage-choice[data-state="correct"] .stage-choice-key,
+.stage-choice[data-state="wrong"] .stage-choice-key {
+  visibility: hidden;
+}
+
+/* Toʻgʻri javobdagi ball — «+100». */
+.stage-choice-points {
+  font-size: 1.5em;
+  font-weight: var(--stage-w-heading, 800);
+  line-height: 1;
+  animation: stage-pop 0.4s var(--stage-ease) both;
+}
+
+/* Savol raqami pillasi — faqat zamonaviy uslubda. */
+.stage-counter {
+  display: none;
+}
+
+/* ── ZAMONAVIY ── */
+[data-stage-style="modern"] .stage-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: stretch;
+}
+
+[data-stage-style="modern"] .stage-choices > .stage-choice {
+  --cols: var(--row, 4);
+  flex: 0 1 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3em;
+  padding: 1em 1.2em;
+  text-align: center;
+}
+
+.stage-screen[data-stage-style="modern"] .stage-choices > .stage-choice {
+  --cols: 1;
+  min-height: 4.5rem;
+}
+
+@media (min-width: 640px) {
+  .stage-screen[data-stage-style="modern"] .stage-choices > .stage-choice {
+    --cols: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stage-screen[data-stage-style="modern"] .stage-choices > .stage-choice {
+    --cols: var(--row, 4);
+    min-height: 12rem;
+  }
+}
+
+/* Chuqurlik: yuqoridan ochroq → pastga toʻqroq, yuqori qirrada yaltiroq. */
+[data-stage-style="modern"] .stage-choice,
+[data-stage-style="modern"] .stage-choice-surface {
+  background-image: linear-gradient(to bottom, oklch(1 0 0 / 0.16), oklch(0 0 0 / 0.2));
+}
+
+[data-stage-style="modern"] .stage-choice::after {
+  content: "";
+  position: absolute;
+  top: 0.3em;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.55), transparent);
+  pointer-events: none;
+}
+
+[data-stage-style="modern"] .stage-choice-shape {
+  position: absolute;
+  top: 0.55em;
+  left: 0.55em;
+  width: 0.9em;
+  height: 0.9em;
+  opacity: 0.9;
+}
+
+[data-stage-style="modern"] .stage-choice-text {
+  flex: none;
+}
+
+/* Javob ochilgach ortiqchasi yashirinadi — faqat toʻgʻri va tanlangan xato. */
+[data-stage-style="modern"] .stage-choice[data-state="ghost"] {
+  display: none;
+}
+
+/* Savol — qorongʻi shisha karta, ramka shaffof. */
+[data-stage-style="modern"] .stage-glass {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+[data-stage-style="modern"] .stage-stem-pill {
+  display: flex;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  min-height: 28%;
+  padding: 1.2em;
+  border: 1px solid oklch(1 0 0 / 0.14);
+  background: oklch(0.16 0.03 285 / 0.6);
+  color: oklch(1 0 0);
+  backdrop-filter: blur(8px);
+}
+
+.stage-screen[data-stage-style="modern"] .stage-stem-pill {
+  min-height: 7rem;
+}
+
+[data-stage-style="modern"] .stage-counter {
+  position: relative;
+  z-index: 1;
+  display: block;
+  align-self: center;
+  margin-bottom: -1.9em;
+  padding: 0.15em 0.9em;
+  border: 1px solid oklch(1 0 0 / 0.22);
+  border-radius: 999px;
+  background: oklch(0.14 0.03 285 / 0.9);
+  color: oklch(0.88 0.16 92);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--stage-w-button, 700);
+}
+
+/* Natija — pastda butun eni boʻylab chiziq (qiya lenta emas). */
+[data-stage-style="modern"] .stage-banner {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  transform: none;
+  animation-name: stage-bar-in;
+}
+
+[data-stage-style="modern"] .stage-banner.is-inline {
+  margin-inline: -1.25rem;
+  padding-block: 0.9rem;
+}
+
+@keyframes stage-bar-in {
+  from {
+    opacity: 0;
+    transform: translateY(60%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── «Vertikal koʻrinish» (muharrir, answerLayout = list) ──
+   Uzun matnli javoblar — har uslubda bitta ustun, matn chapdan. */
+.stage-choices[data-layout="list"],
+.stage-screen .stage-choices[data-layout="list"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-stage-style="modern"] .stage-choices[data-layout="list"] > .stage-choice {
+  --cols: 1;
+  min-height: 3.5rem;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 0.6em;
+  text-align: left;
+}
+
+[data-stage-style="modern"] .stage-choices[data-layout="list"] .stage-choice-shape {
+  position: static;
+  width: 1.15em;
+  height: 1.15em;
+}
+
+[data-stage-style="modern"] .stage-choices[data-layout="list"] .stage-choice-text {
+  flex: 1;
+}
+
+/* ── Muharrir koʻrinishi zamonaviy uslubda ── */
+[data-stage-style="modern"] .quiz-stage-answers.is-grid {
+  grid-template-columns: none;
+  grid-template-rows: minmax(0, 1fr);
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+
+[data-stage-style="modern"] textarea.quiz-stage-stem {
+  border: 1px solid oklch(1 0 0 / 0.14);
+  background: oklch(0.16 0.03 285 / 0.6);
+  color: oklch(1 0 0);
+}
+
+[data-stage-style="modern"] textarea.quiz-stage-stem::placeholder {
+  color: oklch(1 0 0 / 0.6);
 }

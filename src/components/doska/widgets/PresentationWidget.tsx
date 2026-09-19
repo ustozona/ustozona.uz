@@ -14,9 +14,12 @@ import {
 import type { ActivitySetRow } from "@/server/db/schema";
 import { SlideView } from "@/components/slides/SlideView";
 import { slideLayoutOf } from "@/lib/slide-layouts";
-import { stageThemeBg } from "@/lib/stage-themes";
+import { stageThemeVars } from "@/lib/stage-themes";
+import { stageFontVars } from "@/lib/stage-fonts";
+import { STAGE_FONT_CLASS } from "@/components/stage/stage-font-faces";
 import {
   TEACHER_FALLBACK_POLL_MS,
+  type LiveItemResult,
   type LiveResults,
   type LiveSessionInfo,
   type RealtimeConfig,
@@ -30,6 +33,14 @@ import {
   startLiveSessionAction,
 } from "@/server/actions/assess-live";
 import { useLiveNudge } from "@/hooks/useLiveNudge";
+import {
+  ChoiceGrid,
+  ChoiceTile,
+  StageCounter,
+  StageProgress,
+  StageTimer,
+  useCountdown,
+} from "@/components/stage/StageParts";
 
 export type Team = { name: string; score: number };
 
@@ -176,10 +187,12 @@ function TeamBar({ teams, onChange }: { teams: Team[]; onChange: (next: Team[] |
 function Panel({
   children,
   className,
+  style,
   ref,
 }: {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
@@ -193,6 +206,7 @@ function Panel({
         // `cqw` panelning oʻziga nisbatan — toʻliq ekranda ham matn
         // ekran oʻlchamiga moslashadi (aks holda vidjet oʻlchamida qolardi).
         containerType: "inline-size",
+        ...style,
       }}
     >
       {children}
@@ -381,7 +395,11 @@ function Player({
   const step = steps[current];
 
   return (
-    <Panel ref={rootRef} className="gap-[2cqw] p-[3cqw]">
+    <Panel
+      ref={rootRef}
+      className={cn("stage-font gap-[2cqw] p-[3cqw]", STAGE_FONT_CLASS)}
+      style={stageFontVars((draft.set.config as { stageFont?: string }).stageFont)}
+    >
       <div className="flex shrink-0 items-center gap-2 text-[max(12px,1.6cqw)] opacity-70">
         <span className="min-w-0 flex-1 truncate">{draft.set.title}</span>
         {live && (
@@ -412,16 +430,11 @@ function Player({
             <div className="slide-fit">
               <div
                 className="quiz-stage"
-                style={
-                  {
-                    "--stage-bg": stageThemeBg(
-                      step.slideBg ??
-                        (draft.set.config as { stageTheme?: string }).stageTheme ??
-                        "",
-                    ),
-                  } as React.CSSProperties
-                }
+                style={stageThemeVars(
+                  step.slideBg ?? (draft.set.config as { stageTheme?: string }).stageTheme ?? "",
+                )}
               >
+                <StageProgress total={total} current={current} />
                 <SlideView
                   slide={{
                     layout: slideLayoutOf(step.slideLayout),
@@ -436,164 +449,22 @@ function Player({
           </div>
         )}
 
-        {step?.shape === "mcq" && (
-          <>
-            <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
-              {step.stem}
-            </h2>
-            {live && (
-              <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
-                {results?.items[step.activityId ?? ""]?.answered ?? 0} / {results?.joined ?? 0} javob berdi
-              </p>
-            )}
-            <div className="grid grid-cols-2 gap-[1.5cqw]">
-              {step.options.map((option, i) => {
-                const item = live ? results?.items[step.activityId ?? ""] : undefined;
-                const count = item?.byOption[option.id] ?? 0;
-                const share = item && item.answered > 0 ? count / item.answered : 0;
-                return (
-                  <div
-                    key={option.id}
-                    className={cn(
-                      "relative flex items-center gap-[1.5cqw] overflow-hidden rounded-xl border-2 px-[2cqw] py-[1.5cqw] text-[max(13px,2.4cqw)] font-medium transition-opacity",
-                      revealed && option.isCorrect && "border-[var(--doska-light-green)]",
-                      revealed && !option.isCorrect && "opacity-35",
-                      !revealed && "border-current/20",
-                    )}
-                  >
-                    {/* Jonli ustun — FAQAT javob ochilgach. Erta koʻrinsa
-                        proyektorga qarab qolganlar koʻpchilikka ergashadi va
-                        jurnalga tushadigan natija buziladi. Ungacha tepada
-                        faqat «N/M javob berdi» hisobi turadi. */}
-                    {live && revealed && (
-                      <span
-                        aria-hidden
-                        className="absolute inset-y-0 left-0 bg-current/10 transition-[width] duration-500"
-                        style={{ width: `${Math.round(share * 100)}%` }}
-                      />
-                    )}
-                    <span className="relative font-mono opacity-60">{String.fromCharCode(65 + i)}</span>
-                    <span className="relative min-w-0 flex-1">{option.text}</span>
-                    {live && revealed && <span className="relative font-mono opacity-70">{count}</span>}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* SOʻROVNOMA — natija oʻqituvchi «Natijani koʻrsatish» ni bosgandagina
-            chiqadi: ustunlar erta koʻrinsa oʻquvchilar koʻpchilikka ergashadi. */}
-        {step?.shape === "poll" && (
-          <>
-            <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
-              {step.stem}
-            </h2>
-            {live && (
-              <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
-                {results?.items[step.activityId ?? ""]?.answered ?? 0} / {results?.joined ?? 0} javob berdi
-              </p>
-            )}
-            <div className="flex flex-col gap-[1.2cqw]">
-              {step.options.map((option, i) => {
-                const item = live ? results?.items[step.activityId ?? ""] : undefined;
-                const count = item?.byOption[option.id] ?? 0;
-                const share = item && item.answered > 0 ? count / item.answered : 0;
-                const show = live && revealed;
-                return (
-                  <div
-                    key={option.id}
-                    className="relative flex items-center gap-[1.5cqw] overflow-hidden rounded-xl border-2 border-current/20 px-[2cqw] py-[1.2cqw] text-[max(13px,2.4cqw)] font-medium"
-                  >
-                    {show && (
-                      <span
-                        aria-hidden
-                        className="absolute inset-y-0 left-0 bg-current/15 transition-[width] duration-700"
-                        style={{ width: `${Math.round(share * 100)}%` }}
-                      />
-                    )}
-                    <span className="relative font-mono opacity-60">{String.fromCharCode(65 + i)}</span>
-                    <span className="relative min-w-0 flex-1">{option.text}</span>
-                    {show && (
-                      <span className="relative font-mono">{Math.round(share * 100)}%</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* SOʻZ BULUTI — eng koʻp yozilgan soʻz eng katta. */}
-        {step?.shape === "wordcloud" && (
-          <>
-            <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
-              {step.stem}
-            </h2>
-            {live ? (
-              <>
-                <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
-                  {results?.items[step.activityId ?? ""]?.answered ?? 0} / {results?.joined ?? 0} javob berdi
-                </p>
-                {revealed && <WordCloud words={results?.items[step.activityId ?? ""]?.words ?? {}} />}
-              </>
-            ) : (
-              <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
-                Soʻz bulutini yigʻish uchun jonli sessiya oching
-              </p>
-            )}
-          </>
-        )}
-
-        {/* OCHIQ JAVOB — «Natijani koʻrsatish» da javoblar ISMSIZ chiqadi;
-            baholash sessiya panelida, ismlar bilan, proyektorsiz. */}
-        {step?.shape === "text" && (
-          <>
-            <h2 className="text-center text-[max(16px,3.6cqw)] font-semibold leading-snug">
-              {step.stem}
-            </h2>
-            {live && (
-              <p className="text-center text-[max(12px,1.8cqw)] opacity-70">
-                {results?.items[step.activityId ?? ""]?.answered ?? 0} / {results?.joined ?? 0} javob berdi
-              </p>
-            )}
-            {live && revealed && (
-              <div className="grid grid-cols-2 gap-[1cqw] lg:grid-cols-3">
-                {(results?.items[step.activityId ?? ""]?.texts ?? []).map((t, i) => (
-                  <p
-                    key={i}
-                    className="line-clamp-4 rounded-lg border-2 border-current/15 p-[1.2cqw] text-[max(12px,1.8cqw)] leading-snug"
-                  >
-                    {t}
-                  </p>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {step?.shape === "pairs" && (
-          <>
-            <h2 className="text-center text-[max(16px,3.2cqw)] font-semibold">{step.title}</h2>
-            <div className="flex flex-col gap-[1cqw] text-[max(13px,2.4cqw)]">
-              {step.pairs.map((pair) => (
-                <div key={pair.id} className="grid grid-cols-[1fr_auto_1fr] items-center gap-[1.5cqw]">
-                  <span className="rounded-lg border-2 border-current/20 px-[1.5cqw] py-[1cqw]">
-                    {pair.left}
-                  </span>
-                  <span className="opacity-50">→</span>
-                  <span
-                    className={cn(
-                      "rounded-lg border-2 border-current/20 px-[1.5cqw] py-[1cqw]",
-                      !revealed && "opacity-0",
-                    )}
-                  >
-                    {pair.right}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
+        {/* Savol ham slayd kabi SAHNADA: mavzu foni, shisha karta, rangli
+            plitkalar, taymer. Proyektorda koʻrinish oʻquvchi telefonidagi
+            ranglar bilan mos — «koʻk = 2-variant». */}
+        {step && step.shape !== "slide" && (
+          <QuestionStage
+            step={step}
+            total={total}
+            current={current}
+            revealed={revealed}
+            live={Boolean(live)}
+            item={live ? results?.items[step.activityId ?? ""] : undefined}
+            joined={results?.joined ?? 0}
+            theme={(draft.set.config as { stageTheme?: string }).stageTheme ?? ""}
+            stageStyle={(draft.set.config as { stageStyle?: string }).stageStyle ?? "classic"}
+            onTimeUp={() => onReveal(step.activityId)}
+          />
         )}
       </div>
 
@@ -640,6 +511,142 @@ function Player({
         </NavButton>
       </div>
     </Panel>
+  );
+}
+
+type DraftStep = SetDraft["questions"][number];
+
+/**
+ * Savol sahnasi (proyektor). Taymer faqat test va jonli soʻrovnomada:
+ * vaqt tugasa javob oʻzi ochiladi (jonli rejimda shu savol qulflanadi —
+ * `setLiveStep`). Javob ochilgach toʻgʻri variant yashil ✓, qolganlari
+ * xira; jonli sessiyada har plitkada nechta oʻquvchi tanlagani chiqadi.
+ * Doskada «notoʻgʻri» (qizil) holat yoʻq — bu yerda bitta oʻquvchining
+ * tanlovi emas, butun sinf koʻrinadi.
+ */
+function QuestionStage({
+  step,
+  total,
+  current,
+  revealed,
+  live,
+  item,
+  joined,
+  theme,
+  stageStyle,
+  onTimeUp,
+}: {
+  step: DraftStep;
+  total: number;
+  current: number;
+  revealed: boolean;
+  live: boolean;
+  item?: LiveItemResult;
+  joined: number;
+  theme: string;
+  /** Sahna uslubi — klassik / zamonaviy (lib/stage-styles.ts). */
+  stageStyle: string;
+  onTimeUp: () => void;
+}) {
+  const timed = step.shape === "mcq" || (step.shape === "poll" && live);
+  const seconds = timed ? step.timeLimitSec : undefined;
+  const left = useCountdown(seconds, `${current}:${step.activityId ?? ""}`, Boolean(seconds) && !revealed, () => {
+    // Qurilmasiz rejimda sinf ogʻzaki javob beradi — javobni oʻqituvchi
+    // oʻzi ochadi; avtomatik ochish faqat jonli sessiyada.
+    if (!revealed && live) onTimeUp();
+  });
+  const answered = item?.answered ?? 0;
+  const stats = live && revealed;
+
+  const tiles = (correctness: boolean) => (
+    <ChoiceGrid count={step.options.length} layout={step.answerLayout} className="text-[max(12px,2.3cqw)]">
+      {step.options.map((option, i) => {
+        const count = item?.byOption[option.id] ?? 0;
+        return (
+          <ChoiceTile
+            key={option.id}
+            index={i}
+            state={correctness && revealed ? (option.isCorrect ? "correct" : "ghost") : "idle"}
+            count={stats ? count : undefined}
+            share={stats && answered > 0 ? count / answered : undefined}
+          >
+            {option.text}
+          </ChoiceTile>
+        );
+      })}
+    </ChoiceGrid>
+  );
+
+  return (
+    <div className="grid min-h-0 flex-1 place-items-center" style={{ containerType: "size" }}>
+      <div className="slide-fit">
+        <div className="quiz-stage" data-stage-style={stageStyle} style={stageThemeVars(theme)}>
+          <StageProgress total={total} current={current} />
+          <div className="stage-glass">
+            <StageCounter current={current} total={total} />
+            <p className="stage-stem-pill text-[max(14px,3.2cqw)]">
+              {step.shape === "pairs" ? step.title : step.stem}
+            </p>
+            {live && !revealed && (
+              <p className="text-center text-[max(11px,1.6cqw)] opacity-85">
+                {answered} / {joined} javob berdi
+              </p>
+            )}
+
+            {step.shape === "mcq" && tiles(true)}
+            {/* Soʻrovnoma natijasi faqat «Natijani koʻrsatish» dan keyin —
+                ustunlar erta koʻrinsa oʻquvchilar koʻpchilikka ergashadi. */}
+            {step.shape === "poll" && tiles(false)}
+
+            {step.shape === "wordcloud" &&
+              (live ? (
+                revealed && <WordCloud words={item?.words ?? {}} />
+              ) : (
+                <p className="text-center text-[max(12px,1.8cqw)] opacity-85">
+                  Soʻz bulutini yigʻish uchun jonli sessiya oching
+                </p>
+              ))}
+
+            {/* Ochiq javob — ISMSIZ; baholash sessiya panelida, proyektorsiz. */}
+            {step.shape === "text" && live && revealed && (
+              <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-[1cqw] overflow-y-auto lg:grid-cols-3">
+                {(item?.texts ?? []).map((t, i) => (
+                  <p
+                    key={i}
+                    className="line-clamp-4 rounded-lg bg-card/90 p-[1.2cqw] text-[max(12px,1.8cqw)] leading-snug text-foreground"
+                  >
+                    {t}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {step.shape === "pairs" && (
+              <div className="flex min-h-0 flex-1 flex-col gap-[1cqw] overflow-y-auto text-[max(12px,2.2cqw)]">
+                {step.pairs.map((pair, i) => (
+                  <div key={pair.id} className="grid grid-cols-[1fr_auto_1fr] items-center gap-[1.5cqw]">
+                    <ChoiceTile index={i}>{pair.left}</ChoiceTile>
+                    <span className="opacity-70">→</span>
+                    <span
+                      className={cn(
+                        "rounded-lg bg-card/90 px-[1.4cqw] py-[0.8cqw] font-semibold text-foreground transition-opacity",
+                        !revealed && "opacity-0",
+                      )}
+                    >
+                      {pair.right}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {seconds ? (
+              <StageTimer seconds={seconds} left={left} className="text-[max(11px,1.8cqw)]" />
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -839,7 +846,7 @@ function NavButton({
       data-doska-no-drag=""
       disabled={disabled}
       onClick={onClick}
-      className="rounded-lg bg-black/5 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-black/10 disabled:opacity-40 dark:bg-white/10 dark:hover:bg-white/15"
+      className="lift-btn rounded-lg bg-black/5 px-3 py-1.5 text-sm font-medium hover:bg-black/10 disabled:opacity-40 dark:bg-white/10 dark:hover:bg-white/15"
     >
       {children}
     </button>

@@ -22,6 +22,12 @@ import { slideLayoutOf, type SlideLayout } from "@/lib/slide-layouts";
     R33: "oʻyin qatlami maʼlumot oladi, lekin unga yozmaydi"). */
 export type PointsMultiplier = 0 | 1 | 2;
 
+export type AnswerLayout = "grid" | "list";
+
+function answerLayoutOf(config: Record<string, unknown> | undefined): AnswerLayout {
+  return config?.answerLayout === "list" ? "list" : "grid";
+}
+
 export type McqStep = {
   kind: "mcq";
   itemId: string;
@@ -29,6 +35,8 @@ export type McqStep = {
   stem: string;
   options: { id: string; text: string }[];
   pointsMultiplier: PointsMultiplier;
+  /** Muharrirdagi «Vertikal koʻrinish»: `list` — uzun javoblar uchun bitta ustun. */
+  answerLayout: AnswerLayout;
 };
 
 export type PairsStep = {
@@ -61,6 +69,7 @@ export type PollStep = {
   activityId: string;
   stem: string;
   options: { id: string; text: string }[];
+  answerLayout: AnswerLayout;
 };
 
 /** Soʻz buluti — qisqa matnli javob. */
@@ -87,6 +96,10 @@ export type PlaySessionContent = {
   currentIndex: number;
   /** Toʻplam sahna mavzusi (`activity_sets.config.stageTheme`) — slayd foni. */
   stageTheme?: string;
+  /** Toʻplam sahna shrifti (`activity_sets.config.stageFont`). */
+  stageFont?: string;
+  /** Toʻplam sahna uslubi (`activity_sets.config.stageStyle`). */
+  stageStyle?: string;
   steps: PlayStep[];
 };
 
@@ -176,8 +189,16 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
         itemId: item.id,
         activityId,
         stem: content.stem,
-        options: content.options.map((o) => ({ id: o.id, text: o.text })),
+        /* Oʻz tezligidagi rejimda variantlar har oʻquvchiga aralashtiriladi:
+           rang/tartib («men qizilni bosdim») javobni bildirmasin. Jonli
+           rejimda EMAS — u yerda telefon rangi proyektordagi bilan mos
+           boʻlishi kerak. */
+        options: (session.mode === "live" ? content.options : shuffled(content.options)).map((o) => ({
+          id: o.id,
+          text: o.text,
+        })),
         pointsMultiplier,
+        answerLayout: answerLayoutOf(configByActivity.get(activityId)),
       });
     } else if (shape === "text") {
       const item = items[0];
@@ -194,6 +215,7 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
               activityId,
               stem: content.stem ?? "",
               options: (content.options ?? []).map((o) => ({ id: o.id, text: o.text })),
+              answerLayout: answerLayoutOf(configByActivity.get(activityId)),
             }
           : { kind: "wordcloud", itemId: item.id, activityId, stem: content.stem ?? "" },
       );
@@ -212,12 +234,18 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
     }
   }
 
-  const stageTheme = (set?.config as { stageTheme?: string } | undefined)?.stageTheme;
+  const setConfig = set?.config as
+    | { stageTheme?: string; stageFont?: string; stageStyle?: string }
+    | undefined;
+  const stageTheme = setConfig?.stageTheme;
+  const stageFont = setConfig?.stageFont;
   return {
     sessionId: session.id,
     mode: session.mode,
     currentIndex: session.currentIndex,
     stageTheme,
+    stageFont,
+    stageStyle: setConfig?.stageStyle,
     steps,
   };
 }

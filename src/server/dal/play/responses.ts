@@ -7,6 +7,7 @@ import { requireParticipant, ForbiddenError } from "@/server/play/session";
 import { scoreResponse } from "@/lib/assess/score";
 import { isSessionPastDue } from "@/lib/assess/session-due";
 import { scheduleNudge } from "@/server/realtime/broadcast";
+import { correctOptionIdsOf } from "./live";
 
 /* ════════════════════════════════════════════════════════════════════
    JAVOB QABUL QILISH — bitta joy, besh yetkazish usuli (jonli, oʻz
@@ -129,5 +130,12 @@ export async function submitResponse(input: SubmitResponseInput) {
   // xato tashlamaydi (server/realtime/broadcast.ts).
   if (live && liveConfig.liveTopic) scheduleNudge(liveConfig.liveTopic);
 
-  return row;
+  /* Oʻz tezligidagi rejimda oʻquvchi javob bergach toʻgʻri variantni
+     darhol koʻradi (javob ekrani). Jonli rejimda EMAS — u yerda toʻgʻri
+     javob oʻqituvchi ochgandagina keladi (getLiveState), aks holda birinchi
+     javob bergan oʻquvchi uni sinfga aytib yuborardi. */
+  const correctOptionIds =
+    !live && activity.shape === "mcq" ? await correctOptionIdsOf(activity.id) : undefined;
+
+  return { row, correctOptionIds };
 }

@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "sahna-uslubi",
+    date: "2026-09-19",
+    type: "yangi",
+    title: "Taqdimot va testlar uchun yangi koʻrinish: shrift, uslub va rangli javoblar",
+    body:
+      "Muharrirdagi «Mavzu» panelida shriftni (Nunito, Rubik, Montserrat, Onest) va sahna uslubini — «Klassik» yoki «Zamonaviy» — tanlaysiz: oʻquvchi telefoni ham, Doska ham shu koʻrinishda chiqadi. Javob variantlari endi rangli, shaklli va raqamli — kompyuter sinfida oʻquvchilar 1–6 tugmalari bilan javob beradi. Javob ochilganda toʻgʻrisi yashil, xato tanlov qizil boʻlib chiqadi, Doskada esa savollar progressi va vaqt chizigʻi koʻrinadi. Uyga vazifada oʻquvchi har savoldan keyin natijasini darhol koʻradi.",
+    href: "/dashboard/grades",
+  },
+  {
     id: "taqdimot-doskada",
     date: "2026-09-18",
     type: "yangi",
