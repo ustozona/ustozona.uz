@@ -531,6 +531,86 @@
   .heading-small { @apply text-title-sm; color: var(--foreground); }
 }
 
+/* ─────────────────────────────────────────────
+   Landing (marketing) shkalasi — FAQAT landing qatlami (bosh sahifa
+   bloklari, mahsulot va yuridik sahifalar). Ilova shkalasi 24px da
+   tugaydi, landing esa biroz kattaroq, lekin zich gapiradi.
+   Hujjat va qaysi element qaysi qadamda: docs/landing-design.md §3.
+
+   MODULLI va SUYUQ: baza 16px, qadam n = 16 × nisbatⁿ.
+   • ≥ 1440px ekranda nisbat 1.2 (Minor Third) — blog/yordam oʻqish
+     shkalasi bilan bir xil nisbat. Sarlavhalar zich, mazmun oldinda.
+   • 320px ekranda nisbat 1.125 (Major Second) — telefonda farq
+     yumshaydi, katta qadam ham ekranga sigʻadi.
+   • Oraliqda clamp() chiziqli oʻtadi — breakpoint sakrashi yoʻq.
+
+   Tarix: 2026-09-19 da avval 1.333 (Perfect Fourth) qurildi — hero
+   67px, boʻlim sarlavhasi 50px boʻldi. Landing mahsulotning oʻzini
+   (kartalar, rasmlar) koʻrsatadigan zich tuzilishga oʻtgach, sarlavha
+   ikkinchi darajaga tushdi va shkala Minor Third ga almashtirildi.
+
+   Qadam        320px   1440px   Qator  Harf oraligʻi
+   landing-1    18.0    19.2     1.4     0
+   landing-2    20.3    23.0     1.35   -0.01em
+   landing-3    22.8    27.6     1.3    -0.015em
+   landing-4    25.6    33.2     1.25   -0.02em
+   landing-5    28.8    39.8     1.2    -0.02em
+   landing-6    32.4    47.8     1.15   -0.025em
+
+   Vazn tokenda YOʻQ — joyida `font-semibold` / `font-medium` yoziladi
+   (`font-bold` ni scripts/check-design-tokens.mjs darvozasi toʻsadi).
+   Qiymatlar formulasi: min = 16·1.125ⁿ, max = 16·1.2ⁿ, 320→1440px.
+   ───────────────────────────────────────────── */
+@theme inline {
+  --text-landing-1: clamp(1.125rem, 1.104rem + 0.107vw, 1.2rem);
+  --text-landing-1--line-height: 1.4;
+
+  --text-landing-2: clamp(1.266rem, 1.216rem + 0.249vw, 1.44rem);
+  --text-landing-2--line-height: 1.35;
+  --text-landing-2--letter-spacing: -0.01em;
+
+  --text-landing-3: clamp(1.424rem, 1.337rem + 0.435vw, 1.728rem);
+  --text-landing-3--line-height: 1.3;
+  --text-landing-3--letter-spacing: -0.015em;
+
+  --text-landing-4: clamp(1.602rem, 1.467rem + 0.674vw, 2.074rem);
+  --text-landing-4--line-height: 1.25;
+  --text-landing-4--letter-spacing: -0.02em;
+
+  --text-landing-5: clamp(1.802rem, 1.606rem + 0.98vw, 2.488rem);
+  --text-landing-5--line-height: 1.2;
+  --text-landing-5--letter-spacing: -0.02em;
+
+  --text-landing-6: clamp(2.027rem, 1.753rem + 1.37vw, 2.986rem);
+  --text-landing-6--line-height: 1.15;
+  --text-landing-6--letter-spacing: -0.025em;
+}
+
+/* ─────────────────────────────────────────────
+   Mahsulot tablari (landing, ProductTabs.tsx) — gidratatsiyadan OLDIN.
+   `/#doska` bilan kelgan odam JS yuklanguncha ham Doska panelini koʻrsin:
+   boʻlim boshidagi langar `:target` boʻladi, boʻlim uni `:has()` bilan
+   sezadi. `data-hydrated` qoʻyilgach bu qoidalar oʻchadi — tabni React
+   boshqaradi (u ham langarni oʻqiydi). Jurnal — standart tab, unga qoida
+   kerak emas. Faol tugma JS kelguncha neytral turadi: notoʻgʻri tab
+   (Jurnal) belgilangan koʻrinmasin.
+   `:has()` ni bilmaydigan eski brauzerda qoida shunchaki ishlamaydi —
+   avvalgidek JS kelgach tab almashadi.
+   ───────────────────────────────────────────── */
+[data-product-tabs]:not([data-hydrated]):is(:has(#baholash:target), :has(#taqdimot:target), :has(#doska:target)) [data-tab-panel] {
+  display: none;
+}
+[data-product-tabs]:not([data-hydrated]):has(#baholash:target) [data-tab-panel="baholash"],
+[data-product-tabs]:not([data-hydrated]):has(#taqdimot:target) [data-tab-panel="taqdimot"],
+[data-product-tabs]:not([data-hydrated]):has(#doska:target) [data-tab-panel="doska"] {
+  display: grid;
+}
+[data-product-tabs]:not([data-hydrated]):is(:has(#baholash:target), :has(#taqdimot:target), :has(#doska:target)) [data-tab-trigger="jurnal"] {
+  border-color: var(--border);
+  background-color: transparent;
+  color: var(--muted-foreground);
+}
+
 /* Modulli oʻqish shkalasi (Minor Third, nisbat 1.2, baza 16px) — FAQAT
    Yordam markazi va blog maqola sahifalarida, kontent ustuniga
    qoʻyiladigan `.readable-scale` sinfi orqali faollashadi. Yuqoridagi

@@ -163,7 +163,7 @@ export function ProductsSection() {
             >
               {t("badge")}
             </Badge>
-            <h2 className="sm:text-5xl text-3xl text-foreground font-semibold">
+            <h2 className="text-landing-4 font-semibold text-foreground">
               {t("heading")}
             </h2>
             <p className="max-w-2xl text-muted-foreground sm:text-lg text-base">

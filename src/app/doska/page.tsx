@@ -17,8 +17,8 @@ export const metadata: Metadata = {
    Bu yoʻlda ilovaning OʻZI turadi, mahsulot tavsifi emas: Doska
    ishlaydi, shuning uchun unga «tez orada» sahifasi kerak emas.
    Mahsulot tavsifi asosiy landing'ning «Mahsulotlar» boʻlimida.
-   Hali tayyor boʻlmagan ost-loyihalar (Baholash, Shogird, Boshqaruv)
-   esa `ProductPage` da qoladi.
+   Qolgan ost-loyihalar `ProductPage` da: Baholash — mehmon uchun
+   `live` rejimida, hali tayyor boʻlmagan Shogird va Boshqaruv — `soon`.
 
    Kirmasdan ochiladi: oʻqituvchi darsga kirdi, projektorni yoqdi,
    3 soniyada taymer kerak (R134). Ekran localStorage'da saqlanadi;

@@ -3943,177 +3943,101 @@
     "nav": {
       "top": "Asosiy",
       "features": "Imkoniyatlar",
-      "products": "Ostloyihalar",
+      "products": "Mahsulotlar",
       "pricing": "Narxlar",
       "faq": "FAQ",
       "blog": "Blog",
-      "menu": "Menyu"
+      "menu": "Menyu",
+      "doska": "Doska",
+      "jurnal": "Jurnal",
+      "baholash": "Baholash",
+      "enterCode": "Kodni kiritish",
+      "enterCodeShort": "Kod"
     },
     "legal": {
       "terms": "Foydalanish shartlari",
       "privacy": "Maxfiylik siyosati"
     },
     "social": {
-      "telegram": "Telegram",
-      "web": "Web",
-      "email": "Email",
-      "phone": "Phone"
+      "telegram": "Telegram"
     },
     "hero": {
-      "badge": "Yangi — endigina ishga tushdi",
-      "titleLine1": "Baholar, davomat va jurnallar endi oʻzini oʻzi",
-      "titleHighlight": "hisoblaydi",
-      "subtitle": "Siz jurnalga faqat baho va davomatni kiritasiz — yakuniy baho, xulq-atvor bali va choraklik hisobotlar soniyalar ichida oʻzi tayyor boʻladi.",
-      "ctaSecondary": "Imkoniyatlarni koʻrish"
-    },
-    "stats": {
-      "badge": "Faktlar",
-      "heading": "Oʻqituvchining vaqtini tejaydigan aniq faktlar",
-      "items": [
+      "badge": "Yangi: interaktiv taqdimot va jonli dars",
+      "titleLine1": "Darslaringizni rejalashtiring, oʻtkazing, baholang — qolganini Ustozona",
+      "titleHighlight": "bajaradi",
+      "subtitle": "Ish rejani yuklaysiz — mavzular darslarga kunma-kun joylanadi. Darsda taqdimot va test oʻtkazasiz: telefondan, QR-kartadan yoki qogʻozda. Natija jurnalga tushadi — kimga yordam kerakligi darhol koʻrinadi.",
+      "taskPrompt": "Bugun darsda nima qilasiz?",
+      "tasks": [
         {
-          "unit": "bosish",
-          "title": "Davomat",
-          "descp": "Butun sinf kelgan boʻlsa — sana ustunini bosasiz, tamom."
+          "label": "Taymer qoʻyish",
+          "hint": "Roʻyxatdan oʻtmasdan"
         },
         {
-          "unit": "daqiqa",
-          "title": "Chorak hisoboti",
-          "descp": "Yakuniy baho kategoriya va vaznlar asosida oʻzi hisoblanadi."
+          "label": "Sinfni tinchlantirish",
+          "hint": "Svetofor bilan"
         },
         {
-          "unit": "marta",
-          "title": "Kalkulyator",
-          "descp": "Oʻrtacha ballni qoʻlda hisoblash degan ish qolmaydi."
+          "label": "Test oʻtkazish",
+          "hint": "Telefon, QR-karta yoki qogʻoz"
         },
         {
-          "unit": "",
-          "title": "Sinf va oʻquvchi",
-          "descp": "Hech qanday cheklov yoʻq — istalgancha qoʻshavering."
+          "label": "Taqdimot koʻrsatish",
+          "hint": "Slaydlar va jonli savollar"
+        },
+        {
+          "label": "Davomat olish",
+          "hint": "Butun sinf — bir bosishda"
+        },
+        {
+          "label": "Dars rejasi tuzish",
+          "hint": "AI yordamchi bilan"
         }
-      ]
-    },
-    "feature": {
-      "badge": "Nega Ustozona?",
-      "heading": "Vaqtni qogʻozbozlikka emas, oʻqitishga sarflang",
-      "desc": "Har bir darsning 5–10 daqiqasi davomatga ketadi. Kechikkanlarni, uy vazifasi qilmaganlarni alohida daftarga yozasiz. Chorak yakunida esa kalkulyator koʻtarib tungacha oʻrtacha ballni hisoblaysiz.",
-      "cta": "Jurnalni yaratish",
-      "cardTitle": "Ustozonada davomat bir bosishda belgilanadi. Kechikkanlarning xulq bali oʻzi pasayadi, yakuniy baho esa soniyalar ichida hisoblanadi.",
-      "cardTag": "Bitta tizim",
-      "cardSubtitle": "Oʻqituvchining butun ish oqimi",
-      "items": [
-        "Jurnal, davomat va jadval bogʻlangan — bir marta kiriting, hamma joyda yangilanadi.",
-        "Topshiriq muddati va baholash kuni haqida oʻz vaqtida eslatma olasiz.",
-        "Oʻzlashtirish dinamikasi va sinf oʻrtachasi avtomatik hisoblanadi.",
-        "Har sinf va mavzuga oʻz rangi — bir qarashda topasiz va ajratasiz."
-      ]
-    },
-    "services": {
-      "badge": "Tizim ichidan",
-      "heading": "Nimalar qila olasiz?",
-      "desc": "Oʻqituvchining kundalik ishi — jurnal, davomat, xulq, jadval va dars ishlanmasi — bitta tizimda. Nomi ustiga olib boring va koʻring.",
-      "cta": "Oʻzlashtirishni kuzatish",
-      "items": [
-        {
-          "heading": "Elektron jurnal va baholash",
-          "descp": "Kategoriya va vaznlarni bir marta sozlaysiz («Uy vazifasi 20%, imtihon 50%») — tizim qolganini oʻzi qiladi. Past ball qizil, yuqori ball yashil boʻlib boʻyaladi: sinf holati bir qarashda koʻrinadi."
-        },
-        {
-          "heading": "Davomat — bir bosishda",
-          "descp": "Butun sinf kelgan boʻlsa, sana ustunini bosib «hammasi keldi» deb bir marta belgilaysiz. Har bir yozuvga alohida izoh qoldirish mumkin."
-        },
-        {
-          "heading": "Xulq-atvor bali — oʻzi hisoblanadi",
-          "descp": "Kechikish, dars qoldirish va topshiriqni kechiktirish asosida oʻquvchining xulq bali avtomatik shakllanib boradi. Eng zerikarli ish oʻz-oʻzidan bajariladi."
-        },
-        {
-          "heading": "Dars jadvali va rejalashtirish",
-          "descp": "Yil oʻrtasida jadval oʻzgarsa, eski oylarning tarixi va baholari buzilmaydi. Qoʻngʻiroq jadvali va darsni sudrab koʻchirish ham bor."
-        },
-        {
-          "heading": "Dars muharriri va PDF",
-          "descp": "Toʻliq matn muharririda dars ishlanmangizni yozasiz va bir bosishda A4 formatda chop etishga tayyor PDF qilib olasiz."
-        }
-      ]
-    },
-    "howItWorks": {
-      "badge": "Qanday ishlaydi",
-      "heading": "Uch qadamda ishga tushasiz",
-      "steps": [
-        {
-          "title": "Roʻyxatdan oʻting",
-          "descp": "Kompyuter yoki noutbukda saytga kiring. Toʻlov ham, bank kartasi ham kerak emas."
-        },
-        {
-          "title": "Sinf va jadvalni qoʻshing",
-          "descp": "Oʻzingiz dars beradigan sinflarni sehrgar yordamida kiriting — bir necha daqiqa."
-        },
-        {
-          "title": "Darsni boshlang",
-          "descp": "Davomatni belgilang, baholarni qoʻying — qolgan hamma hisob-kitobni Ustozona qiladi."
-        }
-      ]
-    },
-    "personas": {
-      "badge": "Kimlar uchun",
-      "heading": "Maktab oʻqituvchisi uchun yaratilgan",
-      "desc": "Ustozona birinchi navbatda 5–11-sinflarga dars beradigan, har sinfida 30 dan ortiq oʻquvchisi bor ustozlar uchun. 45 daqiqalik darsining har bir soniyasini qogʻozbozlikka emas, taʼlimga sarflashni xohlaydiganlar uchun shaxsiy yordamchi.",
-      "stats": {
-        "grades": "5–11-sinf",
-        "students": "30+ oʻquvchi",
-        "duration": "45 daqiqa"
-      },
-      "card": {
-        "className": "9-A sinf",
-        "badge": "32 oʻquvchi",
-        "lines": [
-          "Har birining ismi, jadvali va ballari bitta joyda",
-          "45 daqiqa ichida hammaning davomatini belgilaysiz",
-          "Xulq va oʻzlashtirish avtomatik hisoblanadi"
-        ]
-      }
+      ],
+      "roleTeacher": "Oʻqituvchi",
+      "roleStudent": "Oʻquvchi"
     },
     "pricing": {
       "badge": "Narxlar",
       "heading": "Oʻqituvchilar uchun — bepul",
-      "desc": "Kundalik ishingiz uchun kerak boʻlgan hamma narsa bugun bepul. Sentabrdagi yangiliklarni oldindan ochiq aytamiz.",
+      "desc": "Darsni tayyorlash, oʻtkazish va baholash uchun kerak boʻlgan hamma narsa oʻqituvchilar uchun bepul. Pullik tariflar haqida oldindan ochiq aytamiz.",
       "plans": [
         {
           "name": "Maktab uchun",
           "status": "Tez orada",
-          "descp": "Bir maktabdagi oʻqituvchilarning birlashishi va yagona maʼmuriy oqim.",
+          "descp": "Maktab maʼmuriyati va ota-onalar uchun qoʻshimcha imkoniyatlar.",
           "price": "Tez orada",
           "cta": "Xabardor boʻlish",
           "features": [
-            "Metodbirlashma uchun umumiy maktab bazasi",
-            "Oʻqituvchilarni yagona guruhga taklif qilish",
-            "Ota-ona va oʻquvchi uchun Telegram mini-ilova",
-            "Maʼmuriyat uchun tezkor hisobotlar"
+            "Maʼmuriyat uchun boshqaruv paneli",
+            "Maktab boʻyicha umumiy hisobotlar",
+            "Ota-ona uchun Telegram mini-ilova"
           ]
         },
         {
           "name": "Ustoz uchun",
           "status": "Mavjud",
-          "descp": "Kundalik ishingiz uchun toʻliq yetarli. Bank kartasi talab qilinmaydi.",
+          "descp": "Darsning uchala bosqichi uchun yetarli. Bank kartasi talab qilinmaydi.",
           "price": "0 soʻm",
           "cta": "Roʻyxatdan oʻtish",
           "features": [
-            "Elektron jurnal va 10+ shkala",
-            "Davomat — bir bosishda",
-            "Avtomatik xulq-atvor bali",
-            "Dars jadvali va rejalashtirish",
-            "Dars muharriri va PDF eksport",
+            "Elektron jurnal va 10+ baholash shkalasi",
+            "Davomat va avtomatik xulq-atvor bali",
+            "Ish rejani Excel fayldan yuklash",
+            "AI yordamchi (kunlik limit bilan)",
+            "Onlayn test, qogʻoz test skaneri, QR-karta",
+            "Doska va interaktiv taqdimot",
+            "Hamkasblar bilan jamoa boʻlib ishlash",
             "Cheksiz sinf va oʻquvchi"
           ]
         },
         {
-          "name": "Pro + AI yordamchi",
+          "name": "Pro",
           "status": "Tez orada",
-          "descp": "Sunʼiy intellekt va kamera orqali qogʻoz testlarni tekshirish.",
+          "descp": "Koʻp sinf va koʻp dars bilan ishlaydigan ustozlar uchun.",
           "price": "Tez orada",
           "cta": "Navbatga yozilish",
           "features": [
-            "AI yordamida dars rejasi va tahlil",
-            "OCR: qogʻoz testni telefon bilan tekshirish",
+            "Kengaytirilgan AI limiti",
             "Kengaytirilgan oʻzlashtirish hisobotlari",
             "Ustuvor qoʻllab-quvvatlash"
           ]
@@ -4121,53 +4045,60 @@
       ]
     },
     "cta": {
-      "headingLine1": "Hisobotlar va turli xil qogʻozbozliklar oʻrniga",
-      "headingLine2": "eʼtiboringizni darsga qarating!",
-      "desc": "Roʻyxatdan oʻtish bir daqiqa. Sinfingizni qoʻshing va darhol ishlata boshlang.",
-      "ctaLabel": "Bepul roʻyxatdan oʻtish"
+      "headingLine1": "Keyingi darsingizni Ustozonada",
+      "headingLine2": "tayyorlang, oʻtkazing va baholang",
+      "desc": "Google yoki Telegram bilan bir tugmada kirasiz. Sinfingizni qoʻshing, ish rejani yuklang — ertangi darsga tayyorsiz.",
+      "ctaLabel": "Bepul roʻyxatdan oʻtish",
+      "trust": "Bepul · Karta kerak emas · 7 tilda"
     },
     "faq": {
-      "badge": "Koʻp beriladigan savollar",
       "heading": "Savollaringiz bormi? Bizda javoblar tayyor",
       "items": [
         {
-          "question": "Bu rasmiy elektron jurnallar oʻrniga oʻtadimi?",
-          "answer": "Yoʻq. Ustozona — sizning shaxsiy ishchi yordamchingiz. Rasmiy tizimlarga kiritish kerak boʻlgan choraklik ballarni, xulq hisobotlarini va davomat statistikasini shu yerda tayyorlab, tayyor raqamlarni koʻchirib qoʻyasiz."
+          "question": "Bu rasmiy elektron jurnal oʻrniga oʻtadimi?",
+          "answer": "Yoʻq. Ustozona — sizning shaxsiy ish vositangiz. Chorak baholari, davomat va xulq hisobotini shu yerda tayyorlaysiz, keyin tayyor raqamlarni rasmiy tizimga koʻchirasiz. Kalkulyator bilan hisoblab oʻtirmaysiz."
         },
         {
-          "question": "Direktorim yoki maktab maʼmuriyati maʼlumotlarimni koʻra oladimi?",
-          "answer": "Maʼlumotlaringiz sizniki — maxfiylik sozlamalari asosida boshqa hech kim sizning ruxsatingizsiz ularni koʻra olmaydi. Barchasini faqat oʻzingiz boshqarasiz."
+          "question": "Telefonda ishlaydimi?",
+          "answer": "Oʻqituvchi paneli kompyuter va noutbuk uchun moʻljallangan. Oʻquvchilar esa testga va taqdimotga oʻz telefonidan qoʻshiladi, qogʻoz testni siz telefon kamerasi bilan tekshirasiz. Hech qanday ilova oʻrnatish shart emas — hammasi brauzerda."
         },
         {
-          "question": "Telefonda ishlatsam boʻladimi?",
-          "answer": "Platforma hozircha asosan kompyuter va noutbuk brauzerida ishlashga moslashgan. Telefon ekranlari uchun qulay maxsus qism sentabrda ishga tushiriladi."
+          "question": "Oʻquvchilarda telefon boʻlmasa, test qanday oʻtadi?",
+          "answer": "Uch yoʻl bor. QR-karta: har oʻquvchi kartani burab javobini koʻrsatadi, siz sinfni telefon kamerasi bilan skanerlaysiz. Qogʻoz test: javob varaqlarini chop etib, kamera bilan tekshirasiz. Yoki taqdimotda sinfni jamoalarga boʻlib, doskada ball berasiz."
         },
         {
-          "question": "Oʻtgan oʻquv yilidagi maʼlumotlar yangi yilda oʻchib ketadimi?",
-          "answer": "Yoʻq. Oʻtgan yillar arxivda saqlanadi. Sinflarni yangi oʻquv yiliga oʻtkazish uchun maxsus sehrgar bor."
+          "question": "Tayyor slaydlarim bor — ularni ishlatsam boʻladimi?",
+          "answer": "Ha. PowerPoint (PPTX) yoki PDF faylingizni import qilasiz va slaydlar orasiga test, soʻrovnoma, soʻz buluti qoʻshasiz. Darsda Doskadan jonli sessiya boshlaysiz — oʻquvchilar QR yoki PIN bilan qoʻshiladi. Ochiq darsda ayniqsa qoʻl keladi."
         },
         {
-          "question": "Dars jadvali oʻzgarib qolsa, avvalgi oylarning jurnali buzilmaydimi?",
-          "answer": "Tizim jadval versiyalarini tushunadi. «3-noyabrdan boshlab jadval oʻzgardi» deb kiritsangiz, undan oldingi oylarning baholar tarixi xuddi oʻzidek saqlanib qoladi."
+          "question": "Ish rejani qoʻlda qayta kiritishim kerakmi?",
+          "answer": "Yoʻq. Ish rejani Excel fayldan yuklaysiz yoki mavzular roʻyxatini nusxalab qoʻyasiz. Darslar birdaniga yaratiladi va jadvalingiz boʻyicha kunma-kun joylanadi, taʼtil kunlari oʻtkazib yuboriladi."
         },
         {
-          "question": "Men 100 ballik tizimda baholayman. Dastur menga toʻgʻri keladimi?",
-          "answer": "Albatta. Tizimda 10 dan ortiq baholash shkalasi bor — 5 ballik, foizli, harfli va boshqalar. Oʻzingizga mosini sozlab olasiz."
+          "question": "Doska uchun roʻyxatdan oʻtish shartmi?",
+          "answer": "Yoʻq. Taymer, svetofor va soat kabi vositalar roʻyxatdan oʻtmasdan darhol ishlaydi. Taqdimot, test va natijalarni saqlash uchun esa roʻyxatdan oʻtish kerak — ular jurnalingizga ulanadi."
         },
         {
-          "question": "Oʻquvchilar soniga chegara bormi?",
-          "answer": "Hech qanday chegara yoʻq. Istalgancha sinf va oʻquvchi qoʻshishingiz mumkin."
+          "question": "Men 100 ballik tizimda baholayman — dastur menga toʻgʻri keladimi?",
+          "answer": "Albatta. 10 dan ortiq baholash shkalasi bor: 5 ballik, 100 ballik, foizli, harfli va boshqalar. Oʻzingizga mosini tanlab, kategoriya vaznlarini bir marta sozlaysiz."
+        },
+        {
+          "question": "Hammasi haqiqatan bepulmi?",
+          "answer": "Ha, oʻqituvchilar uchun bepul: bank kartasi soʻralmaydi, sinf va oʻquvchi soni cheklanmagan. Keyinchalik maktablar uchun va kengaytirilgan imkoniyatli pullik tariflar chiqadi — ular haqida oldindan ochiq aytamiz."
         },
         {
           "question": "Tizimdan foydalanishni qanday oʻrganaman?",
-          "answer": "Birinchi marta kirganingizda interaktiv qoʻllanma sizni qadam-baqadam yetaklaydi. Taklifingiz boʻlsa, fikr-mulohaza doskasiga yozasiz — boshqa ustozlar ovoz beradi, jamoa koʻrib chiqadi."
+          "answer": "Birinchi kirganingizda interaktiv qoʻllanma qadam-baqadam yetaklaydi. Yordam markazida har boʻlim boʻyicha maqolalar bor. Taklifingizni fikr-mulohaza doskasiga yozasiz — boshqa ustozlar ovoz beradi, jamoa koʻrib chiqadi."
         }
-      ]
+      ],
+      "subtitle": "Oʻqituvchilar eng koʻp soʻraydigan savollar.",
+      "contactPrompt": "Savolingizga javob topmadingizmi?",
+      "contactCta": "Telegram orqali yozing"
     },
     "footer": {
-      "tagline": "Oʻqituvchilar uchun taʼlim jarayonini boshqarish va sifatini oshirishga moʻljallangan raqamli platforma.",
+      "tagline": "Oʻqituvchining darsdan oldingi, dars paytidagi va darsdan keyingi ishi — bitta joyda.",
       "pagesTitle": "Sahifalar",
-      "productsTitle": "Ostloyihalar",
+      "productsTitle": "Mahsulotlar",
       "moreInfoTitle": "Qoʻshimcha maʼlumot",
       "contactTitle": "Bogʻlanish uchun",
       "contactNote": "Savol va takliflar uchun Telegram orqali yozing.",
@@ -4175,28 +4106,129 @@
       "copyright": "© {year} Ustozona. Barcha huquqlar himoyalangan."
     },
     "products": {
-      "badge": "Ekotizim",
-      "heading": "Mahsulotlar",
-      "desc": "Ustozona ustiga quriladigan yoʻnalishlar. Ikkitasi ishlayapti, qolganlari yoʻlda.",
+      "badge": "Mahsulotlar",
+      "heading": "Darsning har bosqichi uchun",
+      "desc": "Hammasi bir-biriga ulangan. Toʻrttasi bugun ishlaydi, ota-ona ilovasi va maʼmuriyat paneli — yoʻlda.",
       "mainTitle": "Ustozona",
       "mainStatus": "Mavjud",
-      "mainDesc": "Oʻqituvchi paneli — jurnal, davomat, xulq, jadval, dars ishlanmasi. Bugun ishlatishingiz mumkin.",
+      "mainDesc": "Oʻqituvchi paneli: jurnal, davomat, xulq, jadval, ish reja va AI bilan dars rejasi.",
       "mainCta": "Imkoniyatlarni koʻrish",
       "detailCta": "Batafsil",
       "statusLive": "Mavjud",
       "statusSoon": "Tez orada",
       "taglines": {
-        "blog": "Oʻqituvchilarning maqolalari — tajriba, uslub va yangiliklar bir joyda.",
-        "baholash": "Bitta oʻlchov, besh xil yigʻish usuli — testdan qogʻoz OMR gacha.",
-        "doska": "Sinf ekrani: taymer, svetofor, tasodifiy ism, guruhlarga boʻlish.",
-        "shogird": "Ota-ona va oʻquvchi uchun Telegram ilovasi.",
-        "boshqaruv": "Maktab maʼmuriyati uchun panel."
+        "blog": "Oʻqituvchilar yozgan maqolalar: tajriba, metodika, dars gʻoyalari. Oʻzingiz ham yozasiz.",
+        "baholash": "Onlayn test, qogʻoz test skaneri va QR-kartalar — natija jurnalga tushadi.",
+        "doska": "Sinf ekrani: taymer, svetofor va jonli taqdimot. Taymer bilan svetofor kirmasdan ham ishlaydi.",
+        "shogird": "Ota-ona uchun Telegram ilovasi: bolaning bahosi, davomati va xulqi.",
+        "boshqaruv": "Maktab maʼmuriyati uchun panel va maktab boʻyicha hisobotlar."
       }
     },
     "cookie": {
       "text": "Saytdan foydalanish tajribasini yaxshilash uchun cookie fayllaridan foydalanamiz. Davom etish orqali bunga rozilik bildirasiz.",
       "reject": "Rad etish",
       "accept": "Qabul qilish"
+    },
+    "what": {
+      "heading": "Ustozonada nima bor?",
+      "tabs": [
+        {
+          "label": "Jurnal",
+          "question": "Qaysi oʻquvchi ortda qolayotganini kech bilasizmi?",
+          "summary": "Jurnal, davomat, xulq, jadval va dars ishlanmasi — har kungi ish bir joyda.",
+          "cta": "Jurnalni sinab koʻrish",
+          "facts": [
+            {
+              "lead": "«Eʼtibor kerak» roʻyxati",
+              "text": "davomat, xulq va baho pasayishiga qarab kimga yordam kerakligini bosh sahifa oʻzi koʻrsatadi."
+            },
+            {
+              "lead": "Davomat — bir bosishda",
+              "text": "butun sinf kelgan boʻlsa, sana ustunini bir marta bosasiz."
+            },
+            {
+              "lead": "Ish reja — Excel yoki Word fayldan",
+              "text": "mavzular jadval boʻyicha kunma-kun joylanadi, taʼtil kunlari oʻtkazib yuboriladi."
+            },
+            {
+              "lead": "AI dars rejasi",
+              "text": "mashq va test savollarini dars davomiyligiga moslab tuzadi. Oʻquvchilar ismi AIʼga yuborilmaydi."
+            }
+          ]
+        },
+        {
+          "label": "Baholash",
+          "question": "Test varaqlarini qoʻlda tekshirasizmi?",
+          "summary": "Qaysi yoʻl bilan oʻtkazmang, natija bitta jurnalga tushadi — qaysi test bahoga kirishini oʻzingiz belgilaysiz.",
+          "cta": "Baholash haqida",
+          "facts": [
+            {
+              "lead": "Jonli test",
+              "text": "oʻquvchilar oʻz telefonidan PIN yoki QR orqali qoʻshiladi."
+            },
+            {
+              "lead": "Telefonsiz sinf",
+              "text": "oʻquvchilar QR-kartani koʻtaradi, kamera barcha javoblarni bir zumda oʻqiydi."
+            },
+            {
+              "lead": "Qogʻoz test",
+              "text": "javob varaqlarini chop etasiz va telefon kamerasi bilan tekshirasiz."
+            },
+            {
+              "lead": "Uyga vazifa",
+              "text": "muddat bilan; oʻquvchi har savoldan keyin natijasini darhol koʻradi."
+            }
+          ]
+        },
+        {
+          "label": "Taqdimot",
+          "question": "Darsda oʻquvchilar zerikib qolyaptimi?",
+          "summary": "Slayd koʻrsatish va sinfni tekshirish — bitta taqdimotda.",
+          "cta": "Taqdimot haqida",
+          "facts": [
+            {
+              "lead": "PowerPoint va PDF dan",
+              "text": "tayyor slaydlaringizni qaytadan yasamaysiz."
+            },
+            {
+              "lead": "Slaydlar orasida savol",
+              "text": "test, soʻrovnoma, soʻz buluti yoki ochiq javob."
+            },
+            {
+              "lead": "Jonli sessiya",
+              "text": "oʻquvchilar telefonidan QR yoki PIN bilan qoʻshiladi."
+            },
+            {
+              "lead": "Doskada ochiladi",
+              "text": "taqdimot sinf ekranida taymer va svetofor yonida turadi."
+            }
+          ]
+        },
+        {
+          "label": "Doska",
+          "question": "Sinfni tartibda ushlash qiyinmi?",
+          "summary": "Projektor va katta ekran uchun — uzoqdan ham oʻqiladi.",
+          "cta": "Doskani ochish",
+          "facts": [
+            {
+              "lead": "Taymer va soat",
+              "text": "mashq vaqtini butun sinf katta ekranda koʻrib turadi."
+            },
+            {
+              "lead": "Svetofor",
+              "text": "«jim ishlaymiz», «pichirlab», «erkin gaplashamiz» — qoidani har safar aytib oʻtirmaysiz."
+            },
+            {
+              "lead": "Matn va stikerlar",
+              "text": "topshiriq va eslatmani doskaga yozib qoʻyasiz."
+            },
+            {
+              "lead": "Roʻyxatdan oʻtmasdan",
+              "text": "taymer, svetofor va soat darhol ochiladi."
+            }
+          ]
+        }
+      ]
     }
   },
   "StandardTagPicker": {

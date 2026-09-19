@@ -92,7 +92,7 @@ const Pricing = () => {
             </Badge>
             {/* Heading */}
             <div className="max-w-md sm:max-w-2xl mx-auto text-center flex flex-col gap-3">
-              <h2 className="text-foreground text-3xl sm:text-5xl font-medium">
+              <h2 className="text-landing-4 font-semibold text-foreground">
                 {t("heading")}
               </h2>
               <p className="text-muted-foreground text-base">
@@ -146,7 +146,7 @@ const Pricing = () => {
                         <GlowBadge tone={plan.plan_live ? "success" : "pending"}>
                           {plan.plan_status}
                         </GlowBadge>
-                        <CardTitle className="text-2xl font-medium text-primary">
+                        <CardTitle className="text-landing-2 font-medium text-primary">
                           {plan.plan_name}
                         </CardTitle>
                         <CardDescription className="text-base font-normal">
@@ -157,7 +157,7 @@ const Pricing = () => {
 
                     <CardContent className="flex flex-col flex-1 gap-8 p-0">
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-foreground text-4xl sm:text-5xl font-medium">
+                        <span className="text-foreground text-landing-4 font-medium">
                           {plan.plan_price}
                         </span>
                         {plan.plan_price_note && (
