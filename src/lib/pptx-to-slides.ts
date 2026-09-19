@@ -32,6 +32,8 @@ export type PptxImportResult = {
 
 export const MAX_PPTX_SLIDES = 60;
 const IMAGE_MAX_WIDTH = 1600;
+/** Uzun infografika ham 2 MB server chegarasidan oshmasin. */
+const IMAGE_MAX_HEIGHT = 1600;
 const JPEG_QUALITY = 0.82;
 
 type Pptx = typeof import("pptxtojson");
@@ -71,7 +73,7 @@ function toJpeg(src: string): Promise<string | null> {
   return new Promise((resolve) => {
     const img = new window.Image();
     img.onload = () => {
-      const scale = Math.min(1, IMAGE_MAX_WIDTH / img.width);
+      const scale = Math.min(1, IMAGE_MAX_WIDTH / img.width, IMAGE_MAX_HEIGHT / img.height);
       const canvas = document.createElement("canvas");
       canvas.width = Math.max(1, Math.round(img.width * scale));
       canvas.height = Math.max(1, Math.round(img.height * scale));

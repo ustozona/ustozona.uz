@@ -69,9 +69,11 @@ export async function submitResponse(input: SubmitResponseInput) {
   if (live && previousAttempts > 0) throw new ForbiddenError("Javob allaqachon yuborilgan");
   // Soʻrovnoma va soʻz bulutida «toʻgʻri javob» yoʻq — natija ochilgandan
   // keyin ham javob qabul qilinadi (kechikkan oʻquvchi ham fikr bildiradi).
-  // Bir marta ochilgan savol qulf boʻlib qoladi — oʻqituvchi «Yashirish»
-  // bossa ham javobni koʻrib boʻlganlar endi javob yubora olmaydi.
-  const locked = liveConfig.revealed || (liveConfig.lockedActivityIds ?? []).includes(activity.id);
+  // Qulf SAVOL boʻyicha: faqat ochilgan savol yopiladi va «Yashirish» dan
+  // keyin ham yopiq qoladi. Sessiya-bo'yi `revealed` belgisiga qaralmaydi —
+  // aks holda internet kechikib, hali oldingi savolda turgan oʻquvchining
+  // oʻz vaqtida yuborgan javobi ham rad etilardi.
+  const locked = (liveConfig.lockedActivityIds ?? []).includes(activity.id);
   if (live && locked && activity.grading !== "none") {
     throw new ForbiddenError("Javob vaqti tugadi");
   }

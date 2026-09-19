@@ -90,13 +90,6 @@ import {
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-  EmptyDescription,
-} from "@/components/ui/empty";
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -772,6 +765,11 @@ export default function AssignmentEditorOverlay({
      (sessiyadan nashr qilingan) ustunlar uchun zaxira. */
   function renderContent() {
     if (attachedSetId) {
+      /* Taqdimot ham, test ham shu kartada — faqat belgi, rang va yozuv
+         turga qarab. Faqat slayddan iborat taqdimot baholanmaydi
+         (maks. ball 0), shuning uchun «Avtomatik» yozuvi unda chiqmaydi. */
+      const kindLabel = isDeck ? t("kindDeck") : t("kindTest");
+      const KindIcon = isDeck ? Presentation : ClipboardCheck;
       return (
         <div className="flex items-center gap-3 rounded-xl border border-border p-3">
           <button
@@ -781,17 +779,23 @@ export default function AssignmentEditorOverlay({
           >
             <span
               className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white"
-              style={{ backgroundColor: "#22c55e" }}
+              style={{ backgroundColor: isDeck ? CLASS_COLOR_HEX.orange : "#22c55e" }}
             >
-              <ClipboardCheck className="size-5" />
+              <KindIcon className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
               <h4 className="truncate text-sm font-semibold text-foreground">
-                {setMeta?.title ?? (current.title || t("kindTest"))}
+                {setMeta?.title ?? (current.title || kindLabel)}
               </h4>
               <p className="truncate text-xs text-muted-foreground">
                 {setMeta
-                  ? `${t("kindTest")} · ${t("questionCount", { count: setMeta.itemCount })} · ${t("gradingAuto")}`
+                  ? [
+                      kindLabel,
+                      t("questionCount", { count: setMeta.itemCount }),
+                      setMeta.maxScore > 0 ? t("gradingAuto") : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")
                   : t("loadingLabel")}
               </p>
             </div>
@@ -852,20 +856,6 @@ export default function AssignmentEditorOverlay({
             <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
           )}
         </button>
-      );
-    }
-
-    if (isDeck) {
-      return (
-        <Empty className="rounded-xl border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Presentation />
-            </EmptyMedia>
-            <EmptyTitle>{t("deckEditorSoonTitle")}</EmptyTitle>
-            <EmptyDescription>{t("editorSoonDescription")}</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
       );
     }
 

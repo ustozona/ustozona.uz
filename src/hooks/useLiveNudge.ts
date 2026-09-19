@@ -56,7 +56,6 @@ export function useLiveNudge(
     const connect = () => {
       socket = new WebSocket(url);
       socket.onopen = () => {
-        backoff = 1000;
         send({
           topic: channel,
           event: "phx_join",
@@ -76,7 +75,13 @@ export function useLiveNudge(
           return;
         }
         if (msg.topic !== channel) return;
-        if (msg.event === "phx_reply" && msg.payload?.status === "ok") setConnected(true);
+        if (msg.event === "phx_reply" && msg.payload?.status === "ok") {
+          // Kutish faqat TASDIQLANGAN qoʻshilishdan keyin tiklanadi: socket
+          // ochilib darhol yopilsa (kalit xato, limit) qayta urinish har
+          // soniyada emas, 30 s gacha oʻsib boradi.
+          backoff = 1000;
+          setConnected(true);
+        }
         else if (msg.event === "broadcast") onNudgeRef.current();
         else if (msg.event === "phx_error" || msg.event === "phx_close") socket?.close();
       };

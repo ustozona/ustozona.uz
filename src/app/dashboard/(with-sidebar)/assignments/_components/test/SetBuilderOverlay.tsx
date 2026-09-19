@@ -173,19 +173,27 @@ export default function SetBuilderOverlay({
     upload: (dataUrl: string) => Promise<string>,
     onDone: () => void,
     limit = 4,
-  ): Promise<(string | undefined)[]> {
+  ): Promise<{ urls: (string | undefined)[]; failed: number }> {
     const out: (string | undefined)[] = new Array(dataUrls.length);
     let next = 0;
+    let failed = 0;
     const worker = async () => {
       while (next < dataUrls.length) {
         const i = next++;
         const src = dataUrls[i];
-        out[i] = src ? await upload(src) : undefined;
+        // Bitta rasm xatosi (masalan, 2 MB dan katta) butun importni
+        // bekor qilmasin — slayd rasmsiz qoladi, qolganlari saqlanadi.
+        try {
+          out[i] = src ? await upload(src) : undefined;
+        } catch {
+          out[i] = undefined;
+          if (src) failed++;
+        }
         onDone();
       }
     };
     await Promise.all(Array.from({ length: Math.min(limit, dataUrls.length) }, worker));
-    return out;
+    return { urls: out, failed };
   }
 
   async function importPresentation(file: File) {
@@ -199,6 +207,7 @@ export default function SetBuilderOverlay({
     }
 
     setImportProgress({ done: 0, total: 0 });
+    let failedImages = 0;
     let notStored = false;
     const upload = async (dataUrl: string) => {
       const { url, stored } = await uploadEditorImageAction(dataUrl);
@@ -215,9 +224,10 @@ export default function SetBuilderOverlay({
       if (isPdf) {
         const { images, totalPages } = await pdfToImages(file, half);
         let uploaded = 0;
-        const urls = await uploadAll(images, upload, () =>
+        const { urls, failed } = await uploadAll(images, upload, () =>
           setImportProgress({ done: images.length + ++uploaded, total: images.length * 2 }),
         );
+        failedImages = failed;
         for (const url of urls) {
           slides.push({ ...newQuestion("slide"), slideLayout: "media", imageUrl: url });
         }
@@ -227,11 +237,12 @@ export default function SetBuilderOverlay({
       } else {
         const { slides: parsed, lossy, totalSlides } = await pptxToSlides(file, half);
         let uploaded = 0;
-        const urls = await uploadAll(
+        const { urls, failed } = await uploadAll(
           parsed.map((p) => p.imageDataUrl),
           upload,
           () => setImportProgress({ done: parsed.length + ++uploaded, total: parsed.length * 2 }),
         );
+        failedImages = failed;
         parsed.forEach((p, i) => {
           slides.push({
             ...newQuestion("slide"),
@@ -249,6 +260,9 @@ export default function SetBuilderOverlay({
         }
       }
 
+      if (failedImages > 0) {
+        notes.push(`${failedImages} ta rasm juda katta boʻlgani uchun yuklanmadi — ularni slaydga qoʻlda qoʻshing.`);
+      }
       insertSlides(slides);
       toast.success(`${slides.length} ta slayd qoʻshildi`, {
         description: notes.length ? notes.join(" ") : "Endi slaydlar orasiga savol qoʻshishingiz mumkin.",
