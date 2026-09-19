@@ -2,7 +2,7 @@
    PPTX → TAHRIRLANADIGAN SLAYDLAR (docs/taqdimot-spec.md, 2-qavat).
 
    PDF importi sahifani RASM qiladi — koʻrinishi aniq, lekin matnni
-   tahrirlab boʻlmaydi. Bu yoʻl esa PowerPoint slaydidan sarlavha, matn
+   tahrirlab boʻlmaydi. Bu yoʻl esa taqdimot faylidagi slayddan sarlavha, matn
    va asosiy rasmni AJRATIB oladi va ularni bizning maketlarimizdan
    biriga joylaydi. Erkin joylashuv (koordinata, shrift, animatsiya)
    ataylab tashlanadi: maketlar proyektorda har doim toza chiqadi,
@@ -38,6 +38,10 @@ type Pptx = typeof import("pptxtojson");
 type PptxElement = Awaited<ReturnType<Pptx["parse"]>>["slides"][number]["elements"][number];
 
 type TextBox = { text: string; top: number; left: number; name: string };
+
+/** Har slaydda takrorlanadigan xizmat joylari — mazmun emas. Joy egasi
+    nomi ofis dasturi tiliga qarab keladi (inglizcha/ruscha). */
+const SERVICE_PLACEHOLDER = /slide number|footer|date|номер слайда|нижний колонтитул|^дата/i;
 type Picture = { src: string; area: number };
 
 /** Guruh va diagrammalar ichidagi elementlarni tekis roʻyxatga yoyadi. */
@@ -117,6 +121,7 @@ export async function pptxToSlides(
 
     for (const el of elements) {
       if ((el.type === "text" || el.type === "shape") && el.content) {
+        if (SERVICE_PLACEHOLDER.test(el.name ?? "")) continue;
         const text = htmlToLines(el.content).join("\n");
         if (text) texts.push({ text, top: el.top, left: el.left, name: el.name ?? "" });
       } else if (el.type === "image" && el.base64) {

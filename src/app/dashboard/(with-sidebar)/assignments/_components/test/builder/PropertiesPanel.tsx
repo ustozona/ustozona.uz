@@ -61,7 +61,10 @@ export default function PropertiesPanel({
     if (shape === question.shape) return;
     onChange({
       shape,
-      options: shape === "mcq" && question.options.length === 0 ? newOptions() : question.options,
+      options:
+        (shape === "mcq" || shape === "poll") && question.options.length === 0
+          ? newOptions()
+          : question.options,
       pairs: shape === "pairs" && question.pairs.length === 0 ? [newPair(), newPair()] : question.pairs,
     });
   }

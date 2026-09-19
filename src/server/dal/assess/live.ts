@@ -20,7 +20,7 @@ import type { LiveResults, LiveSessionInfo } from "@/lib/live-session";
    chiqmaydi (kanalda maʼlumot yoʻq, lekin baribir sir tutiladi).
    ════════════════════════════════════════════════════════════════════ */
 
-type LiveConfig = { liveTopic?: string; revealed?: boolean };
+type LiveConfig = { liveTopic?: string; revealed?: boolean; lockedActivityIds?: string[] };
 
 async function loadOwnedLive(sessionId: string) {
   const teacher = await requireTeacher();
@@ -48,16 +48,27 @@ export async function startLiveSession(setId: string, classId: string): Promise<
   return { sessionId: opened.id, joinCode: opened.joinCode ?? "", topic: liveTopic };
 }
 
-/** Oʻqituvchi qadamni almashtirdi yoki javobni ochdi/yopdi. */
-export async function setLiveStep(sessionId: string, index: number, revealed: boolean): Promise<void> {
+/** Oʻqituvchi qadamni almashtirdi yoki javobni ochdi/yopdi.
+
+    `activityId` — ochilgan savol. U `lockedActivityIds` ga yoziladi va
+    «Yashirish» dan keyin ham qulf boʻlib qoladi: toʻgʻri javobni koʻrgan
+    oʻquvchi keyin javob yuborib ball olmasin. */
+export async function setLiveStep(
+  sessionId: string,
+  index: number,
+  revealed: boolean,
+  activityId?: string,
+): Promise<void> {
   const session = await loadOwnedLive(sessionId);
   if (session.mode !== "live") throw new SessionStateError("Bu jonli sessiya emas");
   const config = session.renderConfig as LiveConfig;
+  const locked = new Set(config.lockedActivityIds ?? []);
+  if (revealed && activityId) locked.add(activityId);
   await db
     .update(quizSessions)
     .set({
       currentIndex: Math.max(0, index),
-      renderConfig: { ...config, revealed },
+      renderConfig: { ...config, revealed, lockedActivityIds: [...locked] },
       updatedAt: new Date(),
     })
     .where(eq(quizSessions.id, sessionId));

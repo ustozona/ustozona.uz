@@ -183,6 +183,16 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     }
   }
 
+  /** Jonli sessiyada sahifa yangilangach oʻquvchi allaqachon javob bergan
+      savolni yana koʻradi. Server «allaqachon yuborilgan» desa, bu xato
+      emas — ekran «javob qabul qilindi» holatiga oʻtadi. */
+  function handleLiveDuplicate(e: unknown, activityId: string): boolean {
+    if (!live || !(e instanceof Error) || e.message !== "Javob allaqachon yuborilgan") return false;
+    setError(null);
+    setLiveAnswers((prev) => ({ ...prev, [activityId]: prev[activityId] ?? null }));
+    return true;
+  }
+
   function advanceStep(c: PlaySessionContent) {
     setSelectedOption(null);
     setMatchedLeftIds(new Set());
@@ -211,9 +221,11 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
         setCorrectCount((n) => n + 1);
         setPoints((p) => p + 100 * step.pointsMultiplier);
       }
+      setError(null);
       if (live) setLiveAnswers((prev) => ({ ...prev, [step.activityId]: Boolean(isCorrect) }));
       else advanceStep(content);
     } catch (e) {
+      if (handleLiveDuplicate(e, step.activityId)) return;
       setError(e instanceof Error ? e.message : "Yuborishda xatolik");
     } finally {
       setSubmitting(false);
@@ -236,6 +248,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
         advanceStep(content);
       }
     } catch (e) {
+      if (handleLiveDuplicate(e, step.activityId)) return;
       setError(e instanceof Error ? e.message : "Yuborishda xatolik");
     } finally {
       setSubmitting(false);
@@ -376,6 +389,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
               </PushButton>
             ))}
           </div>
+          {error && <p className="text-center text-sm text-destructive">{error}</p>}
           {liveNote ?? (
             <PushButton disabled={!selectedOption || submitting} onClick={handleMcqNext}>
               {live ? "Javob berish" : stepIndex + 1 < content.steps.length ? "Keyingisi" : "Yakunlash"}
@@ -575,6 +589,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
             })}
           </div>
         </div>
+        {error && <p className="text-center text-sm text-destructive">{error}</p>}
         {liveNote}
       </div>
     );

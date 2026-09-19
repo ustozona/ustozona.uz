@@ -220,7 +220,9 @@ function useOpenSetFromUrl() {
 
     const { deck, activeScreenId, addWidget, patchWidgetState } = useDoskaStore.getState();
     const screen = deck.screens.find((s) => s.id === activeScreenId);
-    const existing = screen?.widgets.find((w) => w.kind === "presentation.v1");
+    // Jonli sessiyasi bor vidjetga TEGILMAYDI — aks holda eski sessiya yangi
+    // toʻplamning qadamlari bilan boshqarilib qolardi. Unda yangi vidjet.
+    const existing = screen?.widgets.find((w) => w.kind === "presentation.v1" && !w.state.live);
     // Dars kartasidan kelgan sinf — jonli sessiyada oldindan tanlangan boʻladi.
     const classId = url.searchParams.get("classId") ?? undefined;
     const state = { setId, index: 0, revealed: false, ...(classId ? { classId } : {}) };

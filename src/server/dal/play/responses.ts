@@ -6,7 +6,7 @@ import { activities, activityItems, responses, sessionParticipants } from "@/ser
 import { requireParticipant, ForbiddenError } from "@/server/play/session";
 import { scoreResponse } from "@/lib/assess/score";
 import { isSessionPastDue } from "@/lib/assess/session-due";
-import { nudgeTopic } from "@/server/realtime/broadcast";
+import { scheduleNudge } from "@/server/realtime/broadcast";
 
 /* ════════════════════════════════════════════════════════════════════
    JAVOB QABUL QILISH — bitta joy, besh yetkazish usuli (jonli, oʻz
@@ -61,11 +61,18 @@ export async function submitResponse(input: SubmitResponseInput) {
      Aks holda doskadagi ustunlar bir oʻquvchini ikki marta sanardi, toʻgʻri
      javobni koʻrgandan keyin «tuzatish» esa natijani maʼnosiz qilardi. */
   const live = session.mode === "live";
-  const liveConfig = session.renderConfig as { revealed?: boolean; liveTopic?: string };
+  const liveConfig = session.renderConfig as {
+    revealed?: boolean;
+    liveTopic?: string;
+    lockedActivityIds?: string[];
+  };
   if (live && previousAttempts > 0) throw new ForbiddenError("Javob allaqachon yuborilgan");
   // Soʻrovnoma va soʻz bulutida «toʻgʻri javob» yoʻq — natija ochilgandan
   // keyin ham javob qabul qilinadi (kechikkan oʻquvchi ham fikr bildiradi).
-  if (live && liveConfig.revealed && activity.grading !== "none") {
+  // Bir marta ochilgan savol qulf boʻlib qoladi — oʻqituvchi «Yashirish»
+  // bossa ham javobni koʻrib boʻlganlar endi javob yubora olmaydi.
+  const locked = liveConfig.revealed || (liveConfig.lockedActivityIds ?? []).includes(activity.id);
+  if (live && locked && activity.grading !== "none") {
     throw new ForbiddenError("Javob vaqti tugadi");
   }
   if (activity.shape === "text") {
@@ -118,7 +125,7 @@ export async function submitResponse(input: SubmitResponseInput) {
 
   // Oʻqituvchi ekraniga «yangi javob» turtkisi — kutilmaydi va hech qachon
   // xato tashlamaydi (server/realtime/broadcast.ts).
-  if (live && liveConfig.liveTopic) void nudgeTopic(liveConfig.liveTopic);
+  if (live && liveConfig.liveTopic) scheduleNudge(liveConfig.liveTopic);
 
   return row;
 }

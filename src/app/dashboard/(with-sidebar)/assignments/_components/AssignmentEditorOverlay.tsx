@@ -413,7 +413,7 @@ export default function AssignmentEditorOverlay({
   }
 
   /** Mavjud toʻplam tanlandi — halqa darhol bogʻlanadi. */
-  function handlePickExistingSet(set: { id: string; title: string }) {
+  function handlePickExistingSet(set: { id: string; title: string; containerKind: string }) {
     setAttachOpen(false);
     handleSetSaved(set);
     toast.success(t("attachedTitle"), { description: set.title });

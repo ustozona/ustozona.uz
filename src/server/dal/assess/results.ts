@@ -93,7 +93,10 @@ export async function sessionReport(sessionId: string): Promise<SessionReport> {
       .where(eq(sessionParticipants.sessionId, sessionId)),
   ]);
 
-  const stats = toResponseStats(responseRows);
+  // Faqat baholanadigan elementlar javoblari — soʻrovnoma/soʻz buluti
+  // javoblari qolsa yakunlash foizi 100% dan oshib ketardi (maxraj ularsiz).
+  const gradedIds = new Set(orderedItemIds);
+  const stats = toResponseStats(responseRows.filter((r) => gradedIds.has(r.itemId)));
   const participantIds = participants.map((p) => p.id);
   const respondedParticipantIds = new Set(stats.map((r) => r.participantId));
 

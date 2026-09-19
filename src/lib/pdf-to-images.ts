@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════════════════════════════════
    PDF → SLAYD RASMLARI (docs/taqdimot-spec.md, 2-qavat: import).
 
-   Oʻqituvchining tayyor taqdimoti (PowerPoint, Google taqdimoti, PDF)
+   Oʻqituvchining tayyor taqdimoti (istalgan ofis dasturidan)
    PDF sifatida yuklanadi va har sahifa bitta rasmga aylanadi. Hammasi
    BRAUZERDA: fayl serverga bormaydi, faqat tayyor rasmlar mavjud
    `uploadEditorImageAction` orqali saqlagichga chiqadi.

@@ -452,7 +452,9 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
         config: draftConfig(q),
         items: draftItems(q),
       };
-      if (q.activityId) return updateActivity(q.activityId, payload);
+      // Tur ham yuboriladi: aks holda test→soʻrovnoma almashtirilganda qator
+      // eski `shape` bilan qolib, yangi element/sozlama bilan nomuvofiq boʻlardi.
+      if (q.activityId) return updateActivity(q.activityId, { ...payload, shape: q.shape });
       return createActivity({ ...payload, shape: q.shape });
     })
   );
@@ -469,9 +471,13 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
     /* Idish turi TANLANMAYDI, HISOBLANADI (R276): bitta slayd boʻlsa
        toʻplam taqdimot. Aks holda «taqdimot deb belgilangan, slaydi yoʻq»
        degan ikki xil haqiqat tugʻilardi. */
+    // Faqat none↔deck oʻrtasida almashadi — boshqa idish (video, matn)
+    // muharrir saqlaganda oʻchirib yuborilmaydi.
     containerKind: parsed.questions.some((q) => q.shape === "slide")
       ? ("deck" as const)
-      : ("none" as const),
+      : previous?.containerKind === "deck" || !previous
+        ? ("none" as const)
+        : (previous.containerKind as "none" | "video" | "passage"),
     items: saved.map((a) => ({ activityId: a.id, role: "check" as const })),
     config: {
       ...(previous?.config ?? {}),

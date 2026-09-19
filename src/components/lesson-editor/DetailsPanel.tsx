@@ -65,10 +65,22 @@ export default function DetailsPanel({
      koʻrsatish va tanlash roʻyxati uchun. Sinfga cheklanmaydi: 5-A da
      tuzilgan taqdimot 5-B darsida ham oʻtiladi (R226). */
   const [allSets, setAllSets] = useState<ActivitySetRow[] | null>(null);
-  useEffect(() => {
-    listSetsAction().then(setAllSets).catch(() => setAllSets([]));
-  }, []);
   const attachedSetIds = lesson.setIds ?? [];
+  useEffect(() => {
+    listSetsAction()
+      .then((rows) => {
+        setAllSets(rows);
+        // Oʻchirilgan toʻplam havolasi tozalanadi — aks holda Bosh sahifadagi
+        // «Taqdimotni boshlash» yoʻq toʻplamni ochardi. Faqat MUVAFFAQIYATLI
+        // yuklashdan keyin: xato boʻlsa roʻyxat boʻsh, hammasi oʻchib ketardi.
+        const alive = new Set(rows.map((r) => r.id));
+        const ids = lesson.setIds ?? [];
+        if (ids.some((id) => !alive.has(id))) onSetSetIds(ids.filter((id) => alive.has(id)));
+      })
+      .catch(() => setAllSets([]));
+    // Faqat ochilganda bir marta — har tahrirda qayta soʻrash shart emas.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson.id]);
   const attachedSets = attachedSetIds
     .map((id) => allSets?.find((s) => s.id === id))
     .filter((s): s is ActivitySetRow => Boolean(s));

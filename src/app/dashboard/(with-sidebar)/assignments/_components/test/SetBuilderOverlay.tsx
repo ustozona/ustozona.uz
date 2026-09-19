@@ -165,6 +165,29 @@ export default function SetBuilderOverlay({
     if (slides[0]) setActiveKey(slides[0].key);
   }
 
+  /** Rasmlarni bir vaqtda koʻpi bilan `limit` tadan yuklaydi — ketma-ket
+      60 ta server soʻrovi maktab internetida bir daqiqadan oshardi, hammasini
+      birdan yuborish esa sust tarmoqni boʻgʻib qoʻyadi. Tartib saqlanadi. */
+  async function uploadAll(
+    dataUrls: (string | undefined)[],
+    upload: (dataUrl: string) => Promise<string>,
+    onDone: () => void,
+    limit = 4,
+  ): Promise<(string | undefined)[]> {
+    const out: (string | undefined)[] = new Array(dataUrls.length);
+    let next = 0;
+    const worker = async () => {
+      while (next < dataUrls.length) {
+        const i = next++;
+        const src = dataUrls[i];
+        out[i] = src ? await upload(src) : undefined;
+        onDone();
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(limit, dataUrls.length) }, worker));
+    return out;
+  }
+
   async function importPresentation(file: File) {
     const isPptx = /\.pptx$/i.test(file.name);
     const isPdf = /\.pdf$/i.test(file.name) || file.type === "application/pdf";
@@ -191,26 +214,33 @@ export default function SetBuilderOverlay({
 
       if (isPdf) {
         const { images, totalPages } = await pdfToImages(file, half);
-        for (let i = 0; i < images.length; i++) {
-          slides.push({ ...newQuestion("slide"), slideLayout: "media", imageUrl: await upload(images[i]) });
-          setImportProgress({ done: images.length + i + 1, total: images.length * 2 });
+        let uploaded = 0;
+        const urls = await uploadAll(images, upload, () =>
+          setImportProgress({ done: images.length + ++uploaded, total: images.length * 2 }),
+        );
+        for (const url of urls) {
+          slides.push({ ...newQuestion("slide"), slideLayout: "media", imageUrl: url });
         }
         if (totalPages > MAX_PDF_PAGES) {
           notes = [`PDF da ${totalPages} sahifa bor — birinchi ${MAX_PDF_PAGES} tasi olindi.`];
         }
       } else {
         const { slides: parsed, lossy, totalSlides } = await pptxToSlides(file, half);
-        for (let i = 0; i < parsed.length; i++) {
-          const p = parsed[i];
+        let uploaded = 0;
+        const urls = await uploadAll(
+          parsed.map((p) => p.imageDataUrl),
+          upload,
+          () => setImportProgress({ done: parsed.length + ++uploaded, total: parsed.length * 2 }),
+        );
+        parsed.forEach((p, i) => {
           slides.push({
             ...newQuestion("slide"),
             slideLayout: p.layout,
             title: p.title,
             stem: p.body,
-            imageUrl: p.imageDataUrl ? await upload(p.imageDataUrl) : undefined,
+            imageUrl: urls[i],
           });
-          setImportProgress({ done: parsed.length + i + 1, total: parsed.length * 2 });
-        }
+        });
         if (totalSlides > MAX_PPTX_SLIDES) {
           notes.push(`Faylda ${totalSlides} slayd bor — birinchi ${MAX_PPTX_SLIDES} tasi olindi.`);
         }

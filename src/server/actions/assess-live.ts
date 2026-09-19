@@ -31,11 +31,13 @@ const stepSchema = z.object({
   sessionId: z.string().min(1),
   index: z.number().int().min(0).max(10_000),
   revealed: z.boolean(),
+  /** Ochilayotgan savol — qulf uchun (dal/assess/live.ts). */
+  activityId: z.string().min(1).optional(),
 });
 
 export async function setLiveStepAction(input: z.infer<typeof stepSchema>): Promise<void> {
-  const { sessionId, index, revealed } = stepSchema.parse(input);
-  await setLiveStep(sessionId, index, revealed);
+  const { sessionId, index, revealed, activityId } = stepSchema.parse(input);
+  await setLiveStep(sessionId, index, revealed, activityId);
 }
 
 export async function liveResultsAction(sessionId: string): Promise<LiveResults> {

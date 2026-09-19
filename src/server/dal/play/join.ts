@@ -5,7 +5,7 @@ import { db } from "@/server/db/client";
 import { enrollments, quizSessions, sessionParticipants, students } from "@/server/db/schema";
 import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/server/play/session";
 import { isSessionPastDue } from "@/lib/assess/session-due";
-import { nudgeTopic } from "@/server/realtime/broadcast";
+import { scheduleNudge } from "@/server/realtime/broadcast";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻSHILISH — akkauntsiz ishtirokchi PIN/havola/QR bilan kiradi.
@@ -80,7 +80,7 @@ export async function joinByCode(
 
   // Jonli sessiyada doskadagi «N qoʻshildi» hisobi darhol yangilansin.
   const liveTopic = (session.renderConfig as { liveTopic?: string }).liveTopic;
-  if (session.mode === "live" && liveTopic) void nudgeTopic(liveTopic);
+  if (session.mode === "live" && liveTopic) scheduleNudge(liveTopic);
 
   return { token, participantId: participant.id, sessionId: session.id };
 }

@@ -77,8 +77,14 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
   // Jonli sessiyada har oʻtish serverga ham yoziladi — oʻquvchi qurilmalari
   // shuni soʻrab oladi. Xato jim: doska baribir oʻtadi, keyingi bosishda
   // server yana yetib oladi.
-  const syncLive = (next: number, nextRevealed: boolean) => {
-    if (live) void setLiveStepAction({ sessionId: live.sessionId, index: next, revealed: nextRevealed }).catch(() => {});
+  const syncLive = (next: number, nextRevealed: boolean, activityId?: string) => {
+    if (!live) return;
+    void setLiveStepAction({
+      sessionId: live.sessionId,
+      index: next,
+      revealed: nextRevealed,
+      activityId,
+    }).catch(() => {});
   };
 
   if (!setId) {
@@ -96,9 +102,9 @@ export function PresentationWidget({ widget }: { widget: DoskaWidget }) {
         patch(widget.id, { index: next, revealed: false, showJoin: false });
         syncLive(next, false);
       }}
-      onReveal={() => {
+      onReveal={(activityId) => {
         patch(widget.id, { revealed: !revealed });
-        syncLive(index, !revealed);
+        syncLive(index, !revealed, activityId);
       }}
       onChange={() => patch(widget.id, { setId: null, index: 0, revealed: false })}
       teams={teams}
@@ -271,7 +277,8 @@ function Player({
   index: number;
   revealed: boolean;
   onGo: (next: number) => void;
-  onReveal: () => void;
+  /** Ochilayotgan savol — server uni qulflaydi («Yashirish» dan keyin ham). */
+  onReveal: (activityId?: string) => void;
   onChange: () => void;
   teams: Team[] | null;
   onTeamsChange: (next: Team[] | null) => void;
@@ -332,7 +339,7 @@ function Player({
     keysRef.current = {
       next: () => current < total - 1 && onGo(current + 1),
       prev: () => current > 0 && onGo(current - 1),
-      reveal: () => step && step.shape !== "slide" && onReveal(),
+      reveal: () => step && step.shape !== "slide" && onReveal(step.activityId),
     };
   });
 
@@ -454,10 +461,11 @@ function Player({
                       !revealed && "border-current/20",
                     )}
                   >
-                    {/* Jonli ustun — javoblar ulushi (oʻqituvchi ochmaguncha
-                        ham koʻrinadi: sinf fikri qanday boʻlinayotgani darsning
-                        oʻzi uchun maʼlumot). */}
-                    {live && (
+                    {/* Jonli ustun — FAQAT javob ochilgach. Erta koʻrinsa
+                        proyektorga qarab qolganlar koʻpchilikka ergashadi va
+                        jurnalga tushadigan natija buziladi. Ungacha tepada
+                        faqat «N/M javob berdi» hisobi turadi. */}
+                    {live && revealed && (
                       <span
                         aria-hidden
                         className="absolute inset-y-0 left-0 bg-current/10 transition-[width] duration-500"
@@ -466,7 +474,7 @@ function Player({
                     )}
                     <span className="relative font-mono opacity-60">{String.fromCharCode(65 + i)}</span>
                     <span className="relative min-w-0 flex-1">{option.text}</span>
-                    {live && <span className="relative font-mono opacity-70">{count}</span>}
+                    {live && revealed && <span className="relative font-mono opacity-70">{count}</span>}
                   </div>
                 );
               })}
@@ -616,7 +624,7 @@ function Player({
         {step &&
           step.shape !== "slide" &&
           (live || (step.shape !== "poll" && step.shape !== "wordcloud" && step.shape !== "text")) && (
-          <NavButton onClick={onReveal}>
+          <NavButton onClick={() => onReveal(step.activityId)}>
             {revealed
               ? "Yashirish"
               : step.shape === "poll" || step.shape === "wordcloud" || step.shape === "text"

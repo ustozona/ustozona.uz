@@ -24,6 +24,8 @@ type Row = {
   takenBy: string | null;
   /** Qayerda tuzilgani — `null` = sinfsiz (faqat kutubxonada). */
   originClassId: string | null;
+  /** `deck` — taqdimot; topshiriq turi shundan hisoblanadi. */
+  containerKind: string;
 };
 
 /**
@@ -57,7 +59,7 @@ export default function AttachTestDialog({
   classId: string;
   /** Joriy topshiriq — oʻzining halqasi "band" deb koʻrsatilmasin. */
   assignmentId: string;
-  onPick: (set: { id: string; title: string }) => void;
+  onPick: (set: { id: string; title: string; containerKind: string }) => void;
   onCreateNew: () => void;
   onClose: () => void;
 }) {
@@ -77,6 +79,7 @@ export default function AttachTestDialog({
           itemCount: r.set.items.length,
           takenBy: r.assignmentId,
           originClassId: r.set.classId,
+          containerKind: r.set.containerKind,
         }));
         // Bogʻlanmaganlari tepada — oʻqituvchi koʻpincha aynan ularni izlaydi.
         mapped.sort((a, b) => Number(Boolean(a.takenBy)) - Number(Boolean(b.takenBy)));
@@ -139,7 +142,7 @@ export default function AttachTestDialog({
                         <button
                           key={row.id}
                           type="button"
-                          onClick={() => onPick({ id: row.id, title: row.title })}
+                          onClick={() => onPick({ id: row.id, title: row.title, containerKind: row.containerKind })}
                           className="list-card flex items-center gap-3 p-3 text-left"
                         >
                           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">

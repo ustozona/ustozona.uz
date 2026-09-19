@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 
 /* ════════════════════════════════════════════════════════════════════
    REALTIME TURTKI — Supabase Realtime Broadcast, REST orqali (R284).
@@ -13,6 +14,13 @@ import "server-only";
    qilishning sharti emas. Sozlanmagan yoki tarmoq xatosi boʻlsa jim
    qaytadi, oʻqituvchi ekrani esa zaxira soʻrov bilan baribir yangilanadi.
    ════════════════════════════════════════════════════════════════════ */
+
+/** Javob qaytgandan KEYIN yuboriladi (`after`). Oddiy `void fetch` serverless
+    muhitda javobdan keyin muzlatilib, turtki yoʻqolishi mumkin edi. */
+export function scheduleNudge(topic: string): void {
+  if (!topic) return;
+  after(() => nudgeTopic(topic));
+}
 
 export async function nudgeTopic(topic: string, event = "changed"): Promise<void> {
   const baseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
