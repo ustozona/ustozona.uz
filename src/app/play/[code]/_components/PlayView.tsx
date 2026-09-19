@@ -489,7 +489,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
         <>
           <StageCounter current={stepIndex} total={content.steps.length} />
           <h1 className="stage-stem-pill text-xl">{step.stem}</h1>
-          <ChoiceGrid count={step.options.length}>
+          <ChoiceGrid count={step.options.length} layout={step.answerLayout}>
             {step.options.map((option, i) => (
               <ChoiceTile
                 key={option.id}
@@ -562,7 +562,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
         <>
           <StageCounter current={stepIndex} total={content.steps.length} />
           <h1 className="stage-stem-pill text-xl">{step.stem}</h1>
-          <ChoiceGrid count={step.options.length}>
+          <ChoiceGrid count={step.options.length} layout={step.answerLayout}>
             {step.options.map((option, i) => (
               <ChoiceTile
                 key={option.id}

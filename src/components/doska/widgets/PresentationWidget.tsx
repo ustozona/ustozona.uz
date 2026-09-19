@@ -559,7 +559,7 @@ function QuestionStage({
   const stats = live && revealed;
 
   const tiles = (correctness: boolean) => (
-    <ChoiceGrid count={step.options.length} className="text-[max(12px,2.3cqw)]">
+    <ChoiceGrid count={step.options.length} layout={step.answerLayout} className="text-[max(12px,2.3cqw)]">
       {step.options.map((option, i) => {
         const count = item?.byOption[option.id] ?? 0;
         return (

@@ -837,3 +837,47 @@ button.stage-choice:disabled {
     transform: none;
   }
 }
+
+/* ── «Vertikal koʻrinish» (muharrir, answerLayout = list) ──
+   Uzun matnli javoblar — har uslubda bitta ustun, matn chapdan. */
+.stage-choices[data-layout="list"],
+.stage-screen .stage-choices[data-layout="list"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+[data-stage-style="modern"] .stage-choices[data-layout="list"] > .stage-choice {
+  --cols: 1;
+  min-height: 3.5rem;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 0.6em;
+  text-align: left;
+}
+
+[data-stage-style="modern"] .stage-choices[data-layout="list"] .stage-choice-shape {
+  position: static;
+  width: 1.15em;
+  height: 1.15em;
+}
+
+[data-stage-style="modern"] .stage-choices[data-layout="list"] .stage-choice-text {
+  flex: 1;
+}
+
+/* ── Muharrir koʻrinishi zamonaviy uslubda ── */
+[data-stage-style="modern"] .quiz-stage-answers.is-grid {
+  grid-template-columns: none;
+  grid-template-rows: minmax(0, 1fr);
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+
+[data-stage-style="modern"] textarea.quiz-stage-stem {
+  border: 1px solid oklch(1 0 0 / 0.14);
+  background: oklch(0.16 0.03 285 / 0.6);
+  color: oklch(1 0 0);
+}
+
+[data-stage-style="modern"] textarea.quiz-stage-stem::placeholder {
+  color: oklch(1 0 0 / 0.6);
+}

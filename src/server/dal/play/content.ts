@@ -22,6 +22,12 @@ import { slideLayoutOf, type SlideLayout } from "@/lib/slide-layouts";
     R33: "oʻyin qatlami maʼlumot oladi, lekin unga yozmaydi"). */
 export type PointsMultiplier = 0 | 1 | 2;
 
+export type AnswerLayout = "grid" | "list";
+
+function answerLayoutOf(config: Record<string, unknown> | undefined): AnswerLayout {
+  return config?.answerLayout === "list" ? "list" : "grid";
+}
+
 export type McqStep = {
   kind: "mcq";
   itemId: string;
@@ -29,6 +35,8 @@ export type McqStep = {
   stem: string;
   options: { id: string; text: string }[];
   pointsMultiplier: PointsMultiplier;
+  /** Muharrirdagi «Vertikal koʻrinish»: `list` — uzun javoblar uchun bitta ustun. */
+  answerLayout: AnswerLayout;
 };
 
 export type PairsStep = {
@@ -61,6 +69,7 @@ export type PollStep = {
   activityId: string;
   stem: string;
   options: { id: string; text: string }[];
+  answerLayout: AnswerLayout;
 };
 
 /** Soʻz buluti — qisqa matnli javob. */
@@ -189,6 +198,7 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
           text: o.text,
         })),
         pointsMultiplier,
+        answerLayout: answerLayoutOf(configByActivity.get(activityId)),
       });
     } else if (shape === "text") {
       const item = items[0];
@@ -205,6 +215,7 @@ export async function getSessionContent(token: string): Promise<PlaySessionConte
               activityId,
               stem: content.stem ?? "",
               options: (content.options ?? []).map((o) => ({ id: o.id, text: o.text })),
+              answerLayout: answerLayoutOf(configByActivity.get(activityId)),
             }
           : { kind: "wordcloud", itemId: item.id, activityId, stem: content.stem ?? "" },
       );

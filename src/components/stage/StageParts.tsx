@@ -129,16 +129,23 @@ export function ChoiceTile({
     (`.stage-choices`); `--row` — keng ekranda bir qatordagi plitka soni. */
 export function ChoiceGrid({
   count,
+  layout = "grid",
   className,
   children,
 }: {
   count: number;
+  /** `list` — muharrirdagi «Vertikal koʻrinish»: uzun javoblar bitta ustunda. */
+  layout?: "grid" | "list";
   className?: string;
   children: React.ReactNode;
 }) {
   const row = count <= 4 ? Math.max(count, 1) : 3;
   return (
-    <div className={cn("stage-choices", className)} style={{ "--row": row } as React.CSSProperties}>
+    <div
+      className={cn("stage-choices", className)}
+      data-layout={layout}
+      style={{ "--row": row } as React.CSSProperties}
+    >
       {children}
     </div>
   );
