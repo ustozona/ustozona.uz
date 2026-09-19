@@ -4,11 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   ArrowLeft, ChevronRight, Download, FileSpreadsheet, FileText,
-  GraduationCap, Plus, Trash2, Users, X,
+  GraduationCap, Plus, SquarePlus, Trash2, Users, X,
 } from "lucide-react";
 
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SectionIcon } from "@/components/ui/section-icon";
@@ -38,6 +39,9 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   /** Import tugagach birinchi yaratilgan sinfga oʻtish uchun. */
   onDone?: (firstClassId: string) => void;
+  /** Berilsa, tanlovda uchinchi yoʻl — «Bitta sinf» — chiqadi va modal
+   *  «Sinf qoʻshish» boʻlib ochiladi («Oʻquvchi qoʻshish» bilan bir xil). */
+  onSingle?: () => void;
 };
 
 /** Sinflarni koʻplab import qilish — «Yangi oʻquvchi» modalining aynan
@@ -52,7 +56,7 @@ type Props = {
  *  «5-A» ham mavjud «5-A» ga tushadi. Oʻquvchilar oʻsha sinfga
  *  QOʻSHILADI — bu import odatda ikki marta bosiladi (birinchisi yarim
  *  qolgan fayl bilan), va har safar sinflar koʻpayib ketmasligi kerak. */
-export function ImportClassesModal({ open, onOpenChange, onDone }: Props) {
+export function ImportClassesModal({ open, onOpenChange, onDone, onSingle }: Props) {
   const t = useTranslations("ImportClassesModal");
   const liveClasses = useLiveClasses();
   const createClass = useCreateClass();
@@ -177,7 +181,7 @@ export function ImportClassesModal({ open, onOpenChange, onDone }: Props) {
       >
         <div className="flex shrink-0 items-center gap-3 border-b border-border px-6 py-5">
           <SectionIcon><GraduationCap /></SectionIcon>
-          <DialogTitle className="min-w-0 flex-1 text-lg">{t("title")}</DialogTitle>
+          <DialogTitle className="min-w-0 flex-1 text-lg">{onSingle ? t("titleAdd") : t("title")}</DialogTitle>
           <DialogClose asChild>
             <Button
               type="button"
@@ -193,15 +197,21 @@ export function ImportClassesModal({ open, onOpenChange, onDone }: Props) {
 
         {/* ── Tanlov ── */}
         {step === "choice" && (
-          <div className="grid grid-cols-2 gap-3 p-6">
+          <div className={cn("grid gap-3 p-6", onSingle ? "sm:grid-cols-3" : "grid-cols-2")}>
             {([
+              ...(onSingle ? [["single", SquarePlus, t("choiceSingleTitle"), t("choiceSingleDescription")] as const] : []),
               ["paste", FileText, t("choicePasteTitle"), t("choicePasteDescription")],
               ["file", FileSpreadsheet, t("choiceFileTitle"), t("choiceFileDescription")],
             ] as const).map(([target, Icon, title, description]) => (
               <button
                 key={target}
                 type="button"
-                onClick={() => setStep(target)}
+                onClick={() => {
+                  if (target === "single") {
+                    onOpenChange(false);
+                    onSingle?.();
+                  } else setStep(target);
+                }}
                 className="group flex flex-col items-center gap-3 rounded-xl border border-border p-5 text-center transition-colors hover:border-primary hover:bg-primary/5"
               >
                 <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">

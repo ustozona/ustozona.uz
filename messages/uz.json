@@ -3908,6 +3908,9 @@
   },
   "ImportClassesModal": {
     "title": "Sinflarni import qilish",
+    "titleAdd": "Sinf qoʻshish",
+    "choiceSingleTitle": "Bitta sinf",
+    "choiceSingleDescription": "Daraja, harf va fanni tanlab qoʻshing.",
     "close": "Yopish",
     "back": "Orqaga",
     "review": "Koʻrib chiqish",

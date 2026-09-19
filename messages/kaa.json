@@ -4084,6 +4084,9 @@
   },
   "ImportClassesModal": {
     "title": "Klaslardı import qılıw",
+    "titleAdd": "Klass qosıw",
+    "choiceSingleTitle": "Bir klass",
+    "choiceSingleDescription": "Dáreje, hárip hám pándi saylań.",
     "close": "Jabıw",
     "back": "Artqa",
     "review": "Kórip shıgıw",
