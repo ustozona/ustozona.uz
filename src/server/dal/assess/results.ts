@@ -1,8 +1,9 @@
 import "server-only";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { activityItems, activitySets, quizSessions, responses, sessionParticipants } from "@/server/db/schema";
+import { activitySets, quizSessions, responses, sessionParticipants } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
+import { gradedItemRows } from "./graded-items";
 import {
   accuracy,
   accuracyByIndex,
@@ -32,10 +33,8 @@ async function loadOrderedItemIds(setId: string): Promise<string[]> {
   if (!set) return [];
   const activityIds = set.items.map((i) => i.activityId);
   if (activityIds.length === 0) return [];
-  const items = await db
-    .select({ id: activityItems.id, activityId: activityItems.activityId, ordinal: activityItems.ordinal })
-    .from(activityItems)
-    .where(inArray(activityItems.activityId, activityIds));
+  // Faqat baholanadiganlar — soʻrovnoma aniqlik foizini buzmasin.
+  const items = await gradedItemRows(activityIds);
   // Toʻplamdagi faoliyat tartibi, keyin har faoliyat ichida ordinal.
   const activityOrder = new Map(activityIds.map((id, i) => [id, i]));
   return items
@@ -94,7 +93,10 @@ export async function sessionReport(sessionId: string): Promise<SessionReport> {
       .where(eq(sessionParticipants.sessionId, sessionId)),
   ]);
 
-  const stats = toResponseStats(responseRows);
+  // Faqat baholanadigan elementlar javoblari — soʻrovnoma/soʻz buluti
+  // javoblari qolsa yakunlash foizi 100% dan oshib ketardi (maxraj ularsiz).
+  const gradedIds = new Set(orderedItemIds);
+  const stats = toResponseStats(responseRows.filter((r) => gradedIds.has(r.itemId)));
   const participantIds = participants.map((p) => p.id);
   const respondedParticipantIds = new Set(stats.map((r) => r.participantId));
 

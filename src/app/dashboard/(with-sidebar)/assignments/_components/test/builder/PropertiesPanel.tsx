@@ -1,7 +1,15 @@
 "use client";
 
-import { Award, Copy, ListChecks, Shapes, Timer, Trash2, X } from "lucide-react";
+import { Award, BookCheck, Copy, LayoutTemplate, ListChecks, Palette, Shapes, Timer, Trash2, Video, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SLIDE_LAYOUT_META, slideLayoutOf } from "@/lib/slide-layouts";
+import { parseVideoUrl } from "@/lib/video-embed";
+import SlideLayoutPicker from "./SlideLayoutPicker";
+import { isUngradedShape } from "./types";
+import { STAGE_THEMES } from "@/lib/stage-themes";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -53,7 +61,10 @@ export default function PropertiesPanel({
     if (shape === question.shape) return;
     onChange({
       shape,
-      options: shape === "mcq" && question.options.length === 0 ? newOptions() : question.options,
+      options:
+        (shape === "mcq" || shape === "poll") && question.options.length === 0
+          ? newOptions()
+          : question.options,
       pairs: shape === "pairs" && question.pairs.length === 0 ? [newPair(), newPair()] : question.pairs,
     });
   }
@@ -79,7 +90,9 @@ export default function PropertiesPanel({
   return (
     <div className="flex h-full min-h-0 flex-col border-l border-border bg-card">
       <div className="flex min-h-16 shrink-0 items-center border-b border-border px-4">
-        <h2 className="text-sm font-semibold">{questionNumber}-savol xossalari</h2>
+        <h2 className="text-sm font-semibold">
+          {question.shape === "slide" ? `${questionNumber}-slayd` : `${questionNumber}-savol xossalari`}
+        </h2>
       </div>
 
       <div className="min-h-0 flex-1 scrollbar-hover overflow-y-auto">
@@ -87,6 +100,86 @@ export default function PropertiesPanel({
           <QuestionTypePicker value={question.shape} onChange={changeShape} />
         </Field>
 
+        {question.shape === "text" && (
+          <Field icon={<BookCheck className="size-4" />} label="Namuna javob (ixtiyoriy)">
+            {/* Oʻquvchiga koʻrinmaydi — faqat baholayotganda yoningizda turadi. */}
+            <Textarea
+              value={question.sampleAnswer ?? ""}
+              onChange={(e) => onChange({ sampleAnswer: e.target.value })}
+              placeholder="Kutilgan javob yoki baholash mezoni"
+              maxLength={2000}
+              className="min-h-20 text-sm"
+            />
+          </Field>
+        )}
+
+        {question.shape === "slide" && (
+          <Field icon={<LayoutTemplate className="size-4" />} label="Maket">
+            <SlideLayoutPicker
+              value={slideLayoutOf(question.slideLayout)}
+              onChange={(slideLayout) => onChange({ slideLayout })}
+            />
+          </Field>
+        )}
+
+        {question.shape === "slide" && (
+          <Field icon={<Palette className="size-4" />} label="Slayd foni">
+            {/* Boʻsh tanlov — toʻplamning umumiy foni (reyldagi «Mavzu»). Faqat
+                ajralib turishi kerak boʻlgan slayd (boʻlim boshi, xulosa) uchun
+                alohida fon tanlanadi. */}
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                aria-pressed={!question.slideBg}
+                onClick={() => onChange({ slideBg: undefined })}
+                className={cn(
+                  "h-7 rounded-full border px-3 text-caption transition-colors",
+                  !question.slideBg ? "border-primary bg-accent" : "border-border hover:bg-muted",
+                )}
+              >
+                Umumiy
+              </button>
+              {STAGE_THEMES.map((theme) => (
+                <button
+                  key={theme.id}
+                  type="button"
+                  title={theme.label}
+                  aria-label={theme.label}
+                  aria-pressed={question.slideBg === theme.id}
+                  onClick={() => onChange({ slideBg: theme.id })}
+                  className={cn(
+                    "size-7 rounded-full transition-shadow",
+                    question.slideBg === theme.id
+                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                      : "hover:ring-2 hover:ring-primary/40",
+                  )}
+                  style={{ background: theme.bg }}
+                />
+              ))}
+            </div>
+          </Field>
+        )}
+
+        {question.shape === "slide" && SLIDE_LAYOUT_META[slideLayoutOf(question.slideLayout)].fields.video && (
+          <Field icon={<Video className="size-4" />} label="Video (YouTube havolasi)">
+            <Input
+              value={question.videoUrl ?? ""}
+              onChange={(e) => onChange({ videoUrl: e.target.value })}
+              placeholder="https://youtu.be/…"
+              maxLength={500}
+            />
+            {question.videoUrl?.trim() && !parseVideoUrl(question.videoUrl.trim()) && (
+              <p className="text-caption text-destructive">Havola tanilmadi — YouTube havolasini qoʻying.</p>
+            )}
+            {question.videoUrl?.trim() && question.imageUrl && (
+              <p className="text-caption text-muted-foreground">Video bor — rasm oʻrniga video koʻrsatiladi.</p>
+            )}
+          </Field>
+        )}
+
+        {/* Slayd baholanmaydi va vaqtga bogʻlanmaydi — vaqt va ball maydonlari yoʻq. */}
+        {!isUngradedShape(question.shape) && (
+        <>
         <Field icon={<Timer className="size-4" />} label="Vaqt limiti">
           <Select
             value={String(question.timeLimitSec)}
@@ -125,6 +218,8 @@ export default function PropertiesPanel({
             </SelectContent>
           </Select>
         </Field>
+        </>
+        )}
 
         {question.shape === "mcq" && (
           <Field icon={<ListChecks className="size-4" />} label="Javob variantlari">

@@ -2044,6 +2044,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "taqdimot-doskada": {
+        "title": "Interaktiv prezentaciya: slaydlar, sorawlar hám tiri sabaq — bir jerde",
+        "body": "Jurnalda tapsırma jaratıp atırǵanda «Avtomatik» → «Prezentaciya» nı tańlaysız. Slaydtı tayar maketten dúzesiz (atama, dizim, súwret, video, citata) yamasa bar PowerPoint hám PDF faylıńızdı import etesiz, slaydlar arasına bolsa test, sorawnama, sóz bultı hám ashıq juwap qoyasız. Sabaqta Doskadan «Tiri sessiya» nı baslaysız: oqıwshılar QR yamasa PIN menen kiredi, siz slaydtı almastırsańız barlıq ekran birge ótedi, juwaplar bolsa doskada tiri baǵana bolıp ósedi. Qurılma bolmasa da boladı — juwaptı doskada ashıp, klastı toparlarǵa bólip ball beresiz. Ashıq juwaplardı keyin 0, ½ yamasa 1 menen bahalaysız hám nátiyjeni jurnalǵa kóshiresiz."
+      },
       "jamoa-ish-maydoni": {
         "title": "Endi mektep bolıp birge islewge boladı — birneshe muǵallim, ulıwma oqıwshılar dizimi",
         "body": "Sazlawlar › Jámáát bóliminde kásiplesińizge shaqırıw kodın beresiz. Ol qosılǵanda klasları hám oqıwshıları menen birge kóshedi — kelisiwden aldın ne kóshetuǵının dizim menen kóredi. Hár klastıń iyesi bar: sabaqtı kim ótetuǵının ol sheshedi, bir klasta birneshe muǵallim bolıwı múmkin. Balanıń bahası, sabaqqa qatnasıwı hám jazbaları tek onı haqıyqatında oqıtatuǵın muǵallimlerge kórinedi — bir mektepte islewdiń ózi hesh nárseni ashpaydı."
@@ -2616,6 +2620,7 @@
     "showSunday": "Ekshembini kórsetiw",
     "hideSunday": "Ekshembini jasırıw",
     "attendanceAction": "Qatnasıw",
+    "startPresentation": "Prezentaciyanı baslaw",
     "gradesAction": "Jurnal"
   },
   "AttentionSection": {
@@ -3066,6 +3071,14 @@
     "standards": "Standartlar",
     "addStandard": "Standart qosıw",
     "removeStandard": "Alıp taslaw",
+    "materials": "Prezentaciya hám testler",
+    "addMaterial": "Prezentaciya yamasa test biriktiriw",
+    "searchMaterial": "Izlew…",
+    "noMaterials": "Házirshe prezentaciya yamasa test joq",
+    "removeMaterial": "Ajıratıw",
+    "kindDeck": "Prezentaciya",
+    "kindTest": "Test",
+    "materialsHint": "Sabaq kúni Dashboard hám Doskada tayar turadı",
     "taught": "Ótilgen",
     "selectClassFirst": "Áwwel klass tańlań",
     "searchStandard": "Standart izlew…",

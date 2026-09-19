@@ -12,6 +12,7 @@ import {
   EyeOff,
   Link as LinkIcon,
   MoreHorizontal,
+  Presentation,
   UserCheck,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
@@ -66,7 +68,7 @@ import { cn } from "@/lib/utils";
     tur-demo eventi ham shu shaklga tushadi). */
 type RailEvent = { id: string; classId: string; startMin: number; endMin: number };
 
-type LessonInfo = { id: string; title: string; status: LessonStatus };
+type LessonInfo = { id: string; title: string; status: LessonStatus; setIds?: string[] };
 
 const SUNDAY_PREF_KEY = "today-rail-show-sunday";
 
@@ -154,7 +156,7 @@ export function TodayRail({ now }: { now: Date }) {
           classId: s.classId,
           startMin: s.startMin,
           endMin: s.endMin,
-          info: { id: l.id, title: l.title, status: l.status },
+          info: { id: l.id, title: l.title, status: l.status, setIds: l.setIds },
         });
       }
     }
@@ -480,6 +482,7 @@ function DayGridView({
             actions={
               <EventActions
                 classId={ev.classId}
+                setId={lesson?.setIds?.[0]}
                 triggerClassName={compact ? undefined : "size-9 [&_svg]:size-4"}
               />
             }
@@ -555,9 +558,13 @@ function DayGridView({
    `group-hover/ev` bilan boshqariladi. */
 function EventActions({
   classId,
+  setId,
   triggerClassName,
 }: {
   classId: string;
+  /** Darsga biriktirilgan birinchi taqdimot/test — Doska'da ochiladi
+      (R278, 6-qaror). Yoʻq boʻlsa band chiqmaydi. */
+  setId?: string;
   /** Joylashuvga qarab oʻlcham tokeni — ikkalasi ham `Button` komponentining
       oʻz oʻlchamlaridan olingan ([[design-system]]), oraliq qiymat emas:
       — default `icon-xs` = 24px quti + 12px ikonka — faqat TOR kartada;
@@ -583,6 +590,17 @@ function EventActions({
         <MoreHorizontal />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40" onClick={(e) => e.stopPropagation()}>
+        {setId && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={`/doska?setId=${encodeURIComponent(setId)}&classId=${encodeURIComponent(classId)}`}>
+                <Presentation />
+                {t("startPresentation")}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem asChild>
           <Link href={`/dashboard/attendance?classId=${encodeURIComponent(classId)}`}>
             <UserCheck />

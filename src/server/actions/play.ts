@@ -1,6 +1,8 @@
 "use server";
 
 import { z } from "zod";
+import { getLiveState } from "@/server/dal/play/live";
+import type { LiveState } from "@/lib/live-session";
 import { joinByCode, listRosterByCode, type JoinResult } from "@/server/dal/play/join";
 import { getSessionContent, type PlaySessionContent } from "@/server/dal/play/content";
 import { submitResponse, type SubmitResponseInput } from "@/server/dal/play/responses";
@@ -62,4 +64,9 @@ export async function gameShellUrlAction(input: {
     })
     .parse(input);
   return gameShellUrl(parsed);
+}
+
+/** Jonli sessiya: oʻquvchi qurilmasi joriy qadamni soʻraydi (R284). */
+export async function getLiveStateAction(token: string): Promise<LiveState> {
+  return getLiveState(z.string().min(1).parse(token));
 }

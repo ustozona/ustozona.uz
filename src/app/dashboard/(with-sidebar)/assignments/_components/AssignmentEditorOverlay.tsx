@@ -90,13 +90,6 @@ import {
 import { DateKeyPicker } from "@/components/ui/date-key-picker";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-  EmptyDescription,
-} from "@/components/ui/empty";
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -233,7 +226,11 @@ export default function AssignmentEditorOverlay({
      toʻliq-ekran qavatini qoʻshardi va faqat savol muharriri yopilganda
      koʻrinardi ("qayerdaman?" ekrani). Sinf testlari roʻyxatining uyi —
      Topshiriqlar sahifasi. */
-  const [builder, setBuilder] = useState<{ setId?: string } | null>(null);
+  const [builder, setBuilder] = useState<{
+    setId?: string;
+    /** Yangi toʻplamning birinchi elementi — taqdimot slayd bilan boshlanadi. */
+    firstShape?: "mcq" | "slide";
+  } | null>(null);
   const [sessionSet, setSessionSet] = useState<ActivitySetRow | null>(null);
   const [sessionLoading, setSessionLoading] = useState(false);
 
@@ -401,8 +398,15 @@ export default function AssignmentEditorOverlay({
     setBuilder({});
   }
 
+  /** Yangi taqdimot — xuddi shu toʻplam muharriri, faqat birinchi element
+      slayd (R276: taqdimot = toʻplam + slaydlar, alohida muharrir yoʻq). */
+  function handleAttachDeck() {
+    setAttachOpen(false);
+    setBuilder({ firstShape: "slide" });
+  }
+
   /** Mavjud toʻplam tanlandi — halqa darhol bogʻlanadi. */
-  function handlePickExistingSet(set: { id: string; title: string }) {
+  function handlePickExistingSet(set: { id: string; title: string; containerKind: string }) {
     setAttachOpen(false);
     handleSetSaved(set);
     toast.success(t("attachedTitle"), { description: set.title });
@@ -424,12 +428,18 @@ export default function AssignmentEditorOverlay({
       toʻplam nomini olamiz: oʻqituvchi bir nomni ikki marta yozmasin.
       Xabar avtosaqlashda ham keladi, shuning uchun oʻzgarish boʻlmasa
       tegmaymiz — aks holda har ikki soniyada bekorga sync yuborilardi. */
-  function handleSetSaved(set: { id: string; title: string }) {
+  function handleSetSaved(set: {
+    id: string;
+    title: string;
+    containerKind?: string;
+  }) {
     const needsTitle = !current.title.trim();
-    if (current.setId === set.id && current.kind === "test" && !needsTitle)
+    /* Tur toʻplamdan HISOBLANADI: slaydi bor toʻplam — taqdimot. */
+    const kind = set.containerKind === "deck" ? "deck" : "test";
+    if (current.setId === set.id && current.kind === kind && !needsTitle)
       return;
     patch({
-      kind: "test",
+      kind,
       setId: set.id,
       ...(needsTitle ? { title: set.title } : {}),
     });
@@ -755,6 +765,11 @@ export default function AssignmentEditorOverlay({
      (sessiyadan nashr qilingan) ustunlar uchun zaxira. */
   function renderContent() {
     if (attachedSetId) {
+      /* Taqdimot ham, test ham shu kartada — faqat belgi, rang va yozuv
+         turga qarab. Faqat slayddan iborat taqdimot baholanmaydi
+         (maks. ball 0), shuning uchun «Avtomatik» yozuvi unda chiqmaydi. */
+      const kindLabel = isDeck ? t("kindDeck") : t("kindTest");
+      const KindIcon = isDeck ? Presentation : ClipboardCheck;
       return (
         <div className="flex items-center gap-3 rounded-xl border border-border p-3">
           <button
@@ -764,17 +779,23 @@ export default function AssignmentEditorOverlay({
           >
             <span
               className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white"
-              style={{ backgroundColor: "#22c55e" }}
+              style={{ backgroundColor: isDeck ? CLASS_COLOR_HEX.orange : "#22c55e" }}
             >
-              <ClipboardCheck className="size-5" />
+              <KindIcon className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
               <h4 className="truncate text-sm font-semibold text-foreground">
-                {setMeta?.title ?? (current.title || t("kindTest"))}
+                {setMeta?.title ?? (current.title || kindLabel)}
               </h4>
               <p className="truncate text-xs text-muted-foreground">
                 {setMeta
-                  ? `${t("kindTest")} · ${t("questionCount", { count: setMeta.itemCount })} · ${t("gradingAuto")}`
+                  ? [
+                      kindLabel,
+                      t("questionCount", { count: setMeta.itemCount }),
+                      setMeta.maxScore > 0 ? t("gradingAuto") : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")
                   : t("loadingLabel")}
               </p>
             </div>
@@ -835,20 +856,6 @@ export default function AssignmentEditorOverlay({
             <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
           )}
         </button>
-      );
-    }
-
-    if (isDeck) {
-      return (
-        <Empty className="rounded-xl border border-dashed border-border">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Presentation />
-            </EmptyMedia>
-            <EmptyTitle>{t("deckEditorSoonTitle")}</EmptyTitle>
-            <EmptyDescription>{t("editorSoonDescription")}</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
       );
     }
 
@@ -946,7 +953,10 @@ export default function AssignmentEditorOverlay({
 
         {autoGrading && showKinds && (
           <MaterialKindPicker
-            onPick={(kind) => kind === "test" && handleAttachTest()}
+            onPick={(kind) => {
+              if (kind === "test") handleAttachTest();
+              else if (kind === "deck") handleAttachDeck();
+            }}
           />
         )}
       </div>
@@ -1470,6 +1480,7 @@ export default function AssignmentEditorOverlay({
           <SetBuilderOverlay
             classId={classId}
             setId={builder.setId}
+            firstShape={builder.firstShape}
             initialTitle={
               builder.setId ? undefined : current.title.trim() || undefined
             }
@@ -1482,6 +1493,7 @@ export default function AssignmentEditorOverlay({
           <SessionPanelModal
             set={sessionSet}
             classId={classId}
+            dueDate={current.dueDate}
             onClose={() => setSessionSet(null)}
           />
         )}

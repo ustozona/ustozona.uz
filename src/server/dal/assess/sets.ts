@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import {
   activities,
@@ -12,6 +12,7 @@ import {
 } from "@/server/db/schema";
 import type { SetContentSummary } from "@/lib/baholash-shells";
 import { requireTeacher } from "@/server/session";
+import { countGradedItems } from "./graded-items";
 
 /* ════════════════════════════════════════════════════════════════════
    ACTIVITY SETS — kviz, taqdimot, interaktiv video, matn+savol.
@@ -227,15 +228,7 @@ export async function getSetMeta(setId: string): Promise<SetMeta | null> {
   const set = await getSet(setId);
   if (!set) return null;
   const activityIds = set.items.map((i) => i.activityId);
-  const maxScore =
-    activityIds.length === 0
-      ? 0
-      : (
-          await db
-            .select({ count: sql<number>`count(*)::int` })
-            .from(activityItems)
-            .where(inArray(activityItems.activityId, activityIds))
-        )[0]?.count ?? 0;
+  const maxScore = await countGradedItems(activityIds);
   return { id: set.id, title: set.title, itemCount: activityIds.length, maxScore };
 }
 

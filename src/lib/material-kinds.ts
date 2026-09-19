@@ -88,7 +88,8 @@ export const MATERIAL_KINDS: Record<MaterialKind, MaterialKindMeta> = {
     color: "orange",
     isContainer: true,
     inLibrary: false,
-    attachable: false,
+    /* Taqdimot = toʻplam + slaydlar (R276) — oʻsha muharrir ochiladi. */
+    attachable: true,
   },
   video: {
     labelKey: "video",

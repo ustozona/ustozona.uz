@@ -46,7 +46,15 @@ export type ActivityShape =
   | "imagezone"
   | "hottext"
   | "text"
-  | "draw";
+  | "draw"
+  /** Taqdimot slaydi — savol emas, baholanmaydi. Matni `config.body` da,
+      `activity_items` qatori YOʻQ: shu sababli ball, natija va skaner
+      (hammasi elementlarni sanaydi) uni oʻz-oʻzidan chetlab oʻtadi. */
+  | "slide"
+  /** Soʻrovnoma — variantlar, toʻgʻri javobi YOʻQ (`grading = "none"`). */
+  | "poll"
+  /** Soʻz buluti — qisqa matnli javob, baholanmaydi. */
+  | "wordcloud";
 
 /** Baholash strategiyasi — SHAKLDAN ALOHIDA OʻQ (B4.2). */
 export type GradingKind =

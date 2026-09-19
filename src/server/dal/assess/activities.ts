@@ -103,6 +103,8 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
 }
 
 export type UpdateActivityInput = {
+  /** Muharrirda savol turi almashtirilganda — elementlar ham birga almashadi. */
+  shape?: ActivityShape;
   title?: string;
   standardId?: string;
   grading?: GradingKind;
@@ -129,6 +131,7 @@ export async function updateActivity(id: string, input: UpdateActivityInput): Pr
       ...(input.grading !== undefined ? { grading: input.grading } : {}),
       ...(input.approved !== undefined ? { approved: input.approved } : {}),
       ...(input.config !== undefined ? { config: input.config } : {}),
+      ...(input.shape !== undefined ? { shape: input.shape } : {}),
       ...(bumpsVersion ? { version: existing.version + 1 } : {}),
       updatedAt: new Date(),
     })

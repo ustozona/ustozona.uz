@@ -57,6 +57,9 @@ export type CreateSessionInput = {
   mode: "live" | "selfpaced" | "paper" | "qrcards" | "lecture";
   title?: string;
   scheduledAt?: Date;
+  /** Uyga vazifa muddati — shundan keyin qoʻshilish ham, javob ham rad
+      etiladi (`play/join.ts`, `play/responses.ts`). */
+  dueAt?: Date;
 };
 
 export async function createSession(input: CreateSessionInput): Promise<QuizSessionRow> {
@@ -99,6 +102,7 @@ export async function createSession(input: CreateSessionInput): Promise<QuizSess
       title: input.title ?? null,
       state: input.scheduledAt ? "scheduled" : "draft",
       scheduledAt: input.scheduledAt ?? null,
+      dueAt: input.dueAt ?? null,
       joinCode: generateJoinCode(),
     })
     .returning();

@@ -5,6 +5,8 @@ import { db } from "@/server/db/client";
 import { activities, activityItems, responses, sessionParticipants } from "@/server/db/schema";
 import { requireParticipant, ForbiddenError } from "@/server/play/session";
 import { scoreResponse } from "@/lib/assess/score";
+import { isSessionPastDue } from "@/lib/assess/session-due";
+import { scheduleNudge } from "@/server/realtime/broadcast";
 
 /* ════════════════════════════════════════════════════════════════════
    JAVOB QABUL QILISH — bitta joy, besh yetkazish usuli (jonli, oʻz
@@ -31,6 +33,9 @@ export async function submitResponse(input: SubmitResponseInput) {
   if (session.state !== "running") {
     throw new ForbiddenError("Sessiya javob qabul qilmayapti");
   }
+  if (isSessionPastDue(session)) {
+    throw new ForbiddenError("Topshiriq muddati tugagan");
+  }
 
   const [item] = await db
     .select()
@@ -51,6 +56,35 @@ export async function submitResponse(input: SubmitResponseInput) {
       and(eq(responses.participantId, participant.id), eq(responses.itemId, input.itemId))
     );
   const attemptNo = previousAttempts + 1;
+
+  /* JONLI SESSIYA (R284): har savolga BITTA javob va faqat javob ochilguncha.
+     Aks holda doskadagi ustunlar bir oʻquvchini ikki marta sanardi, toʻgʻri
+     javobni koʻrgandan keyin «tuzatish» esa natijani maʼnosiz qilardi. */
+  const live = session.mode === "live";
+  const liveConfig = session.renderConfig as {
+    revealed?: boolean;
+    liveTopic?: string;
+    lockedActivityIds?: string[];
+  };
+  if (live && previousAttempts > 0) throw new ForbiddenError("Javob allaqachon yuborilgan");
+  // Soʻrovnoma va soʻz bulutida «toʻgʻri javob» yoʻq — natija ochilgandan
+  // keyin ham javob qabul qilinadi (kechikkan oʻquvchi ham fikr bildiradi).
+  // Qulf SAVOL boʻyicha: faqat ochilgan savol yopiladi va «Yashirish» dan
+  // keyin ham yopiq qoladi. Sessiya-bo'yi `revealed` belgisiga qaralmaydi —
+  // aks holda internet kechikib, hali oldingi savolda turgan oʻquvchining
+  // oʻz vaqtida yuborgan javobi ham rad etilardi.
+  const locked = (liveConfig.lockedActivityIds ?? []).includes(activity.id);
+  if (live && locked && activity.grading !== "none") {
+    throw new ForbiddenError("Javob vaqti tugadi");
+  }
+  if (activity.shape === "text") {
+    const text = typeof input.answer.text === "string" ? input.answer.text.trim() : "";
+    if (!text || text.length > 2000) throw new ForbiddenError("Javob 1–2000 belgi boʻlsin");
+  }
+  if (activity.shape === "wordcloud") {
+    const text = typeof input.answer.text === "string" ? input.answer.text.trim() : "";
+    if (!text || text.length > 40) throw new ForbiddenError("Javob 1–40 belgi boʻlsin");
+  }
 
   const { isCorrect, score } = scoreResponse({
     shape: activity.shape,
@@ -90,6 +124,10 @@ export async function submitResponse(input: SubmitResponseInput) {
     .update(sessionParticipants)
     .set({ lastSeenAt: new Date() })
     .where(eq(sessionParticipants.id, participant.id));
+
+  // Oʻqituvchi ekraniga «yangi javob» turtkisi — kutilmaydi va hech qachon
+  // xato tashlamaydi (server/realtime/broadcast.ts).
+  if (live && liveConfig.liveTopic) scheduleNudge(liveConfig.liveTopic);
 
   return row;
 }

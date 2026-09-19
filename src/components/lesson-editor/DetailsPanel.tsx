@@ -1,8 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
-import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, Target, Plus, Check, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, Target, Plus, Check, X, Presentation, ListChecks } from "lucide-react";
+import { listSetsAction } from "@/server/actions/assess";
+import type { ActivitySetRow } from "@/server/db/schema";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
@@ -40,7 +42,7 @@ const FieldButton = ({ children }: { children: React.ReactNode }) => (
 
 export default function DetailsPanel({
   lesson, units, onClose,
-  onSetClasses, onSetUnitForClass, onAddScheduleForClass, onRemoveScheduleForClass, onSetStandards,
+  onSetClasses, onSetUnitForClass, onAddScheduleForClass, onRemoveScheduleForClass, onSetStandards, onSetSetIds,
 }: {
   lesson: Lesson;
   units: Unit[];
@@ -50,6 +52,7 @@ export default function DetailsPanel({
   onAddScheduleForClass: (classId: string, date: string, startMin: number, endMin: number) => void;
   onRemoveScheduleForClass: (classId: string, index: number) => void;
   onSetStandards: (standards: string[]) => void;
+  onSetSetIds: (setIds: string[]) => void;
 }) {
   const t = useTranslations("LessonDetailsPanel");
   const liveClasses = useLiveClasses();
@@ -57,6 +60,38 @@ export default function DetailsPanel({
   const selectedClasses = liveClasses.filter((c) => selectedIds.includes(c.id));
   const [schedOpen, setSchedOpen] = useState(false);
   const [stdOpen, setStdOpen] = useState(false);
+  const [setsOpen, setSetsOpen] = useState(false);
+  /* Oʻqituvchining barcha toʻplamlari — biriktirilganlarni nom bilan
+     koʻrsatish va tanlash roʻyxati uchun. Sinfga cheklanmaydi: 5-A da
+     tuzilgan taqdimot 5-B darsida ham oʻtiladi (R226). */
+  const [allSets, setAllSets] = useState<ActivitySetRow[] | null>(null);
+  const attachedSetIds = lesson.setIds ?? [];
+  useEffect(() => {
+    listSetsAction()
+      .then((rows) => {
+        setAllSets(rows);
+        // Oʻchirilgan toʻplam havolasi tozalanadi — aks holda Bosh sahifadagi
+        // «Taqdimotni boshlash» yoʻq toʻplamni ochardi. Faqat MUVAFFAQIYATLI
+        // yuklashdan keyin: xato boʻlsa roʻyxat boʻsh, hammasi oʻchib ketardi.
+        const alive = new Set(rows.map((r) => r.id));
+        const ids = lesson.setIds ?? [];
+        if (ids.some((id) => !alive.has(id))) onSetSetIds(ids.filter((id) => alive.has(id)));
+      })
+      .catch(() => setAllSets([]));
+    // Faqat ochilganda bir marta — har tahrirda qayta soʻrash shart emas.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson.id]);
+  const attachedSets = attachedSetIds
+    .map((id) => allSets?.find((s) => s.id === id))
+    .filter((s): s is ActivitySetRow => Boolean(s));
+  const pickableSets = (allSets ?? []).filter((s) => !attachedSetIds.includes(s.id));
+  function toggleSet(id: string) {
+    const next = attachedSetIds.includes(id)
+      ? attachedSetIds.filter((x) => x !== id)
+      : [...attachedSetIds, id];
+    onSetSetIds(next);
+    setSetsOpen(false);
+  }
 
   const standardSets = useStandardsStore((s) => s.sets);
   const availableStandards = useMemo(
@@ -395,6 +430,80 @@ export default function DetailsPanel({
               </PopoverContent>
             </Popover>
           )}
+        </div>
+
+        {/* TAQDIMOT VA TESTLAR — dars kuni Dashboard va Doska'da tayyor turadi. */}
+        <div>
+          <SectionLabel>{t("materials")}</SectionLabel>
+
+          {attachedSets.length > 0 && (
+            <div className="flex flex-col gap-2 mb-2">
+              {attachedSets.map((set) => {
+                const isDeck = set.containerKind === "deck";
+                const Icon = isDeck ? Presentation : ListChecks;
+                return (
+                  <div key={set.id} className="group flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+                    <span className="size-9 rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                      <Icon className="size-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-foreground truncate">{set.title}</div>
+                      <div className="text-caption text-muted-foreground truncate">
+                        {isDeck ? t("kindDeck") : t("kindTest")}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleSet(set.id)}
+                      aria-label={t("removeMaterial")}
+                      className="size-6 rounded-full flex items-center justify-center text-muted-foreground/40 hover:text-destructive hover:bg-accent shrink-0 opacity-60 group-hover:opacity-100 transition-colors"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <Popover open={setsOpen} onOpenChange={setSetsOpen}>
+            <PopoverTrigger asChild>
+              <button type="button"
+                className="w-full flex items-center justify-center gap-2 rounded-full border border-dashed border-border py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors">
+                <Plus className="size-4" />
+                {t("addMaterial")}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="left" align="start" sideOffset={12} className="p-0 w-80">
+              <Command>
+                <CommandInput placeholder={t("searchMaterial")} />
+                <CommandList>
+                  <CommandEmpty>{t("noMaterials")}</CommandEmpty>
+                  <CommandGroup>
+                    {pickableSets.map((set) => {
+                      const isDeck = set.containerKind === "deck";
+                      const Icon = isDeck ? Presentation : ListChecks;
+                      return (
+                        <CommandItem
+                          key={set.id}
+                          value={`${set.title} ${set.id}`}
+                          onSelect={() => toggleSet(set.id)}
+                          className="gap-2"
+                        >
+                          <Icon className="size-4 shrink-0 text-muted-foreground" />
+                          <span className="min-w-0 flex-1 truncate">{set.title}</span>
+                          <span className="text-caption text-muted-foreground">
+                            {isDeck ? t("kindDeck") : t("kindTest")}
+                          </span>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <p className="mt-2 text-caption text-muted-foreground">{t("materialsHint")}</p>
         </div>
       </div>
     </div>

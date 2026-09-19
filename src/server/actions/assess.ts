@@ -22,6 +22,7 @@ import {
   type SetPublishState,
 } from "@/server/dal/assess/sets";
 import type { ActivityBankRow, ActivityRow, ActivitySetRow } from "@/server/db/schema";
+import { SLIDE_LAYOUTS, slideLayoutOf } from "@/lib/slide-layouts";
 
 /* MCQ savol muharriri — yupqa qatlam: zod-parse → DAL. */
 
@@ -206,7 +207,8 @@ export async function deleteSetAction(id: string): Promise<void> {
 const draftQuestionSchema = z.object({
   /** Mavjud savol — yangilanadi. Boʻsh boʻlsa yangi `activity` yaratiladi. */
   activityId: z.string().min(1).optional(),
-  shape: z.enum(["mcq", "pairs"]),
+  /** `slide` — taqdimot slaydi: savol emas, matni `stem` da keladi. */
+  shape: z.enum(["mcq", "pairs", "slide", "poll", "wordcloud", "text"]),
   title: z.string().min(1).max(200),
   stem: z.string().max(2000),
   options: z.array(mcqOptionSchema),
@@ -217,6 +219,21 @@ const draftQuestionSchema = z.object({
   multiSelect: z.boolean(),
   /** Javob kartalari joylashuvi: 2x2 katak yoki vertikal roʻyxat. */
   answerLayout: z.enum(["grid", "list"]).default("grid"),
+  /* ── Faqat slayd (docs/taqdimot-spec.md) ── */
+  slideLayout: z.enum(SLIDE_LAYOUTS).optional(),
+  /** Storage URL; saqlagichsiz muhitda base64 zaxira (uploads.ts) — shuning
+      uchun chegara keng. */
+  imageUrl: z.string().max(3_000_000).optional(),
+  /** Video havolasi (YouTube) — fayl emas. */
+  videoUrl: z.string().max(500).optional(),
+  /** Slaydda KOʻRINADIGAN sarlavha — boʻsh boʻlishi mumkin. `title` esa
+      roʻyxat yorligʻi (majburiy, zaxira bilan toʻldiriladi); ikkalasi
+      aralashsa boʻsh sarlavhali slaydda «3-savol» chiqib qolardi. */
+  slideHeading: z.string().max(200).optional(),
+  /** Shu slaydning oʻz foni (sahna mavzusi id). Boʻsh — toʻplam foni. */
+  slideBg: z.string().max(40).optional(),
+  /** Ochiq javob: namuna javob — faqat oʻqituvchi baholayotganda koʻrinadi. */
+  sampleAnswer: z.string().max(2000).optional(),
 });
 
 export type DraftQuestionValues = z.infer<typeof draftQuestionSchema>;
@@ -241,6 +258,15 @@ export type SetDraft = {
 
 function validateDraftQuestion(q: DraftQuestionValues, index: number) {
   const label = `${index + 1}-savol`;
+  if (q.shape === "slide") return; // boʻsh slayd ham joiz — sarlavha yetadi
+  if (q.shape === "wordcloud" || q.shape === "text") {
+    if (!q.stem.trim()) throw new Error(`${label}: savol matni kerak`);
+    return;
+  }
+  if (q.shape === "poll") {
+    if (q.options.length < 2) throw new Error(`${label}: kamida 2 ta variant kerak`);
+    return;
+  }
   if (q.shape === "mcq") {
     if (q.options.length < 2) throw new Error(`${label}: kamida 2 ta variant kerak`);
     const correct = q.options.filter((o) => o.isCorrect).length;
@@ -255,12 +281,39 @@ function validateDraftQuestion(q: DraftQuestionValues, index: number) {
 
 /** Qoralama savolni DAL kutayotgan `items` shakliga oʻgiradi. */
 function draftItems(q: DraftQuestionValues) {
+  if (q.shape === "slide") return []; // slaydda baholanadigan element yoʻq
+  // Soʻrovnoma va soʻz buluti ham element oladi — javob elementga
+  // bogʻlanadi; lekin `grading = "none"`, sanoqqa kirmaydi (graded-items.ts).
+  if (q.shape === "poll") {
+    return [{ content: { stem: q.stem, options: q.options.map((o) => ({ ...o, isCorrect: false })) } }];
+  }
+  if (q.shape === "wordcloud") return [{ content: { stem: q.stem } }];
+  // Ochiq javob — oʻqituvchi qoʻlda baholaydi (`grading = "manual"`), shuning
+  // uchun u maks. ballga KIRADI (graded-items.ts faqat "none" ni chiqaradi).
+  if (q.shape === "text") return [{ content: { stem: q.stem } }];
   return q.shape === "mcq"
     ? [{ content: { stem: q.stem, options: q.options } }]
     : q.pairs.map((p) => ({ content: { left: p.left, right: p.right } }));
 }
 
 function draftConfig(q: DraftQuestionValues) {
+  if (q.shape === "text") {
+    return {
+      timeLimitSec: q.timeLimitSec,
+      pointsMode: q.pointsMode,
+      ...(q.sampleAnswer?.trim() ? { sample: q.sampleAnswer.trim() } : {}),
+    };
+  }
+  if (q.shape === "slide") {
+    return {
+      heading: q.slideHeading ?? q.title,
+      ...(q.slideBg ? { bg: q.slideBg } : {}),
+      body: q.stem,
+      layout: slideLayoutOf(q.slideLayout),
+      ...(q.imageUrl ? { imageUrl: q.imageUrl } : {}),
+      ...(q.videoUrl ? { videoUrl: q.videoUrl } : {}),
+    };
+  }
   return {
     timeLimitSec: q.timeLimitSec,
     pointsMode: q.pointsMode,
@@ -287,6 +340,61 @@ export async function getSetDraftAction(setId: string): Promise<SetDraft | null>
       pointsMode: config.pointsMode ?? ("standard" as const),
       answerLayout: config.answerLayout ?? ("grid" as const),
     };
+
+    if (activity.shape === "slide") {
+      const slide = activity.config as {
+        heading?: string;
+        bg?: string;
+        body?: string;
+        layout?: string;
+        imageUrl?: string;
+        videoUrl?: string;
+      };
+      questions.push({
+        ...base,
+        shape: "slide",
+        // Eski slaydlarda `heading` yoʻq — roʻyxat nomiga qaytiladi.
+        title: slide.heading ?? activity.title,
+        stem: slide.body ?? "",
+        slideLayout: slideLayoutOf(slide.layout),
+        slideBg: slide.bg,
+        imageUrl: slide.imageUrl,
+        videoUrl: slide.videoUrl,
+        options: [],
+        pairs: [],
+        multiSelect: false,
+      });
+      continue;
+    }
+
+    if (activity.shape === "text") {
+      const content = activity.items[0]?.content as { stem?: string } | undefined;
+      questions.push({
+        ...base,
+        shape: "text",
+        stem: content?.stem ?? "",
+        options: [],
+        pairs: [],
+        multiSelect: false,
+        sampleAnswer: (activity.config as { sample?: string }).sample,
+      });
+      continue;
+    }
+
+    if (activity.shape === "poll" || activity.shape === "wordcloud") {
+      const content = activity.items[0]?.content as
+        | { stem?: string; options?: McqFormValues["options"] }
+        | undefined;
+      questions.push({
+        ...base,
+        shape: activity.shape,
+        stem: content?.stem ?? "",
+        options: content?.options ?? [],
+        pairs: [],
+        multiSelect: false,
+      });
+      continue;
+    }
 
     if (activity.shape === "pairs") {
       questions.push({
@@ -335,11 +443,18 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
     parsed.questions.map(async (q) => {
       const payload = {
         title: q.title,
-        grading: "exact" as const,
+        grading:
+          q.shape === "slide" || q.shape === "poll" || q.shape === "wordcloud"
+            ? ("none" as const)
+            : q.shape === "text"
+              ? ("manual" as const)
+              : ("exact" as const),
         config: draftConfig(q),
         items: draftItems(q),
       };
-      if (q.activityId) return updateActivity(q.activityId, payload);
+      // Tur ham yuboriladi: aks holda test→soʻrovnoma almashtirilganda qator
+      // eski `shape` bilan qolib, yangi element/sozlama bilan nomuvofiq boʻlardi.
+      if (q.activityId) return updateActivity(q.activityId, { ...payload, shape: q.shape });
       return createActivity({ ...payload, shape: q.shape });
     })
   );
@@ -353,6 +468,16 @@ export async function saveSetDraftAction(input: SaveSetDraftValues): Promise<Set
   const setPayload = {
     title: parsed.title,
     purpose: parsed.purpose,
+    /* Idish turi TANLANMAYDI, HISOBLANADI (R276): bitta slayd boʻlsa
+       toʻplam taqdimot. Aks holda «taqdimot deb belgilangan, slaydi yoʻq»
+       degan ikki xil haqiqat tugʻilardi. */
+    // Faqat none↔deck oʻrtasida almashadi — boshqa idish (video, matn)
+    // muharrir saqlaganda oʻchirib yuborilmaydi.
+    containerKind: parsed.questions.some((q) => q.shape === "slide")
+      ? ("deck" as const)
+      : previous?.containerKind === "deck" || !previous
+        ? ("none" as const)
+        : (previous.containerKind as "none" | "video" | "passage"),
     items: saved.map((a) => ({ activityId: a.id, role: "check" as const })),
     config: {
       ...(previous?.config ?? {}),

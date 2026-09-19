@@ -2044,6 +2044,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "taqdimot-doskada": {
+        "title": "Interactive presentations: slides, questions and live lessons — in one place",
+        "body": "When creating an assignment in the Gradebook, choose «Automatic» → «Presentation». Build slides from ready layouts (title, list, image, video, quote) or import your existing PowerPoint and PDF files, then place tests, polls, word clouds and open questions between them. In class, start a «Live session» from the Board: students join with a QR code or PIN, every screen moves with you when you change the slide, and answers grow as live bars on the board. It works without devices too — reveal the answer on the board and award points to teams. Grade open answers later with 0, ½ or 1 and send the results to the Gradebook."
+      },
       "jamoa-ish-maydoni": {
         "title": "Schools can now work as a team — several teachers, one shared roster",
         "body": "In Settings › Team you hand a colleague an invite code. When they join, their classes and students come with them — and before accepting they see the full list of what will move. Every class has an owner who decides who teaches it, and a class can have several teachers. A child’s grades, attendance and notes stay visible only to the teachers who actually teach that child — sharing a school opens nothing on its own."
@@ -2612,6 +2616,7 @@
     "showSunday": "Show Sunday",
     "hideSunday": "Hide Sunday",
     "attendanceAction": "Attendance",
+    "startPresentation": "Start presentation",
     "gradesAction": "Gradebook"
   },
   "AttentionSection": {
@@ -3062,6 +3067,14 @@
     "standards": "Standards",
     "addStandard": "Add standard",
     "removeStandard": "Remove",
+    "materials": "Presentations & tests",
+    "addMaterial": "Attach a presentation or test",
+    "searchMaterial": "Search…",
+    "noMaterials": "No presentations or tests yet",
+    "removeMaterial": "Detach",
+    "kindDeck": "Presentation",
+    "kindTest": "Test",
+    "materialsHint": "Ready on the Dashboard and Board on lesson day",
     "taught": "Taught",
     "selectClassFirst": "Select a class first",
     "searchStandard": "Search standards…",

@@ -4,6 +4,8 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { enrollments, quizSessions, sessionParticipants, students } from "@/server/db/schema";
 import { hashParticipantToken, ForbiddenError, UnauthorizedError } from "@/server/play/session";
+import { isSessionPastDue } from "@/lib/assess/session-due";
+import { scheduleNudge } from "@/server/realtime/broadcast";
 
 /* ════════════════════════════════════════════════════════════════════
    QOʻSHILISH — akkauntsiz ishtirokchi PIN/havola/QR bilan kiradi.
@@ -49,6 +51,9 @@ export async function joinByCode(
   if (session.state !== "running" && session.state !== "scheduled") {
     throw new ForbiddenError("Sessiya hozir qoʻshilish uchun ochiq emas");
   }
+  if (isSessionPastDue(session)) {
+    throw new ForbiddenError("Topshiriq muddati tugagan");
+  }
 
   if (studentId) {
     const [student] = await db
@@ -72,6 +77,10 @@ export async function joinByCode(
       deviceKind: deviceKind ?? null,
     })
     .returning({ id: sessionParticipants.id });
+
+  // Jonli sessiyada doskadagi «N qoʻshildi» hisobi darhol yangilansin.
+  const liveTopic = (session.renderConfig as { liveTopic?: string }).liveTopic;
+  if (session.mode === "live" && liveTopic) scheduleNudge(liveTopic);
 
   return { token, participantId: participant.id, sessionId: session.id };
 }
