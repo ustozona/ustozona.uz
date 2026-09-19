@@ -4084,6 +4084,9 @@
   },
   "ImportClassesModal": {
     "title": "Импорт классов",
+    "titleAdd": "Добавить класс",
+    "choiceSingleTitle": "Один класс",
+    "choiceSingleDescription": "Выберите параллель, букву и предмет.",
     "close": "Закрыть",
     "back": "Назад",
     "review": "Просмотреть",

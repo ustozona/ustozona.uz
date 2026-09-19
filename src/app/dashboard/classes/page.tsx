@@ -458,11 +458,12 @@ export default function ClassesPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Yangi sinf — boʻlingan tugma: asosiy qism bitta sinf,
-                  `⌄` esa koʻplab import (ClassListPanel bilan bir xil). */}
+              {/* Yangi sinf — boʻlingan tugma: asosiy qism tanlov oynasini
+                  ochadi (bittadan / roʻyxat / import — «Oʻquvchi qoʻshish»
+                  bilan bir xil), `⌄` da faqat eksport qoladi. */}
               <div className="flex items-center" data-tour="classes-add">
                 <Button
-                  onClick={() => setIsCreateModalOpen(true)}
+                  onClick={() => setIsImportOpen(true)}
                   className="gap-1.5 rounded-r-none pr-3"
                 >
                   <PlusIcon className="size-4" />
@@ -478,10 +479,6 @@ export default function ClassesPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setIsImportOpen(true)}>
-                      <UploadIcon className="size-4" />
-                      {t("importClasses")}
-                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="gap-2 cursor-pointer"
                       disabled={liveClasses.length === 0}
@@ -710,7 +707,11 @@ export default function ClassesPage() {
         />
       )}
 
-      <ImportClassesModal open={isImportOpen} onOpenChange={setIsImportOpen} />
+      <ImportClassesModal
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        onSingle={() => setIsCreateModalOpen(true)}
+      />
 
       {editTarget && (
         <ClassFormModal

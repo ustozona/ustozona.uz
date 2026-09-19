@@ -4084,6 +4084,9 @@
   },
   "ImportClassesModal": {
     "title": "Сыныптарды импорттау",
+    "titleAdd": "Сынып қосу",
+    "choiceSingleTitle": "Бір сынып",
+    "choiceSingleDescription": "Параллель, әріп пен пәнді таңдаңыз.",
     "close": "Жабу",
     "back": "Артқа",
     "review": "Қарап шығу",

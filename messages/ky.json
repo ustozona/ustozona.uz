@@ -4084,6 +4084,9 @@
   },
   "ImportClassesModal": {
     "title": "Класстарды импорттоо",
+    "titleAdd": "Класс кошуу",
+    "choiceSingleTitle": "Бир класс",
+    "choiceSingleDescription": "Деңгээлди, тамганы жана сабакты тандаңыз.",
     "close": "Жабуу",
     "back": "Артка",
     "review": "Карап чыгуу",

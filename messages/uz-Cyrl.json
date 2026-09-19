@@ -3913,6 +3913,9 @@
   },
   "ImportClassesModal": {
     "title": "Синфларни импорт қилиш",
+    "titleAdd": "Синф қўшиш",
+    "choiceSingleTitle": "Битта синф",
+    "choiceSingleDescription": "Даража, ҳарф ва фанни танлаб қўшинг.",
     "close": "Ёпиш",
     "back": "Орқага",
     "review": "Кўриб чиқиш",

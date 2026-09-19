@@ -4080,6 +4080,9 @@
   },
   "ImportClassesModal": {
     "title": "Import classes",
+    "titleAdd": "Add class",
+    "choiceSingleTitle": "Single class",
+    "choiceSingleDescription": "Pick grade, letter and subject.",
     "close": "Close",
     "back": "Back",
     "review": "Review",
