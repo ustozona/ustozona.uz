@@ -1,10 +1,32 @@
 /* ════════════════════════════════════════════════════════════════════
    LANDING NAVIGATSIYASI — yagona manba.
 
-   Header ham, footer ham shu roʻyxatdan oʻqiydi. Ilgari ular alohida
-   yozilgan edi va bir boʻlim ikki xil nomlanardi: header "Imkoniyatlar",
-   footer "Xususiyatlar" — ikkalasi ham `#features` ga olib borardi.
+   Header — faqat ISHLAYOTGAN mahsulotlar (`HEADER_NAV`), footer —
+   landing boʻlimlari (`FOOTER_PAGE_LINKS`). Ilgari ikkalasi bitta
+   roʻyxatdan oʻqirdi va bir boʻlim ikki xil nomlanardi: header
+   "Imkoniyatlar", footer "Xususiyatlar".
    ════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Header havolalari — faqat bugun ishlayotgan mahsulotlar (2026-09-19).
+ * Kirgan odam menyuda nima bor ekanini koʻradi, landing boʻlimlariga
+ * langar emas. Doska bu roʻyxatda yoʻq: u roʻyxatsiz ochiladi va
+ * header'da alohida rangli tugma boʻlib turadi. «Tez orada»
+ * mahsulotlar (Shogird, Boshqaruv) header'ga ishga tushgandagina
+ * qoʻshiladi. Yorliq — `Landing.nav.<key>`.
+ */
+export type HeaderNavItem = {
+  key: "jurnal" | "baholash" | "blog";
+  href: string;
+};
+
+export const HEADER_NAV: HeaderNavItem[] = [
+  // Jurnal — asosiy Ustozona; alohida sahifasi yoʻq, landing boʻlimiga
+  // olib boradi. `/#jurnal`, `#jurnal` emas: boshqa sahifadan ham ishlasin.
+  { key: "jurnal", href: "/#jurnal" },
+  { key: "baholash", href: "/baholash" },
+  { key: "blog", href: "/blog" },
+];
 
 export type NavItem = {
   title: string;
@@ -23,17 +45,11 @@ const SECTIONS: NavItem[] = [
 ];
 
 /**
- * Landing sahifasining oʻzida — langarlar nisbiy (`#features`).
- * Header scroll-spy shularni kuzatadi.
- */
-export const LANDING_NAV: NavItem[] = SECTIONS;
-
-/**
- * Boshqa sahifalarda (blog, yuridik sahifalar) — langar landing'ga olib
- * borishi kerak: `/#features`. Aks holda `/blog#features` degan mavjud
+ * Boʻlimlar boshqa sahifadan ham ochilishi kerak — langar landing'ga olib
+ * boradi: `/#features`. Aks holda `/blog#features` degan mavjud
  * boʻlmagan langarga oʻtadi va hech narsa boʻlmaydi.
  */
-export const PAGE_NAV: NavItem[] = SECTIONS.map((item) =>
+const PAGE_NAV: NavItem[] = SECTIONS.map((item) =>
   item.href.startsWith("#") && item.href !== "#top"
     ? { ...item, href: `/${item.href}` }
     : item.href === "#top"
@@ -85,15 +101,15 @@ export const PRODUCTS: Product[] = [
   {
     slug: "baholash",
     name: "Ustozona baholash",
-    tagline: "Bitta oʻlchov, besh xil yigʻish usuli — testdan qogʻoz OMR gacha.",
+    tagline: "Onlayn test, qogʻoz test skaneri va QR-kartalar — natija jurnalga tushadi.",
     href: "/baholash",
-    status: "soon",
-    statusLabel: "Tez orada",
+    status: "live",
+    statusLabel: "Mavjud",
   },
   {
     slug: "doska",
     name: "Ustozona doska",
-    tagline: "Sinf ekrani: taymer, svetofor, tasodifiy ism, guruhlarga boʻlish.",
+    tagline: "Sinf ekrani: taymer, svetofor va jonli taqdimot. Taymer bilan svetofor kirmasdan ham ishlaydi.",
     href: "/doska",
     status: "live",
     statusLabel: "Mavjud",

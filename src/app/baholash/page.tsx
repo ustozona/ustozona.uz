@@ -17,9 +17,9 @@ export const metadata = {
 /* ════════════════════════════════════════════════════════════════════
    /baholash — IKKI YUZLI SAHIFA
 
-   • Mehmon (kirmagan) uchun — mahsulot sahifasi, avvalgidek. Marketing
-     qoidasi buzilmaydi: hali tayyor boʻlmagan narsa tayyor deb
-     koʻrsatilmaydi.
+   • Mehmon (kirmagan) uchun — mahsulot sahifasi (`ProductPage`, `live`
+     rejimi): bugun nima ishlashi va roʻyxatdan oʻtish tugmasi. Roʻyxatda
+     faqat ishlaydigan imkoniyatlar turadi — marketing oltin qoidasi.
    • Oʻqituvchi (kirgan) uchun — HAQIQIY ish maydoni: test tanlanadi va
      uchta yetkazish usulidan biri bilan sinfga beriladi.
 
@@ -94,14 +94,14 @@ export default async function BaholashPage({
     <ProductPage
       slug="baholash"
       capabilities={[
-        "Toʻrt resurs turi: test, taqdimot, video, matn+savol — bitta joyda yaratiladi",
-        "Jonli oʻtkazish (PIN/havola/QR) va oʻz tezligidagi uy vazifasi",
-        "Qogʻoz test + telefon kamerasi bilan avtomatik tekshirish (OMR)",
-        "Telefonsiz sinf uchun QR-kartalar",
-        "Natija toʻgʻridan-toʻgʻri jurnalga koʻchadi — qoʻlda koʻchirish yoʻq",
+        "Yangi test tuzasiz yoki avval tuzgan testingizni bankdan olasiz — test topshiriqqa biriktirilishi bilan jurnalda uning ustuni paydo boʻladi",
+        "Jonli oʻtkazish: oʻquvchilar oʻz telefonidan PIN yoki QR orqali qoʻshiladi",
+        "Uyga vazifa: muddat bilan, oʻquvchi har savoldan keyin natijasini darhol koʻradi",
+        "Qogʻoz test: javob varaqlarini chop etasiz va telefon kamerasi bilan tekshirasiz",
+        "Telefonsiz sinf uchun QR-kartalar — kamerani sinfga qaratsangiz, barcha javoblar bir zumda oʻqiladi",
+        "Interaktiv taqdimot: slaydlar orasida test, soʻrovnoma, soʻz buluti va ochiq javob",
       ]}
-      differentiator="Tezlik hech qachon ballanmaydi — sekin, lekin toʻgʻri javob bergan bola yutqazmaydi. Oʻyin faqat qobiq: sinf ichida musobaqa boʻlsa ham, jurnalga faqat toʻgʻri/notoʻgʻri kiradi."
-      plannedNote="Rejalashtirilgan: sxema, yaratish oqimi va savol muharriri hozir qurilmoqda. Qiziqishingiz bormi — Telegram orqali yozing, tayyor boʻlganda birinchilardan xabardor qilamiz."
+      differentiator="Sinfingizda nima boʻlsa — oʻquvchi telefoni, kompyuter sinfi, projektor yoki faqat qogʻoz — test shu bilan oʻtadi. Qaysi yoʻl bilan oʻtkazmang, natija bitta jurnalga tushadi, qaysi test yakuniy bahoga kirishini esa oʻzingiz belgilaysiz."
     />
   );
 }

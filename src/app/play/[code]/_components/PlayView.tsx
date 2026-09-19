@@ -18,6 +18,7 @@ import {
   listRosterByCodeAction,
   submitResponseAction,
 } from "@/server/actions/play";
+import { unwrap } from "@/lib/action-result";
 import type { PlaySessionContent } from "@/server/dal/play/content";
 import { SlideView } from "@/components/slides/SlideView";
 import { stageThemeVars } from "@/lib/stage-themes";
@@ -60,6 +61,12 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
   const [roster, setRoster] = useState<Roster[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  /* Qoʻshilishdan OLDINGI ikki holat alohida: «bunday kod yoʻq» va
+     «serverga ulanib boʻlmadi». Ilgari ikkalasi `error` + boʻsh roʻyxatdan
+     taxmin qilinardi va boʻsh sinfda ism tanlanmasa ham «Kod topilmadi»
+     chiqardi. */
+  const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [content, setContent] = useState<PlaySessionContent | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -195,11 +202,14 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
 
   const loadRoster = useCallback(() => {
     listRosterByCodeAction(joinCode)
-      .then((r) => {
-        setRoster(r);
+      .then((res) => {
+        if (!res.ok) return setLoadError(res.message);
+        if (res.data === null) return setNotFound(true);
+        setRoster(res.data);
         setPhase("join");
       })
-      .catch((e) => setError(e instanceof Error ? e.message : "Kod topilmadi"));
+      // Tarmoq uzilishi — kod notoʻgʻri degani emas, qayta urinish beriladi.
+      .catch(() => setLoadError("Internet aloqasini tekshirib, qayta urinib koʻring."));
   }, [joinCode]);
 
   useEffect(() => {
@@ -230,11 +240,13 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     }
     setError(null);
     try {
-      const result = await joinSessionAction({
-        joinCode,
-        studentId: student.id,
-        displayName: student.name,
-      });
+      const result = unwrap(
+        await joinSessionAction({
+          joinCode,
+          studentId: student.id,
+          displayName: student.name,
+        }),
+      );
       localStorage.setItem(tokenKey(joinCode), result.token);
       if (await redirectToShell(result.token)) return;
       const c = await getSessionContentAction(result.token);
@@ -247,7 +259,9 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
 
   /** Jonli sessiyada sahifa yangilangach oʻquvchi allaqachon javob bergan
       savolni yana koʻradi. Server «allaqachon yuborilgan» desa, bu xato
-      emas — ekran «javob qabul qilindi» holatiga oʻtadi. */
+      emas — ekran «javob qabul qilindi» holatiga oʻtadi. Matnni solishtirish
+      faqat `unwrap()` tufayli ishlaydi: xato mijozda otiladi va matni
+      saqlanadi (prodda serverdan otilgan xato matni yashirinadi). */
   function handleLiveDuplicate(e: unknown, activityId: string): boolean {
     if (!live || !(e instanceof Error) || e.message !== "Javob allaqachon yuborilgan") return false;
     setError(null);
@@ -274,11 +288,13 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     setSubmitting(true);
     try {
       const token = localStorage.getItem(tokenKey(joinCode))!;
-      const { isCorrect, correctOptionIds } = await submitResponseAction({
-        token,
-        itemId: step.itemId,
-        answer: { optionId: selectedOption },
-      });
+      const { isCorrect, correctOptionIds } = unwrap(
+        await submitResponseAction({
+          token,
+          itemId: step.itemId,
+          answer: { optionId: selectedOption },
+        }),
+      );
       setAnsweredCount((n) => n + 1);
       if (isCorrect) {
         setCorrectCount((n) => n + 1);
@@ -305,7 +321,7 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     setSubmitting(true);
     try {
       const token = localStorage.getItem(tokenKey(joinCode))!;
-      await submitResponseAction({ token, itemId: step.itemId, answer });
+      unwrap(await submitResponseAction({ token, itemId: step.itemId, answer }));
       setError(null);
       if (live) setLiveAnswers((prev) => ({ ...prev, [step.activityId]: null }));
       else {
@@ -327,11 +343,13 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     const currentStep = content.steps[stepIndex];
     setSubmitting(true);
     try {
-      const { isCorrect } = await submitResponseAction({
-        token,
-        itemId: pickedLeftId,
-        answer: { matchedId: rightItemId },
-      });
+      const { isCorrect } = unwrap(
+        await submitResponseAction({
+          token,
+          itemId: pickedLeftId,
+          answer: { matchedId: rightItemId },
+        }),
+      );
       setAnsweredCount((n) => n + 1);
       if (isCorrect) {
         setCorrectCount((n) => n + 1);
@@ -353,15 +371,51 @@ export default function PlayView({ joinCode }: { joinCode: string }) {
     }
   }
 
+  if (notFound) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-3 p-6 text-center">
+        <p className="text-lg font-semibold">Kod topilmadi</p>
+        <p className="text-muted-foreground">Ekrandagi kodni tekshirib, qayta kiriting.</p>
+        {/* Oʻquvchi kodni qoʻlda yozgan boʻlsa (`/play`), bir harf xatosi
+            uni boshi berk sahifada qoldirmasin. */}
+        <a href="/play" className="font-medium underline underline-offset-4">
+          Kodni qayta kiritish
+        </a>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4 p-6 text-center">
+        <p className="text-lg font-semibold">Ulanib boʻlmadi</p>
+        <p className="text-muted-foreground">{loadError}</p>
+        <PushButton
+          block={false}
+          onClick={() => {
+            setLoadError(null);
+            loadRoster();
+          }}
+        >
+          Qayta urinish
+        </PushButton>
+      </div>
+    );
+  }
+
   if (phase === "loading") {
     return <div className="flex h-screen items-center justify-center text-muted-foreground">Yuklanmoqda...</div>;
   }
 
-  if (error && phase === "join" && roster.length === 0) {
+  /* Kod toʻgʻri, lekin sinfga hali oʻquvchi yozilmagan — tanlaydigan ism
+     yoʻq. Boʻsh roʻyxat va «Boshlash» tugmasi oʻquvchini chalgʻitardi. */
+  if (phase === "join" && roster.length === 0) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-lg font-semibold">Kod topilmadi</p>
-        <p className="text-muted-foreground">{error}</p>
+        <p className="text-lg font-semibold">Sinf roʻyxati boʻsh</p>
+        <p className="text-muted-foreground">
+          Kod toʻgʻri, lekin bu sinfga hali oʻquvchi qoʻshilmagan. Oʻqituvchingizga ayting.
+        </p>
       </div>
     );
   }

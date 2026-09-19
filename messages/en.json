@@ -4115,231 +4115,162 @@
     "nav": {
       "top": "Home",
       "features": "Features",
-      "products": "Sub-products",
+      "products": "Products",
       "pricing": "Pricing",
       "faq": "FAQ",
       "blog": "Blog",
-      "menu": "Menu"
+      "menu": "Menu",
+      "doska": "Board",
+      "jurnal": "Gradebook",
+      "baholash": "Assessment",
+      "enterCode": "Enter code",
+      "enterCodeShort": "Code"
     },
     "legal": {
       "terms": "Terms of use",
       "privacy": "Privacy policy"
     },
     "social": {
-      "telegram": "Telegram",
-      "web": "Web",
-      "email": "Email",
-      "phone": "Phone"
+      "telegram": "Telegram"
     },
     "hero": {
-      "badge": "New — just launched",
-      "titleLine1": "Grades, attendance and gradebooks now calculate",
-      "titleHighlight": "themselves",
-      "subtitle": "You only enter grades and attendance — final marks, behavior scores and quarterly reports are ready in seconds.",
-      "ctaSecondary": "See features"
-    },
-    "stats": {
-      "badge": "Facts",
-      "heading": "Real facts that save a teacher's time",
-      "items": [
+      "badge": "New: interactive presentations and live lessons",
+      "titleLine1": "Plan, teach and assess your lessons — Ustozona",
+      "titleHighlight": "handles the rest",
+      "subtitle": "Upload your scheme of work — topics are laid out across your lessons day by day. In class you run presentations and quizzes: on phones, QR cards or paper. Results go into the gradebook — you see right away who needs help.",
+      "taskPrompt": "What are you doing in class today?",
+      "tasks": [
         {
-          "unit": "click",
-          "title": "Attendance",
-          "descp": "Whole class present? Click the date column, done."
+          "label": "Set a timer",
+          "hint": "No sign-up needed"
         },
         {
-          "unit": "minutes",
-          "title": "Quarter report",
-          "descp": "The final grade is calculated automatically from categories and weights."
+          "label": "Calm the class",
+          "hint": "With the traffic light"
         },
         {
-          "unit": "times",
-          "title": "Calculator",
-          "descp": "No more manually calculating the average score."
+          "label": "Run a quiz",
+          "hint": "Phone, QR card or paper"
         },
         {
-          "unit": "",
-          "title": "Classes & students",
-          "descp": "No limits — add as many as you need."
+          "label": "Show a presentation",
+          "hint": "Slides and live questions"
+        },
+        {
+          "label": "Take attendance",
+          "hint": "Whole class in one click"
+        },
+        {
+          "label": "Plan a lesson",
+          "hint": "With the AI assistant"
         }
-      ]
-    },
-    "feature": {
-      "badge": "Why Ustozona?",
-      "heading": "Spend time teaching, not on paperwork",
-      "desc": "5–10 minutes of every lesson go to attendance. You write down latecomers and missed homework in a separate notebook. At the end of the quarter you grab a calculator and count the average until late at night.",
-      "cta": "Create a gradebook",
-      "cardTitle": "In Ustozona attendance is marked with one click. Latecomers' behavior score drops automatically, and the final grade is calculated in seconds.",
-      "cardTag": "One system",
-      "cardSubtitle": "A teacher's entire workflow",
-      "items": [
-        "Gradebook, attendance and timetable are linked — enter once, it updates everywhere.",
-        "You get timely reminders about assignment deadlines and grading days.",
-        "Learning trends and class averages are calculated automatically.",
-        "Every class and topic has its own color — spot and tell them apart at a glance."
-      ]
-    },
-    "services": {
-      "badge": "Inside the system",
-      "heading": "What can you do?",
-      "desc": "A teacher's daily work — gradebook, attendance, behavior, timetable and lesson plans — in one system. Hover over a name to see it.",
-      "cta": "Track progress",
-      "items": [
-        {
-          "heading": "Digital gradebook & grading",
-          "descp": "Set up categories and weights once (\"homework 20%, exam 50%\") — the system does the rest. Low scores turn red, high scores turn green: class status is visible at a glance."
-        },
-        {
-          "heading": "Attendance — in one click",
-          "descp": "If the whole class showed up, click the date column and mark \"everyone present\" once. You can also leave a note on any single entry."
-        },
-        {
-          "heading": "Behavior score — calculates itself",
-          "descp": "The student's behavior score builds up automatically from lateness, absences and late assignments. The most tedious task takes care of itself."
-        },
-        {
-          "heading": "Timetable & planning",
-          "descp": "If the schedule changes mid-year, older months' history and grades stay intact. Bell schedules and drag-and-drop lesson moves are included too."
-        },
-        {
-          "heading": "Lesson editor & PDF",
-          "descp": "Write your lesson plan in a full text editor and export it as a print-ready A4 PDF in one click."
-        }
-      ]
-    },
-    "howItWorks": {
-      "badge": "How it works",
-      "heading": "Get started in three steps",
-      "steps": [
-        {
-          "title": "Sign up",
-          "descp": "Log in from a computer or laptop. No payment, no bank card needed."
-        },
-        {
-          "title": "Add classes & timetable",
-          "descp": "Enter the classes you teach with the wizard — takes a few minutes."
-        },
-        {
-          "title": "Start the lesson",
-          "descp": "Mark attendance, enter grades — Ustozona handles the rest of the math."
-        }
-      ]
-    },
-    "personas": {
-      "badge": "Who it's for",
-      "heading": "Built for school teachers",
-      "desc": "Ustozona is built first of all for teachers of grades 5–11 with more than 30 students per class. A personal assistant for those who want to spend every second of a 45-minute lesson on teaching, not paperwork.",
-      "stats": {
-        "grades": "grades 5–11",
-        "students": "30+ students",
-        "duration": "45 minutes"
-      },
-      "card": {
-        "className": "Class 9-A",
-        "badge": "32 students",
-        "lines": [
-          "Every student's name, schedule and scores in one place",
-          "Mark everyone's attendance within 45 minutes",
-          "Behavior and performance are calculated automatically"
-        ]
-      }
+      ],
+      "roleTeacher": "Teacher",
+      "roleStudent": "Student"
     },
     "pricing": {
       "badge": "Pricing",
       "heading": "Free for teachers",
-      "desc": "Everything you need for your daily work is free today. We'll announce September's news openly in advance.",
+      "desc": "Everything you need to prepare, teach and assess lessons is free for teachers. We will announce paid plans openly and in advance.",
       "plans": [
         {
-          "name": "For a school",
+          "name": "For schools",
           "status": "Coming soon",
-          "descp": "Bringing together the teachers of one school under a single administrative flow.",
+          "descp": "Extra tools for school administration and parents.",
           "price": "Coming soon",
           "cta": "Get notified",
           "features": [
-            "A shared school database for the subject department",
-            "Invite teachers into a single group",
-            "Telegram mini-app for parents and students",
-            "Quick reports for the administration"
+            "Admin dashboard",
+            "School-wide reports",
+            "Telegram mini app for parents"
           ]
         },
         {
-          "name": "For a teacher",
+          "name": "For teachers",
           "status": "Available",
-          "descp": "Fully covers your daily work. No bank card required.",
+          "descp": "Enough for all three stages of a lesson. No bank card required.",
           "price": "0 soʻm",
           "cta": "Sign up",
           "features": [
-            "Digital gradebook with 10+ scales",
-            "Attendance — in one click",
-            "Automatic behavior score",
-            "Timetable & planning",
-            "Lesson editor & PDF export",
+            "Electronic gradebook and 10+ grading scales",
+            "Attendance and automatic behaviour points",
+            "Import your scheme of work from Excel",
+            "AI assistant (with a daily limit)",
+            "Online quizzes, paper test scanner, QR cards",
+            "Board and interactive presentations",
+            "Work together with colleagues",
             "Unlimited classes and students"
           ]
         },
         {
-          "name": "Pro + AI assistant",
+          "name": "Pro",
           "status": "Coming soon",
-          "descp": "AI- and camera-assisted grading of paper tests.",
+          "descp": "For teachers with many classes and lessons.",
           "price": "Coming soon",
           "cta": "Join the waitlist",
           "features": [
-            "AI-assisted lesson planning and analysis",
-            "OCR: grade paper tests with your phone",
-            "Extended performance reports",
+            "Higher AI limit",
+            "Advanced mastery reports",
             "Priority support"
           ]
         }
       ]
     },
     "cta": {
-      "headingLine1": "Instead of reports and all kinds of paperwork,",
-      "headingLine2": "give your attention to the lesson!",
-      "desc": "Signing up takes a minute. Add your class and start using it right away.",
-      "ctaLabel": "Sign up for free"
+      "headingLine1": "Your next lesson in Ustozona:",
+      "headingLine2": "prepare it, teach it, assess it",
+      "desc": "Sign in with Google or Telegram in one click. Add your class, upload your scheme of work — and you are ready for tomorrow's lesson.",
+      "ctaLabel": "Sign up for free",
+      "trust": "Free · No card needed · 7 languages"
     },
     "faq": {
-      "badge": "Frequently asked questions",
       "heading": "Got questions? We have answers",
       "items": [
         {
-          "question": "Does this replace official electronic gradebooks?",
-          "answer": "No. Ustozona is your personal work assistant. You prepare quarterly scores, behavior reports and attendance statistics here, then copy the ready numbers into the official systems."
+          "question": "Does this replace the official e-gradebook?",
+          "answer": "No. Ustozona is your personal work tool. You prepare term grades, attendance and behaviour reports here, then copy the finished numbers into the official system. No more calculator work."
         },
         {
-          "question": "Can my principal or school administration see my data?",
-          "answer": "Your data is yours — based on privacy settings, no one else can see it without your permission. You're always in control."
+          "question": "Does it work on a phone?",
+          "answer": "The teacher panel is designed for computers and laptops. Students join quizzes and presentations from their own phones, and you check paper tests with your phone camera. Nothing to install — everything runs in the browser."
         },
         {
-          "question": "Can I use it on my phone?",
-          "answer": "The platform is currently optimized mainly for computer and laptop browsers. A dedicated mobile-friendly view launches in September."
+          "question": "How do I run a quiz if students have no phones?",
+          "answer": "There are three ways. QR cards: each student turns their card to show an answer and you scan the class with your phone camera. Paper test: print the answer sheets and check them with the camera. Or split the class into teams in a presentation and award points on the board."
         },
         {
-          "question": "Will last year's data disappear in the new school year?",
-          "answer": "No. Past years are kept in the archive. There's a dedicated wizard for moving classes to the new school year."
+          "question": "I already have slides — can I use them?",
+          "answer": "Yes. Import your PowerPoint (PPTX) or PDF file and add quizzes, polls and word clouds between the slides. In class you start a live session from the Board — students join with a QR code or PIN. Especially handy for open lessons."
         },
         {
-          "question": "If the timetable changes, will previous months' gradebook break?",
-          "answer": "The system understands timetable versions. If you enter \"the schedule changed starting Nov 3\", the grade history from before that date stays exactly as it was."
+          "question": "Do I have to re-enter my scheme of work by hand?",
+          "answer": "No. Upload your scheme of work from an Excel file or paste the list of topics. Lessons are created at once and laid out day by day according to your timetable, skipping holidays."
         },
         {
-          "question": "I grade on a 100-point scale. Does the app fit me?",
-          "answer": "Absolutely. The system has 10+ grading scales — 5-point, percentage, letter and more. Set up the one that fits you."
+          "question": "Do I need to sign up to use the Board?",
+          "answer": "No. Tools like the timer, traffic light and clock work right away without signing up. Presentations, quizzes and saved results need an account — they connect to your gradebook."
         },
         {
-          "question": "Is there a limit on the number of students?",
-          "answer": "No limit at all. Add as many classes and students as you need."
+          "question": "I grade on a 100-point scale — will it work for me?",
+          "answer": "Of course. There are more than 10 grading scales: 5-point, 100-point, percentage, letter grades and more. Pick yours and set the category weights once."
+        },
+        {
+          "question": "Is it really all free?",
+          "answer": "Yes, it is free for teachers: no bank card is asked, and there is no limit on classes or students. Later there will be paid plans for schools and with extended features — we will announce them openly and in advance."
         },
         {
           "question": "How do I learn to use the system?",
-          "answer": "An interactive guide walks you through it step by step the first time you log in. Got a suggestion? Post it on the feedback board — other teachers vote and the team reviews it."
+          "answer": "The first time you sign in, an interactive guide walks you through step by step. The help center has articles for every section. Post your suggestions on the feedback board — other teachers vote and the team reviews them."
         }
-      ]
+      ],
+      "subtitle": "The questions teachers ask most.",
+      "contactPrompt": "Didn't find your answer?",
+      "contactCta": "Message us on Telegram"
     },
     "footer": {
-      "tagline": "A digital platform for teachers to manage and improve the quality of the learning process.",
+      "tagline": "A teacher's work before, during and after the lesson — in one place.",
       "pagesTitle": "Pages",
-      "productsTitle": "Sub-projects",
+      "productsTitle": "Products",
       "moreInfoTitle": "More information",
       "contactTitle": "Get in touch",
       "contactNote": "For questions and suggestions, write to us on Telegram.",
@@ -4347,28 +4278,129 @@
       "copyright": "© {year} Ustozona. All rights reserved."
     },
     "products": {
-      "badge": "Ecosystem",
-      "heading": "Products",
-      "desc": "Directions being built on top of Ustozona. Two are live, the rest are on the way.",
+      "badge": "Products",
+      "heading": "For every stage of the lesson",
+      "desc": "Everything is connected. Four work today; the parent app and the admin panel are on the way.",
       "mainTitle": "Ustozona",
       "mainStatus": "Available",
-      "mainDesc": "The teacher panel — gradebook, attendance, behavior, timetable, lesson plans. You can use it today.",
+      "mainDesc": "Teacher panel: gradebook, attendance, behaviour, timetable, scheme of work and AI lesson planning.",
       "mainCta": "See features",
       "detailCta": "Learn more",
       "statusLive": "Available",
       "statusSoon": "Coming soon",
       "taglines": {
-        "blog": "Articles by teachers — experience, methods and news in one place.",
-        "baholash": "One measure, five ways to collect — from online tests to paper OMR.",
-        "doska": "Classroom screen: timer, traffic light, random name, group maker.",
-        "shogird": "A Telegram app for parents and students.",
-        "boshqaruv": "A panel for school administration."
+        "blog": "Articles written by teachers: experience, methods, lesson ideas. You can write too.",
+        "baholash": "Online quizzes, a paper test scanner and QR cards — results go into the gradebook.",
+        "doska": "Classroom screen: timer, traffic light and live presentations. The timer and traffic light work even without signing in.",
+        "shogird": "Telegram app for parents: their child's grades, attendance and behaviour.",
+        "boshqaruv": "A panel for school administration and school-wide reports."
       }
     },
     "cookie": {
       "text": "We use cookies to improve your experience on the site. By continuing, you agree to this.",
       "reject": "Decline",
       "accept": "Accept"
+    },
+    "what": {
+      "heading": "What's inside Ustozona?",
+      "tabs": [
+        {
+          "label": "Gradebook",
+          "question": "Do you find out too late which student is falling behind?",
+          "summary": "Gradebook, attendance, behaviour, timetable and lesson plans — your daily work in one place.",
+          "cta": "Try the gradebook",
+          "facts": [
+            {
+              "lead": "“Needs attention” list",
+              "text": "the home page shows who needs help based on attendance, behaviour and falling grades."
+            },
+            {
+              "lead": "Attendance in one click",
+              "text": "if the whole class is present, click the date column once."
+            },
+            {
+              "lead": "Scheme of work from Excel or Word",
+              "text": "topics are laid out day by day according to the timetable, skipping holidays."
+            },
+            {
+              "lead": "AI lesson plan",
+              "text": "builds exercises and quiz questions to fit the lesson length. Student names are never sent to the AI."
+            }
+          ]
+        },
+        {
+          "label": "Assessment",
+          "question": "Still checking test sheets by hand?",
+          "summary": "Whichever way you run it, results go into one gradebook — and you decide which test counts towards the grade.",
+          "cta": "About Assessment",
+          "facts": [
+            {
+              "lead": "Live quiz",
+              "text": "students join from their own phones with a PIN or QR code."
+            },
+            {
+              "lead": "Classroom without phones",
+              "text": "students hold up QR cards and the camera reads every answer at once."
+            },
+            {
+              "lead": "Paper test",
+              "text": "print the answer sheets and check them with your phone camera."
+            },
+            {
+              "lead": "Homework",
+              "text": "with a deadline; students see their result after every question."
+            }
+          ]
+        },
+        {
+          "label": "Presentation",
+          "question": "Are students getting bored in class?",
+          "summary": "Showing slides and checking understanding — in one presentation.",
+          "cta": "About presentations",
+          "facts": [
+            {
+              "lead": "From PowerPoint and PDF",
+              "text": "no need to rebuild your existing slides."
+            },
+            {
+              "lead": "Questions between slides",
+              "text": "quiz, poll, word cloud or open answer."
+            },
+            {
+              "lead": "Live session",
+              "text": "students join from their phones with a QR code or PIN."
+            },
+            {
+              "lead": "Opens on the Board",
+              "text": "the presentation sits on the classroom screen next to the timer and traffic light."
+            }
+          ]
+        },
+        {
+          "label": "Board",
+          "question": "Hard to keep the class in order?",
+          "summary": "Built for projectors and large screens — readable from the back of the room.",
+          "cta": "Open the Board",
+          "facts": [
+            {
+              "lead": "Timer and clock",
+              "text": "the whole class sees the exercise time on the big screen."
+            },
+            {
+              "lead": "Traffic light",
+              "text": "“work quietly”, “whisper”, “talk freely” — no need to repeat the rules each time."
+            },
+            {
+              "lead": "Text and sticky notes",
+              "text": "write the task and reminders on the board."
+            },
+            {
+              "lead": "No sign-up",
+              "text": "the timer, traffic light and clock open instantly."
+            }
+          ]
+        }
+      ]
     }
   },
   "StandardTagPicker": {

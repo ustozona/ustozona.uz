@@ -37,8 +37,11 @@ export const SECTION_MAX_LENGTH = 3;
    ikkita ALOHIDA sinf yaratadi va oʻqituvchi farqni koʻra olmaydi.
 
    Faqat PARALLEL HARFIGA qoʻllanadi (1–3 belgi), erkin `label` ga emas —
-   «Ингliz toʻgaragi» kabi ataylab kirillcha nom buzilmasin. */
-const CYRILLIC_LOOKALIKES: Record<string, string> = {
+   «Ингliz toʻgaragi» kabi ataylab kirillcha nom buzilmasin.
+
+   `/play` kod kiritish sahifasi ham shu jadvaldan foydalanadi: kirill
+   klaviaturali telefonda oʻquvchi «ВС7КМ2» deb yozadi. */
+export const CYRILLIC_LOOKALIKES: Record<string, string> = {
   А: "A", В: "B", Е: "E", К: "K", М: "M", Н: "H",
   О: "O", Р: "P", С: "C", Т: "T", У: "Y", Х: "X",
 };

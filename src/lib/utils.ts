@@ -8,6 +8,8 @@ import { extendTailwindMerge } from "tailwind-merge"
 const TEXT_ROLES = [
   "micro", "tag", "label", "caption", "body", "reading",
   "title-sm", "title", "headline",
+  // Landing qatlami (docs/landing-design.md §3)
+  "landing-1", "landing-2", "landing-3", "landing-4", "landing-5", "landing-6",
 ]
 
 const twMerge = extendTailwindMerge({

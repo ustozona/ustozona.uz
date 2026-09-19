@@ -20,13 +20,19 @@ import { scheduleNudge } from "@/server/realtime/broadcast";
 export type JoinResult = { token: string; participantId: string; sessionId: string };
 
 /** Kod ishtirokchiga ekvivalent — sinf roʻyxatini (faqat id+ism) qaytaradi,
-    ishtirokchi ROʻYXATDAN ismini TANLAYDI (R43), yozmaydi. */
-export async function listRosterByCode(joinCode: string): Promise<{ id: string; name: string }[]> {
+    ishtirokchi ROʻYXATDAN ismini TANLAYDI (R43), yozmaydi.
+
+    `null` — bunday kod yoʻq. Bu xato emas, kutilgan holat: oʻquvchi kodni
+    `/play` da qoʻlda yozadi va bir harf adashishi oddiy hol. Xato
+    otilganda mijoz «kod yoʻq» ni tarmoq uzilishidan ajrata olmasdi. */
+export async function listRosterByCode(
+  joinCode: string,
+): Promise<{ id: string; name: string }[] | null> {
   const [session] = await db
     .select()
     .from(quizSessions)
     .where(eq(quizSessions.joinCode, joinCode.toUpperCase()));
-  if (!session) throw new UnauthorizedError("Yaroqsiz kod");
+  if (!session) return null;
 
   // Mehmon oqimi: oʻqituvchi sessiyasi yoʻq, shu bois qamrov join-kod
   // orqali kelgan sinfning YOZILISH roʻyxatidan olinadi.
