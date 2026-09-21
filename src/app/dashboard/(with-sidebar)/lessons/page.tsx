@@ -758,7 +758,7 @@ export default function LessonsPage() {
               {unitsForClass.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{unitsForClass.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {!isDemoMode && (
+              {unitsForClass.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 px-3" onClick={handleCreateUnit}>
                   <Plus className="size-3.5" />
                   <span>{t("addUnit")}</span>
@@ -939,7 +939,7 @@ export default function LessonsPage() {
                   <Search className="size-4" />
                 </Button>
               </div>
-              {effectiveUnitId && (
+              {effectiveUnitId && lessonsForUnit.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={effectiveUnitId === NONE ? handleNewLesson : handleNewLessonChoice}>
                   <Plus className="size-3.5" />
                   <span className="hidden lg:inline">{t("newLesson")}</span>
@@ -979,9 +979,9 @@ export default function LessonsPage() {
                       <EmptyTitle>{t("lessonsEmptyTitle")}</EmptyTitle>
                       <EmptyDescription>{t("lessonsEmptyDescription")}</EmptyDescription>
                     </EmptyHeader>
-                    {effectiveUnitId !== NONE && (
+                    {(
                       <EmptyContent>
-                        <Button className="gap-2 h-9" onClick={handleNewLessonChoice}>
+                        <Button className="gap-2 h-9" onClick={effectiveUnitId === NONE ? handleNewLesson : handleNewLessonChoice}>
                           <Plus className="size-4" />
                           {t("newLesson")}
                         </Button>
