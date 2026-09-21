@@ -4,8 +4,9 @@ import * as React from "react";
 import { useBehaviorStore } from "@/store/useBehaviorStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
 import { diffBehavior, type BehaviorSnapshot } from "@/lib/sync/behavior-sync";
-import { fetchBehaviorAction, syncBehaviorAction } from "@/server/actions/behavior";
+import { syncBehaviorAction } from "@/server/actions/behavior";
 
 /* Behavior store ↔ server koʻprigi (renderi yoʻq).
    Dashboard layoutda turadi: mount → hydration → sync.
@@ -25,8 +26,11 @@ function selectSnapshot(s: BehaviorState): BehaviorSnapshot {
   };
 }
 
+/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
+const fetchSlice = bootstrapSlice("behavior");
+
 export default function BehaviorServerSync() {
-  const hydrated = useHydrateStore(useBehaviorStore, fetchBehaviorAction);
+  const hydrated = useHydrateStore(useBehaviorStore, fetchSlice);
 
   React.useEffect(() => {
     if (!hydrated) return;

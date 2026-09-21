@@ -4,6 +4,7 @@ import * as React from "react";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
 import { diffGradesMap } from "@/lib/sync/grades-sync";
 import { fetchGradesAction, syncGradesAction } from "@/server/actions/grades";
 
@@ -31,8 +32,11 @@ export async function reloadGradesFromServer(): Promise<void> {
   active?.rebase();
 }
 
+/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
+const fetchSlice = bootstrapSlice("grades");
+
 export default function GradesServerSync() {
-  const hydrated = useHydrateStore(useGradesStore, fetchGradesAction);
+  const hydrated = useHydrateStore(useGradesStore, fetchSlice);
 
   React.useEffect(() => {
     if (!hydrated) return;

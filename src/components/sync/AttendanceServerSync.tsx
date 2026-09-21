@@ -4,11 +4,9 @@ import * as React from "react";
 import { useAttendanceStore } from "@/store/useAttendanceStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
 import { diffAttendance, type AttendanceSnapshot } from "@/lib/sync/attendance-sync";
-import {
-  fetchAttendanceAction,
-  syncAttendanceAction,
-} from "@/server/actions/attendance";
+import { syncAttendanceAction } from "@/server/actions/attendance";
 
 /* Attendance store ↔ server koʻprigi (renderi yoʻq).
    Dashboard layoutda turadi: mount → hydration → sync.
@@ -20,8 +18,11 @@ function selectSnapshot(s: AttendanceState): AttendanceSnapshot {
   return { recordsByClass: s.recordsByClass, statuses: s.statuses };
 }
 
+/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
+const fetchSlice = bootstrapSlice("attendance");
+
 export default function AttendanceServerSync() {
-  const hydrated = useHydrateStore(useAttendanceStore, fetchAttendanceAction);
+  const hydrated = useHydrateStore(useAttendanceStore, fetchSlice);
 
   React.useEffect(() => {
     if (!hydrated) return;

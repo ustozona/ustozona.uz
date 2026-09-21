@@ -4,12 +4,10 @@ import * as React from "react";
 import { useTimetableStore } from "@/store/useTimetableStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
 import { diffTimetable, type TimetableSnapshot } from "@/lib/sync/timetable-sync";
 import { normalizeLegacyVersions, type TimetableVersion } from "@/lib/timetable-versions";
-import {
-  fetchTimetableAction,
-  syncTimetableAction,
-} from "@/server/actions/timetable";
+import { syncTimetableAction } from "@/server/actions/timetable";
 
 /* Timetable store ↔ server koʻprigi (renderi yoʻq).
 
@@ -23,9 +21,11 @@ function selectSnapshot(s: TimetableState): TimetableSnapshot {
   return { versions: s.versions };
 }
 
-/** Fetch + eski raqamli classId'larni jonli id'ga oʻgirish (bir marta, hydration'da). */
+/** Bootstrap boʻlagi + eski raqamli classId'larni jonli id'ga oʻgirish
+    (bir marta, hydration'da). */
+const fetchTimetableSlice = bootstrapSlice("timetable");
 async function fetchNormalized() {
-  const payload = await fetchTimetableAction();
+  const payload = await fetchTimetableSlice();
   if (payload && Array.isArray((payload as { versions?: TimetableVersion[] }).versions)) {
     return {
       ...payload,
