@@ -4446,6 +4446,11 @@
   "LessonsYear": {
     "viewStructure": "Tuzilma",
     "viewYear": "Oʻquv yili",
+    "close": "Yopish",
+    "allClasses": "Barcha sinflar · oʻquv yili",
+    "classYear": "{name} · oʻquv yili",
+    "showYearAll": "Barcha sinflarning oʻquv yili",
+    "showYearClass": "Shu sinfning oʻquv yili",
     "noUnit": "Boʻlimsiz",
     "noDates": "Mavzularga hali sana qoʻyilmagan",
     "planIt": "Rejalashtirish",

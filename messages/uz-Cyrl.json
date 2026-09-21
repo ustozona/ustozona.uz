@@ -4451,6 +4451,11 @@
   "LessonsYear": {
     "viewStructure": "Тузилма",
     "viewYear": "Ўқув йили",
+    "close": "Ёпиш",
+    "allClasses": "Барча синфлар · ўқув йили",
+    "classYear": "{name} · ўқув йили",
+    "showYearAll": "Барча синфларнинг ўқув йили",
+    "showYearClass": "Шу синфнинг ўқув йили",
     "noUnit": "Бўлимсиз",
     "noDates": "Мавзуларга ҳали сана қўйилмаган",
     "planIt": "Режалаштириш",

@@ -4618,6 +4618,11 @@
   "LessonsYear": {
     "viewStructure": "Structure",
     "viewYear": "School year",
+    "close": "Close",
+    "allClasses": "All classes · school year",
+    "classYear": "{name} · school year",
+    "showYearAll": "School year for all classes",
+    "showYearClass": "School year for this class",
     "noUnit": "No unit",
     "noDates": "No topics are dated yet",
     "planIt": "Plan",

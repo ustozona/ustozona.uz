@@ -4622,6 +4622,11 @@
   "LessonsYear": {
     "viewStructure": "Түзүлүш",
     "viewYear": "Окуу жылы",
+    "close": "Жабуу",
+    "allClasses": "Бардык класстар · окуу жылы",
+    "classYear": "{name} · окуу жылы",
+    "showYearAll": "Бардык класстардын окуу жылы",
+    "showYearClass": "Бул класстын окуу жылы",
     "noUnit": "Бөлүмсүз",
     "noDates": "Темаларга азырынча дата коюлган жок",
     "planIt": "Пландоо",

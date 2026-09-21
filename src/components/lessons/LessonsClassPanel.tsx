@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { GraduationCap, Plus, Pencil, Trash2 } from "lucide-react";
+import { CalendarRange, GraduationCap, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { panelHeaderClass } from "@/components/DashboardPage";
@@ -35,15 +35,19 @@ type Props = {
   units: Unit[];
   lessons: Lesson[];
   demoClasses?: ClassInfo[];
+  /** Barcha sinflarning oʻquv yili kalendari ochiqmi (sarlavhadagi tugma). */
+  yearActive?: boolean;
+  onToggleYear?: () => void;
 };
 
 /* Darslar sahifasining sinflar ustuni — har sinf kichik karta: nom, dars
    vaqti, boʻlim/mavzu soni va qamrov chizigʻi (oʻtilgan mavzular ulushi).
    Umumiy `ClassListPanel` boshqa sahifalarda ham ishlatilgani uchun unga
    tegilmaydi; mobil (`< lg`) Sheet koʻrinishi esa oʻshaning oʻzidan olinadi. */
-export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units, lessons, demoClasses }: Props) {
+export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units, lessons, demoClasses, yearActive, onToggleYear }: Props) {
   const t = useTranslations("ClassListPanel");
-  const tl = useTranslations("LessonsPage");
+  const tl = useTranslations("LessonsYear");
+  const tlp = useTranslations("LessonsPage");
   const real = useLiveClasses();
   const classes = demoClasses && real.length === 0 ? demoClasses : real;
   const hydrated = useLiveClassesHydrated();
@@ -104,12 +108,27 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
           <CardTitle className="truncate">{t("title")}</CardTitle>
           {classes.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{classes.length}</span>}
         </div>
+        <div className="flex items-center gap-1 shrink-0">
+        {classes.length > 0 && onToggleYear && (
+          <Button
+            variant="ghost"
+            size="icon"
+            title={tl("showYearAll")}
+            aria-label={tl("showYearAll")}
+            aria-pressed={yearActive}
+            className={cn("text-muted-foreground hover:text-foreground", yearActive && "text-foreground bg-muted")}
+            onClick={onToggleYear}
+          >
+            <CalendarRange className="size-4" />
+          </Button>
+        )}
         {classes.length > 0 && (
           <Button variant="ghost" size="sm" onClick={onAddClass} className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" aria-label={t("addClass")}>
             <Plus className="size-4" aria-hidden="true" />
             {t("add")}
           </Button>
         )}
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 relative overflow-hidden">
@@ -158,11 +177,11 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                         <span className="flex items-baseline gap-2">
                           <span className="text-sm font-semibold text-foreground truncate flex-1">{cls.name}</span>
                           <span className="text-micro tabular-nums text-muted-foreground shrink-0">
-                            {tl("classMeta", { units: s.units, lessons: s.lessons })}
+                            {tlp("classMeta", { units: s.units, lessons: s.lessons })}
                           </span>
                         </span>
                         {cls.time && <span className="block text-caption text-muted-foreground truncate mt-0.5">{cls.time}</span>}
-                        <span className="block h-1 mt-2 rounded-full bg-muted overflow-hidden" title={tl("classCoverage", { pct })}>
+                        <span className="block h-1 mt-2 rounded-full bg-muted overflow-hidden" title={tlp("classCoverage", { pct })}>
                           <span className="block h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: tints.solid }} />
                         </span>
                       </span>

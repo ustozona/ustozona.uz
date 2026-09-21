@@ -4622,6 +4622,11 @@
   "LessonsYear": {
     "viewStructure": "Dúzilis",
     "viewYear": "Oqıw jılı",
+    "close": "Jabıw",
+    "allClasses": "Barlıq klasslar · oqıw jılı",
+    "classYear": "{name} · oqıw jılı",
+    "showYearAll": "Barlıq klasslardıń oqıw jılı",
+    "showYearClass": "Usı klasstıń oqıw jılı",
     "noUnit": "Bólimsiz",
     "noDates": "Temalarǵa ele sáne qoyılmaǵan",
     "planIt": "Rejelestiriw",
