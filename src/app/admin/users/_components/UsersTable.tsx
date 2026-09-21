@@ -93,6 +93,7 @@ import type {
 import {
   ACTIVITY_AREAS,
   AREA_LABELS,
+  activityLabel,
   ACTIVATED_MIN_DAYS,
   QUIET_AFTER_DAYS,
 } from "@/lib/faollik";
@@ -585,7 +586,7 @@ export default function UsersTable({
                   onSort={applySort}
                 />
                 <SortHead
-                  label="Oxirgi ish"
+                  label="Oxirgi faollik"
                   sortKey="last_active"
                   filters={filters}
                   onSort={applySort}
@@ -731,13 +732,17 @@ export default function UsersTable({
                         className={
                           u.lastActiveAt ? "text-foreground" : "text-muted-foreground"
                         }
-                        title={u.lastActiveAt ? fmtDate(u.lastActiveAt) : undefined}
+                        title={
+                          u.lastActiveAt
+                            ? `${fmtDate(u.lastActiveAt)} — ${AREA_LABELS[u.lastArea ?? ""] ?? "—"}`
+                            : undefined
+                        }
                       >
                         {agoLabel(u.lastActiveAt)}
                       </div>
                       {u.lastArea && (
                         <div className="text-caption text-muted-foreground">
-                          {AREA_LABELS[u.lastArea] ?? u.lastArea}
+                          {activityLabel(u.lastAction, u.lastArea)}
                         </div>
                       )}
                     </TableCell>

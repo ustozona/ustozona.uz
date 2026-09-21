@@ -10,7 +10,7 @@ import {
   type AtRiskTeacher,
 } from "@/server/dal/admin/stats";
 import { deviceLabel, type DeviceKind } from "@/lib/user-agent";
-import { AREA_LABELS } from "@/lib/faollik";
+import { activityLabel } from "@/lib/faollik";
 import {
   Empty,
   EmptyHeader,
@@ -213,7 +213,7 @@ async function ActivationSection() {
                       sabab boʻladi. */}
                   <span className="text-caption whitespace-nowrap text-muted-foreground">
                     {r.lastArea
-                      ? `${AREA_LABELS[r.lastArea] ?? r.lastArea} · `
+                      ? `${activityLabel(r.lastAction, r.lastArea)} · `
                       : ""}
                     {daysAgoLabel(r.lastActiveAt)}
                   </span>

@@ -24,6 +24,8 @@ export const teacherActivitySummary = pgView("v_teacher_activity_summary", {
   lastAt: timestamp("last_at", { withTimezone: true }),
   /** Oxirgi harakat qaysi boʻlimda — «Oxirgi ish» ustunida koʻrsatiladi. */
   lastArea: text("last_area"),
+  /** Oxirgi amal kaliti («mavzu.yangi», «davomat»…) — ACTION_LABELS. */
+  lastAction: text("last_action"),
   activeDaysTotal: integer("active_days_total"),
   areasTotal: integer("areas_total"),
   activeDays30d: integer("active_days_30d"),
