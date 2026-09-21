@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CHANGELOG_ENTRIES, unseenChangelogCount } from "@/lib/changelog-data";
+
+/* Yozuvlar maʼlumoti (~50 kB) sidebar orqali har sahifaga tushmasligi
+   uchun talabga koʻra yuklanadi — badge baribir mount'gacha 0. */
+const loadChangelog = () => import("@/lib/changelog-data");
 
 /* Yangilanishlar "koʻrilmagan" hisoblagichi. localStorage'da oxirgi koʻrilgan
    yozuvlar SONI saqlanadi (sana emas — bir kunlik ikki reliz tirqishi yoʻq).
@@ -24,11 +27,17 @@ export function useChangelogUnseenCount(): number {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const read = () => setCount(unseenChangelogCount(readSeenCount()));
+    let alive = true;
+    const read = () => {
+      void loadChangelog().then(({ unseenChangelogCount }) => {
+        if (alive) setCount(unseenChangelogCount(readSeenCount()));
+      });
+    };
     read();
     window.addEventListener(SEEN_EVENT, read); // shu tab (sahifa → sidebar)
     window.addEventListener("storage", read); // boshqa tablar
     return () => {
+      alive = false;
       window.removeEventListener(SEEN_EVENT, read);
       window.removeEventListener("storage", read);
     };
@@ -39,6 +48,8 @@ export function useChangelogUnseenCount(): number {
 
 /** Sahifa ochilganda chaqiriladi — hamma yozuv koʻrildi deb belgilanadi. */
 export function markChangelogSeen() {
-  window.localStorage.setItem(STORAGE_KEY, String(CHANGELOG_ENTRIES.length));
-  window.dispatchEvent(new Event(SEEN_EVENT));
+  void loadChangelog().then(({ CHANGELOG_ENTRIES }) => {
+    window.localStorage.setItem(STORAGE_KEY, String(CHANGELOG_ENTRIES.length));
+    window.dispatchEvent(new Event(SEEN_EVENT));
+  });
 }
