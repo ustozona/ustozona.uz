@@ -4,10 +4,10 @@ import * as React from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
 import { authClient } from "@/lib/auth-client";
 import { getAuthHealthAction } from "@/server/actions/auth-health";
 import {
-  fetchSettingsAction,
   saveSettingsAction,
   type SettingsSaveInput,
 } from "@/server/actions/settings";
@@ -36,8 +36,11 @@ function selectSaveInput(s: SettingsState): SettingsSaveInput {
   };
 }
 
+/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
+const fetchSlice = bootstrapSlice("settings");
+
 export default function SettingsServerSync() {
-  const hydrated = useHydrateStore(useSettingsStore, fetchSettingsAction);
+  const hydrated = useHydrateStore(useSettingsStore, fetchSlice);
 
   /* ⛔ YARoQSIZ COOKIE TUZOG'I — bu effekt aynan shuni yechadi.
      (2026-08-08 da real foydalanuvchida ushlangan holat.)

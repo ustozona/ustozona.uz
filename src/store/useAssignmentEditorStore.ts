@@ -140,6 +140,34 @@ export const useAssignmentEditorStore = create<AssignmentEditorState>()(
         const old = state as { minimized?: boolean } & Partial<AssignmentEditorState>;
         return { ...old, parked: Boolean(old.minimized) } as AssignmentEditorState;
       },
+
+      /* ⛔ SOVUQ YUKLASHDA MUHARRIR OʻZI OCHILMASIN.
+
+         Langar global (`dashboard/layout.tsx`) va qobiq `fixed inset-0`
+         bilan butun ekranni yopadi. `parked` ham localStorage'ga
+         yozilgani uchun ochiq sessiya sahifa yangilangach ham ochiq
+         boʻlib qaytardi — yaʼni kirgan odam hech narsa bosmasa ham
+         toʻgʻridan-toʻgʻri toʻliq ekranli muharrirga tushardi.
+
+         Langarning asl maqsadi bu emas: u boʻlim almashtirilganda
+         qoralama unmount boʻlib yoʻqolmasin deb qoʻyilgan — yaʼni bitta
+         sessiya ICHIDAGI navigatsiya haqida. Shuning uchun rehydrate'da
+         sessiya parklanadi: qoralama saqlanadi, Topshiriqlar roʻyxatida
+         karta boʻlib koʻrinadi, bir bosishda ochiladi. Sessiya ichidagi
+         navigatsiyaga bu tegmaydi — u paytda rehydrate qayta ishlamaydi.
+
+         ⚠️ Nega `onRehydrateStorage` EMAS, `merge`. U yerdagi callback
+         holat obyektini joyida oʻzgartirishga majbur qiladi (`state.parked
+         = true`), bu esa obunachilarga xabar bermaydi; `setState` bilan
+         yozish ham ish bermaydi, chunki sinxron storage'da gidratatsiya
+         `create()` ichida kechadi va store hali TDZ'da boʻladi. `merge`
+         esa store'ga OʻRNATILADIGAN holatni qaytaradi — qoʻshimcha
+         yozuvsiz, poygasiz. */
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<AssignmentEditorState>;
+        const next = { ...current, ...p };
+        return next.session ? { ...next, parked: true } : next;
+      },
     }
   )
 );

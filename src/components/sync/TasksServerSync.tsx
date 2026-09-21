@@ -4,8 +4,9 @@ import * as React from "react";
 import { useTasksStore } from "@/store/useTasksStore";
 import { useHydrateStore } from "@/hooks/useHydrateStore";
 import { createServerSync } from "@/lib/sync/create-server-sync";
+import { bootstrapSlice } from "@/lib/sync/bootstrap-client";
 import { diffTasks, type TasksSnapshot } from "@/lib/sync/tasks-sync";
-import { fetchTasksAction, syncTasksAction } from "@/server/actions/tasks";
+import { syncTasksAction } from "@/server/actions/tasks";
 
 /* Tasks store ↔ server koʻprigi (renderi yoʻq). */
 
@@ -15,8 +16,11 @@ function selectSnapshot(s: TasksState): TasksSnapshot {
   return { items: s.items };
 }
 
+/** Mount hydration umumiy bootstrap javobidan oʻqiladi (bitta soʻrov). */
+const fetchSlice = bootstrapSlice("tasks");
+
 export default function TasksServerSync() {
-  const hydrated = useHydrateStore(useTasksStore, fetchTasksAction);
+  const hydrated = useHydrateStore(useTasksStore, fetchSlice);
 
   React.useEffect(() => {
     if (!hydrated) return;
