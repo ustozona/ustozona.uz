@@ -1,7 +1,7 @@
 "use client";
 
 import { fetchDashboardBootstrapAction } from "@/server/actions/bootstrap";
-import type { DashboardBootstrap } from "@/lib/sync/bootstrap-types";
+import type { DashboardBootstrap, DashboardPayloads } from "@/lib/sync/bootstrap-types";
 
 /* ════════════════════════════════════════════════════════════════════
    BOOTSTRAP — CLIENT TOMONI.
@@ -15,10 +15,11 @@ import type { DashboardBootstrap } from "@/lib/sync/bootstrap-types";
    15 ta komponentda. Modul-singleton shu ikkalasini ham hal qiladi va
    provider qoʻshishni talab qilmaydi.
 
-   ⚠️ Promise QAYTA URINILMAYDI. Yiqilsa har store `useHydrateStore`
-   ichida oʻz xatosini koʻradi va sync BOSHLANMAYDI — bu ataylab:
-   hydration yiqilganda standart qiymatlarni serverga yozib yubormaslik
-   qoidasi (`useHydrateStore` izohiga qarang) oʻz kuchida qoladi.
+   ⚠️ QAYTA URINISH YOʻQ. Yiqilgan boʻlak (yoki butun soʻrov — tarmoq
+   uzilsa) `useHydrateStore` ichida xato boʻlib koʻrinadi, oʻsha store
+   hydrate boʻlmaydi va uning sync'i BOSHLANMAYDI. Bu ataylab: hydration
+   yiqilganda standart qiymatlarni serverga yozib yubormaslik qoidasi
+   (`useHydrateStore` izohiga qarang) oʻz kuchida qoladi.
    ════════════════════════════════════════════════════════════════════ */
 
 let inFlight: Promise<DashboardBootstrap> | null = null;
@@ -32,11 +33,18 @@ function bootstrapOnce(): Promise<DashboardBootstrap> {
  * `useHydrateStore` kutadigan shakldagi fetcher qaytaradi — lekin tarmoqqa
  * chiqmaydi, umumiy bootstrap javobidan bitta boʻlakni oladi.
  *
+ * Boʻlak serverda yiqilgan boʻlsa TASHLAYDI — shunda faqat SHU store
+ * hydrate boʻlmaydi, qoʻshnilari normal ishlayveradi.
+ *
  * Modul darajasida chaqiriladi:
  * `const fetchSlice = bootstrapSlice("grades");`
  */
-export function bootstrapSlice<K extends keyof DashboardBootstrap>(
+export function bootstrapSlice<K extends keyof DashboardPayloads>(
   key: K
-): () => Promise<DashboardBootstrap[K]> {
-  return async () => (await bootstrapOnce())[key];
+): () => Promise<DashboardPayloads[K]> {
+  return async () => {
+    const slice = (await bootstrapOnce())[key];
+    if (!slice.ok) throw new Error(`bootstrap "${String(key)}": ${slice.error}`);
+    return slice.value;
+  };
 }

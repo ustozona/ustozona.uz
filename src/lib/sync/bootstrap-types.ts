@@ -35,9 +35,8 @@ export type CalendarSlice = {
   calendar: AcademicYearCalendar;
 } | null;
 
-/** Dashboard layout mount boʻlganda BITTA soʻrovda keladigan hamma narsa.
-    Kalitlar `components/sync/*ServerSync` fayllariga bir-birga mos. */
-export type DashboardBootstrap = {
+/** Har boʻlakning yuki — `*ServerSync` fayl nomlariga bir-birga mos. */
+export type DashboardPayloads = {
   settings: SettingsPayload;
   grades: { classDataMap: Record<string, ClassData> };
   attendance: AttendancePayload;
@@ -53,4 +52,28 @@ export type DashboardBootstrap = {
   behavior: BehaviorPayload;
   studentNotes: StudentNotesPayload;
   tasks: TasksPayload;
+};
+
+/* ⛔ NEGA HAR BOʻLAK ALOHIDA NATIJA QAYTARADI
+
+   Ilgari 15 ta mustaqil soʻrov bor edi va bitta yiqilsa faqat oʻzi
+   yiqilardi. Ularni bitta soʻrovga birlashtirish xatolikni ham
+   birlashtirib qoʻyardi: `Promise.all` birinchi rad javobda butun
+   amalni rad etadi, yaʼni bitta buzuq qator butun ilovani hydrate
+   boʻlmagan holda qoldirardi — va `useHydrateStore` xatoda `false`
+   qaytargani uchun HECH BIR store sync'ni boshlamasdi.
+
+   Shuning uchun natija boʻlak-boʻlak: yiqilgan boʻlak faqat oʻzining
+   store'ini hydrate qilmaydi va faqat oʻzining sync'ini boshlamaydi.
+   Qolgan 14 tasi normal ishlaydi.
+
+   ⚠️ Yiqilgan boʻlakka JIMGINA standart qiymat BERILMAYDI. Berilsa
+   store default holatda "hydrate boʻldim" deb hisoblanardi, sync
+   boshlanardi va oʻsha standartlar serverdagi haqiqiy maʼlumot ustiga
+   yozilardi (`useHydrateStore` izohidagi asosiy qoida). */
+export type SliceResult<T> = { ok: true; value: T } | { ok: false; error: string };
+
+/** Dashboard layout mount boʻlganda BITTA soʻrovda keladigan hamma narsa. */
+export type DashboardBootstrap = {
+  [K in keyof DashboardPayloads]: SliceResult<DashboardPayloads[K]>;
 };
