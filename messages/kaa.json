@@ -4614,5 +4614,31 @@
     "bumpNoSlot": "Sońǵı temaǵa bos orın tabılmadı — sánesiz qaldı",
     "bumpNothing": "Bul tema kestege qoyılmaǵan — súriw ushın sessiya joq",
     "undo": "Biykarlaw"
+  },
+  "LessonsYear": {
+    "viewStructure": "Dúzilis",
+    "viewYear": "Oqıw jılı",
+    "emptyTitle": "Ele klass joq",
+    "emptyDescription": "Klass, bólim hám temalar qosılǵannan keyin oqıw jılı kartası usı jerde ózi jıynaladı.",
+    "paceTitle": "Qamtıw hám pát",
+    "taughtOf": "{taught} / {total} ótildi",
+    "paceNoLessons": "Temalar ele qosılmaǵan",
+    "paceBehind": "Rejeden {count} tema artta",
+    "paceOnTrack": "Reje boyınsha",
+    "yearTitle": "Oqıw jılı",
+    "dayLessons": "{count} sabaq",
+    "off": "Dem alıs",
+    "mapTitle": "Karta",
+    "mapEmpty": "Bul klassta ele bólim joq",
+    "colUnit": "Bólim",
+    "colDates": "Múddet",
+    "colCoverage": "Qamtıw",
+    "colStandards": "Standartlar",
+    "colState": "Halat",
+    "state_done": "Tamamlandı",
+    "state_behind": "Artta",
+    "state_active": "Processte",
+    "state_upcoming": "Aldında",
+    "state_unscheduled": "Sánesiz"
   }
 }

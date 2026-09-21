@@ -4614,5 +4614,31 @@
     "bumpNoSlot": "Соңғы тақырыпқа бос орын табылмады — күнсіз қалды",
     "bumpNothing": "Бұл тақырып кестеге қойылмаған — жылжытатын сессия жоқ",
     "undo": "Болдырмау"
+  },
+  "LessonsYear": {
+    "viewStructure": "Құрылым",
+    "viewYear": "Оқу жылы",
+    "emptyTitle": "Әзірге сынып жоқ",
+    "emptyDescription": "Сынып, бөлім және тақырыптар қосылғаннан кейін оқу жылының картасы осында өзі жиналады.",
+    "paceTitle": "Қамту және қарқын",
+    "taughtOf": "{taught} / {total} өтілді",
+    "paceNoLessons": "Тақырыптар әлі қосылмаған",
+    "paceBehind": "Жоспардан {count} тақырып артта",
+    "paceOnTrack": "Жоспар бойынша",
+    "yearTitle": "Оқу жылы",
+    "dayLessons": "{count} сабақ",
+    "off": "Демалыс",
+    "mapTitle": "Карта",
+    "mapEmpty": "Бұл сыныпта әлі бөлім жоқ",
+    "colUnit": "Бөлім",
+    "colDates": "Мерзім",
+    "colCoverage": "Қамту",
+    "colStandards": "Стандарттар",
+    "colState": "Күйі",
+    "state_done": "Аяқталды",
+    "state_behind": "Артта",
+    "state_active": "Үдерісте",
+    "state_upcoming": "Алда",
+    "state_unscheduled": "Күнсіз"
   }
 }

@@ -4614,5 +4614,31 @@
     "bumpNoSlot": "Акыркы темага бош орун табылган жок — датасыз калды",
     "bumpNothing": "Бул тема жадыбалга коюлган эмес — жылдыра турган сессия жок",
     "undo": "Жокко чыгаруу"
+  },
+  "LessonsYear": {
+    "viewStructure": "Түзүлүш",
+    "viewYear": "Окуу жылы",
+    "emptyTitle": "Азырынча класс жок",
+    "emptyDescription": "Класс, бөлүм жана темалар кошулгандан кийин окуу жылынын картасы ушул жерде өзү чогулат.",
+    "paceTitle": "Камтуу жана ылдамдык",
+    "taughtOf": "{taught} / {total} өтүлдү",
+    "paceNoLessons": "Темалар азырынча кошула элек",
+    "paceBehind": "Пландан {count} тема артта",
+    "paceOnTrack": "План боюнча",
+    "yearTitle": "Окуу жылы",
+    "dayLessons": "{count} сабак",
+    "off": "Эс алуу",
+    "mapTitle": "Карта",
+    "mapEmpty": "Бул класста азырынча бөлүм жок",
+    "colUnit": "Бөлүм",
+    "colDates": "Мөөнөт",
+    "colCoverage": "Камтуу",
+    "colStandards": "Стандарттар",
+    "colState": "Абалы",
+    "state_done": "Аякталды",
+    "state_behind": "Артта",
+    "state_active": "Процессте",
+    "state_upcoming": "Алдыда",
+    "state_unscheduled": "Датасыз"
   }
 }

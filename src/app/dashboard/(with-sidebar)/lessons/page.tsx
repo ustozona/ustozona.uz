@@ -40,6 +40,7 @@ import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
 import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
+import { LessonsViewSwitch } from "@/components/lessons/LessonsViewSwitch";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -731,6 +732,9 @@ export default function LessonsPage() {
   return (
     <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
+      <div className="flex items-center justify-end">
+        <LessonsViewSwitch active="structure" />
+      </div>
       <DndContext sensors={dndSensors} onDragEnd={handleLessonDragEnd}>
       <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}

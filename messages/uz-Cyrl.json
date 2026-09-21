@@ -4443,5 +4443,31 @@
     "bumpNoSlot": "Охирги мавзуга жадвалда бўш жой топилмади — санасиз қолди",
     "bumpNothing": "Бу мавзу жадвалга қўйилмаган — суриш учун сессия йўқ",
     "undo": "Бекор қилиш"
+  },
+  "LessonsYear": {
+    "viewStructure": "Тузилма",
+    "viewYear": "Ўқув йили",
+    "emptyTitle": "Ҳали синф йўқ",
+    "emptyDescription": "Синф, бўлим ва мавзулар қўшилгач, ўқув йили харитаси шу ерда ўзи йиғилади.",
+    "paceTitle": "Қамров ва суръат",
+    "taughtOf": "{taught} / {total} ўтилди",
+    "paceNoLessons": "Мавзулар ҳали қўшилмаган",
+    "paceBehind": "Режадан {count} та мавзу орқада",
+    "paceOnTrack": "Режа бўйича",
+    "yearTitle": "Ўқув йили",
+    "dayLessons": "{count} та дарс",
+    "off": "Таътил",
+    "mapTitle": "Харита",
+    "mapEmpty": "Бу синфда ҳали бўлим йўқ",
+    "colUnit": "Бўлим",
+    "colDates": "Муддат",
+    "colCoverage": "Қамров",
+    "colStandards": "Стандартлар",
+    "colState": "Ҳолат",
+    "state_done": "Тугалланди",
+    "state_behind": "Орқада",
+    "state_active": "Жараёнда",
+    "state_upcoming": "Олдинда",
+    "state_unscheduled": "Санасиз"
   }
 }
