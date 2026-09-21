@@ -1,6 +1,6 @@
 import type { ClassData } from "@/lib/grades-data";
 import type { Lesson } from "@/lib/lessons-data";
-import { lessonSessions } from "@/lib/lessons-data";
+import { isTaught, lessonSessions } from "@/lib/lessons-data";
 import { addDaysKey, dateToKey } from "@/lib/date-keys";
 import { birthdayTaskId, birthdayTaskTitle, gradingTaskId, lessonTaskId, lessonTaskTitle, type Task, type TaskPriority } from "@/lib/tasks-data";
 import { subjectLabel } from "@/lib/standards-data";
@@ -15,8 +15,8 @@ import { subjectLabel } from "@/lib/standards-data";
      endi yo'q "todo" avto-vazifa pruning qilinadi (done/canceled tarixda qoladi).
    - Grading: mavjud BARCHA assignmentlar uchun (muddat: dueDate ?? date),
      oyna yo'q; assignment o'chsa "todo" pruning qilinadi.
-   - Forward-only: reconciler faqat "todo → done" oʻtkazadi (lesson
-     Completed / baholash toʻliq kiritilgan boʻlsa). Hech qachon
+   - Forward-only: reconciler faqat "todo → done" oʻtkazadi (dars
+     «Oʻtildi» (`isTaught`) / baholash toʻliq kiritilgan boʻlsa). Hech qachon
      "done → todo" qaytarmaydi (canceled ham tombstone — qayta tug'ilmaydi).
    - Sarlavha sinxroni: hali todo bo'lgan avto-vazifa sarlavhasi dars/
      topshiriq nomi o'zgarsa yangilanadi (done/canceled'ga tegilmaydi).
@@ -82,7 +82,7 @@ export function reconcileLessonAndGradingTasks(
       const title = lessonTaskTitle(l.title, info?.name, subjectLabel(info?.subject));
 
       if (!existing) {
-        const bornDone = l.status === "Completed";
+        const bornDone = isTaught(l);
         if (!bornDone) allDone = false;
         upserts.push({
           id,
@@ -106,7 +106,7 @@ export function reconcileLessonAndGradingTasks(
 
       if (existing.status !== "done") allDone = false;
 
-      if (l.status === "Completed" && existing.status !== "done" && existing.status !== "canceled") {
+      if (isTaught(l) && existing.status !== "done" && existing.status !== "canceled") {
         upserts.push({ ...existing, status: "done", completedAt: nowIso });
         continue;
       }
@@ -115,7 +115,7 @@ export function reconcileLessonAndGradingTasks(
       }
     }
 
-    if (allDone && l.status !== "Completed") lessonsToComplete.push(l.id);
+    if (allDone && !isTaught(l)) lessonsToComplete.push(l.id);
   }
 
   /* ── Baholash (topshiriqlar) ── */

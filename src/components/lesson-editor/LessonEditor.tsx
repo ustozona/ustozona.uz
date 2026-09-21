@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -20,12 +20,14 @@ import { Typography } from "@tiptap/extension-typography";
 import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
-  FileText, X, MoreHorizontal, Check, CheckCircle2, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
-  SlidersHorizontal, Sparkles, Plus, Minus, CalendarClock, CircleAlert, PenLine, ChevronDown,
+  FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
+  SlidersHorizontal, Sparkles, Plus, Minus, CircleCheck, FileCheck, FilePen, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
+import { isTaught, lessonPlanState } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
@@ -70,58 +72,23 @@ import { SectionIcon } from "@/components/ui/section-icon";
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
 
-/* Status haqidagi HAMMA vizual maʼlumot (rang, ikonka) — YAGONA joyda.
-   Yangi status qoʻshilsa faqat shu obyektni yangilash yetarli. `tone`dan
-   trigger/dropdown-item/active-fon sinflari hosil qilinadi (pastda). */
-const STATUS_META = {
-  Completed: { icon: CheckCircle2, tone: "success" },
-  Scheduled: { icon: CalendarClock, tone: "info" },
-  Unscheduled: { icon: CircleAlert, tone: "warning" },
-  Draft: { icon: PenLine, tone: "muted" },
+/* Sarlavhadagi dars sikli belgisi — eski 4 holatli `status` menyusi oʻrniga.
+   Ikki mustaqil oʻq (Darslar sahifasidagi karta bilan bir xil): dars rejasi
+   (yoʻq / qoralama — matnda `PLAN_DRAFT_MIN_WORDS`+ soʻz / tayyor — qoʻlda)
+   va «Oʻtildi». Jadvalga qoʻyilganlik alohida holat emas — sessiyalardan
+   koʻrinadi. «Oʻtildi» Vazifalar boʻlimidagi dars avto-vazifasi bilan bogʻliq
+   (tasks-reconcile). */
+const CYCLE_BADGE_CLS = {
+  taught: "bg-success/10 text-success",
+  ready: "bg-info/10 text-info",
+  draft: "bg-muted text-muted-foreground",
+  none: "bg-warning/10 text-warning",
 } as const;
-
-type StatusTone = (typeof STATUS_META)[keyof typeof STATUS_META]["tone"];
-
-const TONE_BADGE_CLS: Record<StatusTone, string> = {
-  success: "bg-success/10 text-success",
-  info: "bg-info/10 text-info",
-  warning: "bg-warning/10 text-warning",
-  muted: "bg-muted text-muted-foreground",
-};
-
-/* dropdown-menu.tsx ichki qoidasi ("text-" sinfi yoʻq svg'larni majburan
-   text-muted-foreground qiladi) sabab ikonka rangini alohida berish shart. */
-const TONE_ICON_CLS: Record<StatusTone, string> = {
-  success: "text-success",
-  info: "text-info",
-  warning: "text-warning",
-  muted: "text-muted-foreground",
-};
-
-const TONE_ITEM_CLS: Record<StatusTone, string> = {
-  success: "text-success focus:bg-success/10 focus:text-success",
-  info: "text-info focus:bg-info/10 focus:text-info",
-  warning: "text-warning focus:bg-warning/10 focus:text-warning",
-  muted: "text-muted-foreground focus:bg-muted focus:text-muted-foreground",
-};
-
-/* Joriy status qatori — hover kutmasdan ham darhol koʻzga tashlanishi uchun
-   doimiy yengil fon (nafaqat oʻng chetdagi check belgisi). */
-const TONE_ACTIVE_CLS: Record<StatusTone, string> = {
-  success: "bg-success/10",
-  info: "bg-info/10",
-  warning: "bg-warning/10",
-  muted: "bg-muted",
-};
-
-/* Menyu tartibi — dars hayot-siklini aks ettiradi (Draft → Unscheduled →
-   Scheduled → Completed). "Qoralama"ga qaytarish orqaga qadam boʻlgani
-   uchun alohida, separator bilan pastda koʻrsatiladi. */
-const STATUS_ORDER = ["Unscheduled", "Scheduled", "Completed", "Draft"] as const;
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const t = useTranslations("LessonEditor");
   const tToolbar = useTranslations("LessonEditorToolbar");
+  const tc = useTranslations("LessonCycle");
   const router = useRouter();
   const liveClasses = useLiveClasses();
   const isMobile = useIsMobile();
@@ -150,7 +117,8 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const removeScheduleForClass = useLessonStore((s) => s.removeScheduleForClass);
-  const setStatus = useLessonStore((s) => s.setStatus);
+  const setPlanReady = useLessonStore((s) => s.setPlanReady);
+  const setTaught = useLessonStore((s) => s.setTaught);
   const standardSets = useStandardsStore((s) => s.sets);
 
   const [activePanel, setActivePanel] = useState<"details" | "ai" | null>("details");
@@ -352,30 +320,28 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     );
   }
 
-  const STATUS = (Object.keys(STATUS_META) as (keyof typeof STATUS_META)[]).reduce(
-    (acc, key) => {
-      const meta = STATUS_META[key];
-      acc[key] = {
-        label: t(`status.${key.toLowerCase()}`),
-        icon: meta.icon,
-        cls: TONE_BADGE_CLS[meta.tone],
-        itemCls: TONE_ITEM_CLS[meta.tone],
-        iconCls: TONE_ICON_CLS[meta.tone],
-        activeCls: TONE_ACTIVE_CLS[meta.tone],
-      };
-      return acc;
-    },
-    {} as Record<keyof typeof STATUS_META, { label: string; icon: typeof CheckCircle2; cls: string; itemCls: string; iconCls: string; activeCls: string }>,
-  );
-  const st = lesson ? STATUS[lesson.status] : STATUS.Draft;
-  const StatusIcon = st.icon;
+  const taught = lesson ? isTaught(lesson) : false;
+  const planState = lesson ? lessonPlanState(lesson) : "none";
+  const cycleKey = taught ? "taught" : planState;
+  const CycleIcon = taught ? CircleCheck : planState === "ready" ? FileCheck : planState === "draft" ? FilePen : FileText;
+  const cycleLabel = taught
+    ? tc("taught")
+    : tc(planState === "ready" ? "planStateReady" : planState === "draft" ? "planStateDraft" : "planStateNone");
 
-  const changeStatus = (key: keyof typeof STATUS_META) => {
-    if (!lesson || lesson.status === key) return;
-    const prev = lesson.status;
-    setStatus(lessonId, key);
-    toast.success(t("toast.statusChanged", { status: STATUS[key].label }), {
-      action: { label: t("toast.undo"), onClick: () => setStatus(lessonId, prev) },
+  const togglePlanReady = () => {
+    if (!lesson) return;
+    const prev = !!lesson.planReady;
+    setPlanReady(lessonId, !prev);
+    toast.success(prev ? tc("unmarkPlanReady") : tc("markPlanReady"), {
+      action: { label: t("toast.undo"), onClick: () => setPlanReady(lessonId, prev) },
+    });
+  };
+  const toggleTaught = () => {
+    if (!lesson) return;
+    const prev = lesson.taughtAt;
+    setTaught(lessonId, taught ? null : todayKey());
+    toast.success(taught ? tc("unmarkTaught") : tc("markTaught"), {
+      action: { label: t("toast.undo"), onClick: () => setTaught(lessonId, prev ?? null) },
     });
   };
 
@@ -448,33 +414,25 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                     type="button"
                     className={cn(
                       "group shrink-0 inline-flex items-center gap-1 rounded-full pl-2 pr-1.5 py-0.5 text-xs font-semibold transition-colors hover:brightness-95 dark:hover:brightness-125",
-                      st.cls
+                      CYCLE_BADGE_CLS[cycleKey]
                     )}
                   >
-                    <StatusIcon className="size-3.5" />
-                    {st.label}
+                    <CycleIcon className="size-3.5" />
+                    {cycleLabel}
                     <ChevronDown className="size-3 opacity-60 transition-transform group-data-[state=open]:rotate-180" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-44">
-                  {STATUS_ORDER.map((key) => {
-                    const opt = STATUS[key];
-                    const OptIcon = opt.icon;
-                    const active = lesson?.status === key;
-                    return (
-                      <Fragment key={key}>
-                        {key === "Draft" && <DropdownMenuSeparator />}
-                        <DropdownMenuItem
-                          className={cn("gap-2 font-medium", opt.itemCls, active && opt.activeCls)}
-                          onSelect={() => changeStatus(key)}
-                        >
-                          <OptIcon className={cn("size-4", opt.iconCls)} />
-                          <span className="flex-1">{opt.label}</span>
-                          {active && <Check className="size-4" />}
-                        </DropdownMenuItem>
-                      </Fragment>
-                    );
-                  })}
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuItem className="gap-2 font-medium" onSelect={togglePlanReady}>
+                    <FileCheck className="size-4 text-info" />
+                    <span className="flex-1">{tc("planStateReady")}</span>
+                    {lesson?.planReady && <Check className="size-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 font-medium" onSelect={toggleTaught}>
+                    <CircleCheck className="size-4 text-success" />
+                    <span className="flex-1">{tc("taught")}</span>
+                    {taught && <Check className="size-4" />}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
