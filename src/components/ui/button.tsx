@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
-import { motion } from "motion/react"
+import * as m from "motion/react-m"
 import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -97,7 +97,7 @@ function Button({
   }
 
   const button = (
-    <motion.button
+    <m.button
       data-slot="button"
       data-variant={variant}
       data-size={size}
@@ -116,7 +116,7 @@ function Button({
       ) : (
         children
       )}
-    </motion.button>
+    </m.button>
   )
 
   if (isDisabled && disabledReason) {

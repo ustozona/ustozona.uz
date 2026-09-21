@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { classTints, type ClassColor } from "@/lib/class-colors";
@@ -1107,7 +1108,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
           qolardi va unmount paytida shuncha sakrardi. */}
       <AnimatePresence>
         {dayPanelOpen && (
-          <motion.div
+          <m.div
             key="day-panel"
             initial={{ width: "0%", paddingRight: 0, opacity: 0 }}
             animate={{ width: "25%", paddingRight: 24, opacity: 1 }}
@@ -1118,7 +1119,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {/* Ichki qatlam gorizontal sirpanadi: kenglik animatsiyasi kontentni
                 har kadrda qayta oqizadi ("ezilish" effekti), transform esa GPU'da
                 ketadi va koʻz buni "chapdan kirib kelish" deb oʻqiydi. */}
-            <motion.div
+            <m.div
               initial={{ x: -16 }}
               animate={{ x: 0 }}
               exit={{ x: -16 }}
@@ -1126,8 +1127,8 @@ export default function PlannerView({ classId }: { classId?: string }) {
               className="h-full w-full"
             >
               {renderDayPanel(selectedDate)}
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
       <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col">

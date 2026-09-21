@@ -1,9 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "motion/react";
+import { LazyMotion } from "motion/react";
+import * as m from "motion/react-m";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+
+/* Sirpanuvchi fon `layoutId` ga, ya'ni domMax'ga muhtoj. U header'dagi
+   bildirishnomalar orqali har sahifaga toʻliq motion'ni olib kelardi —
+   endi talabga koʻra yuklanadi. Yuklanguncha fon oniy almashadi. */
+const loadDomMax = () => import("@/lib/motion-dom-max").then((mod) => mod.default);
 
 export type SegmentedToggleOption<T extends string = string> = {
   value: T;
@@ -49,6 +55,7 @@ export function SegmentedToggle<T extends string>({
   const isPill = variant === "pill";
 
   return (
+    <LazyMotion features={loadDomMax}>
     <ToggleGroup
       type="single"
       variant={isPill ? undefined : "outline"}
@@ -90,7 +97,7 @@ export function SegmentedToggle<T extends string>({
           )}
         >
           {value === opt.value && (
-            <motion.span
+            <m.span
               layoutId={pillId}
               className={cn(
                 "absolute inset-0 z-0 rounded-md bg-foreground",
@@ -110,5 +117,6 @@ export function SegmentedToggle<T extends string>({
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
+    </LazyMotion>
   );
 }
