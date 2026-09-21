@@ -4431,6 +4431,12 @@
     "unmarkTaught": "Oʻtilmagan deb belgilash",
     "section": "Dars holati",
     "planReadyLabel": "Dars rejasi tayyor",
-    "taughtLabel": "Dars oʻtildi"
+    "taughtLabel": "Dars oʻtildi",
+    "askTaught": "Oʻtildimi?",
+    "bump": "Keyingi darsga sur",
+    "bumpedToast": "{count} ta mavzu bir darsga surildi",
+    "bumpNoSlot": "Oxirgi mavzuga jadvalda boʻsh joy topilmadi — sanasiz qoldi",
+    "bumpNothing": "Bu mavzu jadvalga qoʻyilmagan — surish uchun sessiya yoʻq",
+    "undo": "Bekor qilish"
   }
 }

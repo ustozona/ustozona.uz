@@ -25,6 +25,8 @@ import { byNumber, ordinalsOf } from "@/lib/ordinals";
 import { LessonCyclePills } from "@/components/LessonStatusBadge";
 import { isTaught } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
+import { needsTaughtConfirm } from "@/lib/lesson-shift";
+import { useLessonBump } from "@/hooks/useLessonBump";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
   makeLessonsTourDemoClasses, makeLessonsTourDemoUnits, makeLessonsTourDemoLessons,
@@ -37,7 +39,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks, FileCheck, CircleCheck } from "lucide-react";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -123,6 +125,9 @@ export default function LessonsPage() {
   const setPlanReady = useLessonStore((s) => s.setPlanReady);
   const setTaught = useLessonStore((s) => s.setTaught);
   const tc = useTranslations("LessonCycle");
+  const bumpLesson = useLessonBump();
+  const today = todayKey();
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   // Boʻlim tanlovi — sinf kabi `?unit=` URL param'ida. Ilgari oddiy
   // `useState` edi va dars muharririga kirib chiqqanda (sahifa unmount
   // boʻladi) yoʻqolardi: sinf tiklanib, boʻlim nolga tushardi.
@@ -1164,7 +1169,35 @@ export default function LessonsPage() {
                               )}
                             </div>
                           )}
-                          <LessonCyclePills lesson={lesson} />
+                          {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) ? (
+                            /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli. Tugmalar
+                               kartaning sudrash/ochish hodisalarini toʻsadi. */
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full bg-warning/10 pl-2 pr-0.5 h-6 text-tag font-semibold text-warning"
+                              onPointerDown={(e) => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {tc("askTaught")}
+                              <button
+                                type="button"
+                                title={tc("markTaught")}
+                                className="size-5 rounded-full flex items-center justify-center hover:bg-success/15 hover:text-success transition-colors"
+                                onClick={() => setTaught(lesson.id, today)}
+                              >
+                                <Check className="size-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                title={tc("bump")}
+                                className="size-5 rounded-full flex items-center justify-center hover:bg-foreground/10 transition-colors"
+                                onClick={() => bumpLesson(lesson.id, effectiveClassId)}
+                              >
+                                <SkipForward className="size-3.5" />
+                              </button>
+                            </span>
+                          ) : (
+                            <LessonCyclePills lesson={lesson} />
+                          )}
                         </div>
                       </DraggableLesson>
                     </ContextMenuTrigger>
@@ -1182,6 +1215,12 @@ export default function LessonsPage() {
                         <CircleCheck className="size-4" />
                         {isTaught(lesson) ? tc("unmarkTaught") : tc("markTaught")}
                       </ContextMenuItem>
+                      {!isTaught(lesson) && lessonSessions(lesson).some((x) => x.classId === effectiveClassId) && (
+                        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => bumpLesson(lesson.id, effectiveClassId!)}>
+                          <SkipForward className="size-4" />
+                          {tc("bump")}
+                        </ContextMenuItem>
+                      )}
                       {lessonsForUnit.length > 1 && (
                         <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("lessons")}>
                           <ArrowDownUp className="size-4" />

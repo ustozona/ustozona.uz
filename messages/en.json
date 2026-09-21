@@ -4603,6 +4603,12 @@
     "unmarkTaught": "Mark as not taught",
     "section": "Lesson status",
     "planReadyLabel": "Lesson plan ready",
-    "taughtLabel": "Lesson taught"
+    "taughtLabel": "Lesson taught",
+    "askTaught": "Taught?",
+    "bump": "Push to next lesson",
+    "bumpedToast": "{count} topics pushed by one lesson",
+    "bumpNoSlot": "No free slot for the last topic — it's now undated",
+    "bumpNothing": "This topic isn't scheduled — nothing to push",
+    "undo": "Undo"
   }
 }

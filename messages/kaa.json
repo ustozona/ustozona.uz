@@ -4607,6 +4607,12 @@
     "unmarkTaught": "Ótilmegen dep belgilew",
     "section": "Sabaq halatı",
     "planReadyLabel": "Sabaq rejesi tayın",
-    "taughtLabel": "Sabaq ótildi"
+    "taughtLabel": "Sabaq ótildi",
+    "askTaught": "Ótildi me?",
+    "bump": "Keyingi sabaqqa súr",
+    "bumpedToast": "{count} tema bir sabaqqa súrildi",
+    "bumpNoSlot": "Sońǵı temaǵa bos orın tabılmadı — sánesiz qaldı",
+    "bumpNothing": "Bul tema kestege qoyılmaǵan — súriw ushın sessiya joq",
+    "undo": "Biykarlaw"
   }
 }
