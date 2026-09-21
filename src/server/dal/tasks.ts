@@ -30,16 +30,12 @@ function isValidTask(data: unknown): data is Task {
 }
 
 export async function getTasksPayload(): Promise<TasksPayload> {
-  const t0 = Date.now();
   const teacher = await requireTeacher();
-  const t1 = Date.now();
   const rows = await db
     .select({ id: tasks.id, data: tasks.data })
     .from(tasks)
     .where(eq(tasks.teacherId, teacher.id))
     .orderBy(asc(tasks.sortOrder));
-  // VAQTINCHA OʻLCHOV (2026-09-21) — bootstrap.ts dagi izohga qarang.
-  console.log(`[tasks] requireTeacher ${t1 - t0}ms, select ${Date.now() - t1}ms, ${rows.length} qator`);
 
   const items: Task[] = [];
   const staleIds: string[] = [];
