@@ -758,7 +758,8 @@ export default function LessonsPage() {
               {unitsForClass.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{unitsForClass.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {unitsForClass.length > 0 && (
+              {/* Boʻsh holat oynasi faqat keng rejimda chiqadi — tor rejimda tugma sarlavhada. */}
+              {(unitsForClass.length > 0 || detailMode) && (
                 <Button size="sm" className="h-9 gap-1.5 px-3" onClick={handleCreateUnit}>
                   <Plus className="size-3.5" />
                   <span>{t("addUnit")}</span>
