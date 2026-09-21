@@ -154,9 +154,19 @@ export const useAssignmentEditorStore = create<AssignmentEditorState>()(
          sessiya ICHIDAGI navigatsiya haqida. Shuning uchun rehydrate'da
          sessiya parklanadi: qoralama saqlanadi, Topshiriqlar roʻyxatida
          karta boʻlib koʻrinadi, bir bosishda ochiladi. Sessiya ichidagi
-         navigatsiyaga bu tegmaydi — u paytda rehydrate qayta ishlamaydi. */
-      onRehydrateStorage: () => (state) => {
-        if (state?.session) state.parked = true;
+         navigatsiyaga bu tegmaydi — u paytda rehydrate qayta ishlamaydi.
+
+         ⚠️ Nega `onRehydrateStorage` EMAS, `merge`. U yerdagi callback
+         holat obyektini joyida oʻzgartirishga majbur qiladi (`state.parked
+         = true`), bu esa obunachilarga xabar bermaydi; `setState` bilan
+         yozish ham ish bermaydi, chunki sinxron storage'da gidratatsiya
+         `create()` ichida kechadi va store hali TDZ'da boʻladi. `merge`
+         esa store'ga OʻRNATILADIGAN holatni qaytaradi — qoʻshimcha
+         yozuvsiz, poygasiz. */
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<AssignmentEditorState>;
+        const next = { ...current, ...p };
+        return next.session ? { ...next, parked: true } : next;
       },
     }
   )
