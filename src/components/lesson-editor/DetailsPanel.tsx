@@ -19,7 +19,10 @@ import { classColor } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { CLASS_COLOR_HEX, classGradient } from "@/lib/class-colors";
 import { ClassBadge } from "@/components/ClassBadge";
-import { lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
+import { isTaught, lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
+import { useLessonStore } from "@/store/useLessonStore";
+import { todayKey } from "@/lib/date-keys";
+import { Switch } from "@/components/ui/switch";
 import { fmtClock, dateKeyToDate } from "@/lib/lesson-schedule";
 import { MONTHS_UZ_SHORT, DAYS_UZ_SUN } from "@/lib/localization";
 import { useStandardsStore } from "@/store/useStandardsStore";
@@ -56,6 +59,10 @@ export default function DetailsPanel({
   onSetSetIds: (setIds: string[]) => void;
 }) {
   const t = useTranslations("LessonDetailsPanel");
+  const tc = useTranslations("LessonCycle");
+  const setPlanReady = useLessonStore((s) => s.setPlanReady);
+  const setTaught = useLessonStore((s) => s.setTaught);
+  const taught = isTaught(lesson);
   const liveClasses = useLiveClasses();
   const selectedIds = lessonClassIds(lesson);
   const selectedClasses = liveClasses.filter((c) => selectedIds.includes(c.id));
@@ -127,6 +134,21 @@ export default function DetailsPanel({
 
       {/* Body */}
       <div className="flex-1 min-h-0 scrollbar-hover overflow-y-auto px-5 py-5 space-y-7">
+        {/* DARS HOLATI — ikki mustaqil belgi (`isTaught`, `planReady`) */}
+        <div>
+          <SectionLabel>{tc("section")}</SectionLabel>
+          <div className="rounded-xl border border-border divide-y divide-border">
+            <label className="flex items-center justify-between gap-3 px-4 py-3 text-sm cursor-pointer">
+              <span>{tc("planReadyLabel")}</span>
+              <Switch checked={!!lesson.planReady} onCheckedChange={(v) => setPlanReady(lesson.id, v)} />
+            </label>
+            <label className="flex items-center justify-between gap-3 px-4 py-3 text-sm cursor-pointer">
+              <span>{tc("taughtLabel")}</span>
+              <Switch checked={taught} onCheckedChange={(v) => setTaught(lesson.id, v ? todayKey() : null)} />
+            </label>
+          </div>
+        </div>
+
         {/* CLASSES (koʻp tanlov) */}
         <div>
           <SectionLabel>{t("classes")}</SectionLabel>

@@ -4593,5 +4593,16 @@
     },
     "tableHelp": "Click a column name to mark it as «Topic» or «Hours». Click a row number to use that row as the header. Struck-through rows are skipped.",
     "expandHoursShort": "2+ hours → a lesson per hour"
+  },
+  "LessonCycle": {
+    "planReady": "Lesson plan",
+    "taught": "Taught",
+    "markPlanReady": "Lesson plan ready",
+    "unmarkPlanReady": "Plan not ready",
+    "markTaught": "Mark as taught",
+    "unmarkTaught": "Mark as not taught",
+    "section": "Lesson status",
+    "planReadyLabel": "Lesson plan ready",
+    "taughtLabel": "Lesson taught"
   }
 }

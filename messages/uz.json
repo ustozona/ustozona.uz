@@ -4421,5 +4421,16 @@
     },
     "tableHelp": "Ustun nomini bosib «Mavzu» yoki «Soat» deb belgilang. Qator raqamini bossangiz — shu qator sarlavha boʻladi. Chizilgan qatorlar oʻtkaziladi.",
     "expandHoursShort": "2+ soat → har soatga dars"
+  },
+  "LessonCycle": {
+    "planReady": "Dars rejasi",
+    "taught": "Oʻtildi",
+    "markPlanReady": "Dars rejasi tayyor",
+    "unmarkPlanReady": "Reja tayyor emas",
+    "markTaught": "Oʻtildi deb belgilash",
+    "unmarkTaught": "Oʻtilmagan deb belgilash",
+    "section": "Dars holati",
+    "planReadyLabel": "Dars rejasi tayyor",
+    "taughtLabel": "Dars oʻtildi"
   }
 }

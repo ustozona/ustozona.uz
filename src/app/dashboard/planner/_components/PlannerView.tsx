@@ -73,7 +73,7 @@ import {
 import { EventCard } from "@/components/calendar/EventCard";
 import { AddTopicButton } from "@/components/calendar/AddTopicButton";
 import { LessonChip } from "@/components/calendar/LessonChip";
-import { LessonStatusBadge, LessonStatusPill } from "@/components/LessonStatusBadge";
+import { LessonCycleBadge, LessonCyclePills } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makePlannerTourDemo } from "@/components/tour/planner-tour-demo";
 
@@ -774,7 +774,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
             <PillHoverTime startMin={p.startMin} endMin={p.endMin} />
             <div className="flex items-center gap-1.5">
               {cls && <ClassBadge color={color} name={cls.name} />}
-              <LessonStatusPill status={p.lesson.status} />
+              <LessonCyclePills lesson={p.lesson} />
             </div>
           </div>
         }
@@ -1647,7 +1647,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 leading={done ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} /> : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
                                 style={{ height: h }}
                                 className="h-full transition-all hover:brightness-95"
-                                actions={<LessonStatusBadge status={l.status} />}
+                                actions={<LessonCycleBadge lesson={l} />}
                               >
                                 <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-tag">
                                   {minToHHMM(start)} — {minToHHMM(end)}

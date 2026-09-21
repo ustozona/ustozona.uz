@@ -47,9 +47,24 @@ export type Lesson = {
   unitByClass?: Record<string, string | null>;
   /** Har bir sinf uchun alohida rejalashtirish: classId → sessiyalar massivi (koʻp sana). */
   scheduleByClass?: Record<string, LessonSession[]>;
+  /** ── Dars sikli — ikki MUSTAQIL belgi (`status` dan alohida) ──
+   *  `status` jadvalga qoʻyilganlikni bildirardi va import qilinganda hamma
+   *  mavzu «Rejalashtirilgan» boʻlib qolardi. Endi koʻrinadigan holat shu
+   *  ikkisidan: reja tayyormi va dars oʻtildimi. `lessons.data` JSONB
+   *  ichida, migratsiyasiz. */
+  /** Dars rejasi tayyor — oʻqituvchi oʻzi belgilaydi. */
+  planReady?: boolean;
+  /** Dars oʻtilgan kun ("YYYY-MM-DD"); yoʻq/null — oʻtilmagan. */
+  taughtAt?: string | null;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };
+
+/** Dars oʻtilganmi. Eski «Tugallandi» (`status: "Completed"`) mavzular ham
+    oʻtilgan hisoblanadi — maʼlumot koʻchirilmaydi. */
+export function isTaught(l: Lesson): boolean {
+  return l.taughtAt != null || (l.taughtAt === undefined && l.status === "Completed");
+}
 
 /** Dars sessiyasi — bitta sana + vaqt oraligʻi. */
 export type LessonSession = { date: string; startMin: number; endMin: number };

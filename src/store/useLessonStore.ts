@@ -108,6 +108,11 @@ interface LessonState {
   scheduleLesson: (id: string, dateKey: string, startMin: number, endMin: number) => void;
   unscheduleLesson: (id: string) => void;
   setStatus: (id: string, status: LessonStatus) => void;
+  /** Dars rejasi tayyor belgisi. */
+  setPlanReady: (id: string, ready: boolean) => void;
+  /** Oʻtildi (`dateKey`) / oʻtilmagan (`null`). Eski `status` ham moslanadi —
+      progress chiziqlari va boshqa isteʼmolchilar hali `Completed` ni oʻqiydi. */
+  setTaught: (id: string, dateKey: string | null) => void;
 
   /** Bitta sessiyani boshqa sana/vaqtga koʻchirish (planner drag/tahrir). */
   moveSession: (id: string, classId: string, oldDate: string, oldStartMin: number, newDate: string, newStartMin: number, newEndMin: number) => void;
@@ -192,6 +197,16 @@ export const useLessonStore = create<LessonState>()(
         } : l),
       })),
       setStatus: (id, status) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, status } : l)) })),
+      setPlanReady: (id, ready) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: ready } : l)) })),
+      setTaught: (id, dateKey) => set((s) => ({
+        lessons: s.lessons.map((l) => {
+          if (l.id !== id) return l;
+          const status: LessonStatus = dateKey
+            ? "Completed"
+            : anySessions(scheduleMapOf(l)) ? "Scheduled" : "Unscheduled";
+          return { ...l, taughtAt: dateKey, status };
+        }),
+      })),
 
       moveSession: (id, classId, oldDate, oldStartMin, newDate, newStartMin, newEndMin) => set((s) => ({
         lessons: s.lessons.map((l) => {

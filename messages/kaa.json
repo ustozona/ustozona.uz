@@ -4597,5 +4597,16 @@
     },
     "tableHelp": "Ustun nomini bosib «Mavzu» yoki «Soat» deb belgilang. Qator raqamini bossangiz — shu qator sarlavha boʻladi. Chizilgan qatorlar oʻtkaziladi.",
     "expandHoursShort": "2+ soat → har soatga dars"
+  },
+  "LessonCycle": {
+    "planReady": "Sabaq rejesi",
+    "taught": "Ótildi",
+    "markPlanReady": "Sabaq rejesi tayın",
+    "unmarkPlanReady": "Reje tayın emes",
+    "markTaught": "Ótildi dep belgilew",
+    "unmarkTaught": "Ótilmegen dep belgilew",
+    "section": "Sabaq halatı",
+    "planReadyLabel": "Sabaq rejesi tayın",
+    "taughtLabel": "Sabaq ótildi"
   }
 }

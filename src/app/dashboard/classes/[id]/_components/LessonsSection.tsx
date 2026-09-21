@@ -19,6 +19,7 @@ import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Uni
 import { byNumber, ordinalsOf } from "@/lib/ordinals";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
+import { LessonCyclePills } from "@/components/LessonStatusBadge";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -46,22 +47,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TypographyMuted } from "@/components/ui/typography";
 import type { ClassIdentity } from "@/lib/class-id";
-
-/** Status badge ranglari — semantik tokenlar */
-const STATUS_STYLES: Record<Lesson["status"], string> = {
-  Completed: "bg-success/10 text-success",
-  Scheduled: "bg-info/10 text-info",
-  Unscheduled: "bg-warning/10 text-warning",
-  Draft: "bg-muted text-muted-foreground",
-};
-function statusLabels(t: (key: string) => string): Record<Lesson["status"], string> {
-  return {
-    Completed: t("statusCompleted"),
-    Scheduled: t("statusScheduled"),
-    Unscheduled: t("statusUnscheduled"),
-    Draft: t("statusDraft"),
-  };
-}
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const NONE = "__none__";
@@ -739,16 +724,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                                 )}
                               </div>
                             )}
-                            <Badge
-                              variant="secondary"
-                              className={cn(
-                                "gap-1 rounded-full px-3 py-1 text-xs font-semibold border-transparent",
-                                STATUS_STYLES[lesson.status]
-                              )}
-                            >
-                              <span className="size-1.5 rounded-full bg-current" />
-                              {statusLabels(t)[lesson.status]}
-                            </Badge>
+                            {!lesson.date && <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>}
+                            <LessonCyclePills lesson={lesson} />
                           </div>
                           <div className="shrink-0 overflow-hidden max-w-0 opacity-0 group-hover:max-w-9 group-hover:opacity-100 transition-all duration-fast ease-standard">
                             <AlertDialog>

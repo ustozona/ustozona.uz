@@ -22,7 +22,9 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { byNumber, ordinalsOf } from "@/lib/ordinals";
-import { LessonStatusPill } from "@/components/LessonStatusBadge";
+import { LessonCyclePills } from "@/components/LessonStatusBadge";
+import { isTaught } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
   makeLessonsTourDemoClasses, makeLessonsTourDemoUnits, makeLessonsTourDemoLessons,
@@ -35,7 +37,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks } from "lucide-react";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks, FileCheck, CircleCheck } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -118,6 +120,9 @@ export default function LessonsPage() {
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const reorderUnits = useLessonStore((s) => s.reorderUnits);
   const reorderLessons = useLessonStore((s) => s.reorderLessons);
+  const setPlanReady = useLessonStore((s) => s.setPlanReady);
+  const setTaught = useLessonStore((s) => s.setTaught);
+  const tc = useTranslations("LessonCycle");
   // Boʻlim tanlovi — sinf kabi `?unit=` URL param'ida. Ilgari oddiy
   // `useState` edi va dars muharririga kirib chiqqanda (sahifa unmount
   // boʻladi) yoʻqolardi: sinf tiklanib, boʻlim nolga tushardi.
@@ -1142,6 +1147,9 @@ export default function LessonsPage() {
                           )}
                         </div>
                         <div className="shrink-0 flex items-center gap-3">
+                          {!lesson.date && (
+                            <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>
+                          )}
                           {lesson.date && (
                             <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground/60 tabular-nums">
                               <span>{lesson.date}</span>
@@ -1156,7 +1164,7 @@ export default function LessonsPage() {
                               )}
                             </div>
                           )}
-                          <LessonStatusPill status={lesson.status} />
+                          <LessonCyclePills lesson={lesson} />
                         </div>
                       </DraggableLesson>
                     </ContextMenuTrigger>
@@ -1164,6 +1172,15 @@ export default function LessonsPage() {
                       <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startLessonPick(lesson.id)}>
                         <ListChecks className="size-4" />
                         {t("selectMenuItem")}
+                      </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => setPlanReady(lesson.id, !lesson.planReady)}>
+                        <FileCheck className="size-4" />
+                        {lesson.planReady ? tc("unmarkPlanReady") : tc("markPlanReady")}
+                      </ContextMenuItem>
+                      <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => setTaught(lesson.id, isTaught(lesson) ? null : todayKey())}>
+                        <CircleCheck className="size-4" />
+                        {isTaught(lesson) ? tc("unmarkTaught") : tc("markTaught")}
                       </ContextMenuItem>
                       {lessonsForUnit.length > 1 && (
                         <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("lessons")}>
