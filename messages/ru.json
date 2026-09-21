@@ -4603,6 +4603,12 @@
   "LessonCycle": {
     "planReady": "План урока",
     "taught": "Проведён",
+    "markPlanButton": "Отметить план готовым",
+    "planReadyShort": "План готов",
+    "askPlanReady": "План урока готов?",
+    "askPlanReadyDesc": "Текст есть, но план не отмечен готовым.",
+    "yesReady": "Да, готов",
+    "later": "Позже",
     "planStateReady": "План урока готов",
     "planStateDraft": "План урока — черновик",
     "planStateNone": "Плана урока пока нет",

@@ -4427,6 +4427,12 @@
   "LessonCycle": {
     "planReady": "Dars rejasi",
     "taught": "Oʻtildi",
+    "markPlanButton": "Rejani tayyor deb belgilash",
+    "planReadyShort": "Reja tayyor",
+    "askPlanReady": "Dars rejasi tayyormi?",
+    "askPlanReadyDesc": "Matn yozilgan, lekin tayyor deb belgilanmagan.",
+    "yesReady": "Ha, tayyor",
+    "later": "Keyin",
     "planStateReady": "Dars rejasi tayyor",
     "planStateDraft": "Dars rejasi — qoralama",
     "planStateNone": "Dars rejasi hali yoʻq",

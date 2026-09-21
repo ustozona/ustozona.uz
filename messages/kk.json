@@ -4603,6 +4603,12 @@
   "LessonCycle": {
     "planReady": "Сабақ жоспары",
     "taught": "Өтілді",
+    "markPlanButton": "Жоспарды дайын деп белгілеу",
+    "planReadyShort": "Жоспар дайын",
+    "askPlanReady": "Сабақ жоспары дайын ба?",
+    "askPlanReadyDesc": "Мәтін жазылған, бірақ дайын деп белгіленбеген.",
+    "yesReady": "Иә, дайын",
+    "later": "Кейін",
     "planStateReady": "Сабақ жоспары дайын",
     "planStateDraft": "Сабақ жоспары — жоба",
     "planStateNone": "Сабақ жоспары әлі жоқ",

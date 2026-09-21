@@ -21,13 +21,12 @@ import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
   FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
-  SlidersHorizontal, Sparkles, Plus, Minus, CircleCheck, FileCheck, FilePen, ChevronDown,
+  SlidersHorizontal, Sparkles, Plus, Minus, FileCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
-import { isTaught, lessonPlanState } from "@/lib/lessons-data";
-import { todayKey } from "@/lib/date-keys";
+import { lessonPlanState } from "@/lib/lessons-data";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
@@ -72,19 +71,6 @@ import { SectionIcon } from "@/components/ui/section-icon";
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
 
-/* Sarlavhadagi dars sikli belgisi — eski 4 holatli `status` menyusi oʻrniga.
-   Ikki mustaqil oʻq (Darslar sahifasidagi karta bilan bir xil): dars rejasi
-   (yoʻq / qoralama — matnda `PLAN_DRAFT_MIN_WORDS`+ soʻz / tayyor — qoʻlda)
-   va «Oʻtildi». Jadvalga qoʻyilganlik alohida holat emas — sessiyalardan
-   koʻrinadi. «Oʻtildi» Vazifalar boʻlimidagi dars avto-vazifasi bilan bogʻliq
-   (tasks-reconcile). */
-const CYCLE_BADGE_CLS = {
-  taught: "bg-success/10 text-success",
-  ready: "bg-info/10 text-info",
-  draft: "bg-muted text-muted-foreground",
-  none: "bg-warning/10 text-warning",
-} as const;
-
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const t = useTranslations("LessonEditor");
   const tToolbar = useTranslations("LessonEditorToolbar");
@@ -107,18 +93,28 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const backOrPush = useBackOrPush();
   const closeEditor = useCallback(() => {
     const classId = lesson ? lessonClassIds(lesson)[0] : undefined;
+    /* Yumshoq eslatma: matn yozilgan (qoralama), lekin tayyor deb belgilanmagan
+       boʻlsa — yopish toʻsilmaydi, roʻyxatda toast chiqadi. */
+    if (lesson && lessonPlanState(lesson) === "draft") {
+      const id = lesson.id;
+      toast(tc("askPlanReady"), {
+        description: tc("askPlanReadyDesc"),
+        duration: 10000,
+        action: { label: tc("yesReady"), onClick: () => useLessonStore.getState().setPlanReady(id, true) },
+        cancel: { label: tc("later"), onClick: () => {} },
+      });
+    }
     backOrPush(
       classId
         ? `/dashboard/lessons?classId=${encodeURIComponent(classId)}`
         : "/dashboard/lessons"
     );
-  }, [backOrPush, lesson]);
+  }, [backOrPush, lesson, tc]);
   const setLessonClasses = useLessonStore((s) => s.setLessonClasses);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const removeScheduleForClass = useLessonStore((s) => s.removeScheduleForClass);
   const setPlanReady = useLessonStore((s) => s.setPlanReady);
-  const setTaught = useLessonStore((s) => s.setTaught);
   const standardSets = useStandardsStore((s) => s.sets);
 
   const [activePanel, setActivePanel] = useState<"details" | "ai" | null>("details");
@@ -320,28 +316,15 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     );
   }
 
-  const taught = lesson ? isTaught(lesson) : false;
-  const planState = lesson ? lessonPlanState(lesson) : "none";
-  const cycleKey = taught ? "taught" : planState;
-  const CycleIcon = taught ? CircleCheck : planState === "ready" ? FileCheck : planState === "draft" ? FilePen : FileText;
-  const cycleLabel = taught
-    ? tc("taught")
-    : tc(planState === "ready" ? "planStateReady" : planState === "draft" ? "planStateDraft" : "planStateNone");
-
+  /* Dars rejasi — sarlavhadagi YAGONA boshqaruv (oʻng panelda takror yoʻq).
+     «Oʻtildi» muharrirda yoʻq: u darsdan keyin roʻyxat kartasida, kontekst
+     menyuda va Vazifalarda belgilanadi. */
   const togglePlanReady = () => {
     if (!lesson) return;
     const prev = !!lesson.planReady;
     setPlanReady(lessonId, !prev);
     toast.success(prev ? tc("unmarkPlanReady") : tc("markPlanReady"), {
       action: { label: t("toast.undo"), onClick: () => setPlanReady(lessonId, prev) },
-    });
-  };
-  const toggleTaught = () => {
-    if (!lesson) return;
-    const prev = lesson.taughtAt;
-    setTaught(lessonId, taught ? null : todayKey());
-    toast.success(taught ? tc("unmarkTaught") : tc("markTaught"), {
-      action: { label: t("toast.undo"), onClick: () => setTaught(lessonId, prev ?? null) },
     });
   };
 
@@ -408,33 +391,22 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               >
                 {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               </h1>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(
-                      "group shrink-0 inline-flex items-center gap-1 rounded-full pl-2 pr-1.5 py-0.5 text-xs font-semibold transition-colors hover:brightness-95 dark:hover:brightness-125",
-                      CYCLE_BADGE_CLS[cycleKey]
-                    )}
-                  >
-                    <CycleIcon className="size-3.5" />
-                    {cycleLabel}
-                    <ChevronDown className="size-3 opacity-60 transition-transform group-data-[state=open]:rotate-180" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuItem className="gap-2 font-medium" onSelect={togglePlanReady}>
-                    <FileCheck className="size-4 text-info" />
-                    <span className="flex-1">{tc("planStateReady")}</span>
-                    {lesson?.planReady && <Check className="size-4" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2 font-medium" onSelect={toggleTaught}>
-                    <CircleCheck className="size-4 text-success" />
-                    <span className="flex-1">{tc("taught")}</span>
-                    {taught && <Check className="size-4" />}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {lesson?.planReady ? (
+                <button
+                  type="button"
+                  title={tc("unmarkPlanReady")}
+                  onClick={togglePlanReady}
+                  className="shrink-0 inline-flex h-7 items-center gap-1.5 rounded-full bg-success/10 px-2.5 text-xs font-semibold text-success transition-colors hover:bg-success/15"
+                >
+                  <Check className="size-3.5" />
+                  {tc("planReadyShort")}
+                </button>
+              ) : (
+                <Button size="sm" className="shrink-0 h-7 gap-1.5 px-2.5 text-xs" onClick={togglePlanReady} disabled={!lesson}>
+                  <FileCheck className="size-3.5" />
+                  {tc("markPlanButton")}
+                </Button>
+              )}
             </div>
           </div>
         </div>

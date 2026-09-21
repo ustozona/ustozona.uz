@@ -4599,6 +4599,12 @@
   "LessonCycle": {
     "planReady": "Lesson plan",
     "taught": "Taught",
+    "markPlanButton": "Mark plan as ready",
+    "planReadyShort": "Plan ready",
+    "askPlanReady": "Is the lesson plan ready?",
+    "askPlanReadyDesc": "There's text, but it isn't marked ready.",
+    "yesReady": "Yes, ready",
+    "later": "Later",
     "planStateReady": "Lesson plan ready",
     "planStateDraft": "Lesson plan — draft",
     "planStateNone": "No lesson plan yet",

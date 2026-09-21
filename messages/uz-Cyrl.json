@@ -4432,6 +4432,12 @@
   "LessonCycle": {
     "planReady": "Дарс режаси",
     "taught": "Ўтилди",
+    "markPlanButton": "Режани тайёр деб белгилаш",
+    "planReadyShort": "Режа тайёр",
+    "askPlanReady": "Дарс режаси тайёрми?",
+    "askPlanReadyDesc": "Матн ёзилган, лекин тайёр деб белгиланмаган.",
+    "yesReady": "Ҳа, тайёр",
+    "later": "Кейин",
     "planStateReady": "Дарс режаси тайёр",
     "planStateDraft": "Дарс режаси — қоралама",
     "planStateNone": "Дарс режаси ҳали йўқ",
