@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { CalendarRange, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { CardTitle } from "@/components/ui/card";
 import { panelHeaderClass } from "@/components/DashboardPage";
@@ -91,20 +90,10 @@ export function YearCalendar({ title, lessons, classIds, groupOf, colorOf, label
         </Button>
       </div>
 
-      <div className="flex-1 min-h-0 relative overflow-hidden">
-        <ScrollArea className="h-full w-full">
-          <div className="p-4 space-y-4">
-            {legend.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                {legend.map((l) => (
-                  <span key={l.key} className="flex items-center gap-1.5 text-caption text-muted-foreground">
-                    <ClassSwatch hex={l.color} />
-                    {l.label}
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="grid gap-3 grid-cols-2 md:grid-cols-3 2xl:grid-cols-4">
+      {/* lg+: 3 × 4 oy ekranga sigʻadi — qator balandligi boʻlinadi, oy kartasi
+          esa kvadratga yaqin (aspect) boʻlib, kataklar choʻzilib ketmaydi. */}
+      <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
+            <div className="grid gap-3 p-4 grid-cols-2 md:grid-cols-3 lg:h-full lg:grid-rows-4">
               {months.map((mKey) => {
                 const first = dateKeyToDate(mKey);
                 const lead = (first.getDay() + 6) % 7; // hafta dushanbadan
@@ -129,7 +118,7 @@ export function YearCalendar({ title, lessons, classIds, groupOf, colorOf, label
                     if (holiday) tip += ` · ${holiday.name}`;
                   }
                   const cls = cn(
-                    "aspect-square rounded-[3px]",
+                    "aspect-square rounded-[3px] lg:aspect-auto",
                     !entries?.length && inYear && "bg-muted/70",
                     key === today && "ring-2 ring-foreground ring-offset-1 ring-offset-card"
                   );
@@ -142,12 +131,12 @@ export function YearCalendar({ title, lessons, classIds, groupOf, colorOf, label
                   );
                 }
                 return (
-                  <div key={mKey} className="flex flex-col gap-2 rounded-lg border border-border p-3">
+                  <div key={mKey} className="flex flex-col gap-1.5 rounded-lg border border-border p-2.5 lg:h-full lg:min-h-0 lg:aspect-[8/9] lg:max-w-full lg:justify-self-center">
                     <div className="flex items-center justify-between">
                       <span className="text-label font-semibold uppercase">{monthLabel(first)}</span>
                       <span className="text-micro tabular-nums text-muted-foreground uppercase">{count || t("off")}</span>
                     </div>
-                    <div className="grid grid-cols-7 gap-1">
+                    <div className="grid grid-cols-7 gap-1 lg:flex-1 lg:min-h-0 lg:grid-rows-7">
                       {weekdays.map((w, i) => (
                         <span key={`w${i}`} className="text-micro text-center text-muted-foreground">{w}</span>
                       ))}
@@ -157,9 +146,18 @@ export function YearCalendar({ title, lessons, classIds, groupOf, colorOf, label
                 );
               })}
             </div>
-          </div>
-        </ScrollArea>
       </div>
+
+      {legend.length > 0 && (
+        <div className="shrink-0 border-t border-border px-5 py-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          {legend.map((l) => (
+            <span key={l.key} className="flex items-center gap-1.5 text-caption text-muted-foreground">
+              <ClassSwatch hex={l.color} />
+              {l.label}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
