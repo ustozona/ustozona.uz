@@ -17,6 +17,8 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { byNumber, ordinalsOf } from "@/lib/ordinals";
+import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
+import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -85,6 +87,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   const restoreUnit = useLessonStore((s) => s.restoreUnit);
   const restoreLesson = useLessonStore((s) => s.restoreLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
+  const reorderUnits = useLessonStore((s) => s.reorderUnits);
+  const reorderLessons = useLessonStore((s) => s.reorderLessons);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
@@ -154,6 +158,48 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   }, [deleteUnitTarget, lessons]);
 
   useEffect(() => { setSelectedUnitId(null); }, [classId]);
+
+  /* Tartiblash rejimi — Darslar sahifasi bilan bir naqsh (`@/components/ReorderList`). */
+  const [reorderKind, setReorderKind] = useState<"units" | "lessons" | null>(null);
+  const reorderDraft = useReorderDraft();
+  const reorderLabels = { drag: t("reorderDrag"), up: t("reorderUp"), down: t("reorderDown") };
+  useEffect(() => { setReorderKind(null); reorderDraft.stop(); }, [classId, selectedUnitId]);
+  const startReorder = (kind: "units" | "lessons") => {
+    setReorderKind(kind);
+    reorderDraft.start(kind === "units" ? unitsForClass.map((u) => u.id) : lessonsForUnit.map((l) => l.id));
+  };
+  const endReorder = (save: boolean) => {
+    if (save && reorderDraft.order && reorderDraft.movedIds.size > 0) {
+      (reorderKind === "units" ? reorderUnits : reorderLessons)(reorderDraft.order);
+    }
+    reorderDraft.stop();
+    setReorderKind(null);
+  };
+  useEscape(reorderDraft.active, () => endReorder(false));
+  const reorderBar = (
+    <BulkActionBar>
+      <BulkActionCount>
+        {reorderDraft.movedIds.size > 0 ? t("reorderMoved", { count: reorderDraft.movedIds.size }) : t("reorderHint")}
+      </BulkActionCount>
+      <BulkActionDivider />
+      <BulkActionButton onClick={() => endReorder(false)}>{t("cancel")}</BulkActionButton>
+      <BulkActionButton className="bg-background text-foreground hover:bg-background/90" onClick={() => endReorder(true)}>
+        {t("reorderDone")}
+      </BulkActionButton>
+    </BulkActionBar>
+  );
+  const reorderButton = (kind: "units" | "lessons") => (
+    <Button
+      variant="ghost"
+      size="icon"
+      title={t("reorderMenuItem")}
+      aria-pressed={reorderKind === kind}
+      className={cn("text-muted-foreground hover:text-foreground", reorderKind === kind && "text-foreground bg-muted")}
+      onClick={() => (reorderKind === kind ? endReorder(false) : startReorder(kind))}
+    >
+      <ArrowDownUp className="size-4" />
+    </Button>
+  );
 
   const unitsForClass = useMemo(
     () => units.filter((u) => u.classId === classId).sort(byNumber),
@@ -244,6 +290,12 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
           <Pencil className="size-4" />
           {t("editUnit")}
         </ContextMenuItem>
+        {unitsForClass.length > 1 && (
+          <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("units")}>
+            <ArrowDownUp className="size-4" />
+            {t("reorderMenuItem")}
+          </ContextMenuItem>
+        )}
         <ContextMenuItem
           variant="destructive"
           className="gap-2 cursor-pointer"
@@ -399,17 +451,35 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
             <SectionIcon><Layers /></SectionIcon>
             <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
           </div>
-          <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={() => setUnitModalOpen(true)}>
-            <Plus className="size-4" />
-            <span>{t("addUnit")}</span>
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            {unitsForClass.length > 1 && reorderButton("units")}
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={() => setUnitModalOpen(true)}>
+              <Plus className="size-4" />
+              <span>{t("addUnit")}</span>
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 relative overflow-hidden">
           <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+          {reorderKind === "units" && reorderBar}
           <ScrollArea className="h-full w-full">
             <div className="px-3 pt-4 pb-5 space-y-2">
-              {detailMode ? (
+              {reorderKind === "units" && reorderDraft.order ? (
+                <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                  {(id, i, h) => {
+                    const unit = units.find((u) => u.id === id);
+                    if (!unit) return null;
+                    return (
+                      <div className="list-row w-full" style={reorderDraft.movedIds.has(id) ? tints.tint : undefined}>
+                        {h.handle}
+                        <span className="text-sm text-foreground truncate flex-1">{pad(i + 1)}. {unit.title}</span>
+                        {h.arrows}
+                      </div>
+                    );
+                  }}
+                </ReorderList>
+              ) : detailMode ? (
                 <>
                   {unitsForClass.map((unit) =>
                     unit.id === selectedUnitId ? renderUnitSelected(unit) : renderUnitCompact(unit)
@@ -572,9 +642,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                   <Button variant="ghost" size="icon" title={t("searchAria")} className="text-muted-foreground hover:text-foreground">
                     <Search className="size-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" title={t("sortAria")} className="text-muted-foreground hover:text-foreground">
-                    <ArrowDownUp className="size-4" />
-                  </Button>
+                  {lessonsForUnit.length > 1 && reorderButton("lessons")}
                 </div>
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLesson}>
                   <Plus className="size-3.5" />
@@ -594,9 +662,34 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
 
             <div className="flex-1 min-h-0 relative overflow-hidden">
               <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+              {reorderKind === "lessons" && reorderBar}
               <ScrollArea className="h-full w-full">
                 <div className="px-4 pt-4 pb-5 space-y-2">
-                  {lessonsForUnit.length === 0 ? (
+                  {reorderKind === "lessons" && reorderDraft.order ? (
+                    <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                      {(id, i, h) => {
+                        const lesson = lessons.find((l) => l.id === id);
+                        if (!lesson) return null;
+                        const moved = reorderDraft.movedIds.has(id);
+                        return (
+                          <div
+                            className="list-card flex items-center gap-3 p-4"
+                            data-active={moved ? "true" : undefined}
+                            style={{ ["--card-accent" as string]: hex, ...(moved ? tints.tint : {}) }}
+                          >
+                            {h.handle}
+                            <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
+                              <FileText className="size-5" />
+                            </div>
+                            <h4 className="min-w-0 flex-1 text-sm font-semibold text-foreground leading-tight truncate">
+                              {pad(i + 1)}. {lesson.title}
+                            </h4>
+                            {h.arrows}
+                          </div>
+                        );
+                      }}
+                    </ReorderList>
+                  ) : lessonsForUnit.length === 0 ? (
                     <Empty className="py-16">
                       <EmptyHeader>
                         <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
