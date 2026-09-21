@@ -36,6 +36,7 @@ import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
 import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks } from "lucide-react";
+import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
@@ -115,6 +116,8 @@ export default function LessonsPage() {
   const restoreLesson = useLessonStore((s) => s.restoreLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
+  const reorderUnits = useLessonStore((s) => s.reorderUnits);
+  const reorderLessons = useLessonStore((s) => s.reorderLessons);
   // Boʻlim tanlovi — sinf kabi `?unit=` URL param'ida. Ilgari oddiy
   // `useState` edi va dars muharririga kirib chiqqanda (sahifa unmount
   // boʻladi) yoʻqolardi: sinf tiklanib, boʻlim nolga tushardi.
@@ -358,6 +361,12 @@ export default function LessonsPage() {
           <ListChecks className="size-4" />
           {t("selectMenuItem")}
         </ContextMenuItem>
+        {unitsForClass.length > 1 && (
+          <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("units")}>
+            <ArrowDownUp className="size-4" />
+            {t("reorderMenuItem")}
+          </ContextMenuItem>
+        )}
         <ContextMenuItem
           variant="destructive"
           className="gap-2 cursor-pointer"
@@ -475,6 +484,39 @@ export default function LessonsPage() {
      obyekt, va ularni bitta roʻyxatga qoʻshib oʻchirish «nimani
      oʻchiryapman?» degan savolni tugʻdiradi. Shu sabab ikkita mustaqil
      Set va ikkita panel. */
+  /* Tartiblash rejimi (`@/components/ReorderList`) — bir vaqtda bitta ustunda.
+     Qoralama faqat «Tayyor» da store'ga yoziladi; tanlash rejimi bilan birga yoqilmaydi. */
+  const [reorderKind, setReorderKind] = useState<"units" | "lessons" | null>(null);
+  const reorderDraft = useReorderDraft();
+  const reorderLabels = { drag: t("reorderDrag"), up: t("reorderUp"), down: t("reorderDown") };
+  const startReorder = (kind: "units" | "lessons") => {
+    if (isDemoMode) return;
+    setUnitPickMode(false); setSelectedUnitIds(new Set());
+    setLessonPickMode(false); setSelectedLessonIds(new Set());
+    setReorderKind(kind);
+    reorderDraft.start(kind === "units" ? unitsForClass.map((u) => u.id) : lessonsForUnit.map((l) => l.id));
+  };
+  const endReorder = (save: boolean) => {
+    if (save && reorderDraft.order && reorderDraft.movedIds.size > 0) {
+      (reorderKind === "units" ? reorderUnits : reorderLessons)(reorderDraft.order);
+    }
+    reorderDraft.stop();
+    setReorderKind(null);
+  };
+  useEscape(reorderDraft.active, () => endReorder(false));
+  const reorderBar = (
+    <BulkActionBar>
+      <BulkActionCount>
+        {reorderDraft.movedIds.size > 0 ? t("reorderMoved", { count: reorderDraft.movedIds.size }) : t("reorderHint")}
+      </BulkActionCount>
+      <BulkActionDivider />
+      <BulkActionButton onClick={() => endReorder(false)}>{t("cancel")}</BulkActionButton>
+      <BulkActionButton className="bg-background text-foreground hover:bg-background/90" onClick={() => endReorder(true)}>
+        {t("reorderDone")}
+      </BulkActionButton>
+    </BulkActionBar>
+  );
+
   const [selectedUnitIds, setSelectedUnitIds] = useState<Set<string>>(new Set());
   const [selectedLessonIds, setSelectedLessonIds] = useState<Set<string>>(new Set());
   /** Qaysi panel tasdiq soʻrayapti. */
@@ -487,9 +529,15 @@ export default function LessonsPage() {
     setLessonPickMode(false);
     setSelectedUnitIds(new Set());
     setSelectedLessonIds(new Set());
+    setReorderKind(null);
+    reorderDraft.stop();
   }, [effectiveClassId]);
   // Boʻlim almashsa faqat DARS tanlovi tozalanadi (roʻyxat butunlay boshqa).
-  useEffect(() => { setLessonPickMode(false); setSelectedLessonIds(new Set()); }, [effectiveUnitId]);
+  useEffect(() => {
+    setLessonPickMode(false);
+    setSelectedLessonIds(new Set());
+    setReorderKind((k) => (k === "lessons" ? null : k));
+  }, [effectiveUnitId]);
 
   const toggleIn = (
     set: Set<string>,
@@ -709,6 +757,18 @@ export default function LessonsPage() {
               <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
             </div>
             <div className="flex items-center gap-1 shrink-0">
+              {unitsForClass.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title={t("reorderMenuItem")}
+                  aria-pressed={reorderKind === "units"}
+                  className={cn("text-muted-foreground hover:text-foreground", reorderKind === "units" && "text-foreground bg-muted")}
+                  onClick={() => (reorderKind === "units" ? endReorder(false) : startReorder("units"))}
+                >
+                  <ArrowDownUp className="size-4" />
+                </Button>
+              )}
               {unitsForClass.length > 0 && (
                 <Button
                   variant="ghost"
@@ -733,6 +793,7 @@ export default function LessonsPage() {
           {/* List */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
             <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+            {reorderKind === "units" && reorderBar}
             {unitPickMode && (
               <BulkActionBar>
                 <BulkActionCount>{t("selectedCount", { count: selectedUnitIds.size })}</BulkActionCount>
@@ -753,7 +814,24 @@ export default function LessonsPage() {
             )}
             <ScrollArea className="h-full w-full">
               <div className="px-3 pt-4 pb-5 space-y-1.5">
-                {detailMode ? (
+                {reorderKind === "units" && reorderDraft.order ? (
+                  <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                    {(id, i, h) => {
+                      const unit = unitsSource.find((u) => u.id === id);
+                      if (!unit) return null;
+                      return (
+                        <div
+                          className="list-row w-full"
+                          style={reorderDraft.movedIds.has(id) ? selectedClassTints.tint : undefined}
+                        >
+                          {h.handle}
+                          <span className="text-sm text-foreground truncate flex-1">{pad(i + 1)}. {unit.title}</span>
+                          {h.arrows}
+                        </div>
+                      );
+                    }}
+                  </ReorderList>
+                ) : detailMode ? (
                   /* Tor rejim — tanlangan katta, qolganlari kompakt */
                   <>
                     {unitsForClass.map((unit) => (
@@ -929,9 +1007,18 @@ export default function LessonsPage() {
                 <Button variant="ghost" size="icon" title={t("searchAria")} className="text-muted-foreground hover:text-foreground">
                   <Search className="size-4" />
                 </Button>
-                <Button variant="ghost" size="icon" title={t("sortAria")} className="text-muted-foreground hover:text-foreground">
-                  <ArrowDownUp className="size-4" />
-                </Button>
+                {lessonsForUnit.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={t("reorderMenuItem")}
+                    aria-pressed={reorderKind === "lessons"}
+                    className={cn("text-muted-foreground hover:text-foreground", reorderKind === "lessons" && "text-foreground bg-muted")}
+                    onClick={() => (reorderKind === "lessons" ? endReorder(false) : startReorder("lessons"))}
+                  >
+                    <ArrowDownUp className="size-4" />
+                  </Button>
+                )}
                 {lessonsForUnit.length > 0 && (
                   <Button
                     variant="ghost"
@@ -957,6 +1044,7 @@ export default function LessonsPage() {
           {/* List */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
             <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+            {reorderKind === "lessons" && reorderBar}
             {lessonPickMode && (
               <BulkActionBar>
                 <BulkActionCount>{t("selectedCount", { count: selectedLessonIds.size })}</BulkActionCount>
@@ -993,6 +1081,30 @@ export default function LessonsPage() {
                       </EmptyContent>
                     )}
                   </Empty>
+                ) : reorderKind === "lessons" && reorderDraft.order ? (
+                  <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                    {(id, i, h) => {
+                      const lesson = lessonsSource.find((l) => l.id === id);
+                      if (!lesson) return null;
+                      const moved = reorderDraft.movedIds.has(id);
+                      return (
+                        <div
+                          className="list-card flex items-center gap-3 p-4"
+                          data-active={moved ? "true" : undefined}
+                          style={{ ["--card-accent" as string]: selectedClassHex, ...(moved ? selectedClassTints.tint : {}) }}
+                        >
+                          {h.handle}
+                          <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
+                            <FileText className="size-5" />
+                          </div>
+                          <h4 className="min-w-0 flex-1 text-sm font-semibold text-foreground leading-tight truncate">
+                            {pad(i + 1)}. {lesson.title}
+                          </h4>
+                          {h.arrows}
+                        </div>
+                      );
+                    }}
+                  </ReorderList>
                 ) : (
                   lessonsForUnit.map((lesson, i) => {
                     const lessonUnit = unitsSource.find((u) => u.id === lesson.unitId);
@@ -1053,6 +1165,12 @@ export default function LessonsPage() {
                         <ListChecks className="size-4" />
                         {t("selectMenuItem")}
                       </ContextMenuItem>
+                      {lessonsForUnit.length > 1 && (
+                        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("lessons")}>
+                          <ArrowDownUp className="size-4" />
+                          {t("reorderMenuItem")}
+                        </ContextMenuItem>
+                      )}
                       <ContextMenuSeparator />
                       <ContextMenuSub>
                         <ContextMenuSubTrigger className="gap-2 cursor-pointer">

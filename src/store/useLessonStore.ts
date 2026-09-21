@@ -56,6 +56,15 @@ function scheduleMapOf(l: Lesson): Record<string, LessonSession[]> {
   return {};
 }
 
+/** `orderedIds` dagi elementlarga `number = oʻrin + 1`; qiymati oʻzgarmaganlar aynan oʻsha obyekt qoladi. */
+function renumber<T extends { id: string; number: number }>(items: T[], orderedIds: string[]): T[] {
+  const pos = new Map(orderedIds.map((id, i) => [id, i + 1]));
+  return items.map((it) => {
+    const n = pos.get(it.id);
+    return n === undefined || n === it.number ? it : { ...it, number: n };
+  });
+}
+
 /* ── Pure selektorlar ── */
 export function unitsForClass(units: Unit[], classId: string): Unit[] {
   return units.filter((u) => u.classId === classId).sort((a, b) => a.number - b.number);
@@ -84,6 +93,11 @@ interface LessonState {
       ham oʻchadi (jadvaldagi sessiyalari bilan). `false` — darslar saqlanib,
       «Boʻlimsiz» ga oʻtadi. */
   deleteUnit: (id: string, opts?: { withLessons?: boolean }) => void;
+  /** Tartiblash rejimi «Tayyor»: berilgan guruh (bitta sinf boʻlimlari yoki
+      bitta boʻlim mavzulari) `number` i roʻyxat tartibida 1..n qilib yoziladi.
+      Oʻzgarmagan qatorlar tegilmaydi — sinxron diff faqat surilganlarni yuboradi. */
+  reorderUnits: (orderedIds: string[]) => void;
+  reorderLessons: (orderedIds: string[]) => void;
   /** Oʻchirilgan boʻlimni (va unga tegishli boʻlgan darslar boʻlim-bogʻlanishini) qaytarish — undo uchun. */
   restoreUnit: (unit: Unit, lessonIds: string[]) => void;
 
@@ -129,6 +143,8 @@ export const useLessonStore = create<LessonState>()(
         set((s) => ({ units: [...s.units, { id, classId, number: nextNumber, title, description }] }));
         return id;
       },
+      reorderUnits: (orderedIds) => set((s) => ({ units: renumber(s.units, orderedIds) })),
+      reorderLessons: (orderedIds) => set((s) => ({ lessons: renumber(s.lessons, orderedIds) })),
       updateUnit: (id, patch) => set((s) => ({ units: s.units.map((u) => (u.id === id ? { ...u, ...patch } : u)) })),
       deleteUnit: (id, opts) => set((s) => {
         const withLessons = opts?.withLessons ?? true;
