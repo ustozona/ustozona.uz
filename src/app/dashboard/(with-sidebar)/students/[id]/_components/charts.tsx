@@ -23,12 +23,9 @@ import type {
 } from "@/lib/student-profile";
 
 // Davomat semantik ranglari (yagona joy)
-export const ATT_COLORS = {
-  present: "#22c55e",
-  absent: "#ef4444",
-  late: "#f59e0b",
-  excused: "#0ea5e9",
-} as const;
+// Ranglar `@/lib/attendance-colors` ga koʻchdi — diagrammasiz modul.
+import { ATT_COLORS } from "@/lib/attendance-colors";
+export { ATT_COLORS };
 
 // ─── Baho dinamikasi (area + gradient) ───────────────────────────────────────
 

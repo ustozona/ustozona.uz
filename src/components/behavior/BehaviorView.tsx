@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { Award, BarChart3, History, Settings2, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -32,12 +33,19 @@ import { todayKey } from "@/lib/date-keys";
 import { AwardDialog } from "./AwardDialog";
 import BehaviorSettingsModal from "./BehaviorSettingsModal";
 import { showAwardToast } from "./award-toast";
-import { ClassReportDialog } from "./ClassReportDialog";
 import { PointsSheet } from "./PointsSheet";
 import { SkillFormDialog, type SkillType } from "./SkillFormDialog";
-import { StudentDialog } from "./StudentDialog";
 import { BalanceBubble, StudentPointCard } from "./StudentPointCard";
 import { useClassStreaks } from "./useClassStreaks";
+
+/* Ikkala oyna ham hisobot donutini (diagramma kutubxonasi, ~330 kB)
+   tortadi, lekin sahifa ochilganda ikkalasi ham yopiq turadi. Talabga
+   koʻra yuklanadi va yopiq holatda chizilmaydi. */
+const StudentDialog = dynamic(() => import("./StudentDialog").then((m) => m.StudentDialog), { ssr: false });
+const ClassReportDialog = dynamic(
+  () => import("./ClassReportDialog").then((m) => m.ClassReportDialog),
+  { ssr: false }
+);
 
 /* ════════════════════════════════════════════════════════════════════
    XULQ koʻrinishi — oʻquvchi kartochkalari toʻri (karta-grid UX).
@@ -396,8 +404,9 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
         defaultType={skillForm ?? "positive"}
       />
 
+      {activeStudent !== null ? (
       <StudentDialog
-        open={activeStudent !== null}
+        open
         onOpenChange={(open) => {
           if (!open) setActiveStudentId(null);
         }}
@@ -407,6 +416,7 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
         onAward={handleStudentDialogAward}
         onAddSkill={(type) => setSkillForm(type)}
       />
+      ) : null}
 
       <PointsSheet
         open={sheetOpen}
@@ -416,13 +426,15 @@ export default function BehaviorView({ classId, demoMode, demoStudents, demoClas
         classHex={hex}
       />
 
+      {reportOpen ? (
       <ClassReportDialog
-        open={reportOpen}
+        open
         onOpenChange={setReportOpen}
         classId={classId}
         students={students}
         colorHex={hex}
       />
+      ) : null}
 
     </Card>
   );

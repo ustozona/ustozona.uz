@@ -8,6 +8,7 @@ import {
   ArrowUpRight, ArrowRight, Pencil, ChevronUp, ChevronDown,
   AlertTriangle, MessageSquareText,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { DAYS_UZ_SUN } from "@/lib/localization";
 import {
@@ -46,7 +47,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
-import { AttendanceDonut, ATT_COLORS } from "@/app/dashboard/(with-sidebar)/students/[id]/_components/charts";
+import { ATT_COLORS } from "@/lib/attendance-colors";
+/* Donut faqat oʻquvchi ismiga sichqoncha tekkanda chiziladi (HoverCard),
+   lekin statik import boʻlgani uchun diagramma kutubxonasi sahifa
+   ochilishi bilan yuklanardi. */
+const AttendanceDonut = dynamic(
+  () => import("@/app/dashboard/(with-sidebar)/students/[id]/_components/charts").then((m) => m.AttendanceDonut),
+  { ssr: false }
+);
 import type { AttendanceWindow } from "@/lib/student-profile";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
