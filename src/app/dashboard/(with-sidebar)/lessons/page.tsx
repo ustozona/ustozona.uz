@@ -39,9 +39,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, CalendarRange, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
-import { YearCalendar } from "@/components/lessons/YearCalendar";
-import type { DayEntry } from "@/lib/curriculum-map";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -127,7 +125,6 @@ export default function LessonsPage() {
   const setPlanReady = useLessonStore((s) => s.setPlanReady);
   const setTaught = useLessonStore((s) => s.setTaught);
   const tc = useTranslations("LessonCycle");
-  const tl = useTranslations("LessonsYear");
   const bumpLesson = useLessonBump();
   const today = todayKey();
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
@@ -135,10 +132,6 @@ export default function LessonsPage() {
   // `useState` edi va dars muharririga kirib chiqqanda (sahifa unmount
   // boʻladi) yoʻqolardi: sinf tiklanib, boʻlim nolga tushardi.
   const [selectedUnitId, setSelectedUnitId] = useUrlParam("unit");
-  /* Yil koʻrinishi — `?year=all` (Sinflar sarlavhasidan, barcha sinflar) yoki
-     `?year=class` (Boʻlimlar sarlavhasidan, tanlangan sinf). Ochiq boʻlsa
-     Boʻlimlar va Mavzular ustunlari oʻrnida bitta keng kalendar turadi. */
-  const [yearParam, setYearParam] = useUrlParam("year");
   const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
   // Standart: boʻlim bilan darslar ham oʻchadi (kutilgan «papka» semantikasi).
@@ -334,8 +327,6 @@ export default function LessonsPage() {
      bilan boʻlinadi (sidebar ochiq/yopiq boʻlsa ham responsive). "Faol ish" ustuni keng:
        sinf tanlanmagan → 50/25/25, sinf tanlangan → 25/50/25, boʻlim tanlangan → 25/25/50. */
   const noClass = !effectiveClassId;
-  const yearMode: "all" | "class" | null =
-    yearParam === "all" ? "all" : yearParam === "class" && !noClass ? "class" : null;
   const detailMode = !!effectiveUnitId;
   const grow = noClass
     ? { classes: 2, units: 1, lessons: 1 }
@@ -344,9 +335,7 @@ export default function LessonsPage() {
       : { classes: 1, units: 2, lessons: 1 };
 
   /* Grid template (`lg+`) — 3 ustun doim DOM'da; nisbat grow'dan. */
-  const columnsTemplate = yearMode
-    ? "minmax(0,1fr) minmax(0,3fr)"
-    : `minmax(0,${grow.classes}fr) minmax(0,${grow.units}fr) minmax(0,${grow.lessons}fr)`;
+  const columnsTemplate = `minmax(0,${grow.classes}fr) minmax(0,${grow.units}fr) minmax(0,${grow.lessons}fr)`;
 
   /* ── Unit qator/karta koʻrinishlari ── */
 
@@ -728,49 +717,6 @@ export default function LessonsPage() {
     );
   };
 
-  /* Yil kalendari: barcha sinflar — katak sinf rangida, bosilsa shu sinf
-     ochiladi; bitta sinf — katak boʻlim tusida (sinf rangidan hue burab),
-     bosilsa oʻsha kungi mavzuning boʻlimi tanlanadi. */
-  const liveClassList = isDemoMode ? demoClasses ?? [] : liveClasses;
-  const unitHue = (i: number) => `oklch(from ${selectedClassHex} l c calc(h + ${i * 47}))`;
-  const unitColorOf = new Map(unitsForClass.map((u, i) => [u.id, unitHue(i)]));
-  const NO_UNIT_COLOR = "var(--muted-foreground)";
-  const unitOfEntry = (e: DayEntry) => {
-    const l = lessonsSource.find((x) => x.id === e.lessonId);
-    return (l && effectiveClassId ? unitIdForClass(l, effectiveClassId) : null) ?? NONE;
-  };
-  const yearCalendar = yearMode === "all" ? (
-    <YearCalendar
-      title={tl("allClasses")}
-      lessons={lessonsSource}
-      classIds={liveClassList.map((c) => c.id)}
-      groupOf={(e) => e.classId}
-      colorOf={(id) => CLASS_COLOR_HEX[classColor(liveClassList.find((c) => c.id === id) ?? { id, name: "" })]}
-      labelOf={(e) => liveClassList.find((c) => c.id === e.classId)?.name ?? ""}
-      legend={liveClassList.map((c) => ({ key: c.id, label: c.name, color: CLASS_COLOR_HEX[classColor(c)] }))}
-      onDayClick={(entries) => { handleSelectClass(entries[0].classId); setYearParam(null); }}
-      onClose={() => setYearParam(null)}
-    />
-  ) : yearMode === "class" ? (
-    <YearCalendar
-      title={tl("classYear", { name: selectedClass?.name ?? "" })}
-      lessons={lessonsSource}
-      classIds={effectiveClassId ? [effectiveClassId] : []}
-      groupOf={unitOfEntry}
-      colorOf={(g) => unitColorOf.get(g) ?? NO_UNIT_COLOR}
-      labelOf={(e) => {
-        const u = unitsForClass.find((x) => x.id === unitOfEntry(e));
-        return u ? `${uNo(u)}. ${u.title}` : t("noUnitTitle");
-      }}
-      legend={[
-        ...unitsForClass.map((u) => ({ key: u.id, label: `${uNo(u)}. ${u.title}`, color: unitColorOf.get(u.id)! })),
-        ...(noUnitLessons.length ? [{ key: NONE, label: t("noUnitTitle"), color: NO_UNIT_COLOR }] : []),
-      ]}
-      onDayClick={(entries) => { setSelectedUnitId(unitOfEntry(entries[0])); setYearParam(null); }}
-      onClose={() => setYearParam(null)}
-    />
-  ) : null;
-
   return (
     <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
@@ -780,21 +726,14 @@ export default function LessonsPage() {
       <DashboardColumn hideBelow="lg" mobile="self" data-tour="lessons-classes">
         <LessonsClassPanel
           selectedClassId={selectedClassId ?? (isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : "")}
-          onSelect={(id) => { handleSelectClass(id); if (yearMode === "all") setYearParam(null); }}
+          onSelect={handleSelectClass}
           onAddClass={() => setClassModalOpen(true)}
-          yearActive={yearMode === "all"}
-          onToggleYear={() => setYearParam(yearMode === "all" ? null : "all")}
           units={unitsSource}
           lessons={lessonsSource}
           demoClasses={demoClasses ?? undefined}
         />
       </DashboardColumn>
 
-      {yearMode ? (
-        <div className="min-w-0 min-h-0 lg:h-full max-lg:min-h-[50svh]">
-          {yearCalendar}
-        </div>
-      ) : (<>
       {/* ── Column 2: Boʻlimlar ── */}
       <div
         data-tour="lessons-units"
@@ -819,16 +758,6 @@ export default function LessonsPage() {
               {unitsForClass.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{unitsForClass.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                title={tl("showYearClass")}
-                aria-label={tl("showYearClass")}
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => setYearParam("class")}
-              >
-                <CalendarRange className="size-4" />
-              </Button>
               {unitsForClass.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 px-3" onClick={handleCreateUnit}>
                   <Plus className="size-3.5" />
@@ -1232,8 +1161,6 @@ export default function LessonsPage() {
             </>
           )}
         </div>
-
-        </>)}
 
         {classModalOpen && (
           <ClassFormModal

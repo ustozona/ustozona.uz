@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarRange, GraduationCap, Plus, Pencil, Trash2 } from "lucide-react";
+import { GraduationCap, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { panelHeaderClass } from "@/components/DashboardPage";
@@ -35,18 +35,14 @@ type Props = {
   units: Unit[];
   lessons: Lesson[];
   demoClasses?: ClassInfo[];
-  /** Barcha sinflarning oʻquv yili kalendari ochiqmi (sarlavhadagi tugma). */
-  yearActive?: boolean;
-  onToggleYear?: () => void;
 };
 
 /* Darslar sahifasining sinflar ustuni — har sinf kichik karta: nom, dars
    vaqti, boʻlim/mavzu soni va qamrov chizigʻi (oʻtilgan mavzular ulushi).
    Umumiy `ClassListPanel` boshqa sahifalarda ham ishlatilgani uchun unga
    tegilmaydi; mobil (`< lg`) Sheet koʻrinishi esa oʻshaning oʻzidan olinadi. */
-export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units, lessons, demoClasses, yearActive, onToggleYear }: Props) {
+export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units, lessons, demoClasses }: Props) {
   const t = useTranslations("ClassListPanel");
-  const tl = useTranslations("LessonsYear");
   const tlp = useTranslations("LessonsPage");
   const real = useLiveClasses();
   const classes = demoClasses && real.length === 0 ? demoClasses : real;
@@ -109,19 +105,6 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
           {classes.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{classes.length}</span>}
         </div>
         <div className="flex items-center gap-1 shrink-0">
-        {classes.length > 0 && onToggleYear && (
-          <Button
-            variant="ghost"
-            size="icon"
-            title={tl("showYearAll")}
-            aria-label={tl("showYearAll")}
-            aria-pressed={yearActive}
-            className={cn("text-muted-foreground hover:text-foreground", yearActive && "text-foreground bg-muted")}
-            onClick={onToggleYear}
-          >
-            <CalendarRange className="size-4" />
-          </Button>
-        )}
         {classes.length > 0 && (
           <Button variant="ghost" size="sm" onClick={onAddClass} className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" aria-label={t("addClass")}>
             <Plus className="size-4" aria-hidden="true" />
