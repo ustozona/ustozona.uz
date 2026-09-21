@@ -33,13 +33,13 @@ import {
   LESSONS_TOUR_DEMO_CLASS_ID, LESSONS_TOUR_DEMO_UNIT_ID,
 } from "@/components/tour/lessons-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
-import ClassListPanel from "@/components/ClassListPanel";
+import { LessonsClassPanel } from "@/components/lessons/LessonsClassPanel";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
+import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
 import { LessonsViewSwitch } from "@/components/lessons/LessonsViewSwitch";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
@@ -256,29 +256,16 @@ export default function LessonsPage() {
     const all = unitId === null
       ? noUnitLessons
       : (effectiveClassId ? lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === unitId) : []);
-    const done = all.filter((l) => l.status === "Completed").length;
+    const done = all.filter(isTaught).length;
     return { total: all.length, done, pct: all.length ? Math.round((done / all.length) * 100) : 0 };
   };
 
-  const unitStats = useMemo(() => {
-    if (!effectiveUnitId || effectiveUnitId === NONE || !effectiveClassId) return null;
-    const unitLessons = lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId);
-    const completed = unitLessons.filter((l) => l.status === "Completed").length;
-    return { lessons: unitLessons.length, completed, pct: unitLessons.length ? Math.round((completed / unitLessons.length) * 100) : 0 };
-  }, [effectiveUnitId, effectiveClassId, lessonsSource]);
-
-  const [unitFooterOpen, setUnitFooterOpen] = useState(true);
-  useEffect(() => {
-    const saved = localStorage.getItem("unit-panel-footer-open");
-    if (saved !== null) setUnitFooterOpen(saved === "1");
-  }, []);
-  const toggleUnitFooter = () => {
-    setUnitFooterOpen((prev) => {
-      const next = !prev;
-      localStorage.setItem("unit-panel-footer-open", next ? "1" : "0");
-      return next;
-    });
-  };
+  // Sarlavhadagi xulosa — faol sinflar boʻyicha mavzular va oʻtilganlari.
+  const pageSummary = useMemo(() => {
+    const ids = new Set((isDemoMode ? demoClasses ?? [] : liveClasses).map((c) => c.id));
+    const mine = lessonsSource.filter((l) => lessonClassIds(l).some((id) => ids.has(id)));
+    return { classes: ids.size, lessons: mine.length, taught: mine.filter(isTaught).length };
+  }, [isDemoMode, demoClasses, liveClasses, lessonsSource]);
 
   const [classModalOpen, setClassModalOpen] = useState(false);
   const [unitModalOpen, setUnitModalOpen] = useState(false);
@@ -732,18 +719,23 @@ export default function LessonsPage() {
   return (
     <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
-      <div className="flex items-center justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="heading-page truncate">{t("pageTitle")}</h1>
+          <p className="text-caption text-muted-foreground mt-0.5">{t("pageSummary", pageSummary)}</p>
+        </div>
         <LessonsViewSwitch active="structure" />
       </div>
       <DndContext sensors={dndSensors} onDragEnd={handleLessonDragEnd}>
       <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" mobile="self" data-tour="lessons-classes">
-        <ClassListPanel
-          page="lessons"
+        <LessonsClassPanel
           selectedClassId={selectedClassId ?? (isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : "")}
           onSelect={handleSelectClass}
           onAddClass={() => setClassModalOpen(true)}
+          units={unitsSource}
+          lessons={lessonsSource}
           demoClasses={demoClasses ?? undefined}
         />
       </DashboardColumn>
@@ -769,6 +761,7 @@ export default function LessonsPage() {
             <div className="flex items-center gap-2 min-w-0">
               <SectionIcon><Layers /></SectionIcon>
               <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
+              {unitsForClass.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{unitsForClass.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {unitsForClass.length > 1 && (
@@ -886,53 +879,6 @@ export default function LessonsPage() {
             </ScrollArea>
           </div>
 
-          {/* Bottom selected unit stats — Sinflar panel footeri bilan bir xil til (ochib/yopib qoʻyiladi) */}
-          {selectedUnit && unitStats && (
-            <div className="border-t border-border shrink-0">
-              <div className="flex items-center gap-3 px-4 py-3">
-                <div className="size-9 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
-                  <Layers className="size-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
-                    {uNo(selectedUnit)}. {selectedUnit.title}
-                  </h4>
-                </div>
-                <button
-                  onClick={toggleUnitFooter}
-                  title={unitFooterOpen ? t("hideStats") : t("showStats")}
-                  aria-expanded={unitFooterOpen}
-                  className="shrink-0 p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted transition-colors"
-                >
-                  <ChevronDown className={cn("size-4 transition-transform duration-fast", unitFooterOpen && "rotate-180")} aria-hidden="true" />
-                </button>
-              </div>
-              {unitFooterOpen && (
-                <div className="px-4 pb-4">
-                  <div className="flex items-start divide-x divide-border">
-                    <div className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
-                      <p className="text-xs text-muted-foreground truncate">{t("lessonsStatLabel")}</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("lessonsUnitCount", { count: unitStats.lessons })}</p>
-                    </div>
-                    <div className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
-                      <p className="text-xs text-muted-foreground truncate">{t("completedStatLabel")}</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("lessonsUnitCount", { count: unitStats.completed })}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5 mt-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">{t("progress")}</span>
-                      <span className="font-bold tabular-nums text-foreground">{Math.round(unitStats.pct)}%</span>
-                    </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(unitStats.pct, 100)}%`, backgroundColor: selectedClassHex }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           <Dialog open={!!editUnitTarget} onOpenChange={(o) => !o && setEditUnitTarget(null)}>
             <DialogContent className="max-w-[440px]">
               <DialogHeader>
@@ -1015,6 +961,7 @@ export default function LessonsPage() {
             <div className="flex items-center gap-2 min-w-0">
               <SectionIcon><FileText /></SectionIcon>
               <CardTitle className="truncate">{t("lessonsTitle")}</CardTitle>
+              {lessonsForUnit.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{lessonsForUnit.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <div className="hidden xl:flex items-center gap-1">
@@ -1160,17 +1107,14 @@ export default function LessonsPage() {
                             <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>
                           )}
                           {lesson.date && (
-                            <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground/60 tabular-nums">
-                              <span>{lesson.date}</span>
-                              {lesson.time && (
-                                <>
-                                  <span className="text-muted-foreground/30">·</span>
-                                  <span>{lesson.time}</span>
-                                </>
-                              )}
-                              {lesson.classCount && lesson.classCount > 1 && (
-                                <span className="text-muted-foreground/40 font-medium">+{lesson.classCount - 1}</span>
-                              )}
+                            <div className="hidden md:flex flex-col items-end tabular-nums leading-tight">
+                              <span className="text-caption font-semibold text-foreground">
+                                {lesson.date}
+                                {lesson.classCount && lesson.classCount > 1 && (
+                                  <span className="ml-1 text-muted-foreground/60 font-medium">+{lesson.classCount - 1}</span>
+                                )}
+                              </span>
+                              {lesson.time && <span className="text-micro text-muted-foreground mt-0.5">{lesson.time}</span>}
                             </div>
                           )}
                           {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) ? (
