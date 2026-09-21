@@ -58,6 +58,7 @@ export type AtRiskTeacher = {
   lastActiveAt: Date | null;
   /** Oxirgi ish qaysi boʻlimda edi — nima qilganini koʻrsatish uchun. */
   lastArea: string | null;
+  lastAction: string | null;
 };
 
 export type ActivationOverview = {
@@ -147,6 +148,7 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
       COALESCE(stu.student_count, 0)   AS student_count,
       COALESCE(a.active_days_total, 0) AS active_days_total,
       a.last_area                      AS last_area,
+      a.last_action                    AS last_action,
       a.last_at                        AS last_active_at
     FROM scoped s
     LEFT JOIN cls ON cls.teacher_id = s.id
@@ -165,6 +167,7 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
     student_count: number;
     active_days_total: number;
     last_area: string | null;
+    last_action: string | null;
     last_active_at: string | Date | null;
   }>;
 
@@ -222,6 +225,7 @@ export async function getActivationOverview(): Promise<ActivationOverview> {
                 : ("went_quiet" as const),
       lastActiveAt: r.last_active_at,
       lastArea: r.last_area,
+      lastAction: r.last_action,
     }))
     .sort((a, b) => (a.lastActiveAt?.getTime() ?? 0) - (b.lastActiveAt?.getTime() ?? 0));
 

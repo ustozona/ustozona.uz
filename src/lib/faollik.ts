@@ -50,6 +50,45 @@ export const AREA_LABELS: Record<string, string> = {
   qayd: "Qayd",
 };
 
+/** Oxirgi amalning odam oʻqiydigan matni.
+
+    Kalit `drizzle/views/faollik.sql` dagi `action` ustunidan keladi.
+    «.yangi»/«.tahrir» faqat `created_at` bor jadvallarda ajraladi;
+    qolganlarida matn ataylab umumiy («ustida ishladi») — bazadan
+    yaratish yoki tahrir ekanini bilib boʻlmaydi. */
+export const ACTION_LABELS: Record<string, string> = {
+  davomat: "Davomat belgiladi",
+  baho: "Baho qoʻydi",
+  dars: "Dars rejasi ustida ishladi",
+  bolim: "Oʻquv reja boʻlimi ustida ishladi",
+  "mavzu.yangi": "Mavzu yaratdi",
+  "mavzu.tahrir": "Mavzuni tahrirladi",
+  "topshiriq.yangi": "Topshiriq yaratdi",
+  "topshiriq.tahrir": "Topshiriqni tahrirladi",
+  vazifa: "Vazifalar bilan ishladi",
+  jadval: "Dars jadvali ustida ishladi",
+  kalendar: "Oʻquv kalendarini sozladi",
+  standart: "Standartlar bilan ishladi",
+  "test.yangi": "Test savoli yaratdi",
+  "test.tahrir": "Test savolini tahrirladi",
+  "toplam.yangi": "Test yaratdi",
+  "toplam.tahrir": "Testni tahrirladi",
+  skaner: "Javob varaqasini skanerladi",
+  solishtirma: "Solishtirma baholash ochdi",
+  viktorina: "Viktorina oʻtkazdi",
+  sinf_qayd: "Sinfga qayd yozdi",
+  xulq: "Xulq ballini belgiladi",
+  mukofot: "Xulq mukofotini sozladi",
+  oquvchi_qayd: "Oʻquvchiga qayd yozdi",
+};
+
+/** Amal matni; koʻrinish hali yangilanmagan boʻlsa boʻlim nomiga qaytadi. */
+export function activityLabel(action: string | null, area: string | null): string | null {
+  if (action && ACTION_LABELS[action]) return ACTION_LABELS[action];
+  if (area) return AREA_LABELS[area] ?? area;
+  return null;
+}
+
 /** «Faollashgan» uchun eng kam alohida ish kuni.
 
     ⭐ Nega kun, nega 3: bir kunda kiritilgan 400 ta davomat yozuvi —

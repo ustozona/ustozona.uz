@@ -81,6 +81,8 @@ export type AdminUserListItem = {
   lastActiveAt: Date | null;
   /** Oxirgi ish QAYSI boʻlimda edi ("davomat", "jadval"…). */
   lastArea: string | null;
+  /** Oxirgi amal kaliti — matni `activityLabel()` da. */
+  lastAction: string | null;
   /** Ish qilingan alohida kunlar — ommaviy amaldan himoyalangan oʻlchov. */
   activeDaysTotal: number;
   activeDays30d: number;
@@ -374,6 +376,7 @@ export async function listUsersForAdmin(
                 teacherId: act.teacherId,
                 lastAt: act.lastAt,
                 lastArea: act.lastArea,
+                lastAction: act.lastAction,
                 activeDaysTotal: act.activeDaysTotal,
                 activeDays30d: act.activeDays30d,
                 areas30d: act.areas30d,
@@ -413,6 +416,7 @@ export async function listUsersForAdmin(
         studentCount: studentMap.get(r.id) ?? 0,
         lastActiveAt,
         lastArea: a?.lastArea ?? null,
+        lastAction: a?.lastAction ?? null,
         activeDaysTotal,
         activeDays30d: a?.activeDays30d ?? 0,
         areas30d: a?.areas30d ?? 0,
@@ -576,6 +580,7 @@ export async function getUserDetailForAdmin(
     lastSeen: sessions[0]?.updatedAt ?? null,
     lastActiveAt,
     lastArea: a?.lastArea ?? null,
+    lastAction: a?.lastAction ?? null,
     activeDaysTotal,
     activeDays30d: a?.activeDays30d ?? 0,
     areas30d: a?.areas30d ?? 0,

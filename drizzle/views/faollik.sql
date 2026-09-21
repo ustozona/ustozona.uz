@@ -29,8 +29,22 @@ DROP VIEW IF EXISTS v_teacher_sessions;
 DROP VIEW IF EXISTS v_teacher_activity_summary;
 DROP VIEW IF EXISTS v_teacher_activity;
 
+/* ── faollik_op ─────────────────────────────────────────────────────
+   Qator yangi yaratilganmi yoki keyin tahrirlanganmi: `created_at` va
+   `updated_at` orasi 5 soniyadan kam boʻlsa yangi (bitta INSERT ikki
+   ustunga bir necha ms farq bilan yozishi mumkin).
+
+   ⚠️ Faqat IKKALA ustun bor jadvallarda. `lessons`, `grades`,
+   `tasks` va boshqalarda `created_at` yoʻq — ularning amal nomi
+   yaratish/tahrirni ajratmaydi («Dars rejasi ustida ishladi»).
+   Oʻchirish umuman koʻrinmaydi: qator yoʻqoladi. */
+CREATE OR REPLACE FUNCTION faollik_op(c timestamptz, u timestamptz)
+RETURNS text LANGUAGE sql IMMUTABLE AS $$
+    SELECT CASE WHEN u - c < interval '5 seconds' THEN '.yangi' ELSE '.tahrir' END
+$$;
+
 /* ── v_teacher_activity ────────────────────────────────────────────
-   Har bir ish harakati bitta qator: kim, qaysi boʻlimda, qachon.
+   Har bir ish harakati bitta qator: kim, qaysi boʻlimda, nima qildi, qachon.
 
    ⚠️ VAQT USTUNI TURI JADVALGA QARAB FARQ QILADI. Koʻpchiligi
    `timestamptz`, lekin `behavior_*` va `student_notes` vaqtni MATN
@@ -47,32 +61,34 @@ DROP VIEW IF EXISTS v_teacher_activity;
    shu roʻyxatga nisbatan hisoblanadi. */
 CREATE VIEW v_teacher_activity AS
 SELECT * FROM (
-    SELECT teacher_id, 'davomat'::text AS area, updated_at AS at FROM attendance_records
-    UNION ALL SELECT teacher_id, 'baho',      updated_at FROM grades
-    UNION ALL SELECT teacher_id, 'dars',      updated_at FROM lessons
-    UNION ALL SELECT teacher_id, 'mavzu',     updated_at FROM units
-    UNION ALL SELECT teacher_id, 'mavzu',     updated_at FROM topics
-    UNION ALL SELECT teacher_id, 'topshiriq', updated_at FROM assignments
-    UNION ALL SELECT teacher_id, 'vazifa',    updated_at FROM tasks
-    UNION ALL SELECT teacher_id, 'jadval',    updated_at FROM timetable_versions
-    UNION ALL SELECT teacher_id, 'jadval',    updated_at FROM calendars
-    UNION ALL SELECT teacher_id, 'standart',  updated_at FROM standard_sets
-    UNION ALL SELECT teacher_id, 'test',      updated_at FROM activities
-    UNION ALL SELECT teacher_id, 'test',      updated_at FROM activity_sets
-    UNION ALL SELECT teacher_id, 'test',      created_at FROM omr_scans
-    UNION ALL SELECT teacher_id, 'test',      created_at FROM cj_tasks
-    UNION ALL SELECT teacher_id, 'viktorina', updated_at FROM quiz_sessions
-    UNION ALL SELECT teacher_id, 'qayd',      updated_at FROM class_notes
+    SELECT teacher_id, 'davomat'::text AS area, 'davomat'::text AS action, updated_at AS at FROM attendance_records
+    UNION ALL SELECT teacher_id, 'baho',      'baho',        updated_at FROM grades
+    UNION ALL SELECT teacher_id, 'dars',      'dars',        updated_at FROM lessons
+    UNION ALL SELECT teacher_id, 'mavzu',     'bolim',       updated_at FROM units
+    UNION ALL SELECT teacher_id, 'mavzu',     'mavzu' || faollik_op(created_at, updated_at), updated_at FROM topics
+    UNION ALL SELECT teacher_id, 'topshiriq', 'topshiriq' || faollik_op(created_at, updated_at), updated_at FROM assignments
+    UNION ALL SELECT teacher_id, 'vazifa',    'vazifa',      updated_at FROM tasks
+    /* created_at bu yerda MIJOZ yozgan matn — server vaqti bilan solishtirib
+       boʻlmaydi, shuning uchun yaratish/tahrir ajratilmaydi. */
+    UNION ALL SELECT teacher_id, 'jadval',    'jadval',      updated_at FROM timetable_versions
+    UNION ALL SELECT teacher_id, 'jadval',    'kalendar',    updated_at FROM calendars
+    UNION ALL SELECT teacher_id, 'standart',  'standart',    updated_at FROM standard_sets
+    UNION ALL SELECT teacher_id, 'test',      'test' || faollik_op(created_at, updated_at), updated_at FROM activities
+    UNION ALL SELECT teacher_id, 'test',      'toplam' || faollik_op(created_at, updated_at), updated_at FROM activity_sets
+    UNION ALL SELECT teacher_id, 'test',      'skaner',      created_at FROM omr_scans
+    UNION ALL SELECT teacher_id, 'test',      'solishtirma', created_at FROM cj_tasks
+    UNION ALL SELECT teacher_id, 'viktorina', 'viktorina',   updated_at FROM quiz_sessions
+    UNION ALL SELECT teacher_id, 'qayd',      'sinf_qayd',   updated_at FROM class_notes
 
     /* Matn (ISO) ustunlar — yuqoridagi izohga qarang. */
-    UNION ALL SELECT teacher_id, 'xulq',
-        CASE WHEN created_at ~ '^\d{4}-\d{2}-\d{2}' THEN created_at::timestamptz END
+    UNION ALL SELECT teacher_id, 'xulq', 'xulq',
+        CASE WHEN created_at ~ '^d{4}-d{2}-d{2}' THEN created_at::timestamptz END
         FROM behavior_events
-    UNION ALL SELECT teacher_id, 'xulq',
-        CASE WHEN updated_at ~ '^\d{4}-\d{2}-\d{2}' THEN updated_at::timestamptz END
+    UNION ALL SELECT teacher_id, 'xulq', 'mukofot',
+        CASE WHEN updated_at ~ '^d{4}-d{2}-d{2}' THEN updated_at::timestamptz END
         FROM behavior_rewards
-    UNION ALL SELECT teacher_id, 'qayd',
-        CASE WHEN created_at ~ '^\d{4}-\d{2}-\d{2}' THEN created_at::timestamptz END
+    UNION ALL SELECT teacher_id, 'qayd', 'oquvchi_qayd',
+        CASE WHEN created_at ~ '^d{4}-d{2}-d{2}' THEN created_at::timestamptz END
         FROM student_notes
 ) x
 WHERE at IS NOT NULL
@@ -105,6 +121,9 @@ SELECT
     MIN(at)                                   AS first_at,
     MAX(at)                                   AS last_at,
     (array_agg(area ORDER BY at DESC))[1]     AS last_area,
+    /* Aniq amal kaliti («mavzu.yangi», «davomat»…) — matni
+       src/lib/faollik.ts dagi ACTION_LABELS da. */
+    (array_agg(action ORDER BY at DESC))[1]   AS last_action,
     COUNT(DISTINCT (at AT TIME ZONE 'Asia/Tashkent')::date)::int AS active_days_total,
     COUNT(DISTINCT area)::int                 AS areas_total,
     COUNT(DISTINCT (at AT TIME ZONE 'Asia/Tashkent')::date)
