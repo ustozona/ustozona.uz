@@ -772,33 +772,9 @@ export default function LessonsPage() {
               {unitsForClass.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{unitsForClass.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {unitsForClass.length > 1 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title={t("reorderMenuItem")}
-                  aria-pressed={reorderKind === "units"}
-                  className={cn("text-muted-foreground hover:text-foreground", reorderKind === "units" && "text-foreground bg-muted")}
-                  onClick={() => (reorderKind === "units" ? endReorder(false) : startReorder("units"))}
-                >
-                  <ArrowDownUp className="size-4" />
-                </Button>
-              )}
               {unitsForClass.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title={t("selectMenuItem")}
-                  aria-pressed={unitPickMode}
-                  className={cn("text-muted-foreground hover:text-foreground", unitPickMode && "text-foreground bg-muted")}
-                  onClick={() => (unitPickMode ? endUnitPick() : startUnitPick())}
-                >
-                  <ListChecks className="size-4" />
-                </Button>
-              )}
-              {unitsForClass.length > 0 && (
-                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
-                  <Plus className="size-4" />
+                <Button size="sm" className="h-9 gap-1.5 px-3" onClick={handleCreateUnit}>
+                  <Plus className="size-3.5" />
                   <span>{t("addUnit")}</span>
                 </Button>
               )}
@@ -976,30 +952,6 @@ export default function LessonsPage() {
                 <Button variant="ghost" size="icon" title={t("searchAria")} className="text-muted-foreground hover:text-foreground">
                   <Search className="size-4" />
                 </Button>
-                {lessonsForUnit.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title={t("reorderMenuItem")}
-                    aria-pressed={reorderKind === "lessons"}
-                    className={cn("text-muted-foreground hover:text-foreground", reorderKind === "lessons" && "text-foreground bg-muted")}
-                    onClick={() => (reorderKind === "lessons" ? endReorder(false) : startReorder("lessons"))}
-                  >
-                    <ArrowDownUp className="size-4" />
-                  </Button>
-                )}
-                {lessonsForUnit.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title={t("selectMenuItem")}
-                    aria-pressed={lessonPickMode}
-                    className={cn("text-muted-foreground hover:text-foreground", lessonPickMode && "text-foreground bg-muted")}
-                    onClick={() => (lessonPickMode ? endLessonPick() : startLessonPick())}
-                  >
-                    <ListChecks className="size-4" />
-                  </Button>
-                )}
               </div>
               {effectiveUnitId && effectiveUnitId !== NONE && lessonsForUnit.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLessonChoice}>
