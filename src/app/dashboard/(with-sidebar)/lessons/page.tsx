@@ -727,13 +727,7 @@ export default function LessonsPage() {
   return (
     <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="heading-page truncate">{t("pageTitle")}</h1>
-          <p className="text-caption text-muted-foreground mt-0.5">{t("pageSummary", pageSummary)}</p>
-        </div>
-        <LessonsViewSwitch active="structure" />
-      </div>
+      <LessonsViewSwitch active="structure" summary={t("pageSummary", pageSummary)} />
       <DndContext sensors={dndSensors} onDragEnd={handleLessonDragEnd}>
       <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
