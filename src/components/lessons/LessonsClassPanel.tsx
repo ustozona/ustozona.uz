@@ -117,7 +117,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
         <ScrollArea className="h-full w-full">
           <div className="px-3 pt-4 pb-5 space-y-2">
             {!hydrated && classes.length === 0 && Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-[76px] w-full rounded-xl" />
+              <Skeleton key={i} className="h-[88px] w-full rounded-xl" />
             ))}
             {hydrated && classes.length === 0 && (
               <Empty className="py-8">
@@ -142,17 +142,17 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                   <ContextMenuTrigger asChild>
                     <button
                       onClick={() => onSelect(cls.id)}
-                      className="list-card group w-full flex items-center gap-3 p-3 text-left cursor-pointer"
+                      className="list-card group w-full flex items-center gap-3 p-4 text-left cursor-pointer"
                       data-active={isSelected || undefined}
                       aria-current={isSelected || undefined}
                       style={{ ["--card-accent" as string]: tints.solid, ...(isSelected ? tints.tint : {}) }}
                     >
                       <span
-                        className="list-card-icon size-10 rounded-full shrink-0 flex items-center justify-center"
+                        className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center"
                         style={isSelected ? { ...tints.gradientTile, color: "white" } : { ...tints.badge, ...tints.iconText }}
                         aria-hidden="true"
                       >
-                        <Icon className="size-4" />
+                        <Icon className="size-5" />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-baseline gap-2">

@@ -422,7 +422,7 @@ export default function LessonsPage() {
      tanlangan boʻlim shu ustundagi asosiy obyekt boʻlgani uchun ikonka,
      tavsif va dars soni bilan toʻliq pasport oladi). */
   const renderUnitSelected = (unit: Unit, isOver = false) => {
-    const { total } = unitProgress(unit.id);
+    const { total, pct } = unitProgress(unit.id);
     return withUnitMenu(unit,
       <button
         onClick={() => (unitPickMode
@@ -442,7 +442,10 @@ export default function LessonsPage() {
         )}
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{uNo(unit)}. {unit.title}</h4>
-          <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>
+          {unit.description && <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>}
+          <div className="h-1 mt-2 rounded-full bg-muted overflow-hidden" title={t("classCoverage", { pct })}>
+            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: selectedClassHex }} />
+          </div>
         </div>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...selectedClassTints.badge, ...selectedClassTints.text }}>
           {total}
@@ -453,7 +456,7 @@ export default function LessonsPage() {
 
   // Tor ustun, tanlanmagan: kompakt nuqtali qator
   const renderUnitCompact = (unit: Unit, isOver = false) => {
-    const { total } = unitProgress(unit.id);
+    const { total, pct } = unitProgress(unit.id);
     return withUnitMenu(unit,
       <button
         onClick={() => (unitPickMode
@@ -468,7 +471,12 @@ export default function LessonsPage() {
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
           {uNo(unit)}. {unit.title}
         </span>
-        <span className="text-xs text-muted-foreground/60 tabular-nums shrink-0">{total}</span>
+        {total > 0 && (
+          <span className="h-1 w-12 rounded-full bg-muted overflow-hidden shrink-0" title={t("classCoverage", { pct })}>
+            <span className="block h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: selectedClassHex }} />
+          </span>
+        )}
+        <span className="text-xs text-muted-foreground/60 tabular-nums shrink-0 w-5 text-right">{total}</span>
       </button>
     );
   };
