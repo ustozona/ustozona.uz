@@ -109,33 +109,3 @@ export type AssignmentUpsert = z.infer<typeof assignmentUpsertSchema>;
 export type GradeUpsert = z.infer<typeof gradeUpsertSchema>;
 export type GradeKey = z.infer<typeof gradeKeySchema>;
 export type GradesBatch = z.infer<typeof gradesBatchSchema>;
-
-export function emptyGradesBatch(): GradesBatch {
-  return {
-    classesUpsert: [],
-    classesDelete: [],
-    studentsUpsert: [],
-    studentsDelete: [],
-    topicsUpsert: [],
-    topicsDelete: [],
-    assignmentsUpsert: [],
-    assignmentsDelete: [],
-    gradesUpsert: [],
-    gradesDelete: [],
-  };
-}
-
-export function isEmptyGradesBatch(b: GradesBatch): boolean {
-  return (
-    b.classesUpsert.length === 0 &&
-    b.classesDelete.length === 0 &&
-    b.studentsUpsert.length === 0 &&
-    b.studentsDelete.length === 0 &&
-    b.topicsUpsert.length === 0 &&
-    b.topicsDelete.length === 0 &&
-    b.assignmentsUpsert.length === 0 &&
-    b.assignmentsDelete.length === 0 &&
-    b.gradesUpsert.length === 0 &&
-    b.gradesDelete.length === 0
-  );
-}

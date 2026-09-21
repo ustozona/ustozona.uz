@@ -1,10 +1,6 @@
 import type { StudentNoteEntry } from "@/store/useStudentNotesStore";
-import {
-  emptyStudentNotesBatch,
-  isEmptyStudentNotesBatch,
-  type StudentNotesBatch,
-  type StudentNoteUpsert,
-} from "./student-notes-batch";
+import { emptyStudentNotesBatch, isEmptyStudentNotesBatch } from "./student-notes-batch-shape";
+import type { StudentNotesBatch, StudentNoteUpsert } from "./student-notes-batch";
 
 /* Student notes diff — {items} (prev, next) → batch | null.
    feedback-sync bilan bir xil: id boʻyicha, reference oʻzgargan

@@ -1,10 +1,6 @@
 import type { NotificationItem } from "@/store/useNotificationsStore";
-import {
-  emptyNotificationsBatch,
-  isEmptyNotificationsBatch,
-  type NotificationsBatch,
-  type NotificationUpsert,
-} from "./notifications-batch";
+import { emptyNotificationsBatch, isEmptyNotificationsBatch } from "./notifications-batch-shape";
+import type { NotificationsBatch, NotificationUpsert } from "./notifications-batch";
 
 /* ════════════════════════════════════════════════════════════════════
    NOTIFICATIONS DIFF — {items} (prev, next) → batch | null.

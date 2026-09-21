@@ -26,11 +26,3 @@ export const standardsBatchSchema = z.object({
 
 export type StandardSetUpsert = z.infer<typeof standardSetUpsertSchema>;
 export type StandardsBatch = z.infer<typeof standardsBatchSchema>;
-
-export function emptyStandardsBatch(): StandardsBatch {
-  return { setsUpsert: [], setsDelete: [] };
-}
-
-export function isEmptyStandardsBatch(b: StandardsBatch): boolean {
-  return b.setsUpsert.length === 0 && b.setsDelete.length === 0;
-}
