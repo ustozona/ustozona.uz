@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
@@ -50,13 +51,22 @@ import {
   AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import CreateStudentModal, { type NewStudentInput } from "./_components/CreateStudentModal";
-import AddStudentModal from "./_components/AddStudentModal";
+import type { NewStudentInput } from "./_components/CreateStudentModal";
 import StudentsDataTable from "./_components/StudentsDataTable";
-import { MoveStudentsDialog } from "@/components/students/MoveStudentsDialog";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { SegmentedToggle } from "@/components/ui/segmented-toggle";
 import { useCollator } from "@/lib/use-collator";
+
+/* Uchala oyna ham faqat ochilganda kerak, lekin ularning bogʻliqliklari
+   (taqvim, fayl yuklagich, jadval oʻqigich) sahifaning boshlangʻich
+   paketini shishirardi. Shuning uchun talabga koʻra yuklanadi va
+   yopiq holatda umuman chizilmaydi. */
+const AddStudentModal = dynamic(() => import("./_components/AddStudentModal"), { ssr: false });
+const CreateStudentModal = dynamic(() => import("./_components/CreateStudentModal"), { ssr: false });
+const MoveStudentsDialog = dynamic(
+  () => import("@/components/students/MoveStudentsDialog").then((m) => m.MoveStudentsDialog),
+  { ssr: false }
+);
 import {
   Users, User, Plus, Search, ListFilter, ArrowUpDown, Trash2, X,
   TrendingUp, Phone, MessageCircle, Pen, Download, ChevronDown, MoreHorizontal,
@@ -886,13 +896,15 @@ export default function StudentsPage() {
         )}
       </DashboardColumns>
 
+      {addOpen ? (
       <AddStudentModal
-        open={addOpen}
+        open
         onOpenChange={setAddOpen}
         defaultClassId={selectedClassId ?? firstLiveClassId ?? ""}
         onCreate={handleCreate}
         onImport={handleImport}
       />
+      ) : null}
 
       {/* Toʻliq tahrirlash — jadval "edit" rejimidagi qalam tugmasi va kontekst menyu shu oynani ochadi */}
       {editTarget && (() => {
@@ -942,13 +954,15 @@ export default function StudentsPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {moveTargets.length > 0 ? (
       <MoveStudentsDialog
-        open={moveTargets.length > 0}
+        open
         onOpenChange={(v) => { if (!v) setMoveTargets([]); }}
         fromClassId={selectedClassId ?? ""}
         students={moveTargets}
         onMoved={() => setSelectedRowIds(new Set())}
       />
+      ) : null}
 
       <AlertDialog open={!!deleteTargets} onOpenChange={(open) => { if (!open) setDeleteTargets(null); }}>
         <AlertDialogContent>
