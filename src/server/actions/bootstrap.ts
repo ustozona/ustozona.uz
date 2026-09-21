@@ -71,8 +71,17 @@ async function settle<K extends keyof DashboardPayloads>(
   key: K,
   read: () => Promise<DashboardPayloads[K]>
 ): Promise<[K, SliceResult<DashboardPayloads[K]>]> {
+  /* VAQTINCHA OʻLCHOV (2026-09-21): "tasks" boʻlagi prodda har safar
+     chegaraga urilyapti, sababi tashqaridan koʻrinmadi. Har boʻlak
+     davomiyligi va chegaradan KEYIN qanday tugagani logga yoziladi. */
+  const t0 = Date.now();
+  const p = read();
+  p.then(
+    () => console.log(`[bootstrap] "${String(key)}" ${Date.now() - t0}ms ok`),
+    (e) => console.log(`[bootstrap] "${String(key)}" ${Date.now() - t0}ms xato:`, e)
+  );
   try {
-    return [key, { ok: true, value: await withTimeout(read(), SLICE_TIMEOUT_MS) }];
+    return [key, { ok: true, value: await withTimeout(p, SLICE_TIMEOUT_MS) }];
   } catch (err) {
     console.error(`[bootstrap] "${String(key)}" boʻlagi olinmadi:`, err);
     return [key, { ok: false, error: err instanceof Error ? err.message : "unknown" }];
