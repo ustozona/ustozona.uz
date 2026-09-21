@@ -49,6 +49,22 @@ import type {
    `reloadGradesFromServer`). Bu yerda faqat MOUNT yoʻli birlashtirildi.
    ════════════════════════════════════════════════════════════════════ */
 
+/* ⚠️ BOʻLAK UCHUN VAQT CHEGARASI (2026-09-21 prod hodisasi).
+   postgres-js da soʻrov timeout'i yoʻq: oʻlik socketga tushgan bitta
+   soʻrov cheksiz kutadi. Bitta amalda 15 boʻlak boʻlgani uchun u
+   BUTUN amalni 300 s Vercel timeout'igacha ushlab turardi (504) va
+   dashboard faqat skeleton koʻrsatib qolardi. Endi osilgan boʻlak
+   yiqilgan hisoblanadi — qolganlari javobga yetib boradi. */
+const SLICE_TIMEOUT_MS = 15_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const limit = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`timeout ${ms}ms`)), ms);
+  });
+  return Promise.race([p, limit]).finally(() => clearTimeout(timer));
+}
+
 /** Bitta boʻlakni oʻqiydi va HECH QACHON rad etmaydi — xato natijaning
     ichiga tushadi, qoʻshnilariga tegmaydi. */
 async function settle<K extends keyof DashboardPayloads>(
@@ -56,7 +72,7 @@ async function settle<K extends keyof DashboardPayloads>(
   read: () => Promise<DashboardPayloads[K]>
 ): Promise<[K, SliceResult<DashboardPayloads[K]>]> {
   try {
-    return [key, { ok: true, value: await read() }];
+    return [key, { ok: true, value: await withTimeout(read(), SLICE_TIMEOUT_MS) }];
   } catch (err) {
     console.error(`[bootstrap] "${String(key)}" boʻlagi olinmadi:`, err);
     return [key, { ok: false, error: err instanceof Error ? err.message : "unknown" }];
