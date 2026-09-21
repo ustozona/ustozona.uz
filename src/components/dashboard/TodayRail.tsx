@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { NowPulseDot, NowTimePill } from "@/components/calendar/NowIndicator";
 import {
   BookOpenCheck,
   CalendarDays,
@@ -416,16 +417,10 @@ function DayGridView({
         >
           {/* Vaqt — kapsulada, kulrang soat yozuvlaridan ajralib tursin. */}
           <span className="flex w-10 shrink-0 -translate-y-1/2 justify-end">
-            <span className="rounded-full bg-destructive px-1.5 py-px text-micro font-semibold leading-none tabular-nums text-white">
-              {fmtMin(nowMin)}
-            </span>
+            <NowTimePill label={fmtMin(nowMin)} />
           </span>
-          {/* Nuqta «nafas oladi» — jonli vaqt belgisi; reduced-motion'da toʻxtaydi. */}
-          <div className="relative ml-2 h-px flex-1 bg-destructive">
-            <span className="absolute -left-1 top-1/2 size-2 -translate-y-1/2">
-              <span className="absolute inset-0 rounded-full bg-destructive/60 motion-safe:animate-ping" />
-              <span className="absolute inset-0 rounded-full bg-destructive" />
-            </span>
+          <div className="relative ml-2 h-0.5 flex-1 bg-destructive">
+            <NowPulseDot className="absolute -left-1 top-1/2 -translate-y-1/2" />
           </div>
         </div>
       )}
