@@ -3,7 +3,9 @@
 import * as React from "react";
 import { useState, useMemo, useEffect, useRef, type ReactNode } from "react";
 import { useComposedRefs } from "@/lib/compose-refs";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { MONTHS_UZ_SHORT } from "@/lib/localization";
+import { dateKeyToDate } from "@/lib/date-keys";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
@@ -125,6 +127,7 @@ export default function LessonsPage() {
   const setPlanReady = useLessonStore((s) => s.setPlanReady);
   const setTaught = useLessonStore((s) => s.setTaught);
   const tc = useTranslations("LessonCycle");
+  const locale = useLocale();
   const bumpLesson = useLessonBump();
   const today = todayKey();
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
@@ -311,6 +314,25 @@ export default function LessonsPage() {
   };
 
   const openLesson = (id: string) => router.push(`/lessons/${id}`);
+
+  /* Kartadagi sana/vaqt — saqlangan inglizcha matn («Sep 24», «8:00 AM») emas,
+     shu sinfning sessiyasidan: eng yaqin kelgusi (boʻlmasa oxirgi) dars,
+     «24 sen» va 24 soatlik «08:00». Brauzerda oʻzbekcha oy nomlari yoʻq —
+     `MONTHS_UZ_SHORT`. */
+  const intlMonthMissing = new Intl.DateTimeFormat(locale, { month: "short" }).format(new Date(2024, 8, 1)).startsWith("M0");
+  const lessonWhen = (lesson: Lesson) => {
+    const sessions = lessonSessions(lesson)
+      .filter((x) => !effectiveClassId || x.classId === effectiveClassId)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin);
+    if (!sessions.length) return null;
+    const s = sessions.find((x) => x.date >= today) ?? sessions[sessions.length - 1];
+    const d = dateKeyToDate(s.date);
+    const month = intlMonthMissing
+      ? MONTHS_UZ_SHORT[d.getMonth()]
+      : new Intl.DateTimeFormat(locale, { month: "short" }).format(d).replace(".", "");
+    const hhmm = (m: number) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+    return { date: `${d.getDate()} ${month}`, time: hhmm(s.startMin) };
+  };
 
   const selectedClass = isDemoMode
     ? demoClasses![0]
@@ -1050,20 +1072,18 @@ export default function LessonsPage() {
                           )}
                         </div>
                         <div className="shrink-0 flex items-center gap-3">
-                          {!lesson.date && (
-                            <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>
-                          )}
-                          {lesson.date && (
-                            <div className="hidden md:flex flex-col items-end tabular-nums leading-tight">
-                              <span className="text-caption font-semibold text-foreground">
-                                {lesson.date}
-                                {lesson.classCount && lesson.classCount > 1 && (
-                                  <span className="ml-1 text-muted-foreground/60 font-medium">+{lesson.classCount - 1}</span>
-                                )}
-                              </span>
-                              {lesson.time && <span className="text-micro text-muted-foreground mt-0.5">{lesson.time}</span>}
-                            </div>
-                          )}
+                          {(() => {
+                            const when = lessonWhen(lesson);
+                            if (!when) return <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>;
+                            return (
+                              <div className="hidden md:flex flex-col items-end tabular-nums leading-tight">
+                                <span className="text-caption font-semibold text-foreground">
+                                  {when.date}
+                                </span>
+                                <span className="text-micro text-muted-foreground mt-0.5">{when.time}</span>
+                              </div>
+                            );
+                          })()}
                           {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) ? (
                             /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli. Tugmalar
                                kartaning sudrash/ochish hodisalarini toʻsadi. */
