@@ -14,8 +14,13 @@ import { inRange } from "@/lib/academic-calendar";
 import { todayKey } from "@/lib/date-keys";
 import { useMounted } from "@/lib/use-mounted";
 import GradesTable from "./GradesTable";
-import ReuseModal from "./ReuseModal";
-import NewTopicModal, { type TopicApplyPayload } from "./NewTopicModal";
+import dynamic from "next/dynamic";
+import type { TopicApplyPayload } from "./NewTopicModal";
+
+/* Oynalar faqat ochilganda yuklanadi — NewTopicModal zod va
+   react-hook-form'ni olib keladi, ular jurnal uchun kerak emas. */
+const ReuseModal = dynamic(() => import("./ReuseModal"));
+const NewTopicModal = dynamic(() => import("./NewTopicModal"));
 import { Card } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { BookOpen } from "lucide-react";

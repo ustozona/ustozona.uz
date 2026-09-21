@@ -4,7 +4,11 @@ import * as React from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useOnboardingVisible } from "./onboarding-visible";
-import OnboardingWizard from "./OnboardingWizard";
+import dynamic from "next/dynamic";
+
+/* Sehrgar faqat yangi hisobga chiqadi — uning kodi (sana tanlagich,
+   date-fns lokallari) har dashboard sahifasiga yuklanmasin. */
+const OnboardingWizard = dynamic(() => import("./OnboardingWizard"));
 
 /* ════════════════════════════════════════════════════════════════════
    ONBOARDING GATE — sehrgarni qachon koʻrsatishni hal qiladi.
