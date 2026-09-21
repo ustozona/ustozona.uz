@@ -1,11 +1,6 @@
 import type { Lesson, Unit } from "@/lib/lessons-data";
-import {
-  emptyLessonsBatch,
-  isEmptyLessonsBatch,
-  type LessonsBatch,
-  type LessonUpsert,
-  type UnitUpsert,
-} from "./lessons-batch";
+import { emptyLessonsBatch, isEmptyLessonsBatch } from "./lessons-batch-shape";
+import type { LessonsBatch, LessonUpsert, UnitUpsert } from "./lessons-batch";
 
 /* ════════════════════════════════════════════════════════════════════
    LESSONS DIFF — {units, lessons} (prev, next) → batch | null.

@@ -6,15 +6,14 @@ import type {
   Student,
   Topic,
 } from "@/lib/grades-data";
-import {
-  emptyGradesBatch,
-  isEmptyGradesBatch,
-  type AssignmentUpsert,
-  type ClassUpsert,
-  type GradesBatch,
-  type GradeUpsert,
-  type StudentUpsert,
-  type TopicUpsert,
+import { emptyGradesBatch, isEmptyGradesBatch } from "./grades-batch-shape";
+import type {
+  AssignmentUpsert,
+  ClassUpsert,
+  GradesBatch,
+  GradeUpsert,
+  StudentUpsert,
+  TopicUpsert,
 } from "./grades-batch";
 
 /* ════════════════════════════════════════════════════════════════════

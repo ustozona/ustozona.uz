@@ -27,11 +27,3 @@ export const notificationsBatchSchema = z.object({
 
 export type NotificationUpsert = z.infer<typeof notificationUpsertSchema>;
 export type NotificationsBatch = z.infer<typeof notificationsBatchSchema>;
-
-export function emptyNotificationsBatch(): NotificationsBatch {
-  return { itemsUpsert: [], itemsDelete: [] };
-}
-
-export function isEmptyNotificationsBatch(b: NotificationsBatch): boolean {
-  return b.itemsUpsert.length === 0 && b.itemsDelete.length === 0;
-}

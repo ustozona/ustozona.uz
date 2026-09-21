@@ -47,16 +47,3 @@ export type StatusUpsert = z.infer<typeof statusUpsertSchema>;
 export type RecordUpsert = z.infer<typeof recordUpsertSchema>;
 export type RecordKey = z.infer<typeof recordKeySchema>;
 export type AttendanceBatch = z.infer<typeof attendanceBatchSchema>;
-
-export function emptyAttendanceBatch(): AttendanceBatch {
-  return { statusesUpsert: [], statusesDelete: [], recordsUpsert: [], recordsDelete: [] };
-}
-
-export function isEmptyAttendanceBatch(b: AttendanceBatch): boolean {
-  return (
-    b.statusesUpsert.length === 0 &&
-    b.statusesDelete.length === 0 &&
-    b.recordsUpsert.length === 0 &&
-    b.recordsDelete.length === 0
-  );
-}

@@ -1,10 +1,6 @@
 import type { TimetableVersion } from "@/lib/timetable-versions";
-import {
-  emptyTimetableBatch,
-  isEmptyTimetableBatch,
-  type TimetableBatch,
-  type VersionUpsert,
-} from "./timetable-batch";
+import { emptyTimetableBatch, isEmptyTimetableBatch } from "./timetable-batch-shape";
+import type { TimetableBatch, VersionUpsert } from "./timetable-batch";
 
 /* ════════════════════════════════════════════════════════════════════
    TIMETABLE DIFF — versiyalar id boʻyicha hujjat sifatida solishtiriladi.

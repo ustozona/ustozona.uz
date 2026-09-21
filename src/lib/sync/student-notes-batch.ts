@@ -24,11 +24,3 @@ export const studentNotesBatchSchema = z.object({
 
 export type StudentNoteUpsert = z.infer<typeof studentNoteUpsertSchema>;
 export type StudentNotesBatch = z.infer<typeof studentNotesBatchSchema>;
-
-export function emptyStudentNotesBatch(): StudentNotesBatch {
-  return { itemsUpsert: [], itemsDelete: [] };
-}
-
-export function isEmptyStudentNotesBatch(b: StudentNotesBatch): boolean {
-  return b.itemsUpsert.length === 0 && b.itemsDelete.length === 0;
-}

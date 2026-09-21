@@ -43,19 +43,6 @@ export type UnitUpsert = z.infer<typeof unitUpsertSchema>;
 export type LessonUpsert = z.infer<typeof lessonUpsertSchema>;
 export type LessonsBatch = z.infer<typeof lessonsBatchSchema>;
 
-export function emptyLessonsBatch(): LessonsBatch {
-  return { unitsUpsert: [], unitsDelete: [], lessonsUpsert: [], lessonsDelete: [] };
-}
-
-export function isEmptyLessonsBatch(b: LessonsBatch): boolean {
-  return (
-    b.unitsUpsert.length === 0 &&
-    b.unitsDelete.length === 0 &&
-    b.lessonsUpsert.length === 0 &&
-    b.lessonsDelete.length === 0
-  );
-}
-
 /* ════════════════════════════════════════════════════════════════════
    OʻCHIRISH BUYRUGʻI — batch'dan ATAYLAB alohida.
 

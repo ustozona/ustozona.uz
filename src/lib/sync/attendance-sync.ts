@@ -1,11 +1,6 @@
 import type { AttendanceRecord, AttendanceStatusDef } from "@/lib/attendance-data";
-import {
-  emptyAttendanceBatch,
-  isEmptyAttendanceBatch,
-  type AttendanceBatch,
-  type RecordUpsert,
-  type StatusUpsert,
-} from "./attendance-batch";
+import { emptyAttendanceBatch, isEmptyAttendanceBatch } from "./attendance-batch-shape";
+import type { AttendanceBatch, RecordUpsert, StatusUpsert } from "./attendance-batch";
 
 /* ════════════════════════════════════════════════════════════════════
    ATTENDANCE DIFF — {recordsByClass, statuses} (prev, next) → batch.
