@@ -16,6 +16,7 @@ import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
+import { byNumber, ordinalsOf } from "@/lib/ordinals";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -129,7 +130,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
     deleteUnit(unit.id, { withLessons: !keepLessonsOnUnitDelete });
     if (unit.id === selectedUnitId) setSelectedUnitId(null);
     setDeleteUnitTarget(null);
-    toast.success(t("unitDeletedToast", { unit: `${pad(unit.number)}. ${unit.title}` }), {
+    toast.success(t("unitDeletedToast", { unit: `${uNo(unit)}. ${unit.title}` }), {
       action: {
         label: t("undo"),
         onClick: () => {
@@ -155,19 +156,23 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   useEffect(() => { setSelectedUnitId(null); }, [classId]);
 
   const unitsForClass = useMemo(
-    () => units.filter((u) => u.classId === classId).sort((a, b) => a.number - b.number),
+    () => units.filter((u) => u.classId === classId).sort(byNumber),
     [classId, units]
   );
+  // Koʻrinadigan raqam — tartibdagi oʻrin, saqlangan `number` emas (`@/lib/ordinals`).
+  const unitOrdinals = useMemo(() => ordinalsOf(unitsForClass), [unitsForClass]);
+  const uNo = (unit: Unit) => pad(unitOrdinals.get(unit.id) ?? unit.number);
 
   const noUnitLessons = useMemo(
     () => lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === null),
     [lessons, classId]
   );
 
+  // Tartiblangan: kartadagi raqam = roʻyxatdagi oʻrin (`i + 1`).
   const lessonsForUnit = useMemo(() => {
     if (!selectedUnitId) return [];
-    if (selectedUnitId === NONE) return noUnitLessons;
-    return lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === selectedUnitId);
+    if (selectedUnitId === NONE) return [...noUnitLessons].sort(byNumber);
+    return lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === selectedUnitId).sort(byNumber);
   }, [selectedUnitId, classId, noUnitLessons, lessons]);
 
   const unitProgress = (unitId: string | null) => {
@@ -264,7 +269,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-            {pad(unit.number)}. {unit.title}
+            {uNo(unit)}. {unit.title}
           </h4>
           <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">{unit.description}</TypographyMuted>
         </div>
@@ -295,7 +300,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
           <Layers className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{pad(unit.number)}. {unit.title}</h4>
+          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{uNo(unit)}. {unit.title}</h4>
           <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>
         </div>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...tints.badge, ...tints.text }}>
@@ -314,7 +319,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
       >
         <ClassSwatch hex={hex} />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
-          {pad(unit.number)}. {unit.title}
+          {uNo(unit)}. {unit.title}
         </span>
         <span className="text-xs text-muted-foreground/60 tabular-nums shrink-0">{total}</span>
       </button>
@@ -444,7 +449,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
-                  {pad(selectedUnit.number)}. {selectedUnit.title}
+                  {uNo(selectedUnit)}. {selectedUnit.title}
                 </h4>
               </div>
               <button
@@ -513,7 +518,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
             <AlertDialogHeader>
               <AlertDialogTitle>{t("deleteUnitDialogTitle")}</AlertDialogTitle>
               <AlertDialogDescription>
-                {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${pad(deleteUnitTarget.number)}. ${deleteUnitTarget.title}` })}
+                {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${uNo(deleteUnitTarget)}. ${deleteUnitTarget.title}` })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteUnitImpact.lessons > 0 && (
@@ -606,7 +611,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                       </EmptyContent>
                     </Empty>
                   ) : (
-                    lessonsForUnit.map((lesson) => {
+                    lessonsForUnit.map((lesson, i) => {
                       const lessonUnit = units.find((u) => u.id === lesson.unitId);
                       return (
                         <div
@@ -620,12 +625,12 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                           </div>
                           <div className="min-w-0 flex-1">
                             <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-                              {pad(lesson.number)}. {lesson.title}
+                              {pad(i + 1)}. {lesson.title}
                             </h4>
                             {lessonUnit && (
                               <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                                 <ClassSwatch hex={hex} />
-                                <span className="truncate">{pad(lessonUnit.number)}. {lessonUnit.title}</span>
+                                <span className="truncate">{uNo(lessonUnit)}. {lessonUnit.title}</span>
                               </div>
                             )}
                           </div>

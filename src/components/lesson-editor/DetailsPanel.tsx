@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { byNumber, pad2 } from "@/lib/ordinals";
 import { useEffect, useMemo, useState } from "react";
 import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, Target, Plus, Check, X, Presentation, ListChecks } from "lucide-react";
 import { listSetsAction } from "@/server/actions/assess";
@@ -194,7 +195,8 @@ export default function DetailsPanel({
             <div className="space-y-3">
               {selectedClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
-                const unitsForClass = units.filter((u) => u.classId === c.id).sort((a, b) => a.number - b.number);
+                const unitsForClass = units.filter((u) => u.classId === c.id).sort(byNumber);
+                const unitNo = (u: { id: string; number: number }) => pad2(unitsForClass.findIndex((x) => x.id === u.id) + 1 || u.number);
                 const curUnitId = lesson.unitByClass?.[c.id] ?? (c.id === selectedIds[0] ? lesson.unitId ?? null : null);
                 const unit = units.find((u) => u.id === curUnitId);
                 return (
@@ -208,7 +210,7 @@ export default function DetailsPanel({
                           <span className="flex flex-col min-w-0">
                             <span className="text-xs text-muted-foreground leading-tight">{c.name}</span>
                             <span className="text-sm font-semibold text-foreground truncate leading-tight">
-                              {unit ? `${String(unit.number).padStart(2, "0")}. ${unit.title}` : t("noUnitSelected")}
+                              {unit ? `${unitNo(unit)}. ${unit.title}` : t("noUnitSelected")}
                             </span>
                           </span>
                         </span>
@@ -228,7 +230,7 @@ export default function DetailsPanel({
                         return (
                           <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-2 py-2 rounded-lg">
                             {dot(hex)}
-                            <span className="flex-1 truncate">{String(u.number).padStart(2, "0")}. {u.title}</span>
+                            <span className="flex-1 truncate">{unitNo(u)}. {u.title}</span>
                             {on && <Check className="size-4 shrink-0" />}
                           </DropdownMenuItem>
                         );

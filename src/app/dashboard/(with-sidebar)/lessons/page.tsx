@@ -21,6 +21,7 @@ import { useClassIdParam, useUrlParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
+import { byNumber, ordinalsOf } from "@/lib/ordinals";
 import { LessonStatusPill } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
@@ -150,7 +151,7 @@ export default function LessonsPage() {
     deleteUnit(unit.id, { withLessons: !keepLessonsOnUnitDelete });
     if (unit.id === selectedUnitId) setSelectedUnitId(null);
     setDeleteUnitTarget(null);
-    toast.success(t("unitDeletedToast", { unit: `${pad(unit.number)}. ${unit.title}` }), {
+    toast.success(t("unitDeletedToast", { unit: `${uNo(unit)}. ${unit.title}` }), {
       action: {
         label: t("undo"),
         onClick: () => {
@@ -216,9 +217,12 @@ export default function LessonsPage() {
   const lessonsSource = isDemoMode ? demoLessons! : lessons;
 
   const unitsForClass = useMemo(
-    () => unitsSource.filter((u) => u.classId === effectiveClassId).sort((a, b) => a.number - b.number),
+    () => unitsSource.filter((u) => u.classId === effectiveClassId).sort(byNumber),
     [effectiveClassId, unitsSource]
   );
+  // Koʻrinadigan raqam — tartibdagi oʻrin, saqlangan `number` emas (`@/lib/ordinals`).
+  const unitOrdinals = useMemo(() => ordinalsOf(unitsForClass), [unitsForClass]);
+  const uNo = (unit: Unit) => pad(unitOrdinals.get(unit.id) ?? unit.number);
 
   const noUnitLessons = useMemo(
     () => effectiveClassId
@@ -227,10 +231,11 @@ export default function LessonsPage() {
     [lessonsSource, effectiveClassId]
   );
 
+  // Tartiblangan: kartadagi raqam = roʻyxatdagi oʻrin (`i + 1`).
   const lessonsForUnit = useMemo(() => {
     if (!effectiveUnitId || !effectiveClassId) return [];
-    if (effectiveUnitId === NONE) return noUnitLessons;
-    return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId);
+    if (effectiveUnitId === NONE) return [...noUnitLessons].sort(byNumber);
+    return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId).sort(byNumber);
   }, [effectiveUnitId, effectiveClassId, noUnitLessons, lessonsSource]);
 
   const unitProgress = (unitId: string | null) => {
@@ -387,7 +392,7 @@ export default function LessonsPage() {
         )}
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-            {pad(unit.number)}. {unit.title}
+            {uNo(unit)}. {unit.title}
           </h4>
           <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">{unit.description}</TypographyMuted>
         </div>
@@ -429,7 +434,7 @@ export default function LessonsPage() {
         </div>
         )}
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{pad(unit.number)}. {unit.title}</h4>
+          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{uNo(unit)}. {unit.title}</h4>
           <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>
         </div>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...selectedClassTints.badge, ...selectedClassTints.text }}>
@@ -454,7 +459,7 @@ export default function LessonsPage() {
           ? <Checkbox checked={selectedUnitIds.has(unit.id)} aria-label={t("selectAria")} className="pointer-events-none shrink-0" />
           : <ClassSwatch hex={selectedClassHex} />}
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
-          {pad(unit.number)}. {unit.title}
+          {uNo(unit)}. {unit.title}
         </span>
         <span className="text-xs text-muted-foreground/60 tabular-nums shrink-0">{total}</span>
       </button>
@@ -798,7 +803,7 @@ export default function LessonsPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
-                    {pad(selectedUnit.number)}. {selectedUnit.title}
+                    {uNo(selectedUnit)}. {selectedUnit.title}
                   </h4>
                 </div>
                 <button
@@ -867,7 +872,7 @@ export default function LessonsPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>{t("deleteUnitDialogTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${pad(deleteUnitTarget.number)}. ${deleteUnitTarget.title}` })}
+                  {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${uNo(deleteUnitTarget)}. ${deleteUnitTarget.title}` })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               {deleteUnitImpact.lessons > 0 && (
@@ -989,7 +994,7 @@ export default function LessonsPage() {
                     )}
                   </Empty>
                 ) : (
-                  lessonsForUnit.map((lesson) => {
+                  lessonsForUnit.map((lesson, i) => {
                     const lessonUnit = unitsSource.find((u) => u.id === lesson.unitId);
                     // "Koʻchirish" submenu — joriy boʻlim va "Boʻlimsiz" oʻzi chiqarib tashlanadi.
                     const moveTargets = [
@@ -1015,12 +1020,12 @@ export default function LessonsPage() {
                         )}
                         <div className="min-w-0 flex-1">
                           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-                            {pad(lesson.number)}. {lesson.title}
+                            {pad(i + 1)}. {lesson.title}
                           </h4>
                           {lessonUnit && (
                             <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                               <ClassSwatch hex={selectedClassHex} />
-                              <span className="truncate">{pad(lessonUnit.number)}. {lessonUnit.title}</span>
+                              <span className="truncate">{uNo(lessonUnit)}. {lessonUnit.title}</span>
                             </div>
                           )}
                         </div>
@@ -1063,7 +1068,7 @@ export default function LessonsPage() {
                             >
                               <ClassSwatch
                                 hex={target ? selectedClassHex : "var(--muted-foreground)"} />
-                              {target ? `${pad(target.number)}. ${target.title}` : t("noUnitTitle")}
+                              {target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle")}
                             </ContextMenuItem>
                           ))}
                         </ContextMenuSubContent>
