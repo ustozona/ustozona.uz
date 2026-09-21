@@ -4603,6 +4603,11 @@
   "LessonCycle": {
     "planReady": "Сабақ жоспары",
     "taught": "Өтілді",
+    "planStateReady": "Сабақ жоспары дайын",
+    "planStateDraft": "Сабақ жоспары — жоба",
+    "planStateNone": "Сабақ жоспары әлі жоқ",
+    "standardsChip": "Стандарттар: {count}",
+    "materialsChip": "Материалдар: {count}",
     "markPlanReady": "Сабақ жоспары дайын",
     "unmarkPlanReady": "Жоспар дайын емес",
     "markTaught": "Өтілді деп белгілеу",

@@ -4603,6 +4603,11 @@
   "LessonCycle": {
     "planReady": "План урока",
     "taught": "Проведён",
+    "planStateReady": "План урока готов",
+    "planStateDraft": "План урока — черновик",
+    "planStateNone": "Плана урока пока нет",
+    "standardsChip": "Стандарты: {count}",
+    "materialsChip": "Материалы: {count}",
     "markPlanReady": "План урока готов",
     "unmarkPlanReady": "План не готов",
     "markTaught": "Отметить проведённым",

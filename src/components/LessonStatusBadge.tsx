@@ -90,14 +90,16 @@ export function LessonStatusPill({ status, className }: { status: LessonStatus; 
 const PILL = "h-5 gap-1 rounded-full border-transparent px-2 text-tag font-semibold leading-none";
 
 /** Dars sikli — «Dars rejasi» va «Oʻtildi» (ikki MUSTAQIL belgi, `isTaught`).
-    Hech biri boʻlmasa hech narsa chizilmaydi: kartadagi sana matni yetarli. */
-export function LessonCyclePills({ lesson, className }: { lesson: Lesson; className?: string }) {
+    Hech biri boʻlmasa hech narsa chizilmaydi: kartadagi sana matni yetarli.
+    `showPlan={false}` — reja holati boshqa joyda (kartaning ikonkasida) koʻrsatilganda. */
+export function LessonCyclePills({ lesson, className, showPlan = true }: { lesson: Lesson; className?: string; showPlan?: boolean }) {
   const t = useTranslations("LessonCycle");
   const taught = isTaught(lesson);
-  if (!lesson.planReady && !taught) return null;
+  const plan = showPlan && !!lesson.planReady;
+  if (!plan && !taught) return null;
   return (
     <span className={cn("inline-flex items-center gap-1", className)}>
-      {lesson.planReady && (
+      {plan && (
         <Badge variant="secondary" className={cn(PILL, "bg-info/10 text-info")}>
           <FileCheck className="size-3" />
           {t("planReady")}

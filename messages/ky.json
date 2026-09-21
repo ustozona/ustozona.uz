@@ -4603,6 +4603,11 @@
   "LessonCycle": {
     "planReady": "Сабак планы",
     "taught": "Өтүлдү",
+    "planStateReady": "Сабак планы даяр",
+    "planStateDraft": "Сабак планы — долбоор",
+    "planStateNone": "Сабак планы азырынча жок",
+    "standardsChip": "Стандарттар: {count}",
+    "materialsChip": "Материалдар: {count}",
     "markPlanReady": "Сабак планы даяр",
     "unmarkPlanReady": "План даяр эмес",
     "markTaught": "Өтүлдү деп белгилөө",

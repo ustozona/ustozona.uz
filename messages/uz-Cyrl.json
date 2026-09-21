@@ -4432,6 +4432,11 @@
   "LessonCycle": {
     "planReady": "Дарс режаси",
     "taught": "Ўтилди",
+    "planStateReady": "Дарс режаси тайёр",
+    "planStateDraft": "Дарс режаси — қоралама",
+    "planStateNone": "Дарс режаси ҳали йўқ",
+    "standardsChip": "Стандартлар: {count}",
+    "materialsChip": "Материаллар: {count}",
     "markPlanReady": "Дарс режаси тайёр",
     "unmarkPlanReady": "Режа тайёр эмас",
     "markTaught": "Ўтилди деб белгилаш",

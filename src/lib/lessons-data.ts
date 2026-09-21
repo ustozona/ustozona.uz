@@ -66,6 +66,19 @@ export function isTaught(l: Lesson): boolean {
   return l.taughtAt != null || (l.taughtAt === undefined && l.status === "Completed");
 }
 
+/** Qoralama chegarasi: muharrir matnida shuncha soʻz boʻlsa, reja «boshlangan». */
+export const PLAN_DRAFT_MIN_WORDS = 20;
+
+/** Dars rejasi holati: «tayyor» faqat qoʻlda (`planReady`); matnda
+    `PLAN_DRAFT_MIN_WORDS` va undan koʻp soʻz boʻlsa — «qoralama». Soʻz
+    soni harfdan ishonchliroq: «test» kabi yozuvlar chegaradan oʻtmaydi. */
+export function lessonPlanState(l: Lesson): "none" | "draft" | "ready" {
+  if (l.planReady) return "ready";
+  const text = (l.content ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ");
+  const words = text.split(/s+/).filter((w) => /[p{L}p{N}]/u.test(w)).length;
+  return words >= PLAN_DRAFT_MIN_WORDS ? "draft" : "none";
+}
+
 /** Dars sessiyasi — bitta sana + vaqt oraligʻi. */
 export type LessonSession = { date: string; startMin: number; endMin: number };
 

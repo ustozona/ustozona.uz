@@ -4599,6 +4599,11 @@
   "LessonCycle": {
     "planReady": "Lesson plan",
     "taught": "Taught",
+    "planStateReady": "Lesson plan ready",
+    "planStateDraft": "Lesson plan — draft",
+    "planStateNone": "No lesson plan yet",
+    "standardsChip": "Standards: {count}",
+    "materialsChip": "Materials: {count}",
     "markPlanReady": "Lesson plan ready",
     "unmarkPlanReady": "Plan not ready",
     "markTaught": "Mark as taught",

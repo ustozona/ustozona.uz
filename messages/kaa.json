@@ -4603,6 +4603,11 @@
   "LessonCycle": {
     "planReady": "Sabaq rejesi",
     "taught": "Ótildi",
+    "planStateReady": "Sabaq rejesi tayar",
+    "planStateDraft": "Sabaq rejesi — qaralama",
+    "planStateNone": "Sabaq rejesi ele joq",
+    "standardsChip": "Standartlar: {count}",
+    "materialsChip": "Materiallar: {count}",
     "markPlanReady": "Sabaq rejesi tayın",
     "unmarkPlanReady": "Reje tayın emes",
     "markTaught": "Ótildi dep belgilew",

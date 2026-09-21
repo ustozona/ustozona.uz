@@ -4427,6 +4427,11 @@
   "LessonCycle": {
     "planReady": "Dars rejasi",
     "taught": "Oʻtildi",
+    "planStateReady": "Dars rejasi tayyor",
+    "planStateDraft": "Dars rejasi — qoralama",
+    "planStateNone": "Dars rejasi hali yoʻq",
+    "standardsChip": "Standartlar: {count}",
+    "materialsChip": "Materiallar: {count}",
     "markPlanReady": "Dars rejasi tayyor",
     "unmarkPlanReady": "Reja tayyor emas",
     "markTaught": "Oʻtildi deb belgilash",

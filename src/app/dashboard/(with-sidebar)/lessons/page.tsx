@@ -36,6 +36,7 @@ import {
 } from "@/components/tour/lessons-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { LessonsClassPanel } from "@/components/lessons/LessonsClassPanel";
+import { LessonPlanIcon, LessonMetaChips } from "@/components/lessons/LessonPlanMarks";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
@@ -1056,9 +1057,7 @@ export default function LessonsPage() {
                         style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
                         {lessonPickMode ? pickCircle(selectedLessonIds.has(lesson.id)) : (
-                        <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
-                          <FileText className="size-5" />
-                        </div>
+                          <LessonPlanIcon lesson={lesson} hex={selectedClassHex} />
                         )}
                         <div className="min-w-0 flex-1">
                           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
@@ -1072,6 +1071,7 @@ export default function LessonsPage() {
                           )}
                         </div>
                         <div className="shrink-0 flex items-center gap-3">
+                          <LessonMetaChips lesson={lesson} />
                           {(() => {
                             const when = lessonWhen(lesson);
                             if (!when) return <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>;
@@ -1111,7 +1111,7 @@ export default function LessonsPage() {
                               </button>
                             </span>
                           ) : (
-                            <LessonCyclePills lesson={lesson} />
+                            <LessonCyclePills lesson={lesson} showPlan={false} />
                           )}
                         </div>
                       </DraggableLesson>
