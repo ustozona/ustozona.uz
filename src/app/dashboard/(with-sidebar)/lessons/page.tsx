@@ -24,7 +24,6 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { byNumber, ordinalsOf } from "@/lib/ordinals";
-import { LessonCyclePills } from "@/components/LessonStatusBadge";
 import { isTaught } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { needsTaughtConfirm } from "@/lib/lesson-shift";
@@ -36,7 +35,7 @@ import {
 } from "@/components/tour/lessons-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { LessonsClassPanel } from "@/components/lessons/LessonsClassPanel";
-import { LessonPlanIcon, LessonMetaChips } from "@/components/lessons/LessonPlanMarks";
+import { LessonPlanIcon, LessonMetaChips, LessonStatusPill } from "@/components/lessons/LessonPlanMarks";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
@@ -1071,7 +1070,6 @@ export default function LessonsPage() {
                           )}
                         </div>
                         <div className="shrink-0 flex items-center gap-3">
-                          <LessonMetaChips lesson={lesson} />
                           {(() => {
                             const when = lessonWhen(lesson);
                             if (!when) return <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>;
@@ -1084,6 +1082,7 @@ export default function LessonsPage() {
                               </div>
                             );
                           })()}
+                          <LessonMetaChips lesson={lesson} />
                           {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) ? (
                             /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli. Tugmalar
                                kartaning sudrash/ochish hodisalarini toʻsadi. */
@@ -1111,7 +1110,7 @@ export default function LessonsPage() {
                               </button>
                             </span>
                           ) : (
-                            <LessonCyclePills lesson={lesson} showPlan={false} />
+                            <LessonStatusPill lesson={lesson} />
                           )}
                         </div>
                       </DraggableLesson>

@@ -4603,6 +4603,8 @@
   "LessonCycle": {
     "planReady": "Sabaq rejesi",
     "taught": "Ótildi",
+    "pillNone": "Reje joq",
+    "pillDraft": "Qaralama",
     "markPlanButton": "Rejeni tayar dep belgilew",
     "planReadyShort": "Reje tayar",
     "askPlanReady": "Sabaq rejesi tayarma?",

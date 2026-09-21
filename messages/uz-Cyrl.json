@@ -4432,6 +4432,8 @@
   "LessonCycle": {
     "planReady": "Дарс режаси",
     "taught": "Ўтилди",
+    "pillNone": "Режа йўқ",
+    "pillDraft": "Қоралама",
     "markPlanButton": "Режани тайёр деб белгилаш",
     "planReadyShort": "Режа тайёр",
     "askPlanReady": "Дарс режаси тайёрми?",

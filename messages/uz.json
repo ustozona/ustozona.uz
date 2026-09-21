@@ -4427,6 +4427,8 @@
   "LessonCycle": {
     "planReady": "Dars rejasi",
     "taught": "Oʻtildi",
+    "pillNone": "Reja yoʻq",
+    "pillDraft": "Qoralama",
     "markPlanButton": "Rejani tayyor deb belgilash",
     "planReadyShort": "Reja tayyor",
     "askPlanReady": "Dars rejasi tayyormi?",

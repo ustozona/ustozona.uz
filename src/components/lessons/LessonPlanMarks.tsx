@@ -2,9 +2,9 @@
 
 import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
-import { FileCheck, FilePen, FileText, Paperclip, Target } from "lucide-react";
+import { CircleCheck, FileCheck, FilePen, FileText, Paperclip, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { lessonPlanState, type Lesson } from "@/lib/lessons-data";
+import { isTaught, lessonPlanState, type Lesson } from "@/lib/lessons-data";
 
 /* Mavzu kartasidagi dars rejasi belgilari.
    Ikonka doirasi — reja holati: toʻla ✓ (tayyor, qoʻlda belgilangan),
@@ -55,6 +55,27 @@ export function LessonMetaChips({ lesson }: { lesson: Lesson }) {
           {materials}
         </span>
       )}
+    </span>
+  );
+}
+
+/* Kartaning oʻng chetidagi holat pill'i — ustun boʻlib tekislanadi (bir xil
+   kenglik). Oʻtilgan mavzuda «Oʻtildi», aks holda dars rejasi holati. */
+const STATUS_PILL = {
+  taught: { cls: "bg-success/10 text-success", Icon: CircleCheck, key: "taught" },
+  ready: { cls: "bg-info/10 text-info", Icon: FileCheck, key: "planReadyShort" },
+  draft: { cls: "bg-muted text-muted-foreground", Icon: FilePen, key: "pillDraft" },
+  none: { cls: "border border-dashed border-warning/60 text-warning", Icon: FileText, key: "pillNone" },
+} as const;
+
+export function LessonStatusPill({ lesson }: { lesson: Lesson }) {
+  const t = useTranslations("LessonCycle");
+  const k = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
+  const { cls, Icon, key } = STATUS_PILL[k];
+  return (
+    <span className={cn("inline-flex h-6 w-28 items-center justify-center gap-1 rounded-full text-tag font-semibold", cls)}>
+      <Icon className="size-3" />
+      {t(key)}
     </span>
   );
 }
