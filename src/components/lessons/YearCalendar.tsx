@@ -90,10 +90,9 @@ export function YearCalendar({ title, lessons, classIds, groupOf, colorOf, label
         </Button>
       </div>
 
-      {/* lg+: 3 × 4 oy ekranga sigʻadi — qator balandligi boʻlinadi, oy kartasi
-          esa kvadratga yaqin (aspect) boʻlib, kataklar choʻzilib ketmaydi. */}
-      <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
-            <div className="grid gap-3 p-4 grid-cols-2 md:grid-cols-3 lg:h-full lg:grid-rows-4">
+      {/* Qatorda 3 oy, ustun kengligini toʻliq egallaydi; sigʻmasa — scroll. */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="grid gap-3 p-4 grid-cols-2 md:grid-cols-3">
               {months.map((mKey) => {
                 const first = dateKeyToDate(mKey);
                 const lead = (first.getDay() + 6) % 7; // hafta dushanbadan
@@ -118,7 +117,7 @@ export function YearCalendar({ title, lessons, classIds, groupOf, colorOf, label
                     if (holiday) tip += ` · ${holiday.name}`;
                   }
                   const cls = cn(
-                    "aspect-square rounded-[3px] lg:aspect-auto",
+                    "aspect-square rounded-[3px]",
                     !entries?.length && inYear && "bg-muted/70",
                     key === today && "ring-2 ring-foreground ring-offset-1 ring-offset-card"
                   );
@@ -131,12 +130,12 @@ export function YearCalendar({ title, lessons, classIds, groupOf, colorOf, label
                   );
                 }
                 return (
-                  <div key={mKey} className="flex flex-col gap-1.5 rounded-lg border border-border p-2.5 lg:h-full lg:min-h-0 lg:aspect-[8/9] lg:max-w-full lg:justify-self-center">
+                  <div key={mKey} className="flex flex-col gap-2 rounded-lg border border-border p-3">
                     <div className="flex items-center justify-between">
                       <span className="text-label font-semibold uppercase">{monthLabel(first)}</span>
                       <span className="text-micro tabular-nums text-muted-foreground uppercase">{count || t("off")}</span>
                     </div>
-                    <div className="grid grid-cols-7 gap-1 lg:flex-1 lg:min-h-0 lg:grid-rows-7">
+                    <div className="grid grid-cols-7 gap-1">
                       {weekdays.map((w, i) => (
                         <span key={`w${i}`} className="text-micro text-center text-muted-foreground">{w}</span>
                       ))}
