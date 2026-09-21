@@ -65,6 +65,31 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, limit]).finally(() => clearTimeout(timer));
 }
 
+/* ⚠️ BIR VAQTDA KOʻPI BILAN 3 BOʻLAK (2026-09-21 prod hodisasi).
+   15 boʻlak birdan ishga tushganda soʻrovlar soni pool'dagi ulanishlardan
+   (`max: 5`, db/client.ts) oshib ketardi va postgres-js ularni bitta
+   ulanishga ketma-ket (pipeline) yozardi. Supavisor transaction
+   rejimida shunday yuklanishda har soʻrovda bittasining javobi
+   qaytmay qoldi: prod logida 14 boʻlak 100–450 ms da tugagan, bittasi
+   (har safar boshqasi — "tasks", "behavior") esa HECH QACHON tugamagan.
+   Oldingi 15 alohida amal Next navbatida ketma-ket ketgani uchun bu
+   holat yuzaga kelmagan. Ayrim DAL'lar ichida ham Promise.all bor,
+   shuning uchun chegara pool hajmidan ancha past. */
+const SLICE_CONCURRENCY = 3;
+let active = 0;
+const waiting: (() => void)[] = [];
+
+async function gate<T>(run: () => Promise<T>): Promise<T> {
+  if (active >= SLICE_CONCURRENCY) await new Promise<void>((r) => waiting.push(r));
+  active++;
+  try {
+    return await run();
+  } finally {
+    active--;
+    waiting.shift()?.();
+  }
+}
+
 /** Bitta boʻlakni oʻqiydi va HECH QACHON rad etmaydi — xato natijaning
     ichiga tushadi, qoʻshnilariga tegmaydi. */
 async function settle<K extends keyof DashboardPayloads>(
@@ -74,14 +99,17 @@ async function settle<K extends keyof DashboardPayloads>(
   /* VAQTINCHA OʻLCHOV (2026-09-21): "tasks" boʻlagi prodda har safar
      chegaraga urilyapti, sababi tashqaridan koʻrinmadi. Har boʻlak
      davomiyligi va chegaradan KEYIN qanday tugagani logga yoziladi. */
-  const t0 = Date.now();
-  const p = read();
-  p.then(
-    () => console.log(`[bootstrap] "${String(key)}" ${Date.now() - t0}ms ok`),
-    (e) => console.log(`[bootstrap] "${String(key)}" ${Date.now() - t0}ms xato:`, e)
-  );
   try {
-    return [key, { ok: true, value: await withTimeout(p, SLICE_TIMEOUT_MS) }];
+    const value = await gate(() => {
+      const t0 = Date.now();
+      const p = read();
+      p.then(
+        () => console.log(`[bootstrap] "${String(key)}" ${Date.now() - t0}ms ok`),
+        (e) => console.log(`[bootstrap] "${String(key)}" ${Date.now() - t0}ms xato:`, e)
+      );
+      return withTimeout(p, SLICE_TIMEOUT_MS);
+    });
+    return [key, { ok: true, value }];
   } catch (err) {
     console.error(`[bootstrap] "${String(key)}" boʻlagi olinmadi:`, err);
     return [key, { ok: false, error: err instanceof Error ? err.message : "unknown" }];
