@@ -15,7 +15,11 @@ import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
-import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
+import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, byLessonOrder, type Unit, type Lesson } from "@/lib/lessons-data";
+import { byNumber, ordinalsOf } from "@/lib/ordinals";
+import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
+import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
+import { LessonCyclePills } from "@/components/LessonStatusBadge";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -30,7 +34,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, List, Calendar, Trash2, ChevronDown } from "lucide-react";
+import { LibraryBig, FileText, Plus, Search, ArrowDownUp, Pencil, List, Calendar, Trash2, ChevronDown } from "lucide-react";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
 } from "@/components/ui/context-menu";
@@ -43,22 +47,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TypographyMuted } from "@/components/ui/typography";
 import type { ClassIdentity } from "@/lib/class-id";
-
-/** Status badge ranglari — semantik tokenlar */
-const STATUS_STYLES: Record<Lesson["status"], string> = {
-  Completed: "bg-success/10 text-success",
-  Scheduled: "bg-info/10 text-info",
-  Unscheduled: "bg-warning/10 text-warning",
-  Draft: "bg-muted text-muted-foreground",
-};
-function statusLabels(t: (key: string) => string): Record<Lesson["status"], string> {
-  return {
-    Completed: t("statusCompleted"),
-    Scheduled: t("statusScheduled"),
-    Unscheduled: t("statusUnscheduled"),
-    Draft: t("statusDraft"),
-  };
-}
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const NONE = "__none__";
@@ -84,6 +72,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   const restoreUnit = useLessonStore((s) => s.restoreUnit);
   const restoreLesson = useLessonStore((s) => s.restoreLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
+  const reorderUnits = useLessonStore((s) => s.reorderUnits);
+  const reorderLessons = useLessonStore((s) => s.reorderLessons);
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
   const [editUnitTarget, setEditUnitTarget] = useState<Unit | null>(null);
   const [deleteUnitTarget, setDeleteUnitTarget] = useState<Unit | null>(null);
@@ -129,7 +119,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
     deleteUnit(unit.id, { withLessons: !keepLessonsOnUnitDelete });
     if (unit.id === selectedUnitId) setSelectedUnitId(null);
     setDeleteUnitTarget(null);
-    toast.success(t("unitDeletedToast", { unit: `${pad(unit.number)}. ${unit.title}` }), {
+    toast.success(t("unitDeletedToast", { unit: `${uNo(unit)}. ${unit.title}` }), {
       action: {
         label: t("undo"),
         onClick: () => {
@@ -154,20 +144,67 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
 
   useEffect(() => { setSelectedUnitId(null); }, [classId]);
 
+  /* Tartiblash rejimi — Darslar sahifasi bilan bir naqsh (`@/components/ReorderList`). */
+  const [reorderKind, setReorderKind] = useState<"units" | "lessons" | null>(null);
+  const reorderDraft = useReorderDraft();
+  const reorderLabels = { drag: t("reorderDrag"), up: t("reorderUp"), down: t("reorderDown") };
+  useEffect(() => { setReorderKind(null); reorderDraft.stop(); }, [classId, selectedUnitId]);
+  const startReorder = (kind: "units" | "lessons") => {
+    setReorderKind(kind);
+    reorderDraft.start(kind === "units" ? unitsForClass.map((u) => u.id) : lessonsForUnit.map((l) => l.id));
+  };
+  const endReorder = (save: boolean) => {
+    if (save && reorderDraft.order && reorderDraft.movedIds.size > 0) {
+      if (reorderKind === "units") reorderUnits(reorderDraft.order);
+      else reorderLessons(reorderDraft.order, classId);
+    }
+    reorderDraft.stop();
+    setReorderKind(null);
+  };
+  useEscape(reorderDraft.active, () => endReorder(false));
+  const reorderBar = (
+    <BulkActionBar>
+      <BulkActionCount>
+        {reorderDraft.movedIds.size > 0 ? t("reorderMoved", { count: reorderDraft.movedIds.size }) : t("reorderHint")}
+      </BulkActionCount>
+      <BulkActionDivider />
+      <BulkActionButton onClick={() => endReorder(false)}>{t("cancel")}</BulkActionButton>
+      <BulkActionButton className="bg-background text-foreground hover:bg-background/90" onClick={() => endReorder(true)}>
+        {t("reorderDone")}
+      </BulkActionButton>
+    </BulkActionBar>
+  );
+  const reorderButton = (kind: "units" | "lessons") => (
+    <Button
+      variant="ghost"
+      size="icon"
+      title={t("reorderMenuItem")}
+      aria-pressed={reorderKind === kind}
+      className={cn("text-muted-foreground hover:text-foreground", reorderKind === kind && "text-foreground bg-muted")}
+      onClick={() => (reorderKind === kind ? endReorder(false) : startReorder(kind))}
+    >
+      <ArrowDownUp className="size-4" />
+    </Button>
+  );
+
   const unitsForClass = useMemo(
-    () => units.filter((u) => u.classId === classId).sort((a, b) => a.number - b.number),
+    () => units.filter((u) => u.classId === classId).sort(byNumber),
     [classId, units]
   );
+  // Koʻrinadigan raqam — tartibdagi oʻrin, saqlangan `number` emas (`@/lib/ordinals`).
+  const unitOrdinals = useMemo(() => ordinalsOf(unitsForClass), [unitsForClass]);
+  const uNo = (unit: Unit) => pad(unitOrdinals.get(unit.id) ?? unit.number);
 
   const noUnitLessons = useMemo(
     () => lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === null),
     [lessons, classId]
   );
 
+  // Tartiblangan: kartadagi raqam = roʻyxatdagi oʻrin (`i + 1`).
   const lessonsForUnit = useMemo(() => {
     if (!selectedUnitId) return [];
-    if (selectedUnitId === NONE) return noUnitLessons;
-    return lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === selectedUnitId);
+    if (selectedUnitId === NONE) return [...noUnitLessons].sort(byLessonOrder(classId));
+    return lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === selectedUnitId).sort(byLessonOrder(classId));
   }, [selectedUnitId, classId, noUnitLessons, lessons]);
 
   const unitProgress = (unitId: string | null) => {
@@ -239,6 +276,12 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
           <Pencil className="size-4" />
           {t("editUnit")}
         </ContextMenuItem>
+        {unitsForClass.length > 1 && (
+          <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("units")}>
+            <ArrowDownUp className="size-4" />
+            {t("reorderMenuItem")}
+          </ContextMenuItem>
+        )}
         <ContextMenuItem
           variant="destructive"
           className="gap-2 cursor-pointer"
@@ -260,11 +303,11 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         style={{ ["--card-accent" as string]: hex }}
       >
         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
-          <Layers className="size-5" />
+          <LibraryBig className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-            {pad(unit.number)}. {unit.title}
+            {uNo(unit)}. {unit.title}
           </h4>
           <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">{unit.description}</TypographyMuted>
         </div>
@@ -292,10 +335,10 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         style={{ ["--card-accent" as string]: hex, ...tints.tint }}
       >
         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
-          <Layers className="size-5" />
+          <LibraryBig className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{pad(unit.number)}. {unit.title}</h4>
+          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{uNo(unit)}. {unit.title}</h4>
           <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>
         </div>
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...tints.badge, ...tints.text }}>
@@ -314,7 +357,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
       >
         <ClassSwatch hex={hex} />
         <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
-          {pad(unit.number)}. {unit.title}
+          {uNo(unit)}. {unit.title}
         </span>
         <span className="text-xs text-muted-foreground/60 tabular-nums shrink-0">{total}</span>
       </button>
@@ -330,7 +373,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         style={{ ["--card-accent" as string]: "var(--muted-foreground)" }}
       >
         <div className="list-card-icon size-11 rounded-full bg-muted shrink-0 flex items-center justify-center">
-          <Layers className="size-5 text-muted-foreground" />
+          <LibraryBig className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
@@ -360,7 +403,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
           style={{ ["--card-accent" as string]: "var(--muted-foreground)", backgroundColor: "var(--muted)" }}
         >
           <div className="list-card-icon size-11 rounded-full bg-muted shrink-0 flex items-center justify-center">
-            <Layers className="size-5 text-muted-foreground" />
+            <LibraryBig className="size-5 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-sm font-semibold text-foreground leading-tight block">{t("noUnitTitle")}</h4>
@@ -391,20 +434,38 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
       >
         <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
           <div className="flex items-center gap-2 min-w-0">
-            <SectionIcon><Layers /></SectionIcon>
+            <SectionIcon><LibraryBig /></SectionIcon>
             <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
           </div>
-          <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={() => setUnitModalOpen(true)}>
-            <Plus className="size-4" />
-            <span>{t("addUnit")}</span>
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            {unitsForClass.length > 1 && reorderButton("units")}
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={() => setUnitModalOpen(true)}>
+              <Plus className="size-4" />
+              <span>{t("addUnit")}</span>
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 relative overflow-hidden">
           <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+          {reorderKind === "units" && reorderBar}
           <ScrollArea className="h-full w-full">
             <div className="px-3 pt-4 pb-5 space-y-2">
-              {detailMode ? (
+              {reorderKind === "units" && reorderDraft.order ? (
+                <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                  {(id, i, h) => {
+                    const unit = units.find((u) => u.id === id);
+                    if (!unit) return null;
+                    return (
+                      <div className="list-row w-full" style={reorderDraft.movedIds.has(id) ? tints.tint : undefined}>
+                        {h.handle}
+                        <span className="text-sm text-foreground truncate flex-1">{pad(i + 1)}. {unit.title}</span>
+                        {h.arrows}
+                      </div>
+                    );
+                  }}
+                </ReorderList>
+              ) : detailMode ? (
                 <>
                   {unitsForClass.map((unit) =>
                     unit.id === selectedUnitId ? renderUnitSelected(unit) : renderUnitCompact(unit)
@@ -440,11 +501,11 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
           <div className="border-t border-border shrink-0">
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="size-9 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
-                <Layers className="size-4" />
+                <LibraryBig className="size-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
-                  {pad(selectedUnit.number)}. {selectedUnit.title}
+                  {uNo(selectedUnit)}. {selectedUnit.title}
                 </h4>
               </div>
               <button
@@ -513,7 +574,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
             <AlertDialogHeader>
               <AlertDialogTitle>{t("deleteUnitDialogTitle")}</AlertDialogTitle>
               <AlertDialogDescription>
-                {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${pad(deleteUnitTarget.number)}. ${deleteUnitTarget.title}` })}
+                {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${uNo(deleteUnitTarget)}. ${deleteUnitTarget.title}` })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteUnitImpact.lessons > 0 && (
@@ -567,9 +628,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                   <Button variant="ghost" size="icon" title={t("searchAria")} className="text-muted-foreground hover:text-foreground">
                     <Search className="size-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" title={t("sortAria")} className="text-muted-foreground hover:text-foreground">
-                    <ArrowDownUp className="size-4" />
-                  </Button>
+                  {lessonsForUnit.length > 1 && reorderButton("lessons")}
                 </div>
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLesson}>
                   <Plus className="size-3.5" />
@@ -589,9 +648,34 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
 
             <div className="flex-1 min-h-0 relative overflow-hidden">
               <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+              {reorderKind === "lessons" && reorderBar}
               <ScrollArea className="h-full w-full">
                 <div className="px-4 pt-4 pb-5 space-y-2">
-                  {lessonsForUnit.length === 0 ? (
+                  {reorderKind === "lessons" && reorderDraft.order ? (
+                    <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                      {(id, i, h) => {
+                        const lesson = lessons.find((l) => l.id === id);
+                        if (!lesson) return null;
+                        const moved = reorderDraft.movedIds.has(id);
+                        return (
+                          <div
+                            className="list-card flex items-center gap-3 p-4"
+                            data-active={moved ? "true" : undefined}
+                            style={{ ["--card-accent" as string]: hex, ...(moved ? tints.tint : {}) }}
+                          >
+                            {h.handle}
+                            <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
+                              <FileText className="size-5" />
+                            </div>
+                            <h4 className="min-w-0 flex-1 text-sm font-semibold text-foreground leading-tight truncate">
+                              {pad(i + 1)}. {lesson.title}
+                            </h4>
+                            {h.arrows}
+                          </div>
+                        );
+                      }}
+                    </ReorderList>
+                  ) : lessonsForUnit.length === 0 ? (
                     <Empty className="py-16">
                       <EmptyHeader>
                         <EmptyMedia><Illustration name="29" className="h-32 text-black dark:text-white" /></EmptyMedia>
@@ -606,7 +690,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                       </EmptyContent>
                     </Empty>
                   ) : (
-                    lessonsForUnit.map((lesson) => {
+                    lessonsForUnit.map((lesson, i) => {
                       const lessonUnit = units.find((u) => u.id === lesson.unitId);
                       return (
                         <div
@@ -620,12 +704,12 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                           </div>
                           <div className="min-w-0 flex-1">
                             <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-                              {pad(lesson.number)}. {lesson.title}
+                              {pad(i + 1)}. {lesson.title}
                             </h4>
                             {lessonUnit && (
                               <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                                 <ClassSwatch hex={hex} />
-                                <span className="truncate">{pad(lessonUnit.number)}. {lessonUnit.title}</span>
+                                <span className="truncate">{uNo(lessonUnit)}. {lessonUnit.title}</span>
                               </div>
                             )}
                           </div>
@@ -641,16 +725,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                                 )}
                               </div>
                             )}
-                            <Badge
-                              variant="secondary"
-                              className={cn(
-                                "gap-1 rounded-full px-3 py-1 text-xs font-semibold border-transparent",
-                                STATUS_STYLES[lesson.status]
-                              )}
-                            >
-                              <span className="size-1.5 rounded-full bg-current" />
-                              {statusLabels(t)[lesson.status]}
-                            </Badge>
+                            {!lesson.date && <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>}
+                            <LessonCyclePills lesson={lesson} />
                           </div>
                           <div className="shrink-0 overflow-hidden max-w-0 opacity-0 group-hover:max-w-9 group-hover:opacity-100 transition-all duration-fast ease-standard">
                             <AlertDialog>

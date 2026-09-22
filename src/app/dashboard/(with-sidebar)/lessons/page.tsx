@@ -3,7 +3,9 @@
 import * as React from "react";
 import { useState, useMemo, useEffect, useRef, type ReactNode } from "react";
 import { useComposedRefs } from "@/lib/compose-refs";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { MONTHS_UZ_SHORT, DAYS_UZ_SHORT } from "@/lib/localization";
+import { dateKeyToDate } from "@/lib/date-keys";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
@@ -21,24 +23,30 @@ import { useClassIdParam, useUrlParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
-import { LessonStatusPill } from "@/components/LessonStatusBadge";
+import { byNumber, ordinalsOf } from "@/lib/ordinals";
+import { isTaught, lessonPlanState, byLessonOrder } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
+import { needsTaughtConfirm } from "@/lib/lesson-shift";
+import { useLessonBump } from "@/hooks/useLessonBump";
 import { useTourRequest } from "@/components/tour/tour-request";
 import {
   makeLessonsTourDemoClasses, makeLessonsTourDemoUnits, makeLessonsTourDemoLessons,
   LESSONS_TOUR_DEMO_CLASS_ID, LESSONS_TOUR_DEMO_UNIT_ID,
 } from "@/components/tour/lessons-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
-import ClassListPanel from "@/components/ClassListPanel";
+import { LessonsClassPanel } from "@/components/lessons/LessonsClassPanel";
+import { LessonDateLeaf, LessonMetaChips, LessonStatusPill } from "@/components/lessons/LessonPlanMarks";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, ChevronDown, FolderInput, ListChecks } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed } from "lucide-react";
+import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
-  ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuSeparator,
+  ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuSeparator, ContextMenuLabel,
 } from "@/components/ui/context-menu";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -114,6 +122,28 @@ export default function LessonsPage() {
   const restoreLesson = useLessonStore((s) => s.restoreLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
+  const reorderUnits = useLessonStore((s) => s.reorderUnits);
+  const reorderLessons = useLessonStore((s) => s.reorderLessons);
+  const setPlanState = useLessonStore((s) => s.setPlanState);
+  /* Kontekst menyudagi «Holat» boʻlimi — muharrir badge'i bilan bir xil 4 holat
+     va bir xil mantiq: oʻtilgan darsda reja holati tanlansa «oʻtildi» olinadi. */
+  const LESSON_STATES = [
+    { key: "none", Icon: CircleDashed, iconCls: "text-muted-foreground", label: "pillNone" },
+    { key: "draft", Icon: Clock, iconCls: "text-warning", label: "pillDraft" },
+    { key: "ready", Icon: FileCheck, iconCls: "text-info", label: "planReadyShort" },
+    { key: "taught", Icon: CircleCheck, iconCls: "text-success", label: "taught" },
+  ] as const;
+  const applyLessonState = (lesson: Lesson, next: (typeof LESSON_STATES)[number]["key"]) => {
+    if (next === "taught") { setTaught(lesson.id, todayKey()); return; }
+    if (isTaught(lesson)) setTaught(lesson.id, null);
+    setPlanState(lesson.id, next);
+  };
+  const setTaught = useLessonStore((s) => s.setTaught);
+  const tc = useTranslations("LessonCycle");
+  const locale = useLocale();
+  const bumpLesson = useLessonBump();
+  const today = todayKey();
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   // Boʻlim tanlovi — sinf kabi `?unit=` URL param'ida. Ilgari oddiy
   // `useState` edi va dars muharririga kirib chiqqanda (sahifa unmount
   // boʻladi) yoʻqolardi: sinf tiklanib, boʻlim nolga tushardi.
@@ -150,7 +180,7 @@ export default function LessonsPage() {
     deleteUnit(unit.id, { withLessons: !keepLessonsOnUnitDelete });
     if (unit.id === selectedUnitId) setSelectedUnitId(null);
     setDeleteUnitTarget(null);
-    toast.success(t("unitDeletedToast", { unit: `${pad(unit.number)}. ${unit.title}` }), {
+    toast.success(t("unitDeletedToast", { unit: `${uNo(unit)}. ${unit.title}` }), {
       action: {
         label: t("undo"),
         onClick: () => {
@@ -216,9 +246,12 @@ export default function LessonsPage() {
   const lessonsSource = isDemoMode ? demoLessons! : lessons;
 
   const unitsForClass = useMemo(
-    () => unitsSource.filter((u) => u.classId === effectiveClassId).sort((a, b) => a.number - b.number),
+    () => unitsSource.filter((u) => u.classId === effectiveClassId).sort(byNumber),
     [effectiveClassId, unitsSource]
   );
+  // Koʻrinadigan raqam — tartibdagi oʻrin, saqlangan `number` emas (`@/lib/ordinals`).
+  const unitOrdinals = useMemo(() => ordinalsOf(unitsForClass), [unitsForClass]);
+  const uNo = (unit: Unit) => pad(unitOrdinals.get(unit.id) ?? unit.number);
 
   const noUnitLessons = useMemo(
     () => effectiveClassId
@@ -227,44 +260,32 @@ export default function LessonsPage() {
     [lessonsSource, effectiveClassId]
   );
 
+  // Tartiblangan: kartadagi raqam = roʻyxatdagi oʻrin (`i + 1`).
   const lessonsForUnit = useMemo(() => {
     if (!effectiveUnitId || !effectiveClassId) return [];
-    if (effectiveUnitId === NONE) return noUnitLessons;
-    return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId);
+    if (effectiveUnitId === NONE) return [...noUnitLessons].sort(byLessonOrder(effectiveClassId));
+    return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId).sort(byLessonOrder(effectiveClassId));
   }, [effectiveUnitId, effectiveClassId, noUnitLessons, lessonsSource]);
 
   const unitProgress = (unitId: string | null) => {
     const all = unitId === null
       ? noUnitLessons
       : (effectiveClassId ? lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === unitId) : []);
-    const done = all.filter((l) => l.status === "Completed").length;
+    const done = all.filter(isTaught).length;
     return { total: all.length, done, pct: all.length ? Math.round((done / all.length) * 100) : 0 };
   };
 
-  const unitStats = useMemo(() => {
-    if (!effectiveUnitId || effectiveUnitId === NONE || !effectiveClassId) return null;
-    const unitLessons = lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId);
-    const completed = unitLessons.filter((l) => l.status === "Completed").length;
-    return { lessons: unitLessons.length, completed, pct: unitLessons.length ? Math.round((completed / unitLessons.length) * 100) : 0 };
-  }, [effectiveUnitId, effectiveClassId, lessonsSource]);
-
-  const [unitFooterOpen, setUnitFooterOpen] = useState(true);
-  useEffect(() => {
-    const saved = localStorage.getItem("unit-panel-footer-open");
-    if (saved !== null) setUnitFooterOpen(saved === "1");
-  }, []);
-  const toggleUnitFooter = () => {
-    setUnitFooterOpen((prev) => {
-      const next = !prev;
-      localStorage.setItem("unit-panel-footer-open", next ? "1" : "0");
-      return next;
-    });
-  };
 
   const [classModalOpen, setClassModalOpen] = useState(false);
   const [unitModalOpen, setUnitModalOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [unitImportOpen, setUnitImportOpen] = useState(false);
+  // «Koʻchirish → Yangi boʻlimga…»: boʻlim yaratilgach shu mavzu unga koʻchiriladi.
+  const [pendingMoveLessonId, setPendingMoveLessonId] = useState<string | null>(null);
+  const finishPendingMove = (unitId: string | null) => {
+    if (pendingMoveLessonId && unitId && selectedClassId) setUnitForClass(pendingMoveLessonId, selectedClassId, unitId);
+    setPendingMoveLessonId(null);
+  };
 
   // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
@@ -290,6 +311,7 @@ export default function LessonsPage() {
       if (cid === selectedClassId) createdId = id;
     });
     setUnitModalOpen(false);
+    finishPendingMove(createdId);
     if (createdId) setSelectedUnitId(createdId);
   };
 
@@ -312,6 +334,36 @@ export default function LessonsPage() {
   };
 
   const openLesson = (id: string) => router.push(`/lessons/${id}`);
+
+  /* Kartadagi sana/vaqt — saqlangan inglizcha matn («Sep 24», «8:00 AM») emas,
+     shu sinfning sessiyasidan: eng yaqin kelgusi (boʻlmasa oxirgi) dars,
+     «24-sen» va 24 soatlik «08:00 — 08:45». Brauzerda oʻzbekcha oy nomlari yoʻq —
+     `MONTHS_UZ_SHORT`. */
+  const intlMonthMissing = new Intl.DateTimeFormat(locale, { month: "short" }).format(new Date(2024, 8, 1)).startsWith("M0");
+  const lessonWhen = (lesson: Lesson) => {
+    const sessions = lessonSessions(lesson)
+      .filter((x) => !effectiveClassId || x.classId === effectiveClassId)
+      .sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin);
+    if (!sessions.length) return null;
+    const s = sessions.find((x) => x.date >= today) ?? sessions[sessions.length - 1];
+    const d = dateKeyToDate(s.date);
+    const month = intlMonthMissing
+      ? MONTHS_UZ_SHORT[d.getMonth()]
+      : new Intl.DateTimeFormat(locale, { month: "short" }).format(d).replace(".", "");
+    const hhmm = (m: number) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+    // Oʻzbek imlosi: kun va oy chiziqcha bilan («5-sen»), vaqt oraligʻi tire bilan («08:00 — 08:45»).
+    const sep = locale.startsWith("uz") ? "-" : " ";
+    const weekday = intlMonthMissing
+      ? DAYS_UZ_SHORT[(d.getDay() + 6) % 7]
+      : new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d).replace(".", "");
+    return {
+      day: String(d.getDate()),
+      month,
+      weekday,
+      date: `${d.getDate()}${sep}${month}`,
+      time: `${hhmm(s.startMin)} — ${hhmm(s.endMin)}`,
+    };
+  };
 
   const selectedClass = isDemoMode
     ? demoClasses![0]
@@ -353,6 +405,12 @@ export default function LessonsPage() {
           <ListChecks className="size-4" />
           {t("selectMenuItem")}
         </ContextMenuItem>
+        {unitsForClass.length > 1 && (
+          <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("units")}>
+            <ArrowDownUp className="size-4" />
+            {t("reorderMenuItem")}
+          </ContextMenuItem>
+        )}
         <ContextMenuItem
           variant="destructive"
           className="gap-2 cursor-pointer"
@@ -380,18 +438,18 @@ export default function LessonsPage() {
         data-active={unitPickMode && selectedUnitIds.has(unit.id) ? "true" : undefined}
         style={{ ["--card-accent" as string]: selectedClassHex, ...(unitPickMode && selectedUnitIds.has(unit.id) ? selectedClassTints.tint : {}), ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
-        {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
+        {unitPickMode && pickCircle(selectedUnitIds.has(unit.id))}{(
         <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
-          <Layers className="size-5" />
+          <LibraryBig className="size-5" />
         </div>
         )}
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-            {pad(unit.number)}. {unit.title}
+          <h4 className="text-body font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
+            {uNo(unit)}. {unit.title}
           </h4>
-          <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">{unit.description}</TypographyMuted>
+          <TypographyMuted className="text-caption leading-relaxed mt-1 line-clamp-1">{unit.description}</TypographyMuted>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground/70 shrink-0 whitespace-nowrap">
+        <div className="hidden sm:flex items-center gap-1.5 text-caption text-muted-foreground/70 shrink-0 whitespace-nowrap">
           <FileText className="size-3.5" />
           <span>{t("lessonsCountSuffix", { count: total })}</span>
         </div>
@@ -399,7 +457,7 @@ export default function LessonsPage() {
           <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
             <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: selectedClassHex }} />
           </div>
-          <span className="text-xs font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
+          <span className="text-caption font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
         </div>
       </button>
     );
@@ -409,54 +467,41 @@ export default function LessonsPage() {
   /* Tor ustun, TANLANGAN: qator kartaga "koʻtariladi" (ataylab morf —
      tanlangan boʻlim shu ustundagi asosiy obyekt boʻlgani uchun ikonka,
      tavsif va dars soni bilan toʻliq pasport oladi). */
-  const renderUnitSelected = (unit: Unit, isOver = false) => {
-    const { total } = unitProgress(unit.id);
+  /* Tor ustunda HAMMA boʻlim toʻliq karta (nuqtali kompakt qator yoʻq);
+     tanlangani tint va gradient ikonka bilan ajraladi. */
+  const renderUnitSelected = (unit: Unit, isOver = false, active = true) => {
+    const { total, pct } = unitProgress(unit.id);
+    const picked = unitPickMode && selectedUnitIds.has(unit.id);
     return withUnitMenu(unit,
       <button
         onClick={() => (unitPickMode
           ? toggleIn(selectedUnitIds, setSelectedUnitIds, unit.id)
-          : setSelectedUnitId(null))}
+          : setSelectedUnitId(active ? null : unit.id))}
         className={cn(
-          "list-card w-full flex items-center text-left gap-3 p-4 cursor-pointer",
+          "list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer",
           isOver && "ring-2"
         )}
-        data-active="true"
-        style={{ ["--card-accent" as string]: selectedClassHex, ...selectedClassTints.tint, ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
+        data-active={active || picked ? "true" : undefined}
+        style={{ ["--card-accent" as string]: selectedClassHex, ...(active || picked ? selectedClassTints.tint : {}), ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
-        {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
-        <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
-          <Layers className="size-5" />
+        {unitPickMode && pickCircle(selectedUnitIds.has(unit.id))}{(
+        <div
+          style={active ? selectedClassTints.gradientTile : { ...selectedClassTints.badge, ...selectedClassTints.iconText }}
+          className={cn("list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center", active && "text-white")}
+        >
+          <LibraryBig className="size-5" />
         </div>
         )}
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{pad(unit.number)}. {unit.title}</h4>
-          <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>
+          <h4 className="text-body font-semibold text-foreground leading-tight truncate">{uNo(unit)}. {unit.title}</h4>
+          {unit.description && <TypographyMuted className="text-caption leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>}
+          <div className="h-1 mt-2 rounded-full bg-muted overflow-hidden" title={t("classCoverage", { pct })}>
+            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: selectedClassHex }} />
+          </div>
         </div>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...selectedClassTints.badge, ...selectedClassTints.text }}>
+        <span className="text-caption font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...selectedClassTints.badge, ...selectedClassTints.text }}>
           {total}
         </span>
-      </button>
-    );
-  };
-
-  // Tor ustun, tanlanmagan: kompakt nuqtali qator
-  const renderUnitCompact = (unit: Unit, isOver = false) => {
-    const { total } = unitProgress(unit.id);
-    return withUnitMenu(unit,
-      <button
-        onClick={() => (unitPickMode
-          ? toggleIn(selectedUnitIds, setSelectedUnitIds, unit.id)
-          : setSelectedUnitId(unit.id))}
-        className={cn("list-row group w-full", isOver && "ring-2 rounded-lg")}
-        style={isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : undefined}
-      >
-        {unitPickMode
-          ? <Checkbox checked={selectedUnitIds.has(unit.id)} aria-label={t("selectAria")} className="pointer-events-none shrink-0" />
-          : <ClassSwatch hex={selectedClassHex} />}
-        <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
-          {pad(unit.number)}. {unit.title}
-        </span>
-        <span className="text-xs text-muted-foreground/60 tabular-nums shrink-0">{total}</span>
       </button>
     );
   };
@@ -470,6 +515,40 @@ export default function LessonsPage() {
      obyekt, va ularni bitta roʻyxatga qoʻshib oʻchirish «nimani
      oʻchiryapman?» degan savolni tugʻdiradi. Shu sabab ikkita mustaqil
      Set va ikkita panel. */
+  /* Tartiblash rejimi (`@/components/ReorderList`) — bir vaqtda bitta ustunda.
+     Qoralama faqat «Tayyor» da store'ga yoziladi; tanlash rejimi bilan birga yoqilmaydi. */
+  const [reorderKind, setReorderKind] = useState<"units" | "lessons" | null>(null);
+  const reorderDraft = useReorderDraft();
+  const reorderLabels = { drag: t("reorderDrag"), up: t("reorderUp"), down: t("reorderDown") };
+  const startReorder = (kind: "units" | "lessons") => {
+    if (isDemoMode) return;
+    setUnitPickMode(false); setSelectedUnitIds(new Set());
+    setLessonPickMode(false); setSelectedLessonIds(new Set());
+    setReorderKind(kind);
+    reorderDraft.start(kind === "units" ? unitsForClass.map((u) => u.id) : lessonsForUnit.map((l) => l.id));
+  };
+  const endReorder = (save: boolean) => {
+    if (save && reorderDraft.order && reorderDraft.movedIds.size > 0) {
+      if (reorderKind === "units") reorderUnits(reorderDraft.order);
+      else if (effectiveClassId) reorderLessons(reorderDraft.order, effectiveClassId);
+    }
+    reorderDraft.stop();
+    setReorderKind(null);
+  };
+  useEscape(reorderDraft.active, () => endReorder(false));
+  const reorderBar = (
+    <BulkActionBar>
+      <BulkActionCount>
+        {reorderDraft.movedIds.size > 0 ? t("reorderMoved", { count: reorderDraft.movedIds.size }) : t("reorderHint")}
+      </BulkActionCount>
+      <BulkActionDivider />
+      <BulkActionButton onClick={() => endReorder(false)}>{t("cancel")}</BulkActionButton>
+      <BulkActionButton className="bg-background text-foreground hover:bg-background/90" onClick={() => endReorder(true)}>
+        {t("reorderDone")}
+      </BulkActionButton>
+    </BulkActionBar>
+  );
+
   const [selectedUnitIds, setSelectedUnitIds] = useState<Set<string>>(new Set());
   const [selectedLessonIds, setSelectedLessonIds] = useState<Set<string>>(new Set());
   /** Qaysi panel tasdiq soʻrayapti. */
@@ -482,9 +561,15 @@ export default function LessonsPage() {
     setLessonPickMode(false);
     setSelectedUnitIds(new Set());
     setSelectedLessonIds(new Set());
+    setReorderKind(null);
+    reorderDraft.stop();
   }, [effectiveClassId]);
   // Boʻlim almashsa faqat DARS tanlovi tozalanadi (roʻyxat butunlay boshqa).
-  useEffect(() => { setLessonPickMode(false); setSelectedLessonIds(new Set()); }, [effectiveUnitId]);
+  useEffect(() => {
+    setLessonPickMode(false);
+    setSelectedLessonIds(new Set());
+    setReorderKind((k) => (k === "lessons" ? null : k));
+  }, [effectiveUnitId]);
 
   const toggleIn = (
     set: Set<string>,
@@ -575,6 +660,12 @@ export default function LessonsPage() {
      oʻng tugmaga tayanib boʻlmaydi — koʻpchilik uni bosib koʻrmaydi. */
   const [unitPickMode, setUnitPickMode] = useState(false);
   const [lessonPickMode, setLessonPickMode] = useState(false);
+  // Mavzular ustunidagi qidiruv — faqat nom boʻyicha, tanlangan boʻlim ichida.
+  const [lessonSearchOpen, setLessonSearchOpen] = useState(false);
+  const [lessonQuery, setLessonQuery] = useState("");
+  const lessonQ = lessonQuery.trim().toLocaleLowerCase();
+  const lessonMatches = (l: Lesson) => !lessonQ || (l.title ?? "").toLocaleLowerCase().includes(lessonQ);
+  const closeLessonSearch = () => { setLessonSearchOpen(false); setLessonQuery(""); };
 
   const startUnitPick = (id?: string) => {
     setUnitPickMode(true);
@@ -589,10 +680,10 @@ export default function LessonsPage() {
 
   /** Glif oʻrnidagi katakcha. `pointer-events-none` — bosishni kartaning
       oʻzi qabul qiladi (karta `<button>`, ichiga tugma qoʻyib boʻlmaydi). */
+  /* Tanlash rejimi: checkbox ikonka/varaqcha OLDIDA alohida turadi — sana va
+     boʻlim ikonkasi koʻrinib qoladi (nima tanlanayotgani bilinadi). */
   const pickCircle = (checked: boolean) => (
-    <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center border border-border bg-card">
-      <Checkbox checked={checked} aria-label={t("selectAria")} className="pointer-events-none" />
-    </div>
+    <Checkbox checked={checked} aria-label={t("selectAria")} className="pointer-events-none shrink-0" />
   );
 
   // "Boʻlimsiz" — keng ustun
@@ -608,13 +699,13 @@ export default function LessonsPage() {
         style={{ ["--card-accent" as string]: "var(--muted-foreground)" }}
       >
         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center bg-muted">
-          <Layers className="size-5 text-muted-foreground" />
+          <LibraryBig className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
-          <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">{t("noUnitDescription")}</TypographyMuted>
+          <h4 className="text-body font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
+          <TypographyMuted className="text-caption leading-relaxed mt-1 line-clamp-1">{t("noUnitDescription")}</TypographyMuted>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground/70 shrink-0 whitespace-nowrap">
+        <div className="hidden sm:flex items-center gap-1.5 text-caption text-muted-foreground/70 shrink-0 whitespace-nowrap">
           <FileText className="size-3.5" />
           <span>{t("lessonsCountSuffix", { count: total })}</span>
         </div>
@@ -622,7 +713,7 @@ export default function LessonsPage() {
           <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
             <div className="h-full rounded-full bg-muted-foreground/30 transition-all" style={{ width: `${pct}%` }} />
           </div>
-          <span className="text-xs font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
+          <span className="text-caption font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
         </div>
       </button>
     );
@@ -643,11 +734,11 @@ export default function LessonsPage() {
           style={{ ["--card-accent" as string]: "var(--muted-foreground)", backgroundColor: "var(--muted)" }}
         >
           <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={{ backgroundImage: `linear-gradient(135deg, var(--muted-foreground) 0%, oklch(0.4 0 0) 100%)` }}>
-            <Layers className="size-5" />
+            <LibraryBig className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-semibold text-foreground leading-tight block">{t("noUnitTitle")}</h4>
-            <TypographyMuted className="text-xs leading-snug mt-1">{t("noUnitShortDescription")}</TypographyMuted>
+            <h4 className="text-body font-semibold text-foreground leading-tight block">{t("noUnitTitle")}</h4>
+            <TypographyMuted className="text-caption leading-snug mt-1">{t("noUnitShortDescription")}</TypographyMuted>
           </div>
         </button>
       );
@@ -655,12 +746,19 @@ export default function LessonsPage() {
     return (
       <button
         onClick={() => setSelectedUnitId(NONE)}
-        className={cn("list-row group w-full", isOver && "ring-2 ring-muted-foreground/50 rounded-lg")}
+        className={cn(
+          "list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer",
+          isOver && "ring-2 ring-muted-foreground/50"
+        )}
+        style={{ ["--card-accent" as string]: "var(--muted-foreground)" }}
       >
-        <span className="size-2 rounded-full shrink-0 bg-muted-foreground/40" />
-        <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
-          {t("noUnitTitle")}
-        </span>
+        <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center bg-muted">
+          <LibraryBig className="size-5 text-muted-foreground" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h4 className="text-body font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
+          <TypographyMuted className="text-caption leading-snug mt-1 line-clamp-1">{t("noUnitShortDescription")}</TypographyMuted>
+        </div>
       </button>
     );
   };
@@ -672,11 +770,12 @@ export default function LessonsPage() {
       <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" mobile="self" data-tour="lessons-classes">
-        <ClassListPanel
-          page="lessons"
+        <LessonsClassPanel
           selectedClassId={selectedClassId ?? (isDemoMode ? LESSONS_TOUR_DEMO_CLASS_ID : "")}
           onSelect={handleSelectClass}
           onAddClass={() => setClassModalOpen(true)}
+          units={unitsSource}
+          lessons={lessonsSource}
           demoClasses={demoClasses ?? undefined}
         />
       </DashboardColumn>
@@ -700,24 +799,14 @@ export default function LessonsPage() {
           {/* Header */}
           <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
             <div className="flex items-center gap-2 min-w-0">
-              <SectionIcon><Layers /></SectionIcon>
+              <SectionIcon><LibraryBig /></SectionIcon>
               <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
+              {unitsForClass.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{unitsForClass.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {unitsForClass.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title={t("selectMenuItem")}
-                  aria-pressed={unitPickMode}
-                  className={cn("text-muted-foreground hover:text-foreground", unitPickMode && "text-foreground bg-muted")}
-                  onClick={() => (unitPickMode ? endUnitPick() : startUnitPick())}
-                >
-                  <ListChecks className="size-4" />
-                </Button>
-              )}
-              {unitsForClass.length > 0 && (
-                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
+              {/* Boʻsh holat oynasi faqat keng rejimda chiqadi — tor rejimda tugma sarlavhada. */}
+              {(unitsForClass.length > 0 || detailMode) && (
+                <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
                   <Plus className="size-4" />
                   <span>{t("addUnit")}</span>
                 </Button>
@@ -728,6 +817,7 @@ export default function LessonsPage() {
           {/* List */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
             <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+            {reorderKind === "units" && reorderBar}
             {unitPickMode && (
               <BulkActionBar>
                 <BulkActionCount>{t("selectedCount", { count: selectedUnitIds.size })}</BulkActionCount>
@@ -747,13 +837,30 @@ export default function LessonsPage() {
               </BulkActionBar>
             )}
             <ScrollArea className="h-full w-full">
-              <div className="px-3 pt-4 pb-5 space-y-1.5">
-                {detailMode ? (
+              <div className="px-3 pt-4 pb-5 space-y-2">
+                {reorderKind === "units" && reorderDraft.order ? (
+                  <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                    {(id, i, h) => {
+                      const unit = unitsSource.find((u) => u.id === id);
+                      if (!unit) return null;
+                      return (
+                        <div
+                          className="list-row w-full"
+                          style={reorderDraft.movedIds.has(id) ? selectedClassTints.tint : undefined}
+                        >
+                          {h.handle}
+                          <span className="text-body text-foreground truncate flex-1">{pad(i + 1)}. {unit.title}</span>
+                          {h.arrows}
+                        </div>
+                      );
+                    }}
+                  </ReorderList>
+                ) : detailMode ? (
                   /* Tor rejim — tanlangan katta, qolganlari kompakt */
                   <>
                     {unitsForClass.map((unit) => (
                       <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
-                        {(isOver) => (unit.id === effectiveUnitId ? renderUnitSelected(unit, isOver) : renderUnitCompact(unit, isOver))}
+                        {(isOver) => renderUnitSelected(unit, isOver, unit.id === effectiveUnitId)}
                       </UnitDropZone>
                     ))}
                     <UnitDropZone id="unit-none">{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
@@ -789,53 +896,6 @@ export default function LessonsPage() {
             </ScrollArea>
           </div>
 
-          {/* Bottom selected unit stats — Sinflar panel footeri bilan bir xil til (ochib/yopib qoʻyiladi) */}
-          {selectedUnit && unitStats && (
-            <div className="border-t border-border shrink-0">
-              <div className="flex items-center gap-3 px-4 py-3">
-                <div className="size-9 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
-                  <Layers className="size-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
-                    {pad(selectedUnit.number)}. {selectedUnit.title}
-                  </h4>
-                </div>
-                <button
-                  onClick={toggleUnitFooter}
-                  title={unitFooterOpen ? t("hideStats") : t("showStats")}
-                  aria-expanded={unitFooterOpen}
-                  className="shrink-0 p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted transition-colors"
-                >
-                  <ChevronDown className={cn("size-4 transition-transform duration-fast", unitFooterOpen && "rotate-180")} aria-hidden="true" />
-                </button>
-              </div>
-              {unitFooterOpen && (
-                <div className="px-4 pb-4">
-                  <div className="flex items-start divide-x divide-border">
-                    <div className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
-                      <p className="text-xs text-muted-foreground truncate">{t("lessonsStatLabel")}</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("lessonsUnitCount", { count: unitStats.lessons })}</p>
-                    </div>
-                    <div className="flex-1 min-w-0 px-3 first:pl-0 last:pr-0 text-center">
-                      <p className="text-xs text-muted-foreground truncate">{t("completedStatLabel")}</p>
-                      <p className="text-sm font-bold tabular-nums text-foreground mt-1">{t("lessonsUnitCount", { count: unitStats.completed })}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5 mt-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">{t("progress")}</span>
-                      <span className="font-bold tabular-nums text-foreground">{Math.round(unitStats.pct)}%</span>
-                    </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(unitStats.pct, 100)}%`, backgroundColor: selectedClassHex }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           <Dialog open={!!editUnitTarget} onOpenChange={(o) => !o && setEditUnitTarget(null)}>
             <DialogContent className="max-w-[440px]">
               <DialogHeader>
@@ -867,13 +927,13 @@ export default function LessonsPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>{t("deleteUnitDialogTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${pad(deleteUnitTarget.number)}. ${deleteUnitTarget.title}` })}
+                  {deleteUnitTarget && t("deleteUnitDialogDescription", { unit: `${uNo(deleteUnitTarget)}. ${deleteUnitTarget.title}` })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               {deleteUnitImpact.lessons > 0 && (
                 <div className="space-y-3">
                   <TypographyMuted>{t("deleteUnitImpact", deleteUnitImpact)}</TypographyMuted>
-                  <label className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-body">
                     <Checkbox
                       checked={keepLessonsOnUnitDelete}
                       onCheckedChange={(v) => setKeepLessonsOnUnitDelete(v === true)}
@@ -918,30 +978,37 @@ export default function LessonsPage() {
             <div className="flex items-center gap-2 min-w-0">
               <SectionIcon><FileText /></SectionIcon>
               <CardTitle className="truncate">{t("lessonsTitle")}</CardTitle>
+              {lessonsForUnit.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{lessonsForUnit.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <div className="hidden xl:flex items-center gap-1">
-                <Button variant="ghost" size="icon" title={t("searchAria")} className="text-muted-foreground hover:text-foreground">
+              {lessonsForUnit.length > 0 && (lessonSearchOpen ? (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="lesson-search"
+                    autoFocus
+                    value={lessonQuery}
+                    onChange={(e) => setLessonQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Escape") closeLessonSearch(); }}
+                    placeholder={t("lessonsSearchPlaceholder")}
+                    className="h-9 w-44 xl:w-56 pl-9 pr-8"
+                  />
+                  <button
+                    type="button"
+                    aria-label={t("cancel")}
+                    onClick={closeLessonSearch}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 size-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <Button variant="ghost" size="icon" title={t("searchAria")} aria-label={t("searchAria")} onClick={() => setLessonSearchOpen(true)} className="text-muted-foreground hover:text-foreground">
                   <Search className="size-4" />
                 </Button>
-                <Button variant="ghost" size="icon" title={t("sortAria")} className="text-muted-foreground hover:text-foreground">
-                  <ArrowDownUp className="size-4" />
-                </Button>
-                {lessonsForUnit.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title={t("selectMenuItem")}
-                    aria-pressed={lessonPickMode}
-                    className={cn("text-muted-foreground hover:text-foreground", lessonPickMode && "text-foreground bg-muted")}
-                    onClick={() => (lessonPickMode ? endLessonPick() : startLessonPick())}
-                  >
-                    <ListChecks className="size-4" />
-                  </Button>
-                )}
-              </div>
-              {effectiveUnitId && effectiveUnitId !== NONE && lessonsForUnit.length > 0 && (
-                <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={handleNewLessonChoice}>
+              ))}
+              {effectiveUnitId && lessonsForUnit.length > 0 && (
+                <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={effectiveUnitId === NONE ? handleNewLesson : handleNewLessonChoice}>
                   <Plus className="size-3.5" />
                   <span className="hidden lg:inline">{t("newLesson")}</span>
                 </Button>
@@ -952,6 +1019,7 @@ export default function LessonsPage() {
           {/* List */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
             <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent z-10 pointer-events-none" />
+            {reorderKind === "lessons" && reorderBar}
             {lessonPickMode && (
               <BulkActionBar>
                 <BulkActionCount>{t("selectedCount", { count: selectedLessonIds.size })}</BulkActionCount>
@@ -979,22 +1047,54 @@ export default function LessonsPage() {
                       <EmptyTitle>{t("lessonsEmptyTitle")}</EmptyTitle>
                       <EmptyDescription>{t("lessonsEmptyDescription")}</EmptyDescription>
                     </EmptyHeader>
-                    {effectiveUnitId !== NONE && (
+                    {(
                       <EmptyContent>
-                        <Button className="gap-2 h-9" onClick={handleNewLessonChoice}>
+                        <Button className="gap-2 h-9" onClick={effectiveUnitId === NONE ? handleNewLesson : handleNewLessonChoice}>
                           <Plus className="size-4" />
                           {t("newLesson")}
                         </Button>
                       </EmptyContent>
                     )}
                   </Empty>
+                ) : reorderKind === "lessons" && reorderDraft.order ? (
+                  <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
+                    {(id, i, h) => {
+                      const lesson = lessonsSource.find((l) => l.id === id);
+                      if (!lesson) return null;
+                      const moved = reorderDraft.movedIds.has(id);
+                      return (
+                        <div
+                          className="list-card flex items-center gap-3 p-4"
+                          data-active={moved ? "true" : undefined}
+                          style={{ ["--card-accent" as string]: selectedClassHex, ...(moved ? selectedClassTints.tint : {}) }}
+                        >
+                          {h.handle}
+                          <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
+                            <FileText className="size-5" />
+                          </div>
+                          <h4 className="min-w-0 flex-1 text-body font-semibold text-foreground leading-tight truncate">
+                            {pad(i + 1)}. {lesson.title}
+                          </h4>
+                          {h.arrows}
+                        </div>
+                      );
+                    }}
+                  </ReorderList>
                 ) : (
-                  lessonsForUnit.map((lesson) => {
-                    const lessonUnit = unitsSource.find((u) => u.id === lesson.unitId);
+                  <>
+                  {lessonQ && !lessonsForUnit.some(lessonMatches) && (
+                    <p className="py-8 text-center text-caption text-muted-foreground">{t("lessonsSearchEmpty", { q: lessonQuery.trim() })}</p>
+                  )}
+                  {lessonsForUnit.map((lesson, i) => {
+                    // Qidiruvda raqam asl tartibdan qoladi (i — filtrsiz roʻyxatdagi oʻrin).
+                    if (!lessonMatches(lesson)) return null;
+                    // Koʻp sinfli mavzuda boʻlim — shu sinfniki (`unitByClass`), asosiy sinfniki emas.
+                    const lessonUnitId = effectiveClassId ? unitIdForClass(lesson, effectiveClassId) : lesson.unitId;
+                    const lessonUnit = unitsSource.find((u) => u.id === lessonUnitId);
                     // "Koʻchirish" submenu — joriy boʻlim va "Boʻlimsiz" oʻzi chiqarib tashlanadi.
                     const moveTargets = [
-                      ...unitsForClass.filter((u) => u.id !== lesson.unitId),
-                      ...(lesson.unitId !== null ? [null] : []),
+                      ...unitsForClass.filter((u) => u.id !== lessonUnitId),
+                      ...(lessonUnitId ? [null] : []),
                     ];
                     return (
                     <ContextMenu key={lesson.id}>
@@ -1004,43 +1104,57 @@ export default function LessonsPage() {
                         onClick={() => (lessonPickMode
                           ? toggleIn(selectedLessonIds, setSelectedLessonIds, lesson.id)
                           : openLesson(lesson.id))}
-                        className="list-card group flex items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
+                        className="list-card group flex flex-wrap items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
                         data-active={lessonPickMode && selectedLessonIds.has(lesson.id) ? "true" : undefined}
                         style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
-                        {lessonPickMode ? pickCircle(selectedLessonIds.has(lesson.id)) : (
-                        <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
-                          <FileText className="size-5" />
-                        </div>
+                        {lessonPickMode && pickCircle(selectedLessonIds.has(lesson.id))}{(
+                          <LessonDateLeaf lesson={lesson} hex={selectedClassHex} day={lessonWhen(lesson)?.day} month={lessonWhen(lesson)?.month} />
                         )}
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-                            {pad(lesson.number)}. {lesson.title}
+                          <h4 className="text-body font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
+                            {pad(i + 1)}. {lesson.title}
                           </h4>
-                          {lessonUnit && (
-                            <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                              <ClassSwatch hex={selectedClassHex} />
-                              <span className="truncate">{pad(lessonUnit.number)}. {lessonUnit.title}</span>
-                            </div>
-                          )}
+                          {(() => {
+                            const when = lessonWhen(lesson);
+                            if (!lessonUnit && !when) return null;
+                            return (
+                              <div className="flex items-center gap-1.5 mt-1 text-caption text-muted-foreground min-w-0">
+                                {lessonUnit && <ClassSwatch hex={selectedClassHex} />}
+                                {lessonUnit && <span className="truncate">{uNo(lessonUnit)}. {lessonUnit.title}</span>}
+                                {when && (
+                                  <span className="shrink-0 tabular-nums">
+                                    {lessonUnit && "· "}{when.weekday}, {when.time}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                         <div className="shrink-0 flex items-center gap-3">
-                          {lesson.date && (
-                            <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground/60 tabular-nums">
-                              <span>{lesson.date}</span>
-                              {lesson.time && (
-                                <>
-                                  <span className="text-muted-foreground/30">·</span>
-                                  <span>{lesson.time}</span>
-                                </>
-                              )}
-                              {lesson.classCount && lesson.classCount > 1 && (
-                                <span className="text-muted-foreground/40 font-medium">+{lesson.classCount - 1}</span>
-                              )}
-                            </div>
-                          )}
-                          <LessonStatusPill status={lesson.status} />
+                          <LessonMetaChips lesson={lesson} />
+                          <LessonStatusPill lesson={lesson} />
                         </div>
+                        {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) && (
+                          /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli kartaning ostidagi
+                             lentada. Tugmalar kartaning sudrash/ochish hodisalarini toʻsadi. */
+                          <div
+                            className="basis-full flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/60 px-3 py-2 text-caption"
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Clock className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="flex-1 min-w-0 font-medium text-foreground">{tc("askTaughtBanner")}</span>
+                            <Button size="sm" className="h-7 gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => setTaught(lesson.id, today)}>
+                              <Check className="size-3.5" />
+                              {tc("yesTaught")}
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 gap-1.5 bg-card text-foreground" onClick={() => bumpLesson(lesson.id, effectiveClassId)}>
+                              <SkipForward className="size-3.5" />
+                              {tc("bumpNext")}
+                            </Button>
+                          </div>
+                        )}
                       </DraggableLesson>
                     </ContextMenuTrigger>
                     <ContextMenuContent>
@@ -1048,6 +1162,31 @@ export default function LessonsPage() {
                         <ListChecks className="size-4" />
                         {t("selectMenuItem")}
                       </ContextMenuItem>
+                      <ContextMenuSeparator />
+                      <ContextMenuLabel className="text-label">{tc("statusSection")}</ContextMenuLabel>
+                      {(() => {
+                        const cur = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
+                        return LESSON_STATES.map((st) => (
+                          <ContextMenuItem key={st.key} className="gap-2 cursor-pointer" onClick={() => cur !== st.key && applyLessonState(lesson, st.key)}>
+                            <st.Icon className={cn("size-4", st.iconCls)} />
+                            <span className="flex-1">{tc(st.label)}</span>
+                            {cur === st.key && <Check className="size-4" />}
+                          </ContextMenuItem>
+                        ));
+                      })()}
+                      <ContextMenuSeparator />
+                      {!isTaught(lesson) && lessonSessions(lesson).some((x) => x.classId === effectiveClassId) && (
+                        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => bumpLesson(lesson.id, effectiveClassId!)}>
+                          <SkipForward className="size-4" />
+                          {tc("bump")}
+                        </ContextMenuItem>
+                      )}
+                      {lessonsForUnit.length > 1 && (
+                        <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => startReorder("lessons")}>
+                          <ArrowDownUp className="size-4" />
+                          {t("reorderMenuItem")}
+                        </ContextMenuItem>
+                      )}
                       <ContextMenuSeparator />
                       <ContextMenuSub>
                         <ContextMenuSubTrigger className="gap-2 cursor-pointer">
@@ -1063,9 +1202,18 @@ export default function LessonsPage() {
                             >
                               <ClassSwatch
                                 hex={target ? selectedClassHex : "var(--muted-foreground)"} />
-                              {target ? `${pad(target.number)}. ${target.title}` : t("noUnitTitle")}
+                              {target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle")}
                             </ContextMenuItem>
                           ))}
+                          {/* Boʻsh ichki menyu chiqmasin: har doim «Yangi boʻlimga…» bor. */}
+                          {moveTargets.length > 0 && <ContextMenuSeparator />}
+                          <ContextMenuItem
+                            className="gap-2 cursor-pointer"
+                            onClick={() => { setPendingMoveLessonId(lesson.id); handleCreateUnit(); }}
+                          >
+                            <Plus className="size-4" />
+                            {t("moveToNewUnit")}
+                          </ContextMenuItem>
                         </ContextMenuSubContent>
                       </ContextMenuSub>
                       <ContextMenuSeparator />
@@ -1080,7 +1228,8 @@ export default function LessonsPage() {
                     </ContextMenuContent>
                     </ContextMenu>
                     );
-                  })
+                  })}
+                  </>
                 )}
               </div>
             </ScrollArea>
@@ -1111,15 +1260,15 @@ export default function LessonsPage() {
           <UnitImportModal
             classId={selectedClassId}
             onDetailed={() => { setUnitImportOpen(false); setUnitModalOpen(true); }}
-            onCreated={(id) => { setUnitImportOpen(false); if (id) setSelectedUnitId(id); }}
-            onClose={() => setUnitImportOpen(false)}
+            onCreated={(id) => { setUnitImportOpen(false); finishPendingMove(id ?? null); if (id) setSelectedUnitId(id); }}
+            onClose={() => { setUnitImportOpen(false); setPendingMoveLessonId(null); }}
           />
         )}
         {unitModalOpen && (
           <CreateUnitModal
             defaultClassIds={selectedClassId ? [selectedClassId] : []}
             onSubmit={handleUnitSubmit}
-            onClose={() => setUnitModalOpen(false)}
+            onClose={() => { setUnitModalOpen(false); setPendingMoveLessonId(null); }}
           />
         )}
 

@@ -1,8 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { byNumber, ordinalsOf, pad2 } from "@/lib/ordinals";
 import { useEffect, useMemo, useState } from "react";
-import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, Target, Plus, Check, X, Presentation, ListChecks } from "lucide-react";
+import { SlidersHorizontal, ChevronDown, Ban, LibraryBig, CalendarDays, Target, Plus, Check, X, Presentation, ListChecks } from "lucide-react";
 import { listSetsAction } from "@/server/actions/assess";
 import type { ActivitySetRow } from "@/server/db/schema";
 import {
@@ -12,7 +13,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { classColor } from "@/lib/grades-data";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
@@ -194,7 +194,9 @@ export default function DetailsPanel({
             <div className="space-y-3">
               {selectedClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
-                const unitsForClass = units.filter((u) => u.classId === c.id).sort((a, b) => a.number - b.number);
+                const unitsForClass = units.filter((u) => u.classId === c.id).sort(byNumber);
+                const unitOrdinals = ordinalsOf(unitsForClass);
+                const unitNo = (u: { id: string; number: number }) => pad2(unitOrdinals.get(u.id) ?? u.number);
                 const curUnitId = lesson.unitByClass?.[c.id] ?? (c.id === selectedIds[0] ? lesson.unitId ?? null : null);
                 const unit = units.find((u) => u.id === curUnitId);
                 return (
@@ -203,12 +205,12 @@ export default function DetailsPanel({
                       <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 hover:bg-accent/40 transition-colors text-left">
                         <span className="flex items-center gap-3 min-w-0">
                           <span className="size-9 rounded-full flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
-                            <Layers className="size-4" />
+                            <LibraryBig className="size-4" />
                           </span>
                           <span className="flex flex-col min-w-0">
                             <span className="text-xs text-muted-foreground leading-tight">{c.name}</span>
                             <span className="text-sm font-semibold text-foreground truncate leading-tight">
-                              {unit ? `${String(unit.number).padStart(2, "0")}. ${unit.title}` : t("noUnitSelected")}
+                              {unit ? `${unitNo(unit)}. ${unit.title}` : t("noUnitSelected")}
                             </span>
                           </span>
                         </span>
@@ -228,7 +230,7 @@ export default function DetailsPanel({
                         return (
                           <DropdownMenuItem key={u.id} onSelect={() => onSetUnitForClass(c.id, u.id)} className="gap-2 py-2 rounded-lg">
                             {dot(hex)}
-                            <span className="flex-1 truncate">{String(u.number).padStart(2, "0")}. {u.title}</span>
+                            <span className="flex-1 truncate">{unitNo(u)}. {u.title}</span>
                             {on && <Check className="size-4 shrink-0" />}
                           </DropdownMenuItem>
                         );

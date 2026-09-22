@@ -1,8 +1,8 @@
 import { useTranslations } from "next-intl";
-import { CircleCheck, CalendarCheck, CalendarX, PencilLine, type LucideIcon } from "lucide-react";
+import { CircleCheck, CalendarCheck, CalendarX, PencilLine, FileCheck, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { LessonStatus } from "@/lib/lessons-data";
+import { isTaught, type Lesson, type LessonStatus } from "@/lib/lessons-data";
 
 /**
  * Mavzu holati — YAGONA rang/ikonka/yorliq manbai (avval `NextLessonsCard`
@@ -84,5 +84,50 @@ export function LessonStatusPill({ status, className }: { status: LessonStatus; 
       <Icon className="size-3" />
       {label[status]}
     </Badge>
+  );
+}
+
+const PILL = "h-5 gap-1 rounded-full border-transparent px-2 text-tag font-semibold leading-none";
+
+/** Dars sikli — «Dars rejasi» va «Oʻtildi» (ikki MUSTAQIL belgi, `isTaught`).
+    Hech biri boʻlmasa hech narsa chizilmaydi: kartadagi sana matni yetarli. */
+export function LessonCyclePills({ lesson, className }: { lesson: Lesson; className?: string }) {
+  const t = useTranslations("LessonCycle");
+  const taught = isTaught(lesson);
+  const plan = !!lesson.planReady;
+  if (!plan && !taught) return null;
+  return (
+    <span className={cn("inline-flex items-center gap-1", className)}>
+      {plan && (
+        <Badge variant="secondary" className={cn(PILL, "bg-info/10 text-info")}>
+          <FileCheck className="size-3" />
+          {t("planReady")}
+        </Badge>
+      )}
+      {taught && (
+        <Badge variant="secondary" className={cn(PILL, "bg-success/10 text-success")}>
+          <CircleCheck className="size-3" />
+          {t("taught")}
+        </Badge>
+      )}
+    </span>
+  );
+}
+
+/** Jadval bloki burchagi uchun — bitta, eng muhim belgi (oʻtildi > reja). */
+export function LessonCycleBadge({ lesson, className }: { lesson: Lesson; className?: string }) {
+  const t = useTranslations("LessonCycle");
+  const taught = isTaught(lesson);
+  if (!lesson.planReady && !taught) return null;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 bg-background/85 px-1.5 py-0.5 text-micro font-semibold text-foreground/75 shadow-sm backdrop-blur-sm",
+        className
+      )}
+    >
+      <span className={cn("size-1.5 shrink-0 rounded-full", taught ? "bg-success" : "bg-info")} />
+      {taught ? t("taught") : t("planReady")}
+    </span>
   );
 }

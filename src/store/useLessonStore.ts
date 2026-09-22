@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { lessonClassIds, lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession } from "@/lib/lessons-data";
+import type { SessionMove } from "@/lib/lesson-shift";
+import { lessonClassIds, lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession, type LessonPlanState } from "@/lib/lessons-data";
 
 /* ════════════════════════════════════════════════════════════════════
    MAVZU BANKI — server-backed store (6-bosqich migratsiyasi)
@@ -56,6 +57,15 @@ function scheduleMapOf(l: Lesson): Record<string, LessonSession[]> {
   return {};
 }
 
+/** `orderedIds` dagi elementlarga `number = oʻrin + 1`; qiymati oʻzgarmaganlar aynan oʻsha obyekt qoladi. */
+function renumber<T extends { id: string; number: number }>(items: T[], orderedIds: string[]): T[] {
+  const pos = new Map(orderedIds.map((id, i) => [id, i + 1]));
+  return items.map((it) => {
+    const n = pos.get(it.id);
+    return n === undefined || n === it.number ? it : { ...it, number: n };
+  });
+}
+
 /* ── Pure selektorlar ── */
 export function unitsForClass(units: Unit[], classId: string): Unit[] {
   return units.filter((u) => u.classId === classId).sort((a, b) => a.number - b.number);
@@ -84,6 +94,13 @@ interface LessonState {
       ham oʻchadi (jadvaldagi sessiyalari bilan). `false` — darslar saqlanib,
       «Boʻlimsiz» ga oʻtadi. */
   deleteUnit: (id: string, opts?: { withLessons?: boolean }) => void;
+  /** Tartiblash rejimi «Tayyor»: berilgan guruh (bitta sinf boʻlimlari yoki
+      bitta boʻlim mavzulari) `number` i roʻyxat tartibida 1..n qilib yoziladi.
+      Oʻzgarmagan qatorlar tegilmaydi — sinxron diff faqat surilganlarni yuboradi. */
+  reorderUnits: (orderedIds: string[]) => void;
+  /** `classId` — qaysi sinf koʻrinishida tartiblandi: koʻp sinfli mavzuda tartib
+      `orderByClass[classId]` ga yoziladi, umumiy `number` ga tegilmaydi. */
+  reorderLessons: (orderedIds: string[], classId: string) => void;
   /** Oʻchirilgan boʻlimni (va unga tegishli boʻlgan darslar boʻlim-bogʻlanishini) qaytarish — undo uchun. */
   restoreUnit: (unit: Unit, lessonIds: string[]) => void;
 
@@ -94,9 +111,19 @@ interface LessonState {
   scheduleLesson: (id: string, dateKey: string, startMin: number, endMin: number) => void;
   unscheduleLesson: (id: string) => void;
   setStatus: (id: string, status: LessonStatus) => void;
+  /** Dars rejasi tayyor belgisi. */
+  setPlanReady: (id: string, ready: boolean) => void;
+  setPlanState: (id: string, state: LessonPlanState) => void;
+  /** Oʻtildi (`dateKey`) / oʻtilmagan (`null`). Eski `status` ham moslanadi —
+      progress chiziqlari va boshqa isteʼmolchilar hali `Completed` ni oʻqiydi. */
+  setTaught: (id: string, dateKey: string | null) => void;
 
   /** Bitta sessiyani boshqa sana/vaqtga koʻchirish (planner drag/tahrir). */
   moveSession: (id: string, classId: string, oldDate: string, oldStartMin: number, newDate: string, newStartMin: number, newEndMin: number) => void;
+  /** Surish dvigateli (`@/lib/lesson-shift`) natijasini BITTA holat oʻzgarishida
+      qoʻllash: har darsda `from` lar olinib, `to` lar qoʻshiladi (toʻplam
+      sifatida — bitta darsning ketma-ket sessiyalari ham toʻgʻri siljiydi). */
+  applySessionMoves: (classId: string, moves: SessionMove[]) => void;
   /** Berilgan sinfdagi aynan bitta sessiyani olib tashlash (bankka qaytarish). */
   unscheduleSession: (id: string, classId: string, date: string, startMin: number) => void;
   /** Oʻchirilgan darsni TOʻLIQ (content/standards/scheduleByClass bilan) qaytarish. */
@@ -129,6 +156,20 @@ export const useLessonStore = create<LessonState>()(
         set((s) => ({ units: [...s.units, { id, classId, number: nextNumber, title, description }] }));
         return id;
       },
+      reorderUnits: (orderedIds) => set((s) => ({ units: renumber(s.units, orderedIds) })),
+      reorderLessons: (orderedIds, classId) => set((s) => {
+        const pos = new Map(orderedIds.map((id, i) => [id, i + 1]));
+        return {
+          lessons: s.lessons.map((l) => {
+            const n = pos.get(l.id);
+            if (n === undefined) return l;
+            if (lessonClassIds(l).length > 1) {
+              return l.orderByClass?.[classId] === n ? l : { ...l, orderByClass: { ...l.orderByClass, [classId]: n } };
+            }
+            return n === l.number ? l : { ...l, number: n };
+          }),
+        };
+      }),
       updateUnit: (id, patch) => set((s) => ({ units: s.units.map((u) => (u.id === id ? { ...u, ...patch } : u)) })),
       deleteUnit: (id, opts) => set((s) => {
         const withLessons = opts?.withLessons ?? true;
@@ -176,6 +217,17 @@ export const useLessonStore = create<LessonState>()(
         } : l),
       })),
       setStatus: (id, status) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, status } : l)) })),
+      setPlanState: (id, state) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: state === "ready", planStatus: state === "ready" ? undefined : state } : l)) })),
+      setPlanReady: (id, ready) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: ready } : l)) })),
+      setTaught: (id, dateKey) => set((s) => ({
+        lessons: s.lessons.map((l) => {
+          if (l.id !== id) return l;
+          const status: LessonStatus = dateKey
+            ? "Completed"
+            : anySessions(scheduleMapOf(l)) ? "Scheduled" : "Unscheduled";
+          return { ...l, taughtAt: dateKey, status };
+        }),
+      })),
 
       moveSession: (id, classId, oldDate, oldStartMin, newDate, newStartMin, newEndMin) => set((s) => ({
         lessons: s.lessons.map((l) => {
@@ -195,6 +247,37 @@ export const useLessonStore = create<LessonState>()(
           };
         }),
       })),
+
+      applySessionMoves: (classId, moves) => set((s) => {
+        const byLesson = new Map<string, SessionMove[]>();
+        for (const m of moves) byLesson.set(m.lessonId, [...(byLesson.get(m.lessonId) ?? []), m]);
+        return {
+          lessons: s.lessons.map((l) => {
+            const ms = byLesson.get(l.id);
+            if (!ms) return l;
+            const base = scheduleMapOf(l);
+            const arr = [...(base[classId] ?? [])];
+            // `to` faqat `from` haqiqatan topilgan (yoki sanasizdan kelgan) boʻlsa qoʻshiladi —
+            // eskirgan koʻchish (kechikkan undo) sessiyani ikkilantirmasin.
+            for (const m of ms) {
+              if (m.from) {
+                const i = arr.findIndex((x) => x.date === m.from!.date && x.startMin === m.from!.startMin);
+                if (i < 0) continue;
+                arr.splice(i, 1);
+              }
+              if (m.to && !arr.some((x) => x.date === m.to!.date && x.startMin === m.to!.startMin)) arr.push({ ...m.to });
+            }
+            arr.sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin);
+            const scheduleByClass = { ...base };
+            if (arr.length) scheduleByClass[classId] = arr; else delete scheduleByClass[classId];
+            const has = anySessions(scheduleByClass);
+            const status: LessonStatus = !has && l.status === "Scheduled" ? "Unscheduled"
+              : has && l.status === "Unscheduled" ? "Scheduled" : l.status;
+            const primary = (l.classIds && l.classIds[0]) || l.classId;
+            return { ...l, scheduleByClass, status, ...(classId === primary ? legacyScheduleFields(scheduleByClass[primary]) : {}) };
+          }),
+        };
+      }),
 
       unscheduleSession: (id, classId, date, startMin) => set((s) => ({
         lessons: s.lessons.map((l) => {

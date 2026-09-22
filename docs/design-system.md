@@ -409,6 +409,11 @@ Ilovadagi barcha karta va roʻyxat elementlari "Karta pasporti v2" qoidalariga b
 
 ---
 
+
+**Deviatsiyalar (2026-09-22, Darslar sahifasi):**
+- Tanlanmagan sinf/boʻlim kartasida iconbox — 18% tint fon + rangli glif; tanlanganda gradient + oq glif (`ClassListPanel` deviatsiyasi bilan bir xil sabab: koʻp karta orasida tanlangani ajralishi kerak).
+- Karta ichidagi «Oʻtildimi?» tasdiqlash lentasi tugmalari 28px (`h-7`) — 72px karta ichida 36px ogʻir; faqat shu lenta uchun.
+
 ## 7. Modal sarlavhasi (standart)
 
 Barcha modallar **bir xil** sarlavha qatoridan foydalanadi — `DialogHeaderBar`

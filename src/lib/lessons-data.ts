@@ -47,9 +47,53 @@ export type Lesson = {
   unitByClass?: Record<string, string | null>;
   /** Har bir sinf uchun alohida rejalashtirish: classId → sessiyalar massivi (koʻp sana). */
   scheduleByClass?: Record<string, LessonSession[]>;
+  /** ── Dars sikli — ikki MUSTAQIL belgi (`status` dan alohida) ──
+   *  `status` jadvalga qoʻyilganlikni bildirardi va import qilinganda hamma
+   *  mavzu «Rejalashtirilgan» boʻlib qolardi. Endi koʻrinadigan holat shu
+   *  ikkisidan: reja tayyormi va dars oʻtildimi. `lessons.data` JSONB
+   *  ichida, migratsiyasiz. */
+  /** Dars rejasi tayyor — oʻqituvchi oʻzi belgilaydi. */
+  planReady?: boolean;
+  /** Qoʻlda tanlangan «tayyor emas» holati. Yoʻq boʻlsa — matndan avtomatik. */
+  planStatus?: "none" | "draft";
+  /** Koʻp sinfli mavzuning sinf boʻyicha tartibi (tartiblash rejimida yoziladi).
+      Yoʻq boʻlsa umumiy `number` ishlatiladi. */
+  orderByClass?: Record<string, number>;
+  /** Dars oʻtilgan kun ("YYYY-MM-DD"); yoʻq/null — oʻtilmagan. */
+  taughtAt?: string | null;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };
+
+/** Mavzuning shu sinfdagi tartib kaliti va shu boʻyicha taqqoslovchi. */
+export function lessonOrderFor(l: Lesson, classId: string | null | undefined): number {
+  return (classId ? l.orderByClass?.[classId] : undefined) ?? l.number;
+}
+export const byLessonOrder = (classId: string | null | undefined) => (a: Lesson, b: Lesson) =>
+  lessonOrderFor(a, classId) - lessonOrderFor(b, classId);
+
+/** Dars oʻtilganmi. Eski «Tugallandi» (`status: "Completed"`) mavzular ham
+    oʻtilgan hisoblanadi — maʼlumot koʻchirilmaydi. */
+export function isTaught(l: Lesson): boolean {
+  return l.taughtAt != null || (l.taughtAt === undefined && l.status === "Completed");
+}
+
+/** Qoralama chegarasi: muharrir matnida shuncha soʻz boʻlsa, reja «boshlangan». */
+export const PLAN_DRAFT_MIN_WORDS = 20;
+
+/** Dars rejasi holati: «tayyor» faqat qoʻlda (`planReady`); `planStatus`
+    qoʻlda tanlangan boʻlsa — u; aks holda matnda
+    `PLAN_DRAFT_MIN_WORDS` va undan koʻp soʻz boʻlsa — «qoralama». Soʻz
+    soni harfdan ishonchliroq: «test» kabi yozuvlar chegaradan oʻtmaydi. */
+export type LessonPlanState = "none" | "draft" | "ready";
+
+export function lessonPlanState(l: Lesson): LessonPlanState {
+  if (l.planReady) return "ready";
+  if (l.planStatus) return l.planStatus;
+  const text = (l.content ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ");
+  const words = text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+  return words >= PLAN_DRAFT_MIN_WORDS ? "draft" : "none";
+}
 
 /** Dars sessiyasi — bitta sana + vaqt oraligʻi. */
 export type LessonSession = { date: string; startMin: number; endMin: number };

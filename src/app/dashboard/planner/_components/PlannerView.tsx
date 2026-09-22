@@ -31,7 +31,8 @@ import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
-import { lessonSessions, lessonClassIds, unitIdForClass, type Lesson } from "@/lib/lessons-data";
+import { lessonSessions, lessonClassIds, unitIdForClass, isTaught, type Lesson } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -73,7 +74,7 @@ import {
 import { EventCard } from "@/components/calendar/EventCard";
 import { AddTopicButton } from "@/components/calendar/AddTopicButton";
 import { LessonChip } from "@/components/calendar/LessonChip";
-import { LessonStatusBadge, LessonStatusPill } from "@/components/LessonStatusBadge";
+import { LessonCycleBadge, LessonCyclePills } from "@/components/LessonStatusBadge";
 import { useTourRequest } from "@/components/tour/tour-request";
 import { makePlannerTourDemo } from "@/components/tour/planner-tour-demo";
 
@@ -237,7 +238,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const moveSession = useLessonStore((s) => s.moveSession);
   const unscheduleSession = useLessonStore((s) => s.unscheduleSession);
   const restoreLesson = useLessonStore((s) => s.restoreLesson);
-  const setStatus = useLessonStore((s) => s.setStatus);
+  const setTaught = useLessonStore((s) => s.setTaught);
 
   const [blockModal, setBlockModal] = useState<{ date: Date } | null>(null);
   const [blockLabel, setBlockLabel] = useState("");
@@ -774,7 +775,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
             <PillHoverTime startMin={p.startMin} endMin={p.endMin} />
             <div className="flex items-center gap-1.5">
               {cls && <ClassBadge color={color} name={cls.name} />}
-              <LessonStatusPill status={p.lesson.status} />
+              <LessonCyclePills lesson={p.lesson} />
             </div>
           </div>
         }
@@ -1647,7 +1648,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                                 leading={done ? <Check className="size-3.5 shrink-0" strokeWidth={3} style={tints.textOnSolid} /> : <FileText className="size-3.5 shrink-0" style={tints.textOnSolid} />}
                                 style={{ height: h }}
                                 className="h-full transition-all hover:brightness-95"
-                                actions={<LessonStatusBadge status={l.status} />}
+                                actions={<LessonCycleBadge lesson={l} />}
                               >
                                 <span style={tints.textOnSolidMuted} className="mt-0.5 flex items-center gap-1.5 truncate text-tag">
                                   {minToHHMM(start)} — {minToHHMM(end)}
@@ -1958,16 +1959,16 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {editLesson && (
               <div className="flex flex-wrap gap-2">
                 <Button
-                  variant={editLesson.status === "Completed" ? "soft" : "outline"}
+                  variant={isTaught(editLesson) ? "soft" : "outline"}
                   size="sm" className="gap-1.5"
                   onClick={() => {
                     if (!editLesson) return;
-                    const next = editLesson.status === "Completed" ? "Scheduled" : "Completed";
-                    setStatus(editLesson.id, next);
-                    toast.success(next === "Completed" ? t("markedCompletedToast") : t("rescheduledToast"));
+                    const taught = isTaught(editLesson);
+                    setTaught(editLesson.id, taught ? null : todayKey());
+                    toast.success(taught ? t("rescheduledToast") : t("markedCompletedToast"));
                   }}>
                   <Check className="size-4" />
-                  {editLesson.status === "Completed" ? t("completedCheck") : t("markCompleted")}
+                  {isTaught(editLesson) ? t("completedCheck") : t("markCompleted")}
                 </Button>
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
                   if (!editTarget) return;

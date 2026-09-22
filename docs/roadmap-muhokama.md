@@ -399,3 +399,20 @@ Yuqoridagi 6.1–6.4 "qachon" ni belgilaydi. Bu boʻlim — 6.2/6.3 doirasidagi 
 4. Keyinroq: parallel ichida alohida reja, setkani Excel'dan import, oʻqituvchi cheklovlari (boʻsh kun/soat), `docs/dars-jadvali-spec.md` ni yangilash.
 
 **Qaytish sharti:** 1 va 2 tayyor boʻlib, bitta real maktab jadvali boshidan oxirigacha tuzilib, saqlanib, chop etilganda — darvoza olib tashlanadi.
+
+### 6.7. ⏸ Oʻquv yili xaritasi (curriculum map) — olib tashlandi, keyinroq quriladi (2026-09-21)
+
+**Holat:** `maxdum/tartiblash-rejimi` branch'ida bir necha variant sinab koʻrildi va **hammasi olib tashlandi** — Darslar sahifasida hozir faqat uch ustunli tuzilma (sinflar → boʻlimlar → mavzular) qoladi. Qaror: toʻgʻri shakl topilmaguncha koʻrsatmaymiz.
+
+**Nima sinab koʻrildi va nega yoqmadi:**
+- Alohida `/dashboard/lessons/yil` sahifasi, uch ustma-ust panel (qamrov kartalari, 12 oylik kalendar, boʻlimlar jadvali) — panellar kesilib, maʼlumot tarqoq chiqdi.
+- Vaqt chizigʻi (chapda sinflar, yuqorida oylar, boʻlimlar chiziq sifatida) — rad etildi.
+- Sahifa sarlavhasi + «Tuzilma / Oʻquv yili» tablari — kerak emas deb topildi.
+- Ustunlar ichidagi 12 oylik rangli kalendar (Sinflar sarlavhasidan — barcha sinflar, Boʻlimlar sarlavhasidan — bitta sinf, boʻlim tuslarida) — eng yaqin variant, lekin baribir olib tashlandi.
+
+**Qaytganda hisobga olinadigan narsalar:**
+1. Kalendar oraligʻi **Sozlamalar → Oʻquv yili** muddatidan olinadi. Muddat notoʻgʻri kiritilgan boʻlsa (masalan 1-avgust – 25-may), xarita ham notoʻgʻri boshlanadi — bu foydalanuvchini chalkashtirdi.
+2. Brauzerlarda oʻzbek/qoraqalpoq oy va hafta kuni nomlari yoʻq (`Intl` «M09», «M T W» beradi) — `MONTHS_UZ_SHORT` / `DAYS_UZ_SHORT` ishlatilsin.
+3. Flex ustun ichidagi panelga `shrink-0` kerak, aks holda pastki qismi kesiladi.
+4. Maʼlumot manbai tayyor: mavzu sessiyalari (`lessonSessions`), «Oʻtildi» belgisi (`isTaught`), boʻlim tartibi (`ordinalsOf`). Xarita qoʻlda toʻldirilmasligi, rejadan oʻzi yigʻilishi kerak.
+5. Boʻlimni yil koʻrinishida sudrab surish (mavzular ham ergashadi) va sinfdan sinfga vertikal xarita — hali boshlanmagan.

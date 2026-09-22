@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -20,12 +20,14 @@ import { Typography } from "@tiptap/extension-typography";
 import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
-  FileText, X, MoreHorizontal, Check, CheckCircle2, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
-  SlidersHorizontal, Sparkles, Plus, Minus, CalendarClock, CircleAlert, PenLine, ChevronDown,
+  FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
+  SlidersHorizontal, Sparkles, Plus, Minus, FileCheck, CircleDashed, CircleCheck, Clock, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
+import { isTaught, lessonPlanState, type LessonPlanState } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
@@ -70,58 +72,19 @@ import { SectionIcon } from "@/components/ui/section-icon";
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
 
-/* Status haqidagi HAMMA vizual maʼlumot (rang, ikonka) — YAGONA joyda.
-   Yangi status qoʻshilsa faqat shu obyektni yangilash yetarli. `tone`dan
-   trigger/dropdown-item/active-fon sinflari hosil qilinadi (pastda). */
-const STATUS_META = {
-  Completed: { icon: CheckCircle2, tone: "success" },
-  Scheduled: { icon: CalendarClock, tone: "info" },
-  Unscheduled: { icon: CircleAlert, tone: "warning" },
-  Draft: { icon: PenLine, tone: "muted" },
+/* Dars rejasi holati — header badge'i va tanlov menyusi uchun (mavzu
+   kartasidagi pill bilan bir xil rang/ikonka). */
+const PLAN_META = {
+  none: { cls: "border border-dashed border-muted-foreground/40 text-muted-foreground hover:bg-muted", itemCls: "focus:bg-muted", iconCls: "text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "bg-warning/10 text-warning hover:bg-warning/15", itemCls: "focus:bg-warning/10 focus:text-warning", iconCls: "text-warning", Icon: Clock, key: "pillDraft" },
+  ready: { cls: "bg-info/10 text-info hover:bg-info/15", itemCls: "focus:bg-info/10 focus:text-info", iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
+  taught: { cls: "bg-success/10 text-success hover:bg-success/15", itemCls: "focus:bg-success/10 focus:text-success", iconCls: "text-success", Icon: CircleCheck, key: "taught" },
 } as const;
-
-type StatusTone = (typeof STATUS_META)[keyof typeof STATUS_META]["tone"];
-
-const TONE_BADGE_CLS: Record<StatusTone, string> = {
-  success: "bg-success/10 text-success",
-  info: "bg-info/10 text-info",
-  warning: "bg-warning/10 text-warning",
-  muted: "bg-muted text-muted-foreground",
-};
-
-/* dropdown-menu.tsx ichki qoidasi ("text-" sinfi yoʻq svg'larni majburan
-   text-muted-foreground qiladi) sabab ikonka rangini alohida berish shart. */
-const TONE_ICON_CLS: Record<StatusTone, string> = {
-  success: "text-success",
-  info: "text-info",
-  warning: "text-warning",
-  muted: "text-muted-foreground",
-};
-
-const TONE_ITEM_CLS: Record<StatusTone, string> = {
-  success: "text-success focus:bg-success/10 focus:text-success",
-  info: "text-info focus:bg-info/10 focus:text-info",
-  warning: "text-warning focus:bg-warning/10 focus:text-warning",
-  muted: "text-muted-foreground focus:bg-muted focus:text-muted-foreground",
-};
-
-/* Joriy status qatori — hover kutmasdan ham darhol koʻzga tashlanishi uchun
-   doimiy yengil fon (nafaqat oʻng chetdagi check belgisi). */
-const TONE_ACTIVE_CLS: Record<StatusTone, string> = {
-  success: "bg-success/10",
-  info: "bg-info/10",
-  warning: "bg-warning/10",
-  muted: "bg-muted",
-};
-
-/* Menyu tartibi — dars hayot-siklini aks ettiradi (Draft → Unscheduled →
-   Scheduled → Completed). "Qoralama"ga qaytarish orqaga qadam boʻlgani
-   uchun alohida, separator bilan pastda koʻrsatiladi. */
-const STATUS_ORDER = ["Unscheduled", "Scheduled", "Completed", "Draft"] as const;
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const t = useTranslations("LessonEditor");
   const tToolbar = useTranslations("LessonEditorToolbar");
+  const tc = useTranslations("LessonCycle");
   const router = useRouter();
   const liveClasses = useLiveClasses();
   const isMobile = useIsMobile();
@@ -140,17 +103,29 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const backOrPush = useBackOrPush();
   const closeEditor = useCallback(() => {
     const classId = lesson ? lessonClassIds(lesson)[0] : undefined;
+    /* Yumshoq eslatma: matn yozilgan (qoralama), lekin tayyor deb belgilanmagan
+       boʻlsa — yopish toʻsilmaydi, roʻyxatda toast chiqadi. */
+    if (lesson && !isTaught(lesson) && lessonPlanState(lesson) === "draft") {
+      const id = lesson.id;
+      toast(tc("askPlanReady"), {
+        description: tc("askPlanReadyDesc"),
+        duration: 10000,
+        action: { label: tc("yesReady"), onClick: () => useLessonStore.getState().setPlanReady(id, true) },
+        cancel: { label: tc("later"), onClick: () => {} },
+      });
+    }
     backOrPush(
       classId
         ? `/dashboard/lessons?classId=${encodeURIComponent(classId)}`
         : "/dashboard/lessons"
     );
-  }, [backOrPush, lesson]);
+  }, [backOrPush, lesson, tc]);
   const setLessonClasses = useLessonStore((s) => s.setLessonClasses);
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const removeScheduleForClass = useLessonStore((s) => s.removeScheduleForClass);
-  const setStatus = useLessonStore((s) => s.setStatus);
+  const setPlanState = useLessonStore((s) => s.setPlanState);
+  const setTaught = useLessonStore((s) => s.setTaught);
   const standardSets = useStandardsStore((s) => s.sets);
 
   const [activePanel, setActivePanel] = useState<"details" | "ai" | null>("details");
@@ -352,30 +327,24 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     );
   }
 
-  const STATUS = (Object.keys(STATUS_META) as (keyof typeof STATUS_META)[]).reduce(
-    (acc, key) => {
-      const meta = STATUS_META[key];
-      acc[key] = {
-        label: t(`status.${key.toLowerCase()}`),
-        icon: meta.icon,
-        cls: TONE_BADGE_CLS[meta.tone],
-        itemCls: TONE_ITEM_CLS[meta.tone],
-        iconCls: TONE_ICON_CLS[meta.tone],
-        activeCls: TONE_ACTIVE_CLS[meta.tone],
-      };
-      return acc;
-    },
-    {} as Record<keyof typeof STATUS_META, { label: string; icon: typeof CheckCircle2; cls: string; itemCls: string; iconCls: string; activeCls: string }>,
-  );
-  const st = lesson ? STATUS[lesson.status] : STATUS.Draft;
-  const StatusIcon = st.icon;
-
-  const changeStatus = (key: keyof typeof STATUS_META) => {
-    if (!lesson || lesson.status === key) return;
-    const prev = lesson.status;
-    setStatus(lessonId, key);
-    toast.success(t("toast.statusChanged", { status: STATUS[key].label }), {
-      action: { label: t("toast.undo"), onClick: () => setStatus(lessonId, prev) },
+  /* Dars holati — sarlavhadagi YAGONA boshqaruv (oʻng panelda takror yoʻq):
+     uchta reja holati va «Oʻtildi». Oʻtilgan darsda reja holati tanlansa,
+     «oʻtildi» belgisi olib tashlanadi (kartadagi pill bilan bir xil mantiq). */
+  const choosePlanState = (next: LessonPlanState | "taught") => {
+    if (!lesson) return;
+    const taught = isTaught(lesson);
+    const cur = taught ? "taught" : lessonPlanState(lesson);
+    if (cur === next) return;
+    const prev = { planReady: lesson.planReady, planStatus: lesson.planStatus, taughtAt: lesson.taughtAt, status: lesson.status };
+    if (next === "taught") {
+      setTaught(lessonId, todayKey());
+    } else {
+      if (taught) setTaught(lessonId, null);
+      setPlanState(lessonId, next);
+    }
+    const show = next === "ready" || next === "taught" ? toast.success : next === "draft" ? toast.info : toast.warning;
+    show(tc(PLAN_META[next].key), {
+      action: { label: t("toast.undo"), onClick: () => updateLesson(lessonId, prev) },
     });
   };
 
@@ -442,64 +411,59 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               >
                 {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               </h1>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(
-                      "group shrink-0 inline-flex items-center gap-1 rounded-full pl-2 pr-1.5 py-0.5 text-xs font-semibold transition-colors hover:brightness-95 dark:hover:brightness-125",
-                      st.cls
-                    )}
-                  >
-                    <StatusIcon className="size-3.5" />
-                    {st.label}
-                    <ChevronDown className="size-3 opacity-60 transition-transform group-data-[state=open]:rotate-180" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-44">
-                  {STATUS_ORDER.map((key) => {
-                    const opt = STATUS[key];
-                    const OptIcon = opt.icon;
-                    const active = lesson?.status === key;
-                    return (
-                      <Fragment key={key}>
-                        {key === "Draft" && <DropdownMenuSeparator />}
-                        <DropdownMenuItem
-                          className={cn("gap-2 font-medium", opt.itemCls, active && opt.activeCls)}
-                          onSelect={() => changeStatus(key)}
-                        >
-                          <OptIcon className={cn("size-4", opt.iconCls)} />
-                          <span className="flex-1">{opt.label}</span>
-                          {active && <Check className="size-4" />}
-                        </DropdownMenuItem>
-                      </Fragment>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {saving ? (
+                <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-caption text-muted-foreground">
+                  <Loader2 className="size-3.5 animate-spin" />
+                  {t("saving")}
+                </span>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-caption text-muted-foreground cursor-default">
+                      <Check className="size-3.5 text-success" />
+                      {updatedLabel ?? t("saved")}
+                    </span>
+                  </TooltipTrigger>
+                  {lesson?.updatedAt && (
+                    <TooltipContent>{t("savedAtTooltip", { time: formatFeedbackFull(lesson.updatedAt) })}</TooltipContent>
+                  )}
+                </Tooltip>
+              )}
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          {saving ? (
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" />
-              {t("saving")}
-            </span>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground cursor-default">
-                  <Check className="size-3.5 text-success" />
-                  {updatedLabel ?? t("saved")}
-                </span>
-              </TooltipTrigger>
-              {lesson?.updatedAt && (
-                <TooltipContent>{t("savedAtTooltip", { time: formatFeedbackFull(lesson.updatedAt) })}</TooltipContent>
-              )}
-            </Tooltip>
-          )}
+          {lesson && (() => {
+            const state = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
+            const { cls, Icon, key } = PLAN_META[state];
+            return (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn("inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-caption font-semibold transition-colors", cls)}
+                  >
+                    <Icon className="size-3.5" />
+                    {tc(key)}
+                    <ChevronDown className="size-3 opacity-70" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  {(["none", "draft", "ready", "taught"] as const).map((st) => {
+                    const M = PLAN_META[st];
+                    return (
+                      <DropdownMenuItem key={st} onClick={() => choosePlanState(st)} className={cn("gap-2", M.itemCls)}>
+                        <M.Icon className={cn("size-4", M.iconCls)} />
+                        <span className="flex-1">{tc(M.key)}</span>
+                        {state === st && <Check className="size-4" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            );
+          })()}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -559,7 +523,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               <EditorToolbar editor={editor} />
             </div>
             {editor && (
-              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+              <span className="shrink-0 text-caption text-muted-foreground tabular-nums">
                 {t("characterCount", { count: editor.storage.characterCount?.characters() ?? 0 })}
               </span>
             )}
@@ -623,7 +587,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   aria-label={t("zoomReset")}
                   disabled={zoom === 100}
                   onClick={() => setZoom(100)}
-                  className="h-9 rounded-full px-3 text-xs font-semibold tabular-nums"
+                  className="h-9 rounded-full px-3 text-caption font-semibold tabular-nums text-foreground"
                 >
                   {zoom}%
                 </Button>
