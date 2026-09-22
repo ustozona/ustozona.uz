@@ -39,11 +39,12 @@ export function LessonPlanIcon({ lesson, hex, className }: { lesson: Lesson; hex
    va burchakda dars holati belgisi. Belgilar ataylab turli shaklda, rangga
    tayanmasdan ham farqlansin: uzuq doira — reja yoʻq, soat — jarayonda,
    hujjat ✓ — rejalashtirilgan, ✓ — oʻtildi. Sanasiz mavzuda varaqcha «—» koʻrsatadi. */
+/* Neytral oq doira, holatni ikonka rangi bildiradi (pill bilan bir xil). */
 const LEAF_BADGE = {
-  none: { cls: "bg-card border-card text-warning", Icon: CircleDashed, key: "pillNone" },
-  draft: { cls: "bg-muted-foreground border-card text-card", Icon: Clock, key: "pillDraft" },
-  ready: { cls: "bg-info border-card text-info-foreground", Icon: FileCheck, key: "planReadyShort" },
-  taught: { cls: "bg-success border-card text-success-foreground", Icon: Check, key: "taught" },
+  none: { cls: "text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "text-warning", Icon: Clock, key: "pillDraft" },
+  ready: { cls: "text-info", Icon: FileCheck, key: "planReadyShort" },
+  taught: { cls: "text-success", Icon: CircleCheck, key: "taught" },
 } as const;
 
 export function LessonDateLeaf({ lesson, hex, day, month }: { lesson: Lesson; hex: string; day?: string; month?: string }) {
@@ -56,8 +57,8 @@ export function LessonDateLeaf({ lesson, hex, day, month }: { lesson: Lesson; he
         <div className="text-micro uppercase py-px text-white" style={{ backgroundColor: hex }}>{month ?? "—"}</div>
         <div className="text-base font-semibold leading-6 tabular-nums text-foreground">{day ?? "—"}</div>
       </div>
-      <span className={cn("absolute -right-1.5 -bottom-1.5 size-5 rounded-full border-2 flex items-center justify-center", cls)}>
-        <Icon className={k === "none" ? "size-4" : "size-2.5"} strokeWidth={k === "none" ? 2.5 : 3} />
+      <span className={cn("absolute -right-1.5 -bottom-1.5 size-5 rounded-full bg-card border border-border flex items-center justify-center", cls)}>
+        <Icon className="size-3.5" strokeWidth={2.5} />
       </span>
     </div>
   );
@@ -100,11 +101,13 @@ export function LessonMetaChips({ lesson }: { lesson: Lesson }) {
 
 /* Kartaning oʻng chetidagi holat pill'i — ustun boʻlib tekislanadi (bir xil
    kenglik). Oʻtilgan mavzuda «Oʻtildi», aks holda dars rejasi holati. */
+/* Pill neytral (oq fon, yupqa chegara) — roʻyxat tinch qoladi; holatni
+   ikonkaning shakli va rangi bildiradi. */
 const STATUS_PILL = {
-  taught: { cls: "bg-success/10 text-success", Icon: CircleCheck, key: "taught" },
-  ready: { cls: "bg-info/10 text-info", Icon: FileCheck, key: "planReadyShort" },
-  draft: { cls: "bg-muted text-muted-foreground", Icon: Clock, key: "pillDraft" },
-  none: { cls: "border border-dashed border-warning/60 text-warning", Icon: CircleDashed, key: "pillNone" },
+  taught: { cls: "text-success", Icon: CircleCheck, key: "taught" },
+  ready: { cls: "text-info", Icon: FileCheck, key: "planReadyShort" },
+  draft: { cls: "text-warning", Icon: Clock, key: "pillDraft" },
+  none: { cls: "text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
 } as const;
 
 export function LessonStatusPill({ lesson }: { lesson: Lesson }) {
@@ -115,8 +118,8 @@ export function LessonStatusPill({ lesson }: { lesson: Lesson }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={cn("inline-flex h-6 w-36 items-center justify-center gap-1 rounded-full text-tag font-semibold", cls)}>
-          <Icon className="size-3" />
+        <span className="inline-flex h-6 w-36 items-center justify-center gap-1.5 rounded-full border border-border bg-card text-tag font-semibold text-foreground">
+          <Icon className={cn("size-3.5", cls)} />
           {t(key)}
         </span>
       </TooltipTrigger>
