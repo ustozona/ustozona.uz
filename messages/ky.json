@@ -2687,6 +2687,9 @@
     "unknownClass": "Белгисиз класс",
     "untitledTopic": "(аталышсыз тема)",
     "tomorrow": "Эртең",
+    "thisWeek": "Ушул апта",
+    "nextWeek": "Кийинки апта",
+    "inDays": "{count} күндөн кийин",
     "durationSuffix": "{count} мүн",
     "emptyTitle": "Кийинки сабак жок",
     "emptyDescription": "Азырынча пландалган жок — сабак жадвалын текшериңиз."

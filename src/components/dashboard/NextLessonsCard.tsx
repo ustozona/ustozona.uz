@@ -21,8 +21,8 @@ import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { lessonSessions, type Lesson } from "@/lib/lessons-data";
-import { dateToKey, addDaysKey } from "@/lib/date-keys";
-import { MONTHS_UZ, MONTHS_UZ_SHORT } from "@/lib/localization";
+import { dateToKey, addDaysKey, dateKeyToDate } from "@/lib/date-keys";
+import { DAYS_UZ_SUN, MONTHS_UZ, MONTHS_UZ_SHORT } from "@/lib/localization";
 import { fmtMin } from "@/lib/timetable";
 import { cn } from "@/lib/utils";
 
@@ -96,21 +96,39 @@ export function NextLessonsCard({ now }: { now: Date }) {
     return out.slice(0, LIMIT);
   }, [allLessons, classMeta, todayKey, t]);
 
-  const whenLabel = (dateKey: string): string => {
-    if (dateKey === tomorrowKey) return t("tomorrow");
-    const [, m, d] = dateKey.split("-").map(Number);
-    return `${d}-${MONTHS_UZ[m - 1].toLowerCase()}`;
+  // Sana kartadagi bargda turadi — sarlavha davrni bildiradi: shu hafta, keyingi hafta, keyin oy.
+  // Yaqin ikki haftada har kun uchun «Chorshanba · 2 kundan keyin» qatori chiqadi.
+  const nextWeekStart = addDaysKey(todayKey, 7 - ((dateKeyToDate(todayKey).getDay() + 6) % 7));
+  const weekAfterStart = addDaysKey(nextWeekStart, 7);
+  const periodLabel = (period: string): string => {
+    if (period === "this") return t("thisWeek");
+    if (period === "next") return t("nextWeek");
+    const [y, m] = period.split("-").map(Number);
+    if (intlMonthMissing) return MONTHS_UZ[m - 1];
+    const s = new Intl.DateTimeFormat(locale, { month: "long" }).format(new Date(y, m - 1, 1));
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+  const dayLabel = (dateKey: string): string => {
+    const date = dateKeyToDate(dateKey);
+    const w = intlMonthMissing ? DAYS_UZ_SUN[date.getDay()] : new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
+    const days = Math.round((date.getTime() - dateKeyToDate(todayKey).getTime()) / 86_400_000);
+    const rel = dateKey === tomorrowKey ? t("tomorrow") : t("inDays", { count: days });
+    return `${w.charAt(0).toUpperCase() + w.slice(1)} · ${rel}`;
   };
 
   const groups = useMemo(() => {
-    const out: { date: string; rows: Row[] }[] = [];
+    const out: { period: string; days: { date: string; rows: Row[] }[]; count: number }[] = [];
     for (const r of rows) {
-      const last = out[out.length - 1];
-      if (last && last.date === r.date) last.rows.push(r);
-      else out.push({ date: r.date, rows: [r] });
+      const period = r.date < nextWeekStart ? "this" : r.date < weekAfterStart ? "next" : r.date.slice(0, 7);
+      let g = out[out.length - 1];
+      if (!g || g.period !== period) out.push((g = { period, days: [], count: 0 }));
+      const day = g.days[g.days.length - 1];
+      if (day && day.date === r.date) day.rows.push(r);
+      else g.days.push({ date: r.date, rows: [r] });
+      g.count++;
     }
     return out;
-  }, [rows]);
+  }, [rows, nextWeekStart, weekAfterStart]);
 
   return (
     <Card className={panelCardClass}>
@@ -140,14 +158,19 @@ export function NextLessonsCard({ now }: { now: Date }) {
             </div>
           ) : (
             <div className="flex flex-col gap-4 px-4 pt-3 pb-4">
-              {groups.map((g) => (
-                <div key={g.date}>
+              {groups.map((g) => {
+                const near = g.period === "this" || g.period === "next";
+                return (
+                <div key={g.period}>
                   <div className="mb-1.5 flex items-center gap-2 px-1">
-                    <span className="text-xs font-semibold text-muted-foreground">{whenLabel(g.date)}</span>
-                    <span className="text-xs tabular-nums text-muted-foreground/60">{g.rows.length}</span>
+                    <span className="text-xs font-semibold text-foreground">{periodLabel(g.period)}</span>
+                    <span className="text-xs tabular-nums text-muted-foreground/60">{g.count}</span>
                   </div>
                   <div className="flex flex-col gap-2">
-                    {g.rows.map((r) => {
+                  {g.days.map((day) => (
+                  <div key={day.date} className="flex flex-col gap-2">
+                    {near && <span className="px-1 text-tag text-muted-foreground">{dayLabel(day.date)}</span>}
+                    {day.rows.map((r) => {
                       const [y, m, d] = r.date.split("-").map(Number);
                       return (
                       <Link
@@ -178,8 +201,11 @@ export function NextLessonsCard({ now }: { now: Date }) {
                       );
                     })}
                   </div>
+                  ))}
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
