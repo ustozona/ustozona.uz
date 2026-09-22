@@ -74,9 +74,9 @@ const PANEL_DURATION = 0.2;
 /* Dars rejasi holati — header badge'i va tanlov menyusi uchun (mavzu
    kartasidagi pill bilan bir xil rang/ikonka). */
 const PLAN_META = {
-  none: { cls: "border border-dashed border-muted-foreground/40 text-muted-foreground hover:bg-muted", iconCls: "text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
-  draft: { cls: "bg-warning/10 text-warning hover:bg-warning/15", iconCls: "text-warning", Icon: Clock, key: "pillDraft" },
-  ready: { cls: "bg-info/10 text-info hover:bg-info/15", iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
+  none: { cls: "border border-dashed border-muted-foreground/40 text-muted-foreground hover:bg-muted", itemCls: "focus:bg-muted", iconCls: "text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "bg-warning/10 text-warning hover:bg-warning/15", itemCls: "focus:bg-warning/10 focus:text-warning", iconCls: "text-warning", Icon: Clock, key: "pillDraft" },
+  ready: { cls: "bg-info/10 text-info hover:bg-info/15", itemCls: "focus:bg-info/10 focus:text-info", iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
 } as const;
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
@@ -424,7 +424,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   {(["none", "draft", "ready"] as const).map((st) => {
                     const M = PLAN_META[st];
                     return (
-                      <DropdownMenuItem key={st} onClick={() => choosePlanState(st)} className="gap-2">
+                      <DropdownMenuItem key={st} onClick={() => choosePlanState(st)} className={cn("gap-2", M.itemCls)}>
                         <M.Icon className={cn("size-4", M.iconCls)} />
                         <span className="flex-1">{tc(M.key)}</span>
                         {state === st && <Check className="size-4" />}
