@@ -175,29 +175,23 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                       >
                         <Icon className="size-5" />
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2">
-                          <span className="text-body font-semibold text-foreground truncate flex-1">{cls.name}</span>
-                        </span>
-                        <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
-                          {tlp("classMeta", { units: s.units, lessons: s.lessons })}
-                        </span>
-                      </span>
-                      {/* Qamrov halqasi — oʻtilgan mavzular ulushi; tooltipda boʻlimlar kesimi. */}
+                      {/* Qamrov chizigʻi — oʻtilgan mavzular ulushi; tooltipda boʻlimlar kesimi. */}
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="relative size-10 shrink-0" aria-label={tlp("classCoverage", { pct })}>
-                            <svg viewBox="0 0 36 36" className="size-full -rotate-90">
-                              <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
-                              <circle
-                                cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" strokeLinecap="round"
-                                stroke={tints.solid}
-                                strokeDasharray={`${(pct / 100) * 97.4} 97.4`}
-                                className="transition-all"
-                                style={{ opacity: pct ? 1 : 0 }}
-                              />
-                            </svg>
-                            <span className="absolute inset-0 flex items-center justify-center text-tag font-semibold tabular-nums text-foreground">{pct}%</span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-body font-semibold text-foreground truncate">{cls.name}</span>
+                            <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
+                              {tlp("classMeta", { units: s.units, lessons: s.lessons })}
+                            </span>
+                            <span className="flex items-center gap-2 mt-2">
+                              <span className="block flex-1 h-1 rounded-full bg-muted overflow-hidden">
+                                <span
+                                  className="block h-full rounded-full transition-all"
+                                  style={{ width: `${pct}%`, background: tints.solid }}
+                                />
+                              </span>
+                              <span className="w-8 text-right text-caption font-semibold tabular-nums text-foreground shrink-0" aria-label={tlp("classCoverage", { pct })}>{pct}%</span>
+                            </span>
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>

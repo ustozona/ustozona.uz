@@ -2441,6 +2441,7 @@
     "unknownClass": "Nomaʼlum sinf",
     "untitledTopic": "(nomsiz mavzu)",
     "tomorrow": "Ertaga",
+    "inDays": "{count} kundan keyin",
     "durationSuffix": "{count} daq.",
     "emptyTitle": "Kelgusi darslar yoʻq",
     "emptyDescription": "Hali reja tuzilmagan — dars jadvalini tekshiring."

@@ -2683,6 +2683,7 @@
     "unknownClass": "Unknown class",
     "untitledTopic": "(untitled topic)",
     "tomorrow": "Tomorrow",
+    "inDays": "in {count} days",
     "durationSuffix": "{count} min",
     "emptyTitle": "No upcoming lessons",
     "emptyDescription": "Nothing planned yet — check the timetable."
