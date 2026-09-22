@@ -21,12 +21,13 @@ import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
   FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
-  SlidersHorizontal, Sparkles, Plus, Minus, FileCheck, CircleDashed, Clock, ChevronDown,
+  SlidersHorizontal, Sparkles, Plus, Minus, FileCheck, CircleDashed, CircleCheck, Clock, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
-import { lessonPlanState, type LessonPlanState } from "@/lib/lessons-data";
+import { isTaught, lessonPlanState, type LessonPlanState } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
@@ -77,6 +78,7 @@ const PLAN_META = {
   none: { cls: "border border-dashed border-muted-foreground/40 text-muted-foreground hover:bg-muted", itemCls: "focus:bg-muted", iconCls: "text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
   draft: { cls: "bg-warning/10 text-warning hover:bg-warning/15", itemCls: "focus:bg-warning/10 focus:text-warning", iconCls: "text-warning", Icon: Clock, key: "pillDraft" },
   ready: { cls: "bg-info/10 text-info hover:bg-info/15", itemCls: "focus:bg-info/10 focus:text-info", iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
+  taught: { cls: "bg-success/10 text-success hover:bg-success/15", itemCls: "focus:bg-success/10 focus:text-success", iconCls: "text-success", Icon: CircleCheck, key: "taught" },
 } as const;
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
@@ -103,7 +105,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     const classId = lesson ? lessonClassIds(lesson)[0] : undefined;
     /* Yumshoq eslatma: matn yozilgan (qoralama), lekin tayyor deb belgilanmagan
        boʻlsa — yopish toʻsilmaydi, roʻyxatda toast chiqadi. */
-    if (lesson && lessonPlanState(lesson) === "draft") {
+    if (lesson && !isTaught(lesson) && lessonPlanState(lesson) === "draft") {
       const id = lesson.id;
       toast(tc("askPlanReady"), {
         description: tc("askPlanReadyDesc"),
@@ -123,6 +125,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const removeScheduleForClass = useLessonStore((s) => s.removeScheduleForClass);
   const setPlanState = useLessonStore((s) => s.setPlanState);
+  const setTaught = useLessonStore((s) => s.setTaught);
   const standardSets = useStandardsStore((s) => s.sets);
 
   const [activePanel, setActivePanel] = useState<"details" | "ai" | null>("details");
@@ -324,14 +327,22 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     );
   }
 
-  /* Dars rejasi — sarlavhadagi YAGONA boshqaruv (oʻng panelda takror yoʻq).
-     «Oʻtildi» muharrirda yoʻq: u darsdan keyin roʻyxat kartasida, kontekst
-     menyuda va Vazifalarda belgilanadi. */
-  const choosePlanState = (next: LessonPlanState) => {
-    if (!lesson || lessonPlanState(lesson) === next) return;
-    const prev = { planReady: lesson.planReady, planStatus: lesson.planStatus };
-    setPlanState(lessonId, next);
-    const show = next === "ready" ? toast.success : next === "draft" ? toast.info : toast.warning;
+  /* Dars holati — sarlavhadagi YAGONA boshqaruv (oʻng panelda takror yoʻq):
+     uchta reja holati va «Oʻtildi». Oʻtilgan darsda reja holati tanlansa,
+     «oʻtildi» belgisi olib tashlanadi (kartadagi pill bilan bir xil mantiq). */
+  const choosePlanState = (next: LessonPlanState | "taught") => {
+    if (!lesson) return;
+    const taught = isTaught(lesson);
+    const cur = taught ? "taught" : lessonPlanState(lesson);
+    if (cur === next) return;
+    const prev = { planReady: lesson.planReady, planStatus: lesson.planStatus, taughtAt: lesson.taughtAt ?? null, status: lesson.status };
+    if (next === "taught") {
+      setTaught(lessonId, todayKey());
+    } else {
+      if (taught) setTaught(lessonId, null);
+      setPlanState(lessonId, next);
+    }
+    const show = next === "ready" || next === "taught" ? toast.success : next === "draft" ? toast.info : toast.warning;
     show(tc(PLAN_META[next].key), {
       action: { label: t("toast.undo"), onClick: () => updateLesson(lessonId, prev) },
     });
@@ -400,13 +411,31 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               >
                 {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               </h1>
+              {saving ? (
+                <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-xs text-muted-foreground">
+                  <Loader2 className="size-3.5 animate-spin" />
+                  {t("saving")}
+                </span>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-xs text-muted-foreground cursor-default">
+                      <Check className="size-3.5 text-success" />
+                      {updatedLabel ?? t("saved")}
+                    </span>
+                  </TooltipTrigger>
+                  {lesson?.updatedAt && (
+                    <TooltipContent>{t("savedAtTooltip", { time: formatFeedbackFull(lesson.updatedAt) })}</TooltipContent>
+                  )}
+                </Tooltip>
+              )}
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
           {lesson && (() => {
-            const state = lessonPlanState(lesson);
+            const state = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
             const { cls, Icon, key } = PLAN_META[state];
             return (
               <DropdownMenu>
@@ -421,7 +450,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
-                  {(["none", "draft", "ready"] as const).map((st) => {
+                  {(["none", "draft", "ready", "taught"] as const).map((st) => {
                     const M = PLAN_META[st];
                     return (
                       <DropdownMenuItem key={st} onClick={() => choosePlanState(st)} className={cn("gap-2", M.itemCls)}>
@@ -435,24 +464,6 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               </DropdownMenu>
             );
           })()}
-          {saving ? (
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" />
-              {t("saving")}
-            </span>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground cursor-default">
-                  <Check className="size-3.5 text-success" />
-                  {updatedLabel ?? t("saved")}
-                </span>
-              </TooltipTrigger>
-              {lesson?.updatedAt && (
-                <TooltipContent>{t("savedAtTooltip", { time: formatFeedbackFull(lesson.updatedAt) })}</TooltipContent>
-              )}
-            </Tooltip>
-          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
