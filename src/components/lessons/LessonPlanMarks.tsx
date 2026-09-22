@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
-import { Check, CircleCheck, FileCheck, FilePen, FileText, Minus, Paperclip, PenLine, Target } from "lucide-react";
+import { Check, CircleCheck, CircleDashed, Clock, FileCheck, Paperclip, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isTaught, lessonPlanState, type Lesson } from "@/lib/lessons-data";
@@ -21,7 +21,7 @@ export function LessonPlanIcon({ lesson, hex, className }: { lesson: Lesson; hex
       : state === "draft"
         ? { backgroundImage: `linear-gradient(to top, color-mix(in oklch, ${hex} 45%, var(--card)) 50%, color-mix(in oklch, ${hex} 12%, var(--card)) 50%)`, color: hex, border: `1.5px solid ${hex}` }
         : { border: `1.5px dashed ${hex}`, color: hex };
-  const Icon = state === "ready" ? FileCheck : state === "draft" ? FilePen : FileText;
+  const Icon = state === "ready" ? FileCheck : state === "draft" ? Clock : CircleDashed;
   const label = t(state === "ready" ? "planStateReady" : state === "draft" ? "planStateDraft" : "planStateNone");
   return (
     <div
@@ -37,12 +37,12 @@ export function LessonPlanIcon({ lesson, hex, className }: { lesson: Lesson; hex
 
 /* Mavzu kartasining chap tomoni — kalendar varaqcha (sinf rangida: oy, kun)
    va burchakda dars holati belgisi. Belgilar ataylab turli shaklda, rangga
-   tayanmasdan ham farqlansin: — reja yoʻq, qalam — jarayonda, hujjat —
-   rejalashtirilgan, ✓ — oʻtildi. Sanasiz mavzuda varaqcha «—» koʻrsatadi. */
+   tayanmasdan ham farqlansin: uzuq doira — reja yoʻq, soat — jarayonda,
+   hujjat ✓ — rejalashtirilgan, ✓ — oʻtildi. Sanasiz mavzuda varaqcha «—» koʻrsatadi. */
 const LEAF_BADGE = {
-  none: { cls: "bg-card border-dashed border-warning text-warning", Icon: Minus, key: "pillNone" },
-  draft: { cls: "bg-muted-foreground border-card text-card", Icon: PenLine, key: "pillDraft" },
-  ready: { cls: "bg-info border-card text-info-foreground", Icon: FileText, key: "planReadyShort" },
+  none: { cls: "bg-card border-card text-warning", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "bg-muted-foreground border-card text-card", Icon: Clock, key: "pillDraft" },
+  ready: { cls: "bg-info border-card text-info-foreground", Icon: FileCheck, key: "planReadyShort" },
   taught: { cls: "bg-success border-card text-success-foreground", Icon: Check, key: "taught" },
 } as const;
 
@@ -57,7 +57,7 @@ export function LessonDateLeaf({ lesson, hex, day, month }: { lesson: Lesson; he
         <div className="text-base font-semibold leading-6 tabular-nums text-foreground">{day ?? "—"}</div>
       </div>
       <span className={cn("absolute -right-1.5 -bottom-1.5 size-5 rounded-full border-2 flex items-center justify-center", cls)}>
-        <Icon className="size-2.5" strokeWidth={3} />
+        <Icon className={k === "none" ? "size-4" : "size-2.5"} strokeWidth={k === "none" ? 2.5 : 3} />
       </span>
     </div>
   );
@@ -103,8 +103,8 @@ export function LessonMetaChips({ lesson }: { lesson: Lesson }) {
 const STATUS_PILL = {
   taught: { cls: "bg-success/10 text-success", Icon: CircleCheck, key: "taught" },
   ready: { cls: "bg-info/10 text-info", Icon: FileCheck, key: "planReadyShort" },
-  draft: { cls: "bg-muted text-muted-foreground", Icon: FilePen, key: "pillDraft" },
-  none: { cls: "border border-dashed border-warning/60 text-warning", Icon: FileText, key: "pillNone" },
+  draft: { cls: "bg-muted text-muted-foreground", Icon: Clock, key: "pillDraft" },
+  none: { cls: "border border-dashed border-warning/60 text-warning", Icon: CircleDashed, key: "pillNone" },
 } as const;
 
 export function LessonStatusPill({ lesson }: { lesson: Lesson }) {

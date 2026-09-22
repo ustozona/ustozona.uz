@@ -21,7 +21,7 @@ import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
   FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
-  SlidersHorizontal, Sparkles, Plus, Minus, FileCheck, FilePen, ChevronDown,
+  SlidersHorizontal, Sparkles, Plus, Minus, FileCheck, CircleDashed, Clock, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -74,8 +74,8 @@ const PANEL_DURATION = 0.2;
 /* Dars rejasi holati — header badge'i va tanlov menyusi uchun (mavzu
    kartasidagi pill bilan bir xil rang/ikonka). */
 const PLAN_META = {
-  none: { cls: "border border-dashed border-warning/60 text-warning hover:bg-warning/10", iconCls: "text-warning", Icon: FileText, key: "pillNone" },
-  draft: { cls: "bg-muted text-muted-foreground hover:bg-muted/80", iconCls: "text-muted-foreground", Icon: FilePen, key: "pillDraft" },
+  none: { cls: "border border-dashed border-warning/60 text-warning hover:bg-warning/10", iconCls: "text-warning", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "bg-muted text-muted-foreground hover:bg-muted/80", iconCls: "text-muted-foreground", Icon: Clock, key: "pillDraft" },
   ready: { cls: "bg-info/10 text-info hover:bg-info/15", iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
 } as const;
 

@@ -4611,7 +4611,7 @@
     "yesReady": "Yes, ready",
     "later": "Later",
     "planStateReady": "Lesson plan ready",
-    "planStateDraft": "Lesson plan — draft",
+    "planStateDraft": "Lesson plan — in progress",
     "planStateNone": "No lesson plan yet",
     "standardsChip": "Standards: {count}",
     "materialsChip": "Materials: {count}",

@@ -4615,7 +4615,7 @@
     "yesReady": "Да, готов",
     "later": "Позже",
     "planStateReady": "План урока готов",
-    "planStateDraft": "План урока — черновик",
+    "planStateDraft": "План урока — в процессе",
     "planStateNone": "Плана урока пока нет",
     "standardsChip": "Стандарты: {count}",
     "materialsChip": "Материалы: {count}",
