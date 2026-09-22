@@ -89,9 +89,12 @@ const DraggableLesson = React.forwardRef<HTMLDivElement, {
   return (
     <div
       ref={composedRef}
-      {...listeners}
       {...attributes}
       {...rest}
+      {...listeners}
+      // Radix trigger ham onPointerDown beradi (sensorli uzoq bosish) — ikkalasi ham ishlashi shart,
+      // aks holda rest sudrash tinglovchisini ustidan yozadi va karta umuman surilmaydi.
+      onPointerDown={(e) => { rest.onPointerDown?.(e); listeners?.onPointerDown?.(e); }}
       onClick={onClick}
       style={style}
       className={cn(className, isDragging && "opacity-40")}
