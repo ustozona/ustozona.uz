@@ -41,7 +41,7 @@ export function LessonPlanIcon({ lesson, hex, className }: { lesson: Lesson; hex
    hujjat ✓ — rejalashtirilgan, ✓ — oʻtildi. Sanasiz mavzuda varaqcha «—» koʻrsatadi. */
 const LEAF_BADGE = {
   none: { cls: "bg-card border-card text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
-  draft: { cls: "bg-warning border-card text-warning-foreground", Icon: Clock, key: "pillDraft" },
+  draft: { cls: "bg-warning border-card text-white", Icon: Clock, key: "pillDraft" },
   ready: { cls: "bg-info border-card text-info-foreground", Icon: FileCheck, key: "planReadyShort" },
   taught: { cls: "bg-success border-card text-success-foreground", Icon: Check, key: "taught" },
 } as const;
