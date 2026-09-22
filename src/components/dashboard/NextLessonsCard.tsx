@@ -160,15 +160,15 @@ export function NextLessonsCard({ now }: { now: Date }) {
                 return (
                 <div key={g.period}>
                   <div className="mb-2 flex items-center gap-2 px-1">
-                    <span className="text-tag font-semibold uppercase tracking-wide text-muted-foreground">{periodLabel(g.period)}</span>
+                    <span className="text-label text-muted-foreground">{periodLabel(g.period)}</span>
                     <span className="h-px flex-1 bg-border" />
                     <span className="text-tag tabular-nums text-muted-foreground">{g.count}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                   {g.days.map((day) => (
                   <div key={day.date} className="flex flex-col gap-2">
-                    <span className="flex items-baseline justify-between gap-2 px-1 text-xs">
-                      <span className="font-semibold text-foreground">{weekday(day.date)}</span>
+                    <span className="flex items-baseline justify-between gap-2 px-1 text-caption">
+                      <span className="font-medium text-foreground">{weekday(day.date)}</span>
                       <span className="tabular-nums text-muted-foreground">{relDays(day.date)}</span>
                     </span>
                     {day.rows.map((r) => {
