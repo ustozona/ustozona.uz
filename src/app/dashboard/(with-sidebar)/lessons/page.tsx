@@ -24,7 +24,7 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { byNumber, ordinalsOf } from "@/lib/ordinals";
-import { isTaught } from "@/lib/lessons-data";
+import { isTaught, lessonPlanState } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { needsTaughtConfirm } from "@/lib/lesson-shift";
 import { useLessonBump } from "@/hooks/useLessonBump";
@@ -41,12 +41,12 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
-  ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuSeparator,
+  ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuSeparator, ContextMenuLabel,
 } from "@/components/ui/context-menu";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -124,7 +124,20 @@ export default function LessonsPage() {
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const reorderUnits = useLessonStore((s) => s.reorderUnits);
   const reorderLessons = useLessonStore((s) => s.reorderLessons);
-  const setPlanReady = useLessonStore((s) => s.setPlanReady);
+  const setPlanState = useLessonStore((s) => s.setPlanState);
+  /* Kontekst menyudagi «Holat» boʻlimi — muharrir badge'i bilan bir xil 4 holat
+     va bir xil mantiq: oʻtilgan darsda reja holati tanlansa «oʻtildi» olinadi. */
+  const LESSON_STATES = [
+    { key: "none", Icon: CircleDashed, iconCls: "text-muted-foreground", label: "pillNone" },
+    { key: "draft", Icon: Clock, iconCls: "text-warning", label: "pillDraft" },
+    { key: "ready", Icon: FileCheck, iconCls: "text-info", label: "planReadyShort" },
+    { key: "taught", Icon: CircleCheck, iconCls: "text-success", label: "taught" },
+  ] as const;
+  const applyLessonState = (lesson: Lesson, next: (typeof LESSON_STATES)[number]["key"]) => {
+    if (next === "taught") { setTaught(lesson.id, todayKey()); return; }
+    if (isTaught(lesson)) setTaught(lesson.id, null);
+    setPlanState(lesson.id, next);
+  };
   const setTaught = useLessonStore((s) => s.setTaught);
   const tc = useTranslations("LessonCycle");
   const locale = useLocale();
@@ -1140,14 +1153,18 @@ export default function LessonsPage() {
                         {t("selectMenuItem")}
                       </ContextMenuItem>
                       <ContextMenuSeparator />
-                      <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => setPlanReady(lesson.id, !lesson.planReady)}>
-                        <FileCheck className="size-4" />
-                        {lesson.planReady ? tc("unmarkPlanReady") : tc("markPlanReady")}
-                      </ContextMenuItem>
-                      <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => setTaught(lesson.id, isTaught(lesson) ? null : todayKey())}>
-                        <CircleCheck className="size-4" />
-                        {isTaught(lesson) ? tc("unmarkTaught") : tc("markTaught")}
-                      </ContextMenuItem>
+                      <ContextMenuLabel className="text-label">{tc("statusSection")}</ContextMenuLabel>
+                      {(() => {
+                        const cur = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
+                        return LESSON_STATES.map((st) => (
+                          <ContextMenuItem key={st.key} className="gap-2 cursor-pointer" onClick={() => cur !== st.key && applyLessonState(lesson, st.key)}>
+                            <st.Icon className={cn("size-4", st.iconCls)} />
+                            <span className="flex-1">{tc(st.label)}</span>
+                            {cur === st.key && <Check className="size-4" />}
+                          </ContextMenuItem>
+                        ));
+                      })()}
+                      <ContextMenuSeparator />
                       {!isTaught(lesson) && lessonSessions(lesson).some((x) => x.classId === effectiveClassId) && (
                         <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => bumpLesson(lesson.id, effectiveClassId!)}>
                           <SkipForward className="size-4" />

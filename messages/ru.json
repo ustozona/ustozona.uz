@@ -4629,6 +4629,7 @@
     "planReadyLabel": "План урока готов",
     "taughtLabel": "Урок проведён",
     "askTaught": "Проведён?",
+    "statusSection": "Статус",
     "askTaughtBanner": "Время урока прошло. Урок проведён?",
     "yesTaught": "Да, проведён",
     "bumpNext": "Перенести на следующий урок",

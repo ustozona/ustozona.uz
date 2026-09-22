@@ -4625,6 +4625,7 @@
     "planReadyLabel": "Lesson plan ready",
     "taughtLabel": "Lesson taught",
     "askTaught": "Taught?",
+    "statusSection": "Status",
     "askTaughtBanner": "The lesson time has passed. Was it taught?",
     "yesTaught": "Yes, taught",
     "bumpNext": "Move to next lesson",
