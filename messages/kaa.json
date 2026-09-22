@@ -1351,7 +1351,7 @@
     "statusCompleted": "Tawısıldı",
     "statusScheduled": "Rejelestirilgen",
     "statusUnscheduled": "Rejesiz",
-    "classMeta": "{units} bólim · {taught}/{lessons} tema",
+    "classMeta": "{units} bólim · {lessons} tema",
     "classCoverage": "Qamtıw: {pct}%",
     "moveToNewUnit": "Jańa bólimge…",
     "lessonsSearchPlaceholder": "Tema izlew…",

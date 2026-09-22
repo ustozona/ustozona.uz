@@ -1351,7 +1351,7 @@
     "statusCompleted": "Аяқталды",
     "statusScheduled": "Жоспарланған",
     "statusUnscheduled": "Жоспарсыз",
-    "classMeta": "{units} бөлім · {taught}/{lessons} тақырып",
+    "classMeta": "{units} бөлім · {lessons} тақырып",
     "classCoverage": "Қамту: {pct}%",
     "moveToNewUnit": "Жаңа бөлімге…",
     "lessonsSearchPlaceholder": "Тақырып іздеу…",

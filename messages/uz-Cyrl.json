@@ -1351,7 +1351,7 @@
     "statusCompleted": "Тугалланди",
     "statusScheduled": "Режалаштирилган",
     "statusUnscheduled": "Режасиз",
-    "classMeta": "{units} та бўлим · {taught}/{lessons} мавзу",
+    "classMeta": "{units} та бўлим · {lessons} та мавзу",
     "classCoverage": "Қамров: {pct}%",
     "moveToNewUnit": "Янги бўлимга…",
     "lessonsSearchPlaceholder": "Мавзу қидириш…",

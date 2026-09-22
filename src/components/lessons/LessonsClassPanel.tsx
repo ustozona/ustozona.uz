@@ -179,18 +179,18 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="min-w-0 flex-1" aria-label={tlp("classCoverage", { pct })}>
-                            <span className="flex items-baseline gap-2">
-                              <span className="text-body font-semibold text-foreground truncate flex-1">{cls.name}</span>
-                              <span className="text-caption font-semibold tabular-nums text-foreground shrink-0">{pct}%</span>
-                            </span>
+                            <span className="block text-body font-semibold text-foreground truncate">{cls.name}</span>
                             <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
-                              {tlp("classMeta", { units: s.units, taught: s.taught, lessons: s.lessons })}
+                              {tlp("classMeta", { units: s.units, lessons: s.lessons })}
                             </span>
-                            <span className="block h-1 rounded-full bg-muted mt-2 overflow-hidden">
-                              <span
-                                className="block h-full rounded-full transition-all"
-                                style={{ width: `${pct}%`, background: tints.solid }}
-                              />
+                            <span className="flex items-center gap-2 mt-2">
+                              <span className="block flex-1 h-1 rounded-full bg-muted overflow-hidden">
+                                <span
+                                  className="block h-full rounded-full transition-all"
+                                  style={{ width: `${pct}%`, background: tints.solid }}
+                                />
+                              </span>
+                              <span className="w-8 text-right text-caption font-semibold tabular-nums text-foreground shrink-0">{pct}%</span>
                             </span>
                           </span>
                         </TooltipTrigger>
