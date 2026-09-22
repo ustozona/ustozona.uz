@@ -8,7 +8,7 @@ import { MONTHS_UZ_SHORT, DAYS_UZ_SHORT } from "@/lib/localization";
 import { dateKeyToDate } from "@/lib/date-keys";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed, GripVertical } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -97,7 +97,7 @@ const DraggableLesson = React.forwardRef<HTMLDivElement, {
       onPointerDown={(e) => { rest.onPointerDown?.(e); listeners?.onPointerDown?.(e); }}
       onClick={onClick}
       style={style}
-      className={cn(className, isDragging && "opacity-40")}
+      className={cn(className, isDragging && "opacity-40 border-dashed")}
     >
       {children}
     </div>
@@ -292,7 +292,11 @@ export default function LessonsPage() {
 
   // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  // Sudralayotgan mavzu — DragOverlay nusxasi kursorga ergashadi, asl karta joyida xira qoladi.
+  const [dragLessonId, setDragLessonId] = useState<string | null>(null);
+  const handleLessonDragStart = (e: DragStartEvent) => setDragLessonId(e.active.id as string);
   const handleLessonDragEnd = (e: DragEndEvent) => {
+    setDragLessonId(null);
     const lessonId = e.active.id as string;
     const overId = e.over?.id as string | undefined;
     if (!overId || !effectiveClassId) return;
@@ -769,7 +773,7 @@ export default function LessonsPage() {
   return (
     <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
-      <DndContext sensors={dndSensors} onDragEnd={handleLessonDragEnd}>
+      <DndContext sensors={dndSensors} onDragStart={handleLessonDragStart} onDragEnd={handleLessonDragEnd} onDragCancel={() => setDragLessonId(null)}>
       <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" mobile="self" data-tour="lessons-classes">
@@ -1330,6 +1334,26 @@ export default function LessonsPage() {
           </AlertDialogContent>
         </AlertDialog>
       </DashboardColumns>
+      <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.2, 0, 0, 1)" }}>
+        {(() => {
+          const lesson = dragLessonId ? lessonsSource.find((l) => l.id === dragLessonId) : null;
+          if (!lesson) return null;
+          const when = lessonWhen(lesson);
+          const idx = lessonsForUnit.findIndex((l) => l.id === lesson.id);
+          return (
+            <div
+              className="list-card flex items-center gap-3 p-4 w-[min(22rem,80vw)] -rotate-2 cursor-grabbing shadow-lg"
+              style={{ ["--card-accent" as string]: selectedClassHex }}
+            >
+              <GripVertical className="size-4 shrink-0 text-muted-foreground" />
+              <LessonDateLeaf lesson={lesson} classId={effectiveClassId} hex={selectedClassHex} day={when?.day} month={when?.month} />
+              <span className="min-w-0 flex-1 truncate text-body font-semibold text-foreground">
+                {idx >= 0 ? `${pad(idx + 1)}. ` : ""}{lesson.title}
+              </span>
+            </div>
+          );
+        })()}
+      </DragOverlay>
       </DndContext>
     </div>
   );
