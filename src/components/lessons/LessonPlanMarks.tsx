@@ -1,39 +1,10 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { Check, CircleCheck, CircleDashed, Clock, FileCheck, Paperclip, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isTaught, lessonPlanState, type Lesson } from "@/lib/lessons-data";
-
-/* Mavzu kartasidagi dars rejasi belgilari.
-   Ikonka doirasi — reja holati: toʻla ✓ (tayyor, qoʻlda belgilangan),
-   yarim toʻla (qoralama — matn bor), uzuq chiziqli (hali yoʻq).
-   Chiplar — standartlar qamrovi va biriktirilgan materiallar soni. */
-
-export function LessonPlanIcon({ lesson, hex, className }: { lesson: Lesson; hex: string; className?: string }) {
-  const t = useTranslations("LessonCycle");
-  const state = lessonPlanState(lesson);
-  const style: CSSProperties =
-    state === "ready"
-      ? { backgroundImage: `linear-gradient(135deg, color-mix(in oklch, ${hex} 70%, white) 0%, ${hex} 100%)`, color: "white" }
-      : state === "draft"
-        ? { backgroundImage: `linear-gradient(to top, color-mix(in oklch, ${hex} 45%, var(--card)) 50%, color-mix(in oklch, ${hex} 12%, var(--card)) 50%)`, color: hex, border: `1.5px solid ${hex}` }
-        : { border: `1.5px dashed ${hex}`, color: hex };
-  const Icon = state === "ready" ? FileCheck : state === "draft" ? Clock : CircleDashed;
-  const label = t(state === "ready" ? "planStateReady" : state === "draft" ? "planStateDraft" : "planStateNone");
-  return (
-    <div
-      title={label}
-      aria-label={label}
-      className={cn("list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center", className)}
-      style={style}
-    >
-      <Icon className="size-5" />
-    </div>
-  );
-}
 
 /* Mavzu kartasining chap tomoni — kalendar varaqcha (sinf rangida: oy, kun)
    va burchakda dars holati belgisi. Belgilar ataylab turli shaklda, rangga
@@ -51,15 +22,20 @@ export function LessonDateLeaf({ lesson, hex, day, month }: { lesson: Lesson; he
   const k = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
   const { cls, Icon, key } = LEAF_BADGE[k];
   return (
-    <div className="relative shrink-0 w-11" title={t(key)} aria-label={t(key)}>
+    <Tooltip>
+    <TooltipTrigger asChild>
+    <div className="relative shrink-0 w-11" aria-label={t(key)}>
       <div className="rounded-lg overflow-hidden text-center border" style={{ borderColor: hex }}>
-        <div className="text-micro uppercase py-px text-white" style={{ backgroundColor: hex }}>{month ?? "—"}</div>
+        <div className="text-tag font-semibold uppercase py-px text-white" style={{ backgroundColor: hex }}>{month ?? "—"}</div>
         <div className="text-base font-semibold leading-6 tabular-nums text-foreground">{day ?? "—"}</div>
       </div>
       <span className={cn("absolute -right-1.5 -bottom-1.5 size-5 rounded-full border-2 flex items-center justify-center", cls)}>
         <Icon className={k === "none" ? "size-4" : "size-2.5"} strokeWidth={k === "none" ? 2.5 : 3} />
       </span>
     </div>
+    </TooltipTrigger>
+    <TooltipContent>{t(key === "pillNone" ? "planStateNone" : key === "pillDraft" ? "planStateDraft" : key === "planReadyShort" ? "planStateReady" : "taught")}</TooltipContent>
+    </Tooltip>
   );
 }
 

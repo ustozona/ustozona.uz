@@ -195,7 +195,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                                 style={{ opacity: pct ? 1 : 0 }}
                               />
                             </svg>
-                            <span className="absolute inset-0 flex items-center justify-center text-micro tabular-nums text-foreground">{pct}%</span>
+                            <span className="absolute inset-0 flex items-center justify-center text-tag font-semibold tabular-nums text-foreground">{pct}%</span>
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>
