@@ -97,7 +97,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
   }, [allLessons, classMeta, todayKey, t]);
 
   // Sana kartadagi bargda turadi — sarlavha davrni bildiradi: shu hafta, keyingi hafta, keyin oy.
-  // Yaqin ikki haftada har kun uchun «Chorshanba · 2 kundan keyin» qatori chiqadi.
+  // Har kun uchun qator: chapda hafta kuni, oʻngda «2 kundan keyin».
   const nextWeekStart = addDaysKey(todayKey, 7 - ((dateKeyToDate(todayKey).getDay() + 6) % 7));
   const weekAfterStart = addDaysKey(nextWeekStart, 7);
   const periodLabel = (period: string): string => {
@@ -108,12 +108,21 @@ export function NextLessonsCard({ now }: { now: Date }) {
     const s = new Intl.DateTimeFormat(locale, { month: "long" }).format(new Date(y, m - 1, 1));
     return s.charAt(0).toUpperCase() + s.slice(1);
   };
-  const dayLabel = (dateKey: string): string => {
+  /** Hafta oraligʻi: «22–28 sen» yoki «29 sen – 5 okt». */
+  const weekRange = (startKey: string): string => {
+    const [y1, m1, d1] = startKey.split("-").map(Number);
+    const [y2, m2, d2] = addDaysKey(startKey, 6).split("-").map(Number);
+    return m1 === m2 ? `${d1}–${d2} ${shortMonth(y2, m2)}` : `${d1} ${shortMonth(y1, m1)} – ${d2} ${shortMonth(y2, m2)}`;
+  };
+  const weekday = (dateKey: string): string => {
     const date = dateKeyToDate(dateKey);
     const w = intlMonthMissing ? DAYS_UZ_SUN[date.getDay()] : new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
-    const days = Math.round((date.getTime() - dateKeyToDate(todayKey).getTime()) / 86_400_000);
-    const rel = dateKey === tomorrowKey ? t("tomorrow") : t("inDays", { count: days });
-    return `${w.charAt(0).toUpperCase() + w.slice(1)} · ${rel}`;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  };
+  const relDays = (dateKey: string): string => {
+    if (dateKey === tomorrowKey) return t("tomorrow");
+    const days = Math.round((dateKeyToDate(dateKey).getTime() - dateKeyToDate(todayKey).getTime()) / 86_400_000);
+    return t("inDays", { count: days });
   };
 
   const groups = useMemo(() => {
@@ -159,17 +168,21 @@ export function NextLessonsCard({ now }: { now: Date }) {
           ) : (
             <div className="flex flex-col gap-4 px-4 pt-3 pb-4">
               {groups.map((g) => {
-                const near = g.period === "this" || g.period === "next";
+                const range = g.period === "this" ? weekRange(addDaysKey(nextWeekStart, -7)) : g.period === "next" ? weekRange(nextWeekStart) : null;
                 return (
                 <div key={g.period}>
-                  <div className="mb-1.5 flex items-center gap-2 px-1">
-                    <span className="text-xs font-semibold text-foreground">{periodLabel(g.period)}</span>
-                    <span className="text-xs tabular-nums text-muted-foreground/60">{g.count}</span>
+                  <div className="mb-2 flex items-center gap-2 px-1">
+                    <span className="text-tag font-semibold uppercase tracking-wide text-muted-foreground">{periodLabel(g.period)}</span>
+                    <span className="h-px flex-1 bg-border" />
+                    <span className="text-tag tabular-nums text-muted-foreground">{range ?? g.count}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                   {g.days.map((day) => (
                   <div key={day.date} className="flex flex-col gap-2">
-                    {near && <span className="px-1 text-tag text-muted-foreground">{dayLabel(day.date)}</span>}
+                    <span className="flex items-baseline justify-between gap-2 px-1 text-xs">
+                      <span className="font-semibold text-foreground">{weekday(day.date)}</span>
+                      <span className="tabular-nums text-muted-foreground">{relDays(day.date)}</span>
+                    </span>
                     {day.rows.map((r) => {
                       const [y, m, d] = r.date.split("-").map(Number);
                       return (
