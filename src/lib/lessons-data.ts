@@ -81,7 +81,7 @@ export function lessonPlanState(l: Lesson): LessonPlanState {
   if (l.planReady) return "ready";
   if (l.planStatus) return l.planStatus;
   const text = (l.content ?? "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ");
-  const words = text.split(/s+/).filter((w) => /[p{L}p{N}]/u.test(w)).length;
+  const words = text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
   return words >= PLAN_DRAFT_MIN_WORDS ? "draft" : "none";
 }
 
