@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { GraduationCap, Plus, Pencil, Trash2 } from "lucide-react";
+import { GraduationCap, Plus, Pencil, Trash2, Layers, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { panelHeaderClass } from "@/components/DashboardPage";
@@ -23,7 +23,8 @@ import ClassListPanel from "@/components/ClassListPanel";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
 import { classTints } from "@/lib/class-colors";
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
-import { isTaught, lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
+import { isTaught, lessonClassIds, lessonUnitIds, type Lesson, type Unit } from "@/lib/lessons-data";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useLiveClasses, useLiveClassesHydrated, classInfoFromForm, classFormInitial } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useIsBelow } from "@/hooks/use-mobile";
@@ -37,8 +38,9 @@ type Props = {
   demoClasses?: ClassInfo[];
 };
 
-/* Darslar sahifasining sinflar ustuni — har sinf kichik karta: nom, dars
-   vaqti, boʻlim/mavzu soni va qamrov chizigʻi (oʻtilgan mavzular ulushi).
+/* Darslar sahifasining sinflar ustuni — har sinf ikki qatorli karta: nom va
+   ikonkali boʻlim/mavzu soni (toʻliq maʼlumot tooltipda), pastda boʻlimlar
+   boʻyicha boʻlakli progress va umumiy foiz.
    Umumiy `ClassListPanel` boshqa sahifalarda ham ishlatilgani uchun unga
    tegilmaydi; mobil (`< lg`) Sheet koʻrinishi esa oʻshaning oʻzidan olinadi. */
 export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units, lessons, demoClasses }: Props) {
@@ -53,9 +55,18 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
   const [deleteTarget, setDeleteTarget] = useState<ClassInfo | null>(null);
 
   const stats = useMemo(() => {
-    const out = new Map<string, { units: number; lessons: number; taught: number }>();
-    for (const c of classes) out.set(c.id, { units: 0, lessons: 0, taught: 0 });
-    for (const u of units) { const s = out.get(u.classId); if (s) s.units++; }
+    type UnitStat = { id: string; title: string; total: number; taught: number };
+    const out = new Map<string, { units: number; lessons: number; taught: number; perUnit: UnitStat[] }>();
+    for (const c of classes) out.set(c.id, { units: 0, lessons: 0, taught: 0, perUnit: [] });
+    const unitStat = new Map<string, UnitStat>();
+    for (const u of [...units].sort((a, b) => a.number - b.number)) {
+      const s = out.get(u.classId);
+      if (!s) continue;
+      s.units++;
+      const us = { id: u.id, title: u.title, total: 0, taught: 0 };
+      s.perUnit.push(us);
+      unitStat.set(u.id, us);
+    }
     for (const l of lessons) {
       const taught = isTaught(l);
       for (const id of lessonClassIds(l)) {
@@ -63,6 +74,12 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
         if (!s) continue;
         s.lessons++;
         if (taught) s.taught++;
+      }
+      for (const uid of lessonUnitIds(l)) {
+        const us = unitStat.get(uid);
+        if (!us) continue;
+        us.total++;
+        if (taught) us.taught++;
       }
     }
     return out;
@@ -137,7 +154,8 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
               const isSelected = cls.id === selectedClassId;
               const tints = classTints(classColor(cls));
               const Icon = classIcon(cls.icon);
-              const s = stats.get(cls.id) ?? { units: 0, lessons: 0, taught: 0 };
+              const s = stats.get(cls.id) ?? { units: 0, lessons: 0, taught: 0, perUnit: [] };
+              const segs = s.perUnit.filter((u) => u.total > 0);
               const pct = s.lessons ? Math.round((s.taught / s.lessons) * 100) : 0;
               return (
                 <ContextMenu key={cls.id}>
@@ -157,15 +175,45 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                         <Icon className="size-5" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-baseline gap-2">
+                        <span className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-foreground truncate flex-1">{cls.name}</span>
-                          <span className="text-micro tabular-nums text-muted-foreground shrink-0">
-                            {tlp("classMeta", { units: s.units, lessons: s.lessons })}
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex items-center gap-1 text-tag font-semibold tabular-nums text-muted-foreground shrink-0">
+                                <Layers className="size-3.5" aria-hidden="true" />
+                                {s.units}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{tlp("classUnitsTip", { count: s.units })}</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex items-center gap-1 text-tag font-semibold tabular-nums text-muted-foreground shrink-0">
+                                <FileText className="size-3.5" aria-hidden="true" />
+                                {s.lessons}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{tlp("classLessonsTip", { count: s.lessons, taught: s.taught })}</TooltipContent>
+                          </Tooltip>
                         </span>
-                        {cls.time && <span className="block text-caption text-muted-foreground truncate mt-0.5">{cls.time.replace(/\s*[–-]\s*/g, " — ")}</span>}
-                        <span className="block h-1 mt-2 rounded-full bg-muted overflow-hidden" title={tlp("classCoverage", { pct })}>
-                          <span className="block h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: tints.solid }} />
+                        {/* Boʻlimlar boʻyicha progress: har boʻlak — bitta boʻlim (kengligi mavzu soniga
+                            mutanosib), ichida oʻtilgan mavzular ulushi. Oxirida umumiy foiz. */}
+                        <span className="flex items-center gap-2 mt-2">
+                          <span className="flex flex-1 gap-0.5 min-w-0">
+                            {segs.length === 0 ? (
+                              <span className="block h-1 flex-1 rounded-full bg-muted" />
+                            ) : segs.map((u) => (
+                              <Tooltip key={u.id}>
+                                <TooltipTrigger asChild>
+                                  <span className="block h-1 rounded-full bg-muted overflow-hidden min-w-1" style={{ flexGrow: u.total, flexBasis: 0 }}>
+                                    <span className="block h-full rounded-full transition-all" style={{ width: `${Math.round((u.taught / u.total) * 100)}%`, backgroundColor: tints.solid }} />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>{tlp("unitSegTip", { title: u.title, taught: u.taught, total: u.total })}</TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </span>
+                          <span className="text-micro tabular-nums text-muted-foreground shrink-0 w-8 text-right" title={tlp("classCoverage", { pct })}>{pct}%</span>
                         </span>
                       </span>
                     </button>
