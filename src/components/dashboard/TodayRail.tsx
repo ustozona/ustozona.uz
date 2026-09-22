@@ -34,7 +34,7 @@ import { WeekStrip } from "@/components/dashboard/WeekStrip";
 import { addDays, startOfWeekMon } from "@/lib/calendar-core/date-math";
 import { sessionMatchesSlot } from "@/lib/calendar-core/resolve";
 import { subjectLabel } from "@/lib/standards-data";
-import { EventCard } from "@/components/calendar/EventCard";
+import { EventCard, EventSubtitle } from "@/components/calendar/EventCard";
 import { AddTopicButton } from "@/components/calendar/AddTopicButton";
 import { LessonChip } from "@/components/calendar/LessonChip";
 import { LinkLessonDialog, type LinkLessonSlot } from "@/components/LinkLessonDialog";
@@ -77,8 +77,6 @@ const SUNDAY_PREF_KEY = "today-rail-show-sunday";
 const PX_PER_MIN = 3;
 /** Birinchi darsdan qancha oldin scroll qilib koʻrsatish (daqiqa). */
 const SCROLL_LEAD_MIN = 15;
-/** Fan/vaqt ikki qatorga ajraladigan minimal balandlik — Timetable bilan bir xil qiymat. */
-const STACKED_SUBTITLE_MIN_H = 84;
 
 export function TodayRail({ now }: { now: Date }) {
   const t = useTranslations("TodayRail");
@@ -461,19 +459,7 @@ function DayGridView({
             /* Fan + vaqt — Timetable bilan bir xil naqsh: baland kartada
                ALOHIDA qatorda, past kartada `·` bilan bitta qatorga
                yigʻiladi ([[EventBlock]] etalon, timetable/page.tsx). */
-            subtitle={
-              meta.subject && height >= STACKED_SUBTITLE_MIN_H ? (
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate">{meta.subject}</span>
-                  <span className="truncate tabular-nums">{fmtMin(ev.startMin)} — {fmtMin(ev.endMin)}</span>
-                </span>
-              ) : (
-                <span className="truncate">
-                  {meta.subject ? `${meta.subject} · ` : ""}
-                  <span className="tabular-nums">{fmtMin(ev.startMin)} — {fmtMin(ev.endMin)}</span>
-                </span>
-              )
-            }
+            subtitle={<EventSubtitle subject={meta.subject} time={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`} height={height} />}
             actions={
               <EventActions
                 classId={ev.classId}

@@ -72,7 +72,7 @@ import {
   DndContext, PointerSensor, KeyboardSensor, useDraggable, useDroppable,
   useSensor, useSensors, closestCenter, type DragEndEvent,
 } from "@dnd-kit/core";
-import { EventCard } from "@/components/calendar/EventCard";
+import { EventCard, EventSubtitle } from "@/components/calendar/EventCard";
 import { AddTopicButton } from "@/components/calendar/AddTopicButton";
 import { LessonChip } from "@/components/calendar/LessonChip";
 import { LessonCycleBadge, LessonCyclePills } from "@/components/LessonStatusBadge";
@@ -922,7 +922,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               density="auto"
                               style={{ height: h }}
                               className={cn("h-full", isOver && "inset-ring-2 inset-ring-[var(--ring)]")}
-                              subtitle={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}${cls.subject ? ` · ${subjectLabel(cls.subject)}` : ""}`}
+                              subtitle={<EventSubtitle subject={subjectLabel(cls.subject) || undefined} time={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`} height={h} />}
                               /* Boʻsh slot — TodayRail bilan bir xil grammatika:
                                  bitta doim koʻrinadigan chorlov (burchak
                                  qavslari + dashed perimetr, hoverda sinf
@@ -1532,7 +1532,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               data-tour={hasLesson ? "planner-lesson-block" : "planner-empty-slot"}
                               color={clsColor}
                               title={cls.name}
-                              subtitle={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}${cls.subject ? ` · ${subjectLabel(cls.subject)}` : ""}`}
+                              subtitle={<EventSubtitle subject={subjectLabel(cls.subject) || undefined} time={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`} height={blockPx} />}
                               state={hasLesson ? "filled" : "empty"}
                               density="auto"
                               style={{ top: Math.max(topH, 0) * slotHeight + 2, height: blockPx }}
