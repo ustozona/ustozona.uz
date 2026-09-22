@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { Check, CircleCheck, FileCheck, FilePen, FileText, Minus, Paperclip, PenLine, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isTaught, lessonPlanState, type Lesson } from "@/lib/lessons-data";
 
 /* Mavzu kartasidagi dars rejasi belgilari.
@@ -70,18 +71,28 @@ export function LessonMetaChips({ lesson }: { lesson: Lesson }) {
   const materials = lesson.setIds?.length ?? 0;
   return (
     <span className="hidden lg:inline-flex items-center gap-1">
-      <span
-        title={t("standardsChip", { count: standards })}
-        className={cn(CHIP, standards ? "border-border text-foreground/80" : "border-dashed border-border text-muted-foreground")}
-      >
-        <Target className="size-3" />
-        {standards}
-      </span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn(CHIP, standards ? "border-border text-foreground/80" : "border-dashed border-border text-muted-foreground")}>
+            <Target className="size-3" />
+            {standards}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-64">
+          {t("standardsChip", { count: standards })}
+          {standards > 0 && <span className="block tabular-nums opacity-80">{lesson.standards!.join(", ")}</span>}
+        </TooltipContent>
+      </Tooltip>
       {materials > 0 && (
-        <span title={t("materialsChip", { count: materials })} className={cn(CHIP, "border-border text-foreground/80")}>
-          <Paperclip className="size-3" />
-          {materials}
-        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className={cn(CHIP, "border-border text-foreground/80")}>
+              <Paperclip className="size-3" />
+              {materials}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{t("materialsChip", { count: materials })}</TooltipContent>
+        </Tooltip>
       )}
     </span>
   );
@@ -100,10 +111,16 @@ export function LessonStatusPill({ lesson }: { lesson: Lesson }) {
   const t = useTranslations("LessonCycle");
   const k = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
   const { cls, Icon, key } = STATUS_PILL[k];
+  const tip = k === "taught" ? t("taught") : t(k === "ready" ? "planStateReady" : k === "draft" ? "planStateDraft" : "planStateNone");
   return (
-    <span className={cn("inline-flex h-6 w-36 items-center justify-center gap-1 rounded-full text-tag font-semibold", cls)}>
-      <Icon className="size-3" />
-      {t(key)}
-    </span>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={cn("inline-flex h-6 w-36 items-center justify-center gap-1 rounded-full text-tag font-semibold", cls)}>
+          <Icon className="size-3" />
+          {t(key)}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{tip}</TooltipContent>
+    </Tooltip>
   );
 }
