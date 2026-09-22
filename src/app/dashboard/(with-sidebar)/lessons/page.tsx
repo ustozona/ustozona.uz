@@ -793,8 +793,8 @@ export default function LessonsPage() {
             <div className="flex items-center gap-1 shrink-0">
               {/* Boʻsh holat oynasi faqat keng rejimda chiqadi — tor rejimda tugma sarlavhada. */}
               {(unitsForClass.length > 0 || detailMode) && (
-                <Button size="sm" className="h-9 gap-1.5 px-3" onClick={handleCreateUnit}>
-                  <Plus className="size-3.5" />
+                <Button variant="ghost" size="sm" className="shrink-0 gap-1.5 text-muted-foreground hover:text-foreground" onClick={handleCreateUnit}>
+                  <Plus className="size-4" />
                   <span>{t("addUnit")}</span>
                 </Button>
               )}
