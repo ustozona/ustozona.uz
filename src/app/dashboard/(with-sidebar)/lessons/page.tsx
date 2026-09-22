@@ -280,6 +280,12 @@ export default function LessonsPage() {
   const [unitModalOpen, setUnitModalOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [unitImportOpen, setUnitImportOpen] = useState(false);
+  // «Koʻchirish → Yangi boʻlimga…»: boʻlim yaratilgach shu mavzu unga koʻchiriladi.
+  const [pendingMoveLessonId, setPendingMoveLessonId] = useState<string | null>(null);
+  const finishPendingMove = (unitId: string | null) => {
+    if (pendingMoveLessonId && unitId && selectedClassId) setUnitForClass(pendingMoveLessonId, selectedClassId, unitId);
+    setPendingMoveLessonId(null);
+  };
 
   // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
@@ -305,6 +311,7 @@ export default function LessonsPage() {
       if (cid === selectedClassId) createdId = id;
     });
     setUnitModalOpen(false);
+    finishPendingMove(createdId);
     if (createdId) setSelectedUnitId(createdId);
   };
 
@@ -1195,6 +1202,15 @@ export default function LessonsPage() {
                               {target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle")}
                             </ContextMenuItem>
                           ))}
+                          {/* Boʻsh ichki menyu chiqmasin: har doim «Yangi boʻlimga…» bor. */}
+                          {moveTargets.length > 0 && <ContextMenuSeparator />}
+                          <ContextMenuItem
+                            className="gap-2 cursor-pointer"
+                            onClick={() => { setPendingMoveLessonId(lesson.id); handleCreateUnit(); }}
+                          >
+                            <Plus className="size-4" />
+                            {t("moveToNewUnit")}
+                          </ContextMenuItem>
                         </ContextMenuSubContent>
                       </ContextMenuSub>
                       <ContextMenuSeparator />
@@ -1241,15 +1257,15 @@ export default function LessonsPage() {
           <UnitImportModal
             classId={selectedClassId}
             onDetailed={() => { setUnitImportOpen(false); setUnitModalOpen(true); }}
-            onCreated={(id) => { setUnitImportOpen(false); if (id) setSelectedUnitId(id); }}
-            onClose={() => setUnitImportOpen(false)}
+            onCreated={(id) => { setUnitImportOpen(false); finishPendingMove(id ?? null); if (id) setSelectedUnitId(id); }}
+            onClose={() => { setUnitImportOpen(false); setPendingMoveLessonId(null); }}
           />
         )}
         {unitModalOpen && (
           <CreateUnitModal
             defaultClassIds={selectedClassId ? [selectedClassId] : []}
             onSubmit={handleUnitSubmit}
-            onClose={() => setUnitModalOpen(false)}
+            onClose={() => { setUnitModalOpen(false); setPendingMoveLessonId(null); }}
           />
         )}
 

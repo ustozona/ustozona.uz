@@ -1353,6 +1353,7 @@
     "statusUnscheduled": "Не запланирован",
     "classMeta": "Разделов: {units} · тем: {lessons}",
     "classCoverage": "Охват: {pct}%",
+    "moveToNewUnit": "В новый раздел…",
     "lessonsSearchPlaceholder": "Поиск темы…",
     "lessonsSearchEmpty": "По запросу «{q}» тем не найдено",
     "classUnitsTip": "Разделов: {count}",

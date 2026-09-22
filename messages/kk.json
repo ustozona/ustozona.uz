@@ -1353,6 +1353,7 @@
     "statusUnscheduled": "Жоспарсыз",
     "classMeta": "{units} бөлім · {lessons} тақырып",
     "classCoverage": "Қамту: {pct}%",
+    "moveToNewUnit": "Жаңа бөлімге…",
     "lessonsSearchPlaceholder": "Тақырып іздеу…",
     "lessonsSearchEmpty": "«{q}» бойынша тақырып табылмады",
     "classUnitsTip": "{count} бөлім",

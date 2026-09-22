@@ -1353,6 +1353,7 @@
     "statusUnscheduled": "Режасиз",
     "classMeta": "{units} та бўлим · {lessons} та мавзу",
     "classCoverage": "Қамров: {pct}%",
+    "moveToNewUnit": "Янги бўлимга…",
     "lessonsSearchPlaceholder": "Мавзу қидириш…",
     "lessonsSearchEmpty": "«{q}» бўйича мавзу топилмади",
     "classUnitsTip": "{count} та бўлим",
