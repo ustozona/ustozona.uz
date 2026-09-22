@@ -10,7 +10,7 @@ import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
 import { ScrollFade } from "@/components/ui/scroll-fade";
-import { ClassSwatch } from "@/components/ClassSwatch";
+import { ClassBadge } from "@/components/ClassBadge";
 import {
   panelCardClass,
   panelCardHeaderClass,
@@ -19,7 +19,7 @@ import {
 import { useLessonStore } from "@/store/useLessonStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { lessonSessions, type Lesson } from "@/lib/lessons-data";
 import { dateToKey, addDaysKey } from "@/lib/date-keys";
 import { MONTHS_UZ, MONTHS_UZ_SHORT } from "@/lib/localization";
@@ -41,6 +41,7 @@ type Row = {
   title: string;
   className: string;
   classHex: string;
+  classColor: ClassColor | null;
   date: string;
   startMin: number;
   endMin: number;
@@ -59,7 +60,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
       new Map(
         liveClasses.map((c) => [
           c.id,
-          { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] },
+          { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)], color: classColor(c) },
         ])
       ),
     [liveClasses]
@@ -78,6 +79,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
           title: l.title,
           className: meta?.name ?? t("unknownClass"),
           classHex: meta?.hex ?? "#94a3b8",
+          classColor: meta?.color ?? null,
           date: s.date,
           startMin: s.startMin,
           endMin: s.endMin,
@@ -154,10 +156,11 @@ export function NextLessonsCard({ now }: { now: Date }) {
                             {r.title || t("untitledTopic")}
                           </h4>
                           <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2 py-0.5 text-tag font-medium text-foreground">
-                              <ClassSwatch hex={r.classHex} />
-                              {r.className}
-                            </span>
+                            {r.classColor ? (
+                              <ClassBadge color={r.classColor} name={r.className} className="shrink-0" />
+                            ) : (
+                              <span className="shrink-0 text-tag font-semibold">{r.className}</span>
+                            )}
                             <span className="size-0.5 shrink-0 rounded-full bg-muted-foreground/60" />
                             <span className="shrink-0 tabular-nums">
                               {fmtMin(r.startMin)} — {fmtMin(r.endMin)} ({t("durationSuffix", { count: r.endMin - r.startMin })})
