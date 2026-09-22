@@ -70,8 +70,8 @@ const NONE = "__none__";
 
 /* Boʻlim/"Boʻlimsiz" kartalarini @dnd-kit droppable-zonasiga aylantiradi —
    mavzuni sudrab tashlash uchun umumiy wrapper (loyihaning DnD standarti). */
-function UnitDropZone({ id, dragging, current, children }: {
-  id: string; dragging: boolean; current: boolean; children: (isOver: boolean) => ReactNode;
+function UnitDropZone({ id, dragging, current, count = 1, children }: {
+  id: string; dragging: boolean; current: boolean; count?: number; children: (isOver: boolean) => ReactNode;
 }) {
   // Sudrash paytida: tashlash mumkin boʻlgan zonalar nuqtali chegara oladi, mavzuning joriy boʻlimi
   // oʻchiriladi (u yerga tashlash hech narsa qilmaydi), ustidagi zonada «+1» — son qanchaga oʻsishi.
@@ -87,7 +87,7 @@ function UnitDropZone({ id, dragging, current, children }: {
     >
       {children(isOver)}
       {isOver && (
-        <span className="pointer-events-none absolute -top-2 -right-2 rounded-full bg-foreground px-2 py-0.5 text-tag font-semibold text-background tabular-nums">+1</span>
+        <span className="pointer-events-none absolute -top-2 -right-2 rounded-full bg-foreground px-2 py-0.5 text-tag font-semibold text-background tabular-nums">+{count}</span>
       )}
     </div>
   );
@@ -310,34 +310,42 @@ export default function LessonsPage() {
 
   // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
-  // Sudralayotgan mavzu — DragOverlay nusxasi kursorga ergashadi, asl karta joyida xira qoladi.
-  const [dragLessonId, setDragLessonId] = useState<string | null>(null);
-  const dragFromUnitId = (() => {
-    const l = dragLessonId && effectiveClassId ? lessonsSource.find((x) => x.id === dragLessonId) : null;
-    return l ? (unitIdForClass(l, effectiveClassId!) ?? null) : undefined;
-  })();
+  // Sudralayotgan mavzu(lar) — DragOverlay nusxasi kursorga ergashadi, asl karta joyida xira qoladi.
+  // Tanlash rejimida belgilangan kartani sudrasangiz — belgilanganlarning hammasi birga ketadi.
+  const [drag, setDrag] = useState<{ id: string; ids: string[]; from: (string | null)[] } | null>(null);
+  const dragLessonId = drag?.id ?? null;
   const zoneProps = (unitId: string | null) => ({
-    dragging: dragFromUnitId !== undefined,
-    current: dragFromUnitId !== undefined && dragFromUnitId === unitId,
+    dragging: drag != null,
+    // Hammasi shu boʻlimda boʻlsa — u yerga tashlash hech narsa qilmaydi.
+    current: drag != null && drag.from.every((u) => u === unitId),
+    count: drag ? drag.from.filter((u) => u !== unitId).length : 1,
   });
-  const handleLessonDragStart = (e: DragStartEvent) => setDragLessonId(e.active.id as string);
+  const handleLessonDragStart = (e: DragStartEvent) => {
+    const id = e.active.id as string;
+    if (!effectiveClassId) return;
+    const ids = lessonPickMode && selectedLessonIds.has(id) ? [...selectedLessonIds] : [id];
+    const from = ids.map((x) => {
+      const l = lessonsSource.find((y) => y.id === x);
+      return l ? (unitIdForClass(l, effectiveClassId) ?? null) : null;
+    });
+    setDrag({ id, ids, from });
+  };
   const handleLessonDragEnd = (e: DragEndEvent) => {
-    setDragLessonId(null);
-    const lessonId = e.active.id as string;
+    const d = drag;
+    setDrag(null);
     const overId = e.over?.id as string | undefined;
-    if (!overId || !effectiveClassId) return;
+    if (!d || !overId || !effectiveClassId) return;
     const targetUnitId = overId === "unit-none" ? null : overId.replace(/^unit-/, "");
-    const lesson = lessonsSource.find((l) => l.id === lessonId);
-    const fromUnitId = lesson ? unitIdForClass(lesson, effectiveClassId) : null;
-    if (!lesson || fromUnitId === targetUnitId) return;
+    const moves = d.ids.map((id, k) => ({ id, from: d.from[k] })).filter((m) => m.from !== targetUnitId);
+    if (moves.length === 0) return;
     const classId = effectiveClassId;
-    setUnitForClass(lessonId, classId, targetUnitId);
+    moves.forEach((m) => setUnitForClass(m.id, classId, targetUnitId));
+    if (d.ids.length > 1) setSelectedLessonIds(new Set());
     const target = targetUnitId ? unitsSource.find((u) => u.id === targetUnitId) : null;
-    toast.success(t("lessonMovedToUnit", {
-      lesson: lesson.title,
-      unit: target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle"),
-    }), {
-      action: { label: t("undo"), onClick: () => setUnitForClass(lessonId, classId, fromUnitId ?? null) },
+    const unit = target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle");
+    const single = moves.length === 1 ? lessonsSource.find((l) => l.id === moves[0].id) : null;
+    toast.success(single ? t("lessonMovedToUnit", { lesson: single.title, unit }) : t("lessonsMovedToUnit", { count: moves.length, unit }), {
+      action: { label: t("undo"), onClick: () => moves.forEach((m) => setUnitForClass(m.id, classId, m.from)) },
     });
   };
 
@@ -808,7 +816,7 @@ export default function LessonsPage() {
   return (
     <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
-      <DndContext sensors={dndSensors} onDragStart={handleLessonDragStart} onDragEnd={handleLessonDragEnd} onDragCancel={() => setDragLessonId(null)}>
+      <DndContext sensors={dndSensors} onDragStart={handleLessonDragStart} onDragEnd={handleLessonDragEnd} onDragCancel={() => setDrag(null)}>
       <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" mobile="self" data-tour="lessons-classes">
@@ -1146,7 +1154,7 @@ export default function LessonsPage() {
                         onClick={() => (lessonPickMode
                           ? toggleIn(selectedLessonIds, setSelectedLessonIds, lesson.id)
                           : openLesson(lesson.id))}
-                        className="list-card group flex flex-wrap items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
+                        className={cn("list-card group flex flex-wrap items-center gap-3 p-4 cursor-pointer active:cursor-grabbing", drag?.ids.includes(lesson.id) && "opacity-40 border-dashed")}
                         data-active={lessonPickMode && selectedLessonIds.has(lesson.id) ? "true" : undefined}
                         style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
@@ -1385,6 +1393,9 @@ export default function LessonsPage() {
               <span className="min-w-0 flex-1 truncate text-body font-semibold text-foreground">
                 {idx >= 0 ? `${pad(idx + 1)}. ` : ""}{lesson.title}
               </span>
+              {drag && drag.ids.length > 1 && (
+                <span className="shrink-0 rounded-full bg-foreground px-2 py-0.5 text-tag font-semibold text-background tabular-nums">+{drag.ids.length - 1}</span>
+              )}
             </div>
           );
         })()}

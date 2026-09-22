@@ -1355,6 +1355,7 @@
     "classCoverage": "Камтуу: {pct}%",
     "moveToNewUnit": "Жаңы бөлүмгө…",
     "lessonMovedToUnit": "«{lesson}» → {unit}",
+    "lessonsMovedToUnit": "{count} тема → {unit}",
     "lessonsSearchPlaceholder": "Тема издөө…",
     "lessonsSearchEmpty": "«{q}» боюнча тема табылган жок",
     "classUnitsTip": "{count} бөлүм",

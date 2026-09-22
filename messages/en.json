@@ -1355,6 +1355,7 @@
     "classCoverage": "Coverage: {pct}%",
     "moveToNewUnit": "To a new unit…",
     "lessonMovedToUnit": "“{lesson}” → {unit}",
+    "lessonsMovedToUnit": "{count} topics → {unit}",
     "lessonsSearchPlaceholder": "Search topics…",
     "lessonsSearchEmpty": "No topics match “{q}”",
     "classUnitsTip": "{count} units",
