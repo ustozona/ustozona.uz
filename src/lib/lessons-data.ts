@@ -61,6 +61,9 @@ export type Lesson = {
   orderByClass?: Record<string, number>;
   /** Dars oʻtilgan kun ("YYYY-MM-DD"); yoʻq/null — oʻtilmagan. */
   taughtAt?: string | null;
+  /** Koʻp sinfli mavzuda har sinf alohida oʻtiladi: sinf → oʻtilgan kun (null — oʻtilmagan).
+      `taughtAt` bunda faqat hamma sinfda oʻtilganda toʻldiriladi. */
+  taughtByClass?: Record<string, string | null>;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };
@@ -74,7 +77,8 @@ export const byLessonOrder = (classId: string | null | undefined) => (a: Lesson,
 
 /** Dars oʻtilganmi. Eski «Tugallandi» (`status: "Completed"`) mavzular ham
     oʻtilgan hisoblanadi — maʼlumot koʻchirilmaydi. */
-export function isTaught(l: Lesson): boolean {
+export function isTaught(l: Lesson, classId?: string | null): boolean {
+  if (classId && l.taughtByClass && classId in l.taughtByClass) return l.taughtByClass[classId] != null;
   return l.taughtAt != null || (l.taughtAt === undefined && l.status === "Completed");
 }
 

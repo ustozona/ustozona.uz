@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { SessionMove } from "@/lib/lesson-shift";
-import { lessonClassIds, lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession, type LessonPlanState } from "@/lib/lessons-data";
+import { isTaught, lessonClassIds, lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession, type LessonPlanState } from "@/lib/lessons-data";
 
 /* ════════════════════════════════════════════════════════════════════
    MAVZU BANKI — server-backed store (6-bosqich migratsiyasi)
@@ -116,7 +116,8 @@ interface LessonState {
   setPlanState: (id: string, state: LessonPlanState) => void;
   /** Oʻtildi (`dateKey`) / oʻtilmagan (`null`). Eski `status` ham moslanadi —
       progress chiziqlari va boshqa isteʼmolchilar hali `Completed` ni oʻqiydi. */
-  setTaught: (id: string, dateKey: string | null) => void;
+  /** `classId` berilsa va mavzu koʻp sinfli boʻlsa — faqat shu sinfda belgilanadi. */
+  setTaught: (id: string, dateKey: string | null, classId?: string | null) => void;
 
   /** Bitta sessiyani boshqa sana/vaqtga koʻchirish (planner drag/tahrir). */
   moveSession: (id: string, classId: string, oldDate: string, oldStartMin: number, newDate: string, newStartMin: number, newEndMin: number) => void;
@@ -219,13 +220,26 @@ export const useLessonStore = create<LessonState>()(
       setStatus: (id, status) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, status } : l)) })),
       setPlanState: (id, state) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: state === "ready", planStatus: state === "ready" ? undefined : state } : l)) })),
       setPlanReady: (id, ready) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: ready } : l)) })),
-      setTaught: (id, dateKey) => set((s) => ({
+      setTaught: (id, dateKey, classId) => set((s) => ({
         lessons: s.lessons.map((l) => {
           if (l.id !== id) return l;
-          const status: LessonStatus = dateKey
+          const ids = lessonClassIds(l);
+          let taughtAt = dateKey;
+          let taughtByClass: Record<string, string | null> | undefined;
+          if (ids.length > 1) {
+            // Joriy holat har sinf uchun aniq yoziladi, keyin faqat kerakli sinf(lar) oʻzgaradi.
+            taughtByClass = {};
+            for (const c of ids) {
+              const prev = l.taughtByClass && c in l.taughtByClass ? l.taughtByClass[c] : (isTaught(l) ? (l.taughtAt ?? dateKey ?? null) : null);
+              taughtByClass[c] = !classId || c === classId ? dateKey : prev;
+            }
+            const vals = ids.map((c) => taughtByClass![c]);
+            taughtAt = vals.every((v) => v != null) ? (vals as string[]).sort().at(-1)! : null;
+          }
+          const status: LessonStatus = taughtAt
             ? "Completed"
             : anySessions(scheduleMapOf(l)) ? "Scheduled" : "Unscheduled";
-          return { ...l, taughtAt: dateKey, status };
+          return { ...l, taughtAt, ...(taughtByClass ? { taughtByClass } : {}), status };
         }),
       })),
 

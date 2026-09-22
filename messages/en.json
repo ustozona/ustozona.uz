@@ -4627,6 +4627,7 @@
     "taughtLabel": "Lesson taught",
     "askTaught": "Taught?",
     "statusSection": "Status",
+    "taughtByClass": "Taught in classes",
     "askTaughtBanner": "The lesson time has passed. Was it taught?",
     "yesTaught": "Yes, taught",
     "bumpNext": "Move to next lesson",

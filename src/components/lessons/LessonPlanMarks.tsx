@@ -17,9 +17,9 @@ const LEAF_BADGE = {
   taught: { cls: "bg-success border-card text-success-foreground", Icon: Check, key: "taught" },
 } as const;
 
-export function LessonDateLeaf({ lesson, hex, day, month }: { lesson: Lesson; hex: string; day?: string; month?: string }) {
+export function LessonDateLeaf({ lesson, classId, hex, day, month }: { lesson: Lesson; classId?: string | null; hex: string; day?: string; month?: string }) {
   const t = useTranslations("LessonCycle");
-  const k = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
+  const k = isTaught(lesson, classId) ? "taught" : lessonPlanState(lesson);
   const { cls, Icon, key } = LEAF_BADGE[k];
   return (
     <Tooltip>
@@ -83,9 +83,9 @@ const STATUS_PILL = {
   none: { cls: "border border-dashed border-muted-foreground/40 text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
 } as const;
 
-export function LessonStatusPill({ lesson }: { lesson: Lesson }) {
+export function LessonStatusPill({ lesson, classId }: { lesson: Lesson; classId?: string | null }) {
   const t = useTranslations("LessonCycle");
-  const k = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
+  const k = isTaught(lesson, classId) ? "taught" : lessonPlanState(lesson);
   const { cls, Icon, key } = STATUS_PILL[k];
   const tip = k === "taught" ? t("taught") : t(k === "ready" ? "planStateReady" : k === "draft" ? "planStateDraft" : "planStateNone");
   return (

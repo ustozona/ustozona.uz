@@ -134,8 +134,8 @@ export default function LessonsPage() {
     { key: "taught", Icon: CircleCheck, iconCls: "text-success", label: "taught" },
   ] as const;
   const applyLessonState = (lesson: Lesson, next: (typeof LESSON_STATES)[number]["key"]) => {
-    if (next === "taught") { setTaught(lesson.id, todayKey()); return; }
-    if (isTaught(lesson)) setTaught(lesson.id, null);
+    if (next === "taught") { setTaught(lesson.id, todayKey(), effectiveClassId); return; }
+    if (isTaught(lesson, effectiveClassId)) setTaught(lesson.id, null, effectiveClassId);
     setPlanState(lesson.id, next);
   };
   const setTaught = useLessonStore((s) => s.setTaught);
@@ -271,7 +271,7 @@ export default function LessonsPage() {
     const all = unitId === null
       ? noUnitLessons
       : (effectiveClassId ? lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === unitId) : []);
-    const done = all.filter(isTaught).length;
+    const done = all.filter((l) => isTaught(l, effectiveClassId)).length;
     return { total: all.length, done, pct: all.length ? Math.round((done / all.length) * 100) : 0 };
   };
 
@@ -1109,7 +1109,7 @@ export default function LessonsPage() {
                         style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
                         {lessonPickMode && pickCircle(selectedLessonIds.has(lesson.id))}{(
-                          <LessonDateLeaf lesson={lesson} hex={selectedClassHex} day={lessonWhen(lesson)?.day} month={lessonWhen(lesson)?.month} />
+                          <LessonDateLeaf lesson={lesson} classId={effectiveClassId} hex={selectedClassHex} day={lessonWhen(lesson)?.day} month={lessonWhen(lesson)?.month} />
                         )}
                         <div className="min-w-0 flex-1">
                           <h4 className="text-body font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
@@ -1133,7 +1133,7 @@ export default function LessonsPage() {
                         </div>
                         <div className="shrink-0 flex items-center gap-3">
                           <LessonMetaChips lesson={lesson} />
-                          <LessonStatusPill lesson={lesson} />
+                          <LessonStatusPill lesson={lesson} classId={effectiveClassId} />
                         </div>
                         {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) && (
                           /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli kartaning ostidagi
@@ -1145,7 +1145,7 @@ export default function LessonsPage() {
                           >
                             <Clock className="size-4 shrink-0 text-muted-foreground" />
                             <span className="flex-1 min-w-0 font-medium text-foreground">{tc("askTaughtBanner")}</span>
-                            <Button size="sm" className="h-7 gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => setTaught(lesson.id, today)}>
+                            <Button size="sm" className="h-7 gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => setTaught(lesson.id, today, effectiveClassId)}>
                               <Check className="size-3.5" />
                               {tc("yesTaught")}
                             </Button>
@@ -1165,7 +1165,7 @@ export default function LessonsPage() {
                       <ContextMenuSeparator />
                       <ContextMenuLabel className="text-label">{tc("statusSection")}</ContextMenuLabel>
                       {(() => {
-                        const cur = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
+                        const cur = isTaught(lesson, effectiveClassId) ? "taught" : lessonPlanState(lesson);
                         return LESSON_STATES.map((st) => (
                           <ContextMenuItem key={st.key} className="gap-2 cursor-pointer" onClick={() => cur !== st.key && applyLessonState(lesson, st.key)}>
                             <st.Icon className={cn("size-4", st.iconCls)} />
@@ -1175,7 +1175,7 @@ export default function LessonsPage() {
                         ));
                       })()}
                       <ContextMenuSeparator />
-                      {!isTaught(lesson) && lessonSessions(lesson).some((x) => x.classId === effectiveClassId) && (
+                      {!isTaught(lesson, effectiveClassId) && lessonSessions(lesson).some((x) => x.classId === effectiveClassId) && (
                         <ContextMenuItem className="gap-2 cursor-pointer" onClick={() => bumpLesson(lesson.id, effectiveClassId!)}>
                           <SkipForward className="size-4" />
                           {tc("bump")}

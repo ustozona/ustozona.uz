@@ -39,7 +39,7 @@ export function planBump(opts: {
     }
   }
   all.sort((a, b) => cmp(a.s, b.s));
-  const taught = new Set(lessons.filter(isTaught).map((l) => l.id));
+  const taught = new Set(lessons.filter((l) => isTaught(l, classId)).map((l) => l.id));
   const start = all.findIndex((c) => c.lessonId === fromLessonId);
   if (start < 0) return [];
   // Oʻtilgan mavzular joyida qoladi — zanjir ularni chetlab oʻtadi.
@@ -61,7 +61,7 @@ export function planBump(opts: {
 /** «Oʻtildimi?» soʻralsinmi: mavzu oʻtilmagan, lekin sinfdagi biror sessiyasi
     tugagan. (Bugungi dars tugaganidan keyin ham soʻraladi.) */
 export function needsTaughtConfirm(l: Lesson, classId: string, today: string, nowMin: number): boolean {
-  if (isTaught(l)) return false;
+  if (isTaught(l, classId)) return false;
   return lessonSessions(l).some((s) => s.classId === classId && (s.date < today || (s.date === today && s.endMin <= nowMin)));
 }
 

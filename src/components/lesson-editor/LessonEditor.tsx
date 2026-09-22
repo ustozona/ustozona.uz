@@ -32,6 +32,7 @@ import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+  DropdownMenuCheckboxItem, DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import {
@@ -335,7 +336,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     const taught = isTaught(lesson);
     const cur = taught ? "taught" : lessonPlanState(lesson);
     if (cur === next) return;
-    const prev = { planReady: lesson.planReady, planStatus: lesson.planStatus, taughtAt: lesson.taughtAt, status: lesson.status };
+    const prev = { planReady: lesson.planReady, planStatus: lesson.planStatus, taughtAt: lesson.taughtAt, taughtByClass: lesson.taughtByClass, status: lesson.status };
     if (next === "taught") {
       setTaught(lessonId, todayKey());
     } else {
@@ -437,6 +438,10 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           {lesson && (() => {
             const state = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
             const { cls, Icon, key } = PLAN_META[state];
+            // Koʻp sinfli mavzu: «Oʻtildi» har sinfda alohida — qisman boʻlsa badgeʼda «2/3».
+            const classIds = lessonClassIds(lesson);
+            const multi = classIds.length > 1;
+            const taughtN = multi ? classIds.filter((c) => isTaught(lesson, c)).length : 0;
             return (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -446,6 +451,9 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   >
                     <Icon className="size-3.5" />
                     {tc(key)}
+                    {multi && taughtN > 0 && state !== "taught" && (
+                      <span className="inline-flex items-center gap-0.5 text-success tabular-nums"><Check className="size-3" />{taughtN}/{classIds.length}</span>
+                    )}
                     <ChevronDown className="size-3 opacity-70" />
                   </button>
                 </DropdownMenuTrigger>
@@ -460,6 +468,22 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                       </DropdownMenuItem>
                     );
                   })}
+                  {multi && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-label text-muted-foreground">{tc("taughtByClass")}</DropdownMenuLabel>
+                      {classIds.map((cid) => (
+                        <DropdownMenuCheckboxItem
+                          key={cid}
+                          checked={isTaught(lesson, cid)}
+                          onSelect={(e) => e.preventDefault()}
+                          onCheckedChange={(v) => setTaught(lessonId, v ? todayKey() : null, cid)}
+                        >
+                          {liveClasses.find((c) => c.id === cid)?.name ?? cid}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             );
