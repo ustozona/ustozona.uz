@@ -1360,7 +1360,6 @@
     "lessonsSearchEmpty": "«{q}» бўйича мавзу топилмади",
     "classUnitsTip": "{count} та бўлим",
     "classLessonsTip": "{count} та мавзу · {taught} таси ўтилди",
-    "unitSegTip": "{title}: {taught}/{total} ўтилди",
     "statusDraft": "Қоралама",
     "unitDeletedToast": "«{unit}» ўчирилди",
     "undo": "Бекор қилиш",

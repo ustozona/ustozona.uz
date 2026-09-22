@@ -23,7 +23,7 @@ import ClassListPanel from "@/components/ClassListPanel";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
 import { classTints } from "@/lib/class-colors";
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
-import { isTaught, lessonClassIds, lessonUnitIds, type Lesson, type Unit } from "@/lib/lessons-data";
+import { isTaught, lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
 import { useLiveClasses, useLiveClassesHydrated, classInfoFromForm, classFormInitial } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useIsBelow } from "@/hooks/use-mobile";
@@ -53,19 +53,11 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
   const [deleteTarget, setDeleteTarget] = useState<ClassInfo | null>(null);
 
   const stats = useMemo(() => {
-    type UnitStat = { id: string; title: string; total: number; taught: number };
-    const out = new Map<string, { units: number; lessons: number; taught: number; perUnit: UnitStat[] }>();
-    for (const c of classes) out.set(c.id, { units: 0, lessons: 0, taught: 0, perUnit: [] });
-    const unitStat = new Map<string, UnitStat>();
-    const unitClass = new Map<string, string>();
-    for (const u of [...units].sort((a, b) => a.number - b.number)) {
+    const out = new Map<string, { units: number; lessons: number; taught: number }>();
+    for (const c of classes) out.set(c.id, { units: 0, lessons: 0, taught: 0 });
+    for (const u of units) {
       const s = out.get(u.classId);
-      if (!s) continue;
-      s.units++;
-      const us = { id: u.id, title: u.title, total: 0, taught: 0 };
-      s.perUnit.push(us);
-      unitStat.set(u.id, us);
-      unitClass.set(u.id, u.classId);
+      if (s) s.units++;
     }
     for (const l of lessons) {
       for (const id of lessonClassIds(l)) {
@@ -74,12 +66,6 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
         if (!s) continue;
         s.lessons++;
         if (taught) s.taught++;
-      }
-      for (const uid of lessonUnitIds(l)) {
-        const us = unitStat.get(uid);
-        if (!us) continue;
-        us.total++;
-        if (isTaught(l, unitClass.get(uid))) us.taught++;
       }
     }
     return out;
@@ -154,7 +140,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
               const isSelected = cls.id === selectedClassId;
               const tints = classTints(classColor(cls));
               const Icon = classIcon(cls.icon);
-              const s = stats.get(cls.id) ?? { units: 0, lessons: 0, taught: 0, perUnit: [] };
+              const s = stats.get(cls.id) ?? { units: 0, lessons: 0, taught: 0 };
               const pct = s.lessons ? Math.round((s.taught / s.lessons) * 100) : 0;
               return (
                 <ContextMenu key={cls.id}>
