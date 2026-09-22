@@ -1351,7 +1351,7 @@
     "statusCompleted": "Completed",
     "statusScheduled": "Scheduled",
     "statusUnscheduled": "Unscheduled",
-    "classMeta": "{units}u · {lessons}t",
+    "classMeta": "{units} units · {lessons} topics",
     "classCoverage": "Coverage: {pct}%",
     "classUnitsTip": "{count} units",
     "classLessonsTip": "{count} topics · {taught} taught",

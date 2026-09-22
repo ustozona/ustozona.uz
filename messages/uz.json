@@ -1351,7 +1351,7 @@
     "statusCompleted": "Tugallandi",
     "statusScheduled": "Rejalashtirilgan",
     "statusUnscheduled": "Rejasiz",
-    "classMeta": "{units} b · {lessons} m",
+    "classMeta": "{units} ta boʻlim · {lessons} ta mavzu",
     "classCoverage": "Qamrov: {pct}%",
     "classUnitsTip": "{count} ta boʻlim",
     "classLessonsTip": "{count} ta mavzu · {taught} tasi oʻtildi",

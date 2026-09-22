@@ -1351,7 +1351,7 @@
     "statusCompleted": "Tawısıldı",
     "statusScheduled": "Rejelestirilgen",
     "statusUnscheduled": "Rejesiz",
-    "classMeta": "{units} b · {lessons} t",
+    "classMeta": "{units} bólim · {lessons} tema",
     "classCoverage": "Qamtıw: {pct}%",
     "classUnitsTip": "{count} bólim",
     "classLessonsTip": "{count} tema · {taught} ótildi",

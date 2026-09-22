@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { GraduationCap, Plus, Pencil, Trash2, Layers, FileText } from "lucide-react";
+import { GraduationCap, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { panelHeaderClass } from "@/components/DashboardPage";
@@ -38,9 +38,9 @@ type Props = {
   demoClasses?: ClassInfo[];
 };
 
-/* Darslar sahifasining sinflar ustuni — har sinf ikki qatorli karta: nom va
-   ikonkali boʻlim/mavzu soni (toʻliq maʼlumot tooltipda), pastda boʻlimlar
-   boʻyicha boʻlakli progress va umumiy foiz.
+/* Darslar sahifasining sinflar ustuni — har sinf kartasi: nom, ostida
+   boʻlim/mavzu soni matnda, pastda boʻlimlar boʻyicha boʻlakli progress va
+   umumiy foiz.
    Umumiy `ClassListPanel` boshqa sahifalarda ham ishlatilgani uchun unga
    tegilmaydi; mobil (`< lg`) Sheet koʻrinishi esa oʻshaning oʻzidan olinadi. */
 export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units, lessons, demoClasses }: Props) {
@@ -177,24 +177,9 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-foreground truncate flex-1">{cls.name}</span>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center gap-1 text-tag font-semibold tabular-nums text-muted-foreground shrink-0">
-                                <Layers className="size-3.5" aria-hidden="true" />
-                                {s.units}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>{tlp("classUnitsTip", { count: s.units })}</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center gap-1 text-tag font-semibold tabular-nums text-muted-foreground shrink-0">
-                                <FileText className="size-3.5" aria-hidden="true" />
-                                {s.lessons}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>{tlp("classLessonsTip", { count: s.lessons, taught: s.taught })}</TooltipContent>
-                          </Tooltip>
+                        </span>
+                        <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
+                          {tlp("classMeta", { units: s.units, lessons: s.lessons })}
                         </span>
                         {/* Boʻlimlar boʻyicha progress: har boʻlak — bitta boʻlim (kengligi mavzu soniga
                             mutanosib), ichida oʻtilgan mavzular ulushi. Oxirida umumiy foiz. */}
