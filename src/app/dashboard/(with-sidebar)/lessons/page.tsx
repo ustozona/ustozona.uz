@@ -1083,17 +1083,17 @@ export default function LessonsPage() {
                           /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli kartaning ostidagi
                              lentada. Tugmalar kartaning sudrash/ochish hodisalarini toʻsadi. */
                           <div
-                            className="basis-full flex flex-wrap items-center gap-2 rounded-lg bg-warning/10 px-3 py-2 text-caption text-warning"
+                            className="basis-full flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/60 px-3 py-2 text-caption"
                             onPointerDown={(e) => e.stopPropagation()}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <Clock className="size-4 shrink-0" />
-                            <span className="flex-1 min-w-0 font-medium text-foreground/80">{tc("askTaughtBanner")}</span>
-                            <Button size="sm" variant="secondary" className="h-7 gap-1.5 bg-success/10 text-success hover:bg-success/15" onClick={() => setTaught(lesson.id, today)}>
+                            <Clock className="size-4 shrink-0 text-muted-foreground" />
+                            <span className="flex-1 min-w-0 font-medium text-foreground">{tc("askTaughtBanner")}</span>
+                            <Button size="sm" className="h-7 gap-1.5 bg-success text-success-foreground hover:bg-success/90" onClick={() => setTaught(lesson.id, today)}>
                               <Check className="size-3.5" />
                               {tc("yesTaught")}
                             </Button>
-                            <Button size="sm" variant="outline" className="h-7 gap-1.5 bg-card" onClick={() => bumpLesson(lesson.id, effectiveClassId)}>
+                            <Button size="sm" variant="outline" className="h-7 gap-1.5 bg-card text-foreground" onClick={() => bumpLesson(lesson.id, effectiveClassId)}>
                               <SkipForward className="size-3.5" />
                               {tc("bumpNext")}
                             </Button>
