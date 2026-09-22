@@ -1351,7 +1351,7 @@
     "statusCompleted": "Аяктады",
     "statusScheduled": "Пландаштырылган",
     "statusUnscheduled": "Плансыз",
-    "classMeta": "{units} бөлүм · {lessons} тема",
+    "classMeta": "{units} бөлүм · {taught}/{lessons} тема",
     "classCoverage": "Камтуу: {pct}%",
     "moveToNewUnit": "Жаңы бөлүмгө…",
     "lessonsSearchPlaceholder": "Тема издөө…",

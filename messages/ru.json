@@ -1351,7 +1351,7 @@
     "statusCompleted": "Завершён",
     "statusScheduled": "Запланирован",
     "statusUnscheduled": "Не запланирован",
-    "classMeta": "Разделов: {units} · тем: {lessons}",
+    "classMeta": "Разделов: {units} · тем: {taught}/{lessons}",
     "classCoverage": "Охват: {pct}%",
     "moveToNewUnit": "В новый раздел…",
     "lessonsSearchPlaceholder": "Поиск темы…",
