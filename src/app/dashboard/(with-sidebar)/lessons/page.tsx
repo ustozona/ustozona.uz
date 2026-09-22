@@ -317,7 +317,7 @@ export default function LessonsPage() {
 
   /* Kartadagi sana/vaqt — saqlangan inglizcha matn («Sep 24», «8:00 AM») emas,
      shu sinfning sessiyasidan: eng yaqin kelgusi (boʻlmasa oxirgi) dars,
-     «24 sen» va 24 soatlik «08:00 – 08:45». Brauzerda oʻzbekcha oy nomlari yoʻq —
+     «24-sen» va 24 soatlik «08:00 — 08:45». Brauzerda oʻzbekcha oy nomlari yoʻq —
      `MONTHS_UZ_SHORT`. */
   const intlMonthMissing = new Intl.DateTimeFormat(locale, { month: "short" }).format(new Date(2024, 8, 1)).startsWith("M0");
   const lessonWhen = (lesson: Lesson) => {
@@ -331,7 +331,9 @@ export default function LessonsPage() {
       ? MONTHS_UZ_SHORT[d.getMonth()]
       : new Intl.DateTimeFormat(locale, { month: "short" }).format(d).replace(".", "");
     const hhmm = (m: number) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
-    return { date: `${d.getDate()} ${month}`, time: `${hhmm(s.startMin)} – ${hhmm(s.endMin)}` };
+    // Oʻzbek imlosi: kun va oy chiziqcha bilan («5-sen»), vaqt oraligʻi tire bilan («08:00 — 08:45»).
+    const sep = locale.startsWith("uz") ? "-" : " ";
+    return { date: `${d.getDate()}${sep}${month}`, time: `${hhmm(s.startMin)} — ${hhmm(s.endMin)}` };
   };
 
   const selectedClass = isDemoMode

@@ -163,7 +163,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                             {tlp("classMeta", { units: s.units, lessons: s.lessons })}
                           </span>
                         </span>
-                        {cls.time && <span className="block text-caption text-muted-foreground truncate mt-0.5">{cls.time}</span>}
+                        {cls.time && <span className="block text-caption text-muted-foreground truncate mt-0.5">{cls.time.replace(/\s*[–-]\s*/g, " — ")}</span>}
                         <span className="block h-1 mt-2 rounded-full bg-muted overflow-hidden" title={tlp("classCoverage", { pct })}>
                           <span className="block h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: tints.solid }} />
                         </span>
