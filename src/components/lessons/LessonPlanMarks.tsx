@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
-import { CircleCheck, FileCheck, FilePen, FileText, Paperclip, Target } from "lucide-react";
+import { Check, CircleCheck, FileCheck, FilePen, FileText, Minus, Paperclip, PenLine, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isTaught, lessonPlanState, type Lesson } from "@/lib/lessons-data";
 
@@ -30,6 +30,34 @@ export function LessonPlanIcon({ lesson, hex, className }: { lesson: Lesson; hex
       style={style}
     >
       <Icon className="size-5" />
+    </div>
+  );
+}
+
+/* Mavzu kartasining chap tomoni — kalendar varaqcha (sinf rangida: oy, kun)
+   va burchakda dars holati belgisi. Belgilar ataylab turli shaklda, rangga
+   tayanmasdan ham farqlansin: — reja yoʻq, qalam — jarayonda, hujjat —
+   rejalashtirilgan, ✓ — oʻtildi. Sanasiz mavzuda varaqcha «—» koʻrsatadi. */
+const LEAF_BADGE = {
+  none: { cls: "bg-card border-dashed border-warning text-warning", Icon: Minus, key: "pillNone" },
+  draft: { cls: "bg-muted-foreground border-card text-card", Icon: PenLine, key: "pillDraft" },
+  ready: { cls: "bg-info border-card text-info-foreground", Icon: FileText, key: "planReadyShort" },
+  taught: { cls: "bg-success border-card text-success-foreground", Icon: Check, key: "taught" },
+} as const;
+
+export function LessonDateLeaf({ lesson, hex, day, month }: { lesson: Lesson; hex: string; day?: string; month?: string }) {
+  const t = useTranslations("LessonCycle");
+  const k = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
+  const { cls, Icon, key } = LEAF_BADGE[k];
+  return (
+    <div className="relative shrink-0 w-11" title={t(key)} aria-label={t(key)}>
+      <div className="rounded-lg overflow-hidden text-center border" style={{ borderColor: hex }}>
+        <div className="text-micro uppercase py-px text-white" style={{ backgroundColor: hex }}>{month ?? "—"}</div>
+        <div className="text-base font-semibold leading-6 tabular-nums text-foreground">{day ?? "—"}</div>
+      </div>
+      <span className={cn("absolute -right-1.5 -bottom-1.5 size-5 rounded-full border-2 flex items-center justify-center", cls)}>
+        <Icon className="size-2.5" strokeWidth={3} />
+      </span>
     </div>
   );
 }

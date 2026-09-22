@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState, useMemo, useEffect, useRef, type ReactNode } from "react";
 import { useComposedRefs } from "@/lib/compose-refs";
 import { useLocale, useTranslations } from "next-intl";
-import { MONTHS_UZ_SHORT } from "@/lib/localization";
+import { MONTHS_UZ_SHORT, DAYS_UZ_SHORT } from "@/lib/localization";
 import { dateKeyToDate } from "@/lib/date-keys";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -35,7 +35,7 @@ import {
 } from "@/components/tour/lessons-tour-demo";
 import { TourDemoBanner } from "@/components/tour/TourDemoBanner";
 import { LessonsClassPanel } from "@/components/lessons/LessonsClassPanel";
-import { LessonPlanIcon, LessonMetaChips, LessonStatusPill } from "@/components/lessons/LessonPlanMarks";
+import { LessonDateLeaf, LessonMetaChips, LessonStatusPill } from "@/components/lessons/LessonPlanMarks";
 import { DashboardColumns, DashboardColumn } from "@/components/DashboardPage";
 import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
@@ -333,7 +333,16 @@ export default function LessonsPage() {
     const hhmm = (m: number) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
     // Oʻzbek imlosi: kun va oy chiziqcha bilan («5-sen»), vaqt oraligʻi tire bilan («08:00 — 08:45»).
     const sep = locale.startsWith("uz") ? "-" : " ";
-    return { date: `${d.getDate()}${sep}${month}`, time: `${hhmm(s.startMin)} — ${hhmm(s.endMin)}` };
+    const weekday = intlMonthMissing
+      ? DAYS_UZ_SHORT[(d.getDay() + 6) % 7]
+      : new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d).replace(".", "");
+    return {
+      day: String(d.getDate()),
+      month,
+      weekday,
+      date: `${d.getDate()}${sep}${month}`,
+      time: `${hhmm(s.startMin)} — ${hhmm(s.endMin)}`,
+    };
   };
 
   const selectedClass = isDemoMode
@@ -1058,32 +1067,29 @@ export default function LessonsPage() {
                         style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
                         {lessonPickMode ? pickCircle(selectedLessonIds.has(lesson.id)) : (
-                          <LessonPlanIcon lesson={lesson} hex={selectedClassHex} />
+                          <LessonDateLeaf lesson={lesson} hex={selectedClassHex} day={lessonWhen(lesson)?.day} month={lessonWhen(lesson)?.month} />
                         )}
                         <div className="min-w-0 flex-1">
                           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
                             {pad(i + 1)}. {lesson.title}
                           </h4>
-                          {lessonUnit && (
-                            <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                              <ClassSwatch hex={selectedClassHex} />
-                              <span className="truncate">{uNo(lessonUnit)}. {lessonUnit.title}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="shrink-0 flex items-center gap-3">
                           {(() => {
                             const when = lessonWhen(lesson);
-                            if (!when) return <span className="hidden md:inline text-xs text-muted-foreground/40">—</span>;
+                            if (!lessonUnit && !when) return null;
                             return (
-                              <div className="hidden md:flex flex-col items-end tabular-nums leading-tight">
-                                <span className="text-caption font-semibold text-foreground">
-                                  {when.date}
-                                </span>
-                                <span className="text-micro text-muted-foreground mt-0.5">{when.time}</span>
+                              <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground min-w-0">
+                                {lessonUnit && <ClassSwatch hex={selectedClassHex} />}
+                                {lessonUnit && <span className="truncate">{uNo(lessonUnit)}. {lessonUnit.title}</span>}
+                                {when && (
+                                  <span className="shrink-0 tabular-nums">
+                                    {lessonUnit && "· "}{when.weekday}, {when.time}
+                                  </span>
+                                )}
                               </div>
                             );
                           })()}
+                        </div>
+                        <div className="shrink-0 flex items-center gap-3">
                           <LessonMetaChips lesson={lesson} />
                           {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) ? (
                             /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli. Tugmalar
