@@ -96,23 +96,12 @@ export function NextLessonsCard({ now }: { now: Date }) {
     return out.slice(0, LIMIT);
   }, [allLessons, classMeta, todayKey, t]);
 
-  // Sana kartadagi bargda turadi — sarlavha davrni bildiradi: shu hafta, keyingi hafta, keyin oy.
-  // Har kun uchun qator: chapda hafta kuni, oʻngda «2 kundan keyin».
-  const nextWeekStart = addDaysKey(todayKey, 7 - ((dateKeyToDate(todayKey).getDay() + 6) % 7));
-  const weekAfterStart = addDaysKey(nextWeekStart, 7);
+  // Sana kartadagi bargda turadi — sarlavha oyni bildiradi, har kun qatori: hafta kuni + «2 kundan keyin».
   const periodLabel = (period: string): string => {
-    if (period === "this") return t("thisWeek");
-    if (period === "next") return t("nextWeek");
     const [y, m] = period.split("-").map(Number);
     if (intlMonthMissing) return MONTHS_UZ[m - 1];
     const s = new Intl.DateTimeFormat(locale, { month: "long" }).format(new Date(y, m - 1, 1));
     return s.charAt(0).toUpperCase() + s.slice(1);
-  };
-  /** Hafta oraligʻi: «22–28 sen» yoki «29 sen – 5 okt». */
-  const weekRange = (startKey: string): string => {
-    const [y1, m1, d1] = startKey.split("-").map(Number);
-    const [y2, m2, d2] = addDaysKey(startKey, 6).split("-").map(Number);
-    return m1 === m2 ? `${d1}–${d2} ${shortMonth(y2, m2)}` : `${d1} ${shortMonth(y1, m1)} – ${d2} ${shortMonth(y2, m2)}`;
   };
   const weekday = (dateKey: string): string => {
     const date = dateKeyToDate(dateKey);
@@ -128,7 +117,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
   const groups = useMemo(() => {
     const out: { period: string; days: { date: string; rows: Row[] }[]; count: number }[] = [];
     for (const r of rows) {
-      const period = r.date < nextWeekStart ? "this" : r.date < weekAfterStart ? "next" : r.date.slice(0, 7);
+      const period = r.date.slice(0, 7);
       let g = out[out.length - 1];
       if (!g || g.period !== period) out.push((g = { period, days: [], count: 0 }));
       const day = g.days[g.days.length - 1];
@@ -137,7 +126,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
       g.count++;
     }
     return out;
-  }, [rows, nextWeekStart, weekAfterStart]);
+  }, [rows]);
 
   return (
     <Card className={panelCardClass}>
@@ -168,13 +157,12 @@ export function NextLessonsCard({ now }: { now: Date }) {
           ) : (
             <div className="flex flex-col gap-4 px-4 pt-3 pb-4">
               {groups.map((g) => {
-                const range = g.period === "this" ? weekRange(addDaysKey(nextWeekStart, -7)) : g.period === "next" ? weekRange(nextWeekStart) : null;
                 return (
                 <div key={g.period}>
                   <div className="mb-2 flex items-center gap-2 px-1">
                     <span className="text-tag font-semibold uppercase tracking-wide text-muted-foreground">{periodLabel(g.period)}</span>
                     <span className="h-px flex-1 bg-border" />
-                    <span className="text-tag tabular-nums text-muted-foreground">{range ?? g.count}</span>
+                    <span className="text-tag tabular-nums text-muted-foreground">{g.count}</span>
                   </div>
                   <div className="flex flex-col gap-2">
                   {g.days.map((day) => (

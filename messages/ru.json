@@ -2687,8 +2687,6 @@
     "unknownClass": "Неизвестный класс",
     "untitledTopic": "(без темы)",
     "tomorrow": "Завтра",
-    "thisWeek": "На этой неделе",
-    "nextWeek": "На следующей неделе",
     "inDays": "через {count} дн.",
     "durationSuffix": "{count} мин",
     "emptyTitle": "Нет предстоящих уроков",
