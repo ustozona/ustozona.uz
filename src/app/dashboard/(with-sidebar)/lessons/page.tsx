@@ -281,12 +281,31 @@ export default function LessonsPage() {
     [lessonsSource, effectiveClassId]
   );
 
-  // Tartiblangan: kartadagi raqam = roʻyxatdagi oʻrin (`i + 1`).
+  // Tartiblangan: kartadagi raqam = oldingi boʻlimlardagi mavzular + roʻyxatdagi oʻrin (`lNo`).
   const lessonsForUnit = useMemo(() => {
     if (!effectiveUnitId || !effectiveClassId) return [];
     if (effectiveUnitId === NONE) return [...noUnitLessons].sort(byLessonOrder(effectiveClassId));
     return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId).sort(byLessonOrder(effectiveClassId));
   }, [effectiveUnitId, effectiveClassId, noUnitLessons, lessonsSource]);
+
+  // Mavzu raqami boʻlimlar boʻylab davom etadi: 1-boʻlimda 10 ta boʻlsa, 2-boʻlim 11 dan boshlanadi.
+  // «Boʻlimsiz» mavzular hamma boʻlimlardan keyin sanaladi.
+  const lessonOffset = useMemo(() => {
+    if (!effectiveUnitId || !effectiveClassId) return 0;
+    const counts = new Map<string, number>();
+    for (const l of lessonsSource) {
+      if (!lessonClassIds(l).includes(effectiveClassId)) continue;
+      const uid = unitIdForClass(l, effectiveClassId);
+      if (uid) counts.set(uid, (counts.get(uid) ?? 0) + 1);
+    }
+    let offset = 0;
+    for (const u of unitsForClass) {
+      if (u.id === effectiveUnitId) return offset;
+      offset += counts.get(u.id) ?? 0;
+    }
+    return offset;
+  }, [effectiveUnitId, effectiveClassId, lessonsSource, unitsForClass]);
+  const lNo = (i: number) => pad(lessonOffset + i + 1);
 
   const unitProgress = (unitId: string | null) => {
     const all = unitId === null
@@ -1123,7 +1142,7 @@ export default function LessonsPage() {
                             <FileText className="size-5" />
                           </div>
                           <h4 className="min-w-0 flex-1 text-body font-semibold text-foreground leading-tight truncate">
-                            {pad(i + 1)}. {lesson.title}
+                            {lNo(i)}. {lesson.title}
                           </h4>
                           {h.arrows}
                         </div>
@@ -1163,7 +1182,7 @@ export default function LessonsPage() {
                         )}
                         <div className="min-w-0 flex-1">
                           <h4 className="text-body font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-                            {pad(i + 1)}. {lesson.title}
+                            {lNo(i)}. {lesson.title}
                           </h4>
                           {(() => {
                             const when = lessonWhen(lesson);
@@ -1391,7 +1410,7 @@ export default function LessonsPage() {
               <GripVertical className="size-4 shrink-0 text-muted-foreground" />
               <LessonDateLeaf lesson={lesson} classId={effectiveClassId} hex={selectedClassHex} day={when?.day} month={when?.month} />
               <span className="min-w-0 flex-1 truncate text-body font-semibold text-foreground">
-                {idx >= 0 ? `${pad(idx + 1)}. ` : ""}{lesson.title}
+                {idx >= 0 ? `${lNo(idx)}. ` : ""}{lesson.title}
               </span>
               {drag && drag.ids.length > 1 && (
                 <span className="shrink-0 rounded-full bg-foreground px-2 py-0.5 text-tag font-semibold text-background tabular-nums">+{drag.ids.length - 1}</span>
