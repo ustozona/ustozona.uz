@@ -24,7 +24,7 @@ import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
 import { byNumber, ordinalsOf } from "@/lib/ordinals";
-import { isTaught, lessonPlanState } from "@/lib/lessons-data";
+import { isTaught, lessonPlanState, byLessonOrder } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { needsTaughtConfirm } from "@/lib/lesson-shift";
 import { useLessonBump } from "@/hooks/useLessonBump";
@@ -263,8 +263,8 @@ export default function LessonsPage() {
   // Tartiblangan: kartadagi raqam = roʻyxatdagi oʻrin (`i + 1`).
   const lessonsForUnit = useMemo(() => {
     if (!effectiveUnitId || !effectiveClassId) return [];
-    if (effectiveUnitId === NONE) return [...noUnitLessons].sort(byNumber);
-    return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId).sort(byNumber);
+    if (effectiveUnitId === NONE) return [...noUnitLessons].sort(byLessonOrder(effectiveClassId));
+    return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId).sort(byLessonOrder(effectiveClassId));
   }, [effectiveUnitId, effectiveClassId, noUnitLessons, lessonsSource]);
 
   const unitProgress = (unitId: string | null) => {
@@ -529,7 +529,8 @@ export default function LessonsPage() {
   };
   const endReorder = (save: boolean) => {
     if (save && reorderDraft.order && reorderDraft.movedIds.size > 0) {
-      (reorderKind === "units" ? reorderUnits : reorderLessons)(reorderDraft.order);
+      if (reorderKind === "units") reorderUnits(reorderDraft.order);
+      else if (effectiveClassId) reorderLessons(reorderDraft.order, effectiveClassId);
     }
     reorderDraft.stop();
     setReorderKind(null);
@@ -1087,11 +1088,13 @@ export default function LessonsPage() {
                   {lessonsForUnit.map((lesson, i) => {
                     // Qidiruvda raqam asl tartibdan qoladi (i — filtrsiz roʻyxatdagi oʻrin).
                     if (!lessonMatches(lesson)) return null;
-                    const lessonUnit = unitsSource.find((u) => u.id === lesson.unitId);
+                    // Koʻp sinfli mavzuda boʻlim — shu sinfniki (`unitByClass`), asosiy sinfniki emas.
+                    const lessonUnitId = effectiveClassId ? unitIdForClass(lesson, effectiveClassId) : lesson.unitId;
+                    const lessonUnit = unitsSource.find((u) => u.id === lessonUnitId);
                     // "Koʻchirish" submenu — joriy boʻlim va "Boʻlimsiz" oʻzi chiqarib tashlanadi.
                     const moveTargets = [
-                      ...unitsForClass.filter((u) => u.id !== lesson.unitId),
-                      ...(lesson.unitId !== null ? [null] : []),
+                      ...unitsForClass.filter((u) => u.id !== lessonUnitId),
+                      ...(lessonUnitId ? [null] : []),
                     ];
                     return (
                     <ContextMenu key={lesson.id}>

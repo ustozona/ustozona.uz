@@ -56,11 +56,21 @@ export type Lesson = {
   planReady?: boolean;
   /** Qoʻlda tanlangan «tayyor emas» holati. Yoʻq boʻlsa — matndan avtomatik. */
   planStatus?: "none" | "draft";
+  /** Koʻp sinfli mavzuning sinf boʻyicha tartibi (tartiblash rejimida yoziladi).
+      Yoʻq boʻlsa umumiy `number` ishlatiladi. */
+  orderByClass?: Record<string, number>;
   /** Dars oʻtilgan kun ("YYYY-MM-DD"); yoʻq/null — oʻtilmagan. */
   taughtAt?: string | null;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };
+
+/** Mavzuning shu sinfdagi tartib kaliti va shu boʻyicha taqqoslovchi. */
+export function lessonOrderFor(l: Lesson, classId: string | null | undefined): number {
+  return (classId ? l.orderByClass?.[classId] : undefined) ?? l.number;
+}
+export const byLessonOrder = (classId: string | null | undefined) => (a: Lesson, b: Lesson) =>
+  lessonOrderFor(a, classId) - lessonOrderFor(b, classId);
 
 /** Dars oʻtilganmi. Eski «Tugallandi» (`status: "Completed"`) mavzular ham
     oʻtilgan hisoblanadi — maʼlumot koʻchirilmaydi. */

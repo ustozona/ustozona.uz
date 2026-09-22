@@ -335,7 +335,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     const taught = isTaught(lesson);
     const cur = taught ? "taught" : lessonPlanState(lesson);
     if (cur === next) return;
-    const prev = { planReady: lesson.planReady, planStatus: lesson.planStatus, taughtAt: lesson.taughtAt ?? null, status: lesson.status };
+    const prev = { planReady: lesson.planReady, planStatus: lesson.planStatus, taughtAt: lesson.taughtAt, status: lesson.status };
     if (next === "taught") {
       setTaught(lessonId, todayKey());
     } else {

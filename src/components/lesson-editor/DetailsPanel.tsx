@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { byNumber, pad2 } from "@/lib/ordinals";
+import { byNumber, ordinalsOf, pad2 } from "@/lib/ordinals";
 import { useEffect, useMemo, useState } from "react";
 import { SlidersHorizontal, ChevronDown, Ban, LibraryBig, CalendarDays, Target, Plus, Check, X, Presentation, ListChecks } from "lucide-react";
 import { listSetsAction } from "@/server/actions/assess";
@@ -195,7 +195,8 @@ export default function DetailsPanel({
               {selectedClasses.map((c) => {
                 const hex = CLASS_COLOR_HEX[classColor(c)];
                 const unitsForClass = units.filter((u) => u.classId === c.id).sort(byNumber);
-                const unitNo = (u: { id: string; number: number }) => pad2(unitsForClass.findIndex((x) => x.id === u.id) + 1 || u.number);
+                const unitOrdinals = ordinalsOf(unitsForClass);
+                const unitNo = (u: { id: string; number: number }) => pad2(unitOrdinals.get(u.id) ?? u.number);
                 const curUnitId = lesson.unitByClass?.[c.id] ?? (c.id === selectedIds[0] ? lesson.unitId ?? null : null);
                 const unit = units.find((u) => u.id === curUnitId);
                 return (

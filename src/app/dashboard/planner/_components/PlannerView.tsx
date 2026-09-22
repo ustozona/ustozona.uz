@@ -31,7 +31,8 @@ import { TimeGrid, type TimeGridColumn } from "@/components/calendar/TimeGrid";
 import { MonthGrid } from "@/components/calendar/MonthGrid";
 import { useCalendarFormat } from "@/components/calendar/format";
 import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
-import { lessonSessions, lessonClassIds, unitIdForClass, type Lesson } from "@/lib/lessons-data";
+import { lessonSessions, lessonClassIds, unitIdForClass, isTaught, type Lesson } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -237,7 +238,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
   const moveSession = useLessonStore((s) => s.moveSession);
   const unscheduleSession = useLessonStore((s) => s.unscheduleSession);
   const restoreLesson = useLessonStore((s) => s.restoreLesson);
-  const setStatus = useLessonStore((s) => s.setStatus);
+  const setTaught = useLessonStore((s) => s.setTaught);
 
   const [blockModal, setBlockModal] = useState<{ date: Date } | null>(null);
   const [blockLabel, setBlockLabel] = useState("");
@@ -1958,16 +1959,16 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {editLesson && (
               <div className="flex flex-wrap gap-2">
                 <Button
-                  variant={editLesson.status === "Completed" ? "soft" : "outline"}
+                  variant={isTaught(editLesson) ? "soft" : "outline"}
                   size="sm" className="gap-1.5"
                   onClick={() => {
                     if (!editLesson) return;
-                    const next = editLesson.status === "Completed" ? "Scheduled" : "Completed";
-                    setStatus(editLesson.id, next);
-                    toast.success(next === "Completed" ? t("markedCompletedToast") : t("rescheduledToast"));
+                    const taught = isTaught(editLesson);
+                    setTaught(editLesson.id, taught ? null : todayKey());
+                    toast.success(taught ? t("rescheduledToast") : t("markedCompletedToast"));
                   }}>
                   <Check className="size-4" />
-                  {editLesson.status === "Completed" ? t("completedCheck") : t("markCompleted")}
+                  {isTaught(editLesson) ? t("completedCheck") : t("markCompleted")}
                 </Button>
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
                   if (!editTarget) return;

@@ -15,7 +15,7 @@ import { classTints, CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
-import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
+import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, byLessonOrder, type Unit, type Lesson } from "@/lib/lessons-data";
 import { byNumber, ordinalsOf } from "@/lib/ordinals";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
@@ -155,7 +155,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   };
   const endReorder = (save: boolean) => {
     if (save && reorderDraft.order && reorderDraft.movedIds.size > 0) {
-      (reorderKind === "units" ? reorderUnits : reorderLessons)(reorderDraft.order);
+      if (reorderKind === "units") reorderUnits(reorderDraft.order);
+      else reorderLessons(reorderDraft.order, classId);
     }
     reorderDraft.stop();
     setReorderKind(null);
@@ -202,8 +203,8 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
   // Tartiblangan: kartadagi raqam = roʻyxatdagi oʻrin (`i + 1`).
   const lessonsForUnit = useMemo(() => {
     if (!selectedUnitId) return [];
-    if (selectedUnitId === NONE) return [...noUnitLessons].sort(byNumber);
-    return lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === selectedUnitId).sort(byNumber);
+    if (selectedUnitId === NONE) return [...noUnitLessons].sort(byLessonOrder(classId));
+    return lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === selectedUnitId).sort(byLessonOrder(classId));
   }, [selectedUnitId, classId, noUnitLessons, lessons]);
 
   const unitProgress = (unitId: string | null) => {

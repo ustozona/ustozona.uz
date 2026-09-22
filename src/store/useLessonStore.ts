@@ -98,7 +98,9 @@ interface LessonState {
       bitta boʻlim mavzulari) `number` i roʻyxat tartibida 1..n qilib yoziladi.
       Oʻzgarmagan qatorlar tegilmaydi — sinxron diff faqat surilganlarni yuboradi. */
   reorderUnits: (orderedIds: string[]) => void;
-  reorderLessons: (orderedIds: string[]) => void;
+  /** `classId` — qaysi sinf koʻrinishida tartiblandi: koʻp sinfli mavzuda tartib
+      `orderByClass[classId]` ga yoziladi, umumiy `number` ga tegilmaydi. */
+  reorderLessons: (orderedIds: string[], classId: string) => void;
   /** Oʻchirilgan boʻlimni (va unga tegishli boʻlgan darslar boʻlim-bogʻlanishini) qaytarish — undo uchun. */
   restoreUnit: (unit: Unit, lessonIds: string[]) => void;
 
@@ -155,7 +157,19 @@ export const useLessonStore = create<LessonState>()(
         return id;
       },
       reorderUnits: (orderedIds) => set((s) => ({ units: renumber(s.units, orderedIds) })),
-      reorderLessons: (orderedIds) => set((s) => ({ lessons: renumber(s.lessons, orderedIds) })),
+      reorderLessons: (orderedIds, classId) => set((s) => {
+        const pos = new Map(orderedIds.map((id, i) => [id, i + 1]));
+        return {
+          lessons: s.lessons.map((l) => {
+            const n = pos.get(l.id);
+            if (n === undefined) return l;
+            if (lessonClassIds(l).length > 1) {
+              return l.orderByClass?.[classId] === n ? l : { ...l, orderByClass: { ...l.orderByClass, [classId]: n } };
+            }
+            return n === l.number ? l : { ...l, number: n };
+          }),
+        };
+      }),
       updateUnit: (id, patch) => set((s) => ({ units: s.units.map((u) => (u.id === id ? { ...u, ...patch } : u)) })),
       deleteUnit: (id, opts) => set((s) => {
         const withLessons = opts?.withLessons ?? true;
@@ -243,12 +257,16 @@ export const useLessonStore = create<LessonState>()(
             if (!ms) return l;
             const base = scheduleMapOf(l);
             const arr = [...(base[classId] ?? [])];
+            // `to` faqat `from` haqiqatan topilgan (yoki sanasizdan kelgan) boʻlsa qoʻshiladi —
+            // eskirgan koʻchish (kechikkan undo) sessiyani ikkilantirmasin.
             for (const m of ms) {
-              if (!m.from) continue;
-              const i = arr.findIndex((x) => x.date === m.from!.date && x.startMin === m.from!.startMin);
-              if (i >= 0) arr.splice(i, 1);
+              if (m.from) {
+                const i = arr.findIndex((x) => x.date === m.from!.date && x.startMin === m.from!.startMin);
+                if (i < 0) continue;
+                arr.splice(i, 1);
+              }
+              if (m.to && !arr.some((x) => x.date === m.to!.date && x.startMin === m.to!.startMin)) arr.push({ ...m.to });
             }
-            for (const m of ms) if (m.to) arr.push({ ...m.to });
             arr.sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin);
             const scheduleByClass = { ...base };
             if (arr.length) scheduleByClass[classId] = arr; else delete scheduleByClass[classId];
