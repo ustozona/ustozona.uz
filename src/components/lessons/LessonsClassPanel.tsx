@@ -175,7 +175,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-foreground truncate flex-1">{cls.name}</span>
+                          <span className="text-body font-semibold text-foreground truncate flex-1">{cls.name}</span>
                         </span>
                         <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
                           {tlp("classMeta", { units: s.units, lessons: s.lessons })}

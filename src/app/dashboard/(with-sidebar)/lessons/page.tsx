@@ -424,12 +424,12 @@ export default function LessonsPage() {
         </div>
         )}
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
+          <h4 className="text-body font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
             {uNo(unit)}. {unit.title}
           </h4>
-          <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">{unit.description}</TypographyMuted>
+          <TypographyMuted className="text-caption leading-relaxed mt-1 line-clamp-1">{unit.description}</TypographyMuted>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground/70 shrink-0 whitespace-nowrap">
+        <div className="hidden sm:flex items-center gap-1.5 text-caption text-muted-foreground/70 shrink-0 whitespace-nowrap">
           <FileText className="size-3.5" />
           <span>{t("lessonsCountSuffix", { count: total })}</span>
         </div>
@@ -437,7 +437,7 @@ export default function LessonsPage() {
           <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
             <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: selectedClassHex }} />
           </div>
-          <span className="text-xs font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
+          <span className="text-caption font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
         </div>
       </button>
     );
@@ -473,13 +473,13 @@ export default function LessonsPage() {
         </div>
         )}
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{uNo(unit)}. {unit.title}</h4>
-          {unit.description && <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>}
+          <h4 className="text-body font-semibold text-foreground leading-tight truncate">{uNo(unit)}. {unit.title}</h4>
+          {unit.description && <TypographyMuted className="text-caption leading-snug mt-1 line-clamp-1">{unit.description}</TypographyMuted>}
           <div className="h-1 mt-2 rounded-full bg-muted overflow-hidden" title={t("classCoverage", { pct })}>
             <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: selectedClassHex }} />
           </div>
         </div>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...selectedClassTints.badge, ...selectedClassTints.text }}>
+        <span className="text-caption font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...selectedClassTints.badge, ...selectedClassTints.text }}>
           {total}
         </span>
       </button>
@@ -675,10 +675,10 @@ export default function LessonsPage() {
           <LibraryBig className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
-          <TypographyMuted className="text-xs leading-relaxed mt-1 line-clamp-1">{t("noUnitDescription")}</TypographyMuted>
+          <h4 className="text-body font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
+          <TypographyMuted className="text-caption leading-relaxed mt-1 line-clamp-1">{t("noUnitDescription")}</TypographyMuted>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground/70 shrink-0 whitespace-nowrap">
+        <div className="hidden sm:flex items-center gap-1.5 text-caption text-muted-foreground/70 shrink-0 whitespace-nowrap">
           <FileText className="size-3.5" />
           <span>{t("lessonsCountSuffix", { count: total })}</span>
         </div>
@@ -686,7 +686,7 @@ export default function LessonsPage() {
           <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
             <div className="h-full rounded-full bg-muted-foreground/30 transition-all" style={{ width: `${pct}%` }} />
           </div>
-          <span className="text-xs font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
+          <span className="text-caption font-medium tabular-nums w-8 text-right text-muted-foreground">{pct}%</span>
         </div>
       </button>
     );
@@ -710,8 +710,8 @@ export default function LessonsPage() {
             <LibraryBig className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-semibold text-foreground leading-tight block">{t("noUnitTitle")}</h4>
-            <TypographyMuted className="text-xs leading-snug mt-1">{t("noUnitShortDescription")}</TypographyMuted>
+            <h4 className="text-body font-semibold text-foreground leading-tight block">{t("noUnitTitle")}</h4>
+            <TypographyMuted className="text-caption leading-snug mt-1">{t("noUnitShortDescription")}</TypographyMuted>
           </div>
         </button>
       );
@@ -729,8 +729,8 @@ export default function LessonsPage() {
           <LibraryBig className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
-          <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{t("noUnitShortDescription")}</TypographyMuted>
+          <h4 className="text-body font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
+          <TypographyMuted className="text-caption leading-snug mt-1 line-clamp-1">{t("noUnitShortDescription")}</TypographyMuted>
         </div>
       </button>
     );
@@ -822,7 +822,7 @@ export default function LessonsPage() {
                           style={reorderDraft.movedIds.has(id) ? selectedClassTints.tint : undefined}
                         >
                           {h.handle}
-                          <span className="text-sm text-foreground truncate flex-1">{pad(i + 1)}. {unit.title}</span>
+                          <span className="text-body text-foreground truncate flex-1">{pad(i + 1)}. {unit.title}</span>
                           {h.arrows}
                         </div>
                       );
@@ -906,7 +906,7 @@ export default function LessonsPage() {
               {deleteUnitImpact.lessons > 0 && (
                 <div className="space-y-3">
                   <TypographyMuted>{t("deleteUnitImpact", deleteUnitImpact)}</TypographyMuted>
-                  <label className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-body">
                     <Checkbox
                       checked={keepLessonsOnUnitDelete}
                       onCheckedChange={(v) => setKeepLessonsOnUnitDelete(v === true)}
@@ -1024,7 +1024,7 @@ export default function LessonsPage() {
                           <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={selectedClassTints.gradientTile}>
                             <FileText className="size-5" />
                           </div>
-                          <h4 className="min-w-0 flex-1 text-sm font-semibold text-foreground leading-tight truncate">
+                          <h4 className="min-w-0 flex-1 text-body font-semibold text-foreground leading-tight truncate">
                             {pad(i + 1)}. {lesson.title}
                           </h4>
                           {h.arrows}
@@ -1056,14 +1056,14 @@ export default function LessonsPage() {
                           <LessonDateLeaf lesson={lesson} hex={selectedClassHex} day={lessonWhen(lesson)?.day} month={lessonWhen(lesson)?.month} />
                         )}
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
+                          <h4 className="text-body font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
                             {pad(i + 1)}. {lesson.title}
                           </h4>
                           {(() => {
                             const when = lessonWhen(lesson);
                             if (!lessonUnit && !when) return null;
                             return (
-                              <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground min-w-0">
+                              <div className="flex items-center gap-1.5 mt-1 text-caption text-muted-foreground min-w-0">
                                 {lessonUnit && <ClassSwatch hex={selectedClassHex} />}
                                 {lessonUnit && <span className="truncate">{uNo(lessonUnit)}. {lessonUnit.title}</span>}
                                 {when && (

@@ -412,14 +412,14 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                 {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               </h1>
               {saving ? (
-                <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-caption text-muted-foreground">
                   <Loader2 className="size-3.5 animate-spin" />
                   {t("saving")}
                 </span>
               ) : (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-xs text-muted-foreground cursor-default">
+                    <span className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-caption text-muted-foreground cursor-default">
                       <Check className="size-3.5 text-success" />
                       {updatedLabel ?? t("saved")}
                     </span>
@@ -442,7 +442,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className={cn("inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors", cls)}
+                    className={cn("inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-caption font-semibold transition-colors", cls)}
                   >
                     <Icon className="size-3.5" />
                     {tc(key)}
@@ -523,7 +523,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               <EditorToolbar editor={editor} />
             </div>
             {editor && (
-              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+              <span className="shrink-0 text-caption text-muted-foreground tabular-nums">
                 {t("characterCount", { count: editor.storage.characterCount?.characters() ?? 0 })}
               </span>
             )}
@@ -587,7 +587,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   aria-label={t("zoomReset")}
                   disabled={zoom === 100}
                   onClick={() => setZoom(100)}
-                  className="h-9 rounded-full px-3 text-xs font-semibold tabular-nums"
+                  className="h-9 rounded-full px-3 text-caption font-semibold tabular-nums text-foreground"
                 >
                   {zoom}%
                 </Button>
