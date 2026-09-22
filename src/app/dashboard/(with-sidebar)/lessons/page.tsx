@@ -447,22 +447,28 @@ export default function LessonsPage() {
   /* Tor ustun, TANLANGAN: qator kartaga "koʻtariladi" (ataylab morf —
      tanlangan boʻlim shu ustundagi asosiy obyekt boʻlgani uchun ikonka,
      tavsif va dars soni bilan toʻliq pasport oladi). */
-  const renderUnitSelected = (unit: Unit, isOver = false) => {
+  /* Tor ustunda HAMMA boʻlim toʻliq karta (nuqtali kompakt qator yoʻq);
+     tanlangani tint va gradient ikonka bilan ajraladi. */
+  const renderUnitSelected = (unit: Unit, isOver = false, active = true) => {
     const { total, pct } = unitProgress(unit.id);
+    const picked = unitPickMode && selectedUnitIds.has(unit.id);
     return withUnitMenu(unit,
       <button
         onClick={() => (unitPickMode
           ? toggleIn(selectedUnitIds, setSelectedUnitIds, unit.id)
-          : setSelectedUnitId(null))}
+          : setSelectedUnitId(active ? null : unit.id))}
         className={cn(
-          "list-card w-full flex items-center text-left gap-3 p-4 cursor-pointer",
+          "list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer",
           isOver && "ring-2"
         )}
-        data-active="true"
-        style={{ ["--card-accent" as string]: selectedClassHex, ...selectedClassTints.tint, ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
+        data-active={active || picked ? "true" : undefined}
+        style={{ ["--card-accent" as string]: selectedClassHex, ...(active || picked ? selectedClassTints.tint : {}), ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
         {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
-        <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
+        <div
+          style={active ? selectedClassTints.gradientTile : { ...selectedClassTints.badge, ...selectedClassTints.iconText }}
+          className={cn("list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center", active && "text-white")}
+        >
           <LibraryBig className="size-5" />
         </div>
         )}
@@ -476,33 +482,6 @@ export default function LessonsPage() {
         <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0" style={{ ...selectedClassTints.badge, ...selectedClassTints.text }}>
           {total}
         </span>
-      </button>
-    );
-  };
-
-  // Tor ustun, tanlanmagan: kompakt nuqtali qator
-  const renderUnitCompact = (unit: Unit, isOver = false) => {
-    const { total, pct } = unitProgress(unit.id);
-    return withUnitMenu(unit,
-      <button
-        onClick={() => (unitPickMode
-          ? toggleIn(selectedUnitIds, setSelectedUnitIds, unit.id)
-          : setSelectedUnitId(unit.id))}
-        className={cn("list-row group w-full", isOver && "ring-2 rounded-lg")}
-        style={isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : undefined}
-      >
-        {unitPickMode
-          ? <Checkbox checked={selectedUnitIds.has(unit.id)} aria-label={t("selectAria")} className="pointer-events-none shrink-0" />
-          : <ClassSwatch hex={selectedClassHex} />}
-        <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
-          {uNo(unit)}. {unit.title}
-        </span>
-        {total > 0 && (
-          <span className="h-1 w-12 rounded-full bg-muted overflow-hidden shrink-0" title={t("classCoverage", { pct })}>
-            <span className="block h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: selectedClassHex }} />
-          </span>
-        )}
-        <span className="text-xs text-muted-foreground/60 tabular-nums shrink-0 w-5 text-right">{total}</span>
       </button>
     );
   };
@@ -740,12 +719,19 @@ export default function LessonsPage() {
     return (
       <button
         onClick={() => setSelectedUnitId(NONE)}
-        className={cn("list-row group w-full", isOver && "ring-2 ring-muted-foreground/50 rounded-lg")}
+        className={cn(
+          "list-card group w-full flex items-center text-left gap-3 p-4 cursor-pointer",
+          isOver && "ring-2 ring-muted-foreground/50"
+        )}
+        style={{ ["--card-accent" as string]: "var(--muted-foreground)" }}
       >
-        <span className="size-2 rounded-full shrink-0 bg-muted-foreground/40" />
-        <span className="text-sm text-foreground/70 truncate flex-1 transition-colors group-hover:text-foreground">
-          {t("noUnitTitle")}
-        </span>
+        <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center bg-muted">
+          <LibraryBig className="size-5 text-muted-foreground" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
+          <TypographyMuted className="text-xs leading-snug mt-1 line-clamp-1">{t("noUnitShortDescription")}</TypographyMuted>
+        </div>
       </button>
     );
   };
@@ -824,7 +810,7 @@ export default function LessonsPage() {
               </BulkActionBar>
             )}
             <ScrollArea className="h-full w-full">
-              <div className="px-3 pt-4 pb-5 space-y-1.5">
+              <div className="px-3 pt-4 pb-5 space-y-2">
                 {reorderKind === "units" && reorderDraft.order ? (
                   <ReorderList ids={reorderDraft.order} onMove={reorderDraft.move} labels={reorderLabels}>
                     {(id, i, h) => {
@@ -847,7 +833,7 @@ export default function LessonsPage() {
                   <>
                     {unitsForClass.map((unit) => (
                       <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
-                        {(isOver) => (unit.id === effectiveUnitId ? renderUnitSelected(unit, isOver) : renderUnitCompact(unit, isOver))}
+                        {(isOver) => renderUnitSelected(unit, isOver, unit.id === effectiveUnitId)}
                       </UnitDropZone>
                     ))}
                     <UnitDropZone id="unit-none">{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
