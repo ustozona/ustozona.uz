@@ -41,7 +41,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
+import { LibraryBig, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -420,7 +420,7 @@ export default function LessonsPage() {
       >
         {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
         <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
-          <Layers className="size-5" />
+          <LibraryBig className="size-5" />
         </div>
         )}
         <div className="min-w-0 flex-1">
@@ -463,7 +463,7 @@ export default function LessonsPage() {
       >
         {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
         <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
-          <Layers className="size-5" />
+          <LibraryBig className="size-5" />
         </div>
         )}
         <div className="min-w-0 flex-1">
@@ -693,7 +693,7 @@ export default function LessonsPage() {
         style={{ ["--card-accent" as string]: "var(--muted-foreground)" }}
       >
         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center bg-muted">
-          <Layers className="size-5 text-muted-foreground" />
+          <LibraryBig className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
@@ -728,7 +728,7 @@ export default function LessonsPage() {
           style={{ ["--card-accent" as string]: "var(--muted-foreground)", backgroundColor: "var(--muted)" }}
         >
           <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={{ backgroundImage: `linear-gradient(135deg, var(--muted-foreground) 0%, oklch(0.4 0 0) 100%)` }}>
-            <Layers className="size-5" />
+            <LibraryBig className="size-5" />
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-sm font-semibold text-foreground leading-tight block">{t("noUnitTitle")}</h4>
@@ -786,7 +786,7 @@ export default function LessonsPage() {
           {/* Header */}
           <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
             <div className="flex items-center gap-2 min-w-0">
-              <SectionIcon><Layers /></SectionIcon>
+              <SectionIcon><LibraryBig /></SectionIcon>
               <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
               {unitsForClass.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{unitsForClass.length}</span>}
             </div>

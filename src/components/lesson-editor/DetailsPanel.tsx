@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { byNumber, pad2 } from "@/lib/ordinals";
 import { useEffect, useMemo, useState } from "react";
-import { SlidersHorizontal, ChevronDown, Ban, Layers, CalendarDays, Target, Plus, Check, X, Presentation, ListChecks } from "lucide-react";
+import { SlidersHorizontal, ChevronDown, Ban, LibraryBig, CalendarDays, Target, Plus, Check, X, Presentation, ListChecks } from "lucide-react";
 import { listSetsAction } from "@/server/actions/assess";
 import type { ActivitySetRow } from "@/server/db/schema";
 import {
@@ -204,7 +204,7 @@ export default function DetailsPanel({
                       <button type="button" className="w-full flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 hover:bg-accent/40 transition-colors text-left">
                         <span className="flex items-center gap-3 min-w-0">
                           <span className="size-9 rounded-full flex items-center justify-center shrink-0 text-white" style={classGradient(hex)}>
-                            <Layers className="size-4" />
+                            <LibraryBig className="size-4" />
                           </span>
                           <span className="flex flex-col min-w-0">
                             <span className="text-xs text-muted-foreground leading-tight">{c.name}</span>

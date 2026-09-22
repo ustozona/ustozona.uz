@@ -34,7 +34,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { Layers, FileText, Plus, Search, ArrowDownUp, Pencil, List, Calendar, Trash2, ChevronDown } from "lucide-react";
+import { LibraryBig, FileText, Plus, Search, ArrowDownUp, Pencil, List, Calendar, Trash2, ChevronDown } from "lucide-react";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger,
 } from "@/components/ui/context-menu";
@@ -302,7 +302,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         style={{ ["--card-accent" as string]: hex }}
       >
         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
-          <Layers className="size-5" />
+          <LibraryBig className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
@@ -334,7 +334,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         style={{ ["--card-accent" as string]: hex, ...tints.tint }}
       >
         <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
-          <Layers className="size-5" />
+          <LibraryBig className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{uNo(unit)}. {unit.title}</h4>
@@ -372,7 +372,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
         style={{ ["--card-accent" as string]: "var(--muted-foreground)" }}
       >
         <div className="list-card-icon size-11 rounded-full bg-muted shrink-0 flex items-center justify-center">
-          <Layers className="size-5 text-muted-foreground" />
+          <LibraryBig className="size-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold text-foreground leading-tight truncate">{t("noUnitTitle")}</h4>
@@ -402,7 +402,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
           style={{ ["--card-accent" as string]: "var(--muted-foreground)", backgroundColor: "var(--muted)" }}
         >
           <div className="list-card-icon size-11 rounded-full bg-muted shrink-0 flex items-center justify-center">
-            <Layers className="size-5 text-muted-foreground" />
+            <LibraryBig className="size-5 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-sm font-semibold text-foreground leading-tight block">{t("noUnitTitle")}</h4>
@@ -433,7 +433,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
       >
         <div className="px-5 py-4 flex items-center justify-between shrink-0 gap-2 border-b border-border">
           <div className="flex items-center gap-2 min-w-0">
-            <SectionIcon><Layers /></SectionIcon>
+            <SectionIcon><LibraryBig /></SectionIcon>
             <CardTitle className="truncate">{t("unitsTitle")}</CardTitle>
           </div>
           <div className="flex items-center gap-1 shrink-0">
@@ -500,7 +500,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
           <div className="border-t border-border shrink-0">
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="size-9 rounded-full shrink-0 flex items-center justify-center text-white" style={tints.gradientTile}>
-                <Layers className="size-4" />
+                <LibraryBig className="size-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="text-sm font-semibold text-foreground leading-tight truncate">
