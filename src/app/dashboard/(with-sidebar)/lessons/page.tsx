@@ -41,7 +41,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -639,6 +639,12 @@ export default function LessonsPage() {
      oʻng tugmaga tayanib boʻlmaydi — koʻpchilik uni bosib koʻrmaydi. */
   const [unitPickMode, setUnitPickMode] = useState(false);
   const [lessonPickMode, setLessonPickMode] = useState(false);
+  // Mavzular ustunidagi qidiruv — faqat nom boʻyicha, tanlangan boʻlim ichida.
+  const [lessonSearchOpen, setLessonSearchOpen] = useState(false);
+  const [lessonQuery, setLessonQuery] = useState("");
+  const lessonQ = lessonQuery.trim().toLocaleLowerCase();
+  const lessonMatches = (l: Lesson) => !lessonQ || (l.title ?? "").toLocaleLowerCase().includes(lessonQ);
+  const closeLessonSearch = () => { setLessonSearchOpen(false); setLessonQuery(""); };
 
   const startUnitPick = (id?: string) => {
     setUnitPickMode(true);
@@ -954,11 +960,32 @@ export default function LessonsPage() {
               {lessonsForUnit.length > 0 && <span className="text-caption tabular-nums text-muted-foreground">{lessonsForUnit.length}</span>}
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <div className="hidden xl:flex items-center gap-1">
-                <Button variant="ghost" size="icon" title={t("searchAria")} className="text-muted-foreground hover:text-foreground">
+              {lessonsForUnit.length > 0 && (lessonSearchOpen ? (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="lesson-search"
+                    autoFocus
+                    value={lessonQuery}
+                    onChange={(e) => setLessonQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Escape") closeLessonSearch(); }}
+                    placeholder={t("lessonsSearchPlaceholder")}
+                    className="h-9 w-44 xl:w-56 pl-9 pr-8"
+                  />
+                  <button
+                    type="button"
+                    aria-label={t("cancel")}
+                    onClick={closeLessonSearch}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 size-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <Button variant="ghost" size="icon" title={t("searchAria")} aria-label={t("searchAria")} onClick={() => setLessonSearchOpen(true)} className="text-muted-foreground hover:text-foreground">
                   <Search className="size-4" />
                 </Button>
-              </div>
+              ))}
               {effectiveUnitId && lessonsForUnit.length > 0 && (
                 <Button size="sm" className="h-9 gap-1.5 ml-1 px-3" onClick={effectiveUnitId === NONE ? handleNewLesson : handleNewLessonChoice}>
                   <Plus className="size-3.5" />
@@ -1033,7 +1060,13 @@ export default function LessonsPage() {
                     }}
                   </ReorderList>
                 ) : (
-                  lessonsForUnit.map((lesson, i) => {
+                  <>
+                  {lessonQ && !lessonsForUnit.some(lessonMatches) && (
+                    <p className="py-8 text-center text-caption text-muted-foreground">{t("lessonsSearchEmpty", { q: lessonQuery.trim() })}</p>
+                  )}
+                  {lessonsForUnit.map((lesson, i) => {
+                    // Qidiruvda raqam asl tartibdan qoladi (i — filtrsiz roʻyxatdagi oʻrin).
+                    if (!lessonMatches(lesson)) return null;
                     const lessonUnit = unitsSource.find((u) => u.id === lesson.unitId);
                     // "Koʻchirish" submenu — joriy boʻlim va "Boʻlimsiz" oʻzi chiqarib tashlanadi.
                     const moveTargets = [
@@ -1159,7 +1192,8 @@ export default function LessonsPage() {
                     </ContextMenuContent>
                     </ContextMenu>
                     );
-                  })
+                  })}
+                  </>
                 )}
               </div>
             </ScrollArea>
