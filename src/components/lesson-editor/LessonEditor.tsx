@@ -404,7 +404,6 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               none: { cls: "border border-dashed border-warning/60 text-warning hover:bg-warning/10", Icon: FileText, key: "pillNone" },
             } as const;
             const { cls, Icon, key } = meta[state];
-            const notReadyKey = state === "ready" ? (lesson.content?.replace(/<[^>]*>/g, " ").trim() ? "pillDraft" : "pillNone") : key;
             return (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -424,8 +423,8 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                     {lesson.planReady && <Check className="size-4" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => lesson.planReady && togglePlanReady()} className="gap-2">
-                    {notReadyKey === "pillDraft" ? <FilePen className="size-4 text-muted-foreground" /> : <FileText className="size-4 text-warning" />}
-                    <span className="flex-1">{tc(notReadyKey)}</span>
+                    <FileText className="size-4 text-warning" />
+                    <span className="flex-1">{tc("unmarkPlanReady")}</span>
                     {!lesson.planReady && <Check className="size-4" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
