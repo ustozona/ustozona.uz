@@ -192,3 +192,22 @@ export const EventCard = forwardRef<HTMLDivElement | HTMLButtonElement, EventCar
     );
   },
 );
+
+/** Kartadagi fan + vaqt qatori — YAGONA tartib: sinf nomi (sarlavha), fan,
+    vaqt. Baland kartada fan va vaqt alohida qatorda; past kartada `·` bilan
+    bitta qatorga yigʻiladi. */
+export const STACKED_SUBTITLE_MIN_H = 84;
+
+export function EventSubtitle({ subject, time, height }: { subject?: string; time: string; height: number }) {
+  return subject && height >= STACKED_SUBTITLE_MIN_H ? (
+    <span className="flex min-w-0 flex-col">
+      <span className="truncate">{subject}</span>
+      <span className="truncate tabular-nums">{time}</span>
+    </span>
+  ) : (
+    <span className="truncate">
+      {subject ? `${subject} · ` : ""}
+      <span className="tabular-nums">{time}</span>
+    </span>
+  );
+}

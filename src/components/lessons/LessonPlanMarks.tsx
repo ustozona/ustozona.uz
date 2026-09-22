@@ -24,7 +24,8 @@ export function LessonDateLeaf({ lesson, classId, hex, day, month }: { lesson: L
   return (
     <Tooltip>
     <TooltipTrigger asChild>
-    <div className="relative shrink-0 w-11" aria-label={t(key)}>
+    {/* Karta (`group`) hoverida barg yengil koʻtarilib qiyshayadi — prujinali qaytish. */}
+    <div className="relative shrink-0 w-11 origin-bottom transition-transform duration-300 ease-[cubic-bezier(.34,1.56,.64,1)] group-hover:-translate-y-0.5 group-hover:-rotate-6 motion-reduce:transform-none motion-reduce:transition-none" aria-label={t(key)}>
       <div className="rounded-lg overflow-hidden text-center border" style={{ borderColor: hex }}>
         <div className="text-tag font-semibold uppercase py-px text-white" style={{ backgroundColor: hex }}>{month ?? "—"}</div>
         <div className="text-base font-semibold leading-6 tabular-nums text-foreground">{day ?? "—"}</div>
