@@ -1354,6 +1354,7 @@
     "classMeta": "{units} ta boʻlim · {lessons} ta mavzu",
     "classCoverage": "Qamrov: {pct}%",
     "moveToNewUnit": "Yangi boʻlimga…",
+    "lessonMovedToUnit": "«{lesson}» → {unit}",
     "lessonsSearchPlaceholder": "Mavzu qidirish…",
     "lessonsSearchEmpty": "«{q}» boʻyicha mavzu topilmadi",
     "classUnitsTip": "{count} ta boʻlim",

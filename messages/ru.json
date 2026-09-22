@@ -1354,6 +1354,7 @@
     "classMeta": "Разделов: {units} · тем: {lessons}",
     "classCoverage": "Охват: {pct}%",
     "moveToNewUnit": "В новый раздел…",
+    "lessonMovedToUnit": "«{lesson}» → {unit}",
     "lessonsSearchPlaceholder": "Поиск темы…",
     "lessonsSearchEmpty": "По запросу «{q}» тем не найдено",
     "classUnitsTip": "Разделов: {count}",

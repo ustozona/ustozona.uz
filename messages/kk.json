@@ -1354,6 +1354,7 @@
     "classMeta": "{units} бөлім · {lessons} тақырып",
     "classCoverage": "Қамту: {pct}%",
     "moveToNewUnit": "Жаңа бөлімге…",
+    "lessonMovedToUnit": "«{lesson}» → {unit}",
     "lessonsSearchPlaceholder": "Тақырып іздеу…",
     "lessonsSearchEmpty": "«{q}» бойынша тақырып табылмады",
     "classUnitsTip": "{count} бөлім",

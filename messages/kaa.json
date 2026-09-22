@@ -1354,6 +1354,7 @@
     "classMeta": "{units} bólim · {lessons} tema",
     "classCoverage": "Qamtıw: {pct}%",
     "moveToNewUnit": "Jańa bólimge…",
+    "lessonMovedToUnit": "«{lesson}» → {unit}",
     "lessonsSearchPlaceholder": "Tema izlew…",
     "lessonsSearchEmpty": "«{q}» boyınsha tema tabılmadı",
     "classUnitsTip": "{count} bólim",

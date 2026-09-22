@@ -1354,6 +1354,7 @@
     "classMeta": "{units} та бўлим · {lessons} та мавзу",
     "classCoverage": "Қамров: {pct}%",
     "moveToNewUnit": "Янги бўлимга…",
+    "lessonMovedToUnit": "«{lesson}» → {unit}",
     "lessonsSearchPlaceholder": "Мавзу қидириш…",
     "lessonsSearchEmpty": "«{q}» бўйича мавзу топилмади",
     "classUnitsTip": "{count} та бўлим",

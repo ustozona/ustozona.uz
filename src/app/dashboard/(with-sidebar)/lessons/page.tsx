@@ -70,9 +70,27 @@ const NONE = "__none__";
 
 /* Boʻlim/"Boʻlimsiz" kartalarini @dnd-kit droppable-zonasiga aylantiradi —
    mavzuni sudrab tashlash uchun umumiy wrapper (loyihaning DnD standarti). */
-function UnitDropZone({ id, children }: { id: string; children: (isOver: boolean) => ReactNode }) {
-  const { setNodeRef, isOver } = useDroppable({ id });
-  return <div ref={setNodeRef}>{children(isOver)}</div>;
+function UnitDropZone({ id, dragging, current, children }: {
+  id: string; dragging: boolean; current: boolean; children: (isOver: boolean) => ReactNode;
+}) {
+  // Sudrash paytida: tashlash mumkin boʻlgan zonalar nuqtali chegara oladi, mavzuning joriy boʻlimi
+  // oʻchiriladi (u yerga tashlash hech narsa qilmaydi), ustidagi zonada «+1» — son qanchaga oʻsishi.
+  const { setNodeRef, isOver } = useDroppable({ id, disabled: current });
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "relative rounded-xl transition-opacity duration-fast",
+        dragging && !current && !isOver && "outline-2 outline-dashed outline-offset-2 outline-border",
+        dragging && current && "opacity-50"
+      )}
+    >
+      {children(isOver)}
+      {isOver && (
+        <span className="pointer-events-none absolute -top-2 -right-2 rounded-full bg-foreground px-2 py-0.5 text-tag font-semibold text-background tabular-nums">+1</span>
+      )}
+    </div>
+  );
 }
 
 /* Mavzu kartasini sudrab boʻlim-zonalarga tashlash uchun draggable wrapper.
@@ -294,6 +312,14 @@ export default function LessonsPage() {
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   // Sudralayotgan mavzu — DragOverlay nusxasi kursorga ergashadi, asl karta joyida xira qoladi.
   const [dragLessonId, setDragLessonId] = useState<string | null>(null);
+  const dragFromUnitId = (() => {
+    const l = dragLessonId && effectiveClassId ? lessonsSource.find((x) => x.id === dragLessonId) : null;
+    return l ? (unitIdForClass(l, effectiveClassId!) ?? null) : undefined;
+  })();
+  const zoneProps = (unitId: string | null) => ({
+    dragging: dragFromUnitId !== undefined,
+    current: dragFromUnitId !== undefined && dragFromUnitId === unitId,
+  });
   const handleLessonDragStart = (e: DragStartEvent) => setDragLessonId(e.active.id as string);
   const handleLessonDragEnd = (e: DragEndEvent) => {
     setDragLessonId(null);
@@ -302,8 +328,17 @@ export default function LessonsPage() {
     if (!overId || !effectiveClassId) return;
     const targetUnitId = overId === "unit-none" ? null : overId.replace(/^unit-/, "");
     const lesson = lessonsSource.find((l) => l.id === lessonId);
-    if (!lesson || unitIdForClass(lesson, effectiveClassId) === targetUnitId) return;
-    setUnitForClass(lessonId, effectiveClassId, targetUnitId);
+    const fromUnitId = lesson ? unitIdForClass(lesson, effectiveClassId) : null;
+    if (!lesson || fromUnitId === targetUnitId) return;
+    const classId = effectiveClassId;
+    setUnitForClass(lessonId, classId, targetUnitId);
+    const target = targetUnitId ? unitsSource.find((u) => u.id === targetUnitId) : null;
+    toast.success(t("lessonMovedToUnit", {
+      lesson: lesson.title,
+      unit: target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle"),
+    }), {
+      action: { label: t("undo"), onClick: () => setUnitForClass(lessonId, classId, fromUnitId ?? null) },
+    });
   };
 
   // «Boʻlim qoʻshish» — nusxa koʻchirish / Excel oynasi (batafsil oyna — uning ichidan).
@@ -866,22 +901,22 @@ export default function LessonsPage() {
                   /* Tor rejim — tanlangan katta, qolganlari kompakt */
                   <>
                     {unitsForClass.map((unit) => (
-                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
+                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`} {...zoneProps(unit.id)}>
                         {(isOver) => renderUnitSelected(unit, isOver, unit.id === effectiveUnitId)}
                       </UnitDropZone>
                     ))}
-                    <UnitDropZone id="unit-none">{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
+                    <UnitDropZone id="unit-none" {...zoneProps(null)}>{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
                   </>
                 ) : (
                   /* Keng rejim — toʻliq kartalar + doimo "Boʻlimsiz" karta.
                      Haqiqiy boʻlim boʻlmasa, qoʻshimcha markaziy yoʻriqnoma. */
                   <>
                     {unitsForClass.map((unit) => (
-                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
+                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`} {...zoneProps(unit.id)}>
                         {(isOver) => renderUnitWide(unit, isOver)}
                       </UnitDropZone>
                     ))}
-                    <UnitDropZone id="unit-none">{(isOver) => renderNoUnitWide(isOver)}</UnitDropZone>
+                    <UnitDropZone id="unit-none" {...zoneProps(null)}>{(isOver) => renderNoUnitWide(isOver)}</UnitDropZone>
                     {unitsForClass.length === 0 && (
                       <Empty className="py-12">
                         <EmptyHeader>
