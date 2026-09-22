@@ -323,7 +323,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     if (!lesson) return;
     const prev = !!lesson.planReady;
     setPlanReady(lessonId, !prev);
-    toast.success(prev ? tc("unmarkPlanReady") : tc("markPlanReady"), {
+    (prev ? toast.warning : toast.success)(prev ? tc("unmarkPlanReady") : tc("markPlanReady"), {
       action: { label: t("toast.undo"), onClick: () => setPlanReady(lessonId, prev) },
     });
   };
