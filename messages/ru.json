@@ -4603,10 +4603,10 @@
   "LessonCycle": {
     "planReady": "План урока",
     "taught": "Проведён",
-    "pillNone": "Нет плана",
-    "pillDraft": "Черновик",
+    "pillNone": "Нет плана урока",
+    "pillDraft": "В процессе",
     "markPlanButton": "Отметить план готовым",
-    "planReadyShort": "План готов",
+    "planReadyShort": "Запланировано",
     "askPlanReady": "План урока готов?",
     "askPlanReadyDesc": "Текст есть, но план не отмечен готовым.",
     "yesReady": "Да, готов",

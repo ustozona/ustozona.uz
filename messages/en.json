@@ -4599,10 +4599,10 @@
   "LessonCycle": {
     "planReady": "Lesson plan",
     "taught": "Taught",
-    "pillNone": "No plan",
-    "pillDraft": "Draft",
+    "pillNone": "No lesson plan",
+    "pillDraft": "In progress",
     "markPlanButton": "Mark plan as ready",
-    "planReadyShort": "Plan ready",
+    "planReadyShort": "Planned",
     "askPlanReady": "Is the lesson plan ready?",
     "askPlanReadyDesc": "There's text, but it isn't marked ready.",
     "yesReady": "Yes, ready",

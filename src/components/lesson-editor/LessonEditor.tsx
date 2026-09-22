@@ -26,7 +26,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLessonStore } from "@/store/useLessonStore";
-import { lessonPlanState } from "@/lib/lessons-data";
+import { lessonPlanState, type LessonPlanState } from "@/lib/lessons-data";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { flushLessonsNow } from "@/components/sync/LessonsServerSync";
 import {
@@ -71,6 +71,14 @@ import { SectionIcon } from "@/components/ui/section-icon";
 const PANEL_EASE = [0.2, 0, 0, 1] as const;
 const PANEL_DURATION = 0.2;
 
+/* Dars rejasi holati — header badge'i va tanlov menyusi uchun (mavzu
+   kartasidagi pill bilan bir xil rang/ikonka). */
+const PLAN_META = {
+  none: { cls: "border border-dashed border-warning/60 text-warning hover:bg-warning/10", iconCls: "text-warning", Icon: FileText, key: "pillNone" },
+  draft: { cls: "bg-muted text-muted-foreground hover:bg-muted/80", iconCls: "text-muted-foreground", Icon: FilePen, key: "pillDraft" },
+  ready: { cls: "bg-info/10 text-info hover:bg-info/15", iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
+} as const;
+
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const t = useTranslations("LessonEditor");
   const tToolbar = useTranslations("LessonEditorToolbar");
@@ -114,7 +122,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const setUnitForClass = useLessonStore((s) => s.setUnitForClass);
   const addScheduleForClass = useLessonStore((s) => s.addScheduleForClass);
   const removeScheduleForClass = useLessonStore((s) => s.removeScheduleForClass);
-  const setPlanReady = useLessonStore((s) => s.setPlanReady);
+  const setPlanState = useLessonStore((s) => s.setPlanState);
   const standardSets = useStandardsStore((s) => s.sets);
 
   const [activePanel, setActivePanel] = useState<"details" | "ai" | null>("details");
@@ -319,12 +327,13 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   /* Dars rejasi — sarlavhadagi YAGONA boshqaruv (oʻng panelda takror yoʻq).
      «Oʻtildi» muharrirda yoʻq: u darsdan keyin roʻyxat kartasida, kontekst
      menyuda va Vazifalarda belgilanadi. */
-  const togglePlanReady = () => {
-    if (!lesson) return;
-    const prev = !!lesson.planReady;
-    setPlanReady(lessonId, !prev);
-    (prev ? toast.warning : toast.success)(prev ? tc("unmarkPlanReady") : tc("markPlanReady"), {
-      action: { label: t("toast.undo"), onClick: () => setPlanReady(lessonId, prev) },
+  const choosePlanState = (next: LessonPlanState) => {
+    if (!lesson || lessonPlanState(lesson) === next) return;
+    const prev = { planReady: lesson.planReady, planStatus: lesson.planStatus };
+    setPlanState(lessonId, next);
+    const show = next === "ready" ? toast.success : next === "draft" ? toast.info : toast.warning;
+    show(tc(PLAN_META[next].key), {
+      action: { label: t("toast.undo"), onClick: () => updateLesson(lessonId, prev) },
     });
   };
 
@@ -398,12 +407,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
         <div className="flex items-center gap-3 shrink-0">
           {lesson && (() => {
             const state = lessonPlanState(lesson);
-            const meta = {
-              ready: { cls: "bg-info/10 text-info hover:bg-info/15", Icon: FileCheck, key: "planReadyShort" },
-              draft: { cls: "bg-muted text-muted-foreground hover:bg-muted/80", Icon: FilePen, key: "pillDraft" },
-              none: { cls: "border border-dashed border-warning/60 text-warning hover:bg-warning/10", Icon: FileText, key: "pillNone" },
-            } as const;
-            const { cls, Icon, key } = meta[state];
+            const { cls, Icon, key } = PLAN_META[state];
             return (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -417,16 +421,16 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
-                  <DropdownMenuItem onClick={() => !lesson.planReady && togglePlanReady()} className="gap-2">
-                    <FileCheck className="size-4 text-info" />
-                    <span className="flex-1">{tc("planReadyShort")}</span>
-                    {lesson.planReady && <Check className="size-4" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => lesson.planReady && togglePlanReady()} className="gap-2">
-                    <FileText className="size-4 text-warning" />
-                    <span className="flex-1">{tc("unmarkPlanReady")}</span>
-                    {!lesson.planReady && <Check className="size-4" />}
-                  </DropdownMenuItem>
+                  {(["none", "draft", "ready"] as const).map((st) => {
+                    const M = PLAN_META[st];
+                    return (
+                      <DropdownMenuItem key={st} onClick={() => choosePlanState(st)} className="gap-2">
+                        <M.Icon className={cn("size-4", M.iconCls)} />
+                        <span className="flex-1">{tc(M.key)}</span>
+                        {state === st && <Check className="size-4" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
             );

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { SessionMove } from "@/lib/lesson-shift";
-import { lessonClassIds, lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession } from "@/lib/lessons-data";
+import { lessonClassIds, lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession, type LessonPlanState } from "@/lib/lessons-data";
 
 /* ════════════════════════════════════════════════════════════════════
    MAVZU BANKI — server-backed store (6-bosqich migratsiyasi)
@@ -111,6 +111,7 @@ interface LessonState {
   setStatus: (id: string, status: LessonStatus) => void;
   /** Dars rejasi tayyor belgisi. */
   setPlanReady: (id: string, ready: boolean) => void;
+  setPlanState: (id: string, state: LessonPlanState) => void;
   /** Oʻtildi (`dateKey`) / oʻtilmagan (`null`). Eski `status` ham moslanadi —
       progress chiziqlari va boshqa isteʼmolchilar hali `Completed` ni oʻqiydi. */
   setTaught: (id: string, dateKey: string | null) => void;
@@ -202,6 +203,7 @@ export const useLessonStore = create<LessonState>()(
         } : l),
       })),
       setStatus: (id, status) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, status } : l)) })),
+      setPlanState: (id, state) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: state === "ready", planStatus: state === "ready" ? undefined : state } : l)) })),
       setPlanReady: (id, ready) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: ready } : l)) })),
       setTaught: (id, dateKey) => set((s) => ({
         lessons: s.lessons.map((l) => {

@@ -73,7 +73,7 @@ export function LessonStatusPill({ lesson }: { lesson: Lesson }) {
   const k = isTaught(lesson) ? "taught" : lessonPlanState(lesson);
   const { cls, Icon, key } = STATUS_PILL[k];
   return (
-    <span className={cn("inline-flex h-6 w-28 items-center justify-center gap-1 rounded-full text-tag font-semibold", cls)}>
+    <span className={cn("inline-flex h-6 w-36 items-center justify-center gap-1 rounded-full text-tag font-semibold", cls)}>
       <Icon className="size-3" />
       {t(key)}
     </span>

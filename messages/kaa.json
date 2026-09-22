@@ -4603,10 +4603,10 @@
   "LessonCycle": {
     "planReady": "Sabaq rejesi",
     "taught": "Ótildi",
-    "pillNone": "Reje joq",
-    "pillDraft": "Qaralama",
+    "pillNone": "Sabaq rejesi joq",
+    "pillDraft": "Processte",
     "markPlanButton": "Rejeni tayar dep belgilew",
-    "planReadyShort": "Reje tayar",
+    "planReadyShort": "Rejelestirilgen",
     "askPlanReady": "Sabaq rejesi tayarma?",
     "askPlanReadyDesc": "Tekst jazılǵan, biraq tayar dep belgilenbegen.",
     "yesReady": "Awa, tayar",

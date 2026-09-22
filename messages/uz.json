@@ -4427,10 +4427,10 @@
   "LessonCycle": {
     "planReady": "Dars rejasi",
     "taught": "Oʻtildi",
-    "pillNone": "Reja yoʻq",
-    "pillDraft": "Qoralama",
+    "pillNone": "Dars rejasi yoʻq",
+    "pillDraft": "Jarayonda",
     "markPlanButton": "Rejani tayyor deb belgilash",
-    "planReadyShort": "Reja tayyor",
+    "planReadyShort": "Rejalashtirilgan",
     "askPlanReady": "Dars rejasi tayyormi?",
     "askPlanReadyDesc": "Matn yozilgan, lekin tayyor deb belgilanmagan.",
     "yesReady": "Ha, tayyor",

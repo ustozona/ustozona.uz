@@ -4603,10 +4603,10 @@
   "LessonCycle": {
     "planReady": "Сабак планы",
     "taught": "Өтүлдү",
-    "pillNone": "План жок",
-    "pillDraft": "Долбоор",
+    "pillNone": "Сабак планы жок",
+    "pillDraft": "Процессте",
     "markPlanButton": "Планды даяр деп белгилөө",
-    "planReadyShort": "План даяр",
+    "planReadyShort": "Пландаштырылган",
     "askPlanReady": "Сабак планы даярбы?",
     "askPlanReadyDesc": "Текст жазылган, бирок даяр деп белгилене элек.",
     "yesReady": "Ооба, даяр",
