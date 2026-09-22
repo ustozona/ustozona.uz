@@ -41,7 +41,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { LibraryBig, FileText, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -1048,7 +1048,7 @@ export default function LessonsPage() {
                         onClick={() => (lessonPickMode
                           ? toggleIn(selectedLessonIds, setSelectedLessonIds, lesson.id)
                           : openLesson(lesson.id))}
-                        className="list-card group flex items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
+                        className="list-card group flex flex-wrap items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
                         data-active={lessonPickMode && selectedLessonIds.has(lesson.id) ? "true" : undefined}
                         style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
@@ -1077,36 +1077,28 @@ export default function LessonsPage() {
                         </div>
                         <div className="shrink-0 flex items-center gap-3">
                           <LessonMetaChips lesson={lesson} />
-                          {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) ? (
-                            /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli. Tugmalar
-                               kartaning sudrash/ochish hodisalarini toʻsadi. */
-                            <span
-                              className="inline-flex items-center gap-1 rounded-full bg-warning/10 pl-2 pr-0.5 h-6 text-tag font-semibold text-warning"
-                              onPointerDown={(e) => e.stopPropagation()}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {tc("askTaught")}
-                              <button
-                                type="button"
-                                title={tc("markTaught")}
-                                className="size-5 rounded-full flex items-center justify-center hover:bg-success/15 hover:text-success transition-colors"
-                                onClick={() => setTaught(lesson.id, today)}
-                              >
-                                <Check className="size-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                title={tc("bump")}
-                                className="size-5 rounded-full flex items-center justify-center hover:bg-foreground/10 transition-colors"
-                                onClick={() => bumpLesson(lesson.id, effectiveClassId)}
-                              >
-                                <SkipForward className="size-3.5" />
-                              </button>
-                            </span>
-                          ) : (
-                            <LessonStatusPill lesson={lesson} />
-                          )}
+                          <LessonStatusPill lesson={lesson} />
                         </div>
+                        {effectiveClassId && !isDemoMode && needsTaughtConfirm(lesson, effectiveClassId, today, nowMin) && (
+                          /* Dars vaqti oʻtdi, lekin belgilanmagan — B4 savoli kartaning ostidagi
+                             lentada. Tugmalar kartaning sudrash/ochish hodisalarini toʻsadi. */
+                          <div
+                            className="basis-full flex flex-wrap items-center gap-2 rounded-lg bg-warning/10 px-3 py-2 text-caption text-warning"
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Clock className="size-4 shrink-0" />
+                            <span className="flex-1 min-w-0 font-medium text-foreground/80">{tc("askTaughtBanner")}</span>
+                            <Button size="sm" variant="secondary" className="h-7 gap-1.5 bg-success/10 text-success hover:bg-success/15" onClick={() => setTaught(lesson.id, today)}>
+                              <Check className="size-3.5" />
+                              {tc("yesTaught")}
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 gap-1.5 bg-card" onClick={() => bumpLesson(lesson.id, effectiveClassId)}>
+                              <SkipForward className="size-3.5" />
+                              {tc("bumpNext")}
+                            </Button>
+                          </div>
+                        )}
                       </DraggableLesson>
                     </ContextMenuTrigger>
                     <ContextMenuContent>
