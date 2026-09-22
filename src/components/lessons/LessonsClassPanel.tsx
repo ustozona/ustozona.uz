@@ -39,8 +39,7 @@ type Props = {
 };
 
 /* Darslar sahifasining sinflar ustuni — har sinf kartasi: nom, ostida
-   boʻlim/mavzu soni matnda, pastda boʻlimlar boʻyicha boʻlakli progress va
-   umumiy foiz.
+   boʻlim/mavzu soni matnda, oʻngda qamrov halqasi (tooltipda boʻlimlar kesimi).
    Umumiy `ClassListPanel` boshqa sahifalarda ham ishlatilgani uchun unga
    tegilmaydi; mobil (`< lg`) Sheet koʻrinishi esa oʻshaning oʻzidan olinadi. */
 export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units, lessons, demoClasses }: Props) {
@@ -181,26 +180,31 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                         <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
                           {tlp("classMeta", { units: s.units, lessons: s.lessons })}
                         </span>
-                        {/* Boʻlimlar boʻyicha progress: har boʻlak — bitta boʻlim (kengligi mavzu soniga
-                            mutanosib), ichida oʻtilgan mavzular ulushi. Oxirida umumiy foiz. */}
-                        <span className="flex items-center gap-2 mt-2">
-                          <span className="flex flex-1 gap-0.5 min-w-0">
-                            {segs.length === 0 ? (
-                              <span className="block h-1 flex-1 rounded-full bg-muted" />
-                            ) : segs.map((u) => (
-                              <Tooltip key={u.id}>
-                                <TooltipTrigger asChild>
-                                  <span className="block h-1 rounded-full bg-muted overflow-hidden min-w-1" style={{ flexGrow: u.total, flexBasis: 0 }}>
-                                    <span className="block h-full rounded-full transition-all" style={{ width: `${Math.round((u.taught / u.total) * 100)}%`, backgroundColor: tints.solid }} />
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent>{tlp("unitSegTip", { title: u.title, taught: u.taught, total: u.total })}</TooltipContent>
-                              </Tooltip>
-                            ))}
-                          </span>
-                          <span className="text-micro tabular-nums text-muted-foreground shrink-0 w-8 text-right" title={tlp("classCoverage", { pct })}>{pct}%</span>
-                        </span>
                       </span>
+                      {/* Qamrov halqasi — oʻtilgan mavzular ulushi; tooltipda boʻlimlar kesimi. */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="relative size-10 shrink-0" aria-label={tlp("classCoverage", { pct })}>
+                            <svg viewBox="0 0 36 36" className="size-full -rotate-90">
+                              <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
+                              <circle
+                                cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" strokeLinecap="round"
+                                stroke={tints.solid}
+                                strokeDasharray={`${(pct / 100) * 97.4} 97.4`}
+                                className="transition-all"
+                                style={{ opacity: pct ? 1 : 0 }}
+                              />
+                            </svg>
+                            <span className="absolute inset-0 flex items-center justify-center text-micro tabular-nums text-foreground">{pct}%</span>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <span className="block">{tlp("classCoverage", { pct })}</span>
+                          {segs.map((u) => (
+                            <span key={u.id} className="block tabular-nums opacity-80">{tlp("unitSegTip", { title: u.title, taught: u.taught, total: u.total })}</span>
+                          ))}
+                        </TooltipContent>
+                      </Tooltip>
                     </button>
                   </ContextMenuTrigger>
                   <ContextMenuContent>
