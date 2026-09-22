@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, type CSSProperties } from "react";
+import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarClock, FileText } from "lucide-react";
+import { CalendarClock } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { STATUS_ICON, STATUS_PILL_CLASS } from "@/components/LessonStatusBadge";
+import { LessonDateLeaf, LessonStatusPill } from "@/components/lessons/LessonPlanMarks";
 import { SectionIcon } from "@/components/ui/section-icon";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { Illustration } from "@/components/ui/illustration";
@@ -20,10 +19,10 @@ import {
 import { useLessonStore } from "@/store/useLessonStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
-import { CLASS_COLOR_HEX, classTints } from "@/lib/class-colors";
+import { CLASS_COLOR_HEX } from "@/lib/class-colors";
 import { lessonSessions, type Lesson } from "@/lib/lessons-data";
 import { dateToKey, addDaysKey } from "@/lib/date-keys";
-import { MONTHS_UZ } from "@/lib/localization";
+import { MONTHS_UZ, MONTHS_UZ_SHORT } from "@/lib/localization";
 import { fmtMin } from "@/lib/timetable";
 import { cn } from "@/lib/utils";
 
@@ -37,27 +36,19 @@ const LIMIT = 40;
 
 type Row = {
   key: string;
-  lessonId: string;
+  lesson: Lesson;
+  classId: string;
   title: string;
   className: string;
   classHex: string;
-  gradientTile: CSSProperties;
   date: string;
   startMin: number;
   endMin: number;
-  status: Lesson["status"];
 };
 
 
 export function NextLessonsCard({ now }: { now: Date }) {
   const t = useTranslations("NextLessonsCard");
-  const tLessons = useTranslations("LessonsPage");
-  const STATUS_LABELS: Record<Lesson["status"], string> = {
-    Completed: tLessons("statusCompleted"),
-    Scheduled: tLessons("statusScheduled"),
-    Unscheduled: tLessons("statusUnscheduled"),
-    Draft: tLessons("statusDraft"),
-  };
   const todayKey = dateToKey(now);
   const tomorrowKey = addDaysKey(todayKey, 1);
 
@@ -68,7 +59,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
       new Map(
         liveClasses.map((c) => [
           c.id,
-          { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)], tints: classTints(classColor(c)) },
+          { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)] },
         ])
       ),
     [liveClasses]
@@ -82,15 +73,14 @@ export function NextLessonsCard({ now }: { now: Date }) {
         const meta = classMeta.get(s.classId);
         out.push({
           key: `${l.id}-${s.classId}-${s.date}-${s.startMin}`,
-          lessonId: l.id,
+          lesson: l,
+          classId: s.classId,
           title: l.title,
           className: meta?.name ?? t("unknownClass"),
           classHex: meta?.hex ?? "#94a3b8",
-          gradientTile: meta?.tints.gradientTile ?? { backgroundColor: "#94a3b8" },
           date: s.date,
           startMin: s.startMin,
           endMin: s.endMin,
-          status: l.status,
         });
       }
     }
@@ -150,17 +140,15 @@ export function NextLessonsCard({ now }: { now: Date }) {
                   </div>
                   <div className="flex flex-col gap-2">
                     {g.rows.map((r) => {
-                      const StatusIcon = STATUS_ICON[r.status];
+                      const [, m, d] = r.date.split("-").map(Number);
                       return (
                       <Link
                         key={r.key}
-                        href={`/lessons/${r.lessonId}`}
+                        href={`/lessons/${r.lesson.id}`}
                         className="list-card group flex items-center gap-3 p-4"
                         style={{ ["--card-accent" as string]: r.classHex }}
                       >
-                        <div style={r.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
-                          <FileText className="size-5" />
-                        </div>
+                        <LessonDateLeaf lesson={r.lesson} classId={r.classId} hex={r.classHex} day={String(d)} month={MONTHS_UZ_SHORT[m - 1]} />
                         <div className="min-w-0 flex-1">
                           <h4 className="truncate text-sm font-semibold text-foreground leading-tight transition-colors duration-fast group-hover:text-primary">
                             {r.title || t("untitledTopic")}
@@ -176,16 +164,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
                             </span>
                           </p>
                         </div>
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "shrink-0 gap-1 rounded-full px-3 py-1 text-xs font-semibold border-transparent",
-                            STATUS_PILL_CLASS[r.status]
-                          )}
-                        >
-                          <StatusIcon className="size-3" />
-                          {STATUS_LABELS[r.status]}
-                        </Badge>
+                        <span className="hidden sm:inline-flex shrink-0"><LessonStatusPill lesson={r.lesson} classId={r.classId} /></span>
                       </Link>
                       );
                     })}
