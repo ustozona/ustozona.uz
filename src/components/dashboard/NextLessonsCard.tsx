@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { CalendarClock } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { LessonDateLeaf, LessonStatusPill } from "@/components/lessons/LessonPlanMarks";
@@ -50,6 +50,12 @@ type Row = {
 
 export function NextLessonsCard({ now }: { now: Date }) {
   const t = useTranslations("NextLessonsCard");
+  const locale = useLocale();
+  // Oy qisqartmasi darslar sahifasidagi barg bilan bir xil: Intl, ICU maʼlumoti yoʻq tilda (uz) — MONTHS_UZ_SHORT.
+  const monthFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: "short" }), [locale]);
+  const intlMonthMissing = monthFmt.format(new Date(2024, 8, 1)).startsWith("M0");
+  const shortMonth = (y: number, m: number) =>
+    intlMonthMissing ? MONTHS_UZ_SHORT[m - 1] : monthFmt.format(new Date(y, m - 1, 1)).replace(".", "");
   const todayKey = dateToKey(now);
   const tomorrowKey = addDaysKey(todayKey, 1);
 
@@ -142,7 +148,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
                   </div>
                   <div className="flex flex-col gap-2">
                     {g.rows.map((r) => {
-                      const [, m, d] = r.date.split("-").map(Number);
+                      const [y, m, d] = r.date.split("-").map(Number);
                       return (
                       <Link
                         key={r.key}
@@ -150,7 +156,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
                         className="list-card group flex items-center gap-3 p-4"
                         style={{ ["--card-accent" as string]: r.classHex }}
                       >
-                        <LessonDateLeaf lesson={r.lesson} classId={r.classId} hex={r.classHex} day={String(d)} month={MONTHS_UZ_SHORT[m - 1]} />
+                        <LessonDateLeaf lesson={r.lesson} classId={r.classId} hex={r.classHex} day={String(d)} month={shortMonth(y, m)} />
                         <div className="min-w-0 flex-1">
                           <h4 className="truncate text-sm font-semibold text-foreground leading-tight transition-colors duration-fast group-hover:text-primary">
                             {r.title || t("untitledTopic")}

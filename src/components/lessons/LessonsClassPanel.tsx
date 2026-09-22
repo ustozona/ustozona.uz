@@ -178,7 +178,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                       {/* Qamrov chizigʻi — oʻtilgan mavzular ulushi; tooltipda boʻlimlar kesimi. */}
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="min-w-0 flex-1" aria-label={tlp("classCoverage", { pct })}>
+                          <span className="min-w-0 flex-1">
                             <span className="block text-body font-semibold text-foreground truncate">{cls.name}</span>
                             <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
                               {tlp("classMeta", { units: s.units, lessons: s.lessons })}
@@ -190,7 +190,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                                   style={{ width: `${pct}%`, background: tints.solid }}
                                 />
                               </span>
-                              <span className="w-8 text-right text-caption font-semibold tabular-nums text-foreground shrink-0">{pct}%</span>
+                              <span className="w-8 text-right text-caption font-semibold tabular-nums text-foreground shrink-0" aria-label={tlp("classCoverage", { pct })}>{pct}%</span>
                             </span>
                           </span>
                         </TooltipTrigger>
