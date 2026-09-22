@@ -74,9 +74,9 @@ const PANEL_DURATION = 0.2;
 /* Dars rejasi holati — header badge'i va tanlov menyusi uchun (mavzu
    kartasidagi pill bilan bir xil rang/ikonka). */
 const PLAN_META = {
-  none: { iconCls: "text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
-  draft: { iconCls: "text-warning", Icon: Clock, key: "pillDraft" },
-  ready: { iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
+  none: { cls: "border border-dashed border-warning/60 text-warning hover:bg-warning/10", iconCls: "text-warning", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "bg-muted text-muted-foreground hover:bg-muted/80", iconCls: "text-muted-foreground", Icon: Clock, key: "pillDraft" },
+  ready: { cls: "bg-info/10 text-info hover:bg-info/15", iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
 } as const;
 
 export default function LessonEditor({ lessonId }: { lessonId: string }) {
@@ -407,15 +407,15 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
         <div className="flex items-center gap-3 shrink-0">
           {lesson && (() => {
             const state = lessonPlanState(lesson);
-            const { iconCls, Icon, key } = PLAN_META[state];
+            const { cls, Icon, key } = PLAN_META[state];
             return (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex h-7 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+                    className={cn("inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors", cls)}
                   >
-                    <Icon className={cn("size-3.5", iconCls)} />
+                    <Icon className="size-3.5" />
                     {tc(key)}
                     <ChevronDown className="size-3 opacity-70" />
                   </button>
