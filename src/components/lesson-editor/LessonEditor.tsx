@@ -74,8 +74,8 @@ const PANEL_DURATION = 0.2;
 /* Dars rejasi holati — header badge'i va tanlov menyusi uchun (mavzu
    kartasidagi pill bilan bir xil rang/ikonka). */
 const PLAN_META = {
-  none: { cls: "border border-dashed border-warning/60 text-warning hover:bg-warning/10", iconCls: "text-warning", Icon: CircleDashed, key: "pillNone" },
-  draft: { cls: "bg-muted text-muted-foreground hover:bg-muted/80", iconCls: "text-muted-foreground", Icon: Clock, key: "pillDraft" },
+  none: { cls: "border border-dashed border-muted-foreground/40 text-muted-foreground hover:bg-muted", iconCls: "text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "bg-warning/10 text-warning hover:bg-warning/15", iconCls: "text-warning", Icon: Clock, key: "pillDraft" },
   ready: { cls: "bg-info/10 text-info hover:bg-info/15", iconCls: "text-info", Icon: FileCheck, key: "planReadyShort" },
 } as const;
 

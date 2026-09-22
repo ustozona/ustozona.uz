@@ -40,8 +40,8 @@ export function LessonPlanIcon({ lesson, hex, className }: { lesson: Lesson; hex
    tayanmasdan ham farqlansin: uzuq doira — reja yoʻq, soat — jarayonda,
    hujjat ✓ — rejalashtirilgan, ✓ — oʻtildi. Sanasiz mavzuda varaqcha «—» koʻrsatadi. */
 const LEAF_BADGE = {
-  none: { cls: "bg-card border-card text-warning", Icon: CircleDashed, key: "pillNone" },
-  draft: { cls: "bg-muted-foreground border-card text-card", Icon: Clock, key: "pillDraft" },
+  none: { cls: "bg-card border-card text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "bg-warning border-card text-warning-foreground", Icon: Clock, key: "pillDraft" },
   ready: { cls: "bg-info border-card text-info-foreground", Icon: FileCheck, key: "planReadyShort" },
   taught: { cls: "bg-success border-card text-success-foreground", Icon: Check, key: "taught" },
 } as const;
@@ -103,8 +103,8 @@ export function LessonMetaChips({ lesson }: { lesson: Lesson }) {
 const STATUS_PILL = {
   taught: { cls: "bg-success/10 text-success", Icon: CircleCheck, key: "taught" },
   ready: { cls: "bg-info/10 text-info", Icon: FileCheck, key: "planReadyShort" },
-  draft: { cls: "bg-muted text-muted-foreground", Icon: Clock, key: "pillDraft" },
-  none: { cls: "border border-dashed border-warning/60 text-warning", Icon: CircleDashed, key: "pillNone" },
+  draft: { cls: "bg-warning/10 text-warning", Icon: Clock, key: "pillDraft" },
+  none: { cls: "border border-dashed border-muted-foreground/40 text-muted-foreground", Icon: CircleDashed, key: "pillNone" },
 } as const;
 
 export function LessonStatusPill({ lesson }: { lesson: Lesson }) {
