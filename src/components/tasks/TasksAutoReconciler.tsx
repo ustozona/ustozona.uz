@@ -53,9 +53,9 @@ export default function TasksAutoReconciler() {
         useTasksStore.getState().applyAutoReconcile(upserts, deleteIds);
       }
       if (lessonsToComplete.length > 0) {
-        // Dars vazifalari hammasi bajarildi → mavzu «Oʻtildi» (holat ham shu bilan).
+        // Sinfdagi dars vazifalari hammasi bajarildi → mavzu shu sinfda «Oʻtildi».
         const setTaught = useLessonStore.getState().setTaught;
-        for (const id of lessonsToComplete) setTaught(id, today);
+        for (const { lessonId, classId } of lessonsToComplete) setTaught(lessonId, today, classId);
       }
 
       // Bugungi holatga tayanadi — yuqoridagi upsert/delete'dan KEYINGI itemsni oling.

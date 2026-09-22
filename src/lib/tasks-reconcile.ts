@@ -28,7 +28,8 @@ export type ReconcileResult = {
   /** Endi haqiqiy sessiya/assignment'ga mos kelmaydigan "todo" avto-vazifalar. */
   deleteIds: string[];
   /** Barcha oynadagi sessiya-vazifalari done boʻlgan darslar — Completed qilinishi kerak. */
-  lessonsToComplete: string[];
+  /** Sinf boʻyicha: shu sinfdagi dars vazifalari hammasi bajarildi → shu sinfda «Oʻtildi». */
+  lessonsToComplete: { lessonId: string; classId: string }[];
 };
 
 /* Avto-vazifalar muhimligi — FAQAT vazifa tugʻilganda qoʻyiladi.
@@ -63,8 +64,8 @@ export function reconcileLessonAndGradingTasks(
   const windowStart = addDaysKey(todayKey, -7);
   const windowEnd = addDaysKey(todayKey, 21);
 
-  // Har dars uchun: shu oynadagi sessiya-vazifalar barchasi done'mi (Completed sinxroni uchun).
-  const lessonsToComplete: string[] = [];
+  // Har dars va sinf uchun: shu oynadagi sessiya-vazifalar barchasi done'mi («Oʻtildi» sinxroni uchun).
+  const lessonsToComplete: { lessonId: string; classId: string }[] = [];
 
   for (const l of lessons) {
     const sessions = lessonSessions(l).filter((s) => {
@@ -73,7 +74,8 @@ export function reconcileLessonAndGradingTasks(
     });
     if (sessions.length === 0) continue;
 
-    let allDone = true;
+    // Koʻp sinfli mavzuda har sinf alohida oʻtiladi — bajarilganlik ham sinf boʻyicha.
+    const allDoneByClass = new Map<string, boolean>();
     for (const s of sessions) {
       const id = lessonTaskId(l.id, s.classId, s.date, s.startMin);
       keepLessonIds.add(id);
@@ -82,8 +84,9 @@ export function reconcileLessonAndGradingTasks(
       const title = lessonTaskTitle(l.title, info?.name, subjectLabel(info?.subject));
 
       if (!existing) {
-        const bornDone = isTaught(l);
-        if (!bornDone) allDone = false;
+        const bornDone = isTaught(l, s.classId);
+        if (!bornDone) allDoneByClass.set(s.classId, false);
+        else if (!allDoneByClass.has(s.classId)) allDoneByClass.set(s.classId, true);
         upserts.push({
           id,
           title,
@@ -104,9 +107,10 @@ export function reconcileLessonAndGradingTasks(
         continue;
       }
 
-      if (existing.status !== "done") allDone = false;
+      if (existing.status !== "done") allDoneByClass.set(s.classId, false);
+      else if (!allDoneByClass.has(s.classId)) allDoneByClass.set(s.classId, true);
 
-      if (isTaught(l) && existing.status !== "done" && existing.status !== "canceled") {
+      if (isTaught(l, s.classId) && existing.status !== "done" && existing.status !== "canceled") {
         upserts.push({ ...existing, status: "done", completedAt: nowIso });
         continue;
       }
@@ -115,7 +119,9 @@ export function reconcileLessonAndGradingTasks(
       }
     }
 
-    if (allDone && !isTaught(l)) lessonsToComplete.push(l.id);
+    for (const [classId, done] of allDoneByClass) {
+      if (done && !isTaught(l, classId)) lessonsToComplete.push({ lessonId: l.id, classId });
+    }
   }
 
   /* ── Baholash (topshiriqlar) ── */
