@@ -418,7 +418,7 @@ export default function LessonsPage() {
         data-active={unitPickMode && selectedUnitIds.has(unit.id) ? "true" : undefined}
         style={{ ["--card-accent" as string]: selectedClassHex, ...(unitPickMode && selectedUnitIds.has(unit.id) ? selectedClassTints.tint : {}), ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
-        {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
+        {unitPickMode && pickCircle(selectedUnitIds.has(unit.id))}{(
         <div style={selectedClassTints.gradientTile} className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center text-white">
           <LibraryBig className="size-5" />
         </div>
@@ -464,7 +464,7 @@ export default function LessonsPage() {
         data-active={active || picked ? "true" : undefined}
         style={{ ["--card-accent" as string]: selectedClassHex, ...(active || picked ? selectedClassTints.tint : {}), ...(isOver ? { ["--tw-ring-color" as string]: selectedClassHex } : {}) }}
       >
-        {unitPickMode ? pickCircle(selectedUnitIds.has(unit.id)) : (
+        {unitPickMode && pickCircle(selectedUnitIds.has(unit.id))}{(
         <div
           style={active ? selectedClassTints.gradientTile : { ...selectedClassTints.badge, ...selectedClassTints.iconText }}
           className={cn("list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center", active && "text-white")}
@@ -659,10 +659,10 @@ export default function LessonsPage() {
 
   /** Glif oʻrnidagi katakcha. `pointer-events-none` — bosishni kartaning
       oʻzi qabul qiladi (karta `<button>`, ichiga tugma qoʻyib boʻlmaydi). */
+  /* Tanlash rejimi: checkbox ikonka/varaqcha OLDIDA alohida turadi — sana va
+     boʻlim ikonkasi koʻrinib qoladi (nima tanlanayotgani bilinadi). */
   const pickCircle = (checked: boolean) => (
-    <div className="list-card-icon size-11 rounded-full shrink-0 flex items-center justify-center border border-border bg-card">
-      <Checkbox checked={checked} aria-label={t("selectAria")} className="pointer-events-none" />
-    </div>
+    <Checkbox checked={checked} aria-label={t("selectAria")} className="pointer-events-none shrink-0" />
   );
 
   // "Boʻlimsiz" — keng ustun
@@ -1085,7 +1085,7 @@ export default function LessonsPage() {
                         data-active={lessonPickMode && selectedLessonIds.has(lesson.id) ? "true" : undefined}
                         style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
-                        {lessonPickMode ? pickCircle(selectedLessonIds.has(lesson.id)) : (
+                        {lessonPickMode && pickCircle(selectedLessonIds.has(lesson.id))}{(
                           <LessonDateLeaf lesson={lesson} hex={selectedClassHex} day={lessonWhen(lesson)?.day} month={lessonWhen(lesson)?.month} />
                         )}
                         <div className="min-w-0 flex-1">
