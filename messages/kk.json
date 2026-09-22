@@ -1360,7 +1360,6 @@
     "lessonsSearchEmpty": "«{q}» бойынша тақырып табылмады",
     "classUnitsTip": "{count} бөлім",
     "classLessonsTip": "{count} тақырып · {taught} өтілді",
-    "unitSegTip": "{title}: {taught}/{total} өтілді",
     "statusDraft": "Шимайқағаз",
     "unitDeletedToast": "«{unit}» жойылды",
     "undo": "Болдырмау",

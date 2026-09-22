@@ -1360,7 +1360,6 @@
     "lessonsSearchEmpty": "По запросу «{q}» тем не найдено",
     "classUnitsTip": "Разделов: {count}",
     "classLessonsTip": "Тем: {count} · пройдено: {taught}",
-    "unitSegTip": "{title}: пройдено {taught}/{total}",
     "statusDraft": "Черновик",
     "unitDeletedToast": "«{unit}» удалён",
     "undo": "Отменить",

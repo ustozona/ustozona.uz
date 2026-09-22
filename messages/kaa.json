@@ -1360,7 +1360,6 @@
     "lessonsSearchEmpty": "«{q}» boyınsha tema tabılmadı",
     "classUnitsTip": "{count} bólim",
     "classLessonsTip": "{count} tema · {taught} ótildi",
-    "unitSegTip": "{title}: {taught}/{total} ótildi",
     "statusDraft": "Qaralama",
     "unitDeletedToast": "«{unit}» óshirildi",
     "undo": "Biykar etiw",

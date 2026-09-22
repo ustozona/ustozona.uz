@@ -1360,7 +1360,6 @@
     "lessonsSearchEmpty": "No topics match “{q}”",
     "classUnitsTip": "{count} units",
     "classLessonsTip": "{count} topics · {taught} taught",
-    "unitSegTip": "{title}: {taught}/{total} taught",
     "statusDraft": "Draft",
     "unitDeletedToast": "\"{unit}\" was deleted",
     "undo": "Undo",

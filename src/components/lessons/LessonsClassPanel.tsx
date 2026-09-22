@@ -23,8 +23,7 @@ import ClassListPanel from "@/components/ClassListPanel";
 import { classColor, type ClassInfo } from "@/lib/grades-data";
 import { classTints } from "@/lib/class-colors";
 import { classIcon, type ClassIconKey } from "@/lib/class-icons";
-import { isTaught, lessonClassIds, lessonUnitIds, type Lesson, type Unit } from "@/lib/lessons-data";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { isTaught, lessonClassIds, type Lesson, type Unit } from "@/lib/lessons-data";
 import { useLiveClasses, useLiveClassesHydrated, classInfoFromForm, classFormInitial } from "@/hooks/useLiveClasses";
 import { useGradesStore } from "@/store/useGradesStore";
 import { useIsBelow } from "@/hooks/use-mobile";
@@ -54,19 +53,11 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
   const [deleteTarget, setDeleteTarget] = useState<ClassInfo | null>(null);
 
   const stats = useMemo(() => {
-    type UnitStat = { id: string; title: string; total: number; taught: number };
-    const out = new Map<string, { units: number; lessons: number; taught: number; perUnit: UnitStat[] }>();
-    for (const c of classes) out.set(c.id, { units: 0, lessons: 0, taught: 0, perUnit: [] });
-    const unitStat = new Map<string, UnitStat>();
-    const unitClass = new Map<string, string>();
-    for (const u of [...units].sort((a, b) => a.number - b.number)) {
+    const out = new Map<string, { units: number; lessons: number; taught: number }>();
+    for (const c of classes) out.set(c.id, { units: 0, lessons: 0, taught: 0 });
+    for (const u of units) {
       const s = out.get(u.classId);
-      if (!s) continue;
-      s.units++;
-      const us = { id: u.id, title: u.title, total: 0, taught: 0 };
-      s.perUnit.push(us);
-      unitStat.set(u.id, us);
-      unitClass.set(u.id, u.classId);
+      if (s) s.units++;
     }
     for (const l of lessons) {
       for (const id of lessonClassIds(l)) {
@@ -75,12 +66,6 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
         if (!s) continue;
         s.lessons++;
         if (taught) s.taught++;
-      }
-      for (const uid of lessonUnitIds(l)) {
-        const us = unitStat.get(uid);
-        if (!us) continue;
-        us.total++;
-        if (isTaught(l, unitClass.get(uid))) us.taught++;
       }
     }
     return out;
@@ -155,8 +140,7 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
               const isSelected = cls.id === selectedClassId;
               const tints = classTints(classColor(cls));
               const Icon = classIcon(cls.icon);
-              const s = stats.get(cls.id) ?? { units: 0, lessons: 0, taught: 0, perUnit: [] };
-              const segs = s.perUnit.filter((u) => u.total > 0);
+              const s = stats.get(cls.id) ?? { units: 0, lessons: 0, taught: 0 };
               const pct = s.lessons ? Math.round((s.taught / s.lessons) * 100) : 0;
               return (
                 <ContextMenu key={cls.id}>
@@ -175,32 +159,22 @@ export function LessonsClassPanel({ selectedClassId, onSelect, onAddClass, units
                       >
                         <Icon className="size-5" />
                       </span>
-                      {/* Qamrov chizigʻi — oʻtilgan mavzular ulushi; tooltipda boʻlimlar kesimi. */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="min-w-0 flex-1">
-                            <span className="block text-body font-semibold text-foreground truncate">{cls.name}</span>
-                            <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
-                              {tlp("classMeta", { units: s.units, lessons: s.lessons })}
-                            </span>
-                            <span className="flex items-center gap-2 mt-2">
-                              <span className="block flex-1 h-1 rounded-full bg-muted overflow-hidden">
-                                <span
-                                  className="block h-full rounded-full transition-all"
-                                  style={{ width: `${pct}%`, background: tints.solid }}
-                                />
-                              </span>
-                              <span className="w-8 text-right text-caption font-semibold tabular-nums text-foreground shrink-0" aria-label={tlp("classCoverage", { pct })}>{pct}%</span>
-                            </span>
+                      {/* Qamrov chizigʻi — oʻtilgan mavzular ulushi. */}
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-body font-semibold text-foreground truncate">{cls.name}</span>
+                        <span className="block text-caption text-muted-foreground truncate mt-0.5 tabular-nums">
+                          {tlp("classMeta", { units: s.units, lessons: s.lessons })}
+                        </span>
+                        <span className="flex items-center gap-2 mt-2">
+                          <span className="block flex-1 h-1 rounded-full bg-muted overflow-hidden">
+                            <span
+                              className="block h-full rounded-full transition-all"
+                              style={{ width: `${pct}%`, background: tints.solid }}
+                            />
                           </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <span className="block">{tlp("classCoverage", { pct })}</span>
-                          {segs.map((u) => (
-                            <span key={u.id} className="block tabular-nums opacity-80">{tlp("unitSegTip", { title: u.title, taught: u.taught, total: u.total })}</span>
-                          ))}
-                        </TooltipContent>
-                      </Tooltip>
+                          <span className="w-8 text-right text-caption font-semibold tabular-nums text-foreground shrink-0" aria-label={tlp("classCoverage", { pct })}>{pct}%</span>
+                        </span>
+                      </span>
                     </button>
                   </ContextMenuTrigger>
                   <ContextMenuContent>

@@ -1360,7 +1360,6 @@
     "lessonsSearchEmpty": "«{q}» boʻyicha mavzu topilmadi",
     "classUnitsTip": "{count} ta boʻlim",
     "classLessonsTip": "{count} ta mavzu · {taught} tasi oʻtildi",
-    "unitSegTip": "{title}: {taught}/{total} oʻtildi",
     "statusDraft": "Qoralama",
     "unitDeletedToast": "«{unit}» oʻchirildi",
     "undo": "Bekor qilish",
