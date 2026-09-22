@@ -34,6 +34,7 @@ import { getHolidayForDate, inRange } from "@/lib/academic-calendar";
 import { lessonSessions, lessonClassIds, unitIdForClass, isTaught, type Lesson } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { cn } from "@/lib/utils";
+import { subjectLabel } from "@/lib/standards-data";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -921,7 +922,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               density="auto"
                               style={{ height: h }}
                               className={cn("h-full", isOver && "inset-ring-2 inset-ring-[var(--ring)]")}
-                              subtitle={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}`}
+                              subtitle={`${minToHHMM(ev.startMin)} — ${minToHHMM(ev.endMin)}${cls.subject ? ` · ${subjectLabel(cls.subject)}` : ""}`}
                               /* Boʻsh slot — TodayRail bilan bir xil grammatika:
                                  bitta doim koʻrinadigan chorlov (burchak
                                  qavslari + dashed perimetr, hoverda sinf
@@ -1531,7 +1532,7 @@ export default function PlannerView({ classId }: { classId?: string }) {
                               data-tour={hasLesson ? "planner-lesson-block" : "planner-empty-slot"}
                               color={clsColor}
                               title={cls.name}
-                              subtitle={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}`}
+                              subtitle={`${fmtMin(ev.startMin)} — ${fmtMin(ev.endMin)}${cls.subject ? ` · ${subjectLabel(cls.subject)}` : ""}`}
                               state={hasLesson ? "filled" : "empty"}
                               density="auto"
                               style={{ top: Math.max(topH, 0) * slotHeight + 2, height: blockPx }}

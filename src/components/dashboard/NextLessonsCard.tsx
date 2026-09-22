@@ -19,6 +19,7 @@ import {
 import { useLessonStore } from "@/store/useLessonStore";
 import { useLiveClasses } from "@/hooks/useLiveClasses";
 import { classColor } from "@/lib/grades-data";
+import { subjectLabel } from "@/lib/standards-data";
 import { CLASS_COLOR_HEX, type ClassColor } from "@/lib/class-colors";
 import { lessonSessions, type Lesson } from "@/lib/lessons-data";
 import { dateToKey, addDaysKey, dateKeyToDate } from "@/lib/date-keys";
@@ -42,6 +43,7 @@ type Row = {
   className: string;
   classHex: string;
   classColor: ClassColor | null;
+  subject: string;
   date: string;
   startMin: number;
   endMin: number;
@@ -66,7 +68,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
       new Map(
         liveClasses.map((c) => [
           c.id,
-          { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)], color: classColor(c) },
+          { name: c.name, hex: CLASS_COLOR_HEX[classColor(c)], color: classColor(c), subject: c.subject ? subjectLabel(c.subject) : "" },
         ])
       ),
     [liveClasses]
@@ -86,6 +88,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
           className: meta?.name ?? t("unknownClass"),
           classHex: meta?.hex ?? "#94a3b8",
           classColor: meta?.color ?? null,
+          subject: meta?.subject ?? "",
           date: s.date,
           startMin: s.startMin,
           endMin: s.endMin,
@@ -190,6 +193,12 @@ export function NextLessonsCard({ now }: { now: Date }) {
                               <ClassBadge color={r.classColor} name={r.className} className="shrink-0" />
                             ) : (
                               <span className="shrink-0 text-tag font-semibold">{r.className}</span>
+                            )}
+                            {r.subject && (
+                              <>
+                                <span className="size-0.5 shrink-0 rounded-full bg-muted-foreground/60" />
+                                <span className="min-w-0 truncate">{r.subject}</span>
+                              </>
                             )}
                             <span className="size-0.5 shrink-0 rounded-full bg-muted-foreground/60" />
                             <span className="shrink-0 tabular-nums">
