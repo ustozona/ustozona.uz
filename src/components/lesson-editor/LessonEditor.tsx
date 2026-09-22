@@ -21,7 +21,7 @@ import { CharacterCount } from "@tiptap/extension-character-count";
 import "katex/dist/katex.min.css";
 import {
   FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
-  SlidersHorizontal, Sparkles, Plus, Minus, FileCheck,
+  SlidersHorizontal, Sparkles, Plus, Minus, FileCheck, FilePen, ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -391,27 +391,47 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               >
                 {(titleDraft ?? lesson?.title)?.trim() || t("untitled")}
               </h1>
-              {lesson?.planReady ? (
-                <button
-                  type="button"
-                  title={tc("unmarkPlanReady")}
-                  onClick={togglePlanReady}
-                  className="shrink-0 inline-flex h-7 items-center gap-1.5 rounded-full bg-success/10 px-2.5 text-xs font-semibold text-success transition-colors hover:bg-success/15"
-                >
-                  <Check className="size-3.5" />
-                  {tc("planReadyShort")}
-                </button>
-              ) : (
-                <Button size="sm" className="shrink-0 h-7 gap-1.5 px-2.5 text-xs" onClick={togglePlanReady} disabled={!lesson}>
-                  <FileCheck className="size-3.5" />
-                  {tc("markPlanButton")}
-                </Button>
-              )}
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
+          {lesson && (() => {
+            const state = lessonPlanState(lesson);
+            const meta = {
+              ready: { cls: "bg-info/10 text-info hover:bg-info/15", Icon: FileCheck, key: "planReadyShort" },
+              draft: { cls: "bg-muted text-muted-foreground hover:bg-muted/80", Icon: FilePen, key: "pillDraft" },
+              none: { cls: "border border-dashed border-warning/60 text-warning hover:bg-warning/10", Icon: FileText, key: "pillNone" },
+            } as const;
+            const { cls, Icon, key } = meta[state];
+            const notReadyKey = state === "ready" ? (lesson.content?.replace(/<[^>]*>/g, " ").trim() ? "pillDraft" : "pillNone") : key;
+            return (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn("inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors", cls)}
+                  >
+                    <Icon className="size-3.5" />
+                    {tc(key)}
+                    <ChevronDown className="size-3 opacity-70" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem onClick={() => !lesson.planReady && togglePlanReady()} className="gap-2">
+                    <FileCheck className="size-4 text-info" />
+                    <span className="flex-1">{tc("planReadyShort")}</span>
+                    {lesson.planReady && <Check className="size-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => lesson.planReady && togglePlanReady()} className="gap-2">
+                    {notReadyKey === "pillDraft" ? <FilePen className="size-4 text-muted-foreground" /> : <FileText className="size-4 text-warning" />}
+                    <span className="flex-1">{tc(notReadyKey)}</span>
+                    {!lesson.planReady && <Check className="size-4" />}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            );
+          })()}
           {saving ? (
             <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-muted-foreground">
               <Loader2 className="size-3.5 animate-spin" />
