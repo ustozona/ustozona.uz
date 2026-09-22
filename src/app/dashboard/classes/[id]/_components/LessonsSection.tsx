@@ -16,7 +16,7 @@ import { ClassSwatch } from "@/components/ClassSwatch";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, byLessonOrder, type Unit, type Lesson } from "@/lib/lessons-data";
-import { byNumber, ordinalsOf } from "@/lib/ordinals";
+import { byNumber, lessonNumberOffset, ordinalsOf } from "@/lib/ordinals";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import { LessonCyclePills } from "@/components/LessonStatusBadge";
@@ -206,6 +206,12 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
     if (selectedUnitId === NONE) return [...noUnitLessons].sort(byLessonOrder(classId));
     return lessons.filter((l) => lessonClassIds(l).includes(classId) && unitIdForClass(l, classId) === selectedUnitId).sort(byLessonOrder(classId));
   }, [selectedUnitId, classId, noUnitLessons, lessons]);
+
+  // Mavzu raqami boʻlimlar boʻylab davom etadi (`lessonNumberOffset`).
+  const lessonOffset = useMemo(
+    () => (selectedUnitId ? lessonNumberOffset(lessons, unitsForClass, classId, selectedUnitId) : 0),
+    [lessons, unitsForClass, classId, selectedUnitId]
+  );
 
   const unitProgress = (unitId: string | null) => {
     const all = unitId === null
@@ -668,7 +674,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                               <FileText className="size-5" />
                             </div>
                             <h4 className="min-w-0 flex-1 text-sm font-semibold text-foreground leading-tight truncate">
-                              {pad(i + 1)}. {lesson.title}
+                              {pad(lessonOffset + i + 1)}. {lesson.title}
                             </h4>
                             {h.arrows}
                           </div>
@@ -704,7 +710,7 @@ export function LessonsSection({ identity }: { identity: ClassIdentity }) {
                           </div>
                           <div className="min-w-0 flex-1">
                             <h4 className="text-sm font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-                              {pad(i + 1)}. {lesson.title}
+                              {pad(lessonOffset + i + 1)}. {lesson.title}
                             </h4>
                             {lessonUnit && (
                               <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">

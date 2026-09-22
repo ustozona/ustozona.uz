@@ -23,7 +23,7 @@ import { useClassIdParam, useUrlParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
-import { byNumber, ordinalsOf } from "@/lib/ordinals";
+import { byNumber, lessonNumberOffset, ordinalsOf } from "@/lib/ordinals";
 import { isTaught, lessonPlanState, byLessonOrder } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { needsTaughtConfirm } from "@/lib/lesson-shift";
@@ -290,21 +290,10 @@ export default function LessonsPage() {
 
   // Mavzu raqami boʻlimlar boʻylab davom etadi: 1-boʻlimda 10 ta boʻlsa, 2-boʻlim 11 dan boshlanadi.
   // «Boʻlimsiz» mavzular hamma boʻlimlardan keyin sanaladi.
-  const lessonOffset = useMemo(() => {
-    if (!effectiveUnitId || !effectiveClassId) return 0;
-    const counts = new Map<string, number>();
-    for (const l of lessonsSource) {
-      if (!lessonClassIds(l).includes(effectiveClassId)) continue;
-      const uid = unitIdForClass(l, effectiveClassId);
-      if (uid) counts.set(uid, (counts.get(uid) ?? 0) + 1);
-    }
-    let offset = 0;
-    for (const u of unitsForClass) {
-      if (u.id === effectiveUnitId) return offset;
-      offset += counts.get(u.id) ?? 0;
-    }
-    return offset;
-  }, [effectiveUnitId, effectiveClassId, lessonsSource, unitsForClass]);
+  const lessonOffset = useMemo(
+    () => (effectiveUnitId && effectiveClassId ? lessonNumberOffset(lessonsSource, unitsForClass, effectiveClassId, effectiveUnitId) : 0),
+    [effectiveUnitId, effectiveClassId, lessonsSource, unitsForClass]
+  );
   const lNo = (i: number) => pad(lessonOffset + i + 1);
 
   const unitProgress = (unitId: string | null) => {
