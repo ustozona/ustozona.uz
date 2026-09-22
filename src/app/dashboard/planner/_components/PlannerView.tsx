@@ -1959,16 +1959,16 @@ export default function PlannerView({ classId }: { classId?: string }) {
             {editLesson && (
               <div className="flex flex-wrap gap-2">
                 <Button
-                  variant={isTaught(editLesson) ? "soft" : "outline"}
+                  variant={isTaught(editLesson, editTarget?.classId) ? "soft" : "outline"}
                   size="sm" className="gap-1.5"
                   onClick={() => {
                     if (!editLesson) return;
-                    const taught = isTaught(editLesson);
-                    setTaught(editLesson.id, taught ? null : todayKey());
+                    const taught = isTaught(editLesson, editTarget?.classId);
+                    setTaught(editLesson.id, taught ? null : todayKey(), editTarget?.classId);
                     toast.success(taught ? t("rescheduledToast") : t("markedCompletedToast"));
                   }}>
                   <Check className="size-4" />
-                  {isTaught(editLesson) ? t("completedCheck") : t("markCompleted")}
+                  {isTaught(editLesson, editTarget?.classId) ? t("completedCheck") : t("markCompleted")}
                 </Button>
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
                   if (!editTarget) return;
