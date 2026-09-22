@@ -8,7 +8,7 @@ import { MONTHS_UZ_SHORT, DAYS_UZ_SHORT } from "@/lib/localization";
 import { dateKeyToDate } from "@/lib/date-keys";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ import { useClassIdParam, useUrlParam } from "@/hooks/useClassIdParam";
 import { useLessonStore } from "@/store/useLessonStore";
 import { commitLessonsDelete } from "@/lib/sync/lessons-delete";
 import { lessonClassIds, lessonSessions, lessonUnitIds, unitIdForClass, type Unit, type Lesson } from "@/lib/lessons-data";
-import { byNumber, ordinalsOf } from "@/lib/ordinals";
+import { byNumber, lessonNumberOffset, ordinalsOf } from "@/lib/ordinals";
 import { isTaught, lessonPlanState, byLessonOrder } from "@/lib/lessons-data";
 import { todayKey } from "@/lib/date-keys";
 import { needsTaughtConfirm } from "@/lib/lesson-shift";
@@ -41,7 +41,7 @@ import { ClassFormModal } from "@/components/ClassFormModal";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import IshRejaImportModal from "@/components/IshRejaImportModal";
 import UnitImportModal from "@/components/UnitImportModal";
-import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed } from "lucide-react";
+import { LibraryBig, FileText, Clock, Plus, Search, ArrowDownUp, Pencil, Trash2, FolderInput, ListChecks, FileCheck, CircleCheck, Check, SkipForward, X, CircleDashed, GripVertical } from "lucide-react";
 import { ReorderList, useEscape, useReorderDraft } from "@/components/ReorderList";
 import { BulkActionBar, BulkActionButton, BulkActionCount, BulkActionDivider } from "@/components/BulkActionBar";
 import {
@@ -70,9 +70,27 @@ const NONE = "__none__";
 
 /* Boʻlim/"Boʻlimsiz" kartalarini @dnd-kit droppable-zonasiga aylantiradi —
    mavzuni sudrab tashlash uchun umumiy wrapper (loyihaning DnD standarti). */
-function UnitDropZone({ id, children }: { id: string; children: (isOver: boolean) => ReactNode }) {
-  const { setNodeRef, isOver } = useDroppable({ id });
-  return <div ref={setNodeRef}>{children(isOver)}</div>;
+function UnitDropZone({ id, dragging, current, count = 1, children }: {
+  id: string; dragging: boolean; current: boolean; count?: number; children: (isOver: boolean) => ReactNode;
+}) {
+  // Sudrash paytida: tashlash mumkin boʻlgan zonalar nuqtali chegara oladi, mavzuning joriy boʻlimi
+  // oʻchiriladi (u yerga tashlash hech narsa qilmaydi), ustidagi zonada «+1» — son qanchaga oʻsishi.
+  const { setNodeRef, isOver } = useDroppable({ id, disabled: current });
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "relative rounded-xl transition-opacity duration-fast",
+        dragging && !current && !isOver && "outline-2 outline-dashed outline-offset-2 outline-border",
+        dragging && current && "opacity-50"
+      )}
+    >
+      {children(isOver)}
+      {isOver && (
+        <span className="pointer-events-none absolute -top-2 -right-2 rounded-full bg-foreground px-2 py-0.5 text-tag font-semibold text-background tabular-nums">+{count}</span>
+      )}
+    </div>
+  );
 }
 
 /* Mavzu kartasini sudrab boʻlim-zonalarga tashlash uchun draggable wrapper.
@@ -89,12 +107,15 @@ const DraggableLesson = React.forwardRef<HTMLDivElement, {
   return (
     <div
       ref={composedRef}
-      {...listeners}
       {...attributes}
       {...rest}
+      {...listeners}
+      // Radix trigger ham onPointerDown beradi (sensorli uzoq bosish) — ikkalasi ham ishlashi shart,
+      // aks holda rest sudrash tinglovchisini ustidan yozadi va karta umuman surilmaydi.
+      onPointerDown={(e) => { rest.onPointerDown?.(e); listeners?.onPointerDown?.(e); }}
       onClick={onClick}
       style={style}
-      className={cn(className, isDragging && "opacity-40")}
+      className={cn(className, isDragging && "opacity-40 border-dashed")}
     >
       {children}
     </div>
@@ -260,12 +281,20 @@ export default function LessonsPage() {
     [lessonsSource, effectiveClassId]
   );
 
-  // Tartiblangan: kartadagi raqam = roʻyxatdagi oʻrin (`i + 1`).
+  // Tartiblangan: kartadagi raqam = oldingi boʻlimlardagi mavzular + roʻyxatdagi oʻrin (`lNo`).
   const lessonsForUnit = useMemo(() => {
     if (!effectiveUnitId || !effectiveClassId) return [];
     if (effectiveUnitId === NONE) return [...noUnitLessons].sort(byLessonOrder(effectiveClassId));
     return lessonsSource.filter((l) => lessonClassIds(l).includes(effectiveClassId) && unitIdForClass(l, effectiveClassId) === effectiveUnitId).sort(byLessonOrder(effectiveClassId));
   }, [effectiveUnitId, effectiveClassId, noUnitLessons, lessonsSource]);
+
+  // Mavzu raqami boʻlimlar boʻylab davom etadi: 1-boʻlimda 10 ta boʻlsa, 2-boʻlim 11 dan boshlanadi.
+  // «Boʻlimsiz» mavzular hamma boʻlimlardan keyin sanaladi.
+  const lessonOffset = useMemo(
+    () => (effectiveUnitId && effectiveClassId ? lessonNumberOffset(lessonsSource, unitsForClass, effectiveClassId, effectiveUnitId) : 0),
+    [effectiveUnitId, effectiveClassId, lessonsSource, unitsForClass]
+  );
+  const lNo = (i: number) => pad(lessonOffset + i + 1);
 
   const unitProgress = (unitId: string | null) => {
     const all = unitId === null
@@ -289,14 +318,43 @@ export default function LessonsPage() {
 
   // Mavzuni boʻlimlar oʻrtasida drag-and-drop bilan koʻchirish (bitta sinf konteksti, @dnd-kit).
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  // Sudralayotgan mavzu(lar) — DragOverlay nusxasi kursorga ergashadi, asl karta joyida xira qoladi.
+  // Tanlash rejimida belgilangan kartani sudrasangiz — belgilanganlarning hammasi birga ketadi.
+  const [drag, setDrag] = useState<{ id: string; ids: string[]; from: (string | null)[] } | null>(null);
+  const dragLessonId = drag?.id ?? null;
+  const zoneProps = (unitId: string | null) => ({
+    dragging: drag != null,
+    // Hammasi shu boʻlimda boʻlsa — u yerga tashlash hech narsa qilmaydi.
+    current: drag != null && drag.from.every((u) => u === unitId),
+    count: drag ? drag.from.filter((u) => u !== unitId).length : 1,
+  });
+  const handleLessonDragStart = (e: DragStartEvent) => {
+    const id = e.active.id as string;
+    if (!effectiveClassId) return;
+    const ids = lessonPickMode && selectedLessonIds.has(id) ? [...selectedLessonIds] : [id];
+    const from = ids.map((x) => {
+      const l = lessonsSource.find((y) => y.id === x);
+      return l ? (unitIdForClass(l, effectiveClassId) ?? null) : null;
+    });
+    setDrag({ id, ids, from });
+  };
   const handleLessonDragEnd = (e: DragEndEvent) => {
-    const lessonId = e.active.id as string;
+    const d = drag;
+    setDrag(null);
     const overId = e.over?.id as string | undefined;
-    if (!overId || !effectiveClassId) return;
+    if (!d || !overId || !effectiveClassId) return;
     const targetUnitId = overId === "unit-none" ? null : overId.replace(/^unit-/, "");
-    const lesson = lessonsSource.find((l) => l.id === lessonId);
-    if (!lesson || unitIdForClass(lesson, effectiveClassId) === targetUnitId) return;
-    setUnitForClass(lessonId, effectiveClassId, targetUnitId);
+    const moves = d.ids.map((id, k) => ({ id, from: d.from[k] })).filter((m) => m.from !== targetUnitId);
+    if (moves.length === 0) return;
+    const classId = effectiveClassId;
+    moves.forEach((m) => setUnitForClass(m.id, classId, targetUnitId));
+    if (d.ids.length > 1) setSelectedLessonIds(new Set());
+    const target = targetUnitId ? unitsSource.find((u) => u.id === targetUnitId) : null;
+    const unit = target ? `${uNo(target)}. ${target.title}` : t("noUnitTitle");
+    const single = moves.length === 1 ? lessonsSource.find((l) => l.id === moves[0].id) : null;
+    toast.success(single ? t("lessonMovedToUnit", { lesson: single.title, unit }) : t("lessonsMovedToUnit", { count: moves.length, unit }), {
+      action: { label: t("undo"), onClick: () => moves.forEach((m) => setUnitForClass(m.id, classId, m.from)) },
+    });
   };
 
   // «Boʻlim qoʻshish» — nusxa koʻchirish / Excel oynasi (batafsil oyna — uning ichidan).
@@ -766,7 +824,7 @@ export default function LessonsPage() {
   return (
     <div className="flex flex-col flex-1 min-w-0 gap-6 p-4 md:p-6 max-lg:min-h-full lg:h-full lg:min-h-0">
       <TourDemoBanner tourId="lessons" active={isDemoMode} />
-      <DndContext sensors={dndSensors} onDragEnd={handleLessonDragEnd}>
+      <DndContext sensors={dndSensors} onDragStart={handleLessonDragStart} onDragEnd={handleLessonDragEnd} onDragCancel={() => setDrag(null)}>
       <DashboardColumns template={columnsTemplate} className="lg:h-full lg:overflow-hidden">
       {/* ── Column 1: Sinflar (25%) ── */}
       <DashboardColumn hideBelow="lg" mobile="self" data-tour="lessons-classes">
@@ -859,22 +917,22 @@ export default function LessonsPage() {
                   /* Tor rejim — tanlangan katta, qolganlari kompakt */
                   <>
                     {unitsForClass.map((unit) => (
-                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
+                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`} {...zoneProps(unit.id)}>
                         {(isOver) => renderUnitSelected(unit, isOver, unit.id === effectiveUnitId)}
                       </UnitDropZone>
                     ))}
-                    <UnitDropZone id="unit-none">{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
+                    <UnitDropZone id="unit-none" {...zoneProps(null)}>{(isOver) => renderNoUnitNarrow(isOver)}</UnitDropZone>
                   </>
                 ) : (
                   /* Keng rejim — toʻliq kartalar + doimo "Boʻlimsiz" karta.
                      Haqiqiy boʻlim boʻlmasa, qoʻshimcha markaziy yoʻriqnoma. */
                   <>
                     {unitsForClass.map((unit) => (
-                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`}>
+                      <UnitDropZone key={unit.id} id={`unit-${unit.id}`} {...zoneProps(unit.id)}>
                         {(isOver) => renderUnitWide(unit, isOver)}
                       </UnitDropZone>
                     ))}
-                    <UnitDropZone id="unit-none">{(isOver) => renderNoUnitWide(isOver)}</UnitDropZone>
+                    <UnitDropZone id="unit-none" {...zoneProps(null)}>{(isOver) => renderNoUnitWide(isOver)}</UnitDropZone>
                     {unitsForClass.length === 0 && (
                       <Empty className="py-12">
                         <EmptyHeader>
@@ -1073,7 +1131,7 @@ export default function LessonsPage() {
                             <FileText className="size-5" />
                           </div>
                           <h4 className="min-w-0 flex-1 text-body font-semibold text-foreground leading-tight truncate">
-                            {pad(i + 1)}. {lesson.title}
+                            {lNo(i)}. {lesson.title}
                           </h4>
                           {h.arrows}
                         </div>
@@ -1104,7 +1162,7 @@ export default function LessonsPage() {
                         onClick={() => (lessonPickMode
                           ? toggleIn(selectedLessonIds, setSelectedLessonIds, lesson.id)
                           : openLesson(lesson.id))}
-                        className="list-card group flex flex-wrap items-center gap-3 p-4 cursor-pointer active:cursor-grabbing"
+                        className={cn("list-card group flex flex-wrap items-center gap-3 p-4 cursor-pointer active:cursor-grabbing", drag?.ids.includes(lesson.id) && "opacity-40 border-dashed")}
                         data-active={lessonPickMode && selectedLessonIds.has(lesson.id) ? "true" : undefined}
                         style={{ ["--card-accent" as string]: selectedClassHex, ...(lessonPickMode && selectedLessonIds.has(lesson.id) ? selectedClassTints.tint : {}) }}
                       >
@@ -1113,7 +1171,7 @@ export default function LessonsPage() {
                         )}
                         <div className="min-w-0 flex-1">
                           <h4 className="text-body font-semibold text-foreground leading-tight truncate transition-colors group-hover:text-primary">
-                            {pad(i + 1)}. {lesson.title}
+                            {lNo(i)}. {lesson.title}
                           </h4>
                           {(() => {
                             const when = lessonWhen(lesson);
@@ -1327,6 +1385,29 @@ export default function LessonsPage() {
           </AlertDialogContent>
         </AlertDialog>
       </DashboardColumns>
+      <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.2, 0, 0, 1)" }}>
+        {(() => {
+          const lesson = dragLessonId ? lessonsSource.find((l) => l.id === dragLessonId) : null;
+          if (!lesson) return null;
+          const when = lessonWhen(lesson);
+          const idx = lessonsForUnit.findIndex((l) => l.id === lesson.id);
+          return (
+            <div
+              className="list-card flex items-center gap-3 p-4 w-[min(22rem,80vw)] -rotate-2 cursor-grabbing shadow-lg"
+              style={{ ["--card-accent" as string]: selectedClassHex }}
+            >
+              <GripVertical className="size-4 shrink-0 text-muted-foreground" />
+              <LessonDateLeaf lesson={lesson} classId={effectiveClassId} hex={selectedClassHex} day={when?.day} month={when?.month} />
+              <span className="min-w-0 flex-1 truncate text-body font-semibold text-foreground">
+                {idx >= 0 ? `${lNo(idx)}. ` : ""}{lesson.title}
+              </span>
+              {drag && drag.ids.length > 1 && (
+                <span className="shrink-0 rounded-full bg-foreground px-2 py-0.5 text-tag font-semibold text-background tabular-nums">+{drag.ids.length - 1}</span>
+              )}
+            </div>
+          );
+        })()}
+      </DragOverlay>
       </DndContext>
     </div>
   );
