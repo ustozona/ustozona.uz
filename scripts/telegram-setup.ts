@@ -18,8 +18,6 @@
    kerak va bu skript tunnel URL bilan chaqiriladi.
    ════════════════════════════════════════════════════════════════════ */
 
-export {};
-
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
 const site = (process.argv[2] || process.env.BETTER_AUTH_URL || "").replace(/\/$/, "");
@@ -48,33 +46,41 @@ async function call(method: string, body: Record<string, unknown>) {
   if (!json.ok) process.exitCode = 1;
 }
 
-await call("setWebhook", {
-  url: `${site}/api/telegram/webhook`,
-  secret_token: secret,
-  allowed_updates: ["message", "callback_query", "my_chat_member"],
-  max_connections: 20,
-});
+// tsx skriptlari CJS'ga oʻgiriladi — top-level await ishlamaydi.
+async function main() {
+  await call("setWebhook", {
+    url: `${site}/api/telegram/webhook`,
+    secret_token: secret,
+    allowed_updates: ["message", "callback_query", "my_chat_member"],
+    max_connections: 20,
+  });
 
-await call("setMyCommands", {
-  commands: [
-    { command: "bugun", description: "Bugungi darslar va vazifalar" },
-    { command: "ertaga", description: "Ertangi darslar" },
-    { command: "start", description: "Boshlash" },
-  ],
-});
+  await call("setMyCommands", {
+    commands: [
+      { command: "bugun", description: "Bugungi darslar va vazifalar" },
+      { command: "ertaga", description: "Ertangi darslar" },
+      { command: "start", description: "Boshlash" },
+    ],
+  });
 
-await call("setMyShortDescription", {
-  short_description: "Ustozona — oʻqituvchi yordamchisi. Darslar haqida eslatmalar va parolsiz kirish.",
-});
+  await call("setMyShortDescription", {
+    short_description: "Ustozona — oʻqituvchi yordamchisi. Darslar haqida eslatmalar va parolsiz kirish.",
+  });
 
-await call("setMyDescription", {
-  description:
-    "Ustozona boti:\n" +
-    "• har kuni kechqurun — ertangi darslar va rejalanmagan darslar\n" +
-    "• ertalab — bugungi darslar va vazifalar\n" +
-    "• Ustozonaga parolsiz kirish\n\n" +
-    "Boshlash uchun saytda «Telegram orqali davom etish» tugmasini bosing.",
-});
+  await call("setMyDescription", {
+    description:
+      "Ustozona boti:\n" +
+      "• har kuni kechqurun — ertangi darslar va rejalanmagan darslar\n" +
+      "• ertalab — bugungi darslar va vazifalar\n" +
+      "• Ustozonaga parolsiz kirish\n\n" +
+      "Boshlash uchun saytda «Telegram orqali davom etish» tugmasini bosing.",
+  });
 
-const info = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`).then((r) => r.json());
-console.log("\nWebhook holati:", JSON.stringify(info.result, null, 2));
+  const info = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`).then((r) => r.json());
+  console.log("\nWebhook holati:", JSON.stringify(info.result, null, 2));
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

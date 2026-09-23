@@ -170,7 +170,10 @@ export function buildDigest(input: DigestInput): DigestMessage | null {
   const late = kind === "morning" ? overdue(todayKey, input.tasks) : [];
   const notMarked = kind === "evening" ? untaughtToday(todayKey, input) : 0;
 
-  if (!rows.length && !due.length && !late.length && !notMarked) return null;
+  // Muddati oʻtgan vazifalar YOLGʻIZ sabab emas: ular har kuni oʻzgarmay
+  // takrorlanadi va faqat shu roʻyxat kelaversa bot «spam» boʻlib qoladi.
+  // Boshqa sabab bilan ketayotgan xabarga qoʻshimcha boʻlib qoʻshiladi.
+  if (!rows.length && !due.length && !notMarked) return null;
 
   const lines: string[] = [];
   const head = kind === "evening" ? "🌙 <b>Ertaga" : "☀️ <b>Bugun";
