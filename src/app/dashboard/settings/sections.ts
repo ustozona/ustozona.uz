@@ -12,6 +12,7 @@ import {
   ListTodo,
   Link2,
   Users,
+  Send,
   type LucideIcon,
 } from "lucide-react";
 
@@ -46,6 +47,14 @@ export const SECTIONS: SectionDef[] = [
     subtitle: "Shaxsiy maʼlumotlar va statistika",
     icon: User,
     Component: dynamic(() => import("./_components/ProfileSection")),
+  },
+  {
+    id: "telegram",
+    group: "shaxsiy",
+    label: "Telegram",
+    subtitle: "Eslatmalar va parolsiz kirish",
+    icon: Send,
+    Component: dynamic(() => import("./_components/TelegramSection")),
   },
   {
     id: "korinish",

@@ -33,6 +33,9 @@ const eslintConfig = defineConfig([
       "src/server/auth.ts",
       "src/server/play/**",
       "src/server/shogird/**",
+      // Ustozona boti: darvoza — webhook siri / cron siri, sessiya emas.
+      "src/server/telegram/**",
+      "src/server/auth-telegram.ts",
     ],
     rules: {
       "no-restricted-imports": ["error", {
