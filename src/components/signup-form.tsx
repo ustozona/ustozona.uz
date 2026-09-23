@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { GoogleIcon } from "@/components/google-icon";
-import { TelegramIcon } from "@/components/telegram-icon";
+import { TelegramContinueButton } from "@/components/telegram/TelegramContinueButton";
 
 type FieldErrors = {
   firstName?: string;
@@ -40,8 +40,13 @@ function getPasswordStrength(password: string): { score: 0 | 1 | 2 | 3; labelKey
 export function SignupForm({
   className,
   telegramSignupUrl,
+  telegramBotEnabled,
   ...props
-}: React.ComponentProps<"form"> & { telegramSignupUrl?: string }) {
+}: React.ComponentProps<"form"> & {
+  telegramSignupUrl?: string;
+  /** Ustozona boti sozlangan — serverda aniqlanadi (token mijozga chiqmaydi). */
+  telegramBotEnabled?: boolean;
+}) {
   const t = useTranslations("SignupForm");
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -142,29 +147,15 @@ export function SignupForm({
             </Button>
           </Field>
 
-          {/* Telegram — LessonLab boti orqali.
-
-              NEGA BU YERDA: LessonLab va Ustozona bitta bazada ishlaydi
-              va oʻqituvchi uchun bogʻlanish MAJBURIY. Ilgari u alohida,
-              keyingi qadam edi: odam bu formani toʻldirib `/dashboard` ga
-              tushardi, botga qaytishni unutardi va bogʻlanish hech qachon
-              yakunlanmasdi (2026-08-08 da real foydalanuvchida ushlangan).
-
-              Bu tugma zanjirni teskari qiladi: botda ism-familiya va
-              telegram kimligi oʻzi maʼlum, akkaunt esa bogʻlanish bilan
-              BIR PAYTDA ochiladi — «keyin qilinadigan qadam» qolmaydi.
-
-              ⚠️ `<a>` — ataylab, `Link` emas: bu tashqi (t.me) havola. */}
-          {telegramSignupUrl && (
-            <Field>
-              <Button variant="outline" type="button" asChild>
-                <a href={telegramSignupUrl}>
-                  <TelegramIcon className="h-4 w-4" />
-                  {t("continueWithTelegram")}
-                </a>
-              </Button>
-            </Field>
-          )}
+          {/* Telegram — Ustozona boti sozlangan boʻlsa kirish oynasi
+              (tanish telegram kiradi, yangisi shu yerda roʻyxatdan
+              oʻtadi), aks holda eski LessonLab roʻyxat havolasi.
+              Tafsilot: `TelegramContinueButton`. */}
+          <TelegramContinueButton
+            label={t("continueWithTelegram")}
+            botEnabled={telegramBotEnabled}
+            fallbackUrl={telegramSignupUrl}
+          />
         </div>
 
         <FieldSeparator>{t("orWithEmail")}</FieldSeparator>

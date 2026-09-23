@@ -1,6 +1,7 @@
 import { AuthShell } from "@/components/auth-shell";
 import { LoginForm } from "@/components/login-form";
 import { TELEGRAM_SIGNUP_URL } from "@/lib/lessonlab-bot";
+import { isTelegramBotEnabled } from "@/server/telegram/config";
 
 /* ⚠️ SERVER COMPONENT — ataylab («use client» EMAS).
    Sabab: `register/page.tsx` dagi bilan bir xil — `TELEGRAM_SIGNUP_URL`
@@ -9,7 +10,10 @@ import { TELEGRAM_SIGNUP_URL } from "@/lib/lessonlab-bot";
 export default function LoginPage() {
   return (
     <AuthShell>
-      <LoginForm telegramSignupUrl={TELEGRAM_SIGNUP_URL} />
+      <LoginForm
+        telegramSignupUrl={TELEGRAM_SIGNUP_URL}
+        telegramBotEnabled={isTelegramBotEnabled()}
+      />
     </AuthShell>
   );
 }

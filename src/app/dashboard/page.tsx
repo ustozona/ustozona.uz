@@ -8,6 +8,7 @@ import { HomeHero, type HeroEvent } from "@/components/dashboard/HomeHero";
 import { TodayRail } from "@/components/dashboard/TodayRail";
 import { QueueSection } from "@/components/dashboard/QueueSection";
 import { NextLessonsCard } from "@/components/dashboard/NextLessonsCard";
+import { TelegramConnectPrompt } from "@/components/telegram/TelegramConnectPrompt";
 import { resolveVersionForDate } from "@/lib/timetable-versions";
 import { getHolidayForDate } from "@/lib/academic-calendar";
 import { dateToKey } from "@/lib/date-keys";
@@ -109,6 +110,8 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col max-lg:min-h-full lg:h-full">
+      {/* Telegram ulanmagan boʻlsa — yumshoq taklif (tur paytida emas). */}
+      {!tourDemoActive && <TelegramConnectPrompt />}
       <DashboardPageLayout className="flex-1">
         {/* Mobilда uch ustun ustma-ust tushadi: har biriga oʻqiladigan
             eng kichik balandlik beriladi (aks holda `min-h-0` ularni nolga

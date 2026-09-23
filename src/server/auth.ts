@@ -8,6 +8,7 @@ import { db } from "./db/client";
 import * as schema from "./db/schema";
 import { sendResetPasswordEmail } from "./email";
 import { scheduleStage } from "./email/activation";
+import { telegramAuth } from "./auth-telegram";
 
 /* ════════════════════════════════════════════════════════════════════
    BETTER AUTH — runtime konfiguratsiya (yagona haqiqat manbai).
@@ -74,6 +75,8 @@ export const auth = betterAuth({
       bannedUserMessage:
         "Hisobingiz vaqtincha bloklangan. Savollar boʻlsa support@ustozona.uz ga yozing.",
     }),
+    // Telegram botida tasdiqlangan soʻrovdan sessiya (auth-telegram.ts).
+    telegramAuth(),
     // Next 16 async cookies() bilan server action ichida cookie yozishni hal qiladi.
     // nextCookies() DOIM oxirgi plugin boʻlishi kerak.
     nextCookies(),

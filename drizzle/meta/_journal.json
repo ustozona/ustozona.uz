@@ -337,6 +337,13 @@
       "when": 1788872478537,
       "tag": "0047_yozilish_sana_oraligi",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1790168529429,
+      "tag": "0048_telegram_bot",
+      "breakpoints": true
     }
   ]
 }
