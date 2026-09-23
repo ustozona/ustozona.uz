@@ -27,7 +27,6 @@ import { dateToKey, addDaysKey, dateKeyToDate } from "@/lib/date-keys";
 import { DAYS_UZ_SUN, MONTHS_UZ_SHORT } from "@/lib/localization";
 import { fmtMin } from "@/lib/timetable";
 import { cn } from "@/lib/utils";
-import { useCalendarFormat } from "@/components/calendar/format";
 
 /* ════════════════════════════════════════════════════════════════════
    KELGUSI DARSLAR — bosh sahifa hero ostidagi karta. Bugundan keyingi
@@ -54,7 +53,6 @@ type Row = {
 
 export function NextLessonsCard({ now }: { now: Date }) {
   const t = useTranslations("NextLessonsCard");
-  const calFmt = useCalendarFormat();
   const locale = useLocale();
   // Oy qisqartmasi darslar sahifasidagi barg bilan bir xil: Intl, ICU maʼlumoti yoʻq tilda (uz) — MONTHS_UZ_SHORT.
   const monthFmt = useMemo(() => new Intl.DateTimeFormat(locale, { month: "short" }), [locale]);
@@ -102,17 +100,7 @@ export function NextLessonsCard({ now }: { now: Date }) {
     return out.slice(0, LIMIT);
   }, [allLessons, classMeta, todayKey, t]);
 
-  // Sana kartadagi bargda turadi — hafta akkordeoni, ichida har kun BITTA qatorda: «Payshanba, 1 ——— 2 kundan keyin». Oy nomi yoʻq (barg koʻrsatadi).
-  /** Haftaning dushanbasi — hafta guruhi kaliti. */
-  const mondayOf = (dateKey: string): string => addDaysKey(dateKey, -((dateKeyToDate(dateKey).getDay() + 6) % 7));
-  /** Hafta oraligʻi — Rejalashtiruvchi sarlavhasi bilan bir xil imlo: «21–27-sentabr»,
-      ikki oyga boʻlinsa «29-sentabr – 5-oktabr». */
-  const weekLabel = (monday: string): string => {
-    const a = dateKeyToDate(monday), b = dateKeyToDate(addDaysKey(monday, 6));
-    const mon = (d: Date) => calFmt.monthName(d.getMonth()).toLowerCase();
-    if (a.getMonth() === b.getMonth()) return `${a.getDate()}–${b.getDate()}-${mon(a)}`;
-    return `${a.getDate()}-${mon(a)} – ${b.getDate()}-${mon(b)}`;
-  };
+  // Sana kartadagi bargda turadi — har kun akkordeon (default ochiq), sarlavhada faqat: «Payshanba ——— 2 kundan keyin».
   const weekday = (dateKey: string): string => {
     const date = dateKeyToDate(dateKey);
     const w = intlMonthMissing ? DAYS_UZ_SUN[date.getDay()] : new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date);
@@ -124,16 +112,12 @@ export function NextLessonsCard({ now }: { now: Date }) {
     return t("inDays", { count: days });
   };
 
-  const weeks = useMemo(() => {
-    const out: { monday: string; days: { date: string; rows: Row[] }[]; count: number }[] = [];
+  const days = useMemo(() => {
+    const out: { date: string; rows: Row[] }[] = [];
     for (const r of rows) {
-      const monday = mondayOf(r.date);
-      let w = out[out.length - 1];
-      if (!w || w.monday !== monday) out.push((w = { monday, days: [], count: 0 }));
-      const day = w.days[w.days.length - 1];
+      const day = out[out.length - 1];
       if (day && day.date === r.date) day.rows.push(r);
-      else w.days.push({ date: r.date, rows: [r] });
-      w.count++;
+      else out.push({ date: r.date, rows: [r] });
     }
     return out;
   }, [rows]);
@@ -166,23 +150,16 @@ export function NextLessonsCard({ now }: { now: Date }) {
             </div>
           ) : (
             <div className="flex flex-col gap-2 px-4 pt-3 pb-4">
-              {/* Hafta — akkordeon (eng yaqin hafta ochiq); ichida har kun bitta ingichka qator. */}
-              {weeks.map((w, wi) => (
-                <Collapsible key={w.monday} defaultOpen={wi === 0} className="group/week flex flex-col">
-                  <CollapsibleTrigger className="flex items-center gap-2 rounded-md px-1 py-1 text-caption outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring">
-                    <ChevronDown className="size-3.5 shrink-0 -rotate-90 text-muted-foreground transition-transform duration-fast group-data-[state=open]/week:rotate-0" />
-                    <span className="shrink-0 font-medium text-foreground">{weekLabel(w.monday)}</span>
-                    <span className="shrink-0 text-tag tabular-nums text-muted-foreground">{w.count}</span>
-                    <span className="h-px flex-1 bg-border" />
+              {/* Kun — akkordeon, hammasi default ochiq. */}
+              {days.map((day) => (
+                <Collapsible key={day.date} defaultOpen className="group/day flex flex-col gap-2">
+                  <CollapsibleTrigger className="flex items-center gap-2 rounded-md px-1 py-1 text-caption text-muted-foreground outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring">
+                    <ChevronDown className="size-3.5 shrink-0 -rotate-90 transition-transform duration-fast group-data-[state=open]/day:rotate-0" />
+                    <span className="shrink-0">{weekday(day.date)}</span>
+                    <span className="h-px flex-1 bg-border/60" />
+                    <span className="shrink-0 tabular-nums">{relDays(day.date)}</span>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="flex flex-col gap-2 pt-1">
-                  {w.days.map((day) => (
-                  <div key={day.date} className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 px-1 pl-6 text-caption text-muted-foreground">
-                      <span className="shrink-0">{weekday(day.date)}, {Number(day.date.slice(8))}</span>
-                      <span className="h-px flex-1 bg-border/60" />
-                      <span className="shrink-0 tabular-nums">{relDays(day.date)}</span>
-                    </div>
+                  <CollapsibleContent className="flex flex-col gap-2">
                     {day.rows.map((r) => {
                       const [y, m, d] = r.date.split("-").map(Number);
                       return (
@@ -219,8 +196,6 @@ export function NextLessonsCard({ now }: { now: Date }) {
                       </Link>
                       );
                     })}
-                  </div>
-                  ))}
                   </CollapsibleContent>
                 </Collapsible>
               ))}
