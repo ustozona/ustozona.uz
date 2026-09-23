@@ -2,19 +2,24 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Megaphone, Phone, Send } from "lucide-react";
+import { Megaphone, Moon, Phone, Send, Sun } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TelegramAuthDialog } from "@/components/telegram/TelegramAuthDialog";
-import { getTgConnectionAction, setTgMarketingAction } from "@/server/actions/tg-auth";
-import type { TgConnection } from "@/lib/tg-auth-types";
+import {
+  getTgConnectionAction,
+  getTgNotifyPrefsAction,
+  setTgMarketingAction,
+  setTgNotifyPrefsAction,
+} from "@/server/actions/tg-auth";
+import { notifyTimeOptions, type TgConnection, type TgNotifyPrefs } from "@/lib/tg-auth-types";
 import { SettingsCard, SettingsList } from "./SettingsShared";
 
 /* Sozlamalar → Telegram. Ustozona botiga ulanish, Telegram tasdiqlagan
-   telefon va marketing roziligi. Bildirishnoma vaqtlari ham shu boʻlimga
-   qoʻshiladi (keyingi bosqich).
+   telefon, marketing roziligi va kunlik xabarlar vaqti.
 
    LessonLab bogʻlanishi bilan BIR XIL kimlik (`user_telegram`) — biri
    ulansa ikkinchisi ham ulangan boʻladi. Uzish hozircha LessonLab
@@ -125,6 +130,7 @@ export default function TelegramSection() {
       <SettingsCard title={t("title")} description={t("description")}>
         <SettingsList items={items} />
       </SettingsCard>
+      {conn.linked && <DigestPrefsCard />}
       <TelegramAuthDialog
         kind="link"
         open={dialogOpen}
@@ -135,5 +141,93 @@ export default function TelegramSection() {
         onLinked={load}
       />
     </>
+  );
+}
+
+const MORNING_TIMES = notifyTimeOptions("morning");
+const EVENING_TIMES = notifyTimeOptions("evening");
+
+/** Kunlik xabarlar — har oʻzgarish darhol saqlanadi (bitta maydon, draft kerak emas). */
+function DigestPrefsCard() {
+  const t = useTranslations("TelegramSection");
+  const [prefs, setPrefs] = React.useState<TgNotifyPrefs | null>(null);
+
+  React.useEffect(() => {
+    getTgNotifyPrefsAction()
+      .then(setPrefs)
+      .catch(() => setPrefs(null));
+  }, []);
+
+  if (!prefs) return null;
+
+  const update = async (patch: Partial<TgNotifyPrefs>) => {
+    const prev = prefs;
+    const next = { ...prefs, ...patch };
+    setPrefs(next);
+    const ok = await setTgNotifyPrefsAction(next).catch(() => false);
+    if (!ok) {
+      setPrefs(prev);
+      toast.error(t("saveFailed"));
+    }
+  };
+
+  const timeSelect = (value: string, options: string[], onChange: (v: string) => void, disabled: boolean, label: string) => (
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger className="w-24" aria-label={label}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent align="end" className="max-h-72">
+        {options.map((o) => (
+          <SelectItem key={o} value={o}>
+            {o}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  return (
+    <SettingsCard title={t("digestTitle")} description={t("digestDescription")}>
+      <SettingsList
+        items={[
+          {
+            key: "evening",
+            leading: <Moon className="size-4 text-muted-foreground" aria-hidden />,
+            title: t("eveningLabel"),
+            description: t("eveningHint"),
+            multiline: true,
+            dimmed: !prefs.eveningEnabled,
+            trailing: (
+              <>
+                {timeSelect(prefs.eveningTime, EVENING_TIMES, (v) => update({ eveningTime: v }), !prefs.eveningEnabled, t("eveningLabel"))}
+                <Switch
+                  checked={prefs.eveningEnabled}
+                  onCheckedChange={(v) => update({ eveningEnabled: v })}
+                  aria-label={t("eveningLabel")}
+                />
+              </>
+            ),
+          },
+          {
+            key: "morning",
+            leading: <Sun className="size-4 text-muted-foreground" aria-hidden />,
+            title: t("morningLabel"),
+            description: t("morningHint"),
+            multiline: true,
+            dimmed: !prefs.morningEnabled,
+            trailing: (
+              <>
+                {timeSelect(prefs.morningTime, MORNING_TIMES, (v) => update({ morningTime: v }), !prefs.morningEnabled, t("morningLabel"))}
+                <Switch
+                  checked={prefs.morningEnabled}
+                  onCheckedChange={(v) => update({ morningEnabled: v })}
+                  aria-label={t("morningLabel")}
+                />
+              </>
+            ),
+          },
+        ]}
+      />
+    </SettingsCard>
   );
 }

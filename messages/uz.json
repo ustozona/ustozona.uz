@@ -2754,7 +2754,13 @@
     "phoneNeedsLink": "Avval Telegramni ulang.",
     "marketingLabel": "Yangiliklar va maslahatlar",
     "marketingHint": "Ustozona yangiliklari Telegramga keladi. Darslar haqidagi xabarlarga taʼsir qilmaydi.",
-    "saveFailed": "Saqlanmadi. Qaytadan urinib koʻring."
+    "saveFailed": "Saqlanmadi. Qaytadan urinib koʻring.",
+    "digestTitle": "Kunlik xabarlar",
+    "digestDescription": "Aytadigan narsa boʻlmagan kuni (taʼtil, dam olish) xabar kelmaydi.",
+    "eveningLabel": "Kechqurun — ertangi kun",
+    "eveningHint": "Ertangi darslar, mavzu biriktirilmagan darslar va muddatlar.",
+    "morningLabel": "Ertalab — bugungi kun",
+    "morningHint": "Bugungi darslar, bugungi va muddati oʻtgan vazifalar."
   },
   "TelegramPrompt": {
     "link": "Ertangi darslar har kuni kechqurun, bugungi reja esa ertalab Telegramga kelsin — ulash bir daqiqa.",

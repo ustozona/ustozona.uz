@@ -6,7 +6,7 @@
 
    Nima qiladi:
      1. setWebhook — `<sayt>/api/telegram/webhook`, `secret_token` bilan
-     2. setMyCommands — menyuda faqat /start
+     2. setMyCommands — /bugun, /ertaga, /start
      3. setMyDescription / setMyShortDescription — bot profilidagi matn
 
    Kerakli muhit: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET
@@ -17,6 +17,8 @@
    (Telegram localhost'ga yetib bormaydi); lokal sinov uchun tunnel
    kerak va bu skript tunnel URL bilan chaqiriladi.
    ════════════════════════════════════════════════════════════════════ */
+
+export {};
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
@@ -54,7 +56,11 @@ await call("setWebhook", {
 });
 
 await call("setMyCommands", {
-  commands: [{ command: "start", description: "Boshlash" }],
+  commands: [
+    { command: "bugun", description: "Bugungi darslar va vazifalar" },
+    { command: "ertaga", description: "Ertangi darslar" },
+    { command: "start", description: "Boshlash" },
+  ],
 });
 
 await call("setMyShortDescription", {

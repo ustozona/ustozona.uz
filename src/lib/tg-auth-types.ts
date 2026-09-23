@@ -47,3 +47,34 @@ export type TgConnection = {
   marketing: "yes" | "no" | "unasked";
   botUrl: string | null;
 };
+
+/** Kunlik xabarlar sozlamasi. Vaqt `HH:MM` (Toshkent), 15 daqiqa qadam. */
+export type TgNotifyPrefs = {
+  morningEnabled: boolean;
+  morningTime: string;
+  eveningEnabled: boolean;
+  eveningTime: string;
+};
+
+/** Tanlanadigan vaqt oraliqlari — UI roʻyxati ham, server tekshiruvi ham shu yerdan. */
+export const NOTIFY_WINDOWS = {
+  morning: { from: 5 * 60, to: 12 * 60 },
+  evening: { from: 15 * 60, to: 23 * 60 },
+} as const;
+
+export const NOTIFY_DEFAULTS: TgNotifyPrefs = {
+  morningEnabled: true,
+  morningTime: "07:00",
+  eveningEnabled: true,
+  eveningTime: "20:00",
+};
+
+/** `from..to` oraligʻidagi 15 daqiqalik vaqtlar (`HH:MM`). */
+export function notifyTimeOptions(kind: keyof typeof NOTIFY_WINDOWS): string[] {
+  const { from, to } = NOTIFY_WINDOWS[kind];
+  const out: string[] = [];
+  for (let m = from; m <= to; m += 15) {
+    out.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
+  }
+  return out;
+}

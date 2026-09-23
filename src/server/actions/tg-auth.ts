@@ -3,11 +3,19 @@
 import {
   cancelTgAuth,
   getTgConnection,
+  getTgNotifyPrefs,
   pollTgAuth,
   setTgMarketing,
+  setTgNotifyPrefs,
   startTgAuth,
 } from "@/server/dal/tg-auth";
-import type { TgAuthKind, TgAuthPoll, TgAuthStart, TgConnection } from "@/lib/tg-auth-types";
+import type {
+  TgAuthKind,
+  TgAuthPoll,
+  TgAuthStart,
+  TgConnection,
+  TgNotifyPrefs,
+} from "@/lib/tg-auth-types";
 
 /* Telegram orqali kirish / bogʻlash — yupqa qatlam, mantiq DAL'da.
 
@@ -34,4 +42,18 @@ export async function getTgConnectionAction(): Promise<TgConnection | null> {
 
 export async function setTgMarketingAction(consent: boolean): Promise<boolean> {
   return setTgMarketing(consent === true);
+}
+
+export async function getTgNotifyPrefsAction(): Promise<TgNotifyPrefs | null> {
+  return getTgNotifyPrefs();
+}
+
+export async function setTgNotifyPrefsAction(input: TgNotifyPrefs): Promise<boolean> {
+  if (!input || typeof input !== "object") return false;
+  return setTgNotifyPrefs({
+    morningEnabled: input.morningEnabled === true,
+    morningTime: String(input.morningTime ?? ""),
+    eveningEnabled: input.eveningEnabled === true,
+    eveningTime: String(input.eveningTime ?? ""),
+  });
 }

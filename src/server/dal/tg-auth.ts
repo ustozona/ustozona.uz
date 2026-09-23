@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import QRCode from "qrcode";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db/client";
-import { tgAuthRequests, tgChats, userTelegram } from "@/server/db/schema";
+import { tgAuthRequests, tgChats, tgNotifyPrefs, userTelegram } from "@/server/db/schema";
 import { getSession } from "@/server/session";
 import { botStartUrl, botUrl, isTelegramBotEnabled } from "@/server/telegram/config";
 import {
@@ -17,7 +17,15 @@ import {
   newCode,
   newRequestId,
 } from "@/server/telegram/auth-requests";
-import type { TgAuthKind, TgAuthPoll, TgAuthStart, TgConnection } from "@/lib/tg-auth-types";
+import {
+  NOTIFY_DEFAULTS,
+  notifyTimeOptions,
+  type TgAuthKind,
+  type TgAuthPoll,
+  type TgAuthStart,
+  type TgConnection,
+  type TgNotifyPrefs,
+} from "@/lib/tg-auth-types";
 
 /* ════════════════════════════════════════════════════════════════════
    TELEGRAM ORQALI KIRISH / BOGʻLASH — sayt tomoni
@@ -236,4 +244,41 @@ export async function setTgMarketing(consent: boolean): Promise<boolean> {
     .where(eq(tgChats.telegramId, link.telegramId))
     .returning({ id: tgChats.telegramId });
   return res.length > 0;
+}
+
+/** Kunlik xabarlar sozlamasi — qator yoʻq boʻlsa standart. */
+export async function getTgNotifyPrefs(): Promise<TgNotifyPrefs | null> {
+  const session = await getSession();
+  if (!session) return null;
+  const [row] = await db
+    .select()
+    .from(tgNotifyPrefs)
+    .where(eq(tgNotifyPrefs.userId, session.user.id));
+  if (!row) return { ...NOTIFY_DEFAULTS };
+  return {
+    morningEnabled: row.morningEnabled,
+    morningTime: row.morningTime,
+    eveningEnabled: row.eveningEnabled,
+    eveningTime: row.eveningTime,
+  };
+}
+
+export async function setTgNotifyPrefs(input: TgNotifyPrefs): Promise<boolean> {
+  const session = await getSession();
+  if (!session) return false;
+  // Vaqt faqat UI roʻyxatidagi qiymatlardan — cron shu shaklga tayanadi.
+  if (!notifyTimeOptions("morning").includes(input.morningTime)) return false;
+  if (!notifyTimeOptions("evening").includes(input.eveningTime)) return false;
+  const values = {
+    morningEnabled: input.morningEnabled === true,
+    morningTime: input.morningTime,
+    eveningEnabled: input.eveningEnabled === true,
+    eveningTime: input.eveningTime,
+    updatedAt: new Date(),
+  };
+  await db
+    .insert(tgNotifyPrefs)
+    .values({ userId: session.user.id, ...values })
+    .onConflictDoUpdate({ target: tgNotifyPrefs.userId, set: values });
+  return true;
 }

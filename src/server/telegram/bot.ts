@@ -15,6 +15,7 @@ import {
   type TgUser,
 } from "./api";
 import { START_PREFIX, codeChoices, normalizePhone } from "./auth-requests";
+import { digestNow } from "./digest";
 
 /* ════════════════════════════════════════════════════════════════════
    USTOZONA BOTI — update'larni qayta ishlash
@@ -105,6 +106,11 @@ async function onMessage(msg: TgMessage) {
     return greet(msg.chat.id, String(from.id), from);
   }
 
+  const cmd = text.split(/[s@]/)[0].toLowerCase();
+  if (cmd === "/bugun" || cmd === "/ertaga") {
+    return sendDigestNow(msg.chat.id, from, cmd === "/bugun" ? "morning" : "evening");
+  }
+
   // Boshqa har qanday matn — qisqa yoʻriqnoma.
   return greet(msg.chat.id, String(from.id), from);
 }
@@ -131,6 +137,19 @@ async function greet(chatId: number, telegramId: string, from: TgUser) {
     { inline_keyboard: [[{ text: "⚙️ Sozlamalar", url: `${SITE}/dashboard/settings?section=telegram` }]] }
   );
   if (!chat?.phone) await askPhone(chatId);
+}
+
+async function sendDigestNow(chatId: number, from: TgUser, kind: "morning" | "evening") {
+  const userId = await linkedUserId(String(from.id));
+  if (!userId) return greet(chatId, String(from.id), from);
+  const msg = await digestNow(userId, kind);
+  if (!msg) {
+    await sendMessage(chatId, kind === "morning" ? "☀️ Bugun dars va muddatli vazifa yoʻq." : "🌙 Ertaga dars va muddatli vazifa yoʻq.");
+    return;
+  }
+  await sendMessage(chatId, msg.text, {
+    inline_keyboard: [msg.buttons.map((b) => ({ text: b.text, url: b.url }))],
+  });
 }
 
 async function askPhone(chatId: number) {
