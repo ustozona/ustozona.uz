@@ -171,6 +171,10 @@ export async function listBankTests(
   // `Number()` siz sahifalash solishtiruvlari jimgina notoʻgʻri boʻlardi.
   const total = Number(Array.from(countRows)[0]?.n ?? 0);
 
+  // Tartib — eng yangisi birinchi, LessonLab bot va saytdagi test
+  // roʻyxatlari bilan BIR XIL. Ilgari `usage_count DESC` edi: yangi test
+  // (hali oʻynalmagan) oxiriga tushib, 24 talik sahifada koʻrinmay qolardi
+  // — ustoz botda hozirgina yaratgan testini bu yerda topolmasdi.
   const rows = await db.execute<{
     id: number; title: string | null; subject: string | null; grade: string | null;
     author_name: string | null; question_count: string | number;
@@ -183,7 +187,7 @@ export async function listBankTests(
            ) AS already
       FROM (${base}) b
      WHERE TRUE${filters}
-     ORDER BY b.usage_count DESC NULLS LAST, b.id DESC
+     ORDER BY b.id DESC
      LIMIT ${PAGE_SIZE} OFFSET ${page * PAGE_SIZE}
   `);
 
