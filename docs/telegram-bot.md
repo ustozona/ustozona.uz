@@ -131,7 +131,7 @@ Kanal uchta, hammasi bir xil segment maʼnosida ishlaydi. «Ulangan» hali «xab
 |---|---|---|
 | Admin kartasi | `/admin` → «Telegram bot» | — (oʻlchov) |
 | Bosh sahifa taklifi | `TelegramConnectPrompt` | foyda bor (jadvalda dars yoki muddatli vazifa), tanaffus tugagan |
-| TG1 xati | `npm run campaign:telegram` | tasdiqlangan email, foyda bor, xabar olmaydi |
+| TG1 xati | `npm run campaign:telegram` | tasdiqlangan email, xabar olmaydi |
 
 **Qisqa havola `/tg`.** `ustozona.uz/tg` prod env'dagi botga yoʻnaltiradi. Xat, post va QR kodlarda bot nomi toʻgʻridan-toʻgʻri yozilmaydi: kampaniya skripti lokal `.env.local` bilan ishlaydi, unda sinov boti boʻlishi mumkin.
 
@@ -147,7 +147,8 @@ npm run campaign:telegram -- --prod --yes                           # hammaga, 1
 
 Kerak: `PROD_DATABASE_URL`, `UNSUBSCRIBE_SECRET` (prod bilan bir xil), `ACTIVATION_EMAILS=on`, `RESEND_API_KEY` — hammasi `.env.local` da.
 
-- Ikki variant: **link** (ulanmagan) va **start** (ulangan, botni ochmagan).
+- Uch variant: **link** (ulanmagan), **start** (ulangan, botni ochmagan) va **jadval** (jadval ham, muddatli vazifa ham yoʻq — bot hech narsa yubormaydi, shuning uchun avval jadval soʻraladi; jadval toʻlgach bosh sahifada ulash taklifi oʻzi chiqadi).
+- Tasdiqlanmagan manzillarga **yuborilmaydi** — domen obroʻsi (docs/email-aktivatsiya-spec.md §2.1). Ular V1 tasdiqlash xatidan keyin qoʻshiladi.
 - Aktivatsiya xatlari bilan bir xil qoidalar: faqat tasdiqlangan manzil, obunadan chiqqanga yoʻq, `List-Unsubscribe`.
 - Kuniga bitta xat: oxirgi 24 soatda aktivatsiya xati ketgan boʻlsa `bugun-xat-bor` bilan oʻtkaziladi — skriptni ertaga qayta yurgizish kifoya.
 - Jurnal `teachers.prefs.campaigns.tg1` da, `email_activation` ga yozilmaydi (u zanjir holati — sabab `src/server/email/campaign.ts` da).
