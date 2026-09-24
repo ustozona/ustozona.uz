@@ -2691,7 +2691,15 @@
     "inDays": "{count} күндөн кийин",
     "durationSuffix": "{count} мүн",
     "emptyTitle": "Кийинки сабак жок",
-    "emptyDescription": "Азырынча пландалган жок — сабак жадвалын текшериңиз."
+    "emptyDescription": "Азырынча пландалган жок — сабак жадвалын текшериңиз.",
+    "noTopic": "Тема не назначена",
+    "addTopic": "Добавить тему",
+    "addTopicTooltip": "Создать новую тему и открыть редактор",
+    "link": "Привязать",
+    "linkTooltip": "Привязать существующую тему к уроку",
+    "thisWeek": "Эта неделя",
+    "weekProgressAria": "На этой неделе тема назначена {done} из {total} уроков",
+    "holidayRow": "{day} — {name}"
   },
   "DashboardPage": {
     "unknownClass": "Белгисиз класс",

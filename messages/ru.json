@@ -2691,7 +2691,15 @@
     "inDays": "через {count} дн.",
     "durationSuffix": "{count} мин",
     "emptyTitle": "Нет предстоящих уроков",
-    "emptyDescription": "Пока ничего не запланировано — проверьте расписание."
+    "emptyDescription": "Пока ничего не запланировано — проверьте расписание.",
+    "noTopic": "Тема не назначена",
+    "addTopic": "Добавить тему",
+    "addTopicTooltip": "Создать новую тему и открыть редактор",
+    "link": "Привязать",
+    "linkTooltip": "Привязать существующую тему к уроку",
+    "thisWeek": "Эта неделя",
+    "weekProgressAria": "На этой неделе тема назначена {done} из {total} уроков",
+    "holidayRow": "{day} — {name}"
   },
   "DashboardPage": {
     "unknownClass": "Неизвестный класс",

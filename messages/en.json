@@ -2687,7 +2687,15 @@
     "inDays": "in {count} days",
     "durationSuffix": "{count} min",
     "emptyTitle": "No upcoming lessons",
-    "emptyDescription": "Nothing planned yet — check the timetable."
+    "emptyDescription": "Nothing planned yet — check the timetable.",
+    "noTopic": "No topic assigned",
+    "addTopic": "Add topic",
+    "addTopicTooltip": "Create a new topic and open the editor",
+    "link": "Link",
+    "linkTooltip": "Link an existing topic to this lesson",
+    "thisWeek": "This week",
+    "weekProgressAria": "{done} of {total} lessons this week have a topic",
+    "holidayRow": "{day} — {name}"
   },
   "DashboardPage": {
     "unknownClass": "Unknown class",

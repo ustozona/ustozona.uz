@@ -2450,7 +2450,15 @@
     "inDays": "{count} кундан кейин",
     "durationSuffix": "{count} дақ.",
     "emptyTitle": "Келгуси дарслар ёъқ",
-    "emptyDescription": "Ҳали режа тузилмаган — дарс жадвалини текширинг."
+    "emptyDescription": "Ҳали режа тузилмаган — дарс жадвалини текширинг.",
+    "noTopic": "Mavzu biriktirilmagan",
+    "addTopic": "Mavzu qoʻshish",
+    "addTopicTooltip": "Yangi mavzu yaratib, muharrirni ochish",
+    "link": "Ulash",
+    "linkTooltip": "Mavjud mavzuni shu darsga ulash",
+    "thisWeek": "Bu hafta",
+    "weekProgressAria": "Bu hafta {total} ta darsdan {done} tasiga mavzu biriktirilgan",
+    "holidayRow": "{day} — {name}"
   },
   "QueueSection": {
     "title": "Вазифалар",

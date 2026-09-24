@@ -2445,7 +2445,15 @@
     "inDays": "{count} kundan keyin",
     "durationSuffix": "{count} daq.",
     "emptyTitle": "Kelgusi darslar yoʻq",
-    "emptyDescription": "Hali reja tuzilmagan — dars jadvalini tekshiring."
+    "emptyDescription": "Hali reja tuzilmagan — dars jadvalini tekshiring.",
+    "noTopic": "Mavzu biriktirilmagan",
+    "addTopic": "Mavzu qoʻshish",
+    "addTopicTooltip": "Yangi mavzu yaratib, muharrirni ochish",
+    "link": "Ulash",
+    "linkTooltip": "Mavjud mavzuni shu darsga ulash",
+    "thisWeek": "Bu hafta",
+    "weekProgressAria": "Bu hafta {total} ta darsdan {done} tasiga mavzu biriktirilgan",
+    "holidayRow": "{day} — {name}"
   },
   "QueueSection": {
     "title": "Vazifalar",
