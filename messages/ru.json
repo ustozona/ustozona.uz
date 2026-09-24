@@ -4621,6 +4621,8 @@
     "duplicateBadge": "Есть"
   },
   "ImportSource": {
+    "emaktabSheet": "eMaktab: {info}",
+    "emaktabDetected": "Распознан экспорт eMaktab — тем: {count} (без строк заголовка)",
     "errorEmpty": "В файле не найдены данные",
     "errorRead": "Не удалось прочитать файл. Выберите .xlsx, .xls или .csv.",
     "dropTitle": "Выберите файл или перетащите сюда",

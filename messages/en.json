@@ -4554,6 +4554,8 @@
     "duplicateBadge": "Exists"
   },
   "ImportSource": {
+    "emaktabSheet": "eMaktab: {info}",
+    "emaktabDetected": "eMaktab export recognised — {count} topics (header rows skipped)",
     "errorEmpty": "No data found in the file",
     "errorRead": "Couldn't read the file. Choose .xlsx, .xls or .csv.",
     "dropTitle": "Choose a file or drop it here",

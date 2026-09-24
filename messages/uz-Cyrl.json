@@ -4387,6 +4387,8 @@
     "duplicateBadge": "Есть"
   },
   "ImportSource": {
+    "emaktabSheet": "eMaktab: {info}",
+    "emaktabDetected": "eMaktab экспорти танилди — {count} та мавзу (сарлавҳа қаторларисиз)",
     "errorEmpty": "В файле не найдены данные",
     "errorRead": "Не удалось прочитать файл. Выберите .xlsx, .xls или .csv.",
     "dropTitle": "Выберите файл или перетащите сюда",
