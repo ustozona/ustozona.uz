@@ -12,6 +12,10 @@
 @import "../styles/push-button.css";
 @import "../styles/quiz-stage.css";
 
+/* Tashqi bloklar arxivi — ilovaga ulanmagan asl kod, klasslari CSS'ga
+   tushmasin (docs/tashqi-bloklar/README.md). */
+@source not "../../docs/tashqi-bloklar";
+
 @custom-variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────────
