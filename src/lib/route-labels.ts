@@ -24,4 +24,5 @@ export const ROUTE_LABEL_KEYS: Record<string, string> = {
   "/admin/schools": "adminSchools",
   "/admin/feedback": "adminFeedback",
   "/admin/audit": "adminAudit",
+  "/admin/ai": "adminAi",
 };

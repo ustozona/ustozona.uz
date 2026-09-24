@@ -2,7 +2,9 @@
 
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Card } from "@/components/ui/card";
+import { UserPlus } from "lucide-react";
+import { Panel, PanelBody } from "@/components/ui/panel";
+import { AdminPanelHeader } from "./AdminPanelHeader";
 import {
   ChartContainer,
   ChartTooltip,
@@ -24,14 +26,17 @@ export default function SignupsChart({
 }) {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
+  const total = data.reduce((n, d) => n + d.n, 0);
 
   return (
-    <Card className="shadow-none gap-0 p-0">
-      <div className="border-b border-border px-5 py-4">
-        <h2 className="heading-small">Roʻyxatdan oʻtishlar</h2>
-        <p className="text-caption text-muted-foreground">Oxirgi 30 kun</p>
-      </div>
-      <div className="p-5">
+    <Panel>
+      <AdminPanelHeader
+        icon={<UserPlus />}
+        title="Roʻyxatdan oʻtishlar"
+        count={`${total} ta`}
+        description="Oxirgi 30 kun"
+      />
+      <PanelBody inset>
         {mounted ? (
           <ChartContainer config={chartConfig} className="h-56 w-full">
             <AreaChart data={data} margin={{ left: -20, right: 8 }}>
@@ -58,7 +63,7 @@ export default function SignupsChart({
         ) : (
           <div className="h-56" />
         )}
-      </div>
-    </Card>
+      </PanelBody>
+    </Panel>
   );
 }

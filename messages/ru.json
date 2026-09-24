@@ -53,7 +53,8 @@
     "adminUsers": "Пользователи",
     "adminSchools": "Школы",
     "adminFeedback": "Отзывы",
-    "adminAudit": "Журнал аудита"
+    "adminAudit": "Журнал аудита",
+    "adminAi": "Ustozona AI"
   },
   "GlobalCommandPalette": {
     "search": "Поиск",

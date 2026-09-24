@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Panel } from "@/components/ui/panel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,7 +53,7 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { SectionIcon } from "@/components/ui/section-icon";
+import { AdminPanelHeader } from "../../_components/AdminPanelHeader";
 import { School, Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2 } from "lucide-react";
 import { useCollator } from "@/lib/use-collator";
 import type { AdminSchoolItem, TeacherListItem } from "@/server/dal/admin/schools";
@@ -103,20 +103,18 @@ export default function SchoolsTable({
   };
 
   return (
-    <Card className="shadow-none gap-0 overflow-hidden p-0">
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4">
-        <SectionIcon>
-          <School />
-        </SectionIcon>
-        <div className="min-w-0">
-          <h2 className="heading-small">Maktablar</h2>
-          <p className="text-caption text-muted-foreground">{schools.length} ta maktab</p>
-        </div>
-        <Button className="ml-auto" size="sm" onClick={() => setFormDialog("new")}>
-          <Plus />
-          Yangi maktab
-        </Button>
-      </div>
+    <Panel>
+      <AdminPanelHeader
+        icon={<School />}
+        title="Maktablar"
+        count={`${schools.length} ta maktab`}
+        actions={
+          <Button size="sm" onClick={() => setFormDialog("new")}>
+            <Plus />
+            Yangi maktab
+          </Button>
+        }
+      />
 
       {schools.length === 0 ? (
         <Empty>
@@ -263,7 +261,7 @@ export default function SchoolsTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </Panel>
   );
 }
 

@@ -158,7 +158,13 @@ export function StatCard({
         />
       )}
 
-      {sub && !subInline && <TypographyMuted className={cn("truncate text-xs", subClassName)}>{sub}</TypographyMuted>}
+      {/* `truncate` EMAS — yorliq bilan bir xil sabab: izoh odatda raqam
+          qanday oʻqilishini aytadi («soʻrov ketgan, provayder javob
+          bermagan») va tor kartada «soʻrov ketgan, prov…» boʻlib
+          qolardi. `line-clamp-2` — sigʻsa bir qator, sigʻmasa ikkinchisi. */}
+      {sub && !subInline && (
+        <TypographyMuted className={cn("line-clamp-2 text-xs", subClassName)}>{sub}</TypographyMuted>
+      )}
     </div>
   );
 }

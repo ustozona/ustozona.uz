@@ -53,7 +53,8 @@
     "adminUsers": "Users",
     "adminSchools": "Schools",
     "adminFeedback": "Feedback",
-    "adminAudit": "Audit log"
+    "adminAudit": "Audit log",
+    "adminAi": "Ustozona AI"
   },
   "GlobalCommandPalette": {
     "search": "Search",

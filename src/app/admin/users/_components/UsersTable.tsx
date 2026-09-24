@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAdminNav, pendingClass } from "../../_components/use-admin-nav";
+import { AdminPanelHeader } from "../../_components/AdminPanelHeader";
+import { AdminPagination } from "../../_components/AdminPagination";
+import { adminHref } from "../../_components/admin-href";
+import { fmtDate } from "../../_components/admin-dates";
 import SessionsDialog from "./SessionsDialog";
 import {
   Table,
@@ -14,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Panel } from "@/components/ui/panel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +65,6 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { SectionIcon } from "@/components/ui/section-icon";
 import {
   Users,
   Search,
@@ -72,8 +75,6 @@ import {
   VenetianMask,
   KeyRound,
   Trash2,
-  ChevronLeft,
-  ChevronRight,
   EyeOff,
   Eye,
   X,
@@ -115,33 +116,8 @@ const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super admin",
 };
 
-/* ⛔ `toLocaleDateString("uz-UZ", …)` ISHLATMANG — GIDRATATSIYANI BUZADI.
-
-   Node'ning ICU maʼlumoti bilan brauzerniki bir xil emas: server
-   «2026-07-18», Chrome esa «18/07/2026» chizardi va React butun
-   daraxtni qayta quruvchi hydration xatosi berardi (kuzatilgan
-   2026-09-06, «Roʻyxatdan oʻtgan» ustunida).
-
-   Yechim ikki qismli:
-     1. Barqaror lokal (`en-GB`) + `formatToParts` — natija ICU
-        versiyasiga bogʻliq emas, qismlarni oʻzimiz yigʻamiz.
-     2. Vaqt mintaqasi QATʼIY belgilangan. Busiz Vercel (UTC) va
-        foydalanuvchi (UTC+5) yarim tundan keyin BOSHQA kun
-        koʻrsatardi — xuddi shu xato, faqat kuniga bir marta. */
-const DATE_PARTS = new Intl.DateTimeFormat("en-GB", {
-  timeZone: "Asia/Tashkent",
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-});
-
-function fmtDate(d: Date | string | null): string {
-  if (!d) return "—";
-  const date = typeof d === "string" ? new Date(d) : d;
-  const p: Record<string, string> = {};
-  for (const part of DATE_PARTS.formatToParts(date)) p[part.type] = part.value;
-  return `${p.day}.${p.month}.${p.year}`;
-}
+/* Sana — `fmtDate` (../../_components/admin-dates.ts): `toLocaleDateString`
+   gidratatsiyani buzgani uchun barqaror format, sabab oʻsha faylda. */
 
 /* Blok yorligʻi — MUDDAT bilan. Ilgari faqat «Bloklangan» deb yozilardi,
    yaʼni «7 kunga» va «muddatsiz» bir xil koʻrinardi: admin blok qachon
@@ -178,19 +154,21 @@ type Filters = {
 };
 
 function filterHref(f: Filters, page = 1): string {
-  const params = new URLSearchParams();
-  if (f.q) params.set("q", f.q);
-  if (f.role) params.set("role", f.role);
-  if (f.plan) params.set("plan", f.plan);
-  if (f.banned) params.set("banned", f.banned);
-  if (f.status) params.set("status", f.status);
-  if (f.area) params.set("area", f.area);
-  if (f.sort) params.set("sort", f.sort);
-  // Standart `desc` — URL'ni keraksiz parametr bilan toʻldirmaymiz.
-  if (f.sort && f.dir === "asc") params.set("dir", "asc");
-  if (page > 1) params.set("page", String(page));
-  const qs = params.toString();
-  return `/admin/users${qs ? `?${qs}` : ""}`;
+  return adminHref(
+    "/admin/users",
+    {
+      q: f.q,
+      role: f.role,
+      plan: f.plan,
+      banned: f.banned,
+      status: f.status,
+      area: f.area,
+      sort: f.sort,
+      // Standart `desc` — URLʼni keraksiz parametr bilan toʻldirmaymiz.
+      dir: f.sort && f.dir === "asc" ? "asc" : undefined,
+    },
+    page,
+  );
 }
 
 /* ⚠️ ODDIY OʻZBEKCHA, ATAMA EMAS.
@@ -332,14 +310,42 @@ export default function UsersTable({
     go(filterHref({ ...filters, sort, dir }));
   };
 
-  const activeFilterCount = [
-    filters.q,
-    filters.role,
-    filters.plan,
-    filters.banned,
-    filters.status,
-    filters.area,
-  ].filter(Boolean).length;
+  /* Faol filtrlar — har biri chip boʻlib koʻrinadi va alohida olinadi.
+
+     Ilgari faqat «Tozalash (3)» tugmasi bor edi: oltita tanlovdan
+     QAYSI uchtasi yoqiqligini bilish uchun har Selectʼni koʻz bilan
+     tekshirish kerak edi, bittasini olib tashlash uchun esa oʻsha
+     Selectʼni topib «hammasi» ga qaytarish. */
+  const activeChips = (
+    [
+      filters.q && { key: "q", label: "Qidiruv", value: `«${filters.q}»` },
+      filters.role && {
+        key: "role",
+        label: "Rol",
+        value: ROLE_LABELS[filters.role] ?? filters.role,
+      },
+      filters.plan && {
+        key: "plan",
+        label: "Tarif",
+        value: filters.plan.charAt(0).toUpperCase() + filters.plan.slice(1),
+      },
+      filters.banned && {
+        key: "banned",
+        label: "Blok",
+        value: filters.banned === "1" ? "Bloklangan" : "Bloklanmagan",
+      },
+      filters.status && {
+        key: "status",
+        label: "Holat",
+        value: STATUS_LABELS[filters.status as ActivationStatus] ?? filters.status,
+      },
+      filters.area && {
+        key: "area",
+        label: "Boʻlim",
+        value: AREA_LABELS[filters.area] ?? filters.area,
+      },
+    ] as const
+  ).filter(Boolean) as { key: keyof Filters; label: string; value: string }[];
 
   const run = async (fn: () => Promise<unknown>, okMsg: string) => {
     setBusy(true);
@@ -357,17 +363,14 @@ export default function UsersTable({
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
 
   return (
-    <Card className="shadow-none gap-0 overflow-hidden p-0">
+    <Panel>
       {/* Sarlavha + toolbar */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4">
-        <SectionIcon>
-          <Users />
-        </SectionIcon>
-        <div className="min-w-0">
-          <h2 className="heading-small">Foydalanuvchilar</h2>
-          <p className="text-caption text-muted-foreground">{data.total} ta hisob</p>
-        </div>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+      <AdminPanelHeader
+        icon={<Users />}
+        title="Foydalanuvchilar"
+        count={`${data.total} ta hisob`}
+        actions={
+          <>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -501,14 +504,38 @@ export default function UsersTable({
             </SelectContent>
           </Select>
 
-          {/* Nechta filtr yoqilganini koʻrsatuvchi tozalash tugmasi.
-              Oltita tanlov boʻlgach, qaysi biri yoqiqligini koʻz bilan
-              tekshirish qiyin — natija kutilmagan boʻlsa sabab shu. */}
-          {activeFilterCount > 0 && (
+          </>
+        }
+      />
+
+      {/* Faol filtrlar — chip bosilsa faqat oʻsha filtr olinadi.
+          Saralash tozalashda saqlanadi: u filtr emas, koʻrinish. */}
+      {activeChips.length > 0 && (
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-2 border-b border-border px-5 py-3",
+            pendingClass(pending),
+          )}
+        >
+          {activeChips.map((c) => (
+            <Button
+              key={c.key}
+              variant="secondary"
+              size="sm"
+              className="font-normal"
+              aria-label={`${c.label}: ${c.value} — filtrni olib tashlash`}
+              onClick={() => applyFilters({ [c.key]: "" })}
+            >
+              <span className="text-muted-foreground">{c.label}:</span>
+              <span className="max-w-40 truncate">{c.value}</span>
+              <X />
+            </Button>
+          ))}
+          {activeChips.length > 1 && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-9 text-muted-foreground"
+              className="text-muted-foreground"
               onClick={() =>
                 go(
                   filterHref({
@@ -524,12 +551,11 @@ export default function UsersTable({
                 )
               }
             >
-              <X />
-              Tozalash ({activeFilterCount})
+              Hammasini tozalash
             </Button>
           )}
         </div>
-      </div>
+      )}
 
       {/* Koʻrinish qoʻllanmagan boʻlsa — jimgina nol koʻrsatmaymiz.
           Eski taʼrifga qaytish aynan tuzatilayotgan xatoni koʻrinmas
@@ -839,39 +865,13 @@ export default function UsersTable({
         </div>
       )}
 
-      {/* Paginatsiya */}
-      {totalPages > 1 && (
-        <div
-          className={cn(
-            "flex items-center justify-between border-t border-border px-5 py-3",
-            pendingClass(pending),
-          )}
-        >
-          <span className="text-caption text-muted-foreground">
-            {data.page}-sahifa / {totalPages}
-          </span>
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={data.page <= 1}
-              onClick={() => go(filterHref(filters, data.page - 1))}
-            >
-              <ChevronLeft />
-              Oldingi
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={data.page >= totalPages}
-              onClick={() => go(filterHref(filters, data.page + 1))}
-            >
-              Keyingi
-              <ChevronRight />
-            </Button>
-          </div>
-        </div>
-      )}
+      <AdminPagination
+        page={data.page}
+        totalPages={totalPages}
+        hrefFor={(p) => filterHref(filters, p)}
+        onNavigate={go}
+        pending={pending}
+      />
 
       {/* Seanslar — qaysi qurilmadan kirilgan */}
       <SessionsDialog user={sessionsDialog} onClose={() => setSessionsDialog(null)} />
@@ -938,7 +938,7 @@ export default function UsersTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </Panel>
   );
 }
 

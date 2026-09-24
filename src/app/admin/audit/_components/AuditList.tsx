@@ -3,10 +3,12 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useAdminNav, pendingClass } from "../../_components/use-admin-nav";
-import { Card } from "@/components/ui/card";
+import { AdminPanelHeader } from "../../_components/AdminPanelHeader";
+import { AdminPagination } from "../../_components/AdminPagination";
+import { adminHref } from "../../_components/admin-href";
+import { fmtDateTime } from "../../_components/admin-dates";
+import { Panel } from "@/components/ui/panel";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { SectionIcon } from "@/components/ui/section-icon";
 import {
   Select,
   SelectContent,
@@ -21,16 +23,22 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { ScrollText, ChevronLeft, ChevronRight } from "lucide-react";
-import type { AuditLogPage } from "@/server/dal/admin/audit";
+import { ScrollText } from "lucide-react";
+import type { AdminAuditAction, AuditLogPage } from "@/server/dal/admin/audit";
 
-const ACTION_LABELS: Record<string, string> = {
+/* `Record<AdminAuditAction, …>` — yangi amal DAL ga qoʻshilsa, bu yerda
+   yorliqsiz qolib ketmasin (tip xatosi beradi). Ilgari oddiy
+   `Record<string, …>` edi va «statistikadan istisno» amallari yorliqsiz
+   — xom kalit boʻlib — chiqardi, filtrda esa umuman yoʻq edi. */
+const ACTION_LABELS: Record<AdminAuditAction, string> = {
   "user.set_role": "Rol oʻzgartirildi",
   "user.ban": "Bloklandi",
   "user.unban": "Blokdan chiqarildi",
   "user.delete": "Hisob oʻchirildi",
   "user.impersonate": "Sifatida kirildi",
   "user.reset_password": "Parol tiklash xati",
+  "user.exclude_from_metrics": "Statistikadan chiqarildi",
+  "user.include_in_metrics": "Statistikaga qaytarildi",
   "feedback.reply": "Fikrga javob",
   "feedback.status": "Fikr holati",
   "school.create": "Maktab yaratildi",
@@ -39,18 +47,19 @@ const ACTION_LABELS: Record<string, string> = {
   "school.assign_teacher": "Oʻqituvchi biriktirildi",
 };
 
+/** Bazadagi eski yoki notanish amal — xom kalit bilan koʻrsatiladi. */
+function actionLabel(action: string): string {
+  return (ACTION_LABELS as Record<string, string | undefined>)[action] ?? action;
+}
+
 const DESTRUCTIVE_ACTIONS = new Set(["user.ban", "user.delete", "school.delete"]);
 
-function fmtDateTime(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleString("uz-UZ", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+/* Sana — `fmtDateTime` (../../_components/admin-dates.ts). Ilgari bu
+   yerda `toLocaleString("uz-UZ")` edi: server (UTC, Node ICU) va brauzer
+   boshqa satr chizib, gidratatsiyani buzardi. */
+
+const auditHref = (action: string, page = 1) =>
+  adminHref("/admin/audit", { action }, page);
 
 export default function AuditList({
   data,
@@ -64,25 +73,15 @@ export default function AuditList({
   const { pending, go: navigate } = useAdminNav();
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
 
-  const go = (action: string, page = 1) => {
-    const params = new URLSearchParams();
-    if (action) params.set("action", action);
-    if (page > 1) params.set("page", String(page));
-    const qs = params.toString();
-    navigate(`/admin/audit${qs ? `?${qs}` : ""}`);
-  };
+  const go = (action: string, page = 1) => navigate(auditHref(action, page));
 
   return (
-    <Card className="shadow-none gap-0 overflow-hidden p-0">
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4">
-        <SectionIcon>
-          <ScrollText />
-        </SectionIcon>
-        <div className="min-w-0">
-          <h2 className="heading-small">Audit jurnali</h2>
-          <p className="text-caption text-muted-foreground">{data.total} ta yozuv</p>
-        </div>
-        <div className="ml-auto">
+    <Panel>
+      <AdminPanelHeader
+        icon={<ScrollText />}
+        title="Audit jurnali"
+        count={`${data.total} ta yozuv`}
+        actions={
           <Select
             value={activeAction || "all"}
             onValueChange={(v) => go(v === "all" ? "" : v)}
@@ -99,8 +98,8 @@ export default function AuditList({
               ))}
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        }
+      />
 
       {data.items.length === 0 ? (
         <Empty className={pendingClass(pending)}>
@@ -125,7 +124,7 @@ export default function AuditList({
                   variant={DESTRUCTIVE_ACTIONS.has(log.action) ? "destructive" : "secondary"}
                   className="mt-0.5 shrink-0"
                 >
-                  {ACTION_LABELS[log.action] ?? log.action}
+                  {actionLabel(log.action)}
                 </Badge>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">
@@ -157,38 +156,13 @@ export default function AuditList({
         </ul>
       )}
 
-      {totalPages > 1 && (
-        <div
-          className={cn(
-            "flex items-center justify-between border-t border-border px-5 py-3",
-            pendingClass(pending),
-          )}
-        >
-          <span className="text-caption text-muted-foreground">
-            {data.page}-sahifa / {totalPages}
-          </span>
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={data.page <= 1}
-              onClick={() => go(activeAction, data.page - 1)}
-            >
-              <ChevronLeft />
-              Oldingi
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={data.page >= totalPages}
-              onClick={() => go(activeAction, data.page + 1)}
-            >
-              Keyingi
-              <ChevronRight />
-            </Button>
-          </div>
-        </div>
-      )}
-    </Card>
+      <AdminPagination
+        page={data.page}
+        totalPages={totalPages}
+        hrefFor={(p) => auditHref(activeAction, p)}
+        onNavigate={navigate}
+        pending={pending}
+      />
+    </Panel>
   );
 }
