@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { CalendarClock, ChevronDown, Link as LinkIcon, Sun } from "lucide-react";
+import { CalendarClock, ChevronDown, Link as LinkIcon, Plus, Sun } from "lucide-react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { LessonDateLeaf, LessonStatusPill } from "@/components/lessons/LessonPlanMarks";
@@ -365,17 +365,40 @@ function EmptySlotCard({
   const tints = classTints(color);
   return (
     <div
-      className="group flex items-center gap-3 rounded-xl border border-dashed p-4 transition-[filter] duration-fast hover:brightness-[0.98]"
-      style={{ ...tints.tint, ...tints.borderMedium }}
+      className="group relative flex items-center gap-3 rounded-xl border border-dashed border-[var(--slot-dash)] p-4 transition-colors duration-fast hover:border-[var(--slot-hex)] hover:bg-[var(--slot-tint)] has-[.slot-create:focus-visible]:border-[var(--slot-hex)] has-[.slot-create:focus-visible]:bg-[var(--slot-tint)]"
+      style={
+        {
+          ["--slot-hex"]: row.classHex,
+          ["--slot-dash"]: tints.borderMedium.borderColor,
+          ["--slot-tint"]: tints.tint.backgroundColor,
+          ["--slot-ink"]: tints.textOnTint.color,
+        } as CSSProperties
+      }
     >
-      <div className="relative w-11 shrink-0">
+      {/* Butun karta — «Mavzu qoʻshish». Tugma kartani qoplaydi (absolute inset-0),
+          ulash tugmasi esa ustida alohida turadi — ichma-ich button yoʻq. */}
+      <button
+        type="button"
+        onClick={onCreate}
+        aria-label={t("addTopicTooltip")}
+        className="slot-create absolute inset-0 cursor-pointer rounded-xl outline-none"
+      />
+      <div className="pointer-events-none relative w-11 shrink-0">
         <div className="overflow-hidden rounded-lg border border-dashed text-center" style={{ borderColor: row.classHex }}>
           <div className="py-px text-tag font-semibold uppercase" style={{ color: row.classHex }}>{month}</div>
           <div className="text-base font-semibold leading-6 tabular-nums text-foreground">{day}</div>
         </div>
       </div>
-      <div className="min-w-0 flex-1">
-        <h4 className="truncate text-sm font-medium italic leading-tight text-muted-foreground">{t("noTopic")}</h4>
+      <div className="pointer-events-none min-w-0 flex-1">
+        <h4 className="relative h-[1.1rem] text-sm leading-tight">
+          <span className="absolute inset-0 truncate font-medium italic text-muted-foreground transition-opacity duration-fast group-hover:opacity-0 group-has-[.slot-create:focus-visible]:opacity-0 [@media(hover:none)]:opacity-0">
+            {t("noTopic")}
+          </span>
+          <span className="absolute inset-0 flex items-center gap-1 truncate font-semibold text-[var(--slot-ink)] opacity-0 transition-opacity duration-fast group-hover:opacity-100 group-has-[.slot-create:focus-visible]:opacity-100 [@media(hover:none)]:opacity-100">
+            <Plus className="size-3.5 shrink-0" strokeWidth={2.5} />
+            {t("addTopic")}
+          </span>
+        </h4>
         <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
           {row.classColor ? (
             <ClassBadge color={row.classColor} name={row.className} className="shrink-0" />
@@ -394,15 +417,7 @@ function EmptySlotCard({
           </span>
         </p>
       </div>
-      <div className="flex shrink-0 items-stretch gap-1.5">
-        <AddTopicButton
-          color={color}
-          label={t("addTopic")}
-          tooltip={t("addTopicTooltip")}
-          className="max-sm:hidden"
-          onClick={onCreate}
-        />
-        <AddTopicButton color={color} label={t("addTopic")} tooltip={t("addTopicTooltip")} iconOnly className="sm:hidden" onClick={onCreate} />
+      <div className="relative flex shrink-0">
         <AddTopicButton color={color} label={t("link")} tooltip={t("linkTooltip")} icon={LinkIcon} iconOnly onClick={onLink} />
       </div>
     </div>
