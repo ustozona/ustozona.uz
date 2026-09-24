@@ -4,6 +4,7 @@ import { auth } from "@/server/auth";
 import { db } from "@/server/db/client";
 import { tgSignupTickets, userTelegram } from "@/server/db/schema";
 import { telegramPlaceholderEmail } from "@/lib/placeholder-email";
+import { ensureTeacherRow } from "./teacher-row";
 import type { TicketInfo, CompleteResult } from "@/lib/link-types";
 
 // ⛔ Tiplar `@/lib/link-types` da — qayta eksport qilinmaydi.
@@ -177,6 +178,9 @@ export async function completeTgSignup(input: {
 
   // 4-QADAM — biriktirish. Bu yerdan keyin qaytish yoʻq: akkaunt bor.
   try {
+    // ⛔ Avval `teachers` qatori — aks holda prod trigger biriktirishni
+    // yiqitadi (dal/teacher-row.ts).
+    await ensureTeacherRow(userId);
     await db
       .insert(userTelegram)
       .values({ telegramId, userId })

@@ -4,6 +4,7 @@ import { auth } from "@/server/auth";
 import { db } from "@/server/db/client";
 import { tgAuthRequests, tgChats, user, userTelegram } from "@/server/db/schema";
 import { isPlaceholderEmail, telegramPlaceholderEmail } from "@/lib/placeholder-email";
+import { ensureTeacherRow } from "@/server/dal/teacher-row";
 import {
   answerCallbackQuery,
   editMessageText,
@@ -349,6 +350,8 @@ async function onCodePicked(
     }
     if (!existingUserId) {
       const chat = await chatOf(telegramId);
+      // Trigger `teachers` qatorisiz yiqiladi — sabab: dal/teacher-row.ts.
+      await ensureTeacherRow(target);
       await db
         .insert(userTelegram)
         .values({ telegramId, userId: target, username: chat?.username ?? null })
@@ -519,6 +522,11 @@ async function createTelegramAccount(from: TgUser): Promise<string | null> {
       });
       userId = created.id;
     }
+
+    // ⛔ Bogʻlashdan OLDIN: prod trigger `teachers` qatorisiz yiqiladi va
+    // akkaunt yetim qoladi (dal/teacher-row.ts). Yetim qolgan eski
+    // urinish ham shu yerdan oʻtib tuzaladi — `existing` yuqorida.
+    await ensureTeacherRow(userId);
 
     await db
       .insert(userTelegram)
