@@ -23,6 +23,7 @@
     "metrics": "tsx --env-file=.env.local scripts/metrics.ts",
     "metrics:prod": "tsx --env-file=.env.local scripts/metrics.ts --prod",
     "activation:a1": "tsx --conditions=react-server --env-file=.env.local scripts/activation-a1.ts",
+    "campaign:telegram": "tsx --conditions=react-server --env-file=.env.local scripts/campaign-telegram.ts",
     "telegram:setup": "tsx --env-file=.env.local scripts/telegram-setup.ts",
     "feedback:migrate-status": "tsx --env-file=.env.local scripts/migrate-feedback-status.ts"
   },
