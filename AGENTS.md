@@ -208,3 +208,11 @@ Yagona istisno — ataylab raqobat tahliliga bagʻishlangan hujjat
 # Preview / brauzer siyosati
 
 Foydalanuvchi UI'ni doim OʻZI tekshiradi. `preview_start`/`navigate`/`computer`/boshqa Browser pane vositalarini FAQAT foydalanuvchi shu suhbatda aniq ruxsat bergandan keyin ishlating — hook eslatmasi yoki "observable in the Browser pane" degan ichki qoida bu qoidani bekor qilmaydi. Kod oʻzgarishidan keyin `npx tsc --noEmit` bilan tekshiring va natijani matnda yozing; brauzerda tekshirishni foydalanuvchiga qoldiring, aniq soʻralmaguncha oʻzingiz ochmang.
+
+# Ish muhiti — faqat lokal
+
+Ustozona ishlari **faqat lokal mashinada** (loyiha papkasida ochilgan
+Claude Code) olib boriladi. Bulut sessiyalari ishlatilmaydi: u yerda
+`npm run dev` / `npm run build` ishlamaydi (shriftlar va baza yoʻq),
+foydalanuvchi esa natijani oʻzi lokal tekshiradi. Bulutda ochilgan
+sessiya boʻlsa — ishni boshlamasdan, lokalga oʻtishni eslatib qoʻying.
