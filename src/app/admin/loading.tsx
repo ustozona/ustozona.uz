@@ -24,17 +24,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Loading() {
   return (
     <div className="flex flex-col gap-5 p-5">
-      {/* Voronka — olti bosqichli qator */}
-      <Skeleton className="h-[120px] rounded-xl" />
-
-      {/* Grafik + tarif taqsimoti */}
-      <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
-        <Skeleton className="h-[280px] rounded-xl" />
-        <Skeleton className="h-[280px] rounded-xl" />
+      {/* Voronka + Eʼtibor talab qiladi — keng ekranda yonma-yon */}
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Skeleton className="h-[380px] rounded-xl" />
+        <Skeleton className="h-[380px] rounded-xl" />
       </div>
 
-      {/* Eʼtibor talab qiladi */}
-      <Skeleton className="h-[320px] rounded-xl" />
+      {/* Grafik + taqsimotlar */}
+      <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+        <Skeleton className="h-[320px] rounded-xl" />
+        <Skeleton className="h-[320px] rounded-xl" />
+      </div>
     </div>
   );
 }

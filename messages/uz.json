@@ -53,7 +53,8 @@
     "adminUsers": "Foydalanuvchilar",
     "adminSchools": "Maktablar",
     "adminFeedback": "Fikrlar",
-    "adminAudit": "Audit jurnali"
+    "adminAudit": "Audit jurnali",
+    "adminAi": "Ustozona AI"
   },
   "GlobalCommandPalette": {
     "search": "Qidirish",

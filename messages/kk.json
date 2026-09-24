@@ -53,7 +53,8 @@
     "adminUsers": "Пайдаланушылар",
     "adminSchools": "Мектептер",
     "adminFeedback": "Пікірлер",
-    "adminAudit": "Аудит журналы"
+    "adminAudit": "Аудит журналы",
+    "adminAi": "Ustozona AI"
   },
   "GlobalCommandPalette": {
     "search": "Іздеу",

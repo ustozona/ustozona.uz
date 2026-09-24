@@ -53,7 +53,8 @@
     "adminUsers": "Фойдаланувчилар",
     "adminSchools": "Мактаблар",
     "adminFeedback": "Фикрлар",
-    "adminAudit": "Аудит журнали"
+    "adminAudit": "Аудит журнали",
+    "adminAi": "Ustozona AI"
   },
   "GlobalCommandPalette": {
     "search": "Қидириш",
