@@ -122,3 +122,32 @@ Tafsilot kodda: `src/server/db/schema/telegram.ts` (`tgAuthRequests`), `src/serv
 Webhook `localhost` ga yetib bormaydi. Mahalliy sinov uchun tunnel kerak: tunnel URL'i bilan `npm run telegram:setup -- https://<tunnel>` ishga tushiriladi. Sinovdan keyin prod URL bilan qayta ishga tushirishni unutmang.
 
 Buning oʻrniga alohida sinov boti ochib, uning tokenini faqat `.env.local` ga qoʻyish ham mumkin.
+
+## 7. Ustozlarni botga olib kelish
+
+Kanal uchta, hammasi bir xil segment maʼnosida ishlaydi. «Ulangan» hali «xabar oladi» degani emas: `user_telegram` boshqa bot bilan umumiy jadval, u orqali ulangan ustoz bizning botni ochmagan boʻlishi mumkin.
+
+| Kanal | Qayerda | Kimga |
+|---|---|---|
+| Admin kartasi | `/admin` → «Telegram bot» | — (oʻlchov) |
+| Bosh sahifa taklifi | `TelegramConnectPrompt` | foyda bor (jadvalda dars yoki muddatli vazifa), tanaffus tugagan |
+| TG1 xati | `npm run campaign:telegram` | tasdiqlangan email, foyda bor, xabar olmaydi |
+
+**Qisqa havola `/tg`.** `ustozona.uz/tg` prod env'dagi botga yoʻnaltiradi. Xat, post va QR kodlarda bot nomi toʻgʻridan-toʻgʻri yozilmaydi: kampaniya skripti lokal `.env.local` bilan ishlaydi, unda sinov boti boʻlishi mumkin.
+
+**`?ulash=1`.** `/dashboard/settings?section=telegram&ulash=1` ulash oynasini oʻzi ochadi — xatdagi «Telegramni ulash» tugmasi shu yerga olib boradi. Kirmagan ustoz avval `/login` ga, keyin `/dashboard` ga tushadi (u yerda taklif banneri bor).
+
+### TG1 xatini yuborish
+
+```bash
+npm run campaign:telegram -- --prod                                 # quruq yurish, roʻyxat
+npm run campaign:telegram -- --prod --only=<oʻz manzilingiz> --yes  # sinov, darhol
+npm run campaign:telegram -- --prod --yes                           # hammaga, 1 soatdan keyin
+```
+
+Kerak: `PROD_DATABASE_URL`, `UNSUBSCRIBE_SECRET` (prod bilan bir xil), `ACTIVATION_EMAILS=on`, `RESEND_API_KEY` — hammasi `.env.local` da.
+
+- Ikki variant: **link** (ulanmagan) va **start** (ulangan, botni ochmagan).
+- Aktivatsiya xatlari bilan bir xil qoidalar: faqat tasdiqlangan manzil, obunadan chiqqanga yoʻq, `List-Unsubscribe`.
+- Kuniga bitta xat: oxirgi 24 soatda aktivatsiya xati ketgan boʻlsa `bugun-xat-bor` bilan oʻtkaziladi — skriptni ertaga qayta yurgizish kifoya.
+- Jurnal `teachers.prefs.campaigns.tg1` da, `email_activation` ga yozilmaydi (u zanjir holati — sabab `src/server/email/campaign.ts` da).

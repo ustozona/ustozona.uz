@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Megaphone, Moon, Phone, Send, Sun } from "lucide-react";
 import { toast } from "sonner";
@@ -37,6 +38,16 @@ export default function TelegramSection() {
   }, []);
 
   React.useEffect(load, [load]);
+
+  // `?ulash=1` — xatdagi «Telegramni ulash» tugmasi: ustoz shu yerga
+  // kelib yana bir tugma qidirmasin, oyna oʻzi ochiladi. Bir marta.
+  const autoLink = useSearchParams().get("ulash") === "1";
+  const autoOpened = React.useRef(false);
+  React.useEffect(() => {
+    if (!autoLink || autoOpened.current || !conn?.enabled || conn.linked) return;
+    autoOpened.current = true;
+    setDialogOpen(true);
+  }, [autoLink, conn]);
 
   // Botda raqam yuborilgach sahifaga qaytganda — yangi holat.
   React.useEffect(() => {

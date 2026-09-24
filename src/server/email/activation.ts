@@ -23,11 +23,15 @@ import { A1_SUBJECT, a1Html } from "./templates/a1";
    yaratish email xatosi tufayli buzilmasin.
    ════════════════════════════════════════════════════════════════════ */
 
+/* Darvoza, Resend mijozi, manzillar va obunani bekor qilish havolalari
+   EKSPORT QILINADI — bir martalik kampaniyalar (`campaign.ts`) ham xuddi
+   shu qoidalar bilan yuborsin: bitta darvoza, bitta From, bitta token. */
+
 /* ── Darvoza ────────────────────────────────────────────────────────
    Xat FAQAT ACTIVATION_EMAILS=on boʻlganda haqiqatan yuboriladi.
    Aks holda oqim toʻliq ishlaydi, lekin Resend'ga chiqmaydi —
    konsolga yoziladi. */
-const YOQILGANMI = process.env.ACTIVATION_EMAILS === "on";
+export const YOQILGANMI = process.env.ACTIVATION_EMAILS === "on";
 
 /* ── Auditoriya darvozasi ───────────────────────────────────────────
    FAQAT tasdiqlangan manzilga yuborish (default — YOQILGAN).
@@ -41,7 +45,7 @@ const YOQILGANMI = process.env.ACTIVATION_EMAILS === "on";
    Tasdiqlanmaganlar 4-bosqichdagi V1 xati bilan tiklanadi
    (docs/email-aktivatsiya-spec.md §9). Faqat oʻshanda oʻchiriladi:
    ACTIVATION_ALLOW_UNVERIFIED=on */
-const FAQAT_TASDIQLANGAN = process.env.ACTIVATION_ALLOW_UNVERIFIED !== "on";
+export const FAQAT_TASDIQLANGAN = process.env.ACTIVATION_ALLOW_UNVERIFIED !== "on";
 
 /* Nima boʻlgani. `scheduleStage` xatoni yutadi (trigger asosiy amalni
    yiqitmasligi kerak), lekin JIM qolmaydi — chaqiruvchi natijani
@@ -62,9 +66,9 @@ export type ActivationResult =
   | "bosqich-yoʻq"
   | "xato";
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+export const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-function fromAddress(): string {
+export function fromAddress(): string {
   return (
     process.env.RESEND_ACTIVATION_FROM ??
     process.env.RESEND_FROM_EMAIL ??
@@ -82,7 +86,7 @@ function fromAddress(): string {
 
    Reply-To esa istalgan manzil boʻlishi mumkin. Shuning uchun domen
    pochtasini ochmasdan ham javoblarni oʻqish mumkin. */
-function replyTo(): string | undefined {
+export function replyTo(): string | undefined {
   return process.env.RESEND_ACTIVATION_REPLY_TO || undefined;
 }
 
@@ -98,7 +102,7 @@ const PUBLIC_SITE = "https://www.ustozona.uz";
 
    Skript ishlab chiquvchining mashinasidan yurgizilishi mumkin,
    shuning uchun localhost bu yerda HAR DOIM xato. */
-function siteUrl(): string {
+export function siteUrl(): string {
   const berilgan = process.env.ACTIVATION_SITE_URL ?? process.env.BETTER_AUTH_URL;
   if (!berilgan) return PUBLIC_SITE;
 
@@ -248,13 +252,13 @@ export async function advance(userId: string, bajarilgan: ActivationStage): Prom
 /* ── Havolalar va shablonlar ────────────────────────────────────── */
 
 /** Odam bosadigan havola — xat ichida. */
-function unsubscribeUrl(userId: string): string {
+export function unsubscribeUrl(userId: string): string {
   return `${siteUrl()}/unsubscribe?t=${encodeURIComponent(unsubscribeToken(userId))}`;
 }
 
 /** Pochta mijozi POST qiladigan manzil — `List-Unsubscribe` sarlavhasi
  *  uchun. Sahifa emas, API route (u faqat GET). */
-function unsubscribePostUrl(userId: string): string {
+export function unsubscribePostUrl(userId: string): string {
   return `${siteUrl()}/api/unsubscribe?t=${encodeURIComponent(unsubscribeToken(userId))}`;
 }
 
