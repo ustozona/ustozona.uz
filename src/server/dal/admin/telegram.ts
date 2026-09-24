@@ -10,9 +10,9 @@ import { requireAdmin } from "@/server/session";
    majburiy qilish-qilmaslik shu raqamlarga qarab hal qilinadi
    (docs/telegram-bot.md).
 
-   ⚠️ «ULANGAN» ≠ «BOT ISHLAYAPTI». `user_telegram` LessonLab bilan
-   umumiy: u yerdan ulangan ustoz bizning botni hech ochmagan boʻlishi
-   mumkin — unga xabar ketmaydi. Shuning uchun ikki bosqich alohida
+   ⚠️ «ULANGAN» ≠ «BOT ISHLAYAPTI». `user_telegram` boshqa bot bilan
+   umumiy jadval: u orqali ulangan ustoz bizning botni hech ochmagan
+   boʻlishi mumkin — unga xabar ketmaydi. Shuning uchun ikki bosqich alohida
    sanaladi va oraligʻi («botni ochmagan») alohida koʻrsatiladi.
 
    Maxraj — voronka bilan bir xil: `exclude_from_metrics = false`

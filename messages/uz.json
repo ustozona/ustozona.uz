@@ -2779,9 +2779,10 @@
     "later": "Keyinroq",
     "preview": "Namuna",
     "previewLoading": "Xabar tayyorlanmoqda…",
-    "previewEmpty": "Hozircha yuboradigan xabar yoʻq — jadvalga dars qoʻshilganda keladi.",
-    "previewEvening": "Kechqurun sizga shunday xabar keladi:",
-    "previewMorning": "Ertalab sizga shunday xabar keladi:"
+    "previewEmpty": "Yaqin kunlarda yuboradigan xabar yoʻq — jadvalga dars qoʻshilganda keladi.",
+    "previewTitle": "Kechqurun botdan shunday xabar keladi:",
+    "previewError": "Namunani yuklab boʻlmadi.",
+    "previewRetry": "Qayta urinish"
   },
   "SignupForm": {
     "title": "Roʻyxatdan oʻtish",

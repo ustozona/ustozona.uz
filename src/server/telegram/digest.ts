@@ -204,6 +204,35 @@ export async function digestNow(userId: string, kind: DigestKind) {
   return buildDigest({ kind, todayKey, nowMin, siteUrl: SITE, ...data });
 }
 
+const PREVIEW_DAYS = 7;
+
+/** Ulash taklifidagi namuna — yaqin kunlardagi birinchi KECHKI xabar.
+
+    Maʼlumot BIR MARTA yuklanadi, kunlar xotirada aylanadi (shanba yoki
+    taʼtil arafasida ertangi xabar boʻlmaydi — keyingi ish kunigacha
+    qidiriladi).
+
+    `eveningTime` — ustozning kechki xabar vaqti (`HH:MM`); bugun uchun
+    `nowMin` shu vaqt boʻladi, yaʼni «bugun belgilanmagan darslar» soni
+    haqiqiy xabardagidek chiqadi. Keyingi kunlar uchun 0 — hali boʻlmagan
+    darslar «belgilanmagan» deb sanalmasin. */
+export async function digestPreview(userId: string, eveningTime: string) {
+  const { todayKey } = tashkentNow();
+  const sendMin = hhmmToMin(eveningTime);
+  const data = await loadTeacherData(userId, addDaysKey(todayKey, PREVIEW_DAYS));
+  for (let i = 0; i < PREVIEW_DAYS; i++) {
+    const msg = buildDigest({
+      kind: "evening",
+      todayKey: addDaysKey(todayKey, i),
+      nowMin: i === 0 ? sendMin : 0,
+      siteUrl: SITE,
+      ...data,
+    });
+    if (msg) return msg;
+  }
+  return null;
+}
+
 /** Bitta ustozning xabar uchun kerakli maʼlumoti. Soʻrovlar KETMA-KET. */
 async function loadTeacherData(teacherId: string, targetKey: string) {
   const versionRows = await db

@@ -1,13 +1,21 @@
 import "server-only";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import QRCode from "qrcode";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db/client";
-import { tgAuthRequests, tgChats, tgNotifyPrefs, userTelegram } from "@/server/db/schema";
+import {
+  tasks,
+  teachers,
+  tgAuthRequests,
+  tgChats,
+  tgNotifyPrefs,
+  timetableVersions,
+  userTelegram,
+} from "@/server/db/schema";
 import { getSession } from "@/server/session";
 import { botStartUrl, botUrl, isTelegramBotEnabled } from "@/server/telegram/config";
-import { digestNow } from "@/server/telegram/digest";
+import { digestPreview } from "@/server/telegram/digest";
 import {
   REQUEST_TTL_MS,
   START_PREFIX,
@@ -27,6 +35,7 @@ import {
   type TgConnection,
   type TgDigestPreview,
   type TgNotifyPrefs,
+  type TgPrompt,
 } from "@/lib/tg-auth-types";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -285,24 +294,108 @@ export async function setTgNotifyPrefs(input: TgNotifyPrefs): Promise<boolean> {
   return true;
 }
 
-/* Ulash taklifidagi namuna — ustozning OʻZ maʼlumoti bilan quriladigan
-   haqiqiy xabar (bot yuboradigan matnning aynan oʻzi). Umumiy namuna
-   «bu menga kerakmi?» savoliga javob bermaydi, oʻz ertangi darslari esa
-   beradi. Ertaga aytadigan narsa boʻlmasa — bugungi ertalabki xabar. */
+/* ════════════════════════════════════════════════════════════════════
+   BOSH SAHIFADAGI ULASH TAKLIFI
+
+   Uch qoida (TelegramConnectPrompt.tsx):
+   - FOYDA BOʻLGANDA. Jadvalda dars ham, muddatli vazifa ham yoʻq
+     ustozga bot hech narsa yubormaydi — taklif ham chiqmaydi. Bu
+     `buildDigest` ning yuborish shartlarining arzon (EXISTS) nusxasi.
+   - BEZOVTA QILMAY. Har «Keyinroq» tanaffusni uzaytiradi (3 → 7 → 14
+     kun), toʻrtinchisidan keyin taklif butunlay toʻxtaydi.
+   - HISOB USTOZDA, BRAUZERDA EMAS. Hisob `teachers.prefs.tgPrompt` da:
+     telefon va kompyuterda alohida hisoblansa cheklov ikki barobar
+     yumshab qolardi.
+   ════════════════════════════════════════════════════════════════════ */
+
+const PROMPT_SNOOZE_DAYS = [3, 7, 14];
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+type PromptDoc = { dismissals?: number; snoozeUntil?: number };
+
+function readPromptDoc(prefs: unknown): { dismissals: number; snoozeUntil: number } {
+  const doc = ((prefs ?? {}) as { tgPrompt?: PromptDoc }).tgPrompt ?? {};
+  return {
+    dismissals: Number(doc.dismissals) || 0,
+    snoozeUntil: Number(doc.snoozeUntil) || 0,
+  };
+}
+
+/** Taklif uchun: ulanish holati + koʻrsatish kerakmi. */
+export async function getTgPrompt(): Promise<TgPrompt | null> {
+  const session = await getSession();
+  if (!session || !isTelegramBotEnabled()) return null;
+  const userId = session.user.id;
+
+  const [teacher] = await db
+    .select({ prefs: teachers.prefs })
+    .from(teachers)
+    .where(eq(teachers.id, userId));
+  if (!teacher) return null;
+  const { dismissals, snoozeUntil } = readPromptDoc(teacher.prefs);
+  if (dismissals > PROMPT_SNOOZE_DAYS.length || snoozeUntil > Date.now()) return null;
+
+  const [content] = await db.execute<{ has: boolean }>(sql`
+    SELECT EXISTS (
+             SELECT 1 FROM ${timetableVersions}
+             WHERE ${timetableVersions.teacherId} = ${userId}
+               AND jsonb_array_length(${timetableVersions.events}) > 0
+           )
+        OR EXISTS (
+             SELECT 1 FROM ${tasks}
+             WHERE ${tasks.teacherId} = ${userId}
+               AND ${tasks.status} NOT IN ('done', 'canceled')
+               AND ${tasks.dueDate} IS NOT NULL
+           ) AS has
+  `);
+  if (!content?.has) return null;
+
+  const conn = await getTgConnection();
+  return conn ? { conn } : null;
+}
+
+/** «Keyinroq» — navbatdagi tanaffus; roʻyxat tugagach taklif toʻxtaydi. */
+export async function dismissTgPrompt(): Promise<void> {
+  const session = await getSession();
+  if (!session) return;
+  const [teacher] = await db
+    .select({ prefs: teachers.prefs })
+    .from(teachers)
+    .where(eq(teachers.id, session.user.id));
+  if (!teacher) return;
+  const n = readPromptDoc(teacher.prefs).dismissals;
+  const days = PROMPT_SNOOZE_DAYS[n];
+  const patch = JSON.stringify({
+    tgPrompt: {
+      dismissals: n + 1,
+      // Roʻyxatdan tashqari — muddat kerak emas, `dismissals` oʻzi toʻxtatadi.
+      snoozeUntil: days ? Date.now() + days * DAY_MS : 0,
+    },
+  });
+  // JSONB `||` — boshqa kalitlarga (sozlamalar sinxroni) tegmaydi.
+  await db
+    .update(teachers)
+    .set({ prefs: sql`${teachers.prefs} || ${patch}::jsonb`, updatedAt: new Date() })
+    .where(eq(teachers.id, session.user.id));
+}
+
+/* Taklifdagi namuna — ustozning OʻZ maʼlumoti bilan bot yuboradigan
+   kechki xabarning aynan oʻzi, uning oʻz yuborish vaqti bilan. Umumiy
+   namuna «bu menga kerakmi?» savoliga javob bermaydi, oʻz darslari
+   esa beradi. */
 export async function getTgDigestPreview(): Promise<TgDigestPreview | null> {
   const session = await getSession();
   if (!session || !isTelegramBotEnabled()) return null;
-  for (const kind of ["evening", "morning"] as const) {
-    const msg = await digestNow(session.user.id, kind);
-    if (msg) {
-      return {
-        kind,
-        lines: msg.text.split("\n").map(plainLine),
-        buttons: msg.buttons.map((b) => b.text),
-      };
-    }
-  }
-  return null;
+  const [prefs] = await db
+    .select({ eveningTime: tgNotifyPrefs.eveningTime })
+    .from(tgNotifyPrefs)
+    .where(eq(tgNotifyPrefs.userId, session.user.id));
+  const msg = await digestPreview(session.user.id, prefs?.eveningTime ?? NOTIFY_DEFAULTS.eveningTime);
+  if (!msg) return null;
+  return {
+    lines: msg.text.split("\n").map(plainLine),
+    buttons: msg.buttons.map((b) => b.text),
+  };
 }
 
 /** Telegram HTML → oddiy matn: faqat `<b>` va `esc()` belgilari bor. */

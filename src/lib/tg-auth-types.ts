@@ -48,9 +48,12 @@ export type TgConnection = {
   botUrl: string | null;
 };
 
-/** Ulash taklifidagi namuna — bot yuboradigan xabar, oddiy matn qatorlari. */
+/** Bosh sahifadagi ulash taklifi. `null` — koʻrsatilmaydi (tanaffus,
+    toʻxtatilgan yoki yuboradigan narsa yoʻq). */
+export type TgPrompt = { conn: TgConnection };
+
+/** Taklifdagi namuna — bot yuboradigan kechki xabar, oddiy matn qatorlari. */
 export type TgDigestPreview = {
-  kind: "morning" | "evening";
   /** Birinchi qator — sarlavha. */
   lines: string[];
   buttons: string[];

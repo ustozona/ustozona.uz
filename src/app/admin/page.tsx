@@ -9,7 +9,8 @@ import {
   getSignupTrends,
   type AtRiskTeacher,
 } from "@/server/dal/admin/stats";
-import { getTelegramStats } from "@/server/dal/admin/telegram";
+import { unstable_rethrow } from "next/navigation";
+import { getTelegramStats, type TelegramStats } from "@/server/dal/admin/telegram";
 import { deviceLabel, type DeviceKind } from "@/lib/user-agent";
 import { activityLabel } from "@/lib/faollik";
 import {
@@ -65,6 +66,39 @@ function daysAgoLabel(d: Date | null): string {
 
 /* ── Yengil oqim: roʻyxatdan oʻtish grafigi + tarif taqsimoti ── */
 
+/* Bitta ulush qatori: nom, foiz, son va chiziq. Grafik kutubxonasi shu
+   bitta koʻrsatkich uchun ortiqcha. */
+function ShareRow({
+  label,
+  hint,
+  value,
+  share,
+}: {
+  label: string;
+  hint?: string;
+  value: number;
+  /** Foizda, butun songa yaxlitlangan. */
+  share: number;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="min-w-0">
+          {label}
+          {hint && <span className="block text-caption text-muted-foreground">{hint}</span>}
+        </span>
+        <span className="shrink-0 font-medium tabular-nums">
+          {share}%
+          <span className="ml-2 font-normal text-muted-foreground">{value}</span>
+        </span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-primary" style={{ width: `${share}%` }} />
+      </div>
+    </div>
+  );
+}
+
 /* Qurilma taqsimoti — mobil UI'ga qancha kuch berish kerakligini
    koʻrsatadigan yagona raqam.
 
@@ -91,25 +125,12 @@ function DeviceBreakdownCard({
           <p className="text-sm text-muted-foreground">Maʼlumot yoʻq</p>
         )}
         {rows.map((r) => (
-          <div key={r.device} className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between text-sm">
-              <span>{deviceLabel(r.device as DeviceKind)}</span>
-              <span className="font-medium tabular-nums">
-                {r.share}%
-                <span className="ml-2 font-normal text-muted-foreground">
-                  {r.sessions}
-                </span>
-              </span>
-            </div>
-            {/* Oddiy nisbat chizigʻi — grafik kutubxonasi shu bitta
-                koʻrsatkich uchun ortiqcha. */}
-            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${r.share}%` }}
-              />
-            </div>
-          </div>
+          <ShareRow
+            key={r.device}
+            label={deviceLabel(r.device as DeviceKind)}
+            value={r.sessions}
+            share={r.share}
+          />
         ))}
       </div>
     </Card>
@@ -233,7 +254,25 @@ async function ActivationSection() {
    yon koʻrsatkich), shuning uchun voronka emas, oddiy ulushlar roʻyxati.
    Maxraj hamma joyda bitta — oʻqituvchilar soni. */
 async function TelegramSection() {
-  const s = await getTelegramStats();
+  /* Karta oʻz xatosini oʻzi ushlaydi: ushlamasa xato admin/error.tsx gacha
+     koʻtarilib, ishlab turgan voronka va grafiklarni ham oʻchirardi
+     (masalan 0048 migratsiyasi qoʻllanmagan bazada). */
+  let s: TelegramStats;
+  try {
+    s = await getTelegramStats();
+  } catch (err) {
+    unstable_rethrow(err);
+    console.error("[admin] telegram koʻrsatkichlari:", err);
+    return (
+      <Card className="shadow-none gap-0 p-0">
+        <div className="px-5 py-4">
+          <h2 className="heading-small">Telegram bot</h2>
+          <p className="text-caption text-muted-foreground">Maʼlumotni yuklab boʻlmadi</p>
+        </div>
+      </Card>
+    );
+  }
+
   const pctOf = (n: number) => (s.teachers ? Math.round((n / s.teachers) * 100) : 0);
   const rows: { label: string; value: number; hint?: string }[] = [
     { label: "Telegram ulangan", value: s.linked },
@@ -259,26 +298,7 @@ async function TelegramSection() {
       </div>
       <div className="grid gap-x-8 gap-y-3 p-5 md:grid-cols-2">
         {rows.map((r) => (
-          <div key={r.label} className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="min-w-0">
-                {r.label}
-                {r.hint && (
-                  <span className="block text-caption text-muted-foreground">{r.hint}</span>
-                )}
-              </span>
-              <span className="shrink-0 font-medium tabular-nums">
-                {pctOf(r.value)}%
-                <span className="ml-2 font-normal text-muted-foreground">{r.value}</span>
-              </span>
-            </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${pctOf(r.value)}%` }}
-              />
-            </div>
-          </div>
+          <ShareRow key={r.label} {...r} share={pctOf(r.value)} />
         ))}
       </div>
     </Card>
