@@ -15,12 +15,14 @@ import postgres from "postgres";
      - oʻqituvchi, sinov/admin hisobi emas (`exclude_from_metrics`), bloklanmagan
      - email TASDIQLANGAN va yuborsa boʻladigan manzil
      - obunadan chiqmagan, TG1 hali yuborilmagan
-     - botdan FOYDA bor: jadvalda dars yoki muddatli ochiq vazifa
-       (aks holda bot hech narsa yubormaydi — xat yolgʻon vaʼda boʻlardi)
-     - Ustozona boti orqali xabar OLMAYDI:
-         link  — Telegram umuman ulanmagan
-         start — ulangan, lekin botni ochmagan
-       Botni BLOKLAGANLAR olmaydi — bu ularning tanlovi.
+     - Ustozona boti orqali xabar OLMAYDI. Botni BLOKLAGANLAR olmaydi —
+       bu ularning tanlovi.
+
+   Variant (templates/tg1.ts):
+     jadval — jadvalda dars ham, muddatli ochiq vazifa ham yoʻq: bot
+              hech narsa yubormaydi, shuning uchun avval jadval soʻraladi
+     link   — foyda bor, Telegram umuman ulanmagan
+     start  — foyda bor, ulangan, lekin botni ochmagan
 
    Kuniga bitta xat qoidasi dvigatelda (`campaign.ts`): bugun
    aktivatsiya xati olgan ustoz roʻyxatda koʻrinadi, lekin «bugun-xat-bor»
@@ -36,7 +38,7 @@ const YES = process.argv.includes("--yes");
 const ONLY = process.argv.find((a) => a.startsWith("--only="))?.slice("--only=".length) ?? null;
 const KECHIKISH_SOAT = ONLY ? 0 : 1;
 
-type Nomzod = { id: string; email: string; name: string | null; variant: "link" | "start" };
+type Nomzod = { id: string; email: string; name: string | null; variant: "link" | "start" | "jadval" };
 
 async function main() {
   const url = PROD ? process.env.PROD_DATABASE_URL : process.env.DATABASE_URL;
@@ -49,8 +51,8 @@ async function main() {
 
   const sql = postgres(url, { prepare: false, max: 1, onnotice: () => {} });
 
-  /* Segment shartlari `getTgPrompt` (foyda bor) va admin «Telegram bot»
-     kartasi (ulangan / botni ochmagan) bilan bir xil maʼnoda. */
+  /* Segment shartlari `getTgPrompt` (foyda bor = jadval/vazifa) va admin
+     «Telegram bot» kartasi (ulangan / botni ochmagan) bilan bir xil maʼnoda. */
   const nomzodlar = (await sql`
     WITH tg AS (
       SELECT ut.user_id,
@@ -61,7 +63,18 @@ async function main() {
        GROUP BY ut.user_id
     )
     SELECT u.id, u.email, u.name,
-           CASE WHEN tg.user_id IS NULL THEN 'link' ELSE 'start' END AS variant
+           CASE
+             WHEN NOT (
+                    EXISTS (SELECT 1 FROM timetable_versions tv
+                             WHERE tv.teacher_id = u.id AND jsonb_array_length(tv.events) > 0)
+                 OR EXISTS (SELECT 1 FROM tasks k
+                             WHERE k.teacher_id = u.id
+                               AND k.status NOT IN ('done', 'canceled')
+                               AND k.due_date IS NOT NULL)
+                  ) THEN 'jadval'
+             WHEN tg.user_id IS NULL THEN 'link'
+             ELSE 'start'
+           END AS variant
       FROM "user" u
       JOIN teachers t ON t.id = u.id AND t.exclude_from_metrics = false
       LEFT JOIN tg ON tg.user_id = u.id
@@ -73,30 +86,24 @@ async function main() {
        AND (t.prefs -> 'campaigns' -> 'tg1') IS NULL
        AND COALESCE(tg.active, false) = false
        AND COALESCE(tg.blocked, false) = false
-       AND (
-             EXISTS (SELECT 1 FROM timetable_versions tv
-                      WHERE tv.teacher_id = u.id AND jsonb_array_length(tv.events) > 0)
-          OR EXISTS (SELECT 1 FROM tasks k
-                      WHERE k.teacher_id = u.id
-                        AND k.status NOT IN ('done', 'canceled')
-                        AND k.due_date IS NOT NULL)
-           )
        AND (${ONLY}::text IS NULL OR lower(u.email) = lower(${ONLY}))
      ORDER BY variant, u.created_at
   `) as Nomzod[];
 
   if (ONLY) console.log(`  Filtr: faqat ${ONLY}\n`);
   const soni = (v: Nomzod["variant"]) => nomzodlar.filter((n) => n.variant === v).length;
-  console.log(`  Nomzod: ${nomzodlar.length} ta  (ulash: ${soni("link")}, botni ochish: ${soni("start")})\n`);
+  console.log(
+    `  Nomzod: ${nomzodlar.length} ta  (ulash: ${soni("link")}, botni ochish: ${soni("start")}, jadval: ${soni("jadval")})\n`,
+  );
   for (const n of nomzodlar) {
-    console.log(`    ${n.variant.padEnd(7)}${(n.name ?? "—").slice(0, 22).padEnd(24)}${n.email}`);
+    console.log(`    ${n.variant.padEnd(8)}${(n.name ?? "—").slice(0, 22).padEnd(24)}${n.email}`);
   }
 
   if (ONLY && nomzodlar.length === 0) {
     console.log(
       "\n  Bu manzil roʻyxatga tushmadi. Sabablari: email tasdiqlanmagan, bot\n" +
-        "  allaqachon ishlayapti yoki bloklangan, jadval ham vazifa ham yoʻq,\n" +
-        "  obunadan chiqqan, yoki TG1 yuborilib boʻlgan.\n",
+        "  allaqachon ishlayapti yoki bloklangan, obunadan chiqqan, yoki TG1\n" +
+        "  yuborilib boʻlgan.\n",
     );
   }
 

@@ -75,8 +75,11 @@ export async function sendTelegramInvite(
     if (FAQAT_TASDIQLANGAN && !recipient.verified) return "tasdiqlanmagan";
 
     const site = siteUrl();
-    const ctaUrl =
-      variant === "link" ? `${site}/dashboard/settings?section=telegram&ulash=1` : `${site}/tg`;
+    const ctaUrl = {
+      link: `${site}/dashboard/settings?section=telegram&ulash=1`,
+      start: `${site}/tg`,
+      jadval: `${site}/dashboard/timetable`,
+    }[variant];
     const subject = TG1_SUBJECT[variant];
     const html = tg1Html({
       variant,

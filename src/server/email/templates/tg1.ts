@@ -5,6 +5,10 @@
      link  — Telegram ulanmagan
      start — ulangan, lekin Ustozona botini hali ochmagan: bogʻlanish
              boshqa bot orqali qilingan, bizniki xabar yubora olmaydi
+     jadval — jadvali boʻsh: bot unga hech narsa yubormaydi, shuning
+              uchun avval JADVAL soʻraladi. «Darslaringiz keladi» deb
+              yozilmaydi — bu yolgʻon vaʼda boʻlardi. Jadval toʻlgach
+              bosh sahifada ulash taklifi oʻzi chiqadi (getTgPrompt)
 
    Uslub — A1 qoidalari (templates/a1.ts): bitta tugma, 100 soʻzdan
    kam, rasm yoʻq, salomlashuvda faqat ism, imzo jamoa nomidan.
@@ -16,11 +20,33 @@
 
 import { YORDAM_TELEGRAM, YORDAM_TELEGRAM_URL, brendSarlavha, qalqon } from "./_brand";
 
-export type Tg1Variant = "link" | "start";
+export type Tg1Variant = "link" | "start" | "jadval";
 
 export const TG1_SUBJECT: Record<Tg1Variant, string> = {
   link: "Ertangi darslaringiz endi Telegramda",
   start: "Botni ishga tushiring — ertangi darslar Telegramga keladi",
+  jadval: "Dars jadvalingizni kiriting — Telegram har kech eslatib turadi",
+};
+
+const MATN: Record<Tg1Variant, { kirish: string; oxirgi: string; tugma: string }> = {
+  link: {
+    kirish: "Ustozonada yangi imkoniyat: dars jadvalingiz endi Telegramga ham keladi.",
+    oxirgi: "Ulash bir daqiqa: saytda kod chiqadi, botda shu kodni tanlaysiz.",
+    tugma: "Telegramni ulash",
+  },
+  start: {
+    kirish:
+      "Telegramingiz Ustozonaga ulangan, lekin Ustozona boti hali ishga tushirilmagan — shuning uchun xabarlar sizga yetib bormayapti.",
+    oxirgi: "Botni oching va «Start» tugmasini bosing — boshqa hech narsa kerak emas.",
+    tugma: "Botni ochish",
+  },
+  jadval: {
+    kirish:
+      "Ustozonada yangi imkoniyat: Telegram bot dars jadvalingiz asosida har kuni eslatma yuboradi. Buning uchun jadval kerak — hozir u boʻsh.",
+    oxirgi:
+      "Jadvalni bir marta kiritasiz, u butun chorak davomida ishlaydi. Tayyor boʻlgach, bosh sahifada Telegramni ulash taklifi chiqadi.",
+    tugma: "Jadvalni kiritish",
+  },
 };
 
 export function tg1Html({
@@ -31,22 +57,14 @@ export function tg1Html({
 }: {
   variant: Tg1Variant;
   name: string | null;
-  /** link: sozlamalardagi ulash oynasi; start: `/tg` → Ustozona boti. */
+  /** link: sozlamalardagi ulash oynasi; start: `/tg` → bot; jadval: jadval sahifasi. */
   ctaUrl: string;
   unsubscribeUrl: string;
 }): string {
   const ism = name?.trim().split(/\s+/)[0] ?? null;
   const salom = ism ? `Assalomu alaykum, ${qalqon(ism)}!` : "Assalomu alaykum!";
 
-  const kirish =
-    variant === "link"
-      ? "Ustozonada yangi imkoniyat: dars jadvalingiz endi Telegramga ham keladi."
-      : "Telegramingiz Ustozonaga ulangan, lekin Ustozona boti hali ishga tushirilmagan — shuning uchun xabarlar sizga yetib bormayapti.";
-  const tugma = variant === "link" ? "Telegramni ulash" : "Botni ochish";
-  const oxirgi =
-    variant === "link"
-      ? "Ulash bir daqiqa: saytda kod chiqadi, botda shu kodni tanlaysiz."
-      : "Botni oching va «Start» tugmasini bosing — boshqa hech narsa kerak emas.";
+  const { kirish, oxirgi, tugma } = MATN[variant];
 
   return `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.6;color:#1f2937;max-width:480px;margin:0 auto;padding:8px">
   ${brendSarlavha()}
