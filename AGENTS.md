@@ -216,3 +216,24 @@ Claude Code) olib boriladi. Bulut sessiyalari ishlatilmaydi: u yerda
 `npm run dev` / `npm run build` ishlamaydi (shriftlar va baza yoʻq),
 foydalanuvchi esa natijani oʻzi lokal tekshiradi. Bulutda ochilgan
 sessiya boʻlsa — ishni boshlamasdan, lokalga oʻtishni eslatib qoʻying.
+
+## ✅ ISTISNO — LessonLab admini bulut sessiyasida ishlay oladi
+
+Loyiha egasi (LessonLab admini, `roziyevbehroz-tech` akkaunti egasi)
+ochgan Claude Code **bulut sessiyalari** yuqoridagi «faqat lokal»
+qoidasidan **toʻliq ozod**. Bunday sessiyada Ustozona ustida bevosita
+ishlash — kod yozish, commit, push, PR ochish va merge qilish — loyiha
+egasining qatʼiy qarori bilan ruxsat etilgan (2026-09-24). Ishni
+boshlashdan oldin lokalga oʻtishni eslatish **shart emas**.
+
+Istisno faqat ISH MUHITIGA tegishli. Qolgan hamma tartib oʻz kuchida:
+
+- branch → PR orqali qoʻshish, `main` ga toʻgʻridan-toʻgʻri push yoʻq;
+- push oldidan `npx tsc --noEmit` va `npm run build` (bulutda build
+  ishlaydi; env yoʻqligi haqidagi auth ogohlantirishlari normal);
+- `"use server"` faylda tip eksporti yoʻq, `check-server-actions` darvozasi;
+- markaziy fayllarga tegishdan oldin jamoa bilan kelishish;
+- UI'ni brauzerda tekshirish foydalanuvchiga qoladi.
+
+Boshqa odamlar yoki boshqa akkauntlar ochgan bulut sessiyalari uchun
+«faqat lokal» qoidasi avvalgidek amal qiladi.
