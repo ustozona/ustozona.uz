@@ -48,6 +48,17 @@ export type TgConnection = {
   botUrl: string | null;
 };
 
+/** Bosh sahifadagi ulash taklifi. `null` — koʻrsatilmaydi (tanaffus,
+    toʻxtatilgan yoki yuboradigan narsa yoʻq). */
+export type TgPrompt = { conn: TgConnection };
+
+/** Taklifdagi namuna — bot yuboradigan kechki xabar, oddiy matn qatorlari. */
+export type TgDigestPreview = {
+  /** Birinchi qator — sarlavha. */
+  lines: string[];
+  buttons: string[];
+};
+
 /** Kunlik xabarlar sozlamasi. Vaqt `HH:MM` (Toshkent), 15 daqiqa qadam. */
 export type TgNotifyPrefs = {
   morningEnabled: boolean;

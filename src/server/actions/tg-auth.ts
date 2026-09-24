@@ -2,8 +2,11 @@
 
 import {
   cancelTgAuth,
+  dismissTgPrompt,
   getTgConnection,
+  getTgDigestPreview,
   getTgNotifyPrefs,
+  getTgPrompt,
   pollTgAuth,
   setTgMarketing,
   setTgNotifyPrefs,
@@ -14,7 +17,9 @@ import type {
   TgAuthPoll,
   TgAuthStart,
   TgConnection,
+  TgDigestPreview,
   TgNotifyPrefs,
+  TgPrompt,
 } from "@/lib/tg-auth-types";
 
 /* Telegram orqali kirish / bogʻlash — yupqa qatlam, mantiq DAL'da.
@@ -38,6 +43,18 @@ export async function cancelTgAuthAction(): Promise<void> {
 
 export async function getTgConnectionAction(): Promise<TgConnection | null> {
   return getTgConnection();
+}
+
+export async function getTgPromptAction(): Promise<TgPrompt | null> {
+  return getTgPrompt();
+}
+
+export async function dismissTgPromptAction(): Promise<void> {
+  await dismissTgPrompt();
+}
+
+export async function getTgDigestPreviewAction(): Promise<TgDigestPreview | null> {
+  return getTgDigestPreview();
 }
 
 export async function setTgMarketingAction(consent: boolean): Promise<boolean> {
