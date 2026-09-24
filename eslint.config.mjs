@@ -89,7 +89,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    "*.js"
+    "*.js",
+    // Tashqi bloklar arxivi — asl kod, ilovaga ulanmagan (docs/tashqi-bloklar/README.md).
+    "docs/tashqi-bloklar/**",
   ]),
 ]);
 
