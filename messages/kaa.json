@@ -2691,7 +2691,15 @@
     "inDays": "{count} kúnnen keyin",
     "durationSuffix": "{count} min",
     "emptyTitle": "Aldag'ı sabaq joq",
-    "emptyDescription": "Ăli jobalanbagan — sabaq kestesin tekseriń."
+    "emptyDescription": "Ăli jobalanbagan — sabaq kestesin tekseriń.",
+    "noTopic": "Mavzu biriktirilmagan",
+    "addTopic": "Mavzu qoʻshish",
+    "addTopicTooltip": "Yangi mavzu yaratib, muharrirni ochish",
+    "link": "Ulash",
+    "linkTooltip": "Mavjud mavzuni shu darsga ulash",
+    "thisWeek": "Bu hafta",
+    "weekProgressAria": "Bu hafta {total} ta darsdan {done} tasiga mavzu biriktirilgan",
+    "holidayRow": "{day} — {name}"
   },
   "DashboardPage": {
     "unknownClass": "Belgisiz klas",
