@@ -4445,6 +4445,8 @@
     "duplicateBadge": "Bor"
   },
   "ImportSource": {
+    "emaktabSheet": "eMaktab: {info}",
+    "emaktabDetected": "eMaktab eksporti tanildi — {count} ta mavzu (sarlavha qatorlarisiz)",
     "errorEmpty": "Faylda maʼlumot topilmadi",
     "errorRead": "Faylni oʻqib boʻlmadi. .xlsx, .xls yoki .csv tanlang.",
     "dropTitle": "Faylni tanlang yoki shu yerga tashlang",

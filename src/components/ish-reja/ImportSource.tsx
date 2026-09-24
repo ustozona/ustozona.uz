@@ -17,6 +17,25 @@ import {
   autoMapping, clean, downloadTemplate, extract, pickSheet, readWorkbook, tableWidth, textToTable,
   type Extracted, type ImportKind, type Mapping, type Sheet, type SkippedItem,
 } from "@/lib/ish-reja/parse";
+import { parseEmaktabFileAction } from "@/server/actions/ish-reja";
+import type { EmaktabParseResult } from "@/lib/ish-reja/emaktab-types";
+
+/** Server action tanasi chegarasidan (4mb) past — eMaktab eksportlari
+    odatda 200 KB dan kichik. Kattaroq fayl faqat umumiy parser bilan. */
+const EMAKTAB_CLIENT_MAX = 3.5 * 1024 * 1024;
+
+/** eMaktab eksportini LessonLab dvigateli bilan oʻqish (yagona parser).
+    Har qanday xato — `unavailable`: umumiy parser odatdagidek ishlaydi. */
+async function readEmaktab(file: File): Promise<EmaktabParseResult> {
+  if (!/\.xlsx?$/i.test(file.name) || file.size > EMAKTAB_CLIENT_MAX) return { type: "unavailable" };
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    return await parseEmaktabFileAction(form);
+  } catch {
+    return { type: "unavailable" };
+  }
+}
 
 /* ════════════════════════════════════════════════════════════════════
    IMPORT MANBAI — boʻlim va dars oynalari uchun umumiy:
@@ -101,8 +120,33 @@ export function useImportSource(kind: ImportKind, mode: "paste" | "upload") {
     if (!file) return;
     setBusy(true);
     try {
-      const list = await readWorkbook(file);
+      // Umumiy parser va eMaktab dvigateli PARALLEL: dvigatel faqat
+      // boyitadi, javob bermasa yoki fayl eMaktab emas boʻlsa oqim
+      // avvalgidek qoladi.
+      const [list, em] = await Promise.all([
+        readWorkbook(file),
+        kind === "topics" ? readEmaktab(file) : Promise.resolve<EmaktabParseResult>({ type: "unavailable" }),
+      ]);
       if (!list.length) { toast.error(t("errorEmpty")); return; }
+      if (em.type === "lesson_plan" && em.data.lessons.length) {
+        /* eMaktab «Dars rejalashtirish» eksporti: faqat haqiqiy mavzular
+           (sarlavha qatorlari — «Sinf:», «Fan:», FIO — tushmaydi). Asl
+           varaqlar ham qoladi: oʻqituvchi xohlasa ularga oʻta oladi. */
+        const d = em.data;
+        const title = [d.subject, d.class_name, d.quarter ? `${d.quarter}` : ""].filter(Boolean);
+        const sheet: Sheet = {
+          name: t("emaktabSheet", { info: title.join(" · ") }),
+          // «Mavzu» — `TOPIC_HEADER` har tilda taniydigan sarlavha, shunda
+          // moslash avtomatik: nom ustuni = 0, sarlavha qatori = 0.
+          table: [["Mavzu"], ...d.lessons.map((l) => [l.topic])],
+        };
+        const all = [sheet, ...list];
+        setSheets(all);
+        setFileName(file.name);
+        selectSheet(0, all);
+        toast.success(t("emaktabDetected", { count: d.lessons.length }));
+        return;
+      }
       setSheets(list);
       setFileName(file.name);
       selectSheet(pickSheet(list, kind), list);
