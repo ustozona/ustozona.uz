@@ -48,6 +48,14 @@ export type TgConnection = {
   botUrl: string | null;
 };
 
+/** Ulash taklifidagi namuna — bot yuboradigan xabar, oddiy matn qatorlari. */
+export type TgDigestPreview = {
+  kind: "morning" | "evening";
+  /** Birinchi qator — sarlavha. */
+  lines: string[];
+  buttons: string[];
+};
+
 /** Kunlik xabarlar sozlamasi. Vaqt `HH:MM` (Toshkent), 15 daqiqa qadam. */
 export type TgNotifyPrefs = {
   morningEnabled: boolean;

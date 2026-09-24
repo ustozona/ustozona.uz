@@ -3,6 +3,7 @@
 import {
   cancelTgAuth,
   getTgConnection,
+  getTgDigestPreview,
   getTgNotifyPrefs,
   pollTgAuth,
   setTgMarketing,
@@ -14,6 +15,7 @@ import type {
   TgAuthPoll,
   TgAuthStart,
   TgConnection,
+  TgDigestPreview,
   TgNotifyPrefs,
 } from "@/lib/tg-auth-types";
 
@@ -38,6 +40,10 @@ export async function cancelTgAuthAction(): Promise<void> {
 
 export async function getTgConnectionAction(): Promise<TgConnection | null> {
   return getTgConnection();
+}
+
+export async function getTgDigestPreviewAction(): Promise<TgDigestPreview | null> {
+  return getTgDigestPreview();
 }
 
 export async function setTgMarketingAction(consent: boolean): Promise<boolean> {

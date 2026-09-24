@@ -9,6 +9,7 @@ import {
   getSignupTrends,
   type AtRiskTeacher,
 } from "@/server/dal/admin/stats";
+import { getTelegramStats } from "@/server/dal/admin/telegram";
 import { deviceLabel, type DeviceKind } from "@/lib/user-agent";
 import { activityLabel } from "@/lib/faollik";
 import {
@@ -227,6 +228,63 @@ async function ActivationSection() {
   );
 }
 
+/* ── Telegram: ulanish zanjiri ──
+   Har qator oldingisining quyi toʻplami EMAS (bloklangan, marketing —
+   yon koʻrsatkich), shuning uchun voronka emas, oddiy ulushlar roʻyxati.
+   Maxraj hamma joyda bitta — oʻqituvchilar soni. */
+async function TelegramSection() {
+  const s = await getTelegramStats();
+  const pctOf = (n: number) => (s.teachers ? Math.round((n / s.teachers) * 100) : 0);
+  const rows: { label: string; value: number; hint?: string }[] = [
+    { label: "Telegram ulangan", value: s.linked },
+    {
+      label: "Botni ochmagan",
+      value: s.linkedNoBot,
+      hint: "ulangan, lekin /start yoʻq — xabar olmaydi",
+    },
+    { label: "Xabar yetib boradi", value: s.botActive },
+    { label: "Oxirgi 7 kunda xabar olgan", value: s.digestWeek },
+    { label: "Telefon raqami bor", value: s.withPhone },
+    { label: "Marketingga rozi", value: s.marketingYes },
+    { label: "Botni bloklagan", value: s.blocked },
+  ];
+
+  return (
+    <Card className="shadow-none gap-0 p-0">
+      <div className="border-b border-border px-5 py-4">
+        <h2 className="heading-small">Telegram bot</h2>
+        <p className="text-caption text-muted-foreground">
+          {s.teachers} oʻqituvchidan ulush
+        </p>
+      </div>
+      <div className="grid gap-x-8 gap-y-3 p-5 md:grid-cols-2">
+        {rows.map((r) => (
+          <div key={r.label} className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="min-w-0">
+                {r.label}
+                {r.hint && (
+                  <span className="block text-caption text-muted-foreground">{r.hint}</span>
+                )}
+              </span>
+              <span className="shrink-0 font-medium tabular-nums">
+                {pctOf(r.value)}%
+                <span className="ml-2 font-normal text-muted-foreground">{r.value}</span>
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary"
+                style={{ width: `${pctOf(r.value)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function ActivationSkeleton() {
   return (
     <>
@@ -247,6 +305,10 @@ export default function AdminHomePage() {
 
       <Suspense fallback={<TrendsSkeleton />}>
         <TrendsSection />
+      </Suspense>
+
+      <Suspense fallback={<Skeleton className="h-[240px] rounded-xl" />}>
+        <TelegramSection />
       </Suspense>
     </div>
   );

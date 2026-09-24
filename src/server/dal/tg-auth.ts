@@ -7,6 +7,7 @@ import { db } from "@/server/db/client";
 import { tgAuthRequests, tgChats, tgNotifyPrefs, userTelegram } from "@/server/db/schema";
 import { getSession } from "@/server/session";
 import { botStartUrl, botUrl, isTelegramBotEnabled } from "@/server/telegram/config";
+import { digestNow } from "@/server/telegram/digest";
 import {
   REQUEST_TTL_MS,
   START_PREFIX,
@@ -24,6 +25,7 @@ import {
   type TgAuthPoll,
   type TgAuthStart,
   type TgConnection,
+  type TgDigestPreview,
   type TgNotifyPrefs,
 } from "@/lib/tg-auth-types";
 
@@ -281,4 +283,33 @@ export async function setTgNotifyPrefs(input: TgNotifyPrefs): Promise<boolean> {
     .values({ userId: session.user.id, ...values })
     .onConflictDoUpdate({ target: tgNotifyPrefs.userId, set: values });
   return true;
+}
+
+/* Ulash taklifidagi namuna — ustozning OʻZ maʼlumoti bilan quriladigan
+   haqiqiy xabar (bot yuboradigan matnning aynan oʻzi). Umumiy namuna
+   «bu menga kerakmi?» savoliga javob bermaydi, oʻz ertangi darslari esa
+   beradi. Ertaga aytadigan narsa boʻlmasa — bugungi ertalabki xabar. */
+export async function getTgDigestPreview(): Promise<TgDigestPreview | null> {
+  const session = await getSession();
+  if (!session || !isTelegramBotEnabled()) return null;
+  for (const kind of ["evening", "morning"] as const) {
+    const msg = await digestNow(session.user.id, kind);
+    if (msg) {
+      return {
+        kind,
+        lines: msg.text.split("\n").map(plainLine),
+        buttons: msg.buttons.map((b) => b.text),
+      };
+    }
+  }
+  return null;
+}
+
+/** Telegram HTML → oddiy matn: faqat `<b>` va `esc()` belgilari bor. */
+function plainLine(line: string): string {
+  return line
+    .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 }

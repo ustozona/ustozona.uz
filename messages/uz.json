@@ -2776,7 +2776,12 @@
     "startBot": "Telegram ulangan, lekin bot hali ishga tushirilmagan — eslatmalar kelishi uchun botni oching.",
     "phone": "Telefon raqamingizni qoʻshing — botda bitta tugma.",
     "openBot": "Botni ochish",
-    "later": "Keyinroq"
+    "later": "Keyinroq",
+    "preview": "Namuna",
+    "previewLoading": "Xabar tayyorlanmoqda…",
+    "previewEmpty": "Hozircha yuboradigan xabar yoʻq — jadvalga dars qoʻshilganda keladi.",
+    "previewEvening": "Kechqurun sizga shunday xabar keladi:",
+    "previewMorning": "Ertalab sizga shunday xabar keladi:"
   },
   "SignupForm": {
     "title": "Roʻyxatdan oʻtish",
