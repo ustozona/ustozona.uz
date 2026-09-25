@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDoskaStore } from "@/lib/doska/store";
+import { widgetMeta } from "@/lib/doska/registry";
 import { SHAPES, SHAPE_ORDER, toPixels, type ShapeId } from "@/lib/doska/shapes";
 import { BarButton } from "./BarButton";
 import { IconShape } from "./icons";
@@ -23,12 +25,15 @@ import { IconShape } from "./icons";
 
 export function ShapePicker() {
   const addWidget = useDoskaStore((s) => s.addWidget);
+  const t = useTranslations("Doska.widgets");
+  const tShape = useTranslations("Doska.shapes");
+  const meta = widgetMeta("shape.v1");
   const [open, setOpen] = React.useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <BarButton label="Shakl" Icon={IconShape} tint="cyan" />
+        <BarButton label={t(meta.labelKey)} Icon={IconShape} tint={meta.tint} />
       </PopoverTrigger>
 
       <PopoverContent
@@ -49,13 +54,13 @@ export function ShapePicker() {
                 setOpen(false);
               }}
               className="group flex flex-col items-center gap-1.5"
-              title={SHAPES[id].label}
+              title={tShape(id)}
             >
               <span className="group-hover:border-foreground/30 group-hover:bg-muted/50 grid h-12 w-full place-items-center rounded-md border transition-colors">
                 <ShapeGlyph id={id} />
               </span>
               <span className="text-muted-foreground group-hover:text-foreground text-center text-tag leading-tight transition-colors">
-                {SHAPES[id].label}
+                {tShape(id)}
               </span>
             </button>
           ))}

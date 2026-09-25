@@ -2068,6 +2068,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-gildirak": {
+        "title": "Wheel on the Doska: pick who answers, fairly",
+        "body": "Add the «Wheel» from the Doska’s bottom panel, type your students’ names with the pencil button and click the wheel — it spins and picks one student. In «Everyone once» mode a picked student leaves the wheel, so there’s no more «why always me?!»; when everyone has had a turn, you start a new round. If a student isn’t ready, press «Later» — they go back on the wheel and will come up again."
+      },
       "sahna-uslubi": {
         "title": "A new look for presentations and quizzes: fonts, styles and coloured answers",
         "body": "In the editor's «Theme» panel, choose a font (Nunito, Rubik, Montserrat, Onest) and a stage style — «Classic» or «Modern» — and both students' phones and the Board use it. Answer options are now coloured, with a shape and a number, so in a computer lab students can answer with the 1–6 keys. When the answer is revealed, the correct one turns green and a wrong pick turns red, while the Board shows question progress and a timer bar. In homework, students see their result right after each question."
@@ -4649,5 +4653,103 @@
     "bumpNoSlot": "No free slot for the last topic — it's now undated",
     "bumpNothing": "This topic isn't scheduled — nothing to push",
     "undo": "Undo"
-  }
+  },
+  "Doska": {
+    "widgets": {
+      "clock": "Clock",
+      "timer": "Timer",
+      "trafficLight": "Stoplight",
+      "text": "Text",
+      "stickyNote": "Note",
+      "shape": "Shape",
+      "presentation": "Slides",
+      "wheel": "Wheel"
+    },
+    "toolbar": {
+      "duplicate": "{widget} — duplicate",
+      "bringForward": "{widget} — bring forward",
+      "remove": "{widget} — delete"
+    },
+    "bar": {
+      "clear": "Clear",
+      "background": "Backdrop",
+      "home": "Ustozona home",
+      "fullscreen": "Full screen",
+      "showControls": "Show controls",
+      "hideControls": "Hide controls",
+      "prevScreen": "Previous screen",
+      "addScreen": "Add screen",
+      "screenNumber": "Screen {n}",
+      "menu": "Menu"
+    },
+    "guestNote": {
+      "text": "This screen is saved in this browser. <link>Sign in</link> to connect your class list.",
+      "dismiss": "Dismiss note"
+    },
+    "backgrounds": {
+      "chalkboard-green": "Green chalkboard",
+      "chalkboard-black": "Blackboard",
+      "whiteboard": "Whiteboard",
+      "grid-paper": "Grid paper",
+      "dot-paper": "Dot paper",
+      "notebook": "Notebook page",
+      "husnixat": "Handwriting practice",
+      "dusk": "Dusk",
+      "shakllar": "Colorful shapes"
+    },
+    "shapes": {
+      "triangle": "Triangle",
+      "right-triangle": "Right triangle",
+      "rectangle": "Rectangle",
+      "parallelogram": "Parallelogram",
+      "trapezoid": "Trapezoid",
+      "rhombus": "Rhombus",
+      "circle": "Circle",
+      "pentagon": "Pentagon",
+      "hexagon": "Hexagon"
+    },
+    "wheel": {
+      "spin": "Spin the wheel",
+      "hint": "Click to spin",
+      "editList": "Edit list",
+      "backToWheel": "Back to wheel",
+      "soundOn": "Mute",
+      "soundOff": "Unmute",
+      "counter": "{asked} / {total}",
+      "counterLabel": "{asked} of {total} picked",
+      "again": "Again",
+      "later": "Later",
+      "close": "Close",
+      "roundDone": "Everyone’s had a turn!",
+      "roundDoneHint": "All {total} names came up once.",
+      "newRound": "New round",
+      "listTitle": "Names",
+      "listHint": "One name per line",
+      "samplesHint": "Sample names are spinning now. Type your own list.",
+      "mode": "Picking",
+      "modeOnce": "Everyone once",
+      "modeOnceHint": "A picked student leaves the wheel. When everyone has had a turn, a new round begins.",
+      "modeRepeat": "Allow repeats",
+      "modeRepeatHint": "A picked student stays on the wheel and can come up again.",
+      "asked": "Picked",
+      "returnToPool": "Put {name} back on the wheel",
+      "resetRound": "Put everyone back",
+      "sound": "Sound",
+      "speed": "Speed",
+      "speedShort": "Fast",
+      "speedMedium": "Medium",
+      "speedLong": "Slow",
+      "sampleNames": [
+        "Ali",
+        "Emma",
+        "Liam",
+        "Sofia",
+        "Noah",
+        "Mia",
+        "Omar",
+        "Zara"
+      ],
+      "tooMany": "The wheel holds up to {max} names — the rest won’t appear."
+    }
+  }
 }

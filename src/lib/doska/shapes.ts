@@ -44,9 +44,8 @@ export type ShapeId =
 export type ShapePoint = readonly [number, number];
 
 export type ShapeDef = {
+  /** Nomi tarjimada: `Doska.shapes.<id>` (tanlash paneli va `aria-label`). */
   id: ShapeId;
-  /** Tanlash panelidagi nom. */
-  label: string;
   /** `null` — koʻpburchak emas (aylana). */
   points: readonly ShapePoint[] | null;
   /**
@@ -76,7 +75,6 @@ function regular(sides: number): ShapePoint[] {
 export const SHAPES: Record<ShapeId, ShapeDef> = {
   triangle: {
     id: "triangle",
-    label: "Uchburchak",
     // A tepada, B chap-pastda, C oʻng-pastda.
     points: [
       [0.5, 0],
@@ -86,7 +84,6 @@ export const SHAPES: Record<ShapeId, ShapeDef> = {
   },
   "right-triangle": {
     id: "right-triangle",
-    label: "Toʻgʻri burchakli",
     // Toʻgʻri burchak B da — katetlar vertikal va gorizontal, yaʼni
     // darslikdagi standart holat.
     points: [
@@ -98,7 +95,6 @@ export const SHAPES: Record<ShapeId, ShapeDef> = {
   },
   rectangle: {
     id: "rectangle",
-    label: "Toʻrtburchak",
     points: [
       [0, 0],
       [1, 0],
@@ -109,7 +105,6 @@ export const SHAPES: Record<ShapeId, ShapeDef> = {
   },
   parallelogram: {
     id: "parallelogram",
-    label: "Parallelogram",
     points: [
       [0.28, 0],
       [1, 0],
@@ -119,7 +114,6 @@ export const SHAPES: Record<ShapeId, ShapeDef> = {
   },
   trapezoid: {
     id: "trapezoid",
-    label: "Trapetsiya",
     points: [
       [0.25, 0],
       [0.75, 0],
@@ -129,7 +123,6 @@ export const SHAPES: Record<ShapeId, ShapeDef> = {
   },
   rhombus: {
     id: "rhombus",
-    label: "Romb",
     points: [
       [0.5, 0],
       [1, 0.5],
@@ -139,17 +132,14 @@ export const SHAPES: Record<ShapeId, ShapeDef> = {
   },
   circle: {
     id: "circle",
-    label: "Aylana",
     points: null,
   },
   pentagon: {
     id: "pentagon",
-    label: "Beshburchak",
     points: regular(5),
   },
   hexagon: {
     id: "hexagon",
-    label: "Oltiburchak",
     points: regular(6),
   },
 };

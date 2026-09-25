@@ -2068,6 +2068,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-gildirak": {
+        "title": "Doskada Dóńgelek: kim juwap beretuǵının ádil tańlań",
+        "body": "Doskanıń tómengi panelinen «Dóńgelek»ti qoyasız, qálem túymesi menen oqıwshılardıń atların jazasız hám dóńgelekti basasız — ol aylanıp, bir oqıwshını tańlaydı. «Hámme bir retten» rejiminde soralǵan oqıwshı dóńgelekten shıǵadı, sonlıqtan «nege hámme waqıt men?!» degen sóz bolmaydı; hámme soralǵannan keyin jańa aylanbanı baslaysız. Oqıwshı tayar bolmasa, «Keyinirek»ti basasız — ol dóńgelekke qaytıp, keyin qayta shıǵadı."
+      },
       "sahna-uslubi": {
         "title": "Prezentaciya hám testler ushın jańa kórinis: shrift, stil hám reńli juwaplar",
         "body": "Redaktordaǵı «Tema» panelinde shrifttı (Nunito, Rubik, Montserrat, Onest) hám sahna stilin — «Klassik» yamasa «Zamanagóy» — tańlaysız: oqıwshı telefonı da, Doska da usı kóriniste shıǵadı. Juwap variantları endi reńli, formalı hám nomerli — kompyuter klasında oqıwshılar 1–6 túymeleri menen juwap beredi. Juwap ashılǵanda durısı jasıl, qáte tańlaw qızıl bolıp shıǵadı, Doskada bolsa sorawlar progressi hám waqıt sızıǵı kórinedi. Úy tapsırmasında oqıwshı hár sorawdan keyin nátiyjesin dárhal kóredi."
@@ -4653,5 +4657,103 @@
     "bumpNoSlot": "Sońǵı temaǵa bos orın tabılmadı — sánesiz qaldı",
     "bumpNothing": "Bul tema kestege qoyılmaǵan — súriw ushın sessiya joq",
     "undo": "Biykarlaw"
-  }
+  },
+  "Doska": {
+    "widgets": {
+      "clock": "Saat",
+      "timer": "Taymer",
+      "trafficLight": "Svetofor",
+      "text": "Tekst",
+      "stickyNote": "Eslatpe",
+      "shape": "Figura",
+      "presentation": "Slaydlar",
+      "wheel": "Dóńgelek"
+    },
+    "toolbar": {
+      "duplicate": "{widget} — nusqa alıw",
+      "bringForward": "{widget} — aldınǵa shıǵarıw",
+      "remove": "{widget} — óshiriw"
+    },
+    "bar": {
+      "clear": "Tazalaw",
+      "background": "Fon",
+      "home": "Ustozona bas beti",
+      "fullscreen": "Tolıq ekran",
+      "showControls": "Basqarıwdı kórsetiw",
+      "hideControls": "Basqarıwdı jasırıw",
+      "prevScreen": "Aldınǵı ekran",
+      "addScreen": "Ekran qosıw",
+      "screenNumber": "{n}-ekran",
+      "menu": "Menyu"
+    },
+    "guestNote": {
+      "text": "Ekran usı brauzerde saqlanadı. <link>Kirseńiz</link>, klas dizimińiz jalǵanadı.",
+      "dismiss": "Eskertpeni jabıw"
+    },
+    "backgrounds": {
+      "chalkboard-green": "Jasıl doska",
+      "chalkboard-black": "Qara doska",
+      "whiteboard": "Aq taxta",
+      "grid-paper": "Katak dápter",
+      "dot-paper": "Noqatlı qaǵaz",
+      "notebook": "Dápter paraǵı",
+      "husnixat": "Hush jazıw shınıǵıwı",
+      "dusk": "Keshki reń",
+      "shakllar": "Reńli figuralar"
+    },
+    "shapes": {
+      "triangle": "Úshmúyeshlik",
+      "right-triangle": "Tuwrı múyeshli",
+      "rectangle": "Tórtmúyeshlik",
+      "parallelogram": "Parallelogramm",
+      "trapezoid": "Trapeciya",
+      "rhombus": "Romb",
+      "circle": "Sheńber",
+      "pentagon": "Besmúyeshlik",
+      "hexagon": "Altımúyeshlik"
+    },
+    "wheel": {
+      "spin": "Dóńgelekti aylandırıw",
+      "hint": "Basıń — aylanadı",
+      "editList": "Dizimdi ózgertiw",
+      "backToWheel": "Dóńgelekke qaytıw",
+      "soundOn": "Dawıstı óshiriw",
+      "soundOff": "Dawıstı qosıw",
+      "counter": "{asked} / {total}",
+      "counterLabel": "{total} adamnan {asked} soraldı",
+      "again": "Jáne",
+      "later": "Keyinirek",
+      "close": "Jabıw",
+      "roundDone": "Hámme soraldı!",
+      "roundDoneHint": "{total} adamnıń hámmesi bir retten shıqtı.",
+      "newRound": "Jańa aylanba",
+      "listTitle": "Atlar",
+      "listHint": "Hár qatarǵa bir at",
+      "samplesHint": "Házir úlgi atlar aylanıp tur. Óz dizimińizdi jazıń.",
+      "mode": "Tańlaw",
+      "modeOnce": "Hámme bir retten",
+      "modeOnceHint": "Soralǵan oqıwshı dóńgelekten shıǵadı. Hámme soralǵannan keyin jańa aylanba baslanadı.",
+      "modeRepeat": "Qaytalansın",
+      "modeRepeatHint": "Soralǵan oqıwshı dóńgelekte qaladı hám qayta shıǵıwı múmkin.",
+      "asked": "Soralǵanlar",
+      "returnToPool": "{name} — dóńgelekke qaytarıw",
+      "resetRound": "Hámmesin qaytarıw",
+      "sound": "Dawıs",
+      "speed": "Tezlik",
+      "speedShort": "Tez",
+      "speedMedium": "Orta",
+      "speedLong": "Áste",
+      "sampleNames": [
+        "Aygúl",
+        "Baxtiyar",
+        "Gúlnara",
+        "Ernazar",
+        "Dilbar",
+        "Azamat",
+        "Sáwle",
+        "Janibek"
+      ],
+      "tooMany": "Dóńgelekke {max} atqa shekem sıyadı — qalǵanları shıqpaydı."
+    }
+  }
 }

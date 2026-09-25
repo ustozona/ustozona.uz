@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 
 import { useDoskaStore, useActiveScreen } from "@/lib/doska/store";
 import { WIDGET_BAR_ORDER, widgetMeta } from "@/lib/doska/registry";
@@ -30,6 +31,8 @@ export function WidgetBar() {
   const addWidget = useDoskaStore((s) => s.addWidget);
   const clearScreen = useDoskaStore((s) => s.clearScreen);
   const screen = useActiveScreen();
+  const t = useTranslations("Doska.widgets");
+  const tBar = useTranslations("Doska.bar");
 
   // ⚠️ `?? []` bu yerda EMAS: har renderda yangi massiv yaratilib,
   // quyidagi `useMemo` ni har safar qayta hisoblatardi.
@@ -59,7 +62,7 @@ export function WidgetBar() {
       {WIDGET_BAR_ORDER.map((kind) => (
         <BarButton
           key={kind}
-          label={widgetMeta(kind).label}
+          label={t(widgetMeta(kind).labelKey)}
           Icon={WIDGET_ICONS[kind]}
           tint={widgetMeta(kind).tint}
           active={onScreen.has(kind)}
@@ -76,7 +79,7 @@ export function WidgetBar() {
       <BackgroundPicker />
 
       {(widgets?.length ?? 0) > 0 && (
-        <BarButton label="Tozalash" Icon={IconTrash} tint="rose" onClick={clearScreen} />
+        <BarButton label={tBar("clear")} Icon={IconTrash} tint="rose" onClick={clearScreen} />
       )}
     </BarGroup>
   );

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -22,6 +23,7 @@ export function BackgroundPicker() {
   const screen = useActiveScreen();
   const setBackground = useDoskaStore((s) => s.setBackground);
   const current = backgroundById(screen?.background);
+  const t = useTranslations("Doska");
 
   return (
     <Popover>
@@ -29,7 +31,7 @@ export function BackgroundPicker() {
         {/* Ikona, joriy fon namunasi EMAS: ochiq fonlar (katak, nuqta,
             oq taxta) 28px kvadratda deyarli oq boʻlib qoladi va tugma
             boʻsh koʻrinadi. Joriy tanlov popover ichida belgilanadi. */}
-        <BarButton label="Fon" Icon={IconBackground} tint="violet" />
+        <BarButton label={t("bar.background")} Icon={IconBackground} tint="violet" />
       </PopoverTrigger>
 
       <PopoverContent
@@ -69,7 +71,7 @@ export function BackgroundPicker() {
                   )}
                 </span>
                 <span className="text-muted-foreground text-tag leading-tight">
-                  {bg.label}
+                  {t(`backgrounds.${bg.id}`)}
                 </span>
               </button>
             );

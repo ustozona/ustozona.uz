@@ -2068,6 +2068,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-gildirak": {
+        "title": "Doskada Gʻildirak: kim javob berishini adolatli tanlang",
+        "body": "Doskaning pastki panelidan «Gʻildirak»ni qoʻyasiz, qalamcha tugmasi bilan oʻquvchilar ismini yozasiz va gʻildirakni bosasiz — u aylanib, bitta oʻquvchini tanlaydi. «Hamma bir martadan» rejimida soʻralgan bola gʻildirakdan chiqadi, shuning uchun «nega doim men?!» degan gap boʻlmaydi; hamma soʻralgach yangi aylanmani boshlaysiz. Bola tayyor boʻlmasa «Keyinroq»ni bosasiz — u gʻildirakka qaytadi va keyinroq yana chiqadi."
+      },
       "sahna-uslubi": {
         "title": "Taqdimot va testlar uchun yangi koʻrinish: shrift, uslub va rangli javoblar",
         "body": "Muharrirdagi «Mavzu» panelida shriftni (Nunito, Rubik, Montserrat, Onest) va sahna uslubini — «Klassik» yoki «Zamonaviy» — tanlaysiz: oʻquvchi telefoni ham, Doska ham shu koʻrinishda chiqadi. Javob variantlari endi rangli, shaklli va raqamli — kompyuter sinfida oʻquvchilar 1–6 tugmalari bilan javob beradi. Javob ochilganda toʻgʻrisi yashil, xato tanlov qizil boʻlib chiqadi, Doskada esa savollar progressi va vaqt chizigʻi koʻrinadi. Uyga vazifada oʻquvchi har savoldan keyin natijasini darhol koʻradi."
@@ -4540,5 +4544,103 @@
     "bumpNoSlot": "Oxirgi mavzuga jadvalda boʻsh joy topilmadi — sanasiz qoldi",
     "bumpNothing": "Bu mavzu jadvalga qoʻyilmagan — surish uchun sessiya yoʻq",
     "undo": "Bekor qilish"
-  }
+  },
+  "Doska": {
+    "widgets": {
+      "clock": "Soat",
+      "timer": "Taymer",
+      "trafficLight": "Svetofor",
+      "text": "Matn",
+      "stickyNote": "Eslatma",
+      "shape": "Shakl",
+      "presentation": "Taqdimot",
+      "wheel": "Gʻildirak"
+    },
+    "toolbar": {
+      "duplicate": "{widget} — nusxalash",
+      "bringForward": "{widget} — oldinga chiqarish",
+      "remove": "{widget} — oʻchirish"
+    },
+    "bar": {
+      "clear": "Tozalash",
+      "background": "Fon",
+      "home": "Ustozona bosh sahifasi",
+      "fullscreen": "Toʻliq ekran",
+      "showControls": "Boshqaruvni koʻrsatish",
+      "hideControls": "Boshqaruvni yashirish",
+      "prevScreen": "Oldingi ekran",
+      "addScreen": "Ekran qoʻshish",
+      "screenNumber": "{n}-ekran",
+      "menu": "Menyu"
+    },
+    "guestNote": {
+      "text": "Ekran shu brauzerda saqlanadi. <link>Kirsangiz</link> sinf roʻyxatingiz ulanadi.",
+      "dismiss": "Eslatmani yopish"
+    },
+    "backgrounds": {
+      "chalkboard-green": "Yashil doska",
+      "chalkboard-black": "Qora doska",
+      "whiteboard": "Oq taxta",
+      "grid-paper": "Katak daftar",
+      "dot-paper": "Nuqtali qogʻoz",
+      "notebook": "Daftar varagʻi",
+      "husnixat": "Husnixat mashqi",
+      "dusk": "Kechki tus",
+      "shakllar": "Rangli shakllar"
+    },
+    "shapes": {
+      "triangle": "Uchburchak",
+      "right-triangle": "Toʻgʻri burchakli",
+      "rectangle": "Toʻrtburchak",
+      "parallelogram": "Parallelogram",
+      "trapezoid": "Trapetsiya",
+      "rhombus": "Romb",
+      "circle": "Aylana",
+      "pentagon": "Beshburchak",
+      "hexagon": "Oltiburchak"
+    },
+    "wheel": {
+      "spin": "Gʻildirakni aylantirish",
+      "hint": "Bosing — aylanadi",
+      "editList": "Roʻyxatni tahrirlash",
+      "backToWheel": "Gʻildirakka qaytish",
+      "soundOn": "Ovozni oʻchirish",
+      "soundOff": "Ovozni yoqish",
+      "counter": "{asked} / {total}",
+      "counterLabel": "{total} kishidan {asked} tasi soʻraldi",
+      "again": "Yana",
+      "later": "Keyinroq",
+      "close": "Yopish",
+      "roundDone": "Hamma soʻraldi!",
+      "roundDoneHint": "{total} kishining hammasi bir martadan chiqdi.",
+      "newRound": "Yangi aylanma",
+      "listTitle": "Ismlar",
+      "listHint": "Har qatorga bitta ism",
+      "samplesHint": "Hozir namuna ismlar aylanmoqda. Oʻz roʻyxatingizni yozing.",
+      "mode": "Tanlash",
+      "modeOnce": "Hamma bir martadan",
+      "modeOnceHint": "Soʻralgan bola gʻildirakdan chiqadi. Hamma soʻralgach yangi aylanma boshlanadi.",
+      "modeRepeat": "Qaytarilsin",
+      "modeRepeatHint": "Soʻralgan bola gʻildirakda qoladi va yana chiqishi mumkin.",
+      "asked": "Soʻralganlar",
+      "returnToPool": "{name} — gʻildirakka qaytarish",
+      "resetRound": "Hammasini qaytarish",
+      "sound": "Ovoz",
+      "speed": "Tezlik",
+      "speedShort": "Tez",
+      "speedMedium": "Oʻrta",
+      "speedLong": "Sekin",
+      "sampleNames": [
+        "Aziza",
+        "Bobur",
+        "Dilnoza",
+        "Jasur",
+        "Madina",
+        "Otabek",
+        "Sevara",
+        "Sardor"
+      ],
+      "tooMany": "Gʻildirakka {max} tagacha ism sigʻadi — qolganlari chiqmaydi."
+    }
+  }
 }

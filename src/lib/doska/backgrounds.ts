@@ -18,8 +18,12 @@ import type { CSSProperties } from "react";
 export type BackgroundTone = "light" | "dark";
 
 export type DoskaBackground = {
+  /**
+   * Nomi shu yerda EMAS — tarjimada: `Doska.backgrounds.<id>`. Shuning
+   * uchun `id` yozilgach oʻzgartirilmaydi (saqlangan ekranlar ham unga
+   * tayanadi).
+   */
   id: string;
-  label: string;
   tone: BackgroundTone;
   style: CSSProperties;
   /** Doska teksturasi — yengil shovqin qatlami (faqat toʻq fonlarda). */
@@ -29,27 +33,23 @@ export type DoskaBackground = {
 export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
   {
     id: "chalkboard-green",
-    label: "Yashil doska",
     tone: "dark",
     grain: true,
     style: { background: "oklch(0.33 0.045 158)" },
   },
   {
     id: "chalkboard-black",
-    label: "Qora doska",
     tone: "dark",
     grain: true,
     style: { background: "oklch(0.22 0.008 250)" },
   },
   {
     id: "whiteboard",
-    label: "Oq taxta",
     tone: "light",
     style: { background: "oklch(0.97 0.002 250)" },
   },
   {
     id: "grid-paper",
-    label: "Katak daftar",
     tone: "light",
     style: {
       backgroundColor: "oklch(0.99 0.006 90)",
@@ -60,7 +60,6 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
   },
   {
     id: "dot-paper",
-    label: "Nuqtali qogʻoz",
     tone: "light",
     style: {
       backgroundColor: "oklch(0.98 0.004 90)",
@@ -79,7 +78,6 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
      * takrorlanishi koʻrinmaydi.
      */
     id: "notebook",
-    label: "Daftar varagʻi",
     tone: "light",
     style: {
       backgroundColor: "oklch(0.958 0 0)",
@@ -158,7 +156,6 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
      *   2. gorizontal ritm: band (2 kuchli) + oraliq (1 kuchsiz)
      */
     id: "husnixat",
-    label: "Husnixat mashqi",
     tone: "light",
     style: {
       backgroundColor: "oklch(1 0 0)",
@@ -182,7 +179,6 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
   },
   {
     id: "dusk",
-    label: "Kechki tus",
     tone: "dark",
     style: { background: "linear-gradient(160deg, oklch(0.36 0.07 265), oklch(0.34 0.09 300))" },
   },
@@ -296,7 +292,6 @@ export const DOSKA_BACKGROUNDS: DoskaBackground[] = [
      * buzmaydi.
      */
     id: "shakllar",
-    label: "Rangli shakllar",
     tone: "dark",
     style: {
       backgroundColor: "oklch(0.14 0.006 300)",

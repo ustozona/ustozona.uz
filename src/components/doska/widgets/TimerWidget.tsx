@@ -5,6 +5,7 @@ import { Pause, Play, RotateCcw, Plus } from "lucide-react";
 
 import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
+import { WidgetButton } from "./WidgetButton";
 
 /**
  * TAYMER — orqaga sanash.
@@ -63,22 +64,22 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
       </span>
 
       <div className="flex items-center gap-[2cqw]">
-        <TimerButton
+        <WidgetButton
           label={running ? "Toʻxtatish" : "Boshlash"}
           onClick={() => patch(widget.id, { running: !running })}
           disabled={finished}
         >
           {running ? <Pause className="size-[6cqw] min-h-4 min-w-4" /> : <Play className="size-[6cqw] min-h-4 min-w-4" />}
-        </TimerButton>
+        </WidgetButton>
 
-        <TimerButton
+        <WidgetButton
           label="Tiklash"
           onClick={() => patch(widget.id, { remainingSec: durationSec, running: false })}
         >
           <RotateCcw className="size-[6cqw] min-h-4 min-w-4" />
-        </TimerButton>
+        </WidgetButton>
 
-        <TimerButton
+        <WidgetButton
           label="Bir daqiqa qoʻshish"
           onClick={() =>
             patch(widget.id, {
@@ -89,37 +90,8 @@ export function TimerWidget({ widget }: { widget: DoskaWidget }) {
         >
           <Plus className="size-[6cqw] min-h-4 min-w-4" />
           <span className="text-[4cqw] leading-none font-medium">1</span>
-        </TimerButton>
+        </WidgetButton>
       </div>
     </div>
-  );
-}
-
-/**
- * Taymer tugmasi — `<Button>` primitivi EMAS: bu sirt ichida oʻlcham
- * konteyner kengligiga bogʻlangan (`cqw`), tugma esa vidjet fonining
- * ustida turadi. Primitiv bunday kontekstni bilmaydi.
- *
- * `data-doska-no-drag` shu yerda, har chaqiruvda emas: taymer tugmasi
- * boshqaruv ekan, uni bosish hech qachon sudrash boʻlmasligi kerak.
- * (`stopPropagation` bu ish uchun yaramaydi — sabab
- * `lib/doska/interaction.ts` dagi `ATTR_NO_DRAG` izohida.)
- */
-function TimerButton({
-  children,
-  label,
-  ...props
-}: React.ComponentProps<"button"> & { label: string }) {
-  return (
-    <button
-      type="button"
-      data-doska-no-drag=""
-      aria-label={label}
-      className="grid place-items-center gap-1 rounded-full bg-current/15 px-[4cqw] py-[2.5cqw] transition-opacity hover:opacity-80 disabled:opacity-40"
-      style={{ gridAutoFlow: "column" }}
-      {...props}
-    >
-      {children}
-    </button>
   );
 }

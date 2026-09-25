@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { flushDoskaPersist, useDoskaStore } from "@/lib/doska/store";
@@ -37,6 +38,7 @@ export function DoskaShell() {
   const activeScreenId = useDoskaStore((s) => s.activeScreenId);
   const addScreen = useDoskaStore((s) => s.addScreen);
   const setActiveScreen = useDoskaStore((s) => s.setActiveScreen);
+  const t = useTranslations("Doska.bar");
 
   /**
    * Panel yigʻilganmi.
@@ -86,7 +88,7 @@ export function DoskaShell() {
           {/* ── Yuqori qator ── */}
           <div className="flex items-start gap-2">
             <BarGroup>
-              <BarIconButton label="Ustozona bosh sahifasi" asChild>
+              <BarIconButton label={t("home")} asChild>
                 <Link href="/">
                   <IconHome className="size-5" />
                 </Link>
@@ -99,7 +101,7 @@ export function DoskaShell() {
                 ekranga tegishli amal, ikki alohida kartochka esa
                 burchakda ortiqcha shovqin edi. */}
             <BarGroup>
-              <BarIconButton label="Toʻliq ekran" onClick={toggleFullscreen}>
+              <BarIconButton label={t("fullscreen")} onClick={toggleFullscreen}>
                 <IconFullscreen className="size-5" />
               </BarIconButton>
               <BarDivider />
@@ -117,7 +119,7 @@ export function DoskaShell() {
               {barHidden ? (
                 <BarGroup layer="bar">
                   <BarIconButton
-                    label="Boshqaruvni koʻrsatish"
+                    label={t("showControls")}
                     onClick={() => setBarHidden(false)}
                   >
                     <IconChevronUp className="size-5" />
@@ -128,7 +130,7 @@ export function DoskaShell() {
                   <WidgetBar />
                   <BarGroup layer="bar">
                     <BarIconButton
-                      label="Boshqaruvni yashirish"
+                      label={t("hideControls")}
                       onClick={() => setBarHidden(true)}
                     >
                       <IconChevronDown className="size-5" />
@@ -141,7 +143,7 @@ export function DoskaShell() {
             <div className="flex grow basis-0 justify-end">
               <BarGroup layer="bar">
                 <BarIconButton
-                  label="Oldingi ekran"
+                  label={t("prevScreen")}
                   disabled={!hasPrev}
                   onClick={() => hasPrev && setActiveScreen(deck.screens[index - 1].id)}
                 >
@@ -150,7 +152,7 @@ export function DoskaShell() {
 
                 <ScreenCounter current={index + 1} />
 
-                <BarIconButton label="Ekran qoʻshish" onClick={addScreen}>
+                <BarIconButton label={t("addScreen")} onClick={addScreen}>
                   <IconAdd className="size-5" />
                 </BarIconButton>
               </BarGroup>
@@ -174,12 +176,13 @@ export function DoskaShell() {
  * jadvalga aylanadi.
  */
 function ScreenCounter({ current }: { current: number }) {
+  const t = useTranslations("Doska.bar");
   return (
     // Glif oʻzi bezak, lekin raqam maʼlumot — shuning uchun butun
     // boʻlak bitta nom bilan eʼlon qilinadi va ichi yashiriladi.
     <span
       role="img"
-      aria-label={`${current}-ekran`}
+      aria-label={t("screenNumber", { n: current })}
       className="flex shrink-0 flex-col items-center gap-[3px] px-1.5"
     >
       <span className="bg-border h-px w-3 rounded-full" aria-hidden="true" />

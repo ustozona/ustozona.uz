@@ -229,7 +229,9 @@ export const useDoskaStore = create<DoskaState>()(
             w: meta.defaultSize.w,
             h: meta.defaultSize.h,
             z: maxZ + 1,
-            state: { ...meta.initialState, ...initial },
+            // Chuqur nusxa: holatda massiv bor (gʻildirakning `picked`i) va
+            // reyestrdagi boshlangʻich qiymat hamma vidjetga umumiy.
+            state: { ...structuredClone(meta.initialState), ...initial },
           };
 
           set({
@@ -259,17 +261,16 @@ export const useDoskaStore = create<DoskaState>()(
           if (!source) return;
 
           const maxZ = screen?.widgets.reduce((m, w) => Math.max(m, w.z), 0) ?? 0;
-          // Surilish `state` NUSXASIDAN keyin: `state` sayoz koʻchiriladi,
-          // chunki vidjet holati oddiy qiymatlardan iborat (raqam, satr,
-          // bayroq). Ichma-ich obyekt paydo boʻlsa shu joy chuqur nusxaga
-          // oʻtishi kerak — aks holda nusxa asl bilan bogʻlanib qoladi.
+          // `state` CHUQUR koʻchiriladi: unda endi massiv va obyektlar bor
+          // (gʻildirakning `picked`i, taqdimotning `teams`i). Sayoz nusxada
+          // ular asl vidjet bilan bogʻlanib qolardi.
           const copy: DoskaWidget = {
             ...source,
             id: newId(),
             x: source.x + DUPLICATE_OFFSET,
             y: source.y + DUPLICATE_OFFSET,
             z: maxZ + 1,
-            state: { ...source.state },
+            state: structuredClone(source.state),
           };
 
           set({
