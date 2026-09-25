@@ -318,12 +318,37 @@ rejimi.
 
 ## Bosqichlar
 
-- **v1** — Doska yorliqlari tarjima kalitiga (R309) + vidjet, qoʻlda
-  roʻyxat, ikki rejim, «Keyinroq», tovush.
-- **v1.1** — sinf roʻyxati, premium (`teachers.plan === "pro"`): yangi
-  server action, ruxsat va plan tekshiruvi DAL ichida.
+- **v1** ✅ (PR #201) — Doska yorliqlari tarjima kalitiga (R309) +
+  vidjet, qoʻlda roʻyxat, ikki rejim, «Keyinroq», tovush.
+- **v1.1** ✅ — sinf roʻyxati, premium (`teachers.plan === "pro"`).
+  Tafsiloti pastda.
 - **v2 (2-qatlam)** — bugungi yoʻqlar davomatdan; gʻolib ekranida
   «+1 ball» → xulq ballariga.
+
+### v1.1 — sinf roʻyxatini ulash (2026-09-25)
+
+Kod: `server/dal/doska-wheel.ts` (ruxsat + tarif + roster),
+`server/dal/class-roster.ts` (joriy roʻyxat — Baholash varaqlari bilan
+umumiy), `server/actions/doska-wheel.ts`, roʻyxat tomonidagi
+`ConnectClass` va `RosterNames` (`WheelWidget.tsx`), umumiy
+`components/doska/ProBadge.tsx` va `ClassList.tsx`.
+
+| Qaror | Sabab |
+|---|---|
+| Tarif SERVERDA tekshiriladi; «kirmagan / Pro emas / sinf sizniki emas» — `denied` javobi, xato emas | yulduzcha — taklif, himoya emas; `/doska` kirmasdan ochiladi (R134) |
+| Ism SERVERDA qisqartiriladi («Aziza K.», `wheelDisplayNames`) | toʻliq ism brauzerga tushmaydi (R297) |
+| Kalit — oʻquvchi ID si, ism — faqat koʻrinish. «Soʻralganlar» va «bugun yoʻq» ID bilan saqlanadi | qisqa ism butun roʻyxatdan hisoblanadi: yangi «Aziza Komilova» kelsa, eski «Aziza K.» «Aziza Ka.» boʻladi — ism kalit boʻlsa, soʻralgan bola gʻildirakka qaytardi |
+| Ismlar localStorageʼda SAQLANMAYDI — faqat `classId`, sinf nomi va «bugun yoʻq» ID lari; ismlar har sahifa ochilishida serverdan olinadi, xotirada turadi | umumiy sinf kompyuterida keyingi odam roʻyxatni koʻrmasin; Pro tugasa roʻyxat ham yopilsin |
+| Roʻyxat sahifa davomida bir marta soʻraladi (faqat muvaffaqiyatli javob keshlanadi); mehmon deb topilsa xotiradagi ismlar ham tozalanadi | ekranlar orasida yurganda qayta soʻrov yoʻq |
+| Kirish turi keshlanmaydi — roʻyxat tomoni har ochilganda soʻraladi | mehmon «Kirish» dan qaytganda ham «kiring» koʻrmasin |
+| Tarmoq uzilsa — «Roʻyxat yuklanmadi» + «Qayta urinish», server matni koʻrsatilmaydi | server xabari faqat oʻzbekcha; tugmalar qotib qolmasin |
+| Bugun yoʻq bola — ismini bosib chiqariladi (`excluded`) | R296: «bittasini vaqtincha oʻchirib qoʻyish»; davomatdan avtomatik — v2 |
+| Qoʻlda yozilgan roʻyxat sinf ulanganda OʻCHIRILMAYDI | «Uzish» bosilsa u qaytadi |
+| Mehmon → «Kirish» (`/login`); bepul → «Pro haqida» (`/dashboard/settings?section=tarif`) | pullik band oʻchirilmaydi, taklif ochadi (DoskaMenu naqshi) |
+| 5-ism qoʻlda yozilganda yumshoq eslatma | Doska biznes modeli: ogʻriq his qilingandan keyin taklif, bloklamasdan |
+
+⚠️ Hozir hech kimda `plan = "pro"` yoʻq va toʻlov yoʻq — imkoniyat faqat
+`teachers.plan` qoʻlda oʻzgartirilganda ochiladi.
 
 ## Qarorlar (2026-09-25)
 

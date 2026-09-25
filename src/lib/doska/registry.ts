@@ -173,6 +173,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     // Holatning maʼnosi — `lib/doska/wheel.ts` dagi `WheelState`.
     initialState: {
       text: "",
+      roster: null,
       picked: [],
       mode: "once",
       rotation: 0,

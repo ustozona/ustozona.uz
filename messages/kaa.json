@@ -4684,7 +4684,8 @@
       "prevScreen": "Aldınǵı ekran",
       "addScreen": "Ekran qosıw",
       "screenNumber": "{n}-ekran",
-      "menu": "Menyu"
+      "menu": "Menyu",
+      "proFeature": "Tólewli múmkinshilik"
     },
     "guestNote": {
       "text": "Ekran usı brauzerde saqlanadı. <link>Kirseńiz</link>, klas dizimińiz jalǵanadı.",
@@ -4753,7 +4754,25 @@
         "Sáwle",
         "Janibek"
       ],
-      "tooMany": "Dóńgelekke {max} atqa shekem sıyadı — qalǵanları shıqpaydı."
+      "tooMany": "Dóńgelekke {max} atqa shekem sıyadı — qalǵanları shıqpaydı.",
+      "connectClass": "Klas diziminen alıw",
+      "connectGuest": "Jurnaldaǵı klas dizimin jalǵaw ushın akkauntıńızǵa kiriń.",
+      "login": "Kiriw",
+      "connectFree": "Klas dizimin jurnaldan alıw — Pro tarifindegi múmkinshilik.",
+      "aboutPro": "Pro haqqında",
+      "chooseClass": "Qaysı klas?",
+      "noClasses": "Sizde ele klas joq.",
+      "loading": "Júklenbekte…",
+      "loadFailed": "Dizimdi júklew múmkin bolmadı.",
+      "fromClass": "{className} dizimi",
+      "disconnect": "Ajıratıw",
+      "absentToggle": "{name} — búgin joq",
+      "absentHint": "Búgin joq oqıwshını basıń — ol dóńgelekke shıqpaydı.",
+      "suggestConnect": "Klasıńız jurnalda bolsa, atlardı qolda jazıw shárt emes.",
+      "rosterUnavailable": "Klas dizimi tek Pro tarifinde, akkauntıńızǵa kirgenińizde kórinedi.",
+      "rosterLocked": "Dizim jabıq",
+      "rosterFailed": "Dizim júklenbedi",
+      "retry": "Qaytadan urınıw"
     }
   }
 }

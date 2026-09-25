@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDoskaStore } from "@/lib/doska/store";
 import { barIconButtonClass } from "./BarGroup";
+import { ProBadge } from "./ProBadge";
 import { IconMenu, IconTrash, IconAdd, IconHome, IconUsers } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -112,20 +113,6 @@ export function DoskaMenu() {
         </div>
       </PopoverContent>
     </Popover>
-  );
-}
-
-/** Pro belgisi — sariq doira ichida yulduzcha.
-    Rang mavjud --warning tokenidan; yangi rang kiritilmaydi. */
-function ProBadge() {
-  return (
-    <svg viewBox="0 0 20 20" className="size-4 shrink-0" aria-label="Pullik imkoniyat">
-      <rect width="20" height="20" rx="10" fill="var(--warning)" />
-      <path
-        fill="#fff"
-        d="m11.504 11.77-1.082 2.936a.45.45 0 0 1-.844 0L8.496 11.77a.45.45 0 0 0-.266-.267l-2.935-1.082a.45.45 0 0 1 0-.844L8.23 8.496a.45.45 0 0 0 .266-.266l1.082-2.935a.45.45 0 0 1 .844 0l1.082 2.935a.45.45 0 0 0 .267.266l2.934 1.082a.45.45 0 0 1 0 .844l-2.934 1.082a.45.45 0 0 0-.267.267Z"
-      />
-    </svg>
   );
 }
 
