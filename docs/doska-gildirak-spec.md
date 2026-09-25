@@ -320,10 +320,41 @@ rejimi.
 
 - **v1** ✅ (PR #201) — Doska yorliqlari tarjima kalitiga (R309) +
   vidjet, qoʻlda roʻyxat, ikki rejim, «Keyinroq», tovush.
-- **v1.1** ✅ — sinf roʻyxati, premium (`teachers.plan === "pro"`).
+- **v1.1** ✅ (PR #203) — sinf roʻyxati, premium (`teachers.plan === "pro"`).
   Tafsiloti pastda.
-- **v2 (2-qatlam)** — bugungi yoʻqlar davomatdan; gʻolib ekranida
-  «+1 ball» → xulq ballariga.
+
+### Keyingi bosqichlar (2026-09-25)
+
+**v2 — jurnal bilan (Doska 2-qatlami)**
+1. Bugun yoʻqlar DAVOMATDAN avtomatik: ulangan sinfda bugungi darsda
+   «yoʻq» belgilanganlar gʻildirakka chiqmaydi (hozir qoʻlda). Projektorda
+   yoʻqlar roʻyxati koʻrsatilmaydi. Kalit — oʻquvchi ID si, tayyor.
+2. Gʻolibga bir bosishda «+1 ball» → xulq ballari (faqat ulangan sinfda).
+   Avto-ball semantikasi buzilmasin.
+3. «Kam soʻralganga ogʻdirish» darslar kesimida: aylanma (`picked`)
+   serverda sinfga bogʻlanadi, hafta davomida hamma navbat bilan
+   soʻraladi (R294). Hozir vidjetda, brauzerda.
+4. Guruh tuzish vidjeti — oʻsha roster + davomat/xulq bilan (R141).
+
+**Pro tarif**
+5. Hech kimda `plan = "pro"` yoʻq, admin panelda uni qoʻyish yoʻli ham
+   yoʻq — toʻlov yoki admin tugmasi kerak. Pro yoʻli brauzerda sinalmagan.
+6. Pro ishga tushganda — «Yangilanishlar» yozuvi.
+7. Menyudagi «Sinf roʻyxatini ulash» bandi hozir hech narsa qilmaydi —
+   `deck.classId` bilan ulansin; gʻildirak va taqdimot shu sinfni
+   oldindan olsin.
+
+**Tarjima qoldigʻi**
+8. Menyu ichi, taymer va svetofor `aria-label` lari, taqdimot vidjeti,
+   standart ekran nomi «Ekran».
+9. Qoraqalpoq, qozoq va qirgʻizcha matnlarni ona tili egasi tekshirsin.
+
+**Qayta ishlatish (R111)**
+10. `SpinWheel` + `lib/spin-wheel.ts` — Baholash «Random wheel»
+    shabloni (atamalar) va jonli darsda «kim javob beradi».
+
+**Mayda**
+11. `npm run check:tokens -- --update` — tokenlar bazasi tushirilmagan.
 
 ### v1.1 — sinf roʻyxatini ulash (2026-09-25)
 
