@@ -4680,7 +4680,8 @@
       "prevScreen": "Previous screen",
       "addScreen": "Add screen",
       "screenNumber": "Screen {n}",
-      "menu": "Menu"
+      "menu": "Menu",
+      "proFeature": "Paid feature"
     },
     "guestNote": {
       "text": "This screen is saved in this browser. <link>Sign in</link> to connect your class list.",
@@ -4749,7 +4750,25 @@
         "Omar",
         "Zara"
       ],
-      "tooMany": "The wheel holds up to {max} names — the rest won’t appear."
+      "tooMany": "The wheel holds up to {max} names — the rest won’t appear.",
+      "connectClass": "Use class list",
+      "connectGuest": "Sign in to connect your class list from the gradebook.",
+      "login": "Sign in",
+      "connectFree": "Taking the class list from the gradebook is a Pro feature.",
+      "aboutPro": "About Pro",
+      "chooseClass": "Which class?",
+      "noClasses": "You don’t have any classes yet.",
+      "loading": "Loading…",
+      "loadFailed": "Couldn’t load the list.",
+      "fromClass": "{className} list",
+      "disconnect": "Disconnect",
+      "absentToggle": "{name} — absent today",
+      "absentHint": "Tap a student who is absent today — they won’t appear on the wheel.",
+      "suggestConnect": "If your class is in the gradebook, you don’t need to type names by hand.",
+      "rosterUnavailable": "The class list is available only on Pro, when you’re signed in.",
+      "rosterLocked": "List locked",
+      "rosterFailed": "List didn’t load",
+      "retry": "Try again"
     }
   }
 }

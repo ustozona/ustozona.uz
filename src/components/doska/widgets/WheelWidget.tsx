@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Pencil, Volume2, VolumeX, X } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Pencil, Users, Volume2, VolumeX, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,12 +23,18 @@ import {
   WHEEL_MAX_ENTRIES,
   WHEEL_REDUCED_SPEED,
   WHEEL_SPEEDS,
+  type WheelAccess,
   type WheelMode,
+  type WheelRoster,
   type WheelSpeed,
   type WheelState,
+  type WheelStudent,
 } from "@/lib/doska/wheel";
+import { wheelAccessAction, wheelRosterAction } from "@/server/actions/doska-wheel";
 import { SpinWheel, type SpinRequest } from "@/components/stage/SpinWheel";
 import { playSpinTick, playSpinWinner, unlockSpinSound } from "@/components/stage/spin-sound";
+import { ClassList } from "../ClassList";
+import { ProBadge } from "../ProBadge";
 import { WidgetButton } from "./WidgetButton";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -43,15 +50,19 @@ import { WidgetButton } from "./WidgetButton";
      • «Keyinroq» — bola hovuzga qaytadi, qutulmaydi (R295);
      • gʻildirakda faqat ism (R297), vazn yoʻq (R291).
 
+   KALIT va KOʻRINISH ajratilgan: hovuz, «soʻralganlar», aylanish va gʻolib
+   KALITLAR bilan ishlaydi. Qoʻlda yozilgan roʻyxatda kalit = ismning
+   oʻzi; ulangan sinfda kalit = oʻquvchi ID si, ism esa faqat
+   `labelOf` orqali chiziladi (qisqa ism yangi bola kelganda oʻzgarishi
+   mumkin, ID — yoʻq).
+
    ⚠️ Saqlanadigani (store) — roʻyxat, soʻralganlar, rejim, burchak,
-   sozlamalar. Qaysi tomon ochiqligi, gʻolib kartochkasi va aylanish esa
-   KOMPONENT holati: ular faqat shu dars paytiga tegishli (wheel.ts
-   sarlavhasi). Sahifa aylanish oʻrtasida yangilansa gʻolib yoʻqoladi —
-   bu toʻgʻri: natija faqat gʻildirak toʻxtaganda yoziladi.
+   sozlamalar. Qaysi tomon ochiqligi, gʻolib kartochkasi, aylanish va
+   sinfdagi ismlar esa KOMPONENT holati (wheel.ts sarlavhasi).
    ════════════════════════════════════════════════════════════════════ */
 
 type ActiveSpin = SpinRequest & {
-  /** Aylanish davomida chiziladigan boʻlaklar — hovuz shu paytda muzlaydi. */
+  /** Aylanish davomida chiziladigan boʻlaklar (kalitlar) — hovuz shu paytda muzlaydi. */
   entries: string[];
   winner: string;
 };
@@ -62,7 +73,7 @@ type ActiveSpin = SpinRequest & {
  * (memo qilingan): oʻqituvchi roʻyxatni tahrirlasa yoki til almashsa u
  * boshqa massiv boʻladi va eski boʻlaklar oʻz-oʻzidan tushib qoladi.
  */
-type Landed = { source: string[]; names: string[] };
+type Landed = { source: string[]; keys: string[] };
 
 /** Vidjet kartasi — reyestrdagi `tint: "teal"`. */
 const CARD: React.CSSProperties = {
@@ -81,6 +92,8 @@ const RESULT_CARD: React.CSSProperties = {
 /** Natija kartochkasidagi matnli tugma — proyektordan oʻqilsin. */
 const RESULT_BUTTON: React.CSSProperties = { fontSize: "clamp(0.875rem, 4.2cqw, 1.4rem)" };
 
+const NO_KEYS: string[] = [];
+
 export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   const t = useTranslations("Doska.wheel");
   const patchWidgetState = useDoskaStore((s) => s.patchWidgetState);
@@ -95,15 +108,34 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   // esa `memo` — unga har safar yangi massiv berilsa memo foydasiz.
   const samples = React.useMemo(() => t.raw("sampleNames") as string[], [t]);
   const typed = React.useMemo(() => parseEntries(state.text), [state.text]);
-  const usingSamples = typed.length === 0;
-  const entries = React.useMemo(
-    () => (usingSamples ? samples : typed.slice(0, WHEEL_MAX_ENTRIES)),
-    [usingSamples, samples, typed],
-  );
+  const roster = state.roster;
+  const rosterLoad = useRosterStudents(roster?.classId ?? null);
+  const students = rosterLoad?.status === "ok" ? rosterLoad.students : null;
+
+  // Manba tartibi: ulangan sinf → qoʻlda yozilgan roʻyxat → namuna ismlar.
+  const usingSamples = !roster && typed.length === 0;
+  /** Gʻildirakka chiqishi mumkin boʻlganlar (chegaradan oldin). */
+  const allKeys = React.useMemo(() => {
+    if (roster) {
+      if (!students) return NO_KEYS; // yuklanmoqda / yopiq — gʻildirak boʻsh
+      const out = new Set(roster.excluded);
+      return students.filter((s) => !out.has(s.id)).map((s) => s.id);
+    }
+    return usingSamples ? samples : typed;
+  }, [roster, students, usingSamples, samples, typed]);
+  const entries = React.useMemo(() => allKeys.slice(0, WHEEL_MAX_ENTRIES), [allKeys]);
+  const overflow = allKeys.length > WHEEL_MAX_ENTRIES;
   const pool = React.useMemo(
     () => (state.mode === "once" ? remainingPool(entries, state.picked) : entries),
     [state.mode, entries, state.picked],
   );
+
+  /** Kalit → koʻrinadigan ism. Qoʻlda yozilgan roʻyxatda kalitning oʻzi. */
+  const labels = React.useMemo(
+    () => (students ? new Map(students.map((s) => [s.id, s.name])) : null),
+    [students],
+  );
+  const labelOf = React.useCallback((key: string) => labels?.get(key) ?? key, [labels]);
 
   const [side, setSide] = React.useState<"wheel" | "list">("wheel");
   const [winner, setWinner] = React.useState<string | null>(null);
@@ -135,7 +167,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
     // «Hamma bir martadan» da u darhol `picked` ga yoziladi; gʻildirak
     // uni shu zahoti olib tashlasa koʻrsatkich boshqa ismga qarab qolardi
     // va sinf «gʻildirak boshqasini koʻrsatdi» deb oʻylardi.
-    setLanded({ source: entries, names: spin.entries });
+    setLanded({ source: entries, keys: spin.entries });
     setWinner(spin.winner);
     if (state.sound) playSpinWinner();
     patch(
@@ -153,6 +185,14 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   });
   const onSpinEnd = React.useCallback((id: number) => finishRef.current(id), []);
 
+  const idle = !spin && !winner;
+  const shownKeys =
+    spin?.entries ??
+    (landed?.source === entries ? landed.keys : null) ??
+    // Aylanma tugaganda gʻildirak boʻsh qolmasin — hamma ism parda ostida koʻrinadi.
+    (pool.length > 0 ? pool : entries);
+  const shownLabels = React.useMemo(() => shownKeys.map(labelOf), [shownKeys, labelOf]);
+
   function newRound() {
     setLanded(null);
     patch({ picked: [] });
@@ -164,24 +204,33 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
         state={state}
         typed={typed}
         entries={entries}
+        overflow={overflow}
         usingSamples={usingSamples}
         samples={samples}
+        rosterLoad={rosterLoad}
+        labelOf={labelOf}
         patch={patch}
         onBack={() => setSide("wheel")}
-        onPickedChange={() => setLanded(null)}
+        onSourceChange={() => setLanded(null)}
       />
     );
   }
 
   const asked = entries.length - pool.length;
   const roundDone = state.mode === "once" && entries.length > 0 && pool.length === 0;
-  const idle = !spin && !winner;
   const canSpin = idle && pool.length > 0;
-  const shown =
-    spin?.entries ??
-    (landed?.source === entries ? landed.names : null) ??
-    // Aylanma tugaganda gʻildirak boʻsh qolmasin — hamma ism parda ostida koʻrinadi.
-    (pool.length > 0 ? pool : entries);
+  const winnerLabel = winner ? labelOf(winner) : null;
+
+  // Ulangan sinfning ismlari hali kelmagan yoki yopiq — gʻildirak boʻsh,
+  // sababini ustidagi yozuv aytadi.
+  const rosterHint =
+    roster && rosterLoad?.status !== "ok"
+      ? rosterLoad?.status === "denied"
+        ? t("rosterLocked")
+        : rosterLoad?.status === "failed"
+          ? t("rosterFailed")
+          : t("loading")
+      : null;
 
   return (
     <div className="relative size-full rounded-[var(--radius)] p-[5cqw]" style={CARD}>
@@ -207,17 +256,17 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
       >
         <SpinWheel
           className="size-full"
-          entries={shown}
+          entries={shownLabels}
           rotation={state.rotation}
           spin={spin}
           onTick={state.sound ? playSpinTick : undefined}
           onSpinEnd={onSpinEnd}
           // Yozuv faqat birinchi aylanishgacha — keyin u ismlarni yopadi.
-          hint={idle && state.rotation === 0 ? t("hint") : null}
+          hint={rosterHint ?? (idle && state.rotation === 0 ? t("hint") : null)}
         />
       </button>
 
-      {state.mode === "once" && (
+      {state.mode === "once" && entries.length > 0 && (
         <span
           className="absolute bottom-[2.5cqw] left-[2.5cqw] rounded-full bg-current/10 px-[2.5cqw] py-[0.8cqw] font-mono leading-none font-medium"
           style={{ fontSize: "clamp(0.7rem, 3.4cqw, 1.15rem)" }}
@@ -231,7 +280,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
           boʻlsa u paydo boʻlish bilan birga oʻqilmasdi: jonli hudud faqat
           OʻZGARISHNI eʼlon qiladi. Gʻildirakning oʻzi `aria-hidden`. */}
       <p className="sr-only" aria-live="polite">
-        {winner ?? ""}
+        {winnerLabel ?? ""}
       </p>
 
       {winner && !spin && (
@@ -241,7 +290,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
             className="line-clamp-2 leading-tight font-semibold break-words"
             style={{ fontSize: "clamp(1.5rem, 12cqw, 5rem)" }}
           >
-            {winner}
+            {winnerLabel}
           </p>
           <div className="flex flex-wrap justify-center gap-[2cqw]">
             {pool.length > 0 && (
@@ -302,6 +351,108 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   );
 }
 
+/* ── Sinf roʻyxati: yuklash va kesh ────────────────────────────────────
+   Ismlar localStorageʼda SAQLANMAYDI (wheel.ts, `WheelRoster`) — ular
+   har sahifa ochilishida serverdan olinadi va shu yerda, xotirada
+   turadi. Server har safar tarifni tekshiradi: Pro tugagan yoki
+   hisobdan chiqilgan boʻlsa javob `denied` va gʻildirak yopiladi. */
+
+type RosterLoad =
+  | { status: "loading" }
+  | { status: "ok"; className: string; students: WheelStudent[] }
+  | { status: "denied" }
+  | { status: "failed" };
+
+/**
+ * Sahifa davomida bitta sinf bir marta soʻraladi — ekranlar orasida
+ * yurganda gʻildirak qayta ochilsa ham server qayta chaqirilmaydi.
+ * Faqat MUVAFFAQIYATLI javob keshlanadi: rad javobi (kirib olgach) va
+ * tarmoq xatosi (internet qaytgach) keyingi safar qayta soʻraladi.
+ */
+const rosterCache = new Map<string, Promise<RosterLoad>>();
+
+function loadRoster(classId: string): Promise<RosterLoad> {
+  let request = rosterCache.get(classId);
+  if (!request) {
+    request = wheelRosterAction({ classId })
+      .then((res): RosterLoad => {
+        if (!res.ok) return { status: "failed" };
+        return res.data.status === "ok"
+          ? { status: "ok", className: res.data.className, students: res.data.students }
+          : { status: "denied" };
+      })
+      // Tarmoq uzilsa server amali REJECT qiladi — bu ham oddiy holat.
+      .catch((): RosterLoad => ({ status: "failed" }));
+    rosterCache.set(classId, request);
+    void request.then((r) => {
+      if (r.status !== "ok") rosterCache.delete(classId);
+    });
+  }
+  return request;
+}
+
+function useRosterStudents(classId: string | null): (RosterLoad & { retry: () => void }) | null {
+  const [result, setResult] = React.useState<{ classId: string; load: RosterLoad } | null>(null);
+  const [attempt, setAttempt] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!classId) return;
+    let alive = true;
+    void loadRoster(classId).then((load) => {
+      if (alive) setResult({ classId, load });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [classId, attempt]);
+
+  const retry = React.useCallback(() => {
+    setResult(null);
+    setAttempt((n) => n + 1);
+  }, []);
+
+  if (!classId) return null;
+  const load: RosterLoad = result?.classId === classId ? result.load : { status: "loading" };
+  return { ...load, retry };
+}
+
+/**
+ * Kirish turi har safar roʻyxat tomoni ochilganda soʻraladi — keshlanmaydi.
+ * Keshlansa: mehmon «Kirish» ni bosib kirgach Doskaga qaytganda ham
+ * «hisobingizga kiring» koʻrib turardi (sahifa qayta yuklanmaguncha).
+ * Bir vaqtda kelgan soʻrovlar bitta tarmoq chaqiruvida birlashadi.
+ */
+let accessInflight: Promise<WheelAccess> | null = null;
+
+function loadWheelAccess(): Promise<WheelAccess> {
+  accessInflight ??= wheelAccessAction()
+    .then((res): WheelAccess => (res.ok ? res.data : { access: "guest" }))
+    .catch((): WheelAccess => ({ access: "guest" }))
+    .then((access) => {
+      // Hisobdan chiqilgan — xotiradagi ismlar ham ketsin (umumiy kompyuter).
+      if (access.access === "guest") rosterCache.clear();
+      return access;
+    })
+    .finally(() => {
+      accessInflight = null;
+    });
+  return accessInflight;
+}
+
+function useWheelAccess(): WheelAccess | null {
+  const [access, setAccess] = React.useState<WheelAccess | null>(null);
+  React.useEffect(() => {
+    let alive = true;
+    void loadWheelAccess().then((a) => {
+      if (alive) setAccess(a);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  return access;
+}
+
 /* ── Roʻyxat tomoni ────────────────────────────────────────────────────
    Bu ASBOB, sinf uchun kontent emas — shuning uchun Doska panellari
    kabi neytral sirtda va `desk` shkalasida (`doska-bar`), umumiy
@@ -312,25 +463,33 @@ function WheelList({
   state,
   typed,
   entries,
+  overflow,
   usingSamples,
   samples,
+  rosterLoad,
+  labelOf,
   patch,
   onBack,
-  onPickedChange,
+  onSourceChange,
 }: {
   state: WheelState;
   /** Oʻqituvchi yozgan hamma ism — chegaradan oshgani ham. */
   typed: string[];
-  /** Gʻildirakka chiqadiganlari. */
+  /** Gʻildirakka chiqadiganlar (kalitlar). */
   entries: string[];
+  /** Roʻyxat gʻildirak chegarasidan uzun — ortigʻi chiqmaydi. */
+  overflow: boolean;
   usingSamples: boolean;
   samples: string[];
+  rosterLoad: (RosterLoad & { retry: () => void }) | null;
+  labelOf: (key: string) => string;
   patch: (next: Partial<WheelState>) => void;
   onBack: () => void;
-  /** `picked` qoʻlda oʻzgardi — gʻildirakdagi oxirgi holat eskirdi. */
-  onPickedChange: () => void;
+  /** Roʻyxat yoki `picked` qoʻlda oʻzgardi — gʻildirakdagi oxirgi holat eskirdi. */
+  onSourceChange: () => void;
 }) {
   const t = useTranslations("Doska.wheel");
+  const access = useWheelAccess();
 
   const modes: { value: WheelMode; label: string }[] = [
     { value: "once", label: t("modeOnce") },
@@ -342,13 +501,24 @@ function WheelList({
     { value: "long", label: t("speedLong") },
   ];
 
+  const roster = state.roster;
   const asked = state.mode === "once" ? pickedInList(entries, state.picked) : [];
-  const overflow = typed.length > WHEEL_MAX_ENTRIES;
+  const count = roster
+    ? rosterLoad?.status === "ok"
+      ? rosterLoad.students.length
+      : 0
+    : typed.length;
 
   const setPicked = (picked: string[]) => {
-    onPickedChange();
+    onSourceChange();
     patch({ picked });
   };
+
+  const overflowWarning = overflow && (
+    <p role="alert" className="text-destructive text-xs leading-snug">
+      {t("tooMany", { max: WHEEL_MAX_ENTRIES })}
+    </p>
+  );
 
   return (
     // Radius vidjet doirasidan olinadi — `doska-bar` uni ichkarida
@@ -371,8 +541,8 @@ function WheelList({
             <ArrowLeft />
           </Button>
           <span className="font-medium">{t("listTitle")}</span>
-          {typed.length > 0 && (
-            <span className="text-muted-foreground ml-auto pr-2 font-mono text-xs">{typed.length}</span>
+          {count > 0 && (
+            <span className="text-muted-foreground ml-auto pr-2 font-mono text-xs">{count}</span>
           )}
         </div>
 
@@ -390,41 +560,72 @@ function WheelList({
             </p>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-            <Textarea
-              value={state.text}
-              onChange={(e) => {
-                const text = e.target.value;
-                // Namunadan oʻz roʻyxatiga oʻtish — yangi sinf. Namuna ismlar
-                // bilan soʻralganlar «Soʻralganlar» ichida qolib ketmasin.
-                if (usingSamples && text.trim()) {
-                  onPickedChange();
-                  patch({ text, picked: [] });
-                } else {
-                  patch({ text });
-                }
+          {roster ? (
+            <RosterNames
+              roster={roster}
+              load={rosterLoad}
+              overflowWarning={overflowWarning}
+              onToggle={(id) => {
+                const out = roster.excluded.includes(id)
+                  ? roster.excluded.filter((x) => x !== id)
+                  : [...roster.excluded, id];
+                onSourceChange();
+                patch({ roster: { ...roster, excluded: out } });
               }}
-              placeholder={samples.join("\n")}
-              aria-label={t("listTitle")}
-              // Imlo tekshiruvi har ismni qizil chiziq bilan belgilamasin,
-              // brauzer tarjimasi ismni «tarjima» qilmasin (R302).
-              spellCheck={false}
-              translate="no"
-              rows={6}
-              // Ramkada `select-none` bor — maydon ichida qaytarib yoqiladi,
-              // aks holda oʻqituvchi yozganini belgilay olmaydi.
-              className="min-h-24 flex-1 resize-none select-text"
+              onDisconnect={() => {
+                // Qoʻlda yozilgan roʻyxat (`text`) oʻchirilmagan — u qaytadi.
+                onSourceChange();
+                patch({ roster: null, picked: [] });
+              }}
             />
-            {overflow ? (
-              <p role="alert" className="text-destructive text-xs leading-snug">
-                {t("tooMany", { max: WHEEL_MAX_ENTRIES })}
-              </p>
-            ) : (
-              <p className="text-muted-foreground text-xs leading-snug">
-                {usingSamples ? t("samplesHint") : t("listHint")}
-              </p>
-            )}
-          </div>
+          ) : (
+            <>
+              <ConnectClass
+                access={access}
+                onConnected={(next) => {
+                  onSourceChange();
+                  patch({ roster: next, picked: [] });
+                }}
+              />
+
+              <div className="flex min-h-0 flex-1 flex-col gap-1.5">
+                <Textarea
+                  value={state.text}
+                  onChange={(e) => {
+                    const text = e.target.value;
+                    // Namunadan oʻz roʻyxatiga oʻtish — yangi sinf. Namuna ismlar
+                    // bilan soʻralganlar «Soʻralganlar» ichida qolib ketmasin.
+                    if (usingSamples && text.trim()) {
+                      onSourceChange();
+                      patch({ text, picked: [] });
+                    } else {
+                      patch({ text });
+                    }
+                  }}
+                  placeholder={samples.join("\n")}
+                  aria-label={t("listTitle")}
+                  // Imlo tekshiruvi har ismni qizil chiziq bilan belgilamasin,
+                  // brauzer tarjimasi ismni «tarjima» qilmasin (R302).
+                  spellCheck={false}
+                  translate="no"
+                  rows={6}
+                  // Ramkada `select-none` bor — maydon ichida qaytarib yoqiladi,
+                  // aks holda oʻqituvchi yozganini belgilay olmaydi.
+                  className="min-h-24 flex-1 resize-none select-text"
+                />
+                {overflowWarning || (
+                  <p className="text-muted-foreground text-xs leading-snug">
+                    {usingSamples ? t("samplesHint") : t("listHint")}
+                  </p>
+                )}
+                {/* Yumshoq taklif (Doska biznes modeli): ogʻriq his qilingandan
+                    KEYIN — beshinchi ism qoʻlda yozilganda. Ishlatish bloklanmaydi. */}
+                {typed.length >= 5 && access && access.access !== "pro" && (
+                  <p className="text-muted-foreground text-xs leading-snug">{t("suggestConnect")}</p>
+                )}
+              </div>
+            </>
+          )}
 
           {asked.length > 0 && (
             <div className="flex flex-col gap-1.5">
@@ -443,15 +644,15 @@ function WheelList({
                 </Button>
               </div>
               <div className="flex flex-wrap gap-1.5" translate="no">
-                {asked.map(({ name, index }) => (
+                {asked.map(({ name: key, index }) => (
                   <button
                     key={index}
                     type="button"
-                    aria-label={t("returnToPool", { name })}
+                    aria-label={t("returnToPool", { name: labelOf(key) })}
                     onClick={() => setPicked(state.picked.filter((_, j) => j !== index))}
                     className="bg-muted hover:bg-muted/70 inline-flex items-center gap-1 rounded-full py-0.5 pr-2 pl-3 text-xs transition-colors"
                   >
-                    {name}
+                    {labelOf(key)}
                     <X className="size-3.5 opacity-60" />
                   </button>
                 ))}
@@ -474,6 +675,182 @@ function WheelList({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Sinf roʻyxatini ulash (v1.1, pullik — R296) ──────────────────────
+   Pullik band OʻCHIRILMAYDI: yulduzcha bilan turadi, bosilganda taklif
+   ochiladi (DoskaMenu naqshi). Ruxsat va tarif serverda tekshiriladi —
+   bu yerdagi `access` faqat nimani koʻrsatishni hal qiladi. */
+
+function ConnectClass({
+  access,
+  onConnected,
+}: {
+  access: WheelAccess | null;
+  onConnected: (roster: WheelRoster) => void;
+}) {
+  const t = useTranslations("Doska.wheel");
+  const [open, setOpen] = React.useState(false);
+  const [busy, setBusy] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  async function connect(classId: string) {
+    setBusy(classId);
+    setError(null);
+    try {
+      // `loadRoster` hech qachon reject qilmaydi (tarmoq xatosi — `failed`)
+      // va muvaffaqiyatli javobni keshlaydi: vidjet ismlarni shu zahoti oladi.
+      const load = await loadRoster(classId);
+      if (load.status === "ok") {
+        onConnected({ classId, className: load.className, excluded: [] });
+      } else {
+        // Server matni koʻrsatilmaydi — u faqat oʻzbekcha; oʻrniga tarjima.
+        setError(load.status === "denied" ? t("rosterUnavailable") : t("loadFailed"));
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="w-fit"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <Users />
+        {t("connectClass")}
+        {/* Faqat kirish turi MAʼLUM boʻlganda: yuklanish paytida Pro
+            foydalanuvchiga ham «pullik» yulduzchasi lip etib koʻrinardi. */}
+        {access && access.access !== "pro" && <ProBadge />}
+      </Button>
+
+      {open && (
+        <div className="bg-muted/50 flex flex-col gap-2 rounded-md p-3">
+          {access === null && <p className="text-muted-foreground text-xs">{t("loading")}</p>}
+
+          {access?.access === "guest" && (
+            <>
+              <p className="text-xs leading-snug">{t("connectGuest")}</p>
+              <Button asChild size="sm" className="w-fit">
+                <Link href="/login">{t("login")}</Link>
+              </Button>
+            </>
+          )}
+
+          {access?.access === "free" && (
+            <>
+              <p className="text-xs leading-snug">{t("connectFree")}</p>
+              <Button asChild size="sm" className="w-fit">
+                <Link href="/dashboard/settings?section=tarif">{t("aboutPro")}</Link>
+              </Button>
+            </>
+          )}
+
+          {access?.access === "pro" && (
+            <div className="flex flex-col gap-1">
+              <ClassList
+                title={t("chooseClass")}
+                classes={access.classes}
+                error={error}
+                busyId={busy}
+                loadingText={t("loading")}
+                emptyText={t("noClasses")}
+                onPick={(classId) => void connect(classId)}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Ulangan sinf: ismlar — tugma. Bosilgan bola bugun yoʻq deb belgilanadi va
+ * gʻildirakka chiqmaydi (R296: «bittasini vaqtincha oʻchirib qoʻyish»).
+ * Davomatdan avtomatik olish — keyingi bosqich (v2).
+ */
+function RosterNames({
+  roster,
+  load,
+  overflowWarning,
+  onToggle,
+  onDisconnect,
+}: {
+  roster: WheelRoster;
+  load: (RosterLoad & { retry: () => void }) | null;
+  overflowWarning: React.ReactNode;
+  onToggle: (studentId: string) => void;
+  onDisconnect: () => void;
+}) {
+  const t = useTranslations("Doska.wheel");
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-2">
+        <Users className="text-muted-foreground size-4" />
+        <span className="font-medium">{t("fromClass", { className: roster.className })}</span>
+        <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={onDisconnect}>
+          {t("disconnect")}
+        </Button>
+      </div>
+
+      {(load === null || load.status === "loading") && (
+        <p className="text-muted-foreground text-xs">{t("loading")}</p>
+      )}
+
+      {load?.status === "denied" && (
+        <p role="alert" className="text-xs leading-snug">
+          {t("rosterUnavailable")}
+        </p>
+      )}
+
+      {load?.status === "failed" && (
+        <div className="flex items-center gap-2">
+          <p role="alert" className="text-destructive text-xs">
+            {t("loadFailed")}
+          </p>
+          <Button type="button" variant="outline" size="sm" onClick={load.retry}>
+            {t("retry")}
+          </Button>
+        </div>
+      )}
+
+      {load?.status === "ok" && (
+        <>
+          <div className="flex flex-wrap gap-1.5" translate="no">
+            {load.students.map((s) => {
+              const absent = roster.excluded.includes(s.id);
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  aria-pressed={absent}
+                  aria-label={t("absentToggle", { name: s.name })}
+                  onClick={() => onToggle(s.id)}
+                  className={cn(
+                    "rounded-full px-3 py-0.5 text-xs transition-colors",
+                    absent
+                      ? "bg-muted text-muted-foreground line-through"
+                      : "bg-primary/10 hover:bg-primary/15",
+                  )}
+                >
+                  {s.name}
+                </button>
+              );
+            })}
+          </div>
+          {overflowWarning || (
+            <p className="text-muted-foreground text-xs leading-snug">{t("absentHint")}</p>
+          )}
+        </>
+      )}
     </div>
   );
 }

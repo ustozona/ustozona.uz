@@ -4571,7 +4571,8 @@
       "prevScreen": "Oldingi ekran",
       "addScreen": "Ekran qoʻshish",
       "screenNumber": "{n}-ekran",
-      "menu": "Menyu"
+      "menu": "Menyu",
+      "proFeature": "Pullik imkoniyat"
     },
     "guestNote": {
       "text": "Ekran shu brauzerda saqlanadi. <link>Kirsangiz</link> sinf roʻyxatingiz ulanadi.",
@@ -4640,7 +4641,25 @@
         "Sevara",
         "Sardor"
       ],
-      "tooMany": "Gʻildirakka {max} tagacha ism sigʻadi — qolganlari chiqmaydi."
+      "tooMany": "Gʻildirakka {max} tagacha ism sigʻadi — qolganlari chiqmaydi.",
+      "connectClass": "Sinf roʻyxatidan olish",
+      "connectGuest": "Jurnaldagi sinf roʻyxatini ulash uchun hisobingizga kiring.",
+      "login": "Kirish",
+      "connectFree": "Sinf roʻyxatini jurnaldan olish — Pro tarifidagi imkoniyat.",
+      "aboutPro": "Pro haqida",
+      "chooseClass": "Qaysi sinf?",
+      "noClasses": "Sizda hali sinf yoʻq.",
+      "loading": "Yuklanmoqda…",
+      "loadFailed": "Roʻyxatni yuklab boʻlmadi.",
+      "fromClass": "{className} roʻyxati",
+      "disconnect": "Uzish",
+      "absentToggle": "{name} — bugun yoʻq",
+      "absentHint": "Bugun yoʻq bolani bosing — u gʻildirakka chiqmaydi.",
+      "suggestConnect": "Sinfingiz jurnalda boʻlsa, ismlarni qoʻlda yozish shart emas.",
+      "rosterUnavailable": "Sinf roʻyxati faqat Pro tarifida, hisobingizga kirganingizda koʻrinadi.",
+      "rosterLocked": "Roʻyxat yopiq",
+      "rosterFailed": "Roʻyxat yuklanmadi",
+      "retry": "Qayta urinish"
     }
   }
 }

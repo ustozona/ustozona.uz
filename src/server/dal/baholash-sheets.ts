@@ -1,10 +1,11 @@
 import "server-only";
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/server/db/client";
-import { classes, enrollments, students } from "@/server/db/schema";
+import { classes } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import { assertTeachesClass } from "@/server/workspace";
 import { getSet } from "./assess/sets";
+import { activeClassRoster } from "./class-roster";
 
 /* ════════════════════════════════════════════════════════════════════
    QOGʻOZ TEST — varaq maʼlumotini yigʻish
@@ -101,18 +102,9 @@ export async function buildSheetPlan(
     .limit(1);
   if (!cls) throw new Error("Sinf topilmadi");
 
-  const rows = await db
-    .select({ id: students.id, name: students.name, status: students.status })
-    .from(enrollments)
-    .innerJoin(students, eq(students.id, enrollments.studentId))
-    /* `isNull(endedAt)` — sinfdan chiqib ketgan bolaga varaq chop
-       etilmaydi. Yozilishi yopilgan, lekin jurnalda baholari qolgan
-       (docs/oquvchini-kochirish-spec.md §4). */
-    .where(and(eq(enrollments.classId, cls.id), isNull(enrollments.endedAt)))
-    .orderBy(asc(enrollments.sortOrder), asc(students.createdAt));
-
-  // `archived` — sinfdan chiqqan oʻquvchi, unga varaq chop etilmaydi.
-  const active = rows.filter((r) => r.status !== "archived");
+  // Sinfdan chiqib ketgan (yozilishi yopilgan yoki arxivlangan) bolaga
+  // varaq chop etilmaydi — «joriy roʻyxat» taʼrifi `class-roster.ts` da.
+  const active = await activeClassRoster(cls.id);
 
   return {
     testRef: refOf(set.id),

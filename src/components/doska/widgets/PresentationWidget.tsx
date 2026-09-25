@@ -33,6 +33,7 @@ import {
   startLiveSessionAction,
 } from "@/server/actions/assess-live";
 import { useLiveNudge } from "@/hooks/useLiveNudge";
+import { ClassList } from "../ClassList";
 import {
   ChoiceGrid,
   ChoiceTile,
@@ -766,24 +767,16 @@ function LiveStarter({
           data-doska-no-drag=""
           className="absolute bottom-full left-0 z-10 mb-2 flex max-h-64 w-56 flex-col gap-1 overflow-y-auto rounded-lg bg-card p-2 text-card-foreground shadow-lg"
         >
-          <p className="px-2 py-1 text-caption text-muted-foreground">Qaysi sinf qoʻshiladi?</p>
-          {error && <p className="px-2 text-caption text-destructive">{error}</p>}
-          {classes === null && !error && <p className="px-2 text-sm opacity-70">Yuklanmoqda…</p>}
-          {classes?.length === 0 && <p className="px-2 text-sm opacity-70">Sinf topilmadi</p>}
-          {classes?.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              disabled={busy}
-              onClick={() => void start(c.id)}
-              className={cn(
-                "rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted disabled:opacity-50",
-                c.id === preferredClassId && "font-semibold",
-              )}
-            >
-              {c.name}
-            </button>
-          ))}
+          <ClassList
+            title="Qaysi sinf qoʻshiladi?"
+            classes={classes}
+            error={error}
+            busy={busy}
+            preferredId={preferredClassId}
+            loadingText="Yuklanmoqda…"
+            emptyText="Sinf topilmadi"
+            onPick={(classId) => void start(classId)}
+          />
         </div>
       )}
     </div>
