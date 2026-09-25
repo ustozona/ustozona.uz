@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import type { DoskaWidget } from "@/lib/doska/types";
 import {
   centroid,
@@ -26,6 +28,7 @@ import {
    ════════════════════════════════════════════════════════════════════ */
 
 export function ShapeWidget({ widget }: { widget: DoskaWidget }) {
+  const t = useTranslations("Doska.shapes");
   const def = shapeById(widget.state.shape);
   const showLabels = widget.state.labels !== false;
 
@@ -49,7 +52,7 @@ export function ShapeWidget({ widget }: { widget: DoskaWidget }) {
       viewBox={`0 0 ${w} ${h}`}
       className="block size-full overflow-visible"
       style={{ color: "var(--doska-ink)" }}
-      aria-label={def.label}
+      aria-label={t(def.id)}
     >
       {def.points ? (
         <Polygon def={def} w={w} h={h} pad={pad} stroke={stroke} font={font} labels={showLabels} />

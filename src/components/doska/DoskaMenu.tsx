@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -33,6 +34,7 @@ export function DoskaMenu() {
   const clearScreen = useDoskaStore((s) => s.clearScreen);
   const removeScreen = useDoskaStore((s) => s.removeScreen);
   const addScreen = useDoskaStore((s) => s.addScreen);
+  const t = useTranslations("Doska.bar");
 
   const screenCount = deck.screens.length;
 
@@ -40,7 +42,7 @@ export function DoskaMenu() {
     <Popover>
       <PopoverTrigger asChild>
         {/* Idish yoʻq — tugma `DoskaShell` dagi guruh ichida turadi. */}
-        <button type="button" aria-label="Menyu" className={barIconButtonClass}>
+        <button type="button" aria-label={t("menu")} className={barIconButtonClass}>
           <IconMenu className="size-5" />
         </button>
       </PopoverTrigger>

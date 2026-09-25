@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import type { DoskaWidget } from "@/lib/doska/types";
@@ -38,7 +40,9 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
   const duplicateWidget = useDoskaStore((s) => s.duplicateWidget);
   const bringToFront = useDoskaStore((s) => s.bringToFront);
 
-  const label = widgetMeta(widget.kind).label;
+  const tWidget = useTranslations("Doska.widgets");
+  const t = useTranslations("Doska.toolbar");
+  const name = tWidget(widgetMeta(widget.kind).labelKey);
 
   // Vidjet ekranning tepasiga yopishganda panel yuqorida joy topolmaydi
   // va kanvasdan chiqib ketardi — bunday holatda pastga tushadi.
@@ -56,7 +60,7 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
     >
       <BarGroup layer="context">
         <BarIconButton
-          label={`${label} — nusxalash`}
+          label={t("duplicate", { widget: name })}
           data-doska-no-drag=""
           onClick={() => duplicateWidget(widget.id)}
         >
@@ -64,7 +68,7 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
         </BarIconButton>
 
         <BarIconButton
-          label={`${label} — oldinga chiqarish`}
+          label={t("bringForward", { widget: name })}
           data-doska-no-drag=""
           onClick={() => bringToFront(widget.id)}
         >
@@ -74,7 +78,7 @@ export function WidgetToolbar({ widget }: { widget: DoskaWidget }) {
         <BarDivider />
 
         <BarIconButton
-          label={`${label} — oʻchirish`}
+          label={t("remove", { widget: name })}
           data-doska-no-drag=""
           onClick={() => removeWidget(widget.id)}
           className="hover:bg-destructive/10 hover:text-destructive"

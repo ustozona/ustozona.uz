@@ -2087,6 +2087,21 @@
   --doska-note-bg: oklch(0.91 0.06 350);
   --doska-note-fg: oklch(0.36 0.09 350);
   --doska-note-edge: oklch(0.8 0.1 350);
+
+  /* Gʻildirak vidjetining kartasi — reyestrdagi `tint: "teal"`. */
+  --doska-teal-bg: oklch(0.94 0.05 185);
+  --doska-teal-fg: oklch(0.36 0.08 195);
+  --doska-teal-edge: oklch(0.74 0.11 190);
+
+  /* Gʻildirakning oʻzi — JISMONIY obyekt, yopishqoq qogʻoz kabi: boʻr
+     rejimida QAYTA BELGILANMAYDI, aks holda boʻlak ustidagi ism oq
+     boʻlib och boʻlakda koʻrinmay qoladi. Boʻlak ranglari
+     `class-colors.ts` palitrasidan — bu yerda faqat siyoh (ism,
+     koʻrsatkich), gardish, ofset soya va gʻolib ostidagi parda. */
+  --doska-wheel-ink: oklch(0.26 0.02 260);
+  --doska-wheel-rim: oklch(0.99 0 0);
+  --doska-wheel-edge: oklch(0.26 0.02 260 / 0.28);
+  --doska-wheel-scrim: oklch(0.2 0.02 260 / 0.45);
 }
 
 /* ── Doska: bo'r rejimi ──
@@ -2109,6 +2124,10 @@
   --doska-slate-bg: oklch(1 0 0 / 0.08);
   --doska-slate-fg: oklch(0.95 0.01 260);
   --doska-slate-edge: oklch(1 0 0 / 0.14);
+
+  --doska-teal-bg: oklch(1 0 0 / 0.08);
+  --doska-teal-fg: oklch(0.95 0.03 185);
+  --doska-teal-edge: oklch(1 0 0 / 0.14);
 
   /* Siyoh → bo'r. Matn vidjeti idishsiz boʻlgani uchun toʻq fonda
      uning yagona rangi shu — va u oq boʻlmasa matn koʻrinmay qoladi. */

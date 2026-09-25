@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-gildirak",
+    date: "2026-09-25",
+    type: "yangi",
+    title: "Doskada Gʻildirak: kim javob berishini adolatli tanlang",
+    body:
+      "Doskaning pastki panelidan «Gʻildirak»ni qoʻyasiz, qalamcha tugmasi bilan oʻquvchilar ismini yozasiz va gʻildirakni bosasiz — u aylanib, bitta oʻquvchini tanlaydi. «Hamma bir martadan» rejimida soʻralgan bola gʻildirakdan chiqadi, shuning uchun «nega doim men?!» degan gap boʻlmaydi; hamma soʻralgach yangi aylanmani boshlaysiz. Bola tayyor boʻlmasa «Keyinroq»ni bosasiz — u gʻildirakka qaytadi va keyinroq yana chiqadi.",
+    href: "/doska",
+  },
+  {
     id: "sahna-uslubi",
     date: "2026-09-19",
     type: "yangi",

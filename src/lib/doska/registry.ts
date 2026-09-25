@@ -13,10 +13,39 @@ import type { WidgetKind } from "./types";
    (R132 "Edit widget bar") — shuning uchun tartib shu yerda.
    ════════════════════════════════════════════════════════════════════ */
 
+/**
+ * Vidjet nomining tarjima kaliti — `messages/*.json` dagi
+ * `Doska.widgets.*`.
+ *
+ * Nega `kind` ning oʻzi emas: `kind` da nuqta bor (`"clock.v1"`),
+ * next-intl esa nuqtani ichma-ich yoʻl deb oʻqiydi. Ustiga nom versiyaga
+ * bogʻliq emas — `timer.v2` chiqsa ham u «Taymer» boʻlib qoladi.
+ */
+export type WidgetLabelKey =
+  | "clock"
+  | "timer"
+  | "trafficLight"
+  | "text"
+  | "stickyNote"
+  | "shape"
+  | "presentation"
+  | "wheel";
+
 export type WidgetMeta = {
   kind: WidgetKind;
-  /** Panelda koʻrinadigan nom. */
-  label: string;
+  /**
+   * Panelda koʻrinadigan nom — tarjima KALITI, matn emas. Reyestr
+   * Reactʼsiz qoladi, matnni esa komponent `useTranslations("Doska.widgets")`
+   * orqali oladi.
+   *
+   * ⚠️ Panel tugmasi 52px va yorligʻi `truncate` (11px, DM Sans). Chegara
+   * HARF SONI EMAS, piksel: «Gʻildirak» 9 harf, lekin ~39px — sigʻadi;
+   * «Yopishqoq» ham 9 harf, lekin 54.6px — «Yopishq…» boʻlib kesilgan.
+   * Yangi nomni har tilda oʻlchab koʻring. DM Sansʼda kirill yoʻq —
+   * ru/kk/ky/uz-Cyrl nomlari tizim shriftida chiqadi, ularni oʻsha
+   * shrift bilan oʻlchang (docs/doska-gildirak-spec.md R308).
+   */
+  labelKey: WidgetLabelKey;
   /**
    * Vidjet tusi — IDENTIFIKATOR, semantik emas.
    *
@@ -55,7 +84,7 @@ export type WidgetMeta = {
 export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   "clock.v1": {
     kind: "clock.v1",
-    label: "Soat",
+    labelKey: "clock",
     tint: "blue",
     defaultSize: { w: 320, h: 160 },
     minSize: { w: 200, h: 110 },
@@ -63,7 +92,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "timer.v1": {
     kind: "timer.v1",
-    label: "Taymer",
+    labelKey: "timer",
     tint: "amber",
     defaultSize: { w: 340, h: 220 },
     minSize: { w: 260, h: 180 },
@@ -71,7 +100,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "traffic-light.v1": {
     kind: "traffic-light.v1",
-    label: "Svetofor",
+    labelKey: "trafficLight",
     tint: "red",
     defaultSize: { w: 160, h: 380 },
     minSize: { w: 110, h: 260 },
@@ -79,7 +108,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "text.v1": {
     kind: "text.v1",
-    label: "Matn",
+    labelKey: "text",
     // ⚠️ `violet` EMAS — u `BackgroundPicker` («Fon») da band. Panelda
     // ikkita binafsha ikona boʻlsa ular bir vidjetdek koʻrinadi.
     tint: "indigo",
@@ -93,10 +122,9 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "sticky-note.v1": {
     kind: "sticky-note.v1",
-    // ⚠️ Panel tugmasi 52px va yorligʻi `truncate` — 8 belgidan uzun
-    // nom «Yopishq…» boʻlib kesiladi. «Yopishqoq» aynan shunday
-    // kesilgan edi. Yangi vidjet nomini shu chegara bilan tanlang.
-    label: "Eslatma",
+    // «Yopishqoq» emas — u 54.6px va panelda «Yopishq…» boʻlib
+    // kesilgan edi (`labelKey` izohi).
+    labelKey: "stickyNote",
     tint: "pink",
     // Deyarli kvadrat — haqiqiy yopishqoq qogʻoz kabi.
     defaultSize: { w: 280, h: 260 },
@@ -106,7 +134,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "shape.v1": {
     kind: "shape.v1",
-    label: "Shakl",
+    labelKey: "shape",
     // Qoʻshnilari: «Eslatma» (pushti) va ajratgichdan keyin «Fon»
     // (binafsha) — moviy ikkalasidan ham uzoq.
     tint: "cyan",
@@ -120,8 +148,7 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
   },
   "presentation.v1": {
     kind: "presentation.v1",
-    // 8 belgidan oshmasin (panel yorligʻi `truncate`).
-    label: "Taqdimot",
+    labelKey: "presentation",
     // Material turlaridagi taqdimot rangi (`material-kinds.ts`) bilan
     // bir xil — oʻqituvchi jurnalda koʻrgan belgini shu yerda taniydi.
     tint: "orange",
@@ -129,6 +156,29 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     defaultSize: { w: 880, h: 520 },
     minSize: { w: 420, h: 280 },
     initialState: { setId: null, index: 0, revealed: false, teams: null },
+  },
+  "wheel.v1": {
+    kind: "wheel.v1",
+    // «Ruletka» emas — kazino maʼnosi; Doska vidjetlari obyekt nomi
+    // bilan ataladi (docs/doska-gildirak-spec.md R307).
+    labelKey: "wheel",
+    // Qoʻshnilari: «Svetofor» (qizil) va «Matn» (indigo). Moviy-yashil
+    // ikkalasidan ham uzoq, oʻxshash «Shakl» (moviy) esa panelning
+    // narigi chetida.
+    tint: "teal",
+    // Kvadrat — gʻildirak doira, choʻzilgan vidjetda u baribir qisqa
+    // tomonga sigʻadi. Roʻyxat tomoni ham shu oʻlchamga sigʻishi kerak.
+    defaultSize: { w: 440, h: 440 },
+    minSize: { w: 240, h: 240 },
+    // Holatning maʼnosi — `lib/doska/wheel.ts` dagi `WheelState`.
+    initialState: {
+      text: "",
+      picked: [],
+      mode: "once",
+      rotation: 0,
+      sound: true,
+      speed: "medium",
+    },
   },
 };
 
@@ -144,6 +194,9 @@ export const WIDGET_BAR_ORDER: WidgetKind[] = [
   "clock.v1",
   "timer.v1",
   "traffic-light.v1",
+  // Sinfni boshqarish vositalari yonida (soat, taymer, svetofor) —
+  // mazmun vositalaridan (matn, eslatma, taqdimot) oldin.
+  "wheel.v1",
   "text.v1",
   "sticky-note.v1",
   "presentation.v1",

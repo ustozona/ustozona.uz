@@ -9,6 +9,7 @@ import {
   IconText,
   IconTimer,
   IconTrafficLight,
+  IconWheel,
 } from "../icons";
 import { ClockWidget } from "./ClockWidget";
 import { PresentationWidget } from "./PresentationWidget";
@@ -17,6 +18,7 @@ import { StickyNoteWidget } from "./StickyNoteWidget";
 import { TextWidget } from "./TextWidget";
 import { TimerWidget } from "./TimerWidget";
 import { TrafficLightWidget } from "./TrafficLightWidget";
+import { WheelWidget } from "./WheelWidget";
 
 /* ════════════════════════════════════════════════════════════════════
    VIDJETNING REACT TOMONI — kind → komponent va kind → ikona.
@@ -56,6 +58,7 @@ export const WIDGET_COMPONENTS: Record<WidgetKind, ComponentType<WidgetProps>> =
   "sticky-note.v1": StickyNoteWidget,
   "shape.v1": ShapeWidget,
   "presentation.v1": PresentationWidget,
+  "wheel.v1": WheelWidget,
 };
 
 export const WIDGET_ICONS: Record<
@@ -69,4 +72,5 @@ export const WIDGET_ICONS: Record<
   "sticky-note.v1": IconStickyNote,
   "shape.v1": IconShape,
   "presentation.v1": IconPresentation,
+  "wheel.v1": IconWheel,
 };
