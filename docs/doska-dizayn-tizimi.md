@@ -1,5 +1,10 @@
 # Doska dizayn tizimi
 
+> ⚠️ **Qayta koʻrib chiqilmoqda (2026-09-25).** Asboblar UX tadqiqoti va
+> uchta yoʻnalish — [doska-ux-tadqiqot.md](./doska-ux-tadqiqot.md). Qaror
+> qabul qilingach §1–3 oʻsha hujjat asosida qayta yoziladi; ungacha
+> quyidagi qoidalar amalda.
+
 > Ustozona Doska — sinf ekrani. Bu hujjat uning **vizual qoidalarini**
 > belgilaydi. Umumiy tizim (tokenlar, sirt/ohang oʻqlari) —
 > [ost-loyihalar-arxitektura.md](./ost-loyihalar-arxitektura.md) §A va
@@ -80,6 +85,24 @@ kechikishda sichqoncha ustidan oʻtganda tooltip'lar ketma-ket chaqnaydi.
 (DOM element emas) boʻlib uzilardi. Shuning uchun koʻrinish
 `barIconButtonClass` sifatida ham eksport qilingan.
 
+⚠️ Tooltip faqat **global** boshqaruvda (strelkalar, toʻliq ekran,
+menyu, bekor qilish) — ularning ikonasi hamma joyda bir xil maʼnoda.
+**Kontekst panelda** (§2.5) nom doim koʻrinadi — `<BarTextButton>`:
+sensorli doskada hover yoʻq, tooltip chiqmaydi (doska-ux-tadqiqot.md R322).
+
+### Joylashuv — butun boshqaruv pastki qatorda
+
+```
+[↶ ↷]            [ vidjet paneli ] [⌄]            [‹ 2/3 › + │ ⛶ ⋮]
+ bekor qilish         markaz                        ekranlar, menyu
+```
+
+Tepada hech narsa yoʻq: 75″ interaktiv panelning tepasi poldan ≈ 1,8 m
+— u yerdagi tugmaga qoʻl toʻliq choʻzilib yetadi, bola yetmaydi
+(doska-ux-tadqiqot.md R319). Bosh sahifa havolasi menyuda. Yigʻish
+tugmasi (`B`) pastki qatorning hammasini yashiradi, «Qaytarish»
+xabaridan tashqari.
+
 ---
 
 ## 2. Vidjet paneli
@@ -146,12 +169,16 @@ bunga aynan mos.
 ### Tor holat — panel ekrandan chiqib ketmaydi
 
 Panel oʻqituvchining planshetida ham ochiladi. Kenglik yetmaganda u
-`max-w-[calc(100vw-1.5rem)]` bilan chegaralanadi va **ichida
-gorizontal aylanadi**.
+oʻz ustunidan oshmaydi (`max-w-full`, ota ustunlar `min-w-0`) va
+**ichida gorizontal aylanadi**.
 
 Busiz sigʻmagan tugmalar kanvasdan tashqariga chiqib ketardi: 640px
-ekranda «Fon» va «Tozalash» koʻrinmas edi va ularga yetishning **hech
-qanday yoʻli yoʻq** edi.
+ekranda «Fon» koʻrinmas edi va unga yetishning **hech qanday yoʻli
+yoʻq** edi.
+
+⚠️ «Tozalash» bu panelda YOʻQ — menyuda. Qoʻshish tugmalari qatoridagi
+buzuvchi tugma bir notoʻgʻri bosishda ekranni boʻshatardi (A2); endi
+tozalash ham «Qaytarish» xabari bilan qaytariladi.
 
 `overscroll-x-contain` shart — aylantirish panel oxiriga yetganda
 brauzerning «orqaga» ishorasiga oʻtib ketmasin.
@@ -172,8 +199,19 @@ boshqaruvni topolmaydi va ilova buzilgan deb oʻylaydi.
 ## 2.5. Kontekst asboblar paneli
 
 Tanlangan vidjetning **ustida** suzadi va uning amallarini tutadi:
-nusxalash · oldinga chiqarish · oʻchirish
+Sozlash · Nusxa · Qulflash · Markazga │ Oʻchirish — har tugmada ikona
+**va yozuv**. «Oldinga» yoʻq: vidjetni bosishning oʻzi uni oldinga
+chiqaradi. Qulflangan vidjetda «Oʻchirish» koʻrinmaydi, «Qulflash» esa
+«Qulfni ochish» ga aylanadi
 ([`WidgetToolbar.tsx`](../src/components/doska/WidgetToolbar.tsx)).
+
+Nega ustida, ostida emas: vertikal doskada bilak pastdan keladi va
+teginish nuqtasining pastini yopadi (doska-ux-tadqiqot.md R328).
+Yozuvli panel vidjetdan keng boʻlishi mumkin — shuning uchun u ekran
+chetiga qisiladi (`EDGE`).
+
+Oʻchirish tasdiq soʻramaydi: amal darhol bajariladi, pastda chiqqan
+«Qaytarish» xabari (`DoskaNotice`, 6 s) va `Ctrl+Z` uni bekor qiladi.
 
 Ilgari tanlovda faqat burchakdagi yakka «×» bor edi. Burchak esa bitta
 amalga joy beradi — ikkinchisi qoʻshilganda tutqichlar bilan urishadi.
@@ -199,6 +237,40 @@ oynasi yoʻq, boʻsh oyna ochadigan tugma esa yoʻqidan yomon. U vidjet
 sozlamalari qurilganda qoʻshiladi.
 
 ---
+
+## 2.6. Sozlama kartasi
+
+Har vidjetning sozlamasi BIR joyda — vidjet yonidagi kartada
+([`WidgetSettingsCard.tsx`](../src/components/doska/WidgetSettingsCard.tsx)).
+Ochiladi: kontekst paneldagi «Sozlash» yoki `S`; taymer qoʻyilganda —
+darhol (`openSettingsOnAdd`). Qaror va solishtirish:
+doska-ux-tadqiqot.md Q2.
+
+| Qoida | Qiymat |
+|---|---|
+| Joy | yonda; ikkala yonda joy boʻlsa sensorda chapga, sichqonchada joy koʻproq tomonga |
+| Tepasi | vidjet tepasi bilan bir chiziqda; yuqoriga faqat pastda joy qolmaganda |
+| Kenglik | 320 px (`w-80`), vidjetga bogʻliq emas |
+| Tor ekran (< 640 px) | pastki varaq, max 60vh |
+| Maydonlar | faqat `SettingsFields`: tayyor variantlar, ± qadam, tumbler — ≥ 44 px, klaviaturasiz |
+| Saqlash | yoʻq — darhol qoʻllanadi; `Esc`, «×», boʻsh kanvas yopadi |
+| Z-qatlam | `--z-doska-context` |
+
+Vidjet faqat karta ICHINI beradi (`WIDGET_SETTINGS`, `widgets/index.ts`).
+Gʻildirak — istisno (`INLINE_SETTINGS`): ismlar roʻyxati mazmun, u
+vidjetning oʻz «roʻyxat tomoni»da tahrirlanadi; kirish nuqtasi baribir
+umumiy.
+
+## 2.7. Qulf, «Markazga», parda
+
+- **Qulf** — vidjet sudralmaydi, oʻlchanmaydi, oʻchirilmaydi va tozalashda
+  qoladi; ichidagi tugmalar ishlayveradi. Tutqichlar oʻrnida qulf belgisi.
+- **«Markazga»** — AYNAN SHU vidjet (nusxa emas) ekran oʻrtasida, nisbati
+  saqlangan holda kattalashadi, qolgani qoraygan va xiralashgan parda
+  ostida. Vidjet ichi `cqw` bilan oʻlchangani uchun raqam ham oʻsadi —
+  shuning uchun taymer va soat raqamining yuqori chegarasi `30rem`.
+- **Parda** (`1`, menyu) — butun ekran xiralashadi, «Diqqat!»; istalgan
+  bosish yoki tugma koʻtaradi va boshqa yorliqqa yetib bormaydi.
 
 ## 3. Vidjet kartochkasi (kanvasda)
 
@@ -403,7 +475,9 @@ Vidjetlar bir-birining ustiga chiqadi; tartib chalkashsa tuzatish qiyin
 | Vidjet paneli | `--z-doska-bar` | 1000100 |
 | Kontekst asboblar | `--z-doska-context` | 1000105 |
 | Yuqori tugmalar | `--z-doska-top` | 1000110 |
+| «Markazga» pardasi / vidjet / tugma | `--z-doska-top` + 10 / 11 / 12 (`lib/doska/layers.ts`) | 1000120 |
 | Tooltip / toast | `--z-doska-tooltip` | 1001000 |
+| Parda («1») | `--z-doska-tooltip` + 1000 (`lib/doska/layers.ts`) | 1002000 |
 
 Raqamlar referensdan olingan — ular oʻzboshimcha koʻrinadi,
 lekin katta oraliq **ataylab**: orasiga yangi qatlam qoʻshish kerak
