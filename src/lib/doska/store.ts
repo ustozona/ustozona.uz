@@ -32,6 +32,12 @@ const SAVE_DELAY_MS = 350;
  */
 const DUPLICATE_OFFSET = 24;
 
+/**
+ * Qaytarish tarixining chuqurligi. Dars davomida 50 qadam ortga yetadi;
+ * cheksiz tarix esa uzun darsda xotirani sekin toʻldirib boradi.
+ */
+const HISTORY_LIMIT = 50;
+
 /* ────────────────────────────────────────────────────────────────────
    KECHIKTIRILGAN YOZUV.
 
@@ -55,7 +61,7 @@ const DUPLICATE_OFFSET = 24;
    darhol tushirish uchun `flushDoskaPersist()` eksport qilinadi;
    uni `pagehide` / `visibilitychange` ga ULAYDIGAN joy — komponent
    effekti (`DoskaShell`), chunki faqat oʻshanda toza `removeEventListener`
-   bor. Listenerni shu faylда, factory ichida qoʻyish HMR'da ularni
+   bor. Listenerni shu faylda, factory ichida qoʻyish HMR'da ularni
    toʻplab ketardi va tozalash yoʻli yoʻq edi.
    ──────────────────────────────────────────────────────────────────── */
 
@@ -65,7 +71,7 @@ const DUPLICATE_OFFSET = 24;
  */
 let flushPending: (() => void) | null = null;
 
-/** Kutilayotgan localStorage yozuvini darhol diskка tushiradi. */
+/** Kutilayotgan localStorage yozuvini darhol diskka tushiradi. */
 export function flushDoskaPersist(): void {
   flushPending?.();
 }
@@ -132,6 +138,47 @@ function emptyDeck(): DoskaDeck {
   };
 }
 
+/* ────────────────────────────────────────────────────────────────────
+   QAYTARISH TARIXI (docs/doska-ux-tadqiqot.md R312, A1).
+
+   Sensorli doskada bola tegib ketadi, oʻqituvchi esa panelni sichqonchasiz
+   boshqaradi — bir notoʻgʻri bosish vidjetni oʻchirsa yoki butun ekranni
+   tozalasa, uni qaytarish yoʻli boʻlishi SHART. Shu sababli oʻchirishlar
+   tasdiq oynasi soʻramaydi: amal darhol bajariladi, «Qaytarish» xabari
+   esa uni bir bosishda bekor qiladi.
+
+   Tarixga faqat oʻqituvchining ONGLI amallari yoziladi: qoʻyish,
+   oʻchirish, nusxalash, koʻchirish/oʻlchash (butun harakat bitta qadam),
+   fon, ekran qoʻshish/oʻchirish/tozalash.
+
+   ⚠️ Vidjetning ICHKI holati (`state`) tarixga YOZILMAYDI va qaytarishda
+   TIKLANMAYDI (`keepLiveState`). Sabab: taymer har soniya holatini
+   yangilaydi, gʻildirak aylanadi — agar qaytarish ularni ham eski
+   snapshotga qaytarsa, oʻqituvchi oʻchirishni bekor qilganda ishlab
+   turgan taymer bir necha soniya orqaga sakrardi. Faqat OʻCHIRILGAN
+   vidjet oʻzining oʻchirilgan paytdagi holati bilan qaytadi.
+
+   Tarix saqlanmaydi (`partialize`): u dars ichidagi xavfsizlik, sahifa
+   yangilangandan keyin kechagi qadamlar qaytarilmasin.
+   ──────────────────────────────────────────────────────────────────── */
+
+/** Tarixdagi bitta nuqta — ekranlar va qaysi biri ochiq edi. */
+type Snapshot = { deck: DoskaDeck; activeScreenId: string };
+
+/**
+ * Qaytarib boʻladigan oʻchirish haqida xabar — `DoskaNotice` chizadi.
+ *
+ * Xabar faqat oʻsha amal tarixning ENG USTIDA turganda yashaydi: keyingi
+ * har qanday yozilgan amal uni yopadi. Aks holda «Qaytarish» tugmasi
+ * vidjetni emas, undan keyingi boshqa ishni bekor qilib yuborardi.
+ */
+export type DoskaNotice =
+  | { id: number; kind: "widgetRemoved"; widgetKind: WidgetKind }
+  | { id: number; kind: "screenCleared" }
+  | { id: number; kind: "screenRemoved" };
+
+let noticeSeq = 0;
+
 type DoskaState = {
   deck: DoskaDeck;
   activeScreenId: string;
@@ -151,6 +198,23 @@ type DoskaState = {
   editingId: string | null;
   /** localStorage oʻqilganini bildiradi; render mount-gate uchun. */
   hydrated: boolean;
+  /**
+   * Sozlamasi ochiq vidjet (docs/doska-ux-tadqiqot.md Q2).
+   *
+   * Efemer va TANLOVGA bogʻlangan: boshqa vidjet tanlansa yoki boʻsh
+   * kanvas bosilsa yopiladi (`select`). Bir vaqtda bitta karta.
+   */
+  settingsId: string | null;
+  /**
+   * «Markazga» chiqarilgan vidjet — ekran oʻrtasida katta, qolgani parda
+   * ostida (R311). Efemer: sahifa yangilanganda oddiy holat.
+   */
+  spotlightId: string | null;
+  /**
+   * Parda — butun ekran yopiladi («1» tugmasi yoki menyu). Oʻqituvchi
+   * ovozini koʻtarmasdan sinf eʼtiborini oladi (R313). Efemer.
+   */
+  curtain: boolean;
 
   /**
    * `initial` — reyestrdagi boshlangʻich holat ustiga qoʻyiladi.
@@ -179,6 +243,13 @@ type DoskaState = {
   select: (id: string | null) => void;
   setEditing: (id: string | null) => void;
   bringToFront: (id: string) => void;
+  /** Sozlama kartasini ochadi/yopadi; ochilganda vidjet tanlanadi. */
+  toggleSettings: (id: string) => void;
+  closeSettings: () => void;
+  /** Qulflash/qulfni ochish — oʻqituvchi amali, tarixga yoziladi. */
+  toggleLock: (id: string) => void;
+  setSpotlight: (id: string | null) => void;
+  setCurtain: (on: boolean) => void;
 
   setBackground: (backgroundId: string) => void;
   renameDeck: (title: string) => void;
@@ -186,6 +257,26 @@ type DoskaState = {
   addScreen: () => void;
   setActiveScreen: (id: string) => void;
   clearScreen: () => void;
+
+  /** Qaytarish uchun oldingi holatlar (eng yangisi oxirida). Efemer. */
+  past: Snapshot[];
+  /** Qaytarilgan holatlar — «qaytadan bajarish» uchun. Efemer. */
+  future: Snapshot[];
+  notice: DoskaNotice | null;
+  undo: () => void;
+  redo: () => void;
+  /**
+   * Sudrash, oʻlchash yoki strelka bilan siljitish BOSHLANDI.
+   *
+   * Harakat davomida `moveWidget`/`resizeWidget` sekundiga oʻnlab marta
+   * chaqiriladi — ularning har biri tarixga yozilsa bitta sudrashni
+   * qaytarish uchun yuz marta bosish kerak boʻlardi. Shuning uchun tarix
+   * harakat BOSHIDA bir marta yoziladi va butun harakat bitta qadam
+   * boʻlib qaytariladi.
+   */
+  beginGesture: () => void;
+  /** `id` berilsa faqat oʻsha xabar yopiladi — eski taymer yangisini yopmasin. */
+  dismissNotice: (id?: number) => void;
 };
 
 /** Joriy ekranni topib, uning vidjetlarini oʻzgartiruvchi yordamchi. */
@@ -203,6 +294,70 @@ function withActiveScreen(
   };
 }
 
+/** Ekranda qulflangan vidjet bormi — bunday ekran oʻchirilmaydi. */
+export function screenHasLocked(deck: DoskaDeck, screenId: string): boolean {
+  return !!deck.screens.find((x) => x.id === screenId)?.widgets.some((w) => w.locked);
+}
+
+/** Hozirgi holatni tarixga qoʻshadi va «qaytadan bajarish»ni tozalaydi. */
+function pushHistory(s: DoskaState): Pick<DoskaState, "past" | "future"> {
+  return {
+    past: [
+      ...s.past.slice(-(HISTORY_LIMIT - 1)),
+      { deck: s.deck, activeScreenId: s.activeScreenId },
+    ],
+    future: [],
+  };
+}
+
+/**
+ * Snapshotdagi vidjetlarga JONLI ichki holatni qaytaradi (tarix izohi).
+ * Deck nomi ham jonli qoladi — u tarixga yozilmaydi.
+ */
+function keepLiveState(target: DoskaDeck, live: DoskaDeck): DoskaDeck {
+  const states = new Map<string, DoskaWidget["state"]>();
+  for (const screen of live.screens) {
+    for (const w of screen.widgets) states.set(w.id, w.state);
+  }
+  return {
+    ...target,
+    title: live.title,
+    screens: target.screens.map((screen) => ({
+      ...screen,
+      widgets: screen.widgets.map((w) => {
+        const state = states.get(w.id);
+        return state && state !== w.state ? { ...w, state } : w;
+      }),
+    })),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/** Tiklangan holatga koʻra tanlov: vidjet ochiq ekranda qolgan boʻlsa saqlanadi. */
+function restore(
+  s: DoskaState,
+  to: Snapshot,
+): Pick<
+  DoskaState,
+  "deck" | "activeScreenId" | "selectedId" | "editingId" | "notice" | "settingsId" | "spotlightId"
+> {
+  const deck = keepLiveState(to.deck, s.deck);
+  const activeScreenId = deck.screens.some((x) => x.id === to.activeScreenId)
+    ? to.activeScreenId
+    : deck.screens[0].id;
+  const screen = deck.screens.find((x) => x.id === activeScreenId);
+  const keep = s.selectedId !== null && screen?.widgets.some((w) => w.id === s.selectedId);
+  return {
+    deck,
+    activeScreenId,
+    selectedId: keep ? s.selectedId : null,
+    editingId: null,
+    notice: null,
+    settingsId: null,
+    spotlightId: null,
+  };
+}
+
 export const useDoskaStore = create<DoskaState>()(
   persist(
     (set, get) => {
@@ -214,6 +369,12 @@ export const useDoskaStore = create<DoskaState>()(
         selectedId: null,
         editingId: null,
         hydrated: false,
+        settingsId: null,
+        spotlightId: null,
+        curtain: false,
+        past: [],
+        future: [],
+        notice: null,
 
         addWidget: (kind, at, initial) => {
           const meta = widgetMeta(kind);
@@ -235,6 +396,8 @@ export const useDoskaStore = create<DoskaState>()(
           };
 
           set({
+            ...pushHistory(get()),
+            notice: null,
             deck: withActiveScreen(deck, activeScreenId, (ws) => [...ws, widget]),
             selectedId: widget.id,
             // Matn vidjeti darhol yozishga tayyor: oʻqituvchi «Matn»
@@ -242,17 +405,29 @@ export const useDoskaStore = create<DoskaState>()(
             // quti bilan yozish orasida ikkinchi qadam paydo boʻladi
             // va bu dars oʻrtasida sezilarli.
             editingId: meta.editable ? widget.id : null,
+            settingsId: meta.openSettingsOnAdd ? widget.id : null,
           });
         },
 
         removeWidget: (id) =>
-          set((s) => ({
-            deck: withActiveScreen(s.deck, s.activeScreenId, (ws) =>
-              ws.filter((w) => w.id !== id),
-            ),
-            selectedId: s.selectedId === id ? null : s.selectedId,
-            editingId: s.editingId === id ? null : s.editingId,
-          })),
+          set((s) => {
+            const screen = s.deck.screens.find((x) => x.id === s.activeScreenId);
+            const target = screen?.widgets.find((w) => w.id === id);
+            // Qulflangan vidjet oʻchirilmaydi — avval qulfni ochish kerak.
+            if (!target || target.locked) return s;
+
+            return {
+              ...pushHistory(s),
+              deck: withActiveScreen(s.deck, s.activeScreenId, (ws) =>
+                ws.filter((w) => w.id !== id),
+              ),
+              selectedId: s.selectedId === id ? null : s.selectedId,
+              editingId: s.editingId === id ? null : s.editingId,
+              settingsId: s.settingsId === id ? null : s.settingsId,
+              spotlightId: s.spotlightId === id ? null : s.spotlightId,
+              notice: { id: ++noticeSeq, kind: "widgetRemoved", widgetKind: target.kind },
+            };
+          }),
 
         duplicateWidget: (id) => {
           const { deck, activeScreenId } = get();
@@ -271,14 +446,19 @@ export const useDoskaStore = create<DoskaState>()(
             y: source.y + DUPLICATE_OFFSET,
             z: maxZ + 1,
             state: structuredClone(source.state),
+            // Nusxa QULFSIZ tugʻiladi: oʻqituvchi uni joyiga surmoqchi.
+            locked: undefined,
           };
 
           set({
+            ...pushHistory(get()),
+            notice: null,
             deck: withActiveScreen(deck, activeScreenId, (ws) => [...ws, copy]),
             selectedId: copy.id,
             // Nusxa tahrirga OCHILMAYDI, asl vidjetdan farqli: matn
             // allaqachon yozilgan, oʻqituvchi esa nusxani koʻchirmoqchi.
             editingId: null,
+            settingsId: null,
           });
         },
 
@@ -305,7 +485,11 @@ export const useDoskaStore = create<DoskaState>()(
             ),
           })),
 
-        select: (id) => set({ selectedId: id }),
+        select: (id) =>
+          set((s) => ({
+            selectedId: id,
+            settingsId: s.settingsId === id ? s.settingsId : null,
+          })),
 
         setEditing: (id) => set({ editingId: id }),
 
@@ -323,8 +507,39 @@ export const useDoskaStore = create<DoskaState>()(
             };
           }),
 
+        toggleSettings: (id) =>
+          set((s) =>
+            s.settingsId === id
+              ? { settingsId: null }
+              : { settingsId: id, selectedId: id, editingId: null },
+          ),
+
+        closeSettings: () => set({ settingsId: null }),
+
+        toggleLock: (id) =>
+          set((s) => {
+            const screen = s.deck.screens.find((x) => x.id === s.activeScreenId);
+            if (!screen?.widgets.some((w) => w.id === id)) return s;
+            return {
+              ...pushHistory(s),
+              notice: null,
+              deck: withActiveScreen(s.deck, s.activeScreenId, (ws) =>
+                ws.map((w) => (w.id === id ? { ...w, locked: w.locked ? undefined : true } : w)),
+              ),
+            };
+          }),
+
+        // Tanlov ham yopiladi: markazdagi vidjetda tanlovga bogʻliq
+        // tugmalar (taymerning «Qaytadan», «+1») sinfga koʻrinmasin.
+        setSpotlight: (id) =>
+          set({ spotlightId: id, settingsId: null, editingId: null, selectedId: null }),
+
+        setCurtain: (on) => set({ curtain: on }),
+
         setBackground: (backgroundId) =>
           set((s) => ({
+            ...pushHistory(s),
+            notice: null,
             deck: {
               ...s.deck,
               screens: s.deck.screens.map((x) =>
@@ -339,20 +554,32 @@ export const useDoskaStore = create<DoskaState>()(
             deck: { ...s.deck, title, updatedAt: new Date().toISOString() },
           })),
 
-        /** Oxirgi ekran oʻchirilmaydi — doska hech qachon boʻsh qolmasin. */
+        /**
+         * Oxirgi ekran oʻchirilmaydi — doska hech qachon boʻsh qolmasin.
+         *
+         * Qulflangan vidjeti bor ekran ham oʻchirilmaydi: qulf «bu joyida
+         * tursin» degani, u `removeWidget` va `clearScreen` da ham
+         * saqlanadi. Menyu bu holatda bandni sababi bilan koʻrsatadi
+         * (`screenHasLocked`).
+         */
         removeScreen: (id) =>
           set((s) => {
             if (s.deck.screens.length <= 1) return s;
+            if (screenHasLocked(s.deck, id)) return s;
 
             const rest = s.deck.screens
               .filter((x) => x.id !== id)
               .map((x, i) => ({ ...x, ordinal: i }));
 
             return {
+              ...pushHistory(s),
               deck: { ...s.deck, screens: rest, updatedAt: new Date().toISOString() },
               activeScreenId: s.activeScreenId === id ? rest[0].id : s.activeScreenId,
               selectedId: null,
               editingId: null,
+              settingsId: null,
+              spotlightId: null,
+              notice: { id: ++noticeSeq, kind: "screenRemoved" },
             };
           }),
 
@@ -360,6 +587,8 @@ export const useDoskaStore = create<DoskaState>()(
           set((s) => {
             const screen = emptyScreen(s.deck.screens.length);
             return {
+              ...pushHistory(s),
+              notice: null,
               deck: {
                 ...s.deck,
                 screens: [...s.deck.screens, screen],
@@ -368,18 +597,68 @@ export const useDoskaStore = create<DoskaState>()(
               activeScreenId: screen.id,
               selectedId: null,
               editingId: null,
+              settingsId: null,
+              spotlightId: null,
             };
           }),
 
         setActiveScreen: (id) =>
-          set({ activeScreenId: id, selectedId: null, editingId: null }),
-
-        clearScreen: () =>
-          set((s) => ({
-            deck: withActiveScreen(s.deck, s.activeScreenId, () => []),
+          set({
+            activeScreenId: id,
             selectedId: null,
             editingId: null,
-          })),
+            settingsId: null,
+            spotlightId: null,
+          }),
+
+        clearScreen: () =>
+          set((s) => {
+            const screen = s.deck.screens.find((x) => x.id === s.activeScreenId);
+            // Qulflangan vidjetlar tozalashdan ham omon qoladi — qulf
+            // «bu joyida tursin» degani (R311).
+            const kept = screen?.widgets.filter((w) => w.locked) ?? [];
+            // Oʻchadigan narsa yoʻq — tarixga bekor qadam qoʻshilmasin.
+            if (!screen || screen.widgets.length === kept.length) return s;
+
+            return {
+              ...pushHistory(s),
+              deck: withActiveScreen(s.deck, s.activeScreenId, () => kept),
+              selectedId: null,
+              editingId: null,
+              settingsId: null,
+              spotlightId: null,
+              notice: { id: ++noticeSeq, kind: "screenCleared" },
+            };
+          }),
+
+        undo: () =>
+          set((s) => {
+            const prev = s.past[s.past.length - 1];
+            if (!prev) return s;
+            return {
+              ...restore(s, prev),
+              past: s.past.slice(0, -1),
+              future: [...s.future, { deck: s.deck, activeScreenId: s.activeScreenId }],
+            };
+          }),
+
+        redo: () =>
+          set((s) => {
+            const next = s.future[s.future.length - 1];
+            if (!next) return s;
+            return {
+              ...restore(s, next),
+              past: [...s.past, { deck: s.deck, activeScreenId: s.activeScreenId }],
+              future: s.future.slice(0, -1),
+            };
+          }),
+
+        beginGesture: () => set((s) => ({ ...pushHistory(s), notice: null })),
+
+        dismissNotice: (id) =>
+          set((s) =>
+            s.notice && (id === undefined || s.notice.id === id) ? { notice: null } : s,
+          ),
       };
     },
     {
@@ -392,6 +671,14 @@ export const useDoskaStore = create<DoskaState>()(
     },
   ),
 );
+
+/**
+ * Vidjet tanlanganmi — ikkilamchi tugmalar faqat shunda chiqadi
+ * (docs/doska-ux-tadqiqot.md A7: sinf ekrani toza qolsin).
+ */
+export function useIsSelected(id: string): boolean {
+  return useDoskaStore((s) => s.selectedId === id);
+}
 
 /** Joriy ekran — komponentlar shu selektor orqali oʻqiydi. */
 export function useActiveScreen(): DoskaScreen | undefined {

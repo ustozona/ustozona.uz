@@ -6,6 +6,7 @@ import { useDoskaStore } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import {
   applyDrag,
+  dragThreshold,
   passedThreshold,
   ATTR_HANDLE,
   ATTR_NO_DRAG,
@@ -50,6 +51,12 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
       if (!target) return;
 
       const state = useDoskaStore.getState();
+
+      // «Markazga» rejimida kanvas tinch: vidjet koʻchmaydi va tanlanmaydi,
+      // uning ichidagi tugmalar (taymer yuzi) esa oddiy `click` bilan
+      // ishlayveradi. Chiqish — parda yoki «Kichraytirish» tugmasi.
+      if (state.spotlightId) return;
+
       const owner = target.closest<HTMLElement>(`[${ATTR_WIDGET}]`);
 
       if (!owner) {
@@ -110,6 +117,8 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
         moved: false,
         wasSelected,
         editable: widgetMeta(widget.kind).editable === true,
+        locked: widget.locked === true,
+        threshold: dragThreshold(e.pointerType),
       };
 
       // ⚠️ Pointer ushlash BU YERDA QOʻYILMAYDI — u faqat haqiqiy
@@ -121,12 +130,14 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
 
     const onPointerMove = (e: PointerEvent) => {
       if (!session || e.pointerId !== session.pointerId) return;
+      // Qulflangan vidjet joyidan qimirlamaydi (R311).
+      if (session.locked) return;
 
       const dx = e.clientX - session.startX;
       const dy = e.clientY - session.startY;
 
       if (!session.moved) {
-        if (!passedThreshold(dx, dy)) return;
+        if (!passedThreshold(dx, dy, session.threshold)) return;
         session.moved = true;
 
         // Sudrash haqiqatan boshlandi — endi ushlaymiz. Shundan keyin
@@ -136,6 +147,11 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
         // `pointerup` vidjetning oʻziga tushadi va «qayta tegildi»
         // hisobi (`endDrag`) toʻgʻri ishlaydi.
         root.setPointerCapture(session.pointerId);
+
+        // Butun sudrash tarixda BITTA qadam: holat harakat boshida bir
+        // marta yoziladi, oraliq koordinatalar esa yozilmaydi (store.ts,
+        // `beginGesture`).
+        useDoskaStore.getState().beginGesture();
       }
 
       const rect = applyDrag(session, dx, dy);
@@ -187,14 +203,43 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
           ?.focus();
       }
 
+      /**
+       * SUDRASHDAN KEYINGI `click` YUTILADI.
+       *
+       * Koʻp brauzer sudrashdan keyingi `click` ni pointer ushlagan
+       * elementga (kanvasga) yoʻnaltiradi, lekin hammasi emas: baʼzisida
+       * u qoʻyib yuborilgan joydagi tugmaga tushadi — vidjet bilan birga
+       * surilgan tugma esa aynan kursor ostida. Natijada vidjetni koʻchirish
+       * uning ichidagi tugmani ham bosib yuborardi. Brauzerga tayanmasdan,
+       * oʻsha bitta `click` shu yerda, kanvasning capture bosqichida
+       * toʻxtatiladi. `setTimeout` — `click` kelmasa (sensorli sudrash
+       * uni umuman chiqarmaydi) keyingi oddiy bosish yutilib ketmasin.
+       */
+      if (session.moved) {
+        const swallow = (ev: MouseEvent) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+        };
+        root.addEventListener("click", swallow, { capture: true, once: true });
+        setTimeout(() => root.removeEventListener("click", swallow, { capture: true }), 0);
+      }
+
       session = null;
     };
 
-    /** Escape — tahrirdan chiqish, vidjet tanlangancha qoladi. */
+    /**
+     * Escape — tahrirdan chiqish, vidjet tanlangancha qoladi.
+     *
+     * `preventDefault` — umumiy yorliqlar (`useDoskaShortcuts`) oynada
+     * tinglaydi va Escapeʼda tanlovni yopadi. Belgisiz ikkalasi ketma-ket
+     * ishlab, bitta bosish ham tahrirni, ham tanlovni yopib yuborardi.
+     */
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       const state = useDoskaStore.getState();
-      if (state.editingId) state.setEditing(null);
+      if (!state.editingId) return;
+      state.setEditing(null);
+      e.preventDefault();
     };
 
     root.addEventListener("pointerdown", onPointerDown);

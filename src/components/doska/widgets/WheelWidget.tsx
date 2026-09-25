@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { ArrowLeft, Pencil, Users, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowLeft, Users, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,14 @@ import { WidgetButton } from "./WidgetButton";
 
    Ikki tomon (R300): GʻILDIRAK — sinf koʻradigani; ROʻYXAT — oʻqituvchi
    tahrirlaydigani. Roʻyxat bolalar oldida ochilib turmaydi.
+
+   Roʻyxat tomoni hamma vidjetdagi kabi «Sozlash» (kontekst panel) yoki
+   `S` bilan ochiladi — storeʼdagi `settingsId` (docs/doska-ux-tadqiqot.md
+   Q2). U umumiy kartaga KOʻCHIRILMADI: ismlar — mazmun, matn vidjetidagi
+   yozuv kabi joyida tahrirlanadi, sinf roʻyxati esa 320 px kartaga
+   sigʻmaydi (`INLINE_SETTINGS`). Burchakdagi qalam va ovoz tugmalari
+   olib tashlandi — ovoz roʻyxat tomonida, sinf ekrani toza (A7). Roʻyxatni
+   ochish uchun gʻildirak kartaning chetidan tanlanadi.
 
    Qoidalar qisqacha:
      • tasodif kriptografik, gʻolib aylanish BOSHIDA tanlanadi (R289);
@@ -137,7 +145,8 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
   );
   const labelOf = React.useCallback((key: string) => labels?.get(key) ?? key, [labels]);
 
-  const [side, setSide] = React.useState<"wheel" | "list">("wheel");
+  const listOpen = useDoskaStore((s) => s.settingsId === widget.id);
+  const closeSettings = useDoskaStore((s) => s.closeSettings);
   const [winner, setWinner] = React.useState<string | null>(null);
   const [spin, setSpin] = React.useState<ActiveSpin | null>(null);
   const [landed, setLanded] = React.useState<Landed | null>(null);
@@ -198,7 +207,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
     patch({ picked: [] });
   }
 
-  if (side === "list") {
+  if (listOpen) {
     return (
       <WheelList
         state={state}
@@ -210,7 +219,7 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
         rosterLoad={rosterLoad}
         labelOf={labelOf}
         patch={patch}
-        onBack={() => setSide("wheel")}
+        onBack={closeSettings}
         onSourceChange={() => setLanded(null)}
       />
     );
@@ -236,8 +245,11 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
     <div className="relative size-full rounded-[var(--radius)] p-[5cqw]" style={CARD}>
       <button
         type="button"
-        // Bosish sudrash boʻlmasin (`lib/doska/interaction.ts`). Vidjet
-        // kartaning chetidan sudraladi.
+        // Aylantirish — ASOSIY AMAL: bosish vidjetni tanlamaydi va
+        // sudramaydi (`lib/doska/interaction.ts`). Aks holda har aylantirishda
+        // sinf ekranida tanlov ramkasi va panel paydo boʻlardi, barmoq sal
+        // siljisa esa gʻildirak aylanmay, joyidan surilardi. Vidjet
+        // kartaning chetidan tanlanadi va sudraladi.
         data-doska-no-drag=""
         // Faqat tinch holatda: gʻolib kartochkasi ochiq turganda fokus
         // hali shu tugmada — Space/Enter (yoki taqdimot pulti) gʻildirakni
@@ -328,25 +340,6 @@ export function WheelWidget({ widget }: { widget: DoskaWidget }) {
         </ResultOverlay>
       )}
 
-      {/* Boshqaruv pardalardan KEYIN — ularning ustida. Aks holda aylanma
-          tugaganda roʻyxat ham, ovoz ham yopilib qolardi va oʻqituvchi
-          kechikib kelgan bolani qoʻshish uchun butun aylanmani
-          tashlashga majbur boʻlardi. Aylanish paytida va gʻolib
-          kartochkasi ochiq turganda yashirinadi: sinf natijaga qarasin. */}
-      {!spin && !winner && (
-        <div className="absolute top-[2.5cqw] right-[2.5cqw] flex gap-[1.5cqw]">
-          <WidgetButton
-            shape="round"
-            label={state.sound ? t("soundOn") : t("soundOff")}
-            onClick={() => patch({ sound: !state.sound })}
-          >
-            {state.sound ? <Volume2 /> : <VolumeX />}
-          </WidgetButton>
-          <WidgetButton shape="round" label={t("editList")} onClick={() => setSide("list")}>
-            <Pencil />
-          </WidgetButton>
-        </div>
-      )}
     </div>
   );
 }

@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-qulay-boshqaruv",
+    date: "2026-09-25",
+    type: "yangi",
+    title: "Doska qulaylashdi: taymerga istalgan vaqt, har amal qaytariladi, boshqaruv qoʻl ostida",
+    body:
+      "Taymerni qoʻyganingizda vaqtni darhol tanlaysiz (1–15 daqiqa yoki ± tugmalari), uni bosib boshlaysiz, tugaganda qoʻngʻiroq chalinadi; har vidjetning sozlamasi uning yonida, «Sozlash» tugmasida ochiladi. Tasodifan oʻchirilgan vidjet yoki ekran «Qaytarish» bilan joyiga qaytadi, kerakli vidjetni qulflab qoʻyish yoki «Markazga» bilan butun ekranga chiqarish mumkin. Butun boshqaruv endi pastda — interaktiv doskada qoʻl choʻzmasdan yetasiz; menyuda esa sinf eʼtiborini olish uchun «Ekranni yopish» va «Qoʻngʻiroq chalish» bor.",
+    href: "/doska",
+  },
+  {
     id: "doska-gildirak",
     date: "2026-09-25",
     type: "yangi",

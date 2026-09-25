@@ -75,8 +75,11 @@ export function ShapePicker() {
  *
  * 34×28 katakda `A, B, C` harflari oʻqilmaydi, lekin joy egallab
  * figurani kichraytiradi. Panelda tanib olishni SILUET tashiydi.
+ *
+ * Sozlama kartasida ham shu namuna (`ShapeSettings`) — panel va karta
+ * bir xil siluetni koʻrsatsin.
  */
-function ShapeGlyph({ id }: { id: ShapeId }) {
+export function ShapeGlyph({ id }: { id: ShapeId }) {
   const def = SHAPES[id];
   const w = 34;
   const h = 28;

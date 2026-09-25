@@ -1,8 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 
+import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
+import { SettingsSection, SettingsSwitch } from "../SettingsFields";
 
 /**
  * SOAT — joriy vaqt.
@@ -39,10 +42,27 @@ export function ClockWidget({ widget }: { widget: DoskaWidget }) {
     >
       <span
         className="font-mono leading-none font-medium tabular-nums"
-        style={{ fontSize: "clamp(2rem, 26cqw, 7rem)" }}
+        // Yuqori chegara katta: «Markazga» rejimida soat butun ekranga
+        // kattalashadi va raqam u bilan oʻsishi kerak.
+        style={{ fontSize: "clamp(2rem, 26cqw, 30rem)" }}
       >
         {text}
       </span>
     </div>
+  );
+}
+
+export function ClockSettings({ widget }: { widget: DoskaWidget }) {
+  const patch = useDoskaStore((s) => s.patchWidgetState);
+  const t = useTranslations("Doska.clock");
+
+  return (
+    <SettingsSection label={t("view")}>
+      <SettingsSwitch
+        label={t("showSeconds")}
+        checked={widget.state.showSeconds !== false}
+        onChange={(on) => patch(widget.id, { showSeconds: on })}
+      />
+    </SettingsSection>
   );
 }

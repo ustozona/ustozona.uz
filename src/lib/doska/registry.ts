@@ -79,6 +79,14 @@ export type WidgetMeta = {
    * Boshqa vidjetlarda yoʻq: taymerni «tahrirlash» degan holat yoʻq.
    */
   editable?: boolean;
+  /**
+   * Ekranga qoʻyilganda sozlama kartasi DARHOL ochiladimi.
+   *
+   * Taymerda ha: oʻqituvchi taymer qoʻydi, demak birinchi savoli —
+   * «necha daqiqa?». Kartani izlab topish ortiqcha qadam boʻlardi.
+   * Soat yoki svetoforda yoʻq — ular sozlamasiz ham tayyor.
+   */
+  openSettingsOnAdd?: boolean;
 };
 
 export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
@@ -96,14 +104,19 @@ export const WIDGET_REGISTRY: Record<WidgetKind, WidgetMeta> = {
     tint: "amber",
     defaultSize: { w: 340, h: 220 },
     minSize: { w: 260, h: 180 },
-    initialState: { durationSec: 300, remainingSec: 300, running: false },
+    // `view` va `sound` — 2-bosqichda qoʻshildi; eski taymerlarda yoʻq,
+    // komponent ularni standart qiymat bilan oʻqiydi (TimerWidget).
+    initialState: { durationSec: 300, remainingSec: 300, running: false, view: "both", sound: true },
+    openSettingsOnAdd: true,
   },
   "traffic-light.v1": {
     kind: "traffic-light.v1",
     labelKey: "trafficLight",
     tint: "red",
-    defaultSize: { w: 160, h: 380 },
-    minSize: { w: 110, h: 260 },
+    // 2-bosqichda kengaydi (160→180): pastda holat soʻzi turadi va
+    // «Gaplashamiz» sinfdan oʻqiladigan kattalikda sigʻishi kerak.
+    defaultSize: { w: 180, h: 420 },
+    minSize: { w: 120, h: 300 },
     initialState: { active: "red" },
   },
   "text.v1": {
