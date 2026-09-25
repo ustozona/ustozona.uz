@@ -64,6 +64,12 @@ export type Lesson = {
   /** Koʻp sinfli mavzuda har sinf alohida oʻtiladi: sinf → oʻtilgan kun (null — oʻtilmagan).
       `taughtAt` bunda faqat hamma sinfda oʻtilganda toʻldiriladi. */
   taughtByClass?: Record<string, string | null>;
+  /** Sinf → «Oʻtildi» belgisining reviziyasi: belgi shu sinfda har
+      oʻzgarganda yangi tasodifiy token (`withTaughtRev`). Vaqt emas — ikki
+      qurilma soati farq qilsa ham taqqoslash buzilmaydi. Vazifa oʻzi koʻrgan
+      tokenni saqlaydi (`Task.taughtRevSeen`); reconciler shu bilan dars
+      belgisi yoki vazifa holatidan qaysi biri yangiroq ekanini ajratadi. */
+  taughtRevByClass?: Record<string, string>;
   /** Oxirgi tahrir vaqti (ISO) — muharrir headerida nisbiy koʻrsatiladi. */
   updatedAt?: string;
 };
@@ -80,6 +86,32 @@ export const byLessonOrder = (classId: string | null | undefined) => (a: Lesson,
 export function isTaught(l: Lesson, classId?: string | null): boolean {
   if (classId && l.taughtByClass && classId in l.taughtByClass) return l.taughtByClass[classId] != null;
   return l.taughtAt != null || (l.taughtAt === undefined && l.status === "Completed");
+}
+
+function newTaughtRev(): string {
+  const rnd = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID().slice(0, 8)
+    : Math.random().toString(36).slice(2, 10);
+  return `${Date.now().toString(36)}-${rnd}`;
+}
+
+/** `before → after` oʻtishida «Oʻtildi» holati haqiqatan oʻzgargan har aʼzo
+    sinfga yangi reviziya yozadi. Store'dagi har yozuv (setTaught, updateLesson,
+    setStatus) shundan oʻtadi — muharrirdagi «Bekor qilish» ham belgi
+    oʻzgarishi hisoblanadi. Holat oʻzgarmagan sinf tokeni tegilmaydi. */
+export function withTaughtRev(before: Lesson, after: Lesson): Lesson {
+  let revs: Record<string, string> | undefined;
+  for (const c of lessonClassIds(after)) {
+    if (isTaught(before, c) === isTaught(after, c)) continue;
+    revs ??= { ...after.taughtRevByClass };
+    revs[c] = newTaughtRev();
+  }
+  return revs ? { ...after, taughtRevByClass: revs } : after;
+}
+
+/** Ikki reviziya bir xilmi (`undefined` va `null` — «token yoʻq», teng). */
+export function sameRev(a: string | null | undefined, b: string | null | undefined): boolean {
+  return (a ?? null) === (b ?? null);
 }
 
 /** Qoralama chegarasi: muharrir matnida shuncha soʻz boʻlsa, reja «boshlangan». */

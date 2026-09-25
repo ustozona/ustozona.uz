@@ -1,6 +1,6 @@
 import type { ClassData } from "@/lib/grades-data";
 import type { Lesson } from "@/lib/lessons-data";
-import { isTaught, lessonSessions } from "@/lib/lessons-data";
+import { isTaught, lessonClassIds, lessonSessions, sameRev } from "@/lib/lessons-data";
 import { addDaysKey, dateToKey } from "@/lib/date-keys";
 import { birthdayTaskId, birthdayTaskTitle, gradingTaskId, lessonTaskId, lessonTaskTitle, type Task, type TaskPriority } from "@/lib/tasks-data";
 import { subjectLabel } from "@/lib/standards-data";
@@ -13,11 +13,19 @@ import { subjectLabel } from "@/lib/standards-data";
    useTasksStore'ga yoziladi. Qoidalar (reja, B3):
    - Lesson oynasi: [bugun-7, bugun+21]; oynadan tashqari yoki sessiyasi
      endi yo'q "todo" avto-vazifa pruning qilinadi (done/canceled tarixda qoladi).
+     Istisno — foydalanuvchi qayta ochgan (`reopenedAt`) ochiq vazifa.
    - Grading: mavjud BARCHA assignmentlar uchun (muddat: dueDate ?? date),
      oyna yo'q; assignment o'chsa "todo" pruning qilinadi.
-   - Forward-only: reconciler faqat "todo → done" oʻtkazadi (dars
-     «Oʻtildi» (`isTaught`) / baholash toʻliq kiritilgan boʻlsa). Hech qachon
-     "done → todo" qaytarmaydi (canceled ham tombstone — qayta tug'ilmaydi).
+   - Baholash — forward-only: faqat "todo → done" (toʻliq kiritilgan boʻlsa).
+   - Dars ↔ dars vazifasi — ikki tomonlama, (dars × aʼzo sinf) boʻyicha:
+     «Oʻtildi» (`isTaught`) → vazifa done; sinfdagi vazifalar hammasi done →
+     «Oʻtildi». Ziddiyatda YANGIROQ amal yutadi. Vaqt emas, reviziya
+     solishtiriladi: dars belgisi har oʻzgarganda yangi token oladi
+     (`Lesson.taughtRevByClass`), vazifa esa holati qoʻyilgan paytdagi tokenni
+     saqlaydi (`Task.taughtRevSeen`). Teng — vazifa yangiroq; farqli — dars.
+       · «Oʻtildi» vazifa bajarilganidan keyin olingan → vazifa "done → todo";
+       · vazifa «Oʻtildi»dan keyin qayta ochilgan → darsdan «Oʻtildi» olinadi.
+   - Canceled — tombstone, qayta tug'ilmaydi va tegilmaydi.
    - Sarlavha sinxroni: hali todo bo'lgan avto-vazifa sarlavhasi dars/
      topshiriq nomi o'zgarsa yangilanadi (done/canceled'ga tegilmaydi).
    ════════════════════════════════════════════════════════════════════ */
@@ -27,9 +35,10 @@ export type ReconcileResult = {
   upserts: Task[];
   /** Endi haqiqiy sessiya/assignment'ga mos kelmaydigan "todo" avto-vazifalar. */
   deleteIds: string[];
-  /** Barcha oynadagi sessiya-vazifalari done boʻlgan darslar — Completed qilinishi kerak. */
   /** Sinf boʻyicha: shu sinfdagi dars vazifalari hammasi bajarildi → shu sinfda «Oʻtildi». */
   lessonsToComplete: { lessonId: string; classId: string }[];
+  /** Sinf boʻyicha: oʻtilgan darsning vazifasi qoʻlda qayta ochildi → shu sinfda «Oʻtildi» olinadi. */
+  lessonsToUncomplete: { lessonId: string; classId: string }[];
 };
 
 /* Avto-vazifalar muhimligi — FAQAT vazifa tugʻilganda qoʻyiladi.
@@ -46,6 +55,21 @@ const BIRTHDAY_PRIORITY: TaskPriority = "medium";
 function isLive(cd: ClassData | undefined): cd is ClassData {
   return !!cd && !cd.info.archivedAt;
 }
+
+function isOpen(t: Task): boolean {
+  return t.status === "todo" || t.status === "in-progress";
+}
+
+type LessonSlot = { task: Task; title: string };
+
+/** Bitta (dars × sinf) juftligining shu passdagi vazifalari — holat boʻyicha. */
+type ClassBucket = {
+  done: LessonSlot[];
+  open: LessonSlot[];
+  /** Hali vazifasi yoʻq sessiyalar — sinf boʻyicha qaror chiqqach tugʻiladi. */
+  fresh: { id: string; title: string; session: { date: string; startMin: number; endMin: number } }[];
+  canceled: boolean;
+};
 
 export function reconcileLessonAndGradingTasks(
   items: Task[],
@@ -64,29 +88,76 @@ export function reconcileLessonAndGradingTasks(
   const windowStart = addDaysKey(todayKey, -7);
   const windowEnd = addDaysKey(todayKey, 21);
 
-  // Har dars va sinf uchun: shu oynadagi sessiya-vazifalar barchasi done'mi («Oʻtildi» sinxroni uchun).
   const lessonsToComplete: { lessonId: string; classId: string }[] = [];
+  const lessonsToUncomplete: { lessonId: string; classId: string }[] = [];
 
   for (const l of lessons) {
-    const sessions = lessonSessions(l).filter((s) => {
-      const cd = classDataMap[s.classId];
-      return isLive(cd) && s.date >= windowStart && s.date <= windowEnd;
-    });
-    if (sessions.length === 0) continue;
-
-    // Koʻp sinfli mavzuda har sinf alohida oʻtiladi — bajarilganlik ham sinf boʻyicha.
-    const allDoneByClass = new Map<string, boolean>();
-    for (const s of sessions) {
+    /* Koʻp sinfli mavzuda har sinf alohida oʻtiladi — shuning uchun hamma
+       qaror (dars × sinf) juftligida. Faqat AʼZO sinflar: jadvalda qolib
+       ketgan begona sinf `isTaught` da umumiy belgiga tushib, butun darsni
+       «Oʻtildi» qilib yuborardi. */
+    const members = new Set(lessonClassIds(l));
+    const buckets = new Map<string, ClassBucket>();
+    for (const s of lessonSessions(l)) {
+      if (!members.has(s.classId) || !isLive(classDataMap[s.classId])) continue;
       const id = lessonTaskId(l.id, s.classId, s.date, s.startMin);
-      keepLessonIds.add(id);
       const existing = existingById.get(id);
+      // Oynadan tashqari sessiya faqat foydalanuvchi qayta ochgan vazifasi bilan kiradi —
+      // aks holda u pruning'da oʻchib, qayta ochish darsga yetmasdi.
+      const inWindow = s.date >= windowStart && s.date <= windowEnd;
+      if (!inWindow && !(existing?.reopenedAt && isOpen(existing))) continue;
+      keepLessonIds.add(id);
+
+      let b = buckets.get(s.classId);
+      if (!b) buckets.set(s.classId, (b = { done: [], open: [], fresh: [], canceled: false }));
       const info = classDataMap[s.classId]?.info;
       const title = lessonTaskTitle(l.title, info?.name, subjectLabel(info?.subject));
+      if (!existing) b.fresh.push({ id, title, session: s });
+      else if (existing.status === "done") b.done.push({ task: existing, title });
+      else if (existing.status === "canceled") b.canceled = true;
+      else b.open.push({ task: existing, title });
+    }
 
-      if (!existing) {
-        const bornDone = isTaught(l, s.classId);
-        if (!bornDone) allDoneByClass.set(s.classId, false);
-        else if (!allDoneByClass.has(s.classId)) allDoneByClass.set(s.classId, true);
+    for (const [classId, b] of buckets) {
+      const rev = l.taughtRevByClass?.[classId];
+      const seen = rev ?? null;
+      // Vazifa holati dars belgisining oxirgi oʻzgarishidan KEYIN qoʻyilgan.
+      // `undefined` (eski vazifa) hech qachon yangiroq emas — oldingi xulq saqlanadi.
+      const newer = (t: Task) => t.taughtRevSeen !== undefined && sameRev(t.taughtRevSeen, rev);
+      let bornDone = false;
+      let stillOpen = b.open;
+
+      if (isTaught(l, classId)) {
+        if (b.open.some(({ task }) => newer(task))) {
+          /* Vazifa «Oʻtildi»dan keyin qoʻlda qayta ochilgan — darsdan belgi
+             olinadi (ilgari vazifa shu yerda darhol yana done boʻlardi). */
+          lessonsToUncomplete.push({ lessonId: l.id, classId });
+        } else {
+          // Dars belgisi yangiroq — ochiq vazifalar bajarilgan boʻladi.
+          for (const { task, title } of b.open) {
+            upserts.push({ ...task, title, status: "done", completedAt: nowIso, taughtRevSeen: seen });
+          }
+          stillOpen = [];
+          bornDone = true;
+        }
+      } else {
+        /* Dars oʻtilmagan. Belgi vazifa bajarilganidan KEYIN olingan boʻlsa
+           (adashib qoʻyilgan «Oʻtildi» qaytarildi) — vazifa qayta ochiladi.
+           Ilgari bu farqlanmasdi va quyidagi qoida belgini darhol qaytarardi. */
+        const stale = rev !== undefined ? b.done.filter(({ task }) => !newer(task)) : [];
+        for (const { task, title } of stale) {
+          upserts.push({ ...task, title, status: "todo", completedAt: null, doneManually: false, taughtRevSeen: seen });
+        }
+        // Sinfdagi hamma vazifa (bekor qilingani ham toʻsiq) qoʻlda bajarilgan → «Oʻtildi».
+        if (stale.length === 0 && b.done.length > 0 && b.open.length === 0 && !b.canceled && b.fresh.length === 0) {
+          lessonsToComplete.push({ lessonId: l.id, classId });
+        }
+      }
+
+      for (const { task, title } of stillOpen) {
+        if (task.status === "todo" && task.title !== title) upserts.push({ ...task, title });
+      }
+      for (const { id, title, session: s } of b.fresh) {
         upserts.push({
           id,
           title,
@@ -95,32 +166,17 @@ export function reconcileLessonAndGradingTasks(
           dueDate: s.date,
           dueMin: s.startMin,
           dueEndMin: s.endMin,
-          classId: s.classId,
+          classId,
           tags: [],
           repeat: null,
-          source: { kind: "lesson", lessonId: l.id, classId: s.classId, date: s.date, startMin: s.startMin },
+          source: { kind: "lesson", lessonId: l.id, classId, date: s.date, startMin: s.startMin },
           estPomos: 1,
           sortOrder: seed++,
           createdAt: nowIso,
           completedAt: bornDone ? nowIso : null,
+          taughtRevSeen: seen,
         });
-        continue;
       }
-
-      if (existing.status !== "done") allDoneByClass.set(s.classId, false);
-      else if (!allDoneByClass.has(s.classId)) allDoneByClass.set(s.classId, true);
-
-      if (isTaught(l, s.classId) && existing.status !== "done" && existing.status !== "canceled") {
-        upserts.push({ ...existing, status: "done", completedAt: nowIso });
-        continue;
-      }
-      if (existing.status === "todo" && existing.title !== title) {
-        upserts.push({ ...existing, title });
-      }
-    }
-
-    for (const [classId, done] of allDoneByClass) {
-      if (done && !isTaught(l, classId)) lessonsToComplete.push({ lessonId: l.id, classId });
     }
   }
 
@@ -185,7 +241,7 @@ export function reconcileLessonAndGradingTasks(
     else if (t.source.kind === "grading" && !keepGradingIds.has(t.id)) deleteIds.push(t.id);
   }
 
-  return { upserts, deleteIds, lessonsToComplete };
+  return { upserts, deleteIds, lessonsToComplete, lessonsToUncomplete };
 }
 
 /* ════════════════════════════════════════════════════════════════════

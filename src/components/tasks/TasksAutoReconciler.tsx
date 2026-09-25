@@ -14,15 +14,19 @@ import { reconcileLessonAndGradingTasks, reconcileBirthdayTasks } from "@/lib/ta
 
    BehaviorAutoReconciler patterni: darslar/baholash oʻzgarishini kuzatib,
    "boʻlishi kerak boʻlgan" avto-vazifalarni hisoblaydi, faqat FARQNI
-   tasks store'ga yozadi. Shu pastdagi effekt darsni ham "Completed"
-   qiladi (barcha oynadagi sessiya-vazifalari done boʻlsa) — ikki
-   tomonlama sinxron shu YAGONA joyda.
+   tasks store'ga yozadi. Shu pastdagi effekt darsni ham «Oʻtildi»
+   qiladi (barcha oynadagi sessiya-vazifalari done boʻlsa) yoki undan
+   «Oʻtildi»ni oladi (vazifa qoʻlda qayta ochilsa) — ikki tomonlama
+   sinxron shu YAGONA joyda.
 
    Xavfsizlik: `useTasksStore.items` effekt dependency EMAS — oʻz
    yozuvimiz qayta tsikl qoʻzgʻatmasin deb `getState()`dan oʻqiladi
-   (behavior reconciler bilan bir xil loop-qoʻriqchisi). `lessons` esa
-   ham manba, ham yozuv nishoni — setStatus chaqiruvi bir marta qoʻshimcha
-   tsikl qoʻzgʻatadi, lekin ikkinchi pass no-op (status allaqachon mos).
+   (behavior reconciler bilan bir xil loop-qoʻriqchisi). Faqat
+   `lessonTaskEdits` hisoblagichi kuzatiladi — u dars vazifasi QOʻLDA
+   belgilanganda oshadi, reconciler yozuvlari (`applyAutoReconcile`)
+   uni oshirmaydi. `lessons` esa ham manba, ham yozuv nishoni —
+   yozuvimiz bir marta qoʻshimcha pass qoʻzgʻatadi, lekin u no-op
+   (holat allaqachon mos).
    ════════════════════════════════════════════════════════════════════ */
 
 const DEBOUNCE_MS = 800;
@@ -35,6 +39,8 @@ export default function TasksAutoReconciler() {
   const allHydrated = lessonsHydrated && gradesHydrated && tasksHydrated && settingsHydrated;
 
   const lessons = useLessonStore((s) => s.lessons);
+  // Dars vazifasini qoʻlda belgilash/qayta ochish darsga darhol yetsin.
+  const lessonTaskEdits = useTasksStore((s) => s.lessonTaskEdits);
   const classDataMap = useGradesStore((s) => s.classDataMap);
   const tasksSettings = useSettingsStore((s) => s.tasksSettings);
 
@@ -43,7 +49,7 @@ export default function TasksAutoReconciler() {
     const timer = setTimeout(() => {
       const items = useTasksStore.getState().items;
       const today = todayKey();
-      const { upserts, deleteIds, lessonsToComplete } = reconcileLessonAndGradingTasks(
+      const { upserts, deleteIds, lessonsToComplete, lessonsToUncomplete } = reconcileLessonAndGradingTasks(
         items,
         lessons,
         classDataMap,
@@ -52,11 +58,11 @@ export default function TasksAutoReconciler() {
       if (upserts.length > 0 || deleteIds.length > 0) {
         useTasksStore.getState().applyAutoReconcile(upserts, deleteIds);
       }
-      if (lessonsToComplete.length > 0) {
-        // Sinfdagi dars vazifalari hammasi bajarildi → mavzu shu sinfda «Oʻtildi».
-        const setTaught = useLessonStore.getState().setTaught;
-        for (const { lessonId, classId } of lessonsToComplete) setTaught(lessonId, today, classId);
-      }
+      const setTaught = useLessonStore.getState().setTaught;
+      // Sinfdagi dars vazifalari hammasi bajarildi → mavzu shu sinfda «Oʻtildi».
+      for (const { lessonId, classId } of lessonsToComplete) setTaught(lessonId, today, classId);
+      // Oʻtilgan darsning vazifasi qoʻlda qayta ochildi → shu sinfda «Oʻtildi» olinadi.
+      for (const { lessonId, classId } of lessonsToUncomplete) setTaught(lessonId, null, classId);
 
       // Bugungi holatga tayanadi — yuqoridagi upsert/delete'dan KEYINGI itemsni oling.
       const itemsAfter = useTasksStore.getState().items;
@@ -79,7 +85,7 @@ export default function TasksAutoReconciler() {
       }
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [allHydrated, lessons, classDataMap, tasksSettings]);
+  }, [allHydrated, lessons, lessonTaskEdits, classDataMap, tasksSettings]);
 
   return null;
 }
