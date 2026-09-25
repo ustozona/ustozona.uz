@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { SessionMove } from "@/lib/lesson-shift";
-import { isTaught, lessonClassIds, lessonUnitIds, type Unit, type Lesson, type LessonStatus, type LessonSession, type LessonPlanState } from "@/lib/lessons-data";
+import { isTaught, lessonClassIds, lessonSessions, lessonUnitIds, withTaughtRev, type Unit, type Lesson, type LessonStatus, type LessonSession, type LessonPlanState } from "@/lib/lessons-data";
+import { todayKey } from "@/lib/date-keys";
 
 /* ════════════════════════════════════════════════════════════════════
    MAVZU BANKI — server-backed store (6-bosqich migratsiyasi)
@@ -17,6 +18,13 @@ const MON_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+}
+/** Sinf xaritasigacha oʻtilgan (eski) mavzuda sinfning oʻtilgan kuni yozilmagan —
+    shu sinfning bugungacha boʻlgan oxirgi sessiyasi, u ham boʻlmasa bugun. */
+function legacyTaughtDay(l: Lesson, classId: string): string {
+  const today = todayKey();
+  const past = lessonSessions(l).filter((x) => x.classId === classId && x.date <= today).map((x) => x.date).sort();
+  return past.at(-1) ?? today;
 }
 function fmtDisplayDate(dateKey: string): string {
   const [, m, d] = dateKey.split("-").map(Number);
@@ -201,7 +209,7 @@ export const useLessonStore = create<LessonState>()(
         return id;
       },
       updateLesson: (id, patch) => set((s) => ({
-        lessons: s.lessons.map((l) => (l.id === id ? { ...l, ...patch, updatedAt: new Date().toISOString() } : l)),
+        lessons: s.lessons.map((l) => (l.id === id ? withTaughtRev(l, { ...l, ...patch, updatedAt: new Date().toISOString() }) : l)),
       })),
       deleteLesson: (id) => set((s) => ({ lessons: s.lessons.filter((l) => l.id !== id) })),
 
@@ -217,7 +225,7 @@ export const useLessonStore = create<LessonState>()(
           scheduledDate: undefined, startMin: undefined, endMin: undefined, date: undefined, time: undefined,
         } : l),
       })),
-      setStatus: (id, status) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, status } : l)) })),
+      setStatus: (id, status) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? withTaughtRev(l, { ...l, status }) : l)) })),
       setPlanState: (id, state) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: state === "ready", planStatus: state === "ready" ? undefined : state } : l)) })),
       setPlanReady: (id, ready) => set((s) => ({ lessons: s.lessons.map((l) => (l.id === id ? { ...l, planReady: ready } : l)) })),
       setTaught: (id, dateKey, classId) => set((s) => ({
@@ -226,20 +234,25 @@ export const useLessonStore = create<LessonState>()(
           const ids = lessonClassIds(l);
           let taughtAt = dateKey;
           let taughtByClass: Record<string, string | null> | undefined;
-          if (ids.length > 1) {
+          // Sinf xaritasi bir marta paydo boʻlgach (bitta sinfga qaytgan mavzuda ham)
+          // `isTaught` avval shundan oʻqiydi — yozuv ham shu yerga tushishi shart,
+          // aks holda eskirgan yozuv belgini «qaytarib» turardi.
+          if (ids.length > 1 || l.taughtByClass) {
             // Joriy holat har sinf uchun aniq yoziladi, keyin faqat kerakli sinf(lar) oʻzgaradi.
             taughtByClass = {};
             for (const c of ids) {
-              const prev = l.taughtByClass && c in l.taughtByClass ? l.taughtByClass[c] : (isTaught(l) ? (l.taughtAt ?? dateKey ?? null) : null);
+              const prev = l.taughtByClass && c in l.taughtByClass
+                ? l.taughtByClass[c]
+                : isTaught(l) ? (l.taughtAt ?? legacyTaughtDay(l, c)) : null;
               taughtByClass[c] = !classId || c === classId ? dateKey : prev;
             }
             const vals = ids.map((c) => taughtByClass![c]);
-            taughtAt = vals.every((v) => v != null) ? (vals as string[]).sort().at(-1)! : null;
+            if (vals.length) taughtAt = vals.every((v) => v != null) ? (vals as string[]).sort().at(-1)! : null;
           }
           const status: LessonStatus = taughtAt
             ? "Completed"
             : anySessions(scheduleMapOf(l)) ? "Scheduled" : "Unscheduled";
-          return { ...l, taughtAt, ...(taughtByClass ? { taughtByClass } : {}), status };
+          return withTaughtRev(l, { ...l, taughtAt, ...(taughtByClass ? { taughtByClass } : {}), status });
         }),
       })),
 

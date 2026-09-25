@@ -40,8 +40,19 @@ export type Task = {
   source: TaskSource;
   estPomos?: number;
   focus?: FocusEntry[];
-  /** Reconciler avto-vazifani qayta ochmasligi uchun (foydalanuvchi qoʻlda done qilgan). */
+  /** Reconciler avto-vazifani qayta ochmasligi uchun (foydalanuvchi qoʻlda done qilgan).
+      Yagona istisno — dars «Oʻtildi» belgisi keyinroq olib tashlansa (`tasks-reconcile`). */
   doneManually?: boolean;
+  /** Foydalanuvchi done vazifani qayta ochgan payt (ISO). Dars vazifasi oynadan
+      tashqarida boʻlsa ham shu belgi bilan pruning qilinmaydi va reconcilerga
+      kiradi — aks holda eski darsni qayta ochish vazifani oʻchirib yuborardi. */
+  reopenedAt?: string | null;
+  /** Dars vazifasi: holati qoʻyilgan paytdagi darsning shu sinfdagi «Oʻtildi»
+      reviziyasi (`Lesson.taughtRevByClass`). Dars tokeni bilan teng — vazifa
+      holati yangiroq (dars unga ergashadi); farq qilsa — dars belgisi keyin
+      oʻzgargan (vazifa darsga ergashadi). `undefined` — hali yozilmagan
+      (eski vazifa), `null` — dars tokeni yoʻq paytda yozilgan. */
+  taughtRevSeen?: string | null;
   /** Tugʻilgan kun bildirishnomasi idempotentligi uchun. */
   notifiedAt?: string | null;
   sortOrder: number;
