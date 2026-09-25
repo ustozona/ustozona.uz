@@ -13,18 +13,7 @@
    boʻladi, tiq-tiq esa 4 soniya davomida 50–80 marta chaladi.
    ════════════════════════════════════════════════════════════════════ */
 
-let ctx: AudioContext | null = null;
-
-function audio(): AudioContext | null {
-  if (typeof window === "undefined") return null;
-  const Ctor =
-    window.AudioContext ??
-    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!Ctor) return null;
-  ctx ??= new Ctor();
-  if (ctx.state === "suspended") void ctx.resume();
-  return ctx;
-}
+import { sharedAudioContext as audio } from "./audio-context";
 
 /** Foydalanuvchi bosganda chaqiriladi — keyingi tovushlar shunda eshitiladi. */
 export function unlockSpinSound(): void {

@@ -1,23 +1,27 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { flushDoskaPersist, useDoskaStore } from "@/lib/doska/store";
 import { DoskaCanvas } from "./DoskaCanvas";
+import { DoskaCurtain } from "./DoskaCurtain";
 import { WidgetBar } from "./WidgetBar";
 import { DoskaGuestNote } from "./DoskaGuestNote";
 import { DoskaMenu } from "./DoskaMenu";
+import { DoskaNotice } from "./DoskaNotice";
 import { BarDivider, BarGroup, BarIconButton } from "./BarGroup";
+import { useDoskaShortcuts } from "./useDoskaShortcuts";
 import {
-  IconHome,
   IconFullscreen,
   IconAdd,
   IconArrowLeft,
+  IconArrowRight,
   IconChevronDown,
   IconChevronUp,
+  IconRedo,
+  IconUndo,
 } from "./icons";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -26,6 +30,15 @@ import {
    ⚠️ Kanvas butun ekranni egallaydi, boshqaruv esa uning USTIDA suzadi.
    Panel oqimda joy egallasa, doska panel balandligicha kichrayadi va
    vidjetni pastga qoʻyib boʻlmaydi.
+
+   ⚠️ BUTUN boshqaruv PASTKI qatorda, tepada hech narsa yoʻq:
+     chap   — bekor qilish / qaytadan bajarish + «Qaytarish» xabari
+     markaz — vidjet paneli
+     oʻng   — ekranlar (‹ n/N › +), toʻliq ekran, menyu
+   Asosiy qurilma — sensorli doska. 75″ panelning tepasi poldan ≈ 1,8 m,
+   86″ niki ≈ 1,9 m: u yerdagi tugmaga oʻqituvchi qoʻlini toʻliq choʻzib
+   yetadi, bola umuman yetmaydi (docs/doska-ux-tadqiqot.md R319, A6).
+   Bosh sahifa havolasi menyuda.
 
    Qatlam `pointer-events-none`, faqat tugmalar `auto` — shunda
    boshqaruv qatlami kanvasga bosishni toʻsmaydi.
@@ -38,6 +51,10 @@ export function DoskaShell() {
   const activeScreenId = useDoskaStore((s) => s.activeScreenId);
   const addScreen = useDoskaStore((s) => s.addScreen);
   const setActiveScreen = useDoskaStore((s) => s.setActiveScreen);
+  const undo = useDoskaStore((s) => s.undo);
+  const redo = useDoskaStore((s) => s.redo);
+  const canUndo = useDoskaStore((s) => s.past.length > 0);
+  const canRedo = useDoskaStore((s) => s.future.length > 0);
   const t = useTranslations("Doska.bar");
 
   /**
@@ -51,7 +68,8 @@ export function DoskaShell() {
   const [barHidden, setBarHidden] = React.useState(false);
 
   const index = deck.screens.findIndex((s) => s.id === activeScreenId);
-  const hasPrev = index > 0;
+  const prev = deck.screens[index - 1];
+  const next = deck.screens[index + 1];
 
   // Ekran holati kechiktirilib saqlanadi (store.ts). Sahifa yopilishi
   // yoki tab almashishida kutilayotgan yozuvni darhol tushiramiz —
@@ -76,6 +94,11 @@ export function DoskaShell() {
     else void document.documentElement.requestFullscreen();
   };
 
+  useDoskaShortcuts({
+    onToggleFullscreen: toggleFullscreen,
+    onToggleControls: () => setBarHidden((h) => !h),
+  });
+
   return (
     // `delayDuration` 0 emas, 300: boshqaruv zich joylashgan va nol
     // kechikishda sichqoncha panel ustidan oʻtganda tooltipʼlar ketma-ket
@@ -84,115 +107,106 @@ export function DoskaShell() {
       <div className="fixed inset-0 overflow-hidden">
         <DoskaCanvas />
 
-        <div className="pointer-events-none absolute inset-0 flex flex-col justify-between gap-2 p-3">
-          {/* ── Yuqori qator ── */}
-          <div className="flex items-start gap-2">
-            <BarGroup>
-              <BarIconButton label={t("home")} asChild>
-                <Link href="/">
-                  <IconHome className="size-5" />
-                </Link>
-              </BarIconButton>
-            </BarGroup>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end gap-2 p-3">
+          {/* ── Chap: bekor qilish ── */}
+          <div className="flex min-w-0 grow basis-0 flex-col items-start gap-2">
+            <DoskaNotice />
 
-            <div className="grow" />
-
-            {/* Toʻliq ekran va menyu bitta guruhda: ikkalasi ham butun
-                ekranga tegishli amal, ikki alohida kartochka esa
-                burchakda ortiqcha shovqin edi. */}
-            <BarGroup>
-              <BarIconButton label={t("fullscreen")} onClick={toggleFullscreen}>
-                <IconFullscreen className="size-5" />
-              </BarIconButton>
-              <BarDivider />
-              <DoskaMenu />
-            </BarGroup>
+            {!barHidden && (
+              <BarGroup layer="bar">
+                <BarIconButton label={t("undo")} disabled={!canUndo} onClick={undo}>
+                  <IconUndo className="size-5" />
+                </BarIconButton>
+                <BarIconButton label={t("redo")} disabled={!canRedo} onClick={redo}>
+                  <IconRedo className="size-5" />
+                </BarIconButton>
+              </BarGroup>
+            )}
           </div>
 
-          {/* ── Pastki qator ── */}
-          <div className="flex items-end gap-2">
-            <div className="grow basis-0" />
+          {/* ── Markaz: vidjetlar ── */}
+          <div className="pointer-events-auto flex min-w-0 flex-col items-center gap-2">
+            {!barHidden && <DoskaGuestNote />}
 
-            <div className="pointer-events-auto flex flex-col items-center gap-2">
-              {!barHidden && <DoskaGuestNote />}
-
-              {barHidden ? (
+            {barHidden ? (
+              <BarGroup layer="bar">
+                <BarIconButton label={t("showControls")} onClick={() => setBarHidden(false)}>
+                  <IconChevronUp className="size-5" />
+                </BarIconButton>
+              </BarGroup>
+            ) : (
+              <div className="flex max-w-full min-w-0 items-end gap-2">
+                <WidgetBar />
                 <BarGroup layer="bar">
-                  <BarIconButton
-                    label={t("showControls")}
-                    onClick={() => setBarHidden(false)}
-                  >
-                    <IconChevronUp className="size-5" />
+                  <BarIconButton label={t("hideControls")} onClick={() => setBarHidden(true)}>
+                    <IconChevronDown className="size-5" />
                   </BarIconButton>
                 </BarGroup>
-              ) : (
-                <div className="flex items-end gap-2">
-                  <WidgetBar />
-                  <BarGroup layer="bar">
-                    <BarIconButton
-                      label={t("hideControls")}
-                      onClick={() => setBarHidden(true)}
-                    >
-                      <IconChevronDown className="size-5" />
-                    </BarIconButton>
-                  </BarGroup>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
 
-            <div className="flex grow basis-0 justify-end">
+          {/* ── Oʻng: ekranlar, toʻliq ekran, menyu ── */}
+          <div className="flex min-w-0 grow basis-0 justify-end">
+            {!barHidden && (
               <BarGroup layer="bar">
                 <BarIconButton
                   label={t("prevScreen")}
-                  disabled={!hasPrev}
-                  onClick={() => hasPrev && setActiveScreen(deck.screens[index - 1].id)}
+                  disabled={!prev}
+                  onClick={() => prev && setActiveScreen(prev.id)}
                 >
                   <IconArrowLeft className="size-5" />
                 </BarIconButton>
 
-                <ScreenCounter current={index + 1} />
+                <ScreenCounter current={index + 1} total={deck.screens.length} />
+
+                <BarIconButton
+                  label={t("nextScreen")}
+                  disabled={!next}
+                  onClick={() => next && setActiveScreen(next.id)}
+                >
+                  <IconArrowRight className="size-5" />
+                </BarIconButton>
 
                 <BarIconButton label={t("addScreen")} onClick={addScreen}>
                   <IconAdd className="size-5" />
                 </BarIconButton>
+
+                {/* Toʻliq ekran va menyu bitta guruhda ekranlar bilan:
+                    hammasi butun doskaga tegishli amal. */}
+                <BarDivider />
+
+                <BarIconButton label={t("fullscreen")} onClick={toggleFullscreen}>
+                  <IconFullscreen className="size-5" />
+                </BarIconButton>
+                <DoskaMenu />
               </BarGroup>
-            </div>
+            )}
           </div>
         </div>
+
+        <DoskaCurtain />
       </div>
     </TooltipProvider>
   );
 }
 
 /**
- * Ekran hisoblagichi — raqam ustida va ostida qisqa chiziq.
+ * Ekran hisoblagichi — «2 / 3».
  *
- * Yalangʻoch ramkali raqam «1» yonidagi strelkalar bilan birga sahifa
- * raqamiga ham, vidjet soniga ham, ekran raqamiga ham oʻxshardi. Ikki
- * chiziq uni TAXLAM boʻlagi qilib koʻrsatadi: ustida ham, ostida ham
- * boshqa ekran bor degan maʼno.
- *
- * Chiziqlar raqamdan tor (12px va 20px) — teng boʻlsa shakl uch qavatli
- * jadvalga aylanadi.
+ * Ilgari faqat joriy raqam bor edi (ustida va ostida chiziq bilan) va
+ * «keyingi» tugmasi yoʻq edi: oʻqituvchi nechta ekran borligini ham,
+ * oldinga qanday oʻtishni ham bilmasdi. Jami son ikkalasini hal qiladi.
  */
-function ScreenCounter({ current }: { current: number }) {
+function ScreenCounter({ current, total }: { current: number; total: number }) {
   const t = useTranslations("Doska.bar");
   return (
-    // Glif oʻzi bezak, lekin raqam maʼlumot — shuning uchun butun
-    // boʻlak bitta nom bilan eʼlon qilinadi va ichi yashiriladi.
     <span
       role="img"
       aria-label={t("screenNumber", { n: current })}
-      className="flex shrink-0 flex-col items-center gap-[3px] px-1.5"
+      className="text-muted-foreground min-w-12 shrink-0 px-1 text-center font-mono text-xs font-medium tabular-nums"
     >
-      <span className="bg-border h-px w-3 rounded-full" aria-hidden="true" />
-      <span
-        aria-hidden="true"
-        className="border-border text-muted-foreground min-w-6 rounded border px-1 text-center font-mono text-tag leading-4 font-medium"
-      >
-        {current}
-      </span>
-      <span className="bg-border h-px w-3 rounded-full" aria-hidden="true" />
+      {current} / {total}
     </span>
   );
 }

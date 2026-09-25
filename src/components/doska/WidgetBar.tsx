@@ -9,7 +9,6 @@ import { BackgroundPicker } from "./BackgroundPicker";
 import { BarButton } from "./BarButton";
 import { BarGroup } from "./BarGroup";
 import { ShapePicker } from "./ShapePicker";
-import { IconTrash } from "./icons";
 import { WIDGET_ICONS } from "./widgets";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -25,14 +24,16 @@ import { WIDGET_ICONS } from "./widgets";
    Hozircha hamma vidjet koʻrinadi. Soni oshganda panel oʻqituvchi
    tanloviga koʻra filtrlanadi ("Edit widget bar", R132) — tartib
    `WIDGET_BAR_ORDER` da, shuning uchun bu komponent oʻzgarmaydi.
+
+   «Tozalash» bu yerda YOʻQ — u menyuda (`DoskaMenu`). Qoʻshish
+   tugmalari qatorida turgan buzuvchi tugma bir notoʻgʻri bosishda butun
+   ekranni boʻshatardi (docs/doska-ux-tadqiqot.md A2).
    ════════════════════════════════════════════════════════════════════ */
 
 export function WidgetBar() {
   const addWidget = useDoskaStore((s) => s.addWidget);
-  const clearScreen = useDoskaStore((s) => s.clearScreen);
   const screen = useActiveScreen();
   const t = useTranslations("Doska.widgets");
-  const tBar = useTranslations("Doska.bar");
 
   // ⚠️ `?? []` bu yerda EMAS: har renderda yangi massiv yaratilib,
   // quyidagi `useMemo` ni har safar qayta hisoblatardi.
@@ -51,13 +52,13 @@ export function WidgetBar() {
       layer="bar"
       // ⚠️ Panel oʻqituvchining planshetida ham ochiladi. Ilgari u
       // sigʻmagan tugmalarni kanvasdan tashqariga chiqarib yuborardi:
-      // ekran 640px boʻlsa «Fon» va «Tozalash» koʻrinmay qolardi va
-      // ularga yetishning yoʻli yoʻq edi. Endi panel ekran kengligidan
-      // oshmaydi va ichida gorizontal aylanadi.
+      // ekran 640px boʻlsa «Fon» koʻrinmay qolardi va unga yetishning
+      // yoʻli yoʻq edi. Endi panel oʻz ustunidan oshmaydi (`max-w-full`,
+      // ota ustun `min-w-0` — DoskaShell) va ichida gorizontal aylanadi.
       //
       // `overscroll-x-contain` — aylantirish panel oxiriga yetganda
       // brauzerning «orqaga» ishorasiga oʻtib ketmasin.
-      className="max-w-[calc(100vw-1.5rem)] overflow-x-auto overscroll-x-contain"
+      className="max-w-full overflow-x-auto overscroll-x-contain"
     >
       {WIDGET_BAR_ORDER.map((kind) => (
         <BarButton
@@ -77,10 +78,6 @@ export function WidgetBar() {
       <span className="bg-border mx-1 h-10 w-px shrink-0 self-center" />
 
       <BackgroundPicker />
-
-      {(widgets?.length ?? 0) > 0 && (
-        <BarButton label={tBar("clear")} Icon={IconTrash} tint="rose" onClick={clearScreen} />
-      )}
     </BarGroup>
   );
 }

@@ -2068,6 +2068,10 @@
       "changelog": "Changelog"
     },
     "entries": {
+      "doska-qulay-boshqaruv": {
+        "title": "A friendlier Doska: any time on the timer, undo for everything, controls within reach",
+        "body": "When you add a timer you pick the time right away (1–15 minutes or the ± buttons), tap it to start, and a bell rings when time is up; every widget’s settings open right next to it under “Settings”. A widget or screen deleted by accident comes back with “Undo”, and you can lock a widget in place or bring it full screen with “Spotlight”. All controls now sit at the bottom, easy to reach on an interactive board, and the menu has “Cover the screen” and “Ring the bell” to get the class’s attention."
+      },
       "doska-gildirak": {
         "title": "Wheel on the Doska: pick who answers, fairly",
         "body": "Add the «Wheel» from the Doska’s bottom panel, type your students’ names with the pencil button and click the wheel — it spins and picks one student. In «Everyone once» mode a picked student leaves the wheel, so there’s no more «why always me?!»; when everyone has had a turn, you start a new round. If a student isn’t ready, press «Later» — they go back on the wheel and will come up again."
@@ -4667,8 +4671,17 @@
     },
     "toolbar": {
       "duplicate": "{widget} — duplicate",
-      "bringForward": "{widget} — bring forward",
-      "remove": "{widget} — delete"
+      "remove": "{widget} — delete",
+      "duplicateShort": "Duplicate",
+      "removeShort": "Delete",
+      "settings": "{widget} — settings",
+      "settingsShort": "Settings",
+      "lock": "{widget} — lock",
+      "lockShort": "Lock",
+      "unlock": "{widget} — unlock",
+      "unlockShort": "Unlock",
+      "spotlight": "{widget} — spotlight",
+      "spotlightShort": "Spotlight"
     },
     "bar": {
       "clear": "Clear",
@@ -4678,7 +4691,10 @@
       "showControls": "Show controls",
       "hideControls": "Hide controls",
       "prevScreen": "Previous screen",
+      "nextScreen": "Next screen",
       "addScreen": "Add screen",
+      "undo": "Undo",
+      "redo": "Redo",
       "screenNumber": "Screen {n}",
       "menu": "Menu",
       "proFeature": "Paid feature"
@@ -4686,6 +4702,72 @@
     "guestNote": {
       "text": "This screen is saved in this browser. <link>Sign in</link> to connect your class list.",
       "dismiss": "Dismiss note"
+    },
+    "notice": {
+      "widgetRemoved": "{widget} deleted",
+      "screenCleared": "Screen cleared",
+      "screenRemoved": "Screen deleted",
+      "undo": "Undo"
+    },
+    "settings": {
+      "title": "{widget} settings",
+      "close": "Close",
+      "instant": "Changes apply right away · Esc to close"
+    },
+    "timer": {
+      "start": "Start",
+      "pause": "Pause",
+      "reset": "Reset",
+      "addMinute": "Add a minute",
+      "finished": "Time’s up",
+      "time": "Time",
+      "minutes": "{n} min",
+      "less": "Less",
+      "more": "More",
+      "view": "Display",
+      "viewDigits": "Digits",
+      "viewDisk": "Disk",
+      "viewBoth": "Both",
+      "whenDone": "When time is up",
+      "sound": "Play a sound"
+    },
+    "trafficLight": {
+      "red": "Silent",
+      "amber": "Whisper",
+      "green": "Talk",
+      "labelSection": "Label",
+      "showLabel": "Show the state in words"
+    },
+    "clock": {
+      "view": "Display",
+      "showSeconds": "Show seconds"
+    },
+    "shapeSettings": {
+      "shape": "Shape",
+      "view": "Display",
+      "labels": "Letters at the corners (A, B, C)"
+    },
+    "spotlight": {
+      "exit": "Shrink"
+    },
+    "curtain": {
+      "title": "Attention!",
+      "hint": "Tap anywhere to continue"
+    },
+    "menu": {
+      "deckName": "Screen name",
+      "unsaved": "Not saved",
+      "localOnly": "{n, plural, one {# screen} other {# screens}} · this browser only",
+      "curtain": "Cover the screen",
+      "bell": "Ring the bell",
+      "newScreen": "New screen",
+      "connectClass": "Connect class list",
+      "clearScreen": "Clear screen",
+      "removeScreen": "Delete this screen",
+      "removeScreenLocked": "This screen has a locked widget — unlock it first",
+      "promoTitle": "Keep your work",
+      "promoBody": "Your screens are saved to your account, your class list connects, and the student you call on is recorded in the gradebook.",
+      "promoCta": "See the features"
     },
     "backgrounds": {
       "chalkboard-green": "Green chalkboard",

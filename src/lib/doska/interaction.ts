@@ -43,10 +43,32 @@ export type DragSession = {
   wasSelected: boolean;
   /** Vidjet matn qabul qiladimi (reyestrdagi `editable`). */
   editable: boolean;
+  /**
+   * Vidjet qulflangan — seans tanlov va tahrirga kirish uchun ochiladi,
+   * lekin sudrash boshlanmaydi (`DoskaWidget.locked`).
+   */
+  locked: boolean;
+  /** Shu masofadan keyin bosish sudrashga aylanadi — qurilmaga qarab. */
+  threshold: number;
 };
 
-/** Shu masofadan keyin bosish sudrashga aylanadi (piksel). */
+/** Sichqoncha: shu masofadan keyin bosish sudrashga aylanadi (piksel). */
 export const DRAG_THRESHOLD = 3;
+
+/**
+ * Barmoq va qalam: sudrash ostonasi kattaroq.
+ *
+ * Barmoq teginish paytida bir necha piksel «suzadi»; 75″ doskada 3 CSS px
+ * ≈ 2,6 mm, bu esa oddiy teginishdan ham kam. Ostona kichik boʻlsa
+ * teginish sudrashga aylanib, vidjet sal siljiydi va tarixga bekor qadam
+ * yoziladi (docs/doska-ux-tadqiqot.md R320–R321).
+ */
+export const TOUCH_DRAG_THRESHOLD = 10;
+
+/** Hodisaning qurilmasiga mos sudrash ostonasi. */
+export function dragThreshold(pointerType: string): number {
+  return pointerType === "mouse" ? DRAG_THRESHOLD : TOUCH_DRAG_THRESHOLD;
+}
 
 /* ── DOM kelishuvi ──────────────────────────────────────────────────
 
@@ -109,6 +131,6 @@ export function applyDrag(session: DragSession, dx: number, dy: number): Rect {
 }
 
 /** Bosish sudrashga aylandimi. */
-export function passedThreshold(dx: number, dy: number): boolean {
-  return Math.abs(dx) >= DRAG_THRESHOLD || Math.abs(dy) >= DRAG_THRESHOLD;
+export function passedThreshold(dx: number, dy: number, threshold: number = DRAG_THRESHOLD): boolean {
+  return Math.abs(dx) >= threshold || Math.abs(dy) >= threshold;
 }

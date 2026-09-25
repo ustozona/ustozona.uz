@@ -38,6 +38,15 @@ export type DoskaWidget = {
   h: number;
   /** Ustma-ust tartib. Kattasi tepada. */
   z: number;
+  /**
+   * Qulflangan vidjet sudralmaydi, oʻlchanmaydi va oʻchirilmaydi —
+   * ichidagi tugmalar esa ishlayveradi (taymerni boshlash mumkin).
+   *
+   * Sensorli doskada bola tegib ketsa jadval yoki koʻrsatma joyidan
+   * siljimasin (docs/doska-ux-tadqiqot.md R311, A11). Ixtiyoriy maydon:
+   * eski saqlangan ekranlarda yoʻq va `undefined` = qulflanmagan.
+   */
+  locked?: boolean;
   state: Record<string, unknown>;
 };
 

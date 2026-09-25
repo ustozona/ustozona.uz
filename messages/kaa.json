@@ -2068,6 +2068,10 @@
       "changelog": "Jańalanıwlar"
     },
     "entries": {
+      "doska-qulay-boshqaruv": {
+        "title": "Doska qolaylı boldı: taymerge qálegen waqıt, hár háreketti qaytarıw, basqarıw qol astında",
+        "body": "Taymerdi qoyǵanda waqıttı dárhal tańlaysız (1–15 minut yamasa ± túymeleri), onı basıp baslaysız, waqıt tawsılǵanda qońıraw qaǵıladı; hár vidjettiń sazlawları onıń qasında, «Sazlaw» túymesinde ashıladı. Abaysızda óshirilgen vidjet yamasa ekran «Qaytarıw» menen ornına keledi, kerekli vidjetti bekitiw yamasa «Ortaǵa» menen pútkil ekranǵa shıǵarıw múmkin. Barlıq basqarıw endi tómende — interaktiv doskada ańsat jetesiz, al menyuda klastıń dıqqatın awdarıw ushın «Ekrandı jabıw» hám «Qońıraw qaǵıw» bar."
+      },
       "doska-gildirak": {
         "title": "Doskada Dóńgelek: kim juwap beretuǵının ádil tańlań",
         "body": "Doskanıń tómengi panelinen «Dóńgelek»ti qoyasız, qálem túymesi menen oqıwshılardıń atların jazasız hám dóńgelekti basasız — ol aylanıp, bir oqıwshını tańlaydı. «Hámme bir retten» rejiminde soralǵan oqıwshı dóńgelekten shıǵadı, sonlıqtan «nege hámme waqıt men?!» degen sóz bolmaydı; hámme soralǵannan keyin jańa aylanbanı baslaysız. Oqıwshı tayar bolmasa, «Keyinirek»ti basasız — ol dóńgelekke qaytıp, keyin qayta shıǵadı."
@@ -4671,8 +4675,17 @@
     },
     "toolbar": {
       "duplicate": "{widget} — nusqa alıw",
-      "bringForward": "{widget} — aldınǵa shıǵarıw",
-      "remove": "{widget} — óshiriw"
+      "remove": "{widget} — óshiriw",
+      "duplicateShort": "Nusqa",
+      "removeShort": "Óshiriw",
+      "settings": "{widget} — sazlaw",
+      "settingsShort": "Sazlaw",
+      "lock": "{widget} — bekitiw",
+      "lockShort": "Bekitiw",
+      "unlock": "{widget} — bosatıw",
+      "unlockShort": "Bosatıw",
+      "spotlight": "{widget} — ortaǵa shıǵarıw",
+      "spotlightShort": "Ortaǵa"
     },
     "bar": {
       "clear": "Tazalaw",
@@ -4682,7 +4695,10 @@
       "showControls": "Basqarıwdı kórsetiw",
       "hideControls": "Basqarıwdı jasırıw",
       "prevScreen": "Aldınǵı ekran",
+      "nextScreen": "Keyingi ekran",
       "addScreen": "Ekran qosıw",
+      "undo": "Biykarlaw",
+      "redo": "Qaytadan orınlaw",
       "screenNumber": "{n}-ekran",
       "menu": "Menyu",
       "proFeature": "Tólewli múmkinshilik"
@@ -4690,6 +4706,72 @@
     "guestNote": {
       "text": "Ekran usı brauzerde saqlanadı. <link>Kirseńiz</link>, klas dizimińiz jalǵanadı.",
       "dismiss": "Eskertpeni jabıw"
+    },
+    "notice": {
+      "widgetRemoved": "{widget} óshirildi",
+      "screenCleared": "Ekran tazalandı",
+      "screenRemoved": "Ekran óshirildi",
+      "undo": "Qaytarıw"
+    },
+    "settings": {
+      "title": "{widget}: sazlawlar",
+      "close": "Jabıw",
+      "instant": "Ózgeris dárhal qollanıladı · Esc — jabıw"
+    },
+    "timer": {
+      "start": "Baslaw",
+      "pause": "Toqtatıw",
+      "reset": "Basınan",
+      "addMinute": "Bir minut qosıw",
+      "finished": "Waqıt tawsıldı",
+      "time": "Waqıt",
+      "minutes": "{n} min",
+      "less": "Azıraq",
+      "more": "Kóbirek",
+      "view": "Kóriniw",
+      "viewDigits": "San",
+      "viewDisk": "Disk",
+      "viewBoth": "Ekewi de",
+      "whenDone": "Tawsılǵanda",
+      "sound": "Dawıs shıǵarıw"
+    },
+    "trafficLight": {
+      "red": "Tınısh",
+      "amber": "Sıbırlap",
+      "green": "Sóylesemiz",
+      "labelSection": "Jazıw",
+      "showLabel": "Jaǵdaydı sóz benen kórsetiw"
+    },
+    "clock": {
+      "view": "Kóriniw",
+      "showSeconds": "Sekundlardı kórsetiw"
+    },
+    "shapeSettings": {
+      "shape": "Figura",
+      "view": "Kóriniw",
+      "labels": "Tóbelerdegi háripler (A, B, C)"
+    },
+    "spotlight": {
+      "exit": "Kishireytiw"
+    },
+    "curtain": {
+      "title": "Dıqqat!",
+      "hint": "Dawam etiw ushın qálegen jerdi basıń"
+    },
+    "menu": {
+      "deckName": "Ekran atı",
+      "unsaved": "Saqlanbaǵan",
+      "localOnly": "{n} ekran · tek usı brauzerde",
+      "curtain": "Ekrandı jabıw",
+      "bell": "Qońıraw qaǵıw",
+      "newScreen": "Jańa ekran",
+      "connectClass": "Klas dizimin jalǵaw",
+      "clearScreen": "Ekrandı tazalaw",
+      "removeScreen": "Usı ekrandı óshiriw",
+      "removeScreenLocked": "Ekranda bekitilgen vidjet bar — aldın onı bosatıń",
+      "promoTitle": "Jumısıńızdı saqlap qoyıń",
+      "promoBody": "Ekranlarıńız akkauntıńızda saqlanadı, klas dizimi jalǵanadı hám shaqırılǵan oqıwshı jurnalǵa túsedi.",
+      "promoCta": "Múmkinshiliklerdi kóriw"
     },
     "backgrounds": {
       "chalkboard-green": "Jasıl doska",

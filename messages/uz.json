@@ -2068,6 +2068,10 @@
       "changelog": "Yangilanishlar"
     },
     "entries": {
+      "doska-qulay-boshqaruv": {
+        "title": "Doska qulaylashdi: taymerga istalgan vaqt, har amal qaytariladi, boshqaruv qoʻl ostida",
+        "body": "Taymerni qoʻyganingizda vaqtni darhol tanlaysiz (1–15 daqiqa yoki ± tugmalari), uni bosib boshlaysiz, tugaganda qoʻngʻiroq chalinadi; har vidjetning sozlamasi uning yonida, «Sozlash» tugmasida ochiladi. Tasodifan oʻchirilgan vidjet yoki ekran «Qaytarish» bilan joyiga qaytadi, kerakli vidjetni qulflab qoʻyish yoki «Markazga» bilan butun ekranga chiqarish mumkin. Butun boshqaruv endi pastda — interaktiv doskada qoʻl choʻzmasdan yetasiz; menyuda esa sinf eʼtiborini olish uchun «Ekranni yopish» va «Qoʻngʻiroq chalish» bor."
+      },
       "doska-gildirak": {
         "title": "Doskada Gʻildirak: kim javob berishini adolatli tanlang",
         "body": "Doskaning pastki panelidan «Gʻildirak»ni qoʻyasiz, qalamcha tugmasi bilan oʻquvchilar ismini yozasiz va gʻildirakni bosasiz — u aylanib, bitta oʻquvchini tanlaydi. «Hamma bir martadan» rejimida soʻralgan bola gʻildirakdan chiqadi, shuning uchun «nega doim men?!» degan gap boʻlmaydi; hamma soʻralgach yangi aylanmani boshlaysiz. Bola tayyor boʻlmasa «Keyinroq»ni bosasiz — u gʻildirakka qaytadi va keyinroq yana chiqadi."
@@ -4558,8 +4562,17 @@
     },
     "toolbar": {
       "duplicate": "{widget} — nusxalash",
-      "bringForward": "{widget} — oldinga chiqarish",
-      "remove": "{widget} — oʻchirish"
+      "remove": "{widget} — oʻchirish",
+      "duplicateShort": "Nusxa",
+      "removeShort": "Oʻchirish",
+      "settings": "{widget} — sozlash",
+      "settingsShort": "Sozlash",
+      "lock": "{widget} — qulflash",
+      "lockShort": "Qulflash",
+      "unlock": "{widget} — qulfni ochish",
+      "unlockShort": "Qulfni ochish",
+      "spotlight": "{widget} — markazga chiqarish",
+      "spotlightShort": "Markazga"
     },
     "bar": {
       "clear": "Tozalash",
@@ -4569,7 +4582,10 @@
       "showControls": "Boshqaruvni koʻrsatish",
       "hideControls": "Boshqaruvni yashirish",
       "prevScreen": "Oldingi ekran",
+      "nextScreen": "Keyingi ekran",
       "addScreen": "Ekran qoʻshish",
+      "undo": "Bekor qilish",
+      "redo": "Qaytadan bajarish",
       "screenNumber": "{n}-ekran",
       "menu": "Menyu",
       "proFeature": "Pullik imkoniyat"
@@ -4577,6 +4593,72 @@
     "guestNote": {
       "text": "Ekran shu brauzerda saqlanadi. <link>Kirsangiz</link> sinf roʻyxatingiz ulanadi.",
       "dismiss": "Eslatmani yopish"
+    },
+    "notice": {
+      "widgetRemoved": "{widget} oʻchirildi",
+      "screenCleared": "Ekran tozalandi",
+      "screenRemoved": "Ekran oʻchirildi",
+      "undo": "Qaytarish"
+    },
+    "settings": {
+      "title": "{widget}: sozlamalar",
+      "close": "Yopish",
+      "instant": "Oʻzgarish darhol qoʻllanadi · Esc — yopish"
+    },
+    "timer": {
+      "start": "Boshlash",
+      "pause": "Toʻxtatish",
+      "reset": "Qaytadan",
+      "addMinute": "Bir daqiqa qoʻshish",
+      "finished": "Vaqt tugadi",
+      "time": "Vaqt",
+      "minutes": "{n} daq",
+      "less": "Kamroq",
+      "more": "Koʻproq",
+      "view": "Koʻrinish",
+      "viewDigits": "Raqam",
+      "viewDisk": "Disk",
+      "viewBoth": "Ikkalasi",
+      "whenDone": "Tugaganda",
+      "sound": "Ovoz chalinsin"
+    },
+    "trafficLight": {
+      "red": "Jim",
+      "amber": "Pichirlab",
+      "green": "Gaplashamiz",
+      "labelSection": "Yozuv",
+      "showLabel": "Holatni soʻz bilan koʻrsatish"
+    },
+    "clock": {
+      "view": "Koʻrinish",
+      "showSeconds": "Soniyalarni koʻrsatish"
+    },
+    "shapeSettings": {
+      "shape": "Shakl",
+      "view": "Koʻrinish",
+      "labels": "Uchlarda harflar (A, B, C)"
+    },
+    "spotlight": {
+      "exit": "Kichraytirish"
+    },
+    "curtain": {
+      "title": "Diqqat!",
+      "hint": "Davom etish uchun istalgan joyni bosing"
+    },
+    "menu": {
+      "deckName": "Ekran nomi",
+      "unsaved": "Saqlanmagan",
+      "localOnly": "{n} ta ekran · faqat shu brauzerda",
+      "curtain": "Ekranni yopish",
+      "bell": "Qoʻngʻiroq chalish",
+      "newScreen": "Yangi ekran",
+      "connectClass": "Sinf roʻyxatini ulash",
+      "clearScreen": "Ekranni tozalash",
+      "removeScreen": "Shu ekranni oʻchirish",
+      "removeScreenLocked": "Ekranda qulflangan vidjet bor — avval qulfni oching",
+      "promoTitle": "Ishingizni saqlab qoʻying",
+      "promoBody": "Ekranlaringiz hisobingizda saqlanadi, sinf roʻyxatingiz ulanadi va soʻralgan oʻquvchi jurnalga tushadi.",
+      "promoCta": "Imkoniyatlarni koʻrish"
     },
     "backgrounds": {
       "chalkboard-green": "Yashil doska",

@@ -11,13 +11,13 @@ import {
   IconTrafficLight,
   IconWheel,
 } from "../icons";
-import { ClockWidget } from "./ClockWidget";
+import { ClockSettings, ClockWidget } from "./ClockWidget";
 import { PresentationWidget } from "./PresentationWidget";
-import { ShapeWidget } from "./ShapeWidget";
+import { ShapeSettings, ShapeWidget } from "./ShapeWidget";
 import { StickyNoteWidget } from "./StickyNoteWidget";
 import { TextWidget } from "./TextWidget";
-import { TimerWidget } from "./TimerWidget";
-import { TrafficLightWidget } from "./TrafficLightWidget";
+import { TimerSettings, TimerWidget } from "./TimerWidget";
+import { TrafficLightSettings, TrafficLightWidget } from "./TrafficLightWidget";
 import { WheelWidget } from "./WheelWidget";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -36,7 +36,7 @@ import { WheelWidget } from "./WheelWidget";
 
    Yaʼni yangi vidjet qoʻshish IKKI joyga tegadi:
      1. `lib/doska/registry.ts` — nom, tus, oʻlcham, boshlangʻich holat
-     2. shu fayl — ikona va ichki komponent
+     2. shu fayl — ikona, ichki komponent va (boʻlsa) sozlama mazmuni
    Boshqa hech qayerda oʻzgarish kerak emas.
 
    Nega ikkiga boʻlingan: `registry.ts` React'ga bogʻlanmagan sof
@@ -74,3 +74,32 @@ export const WIDGET_ICONS: Record<
   "presentation.v1": IconPresentation,
   "wheel.v1": IconWheel,
 };
+
+/**
+ * SOZLAMA KARTASI MAZMUNI — kind → komponent (docs/doska-ux-tadqiqot.md Q2).
+ *
+ * Karta idishi, sarlavha, yopish va joylashuv UMUMIY (`WidgetSettingsCard`);
+ * vidjet faqat ichini beradi va uni `SettingsFields` qismlaridan quradi.
+ * Roʻyxatda yoʻq vidjetda kontekst panelda «Sozlash» tugmasi chiqmaydi.
+ */
+export const WIDGET_SETTINGS: Partial<Record<WidgetKind, ComponentType<WidgetProps>>> = {
+  "clock.v1": ClockSettings,
+  "timer.v1": TimerSettings,
+  "traffic-light.v1": TrafficLightSettings,
+  "shape.v1": ShapeSettings,
+};
+
+/**
+ * Sozlamasi vidjetning OʻZIDA ochiladigan vidjetlar — umumiy karta chizilmaydi,
+ * vidjet `settingsId` ni oʻzi oʻqiydi.
+ *
+ * Gʻildirak: uning «roʻyxat tomoni» — ismlar (mazmun) va sinf roʻyxati; u matn
+ * vidjetidagi yozuv kabi joyida tahrirlanadi va 320 px kartaga sigʻmaydi.
+ * Kirish nuqtasi esa hammada bir xil — «Sozlash» yoki `S`.
+ */
+export const INLINE_SETTINGS: ReadonlySet<WidgetKind> = new Set<WidgetKind>(["wheel.v1"]);
+
+/** Vidjetning sozlamasi bormi — «Sozlash» tugmasi va `S` yorligʻi uchun. */
+export function hasSettings(kind: WidgetKind): boolean {
+  return kind in WIDGET_SETTINGS || INLINE_SETTINGS.has(kind);
+}

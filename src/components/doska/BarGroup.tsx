@@ -87,7 +87,7 @@ export function BarDivider() {
  *
  * ⚠️ Ochiq eksport qilingan, chunki `DoskaMenu` ning tugmasi
  * `PopoverTrigger asChild` ning bolasi boʻlishi kerak. U
- * `<BarIconButton>` ga oʻralса zanjir `asChild` → `<Tooltip>` (DOM
+ * `<BarIconButton>` ga oʻralsa zanjir `asChild` → `<Tooltip>` (DOM
  * element EMAS) boʻlib uzilardi. Menyu tugmasiga tooltip baribir
  * kerak emas — u bosilganda mazmuni oʻzini tanishtiradi.
  */
@@ -122,5 +122,44 @@ export function BarIconButton({
       <TooltipTrigger asChild>{trigger}</TooltipTrigger>
       <TooltipContent sideOffset={6}>{label}</TooltipContent>
     </Tooltip>
+  );
+}
+
+/**
+ * Guruh ichidagi YOZUVLI tugma — ikona + qisqa nom, tooltipsiz.
+ *
+ * `BarIconButton` dan farqi: nom doim koʻrinadi. Kontekst panelda
+ * ishlatiladi, chunki:
+ *   • sensorli doskada hover yoʻq — tooltip umuman chiqmaydi;
+ *   • obyekt ustidagi amallarning ikonasi (nusxa, qatlam) umumiy maʼnoga
+ *     ega emas, uni taxmin qilish kerak boʻlardi (R322).
+ *
+ * Global boshqaruvda (strelkalar, toʻliq ekran, menyu, bekor qilish)
+ * ikona yetarli — ular hamma joyda bir xil maʼnoda — va u yerda
+ * `BarIconButton` qoladi.
+ *
+ * Ekran oʻquvchisi uchun toʻliqroq nom kerak boʻlsa (`{widget} —
+ * nusxalash`), uni `aria-label` sifatida bering.
+ */
+export function BarTextButton({
+  label,
+  icon,
+  className,
+  ...props
+}: React.ComponentProps<"button"> & { label: string; icon: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        "text-foreground/85 hover:bg-muted hover:text-foreground flex h-10 shrink-0 items-center gap-1.5 px-3 text-sm font-medium whitespace-nowrap transition-colors",
+        "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none focus-visible:-outline-offset-2",
+        "disabled:pointer-events-none disabled:opacity-30",
+        className,
+      )}
+      {...props}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
   );
 }

@@ -2,15 +2,20 @@
 
 import { useTranslations } from "next-intl";
 
+import { useDoskaStore } from "@/lib/doska/store";
 import type { DoskaWidget } from "@/lib/doska/types";
 import {
+  SHAPE_ORDER,
   centroid,
   shapeById,
   toPixels,
   unitVector,
   VERTEX_LETTERS,
   type ShapeDef,
+  type ShapeId,
 } from "@/lib/doska/shapes";
+import { ShapeGlyph } from "../ShapePicker";
+import { SettingsChoices, SettingsSection, SettingsSwitch } from "../SettingsFields";
 
 /* ════════════════════════════════════════════════════════════════════
    GEOMETRIK SHAKL — matematika darsi uchun chizma.
@@ -221,6 +226,39 @@ function Circle({
           </text>
         </>
       )}
+    </>
+  );
+}
+
+/**
+ * Shakl sozlamasi — figurani almashtirish va uch harflarini (A, B, C…)
+ * yoqish/oʻchirish. Ilgari `labels` holati bor edi-yu, uni oʻzgartiradigan
+ * joy yoʻq edi (docs/doska-ux-tadqiqot.md A4).
+ */
+export function ShapeSettings({ widget }: { widget: DoskaWidget }) {
+  const patch = useDoskaStore((s) => s.patchWidgetState);
+  const tShape = useTranslations("Doska.shapes");
+  const t = useTranslations("Doska.shapeSettings");
+  const current = shapeById(widget.state.shape).id;
+
+  return (
+    <>
+      <SettingsSection label={t("shape")}>
+        <SettingsChoices<ShapeId>
+          ariaLabel={t("shape")}
+          columns={3}
+          value={current}
+          options={SHAPE_ORDER.map((id) => ({ value: id, title: tShape(id), label: <ShapeGlyph id={id} /> }))}
+          onChange={(shape) => patch(widget.id, { shape })}
+        />
+      </SettingsSection>
+      <SettingsSection label={t("view")}>
+        <SettingsSwitch
+          label={t("labels")}
+          checked={widget.state.labels !== false}
+          onChange={(on) => patch(widget.id, { labels: on })}
+        />
+      </SettingsSection>
     </>
   );
 }
