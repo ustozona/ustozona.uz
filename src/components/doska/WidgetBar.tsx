@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils";
 import { useDoskaStore, useActiveScreen } from "@/lib/doska/store";
 import { widgetMeta } from "@/lib/doska/registry";
 import { pinnedTools, useDoskaPrefs } from "@/lib/doska/prefs";
+import { useInkTool } from "@/lib/doska/ink-tool";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { BarButton } from "./BarButton";
-import { BarGroup } from "./BarGroup";
+import { BarGroup, BarSeparator } from "./BarGroup";
 import { useDockLayout } from "./dock";
 import { ShapePicker } from "./ShapePicker";
+import { IconPen } from "./icons";
 import { ToolCatalog } from "./ToolCatalog";
 import { WIDGET_ICONS } from "./widgets";
 
@@ -20,7 +22,12 @@ import { WIDGET_ICONS } from "./widgets";
 
    Dizayn qoidalari: docs/doska-dizayn-tizimi.md §2.
 
-   Tuzilma: oʻqituvchi qadagan vositalar │ «Hammasi» · «Fon».
+   Tuzilma: Qalam │ oʻqituvchi qadagan vositalar │ «Hammasi» · «Fon».
+
+   «Qalam» — vidjet emas, REJIM: bosilganda panel oʻrnini qoʻlyozma paneli
+   (`InkBar`) egallaydi. U doim birinchi va panel tuzilmasiga kirmaydi —
+   yashirib boʻlmaydi: yozish doskaning asosiy vazifasi
+   (docs/doska-qolyozma-tadqiqot.md §1, §6).
    Qaysi vosita panelda turishini oʻqituvchi «Hammasi» oynasida tanlaydi
    (`lib/doska/prefs.ts`, R132); tartib esa doim `TOOL_ORDER`. Tuzmagan
    oʻqituvchi standart panelni koʻradi.
@@ -40,6 +47,8 @@ export function WidgetBar() {
   const screen = useActiveScreen();
   const { orientation } = useDockLayout();
   const t = useTranslations("Doska.widgets");
+  const tInk = useTranslations("Doska.ink");
+  const setInkMode = useInkTool((s) => s.setMode);
 
   // ⚠️ `?? []` bu yerda EMAS: har renderda yangi massiv yaratilib,
   // quyidagi `useMemo` ni har safar qayta hisoblatardi.
@@ -73,6 +82,14 @@ export function WidgetBar() {
           : "max-w-full overflow-x-auto overscroll-x-contain",
       )}
     >
+      <BarButton
+        label={tInk("pen")}
+        Icon={IconPen}
+        onClick={() => setInkMode(useInkTool.getState().lastTool)}
+      />
+
+      <BarSeparator vertical={vertical} />
+
       {pinned.map((kind) =>
         // Shakl bitta emas, toʻqqiz figura qoʻyadi — oʻz tanlash paneli bor.
         kind === "shape.v1" ? (
@@ -90,15 +107,7 @@ export function WidgetBar() {
       )}
 
       {/* Hammasi olib tashlangan panelda ajratgich yolgʻiz osilib qolmasin. */}
-      {pinned.length > 0 && (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "bg-border shrink-0 self-center",
-            vertical ? "my-1 h-px w-10" : "mx-1 h-10 w-px",
-          )}
-        />
-      )}
+      {pinned.length > 0 && <BarSeparator vertical={vertical} />}
 
       <ToolCatalog onScreen={onScreen} />
       <BackgroundPicker />

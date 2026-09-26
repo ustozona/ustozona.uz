@@ -294,6 +294,22 @@ html[data-doska-style] {
   --doska-wheel-rim: oklch(0.99 0 0);
   --doska-wheel-edge: oklch(0.26 0.02 260 / 0.28);
   --doska-wheel-scrim: oklch(0.2 0.02 260 / 0.45);
+
+  /* Qoʻlyozma — rangli qalam va marker (docs/doska-qolyozma-tadqiqot.md
+     R335). Jismoniy flomaster: uslubga qarab oʻzgarmaydi. Asosiy rang
+     palitrada yoʻq — u `--doska-ink` (och fonda siyoh, toʻqda boʻr).
+     Yorqinlik oʻrtada: och fonda ham, toʻq doskada ham koʻrinadi; toʻq
+     fonda sal ochroq qiymat pastda, «Boʻr rejimi»da. */
+  --doska-pen-red: oklch(0.58 0.22 27);
+  --doska-pen-blue: oklch(0.55 0.19 258);
+  --doska-pen-green: oklch(0.6 0.17 148);
+  --doska-pen-orange: oklch(0.68 0.18 50);
+  --doska-pen-violet: oklch(0.55 0.2 305);
+  /* Marker kanvasda shaffof chiziladi (`MARKER_ALPHA`) — rang toʻyingan. */
+  --doska-marker-yellow: oklch(0.9 0.19 102);
+  --doska-marker-green: oklch(0.86 0.2 145);
+  --doska-marker-pink: oklch(0.76 0.19 350);
+  --doska-marker-blue: oklch(0.8 0.13 228);
 }
 
 /* ── Boʻr rejimi ──
@@ -306,6 +322,13 @@ html[data-doska-style] {
 [data-bg-tone="dark"] {
   --doska-ink: var(--doska-chalk);
   --doska-ink-shadow: var(--doska-chalk-shadow);
+
+  /* Rangli boʻr — toʻq doskada qalam ranglari ochroq. */
+  --doska-pen-red: oklch(0.72 0.18 27);
+  --doska-pen-blue: oklch(0.74 0.14 250);
+  --doska-pen-green: oklch(0.8 0.17 148);
+  --doska-pen-orange: oklch(0.8 0.15 60);
+  --doska-pen-violet: oklch(0.74 0.15 305);
 }
 
 /* ── Doska ikonalari — IERARXIK ranglash ──
@@ -546,6 +569,8 @@ html[data-doska-style] {
    qiyin. Oraliq katta — orasiga yangi qatlam qoʻshishda hech narsani
    qayta raqamlash shart emas. */
 :root {
+  /* Qoʻlyozma — vidjetlar ustida, tanlov tutqichlari ostida (R338). */
+  --z-doska-ink: 1000090;
   --z-doska-handles: 1000095;
   --z-doska-bar: 1000100;
   --z-doska-context: 1000105;

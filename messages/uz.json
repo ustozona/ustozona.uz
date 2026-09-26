@@ -4602,7 +4602,10 @@
       "widgetRemoved": "{widget} oʻchirildi",
       "screenCleared": "Ekran tozalandi",
       "screenRemoved": "Ekran oʻchirildi",
-      "undo": "Qaytarish"
+      "undo": "Qaytarish",
+      "inkCleared": "Yozuv tozalandi",
+      "saveFailed": "Ekran saqlanmayapti.",
+      "saveFailedHint": "Brauzer xotirasi toʻldi — yozuvni tozalang yoki keraksiz ekranni oʻchiring."
     },
     "settings": {
       "title": "{widget}: sozlamalar",
@@ -4794,6 +4797,34 @@
       "rosterLocked": "Roʻyxat yopiq",
       "rosterFailed": "Roʻyxat yuklanmadi",
       "retry": "Qayta urinish"
+    },
+    "ink": {
+      "toolbar": "Qoʻlyozma asboblari",
+      "pen": "Qalam",
+      "marker": "Marker",
+      "eraser": "Oʻchirgʻich",
+      "select": "Tanlash",
+      "clear": "Tozalash",
+      "clearLabel": "Yozuvni tozalash",
+      "color": "Rang",
+      "size": "Qalinlik",
+      "sizes": {
+        "thin": "Ingichka",
+        "medium": "Oʻrta",
+        "thick": "Qalin"
+      },
+      "colors": {
+        "autoLight": "Qora",
+        "autoDark": "Oq",
+        "red": "Qizil",
+        "blue": "Koʻk",
+        "green": "Yashil",
+        "orange": "Toʻq sariq",
+        "violet": "Binafsha",
+        "yellow": "Sariq",
+        "pink": "Pushti"
+      },
+      "penOnly": "Faqat qalam"
     }
   }
 }

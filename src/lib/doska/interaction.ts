@@ -101,6 +101,30 @@ export const ATTR_HANDLE = "data-doska-handle";
  */
 export const ATTR_NO_DRAG = "data-doska-no-drag";
 
+/* ── Siyoh egallagan hodisa ────────────────────────────────────────
+
+   Qoʻlyozma qatlami (`InkLayer`) bosishni kanvas ildizida, CAPTURE
+   bosqichida oladi va uni shu yerda «egallangan» deb belgilaydi.
+   Dispatcher belgilangan hodisani vidjet tanlash/sudrashga olmaydi.
+
+   ⚠️ Nega `stopPropagation()` EMAS: hodisa hujjatga yetib borishi
+   kerak — ochiq menyu va oynalar (Radix) tashqaridagi bosishni hujjatda
+   tinglaydi va yozish boshlanganda yopilishi shart. Vidjetlarning oʻzi
+   `pointerdown` tinglamaydi (hammasi `click`), yozuvdan keyingi `click`
+   esa qatlamning oʻzi yutadi.
+   ────────────────────────────────────────────────────────────────── */
+
+const claimed = new WeakSet<Event>();
+
+/** Hodisani siyohniki deb belgilaydi — dispatcher unga tegmaydi. */
+export function claimForInk(e: Event): void {
+  claimed.add(e);
+}
+
+export function isClaimedByInk(e: Event): boolean {
+  return claimed.has(e);
+}
+
 /**
  * Sudrash natijasidagi yangi toʻrtburchak.
  *

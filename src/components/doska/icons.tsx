@@ -250,6 +250,24 @@ export function IconPen({ className }: IconProps) {
   );
 }
 
+/** Marker — solar:pen-2-bold-duotone (ostidagi chiziq — boʻyash) */
+export function IconMarker({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><g opacity=".5"><path d="M20 21.2498C20.4142 21.2498 20.75 21.5855 20.75 21.9998C20.75 22.414 20.4142 22.7498 20 22.7498H4C3.58579 22.7498 3.25 22.414 3.25 21.9998C3.25 21.5855 3.58579 21.2498 4 21.2498H20Z"/><path d="M14.6309 2.92163C15.8597 1.69279 17.8522 1.69279 19.0811 2.92163C20.3096 4.15048 20.3098 6.14309 19.0811 7.37182L18.3711 8.08178C18.342 8.07215 18.3121 8.06187 18.2822 8.05151C17.5324 7.79136 16.5493 7.3 15.626 6.3767C14.7026 5.45331 14.2113 4.47033 13.9512 3.72045C13.9408 3.69044 13.9306 3.66081 13.9209 3.63159L14.6309 2.92163Z"/></g><path d="M13.9511 3.59961L13.9205 3.63017C13.9303 3.65952 13.9403 3.68928 13.9508 3.71942C14.211 4.4693 14.7018 5.45232 15.6252 6.37574C16.5487 7.29915 17.5317 7.79002 18.2816 8.05018C18.3113 8.0605 18.3407 8.07046 18.3696 8.08005L11.5198 14.9299C11.058 15.3917 10.827 15.6227 10.5724 15.8213C10.2721 16.0555 9.94711 16.2564 9.60326 16.4202C9.31177 16.5591 9.00196 16.6624 8.38235 16.869L5.11497 17.9581C4.81005 18.0597 4.47388 17.9804 4.24661 17.7531C4.01934 17.5258 3.93998 17.1897 4.04162 16.8847L5.13074 13.6173C5.33728 12.9977 5.44055 12.6879 5.57947 12.3964C5.74334 12.0526 5.94418 11.7276 6.17844 11.4273C6.37702 11.1727 6.60794 10.9418 7.06971 10.48L13.9511 3.59961Z"/></g>
+    </svg>
+  );
+}
+
+/** Oʻchirgich — solar:eraser-bold-duotone */
+export function IconEraser({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={cn("doska-icon", className)} aria-hidden="true">
+      <g><g opacity=".5"><path d="M21 19.5C21.4142 19.5 21.75 19.8358 21.75 20.25C21.75 20.6642 21.4142 21 21 21H9.0625C9.85888 20.9938 10.5387 20.4937 11.5732 19.5H21Z"/><path d="M14.9521 3C15.9898 3 16.8251 3.83484 18.4951 5.50488C20.1652 7.17492 21 8.01022 21 9.04785C20.9999 10.0854 20.1651 10.9208 18.4951 12.5908L13.585 17.5L6.5 10.415L11.4092 5.50488C13.0792 3.83489 13.9146 3.00005 14.9521 3Z"/></g><path d="M13.5854 17.5001L6.5 10.4147L5.50506 11.4096C3.83502 13.0796 3 13.9147 3 14.9523C3 15.9899 3.83502 16.825 5.50506 18.495C7.1751 20.165 8.01013 21.0001 9.04776 21.0001C10.0854 21.0001 10.9204 20.165 12.5904 18.495L13.5854 17.5001Z"/></g>
+    </svg>
+  );
+}
+
 /** Qoʻshish — solar:add-square-bold-duotone */
 export function IconAdd({ className }: IconProps) {
   return (
@@ -626,6 +644,8 @@ export const DOSKA_ICONS: { name: string; source: string; Icon: React.ComponentT
   { name: "IconMenu", source: "solar:menu-dots", Icon: IconMenu },
   { name: "IconCursor", source: "solar:cursor", Icon: IconCursor },
   { name: "IconPen", source: "solar:pen-new-round", Icon: IconPen },
+  { name: "IconMarker", source: "solar:pen-2", Icon: IconMarker },
+  { name: "IconEraser", source: "solar:eraser", Icon: IconEraser },
   { name: "IconAdd", source: "solar:add-square", Icon: IconAdd },
   { name: "IconArrowLeft", source: "solar:alt-arrow-left", Icon: IconArrowLeft },
   { name: "IconUsers", source: "solar:users-group-rounded", Icon: IconUsers },

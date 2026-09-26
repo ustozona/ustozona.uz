@@ -26,6 +26,37 @@ const NOTICE_MS = 6000;
  * keyingi har qanday yozilgan amalda yopadi (`DoskaNotice` turi izohi).
  */
 export function DoskaNotice() {
+  const saveFailed = useDoskaStore((s) => s.saveFailed);
+  return (
+    <>
+      {saveFailed && <SaveFailedNotice />}
+      <UndoNotice />
+    </>
+  );
+}
+
+/**
+ * «SAQLANMAYAPTI» — brauzer xotirasi toʻlgan (store.ts, `saveFailed`).
+ *
+ * Qaytarish xabaridan farqli: oʻzi yopilmaydi va tugmasi yoʻq — holat
+ * keyingi muvaffaqiyatli saqlashda oʻzi tushadi. Oʻqituvchiga nima
+ * qilish kerakligi aytiladi: yozuvni tozalash yoki eski ekranni oʻchirish.
+ */
+function SaveFailedNotice() {
+  const t = useTranslations("Doska.notice");
+  return (
+    <div
+      role="alert"
+      className="doska-bar doska-ctl pointer-events-auto max-w-sm px-4 py-3 text-sm"
+      style={{ zIndex: "var(--z-doska-context)" }}
+    >
+      <span className="text-destructive font-medium">{t("saveFailed")}</span>{" "}
+      <span className="text-muted-foreground">{t("saveFailedHint")}</span>
+    </div>
+  );
+}
+
+function UndoNotice() {
   const notice = useDoskaStore((s) => s.notice);
   const undo = useDoskaStore((s) => s.undo);
   const dismiss = useDoskaStore((s) => s.dismissNotice);

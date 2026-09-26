@@ -4544,7 +4544,10 @@
       "widgetRemoved": "{widget} ўчирилди",
       "screenCleared": "Экран тозаланди",
       "screenRemoved": "Экран ўчирилди",
-      "undo": "Қайтариш"
+      "undo": "Қайтариш",
+      "inkCleared": "Ёзув тозаланди",
+      "saveFailed": "Экран сақланмаяпти.",
+      "saveFailedHint": "Браузер хотираси тўлди — ёзувни тозаланг ёки кераксиз экранни ўчиринг."
     },
     "settings": {
       "title": "{widget}: созламалар",
@@ -4736,6 +4739,34 @@
       "rosterLocked": "Рўйхат ёпиқ",
       "rosterFailed": "Рўйхат юкланмади",
       "retry": "Қайта уриниш"
+    },
+    "ink": {
+      "toolbar": "Қўлёзма асбоблари",
+      "pen": "Қалам",
+      "marker": "Маркер",
+      "eraser": "Ўчиргич",
+      "select": "Танлаш",
+      "clear": "Тозалаш",
+      "clearLabel": "Ёзувни тозалаш",
+      "color": "Ранг",
+      "size": "Қалинлик",
+      "sizes": {
+        "thin": "Ингичка",
+        "medium": "Ўрта",
+        "thick": "Қалин"
+      },
+      "colors": {
+        "autoLight": "Қора",
+        "autoDark": "Оқ",
+        "red": "Қизил",
+        "blue": "Кўк",
+        "green": "Яшил",
+        "orange": "Тўқ сариқ",
+        "violet": "Бинафша",
+        "yellow": "Сариқ",
+        "pink": "Пушти"
+      },
+      "penOnly": "Фақат қалам"
     }
   }
 }

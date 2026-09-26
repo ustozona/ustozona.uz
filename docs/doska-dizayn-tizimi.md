@@ -575,6 +575,7 @@ Vidjetlar bir-birining ustiga chiqadi; tartib chalkashsa tuzatish qiyin
 |---|---|---|
 | Kanvas mazmuni | — | vidjetning `z` maydoni (1…n) |
 | Tanlov chegarasi | — | ramka ichida |
+| Qoʻlyozma (siyoh kanvaslari) | `--z-doska-ink` | 1000090 |
 | Oʻlcham tutqichlari | `--z-doska-handles` | 1000095 |
 | Vidjet paneli | `--z-doska-bar` | 1000100 |
 | Kontekst asboblar | `--z-doska-context` | 1000105 |

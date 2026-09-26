@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { useDoskaStore } from "@/lib/doska/store";
+import { useInkTool, type InkMode } from "@/lib/doska/ink-tool";
 import { playBell } from "./sounds";
 import { hasSettings } from "./widgets";
 
@@ -20,8 +21,11 @@ import { hasSettings } from "./widgets";
      Strelkalar (Shift — 10 px)       tanlangan vidjetni siljitish
      ← →  (tanlov yoʻq)               oldingi / keyingi ekran
      S                                tanlangan vidjet sozlamasi
-     Esc                              markazdan chiqish → sozlamani yopish
-                                      → tanlovni yopish (shu tartibda)
+     P · M · E                        qalam · marker · oʻchirgʻich (qayta
+                                      bosilsa — tanlashga qaytish)
+     Esc                              markazdan chiqish → yozishdan chiqish
+                                      → sozlamani yopish → tanlovni yopish
+                                      (shu tartibda)
      F · B                            toʻliq ekran · boshqaruvni yashirish
      1 · 2                            parda · qoʻngʻiroq
 
@@ -124,6 +128,7 @@ export function useDoskaShortcuts({
         case "Escape":
           // Eng ichki holatdan tashqariga: bitta bosish — bitta qadam.
           if (s.spotlightId) s.setSpotlight(null);
+          else if (useInkTool.getState().mode) useInkTool.getState().setMode(null);
           else if (s.settingsId) s.closeSettings();
           else if (s.selectedId) s.select(null);
           return;
@@ -136,6 +141,20 @@ export function useDoskaShortcuts({
           if (!w || !hasSettings(w.kind)) return;
           e.preventDefault();
           s.toggleSettings(w.id);
+          return;
+        }
+
+        case "p":
+        case "P":
+        case "m":
+        case "M":
+        case "e":
+        case "E": {
+          if (s.spotlightId) return;
+          e.preventDefault();
+          const next: InkMode = key === "p" ? "pen" : key === "m" ? "marker" : "eraser";
+          const ink = useInkTool.getState();
+          ink.setMode(ink.mode === next ? null : next);
           return;
         }
 
