@@ -24,7 +24,7 @@ export default function TermsPage() {
         rasmiy hujjat sifatida kuchga ega emas.
       </p>
       <p>
-        «Oʻyinlar» boʻlimi (Ustozona-Games) va Telegram bot (@uzlessonlabbot)
+        «Oʻyinlar» boʻlimi (Ustozona-Games) va Telegram bot (@UstozonaBot)
         — jamoamizning LessonLab brendi xizmatlari. Ularga qoʻshimcha
         ravishda{" "}
         <a href="https://lessonlab.uz/terms.html" target="_blank" rel="noopener noreferrer">

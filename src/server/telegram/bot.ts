@@ -3,7 +3,7 @@ import { and, desc, eq, gt, isNull } from "drizzle-orm";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db/client";
 import { tgAuthRequests, tgChats, user, userTelegram } from "@/server/db/schema";
-import { isPlaceholderEmail, telegramPlaceholderEmail } from "@/lib/placeholder-email";
+import { telegramPlaceholderEmail } from "@/lib/placeholder-email";
 import { ensureTeacherRow } from "@/server/dal/teacher-row";
 import {
   answerCallbackQuery,
@@ -12,6 +12,7 @@ import {
   sendMessage,
   type TgCallbackQuery,
   type TgMessage,
+  type TgSync,
   type TgUpdate,
   type TgUser,
 } from "./api";
@@ -39,6 +40,9 @@ const PHONE_KEYBOARD = {
 };
 
 export async function handleUpdate(update: TgUpdate): Promise<void> {
+  // Bot birlashuvi: LessonLab jarayoni (VM) chat va tasdiqlangan raqamni
+  // yuboradi — sababi `onSync` izohida. Telegram bunday kalit yubormaydi.
+  if (update.ustozona_sync) return onSync(update.ustozona_sync);
   if (update.message) return onMessage(update.message);
   if (update.callback_query) return onCallback(update.callback_query);
   if (update.my_chat_member) {
@@ -50,6 +54,45 @@ export async function handleUpdate(update: TgUpdate): Promise<void> {
       .set({ blockedAt: blocked ? new Date() : null, updatedAt: new Date() })
       .where(eq(tgChats.telegramId, String(m.from.id)));
   }
+}
+
+/* ── Bot birlashuvi: LessonLab'dan sinxronizatsiya ─────────────────
+
+   Bot bitta (@UstozonaBot), webhook esa LessonLab jarayonida (VM):
+   Ustozona'ga faqat uning oʻz update'lari uzatiladi (`/start a_…`,
+   /bugun, c:/h:/m:, `uz:` nom maydoni — docs/telegram-bot.md). Oddiy
+   /start va boshqa hamma narsa LessonLab'da qoladi.
+
+   Shu sababli `tg_chats` oʻz-oʻzidan toʻlmay qolardi: «botni ishga
+   tushiring / raqam qoʻshing» taklifi abadiy chiqardi va kundalik
+   eslatmalar (`activeChatFor`) yetmasdi. LessonLab /start va raqam
+   tasdigʻida shu xabarni yuboradi. Webhook siri route'da tekshirilgan
+   (faqat VM biladi); maydonlar baribir tekshiriladi. Raqam — LessonLab
+   `contact.user_id === from.id` bilan tasdiqlagan, E.164. */
+
+function onSync(s: TgSync): Promise<void> | void {
+  if (!s || !Number.isSafeInteger(s.telegram_id) || !Number.isSafeInteger(s.chat_id)) return;
+  const str = (v: unknown, max: number) =>
+    typeof v === "string" && v.length > 0 ? v.slice(0, max) : null;
+  const phone = typeof s.phone === "string" && /^\+\d{7,15}$/.test(s.phone) ? s.phone : null;
+  const now = new Date();
+  const profile = {
+    chatId: String(s.chat_id),
+    username: str(s.username, 64),
+    firstName: str(s.first_name, 128),
+    lastName: str(s.last_name, 128),
+    languageCode: str(s.language_code, 16),
+  };
+  const phoneCols = phone ? { phone, phoneVerifiedAt: now } : {};
+  return db
+    .insert(tgChats)
+    .values({ telegramId: String(s.telegram_id), ...profile, ...phoneCols })
+    .onConflictDoUpdate({
+      target: tgChats.telegramId,
+      // /start yubordi — demak bloklanmagan.
+      set: { ...profile, ...phoneCols, blockedAt: null, updatedAt: now },
+    })
+    .then(() => undefined);
 }
 
 /* ── Suhbat qatori ───────────────────────────────────────────────── */
@@ -99,11 +142,10 @@ async function onMessage(msg: TgMessage) {
   if (text.startsWith("/start")) {
     const payload = text.slice("/start".length).trim();
     if (payload.startsWith(START_PREFIX.login)) {
-      return askCode(msg.chat.id, payload.slice(START_PREFIX.login.length), "login");
+      return askCode(msg.chat.id, payload.slice(START_PREFIX.login.length));
     }
-    if (payload.startsWith(START_PREFIX.link)) {
-      return askCode(msg.chat.id, payload.slice(START_PREFIX.link.length), "link");
-    }
+    // `l_` (eski «Telegramni ulash») — olib tashlandi: bogʻlash endi bot
+    // ichidagi raqamli klaviatura bilan (`uzl_`, TelegramLinkDialog).
     return greet(msg.chat.id, String(from.id), from);
   }
 
@@ -181,11 +223,11 @@ async function askMarketing(chatId: number, telegramId: string) {
 
 /* ── 1-qadam: saytdagi kodni tanlash ─────────────────────────────── */
 
-async function askCode(chatId: number, requestId: string, kind: "login" | "link") {
+async function askCode(chatId: number, requestId: string) {
   const [req] = await db
     .select()
     .from(tgAuthRequests)
-    .where(and(eq(tgAuthRequests.id, requestId), eq(tgAuthRequests.kind, kind)));
+    .where(and(eq(tgAuthRequests.id, requestId), eq(tgAuthRequests.kind, "login")));
 
   if (!req || req.status !== "pending" || req.expiresAt.getTime() < Date.now()) {
     await sendMessage(
@@ -195,18 +237,13 @@ async function askCode(chatId: number, requestId: string, kind: "login" | "link"
     return;
   }
 
-  const title = kind === "login" ? "🔐 <b>Ustozonaga kirish</b>" : "🔗 <b>Telegramni akkauntga ulash</b>";
-  let who = "";
-  if (kind === "link" && req.userId) {
-    const [u] = await db.select({ name: user.name, email: user.email }).from(user).where(eq(user.id, req.userId));
-    if (u) who = `\nAkkaunt: <b>${esc(u.name)}</b> (${esc(maskEmail(u.email))})`;
-  }
+  const title = "🔐 <b>Ustozonaga kirish</b>";
   const device = req.clientLabel ? `\nQurilma: ${esc(req.clientLabel)}` : "";
 
   const choices = codeChoices(req.code);
   await sendMessage(
     chatId,
-    `${title}${who}${device}\n\nSaytda qaysi kod koʻrinyapti?`,
+    `${title}${device}\n\nSaytda qaysi kod koʻrinyapti?`,
     {
       inline_keyboard: [
         choices.map((c) => ({ text: c, callback_data: `c:${req.id}:${c}` })),
@@ -214,13 +251,6 @@ async function askCode(chatId: number, requestId: string, kind: "login" | "link"
       ],
     }
   );
-}
-
-function maskEmail(email: string): string {
-  if (isPlaceholderEmail(email)) return "Telegram orqali ochilgan";
-  const [name, domain] = email.split("@");
-  if (!domain) return email;
-  return `${name.slice(0, 1)}•••@${domain}`;
 }
 
 /* ── Callback'lar ───────────────────────────────────────────────── */
@@ -318,53 +348,10 @@ async function onCodePicked(
 
   const existingUserId = await linkedUserId(telegramId);
 
-  if (req.kind === "link") {
-    const target = req.userId;
-    if (!target) return;
-    if (existingUserId && existingUserId !== target) {
-      await decide(req.id, "taken_tg", telegramId);
-      await editMessageText(
-        chatId,
-        messageId,
-        "⚠️ Bu Telegram boshqa Ustozona akkauntiga ulangan. Avval oʻsha akkauntda Sozlamalar → Telegram → «Uzish» ni bosing."
-      );
-      return;
-    }
-    if (!existingUserId) {
-      const [mine] = await db
-        .select({ telegramId: userTelegram.telegramId })
-        .from(userTelegram)
-        .where(eq(userTelegram.userId, target));
-      if (mine) {
-        await decide(req.id, "taken_uz", telegramId);
-        await editMessageText(
-          chatId,
-          messageId,
-          "⚠️ Bu Ustozona akkaunti boshqa Telegramga ulangan. Avval saytda Sozlamalar → Telegram → «Uzish» orqali uni uzing."
-        );
-        return;
-      }
-    }
-    if (!(await decide(req.id, "approved", telegramId, target))) {
-      await editMessageText(chatId, messageId, "⌛ Bu soʻrov eskirgan. Saytda tugmani qayta bosing.");
-      return;
-    }
-    if (!existingUserId) {
-      const chat = await chatOf(telegramId);
-      // Trigger `teachers` qatorisiz yiqiladi — sabab: dal/teacher-row.ts.
-      await ensureTeacherRow(target);
-      await db
-        .insert(userTelegram)
-        .values({ telegramId, userId: target, username: chat?.username ?? null })
-        .onConflictDoNothing();
-    }
-    await editMessageText(
-      chatId,
-      messageId,
-      "✅ Telegram akkauntingizga ulandi! Saytga qaytishingiz mumkin.\n\n" +
-        "Endi har kuni kechqurun ertangi darslar, ertalab bugungi reja shu yerga keladi."
-    );
-    await afterLinked(chatId, telegramId);
+  if (req.kind !== "login") {
+    // Eski `link` soʻrovi (endi yaratilmaydi) — yopamiz.
+    await decide(req.id, "rejected", telegramId);
+    await editMessageText(chatId, messageId, "⌛ Bu soʻrov eskirgan. Saytda tugmani qayta bosing.");
     return;
   }
 

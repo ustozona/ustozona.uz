@@ -14,7 +14,7 @@ export default function PrivacyPage() {
         Ustozona — oʻqituvchilar uchun elektron jurnal, davomat va dars
         rejalashtirish platformasi. Ustozona va LessonLab — bitta jamoaning
         ikki brendi: oʻyinlar (Ustozona-Games) va Telegram bot
-        (@uzlessonlabbot) LessonLab xizmatlari. Bu hujjat qanday maʼlumot
+        (@UstozonaBot) LessonLab xizmatlari. Bu hujjat qanday maʼlumot
         yigʻilishini, u qayerda saqlanishini, ikki xizmat nimani almashishini
         va siz uni qanday nazorat qilishingizni tushuntiradi. Qisqa qilib:{" "}
         <strong>maʼlumotlaringiz sizniki</strong>, biz ularni sotmaymiz va
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
       </p>
       <ul>
         <li>
-          <strong>Bogʻlash:</strong> bir martalik kodni @uzlessonlabbot’da
+          <strong>Bogʻlash:</strong> bir martalik kodni @UstozonaBot’da
           ochasiz. Bot tasdiqlash uchun ismingizni va qisman yashirilgan
           emailingizni (masalan, a***@gmail.com) koʻrsatadi va ekrandagi
           kodni botdagi tugmalar bilan terishingizni soʻraydi — begona odam sizning Telegramingizni

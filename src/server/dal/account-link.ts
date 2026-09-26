@@ -41,7 +41,7 @@ import type {
    havolani JIMGINA kesadi va bog'lanish har doim «invalid» beradi.
    ════════════════════════════════════════════════════════════════════ */
 
-const BOT_USERNAME = process.env.LESSONLAB_BOT_USERNAME || "uzlessonlabbot";
+const BOT_USERNAME = process.env.LESSONLAB_BOT_USERNAME || "UstozonaBot";
 const TTL_MINUTES = 15;
 
 /** Saytda koʻrsatiladigan 4 xonali TASDIQ kodi — havola sirining hosilasi.

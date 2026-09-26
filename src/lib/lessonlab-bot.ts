@@ -12,7 +12,7 @@ import "server-only";
    shart — ikkisi ajralib ketsa, bir havola ishlab ikkinchisi
    ishlamasdi. */
 export const LESSONLAB_BOT_USERNAME =
-  process.env.LESSONLAB_BOT_USERNAME || "uzlessonlabbot";
+  process.env.LESSONLAB_BOT_USERNAME || "UstozonaBot";
 
 /** «Telegram bilan davom etish» — botga oʻtish havolasi.
 

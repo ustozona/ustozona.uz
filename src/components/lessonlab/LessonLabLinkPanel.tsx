@@ -157,7 +157,7 @@ export function LessonLabLinkPanel({
               {t("connect")}
             </Button>
             {variant === "full" && (
-              <span className="text-xs text-muted-foreground">@uzlessonlabbot</span>
+              <span className="text-xs text-muted-foreground">@UstozonaBot</span>
             )}
           </div>
         )}

@@ -13,6 +13,14 @@
    (`.env.local` dan). Saytda ham AYNI `TELEGRAM_WEBHOOK_SECRET`
    turishi shart — aks holda webhook har soʻrovga 401 qaytaradi.
 
+   ⛔ BOT BIRLASHUVI (2026-09-26): @UstozonaBot webhook'i endi LessonLab
+   jarayonida (VM, `https://lessonlab.uz/webhook`), Ustozona'ga oʻz
+   update'lari u yerdan uzatiladi (docs/telegram-bot.md). Bu skript
+   webhook'ni Vercel'ga qaytarib, butun botni (testlar, AI, oʻyinlar)
+   OʻCHIRIB QOʻYARDI. Shuning uchun webhook boshqa joyda boʻlsa skript
+   hech narsa qilmaydi; ataylab qaytarish (orqaga qaytarish) uchun:
+     npm run telegram:setup -- https://www.ustozona.uz --force
+
    ⚠️ Webhook URL — prod domen. Lokal devda webhook ishlamaydi
    (Telegram localhost'ga yetib bormaydi); lokal sinov uchun tunnel
    kerak va bu skript tunnel URL bilan chaqiriladi.
@@ -20,7 +28,9 @@
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-const site = (process.argv[2] || process.env.BETTER_AUTH_URL || "").replace(/\/$/, "");
+const args = process.argv.slice(2);
+const force = args.includes("--force");
+const site = (args.find((a) => !a.startsWith("--")) || process.env.BETTER_AUTH_URL || "").replace(/\/$/, "");
 
 if (!token || !secret) {
   console.error("⛔ TELEGRAM_BOT_TOKEN va TELEGRAM_WEBHOOK_SECRET kerak (.env.local).");
@@ -48,6 +58,22 @@ async function call(method: string, body: Record<string, unknown>) {
 
 // tsx skriptlari CJS'ga oʻgiriladi — top-level await ishlamaydi.
 async function main() {
+  // Webhook kimda? Boshqa manzilda boʻlsa — bu bot birlashuvi, tegmaymiz.
+  const current = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`)
+    .then((r) => r.json() as Promise<{ result?: { url?: string } }>)
+    .then((j) => j.result?.url ?? "")
+    .catch(() => "");
+  const ours = `${site}/api/telegram/webhook`;
+  if (current && current !== ours && !force) {
+    console.error(
+      `⛔ Webhook hozir boshqa joyda: ${current}\n` +
+        "   Bu bot birlashuvi — webhook LessonLab jarayonida, Ustozona update'lari u yerdan\n" +
+        "   uzatiladi (docs/telegram-bot.md). Hech narsa oʻzgartirilmadi.\n" +
+        "   Ataylab qaytarish kerak boʻlsa: npm run telegram:setup -- <sayt> --force"
+    );
+    process.exit(1);
+  }
+
   await call("setWebhook", {
     url: `${site}/api/telegram/webhook`,
     secret_token: secret,
