@@ -23,7 +23,11 @@ import { useDoskaStore } from "./store";
 
    REJIMLAR (docs/doska-qolyozma-tadqiqot.md §4.2):
      • `mode === null` — tanlash: vidjetlar odatdagidek ishlaydi;
-     • `pen` / `marker` / `eraser` — butun ekran yozuv sirti.
+     • `pen` / `marker` / `eraser` — butun ekran yozuv sirti;
+     • `laser` — koʻrsatkich: iz soʻnadi, hech narsa saqlanmaydi (R335).
+
+   OʻCHIRGʻICH ikki xil (R334): butun chiziq (standart — sinfda eng koʻp
+   kerak) va qisman (`eraserPartial`) — faqat tekkan joy kesiladi.
 
    «FAQAT QALAM» (`penOnly`, R333): qalam yozish rejimida birinchi marta
    yozganda yoqiladi — shundan keyin faqat QALAM yozadi, kaft va barmoq
@@ -37,7 +41,7 @@ import { useDoskaStore } from "./store";
    Qalam tanlash rejimida tugma bosishi hisobga olinmaydi — faqat yozish.
    ════════════════════════════════════════════════════════════════════ */
 
-export type InkMode = InkTool | "eraser";
+export type InkMode = InkTool | "eraser" | "laser";
 
 type InkToolState = {
   mode: InkMode | null;
@@ -48,6 +52,8 @@ type InkToolState = {
   penSize: InkSize;
   markerSize: InkSize;
   eraserSize: InkSize;
+  /** Oʻchirgʻich faqat tekkan joyni kesadi — butun chiziqni emas. */
+  eraserPartial: boolean;
   /** Shu sessiyada qalam yozdi — «Faqat qalam» tugmasi koʻrinadi. */
   penSeen: boolean;
   /** Faqat qalam yozadi, barmoq va kaft — yoʻq. */
@@ -62,6 +68,7 @@ type InkToolState = {
   /** Qalam yozdi: birinchi marta boʻlsa «Faqat qalam» yoqiladi. */
   markPenSeen: () => void;
   togglePenOnly: () => void;
+  toggleEraserPartial: () => void;
 };
 
 export const useInkTool = create<InkToolState>()((set, get) => ({
@@ -72,6 +79,7 @@ export const useInkTool = create<InkToolState>()((set, get) => ({
   penSize: DEFAULT_INK_SIZE,
   markerSize: DEFAULT_INK_SIZE,
   eraserSize: DEFAULT_INK_SIZE,
+  eraserPartial: false,
   penSeen: false,
   penOnly: false,
 
@@ -101,7 +109,7 @@ export const useInkTool = create<InkToolState>()((set, get) => ({
 
   setSize: (size) =>
     set((s) => {
-      const mode = s.mode ?? s.lastTool;
+      const mode = sizedTool(s);
       if (mode === "eraser") return { eraserSize: size };
       return mode === "marker" ? { markerSize: size } : { penSize: size };
     }),
@@ -111,11 +119,18 @@ export const useInkTool = create<InkToolState>()((set, get) => ({
   },
 
   togglePenOnly: () => set((s) => ({ penOnly: !s.penOnly })),
+
+  toggleEraserPartial: () => set((s) => ({ eraserPartial: !s.eraserPartial })),
 }));
+
+/** Qalinligi bor asbob: oʻchirgʻich yoki yozuvchi; lazer va tanlashda — oxirgi yozuvchi. */
+function sizedTool(s: InkToolState): InkTool | "eraser" {
+  return s.mode === "pen" || s.mode === "marker" || s.mode === "eraser" ? s.mode : s.lastTool;
+}
 
 /** Joriy asbobning qalinligi — panel tugmalari va kursor uchun. */
 export function currentSize(s: InkToolState): InkSize {
-  const mode = s.mode ?? s.lastTool;
+  const mode = sizedTool(s);
   if (mode === "eraser") return s.eraserSize;
   return mode === "marker" ? s.markerSize : s.penSize;
 }

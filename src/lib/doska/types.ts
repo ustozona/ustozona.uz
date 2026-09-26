@@ -57,8 +57,30 @@ export type DoskaWidget = {
    yozib boʻlmasdi (§4.1, B varianti).
    ──────────────────────────────────────────────────────────────────── */
 
-/** Chiziq chizgan asbob. Oʻchirgich chiziq qoldirmaydi — bu yerda yoʻq. */
+/** Chiziq chizgan asbob. Oʻchirgich va lazer chiziq qoldirmaydi — bu yerda yoʻq. */
 export type InkTool = "pen" | "marker";
+
+/**
+ * «Chiz va ushlab tur» tekislagan shakl (R336). `points` — ikki nuqta:
+ * chiziqda uchlari, toʻrtburchak va ellipsda chegaraviy quti burchaklari.
+ */
+export type InkShape = "line" | "rect" | "ellipse";
+
+/**
+ * Chiziq vidjet SAHIFASIGA bogʻlangan (R338): taqdimot slaydi ustida
+ * yozilgan belgi shu slayd bilan birga koʻrinadi va yashirinadi, vidjet
+ * surilsa u bilan birga suriladi.
+ *
+ * Bunda `points` vidjetning chap-yuqori burchagiga nisbatan, `w` —
+ * yozilgan paytdagi vidjet eni: vidjet kattalashsa yozuv ham shu
+ * nisbatda kattalashadi.
+ */
+export type InkAnchor = {
+  widgetId: string;
+  /** Vidjet sahifasi kaliti — `WidgetMeta.inkPage` (lib/doska/registry.ts). */
+  page: string;
+  w: number;
+};
 
 /**
  * Bitta chiziq — bir teginishdan qoʻyib yuborishgacha.
@@ -80,6 +102,10 @@ export type InkStroke = {
   /** Qalinlik darajasi 1–3; piksel asbobga qarab `lib/doska/ink.ts` da. */
   size: number;
   points: number[];
+  /** Tekislangan shakl — boʻlmasa qoʻlyozma chiziq. Ixtiyoriy, migratsiyasiz. */
+  shape?: InkShape;
+  /** Vidjet sahifasiga bogʻlangan — boʻlmasa ekranning oʻziga. */
+  anchor?: InkAnchor;
 };
 
 export type DoskaScreen = {

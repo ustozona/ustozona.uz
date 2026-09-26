@@ -1,8 +1,9 @@
 # Doska — qoʻlda yozish (qalam) tadqiqoti
 
 > **Holat (2026-09-26):** tadqiqot tugadi, §6 dagi savollar tavsiya
-> boʻyicha hal qilindi; **0-qadam va 1-bosqich qurildi** (§7).
-> Branch: `maxdum/doska-qolyozma`.
+> boʻyicha hal qilindi; **0-qadam, 1-bosqich va 2-bosqich qurildi**
+> (§7, §8). Kaft oʻchirgichi haqiqiy panel natijasini kutmoqda.
+> Branch: `maxdum/doska-qolyozma`, `maxdum/doska-qolyozma-2`.
 >
 > Referens topilmalari **R330–R341** (oldingi raqamlar
 > [doska-ux-tadqiqot.md](./doska-ux-tadqiqot.md) da, R310–R329).
@@ -356,6 +357,61 @@ Oʻlchov (sinov skripti): 1000 nuqtali aylana soddalashtirishdan keyin
 «Faqat qalam» qalam yozish rejimida birinchi marta yozganda yoqiladi va
 siyoh panelida oʻchiriladi — tanlash rejimidagi qalam bosishi uni
 yoqmaydi.
+
+---
+
+## 8. Qurilgani (2-bosqich)
+
+| Joy | Nima |
+|---|---|
+| `lib/doska/types.ts` | `InkStroke.shape?` (`line` · `rect` · `ellipse`, ikki nuqta) va `InkStroke.anchor?` (`widgetId`, `page`, yozilgandagi vidjet eni) — ikkalasi ixtiyoriy, migratsiyasiz |
+| `lib/doska/registry.ts` | `WidgetMeta.inkPage` — vidjetning hozirgi sahifasi; taqdimotda `toʻplam#slayd` |
+| `lib/doska/ink.ts` | `recognizeShape` (chiziq; yopiq shaklda toʻrtburchak — qutining toʻrt burchagidan oʻtadi, ellips — radial ogʻish; deyarli teng tomon → aylana/kvadrat), `snapLineEnd` (15°), `eraseAlong` (qisman: zichlashtirib kesadi, boʻlaklar RDP bilan), `strokeHit` endi oʻchirgʻich YOʻLI bilan (kesma–kesma), `inkAnchorAt` / `visibleInk` / `anchorsKey`, `laserPath` (kometa izi), `inkWidthAt` |
+| `lib/doska/store.ts` | `removeStrokes` → `replaceStrokes` (boʻlaklar asl chiziq oʻrniga); «Tozalash» faqat koʻrinayotgan yozuvni; vidjet oʻchirilsa unga bogʻlangan yozuv ham (bitta qadam) |
+| `lib/doska/ink-tool.ts` | `laser` rejimi, `eraserPartial` |
+| `components/doska/InkLayer.tsx` | ushlab turish taymeri (`HOLD_MS` 550, `HOLD_RADIUS` 6 px), tekislangan chiziq uchi qalam ortidan; lazer izlari hoʻl qatlamda, soʻnguncha kadr davom etadi; bogʻlangan yozuv vidjet bilan surilib, slayd almashsa yashirinadi; tizim siyoh izi (`navigator.ink`, faqat qalam) yoki bashorat nuqtalari |
+| `components/doska/InkBar.tsx` | «Lazer» tugmasi (rang va qalinlik yashirinadi), oʻchirgʻichda «Qisman» |
+| `useDoskaShortcuts.ts` | `L` — lazer |
+| `styles/doska.css` | `--doska-laser` |
+
+Qarorlar:
+
+- **Bogʻlash mezoni — chiziq BOSHLANGAN nuqta.** Slayddan tashqaridan
+  ichiga chizilgan strelka ekranniki. Nuqta ustidagi eng yuqori vidjet
+  sahifasiz boʻlsa (slayd ustidagi taymer) — bogʻlanmaydi.
+- **Sahifa va vidjet burchagi QOʻYIB YUBORILGANDA olinadi.** Yozish
+  paytida barmoq vidjetni sursa yoki pult slaydni almashtirsa, chiziq
+  ekranda koʻringan joyida qoladi (yangi slaydga tushadi), sakramaydi va
+  yoʻqolmaydi.
+- **«Ekranni tozalash» qulflangan vidjetning sahifa yozuvini qoldiradi**
+  — vidjet bilan birga. «Tozalash» (siyoh paneli) esa faqat koʻrinib
+  turgan yozuvni oʻchiradi.
+- **Shakl tanish soddalashtirilgan yoʻlda** (RDP, 3 px) va qalam
+  toʻxtagan nuqtagacha: 240 Hz qalamning titrashi va ushlab turish
+  paytidagi shovqin yoʻl uzunligini oshirib, toʻgʻri chiziqni «egri»
+  qilib qoʻyardi.
+- **Bashorat nuqtalari bir kadr yashaydi** va tizim izi bor boʻlsa ham
+  ishlaydi: qalam toʻxtasa dum qalam uchidan oldinda qolib ketmaydi.
+- **Yozuv vidjet eni boʻyicha bir tekis masshtablanadi.** Vidjet
+  nisbati oʻzgarsa slayd ichida biroz siljishi mumkin — slayd oʻzi
+  16:9 da markazlanadi, vidjet esa erkin choʻziladi.
+- **«Markazga» va toʻliq ekrandagi taqdimotda yozuv koʻrinmaydi** —
+  1-bosqichdagi kabi (siyoh qatlami parda ostida). Kattalashtirilgan
+  slayd ustiga yozish — keyingi qadam.
+- **Tanilmagan shakl qoʻlyozmaligicha qoladi.** Uchburchak yoki harf
+  «deyarli toʻrtburchak»ka aylantirilmaydi.
+- **Kesilgan shakl oddiy chiziqqa aylanadi** — yarim aylana endi aylana
+  emas.
+
+Oʻlchov (sinov skripti): qoʻlda chizilgan kabi titrashli chiziq,
+aylana, ellips, toʻrtburchak, kvadrat tanildi; uchburchak, «S», «C» va
+qisqa vergul — yoʻq. Qisman oʻchirish chiziqni ikki boʻlakka kesadi,
+yoʻl boʻylab oʻtsa — butunlay.
+
+**Kutilmoqda — kaft oʻchirgichi.** `/doska/sinov` hisoboti kelmaguncha
+qurilmaydi: koʻp infraqizil panel kontakt oʻlchamini 1×1 yuboradi
+(R332) va taxminiy chegara kaftni emas, qalin barmoqni oʻchirgʻichga
+aylantirib qoʻyardi.
 
 ---
 

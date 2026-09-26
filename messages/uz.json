@@ -4824,7 +4824,9 @@
         "yellow": "Sariq",
         "pink": "Pushti"
       },
-      "penOnly": "Faqat qalam"
+      "penOnly": "Faqat qalam",
+      "laser": "Lazer",
+      "erasePartial": "Qisman"
     }
   }
 }

@@ -21,8 +21,8 @@ import { hasSettings } from "./widgets";
      Strelkalar (Shift — 10 px)       tanlangan vidjetni siljitish
      ← →  (tanlov yoʻq)               oldingi / keyingi ekran
      S                                tanlangan vidjet sozlamasi
-     P · M · E                        qalam · marker · oʻchirgʻich (qayta
-                                      bosilsa — tanlashga qaytish)
+     P · M · E · L                    qalam · marker · oʻchirgʻich · lazer
+                                      (qayta bosilsa — tanlashga qaytish)
      Esc                              markazdan chiqish → yozishdan chiqish
                                       → sozlamani yopish → tanlovni yopish
                                       (shu tartibda)
@@ -149,10 +149,13 @@ export function useDoskaShortcuts({
         case "m":
         case "M":
         case "e":
-        case "E": {
+        case "E":
+        case "l":
+        case "L": {
           if (s.spotlightId) return;
           e.preventDefault();
-          const next: InkMode = key === "p" ? "pen" : key === "m" ? "marker" : "eraser";
+          const next: InkMode =
+            key === "p" ? "pen" : key === "m" ? "marker" : key === "l" ? "laser" : "eraser";
           const ink = useInkTool.getState();
           ink.setMode(ink.mode === next ? null : next);
           return;

@@ -5,6 +5,7 @@ import { persist, createJSONStorage, type StateStorage } from "zustand/middlewar
 
 import type { DoskaDeck, DoskaScreen, DoskaWidget, InkStroke, WidgetKind } from "./types";
 import { widgetMeta } from "./registry";
+import { visibleInk } from "./ink";
 import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -288,12 +289,20 @@ type DoskaState = {
    */
   addStroke: (stroke: InkStroke, screenId: string) => void;
   /**
-   * Oʻchirgich tekkan chiziqlarni olib tashlaydi — tarixga YOZMAYDI.
-   * Oʻchirgich bir harakatda koʻp chiziqqa tegadi; tarix harakat boshida
-   * bir marta yoziladi (`beginGesture`), sudrash bilan bir xil naqsh.
+   * Oʻchirgich tekkan chiziqlarni almashtiradi: `id → qolgan boʻlaklar`
+   * (butun chiziq oʻchirgʻichida boʻsh massiv). Boʻlaklar asl chiziq
+   * OʻRNIGA qoʻyiladi — ustma-ust tartib buzilmaydi.
+   *
+   * Tarixga YOZMAYDI: oʻchirgich bir harakatda koʻp chiziqqa tegadi;
+   * tarix harakat boshida bir marta yoziladi (`beginGesture`), sudrash
+   * bilan bir xil naqsh.
    */
-  removeStrokes: (ids: ReadonlySet<string>) => void;
-  /** Joriy ekrandagi butun yozuvni oʻchiradi — «Qaytarish» xabari bilan. */
+  replaceStrokes: (changes: ReadonlyMap<string, InkStroke[]>) => void;
+  /**
+   * Joriy ekranda KOʻRINIB turgan yozuvni oʻchiradi — «Qaytarish» xabari
+   * bilan. Taqdimotning boshqa slaydlaridagi belgilar qoladi: oʻqituvchi
+   * koʻrmagan narsani oʻchirmaslik kerak.
+   */
   clearInk: () => void;
 
   /**
@@ -478,8 +487,13 @@ export const useDoskaStore = create<DoskaState>()(
 
             return {
               ...pushHistory(s),
-              deck: withActiveScreen(s.deck, s.activeScreenId, (ws) =>
-                ws.filter((w) => w.id !== id),
+              // Vidjet sahifalariga bogʻlangan yozuv u bilan birga ketadi —
+              // koʻrinmas maʼlumot boʻlib qolmasin. «Qaytarish» ikkalasini
+              // birga qaytaradi (bitta qadam).
+              deck: withScreenInk(
+                withActiveScreen(s.deck, s.activeScreenId, (ws) => ws.filter((w) => w.id !== id)),
+                s.activeScreenId,
+                (ink) => ink.filter((x) => x.anchor?.widgetId !== id),
               ),
               selectedId: s.selectedId === id ? null : s.selectedId,
               editingId: s.editingId === id ? null : s.editingId,
@@ -677,16 +691,21 @@ export const useDoskaStore = create<DoskaState>()(
             // Qulflangan vidjetlar tozalashdan ham omon qoladi — qulf
             // «bu joyida tursin» degani (R311).
             const kept = screen?.widgets.filter((w) => w.locked) ?? [];
-            const hasInk = (screen?.ink?.length ?? 0) > 0;
+            // Yozuv ham ketadi: «ekranni tozalash» — toza doska. Faqat
+            // QOLGAN (qulflangan) vidjet sahifalariga bogʻlangan yozuv
+            // u bilan birga qoladi — aks holda taqdimotning boshqa
+            // slaydlaridagi belgilar koʻrinmasdan oʻchib ketardi.
+            const keptIds = new Set(kept.map((w) => w.id));
+            const ink = screen?.ink ?? [];
+            const keptInk = ink.filter((x) => x.anchor && keptIds.has(x.anchor.widgetId));
             // Oʻchadigan narsa yoʻq — tarixga bekor qadam qoʻshilmasin.
-            if (!screen || (screen.widgets.length === kept.length && !hasInk)) return s;
+            if (!screen || (screen.widgets.length === kept.length && ink.length === keptInk.length)) return s;
 
-            // Yozuv ham ketadi: «ekranni tozalash» — toza doska. Hammasi
-            // bitta qadam va bitta «Qaytarish» bilan qaytadi.
+            // Hammasi bitta qadam va bitta «Qaytarish» bilan qaytadi.
             const deck = withActiveScreen(s.deck, s.activeScreenId, () => kept);
             return {
               ...pushHistory(s),
-              deck: withScreenInk(deck, s.activeScreenId, () => []),
+              deck: withScreenInk(deck, s.activeScreenId, () => keptInk),
               selectedId: null,
               editingId: null,
               settingsId: null,
@@ -706,20 +725,23 @@ export const useDoskaStore = create<DoskaState>()(
             };
           }),
 
-        removeStrokes: (ids) =>
+        replaceStrokes: (changes) =>
           set((s) => ({
             deck: withScreenInk(s.deck, s.activeScreenId, (ink) =>
-              ink.filter((x) => !ids.has(x.id)),
+              ink.flatMap((x) => changes.get(x.id) ?? [x]),
             ),
           })),
 
         clearInk: () =>
           set((s) => {
             const screen = s.deck.screens.find((x) => x.id === s.activeScreenId);
-            if (!screen?.ink?.length) return s;
+            const visible = new Set(visibleInk(screen).map((x) => x.stroke));
+            if (!visible.size) return s;
             return {
               ...pushHistory(s),
-              deck: withScreenInk(s.deck, s.activeScreenId, () => []),
+              deck: withScreenInk(s.deck, s.activeScreenId, (ink) =>
+                ink.filter((x) => !visible.has(x)),
+              ),
               notice: { id: ++noticeSeq, kind: "inkCleared" },
             };
           }),

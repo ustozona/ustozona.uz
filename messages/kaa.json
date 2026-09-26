@@ -4937,7 +4937,9 @@
         "yellow": "Sarı",
         "pink": "Qızǵılt"
       },
-      "penOnly": "Tek qálem"
+      "penOnly": "Tek qálem",
+      "laser": "Lazer",
+      "erasePartial": "Jarım-jartı"
     }
   }
 }
