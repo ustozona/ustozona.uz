@@ -4715,7 +4715,10 @@
       "widgetRemoved": "{widget} óshirildi",
       "screenCleared": "Ekran tazalandı",
       "screenRemoved": "Ekran óshirildi",
-      "undo": "Qaytarıw"
+      "undo": "Qaytarıw",
+      "inkCleared": "Jazıw tazalandı",
+      "saveFailed": "Ekran saqlanbay atır.",
+      "saveFailedHint": "Brauzer yadı toldı — jazıwdı tazalań yamasa keregi joq ekrandı óshiriń."
     },
     "settings": {
       "title": "{widget}: sazlawlar",
@@ -4907,6 +4910,34 @@
       "rosterLocked": "Dizim jabıq",
       "rosterFailed": "Dizim júklenbedi",
       "retry": "Qaytadan urınıw"
+    },
+    "ink": {
+      "toolbar": "Qoljazba ásbapları",
+      "pen": "Qálem",
+      "marker": "Marker",
+      "eraser": "Óshirgish",
+      "select": "Tańlaw",
+      "clear": "Tazalaw",
+      "clearLabel": "Jazıwdı tazalaw",
+      "color": "Reń",
+      "size": "Qalıńlıq",
+      "sizes": {
+        "thin": "Jińishke",
+        "medium": "Ortasha",
+        "thick": "Qalıń"
+      },
+      "colors": {
+        "autoLight": "Qara",
+        "autoDark": "Aq",
+        "red": "Qızıl",
+        "blue": "Kók",
+        "green": "Jasıl",
+        "orange": "Qızǵılt sarı",
+        "violet": "Fiolet",
+        "yellow": "Sarı",
+        "pink": "Qızǵılt"
+      },
+      "penOnly": "Tek qálem"
     }
   }
 }

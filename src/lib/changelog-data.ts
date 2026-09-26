@@ -36,6 +36,15 @@ export type ChangelogEntry = {
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   {
+    id: "doska-qolyozma",
+    date: "2026-09-26",
+    type: "yangi",
+    title: "Doskaga endi qoʻlda yozasiz: qalam, marker va oʻchirgʻich",
+    body:
+      "Paneldagi birinchi tugma — «Qalam»ni bosing va doskaning istalgan joyiga — taymer yoki taqdimot ustiga ham — yozing: sekin yozsangiz chiziq qalinlashadi, tez yozsangiz ingichkalashadi. Marker bilan muhim joyni boʻyab qoʻyasiz, oʻchirgʻich tekkan chiziqni butunlay olib tashlaydi; har chiziq «Bekor qilish» bilan qaytadi. Toʻq doskada siyoh oʻzi boʻrga aylanadi, qalamni alohida taniydigan qurilmada esa kaftingiz yozuvni buzmaydi — barmoq bilan vidjetlarni boshqarishda davom etasiz.",
+    href: "/doska",
+  },
+  {
     id: "doska-uslublar",
     date: "2026-09-25",
     type: "yangi",

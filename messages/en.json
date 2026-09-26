@@ -4711,7 +4711,10 @@
       "widgetRemoved": "{widget} deleted",
       "screenCleared": "Screen cleared",
       "screenRemoved": "Screen deleted",
-      "undo": "Undo"
+      "undo": "Undo",
+      "inkCleared": "Ink cleared",
+      "saveFailed": "The screen is not being saved.",
+      "saveFailedHint": "Browser storage is full — clear the ink or delete a screen you no longer need."
     },
     "settings": {
       "title": "{widget} settings",
@@ -4903,6 +4906,34 @@
       "rosterLocked": "List locked",
       "rosterFailed": "List didn’t load",
       "retry": "Try again"
+    },
+    "ink": {
+      "toolbar": "Ink tools",
+      "pen": "Pen",
+      "marker": "Marker",
+      "eraser": "Eraser",
+      "select": "Select",
+      "clear": "Clear",
+      "clearLabel": "Clear all ink",
+      "color": "Color",
+      "size": "Thickness",
+      "sizes": {
+        "thin": "Thin",
+        "medium": "Medium",
+        "thick": "Thick"
+      },
+      "colors": {
+        "autoLight": "Black",
+        "autoDark": "White",
+        "red": "Red",
+        "blue": "Blue",
+        "green": "Green",
+        "orange": "Orange",
+        "violet": "Violet",
+        "yellow": "Yellow",
+        "pink": "Pink"
+      },
+      "penOnly": "Pen only"
     }
   }
 }

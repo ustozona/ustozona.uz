@@ -8,9 +8,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { STAGE_FONT_CLASS } from "@/components/stage/stage-font-faces";
 import { flushDoskaPersist, useDoskaStore } from "@/lib/doska/store";
 import { useDoskaPrefs, type DockSide } from "@/lib/doska/prefs";
+import { useInkTool } from "@/lib/doska/ink-tool";
 import { DoskaCanvas } from "./DoskaCanvas";
 import { DoskaCurtain } from "./DoskaCurtain";
 import { WidgetBar } from "./WidgetBar";
+import { InkBar } from "./InkBar";
 import { DoskaGuestNote } from "./DoskaGuestNote";
 import { DoskaMenu } from "./DoskaMenu";
 import { DoskaNotice } from "./DoskaNotice";
@@ -68,6 +70,8 @@ export function DoskaShell() {
   const canRedo = useDoskaStore((s) => s.future.length > 0);
   const prefsReady = useDoskaPrefs((s) => s.hydrated);
   const dock = useDoskaPrefs((s) => s.dock);
+  // Yozish rejimida vidjet paneli oʻrnini qoʻlyozma paneli egallaydi (InkBar).
+  const inking = useInkTool((s) => s.mode !== null);
   const t = useTranslations("Doska.bar");
 
   /**
@@ -139,7 +143,7 @@ export function DoskaShell() {
                     dock === "left" ? "left-3" : "right-3",
                   )}
                 >
-                  {!barHidden && <WidgetBar />}
+                  {!barHidden && (inking ? <InkBar /> : <WidgetBar />)}
                   <DockToggle dock={dock} hidden={barHidden} onToggle={() => setBarHidden((h) => !h)} />
                 </div>
               )}
@@ -174,7 +178,7 @@ export function DoskaShell() {
 
                   {!side && (
                     <div className="flex max-w-full min-w-0 items-end gap-2">
-                      {!barHidden && <WidgetBar />}
+                      {!barHidden && (inking ? <InkBar /> : <WidgetBar />)}
                       <DockToggle dock={dock} hidden={barHidden} onToggle={() => setBarHidden((h) => !h)} />
                     </div>
                   )}

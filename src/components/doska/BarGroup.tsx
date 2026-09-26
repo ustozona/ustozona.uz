@@ -82,6 +82,20 @@ export function BarDivider() {
 }
 
 /**
+ * YORLIQLI panel ichidagi ajratgich (`padded` guruh — vidjet paneli,
+ * qoʻlyozma paneli). `BarDivider` dan farqi: idish chetiga choʻzilmaydi,
+ * tugmalar orasida qisqa chiziq; yon relsada gorizontal.
+ */
+export function BarSeparator({ vertical = false }: { vertical?: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn("bg-border shrink-0 self-center", vertical ? "my-1 h-px w-10" : "mx-1 h-10 w-px")}
+    />
+  );
+}
+
+/**
  * Guruh ichidagi yakka ikonali tugma — 48×48 (docs/doska-ux-tadqiqot.md
  * §3: bosish maydoni ≥ 44 px, sensorli doskada barmoq uchun).
  *

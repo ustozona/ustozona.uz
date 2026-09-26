@@ -11,6 +11,7 @@ import {
   ATTR_HANDLE,
   ATTR_NO_DRAG,
   ATTR_WIDGET,
+  isClaimedByInk,
   type DragMode,
   type DragSession,
 } from "@/lib/doska/interaction";
@@ -46,6 +47,8 @@ export function useDoskaInteraction(rootRef: React.RefObject<HTMLElement | null>
     const onPointerDown = (e: PointerEvent) => {
       // Faqat asosiy tugma; oʻng tugma kontekst menyusiga tegmaymiz.
       if (e.button !== 0) return;
+      // Qalam yozyapti — vidjet tanlanmaydi va sudralmaydi (InkLayer).
+      if (isClaimedByInk(e)) return;
 
       const target = e.target as HTMLElement | null;
       if (!target) return;

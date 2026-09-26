@@ -50,12 +50,49 @@ export type DoskaWidget = {
   state: Record<string, unknown>;
 };
 
+/* ── QOʻLYOZMA (siyoh) — docs/doska-qolyozma-tadqiqot.md §4 ──────────
+
+   Siyoh vidjet EMAS, ekranning oʻz qatlami: vidjetlar ustida, butun
+   ekran boʻylab. Vidjet boʻlsa yozuv qutilarga boʻlinib, vidjet ustidan
+   yozib boʻlmasdi (§4.1, B varianti).
+   ──────────────────────────────────────────────────────────────────── */
+
+/** Chiziq chizgan asbob. Oʻchirgich chiziq qoldirmaydi — bu yerda yoʻq. */
+export type InkTool = "pen" | "marker";
+
+/**
+ * Bitta chiziq — bir teginishdan qoʻyib yuborishgacha.
+ *
+ * ⚠️ `color` — palitra KALITI (`"auto"`, `"red"`), rang qiymati emas.
+ * Rangni `src/styles/doska.css` dagi token beradi: `"auto"` och fonda
+ * siyoh, toʻq fonda boʻr boʻladi — fon almashtirilsa eski yozuv ham
+ * koʻrinib qoladi.
+ *
+ * ⚠️ `points` — tekis massiv `[x, y, p, x, y, p, …]`, BUTUN sonlar:
+ * `x`, `y` ekran pikseli (vidjetlar bilan bir tizim), `p` — bosim
+ * 0–100. Obyektlar massivi boʻlsa har nuqta ≈ 3 barobar joy olardi,
+ * `localStorage` esa butun saytga ~5 MB (R340).
+ */
+export type InkStroke = {
+  id: string;
+  tool: InkTool;
+  color: string;
+  /** Qalinlik darajasi 1–3; piksel asbobga qarab `lib/doska/ink.ts` da. */
+  size: number;
+  points: number[];
+};
+
 export type DoskaScreen = {
   id: string;
   ordinal: number;
   /** Fon kaliti yoki `null` (standart fon). Fon vidjeti keyingi bosqichda. */
   background: string | null;
   widgets: DoskaWidget[];
+  /**
+   * Qoʻlyozma. Ixtiyoriy — eski saqlangan ekranlarda yoʻq, `undefined`
+   * = boʻsh (`locked` bilan bir xil naqsh, migratsiyasiz).
+   */
+  ink?: InkStroke[];
 };
 
 export type DoskaDeck = {

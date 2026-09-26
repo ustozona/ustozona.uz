@@ -8,6 +8,7 @@ import { useActiveScreen, useDoskaStore } from "@/lib/doska/store";
 import { backgroundById } from "@/lib/doska/backgrounds";
 import { Z_SPOTLIGHT_EXIT, Z_SPOTLIGHT_SCRIM } from "@/lib/doska/layers";
 import { IconSpotlightExit } from "./icons";
+import { InkLayer } from "./InkLayer";
 import { useDoskaInteraction } from "./InteractionLayer";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { WidgetFrame } from "./WidgetFrame";
@@ -58,6 +59,10 @@ export function DoskaCanvas() {
               </WidgetFrame>
             );
           })}
+
+          {/* Qoʻlyozma vidjetlar USTIDA — taqdimot va taymer ustiga ham
+              yoziladi (R338); tanlov tutqichlari va panel esa undan yuqori. */}
+          <InkLayer rootRef={rootRef} />
 
           <SelectionOverlay />
           <SpotlightScrim />

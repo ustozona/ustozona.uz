@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 
-import type { DoskaDeck, DoskaScreen, DoskaWidget, WidgetKind } from "./types";
+import type { DoskaDeck, DoskaScreen, DoskaWidget, InkStroke, WidgetKind } from "./types";
 import { widgetMeta } from "./registry";
 import { DEFAULT_BACKGROUND_ID } from "./backgrounds";
 
@@ -92,13 +92,19 @@ function deferredLocalStorage(delayMs: number): StateStorage {
       timer = null;
     }
     if (!pending) return;
+    let ok = true;
     try {
       store.setItem(pending.name, pending.value);
     } catch {
       // Xotira toʻlgan yoki maxfiylik rejimi — ekran baribir
-      // ishlayveradi, faqat saqlanmaydi.
+      // ishlayveradi, faqat saqlanmaydi. Endi buni oʻqituvchi KOʻRADI
+      // (`saveFailed`): qoʻlyozma deckni koʻp marta kattalashtiradi va
+      // `localStorage` chegarasiga (~5 MB) yetish haqiqiy xavf — jim
+      // qolinsa butun ekran (vidjetlar ham) yangilanishda yoʻqolardi.
+      ok = false;
     }
     pending = null;
+    reportSave(ok);
   };
 
   flushPending = flush;
@@ -119,6 +125,18 @@ function deferredLocalStorage(delayMs: number): StateStorage {
       store.removeItem(name);
     },
   };
+}
+
+/**
+ * Saqlash natijasini holatga yozadi — faqat oʻzgarganda.
+ *
+ * ⚠️ `setState` persistʼni yana yozdiradi. Qiymat oʻzgarmasa chaqirilmaydi,
+ * shuning uchun muvaffaqiyatsiz yozuv cheksiz takrorlanmaydi: ikkinchi
+ * urinish ham yiqilsa holat allaqachon `true`.
+ */
+function reportSave(ok: boolean) {
+  if (useDoskaStore.getState().saveFailed === !ok) return;
+  useDoskaStore.setState({ saveFailed: !ok });
 }
 
 function newId() {
@@ -175,7 +193,8 @@ type Snapshot = { deck: DoskaDeck; activeScreenId: string };
 export type DoskaNotice =
   | { id: number; kind: "widgetRemoved"; widgetKind: WidgetKind }
   | { id: number; kind: "screenCleared" }
-  | { id: number; kind: "screenRemoved" };
+  | { id: number; kind: "screenRemoved" }
+  | { id: number; kind: "inkCleared" };
 
 let noticeSeq = 0;
 
@@ -258,6 +277,31 @@ type DoskaState = {
   setActiveScreen: (id: string) => void;
   clearScreen: () => void;
 
+  /**
+   * QOʻLYOZMA (docs/doska-qolyozma-tadqiqot.md). Har chiziq — bitta
+   * qaytarish qadami: oʻqituvchi «Ctrl+Z» bosganda oxirgi yozgan
+   * chizigʻi ketadi, butun yozuv emas.
+   */
+  /**
+   * `screenId` — chiziq BOSHLANGAN ekran: yozish oʻrtasida ekran
+   * almashsa (strelka, pult) chiziq yangi ekranga tushib qolmasin.
+   */
+  addStroke: (stroke: InkStroke, screenId: string) => void;
+  /**
+   * Oʻchirgich tekkan chiziqlarni olib tashlaydi — tarixga YOZMAYDI.
+   * Oʻchirgich bir harakatda koʻp chiziqqa tegadi; tarix harakat boshida
+   * bir marta yoziladi (`beginGesture`), sudrash bilan bir xil naqsh.
+   */
+  removeStrokes: (ids: ReadonlySet<string>) => void;
+  /** Joriy ekrandagi butun yozuvni oʻchiradi — «Qaytarish» xabari bilan. */
+  clearInk: () => void;
+
+  /**
+   * Oxirgi saqlash yiqildi (brauzer xotirasi toʻlgan). Efemer — keyingi
+   * muvaffaqiyatli yozuvda oʻzi tushadi. `DoskaNotice` koʻrsatadi.
+   */
+  saveFailed: boolean;
+
   /** Qaytarish uchun oldingi holatlar (eng yangisi oxirida). Efemer. */
   past: Snapshot[];
   /** Qaytarilgan holatlar — «qaytadan bajarish» uchun. Efemer. */
@@ -289,6 +333,21 @@ function withActiveScreen(
     ...deck,
     screens: deck.screens.map((s) =>
       s.id === activeScreenId ? { ...s, widgets: fn(s.widgets) } : s,
+    ),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/** Berilgan ekranning siyohini oʻzgartiruvchi yordamchi. */
+function withScreenInk(
+  deck: DoskaDeck,
+  screenId: string,
+  fn: (ink: InkStroke[]) => InkStroke[],
+): DoskaDeck {
+  return {
+    ...deck,
+    screens: deck.screens.map((s) =>
+      s.id === screenId ? { ...s, ink: fn(s.ink ?? []) } : s,
     ),
     updatedAt: new Date().toISOString(),
   };
@@ -372,6 +431,7 @@ export const useDoskaStore = create<DoskaState>()(
         settingsId: null,
         spotlightId: null,
         curtain: false,
+        saveFailed: false,
         past: [],
         future: [],
         notice: null,
@@ -617,17 +677,50 @@ export const useDoskaStore = create<DoskaState>()(
             // Qulflangan vidjetlar tozalashdan ham omon qoladi — qulf
             // «bu joyida tursin» degani (R311).
             const kept = screen?.widgets.filter((w) => w.locked) ?? [];
+            const hasInk = (screen?.ink?.length ?? 0) > 0;
             // Oʻchadigan narsa yoʻq — tarixga bekor qadam qoʻshilmasin.
-            if (!screen || screen.widgets.length === kept.length) return s;
+            if (!screen || (screen.widgets.length === kept.length && !hasInk)) return s;
 
+            // Yozuv ham ketadi: «ekranni tozalash» — toza doska. Hammasi
+            // bitta qadam va bitta «Qaytarish» bilan qaytadi.
+            const deck = withActiveScreen(s.deck, s.activeScreenId, () => kept);
             return {
               ...pushHistory(s),
-              deck: withActiveScreen(s.deck, s.activeScreenId, () => kept),
+              deck: withScreenInk(deck, s.activeScreenId, () => []),
               selectedId: null,
               editingId: null,
               settingsId: null,
               spotlightId: null,
               notice: { id: ++noticeSeq, kind: "screenCleared" },
+            };
+          }),
+
+        addStroke: (stroke, screenId) =>
+          set((s) => {
+            // Yozish paytida ekran oʻchirilgan boʻlsa chiziq tashlanadi.
+            if (!s.deck.screens.some((x) => x.id === screenId)) return s;
+            return {
+              ...pushHistory(s),
+              notice: null,
+              deck: withScreenInk(s.deck, screenId, (ink) => [...ink, stroke]),
+            };
+          }),
+
+        removeStrokes: (ids) =>
+          set((s) => ({
+            deck: withScreenInk(s.deck, s.activeScreenId, (ink) =>
+              ink.filter((x) => !ids.has(x.id)),
+            ),
+          })),
+
+        clearInk: () =>
+          set((s) => {
+            const screen = s.deck.screens.find((x) => x.id === s.activeScreenId);
+            if (!screen?.ink?.length) return s;
+            return {
+              ...pushHistory(s),
+              deck: withScreenInk(s.deck, s.activeScreenId, () => []),
+              notice: { id: ++noticeSeq, kind: "inkCleared" },
             };
           }),
 

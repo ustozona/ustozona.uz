@@ -4715,7 +4715,10 @@
       "widgetRemoved": "{widget} жойылды",
       "screenCleared": "Экран тазартылды",
       "screenRemoved": "Экран жойылды",
-      "undo": "Қайтару"
+      "undo": "Қайтару",
+      "inkCleared": "Жазу тазартылды",
+      "saveFailed": "Экран сақталмай жатыр.",
+      "saveFailedHint": "Браузер жады толды — жазуды тазалаңыз немесе керексіз экранды жойыңыз."
     },
     "settings": {
       "title": "{widget}: баптаулар",
@@ -4907,6 +4910,34 @@
       "rosterLocked": "Тізім жабық",
       "rosterFailed": "Тізім жүктелмеді",
       "retry": "Қайта көру"
+    },
+    "ink": {
+      "toolbar": "Қолжазба құралдары",
+      "pen": "Қалам",
+      "marker": "Маркер",
+      "eraser": "Өшіргіш",
+      "select": "Таңдау",
+      "clear": "Тазалау",
+      "clearLabel": "Жазуды тазалау",
+      "color": "Түс",
+      "size": "Қалыңдық",
+      "sizes": {
+        "thin": "Жіңішке",
+        "medium": "Орташа",
+        "thick": "Қалың"
+      },
+      "colors": {
+        "autoLight": "Қара",
+        "autoDark": "Ақ",
+        "red": "Қызыл",
+        "blue": "Көк",
+        "green": "Жасыл",
+        "orange": "Қызғылт сары",
+        "violet": "Күлгін",
+        "yellow": "Сары",
+        "pink": "Қызғылт"
+      },
+      "penOnly": "Тек қалам"
     }
   }
 }
