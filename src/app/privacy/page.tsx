@@ -89,7 +89,7 @@ export default function PrivacyPage() {
           <strong>Bogʻlash:</strong> bir martalik kodni @uzlessonlabbot’da
           ochasiz. Bot tasdiqlash uchun ismingizni va qisman yashirilgan
           emailingizni (masalan, a***@gmail.com) koʻrsatadi va ekrandagi
-          kodni tanlashingizni soʻraydi — begona odam sizning Telegramingizni
+          kodni botdagi tugmalar bilan terishingizni soʻraydi — begona odam sizning Telegramingizni
           oʻz akkauntiga ulay olmasligi uchun. Keyin faqat «Ustozona ID ↔
           Telegram ID» juftligi saqlanadi.
         </li>

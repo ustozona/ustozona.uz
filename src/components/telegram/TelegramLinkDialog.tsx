@@ -24,7 +24,7 @@ import {
    Oqim:
      sayt 4 xonali kod koʻrsatadi → odam botni ochadi (telefonda tugma,
      kompyuterda QR) → bot qaysi Ustozona akkaunti bogʻlanayotganini
-     koʻrsatadi va SHU kodni uch variant ichidan tanlatadi → oyna
+     koʻrsatadi va SHU kodni raqamli klaviaturada terdiradi → oyna
      2 soniyada bir holatni soʻraydi va bogʻlangach yopiladi.
 
    Kod nega kerak — `dal/account-link.ts: confirmCodeOf` izohi: begona

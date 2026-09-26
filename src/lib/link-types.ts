@@ -36,7 +36,7 @@
 /** Bog'lanish holati: bog'langan yoki bog'lash havolasi.
 
     `confirmCode` — saytda ko'rsatiladigan 4 xonali kod. Bot (@uzlessonlabbot)
-    bog'lashdan OLDIN uni uch variant ichidan tanlatadi va qaysi Ustozona
+    bog'lashdan OLDIN uni raqamli klaviaturada terdiradi va qaysi Ustozona
     akkaunti bog'lanayotganini ko'rsatadi — begona yuborgan havolani
     ko'r-ko'rona bosgan odam bog'lanib qolmasin (`dal/account-link.ts:
     confirmCodeOf`, LessonLab `services/uz_link_confirm.py`). */

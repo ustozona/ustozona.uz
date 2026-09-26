@@ -4947,7 +4947,7 @@
     "description": "@uzlessonlabbot orqali — bir marta, bir necha soniyada",
     "starting": "Havola tayyorlanmoqda…",
     "codeLabel": "Tasdiq kodi",
-    "codeHint": "Botda START bosing va aynan shu kodni tanlang.",
+    "codeHint": "Botda START bosing va shu kodni tugmalar bilan tering.",
     "qrHint": "Yoki telefon kamerasi bilan QR kodni skanerlang.",
     "openTelegram": "Telegramni ochish",
     "safety": "Bot qaysi Ustozona akkaunti bogʻlanayotganini koʻrsatadi. Akkaunt sizniki boʻlmasa — «Bu men emasman» ni bosing.",

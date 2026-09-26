@@ -48,8 +48,10 @@ const TTL_MINUTES = 15;
 
     NEGA KERAK: bot (@uzlessonlabbot) `/start uzl_<kod>` da endi darhol
     bogʻlamaydi — qaysi Ustozona akkaunti ekanini koʻrsatadi va shu kodni
-    uch variant ichidan tanlatadi. Begona yuborgan havolani koʻr-koʻrona
-    bosgan odam saytni koʻrmayapti va toʻgʻri kodni bilmaydi.
+    raqamli klaviaturada TERDIRADI. Begona yuborgan havolani koʻr-koʻrona
+    bosgan odam saytni koʻrmayapti va toʻgʻri kodni bilmaydi: tasodifan
+    topish ehtimoli 1/10000, bitta xato havolani bekor qiladi. («Uch
+    variantdan tanlash» da bu 1/3 edi — shuning uchun terishga oʻtildi.)
 
     ⚠️ Formula LessonLab bilan AYNAN bir xil boʻlishi SHART
     (`services/uz_link_confirm.py: confirm_code_of`), aks holda hech kim

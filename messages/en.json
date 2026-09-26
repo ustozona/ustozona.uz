@@ -5056,7 +5056,7 @@
     "description": "Via @uzlessonlabbot — once, in a few seconds",
     "starting": "Preparing the link…",
     "codeLabel": "Confirmation code",
-    "codeHint": "Press START in the bot and pick exactly this code.",
+    "codeHint": "Press START in the bot and type this code on its keypad.",
     "qrHint": "Or scan the QR code with your phone camera.",
     "openTelegram": "Open Telegram",
     "safety": "The bot shows which Ustozona account is being connected. If it isn’t yours, tap “Bu men emasman” (“This isn’t me”).",
