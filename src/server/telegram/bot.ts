@@ -121,9 +121,10 @@ async function greet(chatId: number, telegramId: string, from: TgUser) {
   if (!userId) {
     await sendMessage(
       chatId,
-      `Assalomu alaykum, ${esc(from.first_name)}! 👋\n\n` +
-        `Bu — <b>Ustozona</b> boti. Kirish yoki roʻyxatdan oʻtish uchun saytda ` +
-        `«Telegram orqali davom etish» tugmasini bosing — qolganini shu yerda tasdiqlaysiz.`,
+      "Assalomu alaykum, ustoz!\n\n" +
+        "Eslatmalar kelishi uchun Ustozona akkauntingizni ulang yoki yangi akkaunt oching. " +
+        "Shundan soʻng saytdagi dars jadvalingiz asosida har kuni kechqurun va ertalab xabar kelib turadi.\n\n" +
+        "Tugmalardan birini tanlang 👇",
       { inline_keyboard: [[{ text: "🌐 Ustozonani ochish", url: `${SITE}/login` }]] }
     );
     return;
@@ -134,7 +135,7 @@ async function greet(chatId: number, telegramId: string, from: TgUser) {
     chatId,
     `Assalomu alaykum, ${esc(from.first_name)}! ✅ Akkauntingiz ulangan.\n\n` +
       `Har kuni kechqurun ertangi darslar, ertalab esa bugungi reja shu yerga keladi. ` +
-      `Vaqtini Sozlamalarda oʻzgartirasiz.`,
+      `Vaqtini Sozlamalarda oʻzgartirishingiz mumkin.`,
     { inline_keyboard: [[{ text: "⚙️ Sozlamalar", url: `${SITE}/dashboard/settings?section=telegram` }]] }
   );
   if (!chat?.phone) await askPhone(chatId);
@@ -156,7 +157,7 @@ async function sendDigestNow(chatId: number, from: TgUser, kind: "morning" | "ev
 async function askPhone(chatId: number) {
   await sendMessage(
     chatId,
-    "📱 Telefon raqamingizni qoʻshing — akkauntni tiklash va muhim xabarlar uchun. " +
+    "📱 Telefon raqamingizni qoʻshing — bu akkauntni tiklash va muhim xabarlar uchun kerak. " +
       "Pastdagi tugmani bosing.",
     PHONE_KEYBOARD
   );
@@ -168,7 +169,7 @@ async function askMarketing(chatId: number, telegramId: string) {
   await sendMessage(
     chatId,
     "📣 Ustozona yangiliklari va oʻqituvchilar uchun foydali maslahatlarni shu yerga yuboraylikmi?\n\n" +
-      "Istalgan payt Sozlamalarda oʻchirasiz.",
+      "Buni istalgan payt Sozlamalarda oʻchirib qoʻyishingiz mumkin.",
     {
       inline_keyboard: [[
         { text: "✅ Ha, yuboring", callback_data: "m:y" },
@@ -251,7 +252,7 @@ async function onCallback(q: TgCallbackQuery) {
       messageId,
       data === "m:y"
         ? "✅ Rahmat! Yangiliklarni shu yerga yuboramiz."
-        : "Mayli, faqat darslar va akkaunt haqidagi xabarlar keladi."
+        : "Tushunarli, bu yerga faqat darslar va akkaunt haqidagi xabarlar keladi."
     );
     return;
   }
@@ -339,7 +340,7 @@ async function onCodePicked(
         await editMessageText(
           chatId,
           messageId,
-          "⚠️ Bu Ustozona akkaunti boshqa Telegramga ulangan. Avval saytda Sozlamalardan uni uzing."
+          "⚠️ Bu Ustozona akkaunti boshqa Telegramga ulangan. Avval saytda Sozlamalar → Telegram → «Uzish» orqali uni uzing."
         );
         return;
       }
@@ -388,7 +389,7 @@ async function onCodePicked(
     messageId,
     "👋 Bu Telegram bilan Ustozonada akkaunt yoʻq — yangisini ochamiz.\n\n" +
       "Buning uchun pastdagi <b>«📱 Raqamni yuborish»</b> tugmasini bosing.",
-    { inline_keyboard: [[{ text: "Menda email bilan ochilgan akkaunt bor", callback_data: `h:${req.id}` }]] }
+    { inline_keyboard: [[{ text: "Email akkauntim bor", callback_data: `h:${req.id}` }]] }
   );
   await sendMessage(chatId, "Telefon raqamingiz:", PHONE_KEYBOARD);
 }
