@@ -195,7 +195,7 @@ export function buildDigest(input: DigestInput): DigestMessage | null {
   if (unplanned) notes.push(`⚠️ ${unplanned} ta darsga mavzu biriktirilmagan`);
   notes.push(...taskBlock(kind === "evening" ? "📌 Ertaga muddati" : "📌 Bugun muddati", due));
   notes.push(...taskBlock("🔴 Muddati oʻtgan", late));
-  if (notMarked) notes.push(`✅ Bugungi ${notMarked} ta dars «oʻtildi» deb belgilanmagan`);
+  if (notMarked) notes.push(`✅ Bugungi ${notMarked} ta darsga «oʻtildi» belgisi qoʻyilmagan`);
   if (notes.length) lines.push("", ...notes);
 
   const buttons: DigestMessage["buttons"] = [];

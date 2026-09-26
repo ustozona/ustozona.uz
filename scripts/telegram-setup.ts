@@ -64,16 +64,15 @@ async function main() {
   });
 
   await call("setMyShortDescription", {
-    short_description: "Ustozona — oʻqituvchi yordamchisi. Darslar haqida eslatmalar va parolsiz kirish.",
+    short_description: "Ustozlar uchun yordamchi: har kuni ertangi va bugungi darslar haqida eslatma.",
   });
 
   await call("setMyDescription", {
     description:
-      "Ustozona boti:\n" +
-      "• har kuni kechqurun — ertangi darslar va rejalanmagan darslar\n" +
-      "• ertalab — bugungi darslar va vazifalar\n" +
-      "• Ustozonaga parolsiz kirish\n\n" +
-      "Boshlash uchun saytda «Telegram orqali davom etish» tugmasini bosing.",
+      "Darslar va rejalar doim yodingizda boʻladi.\n\n" +
+      "• 🌙 Kechqurun — ertangi darslar va rejasi yozilmagan darslar\n" +
+      "• ☀️ Ertalab — bugungi darslar va vazifalar\n\n" +
+      "Boshlash uchun pastdagi tugmani bosing.",
   });
 
   const info = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`).then((r) => r.json());
