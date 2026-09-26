@@ -2954,6 +2954,7 @@
       "draft": "Qoralama"
     },
     "rail": {
+      "plan": "Reja ustasi",
       "details": "Tafsilotlar",
       "materials": "Materiallar",
       "goals": "Maqsadlar",
@@ -2962,6 +2963,7 @@
       "soon": "Tez orada"
     },
     "toast": {
+      "reflectionSaved": "Mulohaza saqlandi",
       "saved": "Saqlandi",
       "duplicated": "Dars nusxalandi",
       "deleted": "Dars oʻchirildi",
@@ -2973,6 +2975,7 @@
     "copySuffix": "nusxa",
     "more": "Koʻproq",
     "menu": {
+      "present": "Taqdimot rejimi",
       "saveNow": "Hozir saqlash",
       "downloadPdf": "Yuklab olish (PDF)",
       "duplicate": "Nusxalash",
@@ -4840,5 +4843,83 @@
       "hideGuide": "Yopish: {guide}",
       "deleteSelection": "Oʻchirish"
     }
+  },
+  "LessonPlanWizard": {
+    "title": "Reja ustasi",
+    "close": "Yopish",
+    "untitled": "Nomsiz dars",
+    "minutes": "daq",
+    "duration": "Davomiyligi",
+    "teacherChoice": "oʻqituvchi tanlagan model",
+    "previous": {
+      "title": "Oldingi dars",
+      "empty": "Mulohaza yozilmagan"
+    },
+    "model": {
+      "label": "Dars modeli",
+      "recommended": "tavsiya",
+      "bestFor": "Qachon mos",
+      "why": "Nega"
+    },
+    "ways": {
+      "label": "Rejani qanday tuzamiz?",
+      "quick": {
+        "title": "Tez tayyor reja (AI)",
+        "desc": "AI mavzu, model va sinfingizga moslab toʻliq reja tuzadi"
+      },
+      "goal": {
+        "title": "Maqsaddan boshlab (AI)",
+        "desc": "Avval dars oxirida oʻquvchi nima qila olishini yozasiz — reja shunga quriladi"
+      },
+      "self": {
+        "title": "Oʻzim yozaman",
+        "desc": "AIʼsiz shablon: model bosqichlari, vaqti va maqsadi — mazmunni oʻzingiz yozasiz"
+      }
+    },
+    "goal": {
+      "label": "Dars oxirida oʻquvchi…",
+      "placeholder": "masalan: kasrlarni qoʻshish qoidasini tushuntirib, 5 ta misolni mustaqil yecha oladi"
+    },
+    "env": {
+      "label": "Sinf holati",
+      "hint": "Bir marta belgilang — AI rejani aynan shu sinfga moslaydi.",
+      "smartboard": "Smartdoska",
+      "projector": "Proyektor",
+      "movement": "Harakat uchun joy",
+      "phones": "Oʻquvchilarda telefon/planshet",
+      "count": "Oʻquvchilar soni",
+      "level": "Sinf darajasi",
+      "levels": {
+        "none": "Koʻrsatilmagan",
+        "strong": "Kuchli",
+        "mixed": "Aralash",
+        "weak": "Qiyinchilik bilan"
+      }
+    },
+    "resources": {
+      "label": "Darsda",
+      "present": "Taqdimot rejimi (ekranda koʻrsatish)",
+      "games": "Ustozona-Games bilan mustahkamlash"
+    },
+    "reflect": {
+      "label": "Dars oʻtgach",
+      "placeholder": "Nima yaxshi oʻtdi, kim qiynaldi, nimani takrorlash kerak…",
+      "hint": "Bu mulohaza keyingi darsda «Oldingi dars» boʻlib chiqadi va AI soʻroviga qoʻshiladi."
+    },
+    "run": {
+      "ai": "AI bilan reja tuzish",
+      "self": "Shablonni darsga qoʻshish"
+    },
+    "toast": {
+      "skeleton": "Shablon darsga qoʻshildi — endi mazmunini toʻldiring",
+      "goalRequired": "Avval dars maqsadini yozing"
+    }
+  },
+  "LessonPresenter": {
+    "title": "Taqdimot rejimi",
+    "theme": "Yorugʻ/qorongʻi",
+    "close": "Chiqish (Esc)",
+    "prev": "Oldingi",
+    "next": "Keyingi"
   }
 }

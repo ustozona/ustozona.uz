@@ -22,6 +22,7 @@ import "katex/dist/katex.min.css";
 import {
   FileText, X, MoreHorizontal, Check, Loader2, Download, Save, Copy, BookmarkPlus, Trash2,
   SlidersHorizontal, Sparkles, Plus, Minus, FileCheck, CircleDashed, CircleCheck, Clock, ChevronDown,
+  Compass, Presentation,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -48,6 +49,9 @@ import { useBackOrPush } from "@/hooks/useBackOrPush";
 import EditorToolbar from "./EditorToolbar";
 import DetailsPanel from "./DetailsPanel";
 import AiAssistantPanel from "./AiAssistantPanel";
+import PlanWizardPanel from "./PlanWizardPanel";
+import LessonPresenter from "./LessonPresenter";
+import { subjectLabel } from "@/lib/standards-data";
 import { TableKit } from "@tiptap/extension-table";
 import { TaskList, TaskItem } from "@tiptap/extension-list";
 import { Callout, CalloutTitle } from "./callout-extension";
@@ -92,6 +96,7 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const hydrated = useLessonStore((s) => s._hasHydrated);
   const lesson = useLessonStore((s) => s.lessons.find((l) => l.id === lessonId));
   const units = useLessonStore((s) => s.units);
+  const allLessons = useLessonStore((s) => s.lessons);
   const updateLesson = useLessonStore((s) => s.updateLesson);
   const addLesson = useLessonStore((s) => s.addLesson);
   const deleteLesson = useLessonStore((s) => s.deleteLesson);
@@ -129,7 +134,11 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   const setTaught = useLessonStore((s) => s.setTaught);
   const standardSets = useStandardsStore((s) => s.sets);
 
-  const [activePanel, setActivePanel] = useState<"details" | "ai" | null>("details");
+  const [activePanel, setActivePanel] = useState<"details" | "ai" | "plan" | null>("details");
+  /* Reja ustasidan AI yordamchisiga uzatiladigan soʻrov (PlanWizardPanel). */
+  const [pendingPrompt, setPendingPrompt] = useState<{ id: number; text: string } | null>(null);
+  /* Taqdimot rejimi — dars matnidan slaydlar (LessonPresenter). */
+  const [presenting, setPresenting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   /* A4 sahifa zoom'i — faqat KOʻRINISH uchun (CSS transform), saqlangan
@@ -349,11 +358,12 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
     });
   };
 
-  const togglePanel = (panel: "details" | "ai") =>
+  const togglePanel = (panel: "details" | "ai" | "plan") =>
     setActivePanel((cur) => (cur === panel ? null : panel));
 
   const railItems = [
     { icon: SlidersHorizontal, title: t("rail.details"), active: activePanel === "details", onClick: () => togglePanel("details") },
+    { icon: Compass, title: t("rail.plan"), active: activePanel === "plan", onClick: () => togglePanel("plan") },
     { icon: Sparkles, title: t("rail.ai"), active: activePanel === "ai", onClick: () => togglePanel("ai") },
   ];
 
@@ -395,6 +405,49 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
   // (barcha sinflar boʻyicha), daqiqada. Jadval yoʻq boʻlsa berilmaydi.
   const firstSession = lesson ? lessonSessions(lesson).sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin)[0] : undefined;
   const durationMin = firstSession ? firstSession.endMin - firstSession.startMin : undefined;
+
+  /* ── Reja ustasi konteksti ──
+     Asosiy sinf — darsning birinchi sinfi: fan va daraja model tavsiyasi
+     uchun. Oldingi dars — shu sinfdagi, jadvalda shu darsdan OLDIN turgan
+     eng yaqin dars; jadval yoʻq boʻlsa tartib raqami boʻyicha. */
+  const primaryClassId = lesson ? lessonClassIds(lesson)[0] : undefined;
+  const primaryClass = primaryClassId ? liveClasses.find((c) => c.id === primaryClassId) : undefined;
+  const planSubject = primaryClass?.subject ? `${primaryClass.subject} ${subjectLabel(primaryClass.subject)}` : "";
+  const previousLesson = (() => {
+    if (!lesson || !primaryClassId) return null;
+    const firstDateIn = (l: Lesson) =>
+      lessonSessions(l).filter((x) => x.classId === primaryClassId).map((x) => x.date).sort()[0];
+    const peers = allLessons.filter((l) => l.id !== lesson.id && lessonClassIds(l).includes(primaryClassId));
+    const myDate = firstDateIn(lesson);
+    let prev: Lesson | undefined;
+    if (myDate) {
+      prev = peers
+        .map((l) => ({ l, d: firstDateIn(l) }))
+        .filter((x): x is { l: Lesson; d: string } => !!x.d && x.d < myDate)
+        .sort((a, b) => b.d.localeCompare(a.d))[0]?.l;
+    } else {
+      prev = peers.filter((l) => l.number < lesson.number).sort((a, b) => b.number - a.number)[0];
+    }
+    return prev ? { title: prev.title, reflection: prev.reflection } : null;
+  })();
+
+  const planWizard = lesson ? (
+    <PlanWizardPanel
+      topic={(titleDraft ?? lesson.title) || ""}
+      subject={planSubject}
+      grade={primaryClass?.grade ?? null}
+      classId={primaryClassId}
+      className={primaryClass?.name}
+      defaultDuration={durationMin && durationMin > 0 ? durationMin : 45}
+      previousLesson={previousLesson}
+      reflection={lesson.reflection ?? ""}
+      onClose={() => setActivePanel(null)}
+      onAskAi={(text) => { setPendingPrompt({ id: Date.now(), text }); setActivePanel("ai"); }}
+      onInsertSkeleton={(html) => editor?.chain().focus("end").insertContent(html).run()}
+      onSaveReflection={(text) => { updateLesson(lessonId, { reflection: text }); toast.success(t("toast.reflectionSaved")); }}
+      onPresent={() => setPresenting(true)}
+    />
+  ) : null;
 
   return (
     <div className="h-dvh w-full flex flex-col bg-muted overflow-hidden print:h-auto print:overflow-visible">
@@ -501,6 +554,9 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => window.print()} className="gap-2">
                 <Download className="size-4" /> {t("menu.downloadPdf")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPresenting(true)} className="gap-2">
+                <Presentation className="size-4" /> {t("menu.present")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDuplicate} className="gap-2">
                 <Copy className="size-4" /> {t("menu.duplicate")}
@@ -659,7 +715,24 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                     lessonId={lesson.id}
                     onClose={() => setActivePanel(null)}
                     onInsert={(html) => editor?.chain().focus().insertContent(html).run()}
+                    pendingPrompt={pendingPrompt}
+                    onPendingPromptSent={() => setPendingPrompt(null)}
                   />
+                </div>
+              </motion.aside>
+            )}
+
+            {activePanel === "plan" && lesson && (
+              <motion.aside
+                key="plan-panel"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: detailsPanelWidth, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: PANEL_DURATION, ease: PANEL_EASE }}
+                className="no-print shrink-0 bg-card border-l border-border overflow-hidden"
+              >
+                <div className="h-full" style={{ width: detailsPanelWidth }}>
+                  {planWizard}
                 </div>
               </motion.aside>
             )}
@@ -709,7 +782,16 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
                   lessonId={lesson.id}
                   onClose={() => setActivePanel(null)}
                   onInsert={(html) => editor?.chain().focus().insertContent(html).run()}
+                  pendingPrompt={pendingPrompt}
+                  onPendingPromptSent={() => setPendingPrompt(null)}
                 />
+              </SheetContent>
+            </Sheet>
+
+            <Sheet open={activePanel === "plan"} onOpenChange={(open) => !open && setActivePanel(null)}>
+              <SheetContent side="right" showCloseButton={false} className="no-print w-full sm:max-w-full p-0 gap-0">
+                <SheetTitle className="sr-only">{t("rail.plan")}</SheetTitle>
+                {planWizard}
               </SheetContent>
             </Sheet>
 
@@ -751,6 +833,14 @@ export default function LessonEditor({ lessonId }: { lessonId: string }) {
           ))}
         </nav>
       </div>
+
+      {presenting && lesson && (
+        <LessonPresenter
+          title={(titleDraft ?? lesson.title)?.trim() || t("untitled")}
+          html={editor?.getHTML() ?? lesson.content ?? ""}
+          onClose={() => setPresenting(false)}
+        />
+      )}
     </div>
   );
 }
