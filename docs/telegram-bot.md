@@ -1,5 +1,60 @@
 # Ustozona boti — ishga tushirish va ishlash tartibi
 
+> ## ⛔ BOT BIRLASHUVI (2026-09-26) — avval shuni oʻqing
+>
+> @UstozonaBot endi **bitta bot, ikki kod**. Telegram bitta botga faqat
+> BITTA webhook beradi, u esa LessonLab jarayonida (AWS VM,
+> `https://lessonlab.uz/webhook`, repo `ustozona/lessonlab-scanner`):
+>
+> ```
+> Telegram → VM (LessonLab: testlar, AI, oʻyinlar, sinflar, telefon darvozasi)
+>              └─ Ustozona update'lari → shu repo: /api/telegram/webhook (bot.ts)
+> ```
+>
+> **Ustozona'ga uzatiladiganlar** (qolgani LessonLab'da):
+>
+> | Nima | Shakl |
+> |---|---|
+> | Saytga kirish / roʻyxatdan oʻtish | `/start a_<24 belgi>` |
+> | Kunlik reja | `/bugun`, `/ertaga` |
+> | Kirish tugmalari | callback `c:…`, `h:…`, `m:y`, `m:n` |
+> | Telefon kontakti | LessonLab oʻzi soʻramagan boʻlsa |
+> | Bot bloklandi/ochildi | `my_chat_member` (ikkala tomonga) |
+> | **Yangi funksiyalar** | callback `uz:<…>`, `/start uz_<kamida 6 belgi>`, buyruq — VM `.env` dagi `USTOZONA_TG_COMMANDS` |
+>
+> ### Yangi tugma yoki buyruq qoʻshganda
+>
+> - Inline tugma: `callback_data` **albatta** `uz:` bilan boshlansin (`uz:rate:5`).
+> - Deep-link: `?start=uz_<kamida 6 belgi>`.
+> - Yangi `/buyruq`: VM `.env` dagi `USTOZONA_TG_COMMANDS` ga nomini qoʻshing (admin).
+>
+> ⛔ Bu shakldan tashqaridagi yangi tugma/havola **bu yerga yetib kelmaydi** —
+> bot jim qoladi va xato hech qayerda koʻrinmaydi.
+>
+> ### Nima QILMASLIK kerak
+>
+> - ⛔ `npm run telegram:setup` — webhook'ni Vercel'ga qaytarib, butun botni
+>   (testlar, AI, oʻyinlar) oʻchirardi. Skript endi buni oʻzi toʻxtatadi;
+>   `--force` faqat ataylab orqaga qaytarish uchun.
+> - ⛔ `setMyCommands` / `setMyDescription` ni shu yerdan chaqirish — bot
+>   buyruqlarini LessonLab ishga tushishda oʻzi yozadi.
+>
+> ### `tg_chats` qanday toʻladi
+>
+> Oddiy /start endi bu yerga kelmaydi, shuning uchun LessonLab /start va
+> raqam tasdigʻida `ustozona_sync` xabarini yuboradi (`bot.ts: onSync`) —
+> chat, profil va Telegram tasdiqlagan raqam. Busiz «botni ishga tushiring»
+> taklifi abadiy chiqardi va kundalik eslatmalar yetmasdi.
+>
+> Sinov: prod botga webhook qoʻyib boʻlmaydi — BotFather'dan **alohida sinov
+> boti** oching va uning tokenini lokal `.env.local` ga qoʻying.
+>
+> Batafsil (LessonLab tomoni): `lessonlab-scanner/docs/BOT_MERGE.md`.
+>
+> **Keyingi tozalash:** eski «Telegramni ulash» (`kind: "link"`, `l_`) oqimi
+> bot va server action'dan olib tashlandi; `dal/tg-auth.ts` va
+> `TgAuthKind`/`TgAuthPoll` tiplarida qolgan `link` shoxlari endi oʻlik kod.
+
 Bot uchta ishni bajaradi:
 
 1. **Telegram orqali kirish va roʻyxatdan oʻtish.** Tanish telegram kiradi. Yangi odam botda telefon raqamini yuboradi va parolsiz akkaunt ochiladi.
@@ -39,6 +94,9 @@ Supabase → SQL Editor → `drizzle/PROD-0048-telegram-bot.sql` faylini toʻliq
 - Hammasi bitta tranzaksiyada va hash'ni jurnalga yozadi.
 
 ## 3. Webhook
+
+> ⛔ Bot birlashuvidan keyin bu qadam **bajarilmaydi** — webhook LessonLab'da
+> (hujjat boshidagi blok). Quyidagi faqat tarix va orqaga qaytarish uchun.
 
 Deploy tugagach, bir marta ishga tushiriladi (qayta ishga tushirsa ham zarari yoʻq):
 

@@ -29,7 +29,9 @@ import type {
    buzadi). */
 
 export async function startTgAuthAction(kind: TgAuthKind): Promise<TgAuthStart> {
-  if (kind !== "login" && kind !== "link") return { ok: false, reason: "failed" };
+  // `link` — eski bogʻlash oqimi, endi yaratilmaydi (bot.ts dan ham olib
+  // tashlangan): bogʻlash TelegramLinkDialog orqali (`uzl_`, raqamli klaviatura).
+  if (kind !== "login") return { ok: false, reason: "failed" };
   return startTgAuth(kind);
 }
 

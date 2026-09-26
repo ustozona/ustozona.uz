@@ -27,7 +27,7 @@ import { gamePath, isGameFile, type GameFile } from "@/lib/games";
    avtoijro (oʻyin ovozlari), clipboard (PIN nusxalash).
    ════════════════════════════════════════════════════════════════════ */
 
-const TELEGRAM_BOT_URL = "https://t.me/uzlessonlabbot";
+const TELEGRAM_BOT_URL = "https://t.me/UstozonaBot";
 
 export default function GamesFrame({
   base,

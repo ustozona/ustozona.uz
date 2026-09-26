@@ -92,11 +92,24 @@ export type TgChatMemberUpdated = {
   new_chat_member: { status: string };
 };
 
+/** Bot birlashuvi: LessonLab jarayoni yuboradigan sinxron xabar (bot.ts: onSync).
+    Telegram'ning oʻz update turi EMAS. */
+export type TgSync = {
+  telegram_id: number;
+  chat_id: number;
+  username?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  language_code?: string | null;
+  phone?: string;
+};
+
 export type TgUpdate = {
   update_id: number;
   message?: TgMessage;
   callback_query?: TgCallbackQuery;
   my_chat_member?: TgChatMemberUpdated;
+  ustozona_sync?: TgSync;
 };
 
 export type InlineButton =
