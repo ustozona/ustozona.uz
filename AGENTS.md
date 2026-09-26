@@ -41,8 +41,8 @@ git checkout main && git pull && git checkout -b otabek/yangi-ish
 git fetch && git rebase origin/main && npm run build && git push -u origin HEAD
 ```
 
-`roziyevbehroz-tech` dan ishlayotgan boʻlsangiz `origin` oʻrniga
-`upstream` — pastdagi «QAYSI main» boʻlimiga qarang.
+Barcha ish bevosita `ustozona/ustozona.uz` da olib boriladi — `origin`
+shu repo, boshqa akkaunt/upstream kerak emas.
 
 Bu buyruqlarni oʻzingizga alias qilib qoʻysangiz boʻladi (`~/.gitconfig`,
 repo sozlamasi emas). Tartib baribir oʻzgarmaydi.
@@ -108,43 +108,21 @@ va ikkinchi `node_modules` bekorga joy oladi.
 
 ## ⚠️ 1- va 3-qoidada `main` — QAYSI main
 
-Ish `roziyevbehroz-tech/ustozona.uz` da olib borilishi mumkin, lekin
-**prodga u chiqmaydi** — haqiqiy Vercel deploy `ustozona/ustozona.uz`
-(upstream) dan ketadi.
-
-Va u repo GitHub ma'nosida **fork EMAS** (`"fork": false`) — shunchaki
-klon push qilib yaratilgan mustaqil repo. Git tarixi umumiy, lekin
-fork tarmog'i yo'q. Buning amaliy oqibati:
-
-⛔ **Cross-repo PR ISHLAMAYDI.** `compare/main...roziyevbehroz-tech:...`
-   havolasi har doim «There isn't anything to compare» beradi.
-   GitHub bunday PR uchun fork tarmog'ini talab qiladi.
-
-✅ **Ishlaydigan yagona yo'l — branch'ni upstream'ga PUSH qilib,
-   o'sha yerda oddiy PR ochish.** Upstream'dagi mavjud PR'lar aynan
-   shunday qilingan (`men/marketing-brifi`,
-   `roziyevbehroz-tech/claude/baholash-integratsiya` — ikkalasi ham
-   upstream ichidagi branch nomlari).
-
-```bash
-git remote add upstream https://github.com/ustozona/ustozona.uz.git  # bir marta
-git fetch upstream main
-
-git checkout -b <ism>/<tavsif> upstream/main    # 1-qoida: main = upstream/main
-# ... ish ...
-git fetch upstream && git rebase upstream/main  # 3-qoida
-npm run build                                   # 4-qoida
-git push upstream <ism>/<tavsif>                # 2-qoida: main'ga EMAS, branch'ga
-```
+**2026-09-26 dan boshlab bu bo'lim tarixiy** — endi barcha ish (Claude
+va odamlar) bevosita `ustozona/ustozona.uz` da olib boriladi, alohida
+`upstream` remote yoki cross-repo workaround kerak emas. `main` doim
+`ustozona/ustozona.uz` dagi `main` degani; oddiy 1- va 3-qoidadagi
+`origin` buyruqlari yetarli.
 
 PR: `https://github.com/ustozona/ustozona.uz/compare/main...<ism>/<tavsif>?expand=1`
 
-2-qoida buzilmaydi: upstream'ga **branch** push qilinadi, `main` ga
-emas. Qo'shilish baribir PR orqali.
-
-Nega bu alohida yozilgan: 2026-08 da oltita PR `roziyevbehroz-tech`
-repo'sining o'z main'iga ochilgan va prodga umuman chiqmagan — ish bor
-deb o'ylanib, aslida hech qayerga yetmagan.
+Tarixiy izoh (endi dolzarb emas): ilgari ish `roziyevbehroz-tech/ustozona.uz`
+mustaqil (fork bo'lmagan) nusxasida olib borilar va prodga chiqishi
+uchun branch alohida `ustozona/ustozona.uz` (upstream) ga push
+qilinardi — cross-repo PR ishlamagani uchun. 2026-08 da oltita PR shu
+sabab bilan `roziyevbehroz-tech` repo'sining o'z main'iga ochilib qolib,
+prodga umuman chiqmagan edi. Claude GitHub App endi `ustozona/*`
+repolariga to'g'ridan-to'g'ri ulangani uchun bu muammo qolmaydi.
 
 # ⛔ `"use server"` faylda `export type { … }` YOZMANG
 
