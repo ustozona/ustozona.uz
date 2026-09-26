@@ -33,10 +33,35 @@
    hech qanday transformdan o'tmaydi.
    ════════════════════════════════════════════════════════════════════ */
 
-/** Bog'lanish holati: bog'langan yoki bog'lash havolasi. */
+/** Bog'lanish holati: bog'langan yoki bog'lash havolasi.
+
+    `confirmCode` — saytda ko'rsatiladigan 4 xonali kod. Bot (@uzlessonlabbot)
+    bog'lashdan OLDIN uni uch variant ichidan tanlatadi va qaysi Ustozona
+    akkaunti bog'lanayotganini ko'rsatadi — begona yuborgan havolani
+    ko'r-ko'rona bosgan odam bog'lanib qolmasin (`dal/account-link.ts:
+    confirmCodeOf`, LessonLab `services/uz_link_confirm.py`). */
 export type LinkState =
   | { linked: true; telegramId: string }
-  | { linked: false; deepLink: string; expiresInMinutes: number };
+  | { linked: false; deepLink: string; expiresInMinutes: number; confirmCode: string };
+
+/** Bog'lash oynasini ochish natijasi — holat + kompyuter uchun QR. */
+export type LinkStart =
+  | { linked: true; telegramId: string }
+  | {
+      linked: false;
+      deepLink: string;
+      expiresInMinutes: number;
+      confirmCode: string;
+      /** `deepLink` ning QR kodi (SVG) — telefonda skanerlash uchun. */
+      qrSvg: string;
+    }
+  | { failed: FailureReason; detail?: string };
+
+/** `/bogla` — botdan kelgan kod qaysi Telegram akkauntga tegishli.
+    Bog'lashdan OLDIN ko'rsatiladi (tasdiq tugmasi bilan). */
+export type BotCodePeek =
+  | { status: "ok"; telegramName: string; telegramUsername: string | null }
+  | { status: "invalid" | "expired" | "used" };
 
 /** Bot bergan kodni Ustozona tomonida ishlatish natijasi. */
 export type RedeemResult =

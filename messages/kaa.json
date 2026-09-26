@@ -4973,5 +4973,26 @@
     "linkAction": "Baylanıstırıw",
     "later": "Keyinirek",
     "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Telegramdı jalǵaw",
+    "description": "@uzlessonlabbot arqalı — bir ret, bir neshe sekundta",
+    "starting": "Siltew tayarlanbaqta…",
+    "codeLabel": "Tastıyıqlaw kodı",
+    "codeHint": "Botta START basıń hám tap usı kodtı tańlań.",
+    "qrHint": "Yamasa telefon kamerası menen QR kodtı skanerleń.",
+    "openTelegram": "Telegramdı ashıw",
+    "safety": "Bot qaysı Ustozona akkauntı jalǵanıp atırǵanın kórsetedi. Akkaunt siziki bolmasa — «Bu men emasman» túymesin basıń.",
+    "waiting": "Botta tastıyıqlawıńız kútilmekte…",
+    "linked": "Telegram jalǵandı! Endi oyınlarǵa avtomat túrde kiresiz.",
+    "expired": "Siltewdiń múddeti tawsıldı. Qaytadan urınıp kóriń.",
+    "failed": "Siltewdi tayarlap bolmadı. Birazdan keyin qayta urınıp kóriń.",
+    "retry": "Qaytadan",
+    "cancel": "Biykarlaw",
+    "close": "Jabıw",
+    "connect": "Jalǵaw",
+    "change": "Ózgertiw",
+    "linkedLabel": "Jalǵanǵan",
+    "notLinkedLabel": "Jalǵanbaǵan"
   }
 }

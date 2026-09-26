@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { redeemBotCode } from "@/server/dal/account-link";
+import { peekBotCode } from "@/server/dal/account-link";
+import { confirmBoglaAction } from "@/server/actions/account-link";
 import { getSession } from "@/server/session";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -42,6 +43,17 @@ import { getSession } from "@/server/session";
    Kodni tozalash (`.delete()`) ham shu sabab olib tashlandi — cookie
    15 daqiqada o'z-o'zidan tugaydi, qayta ishlatilsa `redeemBotCode()`
    "used" holatini qaytaradi (zararsiz).
+
+   ⛔ SAHIFA OCHILISHI BILAN BOGʻLAMAYDI — TASDIQ TUGMASI BILAN (2026-09-26)
+   ----------------------------------------------------------------------
+   Ilgari bogʻlash shu sahifaning RENDER'ida (GET) bajarilardi. Begona
+   odam oʻz botidan olgan havolani yuborsa, uni ochgan oʻqituvchining
+   Ustozona akkaunti BEGONA Telegramga bogʻlanib qolardi — va u Telegram
+   orqali oʻqituvchining sinf va oʻquvchilari koʻrinardi. Endi sahifa
+   avval QAYSI Telegram ekanini koʻrsatadi (`peekBotCode`), bogʻlash esa
+   faqat «Ha, bogʻlash» tugmasi bilan — Server Action (POST, Next origin
+   tekshiruvi bilan): `confirmBoglaAction` → natija `?r=<holat>` bilan
+   shu sahifaga qaytadi.
    ════════════════════════════════════════════════════════════════════ */
 
 export const dynamic = "force-dynamic";
@@ -77,10 +89,19 @@ function Card({
   );
 }
 
+const RESULTS = ["ok", "already", "expired", "used", "taken_uz", "taken_tg", "invalid"] as const;
+type ResultStatus = (typeof RESULTS)[number];
+
 export default async function BoglaPage(
-  { searchParams }: { searchParams: Promise<{ c?: string }> }
+  { searchParams }: { searchParams: Promise<{ c?: string; r?: string }> }
 ) {
-  const { c } = await searchParams;
+  const { c, r } = await searchParams;
+
+  // Tasdiq tugmasidan keyingi natija (`confirmBoglaAction` shu yerga qaytaradi).
+  if (r) {
+    return <Result status={(RESULTS as readonly string[]).includes(r) ? (r as ResultStatus) : "invalid"} />;
+  }
+
   const freshCode = (c || "").trim();
 
   const jar = await cookies();
@@ -121,7 +142,8 @@ export default async function BoglaPage(
             "Akkauntlarni biriktirish uchun Ustozona hisobingiz kerak.\n\n" +
             "Kirgandan (yoki roʻyxatdan oʻtgandan) soʻng shu havolani " +
             "(yoki ustozona.uz/bogla sahifasini) qayta oching — " +
-            "biriktirish avtomatik yakunlanadi."
+            "qaysi Telegram bogʻlanayotgani koʻrsatiladi va bitta tugma " +
+            "bilan tasdiqlaysiz."
           }
           action={
             <div className="flex gap-3">
@@ -140,14 +162,44 @@ export default async function BoglaPage(
     );
   }
 
-  const result = await redeemBotCode(code);
+  const peek = await peekBotCode(code);
+  if (peek.status !== "ok") return <Result status={peek.status} />;
 
-  // ⛔ Cookie BU YERDA TOZALANMAYDI — Server Component render'da
-  // `.delete()` ham `.set()` bilan bir xil sabab bilan ishlamaydi.
-  // 15 daqiqada oʻz-oʻzidan tugaydi; qayta ishlatilsa `redeemBotCode`
-  // "used" holatini qaytaradi — zararsiz, foydalanuvchiga tushunarli
-  // xabar bilan koʻrsatiladi.
+  const who = peek.telegramUsername
+    ? `${peek.telegramName} (@${peek.telegramUsername})`
+    : peek.telegramName;
 
+  return (
+    <Shell>
+      <Card
+        tone="warn"
+        title="Telegramni bogʻlaysizmi?"
+        body={
+          "Ustozona hisobingiz shu Telegram akkauntga biriktiriladi:\n\n" +
+          `${who}\n\n` +
+          "Bu havolani botdan OʻZINGIZ olgan boʻlsangizgina tasdiqlang. " +
+          "Uni sizga boshqa odam yuborgan boʻlsa — bogʻlamang: u Telegram " +
+          "orqali sinf va oʻquvchilaringizni koʻrib qolardi."
+        }
+        action={
+          <form action={confirmBoglaAction} className="flex flex-wrap gap-3">
+            <input type="hidden" name="code" value={code} />
+            <button type="submit"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+              Ha, bogʻlash
+            </button>
+            <Link href="/dashboard"
+              className="rounded-lg border px-4 py-2 text-sm font-medium">
+              Yoʻq, bu men emasman
+            </Link>
+          </form>
+        }
+      />
+    </Shell>
+  );
+}
+
+function Result({ status }: { status: ResultStatus }) {
   const back = (
     <Link href="/dashboard"
       className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
@@ -155,7 +207,7 @@ export default async function BoglaPage(
     </Link>
   );
 
-  switch (result.status) {
+  switch (status) {
     case "ok":
     case "already":
       return (

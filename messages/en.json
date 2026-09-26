@@ -5050,5 +5050,26 @@
     "linkAction": "Connect",
     "later": "Later",
     "frameTitle": "Ustozona-Games"
+  },
+  "TelegramLink": {
+    "title": "Connect Telegram",
+    "description": "Via @uzlessonlabbot — once, in a few seconds",
+    "starting": "Preparing the link…",
+    "codeLabel": "Confirmation code",
+    "codeHint": "Press START in the bot and pick exactly this code.",
+    "qrHint": "Or scan the QR code with your phone camera.",
+    "openTelegram": "Open Telegram",
+    "safety": "The bot shows which Ustozona account is being connected. If it isn’t yours, tap “Bu men emasman” (“This isn’t me”).",
+    "waiting": "Waiting for you to confirm in the bot…",
+    "linked": "Telegram is connected! You now sign in to games automatically.",
+    "expired": "The link has expired. Please try again.",
+    "failed": "Couldn’t prepare the link. Please try again shortly.",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "close": "Close",
+    "connect": "Connect",
+    "change": "Change",
+    "linkedLabel": "Connected",
+    "notLinkedLabel": "Not connected"
   }
 }

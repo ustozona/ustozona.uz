@@ -1,11 +1,12 @@
 import "server-only";
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
+import QRCode from "qrcode";
 import { db } from "@/server/db/client";
 import { accountLinkCodes, userTelegram } from "@/server/db/schema";
 import { requireTeacher } from "@/server/session";
 import type {
-  LinkState, RedeemResult, UnlinkImpactRow,
+  BotCodePeek, LinkStart, LinkState, RedeemResult, UnlinkImpactRow,
 } from "@/lib/link-types";
 
 // ⛔ Tiplar `@/lib/link-types` da — bu yerda TA'RIFLANMAYDI va
@@ -42,6 +43,32 @@ import type {
 
 const BOT_USERNAME = process.env.LESSONLAB_BOT_USERNAME || "uzlessonlabbot";
 const TTL_MINUTES = 15;
+
+/** Saytda koʻrsatiladigan 4 xonali TASDIQ kodi — havola sirining hosilasi.
+
+    NEGA KERAK: bot (@uzlessonlabbot) `/start uzl_<kod>` da endi darhol
+    bogʻlamaydi — qaysi Ustozona akkaunti ekanini koʻrsatadi va shu kodni
+    uch variant ichidan tanlatadi. Begona yuborgan havolani koʻr-koʻrona
+    bosgan odam saytni koʻrmayapti va toʻgʻri kodni bilmaydi.
+
+    ⚠️ Formula LessonLab bilan AYNAN bir xil boʻlishi SHART
+    (`services/uz_link_confirm.py: confirm_code_of`), aks holda hech kim
+    bogʻlana olmaydi. Namuna: `confirmCodeOf("AbCdEfGhIjKlMnOpQrStUvWxYz012345")
+    === "8158"` — ikkala tomonda test bilan qotirilgan. Bazaga ustun
+    qoʻshilmadi: jadval ikki loyiha uchun umumiy. */
+export function confirmCodeOf(code: string): string {
+  const digest = createHash("sha256").update(`uzl-confirm:${code}`).digest("hex");
+  return String(parseInt(digest.slice(0, 8), 16) % 10000).padStart(4, "0");
+}
+
+function unlinked(code: string, expiresInMinutes: number): LinkState {
+  return {
+    linked: false,
+    deepLink: `https://t.me/${BOT_USERNAME}?start=uzl_${code}`,
+    expiresInMinutes,
+    confirmCode: confirmCodeOf(code),
+  };
+}
 
 /* ⛔ `LINK_REQUIRED` / `LESSONLAB_LINK_REQUIRED` OLIB TASHLANDI (2026-08-10)
 
@@ -108,11 +135,7 @@ export async function getOrCreateLink(): Promise<LinkState> {
   if (active) {
     const remaining = Math.max(
       1, Math.ceil((active.expiresAt.getTime() - Date.now()) / 60_000));
-    return {
-      linked: false,
-      deepLink: `https://t.me/${BOT_USERNAME}?start=uzl_${active.code}`,
-      expiresInMinutes: remaining,
-    };
+    return unlinked(active.code, remaining);
   }
 
   const code = randomBytes(24).toString("base64url");
@@ -135,11 +158,19 @@ export async function getOrCreateLink(): Promise<LinkState> {
     });
   });
 
-  return {
-    linked: false,
-    deepLink: `https://t.me/${BOT_USERNAME}?start=uzl_${code}`,
-    expiresInMinutes: TTL_MINUTES,
-  };
+  return unlinked(code, TTL_MINUTES);
+}
+
+/** Bogʻlash oynasi uchun: holat + havolaning QR kodi (kompyuterda
+    telefon bilan skanerlash). QR faqat oyna ochilganda yasaladi —
+    har soʻrovda emas (`getOrCreateLink` holat tekshiruvida koʻp chaqiriladi). */
+export async function startTelegramLink(): Promise<LinkStart> {
+  const state = await getOrCreateLink();
+  if (state.linked) return state;
+  const qrSvg = await QRCode.toString(state.deepLink, {
+    type: "svg", margin: 1, errorCorrectionLevel: "L",
+  });
+  return { ...state, qrSvg };
 }
 
 /** Telegram biriktirishini UZISH — «boshqa telegramga ulab qoʻydim».
@@ -215,6 +246,41 @@ export async function getUnlinkImpact(): Promise<UnlinkImpactRow[]> {
     responseCount: Number(r.response_count),
     lastActivity: r.last_activity,
   }));
+}
+
+
+/** Yoʻnalish B, 1-qadam: kod qaysi Telegram akkauntga tegishli — HECH
+    NARSA YOZMAYDI. `/bogla` sahifasi uni koʻrsatib, tasdiq tugmasini
+    kutadi.
+
+    NEGA: ilgari `/bogla?c=…` ochilishi bilanoq (GET) bogʻlardi. Begona
+    odam oʻz botidan olgan havolani yuborsa, uni ochgan oʻqituvchining
+    Ustozona akkaunti BEGONA Telegramga bogʻlanib qolardi va u Telegram
+    orqali oʻqituvchining sinf va oʻquvchilari koʻrinardi. Holat
+    oʻzgartiradigan amal GET da boʻlmasligi kerak — endi faqat tugma
+    (Server Action, POST) bilan. */
+export async function peekBotCode(code: string): Promise<BotCodePeek> {
+  await requireTeacher();
+  if (!code || code.length < 16 || code.length > 128) return { status: "invalid" };
+
+  const rows = await db.execute<{
+    expired: boolean; used: boolean; full_name: string | null; username: string | null;
+  }>(sql`
+    SELECT c.expires_at < now() AS expired, c.used_at IS NOT NULL AS used,
+           b.full_name, b.username
+    FROM account_link_codes c
+    LEFT JOIN bot_users b ON b.id::text = c.telegram_id
+    WHERE c.code = ${code} AND c.telegram_id IS NOT NULL
+  `);
+  const row = Array.from(rows)[0];
+  if (!row) return { status: "invalid" };
+  if (row.used) return { status: "used" };
+  if (row.expired) return { status: "expired" };
+  return {
+    status: "ok",
+    telegramName: (row.full_name ?? "").trim() || "Telegram",
+    telegramUsername: row.username ?? null,
+  };
 }
 
 

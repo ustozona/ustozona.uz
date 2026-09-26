@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ExternalLink, Link2, Unlink, RefreshCw, CircleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Link2, Unlink, CircleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover, PopoverContent, PopoverTrigger,
@@ -10,12 +11,19 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { TelegramLinkDialog } from "@/components/telegram/TelegramLinkDialog";
 import { useLessonLabLink, isLinkState } from "@/hooks/useLessonLabLink";
 import { WHY_LINK_MATTERS } from "./why-link-matters";
 
-/* LessonLab bog'lanishi — Profil (ixcham) va Sozlamalar (to'liq karta)
-   ikkalasida ham shu yerdan ishlatiladi (`useLessonLabLink` orqali
-   bitta mantiq). `variant` faqat ko'rinishni o'zgartiradi. */
+/* Telegram (@uzlessonlabbot) bog'lanishi — Profil (ixcham) va Sozlamalar >
+   Telegram (to'liq) ikkalasida ham shu yerdan ishlatiladi
+   (`useLessonLabLink` orqali bitta mantiq). `variant` faqat ko'rinishni
+   o'zgartiradi.
+
+   Ulash — `TelegramLinkDialog` orqali: sayt tasdiq kodini ko'rsatadi,
+   bot esa aynan shu kodni tanlatadi (begona havola bilan bog'lanib
+   qolmaslik uchun). Ilgari bu yerda to'g'ridan-to'g'ri bot havolasi
+   turardi — endi kodsiz bog'lab bo'lmaydi. */
 
 export function WhyLinkInfo() {
   return (
@@ -38,17 +46,38 @@ export function WhyLinkInfo() {
 
 export function LessonLabLinkPanel({
   variant = "full",
+  onChange,
+  autoOpen = false,
 }: {
   variant?: "full" | "compact";
+  /** Bog'lanmagan bo'lsa oyna o'zi bir marta ochilsin (xatdagi
+      «Telegramni ulash» tugmasi — `?ulash=1`). */
+  autoOpen?: boolean;
+  /** Bog'lanish holati o'zgardi (ulandi yoki uzildi) — masalan Sozlamalar
+      > Telegram qolgan qatorlarni (telefon, eslatmalar) qayta o'qisin. */
+  onChange?: () => void;
 }) {
+  const t = useTranslations("TelegramLink");
   const { status, busy, impact, refresh, requestUnlink, confirmUnlink, cancelUnlink } =
     useLessonLabLink();
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const autoOpened = React.useRef(false);
+  React.useEffect(() => {
+    if (!autoOpen || autoOpened.current || !isLinkState(status) || status.linked) return;
+    autoOpened.current = true;
+    setDialogOpen(true);
+  }, [autoOpen, status]);
 
   const onUnlinkClick = async () => {
     const blocked = await requestUnlink();
     // `blocked` bo'lmasa (`impact` bo'sh) — uzish darhol bajarilgan,
     // qo'shimcha tasdiq shart emas (`requestUnlink` o'zi bajaradi).
-    if (!blocked) return;
+    if (!blocked) {
+      onChange?.();
+      // Uzish — o'z-o'zicha maqsad emas: odam TO'G'RI akkauntga qayta
+      // bog'lamoqchi. Oynani darhol ochamiz.
+      setDialogOpen(true);
+    }
   };
 
   if (status === "checking") {
@@ -123,28 +152,28 @@ export function LessonLabLinkPanel({
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild size="sm" className="gap-1.5">
-              <a href={status.deepLink} target="_blank" rel="noopener noreferrer">
-                <Link2 className="size-3.5" />
-                Telegram botda ochish
-                <ExternalLink className="size-3" />
-              </a>
-            </Button>
-            <Button
-              variant="outline" size="sm" className="gap-1.5"
-              disabled={busy} onClick={refresh}
-            >
-              <RefreshCw className={busy ? "size-3.5 animate-spin" : "size-3.5"} />
-              Yangilash
+            <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
+              <Link2 className="size-3.5" />
+              {t("connect")}
             </Button>
             {variant === "full" && (
-              <span className="text-xs text-muted-foreground">
-                Havola {status.expiresInMinutes} daqiqa amal qiladi
-              </span>
+              <span className="text-xs text-muted-foreground">@uzlessonlabbot</span>
             )}
           </div>
         )}
       </div>
+
+      <TelegramLinkDialog
+        open={dialogOpen}
+        onOpenChange={(o) => {
+          setDialogOpen(o);
+          if (!o) refresh();
+        }}
+        onLinked={() => {
+          refresh();
+          onChange?.();
+        }}
+      />
 
       <AlertDialog open={impact != null} onOpenChange={(open) => !open && cancelUnlink()}>
         <AlertDialogContent>
@@ -177,7 +206,13 @@ export function LessonLabLinkPanel({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmUnlink}>
+            <AlertDialogAction
+              onClick={async () => {
+                await confirmUnlink();
+                onChange?.();
+                setDialogOpen(true);
+              }}
+            >
               Ha, baribir uzilsin
             </AlertDialogAction>
           </AlertDialogFooter>

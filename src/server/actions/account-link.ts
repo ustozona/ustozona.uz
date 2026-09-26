@@ -1,10 +1,13 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import {
-  getLinkStatus, redeemBotCode, unlinkTelegram, getUnlinkImpact,
+  getLinkStatus, peekBotCode, redeemBotCode, startTelegramLink, unlinkTelegram, getUnlinkImpact,
 } from "@/server/dal/account-link";
 import { failureOf } from "@/server/dal/_failure-reason";
-import type { RedeemResult, UnlinkImpactRow, LinkStatusResult } from "@/lib/link-types";
+import type {
+  BotCodePeek, LinkStart, RedeemResult, UnlinkImpactRow, LinkStatusResult,
+} from "@/lib/link-types";
 
 /* LessonLab bog'lash — yupqa qatlam: mijoz komponentlari DAL'ni
    to'g'ridan chaqira olmaydi ("server-only"), shuning uchun shu yerda
@@ -38,8 +41,32 @@ export async function getLessonLabLinkStatusAction(): Promise<LinkStatusResult> 
   }
 }
 
+/** Bogʻlash oynasi ochilganda: holat + QR (`TelegramLinkDialog`). */
+export async function startTelegramLinkAction(): Promise<LinkStart> {
+  try {
+    return await startTelegramLink();
+  } catch (err) {
+    const { reason, detail } = failureOf(err, "account-link/start");
+    return { failed: reason, detail };
+  }
+}
+
 export async function redeemLessonLabCodeAction(code: string): Promise<RedeemResult> {
   return redeemBotCode(code);
+}
+
+/** `/bogla` — «Ha, bogʻlash» tugmasi (POST). Bogʻlash endi faqat shu
+    yerda: sahifaning oʻzi (GET) hech narsa yozmaydi — `app/bogla/page.tsx`
+    izohi. Natija `?r=<holat>` bilan sahifaga qaytadi. */
+export async function confirmBoglaAction(formData: FormData): Promise<void> {
+  const code = String(formData.get("code") ?? "").trim();
+  const result = await redeemBotCode(code);
+  redirect(`/bogla?r=${result.status}`);
+}
+
+/** `/bogla`: kod qaysi Telegramga tegishli — tasdiqdan oldin koʻrsatiladi. */
+export async function peekLessonLabCodeAction(code: string): Promise<BotCodePeek> {
+  return peekBotCode(code);
 }
 
 export async function unlinkLessonLabAction(confirmed: boolean) {
